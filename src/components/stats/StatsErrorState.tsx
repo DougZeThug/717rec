@@ -1,7 +1,7 @@
+import { AlertTriangle } from 'lucide-react';
+import React from 'react';
 
-import React from "react";
-import { AlertTriangle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface StatsErrorStateProps {
   teamsError: Error | null;

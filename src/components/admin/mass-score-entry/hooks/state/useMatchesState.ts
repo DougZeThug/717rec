@@ -1,7 +1,7 @@
+import { useState } from 'react';
 
-import { useState } from "react";
-import { MatchWithTeams } from "../../types";
-import { validateMatchScores } from "../../utils/matchValidation";
+import { MatchWithTeams } from '../../types';
+import { validateMatchScores } from '../../utils/matchValidation';
 
 export const useMatchesState = () => {
   const [matches, setMatches] = useState<MatchWithTeams[]>([]);
@@ -11,9 +11,9 @@ export const useMatchesState = () => {
   // This is for the original style (team1/team2 toggle)
   const handleScoreChange = (index: number, team: 'team1' | 'team2', value: string) => {
     const newMatches = [...matches];
-    const scoreValue = value === "" ? null : parseInt(value, 10);
+    const scoreValue = value === '' ? null : parseInt(value, 10);
     const match = newMatches[index];
-    
+
     if (team === 'team1') {
       match.team1Score = scoreValue;
     } else {
@@ -40,6 +40,6 @@ export const useMatchesState = () => {
     submitting,
     setSubmitting,
     handleScoreChange,
-    handleMarkCompleted
+    handleMarkCompleted,
   };
 };

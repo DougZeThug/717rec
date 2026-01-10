@@ -1,18 +1,18 @@
+import React from 'react';
 
-import React from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import TeamManagementTab from "@/components/admin/teams/TeamManagementTab";
-import PendingMatchesSection from "@/components/admin/PendingMatchesSection";
-import TimeslotsTab from "@/components/admin/timeslots/TimeslotsTab";
-import BatchMatchCreationTab from "@/components/admin/batch-matches/BatchMatchCreationTab";
-import MassScoresTab from "@/components/admin/scores/MassScoresTab";
-import AutoScheduleTab from "@/components/admin/auto-schedule/AutoScheduleTab";
-import SeasonManagementTab from "@/components/admin/seasons/SeasonManagementTab";
-import HeroCardsTab from "@/components/admin/hero-cards/HeroCardsTab";
+import AutoScheduleTab from '@/components/admin/auto-schedule/AutoScheduleTab';
+import BatchMatchCreationTab from '@/components/admin/batch-matches/BatchMatchCreationTab';
+import HeroCardsTab from '@/components/admin/hero-cards/HeroCardsTab';
+import PendingMatchesSection from '@/components/admin/PendingMatchesSection';
+import MassScoresTab from '@/components/admin/scores/MassScoresTab';
+import SeasonManagementTab from '@/components/admin/seasons/SeasonManagementTab';
+import TeamManagementTab from '@/components/admin/teams/TeamManagementTab';
+import TimeslotsTab from '@/components/admin/timeslots/TimeslotsTab';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const AdminTabs = () => {
   return (
-  <Tabs defaultValue="teams" className="space-y-4">
+    <Tabs defaultValue="teams" className="space-y-4">
       <TabsList className="flex flex-wrap md:flex-nowrap gap-2 h-auto md:h-10">
         <TabsTrigger value="teams">Team Management</TabsTrigger>
         <TabsTrigger value="pending-matches">Pending Matches</TabsTrigger>
@@ -43,7 +43,7 @@ const AdminTabs = () => {
       <TabsContent value="batch-matches" className="space-y-4">
         <BatchMatchCreationTab />
       </TabsContent>
-      
+
       <TabsContent value="auto-schedule" className="space-y-4">
         <AutoScheduleTab />
       </TabsContent>

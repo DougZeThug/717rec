@@ -1,8 +1,10 @@
-import { useMemo } from "react";
-import { useTeamTotals } from "./useTeamTotals";
-import { useLeaguePercentiles, TeamPercentiles } from "./useLeaguePercentiles";
-import { useOpponentHistory } from "./useHeadToHead";
-import { Team } from "@/types";
+import { useMemo } from 'react';
+
+import { Team } from '@/types';
+
+import { useOpponentHistory } from './useHeadToHead';
+import { TeamPercentiles, useLeaguePercentiles } from './useLeaguePercentiles';
+import { useTeamTotals } from './useTeamTotals';
 
 interface TeamTotalsData {
   career_match_wins: number;
@@ -48,10 +50,7 @@ export interface TeamComparisonData {
   isLoading: boolean;
 }
 
-export const useTeamComparison = (
-  team1: Team | null,
-  team2: Team | null
-): TeamComparisonData => {
+export const useTeamComparison = (team1: Team | null, team2: Team | null): TeamComparisonData => {
   const { totals: totals1, isLoading: loading1 } = useTeamTotals(team1?.id ?? '');
   const { totals: totals2, isLoading: loading2 } = useTeamTotals(team2?.id ?? '');
   const { getTeamPercentiles, isLoading: loadingPercentiles } = useLeaguePercentiles();
@@ -112,7 +111,18 @@ export const useTeamComparison = (
       headToHead,
       isLoading,
     };
-  }, [team1, team2, totals1, totals2, getTeamPercentiles, loadingPercentiles, h2hHistory, loading1, loading2, loadingH2H]);
+  }, [
+    team1,
+    team2,
+    totals1,
+    totals2,
+    getTeamPercentiles,
+    loadingPercentiles,
+    h2hHistory,
+    loading1,
+    loading2,
+    loadingH2H,
+  ]);
 
   return comparisonData;
 };

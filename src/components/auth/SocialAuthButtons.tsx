@@ -1,7 +1,7 @@
+import { Loader2, LucideChrome, Smartphone } from 'lucide-react';
+import React from 'react';
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Loader2, LucideChrome, Smartphone } from "lucide-react";
+import { Button } from '@/components/ui/button';
 
 interface SocialAuthButtonsProps {
   onGoogleSignIn: () => Promise<void>;
@@ -14,7 +14,7 @@ const SocialAuthButtons: React.FC<SocialAuthButtonsProps> = ({
   onGoogleSignIn,
   onNativeGoogleSignIn,
   isNative,
-  isSubmitting
+  isSubmitting,
 }) => {
   return (
     <>
@@ -26,7 +26,7 @@ const SocialAuthButtons: React.FC<SocialAuthButtonsProps> = ({
           <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
         </div>
       </div>
-      
+
       <div className="flex flex-col gap-2">
         {/* Web Google Sign In */}
         <Button
@@ -43,7 +43,7 @@ const SocialAuthButtons: React.FC<SocialAuthButtonsProps> = ({
           )}
           Google
         </Button>
-        
+
         {/* Native Google Sign In - only shown on mobile devices */}
         {isNative && (
           <Button

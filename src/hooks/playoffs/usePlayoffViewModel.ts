@@ -1,24 +1,25 @@
+import { useQueryClient } from '@tanstack/react-query';
 
-import { useQueryClient } from "@tanstack/react-query";
+import { BracketMatchesByType } from '@/services/brackets/types';
+import { convertErrorToString, getUIErrorMessage, logError } from '@/utils/errors';
+import { playoffLog, warnLog } from '@/utils/logger';
+import type { PlayoffViewModel } from '@/utils/playoffs/playoffTypes';
+
+import { usePlayoffActions } from './usePlayoffActions';
 import { usePlayoffBracketData } from './usePlayoffBracketData';
 import { usePlayoffMatches } from './usePlayoffMatches';
 import { usePlayoffTeams } from './usePlayoffTeams';
-import { usePlayoffActions } from './usePlayoffActions';
-import { BracketMatchesByType } from "@/services/brackets/types";
-import { getUIErrorMessage, logError, convertErrorToString } from "@/utils/errors";
-import { playoffLog, warnLog } from "@/utils/logger";
-import type { PlayoffViewModel } from "@/utils/playoffs/playoffTypes";
 
 // Local helper to group bracket matches by type
 const groupBracketMatchesByType = (matches: any[]): BracketMatchesByType => {
   if (!Array.isArray(matches)) {
     return { winners: [], losers: [], finals: [] };
   }
-  
-  const winners = matches.filter(match => match.matchType === 'winners');
-  const losers = matches.filter(match => match.matchType === 'losers');
-  const finals = matches.filter(match => match.matchType === 'finals');
-  
+
+  const winners = matches.filter((match) => match.matchType === 'winners');
+  const losers = matches.filter((match) => match.matchType === 'losers');
+  const finals = matches.filter((match) => match.matchType === 'finals');
+
   return { winners, losers, finals };
 };
 
@@ -27,7 +28,7 @@ const groupBracketMatchesByType = (matches: any[]): BracketMatchesByType => {
  */
 export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel {
   playoffLog('usePlayoffViewModel called with bracketId:', bracketId);
-  
+
   // Defensive: return safe defaults immediately if bracketId is invalid
   if (!bracketId || (typeof bracketId === 'string' && bracketId.trim() === '')) {
     if (import.meta.env.DEV) {
@@ -48,76 +49,73 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
       },
       updateMatchResult: async () => {
         throw new Error('Cannot update match: invalid bracketId');
-      }
+      },
     };
   }
-  
+
   // Get QueryClient using the proper hook
   const queryClient = useQueryClient();
-  
+
   // Use the focused hooks
   const bracketQuery = usePlayoffBracketData(bracketId);
   const matchesQuery = usePlayoffMatches(bracketId);
   const teamsQuery = usePlayoffTeams();
   const actions = usePlayoffActions();
-  
+
   // CRITICAL: Normalize to stable defaults - never return undefined
   const safeMatches = Array.isArray(matchesQuery.data) ? matchesQuery.data : [];
   const safeTeams = Array.isArray(teamsQuery.data) ? teamsQuery.data : [];
-  const combinedBracket = bracketQuery.data ? {
-    ...bracketQuery.data,
-    matches: safeMatches
-  } : null;
-  
-  // Process bracket data to separate winners, losers and finals matches
-  const bracketMatchesByType: BracketMatchesByType | null = safeMatches.length > 0
-    ? groupBracketMatchesByType(safeMatches)
+  const combinedBracket = bracketQuery.data
+    ? {
+        ...bracketQuery.data,
+        matches: safeMatches,
+      }
     : null;
-  
+
+  // Process bracket data to separate winners, losers and finals matches
+  const bracketMatchesByType: BracketMatchesByType | null =
+    safeMatches.length > 0 ? groupBracketMatchesByType(safeMatches) : null;
+
   // Simplified refetch function - no aggressive cache operations
   const refetch = async () => {
     try {
       playoffLog('Starting refetch...');
-      
+
       // Simple parallel refetch without cache manipulation
-      await Promise.all([
-        bracketQuery.refetch(),
-        matchesQuery.refetch(),
-        teamsQuery.refetch()
-      ]);
+      await Promise.all([bracketQuery.refetch(), matchesQuery.refetch(), teamsQuery.refetch()]);
       playoffLog('Refetch completed successfully');
     } catch (err) {
-      logError(err, "usePlayoffViewModel refetch");
-      throw new Error(getUIErrorMessage(err, "Failed to refresh data"));
+      logError(err, 'usePlayoffViewModel refetch');
+      throw new Error(getUIErrorMessage(err, 'Failed to refresh data'));
     }
   };
-  
+
   // Safely convert error to string for consistent interface
   const processedError = convertErrorToString(bracketQuery.error || matchesQuery.error);
-  
+
   return {
     // Bracket data with matches combined
     bracket: combinedBracket,
     isLoading: bracketQuery.isLoading || matchesQuery.isLoading,
     error: processedError,
     bracketMatchesByType,
-    
+
     // Teams data - always array, never undefined
     teams: safeTeams,
     teamsLoading: teamsQuery.isLoading,
-    
+
     // Actions
     refetch,
     deleteBracket: actions.deleteBracket,
-    updateMatchResult: actions.updateMatchResult
+    updateMatchResult: actions.updateMatchResult,
   };
 }
 
 // Re-export the component hooks for direct use
+export * as playoffActions from './usePlayoffActions';
 export { usePlayoffBracketData } from './usePlayoffBracketData';
 export { usePlayoffMatches } from './usePlayoffMatches';
 export { usePlayoffTeams } from './usePlayoffTeams';
-export * as playoffActions from './usePlayoffActions';
 
 // Re-export the BracketMatchesByType type for convenience
-export type { BracketMatchesByType } from "@/services/brackets/types";
+export type { BracketMatchesByType } from '@/services/brackets/types';

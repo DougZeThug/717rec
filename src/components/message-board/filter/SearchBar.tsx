@@ -1,9 +1,10 @@
-import React from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, RefreshCw } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { animations } from "@/styles/design-system";
+import { RefreshCw, Search } from 'lucide-react';
+import React from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
+import { animations } from '@/styles/design-system';
 
 interface SearchBarProps {
   searchInput: string;
@@ -40,18 +41,16 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <span className="sr-only">Search</span>
         </Button>
       </form>
-      
-      <Button 
-        variant="outline" 
+
+      <Button
+        variant="outline"
         size="icon"
         onClick={onRefresh}
         disabled={isRefreshing}
         className="flex-shrink-0"
         aria-label="Refresh messages"
       >
-        <RefreshCw 
-          className={cn("h-4 w-4", isRefreshing && "animate-spin")} 
-        />
+        <RefreshCw className={cn('h-4 w-4', isRefreshing && 'animate-spin')} />
       </Button>
     </div>
   );

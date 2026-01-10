@@ -1,7 +1,7 @@
+import { Loader2 } from 'lucide-react';
+import React from 'react';
 
-import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Card, CardContent } from '@/components/ui/card';
 
 interface ProfileLoadingStateProps {
   message?: string;
@@ -9,8 +9,8 @@ interface ProfileLoadingStateProps {
 }
 
 const ProfileLoadingState: React.FC<ProfileLoadingStateProps> = ({
-  message = "Checking authentication...",
-  subMessage = "Please wait while we retrieve your account information"
+  message = 'Checking authentication...',
+  subMessage = 'Please wait while we retrieve your account information',
 }) => {
   return (
     <Card className="w-full max-w-md">

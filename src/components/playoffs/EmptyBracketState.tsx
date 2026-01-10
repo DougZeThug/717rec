@@ -1,6 +1,7 @@
-import React from "react";
-import { Trophy, Plus } from "lucide-react";
-import { EmptyState } from "@/components/ui/empty-state";
+import { Plus, Trophy } from 'lucide-react';
+import React from 'react';
+
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface EmptyBracketStateProps {
   onCreateBracket: () => void;
@@ -14,7 +15,7 @@ const EmptyBracketState: React.FC<EmptyBracketStateProps> = ({ onCreateBracket }
       description="Create playoff brackets to organize your tournament and determine the champion."
       actions={[
         {
-          label: "Create Bracket",
+          label: 'Create Bracket',
           onClick: onCreateBracket,
           icon: Plus,
         },

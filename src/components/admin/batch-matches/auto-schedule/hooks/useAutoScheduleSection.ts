@@ -1,22 +1,26 @@
-import { useState, useCallback } from "react";
-import { useSchedulePreview } from "@/hooks/useSchedulePreview";
-import { useToast } from "@/hooks/use-toast";
-import { normalizeDate } from "@/utils/dateNormalization";
-import { MatchPair } from "@/components/admin/batch-matches/MatchPairsList";
-import { scheduleLog } from "@/utils/logger";
+import { useCallback, useState } from 'react';
+
+import { MatchPair } from '@/components/admin/batch-matches/MatchPairsList';
+import { useToast } from '@/hooks/use-toast';
+import { useSchedulePreview } from '@/hooks/useSchedulePreview';
+import { normalizeDate } from '@/utils/dateNormalization';
+import { scheduleLog } from '@/utils/logger';
 
 interface UseAutoScheduleSectionProps {
   selectedDate: Date | null;
   setMatchPairs: React.Dispatch<React.SetStateAction<MatchPair[]>>;
 }
 
-export const useAutoScheduleSection = ({ selectedDate, setMatchPairs }: UseAutoScheduleSectionProps) => {
+export const useAutoScheduleSection = ({
+  selectedDate,
+  setMatchPairs,
+}: UseAutoScheduleSectionProps) => {
   // Algorithm settings
   const [avoidRematches, setAvoidRematches] = useState(true);
   const [prioritizeQuality, setPrioritizeQuality] = useState(false);
-  
+
   const { toast } = useToast();
-  
+
   const {
     autoScheduleStep,
     setAutoScheduleStep,
@@ -28,33 +32,33 @@ export const useAutoScheduleSection = ({ selectedDate, setMatchPairs }: UseAutoS
     previewSchedule,
     handleGenerateSchedule,
     convertPairingsToMatches,
-    getTeamCountStatus
+    getTeamCountStatus,
   } = useSchedulePreview();
 
   // Handle loading teams for preview
   const handlePreviewTeams = useCallback(async () => {
     if (!selectedDate) {
       toast({
-        title: "Select Date",
-        description: "Please select a date first.",
-        variant: "destructive"
+        title: 'Select Date',
+        description: 'Please select a date first.',
+        variant: 'destructive',
       });
       return;
     }
-    
+
     scheduleLog('useAutoScheduleSection - handlePreviewTeams', {
       selectedDate,
       selectedDateString: selectedDate.toString(),
       selectedDateIso: selectedDate.toISOString(),
-      simpleDateString: normalizeDate(selectedDate, 'handlePreviewTeams')
+      simpleDateString: normalizeDate(selectedDate, 'handlePreviewTeams'),
     });
-    
+
     const preview = await previewSchedule(selectedDate);
-    
+
     if (preview) {
       toast({
-        title: "Teams Loaded",
-        description: "Teams for each time block have been loaded.",
+        title: 'Teams Loaded',
+        description: 'Teams for each time block have been loaded.',
       });
     }
   }, [selectedDate, previewSchedule, toast]);
@@ -63,22 +67,24 @@ export const useAutoScheduleSection = ({ selectedDate, setMatchPairs }: UseAutoS
   const handleGenerateScheduleClick = useCallback(async () => {
     if (!selectedDate) {
       toast({
-        title: "Select Date",
-        description: "Please select a date first.",
-        variant: "destructive"
+        title: 'Select Date',
+        description: 'Please select a date first.',
+        variant: 'destructive',
       });
       return;
     }
-    
+
     // Pass configuration options to the generation function
     await handleGenerateSchedule(selectedDate, {
       avoidRematches,
       prioritizeQuality,
-      weights: prioritizeQuality ? {
-        // Increase power score and record weights for higher quality matches
-        powerScoreWeight: 5,
-        recordWeight: 3.5
-      } : undefined
+      weights: prioritizeQuality
+        ? {
+            // Increase power score and record weights for higher quality matches
+            powerScoreWeight: 5,
+            recordWeight: 3.5,
+          }
+        : undefined,
     });
   }, [selectedDate, avoidRematches, prioritizeQuality, handleGenerateSchedule, toast]);
 
@@ -86,33 +92,33 @@ export const useAutoScheduleSection = ({ selectedDate, setMatchPairs }: UseAutoS
   const handleApplySchedule = useCallback(() => {
     if (!generatedPairings || !selectedDate) {
       toast({
-        title: "Error",
-        description: "No schedule has been generated yet.",
-        variant: "destructive"
+        title: 'Error',
+        description: 'No schedule has been generated yet.',
+        variant: 'destructive',
       });
       return;
     }
 
     const newMatchPairs = convertPairingsToMatches(generatedPairings, selectedDate);
-    
+
     if (newMatchPairs.length === 0) {
       toast({
-        title: "Error",
-        description: "No valid match pairings were generated.",
-        variant: "destructive"
+        title: 'Error',
+        description: 'No valid match pairings were generated.',
+        variant: 'destructive',
       });
       return;
     }
-    
+
     // Update the match pairs list with generated matches
     setMatchPairs(newMatchPairs as MatchPair[]);
-    
+
     toast({
-      title: "Schedule Applied",
+      title: 'Schedule Applied',
       description: `${newMatchPairs.length} matches have been added to the form.`,
     });
   }, [selectedDate, generatedPairings, convertPairingsToMatches, setMatchPairs, toast]);
-  
+
   // Get current team count stats
   const { total: totalTeams, odd: oddBlocks } = getTeamCountStatus();
 
@@ -122,7 +128,7 @@ export const useAutoScheduleSection = ({ selectedDate, setMatchPairs }: UseAutoS
     setAvoidRematches,
     prioritizeQuality,
     setPrioritizeQuality,
-    
+
     // State
     autoScheduleStep,
     setAutoScheduleStep,
@@ -133,10 +139,10 @@ export const useAutoScheduleSection = ({ selectedDate, setMatchPairs }: UseAutoS
     unmatchedTeamIds,
     totalTeams,
     oddBlocks,
-    
+
     // Actions
     handlePreviewTeams,
     handleGenerateScheduleClick,
-    handleApplySchedule
+    handleApplySchedule,
   };
 };

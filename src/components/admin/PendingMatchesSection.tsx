@@ -1,15 +1,12 @@
 import React from 'react';
-import { useScoreSubmissions } from "@/hooks/useScoreSubmissions";
-import ScoreSubmissionsList from "@/components/admin/scores/ScoreSubmissionsList";
-import { LoadingState } from "@/components/ui/loading-state";
+
+import ScoreSubmissionsList from '@/components/admin/scores/ScoreSubmissionsList';
+import { LoadingState } from '@/components/ui/loading-state';
+import { useScoreSubmissions } from '@/hooks/useScoreSubmissions';
 
 const PendingMatchesSection = () => {
-  const {
-    submissions,
-    isLoading,
-    handleApproveSubmission,
-    handleRejectSubmission
-  } = useScoreSubmissions();
+  const { submissions, isLoading, handleApproveSubmission, handleRejectSubmission } =
+    useScoreSubmissions();
 
   if (isLoading) {
     return <LoadingState variant="section" message="Loading submissions..." />;
@@ -20,8 +17,8 @@ const PendingMatchesSection = () => {
       <p className="text-sm text-muted-foreground mb-4">
         Review score submissions reported by users.
       </p>
-      
-      <ScoreSubmissionsList 
+
+      <ScoreSubmissionsList
         submissions={submissions}
         onApprove={handleApproveSubmission}
         onReject={handleRejectSubmission}

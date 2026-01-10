@@ -1,74 +1,59 @@
+import React, { useMemo } from 'react';
 
-import React, { useMemo } from "react";
-import { cn } from "@/lib/utils";
-import { animations } from "@/styles/design-system";
-import { errorLog } from "@/utils/logger";
-import { useMatchScoreState } from "./hooks/useMatchScoreState";
-import { useGameManagement } from "./hooks/useGameManagement";
-import { useMatchScoreValidation } from "./hooks/useMatchScoreValidation";
-import { MatchScoreEditorProps } from "./types";
-import MatchScoreHeader from "./components/MatchScoreHeader";
-import ValidationErrorDisplay from "./components/ValidationErrorDisplay";
-import GameScoresList from "./components/GameScoresList";
-import MatchScoreActions from "./components/MatchScoreActions";
+import { cn } from '@/lib/utils';
+import { animations } from '@/styles/design-system';
+import { errorLog } from '@/utils/logger';
 
-const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
-  match,
-  teams,
-  onSave,
-  onCancel
-}) => {
-  const {
-    isSubmitting,
-    setIsSubmitting,
-    validationError,
-    setValidationError,
-    games,
-    setGames
-  } = useMatchScoreState(match);
-  
+import GameScoresList from './components/GameScoresList';
+import MatchScoreActions from './components/MatchScoreActions';
+import MatchScoreHeader from './components/MatchScoreHeader';
+import ValidationErrorDisplay from './components/ValidationErrorDisplay';
+import { useGameManagement } from './hooks/useGameManagement';
+import { useMatchScoreState } from './hooks/useMatchScoreState';
+import { useMatchScoreValidation } from './hooks/useMatchScoreValidation';
+import { MatchScoreEditorProps } from './types';
+
+const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({ match, teams, onSave, onCancel }) => {
+  const { isSubmitting, setIsSubmitting, validationError, setValidationError, games, setGames } =
+    useMatchScoreState(match);
+
   const { validateGameScores, calculateTotalScore } = useMatchScoreValidation(
-    games, 
-    match.bestOf, 
+    games,
+    match.bestOf,
     setValidationError
   );
-  
-  const { 
-    handleGameScoreChange, 
-    addGame, 
-    removeGame, 
-    canAddGames 
-  } = useGameManagement({
-    games, 
-    setGames, 
+
+  const { handleGameScoreChange, addGame, removeGame, canAddGames } = useGameManagement({
+    games,
+    setGames,
     validateGameScores,
-    maxGames: match.bestOf
+    maxGames: match.bestOf,
   });
 
-  const team1 = useMemo(() => teams.find(t => t.id === match.team1Id), [teams, match.team1Id]);
-  const team2 = useMemo(() => teams.find(t => t.id === match.team2Id), [teams, match.team2Id]);
-  
+  const team1 = useMemo(() => teams.find((t) => t.id === match.team1Id), [teams, match.team1Id]);
+  const team2 = useMemo(() => teams.find((t) => t.id === match.team2Id), [teams, match.team2Id]);
+
   // Detect BYE matches (one team is null)
   const isBye = !match.team1Id || !match.team2Id;
   const byeWinner = match.team1Id ? team1 : team2;
-  
+
   const handleByeForfeit = async () => {
     try {
       setIsSubmitting(true);
-      
+
       // Forfeit scores: winner gets bestOf, loser gets 0
       const forfeitGames = Array.from({ length: match.bestOf }, () => ({
         team1Score: match.team1Id ? 1 : 0,
-        team2Score: match.team2Id ? 1 : 0
+        team2Score: match.team2Id ? 1 : 0,
       }));
-      
+
       const team1Wins = match.team1Id ? match.bestOf : 0;
       const team2Wins = match.team2Id ? match.bestOf : 0;
       const team1Score = match.team1Id ? 1 : 0;
       const team2Score = match.team2Id ? 1 : 0;
-      
+
       const dummyRefetch = async () => {};
-      
+
       await onSave(
         match.id,
         team1Score,
@@ -80,42 +65,34 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
       );
       onCancel();
     } catch (error) {
-      errorLog("Error saving BYE forfeit:", error);
-      setValidationError("Failed to save BYE forfeit");
+      errorLog('Error saving BYE forfeit:', error);
+      setValidationError('Failed to save BYE forfeit');
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   const handleSave = async () => {
     if (!validateGameScores()) {
       return;
     }
-    
+
     try {
       setIsSubmitting(true);
       const { team1Wins, team2Wins } = calculateTotalScore();
-      
+
       // Calculate match scores (1-0 format for winner-loser)
       const team1Score = team1Wins > team2Wins ? 1 : 0;
       const team2Score = team2Wins > team1Wins ? 1 : 0;
-      
+
       // Create a dummy refetchBrackets function since the actual refetch is handled at a higher level
       const dummyRefetch = async () => {};
-      
-      await onSave(
-        match.id,
-        team1Score,
-        team2Score,
-        games,
-        team1Wins,
-        team2Wins,
-        dummyRefetch
-      );
+
+      await onSave(match.id, team1Score, team2Score, games, team1Wins, team2Wins, dummyRefetch);
       onCancel();
     } catch (error) {
-      errorLog("Error saving match scores:", error);
-      setValidationError("Failed to save match scores");
+      errorLog('Error saving match scores:', error);
+      setValidationError('Failed to save match scores');
     } finally {
       setIsSubmitting(false);
     }
@@ -126,7 +103,7 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
   // BYE match rendering
   if (isBye && byeWinner) {
     return (
-      <div className={cn("space-y-4 md:space-y-6", animations.fadeIn)}>
+      <div className={cn('space-y-4 md:space-y-6', animations.fadeIn)}>
         <div className="text-center py-4 md:py-8 space-y-2 md:space-y-4">
           <div className="text-base md:text-lg font-semibold text-muted-foreground">
             Match Forfeit - BYE
@@ -134,13 +111,11 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
           <div className="text-xl md:text-2xl font-bold px-2">
             {byeWinner.name} wins by walkover
           </div>
-          <div className="text-xs md:text-sm text-muted-foreground">
-            (Best of {match.bestOf})
-          </div>
+          <div className="text-xs md:text-sm text-muted-foreground">(Best of {match.bestOf})</div>
         </div>
-        
+
         <ValidationErrorDisplay error={validationError} />
-        
+
         <div className="flex flex-col sm:flex-row gap-2 justify-end pt-3 md:pt-4 border-t">
           <button
             onClick={onCancel}
@@ -154,7 +129,7 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
             disabled={isSubmitting}
             className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 w-full sm:w-auto"
           >
-            {isSubmitting ? "Saving..." : `Award Win (${match.bestOf}-0)`}
+            {isSubmitting ? 'Saving...' : `Award Win (${match.bestOf}-0)`}
           </button>
         </div>
       </div>
@@ -163,20 +138,20 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
 
   // Regular match rendering
   return (
-    <div className={cn("space-y-6", animations.fadeIn)}>
+    <div className={cn('space-y-6', animations.fadeIn)}>
       {/* Header with match info */}
-      <MatchScoreHeader 
-        team1={team1} 
-        team2={team2} 
-        matchType={match.matchType} 
-        round={match.round} 
+      <MatchScoreHeader
+        team1={team1}
+        team2={team2}
+        matchType={match.matchType}
+        round={match.round}
       />
-      
+
       {/* Game scores section */}
-      <div className={cn("border-t pt-4", animations.fadeIn)} style={{ animationDelay: '0.1s' }}>
+      <div className={cn('border-t pt-4', animations.fadeIn)} style={{ animationDelay: '0.1s' }}>
         <div className="text-sm font-medium mb-2">Game Scores (Best of {match.bestOf})</div>
-        
-        <GameScoresList 
+
+        <GameScoresList
           games={games}
           team1={team1}
           team2={team2}
@@ -184,9 +159,9 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
           onRemoveGame={removeGame}
           canRemoveGame={games.length > 1}
         />
-        
+
         <ValidationErrorDisplay error={validationError} />
-        
+
         <div className={animations.fadeIn} style={{ animationDelay: '0.4s' }}>
           <MatchScoreActions
             onAddGame={addGame}

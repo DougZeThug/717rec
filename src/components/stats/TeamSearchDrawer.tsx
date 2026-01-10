@@ -1,16 +1,12 @@
-import React, { useState, useMemo } from "react";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
-import { Input } from "@/components/ui/input";
-import { Ranking } from "@/types";
-import { Search, Trophy } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
-import { TeamLogo } from "@/components/ui/team";
+import { Search, Trophy } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { Input } from '@/components/ui/input';
+import { TeamLogo } from '@/components/ui/team';
+import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
+import { cn } from '@/lib/utils';
+import { Ranking } from '@/types';
 
 interface TeamSearchDrawerProps {
   open: boolean;
@@ -26,18 +22,16 @@ const TeamSearchDrawer: React.FC<TeamSearchDrawerProps> = ({
   onTeamSelect,
 }) => {
   const { isWinterTheme } = useSeasonalTheme();
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
 
   const filteredTeams = useMemo(() => {
     if (!searchTerm.trim()) return rankings;
     const term = searchTerm.toLowerCase();
-    return rankings.filter((ranking) =>
-      ranking.teamName.toLowerCase().includes(term)
-    );
+    return rankings.filter((ranking) => ranking.teamName.toLowerCase().includes(term));
   }, [rankings, searchTerm]);
 
   const handleTeamClick = (teamId: string) => {
-    setSearchTerm("");
+    setSearchTerm('');
     onTeamSelect(teamId);
   };
 
@@ -69,20 +63,16 @@ const TeamSearchDrawer: React.FC<TeamSearchDrawerProps> = ({
           ) : (
             <div className="space-y-1">
               {filteredTeams.map((ranking, index) => {
-                const globalRank = rankings.findIndex(
-                  (r) => r.teamId === ranking.teamId
-                ) + 1;
+                const globalRank = rankings.findIndex((r) => r.teamId === ranking.teamId) + 1;
 
                 return (
                   <button
                     key={ranking.teamId}
                     onClick={() => handleTeamClick(ranking.teamId)}
                     className={cn(
-                      "w-full flex items-center gap-3 p-3 rounded-lg transition-colors text-left",
-                      "hover:bg-accent/50 active:bg-accent",
-                      isWinterTheme
-                        ? "border border-frost-border/30"
-                        : "border border-border/50"
+                      'w-full flex items-center gap-3 p-3 rounded-lg transition-colors text-left',
+                      'hover:bg-accent/50 active:bg-accent',
+                      isWinterTheme ? 'border border-frost-border/30' : 'border border-border/50'
                     )}
                   >
                     <div className="flex-shrink-0 w-8 h-8">
@@ -96,7 +86,7 @@ const TeamSearchDrawer: React.FC<TeamSearchDrawerProps> = ({
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{ranking.teamName}</p>
                       <p className="text-xs text-muted-foreground">
-                        {ranking.divisionName || "No Division"}
+                        {ranking.divisionName || 'No Division'}
                       </p>
                     </div>
 

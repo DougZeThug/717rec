@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, History, Calendar } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import SeasonAccordion from "./SeasonAccordion";
-import { dbLog, errorLog } from "@/utils/logger";
-import { EmptyState } from "@/components/ui/empty-state";
-import { useNavigate } from "react-router";
-import WinterSection from "@/components/winter/WinterSection";
+import { Calendar, History, Loader2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
+
+import { Card, CardContent } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
+import WinterSection from '@/components/winter/WinterSection';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { dbLog, errorLog } from '@/utils/logger';
+
+import SeasonAccordion from './SeasonAccordion';
 interface SeasonData {
   team_id: string;
   season_id: string;
@@ -45,7 +47,7 @@ const HistoryPageContent: React.FC = () => {
 
   const fetchHistoricalData = async () => {
     try {
-      dbLog("Fetching historical seasons...");
+      dbLog('Fetching historical seasons...');
 
       // Fetch all seasons
       const { data: seasonsData, error: seasonsError } = await supabase
@@ -54,24 +56,23 @@ const HistoryPageContent: React.FC = () => {
         .order('start_date', { ascending: false });
 
       if (seasonsError) {
-        errorLog("Error fetching seasons:", seasonsError);
+        errorLog('Error fetching seasons:', seasonsError);
         toast({
-          title: "Error",
-          description: "Failed to fetch seasons data",
-          variant: "destructive"
+          title: 'Error',
+          description: 'Failed to fetch seasons data',
+          variant: 'destructive',
         });
         return;
       }
 
-      dbLog("Seasons fetched:", seasonsData);
+      dbLog('Seasons fetched:', seasonsData);
       setSeasons(seasonsData || []);
-
     } catch (error) {
-      errorLog("Unexpected error fetching historical data:", error);
+      errorLog('Unexpected error fetching historical data:', error);
       toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive"
+        title: 'Error',
+        description: 'An unexpected error occurred',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -101,14 +102,14 @@ const HistoryPageContent: React.FC = () => {
             description="Past seasons and champions will appear here once the first season is completed."
             actions={[
               {
-                label: "View Current Season",
-                onClick: () => navigate("/schedule"),
+                label: 'View Current Season',
+                onClick: () => navigate('/schedule'),
                 icon: Calendar,
               },
             ]}
             secondaryLink={{
-              label: "Learn how seasons work",
-              href: "/rules",
+              label: 'Learn how seasons work',
+              href: '/rules',
             }}
           />
         </CardContent>
@@ -119,10 +120,7 @@ const HistoryPageContent: React.FC = () => {
   return (
     <WinterSection showIcicles lightIcicles className="space-y-4">
       {seasons.map((season) => (
-        <SeasonAccordion
-          key={season.id}
-          season={season}
-        />
+        <SeasonAccordion key={season.id} season={season} />
       ))}
     </WinterSection>
   );

@@ -1,8 +1,8 @@
-
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, RefreshCw } from 'lucide-react';
+import React from 'react';
+
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface TeamSelectionErrorProps {
   message?: string | null;
@@ -15,8 +15,8 @@ interface TeamSelectionErrorProps {
  * Phase 3: Added retry button for transient failures
  */
 export const TeamSelectionError: React.FC<TeamSelectionErrorProps> = ({
-  message = "Failed to load teams",
-  onRetry
+  message = 'Failed to load teams',
+  onRetry,
 }) => {
   return (
     <Card className="border-destructive/50">
@@ -28,9 +28,9 @@ export const TeamSelectionError: React.FC<TeamSelectionErrorProps> = ({
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-muted-foreground">
-          {message || "Unable to load teams for bracket creation. Please try again."}
+          {message || 'Unable to load teams for bracket creation. Please try again.'}
         </p>
-        
+
         {onRetry && (
           <Button onClick={onRetry} variant="outline" size="sm">
             <RefreshCw className="w-4 h-4 mr-2" />

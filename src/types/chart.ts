@@ -1,4 +1,3 @@
-
 export interface ChartDataItem {
   name: string;
   displayName?: string;

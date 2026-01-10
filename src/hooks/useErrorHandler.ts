@@ -1,14 +1,15 @@
 import { useCallback } from 'react';
+
 import { useToast } from '@/hooks/use-toast';
 import { handleHookError, HookErrorResult } from '@/utils/errorHandling';
 
 /**
  * Reusable hook for consistent error handling across the app.
- * 
+ *
  * Usage:
  * ```tsx
  * const { handleError } = useErrorHandler();
- * 
+ *
  * try {
  *   await someService.doSomething();
  * } catch (error) {
@@ -28,11 +29,7 @@ export function useErrorHandler() {
    * @returns Error information for state management
    */
   const handleError = useCallback(
-    (
-      error: unknown,
-      context: string,
-      showToast: boolean = true
-    ): HookErrorResult => {
+    (error: unknown, context: string, showToast: boolean = true): HookErrorResult => {
       const errorInfo = handleHookError(error, context);
 
       if (showToast) {

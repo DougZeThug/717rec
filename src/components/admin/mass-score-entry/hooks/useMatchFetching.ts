@@ -1,9 +1,11 @@
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { MatchWithTeams, FilterState } from "../types";
-import { buildMatchQuery } from "../services/matchQueryService";
-import { transformDatabaseMatchToMatchWithTeams } from "../utils/matchTransformUtils";
-import { matchLog, errorLog, debugLog } from "@/utils/logger";
+import { useState } from 'react';
+
+import { useToast } from '@/hooks/use-toast';
+import { debugLog, errorLog, matchLog } from '@/utils/logger';
+
+import { buildMatchQuery } from '../services/matchQueryService';
+import { FilterState, MatchWithTeams } from '../types';
+import { transformDatabaseMatchToMatchWithTeams } from '../utils/matchTransformUtils';
 
 export const useMatchFetching = () => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -18,31 +20,31 @@ export const useMatchFetching = () => {
       if (error) throw error;
 
       // Log raw data type information
-      matchLog("Raw matches fetched", {
+      matchLog('Raw matches fetched', {
         count: data?.length || 0,
         bracketId: filters.bracketId,
-        date: filters.date
+        date: filters.date,
       });
 
       const formattedMatches: MatchWithTeams[] = (data || []).map((match, index) => {
         // Raw data inspection - use debugLog for verbose output
         debugLog(`Raw match data from database [${index}]`, {
-          matchId: match.id, 
+          matchId: match.id,
           date: match.date,
           team1_game_wins: match.team1_game_wins,
-          team2_game_wins: match.team2_game_wins
+          team2_game_wins: match.team2_game_wins,
         });
-        
+
         const transformed = transformDatabaseMatchToMatchWithTeams(match);
-        
+
         return transformed;
       });
-      
+
       // Log the final formatted matches
       if (formattedMatches.length > 0) {
-        matchLog("Sample transformed match", {
+        matchLog('Sample transformed match', {
           matchId: formattedMatches[0].id,
-          matchDate: formattedMatches[0].date
+          matchDate: formattedMatches[0].date,
         });
       }
 
@@ -50,11 +52,11 @@ export const useMatchFetching = () => {
       return formattedMatches;
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      errorLog("Error fetching matches:", errorMessage);
+      errorLog('Error fetching matches:', errorMessage);
       toast({
-        title: "Error",
+        title: 'Error',
         description: `Failed to fetch matches: ${errorMessage}`,
-        variant: "destructive"
+        variant: 'destructive',
       });
       setLoading(false);
       return [];
@@ -63,6 +65,6 @@ export const useMatchFetching = () => {
 
   return {
     loading,
-    fetchMatches
+    fetchMatches,
   };
 };

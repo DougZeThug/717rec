@@ -1,8 +1,7 @@
-
-import { matchLog, errorLog, warnLog } from "@/utils/logger";
+import { errorLog, matchLog, warnLog } from '@/utils/logger';
 
 export const validateMatchSubmission = (match: any) => {
-  matchLog("DIAGNOSTIC: Starting match validation:", {
+  matchLog('DIAGNOSTIC: Starting match validation:', {
     matchId: match?.id || 'unknown',
     date: match?.date,
     dateType: match?.date ? typeof match.date : 'undefined',
@@ -21,21 +20,21 @@ export const validateMatchSubmission = (match: any) => {
     iscompleted: match?.iscompleted,
     isEdited: match?.isEdited,
     isValid: match?.isValid,
-    fullMatch: JSON.stringify(match)
+    fullMatch: JSON.stringify(match),
   });
-  
+
   if (!match) {
-    errorLog("Match validation failed: match object is missing");
-    return { isValid: false, errorMessage: "Match data is missing" };
+    errorLog('Match validation failed: match object is missing');
+    return { isValid: false, errorMessage: 'Match data is missing' };
   }
 
   if (match.iscompleted) {
     if (!match.team1Id || !match.team2Id) {
-      errorLog("Match validation failed: missing team data", {
+      errorLog('Match validation failed: missing team data', {
         team1Id: match.team1Id,
-        team2Id: match.team2Id
+        team2Id: match.team2Id,
       });
-      return { isValid: false, errorMessage: "Missing team data" };
+      return { isValid: false, errorMessage: 'Missing team data' };
     }
 
     // Normalize game wins to numbers and check for NaN
@@ -44,11 +43,11 @@ export const validateMatchSubmission = (match: any) => {
     const team1ScoreNum = Number(match.team1Score);
     const team2ScoreNum = Number(match.team2Score);
 
-    matchLog("DIAGNOSTIC: Match validation - after normalization:", { 
+    matchLog('DIAGNOSTIC: Match validation - after normalization:', {
       matchId: match.id,
-      date: match.date, 
+      date: match.date,
       dateType: typeof match.date,
-      team1GameWins, 
+      team1GameWins,
       team2GameWins,
       team1GameWinsType: typeof team1GameWins,
       team2GameWinsType: typeof team2GameWins,
@@ -58,49 +57,49 @@ export const validateMatchSubmission = (match: any) => {
         team1GameWins: isNaN(team1GameWins),
         team2GameWins: isNaN(team2GameWins),
         team1ScoreNum: isNaN(team1ScoreNum),
-        team2ScoreNum: isNaN(team2ScoreNum)
-      }
+        team2ScoreNum: isNaN(team2ScoreNum),
+      },
     });
-    
+
     // Check for NaN values which would indicate parsing problems
     if (isNaN(team1GameWins) || isNaN(team2GameWins)) {
-      errorLog("Match validation failed: game wins cannot be parsed to numbers", {
+      errorLog('Match validation failed: game wins cannot be parsed to numbers', {
         team1GameWins: match.team1_game_wins,
         team2GameWins: match.team2_game_wins,
         team1GameWinsType: typeof match.team1_game_wins,
-        team2GameWinsType: typeof match.team2_game_wins
+        team2GameWinsType: typeof match.team2_game_wins,
       });
-      return { isValid: false, errorMessage: "Game wins must be numbers" };
+      return { isValid: false, errorMessage: 'Game wins must be numbers' };
     }
-    
+
     if (isNaN(team1ScoreNum) || isNaN(team2ScoreNum)) {
-      errorLog("Match validation failed: match scores cannot be parsed to numbers", {
+      errorLog('Match validation failed: match scores cannot be parsed to numbers', {
         team1Score: match.team1Score,
         team2Score: match.team2Score,
         team1ScoreType: typeof match.team1Score,
-        team2ScoreType: typeof match.team2Score
+        team2ScoreType: typeof match.team2Score,
       });
-      return { isValid: false, errorMessage: "Match scores must be numbers" };
+      return { isValid: false, errorMessage: 'Match scores must be numbers' };
     }
-    
+
     // Allow 0-0 initially but warn
     if (team1GameWins === 0 && team2GameWins === 0) {
-      warnLog("Completed match has zero game wins:", {
+      warnLog('Completed match has zero game wins:', {
         matchId: match.id,
         date: match.date,
-        dateType: typeof match.date
+        dateType: typeof match.date,
       });
     }
 
     // Prevent ties except for 0-0
     if (team1GameWins === team2GameWins && team1GameWins !== 0) {
-      errorLog("Match validation failed: tied game wins", {
+      errorLog('Match validation failed: tied game wins', {
         team1GameWins,
         team2GameWins,
         matchId: match.id,
-        date: match.date
+        date: match.date,
       });
-      return { isValid: false, errorMessage: "Game wins cannot be tied" };
+      return { isValid: false, errorMessage: 'Game wins cannot be tied' };
     }
 
     // Validate binary scores match game win results
@@ -108,7 +107,7 @@ export const validateMatchSubmission = (match: any) => {
     const expectedTeam1Score = team1Won ? 1 : 0;
     const expectedTeam2Score = team1Won ? 0 : 1;
 
-    matchLog("DIAGNOSTIC: Expected scores vs actual:", {
+    matchLog('DIAGNOSTIC: Expected scores vs actual:', {
       matchId: match.id,
       date: match.date,
       dateType: typeof match.date,
@@ -116,26 +115,26 @@ export const validateMatchSubmission = (match: any) => {
       expectedTeam1Score,
       expectedTeam2Score,
       actualTeam1Score: team1ScoreNum,
-      actualTeam2Score: team2ScoreNum
+      actualTeam2Score: team2ScoreNum,
     });
 
     if (team1ScoreNum !== expectedTeam1Score || team2ScoreNum !== expectedTeam2Score) {
       errorLog("Match validation failed: scores don't match game win results", {
         expected: `${expectedTeam1Score}-${expectedTeam2Score}`,
         actual: `${team1ScoreNum}-${team2ScoreNum}`,
-        gameWins: `${team1GameWins}-${team2GameWins}`
+        gameWins: `${team1GameWins}-${team2GameWins}`,
       });
-      return { 
-        isValid: false, 
-        errorMessage: "Match scores must match game win results" 
+      return {
+        isValid: false,
+        errorMessage: 'Match scores must match game win results',
       };
     }
   }
 
-  matchLog("DIAGNOSTIC: Match validation passed for match:", {
+  matchLog('DIAGNOSTIC: Match validation passed for match:', {
     id: match.id,
     date: match.date,
-    dateType: typeof match.date
+    dateType: typeof match.date,
   });
   return { isValid: true };
 };

@@ -1,17 +1,14 @@
+import { MessageSquare } from 'lucide-react';
+import React from 'react';
 
-import React from "react";
-import { useMatchComments } from "@/hooks/matches/useMatchComments";
-import { cn } from "@/lib/utils";
-import { animations } from "@/styles/design-system";
-import MatchCommentForm from "./MatchCommentForm";
-import MatchCommentItem from "./MatchCommentItem";
-import { Button } from "@/components/ui/button";
-import { MessageSquare } from "lucide-react";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useMatchComments } from '@/hooks/matches/useMatchComments';
+import { cn } from '@/lib/utils';
+import { animations } from '@/styles/design-system';
+
+import MatchCommentForm from './MatchCommentForm';
+import MatchCommentItem from './MatchCommentItem';
 
 interface MatchCommentsProps {
   matchId: string;
@@ -20,14 +17,14 @@ interface MatchCommentsProps {
 const MatchComments: React.FC<MatchCommentsProps> = ({ matchId }) => {
   const { comments, isLoading, addComment, deleteComment } = useMatchComments(matchId);
   const [isOpen, setIsOpen] = React.useState(false);
-  
+
   const handleAddComment = async (content: string) => {
     const result = await addComment(content);
     if (result) {
       setIsOpen(true); // Expand comments when a new comment is added
     }
   };
-  
+
   if (isLoading) {
     return (
       <div className="mt-2 animate-pulse">
@@ -36,16 +33,12 @@ const MatchComments: React.FC<MatchCommentsProps> = ({ matchId }) => {
       </div>
     );
   }
-  
+
   const commentCount = comments.length;
-  
+
   return (
-    <div className={cn("mt-3 pt-2", animations.fadeIn)}>
-      <Collapsible
-        open={isOpen}
-        onOpenChange={setIsOpen}
-        className="space-y-2"
-      >
+    <div className={cn('mt-3 pt-2', animations.fadeIn)}>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen} className="space-y-2">
         <div className="flex items-center justify-between">
           <CollapsibleTrigger asChild>
             <Button
@@ -60,16 +53,12 @@ const MatchComments: React.FC<MatchCommentsProps> = ({ matchId }) => {
             </Button>
           </CollapsibleTrigger>
         </div>
-        
+
         <CollapsibleContent className="space-y-2">
           {comments.length > 0 ? (
             <div className="space-y-1 divide-y divide-border/30">
               {comments.map((comment) => (
-                <MatchCommentItem
-                  key={comment.id}
-                  comment={comment}
-                  onDelete={deleteComment}
-                />
+                <MatchCommentItem key={comment.id} comment={comment} onDelete={deleteComment} />
               ))}
             </div>
           ) : (
@@ -79,7 +68,7 @@ const MatchComments: React.FC<MatchCommentsProps> = ({ matchId }) => {
           )}
         </CollapsibleContent>
       </Collapsible>
-      
+
       <div className="mt-3">
         <MatchCommentForm onSubmit={handleAddComment} />
       </div>

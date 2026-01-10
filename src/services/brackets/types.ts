@@ -1,4 +1,3 @@
-
 /**
  * Match organized by type and round for easier rendering
  */
@@ -25,5 +24,5 @@ export interface BracketMatch {
   nextLoseMatchId: string | null;
   winnerId: string | null;
   bracket_id: string;
-  status?: "pending" | "in_progress" | "completed";
+  status?: 'pending' | 'in_progress' | 'completed';
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface FrozenTrophyProps extends React.SVGProps<SVGSVGElement> {
   size?: number | string;
@@ -8,11 +8,7 @@ interface FrozenTrophyProps extends React.SVGProps<SVGSVGElement> {
  * Frozen Trophy glyph - Winter champion badge
  * Used for winter tournament winners, seasonal achievements
  */
-const FrozenTrophy: React.FC<FrozenTrophyProps> = ({ 
-  size = 24, 
-  className,
-  ...props 
-}) => (
+const FrozenTrophy: React.FC<FrozenTrophyProps> = ({ size = 24, className, ...props }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -27,11 +23,7 @@ const FrozenTrophy: React.FC<FrozenTrophyProps> = ({
     {...props}
   >
     {/* Trophy cup */}
-    <path 
-      d="M6 4 L6 8 Q6 14 12 14 Q18 14 18 8 L18 4 Z" 
-      fill="currentColor" 
-      fillOpacity="0.1" 
-    />
+    <path d="M6 4 L6 8 Q6 14 12 14 Q18 14 18 8 L18 4 Z" fill="currentColor" fillOpacity="0.1" />
     <path d="M6 4 L6 8 Q6 14 12 14 Q18 14 18 8 L18 4 Z" />
     {/* Trophy handles with icicles */}
     <path d="M6 6 Q3 6 3 9 Q3 11 5 11" />

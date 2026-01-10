@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
-import { useCareerRankings } from './useCareerRankings';
+
 import { calculatePercentile, PercentileResult } from '@/utils/percentileUtils';
+
+import { useCareerRankings } from './useCareerRankings';
 
 export interface TeamPercentiles {
   winPercentage: PercentileResult;
@@ -28,14 +30,14 @@ export function useLeaguePercentiles(): LeaguePercentilesData {
     }
 
     // Extract all values for each stat
-    const winPctValues = rankings.map(r => r.careerWinPercentage);
-    const gameWinPctValues = rankings.map(r => r.careerGameWinPercentage);
-    const powerScoreValues = rankings.map(r => r.careerPowerScore);
-    const sosValues = rankings.map(r => r.careerSos);
-    const championshipValues = rankings.map(r => r.championships);
+    const winPctValues = rankings.map((r) => r.careerWinPercentage);
+    const gameWinPctValues = rankings.map((r) => r.careerGameWinPercentage);
+    const powerScoreValues = rankings.map((r) => r.careerPowerScore);
+    const sosValues = rankings.map((r) => r.careerSos);
+    const championshipValues = rankings.map((r) => r.championships);
     const playoffWinPctValues = rankings
-      .filter(r => r.careerPlayoffWins + r.careerPlayoffLosses > 0)
-      .map(r => r.careerPlayoffWinPercentage);
+      .filter((r) => r.careerPlayoffWins + r.careerPlayoffLosses > 0)
+      .map((r) => r.careerPlayoffWinPercentage);
 
     const percentileMap = new Map<string, TeamPercentiles>();
 
@@ -44,11 +46,15 @@ export function useLeaguePercentiles(): LeaguePercentilesData {
 
       percentileMap.set(ranking.teamId, {
         winPercentage: calculatePercentile(ranking.careerWinPercentage, winPctValues, true),
-        gameWinPercentage: calculatePercentile(ranking.careerGameWinPercentage, gameWinPctValues, true),
+        gameWinPercentage: calculatePercentile(
+          ranking.careerGameWinPercentage,
+          gameWinPctValues,
+          true
+        ),
         powerScore: calculatePercentile(ranking.careerPowerScore, powerScoreValues, true),
         sos: calculatePercentile(ranking.careerSos, sosValues, true), // Higher SOS = tougher opponents
         championships: calculatePercentile(ranking.championships, championshipValues, true),
-        playoffWinPercentage: hasPlayoffGames 
+        playoffWinPercentage: hasPlayoffGames
           ? calculatePercentile(ranking.careerPlayoffWinPercentage, playoffWinPctValues, true)
           : { value: 0, percentile: 0, rank: 0, total: 0 },
       });
@@ -65,6 +71,6 @@ export function useLeaguePercentiles(): LeaguePercentilesData {
     getTeamPercentiles,
     allPercentiles,
     isLoading,
-    totalTeams
+    totalTeams,
   };
 }

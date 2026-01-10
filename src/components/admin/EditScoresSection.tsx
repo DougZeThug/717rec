@@ -1,7 +1,7 @@
-
 import React from 'react';
-import { useUncompletedMatches } from "@/hooks/useUncompletedMatches";
-import MatchScoresList from "@/components/admin/scores/MatchScoresList";
+
+import MatchScoresList from '@/components/admin/scores/MatchScoresList';
+import { useUncompletedMatches } from '@/hooks/useUncompletedMatches';
 
 const EditScoresSection = () => {
   const {
@@ -12,7 +12,7 @@ const EditScoresSection = () => {
     scores,
     toggleItem,
     handleScoreChange,
-    handleSubmitScore
+    handleSubmitScore,
   } = useUncompletedMatches();
 
   if (isLoading) {
@@ -22,21 +22,24 @@ const EditScoresSection = () => {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground mb-4">
-        Submit scores for matches that have been completed. This will automatically update team records.
+        Submit scores for matches that have been completed. This will automatically update team
+        records.
       </p>
-      
-      <MatchScoresList 
+
+      <MatchScoresList
         matches={matches}
         teams={teams}
         openItems={openItems}
         scores={scores}
         onToggleItem={toggleItem}
         onScoreChange={handleScoreChange}
-        onSubmitScore={(matchId, team1Score, team2Score) => handleSubmitScore({
-          matchId,
-          team1Score,
-          team2Score
-        })}
+        onSubmitScore={(matchId, team1Score, team2Score) =>
+          handleSubmitScore({
+            matchId,
+            team1Score,
+            team2Score,
+          })
+        }
       />
     </div>
   );

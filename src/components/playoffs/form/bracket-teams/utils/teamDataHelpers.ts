@@ -1,4 +1,3 @@
-
 /**
  * Utility functions for processing and manipulating team data in bracket forms
  */
@@ -11,8 +10,11 @@ import { ProcessedTeam } from '../types';
  * @param divisionId - Division ID to filter by
  * @returns Filtered array of teams belonging to the specified division
  */
-export const filterTeamsByDivision = (teams: ProcessedTeam[], divisionId: string): ProcessedTeam[] => {
-  return teams.filter(team => team.division_id === divisionId);
+export const filterTeamsByDivision = (
+  teams: ProcessedTeam[],
+  divisionId: string
+): ProcessedTeam[] => {
+  return teams.filter((team) => team.division_id === divisionId);
 };
 
 /**
@@ -31,7 +33,7 @@ export const sortTeamsBySeed = (teams: ProcessedTeam[]): ProcessedTeam[] => {
  * @returns The team object if found, undefined otherwise
  */
 export const getTeamById = (teams: ProcessedTeam[], teamId: string): ProcessedTeam | undefined => {
-  return teams.find(team => team.id === teamId);
+  return teams.find((team) => team.id === teamId);
 };
 
 /**
@@ -51,19 +53,19 @@ export const validateTeamSelection = (
   if (selectedTeamIds.length < minTeams) {
     return { isValid: false, error: `At least ${minTeams} teams are required` };
   }
-  
+
   if (selectedTeamIds.length > maxTeams) {
     return { isValid: false, error: `Maximum ${maxTeams} teams allowed` };
   }
-  
+
   // Check if all selected teams exist in available teams
-  const availableTeamIds = new Set(availableTeams.map(team => team.id));
-  const invalidTeams = selectedTeamIds.filter(id => !availableTeamIds.has(id));
-  
+  const availableTeamIds = new Set(availableTeams.map((team) => team.id));
+  const invalidTeams = selectedTeamIds.filter((id) => !availableTeamIds.has(id));
+
   if (invalidTeams.length > 0) {
     return { isValid: false, error: `Invalid team selection: ${invalidTeams.join(', ')}` };
   }
-  
+
   return { isValid: true };
 };
 
@@ -74,13 +76,13 @@ export const validateTeamSelection = (
  */
 export const groupTeamsByDivision = (teams: ProcessedTeam[]): Map<string, ProcessedTeam[]> => {
   const divisions = new Map<string, ProcessedTeam[]>();
-  
-  teams.forEach(team => {
+
+  teams.forEach((team) => {
     const divisionName = team.divisionName || 'Unknown Division';
     const divisionTeams = divisions.get(divisionName) || [];
     divisionTeams.push(team);
     divisions.set(divisionName, divisionTeams);
   });
-  
+
   return divisions;
 };

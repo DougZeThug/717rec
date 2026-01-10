@@ -1,6 +1,6 @@
+import { useMemo } from 'react';
 
-import { useMemo } from "react";
-import type { Team } from "@/types";
+import type { Team } from '@/types';
 
 export const useTeamSeeding = (teams: Team[]) =>
   useMemo(
@@ -9,5 +9,5 @@ export const useTeamSeeding = (teams: Team[]) =>
         ...team,
         seed: index + 1, // Preserve existing seeding based on rankings order
       })),
-    [teams],
+    [teams]
   );

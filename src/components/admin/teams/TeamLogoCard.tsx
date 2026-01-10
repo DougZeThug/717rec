@@ -1,15 +1,22 @@
-import React, { useState, useRef } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Upload, Loader2, Check } from "lucide-react";
-import { Team } from "@/types";
-import { getLogoStatus, getStatusColor, getStatusLabel, getStatusIcon, LogoStatus } from "@/utils/logoStatusUtils";
-import { uploadTeamImage } from "@/utils/imageUpload";
-import { updateTeamApi } from "@/services/TeamService";
-import { useToast } from "@/hooks/use-toast";
-import { TeamLogo } from "@/components/shared/TeamLogo";
-import { errorLog } from "@/utils/logger";
+import { Check, Loader2, Upload } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+
+import { TeamLogo } from '@/components/shared/TeamLogo';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { updateTeamApi } from '@/services/TeamService';
+import { Team } from '@/types';
+import { uploadTeamImage } from '@/utils/imageUpload';
+import { errorLog } from '@/utils/logger';
+import {
+  getLogoStatus,
+  getStatusColor,
+  getStatusIcon,
+  getStatusLabel,
+  LogoStatus,
+} from '@/utils/logoStatusUtils';
 
 interface TeamLogoCardProps {
   team: Team;
@@ -21,7 +28,7 @@ const TeamLogoCard: React.FC<TeamLogoCardProps> = ({ team, onUpdate }) => {
   const [justUpdated, setJustUpdated] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  
+
   const status = getLogoStatus(team.imageUrl);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,21 +39,21 @@ const TeamLogoCard: React.FC<TeamLogoCardProps> = ({ team, onUpdate }) => {
     try {
       const imageUrl = await uploadTeamImage(file, team.id);
       await updateTeamApi(team.id, { ...team, imageUrl: imageUrl });
-      
+
       toast({
-        title: "Logo Updated",
+        title: 'Logo Updated',
         description: `${team.name}'s logo has been optimized and uploaded.`,
       });
-      
+
       setJustUpdated(true);
       setTimeout(() => setJustUpdated(false), 2000);
       onUpdate();
     } catch (error) {
-      errorLog("Error uploading logo:", error);
+      errorLog('Error uploading logo:', error);
       toast({
-        title: "Upload Failed",
-        description: "Failed to upload logo. Please try again.",
-        variant: "destructive",
+        title: 'Upload Failed',
+        description: 'Failed to upload logo. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsUploading(false);
@@ -65,17 +72,11 @@ const TeamLogoCard: React.FC<TeamLogoCardProps> = ({ team, onUpdate }) => {
       <CardContent className="p-4 flex flex-col items-center gap-3">
         {/* Logo Preview */}
         <div className="w-20 h-20 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
-          <TeamLogo
-            imageUrl={team.imageUrl}
-            teamName={team.name}
-            size="lg"
-          />
+          <TeamLogo imageUrl={team.imageUrl} teamName={team.name} size="lg" />
         </div>
 
         {/* Team Name */}
-        <h3 className="font-medium text-sm text-center line-clamp-2 min-h-[2.5rem]">
-          {team.name}
-        </h3>
+        <h3 className="font-medium text-sm text-center line-clamp-2 min-h-[2.5rem]">{team.name}</h3>
 
         {/* Status Badge */}
         <div className="flex items-center gap-1.5">

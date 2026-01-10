@@ -1,6 +1,7 @@
-import { useMemo } from "react";
-import { useActiveSeason } from "@/hooks/useSeasons";
-import { Snowflake, Flower2, Sun, Leaf, Calendar, LucideIcon } from "lucide-react";
+import { Calendar, Flower2, Leaf, LucideIcon, Snowflake, Sun } from 'lucide-react';
+import { useMemo } from 'react';
+
+import { useActiveSeason } from '@/hooks/useSeasons';
 
 interface SeasonWeekInfo {
   seasonName: string;
@@ -19,7 +20,7 @@ export const useSeasonWeek = (): SeasonWeekInfo => {
   return useMemo(() => {
     if (!season) {
       return {
-        seasonName: "",
+        seasonName: '',
         weekNumber: null,
         seasonIcon: Calendar,
         isLoading,
@@ -31,7 +32,7 @@ export const useSeasonWeek = (): SeasonWeekInfo => {
     const now = new Date();
     const diffTime = now.getTime() - startDate.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
+
     let weekNumber: number | null = null;
     if (diffDays >= 0) {
       weekNumber = Math.floor(diffDays / 7) + 1;
@@ -41,13 +42,13 @@ export const useSeasonWeek = (): SeasonWeekInfo => {
     const seasonNameLower = season.name.toLowerCase();
     let seasonIcon: LucideIcon = Calendar;
 
-    if (seasonNameLower.includes("winter")) {
+    if (seasonNameLower.includes('winter')) {
       seasonIcon = Snowflake;
-    } else if (seasonNameLower.includes("spring")) {
+    } else if (seasonNameLower.includes('spring')) {
       seasonIcon = Flower2;
-    } else if (seasonNameLower.includes("summer")) {
+    } else if (seasonNameLower.includes('summer')) {
       seasonIcon = Sun;
-    } else if (seasonNameLower.includes("fall") || seasonNameLower.includes("autumn")) {
+    } else if (seasonNameLower.includes('fall') || seasonNameLower.includes('autumn')) {
       seasonIcon = Leaf;
     }
 

@@ -1,6 +1,8 @@
-import * as React from "react";
-import { Check, ChevronsUpDown, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Check, ChevronsUpDown, X } from 'lucide-react';
+import * as React from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -8,14 +10,9 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 interface MultiSelectOption {
   value: string;
@@ -34,7 +31,7 @@ export function MultiSelect({
   options,
   selected,
   onChange,
-  placeholder = "Select items...",
+  placeholder = 'Select items...',
   className,
 }: MultiSelectProps) {
   const [open, setOpen] = React.useState(false);
@@ -58,23 +55,20 @@ export function MultiSelect({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn("w-full justify-between", className)}
+          className={cn('w-full justify-between', className)}
         >
           <div className="flex gap-1 flex-wrap">
             {selected.length === 0 ? (
               <span className="text-muted-foreground">{placeholder}</span>
             ) : (
               <span className="text-sm">
-                {selected.length} team{selected.length > 1 ? "s" : ""} selected
+                {selected.length} team{selected.length > 1 ? 's' : ''} selected
               </span>
             )}
           </div>
           <div className="flex items-center gap-2">
             {selected.length > 0 && (
-              <X
-                className="h-4 w-4 shrink-0 opacity-50 hover:opacity-100"
-                onClick={handleClear}
-              />
+              <X className="h-4 w-4 shrink-0 opacity-50 hover:opacity-100" onClick={handleClear} />
             )}
             <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
           </div>
@@ -94,10 +88,8 @@ export function MultiSelect({
                 >
                   <Check
                     className={cn(
-                      "mr-2 h-4 w-4",
-                      selected.includes(option.value)
-                        ? "opacity-100"
-                        : "opacity-0"
+                      'mr-2 h-4 w-4',
+                      selected.includes(option.value) ? 'opacity-100' : 'opacity-0'
                     )}
                   />
                   {option.label}

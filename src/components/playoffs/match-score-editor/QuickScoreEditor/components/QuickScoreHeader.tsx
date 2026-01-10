@@ -1,7 +1,7 @@
+import React from 'react';
 
-import React from "react";
-import { DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { animations } from "@/styles/design-system";
+import { DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { animations } from '@/styles/design-system';
 
 interface QuickScoreHeaderProps {
   team1Name: string;

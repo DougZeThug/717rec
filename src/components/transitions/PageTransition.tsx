@@ -1,10 +1,10 @@
-
 import React, { useEffect } from 'react';
-import { cn } from "@/lib/utils";
-import { animations } from "@/styles/design-system";
 import { useLocation } from 'react-router';
+
 import { useNavigation } from '@/contexts/NavigationContext';
-import { routeLog } from "@/utils/logger";
+import { cn } from '@/lib/utils';
+import { animations } from '@/styles/design-system';
+import { routeLog } from '@/utils/logger';
 
 interface PageTransitionProps {
   children: React.ReactNode;
@@ -14,43 +14,39 @@ interface PageTransitionProps {
   immediate?: boolean;
 }
 
-export const PageTransition: React.FC<PageTransitionProps> = ({ 
-  children, 
+export const PageTransition: React.FC<PageTransitionProps> = ({
+  children,
   delay = 'none',
   animation = 'fadeIn',
-  immediate = false
+  immediate = false,
 }) => {
   const location = useLocation();
   const { isNavigating } = useNavigation();
-  
+
   useEffect(() => {
     routeLog(`Route changed to ${location.pathname}`);
   }, [location]);
-  
+
   const delayClass = {
-    'none': '',
-    'short': 'animation-delay-100',
-    'medium': 'animation-delay-200',
-    'long': 'animation-delay-300'
+    none: '',
+    short: 'animation-delay-100',
+    medium: 'animation-delay-200',
+    long: 'animation-delay-300',
   };
 
   const animationClass = animations[animation];
-  
+
   // Check if this is an admin route to potentially apply different behavior
   const isAdminRoute = location.pathname === '/admin';
-  
+
   // Skip animation for immediate content (improves FCP) or admin routes
   const shouldAnimate = !immediate && (!isAdminRoute || (isAdminRoute && !isNavigating));
   const finalAnimationClass = shouldAnimate ? animationClass : '';
 
   return (
-    <div 
-      className={cn(
-        'relative', 
-        finalAnimationClass, 
-        delayClass[delay]
-      )}
-      style={{ 
+    <div
+      className={cn('relative', finalAnimationClass, delayClass[delay])}
+      style={{
         // Reserve space to prevent layout shift
         contain: 'layout style paint',
       }}

@@ -1,3 +1,2 @@
-
 // Re-export for backward compatibility
-export { useMessageReactions } from "./message-board/useMessageReactions";
+export { useMessageReactions } from './message-board/useMessageReactions';

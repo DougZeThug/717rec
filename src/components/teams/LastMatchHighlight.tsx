@@ -1,9 +1,10 @@
-import React from "react";
-import { Link } from "react-router";
-import { Match } from "@/types";
-import { cn } from "@/lib/utils";
-import { ChevronRight } from "lucide-react";
-import { ICON_SIZES, ICON_STROKE } from "@/styles/icon-system";
+import { ChevronRight } from 'lucide-react';
+import React from 'react';
+import { Link } from 'react-router';
+
+import { cn } from '@/lib/utils';
+import { ICON_SIZES, ICON_STROKE } from '@/styles/icon-system';
+import { Match } from '@/types';
 
 interface LastMatchHighlightProps {
   teamId: string;
@@ -21,9 +22,7 @@ export const LastMatchHighlight: React.FC<LastMatchHighlightProps> = ({
   className,
 }) => {
   // Get the most recent completed match
-  const lastMatch = pastMatches.length > 0 
-    ? pastMatches[pastMatches.length - 1] 
-    : null;
+  const lastMatch = pastMatches.length > 0 ? pastMatches[pastMatches.length - 1] : null;
 
   if (!lastMatch) {
     return null;
@@ -32,31 +31,23 @@ export const LastMatchHighlight: React.FC<LastMatchHighlightProps> = ({
   // Determine if this team won
   const isWin = lastMatch.winnerId === teamId;
   const isTeam1 = lastMatch.team1Id === teamId;
-  
+
   // Get opponent info
   const opponentId = isTeam1 ? lastMatch.team2Id : lastMatch.team1Id;
   const opponentDetails = isTeam1 ? lastMatch.team2Details : lastMatch.team1Details;
-  const opponentName = opponentDetails?.name || "Unknown";
-  
+  const opponentName = opponentDetails?.name || 'Unknown';
+
   // Get scores
   const teamScore = isTeam1 ? lastMatch.team1Score : lastMatch.team2Score;
   const opponentScore = isTeam1 ? lastMatch.team2Score : lastMatch.team1Score;
 
   return (
     <div
-      className={cn(
-        "inline-flex items-center gap-1.5 text-xs text-muted-foreground",
-        className
-      )}
+      className={cn('inline-flex items-center gap-1.5 text-xs text-muted-foreground', className)}
     >
       <span className="opacity-70">Last match:</span>
-      <span
-        className={cn(
-          "font-semibold",
-          isWin ? "text-green-500" : "text-red-500"
-        )}
-      >
-        {isWin ? "W" : "L"}
+      <span className={cn('font-semibold', isWin ? 'text-green-500' : 'text-red-500')}>
+        {isWin ? 'W' : 'L'}
       </span>
       <span className="font-medium">
         {teamScore ?? 0}-{opponentScore ?? 0}
@@ -67,10 +58,10 @@ export const LastMatchHighlight: React.FC<LastMatchHighlightProps> = ({
         className="font-medium text-foreground hover:text-primary transition-colors inline-flex items-center gap-0.5"
       >
         {opponentName}
-        <ChevronRight 
-          size={ICON_SIZES.xs} 
+        <ChevronRight
+          size={ICON_SIZES.xs}
           strokeWidth={ICON_STROKE.normal}
-          className="opacity-50" 
+          className="opacity-50"
         />
       </Link>
     </div>

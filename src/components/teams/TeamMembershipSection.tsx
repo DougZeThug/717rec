@@ -1,30 +1,42 @@
-import React, { useState } from "react";
-import { useTeamMembership } from "@/hooks/useTeamMembership";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { CheckCircle, Clock, Edit, Loader2, LogOut, Users } from 'lucide-react';
+import React, { useState } from 'react';
+
+import { TeamLogo } from '@/components/shared/TeamLogo';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { TeamLogo } from "@/components/shared/TeamLogo";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Loader2, LogOut, Clock, CheckCircle, Edit, Users } from "lucide-react";
-import { EmptyState } from "@/components/ui/empty-state";
+} from '@/components/ui/select';
+import { useTeamMembership } from '@/hooks/useTeamMembership';
 
 const TeamMembershipSection: React.FC = () => {
-  const { membership, availableTeams, isLoading, isFetching, joinTeam, leaveTeam } = useTeamMembership();
-  const [selectedTeamId, setSelectedTeamId] = useState<string>("");
+  const { membership, availableTeams, isLoading, isFetching, joinTeam, leaveTeam } =
+    useTeamMembership();
+  const [selectedTeamId, setSelectedTeamId] = useState<string>('');
 
   const handleJoinTeam = async () => {
     if (!selectedTeamId) return;
     await joinTeam(selectedTeamId);
-    setSelectedTeamId("");
+    setSelectedTeamId('');
   };
-  
+
   if (isFetching) {
     return (
       <div className="flex justify-center py-4">
@@ -43,13 +55,19 @@ const TeamMembershipSection: React.FC = () => {
       </div>
 
       {membership ? (
-        <Card className={membership.is_approved ? "bg-green-50 dark:bg-green-950/20" : "bg-yellow-50 dark:bg-yellow-950/20"}>
+        <Card
+          className={
+            membership.is_approved
+              ? 'bg-green-50 dark:bg-green-950/20'
+              : 'bg-yellow-50 dark:bg-yellow-950/20'
+          }
+        >
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <TeamLogo
                   imageUrl={membership.team?.imageUrl || membership.team?.logoUrl}
-                  teamName={membership.team?.name || "Team"}
+                  teamName={membership.team?.name || 'Team'}
                   size="md"
                   rounded
                 />
@@ -71,8 +89,7 @@ const TeamMembershipSection: React.FC = () => {
                   <p className="text-xs text-muted-foreground">
                     {membership.is_approved && membership.approved_at
                       ? `Approved ${new Date(membership.approved_at).toLocaleDateString()}`
-                      : `Requested ${new Date(membership.joined_at).toLocaleDateString()}`
-                    }
+                      : `Requested ${new Date(membership.joined_at).toLocaleDateString()}`}
                   </p>
                   {membership.is_approved && (
                     <p className="text-xs text-green-600 dark:text-green-400 mt-1">
@@ -82,14 +99,10 @@ const TeamMembershipSection: React.FC = () => {
                   )}
                 </div>
               </div>
-              
+
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-destructive"
-                  >
+                  <Button variant="outline" size="sm" className="text-destructive">
                     <LogOut className="w-4 h-4 mr-2" />
                     Leave Team
                   </Button>
@@ -98,7 +111,8 @@ const TeamMembershipSection: React.FC = () => {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Leave team?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Are you sure you want to leave {membership.team?.name}? You will lose your association with this team and any editing privileges.
+                      Are you sure you want to leave {membership.team?.name}? You will lose your
+                      association with this team and any editing privileges.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -146,7 +160,7 @@ const TeamMembershipSection: React.FC = () => {
               </SelectContent>
             </Select>
           </div>
-          
+
           <Button
             onClick={handleJoinTeam}
             disabled={!selectedTeamId || isLoading}
@@ -157,10 +171,10 @@ const TeamMembershipSection: React.FC = () => {
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting Request...
               </>
             ) : (
-              "Request to Join Team"
+              'Request to Join Team'
             )}
           </Button>
-          
+
           <p className="text-xs text-muted-foreground text-center">
             Your request will be reviewed by an admin before approval
           </p>

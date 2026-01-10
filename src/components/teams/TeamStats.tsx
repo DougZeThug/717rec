@@ -1,9 +1,9 @@
+import { Scale, Target, Trophy, Users, Zap } from 'lucide-react';
+import React from 'react';
 
-import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { getPowerScoreColor, getSosColor, formatPowerScore } from "@/utils/colors";
-import { StatBlock } from "@/components/teams/shared/StatBlock";
-import { Trophy, Target, Users, Scale, Zap } from "lucide-react";
+import { StatBlock } from '@/components/teams/shared/StatBlock';
+import { Card, CardContent } from '@/components/ui/card';
+import { formatPowerScore, getPowerScoreColor, getSosColor } from '@/utils/colors';
 
 interface TeamStatsProps {
   wins: number;
@@ -28,59 +28,59 @@ const TeamStats: React.FC<TeamStatsProps> = ({
   closeMatchLosses,
   powerScore,
 }) => {
-  const powerScoreColor = powerScore !== undefined ? getPowerScoreColor(powerScore) : "";
-  const sosColor = sos !== undefined ? getSosColor(sos) : "";
+  const powerScoreColor = powerScore !== undefined ? getPowerScoreColor(powerScore) : '';
+  const sosColor = sos !== undefined ? getSosColor(sos) : '';
 
   return (
     <Card className="mb-6">
       <CardContent className="pt-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Match Record */}
-          <StatBlock 
-            label="Match Record" 
+          <StatBlock
+            label="Match Record"
             value={`${wins}-${losses}`}
             className="bg-gray-50 dark:bg-black/30"
             icon={<Trophy size={18} className="text-emerald-500" />}
           />
-          
+
           {/* Win Percentage */}
-          <StatBlock 
-            label="Win Percentage" 
+          <StatBlock
+            label="Win Percentage"
             value={`${winPercentage}%`}
             className="bg-gray-50 dark:bg-black/30"
             icon={<Target size={18} className="text-purple-500" />}
           />
-          
+
           {/* Game Record */}
-          <StatBlock 
-            label="Game Record" 
+          <StatBlock
+            label="Game Record"
             value={`${gameWins}-${gameLosses}`}
             className="bg-gray-50 dark:bg-black/30"
             icon={<Users size={18} className="text-indigo-500" />}
           />
-          
+
           {/* Game Win Percentage */}
-          <StatBlock 
-            label="Game Win %" 
+          <StatBlock
+            label="Game Win %"
             value={`${gameWinPercentage}%`}
             className="bg-gray-50 dark:bg-black/30"
             icon={<Target size={18} className="text-teal-500" />}
           />
-          
+
           {/* SOS if available */}
           {sos !== undefined && (
-            <StatBlock 
-              label="Strength of Schedule" 
+            <StatBlock
+              label="Strength of Schedule"
               value={<span className={sosColor}>{sos.toFixed(3)}</span>}
               className="bg-gray-50 dark:bg-black/30"
               icon={<Scale size={18} className="text-blue-500" />}
             />
           )}
-          
+
           {/* Power Score if available */}
           {powerScore !== undefined && (
-            <StatBlock 
-              label="Power Score" 
+            <StatBlock
+              label="Power Score"
               value={<span className={powerScoreColor}>{formatPowerScore(powerScore)}</span>}
               className="bg-gray-50 dark:bg-black/30"
               icon={<Zap size={18} className="text-amber-500" />}

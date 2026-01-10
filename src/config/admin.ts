@@ -1,4 +1,3 @@
-
 // This file now serves as a placeholder for other admin-specific config
 // The password-based access has been replaced by profile-based admin access
 

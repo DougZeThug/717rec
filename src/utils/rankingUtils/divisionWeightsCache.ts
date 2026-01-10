@@ -4,8 +4,8 @@
  * Provides ~97% reduction in database queries during ranking calculations.
  */
 
-import { supabase } from "@/integrations/supabase/client";
-import { cacheLog, errorLog } from "@/utils/logger";
+import { supabase } from '@/integrations/supabase/client';
+import { cacheLog, errorLog } from '@/utils/logger';
 
 type DivisionWeightsMap = Map<string, number>;
 
@@ -24,13 +24,13 @@ export const fetchDivisionWeights = async (): Promise<DivisionWeightsMap> => {
     cacheLog('Division weights cache hit');
     return cachedWeights;
   }
-  
+
   // If fetch is in progress, wait for it
   if (cachePromise) {
     cacheLog('Division weights fetch in progress, awaiting...');
     return cachePromise;
   }
-  
+
   // Start new fetch
   cacheLog('Fetching division weights from database');
   cachePromise = (async () => {
@@ -38,23 +38,23 @@ export const fetchDivisionWeights = async (): Promise<DivisionWeightsMap> => {
       .from('divisions')
       .select('id, name, division_weight')
       .order('name');
-    
+
     if (error) {
       errorLog('Error fetching division weights:', error);
       cachePromise = null; // Clear promise so next call will retry
       return new Map();
     }
-    
+
     const weights = new Map<string, number>();
-    data?.forEach(div => {
+    data?.forEach((div) => {
       weights.set(div.id, div.division_weight || DEFAULT_DIVISION_WEIGHT);
     });
-    
+
     cacheLog(`Division weights cached: ${weights.size} divisions`);
     cachedWeights = weights;
     return weights;
   })();
-  
+
   return cachePromise;
 };
 

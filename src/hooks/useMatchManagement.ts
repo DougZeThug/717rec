@@ -1,23 +1,20 @@
+import { useEffect, useState } from 'react';
 
-import { useState, useEffect } from "react";
-import { Match, Team } from "@/types";
-import { useMatchCreation } from "./useMatchCreation";
-import { useMatchUpdates } from "./useMatchUpdates";
+import { Match, Team } from '@/types';
+
+import { useMatchCreation } from './useMatchCreation';
+import { useMatchUpdates } from './useMatchUpdates';
 
 export const useMatchManagement = (initialMatches: Match[]) => {
   const [matches, setMatches] = useState<Match[]>(initialMatches);
-  
+
   // Update matches when initialMatches changes
   useEffect(() => {
     setMatches(initialMatches);
   }, [initialMatches]);
-  
-  const {
-    isFormOpen,
-    setIsFormOpen,
-    handleCreateMatch
-  } = useMatchCreation(matches, setMatches);
-  
+
+  const { isFormOpen, setIsFormOpen, handleCreateMatch } = useMatchCreation(matches, setMatches);
+
   const {
     editingMatch,
     deleteMatchId,
@@ -25,7 +22,7 @@ export const useMatchManagement = (initialMatches: Match[]) => {
     setEditingMatch,
     setDeleteMatchId,
     handleUpdateMatch,
-    handleDeleteMatch
+    handleDeleteMatch,
   } = useMatchUpdates(matches, setMatches);
 
   return {
@@ -39,6 +36,6 @@ export const useMatchManagement = (initialMatches: Match[]) => {
     setDeleteMatchId,
     handleCreateMatch,
     handleUpdateMatch,
-    handleDeleteMatch
+    handleDeleteMatch,
   };
 };

@@ -1,10 +1,11 @@
-import React from "react";
-import { Settings } from "lucide-react";
-import { AdminSetupSection } from "./AdminSetupSection";
-import { AdminScoringSection } from "./AdminScoringSection";
-import { AdminPlayoffsSection } from "./AdminPlayoffsSection";
-import { AdminHeroSection } from "./AdminHeroSection";
-import { AdminBlindDrawSection } from "./AdminBlindDrawSection";
+import { Settings } from 'lucide-react';
+import React from 'react';
+
+import { AdminBlindDrawSection } from './AdminBlindDrawSection';
+import { AdminHeroSection } from './AdminHeroSection';
+import { AdminPlayoffsSection } from './AdminPlayoffsSection';
+import { AdminScoringSection } from './AdminScoringSection';
+import { AdminSetupSection } from './AdminSetupSection';
 
 export const AdminSections: React.FC = () => {
   return (
@@ -14,9 +15,7 @@ export const AdminSections: React.FC = () => {
           <Settings className="h-5 w-5" />
           Admin Guide
         </h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          League management tools and workflows
-        </p>
+        <p className="text-sm text-muted-foreground mt-1">League management tools and workflows</p>
       </div>
 
       <AdminSetupSection />

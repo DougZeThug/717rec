@@ -2,12 +2,12 @@ export type LogoStatus = 'optimized' | 'legacy' | 'missing';
 
 export const getLogoStatus = (imageUrl: string | null | undefined): LogoStatus => {
   if (!imageUrl) return 'missing';
-  
+
   // Check if it's the new optimized format (WebP in teams/teams/{id}/ path)
   if (imageUrl.includes('.webp') && imageUrl.includes('/teams/teams/')) {
     return 'optimized';
   }
-  
+
   // Has an image but not optimized
   return 'legacy';
 };

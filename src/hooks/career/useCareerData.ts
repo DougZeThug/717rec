@@ -1,12 +1,6 @@
-
-import { supabase } from "@/integrations/supabase/client";
-import { 
-  SeasonStats, 
-  MatchData, 
-  ArchivedMatchData, 
-  PlayoffMatchData 
-} from "@/utils/career/types";
-import { errorLog, warnLog } from "@/utils/logger";
+import { supabase } from '@/integrations/supabase/client';
+import { ArchivedMatchData, MatchData, PlayoffMatchData, SeasonStats } from '@/utils/career/types';
+import { errorLog, warnLog } from '@/utils/logger';
 
 interface TeamData {
   divisions: { division_weight: number } | null;
@@ -43,18 +37,15 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
     archivedMatchesResult,
     allTeamSeasonStatsResult,
     playoffMatchesResult,
-    activeSeasonResult
+    activeSeasonResult,
   ] = await Promise.all([
     // Get team's current division weight
-    supabase
-      .from('teams')
-      .select('divisions(division_weight)')
-      .eq('id', teamId)
-      .single(),
+    supabase.from('teams').select('divisions(division_weight)').eq('id', teamId).single(),
     // Get career stats from team_season_stats with division info and season_id
     supabase
       .from('team_season_stats')
-      .select(`
+      .select(
+        `
         match_wins,
         match_losses,
         game_wins,
@@ -66,12 +57,14 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
         division_name,
         season_id,
         seasons!inner(name)
-      `)
+      `
+      )
       .eq('team_id', teamId),
     // Get current season matches with opponent team info
     supabase
       .from('matches')
-      .select(`
+      .select(
+        `
         winner_id,
         loser_id,
         team1_game_wins,
@@ -81,13 +74,15 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
         season_id,
         team1:teams!matches_team1_id_fkey(id, divisions(name)),
         team2:teams!matches_team2_id_fkey(id, divisions(name))
-      `)
+      `
+      )
       .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
       .eq('iscompleted', true),
     // Get archived matches for sweep rate and division records
     supabase
       .from('matches_archive')
-      .select(`
+      .select(
+        `
         winner_id,
         loser_id,
         team1_game_wins,
@@ -95,17 +90,17 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
         team1_id,
         team2_id,
         season_id
-      `)
+      `
+      )
       .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
       .eq('iscompleted', true),
     // Fetch all team_season_stats for opponent division lookup
-    supabase
-      .from('team_season_stats')
-      .select('team_id, season_id, division_name'),
+    supabase.from('team_season_stats').select('team_id, season_id, division_name'),
     // Get playoff matches with bracket information
     supabase
       .from('playoff_matches')
-      .select(`
+      .select(
+        `
         winner_id,
         loser_id,
         team1_score,
@@ -113,15 +108,12 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
         team1_id,
         team2_id,
         bracket_id
-      `)
+      `
+      )
       .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
       .not('winner_id', 'is', null),
     // Get the current active season (authoritative source)
-    supabase
-      .from('seasons')
-      .select('id')
-      .eq('is_active', true)
-      .single()
+    supabase.from('seasons').select('id').eq('is_active', true).single(),
   ]);
 
   // Handle critical error
@@ -152,19 +144,23 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
   const teamDivisionWeight = teamData?.divisions?.division_weight || 0.85;
 
   // Get bracket division weights for competitive playoff detection
-  let bracketDivisionWeights: Record<string, number> = {};
+  const bracketDivisionWeights: Record<string, number> = {};
   if (playoffMatches && playoffMatches.length > 0) {
-    const bracketIds = [...new Set(playoffMatches.map(match => match.bracket_id).filter(Boolean))] as string[];
-    
+    const bracketIds = [
+      ...new Set(playoffMatches.map((match) => match.bracket_id).filter(Boolean)),
+    ] as string[];
+
     if (bracketIds.length > 0) {
       const { data: bracketData } = await supabase
         .from('brackets')
-        .select(`
+        .select(
+          `
           id,
           divisions(division_weight)
-        `)
+        `
+        )
         .in('id', bracketIds);
-      
+
       if (bracketData) {
         for (const bracket of bracketData) {
           bracketDivisionWeights[bracket.id] = (bracket.divisions as any)?.division_weight || 0.85;
@@ -195,6 +191,6 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
     teamDivisionMap,
     bracketDivisionWeights,
     teamDivisionWeight,
-    currentSeasonId
+    currentSeasonId,
   };
 };

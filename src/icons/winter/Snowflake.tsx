@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface SnowflakeProps extends React.SVGProps<SVGSVGElement> {
   size?: number | string;
@@ -8,11 +8,7 @@ interface SnowflakeProps extends React.SVGProps<SVGSVGElement> {
  * Custom Snowflake glyph - Primary winter accent icon
  * Used for badges, theme toggle, cold streaks
  */
-const Snowflake: React.FC<SnowflakeProps> = ({ 
-  size = 24, 
-  className,
-  ...props 
-}) => (
+const Snowflake: React.FC<SnowflakeProps> = ({ size = 24, className, ...props }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}

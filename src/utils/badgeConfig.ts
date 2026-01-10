@@ -1,7 +1,19 @@
+import {
+  Award,
+  Flame,
+  LucideIcon,
+  Medal,
+  Snowflake,
+  Sparkles,
+  Swords,
+  Target,
+  TrendingUp,
+  Trophy,
+  Zap,
+} from 'lucide-react';
 
-import { LucideIcon, Trophy, Award, Medal, Zap, Target, TrendingUp, Flame, Snowflake, Swords, Sparkles } from 'lucide-react';
-import { BadgeConfig, BadgeType, TeamBadgeEvent } from '@/types/badges';
 import type { WinterGlyphName } from '@/icons';
+import { BadgeConfig, BadgeType, TeamBadgeEvent } from '@/types/badges';
 
 // Extended badge config with winter variant support
 export interface ExtendedBadgeConfig extends BadgeConfig {
@@ -20,7 +32,7 @@ export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
     bgColor: 'bg-yellow-100',
     textColor: 'text-yellow-800',
     isPermanent: true,
-    category: 'championship'
+    category: 'championship',
   },
   intermediate_champion: {
     type: 'intermediate_champion',
@@ -32,7 +44,7 @@ export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
     bgColor: 'bg-orange-100',
     textColor: 'text-orange-800',
     isPermanent: true,
-    category: 'championship'
+    category: 'championship',
   },
   competitive_champion: {
     type: 'competitive_champion',
@@ -44,9 +56,9 @@ export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
     bgColor: 'bg-purple-100',
     textColor: 'text-purple-800',
     isPermanent: true,
-    category: 'championship'
+    category: 'championship',
   },
-  
+
   // Runner-up badges
   recreational_runner_up: {
     type: 'recreational_runner_up',
@@ -57,7 +69,7 @@ export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
     bgColor: 'bg-gray-100',
     textColor: 'text-gray-800',
     isPermanent: true,
-    category: 'championship'
+    category: 'championship',
   },
   intermediate_runner_up: {
     type: 'intermediate_runner_up',
@@ -68,7 +80,7 @@ export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
     bgColor: 'bg-gray-100',
     textColor: 'text-gray-800',
     isPermanent: true,
-    category: 'championship'
+    category: 'championship',
   },
   competitive_runner_up: {
     type: 'competitive_runner_up',
@@ -79,9 +91,9 @@ export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
     bgColor: 'bg-slate-100',
     textColor: 'text-slate-800',
     isPermanent: true,
-    category: 'championship'
+    category: 'championship',
   },
-  
+
   // Third place badges
   recreational_third_place: {
     type: 'recreational_third_place',
@@ -92,7 +104,7 @@ export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
     bgColor: 'bg-amber-100',
     textColor: 'text-amber-800',
     isPermanent: true,
-    category: 'championship'
+    category: 'championship',
   },
   intermediate_third_place: {
     type: 'intermediate_third_place',
@@ -103,7 +115,7 @@ export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
     bgColor: 'bg-amber-100',
     textColor: 'text-amber-800',
     isPermanent: true,
-    category: 'championship'
+    category: 'championship',
   },
   competitive_third_place: {
     type: 'competitive_third_place',
@@ -114,9 +126,9 @@ export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
     bgColor: 'bg-amber-100',
     textColor: 'text-amber-800',
     isPermanent: true,
-    category: 'championship'
+    category: 'championship',
   },
-  
+
   // Performance badges
   king_slayer: {
     type: 'king_slayer',
@@ -127,7 +139,7 @@ export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
     bgColor: 'bg-red-100',
     textColor: 'text-red-800',
     isPermanent: false,
-    category: 'performance'
+    category: 'performance',
   },
   clutch_performer: {
     type: 'clutch_performer',
@@ -138,7 +150,7 @@ export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
     bgColor: 'bg-green-100',
     textColor: 'text-green-800',
     isPermanent: false,
-    category: 'performance'
+    category: 'performance',
   },
   consistent_performer: {
     type: 'consistent_performer',
@@ -149,9 +161,9 @@ export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
     bgColor: 'bg-blue-100',
     textColor: 'text-blue-800',
     isPermanent: false,
-    category: 'performance'
+    category: 'performance',
   },
-  
+
   // Streak badges
   hot_streak: {
     type: 'hot_streak',
@@ -162,7 +174,7 @@ export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
     bgColor: 'bg-orange-100',
     textColor: 'text-orange-800',
     isPermanent: false,
-    category: 'streak'
+    category: 'streak',
   },
   cold_streak: {
     type: 'cold_streak',
@@ -173,9 +185,9 @@ export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
     bgColor: 'bg-blue-100',
     textColor: 'text-blue-800',
     isPermanent: false,
-    category: 'streak'
+    category: 'streak',
   },
-  
+
   // Special badges
   cool_fun_team: {
     type: 'cool_fun_team',
@@ -187,18 +199,21 @@ export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
     bgColor: 'bg-pink-100',
     textColor: 'text-pink-800',
     isPermanent: true,
-    category: 'performance'
-  }
+    category: 'performance',
+  },
 };
 
-export const getBadgeConfig = (badgeType: BadgeType, badge?: TeamBadgeEvent): ExtendedBadgeConfig => {
+export const getBadgeConfig = (
+  badgeType: BadgeType,
+  badge?: TeamBadgeEvent
+): ExtendedBadgeConfig => {
   const baseConfig = badgeConfigs[badgeType];
-  
+
   // Enhanced color hierarchy for Intermediate division
   if (badgeType === 'intermediate_champion' && badge?.metadata) {
     const metadata = badge.metadata as any;
     const divisionName = metadata?.division || '';
-    
+
     // Intermediate High gets cyan, Intermediate Low gets orange
     if (divisionName.toLowerCase().includes('high')) {
       return {
@@ -210,7 +225,7 @@ export const getBadgeConfig = (badgeType: BadgeType, badge?: TeamBadgeEvent): Ex
         textColor: 'text-cyan-800',
       };
     }
-    
+
     if (divisionName.toLowerCase().includes('low')) {
       return {
         ...baseConfig,
@@ -219,12 +234,12 @@ export const getBadgeConfig = (badgeType: BadgeType, badge?: TeamBadgeEvent): Ex
       };
     }
   }
-  
+
   if (badgeType === 'intermediate_runner_up' && badge?.metadata) {
     const metadata = badge.metadata as any;
     const divisionName = metadata?.division || '';
-    
-    // Intermediate High Runner-up gets bright silver, Low gets standard silver  
+
+    // Intermediate High Runner-up gets bright silver, Low gets standard silver
     if (divisionName.toLowerCase().includes('high')) {
       return {
         ...baseConfig,
@@ -235,19 +250,19 @@ export const getBadgeConfig = (badgeType: BadgeType, badge?: TeamBadgeEvent): Ex
         textColor: 'text-gray-800',
       };
     }
-    
+
     if (divisionName.toLowerCase().includes('low')) {
       return {
         ...baseConfig,
-        name: 'Intermediate Low Runner-Up', 
+        name: 'Intermediate Low Runner-Up',
         description: 'Second place in the Intermediate Low Division',
       };
     }
   }
-  
+
   return baseConfig;
 };
 
 export const getBadgesByCategory = (category: BadgeConfig['category']): ExtendedBadgeConfig[] => {
-  return Object.values(badgeConfigs).filter(badge => badge.category === category);
+  return Object.values(badgeConfigs).filter((badge) => badge.category === category);
 };

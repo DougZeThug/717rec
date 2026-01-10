@@ -22,21 +22,18 @@ export const reorderArray = <T>(array: T[], fromIndex: number, toIndex: number):
 /**
  * Calculate the drop position based on drag event
  */
-export const getDropPosition = (
-  dragEvent: DragEvent,
-  containerElement: HTMLElement
-): number => {
+export const getDropPosition = (dragEvent: DragEvent, containerElement: HTMLElement): number => {
   const children = Array.from(containerElement.children);
   const dragOverElement = dragEvent.target as HTMLElement;
-  
+
   // Find the closest draggable element
   let targetElement = dragOverElement;
   while (targetElement && !targetElement.draggable) {
     targetElement = targetElement.parentElement!;
   }
-  
+
   if (!targetElement) return -1;
-  
+
   return children.indexOf(targetElement);
 };
 
@@ -46,7 +43,7 @@ export const getDropPosition = (
 export const assignSeedsByOrder = (teams: ProcessedTeam[]): ProcessedTeam[] => {
   return teams.map((team, index) => ({
     ...team,
-    seed: index + 1
+    seed: index + 1,
   }));
 };
 
@@ -61,9 +58,9 @@ export const handleDragDropReorder = (
   if (fromIndex === toIndex) {
     return { reorderedTeams: teams, wasReordered: false };
   }
-  
+
   const reorderedTeams = reorderArray(teams, fromIndex, toIndex);
   const teamsWithSeeds = assignSeedsByOrder(reorderedTeams);
-  
+
   return { reorderedTeams: teamsWithSeeds, wasReordered: true };
 };

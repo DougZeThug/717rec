@@ -1,14 +1,13 @@
-
-import { supabase } from "@/integrations/supabase/client";
-import { Team } from "@/types";
-import { teamLog, errorLog } from "@/utils/logger";
+import { supabase } from '@/integrations/supabase/client';
+import { Team } from '@/types';
+import { errorLog, teamLog } from '@/utils/logger';
 
 /**
  * Create a new team
  */
-export const createTeamApi = async (teamData: Omit<Team, "id" | "created_at">) => {
-  teamLog("Creating team:", teamData.name);
-  
+export const createTeamApi = async (teamData: Omit<Team, 'id' | 'created_at'>) => {
+  teamLog('Creating team:', teamData.name);
+
   const { data, error } = await supabase
     .from('teams')
     .insert({
@@ -17,18 +16,18 @@ export const createTeamApi = async (teamData: Omit<Team, "id" | "created_at">) =
       image_url: teamData.imageUrl || null, // Use null if no image
       players: teamData.players, // Players is now a string[]
       seed: null, // Default
-      division_id: teamData.division_id || null // Ensure null if no division
+      division_id: teamData.division_id || null, // Ensure null if no division
     })
     .select()
     .single();
-    
+
   if (error) {
-    errorLog("Error creating team:", error);
+    errorLog('Error creating team:', error);
     throw error;
   }
-  
-  teamLog("Team created successfully:", data.id);
-  
+
+  teamLog('Team created successfully:', data.id);
+
   // Transform the new team to our application Team type
   return {
     id: data.id,
@@ -39,6 +38,6 @@ export const createTeamApi = async (teamData: Omit<Team, "id" | "created_at">) =
     wins: 0,
     losses: 0,
     created_at: data.created_at,
-    division: data.division_id
+    division: data.division_id,
   };
 };

@@ -1,33 +1,34 @@
-import React, { useEffect, useState } from "react";
-import { Moon, Sun, Monitor } from "lucide-react";
-import { SnowflakeSparkle } from "@/icons";
-import { Button } from "@/components/ui/button";
+import { Monitor, Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import React, { useEffect, useState } from 'react';
+
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useTheme } from "next-themes";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/dropdown-menu';
+import { SnowflakeSparkle } from '@/icons';
+import { cn } from '@/lib/utils';
 
 interface ThemeToggleProps {
   className?: string;
-  variant?: "default" | "outline" | "ghost";
-  size?: "default" | "sm" | "lg" | "icon";
+  variant?: 'default' | 'outline' | 'ghost';
+  size?: 'default' | 'sm' | 'lg' | 'icon';
 }
 
 const themeOptions = [
-  { value: "light", label: "Light", icon: Sun },
-  { value: "dark", label: "Dark", icon: Moon },
-  { value: "system", label: "System", icon: Monitor },
-  { value: "winter-frozen", label: "Winter", icon: SnowflakeSparkle },
+  { value: 'light', label: 'Light', icon: Sun },
+  { value: 'dark', label: 'Dark', icon: Moon },
+  { value: 'system', label: 'System', icon: Monitor },
+  { value: 'winter-frozen', label: 'Winter', icon: SnowflakeSparkle },
 ] as const;
 
 export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   className,
-  variant = "outline",
-  size = "icon",
+  variant = 'outline',
+  size = 'icon',
 }) => {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -41,36 +42,36 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   }
 
   const getCurrentIcon = () => {
-    if (theme === "winter-frozen") {
+    if (theme === 'winter-frozen') {
       return <SnowflakeSparkle size={20} className="text-cyan-400" />;
     }
-    if (resolvedTheme === "dark") {
+    if (resolvedTheme === 'dark') {
       return <Moon className="h-5 w-5" />;
     }
     return <Sun className="h-5 w-5" />;
   };
 
   const getButtonClasses = () => {
-    if (theme === "winter-frozen") {
+    if (theme === 'winter-frozen') {
       // Premium ice-glass button for winter theme
       return [
-        "theme-toggle-winter",
-        "bg-[hsla(222,35%,15%,0.9)]",
-        "border-[hsla(199,70%,55%,0.5)]",
-        "shadow-[inset_0_1px_0_hsla(199,80%,80%,0.15),0_0_12px_hsla(199,80%,60%,0.2)]",
-        "hover:shadow-[inset_0_1px_0_hsla(199,80%,80%,0.2),0_0_20px_hsla(199,80%,60%,0.35)]",
-        "hover:border-[hsla(199,70%,65%,0.6)]",
-      ].join(" ");
+        'theme-toggle-winter',
+        'bg-[hsla(222,35%,15%,0.9)]',
+        'border-[hsla(199,70%,55%,0.5)]',
+        'shadow-[inset_0_1px_0_hsla(199,80%,80%,0.15),0_0_12px_hsla(199,80%,60%,0.2)]',
+        'hover:shadow-[inset_0_1px_0_hsla(199,80%,80%,0.2),0_0_20px_hsla(199,80%,60%,0.35)]',
+        'hover:border-[hsla(199,70%,65%,0.6)]',
+      ].join(' ');
     }
     // Use semantic tokens for light/dark
-    return "text-foreground hover:bg-muted border-border";
+    return 'text-foreground hover:bg-muted border-border';
   };
 
   const getIconClasses = () => {
-    if (theme === "winter-frozen") {
-      return "h-5 w-5 text-cyan-400 drop-shadow-[0_0_4px_hsla(199,90%,70%,0.6)]";
+    if (theme === 'winter-frozen') {
+      return 'h-5 w-5 text-cyan-400 drop-shadow-[0_0_4px_hsla(199,90%,70%,0.6)]';
     }
-    return "h-5 w-5";
+    return 'h-5 w-5';
   };
 
   return (
@@ -79,17 +80,15 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
         <Button
           variant={variant}
           size={size}
-          className={cn(
-            "rounded-full transition-all duration-300",
-            getButtonClasses(),
-            className
-          )}
+          className={cn('rounded-full transition-all duration-300', getButtonClasses(), className)}
           aria-label="Select theme"
           title="Select theme"
         >
-        {theme === "winter-frozen" ? (
-          <SnowflakeSparkle size={20} className={getIconClasses()} />
-        ) : getCurrentIcon()}
+          {theme === 'winter-frozen' ? (
+            <SnowflakeSparkle size={20} className={getIconClasses()} />
+          ) : (
+            getCurrentIcon()
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[140px]">
@@ -100,20 +99,12 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
               setTheme(value);
               localStorage.setItem('theme', value);
             }}
-            className={cn(
-              "flex items-center gap-2 cursor-pointer",
-              theme === value && "bg-accent"
-            )}
+            className={cn('flex items-center gap-2 cursor-pointer', theme === value && 'bg-accent')}
           >
-            <Icon className={cn(
-              "h-4 w-4",
-              value === "winter-frozen" && "text-cyan-500"
-            )} />
+            <Icon className={cn('h-4 w-4', value === 'winter-frozen' && 'text-cyan-500')} />
             <span>{label}</span>
-            {value === "winter-frozen" && (
-              <span className="ml-auto text-[10px] text-cyan-500 font-medium">
-                ❄️
-              </span>
+            {value === 'winter-frozen' && (
+              <span className="ml-auto text-[10px] text-cyan-500 font-medium">❄️</span>
             )}
           </DropdownMenuItem>
         ))}

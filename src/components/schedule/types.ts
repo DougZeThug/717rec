@@ -1,12 +1,12 @@
+import { UseFormReturn } from 'react-hook-form';
 
-import { Team } from "@/types";
-import { Match } from "@/types";
-import { UseFormReturn } from "react-hook-form";
+import { Team } from '@/types';
+import { Match } from '@/types';
 
 export interface MatchFormProps {
   match?: Match;
   teams: Team[];
-  onSubmit: (match: Omit<Match, "id">) => void;
+  onSubmit: (match: Omit<Match, 'id'>) => void;
   onCancel: () => void;
   form?: UseFormReturn<MatchFormValues>;
 }

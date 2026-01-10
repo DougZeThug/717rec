@@ -1,5 +1,5 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { calculateCareerPowerScore } from '../calculateCareerPowerScore';
 
 // Mock Supabase client
@@ -11,18 +11,18 @@ vi.mock('@/integrations/supabase/client', () => ({
           not: vi.fn(() => ({
             data: [
               { power_score: 0.7, match_wins: 5, match_losses: 3 },
-              { power_score: 0.65, match_wins: 4, match_losses: 4 }
+              { power_score: 0.65, match_wins: 4, match_losses: 4 },
             ],
-            error: null
+            error: null,
           })),
           single: vi.fn(() => ({
             data: { power_score: 75, wins: 3, losses: 2 },
-            error: null
-          }))
-        }))
-      }))
-    }))
-  }
+            error: null,
+          })),
+        })),
+      })),
+    })),
+  },
 }));
 
 describe('calculateCareerPowerScore', () => {
@@ -38,7 +38,7 @@ describe('calculateCareerPowerScore', () => {
       careerPlayoffWins: 5,
       careerPlayoffLosses: 2,
       competitivePlayoffWins: 3,
-      teamDivisionWeight: 1.0
+      teamDivisionWeight: 1.0,
     });
 
     // Should be a number between 0 and 100
@@ -54,7 +54,7 @@ describe('calculateCareerPowerScore', () => {
       careerPlayoffWins: 50,
       careerPlayoffLosses: 0,
       competitivePlayoffWins: 50,
-      teamDivisionWeight: 1.0
+      teamDivisionWeight: 1.0,
     });
 
     expect(result).toBe(100);
@@ -69,7 +69,7 @@ describe('calculateCareerPowerScore', () => {
       careerPlayoffWins: 0,
       careerPlayoffLosses: 0,
       competitivePlayoffWins: 0,
-      teamDivisionWeight: 0.5
+      teamDivisionWeight: 0.5,
     });
 
     // Recreational championship should give 7 * 0.25 = 1.75 points
@@ -80,7 +80,7 @@ describe('calculateCareerPowerScore', () => {
       careerPlayoffWins: 0,
       careerPlayoffLosses: 0,
       competitivePlayoffWins: 0,
-      teamDivisionWeight: 0.5
+      teamDivisionWeight: 0.5,
     });
 
     // Both should return valid numbers
@@ -96,7 +96,7 @@ describe('calculateCareerPowerScore', () => {
       careerPlayoffWins: 0,
       careerPlayoffLosses: 0,
       competitivePlayoffWins: 0,
-      teamDivisionWeight: 1.0
+      teamDivisionWeight: 1.0,
     });
 
     // Should get 4 * 1.0 = 4 points for competitive runner-up
@@ -110,8 +110,8 @@ describe('calculateCareerPowerScore', () => {
       runnerUpDivisions: [],
       careerPlayoffWins: 10,
       careerPlayoffLosses: 2,
-      competitivePlayoffWins: 5,  // 5 * 0.5 = 2.5 points
-      teamDivisionWeight: 1.0
+      competitivePlayoffWins: 5, // 5 * 0.5 = 2.5 points
+      teamDivisionWeight: 1.0,
     });
 
     expect(result).toBeGreaterThanOrEqual(0);

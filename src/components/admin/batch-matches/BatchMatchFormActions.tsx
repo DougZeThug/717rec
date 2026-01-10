@@ -1,7 +1,7 @@
+import { CalendarCheck, Clock, Loader2, Plus } from 'lucide-react';
+import React from 'react';
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Loader2, Plus, CalendarCheck, Clock } from "lucide-react";
+import { Button } from '@/components/ui/button';
 
 interface BatchMatchFormActionsProps {
   onAutoAssign: () => void;
@@ -11,16 +11,16 @@ interface BatchMatchFormActionsProps {
   isAutoAssigning?: boolean;
 }
 
-const BatchMatchFormActions = ({ 
-  onAutoAssign, 
-  onAddMatch, 
+const BatchMatchFormActions = ({
+  onAutoAssign,
+  onAddMatch,
   onSubmit,
   isSubmitting = false,
-  isAutoAssigning = false
+  isAutoAssigning = false,
 }: BatchMatchFormActionsProps) => {
   return (
     <div className="flex flex-col gap-4 w-full pt-2">
-      <Button 
+      <Button
         onClick={onAutoAssign}
         variant="outline"
         className="w-full transition-all duration-200 hover:bg-opacity-90 shadow-sm active:scale-[0.98]"
@@ -40,16 +40,16 @@ const BatchMatchFormActions = ({
       </Button>
 
       <div className="flex flex-col sm:flex-row w-full gap-3">
-        <Button 
-          onClick={onAddMatch} 
+        <Button
+          onClick={onAddMatch}
           variant="outline"
           className="w-full transition-all duration-200 hover:bg-opacity-90 shadow-sm active:scale-[0.98]"
         >
           <Plus className="mr-2 h-4 w-4" />
           Add Another Match
         </Button>
-        <Button 
-          onClick={onSubmit} 
+        <Button
+          onClick={onSubmit}
           disabled={isSubmitting}
           className="w-full transition-all duration-200 hover:bg-opacity-90 shadow-sm active:scale-[0.98]"
         >

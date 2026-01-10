@@ -1,7 +1,32 @@
-import { 
-  Trophy, Star, Calendar, Shuffle, History, Sparkles, Megaphone, Medal, Flag, Zap, 
-  PartyPopper, Target, Users, Crown, Bell, Gift, Heart, Flame, Award, TrendingUp,
-  Clock, MapPin, Info, AlertTriangle, CheckCircle, Rocket, Gamepad2, CircleDot
+import {
+  AlertTriangle,
+  Award,
+  Bell,
+  Calendar,
+  CheckCircle,
+  CircleDot,
+  Clock,
+  Crown,
+  Flag,
+  Flame,
+  Gamepad2,
+  Gift,
+  Heart,
+  History,
+  Info,
+  MapPin,
+  Medal,
+  Megaphone,
+  PartyPopper,
+  Rocket,
+  Shuffle,
+  Sparkles,
+  Star,
+  Target,
+  TrendingUp,
+  Trophy,
+  Users,
+  Zap,
 } from 'lucide-react';
 
 export const HERO_CARD_COLOR_PRESETS = [
@@ -11,7 +36,7 @@ export const HERO_CARD_COLOR_PRESETS = [
     description: 'Default league gradient',
     background_color: 'bg-gradient-to-r from-blue-600 to-amber-500',
     text_color: 'text-white',
-    preview: 'linear-gradient(to right, #2563eb, #f59e0b)'
+    preview: 'linear-gradient(to right, #2563eb, #f59e0b)',
   },
   {
     id: 'emerald-teal',
@@ -19,7 +44,7 @@ export const HERO_CARD_COLOR_PRESETS = [
     description: 'Great for events & announcements',
     background_color: 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500',
     text_color: 'text-white',
-    preview: 'linear-gradient(to right, #10b981, #14b8a6, #06b6d4)'
+    preview: 'linear-gradient(to right, #10b981, #14b8a6, #06b6d4)',
   },
   {
     id: 'dark-slate',
@@ -27,7 +52,7 @@ export const HERO_CARD_COLOR_PRESETS = [
     description: 'Sleek dark appearance',
     background_color: 'bg-gradient-to-r from-slate-800 to-slate-900',
     text_color: 'text-white',
-    preview: 'linear-gradient(to right, #1e293b, #0f172a)'
+    preview: 'linear-gradient(to right, #1e293b, #0f172a)',
   },
   {
     id: 'amber-gold',
@@ -35,7 +60,7 @@ export const HERO_CARD_COLOR_PRESETS = [
     description: 'Perfect for champion highlights',
     background_color: 'bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600',
     text_color: 'text-amber-900',
-    preview: 'linear-gradient(to right, #fbbf24, #eab308, #d97706)'
+    preview: 'linear-gradient(to right, #fbbf24, #eab308, #d97706)',
   },
   {
     id: 'red-warning',
@@ -43,7 +68,7 @@ export const HERO_CARD_COLOR_PRESETS = [
     description: 'Draw attention to important notices',
     background_color: 'bg-gradient-to-r from-red-500 to-orange-500',
     text_color: 'text-white',
-    preview: 'linear-gradient(to right, #ef4444, #f97316)'
+    preview: 'linear-gradient(to right, #ef4444, #f97316)',
   },
   {
     id: 'purple-violet',
@@ -51,7 +76,7 @@ export const HERO_CARD_COLOR_PRESETS = [
     description: 'Unique events & celebrations',
     background_color: 'bg-gradient-to-r from-purple-600 to-violet-500',
     text_color: 'text-white',
-    preview: 'linear-gradient(to right, #9333ea, #8b5cf6)'
+    preview: 'linear-gradient(to right, #9333ea, #8b5cf6)',
   },
   {
     id: 'light-neutral',
@@ -59,7 +84,7 @@ export const HERO_CARD_COLOR_PRESETS = [
     description: 'Subtle, professional look',
     background_color: 'bg-gradient-to-r from-slate-100 to-gray-200',
     text_color: 'text-slate-800',
-    preview: 'linear-gradient(to right, #f1f5f9, #e5e7eb)'
+    preview: 'linear-gradient(to right, #f1f5f9, #e5e7eb)',
   },
   {
     id: 'ocean-blue',
@@ -67,7 +92,7 @@ export const HERO_CARD_COLOR_PRESETS = [
     description: 'Cool blue tones',
     background_color: 'bg-gradient-to-r from-blue-500 to-indigo-600',
     text_color: 'text-white',
-    preview: 'linear-gradient(to right, #3b82f6, #4f46e5)'
+    preview: 'linear-gradient(to right, #3b82f6, #4f46e5)',
   },
   {
     id: 'sunset-pink',
@@ -75,7 +100,7 @@ export const HERO_CARD_COLOR_PRESETS = [
     description: 'Warm pink & orange',
     background_color: 'bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400',
     text_color: 'text-white',
-    preview: 'linear-gradient(to right, #ec4899, #f43f5e, #fb923c)'
+    preview: 'linear-gradient(to right, #ec4899, #f43f5e, #fb923c)',
   },
   {
     id: 'forest-green',
@@ -83,7 +108,7 @@ export const HERO_CARD_COLOR_PRESETS = [
     description: 'Natural green tones',
     background_color: 'bg-gradient-to-r from-green-600 to-emerald-700',
     text_color: 'text-white',
-    preview: 'linear-gradient(to right, #16a34a, #047857)'
+    preview: 'linear-gradient(to right, #16a34a, #047857)',
   },
   {
     id: 'midnight',
@@ -91,7 +116,7 @@ export const HERO_CARD_COLOR_PRESETS = [
     description: 'Deep blue-purple night',
     background_color: 'bg-gradient-to-r from-indigo-900 via-purple-900 to-slate-900',
     text_color: 'text-white',
-    preview: 'linear-gradient(to right, #312e81, #581c87, #0f172a)'
+    preview: 'linear-gradient(to right, #312e81, #581c87, #0f172a)',
   },
   {
     id: 'fire',
@@ -99,7 +124,7 @@ export const HERO_CARD_COLOR_PRESETS = [
     description: 'Hot red & yellow',
     background_color: 'bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500',
     text_color: 'text-white',
-    preview: 'linear-gradient(to right, #dc2626, #f97316, #eab308)'
+    preview: 'linear-gradient(to right, #dc2626, #f97316, #eab308)',
   },
   {
     id: 'steel',
@@ -107,7 +132,7 @@ export const HERO_CARD_COLOR_PRESETS = [
     description: 'Industrial gray',
     background_color: 'bg-gradient-to-r from-zinc-600 to-zinc-800',
     text_color: 'text-white',
-    preview: 'linear-gradient(to right, #52525b, #27272a)'
+    preview: 'linear-gradient(to right, #52525b, #27272a)',
   },
   {
     id: 'bronze',
@@ -115,8 +140,8 @@ export const HERO_CARD_COLOR_PRESETS = [
     description: 'Warm bronze tones',
     background_color: 'bg-gradient-to-r from-amber-700 via-orange-700 to-amber-800',
     text_color: 'text-white',
-    preview: 'linear-gradient(to right, #b45309, #c2410c, #92400e)'
-  }
+    preview: 'linear-gradient(to right, #b45309, #c2410c, #92400e)',
+  },
 ] as const;
 
 export const HERO_CARD_ICONS = [
@@ -156,7 +181,11 @@ export const HERO_CARD_TYPES = [
   { id: 'champions', name: 'Champions Highlight', description: 'Feature season winners' },
   { id: 'event', name: 'Event Promo', description: 'Events with countdowns & details' },
   { id: 'announcement', name: 'Announcement', description: 'Important league news' },
-  { id: 'request', name: 'Team Request Form', description: 'Allow teams to submit schedule requests' },
+  {
+    id: 'request',
+    name: 'Team Request Form',
+    description: 'Allow teams to submit schedule requests',
+  },
 ] as const;
 
 export const TARGET_TYPE_OPTIONS = [
@@ -168,19 +197,44 @@ export const TARGET_TYPE_OPTIONS = [
 
 // Icon map for rendering - used by hero card components
 export const HERO_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  Trophy, Star, Calendar, Shuffle, History, Sparkles, Megaphone, Medal, Flag, Zap,
-  PartyPopper, Target, Users, Crown, Bell, Gift, Heart, Flame, Award, TrendingUp,
-  Clock, MapPin, Info, AlertTriangle, CheckCircle, Rocket, Gamepad2, CircleDot
+  Trophy,
+  Star,
+  Calendar,
+  Shuffle,
+  History,
+  Sparkles,
+  Megaphone,
+  Medal,
+  Flag,
+  Zap,
+  PartyPopper,
+  Target,
+  Users,
+  Crown,
+  Bell,
+  Gift,
+  Heart,
+  Flame,
+  Award,
+  TrendingUp,
+  Clock,
+  MapPin,
+  Info,
+  AlertTriangle,
+  CheckCircle,
+  Rocket,
+  Gamepad2,
+  CircleDot,
 };
 
 // Helper to find preset by background color
 export const findPresetByColors = (bgColor: string, textColor: string) => {
   return HERO_CARD_COLOR_PRESETS.find(
-    p => p.background_color === bgColor && p.text_color === textColor
+    (p) => p.background_color === bgColor && p.text_color === textColor
   );
 };
 
 // Helper to find icon by id
 export const findIconById = (iconId: string) => {
-  return HERO_CARD_ICONS.find(i => i.id === iconId);
+  return HERO_CARD_ICONS.find((i) => i.id === iconId);
 };

@@ -1,7 +1,6 @@
-
 /**
  * Bracket Form Teams Module
- * 
+ *
  * This module provides components and utilities for team selection in bracket forms.
  * Simplified architecture with direct team selection management.
  */
@@ -11,26 +10,26 @@ export { BracketFormTeamsContainer } from './components/BracketFormTeamsContaine
 
 // UI Components
 export {
-  TeamSelectionError,
-  TeamSelectionLoading,
-  TeamSelectionEmpty,
-  TeamSelectionForm,
-  SeedOverrideControls,
   SeedInputField,
   SeedOrderList,
-  SeedStatusBadge
+  SeedOverrideControls,
+  SeedStatusBadge,
+  TeamSelectionEmpty,
+  TeamSelectionError,
+  TeamSelectionForm,
+  TeamSelectionLoading,
 } from './components';
 
 // Simplified Custom Hooks
 export {
   useBracketFormData,
-  useTeamSelectionState,
   useBracketFormValidation,
+  useFormStateManager,
+  useMutationStateManager,
+  useOptimisticTeamMutations,
   useSeedManagement,
   useTeamSeedMutation,
-  useFormStateManager,
-  useOptimisticTeamMutations,
-  useMutationStateManager
+  useTeamSelectionState,
 } from './hooks';
 
 // Re-export seed validation hook
@@ -38,25 +37,21 @@ export { useSeedValidation } from '@/hooks/playoffs/useSeedValidation';
 
 // Types - Note: Import Division directly from '@/types' where needed
 export type {
-  BracketFormTeamsProps,
-  BracketFormTeamsContainerProps,
-  BracketFormStateResult,
-  FormValidationResult,
-  ValidationProgress,
   BracketFormDataResult,
+  BracketFormStateResult,
+  BracketFormTeamsContainerProps,
+  BracketFormTeamsProps,
+  FormValidationResult,
   ProcessedTeam,
   SeedValidationResult,
-  SeedValidationState
+  SeedValidationState,
+  ValidationProgress,
 } from './types';
 
 // Seed Management Types
 export type {
-  SeedManagementState,
   SeedManagementActions,
-  SeedManagementResult
+  SeedManagementResult,
+  SeedManagementState,
 } from './hooks/useSeedManagement';
-
-export type {
-  TeamSeedUpdate,
-  BulkSeedUpdateParams
-} from './hooks/useTeamSeedMutation';
+export type { BulkSeedUpdateParams, TeamSeedUpdate } from './hooks/useTeamSeedMutation';

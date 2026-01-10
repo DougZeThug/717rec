@@ -1,7 +1,7 @@
+import React from 'react';
 
-import React from "react";
-import type { Team } from "@/types";
-import { TeamLogo } from "@/components/ui/team";
+import { TeamLogo } from '@/components/ui/team';
+import type { Team } from '@/types';
 
 interface Props {
   team: Team & { seed?: number };
@@ -15,8 +15,8 @@ const TeamCard: React.FC<Props> = ({ team, selected, onToggle, disabled = false 
     onClick={() => !disabled && onToggle(team.id)}
     disabled={disabled}
     className={`flex items-center p-2 rounded cursor-pointer transition-colors w-full ${
-      selected 
-        ? 'bg-cornhole-green/20 border border-cornhole-green' 
+      selected
+        ? 'bg-cornhole-green/20 border border-cornhole-green'
         : disabled
           ? 'opacity-50 cursor-not-allowed'
           : 'hover:bg-gray-100'
@@ -26,16 +26,17 @@ const TeamCard: React.FC<Props> = ({ team, selected, onToggle, disabled = false 
       {team.seed}
     </div>
     <div className="mr-2">
-      <TeamLogo 
-        imageUrl={team.logoUrl || team.imageUrl} 
-        teamName={team.name || 'Unnamed Team'} 
+      <TeamLogo
+        imageUrl={team.logoUrl || team.imageUrl}
+        teamName={team.name || 'Unnamed Team'}
         size="sm"
       />
     </div>
     <div className="flex-1">
       <div className="font-medium text-left">{team.name || 'Unnamed Team'}</div>
       <div className="text-xs text-gray-500">
-        Power: {team.power_score && team.power_score > 0 ? (team.power_score * 100).toFixed(1) : 'TBD'}
+        Power:{' '}
+        {team.power_score && team.power_score > 0 ? (team.power_score * 100).toFixed(1) : 'TBD'}
       </div>
     </div>
     <span className="ml-auto text-xs text-gray-500">

@@ -1,10 +1,11 @@
-
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import BracketForm from '../../BracketForm';
+import React from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { Team } from '@/types';
+
+import BracketForm from '../../BracketForm';
 
 // Mock the useBracketForm hook
 vi.mock('../useBracketForm', () => ({
@@ -13,7 +14,12 @@ vi.mock('../useBracketForm', () => ({
       control: {},
       handleSubmit: (cb: any) => (e: any) => {
         e.preventDefault();
-        cb({ title: 'Test Tournament', divisionId: 'div1', format: 'Single Elimination', teams: ['team1', 'team2'] });
+        cb({
+          title: 'Test Tournament',
+          divisionId: 'div1',
+          format: 'Single Elimination',
+          teams: ['team1', 'team2'],
+        });
       },
       setValue: vi.fn(),
     },
@@ -21,7 +27,12 @@ vi.mock('../useBracketForm', () => ({
     handleDivisionChange: vi.fn(),
     handleSubmit: (e: any) => {
       e.preventDefault();
-      onSubmit({ title: 'Test Tournament', divisionId: 'div1', format: 'Single Elimination', teams: ['team1', 'team2'] });
+      onSubmit({
+        title: 'Test Tournament',
+        divisionId: 'div1',
+        format: 'Single Elimination',
+        teams: ['team1', 'team2'],
+      });
     },
   }),
 }));
@@ -78,15 +89,15 @@ describe('BracketForm', () => {
 
   it('renders all form sections', () => {
     render(
-      <BracketForm 
-        divisions={mockDivisions} 
+      <BracketForm
+        divisions={mockDivisions}
         teams={mockTeams}
         isSubmitting={false}
         onSubmit={mockOnSubmit}
         onCancel={mockOnCancel}
       />
     );
-    
+
     expect(screen.getByTestId('bracket-form-title')).toBeInTheDocument();
     expect(screen.getByTestId('bracket-form-division')).toBeInTheDocument();
     expect(screen.getByTestId('bracket-form-format')).toBeInTheDocument();
@@ -97,45 +108,45 @@ describe('BracketForm', () => {
 
   it('submits the form with correct data', async () => {
     render(
-      <BracketForm 
-        divisions={mockDivisions} 
+      <BracketForm
+        divisions={mockDivisions}
         teams={mockTeams}
         isSubmitting={false}
         onSubmit={mockOnSubmit}
         onCancel={mockOnCancel}
       />
     );
-    
+
     const user = userEvent.setup();
     const submitButton = screen.getByText('Submit');
-    
+
     await user.click(submitButton);
-    
+
     expect(mockOnSubmit).toHaveBeenCalledTimes(1);
     expect(mockOnSubmit).toHaveBeenCalledWith({
       title: 'Test Tournament',
       divisionId: 'div1',
       format: 'Single Elimination',
-      teams: ['team1', 'team2']
+      teams: ['team1', 'team2'],
     });
   });
 
   it('calls onCancel when cancel button is clicked', async () => {
     render(
-      <BracketForm 
-        divisions={mockDivisions} 
+      <BracketForm
+        divisions={mockDivisions}
         teams={mockTeams}
         isSubmitting={false}
         onSubmit={mockOnSubmit}
         onCancel={mockOnCancel}
       />
     );
-    
+
     const user = userEvent.setup();
     const cancelButton = screen.getByText('Cancel');
-    
+
     await user.click(cancelButton);
-    
+
     expect(mockOnCancel).toHaveBeenCalledTimes(1);
   });
 });

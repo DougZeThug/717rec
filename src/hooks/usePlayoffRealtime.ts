@@ -1,18 +1,19 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { PlayoffMatch } from '@/types';
-import { transformRealtimePlayoffMatch } from '@/utils/matchTransformers';
 import { playoffLog } from '@/utils/logger';
+import { transformRealtimePlayoffMatch } from '@/utils/matchTransformers';
 
 export function usePlayoffRealtime(bracketId: string | null) {
   const [realtimeEnabled, setRealtimeEnabled] = useState(false);
   const [lastUpdatedMatch, setLastUpdatedMatch] = useState<PlayoffMatch | null>(null);
   const { toast } = useToast();
-  
+
   useEffect(() => {
     if (!bracketId) return;
-    
+
     // Establish realtime subscription for playoff matches
     const channel = supabase
       .channel('playoff-bracket-changes')
@@ -22,25 +23,25 @@ export function usePlayoffRealtime(bracketId: string | null) {
           event: 'UPDATE',
           schema: 'public',
           table: 'playoff_matches',
-          filter: `bracket_id=eq.${bracketId}`
+          filter: `bracket_id=eq.${bracketId}`,
         },
         (payload) => {
           playoffLog('Match updated:', payload.new.id);
-          
+
           // Transform database match to app format using centralized transformer
           const updatedMatch = transformRealtimePlayoffMatch(payload.new);
-          
+
           setLastUpdatedMatch(updatedMatch);
-          
+
           // Show toast notification
           toast({
-            title: "Match Updated",
+            title: 'Match Updated',
             description: `Match #${updatedMatch.position} in round ${updatedMatch.round} has been updated.`,
-            duration: 3000
+            duration: 3000,
           });
         }
       )
-      .subscribe(status => {
+      .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
           playoffLog('Realtime subscription active for bracket:', bracketId);
           setRealtimeEnabled(true);
@@ -57,6 +58,6 @@ export function usePlayoffRealtime(bracketId: string | null) {
 
   return {
     realtimeEnabled,
-    lastUpdatedMatch
+    lastUpdatedMatch,
   };
 }

@@ -1,9 +1,8 @@
+import React from 'react';
 
-import React from "react";
-
-interface Props { 
-  count: number; 
-  max: number; 
+interface Props {
+  count: number;
+  max: number;
   minTeams?: number;
 }
 
@@ -18,11 +17,7 @@ const TeamSelectionSummary: React.FC<Props> = ({ count, max, minTeams = 2 }) => 
         Please select at least {minTeams} teams to create a bracket
       </p>
     )}
-    {count >= max && (
-      <p className="text-xs text-blue-500 mt-1">
-        Maximum team limit reached
-      </p>
-    )}
+    {count >= max && <p className="text-xs text-blue-500 mt-1">Maximum team limit reached</p>}
   </div>
 );
 

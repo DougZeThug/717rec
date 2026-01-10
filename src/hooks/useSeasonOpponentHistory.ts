@@ -1,6 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { errorLog, warnLog } from "@/utils/logger";
+import { useQuery } from '@tanstack/react-query';
+
+import { supabase } from '@/integrations/supabase/client';
+import { errorLog, warnLog } from '@/utils/logger';
 
 interface OpponentRecord {
   opponentId: string;
@@ -29,43 +30,43 @@ export interface SeasonOpponentData {
 
 export const useSeasonOpponentHistory = () => {
   return useQuery({
-    queryKey: ["season-opponent-history"],
+    queryKey: ['season-opponent-history'],
     queryFn: async (): Promise<SeasonOpponentData | null> => {
       // 1. Get active season
       const { data: activeSeason, error: seasonError } = await supabase
-        .from("seasons")
-        .select("id, name")
-        .eq("is_active", true)
+        .from('seasons')
+        .select('id, name')
+        .eq('is_active', true)
         .single();
 
       if (seasonError || !activeSeason) {
-        warnLog("No active season found:", seasonError);
+        warnLog('No active season found:', seasonError);
         return null;
       }
 
       // 2. Get all regular season matches for active season (exclude playoff matches)
       const { data: matches, error: matchesError } = await supabase
-        .from("matches")
-        .select(`
+        .from('matches')
+        .select(
+          `
           id,
           team1_id,
           team2_id,
           winner_id,
           iscompleted
-        `)
-        .eq("season_id", activeSeason.id)
-        .eq("iscompleted", true)
-        .is("bracket_id", null); // Regular season only - no bracket/playoff matches
+        `
+        )
+        .eq('season_id', activeSeason.id)
+        .eq('iscompleted', true)
+        .is('bracket_id', null); // Regular season only - no bracket/playoff matches
 
       if (matchesError) {
-        errorLog("Error fetching matches:", matchesError);
+        errorLog('Error fetching matches:', matchesError);
         throw matchesError;
       }
 
       // 3. Get all teams with divisions
-      const { data: teams, error: teamsError } = await supabase
-        .from("teams")
-        .select(`
+      const { data: teams, error: teamsError } = await supabase.from('teams').select(`
           id,
           name,
           division_id,
@@ -76,12 +77,15 @@ export const useSeasonOpponentHistory = () => {
         `);
 
       if (teamsError) {
-        errorLog("Error fetching teams:", teamsError);
+        errorLog('Error fetching teams:', teamsError);
         throw teamsError;
       }
 
       // Build team lookup map
-      const teamMap = new Map<string, { name: string; divisionId: string | null; divisionName: string | null }>();
+      const teamMap = new Map<
+        string,
+        { name: string; divisionId: string | null; divisionName: string | null }
+      >();
       teams?.forEach((team) => {
         teamMap.set(team.id, {
           name: team.name,
@@ -142,7 +146,7 @@ export const useSeasonOpponentHistory = () => {
 
           opponentRecords.push({
             opponentId,
-            opponentName: opponentInfo?.name || "Unknown",
+            opponentName: opponentInfo?.name || 'Unknown',
             opponentDivision: opponentInfo?.divisionName || null,
             matchCount,
             wins: record.wins,
@@ -170,7 +174,7 @@ export const useSeasonOpponentHistory = () => {
       // Sort teams by division, then name
       teamsWithOpponents.sort((a, b) => {
         if (a.divisionName !== b.divisionName) {
-          return (a.divisionName || "").localeCompare(b.divisionName || "");
+          return (a.divisionName || '').localeCompare(b.divisionName || '');
         }
         return a.teamName.localeCompare(b.teamName);
       });

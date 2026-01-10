@@ -1,4 +1,4 @@
-import { PlayoffMatch, PlayoffTeam } from "@/utils/playoffs/playoffTypes";
+import { PlayoffMatch, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 
 /**
  * Validates bracket data for completeness and consistency
@@ -18,18 +18,18 @@ export function validateBracketData(
 
   // Validate matches array
   if (!Array.isArray(matches)) {
-    errors.push("Matches must be an array");
+    errors.push('Matches must be an array');
     return { isValid: false, errors, warnings };
   }
 
   // Validate teams array
   if (!Array.isArray(teams)) {
-    errors.push("Teams must be an array");
+    errors.push('Teams must be an array');
     return { isValid: false, errors, warnings };
   }
 
   // Create team ID set for validation
-  const teamIds = new Set(teams.map(team => team.id));
+  const teamIds = new Set(teams.map((team) => team.id));
 
   // Validate each match
   matches.forEach((match, index) => {
@@ -64,7 +64,7 @@ export function validateBracketData(
       if (!match.winnerId) {
         warnings.push(`Match ${index + 1} is completed but has no winner`);
       }
-      
+
       if (match.team1Score === null || match.team2Score === null) {
         warnings.push(`Match ${index + 1} is completed but missing scores`);
       }
@@ -74,7 +74,7 @@ export function validateBracketData(
   return {
     isValid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   };
 }
 
@@ -84,7 +84,7 @@ export function validateBracketData(
 export function validateMatchConnections(matches: PlayoffMatch[]): BracketValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
-  const matchIds = new Set(matches.map(m => m.id));
+  const matchIds = new Set(matches.map((m) => m.id));
 
   matches.forEach((match, index) => {
     // Validate next match references
@@ -93,13 +93,15 @@ export function validateMatchConnections(matches: PlayoffMatch[]): BracketValida
     }
 
     if (match.nextLoseMatchId && !matchIds.has(match.nextLoseMatchId)) {
-      errors.push(`Match ${index + 1} references invalid nextLoseMatchId: ${match.nextLoseMatchId}`);
+      errors.push(
+        `Match ${index + 1} references invalid nextLoseMatchId: ${match.nextLoseMatchId}`
+      );
     }
   });
 
   return {
     isValid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   };
 }

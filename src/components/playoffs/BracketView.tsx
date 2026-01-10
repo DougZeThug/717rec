@@ -1,19 +1,21 @@
-import React, { useCallback, useMemo, useRef, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useBracketData } from "@/hooks/brackets/useBracketData";
-import { useBracketCompletion } from "@/hooks/useBracketCompletion";
-import { useBracketsManagerRealtime } from "@/hooks/brackets/useBracketsManagerRealtime";
-import { BracketsViewerComponent } from "./viewer";
-import { FinalStandings } from "./FinalStandings";
-import BracketErrorBoundary from "./BracketErrorBoundary";
-import { Loader2, AlertCircle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import { log, bracketLog, errorLog, debugLog } from "@/utils/logger";
-import type { BracketViewData, hasMatches, hasTeams } from "@/types/playoff";
-import type { PlayoffTeam, PlayoffBracket } from "@/utils/playoffs/playoffTypes";
+import { useQuery } from '@tanstack/react-query';
+import { AlertCircle, Loader2 } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { useBracketData } from '@/hooks/brackets/useBracketData';
+import { useBracketsManagerRealtime } from '@/hooks/brackets/useBracketsManagerRealtime';
+import { useBracketCompletion } from '@/hooks/useBracketCompletion';
+import { supabase } from '@/integrations/supabase/client';
+import type { BracketViewData, hasMatches, hasTeams } from '@/types/playoff';
+import { bracketLog, debugLog, errorLog, log } from '@/utils/logger';
+import type { PlayoffBracket, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
+
+import BracketErrorBoundary from './BracketErrorBoundary';
+import { FinalStandings } from './FinalStandings';
+import { BracketsViewerComponent } from './viewer';
 
 interface BracketViewProps {
   bracketId: string;
@@ -26,40 +28,44 @@ const BracketView: React.FC<BracketViewProps> = ({
   bracketId,
   bracket: legacyBracket,
   teams: legacyTeams,
-  onEditMatch
+  onEditMatch,
 }) => {
   const hookCallCount = useRef(0);
   const renderCount = useRef(0);
-  
+
   hookCallCount.current++;
   renderCount.current++;
-  
+
   log(`BracketView hooks called: ${hookCallCount.current}, render: ${renderCount.current}`, {
     bracketId,
-    hasLegacyBracket: !!legacyBracket
+    hasLegacyBracket: !!legacyBracket,
   });
-  
+
   bracketLog('BracketView rendering with props:', {
     bracketId,
     hasLegacyBracket: !!legacyBracket,
-    hasLegacyTeams: !!legacyTeams
+    hasLegacyTeams: !!legacyTeams,
   });
-  
+
   useEffect(() => {
     log('BracketView MOUNTED', { bracketId });
     return () => {
       log('BracketView UNMOUNTED', { bracketId });
     };
   }, [bracketId]);
-  
+
   useEffect(() => {
     debugLog('BracketView props changed:', {
       bracketId,
-      hasLegacyBracket: !!legacyBracket
+      hasLegacyBracket: !!legacyBracket,
     });
   }, [bracketId, legacyBracket, legacyTeams]);
-  
-  const { data: bracketInfo, isLoading: isLoadingBracketInfo, error: bracketInfoError } = useQuery({
+
+  const {
+    data: bracketInfo,
+    isLoading: isLoadingBracketInfo,
+    error: bracketInfoError,
+  } = useQuery({
     queryKey: ['bracket-info', bracketId],
     queryFn: async () => {
       bracketLog('Fetching bracket info for JSONB check:', bracketId);
@@ -68,51 +74,54 @@ const BracketView: React.FC<BracketViewProps> = ({
         .select('id, title, format, state, uses_brackets_manager, bracket_data, participants')
         .eq('id', bracketId)
         .single();
-      
+
       if (error) {
         errorLog('Error fetching bracket info:', error);
         throw error;
       }
-      
+
       bracketLog('Bracket info fetched:', {
         id: data.id,
         title: data.title,
         uses_brackets_manager: data.uses_brackets_manager,
-        has_bracket_data: !!data.bracket_data
+        has_bracket_data: !!data.bracket_data,
       });
-      
+
       return data;
     },
-    enabled: !!bracketId && typeof bracketId === 'string'
+    enabled: !!bracketId && typeof bracketId === 'string',
   });
-  
-  const { 
-    data: fetchedBracket, 
-    isLoading: isLoadingLegacy, 
+
+  const {
+    data: fetchedBracket,
+    isLoading: isLoadingLegacy,
     error: legacyError,
     refetch: refetchBracket,
-    loadingProgress
+    loadingProgress,
   } = useBracketData(bracketId);
-  
+
   useBracketCompletion(bracketId || undefined);
-  
+
   // Add realtime subscription for brackets-manager brackets (auto-fetches stageId if needed)
   const { realtimeEnabled } = useBracketsManagerRealtime(
     bracketInfo?.uses_brackets_manager ? bracketId : null
   );
-  
+
   useEffect(() => {
     if (realtimeEnabled) {
       bracketLog('BracketView: Realtime subscription active for bracket', { bracketId });
     }
   }, [realtimeEnabled, bracketId]);
 
-  const handleMatchClick = useCallback((matchId: string) => {
-    if (onEditMatch) {
-      onEditMatch(matchId);
-    }
-  }, [onEditMatch]);
-  
+  const handleMatchClick = useCallback(
+    (matchId: string) => {
+      if (onEditMatch) {
+        onEditMatch(matchId);
+      }
+    },
+    [onEditMatch]
+  );
+
   if (!bracketId || typeof bracketId !== 'string' || bracketId.trim() === '') {
     errorLog('Invalid bracketId', { bracketId });
     return (
@@ -132,11 +141,11 @@ const BracketView: React.FC<BracketViewProps> = ({
     isLoadingBracketInfo,
     isLoadingLegacy,
     hasLegacyBracket: !!legacyBracket,
-    bracketInfo: bracketInfo ? { id: bracketInfo.id } : null
+    bracketInfo: bracketInfo ? { id: bracketInfo.id } : null,
   });
 
   const isJsonbBracket = bracketInfo?.uses_brackets_manager && bracketInfo?.bracket_data;
-  
+
   const displayBracket = useMemo(() => {
     if (legacyBracket) return legacyBracket;
     if (isJsonbBracket) return bracketInfo;
@@ -157,7 +166,6 @@ const BracketView: React.FC<BracketViewProps> = ({
     }
   }, [refetchBracket, bracketId]);
 
-
   if (isLoading && !legacyBracket && !isJsonbBracket) {
     debugLog('Showing loading state');
     return (
@@ -167,9 +175,7 @@ const BracketView: React.FC<BracketViewProps> = ({
           <div className="space-y-2">
             <p className="font-medium text-foreground">{loadingProgress.label}</p>
             <Progress value={loadingProgress.percent} className="h-2" />
-            <p className="text-xs text-muted-foreground">
-              {loadingProgress.percent}% complete
-            </p>
+            <p className="text-xs text-muted-foreground">{loadingProgress.percent}% complete</p>
           </div>
         </div>
       </div>
@@ -188,12 +194,9 @@ const BracketView: React.FC<BracketViewProps> = ({
             </div>
           </AlertDescription>
         </Alert>
-        
+
         <div className="flex justify-center">
-          <Button 
-            variant="outline" 
-            onClick={handleRetry}
-          >
+          <Button variant="outline" onClick={handleRetry}>
             Try Again
           </Button>
         </div>
@@ -207,12 +210,16 @@ const BracketView: React.FC<BracketViewProps> = ({
       <div className="text-center p-8 space-y-3">
         <div className="space-y-2">
           <p className="text-lg font-medium text-gray-700">No bracket selected</p>
-          <p className="text-sm text-gray-500">Choose a bracket from the list above to view matches</p>
+          <p className="text-sm text-gray-500">
+            Choose a bracket from the list above to view matches
+          </p>
         </div>
         {bracketId && (
           <div className="bg-gray-50 rounded-lg p-3 text-xs text-gray-500">
             <p>Attempted to load bracket: {bracketId}</p>
-            <p className="mt-1">The bracket may have been deleted or you may not have access to it.</p>
+            <p className="mt-1">
+              The bracket may have been deleted or you may not have access to it.
+            </p>
           </div>
         )}
       </div>
@@ -220,13 +227,13 @@ const BracketView: React.FC<BracketViewProps> = ({
   }
 
   const bracketMatches = 'matches' in displayBracket ? displayBracket.matches : undefined;
-  
+
   if (!isJsonbBracket && (!bracketMatches || !Array.isArray(bracketMatches))) {
     errorLog('CRITICAL - Bracket exists but matches is not an array!', {
       bracket: displayBracket,
-      matchesProperty: bracketMatches
+      matchesProperty: bracketMatches,
     });
-    
+
     return (
       <div className="text-center p-8 space-y-3">
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -240,23 +247,29 @@ const BracketView: React.FC<BracketViewProps> = ({
   bracketLog('About to render BracketsViewerComponent:', {
     isJsonbBracket,
     bracketId: displayBracket.id,
-    matchesCount: bracketMatches?.length || 0
+    matchesCount: bracketMatches?.length || 0,
   });
 
   bracketLog('Rendering BracketsViewerComponent');
-  
+
   const showStandings = displayBracket.state === 'completed';
-  
+
   return (
     <div className="w-full h-full min-h-[400px] md:min-h-[600px] space-y-4">
       <FinalStandings bracketId={bracketId!} show={showStandings} />
-      
+
       <BracketErrorBoundary bracketId={bracketId}>
         {displayBracket && displayBracket.id ? (
           <BracketsViewerComponent
             // Cast needed due to union type from multiple data sources
-            bracket={displayBracket as unknown as Parameters<typeof BracketsViewerComponent>[0]['bracket']}
-            teams={'teams' in displayBracket && displayBracket.teams ? displayBracket.teams : displayTeams}
+            bracket={
+              displayBracket as unknown as Parameters<typeof BracketsViewerComponent>[0]['bracket']
+            }
+            teams={
+              'teams' in displayBracket && displayBracket.teams
+                ? displayBracket.teams
+                : displayTeams
+            }
             onMatchClick={handleMatchClick}
           />
         ) : (

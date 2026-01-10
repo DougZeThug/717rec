@@ -1,30 +1,30 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
-import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "@/hooks/use-toast";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { Button } from '@/components/ui/button';
 import {
   Form,
+  FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
-  FormDescription,
-} from "@/components/ui/form";
-import { errorLog } from "@/utils/logger";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { errorLog } from '@/utils/logger';
 
 const profileSchema = z.object({
   username: z
     .string()
-    .min(3, "First name must be at least 3 characters")
-    .regex(/^[a-zA-Z0-9_]+$/, "First name can only contain letters, numbers, and underscores"),
+    .min(3, 'First name must be at least 3 characters')
+    .regex(/^[a-zA-Z0-9_]+$/, 'First name can only contain letters, numbers, and underscores'),
   fullName: z.string().optional(),
 });
 
@@ -54,7 +54,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   });
 
   const { isSubmitting } = form.formState;
-  const username = form.watch("username");
+  const username = form.watch('username');
 
   // Check username availability
   const checkUsernameAvailability = async (value: string) => {
@@ -62,41 +62,41 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       setUsernameAvailable(null);
       return;
     }
-    
+
     try {
       setIsCheckingUsername(true);
-      
+
       // Skip the check if it's their current username
       if (initialUsername === value) {
         setUsernameAvailable(true);
         return;
       }
-      
+
       const { data, error } = await supabase
-        .from("profiles")
-        .select("username")
-        .eq("username", value)
+        .from('profiles')
+        .select('username')
+        .eq('username', value)
         .maybeSingle();
-      
+
       if (error) {
-        errorLog("Error checking username:", error);
+        errorLog('Error checking username:', error);
         setUsernameAvailable(null);
         return;
       }
-      
+
       const isAvailable = !data;
       setUsernameAvailable(isAvailable);
-      
+
       if (!isAvailable) {
-        form.setError("username", {
-          type: "manual",
-          message: "This name is already taken",
+        form.setError('username', {
+          type: 'manual',
+          message: 'This name is already taken',
         });
       } else {
-        form.clearErrors("username");
+        form.clearErrors('username');
       }
     } catch (error) {
-      errorLog("Unexpected error checking username:", error);
+      errorLog('Unexpected error checking username:', error);
       setUsernameAvailable(null);
     } finally {
       setIsCheckingUsername(false);
@@ -106,52 +106,52 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   // Debounce username checks
   useEffect(() => {
     if (!username || username.length < 3) return;
-    
+
     const handler = setTimeout(() => {
       checkUsernameAvailability(username);
     }, 500);
-    
+
     return () => clearTimeout(handler);
   }, [username, initialUsername]);
 
   const onSubmit = async (data: ProfileFormData) => {
     if (!user) return;
-    
+
     if (!usernameAvailable) {
       toast({
-        title: "Invalid first name",
-        description: "Please choose another name",
-        variant: "destructive",
+        title: 'Invalid first name',
+        description: 'Please choose another name',
+        variant: 'destructive',
       });
       return;
     }
-    
+
     try {
       const { error } = await supabase
-        .from("profiles")
+        .from('profiles')
         .update({
           username: data.username,
           full_name: data.fullName || null,
         })
-        .eq("id", user.id);
-      
+        .eq('id', user.id);
+
       if (error) {
         toast({
-          title: "Error updating profile",
+          title: 'Error updating profile',
           description: error.message,
-          variant: "destructive",
+          variant: 'destructive',
         });
         throw error;
       }
-      
+
       toast({
-        title: "Profile updated",
-        description: "Your profile has been successfully updated",
+        title: 'Profile updated',
+        description: 'Your profile has been successfully updated',
       });
-      
+
       onProfileUpdated();
     } catch (error) {
-      errorLog("Error updating profile:", error);
+      errorLog('Error updating profile:', error);
     }
   };
 
@@ -168,11 +168,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
               </FormLabel>
               <div className="relative">
                 <FormControl>
-                  <Input
-                    placeholder="Enter your first name"
-                    className="pr-10"
-                    {...field}
-                  />
+                  <Input placeholder="Enter your first name" className="pr-10" {...field} />
                 </FormControl>
                 {field.value.length >= 3 && !isCheckingUsername && (
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -189,7 +185,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
           name="fullName"
@@ -204,13 +200,13 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             </FormItem>
           )}
         />
-        
+
         <Button
           type="submit"
           className="w-full mt-6"
           disabled={isSubmitting || username.length < 3}
         >
-          {isSubmitting ? "Saving..." : "Save Profile"}
+          {isSubmitting ? 'Saving...' : 'Save Profile'}
         </Button>
       </form>
     </Form>

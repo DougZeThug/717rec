@@ -1,10 +1,10 @@
+import React from 'react';
 
-import React from "react";
-import { FormMessage } from "@/components/ui/form";
-import { Team } from "@/types";
-import { TeamLogo } from "@/components/ui/team";
-import { useTeamRankings } from "@/hooks/useTeamRankings";
-import { teamLog } from "@/utils/logger";
+import { FormMessage } from '@/components/ui/form';
+import { TeamLogo } from '@/components/ui/team';
+import { useTeamRankings } from '@/hooks/useTeamRankings';
+import { Team } from '@/types';
+import { teamLog } from '@/utils/logger';
 
 interface TeamSelectionListProps {
   teams?: Team[] | undefined;
@@ -24,16 +24,19 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
   onChange,
   isLoading = false,
   maxTeams,
-  divisionName
+  divisionName,
 }) => {
   const { rankings, isLoading: rankingsLoading } = useTeamRankings();
-  
-  teamLog("TeamSelectionList: Fresh rankings data:", rankings.slice(0, 3).map(r => ({
-    team: r.teamName,
-    powerScore: r.powerScore,
-    divisionName: r.divisionName
-  })));
-  
+
+  teamLog(
+    'TeamSelectionList: Fresh rankings data:',
+    rankings.slice(0, 3).map((r) => ({
+      team: r.teamName,
+      powerScore: r.powerScore,
+      divisionName: r.divisionName,
+    }))
+  );
+
   const rankedTeams = rankings.map((ranking, index) => ({
     id: ranking.teamId,
     name: ranking.teamName,
@@ -54,33 +57,36 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
     power_score: ranking.powerScore,
     win_percentage: ranking.winPercentage,
     game_win_percentage: ranking.gameWinPercentage,
-    close_match_losses: ranking.closeMatchLosses || 0
+    close_match_losses: ranking.closeMatchLosses || 0,
   }));
-  
-  const filteredTeams = divisionName 
-    ? rankedTeams.filter(team => team.divisionName === divisionName)
+
+  const filteredTeams = divisionName
+    ? rankedTeams.filter((team) => team.divisionName === divisionName)
     : rankedTeams;
-  
-  teamLog("TeamSelectionList: Filtered teams for division:", filteredTeams.map(t => ({
-    name: t.name,
-    divisionName: t.divisionName,
-    powerScore: t.powerScore
-  })));
-  
+
+  teamLog(
+    'TeamSelectionList: Filtered teams for division:',
+    filteredTeams.map((t) => ({
+      name: t.name,
+      divisionName: t.divisionName,
+      powerScore: t.powerScore,
+    }))
+  );
+
   const selectedIds = selectedTeamIds || selectedTeams || [];
-  
+
   const isTeamSelected = (teamId: string) => selectedIds.includes(teamId);
-  
+
   const handleToggle = (teamId: string) => {
     if (onChange) {
       const newSelection = isTeamSelected(teamId)
-        ? selectedIds.filter(id => id !== teamId)
+        ? selectedIds.filter((id) => id !== teamId)
         : [...selectedIds, teamId];
-      
+
       if (maxTeams && !isTeamSelected(teamId) && selectedIds.length >= maxTeams) {
         return;
       }
-      
+
       onChange(newSelection);
     } else if (onTeamToggle) {
       onTeamToggle(teamId);
@@ -93,18 +99,20 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
     <>
       <div className="border rounded-md p-2 h-[200px] overflow-y-auto">
         {isLoadingData ? (
-          <p className="text-center py-4 text-muted-foreground">Loading teams and calculating rankings...</p>
+          <p className="text-center py-4 text-muted-foreground">
+            Loading teams and calculating rankings...
+          </p>
         ) : filteredTeams.length > 0 ? (
           <div className="space-y-2">
             {filteredTeams.map((team) => {
               if (!team || !team.id) return null;
-              
+
               return (
-                <div 
-                  key={team.id} 
+                <div
+                  key={team.id}
                   className={`flex items-center p-2 rounded cursor-pointer ${
-                    isTeamSelected(team.id) 
-                      ? 'bg-cornhole-green/20 border border-cornhole-green' 
+                    isTeamSelected(team.id)
+                      ? 'bg-cornhole-green/20 border border-cornhole-green'
                       : 'hover:bg-muted'
                   }`}
                   onClick={() => handleToggle(team.id)}
@@ -113,9 +121,9 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
                     {team.seed}
                   </div>
                   <div className="mr-2">
-                    <TeamLogo 
-                      imageUrl={team.logoUrl || team.imageUrl} 
-                      teamName={team.name || 'Unnamed Team'} 
+                    <TeamLogo
+                      imageUrl={team.logoUrl || team.imageUrl}
+                      teamName={team.name || 'Unnamed Team'}
                       size="sm"
                     />
                   </div>

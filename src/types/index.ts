@@ -1,4 +1,3 @@
-
 // Team related types
 export interface Team {
   id: string;
@@ -45,7 +44,7 @@ export interface Match {
   team1_game_wins?: number;
   team2_game_wins?: number;
   created_at?: string;
-  status?: "postponed" | "canceled" | null;
+  status?: 'postponed' | 'canceled' | null;
   timeSlot?: string | null;
   team1Details?: {
     team_id: string;
@@ -105,13 +104,13 @@ export * from './bracketRecord';
 
 // Export specific types from bracket.ts (excluding BracketFormat to avoid conflict)
 export type {
-  TeamBase,
-  BracketMeta,
-  PlayoffMatchSimple,
   BracketCreationRequest,
+  BracketMeta,
   BracketOperationResult,
   MatchStatus,
   MatchType,
+  PlayoffMatchSimple,
+  TeamBase,
 } from './bracket';
 
 // Division type - updated to include display_division
@@ -142,29 +141,29 @@ export interface TeamTimeslot {
   };
 }
 
-export * from './chart';
-export * from './match';
 export * from './admin';
-export * from './career';
-export * from './season';
-export * from './schedule';
-export * from './playoff';
-export type {
-  OpponentSlot,
-  BracketMatch,
-  BracketStage,
-  BracketRound,
-  BracketGroup,
-  BracketParticipant,
-  DatabaseMatch,
-} from './bracket';
 export type {
   BadgeMetadata,
   ChampionshipBadgeMetadata,
   KingSlayerBadgeMetadata,
-  StreakBadgeMetadata,
   PerformanceBadgeMetadata,
+  StreakBadgeMetadata,
 } from './badges';
+export type {
+  BracketGroup,
+  BracketMatch,
+  BracketParticipant,
+  BracketRound,
+  BracketStage,
+  DatabaseMatch,
+  OpponentSlot,
+} from './bracket';
+export * from './career';
+export * from './chart';
+export * from './match';
+export * from './playoff';
+export * from './schedule';
+export * from './season';
 
 // Auto-schedule types
 export * from './autoSchedule';
@@ -177,16 +176,16 @@ export * from './heroCard';
 
 // Extended timeslot types (TeamTimeslot is defined inline above)
 export type {
-  TimeslotGroup,
-  BackToBackTimeslotGroup,
-  TimeslotOperationResult,
-  TimeslotFilterOptions,
   BackToBackAssignmentOptions,
+  BackToBackTimeslotGroup,
+  TimeslotFilterOptions,
+  TimeslotGroup,
+  TimeslotOperationResult,
 } from './timeslots';
 
 // Power score types
-export * from './powerScoreTrends';
 export * from './powerScoreSnapshot';
+export * from './powerScoreTrends';
 
 // Team advanced stats types
 export * from './teamAdvancedStats';

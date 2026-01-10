@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from "react";
+import { motion } from 'framer-motion';
+import { Clock, Users, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { X, Users, Clock } from "lucide-react";
-import { Team } from "@/types";
-import { MatchPair } from "./MatchPairsList";
-import { motion } from "framer-motion";
+} from '@/components/ui/select';
+import { Team } from '@/types';
+
+import { MatchPair } from './MatchPairsList';
 
 interface MatchRowProps {
   pair: MatchPair;
@@ -21,24 +23,22 @@ interface MatchRowProps {
 
 const MatchRow: React.FC<MatchRowProps> = ({ pair, teams, onUpdate, onRemove }) => {
   // Only filter out the current team1Id when populating team2 dropdown
-  const availableTeamsForTeam2 = teams.filter(team => 
-    team.id !== pair.team1Id
-  );
-  
+  const availableTeamsForTeam2 = teams.filter((team) => team.id !== pair.team1Id);
+
   // Format time properly for display
   const formatTimeForDisplay = (time: string | null) => {
-    if (!time) return "";
-    
+    if (!time) return '';
+
     // If time is already in 12-hour format (e.g., "6:30 PM"), return as is
-    if (time.includes("AM") || time.includes("PM")) {
+    if (time.includes('AM') || time.includes('PM')) {
       return time;
     }
-    
+
     // If time is in 24-hour format (e.g., "18:30"), convert to 12-hour
     try {
-      const [hours, minutes] = time.split(":");
+      const [hours, minutes] = time.split(':');
       const hour = parseInt(hours, 10);
-      const suffix = hour >= 12 ? "PM" : "AM";
+      const suffix = hour >= 12 ? 'PM' : 'AM';
       const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
       return `${hour12}:${minutes} ${suffix}`;
     } catch (e) {
@@ -46,21 +46,21 @@ const MatchRow: React.FC<MatchRowProps> = ({ pair, teams, onUpdate, onRemove }) 
     }
   };
 
-  const [team1Name, setTeam1Name] = useState<string>("Select Team 1");
-  const [team2Name, setTeam2Name] = useState<string>("Select Team 2");
-  const [timeslotFormatted, setTimeslotFormatted] = useState<string>("");
+  const [team1Name, setTeam1Name] = useState<string>('Select Team 1');
+  const [team2Name, setTeam2Name] = useState<string>('Select Team 2');
+  const [timeslotFormatted, setTimeslotFormatted] = useState<string>('');
 
   useEffect(() => {
     if (pair.team1Id) {
-      const team = teams.find(t => t.id === pair.team1Id);
+      const team = teams.find((t) => t.id === pair.team1Id);
       if (team) setTeam1Name(team.name);
     }
-    
+
     if (pair.team2Id) {
-      const team = teams.find(t => t.id === pair.team2Id);
+      const team = teams.find((t) => t.id === pair.team2Id);
       if (team) setTeam2Name(team.name);
     }
-    
+
     if (pair.timeslot) {
       setTimeslotFormatted(formatTimeForDisplay(pair.timeslot));
     }
@@ -69,7 +69,7 @@ const MatchRow: React.FC<MatchRowProps> = ({ pair, teams, onUpdate, onRemove }) 
   const showPreview = pair.team1Id && pair.team2Id && pair.timeslot;
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
@@ -83,7 +83,7 @@ const MatchRow: React.FC<MatchRowProps> = ({ pair, teams, onUpdate, onRemove }) 
             <label className="text-sm font-medium">Team 1</label>
           </div>
           <Select
-            value={pair.team1Id || ""}
+            value={pair.team1Id || ''}
             onValueChange={(value) => onUpdate({ team1Id: value })}
           >
             <SelectTrigger className="w-full min-h-[44px]">
@@ -110,7 +110,7 @@ const MatchRow: React.FC<MatchRowProps> = ({ pair, teams, onUpdate, onRemove }) 
             <label className="text-sm font-medium">Team 2</label>
           </div>
           <Select
-            value={pair.team2Id || ""}
+            value={pair.team2Id || ''}
             onValueChange={(value) => onUpdate({ team2Id: value })}
           >
             <SelectTrigger className="w-full min-h-[44px]">
@@ -135,14 +135,26 @@ const MatchRow: React.FC<MatchRowProps> = ({ pair, teams, onUpdate, onRemove }) 
             <label className="text-sm font-medium">Match Time</label>
           </div>
           <Select
-            value={pair.timeslot || ""}
+            value={pair.timeslot || ''}
             onValueChange={(value) => onUpdate({ timeslot: value })}
           >
             <SelectTrigger className="flex-1 min-h-[44px]">
               <SelectValue placeholder="Select Time" />
             </SelectTrigger>
             <SelectContent>
-              {["5:00 PM", "5:30 PM", "6:00 PM", "6:30 PM", "7:00 PM", "7:30 PM", "8:00 PM", "8:30 PM", "9:00 PM", "9:30 PM", "10:00 PM"].map((slot) => (
+              {[
+                '5:00 PM',
+                '5:30 PM',
+                '6:00 PM',
+                '6:30 PM',
+                '7:00 PM',
+                '7:30 PM',
+                '8:00 PM',
+                '8:30 PM',
+                '9:00 PM',
+                '9:30 PM',
+                '10:00 PM',
+              ].map((slot) => (
                 <SelectItem key={slot} value={slot}>
                   {slot}
                 </SelectItem>
@@ -161,12 +173,13 @@ const MatchRow: React.FC<MatchRowProps> = ({ pair, teams, onUpdate, onRemove }) 
           <X className="h-4 w-4" />
         </Button>
       </div>
-      
+
       {showPreview && (
         <div className="mt-2 text-sm px-3 py-2 bg-muted/50 rounded-md flex items-center gap-2">
           <span className="text-base">📋</span>
           <p className="text-muted-foreground">
-            <span className="font-medium">Match Preview:</span> {team1Name} vs {team2Name} at {timeslotFormatted}
+            <span className="font-medium">Match Preview:</span> {team1Name} vs {team2Name} at{' '}
+            {timeslotFormatted}
           </p>
         </div>
       )}

@@ -1,18 +1,19 @@
+import { useQuery } from '@tanstack/react-query';
 
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Team } from "@/types";
-import { teamLog } from "@/utils/logger";
+import { supabase } from '@/integrations/supabase/client';
+import { Team } from '@/types';
+import { teamLog } from '@/utils/logger';
 
 export const useTeamDetails = (teamId: string | undefined) => {
   const teamQuery = useQuery({
-    queryKey: ["team-details", teamId],
+    queryKey: ['team-details', teamId],
     queryFn: async () => {
-      if (!teamId) throw new Error("Team ID is required");
-      
+      if (!teamId) throw new Error('Team ID is required');
+
       const { data, error } = await supabase
-        .from("v_team_details")
-        .select(`
+        .from('v_team_details')
+        .select(
+          `
           team_id,
           name,
           logo_url,
@@ -30,23 +31,24 @@ export const useTeamDetails = (teamId: string | undefined) => {
           players,
           created_at,
           close_match_losses
-        `)
-        .eq("team_id", teamId)
+        `
+        )
+        .eq('team_id', teamId)
         .maybeSingle();
-        
+
       if (error) throw error;
-      if (!data) throw new Error("Team not found");
-      
+      if (!data) throw new Error('Team not found');
+
       // Enhanced logging to verify values from v_team_details with the new weighted power score
-      teamLog("Team details from v_team_details with weighted Power Score:", {
+      teamLog('Team details from v_team_details with weighted Power Score:', {
         id: data.team_id,
         name: data.name,
         sos: data.sos,
         power_score: data.power_score,
         win_percentage: data.win_percentage,
-        game_win_percentage: data.game_win_percentage
+        game_win_percentage: data.game_win_percentage,
       });
-      
+
       return {
         id: data.team_id,
         name: data.name,
@@ -65,14 +67,14 @@ export const useTeamDetails = (teamId: string | undefined) => {
         game_win_percentage: data.game_win_percentage || 0,
         players: Array.isArray(data.players) ? data.players : [],
         created_at: data.created_at || new Date().toISOString(),
-        close_match_losses: data.close_match_losses
+        close_match_losses: data.close_match_losses,
       } as Team;
     },
-    enabled: !!teamId
+    enabled: !!teamId,
   });
 
   return {
     team: teamQuery.data,
-    isLoading: teamQuery.isLoading
+    isLoading: teamQuery.isLoading,
   };
 };

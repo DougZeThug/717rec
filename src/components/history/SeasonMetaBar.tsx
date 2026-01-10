@@ -1,8 +1,8 @@
+import { Award, Calendar, Target, TrendingUp } from 'lucide-react';
+import React from 'react';
 
-import React from "react";
-import { Calendar, Award, TrendingUp, Target } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useSeasonalThemeBase } from "@/hooks/useSeasonalTheme";
+import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
+import { cn } from '@/lib/utils';
 
 interface Season {
   id: string;
@@ -35,20 +35,20 @@ interface SeasonMetaBarProps {
 
 const SeasonMetaBar: React.FC<SeasonMetaBarProps> = ({ season, seasonData }) => {
   const { isWinterTheme } = useSeasonalThemeBase();
-  
+
   // Calculate season awards
-  const mostWins = seasonData.reduce((max, team) =>
-    team.match_wins > max.match_wins ? team : max, 
+  const mostWins = seasonData.reduce(
+    (max, team) => (team.match_wins > max.match_wins ? team : max),
     seasonData[0] || { match_wins: 0, team_name: 'N/A' }
   );
 
-  const highestPowerScore = seasonData.reduce((max, team) => 
-    (team.power_score || 0) > (max.power_score || 0) ? team : max,
+  const highestPowerScore = seasonData.reduce(
+    (max, team) => ((team.power_score || 0) > (max.power_score || 0) ? team : max),
     seasonData[0] || { power_score: 0, team_name: 'N/A' }
   );
 
-  const mostGameWins = seasonData.reduce((max, team) => 
-    team.game_wins > max.game_wins ? team : max,
+  const mostGameWins = seasonData.reduce(
+    (max, team) => (team.game_wins > max.game_wins ? team : max),
     seasonData[0] || { game_wins: 0, team_name: 'N/A' }
   );
 
@@ -57,66 +57,88 @@ const SeasonMetaBar: React.FC<SeasonMetaBarProps> = ({ season, seasonData }) => 
   }
 
   return (
-    <div className={cn(
-      "rounded-xl p-4 border",
-      isWinterTheme 
-        ? "bg-white/5 border-white/10" 
-        : "bg-gray-50 dark:bg-slate-700/50 border-gray-200 dark:border-slate-600"
-    )}>
-      <h5 className={cn(
-        "text-sm font-semibold mb-3 flex items-center gap-2",
-        isWinterTheme ? "text-white/80" : "text-gray-700 dark:text-gray-300"
-      )}>
+    <div
+      className={cn(
+        'rounded-xl p-4 border',
+        isWinterTheme
+          ? 'bg-white/5 border-white/10'
+          : 'bg-gray-50 dark:bg-slate-700/50 border-gray-200 dark:border-slate-600'
+      )}
+    >
+      <h5
+        className={cn(
+          'text-sm font-semibold mb-3 flex items-center gap-2',
+          isWinterTheme ? 'text-white/80' : 'text-gray-700 dark:text-gray-300'
+        )}
+      >
         <Award className="w-4 h-4" />
         Season Awards
       </h5>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
         <div className="flex items-center gap-2">
           <Target className="w-4 h-4 text-blue-500" />
           <div>
-            <p className={isWinterTheme ? "text-white/60" : "text-gray-600 dark:text-gray-400"}>Most Wins</p>
-            <p className={cn(
-              "font-medium",
-              isWinterTheme ? "text-white" : "text-slate-900 dark:text-white"
-            )}>
+            <p className={isWinterTheme ? 'text-white/60' : 'text-gray-600 dark:text-gray-400'}>
+              Most Wins
+            </p>
+            <p
+              className={cn(
+                'font-medium',
+                isWinterTheme ? 'text-white' : 'text-slate-900 dark:text-white'
+              )}
+            >
               {mostWins.team_name} ({mostWins.match_wins})
             </p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-green-500" />
           <div>
-            <p className={isWinterTheme ? "text-white/60" : "text-gray-600 dark:text-gray-400"}>Highest Power Score</p>
-            <p className={cn(
-              "font-medium",
-              isWinterTheme ? "text-white" : "text-slate-900 dark:text-white"
-            )}>
-              {highestPowerScore.team_name} ({highestPowerScore.power_score ? (highestPowerScore.power_score * 100).toFixed(1) : 'N/A'})
+            <p className={isWinterTheme ? 'text-white/60' : 'text-gray-600 dark:text-gray-400'}>
+              Highest Power Score
+            </p>
+            <p
+              className={cn(
+                'font-medium',
+                isWinterTheme ? 'text-white' : 'text-slate-900 dark:text-white'
+              )}
+            >
+              {highestPowerScore.team_name} (
+              {highestPowerScore.power_score
+                ? (highestPowerScore.power_score * 100).toFixed(1)
+                : 'N/A'}
+              )
             </p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4 text-purple-500" />
           <div>
-            <p className={isWinterTheme ? "text-white/60" : "text-gray-600 dark:text-gray-400"}>Most Game Wins</p>
-            <p className={cn(
-              "font-medium",
-              isWinterTheme ? "text-white" : "text-slate-900 dark:text-white"
-            )}>
+            <p className={isWinterTheme ? 'text-white/60' : 'text-gray-600 dark:text-gray-400'}>
+              Most Game Wins
+            </p>
+            <p
+              className={cn(
+                'font-medium',
+                isWinterTheme ? 'text-white' : 'text-slate-900 dark:text-white'
+              )}
+            >
               {mostGameWins.team_name} ({mostGameWins.game_wins})
             </p>
           </div>
         </div>
       </div>
-      
+
       {season.end_date && (
-        <div className={cn(
-          "mt-3 pt-3 border-t",
-          isWinterTheme ? "border-white/10" : "border-gray-200 dark:border-slate-600"
-        )}>
+        <div
+          className={cn(
+            'mt-3 pt-3 border-t',
+            isWinterTheme ? 'border-white/10' : 'border-gray-200 dark:border-slate-600'
+          )}
+        >
           <p className="text-xs text-gray-500 dark:text-gray-400">
             Season completed on {new Date(season.end_date).toLocaleDateString()}
           </p>

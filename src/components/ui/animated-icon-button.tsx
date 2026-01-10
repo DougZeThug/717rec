@@ -1,8 +1,9 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { Button, ButtonProps } from "@/components/ui/button";
-import { LucideIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { motion } from 'framer-motion';
+import { LucideIcon } from 'lucide-react';
+import React, { useState } from 'react';
+
+import { Button, ButtonProps } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface AnimatedIconButtonProps extends Omit<ButtonProps, 'children'> {
   icon: LucideIcon;
@@ -30,27 +31,24 @@ export const AnimatedIconButton = React.forwardRef<HTMLButtonElement, AnimatedIc
     };
 
     return (
-      <motion.div
-        whileTap={{ scale: 0.9 }}
-        transition={{ duration: 0.1 }}
-      >
+      <motion.div whileTap={{ scale: 0.9 }} transition={{ duration: 0.1 }}>
         <Button
           ref={ref}
           onClick={handleClick}
           className={cn(
-            "transition-all duration-150",
-            showSuccess && "ring-2 ring-green-500/50 ring-offset-1",
+            'transition-all duration-150',
+            showSuccess && 'ring-2 ring-green-500/50 ring-offset-1',
             className
           )}
           {...props}
         >
-          <Icon className={cn("h-4 w-4", iconClassName)} />
+          <Icon className={cn('h-4 w-4', iconClassName)} />
         </Button>
       </motion.div>
     );
   }
 );
 
-AnimatedIconButton.displayName = "AnimatedIconButton";
+AnimatedIconButton.displayName = 'AnimatedIconButton';
 
 export default AnimatedIconButton;

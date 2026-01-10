@@ -1,8 +1,8 @@
-
 import { useQuery } from '@tanstack/react-query';
+
 import { supabase } from '@/integrations/supabase/client';
-import { TeamBadgeEvent, BadgeType } from '@/types/badges';
 import { Json } from '@/integrations/supabase/types';
+import { BadgeType, TeamBadgeEvent } from '@/types/badges';
 import { errorLog } from '@/utils/logger';
 
 /**
@@ -31,7 +31,7 @@ function transformBadge(badge: RawBadgeData): TeamBadgeEvent {
     awarded_at: badge.awarded_at,
     metadata: badge.metadata || {},
     is_active: badge.is_active,
-    created_at: badge.created_at
+    created_at: badge.created_at,
   };
 }
 
@@ -53,7 +53,7 @@ export const useTeamBadges = (teamId: string) => {
 
       return (data || []).map((badge) => transformBadge(badge as RawBadgeData));
     },
-    enabled: !!teamId
+    enabled: !!teamId,
   });
 };
 
@@ -73,7 +73,7 @@ export const useAllTeamBadges = () => {
       }
 
       return (data || []).map((badge) => transformBadge(badge as RawBadgeData));
-    }
+    },
   });
 };
 
@@ -95,6 +95,6 @@ export const useSeasonBadges = (seasonId: string) => {
 
       return (data || []).map((badge) => transformBadge(badge as RawBadgeData));
     },
-    enabled: !!seasonId
+    enabled: !!seasonId,
   });
 };

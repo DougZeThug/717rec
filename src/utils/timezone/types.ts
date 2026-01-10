@@ -1,4 +1,3 @@
-
 /**
  * Shared type definitions for timezone utilities
  */

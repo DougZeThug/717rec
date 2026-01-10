@@ -1,15 +1,16 @@
+import React from 'react';
 
-import React from "react";
-import MatchCardHeader from "./MatchCardHeader";
-import MatchTeamsSection from "./MatchTeamsSection";
-import MatchStatusIndicator from "./MatchStatusIndicator";
-import MatchGamesDots from "./MatchGamesDots";
-import ChampionIndicator from "./ChampionIndicator";
-import { useMatchCardStyles } from "./hooks/useMatchCardStyles";
-import { useMatchCardState } from "./hooks/useMatchCardState";
-import { useMatchCardInteractions } from "./hooks/useMatchCardInteractions";
-import { useMatchCardAnimation } from "./hooks/useMatchCardAnimation";
-import type { PlayoffMatch, Team } from "@/types";
+import type { PlayoffMatch, Team } from '@/types';
+
+import ChampionIndicator from './ChampionIndicator';
+import { useMatchCardAnimation } from './hooks/useMatchCardAnimation';
+import { useMatchCardInteractions } from './hooks/useMatchCardInteractions';
+import { useMatchCardState } from './hooks/useMatchCardState';
+import { useMatchCardStyles } from './hooks/useMatchCardStyles';
+import MatchCardHeader from './MatchCardHeader';
+import MatchGamesDots from './MatchGamesDots';
+import MatchStatusIndicator from './MatchStatusIndicator';
+import MatchTeamsSection from './MatchTeamsSection';
 
 interface PlayoffMatchCardProps {
   match: PlayoffMatch;
@@ -24,45 +25,57 @@ const PlayoffMatchCard: React.FC<PlayoffMatchCardProps> = ({
   teams,
   onEditMatch,
   hasNextMatch,
-  isUpdated = false
+  isUpdated = false,
 }) => {
-  const { cardClasses } = useMatchCardStyles(match.matchType, onEditMatch, isUpdated, 
-    match.matchType === 'play-in' || match.matchType === 'play-in-2', 
+  const { cardClasses } = useMatchCardStyles(
+    match.matchType,
+    onEditMatch,
+    isUpdated,
+    match.matchType === 'play-in' || match.matchType === 'play-in-2',
     match.matchType === 'finals' && match.round > 3,
-    match.round);
-    
-  const { 
-    team1, team2, winner, team1Seed, team2Seed, isPending, 
-    isComplete, isPlayIn, isResetMatch, seriesScoreText 
+    match.round
+  );
+
+  const {
+    team1,
+    team2,
+    winner,
+    team1Seed,
+    team2Seed,
+    isPending,
+    isComplete,
+    isPlayIn,
+    isResetMatch,
+    seriesScoreText,
   } = useMatchCardState({ match, teams });
-  
+
   const { handleCardClick, handleKeyDown, isInteractive } = useMatchCardInteractions({
     matchId: match.id,
     hasBothTeams: !!match.team1Id && !!match.team2Id,
-    onEditMatch
+    onEditMatch,
   });
-  
+
   const { animationStyle } = useMatchCardAnimation(isUpdated);
-  
+
   // Determine additional properties needed for components
   const isChampionshipMatch = match.matchType === 'finals' && match.round === 1;
   const hasWinner = !!match.winnerId;
 
   return (
     <div
-      role={isInteractive ? "button" : undefined}
+      role={isInteractive ? 'button' : undefined}
       tabIndex={isInteractive ? 0 : undefined}
       onClick={handleCardClick}
       onKeyDown={handleKeyDown}
       className={cardClasses}
       style={animationStyle}
     >
-      <MatchCardHeader 
-        bestOf={match.bestOf} 
-        seriesScore={seriesScoreText} 
-        position={match.position} 
+      <MatchCardHeader
+        bestOf={match.bestOf}
+        seriesScore={seriesScoreText}
+        position={match.position}
       />
-      
+
       <MatchTeamsSection
         team1={team1}
         team2={team2}
@@ -75,7 +88,7 @@ const PlayoffMatchCard: React.FC<PlayoffMatchCardProps> = ({
         winnerId={match.winnerId}
         matchType={match.matchType}
       />
-      
+
       <MatchStatusIndicator
         isPending={isPending}
         isComplete={isComplete}
@@ -83,19 +96,19 @@ const PlayoffMatchCard: React.FC<PlayoffMatchCardProps> = ({
         matchType={match.matchType}
         winnerId={match.winnerId}
       />
-      
-      {match.bestOf > 1 && match.team1GameWins !== undefined && match.team2GameWins !== undefined && (
-        <MatchGamesDots 
-          games={(match.games || [])}
-          team1Id={match.team1Id}
-          team2Id={match.team2Id}
-          winnerId={match.winnerId}
-        />
-      )}
-      
-      {isChampionshipMatch && hasWinner && (
-        <ChampionIndicator winner={winner} />
-      )}
+
+      {match.bestOf > 1 &&
+        match.team1GameWins !== undefined &&
+        match.team2GameWins !== undefined && (
+          <MatchGamesDots
+            games={match.games || []}
+            team1Id={match.team1Id}
+            team2Id={match.team2Id}
+            winnerId={match.winnerId}
+          />
+        )}
+
+      {isChampionshipMatch && hasWinner && <ChampionIndicator winner={winner} />}
     </div>
   );
 };

@@ -1,7 +1,8 @@
+import { useQueryClient } from '@tanstack/react-query';
 
-import { useQueryClient } from "@tanstack/react-query";
-import { invalidateMatchRelatedQueries } from "../matches/utils/queryCacheUtils";
-import { errorLog } from "@/utils/logger";
+import { errorLog } from '@/utils/logger';
+
+import { invalidateMatchRelatedQueries } from '../matches/utils/queryCacheUtils';
 
 export const useTeamWinLossUpdate = () => {
   const queryClient = useQueryClient();
@@ -13,7 +14,7 @@ export const useTeamWinLossUpdate = () => {
       await invalidateMatchRelatedQueries(queryClient);
       return true;
     } catch (error) {
-      errorLog("[useTeamWinLossUpdate] Error:", error);
+      errorLog('[useTeamWinLossUpdate] Error:', error);
       return false;
     }
   };

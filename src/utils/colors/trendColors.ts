@@ -1,4 +1,3 @@
-
 /**
  * Get color class for trend delta values
  * Positive deltas = green shades, negative = red/orange shades

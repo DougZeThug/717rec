@@ -1,9 +1,9 @@
+import { useEffect, useMemo, useState } from 'react';
 
-import { useState, useEffect, useMemo } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "@/hooks/use-toast";
-import { errorLog } from "@/utils/logger";
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { errorLog } from '@/utils/logger';
 
 export interface MatchReaction {
   id: string;
@@ -24,15 +24,15 @@ export const useMatchReactions = (matchId: string) => {
   const [reactions, setReactions] = useState<MatchReaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
-  
+
   // Group and count reactions
   const reactionCounts = useMemo(() => {
     const counts: ReactionCount[] = [];
-    
+
     // Group by emoji
     reactions.forEach((reaction) => {
-      const existing = counts.find(item => item.emoji === reaction.emoji);
-      
+      const existing = counts.find((item) => item.emoji === reaction.emoji);
+
       if (existing) {
         existing.count += 1;
         existing.users.push(reaction.user_id);
@@ -44,29 +44,29 @@ export const useMatchReactions = (matchId: string) => {
           emoji: reaction.emoji,
           count: 1,
           users: [reaction.user_id],
-          hasReacted: reaction.user_id === user?.id
+          hasReacted: reaction.user_id === user?.id,
         });
       }
     });
-    
+
     return counts.sort((a, b) => b.count - a.count);
   }, [reactions, user?.id]);
-  
+
   // Fetch initial reactions
   useEffect(() => {
     const fetchReactions = async () => {
       try {
         setIsLoading(true);
-        
+
         const { data, error } = await supabase
           .from('match_reactions')
           .select('*')
           .eq('match_id', matchId);
-        
+
         if (error) {
           throw error;
         }
-        
+
         setReactions(data || []);
       } catch (err) {
         errorLog('Error fetching match reactions:', err);
@@ -74,67 +74,68 @@ export const useMatchReactions = (matchId: string) => {
         setIsLoading(false);
       }
     };
-    
+
     if (matchId) {
       fetchReactions();
     }
   }, [matchId]);
-  
+
   // Set up realtime subscription
   useEffect(() => {
     if (!matchId) return;
 
     const channel = supabase
       .channel(`match-reactions-${matchId}`)
-      .on('postgres_changes', 
+      .on(
+        'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'match_reactions',
-          filter: `match_id=eq.${matchId}`
-        }, 
+          filter: `match_id=eq.${matchId}`,
+        },
         (payload) => {
           const newReaction = payload.new as MatchReaction;
-          setReactions(curr => [...curr, newReaction]);
+          setReactions((curr) => [...curr, newReaction]);
         }
       )
-      .on('postgres_changes',
+      .on(
+        'postgres_changes',
         {
           event: 'DELETE',
           schema: 'public',
           table: 'match_reactions',
-          filter: `match_id=eq.${matchId}`
+          filter: `match_id=eq.${matchId}`,
         },
         (payload) => {
           const deletedReaction = payload.old as MatchReaction;
-          setReactions(curr => curr.filter(r => r.id !== deletedReaction.id));
+          setReactions((curr) => curr.filter((r) => r.id !== deletedReaction.id));
         }
       )
       .subscribe();
-      
+
     return () => {
       supabase.removeChannel(channel);
     };
   }, [matchId]);
-  
+
   // Toggle reaction (add or remove)
   const toggleReaction = async (emoji: string) => {
     if (!user) {
       toast({
-        title: "Not signed in",
-        description: "You must be signed in to react to matches",
-        variant: "destructive"
+        title: 'Not signed in',
+        description: 'You must be signed in to react to matches',
+        variant: 'destructive',
       });
       return;
     }
-    
+
     if (!emoji) return;
-    
+
     try {
       // Check if the user already added this emoji reaction
-      const existingReaction = reactions.find(r => 
-        r.user_id === user.id && r.emoji === emoji);
-      
+      const existingReaction = reactions.find((r) => r.user_id === user.id && r.emoji === emoji);
+
       if (existingReaction) {
         // If the reaction exists, remove it (toggle behavior)
         const { error } = await supabase
@@ -142,20 +143,18 @@ export const useMatchReactions = (matchId: string) => {
           .delete()
           .eq('id', existingReaction.id)
           .eq('user_id', user.id); // RLS ensures this is the user's reaction
-        
+
         if (error) {
           throw error;
         }
       } else {
         // Add the new reaction
-        const { error } = await supabase
-          .from('match_reactions')
-          .insert({
-            match_id: matchId,
-            user_id: user.id,
-            emoji
-          });
-        
+        const { error } = await supabase.from('match_reactions').insert({
+          match_id: matchId,
+          user_id: user.id,
+          emoji,
+        });
+
         if (error) {
           throw error;
         }
@@ -163,17 +162,17 @@ export const useMatchReactions = (matchId: string) => {
     } catch (err) {
       errorLog('Error toggling reaction:', err);
       toast({
-        title: "Error",
-        description: "Failed to update reaction",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to update reaction',
+        variant: 'destructive',
       });
     }
   };
-  
+
   return {
     reactions,
     reactionCounts,
     isLoading,
-    toggleReaction
+    toggleReaction,
   };
 };

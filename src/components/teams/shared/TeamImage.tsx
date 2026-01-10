@@ -1,6 +1,6 @@
+import React from 'react';
 
-import React from "react";
-import { errorLog } from "@/utils/logger";
+import { errorLog } from '@/utils/logger';
 
 interface TeamImageProps {
   imageUrl: string | null | undefined;
@@ -10,22 +10,23 @@ interface TeamImageProps {
   onError?: (e: React.SyntheticEvent<HTMLImageElement, Event>) => void;
 }
 
-export const TeamImage: React.FC<TeamImageProps> = ({ 
-  imageUrl, 
-  teamName, 
-  className = "",
+export const TeamImage: React.FC<TeamImageProps> = ({
+  imageUrl,
+  teamName,
+  className = '',
   size = 'md',
-  onError 
+  onError,
 }) => {
   const sizeClasses = {
     sm: 'max-h-20',
     md: 'max-h-28',
-    lg: 'max-h-36'
+    lg: 'max-h-36',
   };
 
   const defaultOnError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     errorLog(`Image load error for ${teamName}:`, imageUrl);
-    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
+    (e.target as HTMLImageElement).src =
+      'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
   };
 
   return (
@@ -35,8 +36,8 @@ export const TeamImage: React.FC<TeamImageProps> = ({
           No Team Image
         </div>
       ) : (
-        <img 
-          src={imageUrl} 
+        <img
+          src={imageUrl}
           alt={teamName}
           width={size === 'sm' ? 80 : size === 'md' ? 112 : 144}
           height={size === 'sm' ? 80 : size === 'md' ? 112 : 144}

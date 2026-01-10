@@ -1,9 +1,10 @@
+import React from 'react';
 
-import React from "react";
-import { Team } from "@/types";
-import { TeamCardGrid } from "./grid/TeamCardGrid";
-import { TeamCardList } from "./list/TeamCardList";
-import { warnLog } from "@/utils/logger";
+import { Team } from '@/types';
+import { warnLog } from '@/utils/logger';
+
+import { TeamCardGrid } from './grid/TeamCardGrid';
+import { TeamCardList } from './list/TeamCardList';
 
 interface TeamCardProps {
   team: Team;

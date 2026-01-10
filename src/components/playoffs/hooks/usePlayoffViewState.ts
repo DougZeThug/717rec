@@ -1,18 +1,19 @@
-
 import { useState } from 'react';
-import { PlayoffPageData } from './usePlayoffPageData';
-import { usePlayoffHandlers } from './usePlayoffHandlers';
+
 import { bracketLog, errorLog } from '@/utils/logger';
 
+import { usePlayoffHandlers } from './usePlayoffHandlers';
+import { PlayoffPageData } from './usePlayoffPageData';
+
 export function usePlayoffViewState(
-  data: PlayoffPageData, 
+  data: PlayoffPageData,
   handlers: ReturnType<typeof usePlayoffHandlers>,
-  defaultTab: string = "brackets"
+  defaultTab: string = 'brackets'
 ) {
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [bracketDialogOpen, setBracketDialogOpen] = useState(false);
   const [teamDialogOpen, setTeamDialogOpen] = useState(false);
-  const [deletingBracket, setDeletingBracket] = useState<{id: string, name: string} | null>(null);
+  const [deletingBracket, setDeletingBracket] = useState<{ id: string; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleCreateBracket = () => {
@@ -29,19 +30,19 @@ export function usePlayoffViewState(
 
   const handleConfirmDeleteBracket = async () => {
     if (!deletingBracket) return;
-    
+
     bracketLog('usePlayoffViewState: Confirming bracket deletion:', deletingBracket);
     setIsDeleting(true);
-    
+
     try {
       await data.deleteBracket(deletingBracket.id, deletingBracket.name);
       bracketLog('usePlayoffViewState: Bracket deleted successfully');
-      
+
       // Clear selection if we deleted the currently selected bracket
       if (data.selectedBracketId === deletingBracket.id) {
         data.setSelectedBracketId(null);
       }
-      
+
       // Refresh the brackets list
       await data.refetchBrackets();
     } catch (error) {
@@ -77,6 +78,6 @@ export function usePlayoffViewState(
     handleCreateBracket,
     handleDeleteBracket,
     handleConfirmDeleteBracket,
-    handleBracketCreated: handleBracketCreatedWithNavigation
+    handleBracketCreated: handleBracketCreatedWithNavigation,
   };
 }

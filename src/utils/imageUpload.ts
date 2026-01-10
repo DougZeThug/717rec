@@ -1,8 +1,8 @@
-
-import { supabase } from "@/integrations/supabase/client";
-import { v4 as uuidv4 } from 'uuid';
 import imageCompression from 'browser-image-compression';
-import { warnLog, errorLog } from "@/utils/logger";
+import { v4 as uuidv4 } from 'uuid';
+
+import { supabase } from '@/integrations/supabase/client';
+import { errorLog, warnLog } from '@/utils/logger';
 
 /**
  * Verifies that a compressed image meets minimum quality requirements
@@ -20,18 +20,18 @@ const isValidCompressedImage = async (file: File): Promise<boolean> => {
       return false;
     }
   }
-  
+
   // Verify MIME type
   if (!file.type.startsWith('image/')) {
     warnLog(`Invalid MIME type: ${file.type}`);
     return false;
   }
-  
+
   // Verify image dimensions
   try {
     const image = new Image();
     const imageUrl = URL.createObjectURL(file);
-    
+
     return new Promise((resolve) => {
       image.onload = () => {
         URL.revokeObjectURL(imageUrl);
@@ -41,13 +41,13 @@ const isValidCompressedImage = async (file: File): Promise<boolean> => {
         }
         resolve(isValid);
       };
-      
+
       image.onerror = () => {
         URL.revokeObjectURL(imageUrl);
         warnLog('Failed to load image for validation');
         resolve(false);
       };
-      
+
       image.src = imageUrl;
     });
   } catch (error) {
@@ -66,7 +66,7 @@ export const uploadTeamImage = async (file: File, teamId?: string) => {
   let fileToUpload = file;
   const maxSizeMB = 0.15; // 150KB max size for quality at larger dimensions
   const maxWidthOrHeight = 300; // Max dimensions 300x300px for crisp display on high-DPI screens
-  
+
   try {
     // Attempt to compress and resize the image, converting to WebP for better compression
     const compressedFile = await imageCompression(file, {
@@ -76,10 +76,10 @@ export const uploadTeamImage = async (file: File, teamId?: string) => {
       fileType: 'image/webp', // Use WebP for better compression
       initialQuality: 0.8, // 80% quality for good balance
     });
-    
+
     // Verify the compressed image meets quality standards
     const isValid = await isValidCompressedImage(compressedFile);
-    
+
     if (isValid) {
       fileToUpload = compressedFile;
     } else {
@@ -100,17 +100,13 @@ export const uploadTeamImage = async (file: File, teamId?: string) => {
   // Generate a unique filename with correct extension based on actual file type
   const fileExt = fileToUpload.type === 'image/webp' ? 'webp' : file.name.split('.').pop();
   const fileName = `${uuidv4()}.${fileExt}`;
-  
+
   // Create path based on team ID if available
-  const filePath = teamId 
-    ? `teams/${teamId}/${fileName}` 
-    : `${fileName}`;
+  const filePath = teamId ? `teams/${teamId}/${fileName}` : `${fileName}`;
 
   try {
     // Upload the file to Supabase storage
-    const { data, error } = await supabase.storage
-      .from('teams')
-      .upload(filePath, fileToUpload);
+    const { data, error } = await supabase.storage.from('teams').upload(filePath, fileToUpload);
 
     if (error) {
       errorLog('Error uploading image:', error);
@@ -118,9 +114,9 @@ export const uploadTeamImage = async (file: File, teamId?: string) => {
     }
 
     // Get the public URL for the uploaded image
-    const { data: { publicUrl } } = supabase.storage
-      .from('teams')
-      .getPublicUrl(filePath);
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from('teams').getPublicUrl(filePath);
 
     return publicUrl;
   } catch (error) {

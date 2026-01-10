@@ -1,15 +1,15 @@
+import { Match, Ranking, Team } from '@/types';
+import { calculateGameStats } from '@/utils/teamDetailsUtils/gameStatsUtils';
 
-import { Team, Match, Ranking } from "@/types";
-import { calculateSOS } from "./calculateSOS";
-import { calculateStreak } from "./calculateStreak";
-import { calculateHeadToHead } from "./calculateHeadToHead";
-import { calculateWinPercentage } from "./calculateWinPercentage";
-import { calculateGameStats } from "@/utils/teamDetailsUtils/gameStatsUtils";
+import { calculateHeadToHead } from './calculateHeadToHead';
+import { calculateSOS } from './calculateSOS';
+import { calculateStreak } from './calculateStreak';
+import { calculateWinPercentage } from './calculateWinPercentage';
 
 /**
  * Create a ranking object for a team
  * Now uses the display_division from v_team_details for consistent grouping
- * 
+ *
  * @param team - Team to create ranking for
  * @param allTeams - All teams in the league
  * @param allMatches - All matches
@@ -17,8 +17,8 @@ import { calculateGameStats } from "@/utils/teamDetailsUtils/gameStatsUtils";
  * @param divisionWeights - Pre-fetched division weights map
  */
 export const createRankingObject = (
-  team: Team, 
-  allTeams: Team[], 
+  team: Team,
+  allTeams: Team[],
   allMatches: Match[] | undefined,
   previousRankings: Record<string, number>,
   divisionWeights: Map<string, number>
@@ -26,27 +26,25 @@ export const createRankingObject = (
   // Parse and ensure we're working with numbers
   const wins = parseInt(String(team.wins)) || 0;
   const losses = parseInt(String(team.losses)) || 0;
-  
+
   // Calculate win percentage using wins and losses
   const winPercentage = calculateWinPercentage(wins, losses);
-  
+
   const sos = calculateSOS(team, allTeams, allMatches, divisionWeights);
   const streak = calculateStreak(team.id, allMatches);
   const headToHead = calculateHeadToHead(team.id, allTeams, allMatches);
   const previousRank = previousRankings[team.id];
-  
+
   // Calculate game-level statistics
-  const { 
-    gamesWon,
-    gamesLost,
-    gameWinPercentage,
-    closeMatchLosses
-  } = calculateGameStats(team.id, allMatches);
-  
+  const { gamesWon, gamesLost, gameWinPercentage, closeMatchLosses } = calculateGameStats(
+    team.id,
+    allMatches
+  );
+
   // Use power_score directly from the database view (v_team_details)
   // which now includes the weighted calculation with division weights
   const powerScore = team.power_score || 0;
-  
+
   return {
     teamId: team.id,
     teamName: team.name || 'Unknown Team',
@@ -66,6 +64,6 @@ export const createRankingObject = (
     gamesLost,
     gameWinPercentage,
     powerScore,
-    closeMatchLosses
+    closeMatchLosses,
   };
 };

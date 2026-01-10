@@ -1,4 +1,3 @@
-
 /**
  * Bracket format constants
  */
@@ -7,7 +6,7 @@ export const BRACKET_FORMATS = {
   DOUBLE: 'Double Elimination',
 } as const;
 
-export type BracketFormat = typeof BRACKET_FORMATS[keyof typeof BRACKET_FORMATS];
+export type BracketFormat = (typeof BRACKET_FORMATS)[keyof typeof BRACKET_FORMATS];
 
 /**
  * Bracket state constants

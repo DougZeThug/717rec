@@ -1,6 +1,6 @@
 /**
  * Consolidated Error Handling Utilities
- * 
+ *
  * This module provides standardized error handling patterns:
  * - Services: Always throw errors (use SupabaseError, etc.)
  * - Hooks: Catch errors, show toast, return error state
@@ -9,32 +9,32 @@
 
 // Re-export existing error utilities
 export {
-  ChallongeError,
-  SupabaseError,
   BracketValidationError,
-  TeamValidationError,
-  MatchSyncError,
+  categorizeError,
+  ChallongeError,
+  convertErrorToString,
+  ensureErrorString,
+  getErrorMessage,
+  getUIErrorMessage,
+  isBracketValidationError,
   isChallongeError,
   isSupabaseError,
-  isBracketValidationError,
-  getErrorMessage,
-  ensureErrorString,
-  convertErrorToString,
-  categorizeError,
-  processError,
-  getUIErrorMessage,
   logError,
+  MatchSyncError,
+  processError,
+  SupabaseError,
+  TeamValidationError,
 } from './errors';
 
 // Re-export retry utilities
 export {
-  withRetry,
-  shouldRetryError,
-  formatUserError,
   categorizeError as categorizeMutationError,
+  formatUserError,
+  shouldRetryError,
+  withRetry,
 } from '@/components/playoffs/form/bracket-teams/utils/mutationErrorHandling';
 
-import { SupabaseError, categorizeError, getErrorMessage } from './errors';
+import { categorizeError, getErrorMessage, SupabaseError } from './errors';
 import { errorLog } from './logger';
 
 /**
@@ -64,13 +64,10 @@ export interface HookErrorResult {
  * Handle errors in hooks with consistent logging and messaging
  * Returns user-friendly error information
  */
-export function handleHookError(
-  error: unknown,
-  context: string
-): HookErrorResult {
+export function handleHookError(error: unknown, context: string): HookErrorResult {
   const { category, message, userMessage } = categorizeError(error);
   errorLog(`${context}:`, error);
-  
+
   return {
     message,
     userMessage,

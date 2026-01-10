@@ -1,11 +1,13 @@
-import React from "react";
-import { MatchWithTeams } from "./types";
-import TeamDisplay from "./components/TeamDisplay";
-import ScoreSection from "./components/ScoreSection";
-import MatchStatusSection from "./components/MatchStatusSection";
-import { Switch } from "@/components/ui/switch";
-import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
-import { scoreLog } from "@/utils/logger";
+import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import React from 'react';
+
+import { Switch } from '@/components/ui/switch';
+import { scoreLog } from '@/utils/logger';
+
+import MatchStatusSection from './components/MatchStatusSection';
+import ScoreSection from './components/ScoreSection';
+import TeamDisplay from './components/TeamDisplay';
+import { MatchWithTeams } from './types';
 
 interface MatchRowProps {
   match: MatchWithTeams;
@@ -28,7 +30,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
   onScoreChange,
   onGameWinsChange,
   onMarkCompleted,
-  onClearError
+  onClearError,
 }) => {
   // Use match state for optimistic updates, fallback to props
   const isSubmitting = match.isSubmitting || propIsSubmitting;
@@ -40,11 +42,13 @@ const MatchRow: React.FC<MatchRowProps> = ({
     scores: `${match.team1Score}-${match.team2Score}`,
     gameWins: `${match.team1_game_wins}-${match.team2_game_wins}`,
     isValid: match.isValid,
-    isEdited: match.isEdited
+    isEdited: match.isEdited,
   });
 
   const handleCompletedChange = (checked: boolean) => {
-    scoreLog(`MatchRow: handleCompletedChange called with ${checked} for match ${match.id} at index ${index}`);
+    scoreLog(
+      `MatchRow: handleCompletedChange called with ${checked} for match ${match.id} at index ${index}`
+    );
     onMarkCompleted(checked);
   };
 
@@ -54,11 +58,15 @@ const MatchRow: React.FC<MatchRowProps> = ({
   };
 
   return (
-    <div className={`p-4 rounded-lg bg-background border transition-colors ${
-      isSubmitting ? 'border-primary/50 bg-primary/5' : 
-      hasError ? 'border-destructive' : 
-      'border-border'
-    }`}>
+    <div
+      className={`p-4 rounded-lg bg-background border transition-colors ${
+        isSubmitting
+          ? 'border-primary/50 bg-primary/5'
+          : hasError
+            ? 'border-destructive'
+            : 'border-border'
+      }`}
+    >
       <div className="space-y-4">
         {/* Submission Status Indicator */}
         {isSubmitting && (
@@ -73,7 +81,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
             <span>Submission failed - please retry</span>
           </div>
         )}
-        
+
         {/* Team Names Display */}
         <div className="flex justify-between gap-4">
           <TeamDisplay team={match.team1} align="left" />
@@ -84,7 +92,9 @@ const MatchRow: React.FC<MatchRowProps> = ({
         <ScoreSection
           match={match}
           onScoreChange={(scores) => onScoreChange(scores.team1Score, scores.team2Score)}
-          onGameWinsChange={(gameWins) => onGameWinsChange(gameWins.team1GameWins, gameWins.team2GameWins)}
+          onGameWinsChange={(gameWins) =>
+            onGameWinsChange(gameWins.team1GameWins, gameWins.team2GameWins)
+          }
           onAutoComplete={handleAutoComplete}
           isSubmitting={isSubmitting}
           hasError={hasError}
@@ -95,7 +105,10 @@ const MatchRow: React.FC<MatchRowProps> = ({
         {/* Match Status & Completion Toggle combined */}
         <div className="flex items-center justify-between pt-2">
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium cursor-pointer" onClick={() => handleCompletedChange(!match.iscompleted)}>
+            <label
+              className="text-sm font-medium cursor-pointer"
+              onClick={() => handleCompletedChange(!match.iscompleted)}
+            >
               Mark as Complete
             </label>
             <Switch

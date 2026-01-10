@@ -1,18 +1,16 @@
-import { useLocation, useNavigate } from "react-router";
-import { useEffect } from "react";
-import { FileQuestion, Home, ArrowLeft } from "lucide-react";
-import { EmptyState } from "@/components/ui/empty-state";
-import { routeLog } from "@/utils/logger";
+import { ArrowLeft, FileQuestion, Home } from 'lucide-react';
+import { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router';
+
+import { EmptyState } from '@/components/ui/empty-state';
+import { routeLog } from '@/utils/logger';
 
 const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    routeLog(
-      "404 Error: User attempted to access non-existent route:",
-      location.pathname
-    );
+    routeLog('404 Error: User attempted to access non-existent route:', location.pathname);
   }, [location.pathname]);
 
   return (
@@ -23,14 +21,14 @@ const NotFound = () => {
         description="Oops! The page you're looking for doesn't exist or has been moved."
         actions={[
           {
-            label: "Go Home",
-            onClick: () => navigate("/"),
+            label: 'Go Home',
+            onClick: () => navigate('/'),
             icon: Home,
           },
           {
-            label: "Go Back",
+            label: 'Go Back',
             onClick: () => navigate(-1),
-            variant: "outline",
+            variant: 'outline',
             icon: ArrowLeft,
           },
         ]}

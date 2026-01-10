@@ -1,4 +1,5 @@
 import { AlertCircle, RefreshCw } from 'lucide-react';
+
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -18,12 +19,12 @@ interface ErrorDisplayProps {
 
 /**
  * Standardized error display component for consistent error UI across the app.
- * 
+ *
  * Usage:
  * ```tsx
- * <ErrorDisplay 
- *   error={error} 
- *   onRetry={refetch} 
+ * <ErrorDisplay
+ *   error={error}
+ *   onRetry={refetch}
  *   context="Loading teams"
  * />
  * ```
@@ -47,18 +48,11 @@ export function ErrorDisplay({
       >
         <AlertCircle className="h-10 w-10 text-destructive" />
         <div className="text-center">
-          {context && (
-            <p className="text-sm text-muted-foreground mb-1">{context}</p>
-          )}
+          {context && <p className="text-sm text-muted-foreground mb-1">{context}</p>}
           <p className="text-destructive font-medium">{error}</p>
         </div>
         {onRetry && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onRetry}
-            className="gap-2"
-          >
+          <Button variant="outline" size="sm" onClick={onRetry} className="gap-2">
             <RefreshCw className="h-4 w-4" />
             Try again
           </Button>

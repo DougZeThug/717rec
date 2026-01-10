@@ -2,28 +2,17 @@
  * Contact Support Page
  * Allows users to submit support requests via a form
  */
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { CheckCircle, Mail, MessageSquare, Send } from 'lucide-react';
+import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { trackContactForm } from '@/utils/analytics';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 import PageLayout from '@/components/layout/PageLayout';
 import PageTransition from '@/components/transitions/PageTransition';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -32,8 +21,19 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mail, MessageSquare, Send, CheckCircle } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { trackContactForm } from '@/utils/analytics';
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -104,7 +104,10 @@ export default function Contact() {
       <PageLayout>
         <Helmet>
           <title>Contact Support | 717REC</title>
-          <meta name="description" content="Contact 717REC support for help with your account, reporting issues, or general inquiries." />
+          <meta
+            name="description"
+            content="Contact 717REC support for help with your account, reporting issues, or general inquiries."
+          />
         </Helmet>
         <PageTransition>
           <div className="container max-w-2xl py-12">
@@ -119,9 +122,7 @@ export default function Contact() {
                 <p className="text-muted-foreground mb-6">
                   Thank you for contacting us. We'll get back to you within 24-48 hours.
                 </p>
-                <Button onClick={() => setIsSuccess(false)}>
-                  Send Another Message
-                </Button>
+                <Button onClick={() => setIsSuccess(false)}>Send Another Message</Button>
               </CardContent>
             </Card>
           </div>
@@ -134,7 +135,10 @@ export default function Contact() {
     <PageLayout>
       <Helmet>
         <title>Contact Support | 717REC</title>
-        <meta name="description" content="Contact 717REC support for help with your account, reporting issues, or general inquiries." />
+        <meta
+          name="description"
+          content="Contact 717REC support for help with your account, reporting issues, or general inquiries."
+        />
       </Helmet>
       <PageTransition>
         <div className="container max-w-2xl py-12">
@@ -184,7 +188,13 @@ export default function Contact() {
                         <FormItem>
                           <FormLabel>Email</FormLabel>
                           <FormControl>
-                            <Input type="email" inputMode="email" autoComplete="email" placeholder="your@email.com" {...field} />
+                            <Input
+                              type="email"
+                              inputMode="email"
+                              autoComplete="email"
+                              placeholder="your@email.com"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

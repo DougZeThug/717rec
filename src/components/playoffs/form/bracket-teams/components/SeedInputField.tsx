@@ -1,7 +1,8 @@
-import React from 'react';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { AlertCircle } from 'lucide-react';
+import React from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 
 interface SeedInputFieldProps {
   teamId: string;
@@ -23,7 +24,7 @@ export const SeedInputField: React.FC<SeedInputFieldProps> = ({
   const handleSeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     const seedNumber = value === '' ? null : parseInt(value, 10);
-    
+
     if (seedNumber === null || (!isNaN(seedNumber) && seedNumber > 0)) {
       onSeedChange(teamId, seedNumber);
     }
@@ -57,10 +58,8 @@ export const SeedInputField: React.FC<SeedInputFieldProps> = ({
           <AlertCircle className="absolute -right-1 -top-1 w-4 h-4 text-destructive" />
         )}
       </div>
-      
-      {hasConflict && (
-        <span className="text-xs text-destructive">Duplicate</span>
-      )}
+
+      {hasConflict && <span className="text-xs text-destructive">Duplicate</span>}
     </div>
   );
 };

@@ -1,16 +1,7 @@
+import { Loader2, MoreHorizontal, Trash } from 'lucide-react';
+import React, { useState } from 'react';
 
-import React, { useState } from "react";
-import { MoreHorizontal, Trash, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
-import TeamNameDisplay from "@/components/message-board/TeamNameDisplay";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import TeamNameDisplay from '@/components/message-board/TeamNameDisplay';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,9 +11,18 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { MatchComment } from "@/hooks/matches/useMatchComments";
-import { animations } from "@/styles/design-system";
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/contexts/AuthContext';
+import { MatchComment } from '@/hooks/matches/useMatchComments';
+import { cn } from '@/lib/utils';
+import { animations } from '@/styles/design-system';
 
 interface MatchCommentItemProps {
   comment: MatchComment;
@@ -34,7 +34,7 @@ const MatchCommentItem: React.FC<MatchCommentItemProps> = ({ comment, onDelete }
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const isAuthor = user?.id === comment.user_id;
-  
+
   const handleDelete = async () => {
     try {
       setIsDeleting(true);
@@ -44,28 +44,28 @@ const MatchCommentItem: React.FC<MatchCommentItemProps> = ({ comment, onDelete }
       setIsDeleting(false);
     }
   };
-  
+
   return (
     <>
-      <div className={cn(
-        "py-2 flex group",
-        animations.fadeIn,
-        isDeleting && "opacity-50 pointer-events-none"
-      )}>
+      <div
+        className={cn(
+          'py-2 flex group',
+          animations.fadeIn,
+          isDeleting && 'opacity-50 pointer-events-none'
+        )}
+      >
         {/* Comment content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <TeamNameDisplay 
+            <TeamNameDisplay
               username={comment.username}
               teamName={comment.team_name}
               compact={true}
             />
           </div>
-          <div className="mt-1 text-sm whitespace-pre-wrap break-words">
-            {comment.content}
-          </div>
+          <div className="mt-1 text-sm whitespace-pre-wrap break-words">{comment.content}</div>
         </div>
-        
+
         {/* Comment actions */}
         {isAuthor && (
           <div className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -82,7 +82,7 @@ const MatchCommentItem: React.FC<MatchCommentItemProps> = ({ comment, onDelete }
                   ) : (
                     <MoreHorizontal className="h-4 w-4" />
                   )}
-                  <span className="sr-only">{isDeleting ? "Deleting..." : "Open menu"}</span>
+                  <span className="sr-only">{isDeleting ? 'Deleting...' : 'Open menu'}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-36">
@@ -124,7 +124,7 @@ const MatchCommentItem: React.FC<MatchCommentItemProps> = ({ comment, onDelete }
                   Deleting...
                 </>
               ) : (
-                "Delete"
+                'Delete'
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

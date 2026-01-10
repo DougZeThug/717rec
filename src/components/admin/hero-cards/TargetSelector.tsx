@@ -1,10 +1,17 @@
-import React from "react";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { HeroCardTargetType } from "@/types/heroCard";
-import { TARGET_TYPE_OPTIONS } from "@/constants/heroCardPresets";
+import { useQuery } from '@tanstack/react-query';
+import React from 'react';
+
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { TARGET_TYPE_OPTIONS } from '@/constants/heroCardPresets';
+import { supabase } from '@/integrations/supabase/client';
+import { HeroCardTargetType } from '@/types/heroCard';
 
 interface TargetTypeSelectorProps {
   value: HeroCardTargetType;
@@ -40,31 +47,29 @@ interface TargetEntitySelectorProps {
   onChange: (value: string) => void;
 }
 
-export const TargetEntitySelector: React.FC<TargetEntitySelectorProps> = ({ targetType, value, onChange }) => {
+export const TargetEntitySelector: React.FC<TargetEntitySelectorProps> = ({
+  targetType,
+  value,
+  onChange,
+}) => {
   const { data: teams } = useQuery({
     queryKey: ['teams-for-selector'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('teams')
-        .select('id, name')
-        .order('name');
+      const { data, error } = await supabase.from('teams').select('id, name').order('name');
       if (error) throw error;
       return data;
     },
-    enabled: targetType === 'team'
+    enabled: targetType === 'team',
   });
 
   const { data: divisions } = useQuery({
     queryKey: ['divisions-for-selector'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('divisions')
-        .select('id, name')
-        .order('name');
+      const { data, error } = await supabase.from('divisions').select('id, name').order('name');
       if (error) throw error;
       return data;
     },
-    enabled: targetType === 'division'
+    enabled: targetType === 'division',
   });
 
   const { data: seasons } = useQuery({
@@ -77,7 +82,7 @@ export const TargetEntitySelector: React.FC<TargetEntitySelectorProps> = ({ targ
       if (error) throw error;
       return data;
     },
-    enabled: targetType === 'season'
+    enabled: targetType === 'season',
   });
 
   if (targetType === 'none') return null;

@@ -1,6 +1,5 @@
-
-import { supabase } from "@/integrations/supabase/client";
-import { dbLog, errorLog } from "@/utils/logger";
+import { supabase } from '@/integrations/supabase/client';
+import { dbLog, errorLog } from '@/utils/logger';
 
 interface UpdateTeamRecordParams {
   teamId: string;
@@ -21,7 +20,7 @@ export const updateTeamRecord = async ({
   currentWins,
   currentLosses,
   currentGameWins,
-  currentGameLosses
+  currentGameLosses,
 }: UpdateTeamRecordParams) => {
   // Calculate new values
   // Match win/loss is binary (0 or 1), while game wins/losses are the actual scores
@@ -29,31 +28,31 @@ export const updateTeamRecord = async ({
   const newLosses = currentLosses + (isWinner ? 0 : 1);
   const newGameWins = currentGameWins + gameWins;
   const newGameLosses = currentGameLosses + gameLosses;
-  
+
   dbLog(`Updating ${isWinner ? 'winner' : 'loser'} team ${teamId}:`);
   dbLog(`Match record: ${currentWins}-${currentLosses} → ${newWins}-${newLosses}`);
   dbLog(`Game stats: ${currentGameWins}-${currentGameLosses} → ${newGameWins}-${newGameLosses}`);
-  dbLog("Game stats details:", {
+  dbLog('Game stats details:', {
     teamId: teamId,
     game_wins: gameWins,
-    game_losses: gameLosses
+    game_losses: gameLosses,
   });
-  
+
   const { error, data } = await supabase
     .from('teams')
-    .update({ 
+    .update({
       wins: newWins,
       losses: newLosses,
       game_wins: newGameWins,
-      game_losses: newGameLosses
+      game_losses: newGameLosses,
     })
     .eq('id', teamId)
     .select();
-    
+
   if (error || !data?.length) {
     errorLog(`CRITICAL ERROR updating ${isWinner ? 'winner' : 'loser'} record:`, error);
     return false;
   }
-  
+
   return true;
 };

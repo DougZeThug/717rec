@@ -1,8 +1,10 @@
-import React from "react";
-import { Badge } from "@/components/ui/badge";
-import { Clock } from "lucide-react";
-import { TeamTimeslot } from "@/types";
-import TeamDayTimeslotSkeleton from "./TeamDayTimeslotSkeleton";
+import { Clock } from 'lucide-react';
+import React from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { TeamTimeslot } from '@/types';
+
+import TeamDayTimeslotSkeleton from './TeamDayTimeslotSkeleton';
 
 interface TeamDayTimeslotProps {
   teamId: string;
@@ -11,19 +13,19 @@ interface TeamDayTimeslotProps {
   isLoading?: boolean;
 }
 
-const TeamDayTimeslot: React.FC<TeamDayTimeslotProps> = ({ 
-  teamId, 
-  date, 
+const TeamDayTimeslot: React.FC<TeamDayTimeslotProps> = ({
+  teamId,
+  date,
   timeslots,
-  isLoading = false
+  isLoading = false,
 }) => {
   // Find timeslot for this team on the specified date
-  const teamTimeslot = timeslots.find(ts => ts.team_id === teamId);
-  
+  const teamTimeslot = timeslots.find((ts) => ts.team_id === teamId);
+
   if (isLoading) {
     return <TeamDayTimeslotSkeleton />;
   }
-  
+
   if (!teamTimeslot) {
     return null;
   }

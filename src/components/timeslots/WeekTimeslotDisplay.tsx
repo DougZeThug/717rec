@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { format, startOfWeek, endOfWeek } from "date-fns";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
-import { Clock } from "lucide-react";
-import { TeamTimeslot } from "@/types";
-import { LoadingState } from "@/components/ui/loading-state";
-import { errorLog } from "@/utils/logger";
+import { endOfWeek, format, startOfWeek } from 'date-fns';
+import { Clock } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { LoadingState } from '@/components/ui/loading-state';
+import { supabase } from '@/integrations/supabase/client';
+import { TeamTimeslot } from '@/types';
+import { errorLog } from '@/utils/logger';
 
 interface WeekTimeslotDisplayProps {
   teamId: string;
@@ -13,27 +14,27 @@ interface WeekTimeslotDisplayProps {
   enableBatchAssignment?: boolean;
 }
 
-const WeekTimeslotDisplay: React.FC<WeekTimeslotDisplayProps> = ({ 
-  teamId, 
+const WeekTimeslotDisplay: React.FC<WeekTimeslotDisplayProps> = ({
+  teamId,
   teamName,
-  enableBatchAssignment = false
+  enableBatchAssignment = false,
 }) => {
   const [timeslots, setTimeslots] = useState<TeamTimeslot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Get current week's date range
   const today = new Date();
   const weekStart = startOfWeek(today, { weekStartsOn: 0 });
   const weekEnd = endOfWeek(today, { weekStartsOn: 0 });
-  
+
   useEffect(() => {
     const fetchWeekTimeslots = async () => {
       setIsLoading(true);
-      
+
       try {
         const startDate = format(weekStart, 'yyyy-MM-dd');
         const endDate = format(weekEnd, 'yyyy-MM-dd');
-        
+
         const { data, error } = await supabase
           .from('team_timeslots')
           .select('*')
@@ -41,11 +42,11 @@ const WeekTimeslotDisplay: React.FC<WeekTimeslotDisplayProps> = ({
           .gte('match_date', startDate)
           .lte('match_date', endDate)
           .order('match_date', { ascending: true });
-        
+
         if (error) {
           throw error;
         }
-        
+
         setTimeslots(data || []);
       } catch (error) {
         errorLog('Error fetching week timeslots:', error);
@@ -53,7 +54,7 @@ const WeekTimeslotDisplay: React.FC<WeekTimeslotDisplayProps> = ({
         setIsLoading(false);
       }
     };
-    
+
     fetchWeekTimeslots();
   }, [teamId]);
 
@@ -83,7 +84,9 @@ const WeekTimeslotDisplay: React.FC<WeekTimeslotDisplayProps> = ({
   return (
     <Card className="bg-blue-50">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg">This Week's Timeslot{timeslots.length > 1 ? 's' : ''}</CardTitle>
+        <CardTitle className="text-lg">
+          This Week's Timeslot{timeslots.length > 1 ? 's' : ''}
+        </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
         {timeslots.map((timeslot) => (

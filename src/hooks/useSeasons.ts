@@ -1,7 +1,7 @@
+import { useQuery } from '@tanstack/react-query';
 
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { errorLog } from "@/utils/logger";
+import { supabase } from '@/integrations/supabase/client';
+import { errorLog } from '@/utils/logger';
 
 export const useSeasons = () => {
   return useQuery({
@@ -40,7 +40,7 @@ export const useActiveSeason = () => {
       // Validate we have at most one active season
       if (activeSeasons && activeSeasons.length > 1) {
         const errorMsg = `Data integrity violation: ${activeSeasons.length} active seasons found. Only one season can be active at a time.`;
-        errorLog(errorMsg, { seasonIds: activeSeasons.map(s => s.id) });
+        errorLog(errorMsg, { seasonIds: activeSeasons.map((s) => s.id) });
         throw new Error(errorMsg);
       }
 

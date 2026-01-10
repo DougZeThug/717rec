@@ -1,14 +1,16 @@
-import React, { useEffect } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import MessageItem from "./MessageItem";
-import { Message } from "@/types/reactions";
-import { Loader2, MessageSquare } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { useInView } from "react-intersection-observer";
-import { animations, gradients } from "@/styles/design-system";
-import { EmptyState } from "@/components/ui/empty-state";
-import MessageFeedSkeleton from "./MessageFeedSkeleton";
+import { Loader2, MessageSquare } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { useInView } from 'react-intersection-observer';
+
+import { Card, CardContent } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
+import { animations, gradients } from '@/styles/design-system';
+import { Message } from '@/types/reactions';
+
+import MessageFeedSkeleton from './MessageFeedSkeleton';
+import MessageItem from './MessageItem';
 
 interface MessageFeedProps {
   messages: Message[];
@@ -21,102 +23,103 @@ interface MessageFeedProps {
   loadingMore: boolean;
 }
 
-const MessageFeed: React.FC<MessageFeedProps> = React.memo(({ 
-  messages, 
-  isLoading, 
-  error, 
-  onDeleteMessage,
-  onEditMessage,
-  hasMore,
-  onLoadMore,
-  loadingMore
-}) => {
-  // Set up intersection observer for infinite scrolling
-  const { ref: loadMoreRef, inView } = useInView({
-    threshold: 0.1,
-  });
+const MessageFeed: React.FC<MessageFeedProps> = React.memo(
+  ({
+    messages,
+    isLoading,
+    error,
+    onDeleteMessage,
+    onEditMessage,
+    hasMore,
+    onLoadMore,
+    loadingMore,
+  }) => {
+    // Set up intersection observer for infinite scrolling
+    const { ref: loadMoreRef, inView } = useInView({
+      threshold: 0.1,
+    });
 
-  // Load more messages when the load more element comes into view
-  useEffect(() => {
-    if (inView && hasMore && !loadingMore) {
-      onLoadMore();
+    // Load more messages when the load more element comes into view
+    useEffect(() => {
+      if (inView && hasMore && !loadingMore) {
+        onLoadMore();
+      }
+    }, [inView, hasMore, onLoadMore, loadingMore]);
+
+    if (isLoading && messages.length === 0) {
+      return <MessageFeedSkeleton count={5} />;
     }
-  }, [inView, hasMore, onLoadMore, loadingMore]);
 
-  if (isLoading && messages.length === 0) {
-    return <MessageFeedSkeleton count={5} />;
-  }
-  
-  if (error) {
+    if (error) {
+      return (
+        <Card className={cn('mb-4 border-destructive/50', animations.fadeIn)}>
+          <CardContent className="text-center py-12 text-destructive">
+            <div className="space-y-2">
+              <p className="font-medium">{error}</p>
+              <p className="text-sm mt-2 text-muted-foreground">Please try refreshing the page</p>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    if (messages.length === 0) {
+      return (
+        <Card className={cn('mb-4 bg-card/50', animations.fadeIn)}>
+          <CardContent className="py-0">
+            <EmptyState
+              icon={MessageSquare}
+              title="No Messages Yet"
+              description="Be the first to start a conversation! Share updates, tips, or just say hello."
+              className="py-8"
+            />
+          </CardContent>
+        </Card>
+      );
+    }
+
     return (
-      <Card className={cn("mb-4 border-destructive/50", animations.fadeIn)}>
-        <CardContent className="text-center py-12 text-destructive">
-          <div className="space-y-2">
-            <p className="font-medium">{error}</p>
-            <p className="text-sm mt-2 text-muted-foreground">Please try refreshing the page</p>
-          </div>
+      <Card className={cn('mb-4 border shadow', gradients.card.subtle)}>
+        <CardContent className="p-0">
+          <ScrollArea className={cn('h-[calc(100vh-250px)]', 'lg:h-[calc(100vh-280px)]')}>
+            <div className="space-y-2 p-3">
+              {messages.map((message) => (
+                <MessageItem
+                  key={message.id}
+                  message={message}
+                  onDelete={onDeleteMessage}
+                  onEdit={onEditMessage}
+                />
+              ))}
+
+              {/* Load more messages trigger */}
+              {hasMore && (
+                <div
+                  ref={loadMoreRef}
+                  className="py-4 flex justify-center"
+                  aria-live="polite"
+                  aria-busy={loadingMore}
+                >
+                  {loadingMore ? (
+                    <div className="flex items-center space-x-2">
+                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        Loading more messages...
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Scroll for more messages</span>
+                  )}
+                </div>
+              )}
+            </div>
+          </ScrollArea>
         </CardContent>
       </Card>
     );
   }
-  
-  if (messages.length === 0) {
-    return (
-      <Card className={cn("mb-4 bg-card/50", animations.fadeIn)}>
-        <CardContent className="py-0">
-          <EmptyState
-            icon={MessageSquare}
-            title="No Messages Yet"
-            description="Be the first to start a conversation! Share updates, tips, or just say hello."
-            className="py-8"
-          />
-        </CardContent>
-      </Card>
-    );
-  }
-  
-  return (
-    <Card className={cn("mb-4 border shadow", gradients.card.subtle)}>
-      <CardContent className="p-0">
-        <ScrollArea className={cn(
-          "h-[calc(100vh-250px)]",
-          "lg:h-[calc(100vh-280px)]"
-        )}>
-          <div className="space-y-2 p-3">
-            {messages.map((message) => (
-              <MessageItem 
-                key={message.id} 
-                message={message} 
-                onDelete={onDeleteMessage}
-                onEdit={onEditMessage}
-              />
-            ))}
-            
-            {/* Load more messages trigger */}
-            {hasMore && (
-              <div 
-                ref={loadMoreRef} 
-                className="py-4 flex justify-center"
-                aria-live="polite"
-                aria-busy={loadingMore}
-              >
-                {loadingMore ? (
-                  <div className="flex items-center space-x-2">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Loading more messages...</span>
-                  </div>
-                ) : (
-                  <span className="text-sm text-muted-foreground">Scroll for more messages</span>
-                )}
-              </div>
-            )}
-          </div>
-        </ScrollArea>
-      </CardContent>
-    </Card>
-  );
-});
+);
 
-MessageFeed.displayName = "MessageFeed";
+MessageFeed.displayName = 'MessageFeed';
 
 export default MessageFeed;

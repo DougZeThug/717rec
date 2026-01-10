@@ -1,10 +1,11 @@
-import React, { useRef, useEffect } from 'react';
-import { Team } from "@/types";
-import { TeamList } from "@/components/teams/TeamList";
-import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ChevronDown } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
+
+import { TeamList } from '@/components/teams/TeamList';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Team } from '@/types';
 
 interface TeamsDivisionSectionProps {
   divisionName: string;
@@ -27,10 +28,10 @@ export const TeamsDivisionSection: React.FC<TeamsDivisionSectionProps> = ({
   onEditTeam,
   onDeleteTeam,
   isLoading,
-  viewMode
+  viewMode,
 }) => {
   const sectionRef = useRef<HTMLDivElement>(null);
-  
+
   useEffect(() => {
     if (isExpanded && sectionRef.current) {
       const yOffset = -80;
@@ -43,44 +44,44 @@ export const TeamsDivisionSection: React.FC<TeamsDivisionSectionProps> = ({
 
   return (
     <div className="space-y-2 border-b pb-3 sm:pb-6 last:border-b-0" ref={sectionRef}>
-      <div 
+      <div
         className={cn(
-          "flex justify-between items-center cursor-pointer",
-          "bg-gray-50/50 dark:bg-gray-900/50 rounded-lg",
-          "px-3 py-2 sm:px-4 sm:py-3",
-          "hover:bg-gray-100 dark:hover:bg-gray-800/70 transition-colors"
+          'flex justify-between items-center cursor-pointer',
+          'bg-gray-50/50 dark:bg-gray-900/50 rounded-lg',
+          'px-3 py-2 sm:px-4 sm:py-3',
+          'hover:bg-gray-100 dark:hover:bg-gray-800/70 transition-colors'
         )}
         onClick={onToggleExpand}
       >
         <div className="flex items-center gap-2">
           <h3 className="font-bebas text-base sm:text-lg uppercase tracking-wide">
-            {divisionName} 
+            {divisionName}
             <span className="ml-1.5 text-muted-foreground text-sm font-inter font-normal">
               ({teams.length})
             </span>
           </h3>
         </div>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="p-1 h-7 w-7 sm:h-8 sm:w-8 transition-transform duration-300" 
+        <Button
+          variant="ghost"
+          size="sm"
+          className="p-1 h-7 w-7 sm:h-8 sm:w-8 transition-transform duration-300"
           style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
         >
           <ChevronDown size={18} />
         </Button>
       </div>
-      
+
       <AnimatePresence>
         {isExpanded && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
+            animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
             <div className="pt-1 sm:pt-2">
-              <TeamList 
+              <TeamList
                 teams={teams}
                 isLoading={isLoading}
                 onEdit={onEditTeam}

@@ -1,63 +1,82 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, Edit, Trash2, Plus, Users, Settings, Image } from "lucide-react";
-import BulkLogoUpdateTab from "./BulkLogoUpdateTab";
-import TeamForm from "@/components/teams/TeamForm";
-import { Team } from "@/types";
-import { useToast } from "@/hooks/use-toast";
-import { useTeams } from "@/hooks/useTeams";
-import { useTeamsQuery } from "@/hooks/teams";
-import { useDivisions } from "@/hooks/useDivisions";
-import { updateTeamApi } from "@/services/TeamService";
-import { errorLog } from "@/utils/logger";
+import { motion } from 'framer-motion';
+import { Edit, Image, Plus, Search, Settings, Trash2, Users } from 'lucide-react';
+import React, { useState } from 'react';
+
+import TeamForm from '@/components/teams/TeamForm';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useTeamsQuery } from '@/hooks/teams';
+import { useToast } from '@/hooks/use-toast';
+import { useDivisions } from '@/hooks/useDivisions';
+import { useTeams } from '@/hooks/useTeams';
+import { updateTeamApi } from '@/services/TeamService';
+import { Team } from '@/types';
+import { errorLog } from '@/utils/logger';
+
+import BulkLogoUpdateTab from './BulkLogoUpdateTab';
 
 const TeamManagementTab = () => {
   const { toast } = useToast();
   const { createTeam } = useTeams();
-  const { data: teams, isLoading: isLoadingTeams, refetch: refetchTeams } = useTeamsQuery({ includeHidden: true });
+  const {
+    data: teams,
+    isLoading: isLoadingTeams,
+    refetch: refetchTeams,
+  } = useTeamsQuery({ includeHidden: true });
   const { divisions, isLoading: isLoadingDivisions } = useDivisions();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDivision, setSelectedDivision] = useState("all");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedDivision, setSelectedDivision] = useState('all');
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
-  const handleTeamSubmit = async (teamData: Omit<Team, "id" | "created_at">) => {
+  const handleTeamSubmit = async (teamData: Omit<Team, 'id' | 'created_at'>) => {
     try {
       const newTeam = await createTeam(teamData);
       toast({
-        title: "Team Created",
+        title: 'Team Created',
         description: `${newTeam.name} has been successfully created.`,
       });
       refetchTeams();
     } catch (error) {
-      errorLog("Error creating team:", error);
+      errorLog('Error creating team:', error);
     }
   };
 
-  const handleEditTeam = async (teamData: Omit<Team, "id" | "created_at">) => {
+  const handleEditTeam = async (teamData: Omit<Team, 'id' | 'created_at'>) => {
     if (!editingTeam) return;
     try {
       await updateTeamApi(editingTeam.id, teamData);
       toast({
-        title: "Team Updated",
+        title: 'Team Updated',
         description: `${teamData.name} has been successfully updated.`,
       });
       setEditingTeam(null);
       refetchTeams();
     } catch (error) {
-      errorLog("Error updating team:", error);
+      errorLog('Error updating team:', error);
       toast({
-        title: "Update Failed",
-        description: "Failed to update team. Please try again.",
-        variant: "destructive"
+        title: 'Update Failed',
+        description: 'Failed to update team. Please try again.',
+        variant: 'destructive',
       });
     }
   };
@@ -65,7 +84,7 @@ const TeamManagementTab = () => {
   const handleDivisionChange = async (teamId: string, newDivisionId: string | null) => {
     setIsUpdating(teamId);
     try {
-      const team = teams?.find(t => t.id === teamId);
+      const team = teams?.find((t) => t.id === teamId);
       if (!team) return;
 
       await updateTeamApi(teamId, {
@@ -74,34 +93,36 @@ const TeamManagementTab = () => {
       });
 
       toast({
-        title: "Division Updated",
+        title: 'Division Updated',
         description: `Team division has been updated successfully.`,
       });
       refetchTeams();
     } catch (error) {
-      errorLog("Error updating team division:", error);
+      errorLog('Error updating team division:', error);
       toast({
-        title: "Update Failed",
-        description: "Failed to update team division. Please try again.",
-        variant: "destructive"
+        title: 'Update Failed',
+        description: 'Failed to update team division. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsUpdating(null);
     }
   };
 
-  const filteredTeams = teams?.filter(team => {
-    const matchesSearch = team.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDivision = selectedDivision === "all" || 
-      (selectedDivision === "unassigned" && !team.division_id) ||
-      team.division_id === selectedDivision;
-    return matchesSearch && matchesDivision;
-  }) || [];
+  const filteredTeams =
+    teams?.filter((team) => {
+      const matchesSearch = team.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesDivision =
+        selectedDivision === 'all' ||
+        (selectedDivision === 'unassigned' && !team.division_id) ||
+        team.division_id === selectedDivision;
+      return matchesSearch && matchesDivision;
+    }) || [];
 
   const teamStats = {
     total: teams?.length || 0,
-    withDivisions: teams?.filter(t => t.division_id).length || 0,
-    unassigned: teams?.filter(t => !t.division_id).length || 0,
+    withDivisions: teams?.filter((t) => t.division_id).length || 0,
+    unassigned: teams?.filter((t) => !t.division_id).length || 0,
   };
 
   if (isLoadingTeams || isLoadingDivisions) {
@@ -205,7 +226,10 @@ const TeamManagementTab = () => {
                   </TableHeader>
                   <TableBody>
                     {filteredTeams.map((team) => (
-                      <TableRow key={team.id} className="transition-colors duration-150 hover:bg-muted/50 active:bg-muted">
+                      <TableRow
+                        key={team.id}
+                        className="transition-colors duration-150 hover:bg-muted/50 active:bg-muted"
+                      >
                         <TableCell className="font-medium">{team.name}</TableCell>
                         <TableCell>
                           <span className="text-sm">
@@ -214,9 +238,9 @@ const TeamManagementTab = () => {
                         </TableCell>
                         <TableCell>
                           <Select
-                            value={team.division_id || "unassigned"}
-                            onValueChange={(value) => 
-                              handleDivisionChange(team.id, value === "unassigned" ? null : value)
+                            value={team.division_id || 'unassigned'}
+                            onValueChange={(value) =>
+                              handleDivisionChange(team.id, value === 'unassigned' ? null : value)
                             }
                             disabled={isUpdating === team.id}
                           >
@@ -277,10 +301,7 @@ const TeamManagementTab = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <TeamForm 
-                onSubmit={handleTeamSubmit}
-                onCancel={() => {}}
-              />
+              <TeamForm onSubmit={handleTeamSubmit} onCancel={() => {}} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -297,7 +318,7 @@ const TeamManagementTab = () => {
             <DialogTitle>Edit Team: {editingTeam?.name}</DialogTitle>
           </DialogHeader>
           {editingTeam && (
-            <TeamForm 
+            <TeamForm
               team={editingTeam}
               onSubmit={handleEditTeam}
               onCancel={() => setEditingTeam(null)}

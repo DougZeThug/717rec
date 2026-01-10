@@ -1,27 +1,34 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2, Plus, Save, Upload, X } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Team } from "@/types";
-import { uploadTeamImage } from "@/utils/imageUpload";
-import { Upload, X, Plus, Save, Loader2 } from "lucide-react";
-import { DestructiveIconButton } from "@/components/ui/destructive-icon-button";
-import { useToast } from "@/hooks/use-toast";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useDivisions } from "@/hooks/useDivisions";
+
+import { Button } from '@/components/ui/button';
+import { DestructiveIconButton } from '@/components/ui/destructive-icon-button';
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
-} from "@/components/ui/form";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import { useDivisions } from '@/hooks/useDivisions';
+import { Team } from '@/types';
+import { uploadTeamImage } from '@/utils/imageUpload';
 
 const teamSchema = z.object({
-  name: z.string().min(1, "Team name is required"),
+  name: z.string().min(1, 'Team name is required'),
   division_id: z.string().nullable(),
 });
 
@@ -29,7 +36,7 @@ type TeamFormData = z.infer<typeof teamSchema>;
 
 interface TeamFormProps {
   team?: Team;
-  onSubmit: (data: Omit<Team, "id" | "created_at">) => void;
+  onSubmit: (data: Omit<Team, 'id' | 'created_at'>) => void;
   onCancel: () => void;
 }
 
@@ -72,23 +79,23 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
     try {
       setIsUploading(true);
       toast({
-        title: "Processing Image",
-        description: "Compressing, validating, and uploading your image...",
+        title: 'Processing Image',
+        description: 'Compressing, validating, and uploading your image...',
       });
-      
+
       const uploadedImageUrl = await uploadTeamImage(file, team?.id);
       setImageUrl(uploadedImageUrl);
-      
+
       toast({
-        title: "Image Uploaded",
-        description: "Image successfully processed and uploaded.",
+        title: 'Image Uploaded',
+        description: 'Image successfully processed and uploaded.',
       });
     } catch (error) {
       console.error('Upload error:', error);
       toast({
-        title: "Image Upload Failed",
-        description: "Could not upload the image. Please try again with a different image.",
-        variant: "destructive"
+        title: 'Image Upload Failed',
+        description: 'Could not upload the image. Please try again with a different image.',
+        variant: 'destructive',
       });
     } finally {
       setIsUploading(false);
@@ -103,15 +110,15 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
   };
 
   const handleFormSubmit = (data: TeamFormData) => {
-    const divisionValue = data.division_id === "none" ? null : data.division_id;
-    
+    const divisionValue = data.division_id === 'none' ? null : data.division_id;
+
     onSubmit({
       name: data.name,
       imageUrl: imageUrl || undefined,
-      players: playerNames.filter(name => name.trim() !== ""),
+      players: playerNames.filter((name) => name.trim() !== ''),
       wins: team?.wins || 0,
       losses: team?.losses || 0,
-      division_id: divisionValue
+      division_id: divisionValue,
     });
   };
 
@@ -126,26 +133,22 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
               <FormItem>
                 <FormLabel>Team Name</FormLabel>
                 <FormControl>
-                  <Input
-                    autoComplete="organization"
-                    placeholder="Enter team name"
-                    {...field}
-                  />
+                  <Input autoComplete="organization" placeholder="Enter team name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="division_id"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Division</FormLabel>
-                <Select 
-                  value={field.value || "none"} 
-                  onValueChange={(value) => field.onChange(value === "none" ? null : value)}
+                <Select
+                  value={field.value || 'none'}
+                  onValueChange={(value) => field.onChange(value === 'none' ? null : value)}
                 >
                   <FormControl>
                     <SelectTrigger className="w-full">
@@ -155,12 +158,18 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
                   <SelectContent>
                     <SelectItem value="none">None</SelectItem>
                     {isDivisionsLoading ? (
-                      <SelectItem value="loading-divisions" disabled>Loading divisions...</SelectItem>
+                      <SelectItem value="loading-divisions" disabled>
+                        Loading divisions...
+                      </SelectItem>
                     ) : divisions.length === 0 ? (
-                      <SelectItem value="no-divisions-available" disabled>No divisions available</SelectItem>
+                      <SelectItem value="no-divisions-available" disabled>
+                        No divisions available
+                      </SelectItem>
                     ) : (
                       divisions.map((div) => (
-                        <SelectItem key={div.id} value={div.id}>{div.name}</SelectItem>
+                        <SelectItem key={div.id} value={div.id}>
+                          {div.name}
+                        </SelectItem>
                       ))
                     )}
                   </SelectContent>
@@ -169,39 +178,39 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
               </FormItem>
             )}
           />
-          
+
           <div className="space-y-2">
             <FormLabel>Team Image</FormLabel>
-            <input 
-              type="file" 
+            <input
+              type="file"
               ref={fileInputRef}
-              accept="image/*" 
-              onChange={handleImageUpload} 
+              accept="image/*"
+              onChange={handleImageUpload}
               className="hidden"
               disabled={isUploading}
             />
             <div className="flex items-center gap-2">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading}
                 className="flex items-center gap-2"
               >
-                <Upload size={16} /> 
-                {isUploading ? "Processing..." : "Upload Image"}
+                <Upload size={16} />
+                {isUploading ? 'Processing...' : 'Upload Image'}
               </Button>
               {imageUrl && (
                 <div className="relative">
-                  <img 
-                    src={imageUrl} 
-                    alt="Team preview" 
+                  <img
+                    src={imageUrl}
+                    alt="Team preview"
                     className="h-20 w-20 object-cover rounded"
                   />
-                  <Button 
-                    type="button" 
-                    variant="destructive" 
-                    size="icon" 
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
                     className="absolute -top-2 -right-2 h-8 w-8 rounded-full p-0"
                     onClick={handleRemoveImage}
                   >
@@ -228,12 +237,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
                 />
               </div>
             ))}
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={handleAddPlayer}
-              className="mt-2"
-            >
+            <Button type="button" variant="outline" onClick={handleAddPlayer} className="mt-2">
               <Plus className="h-4 w-4 mr-2" />
               Add Player
             </Button>

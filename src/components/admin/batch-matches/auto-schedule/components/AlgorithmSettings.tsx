@@ -1,14 +1,14 @@
+import { Settings2 } from 'lucide-react';
+import React from 'react';
 
-import React from "react";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Settings2 } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from '@/components/ui/accordion';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 
 interface AlgorithmSettingsProps {
   avoidRematches: boolean;
@@ -25,7 +25,7 @@ export const AlgorithmSettings: React.FC<AlgorithmSettingsProps> = ({
   prioritizeQuality,
   setPrioritizeQuality,
   dualMatchMode,
-  setDualMatchMode
+  setDualMatchMode,
 }) => {
   return (
     <Accordion type="single" collapsible className="mb-4">
@@ -52,7 +52,7 @@ export const AlgorithmSettings: React.FC<AlgorithmSettingsProps> = ({
                 />
               </div>
             )}
-            
+
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="avoid-rematches">Avoid Rematches</Label>
@@ -66,7 +66,7 @@ export const AlgorithmSettings: React.FC<AlgorithmSettingsProps> = ({
                 onCheckedChange={setAvoidRematches}
               />
             </div>
-            
+
             {!dualMatchMode && (
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">

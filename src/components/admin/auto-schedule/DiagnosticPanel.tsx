@@ -1,10 +1,11 @@
+import { AlertCircle, CheckCircle2, ChevronDown, Database } from 'lucide-react';
 import React, { useMemo } from 'react';
+
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Badge } from '@/components/ui/badge';
-import { AlertCircle, CheckCircle2, ChevronDown, Database } from 'lucide-react';
 import { TimeBlockTeamsMap } from '@/types/autoSchedule';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface DiagnosticPanelProps {
   teamBlockMap: Record<string, string>;
@@ -21,7 +22,7 @@ interface TeamAssignment {
 
 /**
  * DiagnosticPanel - Debugging tool for auto-schedule validation
- * 
+ *
  * Displays:
  * - Team-to-block assignments
  * - Duplicate team assignments (critical errors)
@@ -31,7 +32,7 @@ interface TeamAssignment {
 export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
   teamBlockMap,
   timeBlockTeams,
-  isVisible = true
+  isVisible = true,
 }) => {
   const [isOpen, setIsOpen] = React.useState(false);
 
@@ -44,8 +45,8 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
     // Build team assignments list and detect duplicates
     Object.entries(timeBlockTeams).forEach(([block, teams]) => {
       blockStats.set(block, teams.length);
-      
-      teams.forEach(team => {
+
+      teams.forEach((team) => {
         const currentBlocks = teamBlocks.get(team.id) || [];
         currentBlocks.push(block);
         teamBlocks.set(team.id, currentBlocks);
@@ -54,7 +55,7 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
           teamId: team.id,
           teamName: team.name,
           block: block,
-          isDuplicate: currentBlocks.length > 1
+          isDuplicate: currentBlocks.length > 1,
         });
       });
     });
@@ -65,11 +66,11 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
       .map(([teamId, blocks]) => {
         const team = Object.values(timeBlockTeams)
           .flat()
-          .find(t => t.id === teamId);
+          .find((t) => t.id === teamId);
         return {
           teamId,
           teamName: team?.name || 'Unknown',
-          blocks
+          blocks,
         };
       });
 
@@ -86,7 +87,7 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
       totalTeams,
       teamsWithAssignments,
       isValid,
-      hasDuplicates
+      hasDuplicates,
     };
   }, [teamBlockMap, timeBlockTeams]);
 
@@ -117,7 +118,10 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
           <CardContent className="space-y-4">
             {/* Validation Status */}
             <div className="flex items-center gap-2">
-              <Badge variant={analysis.isValid ? "default" : "destructive"} className="font-mono text-xs">
+              <Badge
+                variant={analysis.isValid ? 'default' : 'destructive'}
+                className="font-mono text-xs"
+              >
                 {analysis.isValid ? '✅ Valid' : '❌ Invalid'}
               </Badge>
               <span className="text-xs text-muted-foreground">
@@ -130,8 +134,9 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription className="text-xs font-mono">
-                  <strong>Critical Error:</strong> {analysis.duplicateTeams.length} team(s) assigned to multiple blocks
-                  {analysis.duplicateTeams.map(dup => (
+                  <strong>Critical Error:</strong> {analysis.duplicateTeams.length} team(s) assigned
+                  to multiple blocks
+                  {analysis.duplicateTeams.map((dup) => (
                     <div key={dup.teamId} className="mt-1 pl-4 border-l-2 border-destructive/50">
                       {dup.teamName}: {dup.blocks.join(', ')}
                     </div>
@@ -145,7 +150,10 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
               <h4 className="text-xs font-semibold text-muted-foreground">Block Statistics</h4>
               <div className="grid grid-cols-2 gap-2">
                 {Array.from(analysis.blockStats.entries()).map(([block, count]) => (
-                  <div key={block} className="flex items-center justify-between p-2 rounded bg-background border text-xs font-mono">
+                  <div
+                    key={block}
+                    className="flex items-center justify-between p-2 rounded bg-background border text-xs font-mono"
+                  >
                     <span className="font-medium">{block}</span>
                     <Badge variant="outline" className="text-xs">
                       {count} teams
@@ -168,13 +176,16 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
                       <div
                         key={`${assignment.teamId}-${index}`}
                         className={`flex items-center justify-between p-2 rounded text-xs font-mono ${
-                          assignment.isDuplicate 
-                            ? 'bg-destructive/10 border border-destructive' 
+                          assignment.isDuplicate
+                            ? 'bg-destructive/10 border border-destructive'
                             : 'bg-background border'
                         }`}
                       >
                         <span className="truncate flex-1">{assignment.teamName}</span>
-                        <Badge variant={assignment.isDuplicate ? "destructive" : "secondary"} className="text-xs ml-2">
+                        <Badge
+                          variant={assignment.isDuplicate ? 'destructive' : 'secondary'}
+                          className="text-xs ml-2"
+                        >
                           {assignment.block}
                         </Badge>
                       </div>
@@ -194,7 +205,9 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
             {/* Database Check Hint */}
             <div className="pt-2 border-t">
               <p className="text-xs text-muted-foreground font-mono">
-                💡 To check database: Query <code className="bg-muted px-1 rounded">team_timeslots</code> for duplicate pair assignments
+                💡 To check database: Query{' '}
+                <code className="bg-muted px-1 rounded">team_timeslots</code> for duplicate pair
+                assignments
               </p>
             </div>
           </CardContent>

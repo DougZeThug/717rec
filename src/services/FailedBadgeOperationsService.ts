@@ -54,7 +54,7 @@ export class FailedBadgeOperationsService {
     matchId: string
   ): void {
     const operations = this.getFailedOperations();
-    
+
     const newOperation: FailedBadgeOperation = {
       id: crypto.randomUUID(),
       type,
@@ -62,12 +62,12 @@ export class FailedBadgeOperationsService {
       error: error instanceof Error ? error.message : String(error),
       matchId,
       createdAt: new Date().toISOString(),
-      retryCount: 0
+      retryCount: 0,
     };
 
     operations.push(newOperation);
     this.saveFailedOperations(operations);
-    
+
     warnLog('Badge operation queued for retry:', { type, matchId, error: newOperation.error });
 
     // Attempt to notify admin via database (non-blocking)
@@ -81,7 +81,7 @@ export class FailedBadgeOperationsService {
    */
   static removeOperation(operationId: string): void {
     const operations = this.getFailedOperations();
-    const filtered = operations.filter(op => op.id !== operationId);
+    const filtered = operations.filter((op) => op.id !== operationId);
     this.saveFailedOperations(filtered);
   }
 
@@ -114,13 +114,11 @@ export class FailedBadgeOperationsService {
     try {
       // Try to insert into admin notifications / messages
       // Using the messages table as a fallback admin notification channel
-      const { error } = await supabase
-        .from('messages')
-        .insert({
-          username: 'System',
-          content: `⚠️ Badge processing failed for match ${operation.matchId}. Type: ${operation.type}. Error: ${operation.error}`,
-          category: 'admin_notification'
-        });
+      const { error } = await supabase.from('messages').insert({
+        username: 'System',
+        content: `⚠️ Badge processing failed for match ${operation.matchId}. Type: ${operation.type}. Error: ${operation.error}`,
+        category: 'admin_notification',
+      });
 
       if (error) {
         // Silent fail - this is a best-effort notification
@@ -144,7 +142,7 @@ export class FailedBadgeOperationsService {
     remaining: FailedBadgeOperation[];
   }> {
     const operations = this.getFailedOperations();
-    
+
     if (operations.length === 0) {
       return { total: 0, succeeded: 0, failed: 0, remaining: [] };
     }
@@ -173,11 +171,14 @@ export class FailedBadgeOperationsService {
         operation.error = e instanceof Error ? e.message : String(e);
         remaining.push(operation);
         failed++;
-        warnLog('Retry failed for badge operation:', { type: operation.type, retryCount: operation.retryCount });
+        warnLog('Retry failed for badge operation:', {
+          type: operation.type,
+          retryCount: operation.retryCount,
+        });
       }
 
       // Small delay between retries to avoid overwhelming the database
-      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
     }
 
     this.saveFailedOperations(remaining);
@@ -186,7 +187,7 @@ export class FailedBadgeOperationsService {
       total: operations.length,
       succeeded,
       failed,
-      remaining
+      remaining,
     };
   }
 
@@ -200,7 +201,7 @@ export class FailedBadgeOperationsService {
       case 'match_badges': {
         const { data, error } = await supabase.rpc('process_match_badges', {
           p_team1_id: params.team1Id,
-          p_team2_id: params.team2Id
+          p_team2_id: params.team2Id,
         });
         if (error) throw error;
         return;
@@ -209,7 +210,7 @@ export class FailedBadgeOperationsService {
       case 'kingslayer': {
         const { data, error } = await supabase.rpc('award_kingslayer_badge', {
           p_winner_id: params.winnerId,
-          p_loser_id: params.loserId
+          p_loser_id: params.loserId,
         });
         if (error) throw error;
         return;
@@ -217,7 +218,7 @@ export class FailedBadgeOperationsService {
 
       case 'clutch_performer': {
         const { data, error } = await supabase.rpc('award_clutch_performer_badge', {
-          p_team_id: params.winnerId
+          p_team_id: params.winnerId,
         });
         if (error) throw error;
         return;
@@ -225,7 +226,7 @@ export class FailedBadgeOperationsService {
 
       case 'consistent_performer': {
         const { data, error } = await supabase.rpc('award_consistent_performer_badge', {
-          p_team_id: params.winnerId
+          p_team_id: params.winnerId,
         });
         if (error) throw error;
         return;

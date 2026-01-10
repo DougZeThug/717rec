@@ -1,4 +1,5 @@
 import Snowfall from 'react-snowfall';
+
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 
 /**
@@ -6,9 +7,9 @@ import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
  */
 export const WinterSnowfall = () => {
   const { shouldApplyWinter } = useSeasonalTheme();
-  
+
   if (!shouldApplyWinter) return null;
-  
+
   return (
     <Snowfall
       style={{

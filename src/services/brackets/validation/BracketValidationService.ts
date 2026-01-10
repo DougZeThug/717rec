@@ -1,7 +1,7 @@
+import { validationLog } from '@/utils/logger';
+import { isValidUUID } from '@/utils/validation';
 
 import { BracketFormData } from '../types/BracketFormData';
-import { isValidUUID } from '@/utils/validation';
-import { validationLog } from '@/utils/logger';
 
 export interface ValidationResult {
   isValid: boolean;
@@ -71,11 +71,14 @@ export class BracketValidationService {
       errors.push('Minimum 2 teams required for bracket creation');
     }
 
-    validationLog('Validation result:', { isValid: errors.length === 0, errorCount: errors.length });
+    validationLog('Validation result:', {
+      isValid: errors.length === 0,
+      errorCount: errors.length,
+    });
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -112,10 +115,13 @@ export class BracketValidationService {
     const result = {
       isValid: errors.length === 0,
       invalidTeams,
-      errors
+      errors,
     };
 
-    validationLog('Team validation result:', { isValid: result.isValid, invalidCount: invalidTeams.length });
+    validationLog('Team validation result:', {
+      isValid: result.isValid,
+      invalidCount: invalidTeams.length,
+    });
     return result;
   }
 
@@ -124,19 +130,22 @@ export class BracketValidationService {
    */
   static sanitizeFormData(data: unknown): BracketFormData {
     validationLog('Sanitizing bracket form data');
-    
+
     // Type guard check
     if (!isValidBracketFormData(data)) {
       throw new Error('Invalid form data structure for sanitization');
     }
-    
+
     const sanitized = {
       title: (data.title || '').trim(),
-      divisionId: data.divisionId && typeof data.divisionId === 'string' ? data.divisionId.trim() : '',
+      divisionId:
+        data.divisionId && typeof data.divisionId === 'string' ? data.divisionId.trim() : '',
       format: data.format,
-      teams: Array.isArray(data.teams) 
-        ? data.teams.filter(id => id && typeof id === 'string' && id.trim() !== '' && isValidUUID(id))
-        : []
+      teams: Array.isArray(data.teams)
+        ? data.teams.filter(
+            (id) => id && typeof id === 'string' && id.trim() !== '' && isValidUUID(id)
+          )
+        : [],
     };
 
     validationLog('Data sanitized:', { teamCount: sanitized.teams.length });
@@ -148,10 +157,10 @@ export class BracketValidationService {
    */
   static validateForSubmission(data: unknown): ValidationResult {
     validationLog('Validating for submission');
-    
+
     const sanitizedData = this.sanitizeFormData(data);
     const formValidation = this.validateFormData(sanitizedData);
-    
+
     if (!formValidation.isValid) {
       return formValidation;
     }
@@ -160,7 +169,7 @@ export class BracketValidationService {
     if (!teamValidation.isValid) {
       return {
         isValid: false,
-        errors: teamValidation.errors
+        errors: teamValidation.errors,
       };
     }
 

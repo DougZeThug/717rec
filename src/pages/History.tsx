@@ -1,20 +1,20 @@
+import React from 'react';
 
-import React from "react";
-import PageLayout from "@/components/layout/PageLayout";
-import PageHeader from "@/components/layout/PageHeader";
-import HistoryPageContent from "@/components/history/HistoryPageContent";
-import { useIsMobile } from "@/hooks/use-mobile";
-import PageTransition from "@/components/transitions/PageTransition";
-import AnimatedBreadcrumbs from "@/components/navigation/AnimatedBreadcrumbs";
-import useScrollRestoration from "@/hooks/useScrollRestoration";
+import HistoryPageContent from '@/components/history/HistoryPageContent';
+import PageHeader from '@/components/layout/PageHeader';
+import PageLayout from '@/components/layout/PageLayout';
+import AnimatedBreadcrumbs from '@/components/navigation/AnimatedBreadcrumbs';
+import PageTransition from '@/components/transitions/PageTransition';
+import { useIsMobile } from '@/hooks/use-mobile';
+import useScrollRestoration from '@/hooks/useScrollRestoration';
 
 const History: React.FC = () => {
-  useScrollRestoration("/history");
+  useScrollRestoration('/history');
   const isMobile = useIsMobile();
-  
+
   return (
-    <PageLayout 
-      className="flex flex-col gap-4 md:gap-8" 
+    <PageLayout
+      className="flex flex-col gap-4 md:gap-8"
       compact={isMobile}
       gradientVariant="blueOrange"
     >
@@ -27,7 +27,7 @@ const History: React.FC = () => {
           description="Explore past seasons, champions, and standings"
         />
       </PageTransition>
-      
+
       <div className="container mx-auto px-4">
         <PageTransition animation="fadeInSlideUp" delay="short">
           <HistoryPageContent />

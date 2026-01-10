@@ -1,4 +1,3 @@
-
 export interface MatchPair {
   id: string;
   team1Id: string | null;

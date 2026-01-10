@@ -1,17 +1,14 @@
+import { format } from 'date-fns';
+import { motion } from 'framer-motion';
+import { ChevronDown } from 'lucide-react';
+import React, { useState } from 'react';
 
-import React, { useState } from "react";
-import { format } from "date-fns";
-import { ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { MatchWithTeams } from "../types";
-import { motion } from "framer-motion";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger
-} from "@/components/ui/collapsible";
-import { groupMatchesByTimeSlot, sortTimeSlots } from "../utils/timeGrouping";
-import TimeSlotMatchGroup from "./TimeSlotMatchGroup";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { cn } from '@/lib/utils';
+
+import { MatchWithTeams } from '../types';
+import { groupMatchesByTimeSlot, sortTimeSlots } from '../utils/timeGrouping';
+import TimeSlotMatchGroup from './TimeSlotMatchGroup';
 
 interface DateMatchGroupProps {
   date: Date;
@@ -26,9 +23,9 @@ interface DateMatchGroupProps {
   onClearError?: (matchId: string) => void;
 }
 
-const DateMatchGroup: React.FC<DateMatchGroupProps> = ({ 
-  date, 
-  matches, 
+const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
+  date,
+  matches,
   defaultExpanded = false,
   onScoreChange,
   onGameWinsChange,
@@ -36,33 +33,29 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
   submitting,
   failedMatches,
   errorMessages,
-  onClearError
+  onClearError,
 }) => {
   const [isOpen, setIsOpen] = useState(defaultExpanded);
-  const formattedDate = format(date, "EEEE, MMMM d, yyyy");
-  
+  const formattedDate = format(date, 'EEEE, MMMM d, yyyy');
+
   // Group matches by time slot for this date
   const matchesByTimeSlot = groupMatchesByTimeSlot(matches);
   const sortedTimeSlots = sortTimeSlots(Object.keys(matchesByTimeSlot));
-  
+
   return (
-    <Collapsible
-      open={isOpen}
-      onOpenChange={setIsOpen}
-      className="mb-4 overflow-hidden bg-card"
-    >
-      <CollapsibleTrigger 
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-4 overflow-hidden bg-card">
+      <CollapsibleTrigger
         className={cn(
-          "flex w-full items-center justify-between p-4 text-left transition-all",
-          "hover:bg-accent hover:text-accent-foreground",
-          "border-b text-sm font-semibold"
+          'flex w-full items-center justify-between p-4 text-left transition-all',
+          'hover:bg-accent hover:text-accent-foreground',
+          'border-b text-sm font-semibold'
         )}
       >
         <span>{formattedDate}</span>
-        <ChevronDown 
+        <ChevronDown
           className={cn(
-            "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200",
-            isOpen && "rotate-180"
+            'h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200',
+            isOpen && 'rotate-180'
           )}
         />
       </CollapsibleTrigger>
@@ -74,11 +67,11 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
           className="p-4 space-y-4"
         >
           {sortedTimeSlots.length > 0 ? (
-            sortedTimeSlots.map(timeSlot => (
+            sortedTimeSlots.map((timeSlot) => (
               <TimeSlotMatchGroup
                 key={timeSlot}
                 timeSlot={timeSlot}
-                matches={matchesByTimeSlot[timeSlot]} 
+                matches={matchesByTimeSlot[timeSlot]}
                 onScoreChange={onScoreChange}
                 onGameWinsChange={onGameWinsChange}
                 onMarkCompleted={onMarkCompleted}

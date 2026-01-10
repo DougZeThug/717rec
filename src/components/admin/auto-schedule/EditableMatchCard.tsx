@@ -1,11 +1,18 @@
-import React from "react";
-import { Team, AutoScheduleMatch } from "@/types";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeftRight } from "lucide-react";
-import { DestructiveIconButton } from "@/components/ui/destructive-icon-button";
-import TeamLogo from "@/components/ui/team/TeamLogo";
-import { Badge } from "@/components/ui/badge";
+import { ArrowLeftRight } from 'lucide-react';
+import React from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { DestructiveIconButton } from '@/components/ui/destructive-icon-button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import TeamLogo from '@/components/ui/team/TeamLogo';
+import { AutoScheduleMatch, Team } from '@/types';
 
 interface EditableMatchCardProps {
   match: AutoScheduleMatch;
@@ -27,7 +34,7 @@ const timeSlotOptions = [
   '8:30 PM',
   '9:00 PM',
   '9:30 PM',
-  '10:00 PM'
+  '10:00 PM',
 ];
 
 const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
@@ -38,24 +45,26 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
   onSwapTeams,
   onRemove,
   hasError,
-  errorMessage
+  errorMessage,
 }) => {
   const getTeamById = (id: string | null) => {
     if (!id) return null;
-    return teams.find(t => t.id === id) || null;
+    return teams.find((t) => t.id === id) || null;
   };
 
   const team1 = getTeamById(match.team1Id);
   const team2 = getTeamById(match.team2Id);
 
   return (
-    <div className={`p-4 border rounded-lg bg-card shadow-sm ${hasError ? 'border-destructive' : ''}`}>
+    <div
+      className={`p-4 border rounded-lg bg-card shadow-sm ${hasError ? 'border-destructive' : ''}`}
+    >
       {hasError && errorMessage && (
         <div className="mb-3 p-2 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">
           {errorMessage}
         </div>
       )}
-      
+
       <div className="flex flex-col gap-3">
         {/* Team Selections - Stack on mobile, row on desktop */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -70,7 +79,7 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
                 <SelectValue placeholder="Select team">
                   {team1 && (
                     <div className="flex items-center gap-2">
-                      <TeamLogo 
+                      <TeamLogo
                         imageUrl={team1.imageUrl || ''}
                         teamName={team1.name}
                         className="h-4 w-4 shrink-0"
@@ -83,11 +92,11 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
               <SelectContent>
                 <div className="max-h-[300px] overflow-auto">
                   {teams
-                    .filter(team => team.id !== match.team2Id)
-                    .map(team => (
+                    .filter((team) => team.id !== match.team2Id)
+                    .map((team) => (
                       <SelectItem key={team.id} value={team.id}>
                         <div className="flex items-center gap-2">
-                          <TeamLogo 
+                          <TeamLogo
                             imageUrl={team.imageUrl || ''}
                             teamName={team.name}
                             className="h-4 w-4"
@@ -124,7 +133,7 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
                 <SelectValue placeholder="Select team">
                   {team2 && (
                     <div className="flex items-center gap-2">
-                      <TeamLogo 
+                      <TeamLogo
                         imageUrl={team2.imageUrl || ''}
                         teamName={team2.name}
                         className="h-4 w-4 shrink-0"
@@ -137,11 +146,11 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
               <SelectContent>
                 <div className="max-h-[300px] overflow-auto">
                   {teams
-                    .filter(team => team.id !== match.team1Id)
-                    .map(team => (
+                    .filter((team) => team.id !== match.team1Id)
+                    .map((team) => (
                       <SelectItem key={team.id} value={team.id}>
                         <div className="flex items-center gap-2">
-                          <TeamLogo 
+                          <TeamLogo
                             imageUrl={team.imageUrl || ''}
                             teamName={team.name}
                             className="h-4 w-4"
@@ -168,7 +177,7 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
                 <SelectValue placeholder="Select time" />
               </SelectTrigger>
               <SelectContent>
-                {timeSlotOptions.map(time => (
+                {timeSlotOptions.map((time) => (
                   <SelectItem key={time} value={time}>
                     {time}
                   </SelectItem>

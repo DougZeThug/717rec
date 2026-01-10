@@ -1,4 +1,3 @@
-
 export interface MessageReaction {
   id: string;
   message_id: string;
@@ -31,9 +30,9 @@ export interface Message {
 export type MessageCategory = 'General' | 'Question' | 'Announcement' | 'Event' | 'Other';
 
 export const MESSAGE_CATEGORIES: MessageCategory[] = [
-  'General', 
-  'Question', 
-  'Announcement', 
-  'Event', 
-  'Other'
+  'General',
+  'Question',
+  'Announcement',
+  'Event',
+  'Other',
 ];

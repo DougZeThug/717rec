@@ -1,20 +1,10 @@
-import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
-import { Inbox, Check, X, Clock, Loader2 } from "lucide-react";
-import { useAllRequests, useUpdateRequestStatus, usePendingRequestsCount } from "@/hooks/useTeamRequests";
-import { TeamRequestStatus, REQUEST_TYPE_LABELS, REQUEST_STATUS_LABELS } from "@/types/teamRequest";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { format } from 'date-fns';
+import { Check, Clock, Inbox, Loader2, X } from 'lucide-react';
+import React, { useState } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -22,16 +12,31 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  useAllRequests,
+  usePendingRequestsCount,
+  useUpdateRequestStatus,
+} from '@/hooks/useTeamRequests';
+import { cn } from '@/lib/utils';
+import { REQUEST_STATUS_LABELS, REQUEST_TYPE_LABELS, TeamRequestStatus } from '@/types/teamRequest';
 
 const RequestsTab: React.FC = () => {
-  const [statusFilter, setStatusFilter] = useState<TeamRequestStatus | "ALL">("PENDING");
+  const [statusFilter, setStatusFilter] = useState<TeamRequestStatus | 'ALL'>('PENDING');
   const [selectedRequest, setSelectedRequest] = useState<string | null>(null);
-  const [adminNotes, setAdminNotes] = useState("");
-  const [actionType, setActionType] = useState<"approve" | "deny" | null>(null);
+  const [adminNotes, setAdminNotes] = useState('');
+  const [actionType, setActionType] = useState<'approve' | 'deny' | null>(null);
 
   const { data: requests, isLoading } = useAllRequests(
-    statusFilter === "ALL" ? undefined : statusFilter
+    statusFilter === 'ALL' ? undefined : statusFilter
   );
   const { data: pendingCount } = usePendingRequestsCount();
   const updateMutation = useUpdateRequestStatus();
@@ -41,19 +46,19 @@ const RequestsTab: React.FC = () => {
 
     await updateMutation.mutateAsync({
       id: selectedRequest,
-      status: actionType === "approve" ? "APPROVED" : "DENIED",
+      status: actionType === 'approve' ? 'APPROVED' : 'DENIED',
       admin_notes: adminNotes || undefined,
     });
 
     setSelectedRequest(null);
-    setAdminNotes("");
+    setAdminNotes('');
     setActionType(null);
   };
 
-  const openActionDialog = (requestId: string, action: "approve" | "deny") => {
+  const openActionDialog = (requestId: string, action: 'approve' | 'deny') => {
     setSelectedRequest(requestId);
     setActionType(action);
-    setAdminNotes("");
+    setAdminNotes('');
   };
 
   return (
@@ -70,7 +75,7 @@ const RequestsTab: React.FC = () => {
         </CardTitle>
         <Select
           value={statusFilter}
-          onValueChange={(value) => setStatusFilter(value as TeamRequestStatus | "ALL")}
+          onValueChange={(value) => setStatusFilter(value as TeamRequestStatus | 'ALL')}
         >
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Filter by status" />
@@ -94,33 +99,29 @@ const RequestsTab: React.FC = () => {
               <div
                 key={request.id}
                 className={cn(
-                  "border rounded-lg p-4 space-y-3",
-                  request.status === "PENDING" && "border-amber-500/50 bg-amber-500/5"
+                  'border rounded-lg p-4 space-y-3',
+                  request.status === 'PENDING' && 'border-amber-500/50 bg-amber-500/5'
                 )}
               >
                 {/* Header */}
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold">
-                        {request.teams?.name || "Unknown Team"}
-                      </span>
+                      <span className="font-semibold">{request.teams?.name || 'Unknown Team'}</span>
                       <Badge
                         variant={
-                          request.request_type === "EMERGENCY_CANCEL"
-                            ? "destructive"
-                            : "outline"
+                          request.request_type === 'EMERGENCY_CANCEL' ? 'destructive' : 'outline'
                         }
                       >
                         {REQUEST_TYPE_LABELS[request.request_type]}
                       </Badge>
                       <Badge
                         variant={
-                          request.status === "APPROVED"
-                            ? "default"
-                            : request.status === "DENIED"
-                            ? "destructive"
-                            : "secondary"
+                          request.status === 'APPROVED'
+                            ? 'default'
+                            : request.status === 'DENIED'
+                              ? 'destructive'
+                              : 'secondary'
                         }
                       >
                         {REQUEST_STATUS_LABELS[request.status]}
@@ -133,13 +134,13 @@ const RequestsTab: React.FC = () => {
                   </div>
 
                   {/* Actions for pending requests */}
-                  {request.status === "PENDING" && (
+                  {request.status === 'PENDING' && (
                     <div className="flex flex-col sm:flex-row gap-2 mt-2 sm:mt-0">
                       <Button
                         size="sm"
                         variant="outline"
                         className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                        onClick={() => openActionDialog(request.id, "approve")}
+                        onClick={() => openActionDialog(request.id, 'approve')}
                       >
                         <Check className="h-4 w-4 mr-1" />
                         Approve
@@ -148,7 +149,7 @@ const RequestsTab: React.FC = () => {
                         size="sm"
                         variant="outline"
                         className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        onClick={() => openActionDialog(request.id, "deny")}
+                        onClick={() => openActionDialog(request.id, 'deny')}
                       >
                         <X className="h-4 w-4 mr-1" />
                         Deny
@@ -161,21 +162,21 @@ const RequestsTab: React.FC = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                   {request.match_date && (
                     <div>
-                      <span className="text-muted-foreground">Date:</span>{" "}
+                      <span className="text-muted-foreground">Date:</span>{' '}
                       <span className="font-medium">
-                        {format(new Date(request.match_date), "MMM d, yyyy")}
+                        {format(new Date(request.match_date), 'MMM d, yyyy')}
                       </span>
                     </div>
                   )}
                   {request.current_timeslot && (
                     <div>
-                      <span className="text-muted-foreground">Current:</span>{" "}
+                      <span className="text-muted-foreground">Current:</span>{' '}
                       <span className="font-medium">{request.current_timeslot}</span>
                     </div>
                   )}
                   {request.requested_timeslot && (
                     <div>
-                      <span className="text-muted-foreground">Requested:</span>{" "}
+                      <span className="text-muted-foreground">Requested:</span>{' '}
                       <span className="font-medium">{request.requested_timeslot}</span>
                     </div>
                   )}
@@ -184,7 +185,7 @@ const RequestsTab: React.FC = () => {
                 {/* Reason */}
                 {request.reason && (
                   <div className="text-sm">
-                    <span className="text-muted-foreground">Reason:</span>{" "}
+                    <span className="text-muted-foreground">Reason:</span>{' '}
                     <span>{request.reason}</span>
                   </div>
                 )}
@@ -192,7 +193,7 @@ const RequestsTab: React.FC = () => {
                 {/* Admin notes */}
                 {request.admin_notes && (
                   <div className="text-sm bg-muted/50 p-2 rounded">
-                    <span className="text-muted-foreground">Admin notes:</span>{" "}
+                    <span className="text-muted-foreground">Admin notes:</span>{' '}
                     <span>{request.admin_notes}</span>
                   </div>
                 )}
@@ -210,9 +211,7 @@ const RequestsTab: React.FC = () => {
           <div className="text-center py-8 text-muted-foreground">
             <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
             <p>No requests found</p>
-            {statusFilter !== "ALL" && (
-              <p className="text-sm mt-1">Try changing the filter</p>
-            )}
+            {statusFilter !== 'ALL' && <p className="text-sm mt-1">Try changing the filter</p>}
           </div>
         )}
       </CardContent>
@@ -222,12 +221,12 @@ const RequestsTab: React.FC = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {actionType === "approve" ? "Approve Request" : "Deny Request"}
+              {actionType === 'approve' ? 'Approve Request' : 'Deny Request'}
             </DialogTitle>
             <DialogDescription>
-              {actionType === "approve"
-                ? "Approve this request? You can add optional notes."
-                : "Deny this request? Consider adding a reason."}
+              {actionType === 'approve'
+                ? 'Approve this request? You can add optional notes.'
+                : 'Deny this request? Consider adding a reason.'}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
@@ -245,12 +244,10 @@ const RequestsTab: React.FC = () => {
             <Button
               onClick={handleAction}
               disabled={updateMutation.isPending}
-              variant={actionType === "approve" ? "default" : "destructive"}
+              variant={actionType === 'approve' ? 'default' : 'destructive'}
             >
-              {updateMutation.isPending && (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              )}
-              {actionType === "approve" ? "Approve" : "Deny"}
+              {updateMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              {actionType === 'approve' ? 'Approve' : 'Deny'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,5 +1,4 @@
-
-import React, { useRef, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 interface RippleTransitionProps {
@@ -15,7 +14,7 @@ export const RippleTransition: React.FC<RippleTransitionProps> = ({
   isActive,
   originX,
   originY,
-  color = "#1E3A5F", // cornhole navy by default
+  color = '#1E3A5F', // cornhole navy by default
   duration = 400,
   onAnimationComplete,
 }) => {
@@ -26,9 +25,9 @@ export const RippleTransition: React.FC<RippleTransitionProps> = ({
       const handleTransitionEnd = () => {
         onAnimationComplete();
       };
-      
+
       rippleRef.current.addEventListener('transitionend', handleTransitionEnd);
-      
+
       return () => {
         rippleRef.current?.removeEventListener('transitionend', handleTransitionEnd);
       };
@@ -38,10 +37,7 @@ export const RippleTransition: React.FC<RippleTransitionProps> = ({
   if (!isActive) return null;
 
   return createPortal(
-    <div 
-      className="fixed inset-0 z-50 pointer-events-none overflow-hidden"
-      aria-hidden="true"
-    >
+    <div className="fixed inset-0 z-50 pointer-events-none overflow-hidden" aria-hidden="true">
       <div
         ref={rippleRef}
         className="absolute rounded-full transform -translate-x-1/2 -translate-y-1/2 transition-all ease-out"
@@ -55,7 +51,7 @@ export const RippleTransition: React.FC<RippleTransitionProps> = ({
           transform: 'scale(0)',
           opacity: 0,
           // Immediately after mount, expand to cover screen
-          animation: `rippleExpand ${duration}ms cubic-bezier(0.4, 0, 0.2, 1) forwards`
+          animation: `rippleExpand ${duration}ms cubic-bezier(0.4, 0, 0.2, 1) forwards`,
         }}
       />
       <style>

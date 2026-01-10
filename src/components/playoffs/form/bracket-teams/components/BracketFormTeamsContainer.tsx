@@ -1,16 +1,18 @@
 import React from 'react';
-import { Division, Team } from '@/types';
-import { BracketFormTeamsContainerProps, ProcessedTeam } from '../types';
-import { useBracketFormData } from '../hooks/useBracketFormData';
-import { useTeamSelectionState } from '../hooks/useTeamSelectionState';
-import { useBracketFormValidation } from '../hooks/useBracketFormValidation';
-import { TeamSelectionLoading } from './TeamSelectionLoading';
-import { TeamSelectionError } from './TeamSelectionError';
-import { TeamSelectionEmpty } from './TeamSelectionEmpty';
-import { TeamSelectionForm } from './TeamSelectionForm';
-import { isTeamArray, isDivisionArray, isDivisionIdValid } from '@/utils/typeGuards';
+
 import { useToast } from '@/hooks/use-toast';
-import { warnLog } from "@/utils/logger";
+import { Division, Team } from '@/types';
+import { warnLog } from '@/utils/logger';
+import { isDivisionArray, isDivisionIdValid, isTeamArray } from '@/utils/typeGuards';
+
+import { useBracketFormData } from '../hooks/useBracketFormData';
+import { useBracketFormValidation } from '../hooks/useBracketFormValidation';
+import { useTeamSelectionState } from '../hooks/useTeamSelectionState';
+import { BracketFormTeamsContainerProps, ProcessedTeam } from '../types';
+import { TeamSelectionEmpty } from './TeamSelectionEmpty';
+import { TeamSelectionError } from './TeamSelectionError';
+import { TeamSelectionForm } from './TeamSelectionForm';
+import { TeamSelectionLoading } from './TeamSelectionLoading';
 
 /**
  * Main container component for bracket team selection
@@ -23,7 +25,7 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
   minTeams = 2,
   divisions = [],
   onChange,
-  onSeedChange
+  onSeedChange,
 }) => {
   const { toast } = useToast();
   const hasToastedInvalidDivision = React.useRef(false);
@@ -47,31 +49,31 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
 
   const validDivisionId = React.useMemo(() => {
     if (!divisionId) return null;
-    
+
     if (!isDivisionIdValid(validDivisions, divisionId)) {
       // Toast error once per component instance
       if (!hasToastedInvalidDivision.current) {
         toast({
-          variant: "destructive",
-          title: "Invalid Division",
-          description: "The selected division is not valid. Showing all teams."
+          variant: 'destructive',
+          title: 'Invalid Division',
+          description: 'The selected division is not valid. Showing all teams.',
         });
         hasToastedInvalidDivision.current = true;
       }
       return null;
     }
-    
+
     return divisionId;
   }, [divisionId, validDivisions, toast]);
 
   // Always call useBracketFormData - pass validTeamsProp to short-circuit if provided
-  const { 
-    teams: fetchedTeams, 
-    isLoading: fetchLoading, 
-    isError: fetchError, 
-    errorMessage, 
+  const {
+    teams: fetchedTeams,
+    isLoading: fetchLoading,
+    isError: fetchError,
+    errorMessage,
     isDataReady,
-    seedValidation
+    seedValidation,
   } = useBracketFormData(validDivisions, validTeamsProp, validDivisionId);
 
   // Determine which teams to use and loading states
@@ -82,7 +84,7 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
   // Convert teams to ProcessedTeam format with type safety
   const processedTeams = React.useMemo((): ProcessedTeam[] => {
     if (!isTeamArray(allTeams)) return [];
-    
+
     return allTeams.map((team, index) => ({
       id: team.id,
       name: team.name || 'Unnamed Team',
@@ -102,7 +104,7 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
       win_percentage: team.win_percentage || 0,
       game_win_percentage: team.game_win_percentage || 0,
       created_at: team.created_at || new Date().toISOString(),
-      close_match_losses: team.close_match_losses || 0
+      close_match_losses: team.close_match_losses || 0,
     }));
   }, [allTeams]);
 
@@ -131,10 +133,10 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
   // Single-path parent notification via useEffect - ONLY updates parent state
   React.useEffect(() => {
     const ids = Array.from(formState.selected);
-    
+
     onChange({
       ids,
-      isValid: validation.isValid
+      isValid: validation.isValid,
     });
   }, [formState.selected, validation.isValid, onChange]);
 
@@ -152,8 +154,8 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
   // Error state
   if (isError) {
     return (
-      <TeamSelectionError 
-        message={errorMessage || "An error occurred loading teams"} 
+      <TeamSelectionError
+        message={errorMessage || 'An error occurred loading teams'}
         onRetry={() => window.location.reload()}
       />
     );
@@ -165,11 +167,14 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
   }
 
   // Seed change handler - forward to parent if provided
-  const handleSeedChange = React.useCallback((teamId: string, seed: number | null) => {
-    if (onSeedChange) {
-      onSeedChange(teamId, seed);
-    }
-  }, [onSeedChange]);
+  const handleSeedChange = React.useCallback(
+    (teamId: string, seed: number | null) => {
+      if (onSeedChange) {
+        onSeedChange(teamId, seed);
+      }
+    },
+    [onSeedChange]
+  );
 
   // Main form with teams available
   return (
@@ -183,13 +188,9 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
         seedValidation={seedValidation}
         onSeedChange={handleSeedChange}
       />
-      
+
       {/* Display validation message */}
-      {validation.message && (
-        <div className="text-sm text-destructive">
-          {validation.message}
-        </div>
-      )}
+      {validation.message && <div className="text-sm text-destructive">{validation.message}</div>}
     </div>
   );
 };

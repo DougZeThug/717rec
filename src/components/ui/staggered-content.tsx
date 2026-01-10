@@ -1,8 +1,9 @@
-import React from "react";
-import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { motion } from 'framer-motion';
+import React from 'react';
 
-type Priority = "high" | "medium" | "low";
+import { cn } from '@/lib/utils';
+
+type Priority = 'high' | 'medium' | 'low';
 
 interface StaggerItemProps {
   priority?: Priority;
@@ -21,7 +22,7 @@ const priorityDelays: Record<Priority, number> = {
  * Priority determines delay: high=instant, medium=100ms, low=200ms
  */
 export const StaggerItem: React.FC<StaggerItemProps> = ({
-  priority = "medium",
+  priority = 'medium',
   children,
   className,
 }) => {
@@ -50,15 +51,8 @@ interface StaggeredContentProps {
  * Container for staggered content reveal
  * Wraps children with StaggerItem for coordinated animations
  */
-export const StaggeredContent: React.FC<StaggeredContentProps> = ({
-  children,
-  className,
-}) => {
-  return (
-    <div className={cn("contents", className)}>
-      {children}
-    </div>
-  );
+export const StaggeredContent: React.FC<StaggeredContentProps> = ({ children, className }) => {
+  return <div className={cn('contents', className)}>{children}</div>;
 };
 
 /**

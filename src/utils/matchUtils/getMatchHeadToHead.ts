@@ -1,6 +1,6 @@
-import { HeadToHeadService } from "@/services/HeadToHeadService";
-import type { HeadToHeadRecord } from "@/types/headToHead";
-import { errorLog } from "@/utils/logger";
+import { HeadToHeadService } from '@/services/HeadToHeadService';
+import type { HeadToHeadRecord } from '@/types/headToHead';
+import { errorLog } from '@/utils/logger';
 
 export interface MatchHeadToHeadResult {
   team1Wins: number;
@@ -26,10 +26,10 @@ export const getMatchHeadToHead = async (
   try {
     // Use existing service to get all head-to-head records for team1
     const records = await HeadToHeadService.getTeamHeadToHead(team1Id);
-    
+
     // Find the specific record for team2
-    const opponentRecord = records.find((record: HeadToHeadRecord) => 
-      record.opponent_id === team2Id
+    const opponentRecord = records.find(
+      (record: HeadToHeadRecord) => record.opponent_id === team2Id
     );
 
     if (!opponentRecord) {

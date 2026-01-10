@@ -1,12 +1,14 @@
-import React, { CSSProperties, useCallback } from "react";
-import { Match } from "@/types";
-import { Skeleton } from "@/components/ui/skeleton";
-import { History } from "lucide-react";
-import { InlineEmptyState } from "@/components/ui/inline-empty-state";
-import TeamGameScoreRow from "./TeamGameScoreRow";
-import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
-import { VirtualizedList } from "@/components/ui/VirtualizedList";
-import { useVirtualization } from "@/hooks/useVirtualization";
+import { History } from 'lucide-react';
+import React, { CSSProperties, useCallback } from 'react';
+
+import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
+import { InlineEmptyState } from '@/components/ui/inline-empty-state';
+import { Skeleton } from '@/components/ui/skeleton';
+import { VirtualizedList } from '@/components/ui/VirtualizedList';
+import { useVirtualization } from '@/hooks/useVirtualization';
+import { Match } from '@/types';
+
+import TeamGameScoreRow from './TeamGameScoreRow';
 
 interface MatchListProps {
   matches: Match[];
@@ -29,11 +31,7 @@ const VirtualizedMatchRow: React.FC<{
 }> = ({ match, style, teamId, highlightWinnerLoser, isLast }) => {
   return (
     <div style={style} className={isLast ? '' : 'border-b border-border'}>
-      <TeamGameScoreRow
-        match={match}
-        teamId={teamId}
-        highlightWinnerLoser={highlightWinnerLoser}
-      />
+      <TeamGameScoreRow match={match} teamId={teamId} highlightWinnerLoser={highlightWinnerLoser} />
     </div>
   );
 };
@@ -42,24 +40,27 @@ const MatchList: React.FC<MatchListProps> = ({
   matches,
   isLoading,
   teamId,
-  title = "Current Season Match History",
+  title = 'Current Season Match History',
   isPast = true,
   highlightWinnerLoser = false,
   collapsible = false,
-  defaultOpen = true
+  defaultOpen = true,
 }) => {
   const { shouldVirtualize } = useVirtualization({ itemCount: matches.length, threshold: 20 });
 
-  const renderRow = useCallback((match: Match, index: number, style: CSSProperties) => (
-    <VirtualizedMatchRow
-      key={match.id}
-      match={match}
-      style={style}
-      teamId={teamId}
-      highlightWinnerLoser={highlightWinnerLoser}
-      isLast={index === matches.length - 1}
-    />
-  ), [teamId, highlightWinnerLoser, matches.length]);
+  const renderRow = useCallback(
+    (match: Match, index: number, style: CSSProperties) => (
+      <VirtualizedMatchRow
+        key={match.id}
+        match={match}
+        style={style}
+        teamId={teamId}
+        highlightWinnerLoser={highlightWinnerLoser}
+        isLast={index === matches.length - 1}
+      />
+    ),
+    [teamId, highlightWinnerLoser, matches.length]
+  );
 
   const matchContent = (
     <>
@@ -68,10 +69,12 @@ const MatchList: React.FC<MatchListProps> = ({
       ) : matches.length === 0 ? (
         <InlineEmptyState
           icon={History}
-          message={isPast ? "No Match History" : "No Upcoming Matches"}
-          description={isPast 
-            ? "Match history will appear after games are played" 
-            : "No upcoming matches scheduled"}
+          message={isPast ? 'No Match History' : 'No Upcoming Matches'}
+          description={
+            isPast
+              ? 'Match history will appear after games are played'
+              : 'No upcoming matches scheduled'
+          }
         />
       ) : shouldVirtualize ? (
         <VirtualizedList
@@ -111,9 +114,7 @@ const MatchList: React.FC<MatchListProps> = ({
 
   return (
     <div>
-      {title && (
-        <h2 className="text-lg sm:text-xl font-semibold mb-3">{title}</h2>
-      )}
+      {title && <h2 className="text-lg sm:text-xl font-semibold mb-3">{title}</h2>}
       {matchContent}
     </div>
   );

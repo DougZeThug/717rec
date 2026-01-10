@@ -1,6 +1,6 @@
+import React from 'react';
 
-import React from "react";
-import BatchMatchFormContainer from "./BatchMatchFormContainer";
+import BatchMatchFormContainer from './BatchMatchFormContainer';
 
 const BatchMatchForm = () => {
   return <BatchMatchFormContainer />;

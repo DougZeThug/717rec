@@ -1,15 +1,16 @@
-import React from "react";
-import { Team } from "@/types";
-import { ArrowLeftRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowLeftRight } from 'lucide-react';
+import React from 'react';
+
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+} from '@/components/ui/select';
+import { Team } from '@/types';
 
 interface TeamCompareSelectorProps {
   teams: Team[];
@@ -54,7 +55,7 @@ export const TeamCompareSelector: React.FC<TeamCompareSelectorProps> = ({
     <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full">
       {/* Team 1 Selector */}
       <div className="flex-1 w-full">
-        <Select value={team1?.id || ""} onValueChange={handleTeam1Change}>
+        <Select value={team1?.id || ''} onValueChange={handleTeam1Change}>
           <SelectTrigger className="w-full h-12">
             <SelectValue placeholder="Select Team 1">
               {team1 && <TeamOption team={team1} />}
@@ -85,7 +86,7 @@ export const TeamCompareSelector: React.FC<TeamCompareSelectorProps> = ({
 
       {/* Team 2 Selector */}
       <div className="flex-1 w-full">
-        <Select value={team2?.id || ""} onValueChange={handleTeam2Change}>
+        <Select value={team2?.id || ''} onValueChange={handleTeam2Change}>
           <SelectTrigger className="w-full h-12">
             <SelectValue placeholder="Select Team 2">
               {team2 && <TeamOption team={team2} />}

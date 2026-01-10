@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock dependencies before importing the hook
 const mockHandleSubmitScore = vi.fn();
@@ -13,35 +13,35 @@ vi.mock('@/integrations/supabase/client', () => ({
       select: vi.fn(() => ({
         order: vi.fn(() => Promise.resolve({ data: [], error: null })),
         gte: vi.fn(() => ({
-          lt: vi.fn(() => Promise.resolve({ data: [], error: null }))
+          lt: vi.fn(() => Promise.resolve({ data: [], error: null })),
         })),
-        eq: vi.fn(() => Promise.resolve({ data: [], error: null }))
+        eq: vi.fn(() => Promise.resolve({ data: [], error: null })),
       })),
       channel: vi.fn(() => ({
         on: vi.fn(() => ({
-          subscribe: vi.fn()
-        }))
-      }))
+          subscribe: vi.fn(),
+        })),
+      })),
     })),
     channel: vi.fn(() => ({
       on: vi.fn(() => ({
-        subscribe: vi.fn()
-      }))
+        subscribe: vi.fn(),
+      })),
     })),
-    removeChannel: vi.fn()
-  }
+    removeChannel: vi.fn(),
+  },
 }));
 
 vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({
-    toast: mockToast
-  })
+    toast: mockToast,
+  }),
 }));
 
 vi.mock('@/hooks/matches/useMatchSubmission', () => ({
   useMatchSubmission: () => ({
-    handleSubmitScore: mockHandleSubmitScore
-  })
+    handleSubmitScore: mockHandleSubmitScore,
+  }),
 }));
 
 vi.mock('@/utils/logger', () => ({
@@ -49,7 +49,7 @@ vi.mock('@/utils/logger', () => ({
   scoreLog: vi.fn(),
   errorLog: vi.fn(),
   warnLog: vi.fn(),
-  dbLog: vi.fn()
+  dbLog: vi.fn(),
 }));
 
 // Import after mocks
@@ -57,7 +57,7 @@ import { useScoreEntryData } from '../hooks/useScoreEntryData';
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } }
+    defaultOptions: { queries: { retry: false } },
   });
   const Wrapper = ({ children }: { children: React.ReactNode }) => {
     return React.createElement(QueryClientProvider, { client: queryClient }, children);
@@ -92,7 +92,7 @@ describe('useScoreEntryData', () => {
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({
         title: expect.stringContaining('No'),
-        variant: 'destructive'
+        variant: 'destructive',
       })
     );
   });

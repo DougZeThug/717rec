@@ -1,6 +1,8 @@
-import { describe, it, expect } from 'vitest';
-import { generateScheduleGreedy, GreedySchedulerInput } from '../greedyBackToBackScheduler';
+import { describe, expect, it } from 'vitest';
+
 import { Team } from '@/types';
+
+import { generateScheduleGreedy, GreedySchedulerInput } from '../greedyBackToBackScheduler';
 
 // Helper to create mock teams
 function createMockTeam(id: string, name: string, division: string, tier: number = 1): Team {
@@ -19,7 +21,7 @@ function createMockTeam(id: string, name: string, division: string, tier: number
     seed: null,
     created_at: new Date().toISOString(),
     challonge_participant_id: null,
-    spotify_url: null
+    spotify_url: null,
   } as Team;
 }
 
@@ -36,13 +38,13 @@ describe('greedyBackToBackScheduler', () => {
         createMockTeam('7', 'Team G', 'Tier 2', 2),
         createMockTeam('8', 'Team H', 'Tier 2', 2),
         createMockTeam('9', 'Team I', 'Tier 3', 3),
-        createMockTeam('10', 'Team J', 'Tier 3', 3)
+        createMockTeam('10', 'Team J', 'Tier 3', 3),
       ];
 
       const input: GreedySchedulerInput = {
         teams,
         historyPairs: [],
-        slots: ['8:30', '9:00']
+        slots: ['8:30', '9:00'],
       };
 
       const result = generateScheduleGreedy(input);
@@ -50,20 +52,20 @@ describe('greedyBackToBackScheduler', () => {
       // Should have 10 total matches (5 in S1, 5 in S2)
       expect(result).toHaveLength(10);
 
-      const s1Matches = result.filter(m => m.slot === '8:30');
-      const s2Matches = result.filter(m => m.slot === '9:00');
+      const s1Matches = result.filter((m) => m.slot === '8:30');
+      const s2Matches = result.filter((m) => m.slot === '9:00');
 
       expect(s1Matches).toHaveLength(5);
       expect(s2Matches).toHaveLength(5);
 
       // Check each team appears exactly once in each slot
       const s1Teams = new Set([
-        ...s1Matches.map(m => m.teamAId),
-        ...s1Matches.map(m => m.teamBId)
+        ...s1Matches.map((m) => m.teamAId),
+        ...s1Matches.map((m) => m.teamBId),
       ]);
       const s2Teams = new Set([
-        ...s2Matches.map(m => m.teamAId),
-        ...s2Matches.map(m => m.teamBId)
+        ...s2Matches.map((m) => m.teamAId),
+        ...s2Matches.map((m) => m.teamBId),
       ]);
 
       expect(s1Teams.size).toBe(10);
@@ -87,19 +89,19 @@ describe('greedyBackToBackScheduler', () => {
         createMockTeam('5', 'T2-A', 'Tier 2', 2),
         createMockTeam('6', 'T2-B', 'Tier 2', 2),
         createMockTeam('7', 'T2-C', 'Tier 2', 2),
-        createMockTeam('8', 'T2-D', 'Tier 2', 2)
+        createMockTeam('8', 'T2-D', 'Tier 2', 2),
       ];
 
       const input: GreedySchedulerInput = {
         teams,
         historyPairs: [],
-        slots: ['8:30', '9:00']
+        slots: ['8:30', '9:00'],
       };
 
       const result = generateScheduleGreedy(input);
 
       // Count same-division matches
-      const sameDivisionMatches = result.filter(m => m.tierA === m.tierB);
+      const sameDivisionMatches = result.filter((m) => m.tierA === m.tierB);
 
       // Should have mostly same-division matches (at least 6 out of 8)
       expect(sameDivisionMatches.length).toBeGreaterThanOrEqual(6);
@@ -110,18 +112,18 @@ describe('greedyBackToBackScheduler', () => {
         createMockTeam('1', 'Team A', 'Tier 1', 1),
         createMockTeam('2', 'Team B', 'Tier 1', 1),
         createMockTeam('3', 'Team C', 'Tier 1', 1),
-        createMockTeam('4', 'Team D', 'Tier 1', 1)
+        createMockTeam('4', 'Team D', 'Tier 1', 1),
       ];
 
       const historyPairs: Array<[string, string]> = [
         ['1', '2'], // Team A played Team B
-        ['3', '4']  // Team C played Team D
+        ['3', '4'], // Team C played Team D
       ];
 
       const input: GreedySchedulerInput = {
         teams,
         historyPairs,
-        slots: ['8:30', '9:00']
+        slots: ['8:30', '9:00'],
       };
 
       const result = generateScheduleGreedy(input);
@@ -149,14 +151,14 @@ describe('greedyBackToBackScheduler', () => {
         createMockTeam('6', 'Team F', 'Tier 2', 2),
         createMockTeam('7', 'Team G', 'Tier 3', 3),
         createMockTeam('8', 'Team H', 'Tier 3', 3),
-        createMockTeam('9', 'Team I', 'Tier 3', 3)
+        createMockTeam('9', 'Team I', 'Tier 3', 3),
       ];
 
       const input: GreedySchedulerInput = {
         teams,
         historyPairs: [],
         slots: ['8:30', '9:00'],
-        thirdSlot: '9:30'
+        thirdSlot: '9:30',
       };
 
       const result = generateScheduleGreedy(input);
@@ -164,24 +166,20 @@ describe('greedyBackToBackScheduler', () => {
       // Should have 9 total matches (4 in S1, 4 in S2, 1 in S3)
       expect(result).toHaveLength(9);
 
-      const s1Matches = result.filter(m => m.slot === '8:30');
-      const s2Matches = result.filter(m => m.slot === '9:00');
-      const s3Matches = result.filter(m => m.slot === '9:30');
+      const s1Matches = result.filter((m) => m.slot === '8:30');
+      const s2Matches = result.filter((m) => m.slot === '9:00');
+      const s3Matches = result.filter((m) => m.slot === '9:30');
 
       expect(s1Matches).toHaveLength(4);
       expect(s2Matches).toHaveLength(4);
       expect(s3Matches).toHaveLength(1);
 
       // Find Bye1 and Bye2
-      const s1TeamIds = new Set([
-        ...s1Matches.flatMap(m => [m.teamAId, m.teamBId])
-      ]);
-      const s2TeamIds = new Set([
-        ...s2Matches.flatMap(m => [m.teamAId, m.teamBId])
-      ]);
+      const s1TeamIds = new Set([...s1Matches.flatMap((m) => [m.teamAId, m.teamBId])]);
+      const s2TeamIds = new Set([...s2Matches.flatMap((m) => [m.teamAId, m.teamBId])]);
 
-      const bye1Id = teams.find(t => !s1TeamIds.has(t.id))?.id;
-      const bye2Id = teams.find(t => !s2TeamIds.has(t.id))?.id;
+      const bye1Id = teams.find((t) => !s1TeamIds.has(t.id))?.id;
+      const bye2Id = teams.find((t) => !s2TeamIds.has(t.id))?.id;
 
       expect(bye1Id).toBeDefined();
       expect(bye2Id).toBeDefined();
@@ -211,24 +209,22 @@ describe('greedyBackToBackScheduler', () => {
         createMockTeam('2', 'Team B', 'Tier 1', 1),
         createMockTeam('3', 'Team C', 'Tier 1', 1),
         createMockTeam('4', 'Team D', 'Tier 1', 1),
-        createMockTeam('5', 'Team E', 'Tier 1', 1)
+        createMockTeam('5', 'Team E', 'Tier 1', 1),
       ];
 
       // Team C and Team D have played before
-      const historyPairs: Array<[string, string]> = [
-        ['3', '4']
-      ];
+      const historyPairs: Array<[string, string]> = [['3', '4']];
 
       const input: GreedySchedulerInput = {
         teams,
         historyPairs,
         slots: ['8:30', '9:00'],
-        thirdSlot: '9:30'
+        thirdSlot: '9:30',
       };
 
       const result = generateScheduleGreedy(input);
 
-      const s3Matches = result.filter(m => m.slot === '9:30');
+      const s3Matches = result.filter((m) => m.slot === '9:30');
       expect(s3Matches).toHaveLength(1);
 
       const s3Match = s3Matches[0];
@@ -245,7 +241,7 @@ describe('greedyBackToBackScheduler', () => {
         createMockTeam('1', 'T1-A', 'Tier 1', 1),
         createMockTeam('2', 'T1-B', 'Tier 1', 1),
         createMockTeam('3', 'T3-A', 'Tier 3', 3),
-        createMockTeam('4', 'T3-B', 'Tier 3', 3)
+        createMockTeam('4', 'T3-B', 'Tier 3', 3),
       ];
 
       const input: GreedySchedulerInput = {
@@ -253,8 +249,8 @@ describe('greedyBackToBackScheduler', () => {
         historyPairs: [],
         slots: ['8:30', '9:00'],
         config: {
-          maxTierGap: 1
-        }
+          maxTierGap: 1,
+        },
       };
 
       const result = generateScheduleGreedy(input);
@@ -271,19 +267,19 @@ describe('greedyBackToBackScheduler', () => {
         createMockTeam('1', 'T1-A', 'Tier 1', 1),
         createMockTeam('2', 'T1-B', 'Tier 1', 1),
         createMockTeam('3', 'T2-A', 'Tier 2', 2),
-        createMockTeam('4', 'T2-B', 'Tier 2', 2)
+        createMockTeam('4', 'T2-B', 'Tier 2', 2),
       ];
 
       const input: GreedySchedulerInput = {
         teams,
         historyPairs: [],
-        slots: ['8:30', '9:00']
+        slots: ['8:30', '9:00'],
       };
 
       const result = generateScheduleGreedy(input);
 
       // All matches should be same-tier in this case
-      const sameTierMatches = result.filter(m => m.tierA === m.tierB);
+      const sameTierMatches = result.filter((m) => m.tierA === m.tierB);
       expect(sameTierMatches).toHaveLength(result.length);
     });
   });
@@ -294,13 +290,13 @@ describe('greedyBackToBackScheduler', () => {
         createMockTeam('1', 'Team A', 'Tier 1', 1),
         createMockTeam('2', 'Team B', 'Tier 1', 1),
         createMockTeam('3', 'Team C', 'Tier 1', 1),
-        createMockTeam('4', 'Team D', 'Tier 1', 1)
+        createMockTeam('4', 'Team D', 'Tier 1', 1),
       ];
 
       const input: GreedySchedulerInput = {
         teams,
         historyPairs: [],
-        slots: ['8:30', '9:00']
+        slots: ['8:30', '9:00'],
       };
 
       const result1 = generateScheduleGreedy(input);

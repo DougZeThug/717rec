@@ -1,10 +1,10 @@
-
 import { LucideIcon } from 'lucide-react';
+
 import { Json } from '@/integrations/supabase/types';
 
-export type BadgeType = 
+export type BadgeType =
   | 'recreational_champion'
-  | 'intermediate_champion' 
+  | 'intermediate_champion'
   | 'competitive_champion'
   | 'recreational_runner_up'
   | 'intermediate_runner_up'
@@ -71,9 +71,9 @@ export interface PerformanceBadgeMetadata {
   period: 'season' | 'career';
 }
 
-export type BadgeMetadata = 
-  | ChampionshipBadgeMetadata 
-  | KingSlayerBadgeMetadata 
-  | StreakBadgeMetadata 
+export type BadgeMetadata =
+  | ChampionshipBadgeMetadata
+  | KingSlayerBadgeMetadata
+  | StreakBadgeMetadata
   | PerformanceBadgeMetadata
   | Record<string, unknown>;

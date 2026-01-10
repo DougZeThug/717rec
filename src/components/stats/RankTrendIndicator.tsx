@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { TrendingDown, TrendingUp, Minus } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { debugLog } from "@/utils/logger";
-import { cn } from "@/lib/utils";
-import { ICON_SIZES, ICON_STROKE } from "@/styles/icon-system";
+import { AnimatePresence, motion } from 'framer-motion';
+import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+
+import { cn } from '@/lib/utils';
+import { ICON_SIZES, ICON_STROKE } from '@/styles/icon-system';
+import { debugLog } from '@/utils/logger';
 
 interface RankTrendIndicatorProps {
   rankChange?: number;
@@ -40,10 +41,10 @@ const RankTrendIndicator: React.FC<RankTrendIndicatorProps> = ({ rankChange }) =
   } else if (rankChange > 0) {
     // Positive change means team moved up in rankings
     return (
-      <motion.div 
+      <motion.div
         className={cn(
-          "flex items-center text-green-600 dark:text-green-400 relative",
-          showFlash && "animate-pulse"
+          'flex items-center text-green-600 dark:text-green-400 relative',
+          showFlash && 'animate-pulse'
         )}
         initial={{ scale: 1 }}
         animate={showFlash ? { scale: [1, 1.2, 1] } : { scale: 1 }}
@@ -67,10 +68,10 @@ const RankTrendIndicator: React.FC<RankTrendIndicatorProps> = ({ rankChange }) =
   } else {
     // Negative change means team moved down in rankings
     return (
-      <motion.div 
+      <motion.div
         className={cn(
-          "flex items-center text-red-600 dark:text-red-400 relative",
-          showFlash && "animate-pulse"
+          'flex items-center text-red-600 dark:text-red-400 relative',
+          showFlash && 'animate-pulse'
         )}
         initial={{ scale: 1 }}
         animate={showFlash ? { scale: [1, 1.2, 1] } : { scale: 1 }}

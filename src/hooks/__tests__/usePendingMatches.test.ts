@@ -1,27 +1,29 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { renderHook, waitFor, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
-import { usePendingMatches } from '../usePendingMatches';
-import { supabase } from "@/integrations/supabase/client";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { applyMatchResult } from '@/hooks/team-stats/utils/teamRecordUtils';
+import { supabase } from '@/integrations/supabase/client';
+
+import { usePendingMatches } from '../usePendingMatches';
 
 // Mock dependencies
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     from: vi.fn(),
-    rpc: vi.fn()
-  }
+    rpc: vi.fn(),
+  },
 }));
 
 vi.mock('@/hooks/team-stats/utils/teamRecordUtils', () => ({
-  applyMatchResult: vi.fn()
+  applyMatchResult: vi.fn(),
 }));
 
 vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({
-    toast: vi.fn()
-  })
+    toast: vi.fn(),
+  }),
 }));
 
 // Create a wrapper for React Query
@@ -34,9 +36,8 @@ const createWrapper = () => {
       },
     },
   });
-  return ({ children }: { children: React.ReactNode }) => (
-    React.createElement(QueryClientProvider, { client: queryClient }, children)
-  );
+  return ({ children }: { children: React.ReactNode }) =>
+    React.createElement(QueryClientProvider, { client: queryClient }, children);
 };
 
 describe('usePendingMatches', () => {
@@ -47,12 +48,12 @@ describe('usePendingMatches', () => {
     team1_game_wins: 2,
     team2_game_wins: 1,
     roundNumber: 1,
-    isCompleted: true
+    isCompleted: true,
   };
 
   beforeEach(() => {
     vi.resetAllMocks();
-    
+
     // Default mock for fetching matches
     (supabase.from as any).mockImplementation((table: string) => {
       if (table === 'matches') {
@@ -60,19 +61,19 @@ describe('usePendingMatches', () => {
           select: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
               is: vi.fn().mockReturnValue({
-                order: vi.fn().mockResolvedValue({ data: [], error: null })
-              })
+                order: vi.fn().mockResolvedValue({ data: [], error: null }),
+              }),
             }),
-            update: vi.fn()
+            update: vi.fn(),
           }),
           update: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ data: null, error: null })
-          })
+            eq: vi.fn().mockResolvedValue({ data: null, error: null }),
+          }),
         };
       }
       if (table === 'v_team_details') {
         return {
-          select: vi.fn().mockResolvedValue({ data: [], error: null })
+          select: vi.fn().mockResolvedValue({ data: [], error: null }),
         };
       }
       return { select: vi.fn().mockResolvedValue({ data: [], error: null }) };
@@ -87,18 +88,18 @@ describe('usePendingMatches', () => {
           select: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
               is: vi.fn().mockReturnValue({
-                order: vi.fn().mockResolvedValue({ data: [], error: null })
-              })
-            })
+                order: vi.fn().mockResolvedValue({ data: [], error: null }),
+              }),
+            }),
           }),
           update: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ data: null, error: null })
-          })
+            eq: vi.fn().mockResolvedValue({ data: null, error: null }),
+          }),
         };
       }
       if (table === 'v_team_details') {
         return {
-          select: vi.fn().mockResolvedValue({ data: [], error: null })
+          select: vi.fn().mockResolvedValue({ data: [], error: null }),
         };
       }
       return { select: vi.fn().mockResolvedValue({ data: [], error: null }) };
@@ -107,9 +108,9 @@ describe('usePendingMatches', () => {
     (applyMatchResult as any).mockResolvedValue(true);
 
     const { result } = renderHook(() => usePendingMatches(), {
-      wrapper: createWrapper()
+      wrapper: createWrapper(),
     });
-    
+
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     // Call handleApproveResult with team 1 as winner
@@ -121,8 +122,8 @@ describe('usePendingMatches', () => {
     expect(applyMatchResult).toHaveBeenCalledWith(
       'team-1', // winnerId
       'team-2', // loserId
-      2,        // winner's game wins
-      1         // loser's game wins
+      2, // winner's game wins
+      1 // loser's game wins
     );
   });
 
@@ -133,18 +134,18 @@ describe('usePendingMatches', () => {
           select: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
               is: vi.fn().mockReturnValue({
-                order: vi.fn().mockResolvedValue({ data: [], error: null })
-              })
-            })
+                order: vi.fn().mockResolvedValue({ data: [], error: null }),
+              }),
+            }),
           }),
           update: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ data: null, error: null })
-          })
+            eq: vi.fn().mockResolvedValue({ data: null, error: null }),
+          }),
         };
       }
       if (table === 'v_team_details') {
         return {
-          select: vi.fn().mockResolvedValue({ data: [], error: null })
+          select: vi.fn().mockResolvedValue({ data: [], error: null }),
         };
       }
       return { select: vi.fn().mockResolvedValue({ data: [], error: null }) };
@@ -154,9 +155,9 @@ describe('usePendingMatches', () => {
     (applyMatchResult as any).mockRejectedValue(new Error('RPC failed'));
 
     const { result } = renderHook(() => usePendingMatches(), {
-      wrapper: createWrapper()
+      wrapper: createWrapper(),
     });
-    
+
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     // Call handleApproveResult - should not throw due to mutation error handling
@@ -180,18 +181,18 @@ describe('usePendingMatches', () => {
           select: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
               is: vi.fn().mockReturnValue({
-                order: vi.fn().mockResolvedValue({ data: [], error: null })
-              })
-            })
+                order: vi.fn().mockResolvedValue({ data: [], error: null }),
+              }),
+            }),
           }),
           update: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ data: null, error: null })
-          })
+            eq: vi.fn().mockResolvedValue({ data: null, error: null }),
+          }),
         };
       }
       if (table === 'v_team_details') {
         return {
-          select: vi.fn().mockResolvedValue({ data: [], error: null })
+          select: vi.fn().mockResolvedValue({ data: [], error: null }),
         };
       }
       return { select: vi.fn().mockResolvedValue({ data: [], error: null }) };
@@ -200,9 +201,9 @@ describe('usePendingMatches', () => {
     (applyMatchResult as any).mockResolvedValue(true);
 
     const { result } = renderHook(() => usePendingMatches(), {
-      wrapper: createWrapper()
+      wrapper: createWrapper(),
     });
-    
+
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     // Call handleApproveResult with team 2 as winner
@@ -214,8 +215,8 @@ describe('usePendingMatches', () => {
     expect(applyMatchResult).toHaveBeenCalledWith(
       'team-2', // winnerId (team 2 won)
       'team-1', // loserId
-      1,        // winner's game wins (team2GameWins)
-      2         // loser's game wins (team1GameWins)
+      1, // winner's game wins (team2GameWins)
+      2 // loser's game wins (team1GameWins)
     );
   });
 });

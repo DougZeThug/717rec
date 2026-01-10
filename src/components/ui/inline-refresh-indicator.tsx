@@ -1,7 +1,8 @@
-import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { RefreshCw } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from 'framer-motion';
+import { RefreshCw } from 'lucide-react';
+import React from 'react';
+
+import { cn } from '@/lib/utils';
 
 interface InlineRefreshIndicatorProps {
   isRefetching: boolean;
@@ -16,7 +17,7 @@ interface InlineRefreshIndicatorProps {
 export const InlineRefreshIndicator: React.FC<InlineRefreshIndicatorProps> = ({
   isRefetching,
   className,
-  label = "Updating...",
+  label = 'Updating...',
 }) => {
   return (
     <AnimatePresence>
@@ -27,7 +28,7 @@ export const InlineRefreshIndicator: React.FC<InlineRefreshIndicatorProps> = ({
           exit={{ opacity: 0, x: -8 }}
           transition={{ duration: 0.15 }}
           className={cn(
-            "inline-flex items-center gap-1.5 text-xs text-muted-foreground",
+            'inline-flex items-center gap-1.5 text-xs text-muted-foreground',
             className
           )}
         >
@@ -45,7 +46,7 @@ export const InlineRefreshIndicator: React.FC<InlineRefreshIndicatorProps> = ({
 export const HeaderRefreshIndicator: React.FC<InlineRefreshIndicatorProps> = ({
   isRefetching,
   className,
-  label = "Updating...",
+  label = 'Updating...',
 }) => {
   return (
     <AnimatePresence>
@@ -56,8 +57,8 @@ export const HeaderRefreshIndicator: React.FC<InlineRefreshIndicatorProps> = ({
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.2 }}
           className={cn(
-            "inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium",
-            "bg-muted/50 text-muted-foreground rounded-pill border border-border",
+            'inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium',
+            'bg-muted/50 text-muted-foreground rounded-pill border border-border',
             className
           )}
         >

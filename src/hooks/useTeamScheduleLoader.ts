@@ -1,9 +1,10 @@
-import { useState, useCallback } from 'react';
-import { TimeBlockTeamsMap, PairedTimeBlockTeamsMap, DualBlockConfig } from '@/types/autoSchedule';
-import { getTeamsByTimeBlock, getAllBackToBackTeams } from '@/utils/autoSchedule/teamLoaderUtils';
+import { useCallback, useState } from 'react';
+
+import { DualBlockConfig, PairedTimeBlockTeamsMap, TimeBlockTeamsMap } from '@/types/autoSchedule';
 import { TIME_BLOCKS } from '@/utils/autoSchedule/constants';
+import { getAllBackToBackTeams, getTeamsByTimeBlock } from '@/utils/autoSchedule/teamLoaderUtils';
 import { normalizeDate } from '@/utils/dateNormalization';
-import { scheduleLog, errorLog } from '@/utils/logger';
+import { errorLog, scheduleLog } from '@/utils/logger';
 
 /**
  * Hook for loading team schedules and handling team count status
@@ -20,92 +21,97 @@ export const useTeamScheduleLoader = () => {
    * Improved date handling and error detection
    * Added dual block mode support
    */
-  const loadTeamsForDate = useCallback(async (
-    date: Date, 
-    dualBlockMode = false,
-    dualBlockConfig?: DualBlockConfig
-  ): Promise<TimeBlockTeamsMap> => {
-    setIsLoading(true);
-    
-    try {
-      scheduleLog("loadTeamsForDate called with:", {
-        date: date,
-        normalizedDate: normalizeDate(date, 'loadTeamsForDate'),
-        dualBlockMode
-      });
-      
-      // Ensure the date is properly formatted to prevent timezone issues
-      const safeDate = new Date(date);
-      safeDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone edge cases
-      
-      // Use the new back-to-back team loading function
-      const timeBlocksData = await getAllBackToBackTeams(safeDate);
-      
-      // Update state with standard time block format
-      setTimeBlockTeams(timeBlocksData);
-      
-      // If dual block mode is enabled, also load paired blocks
-      if (dualBlockMode && dualBlockConfig) {
-        const primaryBlock = dualBlockConfig.primaryBlock || 'Early';
-        const secondaryBlock = dualBlockConfig.secondaryBlock || 'Late';
-        
-        // Create paired blocks from loaded data
-        const primaryTeams = timeBlocksData[primaryBlock] || [];
-        const secondaryTeams = timeBlocksData[secondaryBlock] || [];
-        
-        const pairKey = `${primaryBlock}-${secondaryBlock}`;
-        const pairedBlocks = {
-          [pairKey]: {
-            primaryBlock,
-            secondaryBlock,
-            primaryTeams,
-            secondaryTeams
-          }
-        };
-        
-        setPairedTimeBlockTeams(pairedBlocks);
-        
-        scheduleLog("Loaded paired blocks for dual mode:", pairedBlocks);
-      } else {
-        // Reset paired blocks state if not in dual mode
+  const loadTeamsForDate = useCallback(
+    async (
+      date: Date,
+      dualBlockMode = false,
+      dualBlockConfig?: DualBlockConfig
+    ): Promise<TimeBlockTeamsMap> => {
+      setIsLoading(true);
+
+      try {
+        scheduleLog('loadTeamsForDate called with:', {
+          date: date,
+          normalizedDate: normalizeDate(date, 'loadTeamsForDate'),
+          dualBlockMode,
+        });
+
+        // Ensure the date is properly formatted to prevent timezone issues
+        const safeDate = new Date(date);
+        safeDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone edge cases
+
+        // Use the new back-to-back team loading function
+        const timeBlocksData = await getAllBackToBackTeams(safeDate);
+
+        // Update state with standard time block format
+        setTimeBlockTeams(timeBlocksData);
+
+        // If dual block mode is enabled, also load paired blocks
+        if (dualBlockMode && dualBlockConfig) {
+          const primaryBlock = dualBlockConfig.primaryBlock || 'Early';
+          const secondaryBlock = dualBlockConfig.secondaryBlock || 'Late';
+
+          // Create paired blocks from loaded data
+          const primaryTeams = timeBlocksData[primaryBlock] || [];
+          const secondaryTeams = timeBlocksData[secondaryBlock] || [];
+
+          const pairKey = `${primaryBlock}-${secondaryBlock}`;
+          const pairedBlocks = {
+            [pairKey]: {
+              primaryBlock,
+              secondaryBlock,
+              primaryTeams,
+              secondaryTeams,
+            },
+          };
+
+          setPairedTimeBlockTeams(pairedBlocks);
+
+          scheduleLog('Loaded paired blocks for dual mode:', pairedBlocks);
+        } else {
+          // Reset paired blocks state if not in dual mode
+          setPairedTimeBlockTeams({});
+        }
+
+        scheduleLog('Team loading completed', {
+          timeBlockCount: Object.keys(timeBlocksData).length,
+          totalTeams: Object.values(timeBlocksData).flat().length,
+          dualMode: dualBlockMode,
+        });
+
+        // Return standard time blocks
+        return timeBlocksData;
+      } catch (error) {
+        errorLog('Error loading teams for date:', error);
+        // Return empty object on error
+        setTimeBlockTeams({});
         setPairedTimeBlockTeams({});
+        return {};
+      } finally {
+        setIsLoading(false);
       }
-      
-      scheduleLog("Team loading completed", {
-        timeBlockCount: Object.keys(timeBlocksData).length,
-        totalTeams: Object.values(timeBlocksData).flat().length,
-        dualMode: dualBlockMode
-      });
-      
-      // Return standard time blocks
-      return timeBlocksData;
-    } catch (error) {
-      errorLog('Error loading teams for date:', error);
-      // Return empty object on error
-      setTimeBlockTeams({});
-      setPairedTimeBlockTeams({});
-      return {};
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   /**
    * Get counts for all teams and blocks with odd number of teams
    */
   const getTeamCountStatus = useCallback(() => {
     // Count total teams across all time blocks
-    const total = Object.values(timeBlockTeams)
-      .reduce((sum, teams) => sum + (teams?.length || 0), 0);
-    
-    // Count blocks with odd number of teams 
-    const odd = Object.values(timeBlockTeams)
-      .filter(teams => teams && teams.length % 2 !== 0)
-      .length;
-    
+    const total = Object.values(timeBlockTeams).reduce(
+      (sum, teams) => sum + (teams?.length || 0),
+      0
+    );
+
+    // Count blocks with odd number of teams
+    const odd = Object.values(timeBlockTeams).filter(
+      (teams) => teams && teams.length % 2 !== 0
+    ).length;
+
     return { total, odd };
   }, [timeBlockTeams]);
-  
+
   /**
    * Get counts specifically for dual block mode
    */
@@ -113,31 +119,31 @@ export const useTeamScheduleLoader = () => {
     if (Object.keys(pairedTimeBlockTeams).length === 0) {
       return { total: 0, paired: 0, unpaired: 0, odd: false };
     }
-    
+
     // Get first pair (typically there's only one in dual mode)
     const pair = Object.values(pairedTimeBlockTeams)[0];
-    
+
     // Count teams in each block
     const primaryCount = pair.primaryTeams.length;
     const secondaryCount = pair.secondaryTeams.length;
     const total = primaryCount + secondaryCount;
-    
+
     // Determine if either block has an odd count
-    const odd = (primaryCount % 2 !== 0) || (secondaryCount % 2 !== 0);
-    
+    const odd = primaryCount % 2 !== 0 || secondaryCount % 2 !== 0;
+
     // Create map of team IDs from primary block
-    const primaryTeamIds = new Set(pair.primaryTeams.map(team => team.id));
-    
+    const primaryTeamIds = new Set(pair.primaryTeams.map((team) => team.id));
+
     // Count teams that appear in both blocks
-    const teamsInBothBlocks = pair.secondaryTeams.filter(team => 
+    const teamsInBothBlocks = pair.secondaryTeams.filter((team) =>
       primaryTeamIds.has(team.id)
     ).length;
-    
-    return { 
+
+    return {
       total,
-      paired: teamsInBothBlocks, 
+      paired: teamsInBothBlocks,
       unpaired: total - teamsInBothBlocks,
-      odd
+      odd,
     };
   }, [pairedTimeBlockTeams]);
 
@@ -147,7 +153,7 @@ export const useTeamScheduleLoader = () => {
     pairedTimeBlockTeams,
     loadTeamsForDate,
     getTeamCountStatus,
-    getDualBlockCountStatus
+    getDualBlockCountStatus,
   };
 };
 

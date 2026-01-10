@@ -1,4 +1,3 @@
-
 /**
  * Bracket-related type definitions
  */
@@ -13,7 +12,7 @@ export interface TeamBase {
 export interface BracketMeta {
   id: string;
   title: string;
-  format: "singleElim" | "doubleElim";
+  format: 'singleElim' | 'doubleElim';
   challongeTournamentId: string;
   divisionId: string | null;
   createdAt: string;
@@ -23,13 +22,13 @@ export interface PlayoffMatchSimple {
   id: string;
   bracketId: string;
   round: number;
-  matchType: "winners" | "losers" | "finals";
+  matchType: 'winners' | 'losers' | 'finals';
   team1Id: string | null;
   team2Id: string | null;
   winnerId: string | null;
   loserId: string | null;
   bestOf: number;
-  status: "pending" | "in_progress" | "complete";
+  status: 'pending' | 'in_progress' | 'complete';
 }
 
 export interface BracketCreationRequest {
@@ -38,7 +37,7 @@ export interface BracketCreationRequest {
   divisionName: string;
   format: string;
   teams: string[];
-  tournamentType: "single elimination" | "double elimination";
+  tournamentType: 'single elimination' | 'double elimination';
 }
 
 export interface BracketOperationResult {
@@ -48,9 +47,9 @@ export interface BracketOperationResult {
 }
 
 // Type utilities for converting between representations
-export type BracketFormat = "singleElim" | "doubleElim";
-export type MatchStatus = "pending" | "in_progress" | "complete";
-export type MatchType = "winners" | "losers" | "finals";
+export type BracketFormat = 'singleElim' | 'doubleElim';
+export type MatchStatus = 'pending' | 'in_progress' | 'complete';
+export type MatchType = 'winners' | 'losers' | 'finals';
 
 /**
  * Opponent slot for brackets-manager integration

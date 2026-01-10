@@ -1,6 +1,6 @@
+import { nanoid } from 'nanoid';
 
-import { nanoid } from "nanoid";
-import { BracketMatch } from "./types";
+import { BracketMatch } from './types';
 
 /**
  * Handles generation of finals matches in a tournament
@@ -20,7 +20,7 @@ export class FinalsGenerator {
       id: nanoid(),
       round: 1,
       position: 1,
-      matchType: "finals",
+      matchType: 'finals',
       team1Id: null, // Winner of winners bracket
       team2Id: null, // Winner of losers bracket
       team1Seed: null,
@@ -28,11 +28,11 @@ export class FinalsGenerator {
       nextWinMatchId: null, // Always null for finals
       nextLoseMatchId: null, // Always null for finals
       winnerId: null,
-      bracket_id: bracketId
+      bracket_id: bracketId,
     };
-    
+
     matchMap['finals-1'] = finalsMatch;
-    
+
     return finalsMatch;
   }
 }

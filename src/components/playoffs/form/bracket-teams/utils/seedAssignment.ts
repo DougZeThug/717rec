@@ -24,10 +24,10 @@ export const assignMixedSeeds = (teams: any[]): TeamWithSeed[] => {
   const teamsWithManualSeeds: TeamWithSeed[] = [];
   const teamsWithoutSeeds: TeamWithSeed[] = [];
 
-  teams.forEach(team => {
+  teams.forEach((team) => {
     const teamWithSeed: TeamWithSeed = {
       ...team,
-      finalSeed: 0 // Will be set below
+      finalSeed: 0, // Will be set below
     };
 
     if (team.seed && typeof team.seed === 'number' && team.seed > 0) {
@@ -44,7 +44,7 @@ export const assignMixedSeeds = (teams: any[]): TeamWithSeed[] => {
   teamsWithoutSeeds.sort((a, b) => {
     const aPowerScore = a.power_score;
     const bPowerScore = b.power_score;
-    
+
     // Handle NULL power scores - put them at the end
     if (aPowerScore === null && bPowerScore === null) {
       const aWinPct = a.win_percentage || 0;
@@ -54,21 +54,21 @@ export const assignMixedSeeds = (teams: any[]): TeamWithSeed[] => {
     }
     if (aPowerScore === null) return 1;
     if (bPowerScore === null) return -1;
-    
+
     // Both have power scores, sort normally (descending)
     if (bPowerScore !== aPowerScore) return bPowerScore - aPowerScore;
-    
+
     const aWinPct = a.win_percentage || 0;
     const bWinPct = b.win_percentage || 0;
     if (bWinPct !== aWinPct) return bWinPct - aWinPct;
-    
+
     return (a.name || '').localeCompare(b.name || '');
   });
 
   // Find available seed slots (not used by manual seeds)
-  const usedSeeds = new Set(teamsWithManualSeeds.map(team => team.finalSeed));
+  const usedSeeds = new Set(teamsWithManualSeeds.map((team) => team.finalSeed));
   const availableSeeds: number[] = [];
-  
+
   for (let i = 1; i <= teams.length; i++) {
     if (!usedSeeds.has(i)) {
       availableSeeds.push(i);

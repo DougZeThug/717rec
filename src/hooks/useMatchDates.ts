@@ -1,6 +1,6 @@
-
-import { useMemo } from 'react';
 import { format, parseISO } from 'date-fns';
+import { useMemo } from 'react';
+
 import { Match } from '@/types';
 
 /**
@@ -10,15 +10,13 @@ import { Match } from '@/types';
 export const useMatchDates = (matchesData: Match[] | undefined): Set<string> => {
   return useMemo(() => {
     if (!matchesData) return new Set<string>();
-    
+
     const matchDates = new Set<string>();
-    matchesData.forEach(match => {
+    matchesData.forEach((match) => {
       if (match.date) {
         try {
           // Handle both ISO strings and date strings
-          const date = typeof match.date === 'string' 
-            ? parseISO(match.date) 
-            : match.date;
+          const date = typeof match.date === 'string' ? parseISO(match.date) : match.date;
           const dateStr = format(date, 'yyyy-MM-dd');
           matchDates.add(dateStr);
         } catch {
@@ -26,7 +24,7 @@ export const useMatchDates = (matchesData: Match[] | undefined): Set<string> => 
         }
       }
     });
-    
+
     return matchDates;
   }, [matchesData]);
 };

@@ -1,5 +1,5 @@
+import { describe, expect, it } from 'vitest';
 
-import { describe, it, expect } from 'vitest';
 import { calculateSweepRate } from '../calculateSweepRate';
 import { MatchData, PlayoffMatchData } from '../types';
 
@@ -11,12 +11,12 @@ describe('calculateSweepRate', () => {
       regularMatches: [],
       playoffMatches: null,
       teamId,
-      totalMatches: 0
+      totalMatches: 0,
     });
 
     expect(result).toEqual({
       career_sweeps: 0,
-      career_sweep_rate: 0
+      career_sweep_rate: 0,
     });
   });
 
@@ -29,15 +29,15 @@ describe('calculateSweepRate', () => {
         team2_id: 'team-2',
         team1_game_wins: 2,
         team2_game_wins: 0,
-        season_id: 'season-1'
-      }
+        season_id: 'season-1',
+      },
     ];
 
     const result = calculateSweepRate({
       regularMatches,
       playoffMatches: null,
       teamId,
-      totalMatches: 1
+      totalMatches: 1,
     });
 
     expect(result.career_sweeps).toBe(1);
@@ -53,15 +53,15 @@ describe('calculateSweepRate', () => {
         team2_id: 'team-1',
         team1_game_wins: 0,
         team2_game_wins: 2,
-        season_id: 'season-1'
-      }
+        season_id: 'season-1',
+      },
     ];
 
     const result = calculateSweepRate({
       regularMatches,
       playoffMatches: null,
       teamId,
-      totalMatches: 1
+      totalMatches: 1,
     });
 
     expect(result.career_sweeps).toBe(1);
@@ -76,15 +76,15 @@ describe('calculateSweepRate', () => {
         team2_id: 'team-2',
         team1_game_wins: 2,
         team2_game_wins: 1,
-        season_id: 'season-1'
-      }
+        season_id: 'season-1',
+      },
     ];
 
     const result = calculateSweepRate({
       regularMatches,
       playoffMatches: null,
       teamId,
-      totalMatches: 1
+      totalMatches: 1,
     });
 
     expect(result.career_sweeps).toBe(0);
@@ -99,15 +99,15 @@ describe('calculateSweepRate', () => {
         team2_id: 'team-2',
         team1_game_wins: 0,
         team2_game_wins: 2,
-        season_id: 'season-1'
-      }
+        season_id: 'season-1',
+      },
     ];
 
     const result = calculateSweepRate({
       regularMatches,
       playoffMatches: null,
       teamId,
-      totalMatches: 1
+      totalMatches: 1,
     });
 
     expect(result.career_sweeps).toBe(0);
@@ -122,15 +122,15 @@ describe('calculateSweepRate', () => {
         team2_id: 'team-2',
         team1_score: 2,
         team2_score: 0,
-        bracket_id: 'bracket-1'
-      }
+        bracket_id: 'bracket-1',
+      },
     ];
 
     const result = calculateSweepRate({
       regularMatches: [],
       playoffMatches,
       teamId,
-      totalMatches: 1
+      totalMatches: 1,
     });
 
     expect(result.career_sweeps).toBe(1);
@@ -145,15 +145,15 @@ describe('calculateSweepRate', () => {
         team2_id: 'team-2',
         team1_game_wins: null,
         team2_game_wins: null,
-        season_id: 'season-1'
-      }
+        season_id: 'season-1',
+      },
     ];
 
     const result = calculateSweepRate({
       regularMatches,
       playoffMatches: null,
       teamId,
-      totalMatches: 1
+      totalMatches: 1,
     });
 
     expect(result.career_sweeps).toBe(0);
@@ -168,7 +168,7 @@ describe('calculateSweepRate', () => {
         team2_id: 'team-2',
         team1_game_wins: 2,
         team2_game_wins: 0,
-        season_id: 'season-1'
+        season_id: 'season-1',
       },
       {
         winner_id: 'team-1',
@@ -177,15 +177,15 @@ describe('calculateSweepRate', () => {
         team2_id: 'team-3',
         team1_game_wins: 2,
         team2_game_wins: 1,
-        season_id: 'season-1'
-      }
+        season_id: 'season-1',
+      },
     ];
 
     const result = calculateSweepRate({
       regularMatches,
       playoffMatches: null,
       teamId,
-      totalMatches: 4 // Assuming 4 total matches played
+      totalMatches: 4, // Assuming 4 total matches played
     });
 
     expect(result.career_sweeps).toBe(1);

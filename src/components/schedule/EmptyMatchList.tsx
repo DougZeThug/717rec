@@ -1,7 +1,8 @@
-import React from "react";
-import { CalendarX, Calendar, Search } from "lucide-react";
-import { EmptyState } from "@/components/ui/empty-state";
-import { useNavigate } from "react-router";
+import { Calendar, CalendarX, Search } from 'lucide-react';
+import React from 'react';
+import { useNavigate } from 'react-router';
+
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface EmptyMatchListProps {
   searchTerm: string;
@@ -15,7 +16,7 @@ const EmptyMatchList: React.FC<EmptyMatchListProps> = ({ searchTerm, isCompleted
     if (searchTerm) {
       return {
         icon: Search,
-        title: "No Matches Found",
+        title: 'No Matches Found',
         description: `No matches found for "${searchTerm}". Try a different search term.`,
         actions: [],
       };
@@ -24,7 +25,7 @@ const EmptyMatchList: React.FC<EmptyMatchListProps> = ({ searchTerm, isCompleted
     if (isCompleted) {
       return {
         icon: CalendarX,
-        title: "No Completed Matches",
+        title: 'No Completed Matches',
         description: "Once matches are played and scores are recorded, they'll appear here.",
         actions: [],
       };
@@ -32,13 +33,13 @@ const EmptyMatchList: React.FC<EmptyMatchListProps> = ({ searchTerm, isCompleted
 
     return {
       icon: Calendar,
-      title: "No Upcoming Matches",
-      description: "There are no scheduled matches yet. Check back later for updates.",
+      title: 'No Upcoming Matches',
+      description: 'There are no scheduled matches yet. Check back later for updates.',
       actions: [
         {
-          label: "View Teams",
-          onClick: () => navigate("/teams"),
-          variant: "outline" as const,
+          label: 'View Teams',
+          onClick: () => navigate('/teams'),
+          variant: 'outline' as const,
         },
       ],
     };
@@ -46,14 +47,7 @@ const EmptyMatchList: React.FC<EmptyMatchListProps> = ({ searchTerm, isCompleted
 
   const { icon, title, description, actions } = getEmptyStateContent();
 
-  return (
-    <EmptyState
-      icon={icon}
-      title={title}
-      description={description}
-      actions={actions}
-    />
-  );
+  return <EmptyState icon={icon} title={title} description={description} actions={actions} />;
 };
 
 export default EmptyMatchList;

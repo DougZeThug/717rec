@@ -1,11 +1,12 @@
-import React from "react";
-import { motion } from "framer-motion";
-import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Edit, Calendar, Trophy, Archive } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import type { Season } from "@/types/season";
+import { motion } from 'framer-motion';
+import { Archive, Calendar, Edit, Trophy } from 'lucide-react';
+import React from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { Season } from '@/types/season';
 
 interface SeasonsListProps {
   seasons: Season[] | undefined;
@@ -47,7 +48,11 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
 
   const getStatusBadge = (season: Season) => {
     if (season.is_active) {
-      return <Badge variant="default" className="bg-green-500">Active</Badge>;
+      return (
+        <Badge variant="default" className="bg-green-500">
+          Active
+        </Badge>
+      );
     } else if (season.is_archived) {
       return <Badge variant="secondary">Archived</Badge>;
     } else {
@@ -77,8 +82,8 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
                 <div>
                   <CardTitle className="text-lg">{season.name}</CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    {new Date(season.start_date).toLocaleDateString()} - 
-                    {season.end_date ? new Date(season.end_date).toLocaleDateString() : "Ongoing"}
+                    {new Date(season.start_date).toLocaleDateString()} -
+                    {season.end_date ? new Date(season.end_date).toLocaleDateString() : 'Ongoing'}
                   </p>
                 </div>
               </div>
@@ -101,7 +106,7 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div>
-                <span className="font-medium">Created:</span>{" "}
+                <span className="font-medium">Created:</span>{' '}
                 {new Date(season.created_at).toLocaleDateString()}
               </div>
               {season.champion_team_id && (
@@ -112,7 +117,7 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
               )}
               {season.is_archived && (
                 <div>
-                  <span className="font-medium">Status:</span>{" "}
+                  <span className="font-medium">Status:</span>{' '}
                   <span className="text-muted-foreground">Archived season</span>
                 </div>
               )}

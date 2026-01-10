@@ -1,14 +1,13 @@
-import React, { useMemo, useState } from 'react';
 import {
-  DndContext,
   closestCenter,
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
-  DragStartEvent,
-  DragOverlay,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -16,10 +15,12 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { ProcessedTeam } from '../types';
-import { SortableTeamItem } from './SortableTeamItem';
-import { DragOverlayItem } from './DragOverlayItem';
 import { AnimatePresence } from 'framer-motion';
+import React, { useMemo, useState } from 'react';
+
+import { ProcessedTeam } from '../types';
+import { DragOverlayItem } from './DragOverlayItem';
+import { SortableTeamItem } from './SortableTeamItem';
 
 interface SeedOrderListProps {
   teams: ProcessedTeam[];
@@ -49,10 +50,7 @@ export const SeedOrderList: React.FC<SeedOrderListProps> = ({
     })
   );
 
-  const activeTeam = useMemo(() => 
-    teams.find(t => t.id === activeId),
-    [teams, activeId]
-  );
+  const activeTeam = useMemo(() => teams.find((t) => t.id === activeId), [teams, activeId]);
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(String(event.active.id));
@@ -66,19 +64,19 @@ export const SeedOrderList: React.FC<SeedOrderListProps> = ({
 
     const oldIndex = teams.findIndex((item) => item.id === active.id);
     const newIndex = teams.findIndex((item) => item.id === over.id);
-    
+
     const reordered = arrayMove(teams, oldIndex, newIndex);
-    
+
     // Reassign seeds based on new order
     const updated = reordered.map((team, idx) => ({
       ...team,
-      seed: idx + 1
+      seed: idx + 1,
     }));
-    
+
     onTeamReorder(updated);
   };
 
-  const teamIds = useMemo(() => teams.map(t => t.id), [teams]);
+  const teamIds = useMemo(() => teams.map((t) => t.id), [teams]);
 
   return (
     <DndContext
@@ -107,10 +105,12 @@ export const SeedOrderList: React.FC<SeedOrderListProps> = ({
         </div>
       </SortableContext>
 
-      <DragOverlay dropAnimation={{
-        duration: 200,
-        easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
-      }}>
+      <DragOverlay
+        dropAnimation={{
+          duration: 200,
+          easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+        }}
+      >
         {activeTeam ? (
           <DragOverlayItem
             name={activeTeam.name}

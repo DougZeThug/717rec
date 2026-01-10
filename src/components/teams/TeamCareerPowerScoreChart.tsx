@@ -1,21 +1,22 @@
-import { useTeamCareerPowerScore } from "@/hooks/useTeamCareerPowerScore";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useTheme } from "next-themes";
-import { getDivisionHexColor } from "@/utils/colors/divisionHexColors";
-import { SeasonPowerScoreData } from "@/types/teamCareerPowerScore";
+import { TrendingUp } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import {
-  LineChart,
+  CartesianGrid,
   Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-import type { Props as DotProps } from "recharts/types/shape/Dot";
-import { TrendingUp } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
+} from 'recharts';
+import type { Props as DotProps } from 'recharts/types/shape/Dot';
+
+import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useTeamCareerPowerScore } from '@/hooks/useTeamCareerPowerScore';
+import { SeasonPowerScoreData } from '@/types/teamCareerPowerScore';
+import { getDivisionHexColor } from '@/utils/colors/divisionHexColors';
 
 interface TeamCareerPowerScoreChartProps {
   teamId: string;
@@ -35,25 +36,10 @@ const CustomDot = (props: DotProps & { payload?: SeasonPowerScoreData }) => {
   return (
     <g>
       {/* Main dot */}
-      <circle
-        cx={cx}
-        cy={cy}
-        r={6}
-        fill={color}
-        stroke="white"
-        strokeWidth={2}
-      />
+      <circle cx={cx} cy={cy} r={6} fill={color} stroke="white" strokeWidth={2} />
       {/* Top 3 badge */}
       {payload.isTop3 && (
-        <circle
-          cx={cx}
-          cy={cy}
-          r={10}
-          fill="none"
-          stroke="#fbbf24"
-          strokeWidth={2}
-          opacity={0.6}
-        />
+        <circle cx={cx} cy={cy} r={10} fill="none" stroke="#fbbf24" strokeWidth={2} opacity={0.6} />
       )}
     </g>
   );
@@ -116,13 +102,9 @@ const CustomTooltip = ({ active, payload }: any) => {
         </p>
       )}
       {data.divisionName && (
-        <p className="text-xs text-muted-foreground">
-          Division: {data.divisionName}
-        </p>
+        <p className="text-xs text-muted-foreground">Division: {data.divisionName}</p>
       )}
-      {placementText && (
-        <p className="text-xs font-medium mt-1">{placementText}</p>
-      )}
+      {placementText && <p className="text-xs font-medium mt-1">{placementText}</p>}
     </div>
   );
 };
@@ -161,8 +143,8 @@ const TeamCareerPowerScoreChart = ({ teamId }: TeamCareerPowerScoreChartProps) =
           data={seasonData}
           margin={{ top: 20, right: 30, left: 0, bottom: isMobile ? 60 : 20 }}
         >
-          <CartesianGrid 
-            strokeDasharray="3 3" 
+          <CartesianGrid
+            strokeDasharray="3 3"
             stroke={isDark ? '#374151' : '#e5e7eb'}
             opacity={0.5}
           />
@@ -176,11 +158,11 @@ const TeamCareerPowerScoreChart = ({ teamId }: TeamCareerPowerScoreChartProps) =
           />
           <YAxis
             domain={[0, 100]}
-            label={{ 
-              value: 'Power Score', 
-              angle: -90, 
+            label={{
+              value: 'Power Score',
+              angle: -90,
               position: 'insideLeft',
-              style: { fontSize: 12, fill: 'currentColor' }
+              style: { fontSize: 12, fill: 'currentColor' },
             }}
             tick={{ fontSize: 11, fill: 'currentColor' }}
             stroke="currentColor"
@@ -201,15 +183,24 @@ const TeamCareerPowerScoreChart = ({ teamId }: TeamCareerPowerScoreChartProps) =
       {/* Division legend */}
       <div className="flex flex-wrap gap-4 mt-4 text-xs text-muted-foreground">
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getDivisionHexColor('Competitive', isDark) }} />
+          <div
+            className="w-3 h-3 rounded-full"
+            style={{ backgroundColor: getDivisionHexColor('Competitive', isDark) }}
+          />
           <span>Competitive</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getDivisionHexColor('Intermediate', isDark) }} />
+          <div
+            className="w-3 h-3 rounded-full"
+            style={{ backgroundColor: getDivisionHexColor('Intermediate', isDark) }}
+          />
           <span>Intermediate</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getDivisionHexColor('Recreational', isDark) }} />
+          <div
+            className="w-3 h-3 rounded-full"
+            style={{ backgroundColor: getDivisionHexColor('Recreational', isDark) }}
+          />
           <span>Recreational</span>
         </div>
       </div>

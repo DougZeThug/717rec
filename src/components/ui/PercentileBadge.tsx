@@ -1,12 +1,8 @@
 import React from 'react';
+
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { getPercentileTier, formatOrdinal, PercentileResult } from '@/utils/percentileUtils';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { formatOrdinal, getPercentileTier, PercentileResult } from '@/utils/percentileUtils';
 
 interface PercentileBadgeProps {
   percentile: number;
@@ -45,9 +41,10 @@ export const PercentileBadge: React.FC<PercentileBadgeProps> = ({
   // Display rank as ordinal (1st, 2nd, 3rd) instead of percentile
   const displayText = rank ? formatOrdinal(rank) : `${percentile}%`;
 
-  const tooltipText = rank && total 
-    ? `Ranked ${formatOrdinal(rank)} of ${total} teams${statName ? ` in ${statName}` : ''}`
-    : `${percentile}th percentile${statName ? ` in ${statName}` : ''}`;
+  const tooltipText =
+    rank && total
+      ? `Ranked ${formatOrdinal(rank)} of ${total} teams${statName ? ` in ${statName}` : ''}`
+      : `${percentile}th percentile${statName ? ` in ${statName}` : ''}`;
 
   const badge = (
     <span
@@ -66,9 +63,7 @@ export const PercentileBadge: React.FC<PercentileBadgeProps> = ({
     return (
       <TooltipProvider>
         <Tooltip>
-          <TooltipTrigger asChild>
-            {badge}
-          </TooltipTrigger>
+          <TooltipTrigger asChild>{badge}</TooltipTrigger>
           <TooltipContent side="top" className="text-xs">
             {tooltipText}
           </TooltipContent>
@@ -95,7 +90,7 @@ export const PercentileFromResult: React.FC<PercentileFromResultProps> = ({
   className,
 }) => {
   if (result.total === 0) return null;
-  
+
   return (
     <PercentileBadge
       percentile={result.percentile}

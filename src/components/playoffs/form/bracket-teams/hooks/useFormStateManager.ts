@@ -1,22 +1,23 @@
-import { useState, useCallback, useEffect } from 'react';
-import { ProcessedTeam, BracketFormStateResult } from '../types';
-import { useSeedManagement, SeedManagementResult } from './useSeedManagement';
+import { useCallback, useEffect, useState } from 'react';
+
+import { BracketFormStateResult, ProcessedTeam } from '../types';
+import { SeedManagementResult, useSeedManagement } from './useSeedManagement';
 
 interface FormStateManagerResult {
   // Team selection state
   teamSelectionState: BracketFormStateResult;
-  
+
   // Seed management state
   seedManagementState: SeedManagementResult;
-  
+
   // Unified form state
   hasUnsavedChanges: boolean;
   canSave: boolean;
-  
+
   // Actions
   saveAllChanges: () => Promise<void>;
   cancelAllChanges: () => void;
-  
+
   // Cross-tab synchronization
   syncedTeams: ProcessedTeam[];
 }
@@ -28,18 +29,14 @@ export const useFormStateManager = (
   onSeedChange?: (teamId: string, seed: number | null) => void
 ): FormStateManagerResult => {
   const [isSaving, setIsSaving] = useState(false);
-  
+
   // Initialize seed management
-  const seedManagementState = useSeedManagement(
-    initialTeams,
-    seedValidation,
-    onSeedChange
-  );
+  const seedManagementState = useSeedManagement(initialTeams, seedValidation, onSeedChange);
 
   // Synchronized teams that reflect both selection and seed changes
-  const syncedTeams = seedManagementState.processedTeams.map(team => ({
+  const syncedTeams = seedManagementState.processedTeams.map((team) => ({
     ...team,
-    isSelected: teamSelectionState.selected.has(team.id)
+    isSelected: teamSelectionState.selected.has(team.id),
   }));
 
   // Check if we have unsaved changes
@@ -49,7 +46,7 @@ export const useFormStateManager = (
   // Save all changes
   const saveAllChanges = useCallback(async () => {
     if (!canSave) return;
-    
+
     setIsSaving(true);
     try {
       seedManagementState.actions.commitChanges();
@@ -70,6 +67,6 @@ export const useFormStateManager = (
     canSave,
     saveAllChanges,
     cancelAllChanges,
-    syncedTeams
+    syncedTeams,
   };
 };

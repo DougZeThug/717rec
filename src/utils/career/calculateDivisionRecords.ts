@@ -1,10 +1,9 @@
-
-import { 
-  MatchData, 
-  ArchivedMatchData, 
-  PlayoffMatchData, 
-  DivisionRecords, 
-  DivisionTier 
+import {
+  ArchivedMatchData,
+  DivisionRecords,
+  DivisionTier,
+  MatchData,
+  PlayoffMatchData,
 } from './types';
 
 interface DivisionRecordsInput {
@@ -34,7 +33,7 @@ export const categorizeDivision = (divisionName: string | null): DivisionTier | 
  */
 export const getTierFromWeight = (weight: number): DivisionTier => {
   if (weight >= 0.89) return 'competitive';
-  if (weight >= 0.40) return 'intermediate';
+  if (weight >= 0.4) return 'intermediate';
   return 'recreational';
 };
 
@@ -48,12 +47,12 @@ export const calculateDivisionRecords = ({
   playoffMatches,
   teamDivisionMap,
   bracketDivisionWeights,
-  teamId
+  teamId,
 }: DivisionRecordsInput): DivisionRecords => {
   const division_records: DivisionRecords = {
     competitive: { wins: 0, losses: 0 },
     intermediate: { wins: 0, losses: 0 },
-    recreational: { wins: 0, losses: 0 }
+    recreational: { wins: 0, losses: 0 },
   };
 
   // Process archived matches - look up opponent's division at time of match
@@ -62,10 +61,10 @@ export const calculateDivisionRecords = ({
       const isTeam1 = match.team1_id === teamId;
       const opponentId = isTeam1 ? match.team2_id : match.team1_id;
       if (!opponentId || !match.season_id) continue;
-      
+
       const opponentDivision = teamDivisionMap.get(`${opponentId}_${match.season_id}`);
       const tier = categorizeDivision(opponentDivision || null);
-      
+
       if (tier) {
         if (match.winner_id === teamId) {
           division_records[tier].wins++;
@@ -80,11 +79,11 @@ export const calculateDivisionRecords = ({
   if (currentMatches) {
     for (const match of currentMatches) {
       const isTeam1 = match.team1_id === teamId;
-      const opponentDivision = isTeam1 
-        ? match.team2?.divisions?.name 
+      const opponentDivision = isTeam1
+        ? match.team2?.divisions?.name
         : match.team1?.divisions?.name;
       const tier = categorizeDivision(opponentDivision || null);
-      
+
       if (tier) {
         if (match.winner_id === teamId) {
           division_records[tier].wins++;
@@ -101,7 +100,7 @@ export const calculateDivisionRecords = ({
       if (!match.bracket_id) continue;
       const bracketWeight = bracketDivisionWeights[match.bracket_id] || 0.85;
       const tier = getTierFromWeight(bracketWeight);
-      
+
       if (match.winner_id === teamId) {
         division_records[tier].wins++;
       } else if (match.loser_id === teamId) {

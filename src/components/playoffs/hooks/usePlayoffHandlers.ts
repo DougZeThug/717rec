@@ -1,8 +1,9 @@
-
 import { useCallback } from 'react';
+
 import { usePlayoffEditMatch } from '@/hooks/playoffs/usePlayoffEditMatch';
+import { errorLog, playoffLog } from '@/utils/logger';
+
 import { PlayoffPageData } from './usePlayoffPageData';
-import { playoffLog, errorLog } from "@/utils/logger";
 
 export function usePlayoffHandlers(data: PlayoffPageData) {
   const {
@@ -10,16 +11,15 @@ export function usePlayoffHandlers(data: PlayoffPageData) {
     isQuickEdit,
     handleEditMatch,
     handleCloseMatchEditor,
-    handleSaveMatchScore
+    handleSaveMatchScore,
   } = usePlayoffEditMatch();
 
   const handleBracketCreatedWithNavigation = useCallback(async () => {
     playoffLog('Starting simplified bracket creation');
-    
+
     try {
       await data.handleBracketCreated();
       playoffLog('Bracket creation completed successfully');
-      
     } catch (error) {
       errorLog('Error in bracket creation:', error);
       throw error;
@@ -32,6 +32,6 @@ export function usePlayoffHandlers(data: PlayoffPageData) {
     handleEditMatch,
     handleCloseMatchEditor,
     handleSaveMatchScore,
-    handleBracketCreatedWithNavigation
+    handleBracketCreatedWithNavigation,
   };
 }

@@ -1,5 +1,5 @@
-
 import React from 'react';
+
 import { BracketFormStateResult } from '../types';
 
 /**
@@ -16,10 +16,10 @@ export const useTeamSelectionState = (
   const validMaxTeams = typeof maxTeams === 'number' && maxTeams > 0 ? maxTeams : 16;
   const validMinTeams = typeof minTeams === 'number' && minTeams > 0 ? minTeams : 2;
   const validAvailableCount = typeof availableTeamsCount === 'number' ? availableTeamsCount : 0;
-  
+
   // Simple team selection state
   const [selected, setSelected] = React.useState<Set<string>>(initialSelected);
-  
+
   // Derived state
   const selectedArray = React.useMemo(() => Array.from(selected), [selected]);
   const count = selected.size;
@@ -30,19 +30,22 @@ export const useTeamSelectionState = (
   /**
    * Team toggle handler - no longer calls onChange internally
    */
-  const handleTeamToggle = React.useCallback((teamId: string) => {
-    if (typeof teamId === 'string' && teamId.length > 0) {
-      setSelected(prev => {
-        const next = new Set(prev);
-        if (next.has(teamId)) {
-          next.delete(teamId);
-        } else if (next.size < validMaxTeams) {
-          next.add(teamId);
-        }
-        return next;
-      });
-    }
-  }, [validMaxTeams]);
+  const handleTeamToggle = React.useCallback(
+    (teamId: string) => {
+      if (typeof teamId === 'string' && teamId.length > 0) {
+        setSelected((prev) => {
+          const next = new Set(prev);
+          if (next.has(teamId)) {
+            next.delete(teamId);
+          } else if (next.size < validMaxTeams) {
+            next.add(teamId);
+          }
+          return next;
+        });
+      }
+    },
+    [validMaxTeams]
+  );
 
   /**
    * Clear selection handler - no longer calls onChange internally
@@ -62,7 +65,7 @@ export const useTeamSelectionState = (
     canSelectMore,
     isAtMaximum,
     hasSelection,
-    
+
     // Legacy validation properties (kept for compatibility)
     isValid: count >= validMinTeams && count <= validMaxTeams,
     isComplete: count >= validMinTeams,
@@ -76,11 +79,11 @@ export const useTeamSelectionState = (
       selected: count,
       required: validMinTeams,
       maximum: validMaxTeams,
-      available: validAvailableCount
+      available: validAvailableCount,
     },
-    
+
     // No cleanup needed
-    cleanup: () => {}
+    cleanup: () => {},
   };
 
   return result;

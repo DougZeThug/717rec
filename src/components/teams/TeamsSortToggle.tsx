@@ -1,13 +1,13 @@
-
+import { ArrowDownAZ, ListOrdered } from 'lucide-react';
 import React from 'react';
-import { Button } from "@/components/ui/button";
-import { ListOrdered, ArrowDownAZ } from "lucide-react";
+
+import { Button } from '@/components/ui/button';
 
 export type SortMode = 'rank' | 'alpha';
 
 const SORT_MODES = [
   { key: 'rank', label: 'Rank', icon: ListOrdered },
-  { key: 'alpha', label: 'A–Z', icon: ArrowDownAZ }
+  { key: 'alpha', label: 'A–Z', icon: ArrowDownAZ },
 ] as const;
 
 interface TeamsSortToggleProps {
@@ -21,15 +21,13 @@ const TeamsSortToggle: React.FC<TeamsSortToggleProps> = ({ sortMode, setSortMode
     <div className="inline-flex rounded-lg bg-muted p-0.5 shadow-sm border border-border">
       {SORT_MODES.map(({ key, label, icon: Icon }) => (
         <Button
-          variant={sortMode === key ? "default" : "ghost"}
+          variant={sortMode === key ? 'default' : 'ghost'}
           size="sm"
           aria-pressed={sortMode === key}
           key={key}
           onClick={() => setSortMode(key as SortMode)}
           className={`flex items-center px-2 py-1 rounded-md transition-all duration-200 gap-1 ${
-            sortMode === key 
-              ? "" 
-              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            sortMode === key ? '' : 'text-muted-foreground hover:text-foreground hover:bg-muted'
           }`}
           style={{ minWidth: 74 }}
         >

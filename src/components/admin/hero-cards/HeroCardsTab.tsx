@@ -1,11 +1,13 @@
-import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Plus, Image } from "lucide-react";
-import { useAllHeroCards, useHeroCardMutations } from "@/hooks/useHeroCards";
-import HeroCardsList from "./HeroCardsList";
-import HeroCardForm from "./HeroCardForm";
-import { HeroCard } from "@/types/heroCard";
+import { Image, Plus } from 'lucide-react';
+import React, { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAllHeroCards, useHeroCardMutations } from '@/hooks/useHeroCards';
+import { HeroCard } from '@/types/heroCard';
+
+import HeroCardForm from './HeroCardForm';
+import HeroCardsList from './HeroCardsList';
 
 const HeroCardsTab: React.FC = () => {
   const { data: heroCards, isLoading } = useAllHeroCards();
@@ -28,12 +30,7 @@ const HeroCardsTab: React.FC = () => {
   };
 
   if (isCreating || editingCard) {
-    return (
-      <HeroCardForm 
-        card={editingCard} 
-        onClose={handleClose} 
-      />
-    );
+    return <HeroCardForm card={editingCard} onClose={handleClose} />;
   }
 
   return (
@@ -49,11 +46,7 @@ const HeroCardsTab: React.FC = () => {
         </Button>
       </CardHeader>
       <CardContent>
-        <HeroCardsList 
-          cards={heroCards || []} 
-          isLoading={isLoading}
-          onEdit={handleEdit}
-        />
+        <HeroCardsList cards={heroCards || []} isLoading={isLoading} onEdit={handleEdit} />
       </CardContent>
     </Card>
   );

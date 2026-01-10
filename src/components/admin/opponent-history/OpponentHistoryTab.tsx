@@ -1,17 +1,31 @@
-import React, { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useSeasonOpponentHistory } from "@/hooks/useSeasonOpponentHistory";
-import { Search, Users2, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Loader2, Search, Users2 } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { useSeasonOpponentHistory } from '@/hooks/useSeasonOpponentHistory';
+import { cn } from '@/lib/utils';
 
 const OpponentHistoryTab: React.FC = () => {
   const { data, isLoading, error } = useSeasonOpponentHistory();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [divisionFilter, setDivisionFilter] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [divisionFilter, setDivisionFilter] = useState<string>('all');
 
   // Get unique divisions for filter
   const divisions = useMemo(() => {
@@ -26,10 +40,10 @@ const OpponentHistoryTab: React.FC = () => {
   // Filter teams
   const filteredTeams = useMemo(() => {
     if (!data?.teams) return [];
-    
+
     return data.teams.filter((team) => {
       const matchesSearch = team.teamName.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesDivision = divisionFilter === "all" || team.divisionName === divisionFilter;
+      const matchesDivision = divisionFilter === 'all' || team.divisionName === divisionFilter;
       return matchesSearch && matchesDivision;
     });
   }, [data?.teams, searchTerm, divisionFilter]);
@@ -131,7 +145,7 @@ const OpponentHistoryTab: React.FC = () => {
                   <TableCell className="font-medium">{team.teamName}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className="text-xs">
-                      {team.divisionName || "—"}
+                      {team.divisionName || '—'}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -144,9 +158,11 @@ const OpponentHistoryTab: React.FC = () => {
                             key={opp.opponentId}
                             variant="secondary"
                             className={cn(
-                              "text-xs cursor-default",
-                              opp.wins > opp.losses && "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-                              opp.wins < opp.losses && "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                              'text-xs cursor-default',
+                              opp.wins > opp.losses &&
+                                'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+                              opp.wins < opp.losses &&
+                                'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                             )}
                             title={`${opp.wins}-${opp.losses} vs ${opp.opponentName}`}
                           >
@@ -162,9 +178,7 @@ const OpponentHistoryTab: React.FC = () => {
                   <TableCell className="text-center font-mono">
                     {team.uniqueOpponentCount}
                   </TableCell>
-                  <TableCell className="text-center font-mono">
-                    {team.totalMatches}
-                  </TableCell>
+                  <TableCell className="text-center font-mono">{team.totalMatches}</TableCell>
                 </TableRow>
               ))}
               {filteredTeams.length === 0 && (

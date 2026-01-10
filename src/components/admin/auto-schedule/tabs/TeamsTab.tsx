@@ -1,15 +1,15 @@
+import { Edit3, Eye, RotateCcw } from 'lucide-react';
+import React, { useState } from 'react';
 
-import React, { useState } from "react";
-import { Team } from "@/types";
-import { TimeBlockTeamsMap } from "@/types/autoSchedule";
-import { WarningDisplay } from "@/components/admin/batch-matches/auto-schedule/WarningDisplay";
-import SchedulePreview from "@/components/admin/batch-matches/auto-schedule/SchedulePreview";
-import InteractiveSchedulePreview from "@/components/admin/batch-matches/auto-schedule/InteractiveSchedulePreview";
-import { validateTeamCounts } from "@/utils/autoSchedule/edgeCaseUtils";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Edit3, Eye, RotateCcw } from "lucide-react";
-import ManualTeamAssignment from "@/components/admin/auto-schedule/ManualTeamAssignment";
+import ManualTeamAssignment from '@/components/admin/auto-schedule/ManualTeamAssignment';
+import InteractiveSchedulePreview from '@/components/admin/batch-matches/auto-schedule/InteractiveSchedulePreview';
+import SchedulePreview from '@/components/admin/batch-matches/auto-schedule/SchedulePreview';
+import { WarningDisplay } from '@/components/admin/batch-matches/auto-schedule/WarningDisplay';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Team } from '@/types';
+import { TimeBlockTeamsMap } from '@/types/autoSchedule';
+import { validateTeamCounts } from '@/utils/autoSchedule/edgeCaseUtils';
 
 interface TeamsTabProps {
   timeBlockTeams: TimeBlockTeamsMap;
@@ -28,11 +28,11 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
   oddBlocks,
   totalTeams,
   onManualTeamAssign,
-  originalTimeBlockTeams = {}
+  originalTimeBlockTeams = {},
 }) => {
-  const [activeTab, setActiveTab] = useState<string>("auto");
+  const [activeTab, setActiveTab] = useState<string>('auto');
   const [isEditMode, setIsEditMode] = useState(false);
-  
+
   // Check for blocks with insufficient teams
   const { insufficientBlocks } = validateTeamCounts(timeBlockTeams);
 
@@ -41,24 +41,24 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
     if (onManualTeamAssign) {
       // Merge manual teams with existing teams
       const updatedTeamBlocks = { ...timeBlockTeams };
-      
+
       // Add manually assigned teams to the respective time blocks
       Object.entries(manualTeams).forEach(([blockKey, teams]) => {
         if (updatedTeamBlocks[blockKey]) {
           // If the block already exists, add the new teams (avoid duplicates)
-          const existingTeamIds = updatedTeamBlocks[blockKey].map(team => team.id);
-          const newTeams = teams.filter(team => !existingTeamIds.includes(team.id));
+          const existingTeamIds = updatedTeamBlocks[blockKey].map((team) => team.id);
+          const newTeams = teams.filter((team) => !existingTeamIds.includes(team.id));
           updatedTeamBlocks[blockKey] = [...updatedTeamBlocks[blockKey], ...newTeams];
         } else {
           // If the block doesn't exist yet, create it with the selected teams
           updatedTeamBlocks[blockKey] = teams;
         }
       });
-      
+
       onManualTeamAssign(updatedTeamBlocks);
-      
+
       // Switch to auto tab to see the updated team list
-      setActiveTab("auto");
+      setActiveTab('auto');
     }
   };
 
@@ -74,7 +74,8 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
   };
 
   // Check if teams have been modified from original
-  const hasModifications = JSON.stringify(timeBlockTeams) !== JSON.stringify(originalTimeBlockTeams);
+  const hasModifications =
+    JSON.stringify(timeBlockTeams) !== JSON.stringify(originalTimeBlockTeams);
 
   return (
     <div className="space-y-4">
@@ -83,7 +84,7 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
           <TabsTrigger value="auto">Auto-Loaded Teams</TabsTrigger>
           <TabsTrigger value="manual">Manual Assignment</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="auto" className="space-y-4 mt-4">
           <div className="flex items-center justify-between">
             <div>
@@ -92,7 +93,7 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
                 Review teams assigned to each time block before generating the schedule.
               </p>
             </div>
-            
+
             {totalTeams > 0 && (
               <div className="flex items-center gap-2">
                 {hasModifications && (
@@ -106,9 +107,9 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
                     Reset to Auto-Loaded
                   </Button>
                 )}
-                
+
                 <Button
-                  variant={isEditMode ? "default" : "outline"}
+                  variant={isEditMode ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setIsEditMode(!isEditMode)}
                   className="flex items-center gap-2"
@@ -128,7 +129,7 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
               </div>
             )}
           </div>
-          
+
           {totalTeams > 0 ? (
             isEditMode ? (
               <InteractiveSchedulePreview
@@ -139,7 +140,7 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
                 onTeamUpdate={handleTeamUpdate}
               />
             ) : (
-              <SchedulePreview 
+              <SchedulePreview
                 timeBlockTeams={timeBlockTeams}
                 date={selectedDate}
                 unmatchedTeamIds={unmatchedTeamIds}
@@ -153,7 +154,7 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
               </p>
             </div>
           )}
-          
+
           {(oddBlocks > 0 || insufficientBlocks.length > 0) && (
             <WarningDisplay
               oddBlocks={oddBlocks}
@@ -162,12 +163,9 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
             />
           )}
         </TabsContent>
-        
+
         <TabsContent value="manual" className="mt-4">
-          <ManualTeamAssignment 
-            selectedDate={selectedDate}
-            onTeamsAssigned={handleTeamsAssigned}
-          />
+          <ManualTeamAssignment selectedDate={selectedDate} onTeamsAssigned={handleTeamsAssigned} />
         </TabsContent>
       </Tabs>
     </div>

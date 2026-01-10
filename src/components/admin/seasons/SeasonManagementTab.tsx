@@ -1,22 +1,23 @@
+import { Calendar, Plus, Trophy } from 'lucide-react';
+import React, { useState } from 'react';
 
-import React, { useState } from "react";
-import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Plus, Calendar, Trophy } from "lucide-react";
-import AdminSectionWrapper from "@/components/admin/AdminSectionWrapper";
-import SeasonsList from "./SeasonsList";
-import SeasonForm from "./SeasonForm";
-import SeasonActions from "./SeasonActions";
-import { useSeasons } from "@/hooks/useSeasons";
+import AdminSectionWrapper from '@/components/admin/AdminSectionWrapper';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useSeasons } from '@/hooks/useSeasons';
+
+import SeasonActions from './SeasonActions';
+import SeasonForm from './SeasonForm';
+import SeasonsList from './SeasonsList';
 
 const SeasonManagementTab = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingSeason, setEditingSeason] = useState<any>(null);
   const { data: seasons, isLoading } = useSeasons();
 
-  const activeSeason = seasons?.find(season => season.is_active);
-  const archivedSeasons = seasons?.filter(season => season.is_archived);
-  const inactiveSeasons = seasons?.filter(season => !season.is_active && !season.is_archived);
+  const activeSeason = seasons?.find((season) => season.is_active);
+  const archivedSeasons = seasons?.filter((season) => season.is_archived);
+  const inactiveSeasons = seasons?.filter((season) => !season.is_active && !season.is_archived);
 
   const handleCreateSeason = () => {
     setEditingSeason(null);
@@ -44,9 +45,7 @@ const SeasonManagementTab = () => {
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {activeSeason ? activeSeason.name : "None"}
-              </div>
+              <div className="text-2xl font-bold">{activeSeason ? activeSeason.name : 'None'}</div>
               {activeSeason && (
                 <p className="text-xs text-muted-foreground">
                   Started {new Date(activeSeason.start_date).toLocaleDateString()}
@@ -75,9 +74,7 @@ const SeasonManagementTab = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{inactiveSeasons?.length || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                Ready to activate
-              </p>
+              <p className="text-xs text-muted-foreground">Ready to activate</p>
             </CardContent>
           </Card>
         </div>
@@ -88,25 +85,14 @@ const SeasonManagementTab = () => {
             <Plus className="h-4 w-4" />
             Create New Season
           </Button>
-          {activeSeason && (
-            <SeasonActions season={activeSeason} />
-          )}
+          {activeSeason && <SeasonActions season={activeSeason} />}
         </div>
 
         {/* Season Form */}
-        {showCreateForm && (
-          <SeasonForm
-            season={editingSeason}
-            onClose={handleCloseForm}
-          />
-        )}
+        {showCreateForm && <SeasonForm season={editingSeason} onClose={handleCloseForm} />}
 
         {/* Seasons List */}
-        <SeasonsList
-          seasons={seasons}
-          isLoading={isLoading}
-          onEditSeason={handleEditSeason}
-        />
+        <SeasonsList seasons={seasons} isLoading={isLoading} onEditSeason={handleEditSeason} />
       </div>
     </AdminSectionWrapper>
   );

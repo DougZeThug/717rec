@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
-import { useLocation } from "react-router";
+import { useEffect, useRef } from 'react';
+import { useLocation } from 'react-router';
 
-const SCROLL_POSITIONS_KEY = "scroll_positions";
+const SCROLL_POSITIONS_KEY = 'scroll_positions';
 
 /**
  * Hook to save and restore scroll position for a route.
@@ -17,11 +17,9 @@ export const useScrollRestoration = (routeKey?: string) => {
   useEffect(() => {
     const handleScroll = () => {
       if (isRestoring.current) return;
-      
+
       try {
-        const positions = JSON.parse(
-          sessionStorage.getItem(SCROLL_POSITIONS_KEY) || "{}"
-        );
+        const positions = JSON.parse(sessionStorage.getItem(SCROLL_POSITIONS_KEY) || '{}');
         positions[key] = window.scrollY;
         sessionStorage.setItem(SCROLL_POSITIONS_KEY, JSON.stringify(positions));
       } catch (e) {
@@ -41,25 +39,23 @@ export const useScrollRestoration = (routeKey?: string) => {
       }
     };
 
-    window.addEventListener("scroll", throttledScroll, { passive: true });
-    return () => window.removeEventListener("scroll", throttledScroll);
+    window.addEventListener('scroll', throttledScroll, { passive: true });
+    return () => window.removeEventListener('scroll', throttledScroll);
   }, [key]);
 
   // Restore scroll position on mount (only when navigating back)
   useEffect(() => {
     // Check if this is a back/forward navigation
-    const navEntries = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
-    const isBackNavigation = navEntries.length > 0 && navEntries[0].type === "back_forward";
-    
+    const navEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
+    const isBackNavigation = navEntries.length > 0 && navEntries[0].type === 'back_forward';
+
     // Only restore on back/forward navigation
     if (!isBackNavigation) return;
-    
+
     try {
-      const positions = JSON.parse(
-        sessionStorage.getItem(SCROLL_POSITIONS_KEY) || "{}"
-      );
+      const positions = JSON.parse(sessionStorage.getItem(SCROLL_POSITIONS_KEY) || '{}');
       const savedPosition = positions[key];
-      
+
       if (savedPosition !== undefined && savedPosition > 0) {
         isRestoring.current = true;
         // Wait for content to render before restoring scroll
@@ -76,7 +72,7 @@ export const useScrollRestoration = (routeKey?: string) => {
             requestAnimationFrame(restoreScroll);
           }
         };
-        
+
         // Start after a short delay to allow initial render
         setTimeout(() => {
           requestAnimationFrame(restoreScroll);
@@ -90,9 +86,7 @@ export const useScrollRestoration = (routeKey?: string) => {
   // Clear this route's position when navigating away to a different parent route
   const clearPosition = () => {
     try {
-      const positions = JSON.parse(
-        sessionStorage.getItem(SCROLL_POSITIONS_KEY) || "{}"
-      );
+      const positions = JSON.parse(sessionStorage.getItem(SCROLL_POSITIONS_KEY) || '{}');
       delete positions[key];
       sessionStorage.setItem(SCROLL_POSITIONS_KEY, JSON.stringify(positions));
     } catch (e) {

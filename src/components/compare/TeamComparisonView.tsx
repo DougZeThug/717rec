@@ -1,9 +1,11 @@
-import React from "react";
-import { TeamComparisonSide } from "@/hooks/useTeamComparison";
-import { ComparisonStatRow } from "./ComparisonStatRow";
-import { HeadToHeadSection } from "./HeadToHeadSection";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Trophy, Medal } from "lucide-react";
+import { Medal, Trophy } from 'lucide-react';
+import React from 'react';
+
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { TeamComparisonSide } from '@/hooks/useTeamComparison';
+
+import { ComparisonStatRow } from './ComparisonStatRow';
+import { HeadToHeadSection } from './HeadToHeadSection';
 
 interface TeamComparisonViewProps {
   team1: TeamComparisonSide;
@@ -18,18 +20,18 @@ interface TeamComparisonViewProps {
   } | null;
 }
 
-const TeamHeader: React.FC<{ team: TeamComparisonSide; align: "left" | "right" }> = ({
+const TeamHeader: React.FC<{ team: TeamComparisonSide; align: 'left' | 'right' }> = ({
   team,
   align,
 }) => (
-  <div className={`flex items-center gap-3 ${align === "right" ? "flex-row-reverse" : ""}`}>
+  <div className={`flex items-center gap-3 ${align === 'right' ? 'flex-row-reverse' : ''}`}>
     <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-border">
       <AvatarImage src={team.logoUrl || undefined} alt={team.name} />
       <AvatarFallback className="text-lg font-bold bg-muted">
         {team.name.substring(0, 2).toUpperCase()}
       </AvatarFallback>
     </Avatar>
-    <div className={`flex flex-col ${align === "right" ? "items-end" : "items-start"}`}>
+    <div className={`flex flex-col ${align === 'right' ? 'items-end' : 'items-start'}`}>
       <h3 className="font-bold text-lg sm:text-xl line-clamp-1">{team.name}</h3>
       {team.totals && (
         <span className="text-sm text-muted-foreground">
@@ -165,8 +167,14 @@ export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({
 
         <ComparisonStatRow
           label="vs Competitive"
-          value1={formatRecord(t1?.division_records.competitive.wins || 0, t1?.division_records.competitive.losses || 0)}
-          value2={formatRecord(t2?.division_records.competitive.wins || 0, t2?.division_records.competitive.losses || 0)}
+          value1={formatRecord(
+            t1?.division_records.competitive.wins || 0,
+            t1?.division_records.competitive.losses || 0
+          )}
+          value2={formatRecord(
+            t2?.division_records.competitive.wins || 0,
+            t2?.division_records.competitive.losses || 0
+          )}
           numericValue1={t1?.division_records.competitive.wins || 0}
           numericValue2={t2?.division_records.competitive.wins || 0}
           showPercentiles={false}
@@ -174,8 +182,14 @@ export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({
 
         <ComparisonStatRow
           label="vs Intermediate"
-          value1={formatRecord(t1?.division_records.intermediate.wins || 0, t1?.division_records.intermediate.losses || 0)}
-          value2={formatRecord(t2?.division_records.intermediate.wins || 0, t2?.division_records.intermediate.losses || 0)}
+          value1={formatRecord(
+            t1?.division_records.intermediate.wins || 0,
+            t1?.division_records.intermediate.losses || 0
+          )}
+          value2={formatRecord(
+            t2?.division_records.intermediate.wins || 0,
+            t2?.division_records.intermediate.losses || 0
+          )}
           numericValue1={t1?.division_records.intermediate.wins || 0}
           numericValue2={t2?.division_records.intermediate.wins || 0}
           showPercentiles={false}
@@ -183,8 +197,14 @@ export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({
 
         <ComparisonStatRow
           label="vs Recreational"
-          value1={formatRecord(t1?.division_records.recreational.wins || 0, t1?.division_records.recreational.losses || 0)}
-          value2={formatRecord(t2?.division_records.recreational.wins || 0, t2?.division_records.recreational.losses || 0)}
+          value1={formatRecord(
+            t1?.division_records.recreational.wins || 0,
+            t1?.division_records.recreational.losses || 0
+          )}
+          value2={formatRecord(
+            t2?.division_records.recreational.wins || 0,
+            t2?.division_records.recreational.losses || 0
+          )}
           numericValue1={t1?.division_records.recreational.wins || 0}
           numericValue2={t2?.division_records.recreational.wins || 0}
           showPercentiles={false}

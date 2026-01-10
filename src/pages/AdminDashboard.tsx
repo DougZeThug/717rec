@@ -1,12 +1,12 @@
+import { motion } from 'framer-motion';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router';
 
-import React, { useEffect } from "react";
-import { useAdminAccess } from "@/hooks/useAdminAccess";
-import { AdminAccessModal } from "@/components/admin/AdminAccessModal";
-import AdminSidebar from "@/components/admin/dashboard/AdminSidebar";
-import { motion } from "framer-motion";
-import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router";
-import { toast } from "@/hooks/use-toast";
+import { AdminAccessModal } from '@/components/admin/AdminAccessModal';
+import AdminSidebar from '@/components/admin/dashboard/AdminSidebar';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
+import { useAdminAccess } from '@/hooks/useAdminAccess';
 
 const AdminDashboard = () => {
   const { isAdminAccessGranted, requestAdminAccess, isLoading } = useAdminAccess();
@@ -35,13 +35,13 @@ const AdminDashboard = () => {
   // If user is logged in but doesn't have admin access
   if (!isAdminAccessGranted) {
     return (
-      <AdminAccessModal 
+      <AdminAccessModal
         isOpen={true}
         onRequestAccess={() => {
           requestAdminAccess();
           toast({
-            title: "Access requested",
-            description: "An administrator has been notified of your request.",
+            title: 'Access requested',
+            description: 'An administrator has been notified of your request.',
           });
         }}
       />
@@ -49,7 +49,7 @@ const AdminDashboard = () => {
   }
 
   return (
-    <motion.div 
+    <motion.div
       className="container mx-auto py-4 md:py-8 px-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}

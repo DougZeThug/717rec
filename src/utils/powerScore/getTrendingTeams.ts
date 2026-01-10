@@ -1,5 +1,4 @@
-
-import { Team } from "@/types";
+import { Team } from '@/types';
 
 /**
  * Calculate trending teams based on power score changes
@@ -17,18 +16,18 @@ export const getTrendingTeams = (
 
   // Calculate power score changes and sort by biggest increase
   const teamsWithTrend = teams
-    .map(team => {
+    .map((team) => {
       const previousScore = previousScores[team.id] || team.power_score || 0;
       const currentScore = team.power_score || 0;
       const increase = currentScore - previousScore;
-      
+
       return {
         team,
         increase,
-        previousScore
+        previousScore,
       };
     })
-    .filter(item => item.increase > 0) // Only include teams with positive trends
+    .filter((item) => item.increase > 0) // Only include teams with positive trends
     .sort((a, b) => b.increase - a.increase);
 
   return teamsWithTrend;

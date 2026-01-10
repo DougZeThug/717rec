@@ -1,5 +1,4 @@
-
-import { vi } from "vitest";
+import { vi } from 'vitest';
 
 // For tracking inserted values
 export let insertedRows: Record<string, unknown[]> = {};
@@ -42,37 +41,35 @@ export const supabase = {
     select: (query?: string) => ({
       eq: (column: string, value: unknown) => ({
         single: () => Promise.resolve({ data: null, error: null }),
-        then: (callback: (result: MockSupabaseResponse) => unknown) => 
-          Promise.resolve({ data: [], error: null }).then(callback)
+        then: (callback: (result: MockSupabaseResponse) => unknown) =>
+          Promise.resolve({ data: [], error: null }).then(callback),
       }),
-      then: (callback: (result: MockSupabaseResponse) => unknown) => 
-        Promise.resolve({ data: [], error: null }).then(callback)
+      then: (callback: (result: MockSupabaseResponse) => unknown) =>
+        Promise.resolve({ data: [], error: null }).then(callback),
     }),
     insert: (data: unknown | unknown[]) => {
       // Track the inserted rows for verification
       const rows = Array.isArray(data) ? data : [data];
-      
+
       if (!insertedRows[tableName]) {
         insertedRows[tableName] = [];
       }
-      
+
       console.log(`Mock inserting into ${tableName}:`, rows);
-      
+
       // Add the rows to our tracking object
       insertedRows[tableName].push(...rows);
-      
+
       return Promise.resolve({ data: rows, error: null });
     },
     update: (data: unknown) => ({
       eq: (column: string, value: unknown) => Promise.resolve({ data, error: null }),
-      match: (criteria: Record<string, unknown>) => Promise.resolve({ data, error: null })
-    })
-  })
+      match: (criteria: Record<string, unknown>) => Promise.resolve({ data, error: null }),
+    }),
+  }),
 };
 
 // Mock UUID for consistent testing
 vi.mock('uuid', () => ({
-  v4: vi.fn().mockImplementation(() => 
-    '00000000-0000-0000-0000-000000000000'
-  )
+  v4: vi.fn().mockImplementation(() => '00000000-0000-0000-0000-000000000000'),
 }));

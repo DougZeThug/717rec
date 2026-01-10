@@ -1,5 +1,6 @@
-import React from 'react';
 import { GripVertical, Users } from 'lucide-react';
+import React from 'react';
+
 import { cn } from '@/lib/utils';
 
 interface DragOverlayItemProps {
@@ -8,17 +9,13 @@ interface DragOverlayItemProps {
   logoUrl?: string | null;
 }
 
-export const DragOverlayItem: React.FC<DragOverlayItemProps> = ({
-  name,
-  seed,
-  logoUrl,
-}) => {
+export const DragOverlayItem: React.FC<DragOverlayItemProps> = ({ name, seed, logoUrl }) => {
   return (
     <div
       className={cn(
-        "flex items-center gap-3 p-3 rounded-lg border-2 border-primary",
-        "bg-card shadow-2xl scale-105",
-        "cursor-grabbing"
+        'flex items-center gap-3 p-3 rounded-lg border-2 border-primary',
+        'bg-card shadow-2xl scale-105',
+        'cursor-grabbing'
       )}
     >
       {/* Drag Handle */}
@@ -27,10 +24,12 @@ export const DragOverlayItem: React.FC<DragOverlayItemProps> = ({
       </div>
 
       {/* Seed Badge */}
-      <div className={cn(
-        "flex items-center justify-center min-w-[2rem] h-7 rounded-md text-sm font-bold",
-        "bg-primary text-primary-foreground"
-      )}>
+      <div
+        className={cn(
+          'flex items-center justify-center min-w-[2rem] h-7 rounded-md text-sm font-bold',
+          'bg-primary text-primary-foreground'
+        )}
+      >
         #{seed}
       </div>
 

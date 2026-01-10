@@ -1,12 +1,13 @@
-import { FormField, FormItem, FormLabel, FormControl, FormDescription } from "@/components/ui/form";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Trophy } from "lucide-react";
+import { Trophy } from 'lucide-react';
+
+import { FormControl, FormDescription, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 export function BracketFormGrandFinal({ form }: { form: any }) {
-  const format = form.watch("format");
-  
+  const format = form.watch('format');
+
   // Only show for Double Elimination
-  if (format !== "Double Elimination") {
+  if (format !== 'Double Elimination') {
     return null;
   }
 
@@ -23,7 +24,7 @@ export function BracketFormGrandFinal({ form }: { form: any }) {
           <FormControl>
             <RadioGroup
               onValueChange={field.onChange}
-              defaultValue={field.value || "simple"}
+              defaultValue={field.value || 'simple'}
               className="flex flex-col space-y-1"
             >
               <FormItem className="flex items-center space-x-3 space-y-0">
@@ -31,9 +32,7 @@ export function BracketFormGrandFinal({ form }: { form: any }) {
                   <RadioGroupItem value="simple" />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel className="font-normal">
-                    Simple Grand Final
-                  </FormLabel>
+                  <FormLabel className="font-normal">Simple Grand Final</FormLabel>
                   <FormDescription className="text-xs">
                     One match determines champion (faster, simpler)
                   </FormDescription>
@@ -44,11 +43,10 @@ export function BracketFormGrandFinal({ form }: { form: any }) {
                   <RadioGroupItem value="double" />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel className="font-normal">
-                    Double Grand Final (Bracket Reset)
-                  </FormLabel>
+                  <FormLabel className="font-normal">Double Grand Final (Bracket Reset)</FormLabel>
                   <FormDescription className="text-xs">
-                    If lower bracket champion wins first match, play second match (traditional fairness)
+                    If lower bracket champion wins first match, play second match (traditional
+                    fairness)
                   </FormDescription>
                 </div>
               </FormItem>

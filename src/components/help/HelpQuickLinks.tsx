@@ -1,8 +1,9 @@
-import React from "react";
-import { Link } from "react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Calendar, Users, Trophy, BarChart3 } from "lucide-react";
+import { BarChart3, Calendar, Trophy, Users } from 'lucide-react';
+import React from 'react';
+import { Link } from 'react-router';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export const HelpQuickLinks: React.FC = () => {
   return (

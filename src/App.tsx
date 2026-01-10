@@ -1,45 +1,47 @@
-import React, { Suspense, lazy, useEffect } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router";
-import { HelmetProvider } from "react-helmet-async";
-import { NavigationProvider } from "@/contexts/NavigationContext";
-import { AuthProvider } from "@/contexts/AuthContext";
-import PageTransition from "./components/transitions/PageTransition";
-import LoadingState from "@/components/ui/loading-state";
-import Navbar from "./components/layout/Navbar";
-import Footer from "./components/layout/Footer";
-import AppNavigation from "./components/navigation/AppNavigation";
-import ProtectedAdminRoute from "./components/auth/ProtectedAdminRoute";
-import { ErrorBoundary } from "./components/ErrorBoundary";
-import { routeLog } from "@/utils/logger";
-import { initSentry } from "@/utils/sentry";
-import { initAnalytics, trackPageView } from "@/utils/analytics";
-import { preloadCoreRoutes } from "@/utils/routePrefetch";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React, { lazy, Suspense, useEffect } from 'react';
+import { HelmetProvider } from 'react-helmet-async';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
+
+import LoadingState from '@/components/ui/loading-state';
+import { Toaster } from '@/components/ui/toaster';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { NavigationProvider } from '@/contexts/NavigationContext';
+import { initAnalytics, trackPageView } from '@/utils/analytics';
+import { routeLog } from '@/utils/logger';
+import { preloadCoreRoutes } from '@/utils/routePrefetch';
+import { initSentry } from '@/utils/sentry';
+
+import ProtectedAdminRoute from './components/auth/ProtectedAdminRoute';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import Footer from './components/layout/Footer';
+import Navbar from './components/layout/Navbar';
+import AppNavigation from './components/navigation/AppNavigation';
+import PageTransition from './components/transitions/PageTransition';
 
 // Initialize Sentry and Analytics on app load
 initSentry();
 initAnalytics();
 
 // Lazy load all page components
-const Index = lazy(() => import("./pages/Index"));
-const Help = lazy(() => import("./pages/Help"));
-const TeamsPage = lazy(() => import("./pages/TeamsPage"));
-const TeamDetails = lazy(() => import("./pages/TeamDetails"));
-const Schedule = lazy(() => import("./pages/Schedule"));
-const Stats = lazy(() => import("./pages/Stats"));
-const Playoffs = lazy(() => import("./pages/Playoffs"));
-const History = lazy(() => import("./pages/History"));
-const Timeslots = lazy(() => import("./pages/Timeslots"));
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
-const Auth = lazy(() => import("./pages/Auth"));
-const ProfileSetup = lazy(() => import("./pages/ProfileSetup"));
-const MessageBoard = lazy(() => import("./pages/MessageBoard"));
-const MyTeam = lazy(() => import("./pages/MyTeam"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const Contact = lazy(() => import("./pages/Contact"));
-const Compare = lazy(() => import("./pages/Compare"));
+const Index = lazy(() => import('./pages/Index'));
+const Help = lazy(() => import('./pages/Help'));
+const TeamsPage = lazy(() => import('./pages/TeamsPage'));
+const TeamDetails = lazy(() => import('./pages/TeamDetails'));
+const Schedule = lazy(() => import('./pages/Schedule'));
+const Stats = lazy(() => import('./pages/Stats'));
+const Playoffs = lazy(() => import('./pages/Playoffs'));
+const History = lazy(() => import('./pages/History'));
+const Timeslots = lazy(() => import('./pages/Timeslots'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const Auth = lazy(() => import('./pages/Auth'));
+const ProfileSetup = lazy(() => import('./pages/ProfileSetup'));
+const MessageBoard = lazy(() => import('./pages/MessageBoard'));
+const MyTeam = lazy(() => import('./pages/MyTeam'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+const Contact = lazy(() => import('./pages/Contact'));
+const Compare = lazy(() => import('./pages/Compare'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -52,7 +54,7 @@ const queryClient = new QueryClient({
 
 const AppContent = () => {
   const location = useLocation();
-  
+
   // Log every route change and track page views
   useEffect(() => {
     routeLog(`Navigating to: ${location.pathname}`);
@@ -63,18 +65,20 @@ const AppContent = () => {
   useEffect(() => {
     preloadCoreRoutes();
   }, []);
-  
+
   return (
     <NavigationProvider>
       <div className="flex flex-col min-h-screen overflow-x-hidden">
         <Navbar />
         <PageTransition>
           <main className="flex-grow">
-            <Suspense fallback={
-              <div className="flex items-center justify-center min-h-[60vh] py-8">
-                <LoadingState message="Loading page..." size="lg" />
-              </div>
-            }>
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center min-h-[60vh] py-8">
+                  <LoadingState message="Loading page..." size="lg" />
+                </div>
+              }
+            >
               <Routes location={location}>
                 <Route path="/" element={<Index />} />
                 <Route path="/teams" element={<TeamsPage />} />
@@ -83,16 +87,22 @@ const AppContent = () => {
                 <Route path="/stats" element={<Stats />} />
                 <Route path="/playoffs" element={<Playoffs />} />
                 <Route path="/history" element={<History />} />
-                <Route path="/timeslots" element={
-                  <ProtectedAdminRoute>
-                    <Timeslots />
-                  </ProtectedAdminRoute>
-                } />
-                <Route path="/admin" element={
-                  <ProtectedAdminRoute>
-                    <AdminDashboard />
-                  </ProtectedAdminRoute>
-                } />
+                <Route
+                  path="/timeslots"
+                  element={
+                    <ProtectedAdminRoute>
+                      <Timeslots />
+                    </ProtectedAdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedAdminRoute>
+                      <AdminDashboard />
+                    </ProtectedAdminRoute>
+                  }
+                />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/setup-profile" element={<ProfileSetup />} />
                 <Route path="/message-board" element={<MessageBoard />} />

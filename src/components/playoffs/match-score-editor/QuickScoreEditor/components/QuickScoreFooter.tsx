@@ -1,19 +1,16 @@
+import { X } from 'lucide-react';
+import React from 'react';
 
-import React from "react";
-import { DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
-import { animations } from "@/styles/design-system";
+import { Button } from '@/components/ui/button';
+import { DialogFooter } from '@/components/ui/dialog';
+import { animations } from '@/styles/design-system';
 
 interface QuickScoreFooterProps {
   onCancel: () => void;
   isSubmitting: boolean;
 }
 
-const QuickScoreFooter: React.FC<QuickScoreFooterProps> = ({
-  onCancel,
-  isSubmitting
-}) => {
+const QuickScoreFooter: React.FC<QuickScoreFooterProps> = ({ onCancel, isSubmitting }) => {
   return (
     <DialogFooter className={animations.fadeIn} style={{ animationDelay: '0.5s' }}>
       <Button variant="ghost" onClick={onCancel} disabled={isSubmitting}>

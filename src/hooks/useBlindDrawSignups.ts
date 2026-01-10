@@ -1,7 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { errorLog } from "@/utils/logger";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { errorLog } from '@/utils/logger';
 
 export interface BlindDrawSignup {
   id: string;
@@ -14,10 +15,10 @@ export interface BlindDrawSignup {
 // Fetch signup count for public display (no auth required)
 export const useBlindDrawSignupCount = (eventDate?: string) => {
   return useQuery({
-    queryKey: ["blind-draw-signup-count", eventDate],
+    queryKey: ['blind-draw-signup-count', eventDate],
     queryFn: async () => {
       if (!eventDate) return 0;
-      const { data, error } = await supabase.rpc("get_blind_draw_signup_count", {
+      const { data, error } = await supabase.rpc('get_blind_draw_signup_count', {
         p_event_date: eventDate,
       });
       if (error) throw error;
@@ -30,15 +31,15 @@ export const useBlindDrawSignupCount = (eventDate?: string) => {
 // Fetch signups for admin view (requires admin role)
 export const useBlindDrawSignups = (eventDate?: string) => {
   return useQuery({
-    queryKey: ["blind-draw-signups", eventDate],
+    queryKey: ['blind-draw-signups', eventDate],
     queryFn: async () => {
       let query = supabase
-        .from("blind_draw_signups")
-        .select("*")
-        .order("created_at", { ascending: true });
+        .from('blind_draw_signups')
+        .select('*')
+        .order('created_at', { ascending: true });
 
       if (eventDate) {
-        query = query.eq("event_date", eventDate);
+        query = query.eq('event_date', eventDate);
       }
 
       const { data, error } = await query;
@@ -63,30 +64,28 @@ export const useAddBlindDrawSignup = () => {
       firstName: string;
       lastInitial: string;
     }) => {
-      const { error } = await supabase
-        .from("blind_draw_signups")
-        .insert({
-          event_date: eventDate,
-          first_name: firstName.trim(),
-          last_initial: lastInitial.trim().toUpperCase(),
-        });
+      const { error } = await supabase.from('blind_draw_signups').insert({
+        event_date: eventDate,
+        first_name: firstName.trim(),
+        last_initial: lastInitial.trim().toUpperCase(),
+      });
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["blind-draw-signups"] });
-      queryClient.invalidateQueries({ queryKey: ["blind-draw-signup-count"] });
+      queryClient.invalidateQueries({ queryKey: ['blind-draw-signups'] });
+      queryClient.invalidateQueries({ queryKey: ['blind-draw-signup-count'] });
       toast({
-        title: "Success",
+        title: 'Success',
         description: "You're signed up! See you Thursday!",
       });
     },
     onError: (error) => {
-      errorLog("Signup error:", error);
+      errorLog('Signup error:', error);
       toast({
-        title: "Error",
-        description: "Failed to sign up. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to sign up. Please try again.',
+        variant: 'destructive',
       });
     },
   });
@@ -99,26 +98,23 @@ export const useDeleteBlindDrawSignup = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("blind_draw_signups")
-        .delete()
-        .eq("id", id);
+      const { error } = await supabase.from('blind_draw_signups').delete().eq('id', id);
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["blind-draw-signups"] });
+      queryClient.invalidateQueries({ queryKey: ['blind-draw-signups'] });
       toast({
-        title: "Success",
-        description: "Signup removed",
+        title: 'Success',
+        description: 'Signup removed',
       });
     },
     onError: (error) => {
-      errorLog("Delete error:", error);
+      errorLog('Delete error:', error);
       toast({
-        title: "Error",
-        description: "Failed to remove signup",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to remove signup',
+        variant: 'destructive',
       });
     },
   });
@@ -132,25 +128,25 @@ export const useClearBlindDrawSignups = () => {
   return useMutation({
     mutationFn: async (eventDate: string) => {
       const { error } = await supabase
-        .from("blind_draw_signups")
+        .from('blind_draw_signups')
         .delete()
-        .eq("event_date", eventDate);
+        .eq('event_date', eventDate);
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["blind-draw-signups"] });
+      queryClient.invalidateQueries({ queryKey: ['blind-draw-signups'] });
       toast({
-        title: "Success",
-        description: "All signups cleared",
+        title: 'Success',
+        description: 'All signups cleared',
       });
     },
     onError: (error) => {
-      errorLog("Clear error:", error);
+      errorLog('Clear error:', error);
       toast({
-        title: "Error",
-        description: "Failed to clear signups",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to clear signups',
+        variant: 'destructive',
       });
     },
   });

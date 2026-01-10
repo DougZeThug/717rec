@@ -1,9 +1,11 @@
-import React from "react";
-import { Label } from "@/components/ui/label";
-import MatchStatusIndicator from "./MatchStatusIndicator";
-import { Check } from "lucide-react";
-import { motion } from "framer-motion";
-import { scoreLog } from "@/utils/logger";
+import { motion } from 'framer-motion';
+import { Check } from 'lucide-react';
+import React from 'react';
+
+import { Label } from '@/components/ui/label';
+import { scoreLog } from '@/utils/logger';
+
+import MatchStatusIndicator from './MatchStatusIndicator';
 
 interface MatchStatusSectionProps {
   isCompleted: boolean;
@@ -18,12 +20,14 @@ const MatchStatusSection: React.FC<MatchStatusSectionProps> = ({
   onCompletedChange,
   isEdited,
   isValid,
-  disabled
+  disabled,
 }) => {
   // Handle click on the status indicator
   const handleStatusClick = () => {
     if (!disabled) {
-      scoreLog(`MatchStatusSection: Label clicked, toggling from ${isCompleted} to ${!isCompleted}`);
+      scoreLog(
+        `MatchStatusSection: Label clicked, toggling from ${isCompleted} to ${!isCompleted}`
+      );
       onCompletedChange(!isCompleted);
     }
   };
@@ -40,12 +44,8 @@ const MatchStatusSection: React.FC<MatchStatusSectionProps> = ({
           <span className="text-sm">Complete</span>
         </motion.div>
       ) : null}
-      
-      <MatchStatusIndicator
-        isEdited={isEdited}
-        isValid={isValid}
-        isCompleted={isCompleted}
-      />
+
+      <MatchStatusIndicator isEdited={isEdited} isValid={isValid} isCompleted={isCompleted} />
     </div>
   );
 };

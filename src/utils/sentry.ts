@@ -3,7 +3,9 @@
  */
 import * as Sentry from '@sentry/react';
 
-const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN || 'https://4118ea1dd42747921364d1aa6c4e2c8e@o4510601435152384.ingest.us.sentry.io/4510601452847104';
+const SENTRY_DSN =
+  import.meta.env.VITE_SENTRY_DSN ||
+  'https://4118ea1dd42747921364d1aa6c4e2c8e@o4510601435152384.ingest.us.sentry.io/4510601452847104';
 
 export const initSentry = () => {
   if (!SENTRY_DSN) {
@@ -14,25 +16,25 @@ export const initSentry = () => {
   Sentry.init({
     dsn: SENTRY_DSN,
     environment: import.meta.env.MODE,
-    
+
     // Only send errors in production
     enabled: import.meta.env.PROD,
-    
+
     // Sample rate for performance monitoring (0 = disabled, 1 = 100%)
     tracesSampleRate: 0.1,
-    
+
     // Sample rate for session replays
     replaysSessionSampleRate: 0,
     replaysOnErrorSampleRate: 0.1,
-    
+
     // Filter out known non-critical errors
     beforeSend(event, hint) {
       const error = hint.originalException;
-      
+
       // Ignore network errors that are expected
       if (error instanceof Error) {
         const message = error.message.toLowerCase();
-        
+
         // Ignore common non-actionable errors
         if (
           message.includes('resizeobserver loop') ||
@@ -43,10 +45,10 @@ export const initSentry = () => {
           return null;
         }
       }
-      
+
       return event;
     },
-    
+
     // Add additional context
     initialScope: {
       tags: {
@@ -64,7 +66,7 @@ export const captureError = (error: Error, context?: Record<string, unknown>) =>
     console.error('[Sentry would capture]:', error, context);
     return;
   }
-  
+
   Sentry.captureException(error, {
     extra: context,
   });
@@ -78,7 +80,7 @@ export const captureMessage = (message: string, level: Sentry.SeverityLevel = 'i
     console.log(`[Sentry would capture ${level}]:`, message);
     return;
   }
-  
+
   Sentry.captureMessage(message, level);
 };
 

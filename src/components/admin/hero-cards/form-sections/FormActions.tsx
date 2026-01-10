@@ -1,6 +1,7 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { X, Plus, Save, Loader2 } from "lucide-react";
+import { Loader2, Plus, Save, X } from 'lucide-react';
+import React from 'react';
+
+import { Button } from '@/components/ui/button';
 
 interface FormActionsProps {
   isSubmitting: boolean;
@@ -8,11 +9,7 @@ interface FormActionsProps {
   onCancel: () => void;
 }
 
-export const FormActions: React.FC<FormActionsProps> = ({
-  isSubmitting,
-  isEditing,
-  onCancel,
-}) => {
+export const FormActions: React.FC<FormActionsProps> = ({ isSubmitting, isEditing, onCancel }) => {
   return (
     <div className="flex justify-end gap-3 pt-6 border-t mt-6">
       <Button type="button" variant="outline" onClick={onCancel}>

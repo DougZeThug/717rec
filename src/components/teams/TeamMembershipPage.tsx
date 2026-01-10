@@ -1,8 +1,9 @@
+import React from 'react';
 
-import React from "react";
-import PageLayout from "@/components/layout/PageLayout";
-import TeamMembershipSection from "./TeamMembershipSection";
-import TeamEditSection from "./TeamEditSection";
+import PageLayout from '@/components/layout/PageLayout';
+
+import TeamEditSection from './TeamEditSection';
+import TeamMembershipSection from './TeamMembershipSection';
 
 const TeamMembershipPage: React.FC = () => {
   return (
@@ -15,7 +16,7 @@ const TeamMembershipPage: React.FC = () => {
               Manage your team membership and edit team details
             </p>
           </div>
-          
+
           <TeamMembershipSection />
           <TeamEditSection />
         </div>

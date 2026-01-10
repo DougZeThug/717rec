@@ -1,4 +1,3 @@
-
 // Re-export Team from main types to avoid duplication
 export type { Team } from '@/types';
 
@@ -57,7 +56,7 @@ export interface BracketFormStateResult {
   canSelectMore: boolean;
   isAtMaximum: boolean;
   hasSelection: boolean;
-  
+
   // Validation
   isValid: boolean;
   isComplete: boolean;
@@ -67,7 +66,7 @@ export interface BracketFormStateResult {
   warningMessage: string | null;
   statusMessage: string;
   progress: ValidationProgress;
-  
+
   // Effects
   cleanup: () => void;
 }

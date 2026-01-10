@@ -1,7 +1,7 @@
+import React from 'react';
+import { Link } from 'react-router';
 
-import React from "react";
-import { Link } from "react-router";
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 interface TeamLogoProps {
   imageUrl: string | null | undefined;
@@ -11,20 +11,20 @@ interface TeamLogoProps {
   className?: string;
 }
 
-export const TeamLogo: React.FC<TeamLogoProps> = ({ 
-  imageUrl, 
+export const TeamLogo: React.FC<TeamLogoProps> = ({
+  imageUrl,
   teamName,
   teamId,
   clickable = false,
-  className
+  className,
 }) => {
   // Remove avatar/circle styling from container
   const logoContent = (
-    <div 
+    <div
       className={cn(
         // Remove: 'rounded-full overflow-hidden'
-        "bg-gray-100 dark:bg-gray-800 flex items-center justify-center",
-        "w-10 h-10", // enforce fixed size always for logo
+        'bg-gray-100 dark:bg-gray-800 flex items-center justify-center',
+        'w-10 h-10', // enforce fixed size always for logo
         className
       )}
       tabIndex={clickable ? 0 : undefined}

@@ -1,5 +1,4 @@
-
-import { Team } from "@/types";
+import { Team } from '@/types';
 
 // Create a cache for compatibility scores to avoid recalculating
 type CompatibilityCache = {
@@ -21,21 +20,21 @@ export function getCacheKey(team1Id: string, team2Id: string): string {
  * Get compatibility score from cache or calculate it
  */
 export function getCachedCompatibilityScore(
-  team1: Team, 
-  team2: Team, 
+  team1: Team,
+  team2: Team,
   calculateFn: (t1: Team, t2: Team) => number
 ): number {
   const cacheKey = getCacheKey(team1.id, team2.id);
-  
+
   // Return from cache if available
   if (compatibilityScoreCache[cacheKey] !== undefined) {
     return compatibilityScoreCache[cacheKey];
   }
-  
+
   // Calculate and cache the score
   const score = calculateFn(team1, team2);
   compatibilityScoreCache[cacheKey] = score;
-  
+
   return score;
 }
 
@@ -43,7 +42,7 @@ export function getCachedCompatibilityScore(
  * Clear the compatibility score cache
  */
 export function clearCompatibilityCache(): void {
-  Object.keys(compatibilityScoreCache).forEach(key => {
+  Object.keys(compatibilityScoreCache).forEach((key) => {
     delete compatibilityScoreCache[key];
   });
 }
@@ -62,16 +61,16 @@ export async function getCachedMatchHistory(
   checkFn: (t1: string, t2: string) => Promise<boolean>
 ): Promise<boolean> {
   const cacheKey = getCacheKey(team1Id, team2Id);
-  
+
   // Return from cache if available
   if (matchHistoryCache[cacheKey] !== undefined) {
     return matchHistoryCache[cacheKey];
   }
-  
+
   // Fetch match history and cache it
   const hasPlayed = await checkFn(team1Id, team2Id);
   matchHistoryCache[cacheKey] = hasPlayed;
-  
+
   return hasPlayed;
 }
 
@@ -79,7 +78,7 @@ export async function getCachedMatchHistory(
  * Clear the match history cache
  */
 export function clearMatchHistoryCache(): void {
-  Object.keys(matchHistoryCache).forEach(key => {
+  Object.keys(matchHistoryCache).forEach((key) => {
     delete matchHistoryCache[key];
   });
 }

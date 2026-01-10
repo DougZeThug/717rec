@@ -1,18 +1,24 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import type { TeamRequest, TeamRequestType, TeamRequestStatus, TeamRequestWithTeam } from "@/types/teamRequest";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import type {
+  TeamRequest,
+  TeamRequestStatus,
+  TeamRequestType,
+  TeamRequestWithTeam,
+} from '@/types/teamRequest';
 
 // Fetch pending requests count for admin badge
 export const usePendingRequestsCount = () => {
   return useQuery({
-    queryKey: ["team-requests", "pending-count"],
+    queryKey: ['team-requests', 'pending-count'],
     queryFn: async () => {
       const { count, error } = await supabase
-        .from("team_requests")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "PENDING");
-      
+        .from('team_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'PENDING');
+
       if (error) throw error;
       return count || 0;
     },
@@ -23,17 +29,17 @@ export const usePendingRequestsCount = () => {
 // Fetch requests for a specific team
 export const useTeamRequests = (teamId: string | undefined) => {
   return useQuery({
-    queryKey: ["team-requests", "team", teamId],
+    queryKey: ['team-requests', 'team', teamId],
     queryFn: async () => {
       if (!teamId) return [];
-      
+
       const { data, error } = await supabase
-        .from("team_requests")
-        .select("*")
-        .eq("team_id", teamId)
-        .order("created_at", { ascending: false })
+        .from('team_requests')
+        .select('*')
+        .eq('team_id', teamId)
+        .order('created_at', { ascending: false })
         .limit(10);
-      
+
       if (error) throw error;
       return data as TeamRequest[];
     },
@@ -44,20 +50,22 @@ export const useTeamRequests = (teamId: string | undefined) => {
 // Fetch all requests for admin view
 export const useAllRequests = (statusFilter?: TeamRequestStatus) => {
   return useQuery({
-    queryKey: ["team-requests", "all", statusFilter],
+    queryKey: ['team-requests', 'all', statusFilter],
     queryFn: async () => {
       let query = supabase
-        .from("team_requests")
-        .select(`
+        .from('team_requests')
+        .select(
+          `
           *,
           teams:team_id (name)
-        `)
-        .order("created_at", { ascending: false });
-      
+        `
+        )
+        .order('created_at', { ascending: false });
+
       if (statusFilter) {
-        query = query.eq("status", statusFilter);
+        query = query.eq('status', statusFilter);
       }
-      
+
       const { data, error } = await query;
       if (error) throw error;
       return data as TeamRequestWithTeam[];
@@ -82,17 +90,17 @@ export const useSubmitRequest = () => {
     }) => {
       // Get current season
       const { data: season } = await supabase
-        .from("seasons")
-        .select("id")
-        .eq("is_active", true)
+        .from('seasons')
+        .select('id')
+        .eq('is_active', true)
         .single();
 
       const { data, error } = await supabase
-        .from("team_requests")
+        .from('team_requests')
         .insert({
           ...request,
           season_id: season?.id,
-          status: "PENDING",
+          status: 'PENDING',
         })
         .select()
         .single();
@@ -101,19 +109,19 @@ export const useSubmitRequest = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["team-requests"] });
+      queryClient.invalidateQueries({ queryKey: ['team-requests'] });
       toast({
-        title: "Request Submitted",
-        description: "Your request has been submitted and is pending review.",
+        title: 'Request Submitted',
+        description: 'Your request has been submitted and is pending review.',
       });
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to submit request. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to submit request. Please try again.',
+        variant: 'destructive',
       });
-      console.error("Submit request error:", error);
+      console.error('Submit request error:', error);
     },
   });
 };
@@ -134,16 +142,16 @@ export const useUpdateRequestStatus = () => {
       admin_notes?: string;
     }) => {
       const { data: userData } = await supabase.auth.getUser();
-      
+
       const { data, error } = await supabase
-        .from("team_requests")
+        .from('team_requests')
         .update({
           status,
           admin_notes,
           processed_by: userData.user?.id,
           processed_at: new Date().toISOString(),
         })
-        .eq("id", id)
+        .eq('id', id)
         .select()
         .single();
 
@@ -151,19 +159,19 @@ export const useUpdateRequestStatus = () => {
       return data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["team-requests"] });
+      queryClient.invalidateQueries({ queryKey: ['team-requests'] });
       toast({
-        title: `Request ${variables.status === "APPROVED" ? "Approved" : "Denied"}`,
+        title: `Request ${variables.status === 'APPROVED' ? 'Approved' : 'Denied'}`,
         description: `The request has been ${variables.status.toLowerCase()}.`,
       });
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to update request. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to update request. Please try again.',
+        variant: 'destructive',
       });
-      console.error("Update request error:", error);
+      console.error('Update request error:', error);
     },
   });
 };

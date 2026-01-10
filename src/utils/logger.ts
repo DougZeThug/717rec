@@ -7,21 +7,23 @@
  *  - Automatic production log suppression
  */
 
+import { captureError, captureMessage } from '@/utils/sentry';
+
 // Vite-compatible environment detection
 const isDev = typeof import.meta !== 'undefined' && import.meta.env?.DEV === true;
 
 // Log level control (can be overridden via environment variable)
 type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'none';
-const LOG_LEVEL: LogLevel = (typeof import.meta !== 'undefined' 
-  ? import.meta.env?.VITE_LOG_LEVEL as LogLevel 
-  : 'info') || 'info';
+const LOG_LEVEL: LogLevel =
+  (typeof import.meta !== 'undefined' ? (import.meta.env?.VITE_LOG_LEVEL as LogLevel) : 'info') ||
+  'info';
 
 const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
   debug: 0,
   info: 1,
   warn: 2,
   error: 3,
-  none: 99
+  none: 99,
 };
 
 const shouldLog = (level: LogLevel): boolean => {
@@ -37,26 +39,25 @@ export const log = (...args: unknown[]) => {
 export const errorLog = (...args: unknown[]) => {
   // Always log errors in dev mode
   if (shouldLog('error')) console.error('[717REC ERROR]', ...args);
-  
+
   // In production, send to Sentry
   if (!isDev && args.length > 0) {
-    // Dynamically import to avoid circular dependencies
-    import('@/utils/sentry').then(({ captureError, captureMessage }) => {
+    try {
       // Find Error in any argument position (not just first)
-      const errorArg = args.find(arg => arg instanceof Error);
-      const messageArg = args.find(arg => typeof arg === 'string');
-      
+      const errorArg = args.find((arg) => arg instanceof Error);
+      const messageArg = args.find((arg) => typeof arg === 'string');
+
       if (errorArg instanceof Error) {
-        captureError(errorArg, { 
+        captureError(errorArg, {
           message: messageArg,
-          additionalArgs: args.filter(a => a !== errorArg && a !== messageArg)
+          additionalArgs: args.filter((a) => a !== errorArg && a !== messageArg),
         });
       } else if (messageArg) {
         captureMessage(String(messageArg), 'error');
       }
-    }).catch(() => {
+    } catch {
       // Sentry not available, silently fail
-    });
+    }
   }
 };
 
@@ -73,76 +74,59 @@ export const debugLog = (...args: unknown[]) => {
 // ============================================
 
 // Auth operations
-export const authLog = (...args: unknown[]) =>
-  log('🔐 Auth:', ...args);
+export const authLog = (...args: unknown[]) => log('🔐 Auth:', ...args);
 
 // Bracket operations
-export const bracketLog = (...args: unknown[]) =>
-  log('🎲 Bracket:', ...args);
+export const bracketLog = (...args: unknown[]) => log('🎲 Bracket:', ...args);
 
 // Match operations
-export const matchLog = (...args: unknown[]) =>
-  log('🎯 Match:', ...args);
+export const matchLog = (...args: unknown[]) => log('🎯 Match:', ...args);
 
 // Team operations
-export const teamLog = (...args: unknown[]) =>
-  log('👥 Team:', ...args);
+export const teamLog = (...args: unknown[]) => log('👥 Team:', ...args);
 
 // Playoffs operations
-export const playoffLog = (...args: unknown[]) =>
-  log('🏆 Playoff:', ...args);
+export const playoffLog = (...args: unknown[]) => log('🏆 Playoff:', ...args);
 
 // Score operations
-export const scoreLog = (...args: unknown[]) =>
-  log('📊 Score:', ...args);
+export const scoreLog = (...args: unknown[]) => log('📊 Score:', ...args);
 
 // Badge operations
-export const badgeLog = (...args: unknown[]) =>
-  log('🏅 Badge:', ...args);
+export const badgeLog = (...args: unknown[]) => log('🏅 Badge:', ...args);
 
 // Database operations
-export const dbLog = (...args: unknown[]) =>
-  log('💾 DB:', ...args);
+export const dbLog = (...args: unknown[]) => log('💾 DB:', ...args);
 
 // Schedule operations
-export const scheduleLog = (...args: unknown[]) =>
-  log('📅 Schedule:', ...args);
+export const scheduleLog = (...args: unknown[]) => log('📅 Schedule:', ...args);
 
 // Admin operations
-export const adminLog = (...args: unknown[]) =>
-  log('⚡ Admin:', ...args);
+export const adminLog = (...args: unknown[]) => log('⚡ Admin:', ...args);
 
 // Challonge operations
-export const challongeLog = (...args: unknown[]) =>
-  log('🎮 Challonge:', ...args);
+export const challongeLog = (...args: unknown[]) => log('🎮 Challonge:', ...args);
 
 // Timezone operations
-export const timezoneLog = (...args: unknown[]) =>
-  log('🌐 Timezone:', ...args);
+export const timezoneLog = (...args: unknown[]) => log('🌐 Timezone:', ...args);
 
 // Chart/visualization operations
-export const chartLog = (...args: unknown[]) =>
-  log('📈 Chart:', ...args);
+export const chartLog = (...args: unknown[]) => log('📈 Chart:', ...args);
 
 // Validation operations
-export const validationLog = (...args: unknown[]) =>
-  log('✓ Validation:', ...args);
+export const validationLog = (...args: unknown[]) => log('✓ Validation:', ...args);
 
 // Image loading operations (used in onError handlers)
 export const imageErrorLog = (teamName: string, imageUrl: string | null | undefined) =>
   warnLog('🖼️ Image:', `Failed to load image for ${teamName}:`, imageUrl || 'no URL');
 
 // Cache operations
-export const cacheLog = (...args: unknown[]) =>
-  log('💨 Cache:', ...args);
+export const cacheLog = (...args: unknown[]) => log('💨 Cache:', ...args);
 
 // Route/navigation operations
-export const routeLog = (...args: unknown[]) =>
-  log('🧭 Route:', ...args);
+export const routeLog = (...args: unknown[]) => log('🧭 Route:', ...args);
 
 // Filter operations
-export const filterLog = (...args: unknown[]) =>
-  log('🔍 Filter:', ...args);
+export const filterLog = (...args: unknown[]) => log('🔍 Filter:', ...args);
 
 // ============================================
 // Status loggers
@@ -166,13 +150,13 @@ export const failureLog = (operation: string, error: string | Error) =>
 
 export const supabaseErrorLog = (operation: string, error: unknown) => {
   if (!isDev) return;
-  
+
   if (error && typeof error === 'object' && 'message' in error) {
     const supabaseError = error as { message: string; code?: string; details?: string };
     errorLog(`Supabase ${operation} failed:`, {
       code: supabaseError.code,
       message: supabaseError.message,
-      details: supabaseError.details
+      details: supabaseError.details,
     });
   } else {
     errorLog(`Supabase ${operation} failed:`, error);

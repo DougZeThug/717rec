@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface IceShardProps extends React.SVGProps<SVGSVGElement> {
   size?: number | string;
@@ -8,11 +8,7 @@ interface IceShardProps extends React.SVGProps<SVGSVGElement> {
  * Ice Shard glyph - Sharp crystalline fragment
  * Used for warning/alert winter variant, destructive actions
  */
-const IceShard: React.FC<IceShardProps> = ({ 
-  size = 24, 
-  className,
-  ...props 
-}) => (
+const IceShard: React.FC<IceShardProps> = ({ size = 24, className, ...props }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -27,10 +23,10 @@ const IceShard: React.FC<IceShardProps> = ({
     {...props}
   >
     {/* Main shard shape */}
-    <path 
-      d="M12 2 L17 8 L15 14 L18 22 L12 18 L6 22 L9 14 L7 8 Z" 
-      fill="currentColor" 
-      fillOpacity="0.1" 
+    <path
+      d="M12 2 L17 8 L15 14 L18 22 L12 18 L6 22 L9 14 L7 8 Z"
+      fill="currentColor"
+      fillOpacity="0.1"
     />
     <path d="M12 2 L17 8 L15 14 L18 22 L12 18 L6 22 L9 14 L7 8 Z" />
     {/* Internal facet lines */}

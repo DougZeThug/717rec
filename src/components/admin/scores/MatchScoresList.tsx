@@ -1,16 +1,21 @@
-
 import React from 'react';
+
 import { Match, Team } from '@/types';
+
 import MatchScoreItem from './MatchScoreItem';
 
 interface MatchScoresListProps {
   matches: Match[];
   teams: Record<string, Team>;
   openItems: Record<string, boolean>;
-  scores: Record<string, { team1Score: string, team2Score: string }>;
+  scores: Record<string, { team1Score: string; team2Score: string }>;
   onToggleItem: (id: string) => void;
   onScoreChange: (matchId: string, team: 'team1Score' | 'team2Score', value: string) => void;
-  onSubmitScore: (matchId: string, team1GameWins: number, team2GameWins: number) => Promise<boolean>;
+  onSubmitScore: (
+    matchId: string,
+    team1GameWins: number,
+    team2GameWins: number
+  ) => Promise<boolean>;
 }
 
 const MatchScoresList = ({
@@ -20,7 +25,7 @@ const MatchScoresList = ({
   scores,
   onToggleItem,
   onScoreChange,
-  onSubmitScore
+  onSubmitScore,
 }: MatchScoresListProps) => {
   if (matches.length === 0) {
     return <div className="p-4 bg-slate-50 rounded-md">All matches have scores submitted.</div>;
@@ -28,7 +33,7 @@ const MatchScoresList = ({
 
   return (
     <div className="space-y-4">
-      {matches.map(match => (
+      {matches.map((match) => (
         <MatchScoreItem
           key={match.id}
           match={match}

@@ -1,8 +1,8 @@
+import React from 'react';
 
-import React from "react";
-import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
-import EditScoresSection from "@/components/admin/EditScoresSection";
-import PendingMatchesSection from "@/components/admin/PendingMatchesSection";
+import EditScoresSection from '@/components/admin/EditScoresSection';
+import PendingMatchesSection from '@/components/admin/PendingMatchesSection';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const ScoresTab = () => {
   return (
@@ -15,7 +15,7 @@ const ScoresTab = () => {
           <EditScoresSection />
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Approve Results</CardTitle>

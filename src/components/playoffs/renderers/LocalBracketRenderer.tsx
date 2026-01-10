@@ -1,7 +1,7 @@
+import React from 'react';
 
-import React from "react";
-import { BracketsViewerComponent } from "@/components/playoffs/viewer";
-import { PlayoffBracket, PlayoffTeam } from "@/utils/playoffs/playoffTypes";
+import { BracketsViewerComponent } from '@/components/playoffs/viewer';
+import { PlayoffBracket, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 
 interface LocalBracketRendererProps {
   bracket: PlayoffBracket;
@@ -24,11 +24,5 @@ export const LocalBracketRenderer: React.FC<LocalBracketRendererProps> = ({
     );
   }
 
-  return (
-    <BracketsViewerComponent
-      bracket={bracket}
-      teams={teams}
-      onMatchClick={onEditMatch}
-    />
-  );
+  return <BracketsViewerComponent bracket={bracket} teams={teams} onMatchClick={onEditMatch} />;
 };

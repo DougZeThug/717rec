@@ -1,13 +1,12 @@
-
 /**
  * Format date to display in Month Day, Year format
  */
 export const formatDate = (dateString: string) => {
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { 
-    month: 'short', 
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
     day: 'numeric',
-    year: 'numeric'
+    year: 'numeric',
   });
 };
 
@@ -16,9 +15,9 @@ export const formatDate = (dateString: string) => {
  */
 export const formatTime = (dateString: string) => {
   const date = new Date(dateString);
-  return date.toLocaleTimeString('en-US', { 
-    hour: 'numeric', 
+  return date.toLocaleTimeString('en-US', {
+    hour: 'numeric',
     minute: '2-digit',
-    hour12: true
+    hour12: true,
   });
 };

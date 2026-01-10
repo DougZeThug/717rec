@@ -1,10 +1,10 @@
 // Re-export match transformers for bracket-specific consumers
 // Note: These now delegate to the centralized matchTransformers.ts
 
-export { 
+export {
   transformDatabasePlayoffMatch,
   transformDatabasePlayoffMatches,
-  transformDatabasePlayoffMatchesWithTeams
+  transformDatabasePlayoffMatchesWithTeams,
 } from '@/utils/matchTransformers';
 
 // Legacy aliases for backward compatibility

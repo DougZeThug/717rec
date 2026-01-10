@@ -1,7 +1,8 @@
+import React from 'react';
 
-import React from "react";
-import { Team } from "@/types";
-import TeamRow from "./TeamRow";
+import { Team } from '@/types';
+
+import TeamRow from './TeamRow';
 
 interface MatchTeamsSectionProps {
   team1: Team | null;
@@ -26,7 +27,7 @@ const MatchTeamsSection: React.FC<MatchTeamsSectionProps> = ({
   team1Score,
   team2Score,
   winnerId,
-  matchType
+  matchType,
 }) => {
   return (
     <div className="space-y-1.5">
@@ -39,7 +40,7 @@ const MatchTeamsSection: React.FC<MatchTeamsSectionProps> = ({
         isWinner={team1Id === winnerId}
         matchType={matchType}
       />
-      
+
       {/* Team 2 Row */}
       <TeamRow
         team={team2}

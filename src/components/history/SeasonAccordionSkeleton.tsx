@@ -1,5 +1,6 @@
-import React from "react";
-import { ShimmerSkeleton } from "@/components/ui/shimmer-skeleton";
+import React from 'react';
+
+import { ShimmerSkeleton } from '@/components/ui/shimmer-skeleton';
 
 /**
  * Skeleton for SeasonAccordion expanded content

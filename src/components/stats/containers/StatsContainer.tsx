@@ -1,24 +1,26 @@
-import React, { Suspense, lazy } from "react";
-import { useTeamRankings } from "@/hooks/useTeamRankings";
-import { useTeamsQuery } from "@/hooks/teams";
-import { Match } from "@/types";
-import StatsErrorState from "../StatsErrorState";
-import StatsPageHeader from "./StatsPageHeader";
-import StatsChartsSection from "./StatsChartsSection";
-import FullRankingsSection from "./FullRankingsSection";
-import LoadingStateContainer from "./LoadingStateContainer";
-import CareerRankingsSection from "../career/CareerRankingsSection";
-import { Skeleton } from "@/components/ui/skeleton";
-import WinterSection from "@/components/winter/WinterSection";
-import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
-import { cn } from "@/lib/utils";
-import { useTeamMembership } from "@/hooks/useTeamMembership";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { lazy, Suspense } from 'react';
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import WinterSection from '@/components/winter/WinterSection';
+import { useTeamsQuery } from '@/hooks/teams';
+import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
+import { useTeamMembership } from '@/hooks/useTeamMembership';
+import { useTeamRankings } from '@/hooks/useTeamRankings';
+import { cn } from '@/lib/utils';
+import { Match } from '@/types';
+
+import CareerRankingsSection from '../career/CareerRankingsSection';
+import StatsErrorState from '../StatsErrorState';
+import FullRankingsSection from './FullRankingsSection';
+import LoadingStateContainer from './LoadingStateContainer';
+import StatsChartsSection from './StatsChartsSection';
+import StatsPageHeader from './StatsPageHeader';
 
 // Lazy load the chart component to defer loading recharts bundle
-const AllTeamsCareerPowerScoreChart = lazy(() => 
-  import("../career/AllTeamsCareerPowerScoreChart").then(module => ({ 
-    default: module.AllTeamsCareerPowerScoreChart 
+const AllTeamsCareerPowerScoreChart = lazy(() =>
+  import('../career/AllTeamsCareerPowerScoreChart').then((module) => ({
+    default: module.AllTeamsCareerPowerScoreChart,
   }))
 );
 
@@ -30,14 +32,10 @@ interface StatsContainerProps {
 
 const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContainerProps) => {
   const { isWinterTheme } = useSeasonalTheme();
-  const { 
-    data: teams, 
-    isLoading: isLoadingTeams, 
-    error: teamsError,
-  } = useTeamsQuery();
+  const { data: teams, isLoading: isLoadingTeams, error: teamsError } = useTeamsQuery();
   const { rankings, isLoading: isLoadingRankings } = useTeamRankings(teams, matches);
   const { membership } = useTeamMembership();
-  
+
   // Only pass myTeamId if user has approved membership
   const myTeamId = membership?.is_approved ? membership.team_id : null;
 
@@ -57,23 +55,23 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
       showIcicles
       lightIcicles
       className={cn(
-        "max-w-7xl mx-auto px-2 sm:px-4",
-        isWinterTheme ? "bg-transparent" : "bg-gray-50 dark:bg-transparent"
+        'max-w-7xl mx-auto px-2 sm:px-4',
+        isWinterTheme ? 'bg-transparent' : 'bg-gray-50 dark:bg-transparent'
       )}
     >
       <StatsPageHeader />
-      
+
       <div className="font-inter">
         {rankings.length > 0 ? (
           <>
             <FullRankingsSection rankings={rankings} myTeamId={myTeamId} />
-            
+
             <StatsChartsSection rankings={rankings} />
 
             <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl" />}>
               <AllTeamsCareerPowerScoreChart />
             </Suspense>
-            
+
             <CareerRankingsSection />
           </>
         ) : (

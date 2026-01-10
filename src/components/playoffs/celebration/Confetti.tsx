@@ -1,6 +1,6 @@
-
 import React, { useEffect, useState } from 'react';
-import { cn } from "@/lib/utils";
+
+import { cn } from '@/lib/utils';
 
 interface ConfettiPiece {
   id: number;
@@ -25,12 +25,12 @@ const colors = [
 
 const Confetti: React.FC = () => {
   const [pieces, setPieces] = useState<ConfettiPiece[]>([]);
-  
+
   useEffect(() => {
     // Generate confetti pieces
     const newPieces: ConfettiPiece[] = [];
     const pieceCount = 100;
-    
+
     for (let i = 0; i < pieceCount; i++) {
       newPieces.push({
         id: i,
@@ -42,36 +42,33 @@ const Confetti: React.FC = () => {
         delay: Math.random() * 0.5, // 0-0.5s delay
       });
     }
-    
+
     setPieces(newPieces);
-    
+
     // Clean up after animation completes
     const timeout = setTimeout(() => {
       setPieces([]);
     }, 6000);
-    
+
     return () => clearTimeout(timeout);
   }, []);
-  
+
   return (
     <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
-      {pieces.map(piece => (
+      {pieces.map((piece) => (
         <div
           key={piece.id}
-          className={cn(
-            "absolute w-2 h-6 opacity-80",
-            piece.color
-          )}
+          className={cn('absolute w-2 h-6 opacity-80', piece.color)}
           style={{
             left: `${piece.x}%`,
             top: '-20px',
             transform: `scale(${piece.size}) rotate(${piece.rotation}deg)`,
             animation: `fall ${piece.animationDuration}s ease-in forwards`,
-            animationDelay: `${piece.delay}s`
+            animationDelay: `${piece.delay}s`,
           }}
         />
       ))}
-      
+
       <style>
         {`
           @keyframes fall {

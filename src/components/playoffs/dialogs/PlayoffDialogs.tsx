@@ -1,11 +1,17 @@
+import React from 'react';
 
-import React from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import BracketCreationDialog from "@/components/playoffs/BracketCreationDialog";
-import TeamDivisionDialog from "@/components/playoffs/TeamDivisionDialog";
-import DeleteBracketDialog from "@/components/playoffs/DeleteBracketDialog";
-import { MatchScoreEditor, QuickScoreEditor } from "@/components/playoffs/match-score-editor";
-import { Division, PlayoffMatch, Team } from "@/types";
+import BracketCreationDialog from '@/components/playoffs/BracketCreationDialog';
+import DeleteBracketDialog from '@/components/playoffs/DeleteBracketDialog';
+import { MatchScoreEditor, QuickScoreEditor } from '@/components/playoffs/match-score-editor';
+import TeamDivisionDialog from '@/components/playoffs/TeamDivisionDialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Division, PlayoffMatch, Team } from '@/types';
 
 interface PlayoffDialogsProps {
   // Team division dialog
@@ -102,13 +108,11 @@ const PlayoffDialogs: React.FC<PlayoffDialogsProps> = ({
       >
         <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader className="sr-only">
-            <DialogTitle>
-              {isQuickEdit ? "Quick Score Update" : "Edit Match Score"}
-            </DialogTitle>
+            <DialogTitle>{isQuickEdit ? 'Quick Score Update' : 'Edit Match Score'}</DialogTitle>
             <DialogDescription>
-              {isQuickEdit 
-                ? "Update the match score quickly" 
-                : "Edit match details and game-by-game scores"}
+              {isQuickEdit
+                ? 'Update the match score quickly'
+                : 'Edit match details and game-by-game scores'}
             </DialogDescription>
           </DialogHeader>
 
@@ -138,7 +142,7 @@ const PlayoffDialogs: React.FC<PlayoffDialogsProps> = ({
         onOpenChange={(open) => {
           if (!open) setDeletingBracket(null);
         }}
-        bracketName={deletingBracket?.name || ""}
+        bracketName={deletingBracket?.name || ''}
         onConfirm={onConfirmDelete}
         isDeleting={isDeleting}
       />

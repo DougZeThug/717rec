@@ -1,27 +1,35 @@
-import React, { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
-import { Search, Image, CheckCircle, AlertCircle, XCircle } from "lucide-react";
-import { Team } from "@/types";
-import { useTeamsQuery } from "@/hooks/teams";
-import { getLogoStatus, LogoStatus } from "@/utils/logoStatusUtils";
-import TeamLogoCard from "./TeamLogoCard";
+import { AlertCircle, CheckCircle, Image, Search, XCircle } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Progress } from '@/components/ui/progress';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useTeamsQuery } from '@/hooks/teams';
+import { Team } from '@/types';
+import { getLogoStatus, LogoStatus } from '@/utils/logoStatusUtils';
+
+import TeamLogoCard from './TeamLogoCard';
 
 type FilterStatus = 'all' | LogoStatus;
 type SortOption = 'name' | 'status';
 
 const BulkLogoUpdateTab: React.FC = () => {
   const { data: teams, isLoading, refetch } = useTeamsQuery({ includeHidden: true });
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
   const [sortBy, setSortBy] = useState<SortOption>('status');
 
   // Calculate stats
   const stats = useMemo(() => {
     if (!teams) return { total: 0, optimized: 0, legacy: 0, missing: 0 };
-    
+
     return teams.reduce(
       (acc, team) => {
         const status = getLogoStatus(team.imageUrl);
@@ -33,15 +41,14 @@ const BulkLogoUpdateTab: React.FC = () => {
     );
   }, [teams]);
 
-  const optimizationPercentage = stats.total > 0 
-    ? Math.round((stats.optimized / stats.total) * 100) 
-    : 0;
+  const optimizationPercentage =
+    stats.total > 0 ? Math.round((stats.optimized / stats.total) * 100) : 0;
 
   // Filter and sort teams
   const filteredTeams = useMemo(() => {
     if (!teams) return [];
 
-    let result = teams.filter(team => {
+    const result = teams.filter((team) => {
       const matchesSearch = team.name.toLowerCase().includes(searchTerm.toLowerCase());
       const status = getLogoStatus(team.imageUrl);
       const matchesFilter = filterStatus === 'all' || status === filterStatus;
@@ -175,11 +182,7 @@ const BulkLogoUpdateTab: React.FC = () => {
           {/* Teams Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {filteredTeams.map((team) => (
-              <TeamLogoCard
-                key={team.id}
-                team={team}
-                onUpdate={refetch}
-              />
+              <TeamLogoCard key={team.id} team={team} onUpdate={refetch} />
             ))}
           </div>
 

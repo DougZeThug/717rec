@@ -1,33 +1,33 @@
-
-import React, { useState, useMemo } from "react";
 import {
-  Users,
-  Users2,
-  Clock,
   Calendar,
-  ListChecks,
-  Sparkles,
   CalendarClock,
-  Timer,
+  ClipboardCheck,
+  Clock,
+  HelpCircle,
+  Inbox,
   LayoutGrid,
+  ListChecks,
   Search,
   Shuffle,
-  HelpCircle,
-  ClipboardCheck,
-  Inbox,
+  Sparkles,
+  Timer,
+  Users,
+  Users2,
   X,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+} from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from '@/components/ui/accordion';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 interface AdminMenuItem {
   id: string;
@@ -43,45 +43,45 @@ interface TabGroup {
 }
 
 const adminMenuItems: AdminMenuItem[] = [
-  { id: "timeslots", label: "Timeslots", icon: Timer },
-  { id: "batch-matches", label: "Match Creation", icon: Sparkles },
-  { id: "auto-schedule", label: "Auto Schedule", icon: CalendarClock },
-  { id: "matchups", label: "Matchups", icon: Users2 },
-  { id: "scores", label: "Scores", icon: ListChecks },
-  { id: "seasons", label: "Season", icon: Calendar },
-  { id: "participation", label: "Participation", icon: ClipboardCheck },
-  { id: "requests", label: "Requests", icon: Inbox },
-  { id: "teams", label: "Teams", icon: Users },
-  { id: "pending-matches", label: "Pending", icon: Clock },
-  { id: "hero-cards", label: "Hero Cards", icon: LayoutGrid },
-  { id: "blind-draw", label: "Blind Draw", icon: Shuffle },
-  { id: "help", label: "Help", icon: HelpCircle },
+  { id: 'timeslots', label: 'Timeslots', icon: Timer },
+  { id: 'batch-matches', label: 'Match Creation', icon: Sparkles },
+  { id: 'auto-schedule', label: 'Auto Schedule', icon: CalendarClock },
+  { id: 'matchups', label: 'Matchups', icon: Users2 },
+  { id: 'scores', label: 'Scores', icon: ListChecks },
+  { id: 'seasons', label: 'Season', icon: Calendar },
+  { id: 'participation', label: 'Participation', icon: ClipboardCheck },
+  { id: 'requests', label: 'Requests', icon: Inbox },
+  { id: 'teams', label: 'Teams', icon: Users },
+  { id: 'pending-matches', label: 'Pending', icon: Clock },
+  { id: 'hero-cards', label: 'Hero Cards', icon: LayoutGrid },
+  { id: 'blind-draw', label: 'Blind Draw', icon: Shuffle },
+  { id: 'help', label: 'Help', icon: HelpCircle },
 ];
 
 const tabGroups: TabGroup[] = [
   {
-    id: "scheduling",
-    label: "Scheduling",
+    id: 'scheduling',
+    label: 'Scheduling',
     icon: CalendarClock,
-    tabs: ["timeslots", "batch-matches", "auto-schedule"],
+    tabs: ['timeslots', 'batch-matches', 'auto-schedule'],
   },
   {
-    id: "scores-stats",
-    label: "Scores & Stats",
+    id: 'scores-stats',
+    label: 'Scores & Stats',
     icon: ListChecks,
-    tabs: ["scores", "matchups", "pending-matches"],
+    tabs: ['scores', 'matchups', 'pending-matches'],
   },
   {
-    id: "teams-players",
-    label: "Teams & Players",
+    id: 'teams-players',
+    label: 'Teams & Players',
     icon: Users,
-    tabs: ["teams", "requests", "participation"],
+    tabs: ['teams', 'requests', 'participation'],
   },
   {
-    id: "settings",
-    label: "Settings & Content",
+    id: 'settings',
+    label: 'Settings & Content',
     icon: LayoutGrid,
-    tabs: ["seasons", "hero-cards", "blind-draw", "help"],
+    tabs: ['seasons', 'hero-cards', 'blind-draw', 'help'],
   },
 ];
 
@@ -96,7 +96,7 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
   onTabChange,
   pendingRequestsCount = 0,
 }) => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
   const getActiveGroup = (tabId: string): string => {
     for (const group of tabGroups) {
@@ -112,7 +112,7 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
   };
 
   const getGroupBadgeCount = (group: TabGroup): number => {
-    if (group.tabs.includes("requests") && pendingRequestsCount > 0) {
+    if (group.tabs.includes('requests') && pendingRequestsCount > 0) {
       return pendingRequestsCount;
     }
     return 0;
@@ -127,7 +127,7 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
 
   const handleTabSelect = (tabId: string) => {
     onTabChange(tabId);
-    setSearchQuery("");
+    setSearchQuery('');
   };
 
   return (
@@ -143,7 +143,7 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
         />
         {searchQuery && (
           <button
-            onClick={() => setSearchQuery("")}
+            onClick={() => setSearchQuery('')}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
           >
             <X className="h-4 w-4" />
@@ -158,18 +158,18 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
         </p>
         <div className="flex gap-2">
           <Button
-            variant={activeTab === "scores" ? "default" : "outline"}
+            variant={activeTab === 'scores' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => handleTabSelect("scores")}
+            onClick={() => handleTabSelect('scores')}
             className="flex-1 h-10"
           >
             <ListChecks className="h-4 w-4 mr-2" />
             Scores
           </Button>
           <Button
-            variant={activeTab === "timeslots" ? "default" : "outline"}
+            variant={activeTab === 'timeslots' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => handleTabSelect("timeslots")}
+            onClick={() => handleTabSelect('timeslots')}
             className="flex-1 h-10"
           >
             <Timer className="h-4 w-4 mr-2" />
@@ -182,25 +182,23 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
       {searchQuery ? (
         <div className="space-y-1">
           {filteredItems.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              No sections found
-            </p>
+            <p className="text-sm text-muted-foreground text-center py-4">No sections found</p>
           ) : (
             filteredItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => handleTabSelect(item.id)}
                 className={cn(
-                  "w-full flex items-center gap-3 px-3 py-3 rounded-md text-sm transition-colors",
-                  "hover:bg-accent hover:text-accent-foreground",
+                  'w-full flex items-center gap-3 px-3 py-3 rounded-md text-sm transition-colors',
+                  'hover:bg-accent hover:text-accent-foreground',
                   activeTab === item.id
-                    ? "bg-primary/10 text-primary font-medium"
-                    : "text-foreground"
+                    ? 'bg-primary/10 text-primary font-medium'
+                    : 'text-foreground'
                 )}
               >
                 <item.icon className="h-4 w-4 shrink-0" />
                 <span className="flex-1 text-left">{item.label}</span>
-                {item.id === "requests" && pendingRequestsCount > 0 && (
+                {item.id === 'requests' && pendingRequestsCount > 0 && (
                   <Badge variant="destructive" className="text-xs">
                     {pendingRequestsCount}
                   </Badge>
@@ -230,14 +228,12 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
                 >
                   <AccordionTrigger
                     className={cn(
-                      "flex items-center gap-3 px-3 py-3 hover:no-underline hover:bg-accent/50 text-sm",
-                      hasActiveTab && "bg-primary/5"
+                      'flex items-center gap-3 px-3 py-3 hover:no-underline hover:bg-accent/50 text-sm',
+                      hasActiveTab && 'bg-primary/5'
                     )}
                   >
                     <GroupIcon className="h-4 w-4 shrink-0" />
-                    <span className="flex-1 text-left font-medium">
-                      {group.label}
-                    </span>
+                    <span className="flex-1 text-left font-medium">{group.label}</span>
                     {groupBadge > 0 && (
                       <Badge variant="destructive" className="text-xs mr-2">
                         {groupBadge}
@@ -256,17 +252,17 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
                             key={tabId}
                             onClick={() => handleTabSelect(tabId)}
                             className={cn(
-                              "w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors",
-                              "hover:bg-accent hover:text-accent-foreground",
-                              "border-b border-border last:border-b-0",
+                              'w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors',
+                              'hover:bg-accent hover:text-accent-foreground',
+                              'border-b border-border last:border-b-0',
                               activeTab === tabId
-                                ? "bg-primary/10 text-primary font-medium"
-                                : "text-muted-foreground"
+                                ? 'bg-primary/10 text-primary font-medium'
+                                : 'text-muted-foreground'
                             )}
                           >
                             <TabIcon className="h-4 w-4 shrink-0" />
                             <span className="flex-1 text-left">{tab.label}</span>
-                            {tabId === "requests" && pendingRequestsCount > 0 && (
+                            {tabId === 'requests' && pendingRequestsCount > 0 && (
                               <Badge variant="destructive" className="text-xs">
                                 {pendingRequestsCount}
                               </Badge>

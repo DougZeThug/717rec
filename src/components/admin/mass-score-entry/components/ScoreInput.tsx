@@ -1,8 +1,10 @@
-import React from "react";
-import ScoreButtonGroup from "./ScoreButtonGroup";
-import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
-import { scoreLog } from "@/utils/logger";
+import { motion } from 'framer-motion';
+import React from 'react';
+
+import { cn } from '@/lib/utils';
+import { scoreLog } from '@/utils/logger';
+
+import ScoreButtonGroup from './ScoreButtonGroup';
 
 interface ScoreInputProps {
   value: {
@@ -27,14 +29,14 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
   onChangeGameWins,
   onComplete,
   disabled,
-  className = "",
+  className = '',
   isCompleted = false,
   matchId,
-  matchDate
+  matchDate,
 }) => {
   return (
-    <motion.div 
-      className={cn("w-full flex justify-center", className)}
+    <motion.div
+      className={cn('w-full flex justify-center', className)}
       animate={{ opacity: disabled ? 0.8 : 1 }}
       transition={{ duration: 0.2 }}
     >
@@ -44,32 +46,32 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
           // Ensure numeric scores
           const numericScores = {
             team1Score: Number(scores.team1Score),
-            team2Score: Number(scores.team2Score)
+            team2Score: Number(scores.team2Score),
           };
-          
+
           scoreLog(`ScoreInput onChange called for match ${matchId}:`, {
             matchId,
             matchDate,
             dateType: typeof matchDate,
             scores: numericScores,
-            previousValue: value
+            previousValue: value,
           });
-          
+
           onChange(numericScores);
-          
+
           // If we have a game wins handler, pass numeric values
           if (onChangeGameWins) {
             const numericGameWins = {
               team1GameWins: Number(scores.team1GameWins),
-              team2GameWins: Number(scores.team2GameWins)
+              team2GameWins: Number(scores.team2GameWins),
             };
-            
+
             scoreLog(`ScoreInput onChangeGameWins called for match ${matchId}:`, {
               matchId,
               matchDate,
-              numericGameWins
+              numericGameWins,
             });
-            
+
             onChangeGameWins(numericGameWins);
           }
         }}

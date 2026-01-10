@@ -1,12 +1,14 @@
-import React, { useEffect, useCallback } from "react";
-import { useAutoSchedule } from "@/hooks/useAutoSchedule/index";
-import AutoScheduleHeader from "./AutoScheduleHeader";
-import DateSettingsPanel from "./DateSettingsPanel";
-import ScheduleWorkflowTabs from "./ScheduleWorkflowTabs";
-import InformationSection from "./InformationSection";
-import { DiagnosticPanel } from "./DiagnosticPanel";
-import { TimeBlockTeamsMap } from "@/types/autoSchedule";
-import { scheduleLog } from "@/utils/logger";
+import React, { useCallback, useEffect } from 'react';
+
+import { useAutoSchedule } from '@/hooks/useAutoSchedule/index';
+import { TimeBlockTeamsMap } from '@/types/autoSchedule';
+import { scheduleLog } from '@/utils/logger';
+
+import AutoScheduleHeader from './AutoScheduleHeader';
+import DateSettingsPanel from './DateSettingsPanel';
+import { DiagnosticPanel } from './DiagnosticPanel';
+import InformationSection from './InformationSection';
+import ScheduleWorkflowTabs from './ScheduleWorkflowTabs';
 
 /**
  * AutoScheduleTab provides a workflow to generate and manage match schedules
@@ -27,14 +29,14 @@ const AutoScheduleTab = () => {
     setDualMatchMode,
     generatedMatches,
     matchQualityMetrics,
-    
+
     // Edit state
     editableMatches,
     isEditMode,
     setIsEditMode,
     validation,
     hasUnsavedEdits,
-    
+
     // Data
     isLoading,
     isGenerating,
@@ -47,24 +49,24 @@ const AutoScheduleTab = () => {
     unmatchedTeamIds,
     totalTeams,
     oddBlocks,
-    
+
     // Actions
     handleLoadTeams,
     handleGenerateClick,
     handleApplySchedule,
     handleSaveSchedule,
-    
+
     // Edit actions
     updateMatchTeam,
     updateMatchTimeslot,
     swapTeams,
     removeMatch,
     resetToGenerated,
-    
+
     // Formatted utilities
-    formattedDate
+    formattedDate,
   } = useAutoSchedule();
-  
+
   // Track tab changes for analytics
   useEffect(() => {
     scheduleLog(`Auto schedule tab changed to: ${activeTab}`);
@@ -78,17 +80,17 @@ const AutoScheduleTab = () => {
         e.returnValue = '';
       }
     };
-    
+
     if (hasUnsavedEdits) {
       window.addEventListener('beforeunload', handleBeforeUnload);
     }
-    
+
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedEdits]);
-  
+
   // Handle manual team assignment
   const handleManualTeamAssign = (updatedTeams: TimeBlockTeamsMap) => {
-    scheduleLog("Manually assigned teams:", updatedTeams);
+    scheduleLog('Manually assigned teams:', updatedTeams);
     setTimeBlockTeams(updatedTeams);
   };
 
@@ -100,20 +102,20 @@ const AutoScheduleTab = () => {
     }
     setIsEditMode(!isEditMode);
   };
-  
+
   return (
     <div className="space-y-6">
       <AutoScheduleHeader />
-      
+
       {/* Diagnostic Panel - Shows team-to-block assignments and validation */}
-      <DiagnosticPanel 
+      <DiagnosticPanel
         teamBlockMap={teamBlockMap || {}}
         timeBlockTeams={timeBlockTeams || {}}
         isVisible={totalTeams > 0}
       />
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <DateSettingsPanel 
+        <DateSettingsPanel
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
           avoidRematches={avoidRematches}
@@ -130,8 +132,8 @@ const AutoScheduleTab = () => {
           onLoadTeams={handleLoadTeams}
           onGenerateSchedule={handleGenerateClick}
         />
-        
-        <ScheduleWorkflowTabs 
+
+        <ScheduleWorkflowTabs
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           selectedDate={selectedDate}
@@ -161,7 +163,7 @@ const AutoScheduleTab = () => {
           hasUnsavedEdits={hasUnsavedEdits}
         />
       </div>
-      
+
       <InformationSection />
     </div>
   );

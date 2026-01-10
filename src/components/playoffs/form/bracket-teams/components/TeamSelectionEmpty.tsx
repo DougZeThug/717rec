@@ -1,7 +1,8 @@
+import { FolderOpen, Plus, Users } from 'lucide-react';
 import React from 'react';
-import { Users, Plus, FolderOpen } from 'lucide-react';
-import { EmptyState } from '@/components/ui/empty-state';
 import { useNavigate } from 'react-router';
+
+import { EmptyState } from '@/components/ui/empty-state';
 
 /**
  * Empty state component for team selection
@@ -17,16 +18,16 @@ export const TeamSelectionEmpty: React.FC = () => {
       description="No teams exist in this division. Add teams first, or try selecting a different division."
       actions={[
         {
-          label: "Manage Teams",
-          onClick: () => navigate("/admin"),
+          label: 'Manage Teams',
+          onClick: () => navigate('/admin'),
           icon: Plus,
-          variant: "default",
+          variant: 'default',
         },
         {
-          label: "View Teams",
-          onClick: () => navigate("/teams"),
+          label: 'View Teams',
+          onClick: () => navigate('/teams'),
           icon: FolderOpen,
-          variant: "outline",
+          variant: 'outline',
         },
       ]}
       className="border border-border rounded-lg"

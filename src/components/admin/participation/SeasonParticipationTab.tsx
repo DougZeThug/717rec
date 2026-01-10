@@ -1,27 +1,41 @@
-import React, { useState, useMemo } from "react";
-import { Users, Check, X, HelpCircle, Download } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { useSeasons } from "@/hooks/useSeasons";
-import { useSeasonParticipations } from "@/hooks/useSeasonParticipation";
-import { useTeams } from "@/hooks/useTeams";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { format } from 'date-fns';
+import { Check, Download, HelpCircle, Users, X } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { useSeasonParticipations } from '@/hooks/useSeasonParticipation';
+import { useSeasons } from '@/hooks/useSeasons';
+import { useTeams } from '@/hooks/useTeams';
+import { cn } from '@/lib/utils';
 
 type StatusFilter = 'all' | 'PLAYING' | 'NOT_PLAYING' | 'NO_RESPONSE';
 
 const SeasonParticipationTab: React.FC = () => {
   const { data: seasons, isLoading: seasonsLoading } = useSeasons();
   const { teams, isLoading: teamsLoading } = useTeams();
-  
+
   // Default to most recent active season
   const defaultSeasonId = useMemo(() => {
-    if (!seasons?.length) return "";
+    if (!seasons?.length) return '';
     const activeSeason = seasons.find((s) => s.is_active);
-    return activeSeason?.id ?? seasons[0]?.id ?? "";
+    return activeSeason?.id ?? seasons[0]?.id ?? '';
   }, [seasons]);
 
   const [selectedSeasonId, setSelectedSeasonId] = useState<string>(defaultSeasonId);
@@ -42,16 +56,14 @@ const SeasonParticipationTab: React.FC = () => {
   const teamsWithStatus = useMemo(() => {
     if (!teams) return [];
 
-    const participationMap = new Map(
-      participations?.map((p) => [p.team_id, p]) ?? []
-    );
+    const participationMap = new Map(participations?.map((p) => [p.team_id, p]) ?? []);
 
     return teams.map((team) => {
       const participation = participationMap.get(team.id);
       return {
         ...team,
         participation,
-        status: participation?.status ?? 'NO_RESPONSE' as const,
+        status: participation?.status ?? ('NO_RESPONSE' as const),
         updatedAt: participation?.updated_at,
         submittedBy: participation?.submitted_by_name,
       };
@@ -82,7 +94,10 @@ const SeasonParticipationTab: React.FC = () => {
       t.submittedBy ?? '',
     ]);
 
-    const csvContent = [headers.join(','), ...rows.map((r) => r.map((c) => `"${c}"`).join(','))].join('\n');
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((r) => r.map((c) => `"${c}"`).join(',')),
+    ].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -112,7 +127,7 @@ const SeasonParticipationTab: React.FC = () => {
             <SelectContent>
               {seasons?.map((season) => (
                 <SelectItem key={season.id} value={season.id}>
-                  {season.name} {season.is_active && "(Active)"}
+                  {season.name} {season.is_active && '(Active)'}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -219,26 +234,37 @@ const SeasonParticipationTab: React.FC = () => {
                   filteredTeams.map((team) => (
                     <TableRow key={team.id}>
                       <TableCell className="font-medium">{team.name}</TableCell>
-                      <TableCell className="text-muted-foreground">{team.divisionName ?? '-'}</TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {team.divisionName ?? '-'}
+                      </TableCell>
                       <TableCell>
                         <Badge
                           variant="outline"
                           className={cn(
-                            team.status === 'PLAYING' && "bg-green-500/10 text-green-600 border-green-500/30",
-                            team.status === 'NOT_PLAYING' && "bg-red-500/10 text-red-600 border-red-500/30",
-                            team.status === 'NO_RESPONSE' && "bg-yellow-500/10 text-yellow-600 border-yellow-500/30"
+                            team.status === 'PLAYING' &&
+                              'bg-green-500/10 text-green-600 border-green-500/30',
+                            team.status === 'NOT_PLAYING' &&
+                              'bg-red-500/10 text-red-600 border-red-500/30',
+                            team.status === 'NO_RESPONSE' &&
+                              'bg-yellow-500/10 text-yellow-600 border-yellow-500/30'
                           )}
                         >
                           {team.status === 'PLAYING' && <Check className="h-3 w-3 mr-1" />}
                           {team.status === 'NOT_PLAYING' && <X className="h-3 w-3 mr-1" />}
                           {team.status === 'NO_RESPONSE' && <HelpCircle className="h-3 w-3 mr-1" />}
-                          {team.status === 'PLAYING' ? 'Playing' : team.status === 'NOT_PLAYING' ? 'Not Playing' : 'No Response'}
+                          {team.status === 'PLAYING'
+                            ? 'Playing'
+                            : team.status === 'NOT_PLAYING'
+                              ? 'Not Playing'
+                              : 'No Response'}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {team.updatedAt ? format(new Date(team.updatedAt), 'MMM d, h:mm a') : '-'}
                       </TableCell>
-                      <TableCell className="text-muted-foreground">{team.submittedBy ?? '-'}</TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {team.submittedBy ?? '-'}
+                      </TableCell>
                     </TableRow>
                   ))
                 )}

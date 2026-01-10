@@ -1,5 +1,6 @@
-import React from "react";
-import { ShimmerSkeleton } from "@/components/ui/shimmer-skeleton";
+import React from 'react';
+
+import { ShimmerSkeleton } from '@/components/ui/shimmer-skeleton';
 
 /**
  * Skeleton for BlindDrawSignupsTab table
@@ -13,7 +14,9 @@ const SignupsListSkeleton: React.FC = () => {
           <tr>
             <th className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium w-8">#</th>
             <th className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium">Name</th>
-            <th className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium hidden sm:table-cell">Signed Up</th>
+            <th className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium hidden sm:table-cell">
+              Signed Up
+            </th>
             <th className="text-right px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium w-12"></th>
           </tr>
         </thead>

@@ -1,4 +1,3 @@
-
 import { SeasonStats } from './types';
 
 /**
@@ -7,14 +6,14 @@ import { SeasonStats } from './types';
  */
 export const calculateCareerSOS = (seasonStats: SeasonStats[] | null): number => {
   const DEFAULT_SOS = 0.5;
-  
+
   if (!seasonStats || seasonStats.length === 0) {
     return DEFAULT_SOS;
   }
 
   let totalWeightedSOS = 0;
   let totalMatches = 0;
-  
+
   for (const season of seasonStats) {
     const seasonMatches = (season.match_wins || 0) + (season.match_losses || 0);
     if (seasonMatches > 0 && season.sos !== null && season.sos !== undefined) {
@@ -22,10 +21,10 @@ export const calculateCareerSOS = (seasonStats: SeasonStats[] | null): number =>
       totalMatches += seasonMatches;
     }
   }
-  
+
   if (totalMatches === 0) {
     return DEFAULT_SOS;
   }
-  
+
   return totalWeightedSOS / totalMatches;
 };

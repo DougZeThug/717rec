@@ -1,6 +1,6 @@
+import React from 'react';
 
-import React from "react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface PlayerChipProps {
   playerName: string;
@@ -11,7 +11,7 @@ interface PlayerChipProps {
 export const PlayerChip: React.FC<PlayerChipProps> = ({
   playerName,
   avatarUrl,
-  className = "",
+  className = '',
 }) => {
   // Get first letter of first and last name for avatar
   const getInitials = (name: string): string => {
@@ -19,7 +19,7 @@ export const PlayerChip: React.FC<PlayerChipProps> = ({
     if (parts.length >= 2) {
       return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
     }
-    return (name[0] || "?").toUpperCase();
+    return (name[0] || '?').toUpperCase();
   };
 
   return (
@@ -34,7 +34,9 @@ export const PlayerChip: React.FC<PlayerChipProps> = ({
           {getInitials(playerName)}
         </AvatarFallback>
       </Avatar>
-      <span className="truncate max-w-[80px]" title={playerName}>{playerName}</span>
+      <span className="truncate max-w-[80px]" title={playerName}>
+        {playerName}
+      </span>
     </div>
   );
 };

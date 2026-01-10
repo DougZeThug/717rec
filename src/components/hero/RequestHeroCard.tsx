@@ -1,15 +1,19 @@
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Clock, Calendar, AlertTriangle, ChevronDown, Loader2, 
-  Check, Send, History 
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { format } from 'date-fns';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+  AlertTriangle,
+  Calendar,
+  Check,
+  ChevronDown,
+  Clock,
+  History,
+  Loader2,
+  Send,
+} from 'lucide-react';
+import React, { useState } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -17,27 +21,26 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { useTeamsArray } from "@/hooks/teams";
-import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
-import { useSubmitRequest, useTeamRequests } from "@/hooks/useTeamRequests";
-import { TeamRequestType, REQUEST_TYPE_LABELS, REQUEST_STATUS_LABELS } from "@/types/teamRequest";
-import { HeroCard as HeroCardType } from "@/types/heroCard";
-import { format } from "date-fns";
+} from '@/components/ui/command';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Textarea } from '@/components/ui/textarea';
+import { useTeamsArray } from '@/hooks/teams';
+import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
+import { useSubmitRequest, useTeamRequests } from '@/hooks/useTeamRequests';
+import { cn } from '@/lib/utils';
+import { HeroCard as HeroCardType } from '@/types/heroCard';
+import { REQUEST_STATUS_LABELS, REQUEST_TYPE_LABELS, TeamRequestType } from '@/types/teamRequest';
 
 interface RequestHeroCardProps {
   card: HeroCardType;
 }
 
 const REQUEST_OPTIONS: { type: TeamRequestType; icon: React.ElementType; description: string }[] = [
-  { type: "TIME_CHANGE", icon: Clock, description: "Request a different time slot" },
-  { type: "BYE_REQUEST", icon: Calendar, description: "Request a bye week" },
-  { type: "EMERGENCY_CANCEL", icon: AlertTriangle, description: "Emergency cancellation" },
+  { type: 'TIME_CHANGE', icon: Clock, description: 'Request a different time slot' },
+  { type: 'BYE_REQUEST', icon: Calendar, description: 'Request a bye week' },
+  { type: 'EMERGENCY_CANCEL', icon: AlertTriangle, description: 'Emergency cancellation' },
 ];
 
 const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
@@ -45,27 +48,29 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
   const { teams, isLoading: teamsLoading } = useTeamsArray({ includeHidden: false });
   const submitMutation = useSubmitRequest();
 
-  const [selectedTeamId, setSelectedTeamId] = useState<string>("");
+  const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [selectedType, setSelectedType] = useState<TeamRequestType | null>(null);
   const [teamSearchOpen, setTeamSearchOpen] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
   // Form fields
-  const [matchDate, setMatchDate] = useState("");
-  const [currentTimeslot, setCurrentTimeslot] = useState("");
-  const [requestedTimeslot, setRequestedTimeslot] = useState("");
-  const [reason, setReason] = useState("");
+  const [matchDate, setMatchDate] = useState('');
+  const [currentTimeslot, setCurrentTimeslot] = useState('');
+  const [requestedTimeslot, setRequestedTimeslot] = useState('');
+  const [reason, setReason] = useState('');
 
-  const { data: teamRequests, isLoading: requestsLoading } = useTeamRequests(selectedTeamId || undefined);
+  const { data: teamRequests, isLoading: requestsLoading } = useTeamRequests(
+    selectedTeamId || undefined
+  );
 
   const selectedTeam = teams?.find((t) => t.id === selectedTeamId);
 
   const resetForm = () => {
     setSelectedType(null);
-    setMatchDate("");
-    setCurrentTimeslot("");
-    setRequestedTimeslot("");
-    setReason("");
+    setMatchDate('');
+    setCurrentTimeslot('');
+    setRequestedTimeslot('');
+    setReason('');
   };
 
   const handleSubmit = async () => {
@@ -85,10 +90,10 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
   };
 
   const baseClasses = cn(
-    "relative w-full rounded-xl shadow-md border border-border/30",
+    'relative w-full rounded-xl shadow-md border border-border/30',
     shouldApplyWinter
-      ? "winter-card-full overflow-visible bg-gradient-to-br from-cyan-900/90 to-blue-900/90 text-cyan-50"
-      : "overflow-hidden",
+      ? 'winter-card-full overflow-visible bg-gradient-to-br from-cyan-900/90 to-blue-900/90 text-cyan-50'
+      : 'overflow-hidden',
     card.background_color,
     card.text_color
   );
@@ -105,7 +110,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
           <div className="flex items-center gap-3">
             <Send className="w-5 h-5" />
             <h3 className="font-bebas text-xl md:text-2xl uppercase tracking-wide">
-              {card.title || "Submit a Request"}
+              {card.title || 'Submit a Request'}
             </h3>
           </div>
           {selectedTeamId && teamRequests && teamRequests.length > 0 && (
@@ -121,9 +126,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
           )}
         </div>
 
-        {card.subtitle && (
-          <p className="text-sm opacity-80 mb-4">{card.subtitle}</p>
-        )}
+        {card.subtitle && <p className="text-sm opacity-80 mb-4">{card.subtitle}</p>}
 
         <div className="space-y-4">
           {/* Team selector */}
@@ -136,8 +139,8 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
                   role="combobox"
                   aria-expanded={teamSearchOpen}
                   className={cn(
-                    "w-full justify-between bg-background/20 border-white/20 hover:bg-background/30",
-                    "text-inherit hover:text-inherit"
+                    'w-full justify-between bg-background/20 border-white/20 hover:bg-background/30',
+                    'text-inherit hover:text-inherit'
                   )}
                   disabled={teamsLoading}
                 >
@@ -146,7 +149,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
                   ) : selectedTeam ? (
                     selectedTeam.name
                   ) : (
-                    "Choose a team..."
+                    'Choose a team...'
                   )}
                   <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
@@ -169,8 +172,8 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
                         >
                           <Check
                             className={cn(
-                              "mr-2 h-4 w-4",
-                              selectedTeamId === team.id ? "opacity-100" : "opacity-0"
+                              'mr-2 h-4 w-4',
+                              selectedTeamId === team.id ? 'opacity-100' : 'opacity-0'
                             )}
                           />
                           {team.name}
@@ -187,7 +190,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
           {selectedTeamId && !showHistory && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
+              animate={{ opacity: 1, height: 'auto' }}
               className="space-y-3"
             >
               <Label className="text-sm font-medium opacity-90">What do you need?</Label>
@@ -197,11 +200,11 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
                     key={type}
                     onClick={() => setSelectedType(type)}
                     className={cn(
-                      "flex flex-col items-center gap-2 p-4 rounded-lg transition-all text-center",
-                      "border-2",
+                      'flex flex-col items-center gap-2 p-4 rounded-lg transition-all text-center',
+                      'border-2',
                       selectedType === type
-                        ? "bg-white/20 border-white/50"
-                        : "bg-background/10 border-white/20 hover:bg-background/20"
+                        ? 'bg-white/20 border-white/50'
+                        : 'bg-background/10 border-white/20 hover:bg-background/20'
                     )}
                   >
                     <Icon className="w-6 h-6" />
@@ -218,14 +221,14 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
             {selectedTeamId && selectedType && !showHistory && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
+                animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
                 className="space-y-4"
               >
                 {/* Date field */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium opacity-90">
-                    {selectedType === "BYE_REQUEST" ? "Date to skip" : "Match date"}
+                    {selectedType === 'BYE_REQUEST' ? 'Date to skip' : 'Match date'}
                   </Label>
                   <Input
                     type="date"
@@ -236,7 +239,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
                 </div>
 
                 {/* Time change specific fields */}
-                {selectedType === "TIME_CHANGE" && (
+                {selectedType === 'TIME_CHANGE' && (
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
                       <Label className="text-sm font-medium opacity-90">Current timeslot</Label>
@@ -262,7 +265,9 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
                 {/* Reason field */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium opacity-90">
-                    {selectedType === "EMERGENCY_CANCEL" ? "Reason (required)" : "Reason (optional)"}
+                    {selectedType === 'EMERGENCY_CANCEL'
+                      ? 'Reason (required)'
+                      : 'Reason (optional)'}
                   </Label>
                   <Textarea
                     placeholder="Explain your request..."
@@ -275,7 +280,9 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
                 {/* Submit button */}
                 <Button
                   onClick={handleSubmit}
-                  disabled={submitMutation.isPending || (selectedType === "EMERGENCY_CANCEL" && !reason)}
+                  disabled={
+                    submitMutation.isPending || (selectedType === 'EMERGENCY_CANCEL' && !reason)
+                  }
                   className="w-full bg-white/20 hover:bg-white/30 text-inherit border border-white/20"
                 >
                   {submitMutation.isPending ? (
@@ -294,7 +301,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
             {selectedTeamId && showHistory && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
+                animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
                 className="space-y-3"
               >
@@ -317,11 +324,11 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
                             </span>
                             <Badge
                               variant={
-                                request.status === "APPROVED"
-                                  ? "default"
-                                  : request.status === "DENIED"
-                                  ? "destructive"
-                                  : "secondary"
+                                request.status === 'APPROVED'
+                                  ? 'default'
+                                  : request.status === 'DENIED'
+                                    ? 'destructive'
+                                    : 'secondary'
                               }
                               className="text-xs"
                             >
@@ -330,12 +337,12 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
                           </div>
                           {request.match_date && (
                             <span className="text-xs opacity-70">
-                              {format(new Date(request.match_date), "MMM d, yyyy")}
+                              {format(new Date(request.match_date), 'MMM d, yyyy')}
                             </span>
                           )}
                         </div>
                         <span className="text-xs opacity-50">
-                          {format(new Date(request.created_at), "MMM d")}
+                          {format(new Date(request.created_at), 'MMM d')}
                         </span>
                       </div>
                     ))}

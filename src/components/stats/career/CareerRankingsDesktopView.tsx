@@ -1,15 +1,24 @@
+import { ArrowDown, ArrowUp } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router';
-import { CareerRanking } from '@/types/career';
-import { CareerSortOptions } from './CareerRankingsTable';
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
-import { ArrowDown, ArrowUp } from 'lucide-react';
-import { getPowerScoreColor, getSosColor } from '@/utils/colors';
-import { getWinPercentageColor } from '@/utils/colors/winPercentageColors';
-import { getChampionshipColor, getRunnerUpColor } from '@/utils/colors/championshipColors';
-import { cn } from '@/lib/utils';
-import { useLeaguePercentiles } from '@/hooks/useLeaguePercentiles';
+
 import { PercentileBadge } from '@/components/ui/PercentileBadge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { useLeaguePercentiles } from '@/hooks/useLeaguePercentiles';
+import { cn } from '@/lib/utils';
+import { CareerRanking } from '@/types/career';
+import { getPowerScoreColor, getSosColor } from '@/utils/colors';
+import { getChampionshipColor, getRunnerUpColor } from '@/utils/colors/championshipColors';
+import { getWinPercentageColor } from '@/utils/colors/winPercentageColors';
+
+import { CareerSortOptions } from './CareerRankingsTable';
 
 interface CareerRankingsDesktopViewProps {
   rankings: CareerRanking[];
@@ -22,14 +31,16 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
   rankings,
   sortOptions,
   onSortChange,
-  showHidden = false
+  showHidden = false,
 }) => {
   const { getTeamPercentiles } = useLeaguePercentiles();
   const getSortIcon = (field: string) => {
     if (sortOptions.field !== field) return null;
-    return sortOptions.direction === 'desc' ? 
-      <ArrowDown className="inline h-4 w-4 ml-1" /> : 
-      <ArrowUp className="inline h-4 w-4 ml-1" />;
+    return sortOptions.direction === 'desc' ? (
+      <ArrowDown className="inline h-4 w-4 ml-1" />
+    ) : (
+      <ArrowUp className="inline h-4 w-4 ml-1" />
+    );
   };
 
   const formatPercentage = (value: number) => {
@@ -43,55 +54,55 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
           <TableRow>
             <TableHead className="w-12 text-center">#</TableHead>
             <TableHead className="min-w-[200px]">Team</TableHead>
-            <TableHead 
+            <TableHead
               className="cursor-pointer hover:bg-muted/50 text-center"
               onClick={() => onSortChange('careerMatchWins')}
             >
               Career Record {getSortIcon('careerMatchWins')}
             </TableHead>
-            <TableHead 
+            <TableHead
               className="cursor-pointer hover:bg-muted/50 text-center"
               onClick={() => onSortChange('careerWinPercentage')}
             >
               Win % {getSortIcon('careerWinPercentage')}
             </TableHead>
-            <TableHead 
+            <TableHead
               className="cursor-pointer hover:bg-muted/50 text-center"
               onClick={() => onSortChange('careerGameWins')}
             >
               Game Record {getSortIcon('careerGameWins')}
             </TableHead>
-            <TableHead 
+            <TableHead
               className="cursor-pointer hover:bg-muted/50 text-center"
               onClick={() => onSortChange('careerGameWinPercentage')}
             >
               Game Win % {getSortIcon('careerGameWinPercentage')}
             </TableHead>
-            <TableHead 
+            <TableHead
               className="cursor-pointer hover:bg-muted/50 text-center"
               onClick={() => onSortChange('careerPlayoffWins')}
             >
               Playoff Record {getSortIcon('careerPlayoffWins')}
             </TableHead>
-            <TableHead 
+            <TableHead
               className="cursor-pointer hover:bg-muted/50 text-center"
               onClick={() => onSortChange('championships')}
             >
               Championships {getSortIcon('championships')}
             </TableHead>
-            <TableHead 
+            <TableHead
               className="cursor-pointer hover:bg-muted/50 text-center"
               onClick={() => onSortChange('runnerUps')}
             >
               Runner-ups {getSortIcon('runnerUps')}
             </TableHead>
-            <TableHead 
+            <TableHead
               className="cursor-pointer hover:bg-muted/50 text-center"
               onClick={() => onSortChange('careerPowerScore')}
             >
               Career Power Score {getSortIcon('careerPowerScore')}
             </TableHead>
-            <TableHead 
+            <TableHead
               className="cursor-pointer hover:bg-muted/50 text-center"
               onClick={() => onSortChange('careerSos')}
             >
@@ -101,13 +112,16 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
         </TableHeader>
         <TableBody>
           {rankings.map((ranking, index) => (
-            <TableRow key={ranking.teamId} className={cn(
-              "hover:bg-muted/50",
-              ranking.divisionName === 'Hidden' ? 'bg-muted/30 border-l-4 border-l-muted-foreground' : ''
-            )}>
-              <TableCell className="text-center font-medium">
-                {index + 1}
-              </TableCell>
+            <TableRow
+              key={ranking.teamId}
+              className={cn(
+                'hover:bg-muted/50',
+                ranking.divisionName === 'Hidden'
+                  ? 'bg-muted/30 border-l-4 border-l-muted-foreground'
+                  : ''
+              )}
+            >
+              <TableCell className="text-center font-medium">{index + 1}</TableCell>
               <TableCell>
                 <Link
                   to={`/teams/${ranking.teamId}`}
@@ -115,8 +129,8 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
                   onClick={(e) => e.stopPropagation()}
                 >
                   {ranking.imageUrl && (
-                    <img 
-                      src={ranking.imageUrl} 
+                    <img
+                      src={ranking.imageUrl}
                       alt={`${ranking.teamName} logo`}
                       className="w-8 h-8 rounded object-cover"
                     />
@@ -136,11 +150,13 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
               <TableCell className="text-center">
                 {ranking.careerMatchWins}-{ranking.careerMatchLosses}
               </TableCell>
-              <TableCell className={cn("text-center", getWinPercentageColor(ranking.careerWinPercentage))}>
+              <TableCell
+                className={cn('text-center', getWinPercentageColor(ranking.careerWinPercentage))}
+              >
                 <div className="flex items-center justify-center gap-1.5">
                   {formatPercentage(ranking.careerWinPercentage)}
                   {getTeamPercentiles(ranking.teamId)?.winPercentage && (
-                    <PercentileBadge 
+                    <PercentileBadge
                       percentile={getTeamPercentiles(ranking.teamId)!.winPercentage.percentile}
                       rank={getTeamPercentiles(ranking.teamId)!.winPercentage.rank}
                       total={getTeamPercentiles(ranking.teamId)!.winPercentage.total}
@@ -153,31 +169,37 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
               <TableCell className="text-center">
                 {ranking.careerGameWins}-{ranking.careerGameLosses}
               </TableCell>
-              <TableCell className={cn("text-center", getWinPercentageColor(ranking.careerGameWinPercentage))}>
+              <TableCell
+                className={cn(
+                  'text-center',
+                  getWinPercentageColor(ranking.careerGameWinPercentage)
+                )}
+              >
                 {formatPercentage(ranking.careerGameWinPercentage)}
               </TableCell>
               <TableCell className="text-center">
-                {ranking.careerPlayoffWins > 0 || ranking.careerPlayoffLosses > 0 
+                {ranking.careerPlayoffWins > 0 || ranking.careerPlayoffLosses > 0
                   ? `${ranking.careerPlayoffWins}-${ranking.careerPlayoffLosses}`
-                  : '-'
-                }
+                  : '-'}
               </TableCell>
-              <TableCell className={cn("text-center", getChampionshipColor(ranking.championships))}>
+              <TableCell className={cn('text-center', getChampionshipColor(ranking.championships))}>
                 {ranking.championships > 0 ? ranking.championships : '-'}
               </TableCell>
-              <TableCell className={cn("text-center", getRunnerUpColor(ranking.runnerUps))}>
+              <TableCell className={cn('text-center', getRunnerUpColor(ranking.runnerUps))}>
                 {ranking.runnerUps > 0 ? ranking.runnerUps : '-'}
               </TableCell>
               <TableCell className="text-center">
                 <div className="flex items-center justify-center gap-1.5">
-                  <span className={cn(
-                    "font-bold px-2 py-1 rounded text-sm",
-                    getPowerScoreColor(ranking.careerPowerScore)
-                  )}>
+                  <span
+                    className={cn(
+                      'font-bold px-2 py-1 rounded text-sm',
+                      getPowerScoreColor(ranking.careerPowerScore)
+                    )}
+                  >
                     {ranking.careerPowerScore.toFixed(1)}
                   </span>
                   {getTeamPercentiles(ranking.teamId)?.powerScore && (
-                    <PercentileBadge 
+                    <PercentileBadge
                       percentile={getTeamPercentiles(ranking.teamId)!.powerScore.percentile}
                       rank={getTeamPercentiles(ranking.teamId)!.powerScore.rank}
                       total={getTeamPercentiles(ranking.teamId)!.powerScore.total}
@@ -188,7 +210,7 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
                 </div>
               </TableCell>
               <TableCell className="text-center">
-                <span className={cn("font-mono", getSosColor(ranking.careerSos))}>
+                <span className={cn('font-mono', getSosColor(ranking.careerSos))}>
                   {ranking.careerSos.toFixed(3)}
                 </span>
               </TableCell>

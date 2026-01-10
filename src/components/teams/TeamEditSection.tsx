@@ -1,24 +1,24 @@
+import { AlertCircle, Edit, Loader2, Save } from 'lucide-react';
+import React, { useState } from 'react';
 
-import React, { useState } from "react";
-import { useTeamMembership } from "@/hooks/useTeamMembership";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { TeamLogo } from "@/components/shared/TeamLogo";
-import { Edit, Save, Loader2, AlertCircle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { TeamLogo } from '@/components/shared/TeamLogo';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import { useTeamMembership } from '@/hooks/useTeamMembership';
+import { supabase } from '@/integrations/supabase/client';
 
 const TeamEditSection: React.FC = () => {
   const { membership, refreshMembership } = useTeamMembership();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: "",
-    image_url: "",
+    name: '',
+    image_url: '',
   });
   const { toast } = useToast();
 
@@ -30,8 +30,8 @@ const TeamEditSection: React.FC = () => {
   // Initialize form data when entering edit mode
   const handleEditClick = () => {
     setFormData({
-      name: membership.team?.name || "",
-      image_url: membership.team?.imageUrl || "",
+      name: membership.team?.name || '',
+      image_url: membership.team?.imageUrl || '',
     });
     setIsEditing(true);
   };
@@ -41,31 +41,31 @@ const TeamEditSection: React.FC = () => {
 
     try {
       setIsLoading(true);
-      
+
       const { error } = await supabase
-        .from("teams")
+        .from('teams')
         .update({
           name: formData.name.trim(),
           image_url: formData.image_url.trim() || null,
         })
-        .eq("id", membership.team.id);
+        .eq('id', membership.team.id);
 
       if (error) throw error;
 
       toast({
-        title: "Team Updated",
-        description: "Team details have been successfully updated",
+        title: 'Team Updated',
+        description: 'Team details have been successfully updated',
       });
 
       setIsEditing(false);
       await refreshMembership(); // Refresh to get updated team data
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to update team details';
-      console.error("Error updating team:", error);
+      console.error('Error updating team:', error);
       toast({
-        title: "Update Failed",
+        title: 'Update Failed',
         description: message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -75,8 +75,8 @@ const TeamEditSection: React.FC = () => {
   const handleCancel = () => {
     setIsEditing(false);
     setFormData({
-      name: "",
-      image_url: "",
+      name: '',
+      image_url: '',
     });
   };
 
@@ -107,12 +107,10 @@ const TeamEditSection: React.FC = () => {
               />
               <div>
                 <h3 className="text-lg font-semibold">{membership.team.name}</h3>
-                <p className="text-sm text-muted-foreground">
-                  Team ID: {membership.team.id}
-                </p>
+                <p className="text-sm text-muted-foreground">Team ID: {membership.team.id}</p>
               </div>
             </div>
-            
+
             <Button onClick={handleEditClick} className="w-full">
               <Edit className="w-4 h-4 mr-2" />
               Edit Team Details
@@ -176,12 +174,8 @@ const TeamEditSection: React.FC = () => {
                   </>
                 )}
               </Button>
-              
-              <Button
-                onClick={handleCancel}
-                variant="outline"
-                disabled={isLoading}
-              >
+
+              <Button onClick={handleCancel} variant="outline" disabled={isLoading}>
                 Cancel
               </Button>
             </div>

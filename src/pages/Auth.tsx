@@ -1,15 +1,15 @@
+import React, { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router';
 
-import React, { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router";
-import { useAuth } from "@/contexts/AuthContext";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import PageLayout from "@/components/layout/PageLayout";
-import AuthContainer from "@/components/auth/AuthContainer";
-import AuthForm from "@/components/auth/AuthForm";
-import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
-import { useAuthForm } from "@/hooks/useAuthForm";
-import { useNativePlatform } from "@/hooks/useNativePlatform";
-import { authLog } from "@/utils/logger";
+import AuthContainer from '@/components/auth/AuthContainer';
+import AuthForm from '@/components/auth/AuthForm';
+import SocialAuthButtons from '@/components/auth/SocialAuthButtons';
+import PageLayout from '@/components/layout/PageLayout';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/contexts/AuthContext';
+import { useAuthForm } from '@/hooks/useAuthForm';
+import { useNativePlatform } from '@/hooks/useNativePlatform';
+import { authLog } from '@/utils/logger';
 
 interface LocationState {
   returnTo?: string;
@@ -20,11 +20,11 @@ const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as LocationState | undefined;
-  const returnTo = state?.returnTo || "/";
-  
+  const returnTo = state?.returnTo || '/';
+
   const { isNative } = useNativePlatform();
-  const { 
-    activeTab, 
+  const {
+    activeTab,
     setActiveTab,
     isSubmitting,
     emailError,
@@ -33,14 +33,14 @@ const Auth = () => {
     handleSignIn,
     handleSignUp,
     handleGoogleSignIn,
-    handleNativeGoogleSignIn
+    handleNativeGoogleSignIn,
   } = useAuthForm({ returnTo });
 
   // If user is already logged in, redirect to return path
   useEffect(() => {
     // Only redirect if authentication check has completed
     if (authInitialized && user) {
-      authLog("User already logged in, redirecting to:", returnTo);
+      authLog('User already logged in, redirecting to:', returnTo);
       navigate(returnTo);
     }
   }, [user, navigate, returnTo, authInitialized]);
@@ -48,24 +48,24 @@ const Auth = () => {
   // Footer content with tab switching
   const renderFooter = () => (
     <p className="py-1">
-      {activeTab === "login" ? (
+      {activeTab === 'login' ? (
         <>
-          Don't have an account?{" "}
+          Don't have an account?{' '}
           <button
             type="button"
             className="text-primary hover:underline py-2 px-1 -my-2"
-            onClick={() => setActiveTab("signup")}
+            onClick={() => setActiveTab('signup')}
           >
             Sign up
           </button>
         </>
       ) : (
         <>
-          Already have an account?{" "}
+          Already have an account?{' '}
           <button
             type="button"
             className="text-primary hover:underline py-2 px-1 -my-2"
-            onClick={() => setActiveTab("login")}
+            onClick={() => setActiveTab('login')}
           >
             Login
           </button>
@@ -82,9 +82,9 @@ const Auth = () => {
             <TabsTrigger value="login">Login</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="login">
-            <AuthForm 
+            <AuthForm
               type="login"
               onSubmit={handleSignIn}
               isSubmitting={isSubmitting}
@@ -93,9 +93,9 @@ const Auth = () => {
               authError={authError}
             />
           </TabsContent>
-          
+
           <TabsContent value="signup">
-            <AuthForm 
+            <AuthForm
               type="signup"
               onSubmit={handleSignUp}
               isSubmitting={isSubmitting}

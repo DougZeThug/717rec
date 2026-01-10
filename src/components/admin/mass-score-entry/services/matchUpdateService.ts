@@ -1,8 +1,9 @@
-import { MatchWithTeams } from "../types";
-import { updateMatchInDatabase } from "./matchUpdateCore";
-import { useTeamRecordUpdate } from "@/hooks/matches/useTeamRecordUpdate";
-import { useToast } from "@/hooks/use-toast";
-import { errorLog } from "@/utils/logger";
+import { useTeamRecordUpdate } from '@/hooks/matches/useTeamRecordUpdate';
+import { useToast } from '@/hooks/use-toast';
+import { errorLog } from '@/utils/logger';
+
+import { MatchWithTeams } from '../types';
+import { updateMatchInDatabase } from './matchUpdateCore';
 
 export const useMatchUpdateService = () => {
   const { updateTeamStats } = useTeamRecordUpdate();
@@ -17,7 +18,7 @@ export const useMatchUpdateService = () => {
 
       let winnerId = null;
       let loserId = null;
-      
+
       if (match.team1Score === 1) {
         winnerId = match.team1Id;
         loserId = match.team2Id;
@@ -28,17 +29,17 @@ export const useMatchUpdateService = () => {
 
       if (match.iscompleted && winnerId && loserId && match.team1 && match.team2) {
         const teams = [match.team1, match.team2];
-        
-        const winnerGameWins = parseInt(String(winnerId === match.team1Id ? match.team1_game_wins : match.team2_game_wins)) || 0;
-        const loserGameWins = parseInt(String(loserId === match.team1Id ? match.team1_game_wins : match.team2_game_wins)) || 0;
-              
-        await updateTeamStats(
-          winnerId,
-          loserId,
-          teams,
-          winnerGameWins,
-          loserGameWins
-        );
+
+        const winnerGameWins =
+          parseInt(
+            String(winnerId === match.team1Id ? match.team1_game_wins : match.team2_game_wins)
+          ) || 0;
+        const loserGameWins =
+          parseInt(
+            String(loserId === match.team1Id ? match.team1_game_wins : match.team2_game_wins)
+          ) || 0;
+
+        await updateTeamStats(winnerId, loserId, teams, winnerGameWins, loserGameWins);
       }
 
       return true;

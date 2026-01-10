@@ -1,39 +1,39 @@
+import { useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { Match, Team } from "@/types";
-import { createDateWithTime } from "@/components/schedule/form-utils";
-import { normalizeTimeFormat } from "@/utils/timeUtils";
-import { useQueryClient } from "@tanstack/react-query";
-import { errorLog, warnLog } from "@/utils/logger";
+import { createDateWithTime } from '@/components/schedule/form-utils';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { Match, Team } from '@/types';
+import { errorLog, warnLog } from '@/utils/logger';
+import { normalizeTimeFormat } from '@/utils/timeUtils';
 
 export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]) => void) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const handleCreateMatch = async (matchData: Omit<Match, "id">, teams: Team[]) => {
+  const handleCreateMatch = async (matchData: Omit<Match, 'id'>, teams: Team[]) => {
     try {
       // Ensure we have a valid date with proper time
       let dateWithTime = new Date(matchData.date);
-      
+
       // If timeSlot is provided in the data, use it to set the time properly
       if (matchData.timeSlot) {
         dateWithTime = createDateWithTime(new Date(matchData.date), matchData.timeSlot);
       }
-      
+
       // Get active season
       const { data: activeSeason, error: seasonError } = await supabase
         .from('seasons')
         .select('id')
         .eq('is_active', true)
         .maybeSingle();
-      
+
       if (seasonError) {
         warnLog('Error fetching active season:', seasonError);
       }
-      
+
       // Create the match in Supabase
       const { data, error } = await supabase
         .from('matches')
@@ -41,7 +41,7 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
           team1_id: matchData.team1Id,
           team2_id: matchData.team2Id,
           date: dateWithTime.toISOString(),
-          location: matchData.location || "",
+          location: matchData.location || '',
           iscompleted: matchData.iscompleted,
           team1_score: matchData.team1Score,
           team2_score: matchData.team2Score,
@@ -50,13 +50,13 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
           team1_game_wins: matchData.team1_game_wins || 0,
           team2_game_wins: matchData.team2_game_wins || 0,
           round_number: 0,
-          season_id: activeSeason?.id || null
+          season_id: activeSeason?.id || null,
         })
         .select()
         .single();
-      
+
       if (error) throw error;
-      
+
       // Transform the returned match to our app's format
       const newMatch: Match = {
         id: data.id,
@@ -72,28 +72,28 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
         team1_game_wins: data.team1_game_wins,
         team2_game_wins: data.team2_game_wins,
         round_number: data.round_number,
-        timeSlot: matchData.timeSlot // Preserve the timeSlot for UI purposes
+        timeSlot: matchData.timeSlot, // Preserve the timeSlot for UI purposes
       };
-      
+
       setMatches([...matches, newMatch]);
       setIsFormOpen(false);
-      
+
       toast({
-        title: "Match Created",
+        title: 'Match Created',
         description: `Match has been successfully scheduled.`,
       });
 
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['matches'] });
-      
+
       return true;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      errorLog("Error creating match:", error);
+      errorLog('Error creating match:', error);
       toast({
-        title: "Error",
+        title: 'Error',
         description: `Failed to create match: ${message}`,
-        variant: "destructive"
+        variant: 'destructive',
       });
       return false;
     }
@@ -102,6 +102,6 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
   return {
     isFormOpen,
     setIsFormOpen,
-    handleCreateMatch
+    handleCreateMatch,
   };
 };

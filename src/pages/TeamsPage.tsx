@@ -1,7 +1,7 @@
+import React from 'react';
 
-import React from "react";
-import TeamsPageContainer from "@/components/teams/TeamsPageContainer";
-import PageLayout from "@/components/layout/PageLayout";
+import PageLayout from '@/components/layout/PageLayout';
+import TeamsPageContainer from '@/components/teams/TeamsPageContainer';
 
 const TeamsPage: React.FC = () => (
   <PageLayout gradientVariant="blueOrange">

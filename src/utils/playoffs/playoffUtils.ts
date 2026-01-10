@@ -1,5 +1,3 @@
-
-
 import { PlayoffBracket } from './playoffTypes';
 
 // UUID validation utility

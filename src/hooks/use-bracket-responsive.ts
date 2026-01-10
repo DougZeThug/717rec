@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface BracketResponsiveConfig {
@@ -40,7 +41,7 @@ const MOBILE_CONFIG: Partial<BracketResponsiveConfig> = {
   },
   fontSize: {
     xs: '0.75rem',
-    sm: '0.875rem', 
+    sm: '0.875rem',
     md: '1rem',
     lg: '1.125rem',
     xl: '1.25rem',
@@ -63,7 +64,7 @@ const TABLET_CONFIG: Partial<BracketResponsiveConfig> = {
   fontSize: {
     xs: '0.875rem',
     sm: '1rem',
-    md: '1.125rem', 
+    md: '1.125rem',
     lg: '1.25rem',
     xl: '1.5rem',
   },
@@ -86,7 +87,7 @@ const DESKTOP_CONFIG: Partial<BracketResponsiveConfig> = {
     xs: '1rem',
     sm: '1.125rem',
     md: '1.25rem',
-    lg: '1.5rem', 
+    lg: '1.5rem',
     xl: '1.75rem',
   },
   minTouchTarget: 32,
@@ -132,7 +133,7 @@ export const useBracketResponsive = (): BracketResponsiveConfig => {
 
   const getConfig = (): BracketResponsiveConfig => {
     let baseConfig: Partial<BracketResponsiveConfig>;
-    
+
     if (isMobile) {
       baseConfig = MOBILE_CONFIG;
     } else if (isTablet) {

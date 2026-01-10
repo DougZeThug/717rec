@@ -1,10 +1,12 @@
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { Match, Team } from "@/types";
-import { useTeamRecords } from "./useTeamRecords";
-import { useQueryClient } from "@tanstack/react-query";
-import { errorLog, warnLog } from "@/utils/logger";
+import { useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { Match, Team } from '@/types';
+import { errorLog, warnLog } from '@/utils/logger';
+
+import { useTeamRecords } from './useTeamRecords';
 
 export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[]) => void) => {
   const [editingMatch, setEditingMatch] = useState<Match | undefined>(undefined);
@@ -14,15 +16,15 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
   const { updateTeamRecords } = useTeamRecords();
   const queryClient = useQueryClient();
 
-  const handleUpdateMatch = async (matchData: Omit<Match, "id">, teams: Team[]) => {
+  const handleUpdateMatch = async (matchData: Omit<Match, 'id'>, teams: Team[]) => {
     if (!editingMatch) return false;
-    
+
     try {
       // Check if the winner/loser has changed
       const winnerChanged = editingMatch.winnerId !== matchData.winnerId;
       const wasCompleted = editingMatch.iscompleted;
       const isNowCompleted = matchData.iscompleted;
-      
+
       // Update the match in Supabase
       const { data, error } = await supabase
         .from('matches')
@@ -30,21 +32,21 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
           team1_id: matchData.team1Id,
           team2_id: matchData.team2Id,
           date: matchData.date,
-          location: matchData.location || "",
+          location: matchData.location || '',
           iscompleted: matchData.iscompleted,
           team1_score: matchData.team1Score,
           team2_score: matchData.team2Score,
           winner_id: matchData.winnerId,
           loser_id: matchData.loserId,
           team1_game_wins: matchData.team1_game_wins || 0,
-          team2_game_wins: matchData.team2_game_wins || 0
+          team2_game_wins: matchData.team2_game_wins || 0,
         })
         .eq('id', editingMatch.id)
         .select()
         .single();
-      
+
       if (error) throw error;
-      
+
       // Transform the returned match to our app's format
       const updatedMatch: Match = {
         id: data.id,
@@ -59,40 +61,41 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
         loserId: data.loser_id,
         team1_game_wins: data.team1_game_wins,
         team2_game_wins: data.team2_game_wins,
-        round_number: data.round_number
+        round_number: data.round_number,
       };
-      
+
       // Update the matches state
-      const updatedMatches = matches.map(match => 
+      const updatedMatches = matches.map((match) =>
         match.id === updatedMatch.id ? updatedMatch : match
       );
       setMatches(updatedMatches);
-      
+
       setEditingMatch(undefined);
-      
+
       toast({
-        title: "Match Updated",
+        title: 'Match Updated',
         description: `Match details have been successfully updated.`,
       });
 
       // If match is newly completed or winner changed, update team records
       if ((isNowCompleted && !wasCompleted) || (isNowCompleted && winnerChanged)) {
         if (updatedMatch.winnerId && updatedMatch.loserId) {
-          
           // If winner changed on already-completed match, reverse old stats first
           if (wasCompleted && winnerChanged && editingMatch.winnerId && editingMatch.loserId) {
-            const oldWinnerGameWins = editingMatch.winnerId === editingMatch.team1Id
-              ? (editingMatch.team1_game_wins || 0)
-              : (editingMatch.team2_game_wins || 0);
-            const oldLoserGameWins = editingMatch.loserId === editingMatch.team1Id
-              ? (editingMatch.team1_game_wins || 0)
-              : (editingMatch.team2_game_wins || 0);
+            const oldWinnerGameWins =
+              editingMatch.winnerId === editingMatch.team1Id
+                ? editingMatch.team1_game_wins || 0
+                : editingMatch.team2_game_wins || 0;
+            const oldLoserGameWins =
+              editingMatch.loserId === editingMatch.team1Id
+                ? editingMatch.team1_game_wins || 0
+                : editingMatch.team2_game_wins || 0;
 
             const { error: reverseError } = await supabase.rpc('reverse_team_stats', {
               p_winner_id: editingMatch.winnerId,
               p_loser_id: editingMatch.loserId,
               p_winner_game_wins: oldWinnerGameWins,
-              p_loser_game_wins: oldLoserGameWins
+              p_loser_game_wins: oldLoserGameWins,
             });
 
             if (reverseError) {
@@ -107,34 +110,36 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
           }
 
           // Now apply the new stats
-          const winnerGameWins = updatedMatch.winnerId === updatedMatch.team1Id 
-            ? (updatedMatch.team1_game_wins || 0) 
-            : (updatedMatch.team2_game_wins || 0);
-          const loserGameWins = updatedMatch.loserId === updatedMatch.team1Id 
-            ? (updatedMatch.team1_game_wins || 0) 
-            : (updatedMatch.team2_game_wins || 0);
-          
+          const winnerGameWins =
+            updatedMatch.winnerId === updatedMatch.team1Id
+              ? updatedMatch.team1_game_wins || 0
+              : updatedMatch.team2_game_wins || 0;
+          const loserGameWins =
+            updatedMatch.loserId === updatedMatch.team1Id
+              ? updatedMatch.team1_game_wins || 0
+              : updatedMatch.team2_game_wins || 0;
+
           await updateTeamRecords(
-            updatedMatch.winnerId, 
-            updatedMatch.loserId, 
+            updatedMatch.winnerId,
+            updatedMatch.loserId,
             teams,
             winnerGameWins,
             loserGameWins
           );
         }
       }
-      
+
       // Invalidate relevant queries to refresh data across the app
       invalidateAllDataQueries();
-      
+
       return true;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      errorLog("Error updating match:", error);
+      errorLog('Error updating match:', error);
       toast({
-        title: "Error",
+        title: 'Error',
         description: `Failed to update match: ${message}`,
-        variant: "destructive"
+        variant: 'destructive',
       });
       return false;
     }
@@ -142,36 +147,38 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
 
   const handleDeleteMatch = async (teams: Team[]) => {
     if (!deleteMatchId) return false;
-    
+
     try {
       setIsDeleting(true);
-      const matchToDelete = matches.find(match => match.id === deleteMatchId);
-      
+      const matchToDelete = matches.find((match) => match.id === deleteMatchId);
+
       if (!matchToDelete) {
-        throw new Error("Match not found");
+        throw new Error('Match not found');
       }
-      
+
       // If match was completed, reverse the team stats BEFORE deleting
       if (matchToDelete.iscompleted && matchToDelete.winnerId && matchToDelete.loserId) {
-        const winnerGameWins = matchToDelete.winnerId === matchToDelete.team1Id 
-          ? (matchToDelete.team1_game_wins || 0) 
-          : (matchToDelete.team2_game_wins || 0);
-        const loserGameWins = matchToDelete.loserId === matchToDelete.team1Id 
-          ? (matchToDelete.team1_game_wins || 0) 
-          : (matchToDelete.team2_game_wins || 0);
-        
+        const winnerGameWins =
+          matchToDelete.winnerId === matchToDelete.team1Id
+            ? matchToDelete.team1_game_wins || 0
+            : matchToDelete.team2_game_wins || 0;
+        const loserGameWins =
+          matchToDelete.loserId === matchToDelete.team1Id
+            ? matchToDelete.team1_game_wins || 0
+            : matchToDelete.team2_game_wins || 0;
+
         // Call the RPC to reverse team stats
         const { error: reverseError } = await supabase.rpc('reverse_team_stats', {
           p_winner_id: matchToDelete.winnerId,
           p_loser_id: matchToDelete.loserId,
           p_winner_game_wins: winnerGameWins,
-          p_loser_game_wins: loserGameWins
+          p_loser_game_wins: loserGameWins,
         });
-        
+
         if (reverseError) {
           throw new Error(`Failed to reverse team stats: ${reverseError.message}`);
         }
-        
+
         // Refresh team_season_stats to keep career data in sync
         const { error: seasonStatsError } = await supabase.rpc('upsert_team_season_stats');
         if (seasonStatsError) {
@@ -179,38 +186,35 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
           // Non-fatal - continue with deletion
         }
       }
-      
+
       // Delete the match from Supabase
-      const { error } = await supabase
-        .from('matches')
-        .delete()
-        .eq('id', deleteMatchId);
-      
+      const { error } = await supabase.from('matches').delete().eq('id', deleteMatchId);
+
       if (error) throw error;
-      
+
       // Update the matches state
-      const updatedMatches = matches.filter(match => match.id !== deleteMatchId);
+      const updatedMatches = matches.filter((match) => match.id !== deleteMatchId);
       setMatches(updatedMatches);
-      
+
       setDeleteMatchId(null);
-      
+
       toast({
-        title: "Match Deleted",
-        description: "Match has been successfully deleted.",
-        variant: "destructive"
+        title: 'Match Deleted',
+        description: 'Match has been successfully deleted.',
+        variant: 'destructive',
       });
-      
+
       // Invalidate all queries to ensure data consistency
       invalidateAllDataQueries();
-      
+
       return true;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      errorLog("Error deleting match:", error);
+      errorLog('Error deleting match:', error);
       toast({
-        title: "Error", 
+        title: 'Error',
         description: `Failed to delete match: ${message}`,
-        variant: "destructive"
+        variant: 'destructive',
       });
       return false;
     } finally {
@@ -225,9 +229,9 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
     queryClient.invalidateQueries({ queryKey: ['rankings'] });
     queryClient.invalidateQueries({ queryKey: ['teamStats'] });
     queryClient.invalidateQueries({ queryKey: ['team-totals'] });
-    
+
     // Also invalidate single team queries that might be open in team details pages
-    queryClient.invalidateQueries({ queryKey: ['team'] }); 
+    queryClient.invalidateQueries({ queryKey: ['team'] });
     queryClient.invalidateQueries({ queryKey: ['team-matches'] });
   };
 
@@ -239,6 +243,6 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
     setDeleteMatchId,
     handleUpdateMatch,
     handleDeleteMatch,
-    invalidateAllDataQueries
+    invalidateAllDataQueries,
   };
 };

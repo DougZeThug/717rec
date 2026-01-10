@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface WinterStarProps extends React.SVGProps<SVGSVGElement> {
   size?: number | string;
@@ -8,11 +8,7 @@ interface WinterStarProps extends React.SVGProps<SVGSVGElement> {
  * Winter Star glyph - Icy star variant
  * Used for special winter badges, achievements
  */
-const WinterStar: React.FC<WinterStarProps> = ({ 
-  size = 24, 
-  className,
-  ...props 
-}) => (
+const WinterStar: React.FC<WinterStarProps> = ({ size = 24, className, ...props }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -27,10 +23,10 @@ const WinterStar: React.FC<WinterStarProps> = ({
     {...props}
   >
     {/* Main 4-point star */}
-    <path 
-      d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z" 
-      fill="currentColor" 
-      fillOpacity="0.15" 
+    <path
+      d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"
+      fill="currentColor"
+      fillOpacity="0.15"
     />
     <path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z" />
     {/* Inner sparkle/frost lines */}

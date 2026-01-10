@@ -1,7 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { errorLog, matchLog } from "@/utils/logger";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { errorLog, matchLog } from '@/utils/logger';
 
 export interface PendingMatch {
   id: string;
@@ -25,13 +26,14 @@ export function usePendingScoresMatches() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: matches = [], isLoading, refetch } = useQuery<PendingMatch[]>({
+  const {
+    data: matches = [],
+    isLoading,
+    refetch,
+  } = useQuery<PendingMatch[]>({
     queryKey: ['matches', 'pending-scores'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('v_pending_matches')
-        .select('*')
-        .limit(10);
+      const { data, error } = await supabase.from('v_pending_matches').select('*').limit(10);
 
       if (error) {
         errorLog('Error fetching pending matches:', error);
@@ -43,7 +45,7 @@ export function usePendingScoresMatches() {
         throw error;
       }
 
-      return (data || []).map(match => ({
+      return (data || []).map((match) => ({
         id: match.id,
         team1_id: match.team1_id || '',
         team2_id: match.team2_id || '',
@@ -52,22 +54,26 @@ export function usePendingScoresMatches() {
         team1_logo: match.team1_logo,
         team2_logo: match.team2_logo,
         date: match.date || '',
-        location: match.location || ''
+        location: match.location || '',
       }));
     },
     staleTime: 1000 * 60 * 2, // 2 minutes
   });
 
   const submitMutation = useMutation({
-    mutationFn: async ({ matchId, submission }: { matchId: string; submission: ScoreSubmission }) => {
-      const { error } = await supabase
-        .from('score_submissions')
-        .insert({
-          match_id: matchId,
-          submitter_name: submission.submitter_name,
-          submitter_team: submission.submitter_team || null,
-          message: submission.message
-        });
+    mutationFn: async ({
+      matchId,
+      submission,
+    }: {
+      matchId: string;
+      submission: ScoreSubmission;
+    }) => {
+      const { error } = await supabase.from('score_submissions').insert({
+        match_id: matchId,
+        submitter_name: submission.submitter_name,
+        submitter_team: submission.submitter_team || null,
+        message: submission.message,
+      });
 
       if (error) throw error;
       return true;
@@ -104,6 +110,6 @@ export function usePendingScoresMatches() {
     isLoading,
     isSubmitting: submitMutation.isPending,
     submitScore,
-    refetch
+    refetch,
   };
 }

@@ -1,14 +1,16 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Team } from "@/types";
-import { TeamDeleteDialog } from "@/components/teams/TeamDeleteDialog";
-import { TeamList } from "@/components/teams/TeamList";
-import { TeamsByDivision } from "@/components/teams/TeamsByDivision";
-import { TeamEditForm } from "@/components/teams/TeamEditForm";
-import { useTeamManagement } from "@/hooks/useTeamManagement";
-import { useDivisions } from "@/hooks/useDivisions";
-import { motion, AnimatePresence } from 'framer-motion';
-import { DisplayMode, SortMode } from "./TeamsPageContainer";
-import { groupTeamsByDisplayDivision } from "@/utils/teamGrouping";
+import { AnimatePresence, motion } from 'framer-motion';
+import React, { useEffect, useMemo, useState } from 'react';
+
+import { TeamDeleteDialog } from '@/components/teams/TeamDeleteDialog';
+import { TeamEditForm } from '@/components/teams/TeamEditForm';
+import { TeamList } from '@/components/teams/TeamList';
+import { TeamsByDivision } from '@/components/teams/TeamsByDivision';
+import { useDivisions } from '@/hooks/useDivisions';
+import { useTeamManagement } from '@/hooks/useTeamManagement';
+import { Team } from '@/types';
+import { groupTeamsByDisplayDivision } from '@/utils/teamGrouping';
+
+import { DisplayMode, SortMode } from './TeamsPageContainer';
 
 interface TeamsContainerProps {
   displayMode: DisplayMode;
@@ -17,41 +19,39 @@ interface TeamsContainerProps {
 }
 
 const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode, sortMode }) => {
-  const { 
-    teams, 
-    isLoading, 
-    teamToEdit, 
+  const {
+    teams,
+    isLoading,
+    teamToEdit,
     setTeamToEdit,
-    deleteTeamId, 
+    deleteTeamId,
     setDeleteTeamId,
     isDeleting,
     handleUpdateTeam,
-    handleDeleteTeam
+    handleDeleteTeam,
   } = useTeamManagement();
-  
+
   const { divisions } = useDivisions();
-  
+
   const uniqueTeams = useMemo(() => {
     const uniqueTeamMap = new Map<string, Team>();
-    teams.forEach(team => {
+    teams.forEach((team) => {
       if (!uniqueTeamMap.has(team.id)) {
         uniqueTeamMap.set(team.id, team);
       }
     });
     return Array.from(uniqueTeamMap.values());
   }, [teams]);
-  
+
   // Group teams by display division instead of actual division_id
   const teamsByDisplayDivision = useMemo(() => {
     return groupTeamsByDisplayDivision(uniqueTeams, divisions);
   }, [uniqueTeams, divisions]);
 
   const sortTeams = (arr: Team[]) => {
-    if (sortMode === "alpha") {
-      return [...arr].sort((a, b) => 
-        a.name.toLowerCase().localeCompare(b.name.toLowerCase())
-      );
-    } 
+    if (sortMode === 'alpha') {
+      return [...arr].sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+    }
     return [...arr].sort((a, b) => (b.power_score ?? 0) - (a.power_score ?? 0));
   };
 
@@ -64,10 +64,10 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode, 
   }, [teamsByDisplayDivision, sortMode]);
 
   const sortedAllTeams = useMemo(() => sortTeams(uniqueTeams), [uniqueTeams, sortMode]);
-  
+
   // Updated to work with display divisions
   const getDivisionName = (displayDivision: string | undefined): string => {
-    if (!displayDivision) return "Unassigned Division";
+    if (!displayDivision) return 'Unassigned Division';
     return `${displayDivision} Division`;
   };
 
@@ -97,7 +97,7 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode, 
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
         >
-          {displayMode === "grouped" ? (
+          {displayMode === 'grouped' ? (
             <TeamsByDivision
               teamsByDivision={sortedTeamsByDivision}
               getDivisionName={getDivisionName}
@@ -108,7 +108,7 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode, 
               sortMode={sortMode}
             />
           ) : (
-            <TeamList 
+            <TeamList
               teams={sortedAllTeams}
               isLoading={isLoading}
               onEdit={setTeamToEdit}
@@ -118,7 +118,7 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode, 
           )}
         </motion.div>
       </AnimatePresence>
-      <TeamDeleteDialog 
+      <TeamDeleteDialog
         isOpen={!!deleteTeamId}
         onClose={() => setDeleteTeamId(null)}
         onConfirm={handleDeleteTeam}

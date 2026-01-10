@@ -1,7 +1,8 @@
+import React from 'react';
 
-import React from "react";
-import type { PlayoffMatch, Team } from "@/types";
-import MatchScoreEditor from "./MatchScoreEditor/MatchScoreEditor";
+import type { PlayoffMatch, Team } from '@/types';
+
+import MatchScoreEditor from './MatchScoreEditor/MatchScoreEditor';
 
 interface MatchScoreEditorWrapperProps {
   match: PlayoffMatch;
@@ -10,7 +11,7 @@ interface MatchScoreEditorWrapperProps {
     matchId: string,
     team1Score: number,
     team2Score: number,
-    games: { team1Score: number; team2Score: number; }[],
+    games: { team1Score: number; team2Score: number }[],
     team1GameWins: number,
     team2GameWins: number,
     refetchBrackets: () => Promise<any>
@@ -24,17 +25,10 @@ const MatchScoreEditorWrapper: React.FC<MatchScoreEditorWrapperProps> = ({
   match,
   teams,
   onSave,
-  onCancel
+  onCancel,
 }) => {
   // Direct pass-through of the 7-parameter onSave function
-  return (
-    <MatchScoreEditor
-      match={match}
-      teams={teams}
-      onSave={onSave}
-      onCancel={onCancel}
-    />
-  );
+  return <MatchScoreEditor match={match} teams={teams} onSave={onSave} onCancel={onCancel} />;
 };
 
 export default MatchScoreEditorWrapper;

@@ -1,17 +1,14 @@
+import { format } from 'date-fns';
+import { CalendarX, ChevronDown } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import React from 'react';
 
-import React from "react";
-import { format } from "date-fns";
-import { CalendarX, ChevronDown } from "lucide-react";
-import { Match } from "@/types";
-import { 
-  Collapsible, 
-  CollapsibleContent, 
-  CollapsibleTrigger 
-} from "@/components/ui/collapsible";
-import { cn } from "@/lib/utils";
-import { useTheme } from "next-themes";
-import TimeSlotMatchGroup from "./TimeSlotMatchGroup";
-import { groupMatchesByTimeSlot } from "@/utils/timeUtils";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { cn } from '@/lib/utils';
+import { Match } from '@/types';
+import { groupMatchesByTimeSlot } from '@/utils/timeUtils';
+
+import TimeSlotMatchGroup from './TimeSlotMatchGroup';
 
 interface DateMatchGroupProps {
   date: Date;
@@ -22,21 +19,21 @@ interface DateMatchGroupProps {
   onDeleteMatch?: (matchId: string) => void;
 }
 
-const DateMatchGroup: React.FC<DateMatchGroupProps> = ({ 
-  date, 
-  matches, 
+const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
+  date,
+  matches,
   isCurrentDay,
   isFirstGroup = false,
   onEditMatch,
-  onDeleteMatch
+  onDeleteMatch,
 }) => {
   const [isOpen, setIsOpen] = React.useState(isCurrentDay || isFirstGroup);
   const { resolvedTheme } = useTheme();
-  const isLight = resolvedTheme === "light";
-  
-  const formattedDate = format(date, "EEEE, MMMM d");
-  const isCompleted = matches.every(match => match.iscompleted);
-  
+  const isLight = resolvedTheme === 'light';
+
+  const formattedDate = format(date, 'EEEE, MMMM d');
+  const isCompleted = matches.every((match) => match.iscompleted);
+
   // Group matches by time slot
   const matchesByTimeSlot = groupMatchesByTimeSlot(matches);
   // Sort time slots chronologically
@@ -45,34 +42,30 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
     const timeB = new Date(`1970/01/01 ${b}`).getTime();
     return timeA - timeB;
   });
-  
+
   return (
-    <Collapsible
-      open={isOpen}
-      onOpenChange={setIsOpen}
-      className="mb-4 overflow-hidden font-inter"
-    >
-      <CollapsibleTrigger 
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-4 overflow-hidden font-inter">
+      <CollapsibleTrigger
         className={cn(
-          "flex w-full items-center justify-between p-4 text-left font-semibold text-sm rounded-t transition-all",
-          isLight 
-            ? "bg-gray-50 text-gray-700 shadow-sm border-b border-gray-200" 
-            : "bg-gray-800 text-white border-gray-700",
-          isCompleted 
-            ? isLight 
-              ? "bg-green-50/50 border-green-100" 
-              : "bg-green-900/20 border-green-800/30" 
-            : ""
+          'flex w-full items-center justify-between p-4 text-left font-semibold text-sm rounded-t transition-all',
+          isLight
+            ? 'bg-gray-50 text-gray-700 shadow-sm border-b border-gray-200'
+            : 'bg-gray-800 text-white border-gray-700',
+          isCompleted
+            ? isLight
+              ? 'bg-green-50/50 border-green-100'
+              : 'bg-green-900/20 border-green-800/30'
+            : ''
         )}
         aria-expanded={isOpen}
         aria-controls={`content-${formattedDate}`}
       >
         <span>{formattedDate}</span>
-        <ChevronDown 
+        <ChevronDown
           className={cn(
-            "h-4 w-4 transition-transform duration-200",
-            isOpen ? "transform rotate-180" : ""
-          )} 
+            'h-4 w-4 transition-transform duration-200',
+            isOpen ? 'transform rotate-180' : ''
+          )}
         />
       </CollapsibleTrigger>
       <CollapsibleContent id={`content-${formattedDate}`}>
@@ -90,11 +83,13 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
             ))
           ) : (
             <div className="col-span-full py-8 text-center">
-              <CalendarX className={cn(
-                "mx-auto h-12 w-12 mb-2",
-                isLight ? "text-gray-400" : "text-gray-500"
-              )} />
-              <p className={isLight ? "text-gray-500" : "text-gray-400"}>
+              <CalendarX
+                className={cn(
+                  'mx-auto h-12 w-12 mb-2',
+                  isLight ? 'text-gray-400' : 'text-gray-500'
+                )}
+              />
+              <p className={isLight ? 'text-gray-500' : 'text-gray-400'}>
                 No matches scheduled for this date.
               </p>
             </div>

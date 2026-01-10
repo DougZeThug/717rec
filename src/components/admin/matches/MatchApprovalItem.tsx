@@ -1,12 +1,9 @@
+import { CheckCircle, ChevronDown, ChevronRight } from 'lucide-react';
 import React from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Match, Team } from '@/types';
-import { Button } from "@/components/ui/button";
-import { 
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { ChevronDown, ChevronRight, CheckCircle } from 'lucide-react';
 
 interface MatchApprovalItemProps {
   match: Match;
@@ -17,13 +14,13 @@ interface MatchApprovalItemProps {
   onMarkAsTie: (matchId: string) => void;
 }
 
-const MatchApprovalItem = ({ 
-  match, 
-  teams, 
-  isOpen, 
-  onToggle, 
-  onApproveResult, 
-  onMarkAsTie 
+const MatchApprovalItem = ({
+  match,
+  teams,
+  isOpen,
+  onToggle,
+  onApproveResult,
+  onMarkAsTie,
 }: MatchApprovalItemProps) => {
   const team1 = teams[match.team1Id];
   const team2 = teams[match.team2Id];
@@ -39,38 +36,40 @@ const MatchApprovalItem = ({
     >
       <CollapsibleTrigger className="flex items-center justify-between w-full p-4 text-left hover:bg-secondary">
         <div className="flex items-center">
-          {isOpen ? <ChevronDown className="h-4 w-4 mr-2" /> : <ChevronRight className="h-4 w-4 mr-2" />}
+          {isOpen ? (
+            <ChevronDown className="h-4 w-4 mr-2" />
+          ) : (
+            <ChevronRight className="h-4 w-4 mr-2" />
+          )}
           <div className="flex items-center">
             <div className="w-6 h-6 overflow-hidden bg-muted mr-2">
               {team1Image && (
-                <img 
-                  src={team1Image} 
-                  alt="" 
+                <img
+                  src={team1Image}
+                  alt=""
                   className="w-full h-full object-contain"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
+                    (e.target as HTMLImageElement).src =
+                      'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
                   }}
                 />
               )}
             </div>
-            <span>
-              {team1?.name || 'Team 1'} vs 
-            </span>
+            <span>{team1?.name || 'Team 1'} vs</span>
             <div className="w-6 h-6 overflow-hidden bg-muted mx-2">
               {team2Image && (
-                <img 
-                  src={team2Image} 
-                  alt="" 
+                <img
+                  src={team2Image}
+                  alt=""
                   className="w-full h-full object-contain"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
+                    (e.target as HTMLImageElement).src =
+                      'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
                   }}
                 />
               )}
             </div>
-            <span>
-              {team2?.name || 'Team 2'}
-            </span>
+            <span>{team2?.name || 'Team 2'}</span>
           </div>
         </div>
         <div className="text-sm text-muted-foreground">
@@ -84,20 +83,20 @@ const MatchApprovalItem = ({
               <p className="font-medium">{teams[match.team1Id]?.name || 'Team 1'}</p>
               <p className="text-2xl font-bold">{match.team1Score}</p>
             </div>
-            
+
             <div className="text-center">
               <p className="text-lg">vs</p>
             </div>
-            
+
             <div className="text-center">
               <p className="font-medium">{teams[match.team2Id]?.name || 'Team 2'}</p>
               <p className="text-2xl font-bold">{match.team2Score}</p>
             </div>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row gap-2 sm:justify-between">
             <div className="flex gap-2">
-              <Button 
+              <Button
                 onClick={() => onApproveResult(match, 1)}
                 variant="outline"
                 className="flex items-center gap-2"
@@ -105,8 +104,8 @@ const MatchApprovalItem = ({
                 <CheckCircle className="h-4 w-4" />
                 {teams[match.team1Id]?.name || 'Team 1'} Wins
               </Button>
-              
-              <Button 
+
+              <Button
                 onClick={() => onApproveResult(match, 2)}
                 variant="outline"
                 className="flex items-center gap-2"
@@ -115,11 +114,8 @@ const MatchApprovalItem = ({
                 {teams[match.team2Id]?.name || 'Team 2'} Wins
               </Button>
             </div>
-            
-            <Button 
-              onClick={() => onMarkAsTie(match.id)}
-              variant="secondary"
-            >
+
+            <Button onClick={() => onMarkAsTie(match.id)} variant="secondary">
               Mark as Tie
             </Button>
           </div>

@@ -1,4 +1,3 @@
-
 /**
  * Season-related type definitions
  */

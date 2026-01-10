@@ -1,11 +1,12 @@
-import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
+
 import MatchRow from '../MatchRow';
 import { MatchWithTeams } from '../types';
 
 vi.mock('@/utils/logger', () => ({
-  scoreLog: vi.fn()
+  scoreLog: vi.fn(),
 }));
 
 const createMockMatch = (overrides: Partial<MatchWithTeams> = {}): MatchWithTeams => ({
@@ -40,7 +41,7 @@ const createMockMatch = (overrides: Partial<MatchWithTeams> = {}): MatchWithTeam
     sos: 0.5,
     power_score: 0,
     win_percentage: 0,
-    game_win_percentage: 0
+    game_win_percentage: 0,
   },
   team2: {
     id: 'team-2',
@@ -55,11 +56,11 @@ const createMockMatch = (overrides: Partial<MatchWithTeams> = {}): MatchWithTeam
     sos: 0.5,
     power_score: 0,
     win_percentage: 0,
-    game_win_percentage: 0
+    game_win_percentage: 0,
   },
   isEdited: false,
   isValid: true,
-  ...overrides
+  ...overrides,
 });
 
 describe('MatchRow', () => {
@@ -68,7 +69,7 @@ describe('MatchRow', () => {
     index: 0,
     onScoreChange: vi.fn(),
     onGameWinsChange: vi.fn(),
-    onMarkCompleted: vi.fn()
+    onMarkCompleted: vi.fn(),
   };
 
   it('renders team names', () => {
@@ -87,7 +88,7 @@ describe('MatchRow', () => {
   it('shows submitting state with loader', () => {
     const props = {
       ...defaultProps,
-      match: createMockMatch({ isSubmitting: true })
+      match: createMockMatch({ isSubmitting: true }),
     };
 
     render(<MatchRow {...props} />);
@@ -98,7 +99,7 @@ describe('MatchRow', () => {
   it('shows error state with alert icon', () => {
     const props = {
       ...defaultProps,
-      match: createMockMatch({ submitError: true })
+      match: createMockMatch({ submitError: true }),
     };
 
     render(<MatchRow {...props} />);
@@ -109,11 +110,11 @@ describe('MatchRow', () => {
   it('applies correct styling when submitting', () => {
     const props = {
       ...defaultProps,
-      match: createMockMatch({ isSubmitting: true })
+      match: createMockMatch({ isSubmitting: true }),
     };
 
     const { container } = render(<MatchRow {...props} />);
-    
+
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper.className).toContain('border-primary/50');
   });
@@ -121,18 +122,18 @@ describe('MatchRow', () => {
   it('applies error styling when submitError is true', () => {
     const props = {
       ...defaultProps,
-      match: createMockMatch({ submitError: true })
+      match: createMockMatch({ submitError: true }),
     };
 
     const { container } = render(<MatchRow {...props} />);
-    
+
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper.className).toContain('border-destructive');
   });
 
   it('applies default styling when not submitting or error', () => {
     const { container } = render(<MatchRow {...defaultProps} />);
-    
+
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper.className).toContain('border-border');
   });
@@ -140,7 +141,7 @@ describe('MatchRow', () => {
   it('disables switch when submitting', () => {
     const props = {
       ...defaultProps,
-      match: createMockMatch({ isSubmitting: true })
+      match: createMockMatch({ isSubmitting: true }),
     };
 
     render(<MatchRow {...props} />);
@@ -152,7 +153,7 @@ describe('MatchRow', () => {
   it('uses prop isSubmitting as fallback', () => {
     const props = {
       ...defaultProps,
-      isSubmitting: true
+      isSubmitting: true,
     };
 
     render(<MatchRow {...props} />);
@@ -163,7 +164,7 @@ describe('MatchRow', () => {
   it('uses prop hasError as fallback', () => {
     const props = {
       ...defaultProps,
-      hasError: true
+      hasError: true,
     };
 
     render(<MatchRow {...props} />);
@@ -175,7 +176,7 @@ describe('MatchRow', () => {
     const props = {
       ...defaultProps,
       match: createMockMatch({ isSubmitting: false }),
-      isSubmitting: true
+      isSubmitting: true,
     };
 
     render(<MatchRow {...props} />);
@@ -188,7 +189,7 @@ describe('MatchRow', () => {
   it('does not show error when isSubmitting is true', () => {
     const props = {
       ...defaultProps,
-      match: createMockMatch({ isSubmitting: true, submitError: true })
+      match: createMockMatch({ isSubmitting: true, submitError: true }),
     };
 
     render(<MatchRow {...props} />);

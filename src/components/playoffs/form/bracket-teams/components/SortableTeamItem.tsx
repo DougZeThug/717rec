@@ -1,9 +1,10 @@
-import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Users } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { GripVertical, Users } from 'lucide-react';
+import React from 'react';
+
+import { cn } from '@/lib/utils';
 
 interface SortableTeamItemProps {
   id: string;
@@ -26,18 +27,11 @@ export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
   hasConflict = false,
   onSeedChange,
 }) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-    isOver,
-  } = useSortable({ 
-    id,
-    disabled,
-  });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging, isOver } =
+    useSortable({
+      id,
+      disabled,
+    });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -53,12 +47,12 @@ export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       className={cn(
-        "flex items-center gap-3 p-3 rounded-lg border transition-all duration-200",
-        isDragging && "z-50 shadow-lg ring-2 ring-primary/50 bg-card scale-[1.02]",
-        isOver && !isDragging && "border-primary/50 bg-primary/5",
-        !disabled && "hover:bg-muted/80 cursor-grab active:cursor-grabbing",
-        disabled && "bg-background cursor-default opacity-60",
-        hasConflict && "border-destructive/50 bg-destructive/5"
+        'flex items-center gap-3 p-3 rounded-lg border transition-all duration-200',
+        isDragging && 'z-50 shadow-lg ring-2 ring-primary/50 bg-card scale-[1.02]',
+        isOver && !isDragging && 'border-primary/50 bg-primary/5',
+        !disabled && 'hover:bg-muted/80 cursor-grab active:cursor-grabbing',
+        disabled && 'bg-background cursor-default opacity-60',
+        hasConflict && 'border-destructive/50 bg-destructive/5'
       )}
     >
       {/* Drag Handle */}
@@ -73,10 +67,12 @@ export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
       )}
 
       {/* Seed Badge */}
-      <div className={cn(
-        "flex items-center justify-center min-w-[2rem] h-7 rounded-md text-sm font-bold",
-        "bg-primary/10 text-primary"
-      )}>
+      <div
+        className={cn(
+          'flex items-center justify-center min-w-[2rem] h-7 rounded-md text-sm font-bold',
+          'bg-primary/10 text-primary'
+        )}
+      >
         #{seed}
       </div>
 
@@ -111,9 +107,9 @@ export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
           value={seed}
           onChange={(e) => onSeedChange(parseInt(e.target.value) || null)}
           className={cn(
-            "w-12 h-8 text-center text-sm font-medium rounded-md border",
-            "bg-background focus:ring-2 focus:ring-primary/50 focus:border-primary",
-            hasConflict && "border-destructive focus:ring-destructive/50"
+            'w-12 h-8 text-center text-sm font-medium rounded-md border',
+            'bg-background focus:ring-2 focus:ring-primary/50 focus:border-primary',
+            hasConflict && 'border-destructive focus:ring-destructive/50'
           )}
           aria-label={`Seed for ${name}`}
         />

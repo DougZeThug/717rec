@@ -18,9 +18,9 @@ export const arrayToCSV = <T extends Record<string, unknown>>(
   data: T[],
   columns: { key: keyof T; header: string }[]
 ): string => {
-  const headers = columns.map(col => escapeCSVValue(col.header)).join(',');
-  const rows = data.map(row => 
-    columns.map(col => escapeCSVValue(row[col.key] as string | number | null)).join(',')
+  const headers = columns.map((col) => escapeCSVValue(col.header)).join(',');
+  const rows = data.map((row) =>
+    columns.map((col) => escapeCSVValue(row[col.key] as string | number | null)).join(',')
   );
   return [headers, ...rows].join('\n');
 };
@@ -28,7 +28,11 @@ export const arrayToCSV = <T extends Record<string, unknown>>(
 /**
  * Trigger a file download in the browser
  */
-export const downloadFile = (content: string, filename: string, mimeType: string = 'text/csv'): void => {
+export const downloadFile = (
+  content: string,
+  filename: string,
+  mimeType: string = 'text/csv'
+): void => {
   const blob = new Blob([content], { type: `${mimeType};charset=utf-8;` });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -71,7 +75,7 @@ export const exportHeadToHeadToCSV = (
   const date = new Date().toISOString().split('T')[0];
   const safeTeamName = teamName.replace(/[^a-zA-Z0-9]/g, '_');
   const filename = `${safeTeamName}_HeadToHead_${date}.csv`;
-  
+
   downloadFile(csv, filename);
 };
 
@@ -119,7 +123,7 @@ export const exportStandingsToCSV = (
   const csv = arrayToCSV(data, columns);
   const date = new Date().toISOString().split('T')[0];
   const filename = `Current_Standings_${date}.csv`;
-  
+
   downloadFile(csv, filename);
 };
 
@@ -174,6 +178,6 @@ export const exportCareerStatsToCSV = (
   const csv = arrayToCSV(data, columns);
   const date = new Date().toISOString().split('T')[0];
   const filename = `Career_Statistics_${date}.csv`;
-  
+
   downloadFile(csv, filename);
 };

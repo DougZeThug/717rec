@@ -1,41 +1,41 @@
+import { Loader2, Send } from 'lucide-react';
+import React, { useState } from 'react';
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Send, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
-import { LoginRequired } from "@/components/auth";
+import { LoginRequired } from '@/components/auth';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { cn } from '@/lib/utils';
 
 interface MatchCommentFormProps {
   onSubmit: (content: string) => Promise<void>;
   placeholder?: string;
 }
 
-const MatchCommentForm: React.FC<MatchCommentFormProps> = ({ 
-  onSubmit, 
-  placeholder = "Add a comment..." 
+const MatchCommentForm: React.FC<MatchCommentFormProps> = ({
+  onSubmit,
+  placeholder = 'Add a comment...',
 }) => {
-  const [content, setContent] = useState("");
+  const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!content.trim() || isSubmitting) return;
-    
+
     try {
       setIsSubmitting(true);
       await onSubmit(content);
-      setContent("");
+      setContent('');
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   if (!user) {
     return (
-      <LoginRequired 
+      <LoginRequired
         message="Sign in to comment on matches"
         fallback={
           <div className="bg-muted/30 rounded-md px-4 py-3 text-sm text-muted-foreground">
@@ -48,26 +48,28 @@ const MatchCommentForm: React.FC<MatchCommentFormProps> = ({
       </LoginRequired>
     );
   }
-  
+
   return (
     <form onSubmit={handleSubmit} className="relative">
-      <div className={cn(
-        "flex items-start border rounded-md bg-background transition-all",
-        "focus-within:ring-1 focus-within:ring-ring focus-within:border-input"
-      )}>
+      <div
+        className={cn(
+          'flex items-start border rounded-md bg-background transition-all',
+          'focus-within:ring-1 focus-within:ring-ring focus-within:border-input'
+        )}
+      >
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder={placeholder}
           rows={1}
           className={cn(
-            "flex-1 py-2 px-3 resize-none outline-none bg-transparent",
-            "text-sm text-foreground placeholder:text-muted-foreground",
-            "focus:outline-none focus:border-none focus:ring-0"
+            'flex-1 py-2 px-3 resize-none outline-none bg-transparent',
+            'text-sm text-foreground placeholder:text-muted-foreground',
+            'focus:outline-none focus:border-none focus:ring-0'
           )}
-          style={{ minHeight: "2.5rem", maxHeight: "8rem" }}
+          style={{ minHeight: '2.5rem', maxHeight: '8rem' }}
         />
-        <Button 
+        <Button
           type="submit"
           size="sm"
           disabled={!content.trim() || isSubmitting}
@@ -79,7 +81,7 @@ const MatchCommentForm: React.FC<MatchCommentFormProps> = ({
           ) : (
             <Send className="h-4 w-4" />
           )}
-          <span className="sr-only">{isSubmitting ? "Sending..." : "Send comment"}</span>
+          <span className="sr-only">{isSubmitting ? 'Sending...' : 'Send comment'}</span>
         </Button>
       </div>
     </form>

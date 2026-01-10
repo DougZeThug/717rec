@@ -1,4 +1,7 @@
-import React, { useState } from "react";
+import { AlertTriangle, Trophy } from 'lucide-react';
+import React, { useState } from 'react';
+
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,14 +11,18 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Trophy, AlertTriangle } from "lucide-react";
-import { useSeasonMutations } from "@/hooks/useSeasonMutations";
-import { useTeamsArray } from "@/hooks/teams";
-import { toast } from "@/hooks/use-toast";
+} from '@/components/ui/alert-dialog';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useTeamsArray } from '@/hooks/teams';
+import { toast } from '@/hooks/use-toast';
+import { useSeasonMutations } from '@/hooks/useSeasonMutations';
 
 interface SeasonArchivalDialogProps {
   isOpen: boolean;
@@ -23,17 +30,13 @@ interface SeasonArchivalDialogProps {
   season: any;
 }
 
-const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({
-  isOpen,
-  onClose,
-  season,
-}) => {
+const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({ isOpen, onClose, season }) => {
   const { teams } = useTeamsArray();
   const { archiveSeason } = useSeasonMutations();
   const [isArchiving, setIsArchiving] = useState(false);
-  const [championId, setChampionId] = useState<string>("");
-  const [runnerUpId, setRunnerUpId] = useState<string>("");
-  const [thirdPlaceId, setThirdPlaceId] = useState<string>("");
+  const [championId, setChampionId] = useState<string>('');
+  const [runnerUpId, setRunnerUpId] = useState<string>('');
+  const [thirdPlaceId, setThirdPlaceId] = useState<string>('');
 
   const handleArchive = async () => {
     setIsArchiving(true);
@@ -45,27 +48,26 @@ const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({
         third_place_team_id: thirdPlaceId || null,
       });
       toast({
-        title: "Success",
+        title: 'Success',
         description: `${season.name} has been archived`,
       });
       onClose();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to archive season';
       toast({
-        title: "Error",
+        title: 'Error',
         description: message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     } finally {
       setIsArchiving(false);
     }
   };
 
-  const availableTeams = teams?.filter(team => 
-    team.id !== championId && 
-    team.id !== runnerUpId && 
-    team.id !== thirdPlaceId
-  ) || [];
+  const availableTeams =
+    teams?.filter(
+      (team) => team.id !== championId && team.id !== runnerUpId && team.id !== thirdPlaceId
+    ) || [];
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
@@ -96,7 +98,7 @@ const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({
                 <SelectValue placeholder="Select champion team" />
               </SelectTrigger>
               <SelectContent>
-                {teams?.map(team => (
+                {teams?.map((team) => (
                   <SelectItem key={team.id} value={team.id}>
                     {team.name}
                   </SelectItem>
@@ -112,7 +114,7 @@ const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({
                 <SelectValue placeholder="Select runner-up team" />
               </SelectTrigger>
               <SelectContent>
-                {availableTeams.map(team => (
+                {availableTeams.map((team) => (
                   <SelectItem key={team.id} value={team.id}>
                     {team.name}
                   </SelectItem>
@@ -128,7 +130,7 @@ const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({
                 <SelectValue placeholder="Select third place team" />
               </SelectTrigger>
               <SelectContent>
-                {availableTeams.map(team => (
+                {availableTeams.map((team) => (
                   <SelectItem key={team.id} value={team.id}>
                     {team.name}
                   </SelectItem>
@@ -145,7 +147,7 @@ const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({
             disabled={isArchiving}
             className="bg-orange-600 hover:bg-orange-700"
           >
-            {isArchiving ? "Archiving..." : "Archive Season"}
+            {isArchiving ? 'Archiving...' : 'Archive Season'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

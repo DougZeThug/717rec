@@ -1,9 +1,9 @@
+import { useCallback, useState } from 'react';
 
-import { useState, useCallback } from "react";
-import { cn } from "@/lib/utils";
-import { motion as motionTokens } from "@/styles/design-system/motion";
+import { cn } from '@/lib/utils';
+import { motion as motionTokens } from '@/styles/design-system/motion';
 
-type PressType = "button" | "card" | "row" | "tab" | "subtle";
+type PressType = 'button' | 'card' | 'row' | 'tab' | 'subtle';
 
 interface UsePressedFeedbackOptions {
   type?: PressType;
@@ -29,15 +29,13 @@ interface PressedFeedbackResult {
 /**
  * Hook to add consistent pressed state feedback to interactive elements.
  * Provides both class names and handlers for touch/mouse interactions.
- * 
+ *
  * @example
  * const { className, pressHandlers } = usePressedFeedback({ type: "card" });
  * return <div className={cn("...", className)} {...pressHandlers}>...</div>
  */
-export function usePressedFeedback(
-  options: UsePressedFeedbackOptions = {}
-): PressedFeedbackResult {
-  const { type = "button", withTint = true, disabled = false } = options;
+export function usePressedFeedback(options: UsePressedFeedbackOptions = {}): PressedFeedbackResult {
+  const { type = 'button', withTint = true, disabled = false } = options;
   const [isPressed, setIsPressed] = useState(false);
 
   const handlePressStart = useCallback(() => {
@@ -53,15 +51,15 @@ export function usePressedFeedback(
   // Get the appropriate class based on type
   const getTypeClass = () => {
     switch (type) {
-      case "button":
+      case 'button':
         return motionTokens.classes.buttonPress;
-      case "card":
+      case 'card':
         return motionTokens.classes.cardPress;
-      case "row":
+      case 'row':
         return motionTokens.classes.rowPress;
-      case "tab":
+      case 'tab':
         return motionTokens.classes.tabPress;
-      case "subtle":
+      case 'subtle':
         return motionTokens.classes.subtlePress;
       default:
         return motionTokens.classes.buttonPress;
@@ -71,7 +69,7 @@ export function usePressedFeedback(
   const className = cn(
     getTypeClass(),
     withTint && motionTokens.classes.mobileTint,
-    disabled && "pointer-events-none"
+    disabled && 'pointer-events-none'
   );
 
   const pressHandlers = {
@@ -93,14 +91,12 @@ export function usePressedFeedback(
  * Simple utility to get pressed state classes without the hook state management.
  * Use when you just need Tailwind classes without tracking pressed state.
  */
-export function getPressedClasses(type: PressType = "button", withTint = true): string {
-  const baseClass = motionTokens.classes[`${type}Press` as keyof typeof motionTokens.classes] 
-    || motionTokens.classes.buttonPress;
-  
-  return cn(
-    baseClass,
-    withTint && motionTokens.classes.mobileTint
-  );
+export function getPressedClasses(type: PressType = 'button', withTint = true): string {
+  const baseClass =
+    motionTokens.classes[`${type}Press` as keyof typeof motionTokens.classes] ||
+    motionTokens.classes.buttonPress;
+
+  return cn(baseClass, withTint && motionTokens.classes.mobileTint);
 }
 
 export default usePressedFeedback;

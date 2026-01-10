@@ -1,26 +1,26 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2, Plus, Save, X } from 'lucide-react';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
-import React from "react";
-import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { X, Plus, Save, Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useSeasonMutations } from "@/hooks/useSeasonMutations";
-import { toast } from "@/hooks/use-toast";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
-} from "@/components/ui/form";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { toast } from '@/hooks/use-toast';
+import { useSeasonMutations } from '@/hooks/useSeasonMutations';
 
 const seasonSchema = z.object({
-  name: z.string().min(1, "Season name is required"),
-  start_date: z.string().min(1, "Start date is required"),
+  name: z.string().min(1, 'Season name is required'),
+  start_date: z.string().min(1, 'Start date is required'),
   end_date: z.string().optional(),
 });
 
@@ -38,9 +38,9 @@ const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
   const form = useForm<SeasonFormData>({
     resolver: zodResolver(seasonSchema),
     defaultValues: {
-      name: season?.name || "",
-      start_date: season?.start_date || "",
-      end_date: season?.end_date || "",
+      name: season?.name || '',
+      start_date: season?.start_date || '',
+      end_date: season?.end_date || '',
     },
   });
 
@@ -55,11 +55,11 @@ const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
           start_date: data.start_date,
           end_date: data.end_date || null,
         };
-        
+
         await updateSeason.mutateAsync(updateData);
         toast({
-          title: "Success",
-          description: "Season updated successfully",
+          title: 'Success',
+          description: 'Season updated successfully',
         });
       } else {
         const createData = {
@@ -67,21 +67,21 @@ const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
           start_date: data.start_date,
           end_date: data.end_date || null,
         };
-        
+
         await createSeason.mutateAsync(createData);
         toast({
-          title: "Success",
-          description: "Season created successfully",
+          title: 'Success',
+          description: 'Season created successfully',
         });
       }
-      
+
       onClose();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to save season';
       toast({
-        title: "Error",
+        title: 'Error',
         description: message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   };
@@ -90,7 +90,7 @@ const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>{isEditing ? "Edit Season" : "Create New Season"}</CardTitle>
+          <CardTitle>{isEditing ? 'Edit Season' : 'Create New Season'}</CardTitle>
           <Button variant="ghost" size="sm" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
@@ -152,7 +152,7 @@ const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    {isEditing ? "Updating..." : "Creating..."}
+                    {isEditing ? 'Updating...' : 'Creating...'}
                   </>
                 ) : isEditing ? (
                   <>

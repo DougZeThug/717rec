@@ -1,14 +1,22 @@
-
-import { Team } from "@/types";
-import { DualBlockConfig, TeamPair, TimeBlockTeamsMap, PairedTimeBlockTeamsMap } from "@/types/autoSchedule";
-import { NotificationCallback, DualBlockValidationResult, DualBlockPairingState } from "@/types/dualBlock";
+import { Team } from '@/types';
+import {
+  DualBlockConfig,
+  PairedTimeBlockTeamsMap,
+  TeamPair,
+  TimeBlockTeamsMap,
+} from '@/types/autoSchedule';
+import {
+  DualBlockPairingState,
+  DualBlockValidationResult,
+  NotificationCallback,
+} from '@/types/dualBlock';
 
 /**
  * Default block names if not specified in config
  */
 export const DEFAULT_BLOCKS = {
   PRIMARY: 'Early',
-  SECONDARY: 'Late'
+  SECONDARY: 'Late',
 };
 
 /**
@@ -21,43 +29,43 @@ export function validateDualBlockTeams(
 ): DualBlockValidationResult {
   const primaryBlock = config.primaryBlock || DEFAULT_BLOCKS.PRIMARY;
   const secondaryBlock = config.secondaryBlock || DEFAULT_BLOCKS.SECONDARY;
-  
+
   const primaryTeams = timeBlockTeams[primaryBlock] || [];
   const secondaryTeams = timeBlockTeams[secondaryBlock] || [];
-  
+
   // Check if blocks exist
   if (primaryTeams.length === 0 || secondaryTeams.length === 0) {
     const errorMessage = `Dual match mode requires teams in both ${primaryBlock} and ${secondaryBlock} blocks`;
-    
+
     if (notify) {
       notify({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive"
+        variant: 'destructive',
       });
     }
-    
+
     return { isValid: false, errorMessage };
   }
-  
+
   // Check if team counts match
   if (primaryTeams.length !== secondaryTeams.length) {
     const warningMessage = `${primaryBlock} block has ${primaryTeams.length} teams but ${secondaryBlock} has ${secondaryTeams.length} teams`;
-    
+
     if (notify) {
       notify({
-        title: "Warning",
+        title: 'Warning',
         description: warningMessage,
-        variant: "default"
+        variant: 'default',
       });
     }
-    
-    return { 
-      isValid: true, 
-      warningMessages: [warningMessage]
+
+    return {
+      isValid: true,
+      warningMessages: [warningMessage],
     };
   }
-  
+
   return { isValid: true };
 }
 
@@ -65,14 +73,14 @@ export function validateDualBlockTeams(
  * Handle odd number of teams in dual block mode by selecting one team to exclude
  */
 export function handleOddTeamCount(
-  teams: Team[], 
+  teams: Team[],
   config: DualBlockConfig,
   notify?: NotificationCallback
-): { adjustedTeams: Team[], unmatchedTeamId: string } {
+): { adjustedTeams: Team[]; unmatchedTeamId: string } {
   let unmatchedTeamId = '';
   let removedTeam: Team | null = null;
   const adjustedTeams = [...teams];
-  
+
   // Select team to remove based on strategy
   switch (config.unmatchedTeamStrategy) {
     case 'lowest-rank':
@@ -80,32 +88,32 @@ export function handleOddTeamCount(
       adjustedTeams.sort((a, b) => (a.power_score || 0) - (b.power_score || 0));
       removedTeam = adjustedTeams.shift() || null;
       break;
-      
+
     case 'highest-rank':
       // Sort by power score descending and remove the highest
       adjustedTeams.sort((a, b) => (b.power_score || 0) - (a.power_score || 0));
       removedTeam = adjustedTeams.shift() || null;
       break;
-      
+
     case 'random':
     default:
       // Remove random team
       const randomIndex = Math.floor(Math.random() * adjustedTeams.length);
       removedTeam = adjustedTeams.splice(randomIndex, 1)[0];
   }
-  
+
   if (removedTeam) {
     unmatchedTeamId = removedTeam.id;
-    
+
     if (notify) {
       notify({
-        title: "Warning",
+        title: 'Warning',
         description: `Odd number of teams. Team "${removedTeam.name}" will not be scheduled.`,
-        variant: "default"
+        variant: 'default',
       });
     }
   }
-  
+
   return { adjustedTeams, unmatchedTeamId };
 }
 
@@ -114,16 +122,16 @@ export function handleOddTeamCount(
  * play against different opponents in each block
  */
 export function createCrossBlockCompatibilityAdjuster(
-  pairings: TeamPair[],
+  pairings: TeamPair[]
 ): (team1: Team, team2: Team) => number {
   // Create map of team ID to opponent ID for quick lookup
   const opponentMap = new Map<string, string>();
-  
-  pairings.forEach(pair => {
+
+  pairings.forEach((pair) => {
     opponentMap.set(pair.team1.id, pair.team2.id);
     opponentMap.set(pair.team2.id, pair.team1.id);
   });
-  
+
   // Return a function that applies heavy penalty for matching with same opponent
   return (team1: Team, team2: Team) => {
     if (opponentMap.get(team1.id) === team2.id) {
@@ -140,12 +148,13 @@ export function createTimeBlockPairs(
   timeBlockTeams: TimeBlockTeamsMap,
   config: DualBlockConfig
 ): PairedTimeBlockTeamsMap {
-  const { primaryBlock = DEFAULT_BLOCKS.PRIMARY, secondaryBlock = DEFAULT_BLOCKS.SECONDARY } = config;
-  
+  const { primaryBlock = DEFAULT_BLOCKS.PRIMARY, secondaryBlock = DEFAULT_BLOCKS.SECONDARY } =
+    config;
+
   // Get teams from blocks or empty arrays if not found
   const primaryTeams = timeBlockTeams[primaryBlock] || [];
   const secondaryTeams = timeBlockTeams[secondaryBlock] || [];
-  
+
   // Create a single pair entry with both blocks
   const pairKey = `${primaryBlock}-${secondaryBlock}`;
   const pairedBlocks: PairedTimeBlockTeamsMap = {
@@ -153,24 +162,26 @@ export function createTimeBlockPairs(
       primaryBlock,
       secondaryBlock,
       primaryTeams,
-      secondaryTeams
-    }
+      secondaryTeams,
+    },
   };
-  
+
   return pairedBlocks;
 }
 
 /**
  * Transform paired time block structure back to standard time blocks
  */
-export function transformPairedTeamsToRegular(pairedBlocks: PairedTimeBlockTeamsMap): TimeBlockTeamsMap {
+export function transformPairedTeamsToRegular(
+  pairedBlocks: PairedTimeBlockTeamsMap
+): TimeBlockTeamsMap {
   const regularBlocks: TimeBlockTeamsMap = {};
-  
-  Object.values(pairedBlocks).forEach(pair => {
+
+  Object.values(pairedBlocks).forEach((pair) => {
     regularBlocks[pair.primaryBlock] = pair.primaryTeams;
     regularBlocks[pair.secondaryBlock] = pair.secondaryTeams;
   });
-  
+
   return regularBlocks;
 }
 
@@ -181,13 +192,13 @@ export function balanceTeamsBetweenBlocks(
   primaryTeams: Team[],
   secondaryTeams: Team[],
   config: DualBlockConfig = {}
-): { primaryAdjusted: Team[], secondaryAdjusted: Team[], unmatchedTeamIds: string[] } {
+): { primaryAdjusted: Team[]; secondaryAdjusted: Team[]; unmatchedTeamIds: string[] } {
   const unmatchedTeamIds: string[] = [];
-  
+
   // Make copies so we don't modify the original arrays
   const primaryAdjusted = [...primaryTeams];
   const secondaryAdjusted = [...secondaryTeams];
-  
+
   // Handle odd counts in each block
   if (primaryAdjusted.length % 2 !== 0) {
     const { adjustedTeams, unmatchedTeamId } = handleOddTeamCount(primaryAdjusted, config);
@@ -195,14 +206,14 @@ export function balanceTeamsBetweenBlocks(
     primaryAdjusted.length = 0; // Clear array
     primaryAdjusted.push(...adjustedTeams); // Fill with adjusted teams
   }
-  
+
   if (secondaryAdjusted.length % 2 !== 0) {
     const { adjustedTeams, unmatchedTeamId } = handleOddTeamCount(secondaryAdjusted, config);
     if (unmatchedTeamId) unmatchedTeamIds.push(unmatchedTeamId);
     secondaryAdjusted.length = 0; // Clear array
     secondaryAdjusted.push(...adjustedTeams); // Fill with adjusted teams
   }
-  
+
   return { primaryAdjusted, secondaryAdjusted, unmatchedTeamIds };
 }
 
@@ -211,8 +222,8 @@ export function balanceTeamsBetweenBlocks(
  */
 export function findCommonTeams(primaryTeams: Team[], secondaryTeams: Team[]): Team[] {
   // Create set of primary team IDs for fast lookup
-  const primaryTeamIds = new Set(primaryTeams.map(team => team.id));
-  
+  const primaryTeamIds = new Set(primaryTeams.map((team) => team.id));
+
   // Filter secondary teams to find those that also exist in primary
-  return secondaryTeams.filter(team => primaryTeamIds.has(team.id));
+  return secondaryTeams.filter((team) => primaryTeamIds.has(team.id));
 }

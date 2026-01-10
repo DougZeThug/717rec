@@ -1,9 +1,9 @@
+import { ArrowRight, FileText } from 'lucide-react';
+import React from 'react';
 
-import React from "react";
-import { TeamPairingMap } from "@/types/autoSchedule";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, FileText } from "lucide-react";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { TeamPairingMap } from '@/types/autoSchedule';
 
 interface BatchMatchIntegrationProps {
   generatedPairings: TeamPairingMap;
@@ -16,7 +16,7 @@ const BatchMatchIntegration = ({
   generatedPairings,
   selectedDate,
   onExport,
-  matchCount
+  matchCount,
 }: BatchMatchIntegrationProps) => {
   if (!generatedPairings || Object.keys(generatedPairings).length === 0) {
     return (
@@ -28,7 +28,7 @@ const BatchMatchIntegration = ({
 
   // Count total matches
   const totalMatches = Object.values(generatedPairings).reduce(
-    (sum, blockPairings) => sum + blockPairings.length, 
+    (sum, blockPairings) => sum + blockPairings.length,
     0
   );
 
@@ -42,17 +42,13 @@ const BatchMatchIntegration = ({
       <CardContent>
         <div className="space-y-4">
           <p className="text-sm">
-            {matchCount > 0 
+            {matchCount > 0
               ? `${matchCount} matches ready to use in Batch Matches tab.`
-              : `${totalMatches} match pairings generated and ready to export.`
-            }
+              : `${totalMatches} match pairings generated and ready to export.`}
           </p>
-          
-          <Button 
-            onClick={onExport} 
-            className="w-full flex items-center justify-center"
-          >
-            {matchCount > 0 ? "View in Batch Matches Tab" : "Export to Batch Matches"}
+
+          <Button onClick={onExport} className="w-full flex items-center justify-center">
+            {matchCount > 0 ? 'View in Batch Matches Tab' : 'Export to Batch Matches'}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>

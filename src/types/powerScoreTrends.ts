@@ -1,4 +1,3 @@
-
 export type TrendDirection = 'up' | 'down';
 
 export interface PowerScoreTrend {

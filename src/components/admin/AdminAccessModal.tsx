@@ -1,16 +1,16 @@
-
+import { LockIcon } from 'lucide-react';
 import React from 'react';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogDescription 
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router";
-import { LockIcon } from "lucide-react";
+import { useNavigate } from 'react-router';
+
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AdminAccessModalProps {
   isOpen: boolean;
@@ -18,10 +18,10 @@ interface AdminAccessModalProps {
   onRequestAccess?: () => void;
 }
 
-export const AdminAccessModal: React.FC<AdminAccessModalProps> = ({ 
-  isOpen, 
+export const AdminAccessModal: React.FC<AdminAccessModalProps> = ({
+  isOpen,
   onAccessGranted,
-  onRequestAccess
+  onRequestAccess,
 }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -45,18 +45,16 @@ export const AdminAccessModal: React.FC<AdminAccessModalProps> = ({
             Access Restricted
           </DialogTitle>
           <DialogDescription>
-            {!user ? (
-              "You must be logged in to access this area."
-            ) : (
-              "You don't have permission to access the admin panel."
-            )}
+            {!user
+              ? 'You must be logged in to access this area.'
+              : "You don't have permission to access the admin panel."}
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           {!user ? (
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               className="w-full"
               onClick={() => navigate('/auth', { state: { returnTo: '/admin' } })}
             >
@@ -64,20 +62,15 @@ export const AdminAccessModal: React.FC<AdminAccessModalProps> = ({
             </Button>
           ) : (
             <>
-              <Button 
-                type="button" 
+              <Button
+                type="button"
                 variant="secondary"
                 className="w-full"
                 onClick={handleRequestAccess}
               >
                 Request Access
               </Button>
-              <Button 
-                type="button" 
-                variant="outline"
-                className="w-full"
-                onClick={handleBackToHome}
-              >
+              <Button type="button" variant="outline" className="w-full" onClick={handleBackToHome}>
                 Back to Home
               </Button>
             </>

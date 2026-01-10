@@ -1,7 +1,8 @@
-import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Trash2 } from 'lucide-react';
+import * as React from 'react';
+
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface DestructiveIconButtonProps {
   onClick: () => void;
@@ -9,7 +10,7 @@ interface DestructiveIconButtonProps {
   title?: string;
   icon?: React.ReactNode;
   className?: string;
-  size?: "default" | "sm" | "icon";
+  size?: 'default' | 'sm' | 'icon';
 }
 
 /**
@@ -19,10 +20,10 @@ interface DestructiveIconButtonProps {
 const DestructiveIconButton: React.FC<DestructiveIconButtonProps> = ({
   onClick,
   disabled = false,
-  title = "Remove",
+  title = 'Remove',
   icon,
   className,
-  size = "icon",
+  size = 'icon',
 }) => {
   return (
     <Button
@@ -33,8 +34,8 @@ const DestructiveIconButton: React.FC<DestructiveIconButtonProps> = ({
       disabled={disabled}
       title={title}
       className={cn(
-        "hover:bg-destructive/10 hover:text-destructive",
-        "disabled:opacity-30",
+        'hover:bg-destructive/10 hover:text-destructive',
+        'disabled:opacity-30',
         className
       )}
     >

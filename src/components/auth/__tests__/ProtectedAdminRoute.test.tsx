@@ -1,28 +1,29 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import ProtectedAdminRoute from '../ProtectedAdminRoute';
 
 // Mock the auth context
 const mockUseAuth = vi.fn();
 vi.mock('@/contexts/AuthContext', () => ({
-  useAuth: () => mockUseAuth()
+  useAuth: () => mockUseAuth(),
 }));
 
 // Mock the admin access hook
 const mockUseAdminAccess = vi.fn();
 vi.mock('@/hooks/useAdminAccess', () => ({
-  useAdminAccess: () => mockUseAdminAccess()
+  useAdminAccess: () => mockUseAdminAccess(),
 }));
 
 // Mock toast
 vi.mock('@/hooks/use-toast', () => ({
-  toast: vi.fn()
+  toast: vi.fn(),
 }));
 
 // Mock logger
 vi.mock('@/utils/logger', () => ({
-  authLog: vi.fn()
+  authLog: vi.fn(),
 }));
 
 // Mock Navigate component to track redirects
@@ -34,7 +35,7 @@ vi.mock('react-router', async () => {
     Navigate: ({ to }: { to: string }) => {
       mockNavigate(to);
       return <div data-testid="navigate">{`Redirecting to ${to}`}</div>;
-    }
+    },
   };
 });
 
@@ -47,11 +48,11 @@ describe('ProtectedAdminRoute', () => {
     mockUseAuth.mockReturnValue({
       user: null,
       authInitialized: false,
-      profile: null
+      profile: null,
     });
     mockUseAdminAccess.mockReturnValue({
       isAdminAccessGranted: false,
-      isLoading: true
+      isLoading: true,
     });
 
     render(
@@ -69,11 +70,11 @@ describe('ProtectedAdminRoute', () => {
     mockUseAuth.mockReturnValue({
       user: null,
       authInitialized: true,
-      profile: null
+      profile: null,
     });
     mockUseAdminAccess.mockReturnValue({
       isAdminAccessGranted: false,
-      isLoading: false
+      isLoading: false,
     });
 
     render(
@@ -94,11 +95,11 @@ describe('ProtectedAdminRoute', () => {
     mockUseAuth.mockReturnValue({
       user: { id: 'user-1', email: 'user@test.com' },
       authInitialized: true,
-      profile: { is_admin: false }
+      profile: { is_admin: false },
     });
     mockUseAdminAccess.mockReturnValue({
       isAdminAccessGranted: false,
-      isLoading: false
+      isLoading: false,
     });
 
     render(
@@ -110,20 +111,23 @@ describe('ProtectedAdminRoute', () => {
     );
 
     // Wait for the initial check timeout (1 second in the component)
-    await waitFor(() => {
-      expect(screen.getByText('Redirecting to /')).toBeInTheDocument();
-    }, { timeout: 2000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('Redirecting to /')).toBeInTheDocument();
+      },
+      { timeout: 2000 }
+    );
   });
 
   it('renders children for admin users', async () => {
     mockUseAuth.mockReturnValue({
       user: { id: 'admin-1', email: 'admin@test.com' },
       authInitialized: true,
-      profile: { is_admin: true }
+      profile: { is_admin: true },
     });
     mockUseAdminAccess.mockReturnValue({
       isAdminAccessGranted: true,
-      isLoading: false
+      isLoading: false,
     });
 
     render(

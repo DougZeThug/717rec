@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useQueryClient } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2 } from 'lucide-react';
 import { useBracketsManagerMatch } from '@/hooks/playoffs/useBracketsManagerMatch';
-import { bracketManagerService } from '@/services/brackets/manager';
 import { useToast } from '@/hooks/use-toast';
-import { log, errorLog } from '@/utils/logger';
-import { useQueryClient } from '@tanstack/react-query';
+import { bracketManagerService } from '@/services/brackets/manager';
+import { errorLog, log } from '@/utils/logger';
 
 interface BracketsManagerMatchEditorProps {
   matchId: number | null;
@@ -21,12 +22,12 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
   matchId,
   bracketId,
   isOpen,
-  onClose
+  onClose,
 }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: matchData, isLoading, error } = useBracketsManagerMatch(matchId);
-  
+
   const [opponent1Score, setOpponent1Score] = useState<number>(0);
   const [opponent2Score, setOpponent2Score] = useState<number>(0);
   const [isSaving, setIsSaving] = useState(false);
@@ -53,12 +54,12 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
 
       try {
         const result = await bracketManagerService.checkByeEligibility(matchId);
-        
+
         setByeEligible({
           canToggle: result.ok,
           currentStatus: result.meta?.status || 0,
           statusName: result.meta?.currentStatusName || 'Unknown',
-          reason: result.reason
+          reason: result.reason,
         });
       } catch (err) {
         errorLog('Error checking BYE eligibility:', err);
@@ -73,58 +74,58 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
 
     try {
       setIsSaving(true);
-      
+
       // Check if this is a BYE match (one opponent is null)
       const isBye = !matchData.opponent1 || !matchData.opponent2;
-      
+
       log('Saving brackets-manager match', {
         matchId,
         opponent1Score,
         opponent2Score,
         isBye,
         hasOpponent1: !!matchData.opponent1,
-        hasOpponent2: !!matchData.opponent2
+        hasOpponent2: !!matchData.opponent2,
       });
 
       // For BYE matches, only update the opponent that exists
       if (isBye) {
         const scores: any = {};
-        
+
         if (matchData.opponent1) {
-          scores.opponent1 = { 
+          scores.opponent1 = {
             score: opponent1Score,
-            result: "win" as const
+            result: 'win' as const,
           };
         } else if (matchData.opponent2) {
-          scores.opponent2 = { 
+          scores.opponent2 = {
             score: opponent2Score,
-            result: "win" as const
+            result: 'win' as const,
           };
         }
 
         await bracketManagerService.updateMatch({
           matchId,
-          scores
+          scores,
         });
       } else {
         // Regular match - determine winner based on scores
         const scores: {
-          opponent1: { score: number; result?: "win" | "loss" };
-          opponent2: { score: number; result?: "win" | "loss" };
+          opponent1: { score: number; result?: 'win' | 'loss' };
+          opponent2: { score: number; result?: 'win' | 'loss' };
         } = {
-          opponent1: { 
+          opponent1: {
             score: opponent1Score,
-            result: opponent1Score > opponent2Score ? "win" as const : "loss" as const
+            result: opponent1Score > opponent2Score ? ('win' as const) : ('loss' as const),
           },
-          opponent2: { 
+          opponent2: {
             score: opponent2Score,
-            result: opponent2Score > opponent1Score ? "win" as const : "loss" as const
-          }
+            result: opponent2Score > opponent1Score ? ('win' as const) : ('loss' as const),
+          },
         };
 
         await bracketManagerService.updateMatch({
           matchId,
-          scores
+          scores,
         });
       }
 
@@ -135,7 +136,7 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
 
       toast({
         title: 'Match Updated',
-        description: 'Match score saved successfully with auto-progression'
+        description: 'Match score saved successfully with auto-progression',
       });
 
       onClose();
@@ -144,7 +145,7 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
       toast({
         title: 'Error',
         description: err instanceof Error ? err.message : 'Failed to update match',
-        variant: 'destructive'
+        variant: 'destructive',
       });
     } finally {
       setIsSaving(false);
@@ -159,11 +160,15 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
 
       const makeReady = byeEligible.currentStatus !== 2;
 
-      const result = await bracketManagerService.adminToggleByeReady(matchId, makeReady, clearDownstream);
+      const result = await bracketManagerService.adminToggleByeReady(
+        matchId,
+        makeReady,
+        clearDownstream
+      );
 
       toast({
         title: 'Status Updated',
-        description: result.message
+        description: result.message,
       });
 
       await queryClient.invalidateQueries({ queryKey: ['brackets-manager-match', matchId] });
@@ -172,14 +177,14 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
       setByeEligible({
         ...byeEligible,
         currentStatus: result.status,
-        statusName: result.statusName
+        statusName: result.statusName,
       });
     } catch (err) {
       errorLog('Error toggling BYE status:', err);
       toast({
         title: 'Toggle Failed',
         description: err instanceof Error ? err.message : 'Failed to toggle match status',
-        variant: 'destructive'
+        variant: 'destructive',
       });
     } finally {
       setIsTogglingStatus(false);
@@ -228,7 +233,9 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
 
           <div className="space-y-4 sm:space-y-6 py-2 sm:py-4">
             <div className="text-center py-2 sm:py-4">
-              <p className="text-lg sm:text-xl font-semibold px-2">{byeWinner.name} wins by walkover</p>
+              <p className="text-lg sm:text-xl font-semibold px-2">
+                {byeWinner.name} wins by walkover
+              </p>
               <p className="text-xs sm:text-sm text-muted-foreground mt-2">Opponent: BYE</p>
             </div>
 
@@ -239,7 +246,8 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
                   <div className="space-y-1">
                     <p className="text-sm font-medium">Match Status Control</p>
                     <p className="text-xs text-muted-foreground">
-                      Current Status: <span className="font-semibold">{byeEligible.statusName}</span>
+                      Current Status:{' '}
+                      <span className="font-semibold">{byeEligible.statusName}</span>
                     </p>
                   </div>
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -315,20 +323,21 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
                         ⚠️ This match is marked as Completed but has no winner (zombie state).
                       </p>
                       <p>
-                        <strong>Reopen (Safe)</strong>: Only works if downstream matches haven't been populated yet.
+                        <strong>Reopen (Safe)</strong>: Only works if downstream matches haven't
+                        been populated yet.
                       </p>
                       <p>
-                        <strong>Reopen + Clear Downstream</strong>: Nullifies all downstream matches. Use with caution!
+                        <strong>Reopen + Clear Downstream</strong>: Nullifies all downstream
+                        matches. Use with caution!
                       </p>
                     </div>
                   ) : byeEligible.currentStatus !== 2 ? (
                     <p>
-                      ⚠️ This BYE match is currently locked. Click "Unlock to Ready" to enable score entry.
+                      ⚠️ This BYE match is currently locked. Click "Unlock to Ready" to enable score
+                      entry.
                     </p>
                   ) : (
-                    <p>
-                      ✅ Match is ready. You can now enter scores below or revert if needed.
-                    </p>
+                    <p>✅ Match is ready. You can now enter scores below or revert if needed.</p>
                   )}
                 </div>
               </div>
@@ -369,11 +378,16 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
           </div>
 
           <div className="flex flex-col sm:flex-row justify-end gap-2">
-            <Button variant="outline" onClick={onClose} disabled={isSaving} className="w-full sm:w-auto">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              disabled={isSaving}
+              className="w-full sm:w-auto"
+            >
               Cancel
             </Button>
-            <Button 
-              onClick={handleSave} 
+            <Button
+              onClick={handleSave}
               disabled={isSaving || (byeEligible && byeEligible.currentStatus !== 2)}
               className="w-full sm:w-auto"
             >
@@ -397,9 +411,7 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
         <div className="space-y-6 py-4">
           {/* Team 1 Score */}
           <div className="space-y-2">
-            <Label htmlFor="team1-score">
-              {matchData.opponent1?.name || 'Team 1'} Score
-            </Label>
+            <Label htmlFor="team1-score">{matchData.opponent1?.name || 'Team 1'} Score</Label>
             <Input
               id="team1-score"
               type="number"
@@ -412,9 +424,7 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
 
           {/* Team 2 Score */}
           <div className="space-y-2">
-            <Label htmlFor="team2-score">
-              {matchData.opponent2?.name || 'Team 2'} Score
-            </Label>
+            <Label htmlFor="team2-score">{matchData.opponent2?.name || 'Team 2'} Score</Label>
             <Input
               id="team2-score"
               type="number"

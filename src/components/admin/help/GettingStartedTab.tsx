@@ -1,21 +1,22 @@
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
-  Timer,
-  Sparkles,
-  CalendarClock,
-  ListChecks,
+  ArrowRight,
   Calendar,
-  Users,
+  CalendarClock,
+  CheckCircle2,
   Clock,
   LayoutGrid,
-  Shuffle,
-  ArrowRight,
-  CheckCircle2,
   Lightbulb,
+  ListChecks,
+  Shuffle,
+  Sparkles,
+  Timer,
+  Users,
   Users2,
-} from "lucide-react";
+} from 'lucide-react';
+import React from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface WorkflowStep {
   step: number;
@@ -28,116 +29,116 @@ interface WorkflowStep {
 const workflowSteps: WorkflowStep[] = [
   {
     step: 1,
-    title: "Set Up Timeslots",
-    description: "Define available match times and locations for scheduling",
+    title: 'Set Up Timeslots',
+    description: 'Define available match times and locations for scheduling',
     icon: Timer,
-    tab: "timeslots",
+    tab: 'timeslots',
   },
   {
     step: 2,
-    title: "Create Teams",
-    description: "Add teams and assign them to divisions",
+    title: 'Create Teams',
+    description: 'Add teams and assign them to divisions',
     icon: Users,
-    tab: "teams",
+    tab: 'teams',
   },
   {
     step: 3,
-    title: "Configure Season",
-    description: "Set up the current season with start/end dates",
+    title: 'Configure Season',
+    description: 'Set up the current season with start/end dates',
     icon: Calendar,
-    tab: "seasons",
+    tab: 'seasons',
   },
   {
     step: 4,
-    title: "Generate Schedule",
-    description: "Use Auto Schedule to create balanced matchups automatically",
+    title: 'Generate Schedule',
+    description: 'Use Auto Schedule to create balanced matchups automatically',
     icon: CalendarClock,
-    tab: "auto-schedule",
+    tab: 'auto-schedule',
   },
   {
     step: 5,
-    title: "Record Scores",
-    description: "Enter match results as games are completed",
+    title: 'Record Scores',
+    description: 'Enter match results as games are completed',
     icon: ListChecks,
-    tab: "scores",
+    tab: 'scores',
   },
   {
     step: 6,
-    title: "Run Playoffs",
-    description: "Create brackets and manage tournament progression",
+    title: 'Run Playoffs',
+    description: 'Create brackets and manage tournament progression',
     icon: Sparkles,
-    tab: "batch-matches",
+    tab: 'batch-matches',
   },
 ];
 
 const tabDescriptions = [
   {
-    id: "timeslots",
-    label: "Timeslots",
+    id: 'timeslots',
+    label: 'Timeslots',
     icon: Timer,
-    description: "Manage available match times and court assignments",
+    description: 'Manage available match times and court assignments',
   },
   {
-    id: "batch-matches",
-    label: "Match Creation",
+    id: 'batch-matches',
+    label: 'Match Creation',
     icon: Sparkles,
-    description: "Create individual matches or batch import matchups",
+    description: 'Create individual matches or batch import matchups',
   },
   {
-    id: "auto-schedule",
-    label: "Auto Schedule",
+    id: 'auto-schedule',
+    label: 'Auto Schedule',
     icon: CalendarClock,
-    description: "Automatically generate balanced schedules for divisions",
+    description: 'Automatically generate balanced schedules for divisions',
   },
   {
-    id: "matchups",
-    label: "Matchups",
+    id: 'matchups',
+    label: 'Matchups',
     icon: Users2,
-    description: "View opponent history and matchup frequency",
+    description: 'View opponent history and matchup frequency',
   },
   {
-    id: "scores",
-    label: "Scores",
+    id: 'scores',
+    label: 'Scores',
     icon: ListChecks,
-    description: "Enter and manage match scores in bulk",
+    description: 'Enter and manage match scores in bulk',
   },
   {
-    id: "seasons",
-    label: "Season",
+    id: 'seasons',
+    label: 'Season',
     icon: Calendar,
-    description: "Configure season settings, dates, and champions",
+    description: 'Configure season settings, dates, and champions',
   },
   {
-    id: "teams",
-    label: "Teams",
+    id: 'teams',
+    label: 'Teams',
     icon: Users,
-    description: "Add, edit, and manage teams and their divisions",
+    description: 'Add, edit, and manage teams and their divisions',
   },
   {
-    id: "pending-matches",
-    label: "Pending",
+    id: 'pending-matches',
+    label: 'Pending',
     icon: Clock,
-    description: "Review and approve player-submitted scores",
+    description: 'Review and approve player-submitted scores',
   },
   {
-    id: "hero-cards",
-    label: "Hero",
+    id: 'hero-cards',
+    label: 'Hero',
     icon: LayoutGrid,
-    description: "Manage homepage hero cards and announcements",
+    description: 'Manage homepage hero cards and announcements',
   },
   {
-    id: "blind-draw",
-    label: "Blind Draw",
+    id: 'blind-draw',
+    label: 'Blind Draw',
     icon: Shuffle,
-    description: "View and manage blind draw event signups",
+    description: 'View and manage blind draw event signups',
   },
 ];
 
 const tips = [
-  "Use Auto Schedule after setting up timeslots for best results",
-  "Review pending scores weekly to keep standings current",
-  "Create playoff brackets after the regular season ends",
-  "Update hero cards to highlight upcoming events",
+  'Use Auto Schedule after setting up timeslots for best results',
+  'Review pending scores weekly to keep standings current',
+  'Create playoff brackets after the regular season ends',
+  'Update hero cards to highlight upcoming events',
 ];
 
 const GettingStartedTab: React.FC = () => {
@@ -146,9 +147,7 @@ const GettingStartedTab: React.FC = () => {
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold">Getting Started</h2>
-        <p className="text-muted-foreground mt-1">
-          A quick guide to managing your 717REC league
-        </p>
+        <p className="text-muted-foreground mt-1">A quick guide to managing your 717REC league</p>
       </div>
 
       {/* Workflow Steps */}
@@ -164,9 +163,7 @@ const GettingStartedTab: React.FC = () => {
             {workflowSteps.map((item, index) => (
               <div key={item.step} className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-sm font-semibold text-primary">
-                    {item.step}
-                  </span>
+                  <span className="text-sm font-semibold text-primary">{item.step}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -176,9 +173,7 @@ const GettingStartedTab: React.FC = () => {
                       {item.tab}
                     </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    {item.description}
-                  </p>
+                  <p className="text-sm text-muted-foreground mt-0.5">{item.description}</p>
                 </div>
                 {index < workflowSteps.length - 1 && (
                   <ArrowRight className="h-4 w-4 text-muted-foreground/50 flex-shrink-0 mt-2" />
@@ -197,18 +192,13 @@ const GettingStartedTab: React.FC = () => {
         <CardContent>
           <div className="grid gap-3 sm:grid-cols-2">
             {tabDescriptions.map((tab) => (
-              <div
-                key={tab.id}
-                className="flex items-start gap-3 p-3 rounded-lg bg-muted/50"
-              >
+              <div key={tab.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
                 <div className="p-2 rounded-md bg-background">
                   <tab.icon className="h-4 w-4 text-primary" />
                 </div>
                 <div className="min-w-0">
                   <p className="font-medium text-sm">{tab.label}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {tab.description}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{tab.description}</p>
                 </div>
               </div>
             ))}
@@ -227,10 +217,7 @@ const GettingStartedTab: React.FC = () => {
         <CardContent>
           <ul className="space-y-2">
             {tips.map((tip, index) => (
-              <li
-                key={index}
-                className="flex items-start gap-2 text-sm text-muted-foreground"
-              >
+              <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground">
                 <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
                 {tip}
               </li>

@@ -1,6 +1,7 @@
-import React from "react";
-import { cn } from "@/lib/utils";
-import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
+import React from 'react';
+
+import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
+import { cn } from '@/lib/utils';
 
 interface WinterSectionProps {
   children: React.ReactNode;
@@ -32,9 +33,9 @@ const WinterSection: React.FC<WinterSectionProps> = ({
     <div
       className={cn(
         // Base winter section styling
-        "winter-section relative",
+        'winter-section relative',
         // Icicle trim variants
-        showIcicles && (lightIcicles ? "icicle-trim-light" : "icicle-trim"),
+        showIcicles && (lightIcicles ? 'icicle-trim-light' : 'icicle-trim'),
         className
       )}
     >

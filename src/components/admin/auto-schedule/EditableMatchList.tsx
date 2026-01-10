@@ -1,9 +1,11 @@
-import React, { useMemo } from "react";
-import { Team, AutoScheduleMatch } from "@/types";
-import { ValidationResult } from "@/utils/autoSchedule/validation";
-import EditableMatchCard from "./EditableMatchCard";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, CheckCircle } from "lucide-react";
+import { AlertCircle, CheckCircle } from 'lucide-react';
+import React, { useMemo } from 'react';
+
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AutoScheduleMatch, Team } from '@/types';
+import { ValidationResult } from '@/utils/autoSchedule/validation';
+
+import EditableMatchCard from './EditableMatchCard';
 
 interface EditableMatchListProps {
   matches: AutoScheduleMatch[];
@@ -22,20 +24,20 @@ const EditableMatchList: React.FC<EditableMatchListProps> = ({
   onUpdateTeam,
   onUpdateTimeslot,
   onSwapTeams,
-  onRemove
+  onRemove,
 }) => {
   // Group matches by timeslot
   const matchesByTimeslot = useMemo(() => {
     const grouped = new Map<string, AutoScheduleMatch[]>();
-    
-    matches.forEach(match => {
+
+    matches.forEach((match) => {
       const timeslot = match.timeslot || 'No Timeslot';
       if (!grouped.has(timeslot)) {
         grouped.set(timeslot, []);
       }
       grouped.get(timeslot)!.push(match);
     });
-    
+
     // Sort timeslots
     return Array.from(grouped.entries()).sort((a, b) => a[0].localeCompare(b[0]));
   }, [matches]);
@@ -43,7 +45,7 @@ const EditableMatchList: React.FC<EditableMatchListProps> = ({
   // Get error for specific match
   const getMatchError = (matchId: string) => {
     if (!validation) return null;
-    return validation.errors.find(error => error.matchId === matchId);
+    return validation.errors.find((error) => error.matchId === matchId);
   };
 
   if (matches.length === 0) {
@@ -58,7 +60,7 @@ const EditableMatchList: React.FC<EditableMatchListProps> = ({
     <div className="space-y-4">
       {/* Validation Summary */}
       {validation && (
-        <Alert variant={validation.isValid ? "default" : "destructive"}>
+        <Alert variant={validation.isValid ? 'default' : 'destructive'}>
           {validation.isValid ? (
             <CheckCircle className="h-4 w-4" />
           ) : (
@@ -83,9 +85,9 @@ const EditableMatchList: React.FC<EditableMatchListProps> = ({
           <h4 className="font-medium text-sm text-muted-foreground">
             {timeslot} ({timeslotMatches.length} match{timeslotMatches.length !== 1 ? 'es' : ''})
           </h4>
-          
+
           <div className="space-y-3">
-            {timeslotMatches.map(match => {
+            {timeslotMatches.map((match) => {
               const error = getMatchError(match.id);
               return (
                 <EditableMatchCard

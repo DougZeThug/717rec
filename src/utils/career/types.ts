@@ -1,4 +1,3 @@
-
 // Types for career calculation utilities
 
 export interface DivisionRecord {
