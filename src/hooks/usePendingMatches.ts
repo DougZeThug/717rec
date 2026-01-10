@@ -126,6 +126,43 @@ export function usePendingMatches() {
   // Mutation for marking as tie
   const tieMutation = useMutation({
     mutationFn: async (matchId: string) => {
+      // First, fetch the current match to see if it has a winner/loser
+      const { data: currentMatch, error: fetchError } = await supabase
+        .from('matches')
+        .select('winner_id, loser_id, team1_id, team2_id, team1_game_wins, team2_game_wins')
+        .eq('id', matchId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // If match currently has a winner, reverse the stats first
+      if (currentMatch.winner_id && currentMatch.loser_id) {
+        const winnerGameWins = currentMatch.winner_id === currentMatch.team1_id
+          ? (currentMatch.team1_game_wins || 0)
+          : (currentMatch.team2_game_wins || 0);
+        const loserGameWins = currentMatch.loser_id === currentMatch.team1_id
+          ? (currentMatch.team1_game_wins || 0)
+          : (currentMatch.team2_game_wins || 0);
+
+        const { error: reverseError } = await supabase.rpc('reverse_team_stats', {
+          p_winner_id: currentMatch.winner_id,
+          p_loser_id: currentMatch.loser_id,
+          p_winner_game_wins: winnerGameWins,
+          p_loser_game_wins: loserGameWins
+        });
+
+        if (reverseError) {
+          throw new Error(`Failed to reverse team stats: ${reverseError.message}`);
+        }
+
+        // Refresh season stats for historical accuracy
+        const { error: seasonStatsError } = await supabase.rpc('upsert_team_season_stats');
+        if (seasonStatsError) {
+          console.warn('Failed to refresh season stats:', seasonStatsError);
+        }
+      }
+
+      // Now update the match to mark as tie
       const { error } = await supabase
         .from('matches')
         .update({
@@ -142,6 +179,7 @@ export function usePendingMatches() {
         description: 'Match has been successfully marked as a tie.',
       });
       queryClient.invalidateQueries({ queryKey: ['matches'] });
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
     },
     onError: (error) => {
       console.error('Error marking as tie:', error);
