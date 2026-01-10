@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { normalizeDate } from '@/utils/dateNormalization';
 import { haveTeamsPlayedBefore, fetchSeasonHistoryForTeams } from '@/utils/autoSchedule/matchHistoryService';
 import { generateScheduleGreedy } from '@/utils/scheduling/greedyBackToBackScheduler';
-import { getPairConfig } from '@/utils/autoSchedule/constants';
+import { getPairConfig, getBackToBackPair } from '@/utils/autoSchedule/constants';
 import { scheduleLog, errorLog, warnLog } from '@/utils/logger';
 
 /**
@@ -109,7 +109,8 @@ export const usePairingGenerator = () => {
           
           // Get the specific timeslots for this pair
           const slots: [string, string] = [pairConfig.primary, pairConfig.secondary];
-          const thirdSlot = pairConfig.secondary; // Fallback for odd teams
+          // For odd teams, use the next slot after secondary (or fallback to secondary if none exists)
+          const thirdSlot = getBackToBackPair(pairConfig.secondary) || pairConfig.secondary;
           
           scheduleLog(`Scheduling ${pairName} pair (${pairTeams.length} teams):`);
           scheduleLog(`   Timeslots: ${slots[0]} and ${slots[1]}`);
