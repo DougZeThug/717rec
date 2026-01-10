@@ -100,7 +100,7 @@ export const useAuth = () => {
         if (!currentSession) {
           authLog("No session, clearing profile");
           setProfile(null);
-        } else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
+        } else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED' || event === 'PASSWORD_RECOVERY') {
           authLog(`Fetching profile for event: ${event}, user: ${currentSession.user.email}`);
           ensureThemeConsistency();
           
