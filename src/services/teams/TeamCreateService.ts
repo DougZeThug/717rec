@@ -17,7 +17,7 @@ export const createTeamApi = async (teamData: Omit<Team, "id" | "created_at">) =
       image_url: teamData.imageUrl || null, // Use null if no image
       players: teamData.players, // Players is now a string[]
       seed: null, // Default
-      division_id: teamData.division || null // Ensure null if no division
+      division_id: teamData.division_id || null // Ensure null if no division
     })
     .select()
     .single();
