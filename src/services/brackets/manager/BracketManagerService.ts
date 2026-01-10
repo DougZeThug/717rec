@@ -736,12 +736,21 @@ export class BracketManagerService {
 
       const participantArray = Array.isArray(participants) ? participants : [participants];
 
+      // Create a Map for O(1) lookups by participant ID
+      const participantMap = new Map<number, any>();
+      participantArray.forEach(p => {
+        participantMap.set((p as any).id, p);
+      });
+
       // Update playoff_team_records
-      const recordUpdates = (finalStandings as any[]).map((standing, index) => ({
-        team_id: (participantArray as any)[standing.id - 1]?.team_id,
-        bracket_id: bracketId,
-        placement: index + 1
-      })).filter(r => r.team_id);
+      const recordUpdates = (finalStandings as any[]).map((standing, index) => {
+        const participant = participantMap.get(standing.id);
+        return {
+          team_id: (participant as any)?.team_id,
+          bracket_id: bracketId,
+          placement: index + 1
+        };
+      }).filter(r => r.team_id);
 
       if (recordUpdates.length > 0) {
         const { error } = await supabase
