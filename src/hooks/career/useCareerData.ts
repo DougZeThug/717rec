@@ -42,7 +42,8 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
     currentMatchesResult,
     archivedMatchesResult,
     allTeamSeasonStatsResult,
-    playoffMatchesResult
+    playoffMatchesResult,
+    activeSeasonResult
   ] = await Promise.all([
     // Get team's current division weight
     supabase
@@ -114,7 +115,13 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
         bracket_id
       `)
       .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
-      .not('winner_id', 'is', null)
+      .not('winner_id', 'is', null),
+    // Get the current active season (authoritative source)
+    supabase
+      .from('seasons')
+      .select('id')
+      .eq('is_active', true)
+      .single()
   ]);
 
   // Handle critical error
@@ -140,6 +147,7 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
   const archivedMatches = archivedMatchesResult.data as ArchivedMatchData[] | null;
   const allTeamSeasonStats = allTeamSeasonStatsResult.data as AllTeamSeasonStats[] | null;
   const playoffMatches = playoffMatchesResult.data as PlayoffMatchData[] | null;
+  const activeSeason = activeSeasonResult.data as { id: string } | null;
 
   const teamDivisionWeight = teamData?.divisions?.division_weight || 0.85;
 
@@ -175,10 +183,8 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
     }
   }
 
-  // Determine current active season ID from currentMatches
-  const currentSeasonId = currentMatches && currentMatches.length > 0 
-    ? currentMatches[0].season_id 
-    : null;
+  // Use the authoritative active season from seasons table
+  const currentSeasonId = activeSeason?.id || null;
 
   return {
     teamData,
