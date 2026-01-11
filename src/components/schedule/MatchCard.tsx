@@ -196,7 +196,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
               )}
             >
               {team1IsWinner && <Check className="h-4 w-4 text-green-500 flex-shrink-0" />}
-              <span className={cn(getTeamStyle(team1IsWinner), 'font-sans text-sm')}>
+              <span className={cn(getTeamStyle(team1IsWinner), 'font-sans text-sm truncate')}>
                 ({match.team1_game_wins || 0}) {team1Name}
               </span>
             </TransitionLink>
@@ -212,7 +212,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
               )}
             >
               {team2IsWinner && <Check className="h-4 w-4 text-green-500 flex-shrink-0" />}
-              <span className={cn(getTeamStyle(team2IsWinner), 'font-sans text-sm')}>
+              <span className={cn(getTeamStyle(team2IsWinner), 'font-sans text-sm truncate')}>
                 ({match.team2_game_wins || 0}) {team2Name}
               </span>
             </TransitionLink>

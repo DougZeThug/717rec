@@ -58,9 +58,9 @@ const MobileMenu: React.FC<MobileMenuProps> = React.memo(({ navItems }) => {
         {isOpen && (
           <motion.div
             className="md:hidden pt-2 pb-3 space-y-1 overflow-hidden"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, maxHeight: 0 }}
+            animate={{ opacity: 1, maxHeight: '500px' }}
+            exit={{ opacity: 0, maxHeight: 0 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
           >
             <NavLinks isMobile={true} onLinkClick={handleLinkClose} />

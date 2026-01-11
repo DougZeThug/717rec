@@ -91,7 +91,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
                 className={cn(
                   'bg-cornhole-navy text-white px-4 py-3 font-medium',
                   'bg-gradient-to-r from-cornhole-navy to-cornhole-navy/90',
-                  'flex justify-between items-center cursor-pointer min-h-[48px]'
+                  'flex justify-between items-center cursor-pointer min-h-[44px]'
                 )}
               >
                 <div className="flex items-center gap-2">
@@ -202,7 +202,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
                 className={cn(
                   'bg-orange-600 text-white px-4 py-3 font-medium',
                   'bg-gradient-to-r from-orange-600 to-orange-600/90',
-                  'flex justify-between items-center cursor-pointer min-h-[48px]'
+                  'flex justify-between items-center cursor-pointer min-h-[44px]'
                 )}
               >
                 <div className="flex items-center gap-2">

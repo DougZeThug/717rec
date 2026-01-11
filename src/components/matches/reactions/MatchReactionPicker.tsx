@@ -54,7 +54,7 @@ const MatchReactionPicker: React.FC<MatchReactionPickerProps> = ({ onSelect, onC
       <div className="flex justify-between items-center">
         <div className="text-sm font-medium">Add reaction</div>
         {onClose && (
-          <Button variant="ghost" size="sm" className="h-6 w-6 p-0 rounded-full" onClick={onClose}>
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
         )}

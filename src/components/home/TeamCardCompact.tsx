@@ -21,7 +21,7 @@ const TeamCardCompact: React.FC<TeamCardCompactProps> = ({ team, rank, isWinter 
         'relative flex flex-col items-center p-3 rounded-lg',
         'border border-border/50',
         'shadow-sm hover:shadow-md transition-shadow',
-        'min-w-[120px] max-w-[140px]',
+        'min-w-[100px] flex-1',
         'active:scale-[0.98]',
         isWinter
           ? 'frost-card frost-edge'

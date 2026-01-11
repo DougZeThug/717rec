@@ -138,14 +138,14 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
             <SortableHeader field="gameWinPercentage" className="hidden lg:table-cell">
               Game %
             </SortableHeader>
-            <SortableHeader field="sos">
+            <SortableHeader field="sos" className="hidden lg:table-cell">
               <div className="flex items-center gap-1 justify-center">
                 <span>SOS</span>
               </div>
             </SortableHeader>
             <TableHead
               className={cn(
-                'text-center text-sm font-medium font-mono',
+                'hidden md:table-cell text-center text-sm font-medium font-mono',
                 isWinterTheme ? 'text-card-foreground' : 'text-gray-800 dark:text-white'
               )}
             >
@@ -153,7 +153,7 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
             </TableHead>
             <TableHead
               className={cn(
-                'text-center text-sm font-medium font-mono',
+                'hidden md:table-cell text-center text-sm font-medium font-mono',
                 isWinterTheme ? 'text-card-foreground' : 'text-gray-800 dark:text-white'
               )}
             >
@@ -246,7 +246,7 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
                   <TableCell className="hidden lg:table-cell text-center font-mono">
                     {(ranking.gameWinPercentage * 100).toFixed(1)}%
                   </TableCell>
-                  <TableCell className="text-center font-mono">
+                  <TableCell className="hidden lg:table-cell text-center font-mono">
                     <span
                       className={isLight ? '' : getSosColor(ranking.sos)}
                       style={{
@@ -264,10 +264,10 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
                       {ranking.sos?.toFixed(3)}
                     </span>
                   </TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="hidden md:table-cell text-center">
                     <span className="font-mono">{ranking.streak}</span>
                   </TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="hidden md:table-cell text-center">
                     {/* Trend indicator can be added if desired */}
                   </TableCell>
                 </TableRow>

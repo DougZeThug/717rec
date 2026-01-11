@@ -21,10 +21,10 @@ const TeamDisplay: React.FC<TeamDisplayProps> = ({ team, align = 'left' }) => {
           alt=""
           loading="lazy"
           decoding="async"
-          className="h-6 w-6 rounded-full object-cover"
+          className="h-8 w-8 rounded-full object-cover"
         />
       )}
-      <span className="font-medium">{team.name || 'TBD'}</span>
+      <span className="font-medium truncate">{team.name || 'TBD'}</span>
     </div>
   );
 };
