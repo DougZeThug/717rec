@@ -31,30 +31,29 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
     null
   );
 
-  // Use fresh database data directly
-  const displayRecords = records || [];
+  const filteredRecords = useMemo(() => {
+    const displayRecords = records || [];
+    return displayRecords
+      .filter((record) => record.opponent_name.toLowerCase().includes(searchTerm.toLowerCase()))
+      .sort((a, b) => {
+        let aValue: any = a[sortField];
+        let bValue: any = b[sortField];
 
-  const filteredRecords = useMemo(
-    () =>
-      displayRecords
-        .filter((record) => record.opponent_name.toLowerCase().includes(searchTerm.toLowerCase()))
-        .sort((a, b) => {
-          let aValue: any = a[sortField];
-          let bValue: any = b[sortField];
+        if (sortField === 'opponent_name') {
+          aValue = aValue.toLowerCase();
+          bValue = bValue.toLowerCase();
+        }
 
-          if (sortField === 'opponent_name') {
-            aValue = aValue.toLowerCase();
-            bValue = bValue.toLowerCase();
-          }
+        if (sortDirection === 'asc') {
+          return aValue > bValue ? 1 : -1;
+        } else {
+          return aValue < bValue ? 1 : -1;
+        }
+      });
+  }, [records, searchTerm, sortField, sortDirection]);
 
-          if (sortDirection === 'asc') {
-            return aValue > bValue ? 1 : -1;
-          } else {
-            return aValue < bValue ? 1 : -1;
-          }
-        }),
-    [displayRecords, searchTerm, sortField, sortDirection]
-  );
+  // For empty state check
+  const hasRecords = records && records.length > 0;
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -95,7 +94,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
       );
     }
 
-    if (displayRecords.length === 0) {
+    if (!hasRecords) {
       return (
         <div className="text-center py-8">
           <Swords className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
