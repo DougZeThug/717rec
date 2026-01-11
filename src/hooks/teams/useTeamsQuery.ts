@@ -66,12 +66,21 @@ export function transformTeamRow(row: VTeamDetailsRow): Team {
 
 /**
  * Build query key for teams based on options
+ * Uses explicit key parts for better cache discrimination and invalidation
  */
-function buildQueryKey(options?: TeamsQueryOptions): (string | TeamsQueryOptions)[] {
-  if (!options?.divisionId && !options?.includeHidden) {
-    return [TEAMS_QUERY_KEY];
+function buildQueryKey(options?: TeamsQueryOptions): (string | boolean)[] {
+  const parts: (string | boolean)[] = [TEAMS_QUERY_KEY];
+
+  // Add explicit key parts for better cache control
+  if (options?.divisionId) {
+    parts.push('division', options.divisionId);
   }
-  return [TEAMS_QUERY_KEY, options];
+
+  if (options?.includeHidden) {
+    parts.push('includeHidden');
+  }
+
+  return parts;
 }
 
 /**

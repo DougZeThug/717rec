@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 
-import { dbLog, errorLog, scoreLog } from '@/utils/logger';
+import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
+import { errorLog, scoreLog } from '@/utils/logger';
 
 import { useMatchUpdateService } from '../services/matchUpdateService';
 import { MatchWithTeams } from '../types';
@@ -88,7 +89,7 @@ export const useScoreSubmission = (
         });
       }
 
-      invalidateAllDataQueries();
+      await invalidateMatchRelatedQueries(queryClient);
 
       if (successCount > 0) {
         try {
@@ -108,16 +109,6 @@ export const useScoreSubmission = (
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const invalidateAllDataQueries = () => {
-    dbLog('Invalidating all data queries for fresh data');
-    queryClient.invalidateQueries({ queryKey: ['matches'] });
-    queryClient.invalidateQueries({ queryKey: ['teams'] });
-    queryClient.invalidateQueries({ queryKey: ['rankings'] });
-    queryClient.invalidateQueries({ queryKey: ['teamStats'] });
-    queryClient.invalidateQueries({ queryKey: ['team'] });
-    queryClient.invalidateQueries({ queryKey: ['team-matches'] });
   };
 
   return {

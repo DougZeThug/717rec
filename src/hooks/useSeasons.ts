@@ -19,6 +19,7 @@ export const useSeasons = () => {
 
       return data;
     },
+    staleTime: 1000 * 60 * 5, // 5 minutes - season data changes infrequently
   });
 };
 
@@ -47,5 +48,6 @@ export const useActiveSeason = () => {
       // Return the single active season or null if none exists
       return activeSeasons?.[0] ?? null;
     },
+    staleTime: 1000 * 60 * 5, // 5 minutes - active season changes infrequently
   });
 };

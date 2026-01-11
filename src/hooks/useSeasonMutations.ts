@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CreateSeasonData {
@@ -21,6 +22,7 @@ interface ArchiveSeasonData {
 
 export const useSeasonMutations = () => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const createSeason = useMutation({
     mutationFn: async (data: CreateSeasonData) => {
@@ -35,6 +37,17 @@ export const useSeasonMutations = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seasons'] });
+      toast({
+        title: 'Success',
+        description: 'Season created successfully',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: `Failed to create season: ${error.message}`,
+        variant: 'destructive',
+      });
     },
   });
 
@@ -52,6 +65,17 @@ export const useSeasonMutations = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seasons'] });
+      toast({
+        title: 'Success',
+        description: 'Season updated successfully',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: `Failed to update season: ${error.message}`,
+        variant: 'destructive',
+      });
     },
   });
 
@@ -69,6 +93,17 @@ export const useSeasonMutations = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seasons'] });
+      toast({
+        title: 'Success',
+        description: 'Season activated successfully',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: `Failed to activate season: ${error.message}`,
+        variant: 'destructive',
+      });
     },
   });
 
@@ -90,6 +125,17 @@ export const useSeasonMutations = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seasons'] });
+      toast({
+        title: 'Success',
+        description: 'Season archived successfully',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: `Failed to archive season: ${error.message}`,
+        variant: 'destructive',
+      });
     },
   });
 

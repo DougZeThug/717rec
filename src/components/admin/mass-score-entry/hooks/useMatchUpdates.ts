@@ -2,8 +2,9 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useToast } from '@/hooks/use-toast';
 import { useTeamRecords } from '@/hooks/useTeamRecords';
+import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
 import { supabase } from '@/integrations/supabase/client';
-import { dbLog, errorLog, scoreLog, warnLog } from '@/utils/logger';
+import { errorLog, scoreLog, warnLog } from '@/utils/logger';
 
 import { MatchWithTeams } from '../types';
 
@@ -119,22 +120,7 @@ export const useMatchUpdates = () => {
       }
 
       // Invalidate queries to ensure fresh data throughout the app
-      const queriesToInvalidate = [
-        'matches',
-        'teams',
-        'rankings',
-        'teamStats',
-        'team',
-        'team-matches',
-        'seasonStats',
-        'historicalSeasons',
-        'careerPowerScores',
-      ];
-
-      for (const queryKey of queriesToInvalidate) {
-        queryClient.invalidateQueries({ queryKey: [queryKey] });
-        dbLog(`Invalidated query cache for ${queryKey}`);
-      }
+      await invalidateMatchRelatedQueries(queryClient);
 
       return true;
     } catch (error: unknown) {

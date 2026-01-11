@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Match, Team } from '@/types';
 import { errorLog, warnLog } from '@/utils/logger';
 
+import { invalidateMatchRelatedQueries } from './matches/utils/queryCacheUtils';
 import { useTeamRecords } from './useTeamRecords';
 
 export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[]) => void) => {
@@ -130,7 +131,7 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
       }
 
       // Invalidate relevant queries to refresh data across the app
-      invalidateAllDataQueries();
+      await invalidateMatchRelatedQueries(queryClient);
 
       return true;
     } catch (error) {
@@ -205,7 +206,7 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
       });
 
       // Invalidate all queries to ensure data consistency
-      invalidateAllDataQueries();
+      await invalidateMatchRelatedQueries(queryClient);
 
       return true;
     } catch (error) {
@@ -222,19 +223,6 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
     }
   };
 
-  // Helper function to invalidate all related queries
-  const invalidateAllDataQueries = () => {
-    queryClient.invalidateQueries({ queryKey: ['matches'] });
-    queryClient.invalidateQueries({ queryKey: ['teams'] });
-    queryClient.invalidateQueries({ queryKey: ['rankings'] });
-    queryClient.invalidateQueries({ queryKey: ['teamStats'] });
-    queryClient.invalidateQueries({ queryKey: ['team-totals'] });
-
-    // Also invalidate single team queries that might be open in team details pages
-    queryClient.invalidateQueries({ queryKey: ['team'] });
-    queryClient.invalidateQueries({ queryKey: ['team-matches'] });
-  };
-
   return {
     editingMatch,
     deleteMatchId,
@@ -243,6 +231,5 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
     setDeleteMatchId,
     handleUpdateMatch,
     handleDeleteMatch,
-    invalidateAllDataQueries,
   };
 };
