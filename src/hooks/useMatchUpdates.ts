@@ -178,19 +178,20 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
         if (reverseError) {
           throw new Error(`Failed to reverse team stats: ${reverseError.message}`);
         }
-
-        // Refresh team_season_stats to keep career data in sync
-        const { error: seasonStatsError } = await supabase.rpc('upsert_team_season_stats');
-        if (seasonStatsError) {
-          warnLog('Failed to refresh season stats:', seasonStatsError);
-          // Non-fatal - continue with deletion
-        }
       }
 
       // Delete the match from Supabase
       const { error } = await supabase.from('matches').delete().eq('id', deleteMatchId);
 
       if (error) throw error;
+
+      // AFTER deletion: Refresh team_season_stats to keep career data in sync
+      // This must happen after the match is deleted so the recalculation doesn't include the deleted match
+      const { error: seasonStatsError } = await supabase.rpc('upsert_team_season_stats');
+      if (seasonStatsError) {
+        warnLog('Failed to refresh season stats after deletion:', seasonStatsError);
+        // Non-fatal - stats will eventually sync
+      }
 
       // Update the matches state
       const updatedMatches = matches.filter((match) => match.id !== deleteMatchId);
@@ -229,6 +230,7 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
     queryClient.invalidateQueries({ queryKey: ['rankings'] });
     queryClient.invalidateQueries({ queryKey: ['teamStats'] });
     queryClient.invalidateQueries({ queryKey: ['team-totals'] });
+    queryClient.invalidateQueries({ queryKey: ['season-data'] }); // History page data
 
     // Also invalidate single team queries that might be open in team details pages
     queryClient.invalidateQueries({ queryKey: ['team'] });
