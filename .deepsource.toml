@@ -16,8 +16,7 @@ enabled = true
   [analyzers.meta]
   coverage_file_pattern = "coverage/lcov.info"
 
-[exclude_patterns]
-paths = [
+exclude_patterns = [
   "node_modules/**",
   "dist/**",
   "coverage/**",
