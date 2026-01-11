@@ -37,7 +37,7 @@ const Index: React.FC = () => {
   const hasTeamOfWeek = !trendLoading && topGainer && topGainer.delta > 0;
   const showParticipationCard = !!confirmationSeason;
 
-  // Top teams by power score
+  // Top teams by power score - memoized to prevent re-sorting on every render
   const topTeams = React.useMemo(() => {
     if (!teams?.length) return [];
     return [...teams].sort((a, b) => (b.power_score ?? 0) - (a.power_score ?? 0)).slice(0, 10);

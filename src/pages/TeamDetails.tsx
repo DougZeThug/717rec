@@ -1,4 +1,5 @@
 import { ArrowLeft, Trophy } from 'lucide-react';
+import React, { lazy, Suspense } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
 import TeamBadgeCollection from '@/components/badges/TeamBadgeCollection';
@@ -9,10 +10,12 @@ import PlayerList from '@/components/teams/PlayerList';
 import StatBreakdown from '@/components/teams/StatBreakdown';
 import TeamAdvancedStatsSection from '@/components/teams/TeamAdvancedStatsSection';
 import TeamAnalysis from '@/components/teams/TeamAnalysis';
-import TeamCareerPowerScoreChart from '@/components/teams/TeamCareerPowerScoreChart';
 import TeamDetailsStickyNav from '@/components/teams/TeamDetailsStickyNav';
 import TeamHeader from '@/components/teams/TeamHeader';
 import TeamTotals from '@/components/teams/TeamTotals';
+
+// Lazy load chart component to reduce initial bundle size
+const TeamCareerPowerScoreChart = lazy(() => import('@/components/teams/TeamCareerPowerScoreChart'));
 import { Button } from '@/components/ui/button';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -156,7 +159,11 @@ const TeamDetails = () => {
           {teamId && <TeamAdvancedStatsSection teamId={teamId} />}
 
           {/* Career Power Score Trend */}
-          {teamId && <TeamCareerPowerScoreChart teamId={teamId} />}
+          {teamId && (
+            <Suspense fallback={<Skeleton className="h-[300px] w-full mt-4" />}>
+              <TeamCareerPowerScoreChart teamId={teamId} />
+            </Suspense>
+          )}
         </section>
 
         {/* 7. Team Achievements */}

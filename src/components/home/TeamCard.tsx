@@ -18,9 +18,27 @@ interface TeamCardProps {
   isWinter?: boolean;
 }
 
-const TeamCard: React.FC<TeamCardProps> = ({ team, delay = 0, isWinter = false }) => {
+const TeamCard: React.FC<TeamCardProps> = React.memo(({ team, delay = 0, isWinter = false }) => {
   const { theme } = useTheme();
   const delayClass = delay ? `animation-delay-${delay * 100}` : '';
+
+  // Memoize animation props to prevent recreating on every render
+  const hoverAnimation = React.useMemo(
+    () => ({
+      scale: 1.03,
+      y: -4,
+      boxShadow: isWinter
+        ? '0 12px 24px -8px rgba(0,0,0,0.3), 0 0 20px rgba(34,211,238,0.1)'
+        : '0 12px 24px -8px rgba(0,0,0,0.15)',
+    }),
+    [isWinter]
+  );
+
+  const tapAnimation = React.useMemo(() => ({ scale: 0.98 }), []);
+  const springTransition = React.useMemo(
+    () => ({ type: 'spring' as const, stiffness: 400, damping: 25 }),
+    []
+  );
 
   return (
     <motion.div
@@ -38,15 +56,9 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, delay = 0, isWinter = false }
         animations.fadeInSlideUp,
         delayClass
       )}
-      whileHover={{
-        scale: 1.03,
-        y: -4,
-        boxShadow: isWinter
-          ? '0 12px 24px -8px rgba(0,0,0,0.3), 0 0 20px rgba(34,211,238,0.1)'
-          : '0 12px 24px -8px rgba(0,0,0,0.15)',
-      }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+      whileHover={hoverAnimation}
+      whileTap={tapAnimation}
+      transition={springTransition}
     >
       <Link to={`/teams/${team.id}`} className="block">
         <div
@@ -98,6 +110,8 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, delay = 0, isWinter = false }
       </Link>
     </motion.div>
   );
-};
+});
+
+TeamCard.displayName = 'TeamCard';
 
 export default TeamCard;

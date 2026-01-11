@@ -18,7 +18,7 @@ interface TopTeamsProps {
   teams: Team[];
 }
 
-const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
+const TopTeams: React.FC<TopTeamsProps> = React.memo(({ teams }) => {
   const { shouldApplyWinter } = useSeasonalTheme();
   const topTenTeams = teams.slice(0, 10);
 
@@ -113,6 +113,8 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
       </div>
     </section>
   );
-};
+});
+
+TopTeams.displayName = 'TopTeams';
 
 export default TopTeams;

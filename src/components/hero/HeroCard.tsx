@@ -13,7 +13,7 @@ interface HeroCardProps {
   card: HeroCardType;
 }
 
-const HeroCard: React.FC<HeroCardProps> = ({ card }) => {
+const HeroCard: React.FC<HeroCardProps> = React.memo(({ card }) => {
   switch (card.card_type) {
     case 'champions':
       return <ChampionsHeroCard card={card} />;
@@ -28,6 +28,8 @@ const HeroCard: React.FC<HeroCardProps> = ({ card }) => {
     default:
       return <StandardHeroCard card={card} />;
   }
-};
+});
+
+HeroCard.displayName = 'HeroCard';
 
 export default HeroCard;

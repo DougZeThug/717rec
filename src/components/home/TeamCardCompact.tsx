@@ -13,7 +13,7 @@ interface TeamCardCompactProps {
   isWinter?: boolean;
 }
 
-const TeamCardCompact: React.FC<TeamCardCompactProps> = ({ team, rank, isWinter = false }) => {
+const TeamCardCompact: React.FC<TeamCardCompactProps> = React.memo(({ team, rank, isWinter = false }) => {
   return (
     <Link
       to={`/teams/${team.id}`}
@@ -67,6 +67,8 @@ const TeamCardCompact: React.FC<TeamCardCompactProps> = ({ team, rank, isWinter 
       </div>
     </Link>
   );
-};
+});
+
+TeamCardCompact.displayName = 'TeamCardCompact';
 
 export default TeamCardCompact;

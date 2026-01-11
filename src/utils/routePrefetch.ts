@@ -43,20 +43,19 @@ export const prefetchRoute = (path: string): void => {
 };
 
 // Preload core navigation pages after initial render
+// OPTIMIZATION: Only preload teams page to reduce initial bundle load
 export const preloadCoreRoutes = (): void => {
   const preload = () => {
-    // Preload the most commonly visited pages
+    // Only preload teams page (most commonly visited)
+    // Other pages will lazy load on demand
     prefetchRoutes.teams();
-    prefetchRoutes.schedule();
-    prefetchRoutes.stats();
-    prefetchRoutes.playoffs();
-    prefetchRoutes.history();
   };
 
   // Use requestIdleCallback to not block initial render
+  // Wait longer to ensure main content is fully loaded first
   if ('requestIdleCallback' in window) {
-    requestIdleCallback(preload);
+    requestIdleCallback(preload, { timeout: 3000 });
   } else {
-    setTimeout(preload, 1000);
+    setTimeout(preload, 3000);
   }
 };

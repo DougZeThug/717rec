@@ -1,10 +1,11 @@
 import useEmblaCarousel from 'embla-carousel-react';
 import { ChevronDown } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
@@ -12,9 +13,11 @@ import { gradients } from '@/styles/design-system';
 import { Ranking } from '@/types';
 
 import { useChartData } from './hooks/useChartData';
-import PowerScoreChartCard from './PowerScoreChartCard';
-import PowerScoreTrendsCard from './PowerScoreTrendsCard';
-import WinLossChartCard from './WinLossChartCard';
+
+// Lazy load chart components to reduce initial bundle size (Recharts is ~355kb)
+const PowerScoreChartCard = lazy(() => import('./PowerScoreChartCard'));
+const PowerScoreTrendsCard = lazy(() => import('./PowerScoreTrendsCard'));
+const WinLossChartCard = lazy(() => import('./WinLossChartCard'));
 
 interface StatsChartsProps {
   rankings: Ranking[];
@@ -107,60 +110,70 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
         </CollapsibleTrigger>
         <CollapsibleContent>
           <div className="p-4 pt-0">
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 font-inter">
-              {/* On mobile: swipeable carousel */}
-              {isMobile ? (
-                <div className="col-span-1">
-                  <div className="overflow-hidden will-change-transform" ref={emblaRef}>
-                    <div className="flex touch-pan-y">
-                      <div className="flex-[0_0_100%] min-w-0 pr-2">
-                        <WinLossChartCard
-                          data={winLossData}
-                          chartLimit={chartLimit}
-                          isMobile={isMobile}
-                        />
-                      </div>
-                      <div className="flex-[0_0_100%] min-w-0 pr-2">
-                        <PowerScoreChartCard data={powerScoreData} />
-                      </div>
-                      <div className="flex-[0_0_100%] min-w-0">
-                        <PowerScoreTrendsCard />
+            <Suspense
+              fallback={
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+                  <Skeleton className="h-[300px] w-full" />
+                  <Skeleton className="h-[300px] w-full" />
+                  <Skeleton className="h-[300px] w-full" />
+                </div>
+              }
+            >
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 font-inter">
+                {/* On mobile: swipeable carousel */}
+                {isMobile ? (
+                  <div className="col-span-1">
+                    <div className="overflow-hidden will-change-transform" ref={emblaRef}>
+                      <div className="flex touch-pan-y">
+                        <div className="flex-[0_0_100%] min-w-0 pr-2">
+                          <WinLossChartCard
+                            data={winLossData}
+                            chartLimit={chartLimit}
+                            isMobile={isMobile}
+                          />
+                        </div>
+                        <div className="flex-[0_0_100%] min-w-0 pr-2">
+                          <PowerScoreChartCard data={powerScoreData} />
+                        </div>
+                        <div className="flex-[0_0_100%] min-w-0">
+                          <PowerScoreTrendsCard />
+                        </div>
                       </div>
                     </div>
+                    {/* Dot indicators */}
+                    <div className="flex justify-center gap-2 mt-3">
+                      {chartLabels.map((label, index) => (
+                        <button
+                          key={index}
+                          onClick={() => emblaApi?.scrollTo(index)}
+                          className={cn(
+                            'px-2 py-1 rounded-full text-xs transition-all',
+                            selectedIndex === index
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                          )}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  {/* Dot indicators */}
-                  <div className="flex justify-center gap-2 mt-3">
-                    {chartLabels.map((label, index) => (
-                      <button
-                        key={index}
-                        onClick={() => emblaApi?.scrollTo(index)}
-                        className={cn(
-                          'px-2 py-1 rounded-full text-xs transition-all',
-                          selectedIndex === index
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                        )}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                // On desktop: show all three charts in a row
-                <>
-                  <WinLossChartCard
-                    data={winLossData}
-                    chartLimit={chartLimit}
-                    isMobile={isMobile}
-                  />
+                ) : (
+                  // On desktop: show all three charts in a row
+                  <>
+                    <WinLossChartCard
+                      data={winLossData}
+                      chartLimit={chartLimit}
+                      isMobile={isMobile}
+                    />
 
-                  <PowerScoreChartCard data={powerScoreData} />
+                    <PowerScoreChartCard data={powerScoreData} />
 
-                  <PowerScoreTrendsCard />
-                </>
-              )}
-            </div>
+                    <PowerScoreTrendsCard />
+                  </>
+                )}
+              </div>
+            </Suspense>
           </div>
         </CollapsibleContent>
       </Card>
