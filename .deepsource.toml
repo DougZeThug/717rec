@@ -1,0 +1,26 @@
+version = 1
+
+[[analyzers]]
+name = "javascript"
+enabled = true
+
+  [analyzers.meta]
+  plugins = ["react"]
+  environment = ["browser", "es2020"]
+  dialect = "typescript"
+
+[[analyzers]]
+name = "test-coverage"
+enabled = true
+
+  [analyzers.meta]
+  coverage_file_pattern = "coverage/lcov.info"
+
+[exclude_patterns]
+paths = [
+  "node_modules/**",
+  "dist/**",
+  "coverage/**",
+  "*.config.js",
+  "src/integrations/supabase/types.ts"
+]
