@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -17,7 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { useProfileUpdate, useUsernameAvailability } from '@/hooks/useProfileOperations';
 import { errorLog } from '@/utils/logger';
 
 const profileSchema = z.object({
@@ -42,8 +42,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   onProfileUpdated,
 }) => {
   const { user } = useAuth();
-  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
-  const [isCheckingUsername, setIsCheckingUsername] = useState<boolean>(false);
+  const { isAvailable: usernameAvailable, isChecking: isCheckingUsername, checkUsername } = useUsernameAvailability();
+  const { updateProfile } = useProfileUpdate();
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -56,38 +56,14 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   const { isSubmitting } = form.formState;
   const username = form.watch('username');
 
-  // Check username availability
-  const checkUsernameAvailability = async (value: string) => {
-    if (value.length < 3) {
-      setUsernameAvailable(null);
-      return;
-    }
+  // Check username availability with debounce
+  useEffect(() => {
+    if (!username || username.length < 3) return;
 
-    try {
-      setIsCheckingUsername(true);
+    const handler = setTimeout(async () => {
+      const isAvailable = await checkUsername(username, initialUsername);
 
-      // Skip the check if it's their current username
-      if (initialUsername === value) {
-        setUsernameAvailable(true);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('username', value)
-        .maybeSingle();
-
-      if (error) {
-        errorLog('Error checking username:', error);
-        setUsernameAvailable(null);
-        return;
-      }
-
-      const isAvailable = !data;
-      setUsernameAvailable(isAvailable);
-
-      if (!isAvailable) {
+      if (!isAvailable && username !== initialUsername) {
         form.setError('username', {
           type: 'manual',
           message: 'This name is already taken',
@@ -95,24 +71,10 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       } else {
         form.clearErrors('username');
       }
-    } catch (error) {
-      errorLog('Unexpected error checking username:', error);
-      setUsernameAvailable(null);
-    } finally {
-      setIsCheckingUsername(false);
-    }
-  };
-
-  // Debounce username checks
-  useEffect(() => {
-    if (!username || username.length < 3) return;
-
-    const handler = setTimeout(() => {
-      checkUsernameAvailability(username);
     }, 500);
 
     return () => clearTimeout(handler);
-  }, [username, initialUsername]);
+  }, [username, initialUsername, checkUsername]);
 
   const onSubmit = async (data: ProfileFormData) => {
     if (!user) return;
@@ -127,22 +89,10 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     }
 
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          username: data.username,
-          full_name: data.fullName || null,
-        })
-        .eq('id', user.id);
-
-      if (error) {
-        toast({
-          title: 'Error updating profile',
-          description: error.message,
-          variant: 'destructive',
-        });
-        throw error;
-      }
+      await updateProfile(user.id, {
+        username: data.username,
+        fullName: data.fullName,
+      });
 
       toast({
         title: 'Profile updated',
@@ -152,6 +102,12 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       onProfileUpdated();
     } catch (error) {
       errorLog('Error updating profile:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      toast({
+        title: 'Error updating profile',
+        description: errorMessage,
+        variant: 'destructive',
+      });
     }
   };
 

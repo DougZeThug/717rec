@@ -1,83 +1,38 @@
 import { Calendar, History, Loader2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import WinterSection from '@/components/winter/WinterSection';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { dbLog, errorLog } from '@/utils/logger';
+import { useSeasons } from '@/hooks/useSeasons';
 
 import SeasonAccordion from './SeasonAccordion';
-interface SeasonData {
-  team_id: string;
-  season_id: string;
-  match_wins: number;
-  match_losses: number;
-  game_wins: number;
-  game_losses: number;
-  sos: number | null;
-  power_score: number | null;
-  champion: boolean;
-  runner_up: boolean;
-  division_name: string | null;
-  team_name: string;
-  team_logo_url: string | null;
-  team_image_url: string | null;
-}
-
-interface Season {
-  id: string;
-  name: string;
-  start_date: string;
-  end_date: string | null;
-  is_active: boolean;
-}
 
 const HistoryPageContent: React.FC = () => {
-  const [seasons, setSeasons] = useState<Season[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { data: seasonsData, isLoading: loading, error } = useSeasons();
 
-  useEffect(() => {
-    fetchHistoricalData();
-  }, []);
+  // Sort seasons by start_date descending
+  const seasons = useMemo(() => {
+    if (!seasonsData) return [];
+    return [...seasonsData].sort((a, b) => {
+      return new Date(b.start_date).getTime() - new Date(a.start_date).getTime();
+    });
+  }, [seasonsData]);
 
-  const fetchHistoricalData = async () => {
-    try {
-      dbLog('Fetching historical seasons...');
-
-      // Fetch all seasons
-      const { data: seasonsData, error: seasonsError } = await supabase
-        .from('seasons')
-        .select('*')
-        .order('start_date', { ascending: false });
-
-      if (seasonsError) {
-        errorLog('Error fetching seasons:', seasonsError);
-        toast({
-          title: 'Error',
-          description: 'Failed to fetch seasons data',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      dbLog('Seasons fetched:', seasonsData);
-      setSeasons(seasonsData || []);
-    } catch (error) {
-      errorLog('Unexpected error fetching historical data:', error);
+  // Show error toast if query failed
+  React.useEffect(() => {
+    if (error) {
       toast({
         title: 'Error',
-        description: 'An unexpected error occurred',
+        description: 'Failed to fetch seasons data',
         variant: 'destructive',
       });
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [error, toast]);
 
   if (loading) {
     return (

@@ -1,5 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import { Label } from '@/components/ui/label';
 import {
@@ -10,7 +9,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { TARGET_TYPE_OPTIONS } from '@/constants/heroCardPresets';
-import { supabase } from '@/integrations/supabase/client';
+import { useDivisions } from '@/hooks/useDivisions';
+import { useSeasons } from '@/hooks/useSeasons';
+import { useTeamsQuery } from '@/hooks/teams/useTeamsQuery';
 import { HeroCardTargetType } from '@/types/heroCard';
 
 interface TargetTypeSelectorProps {
@@ -52,38 +53,27 @@ export const TargetEntitySelector: React.FC<TargetEntitySelectorProps> = ({
   value,
   onChange,
 }) => {
-  const { data: teams } = useQuery({
-    queryKey: ['teams-for-selector'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('teams').select('id, name').order('name');
-      if (error) throw error;
-      return data;
-    },
-    enabled: targetType === 'team',
-  });
+  const { data: teamsData } = useTeamsQuery({ enabled: targetType === 'team', includeHidden: true });
+  const { data: divisionsData } = useDivisions(targetType === 'division');
+  const { data: seasonsData } = useSeasons();
 
-  const { data: divisions } = useQuery({
-    queryKey: ['divisions-for-selector'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('divisions').select('id, name').order('name');
-      if (error) throw error;
-      return data;
-    },
-    enabled: targetType === 'division',
-  });
+  // Transform teams data to match the expected format
+  const teams = useMemo(() => {
+    if (!teamsData) return [];
+    return teamsData.map(team => ({ id: team.id, name: team.name })).sort((a, b) => a.name.localeCompare(b.name));
+  }, [teamsData]);
 
-  const { data: seasons } = useQuery({
-    queryKey: ['seasons-for-selector'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('seasons')
-        .select('id, name')
-        .order('start_date', { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-    enabled: targetType === 'season',
-  });
+  // Transform divisions data to match the expected format
+  const divisions = useMemo(() => {
+    if (!divisionsData) return [];
+    return divisionsData.map(div => ({ id: div.id, name: div.name })).sort((a, b) => a.name.localeCompare(b.name));
+  }, [divisionsData]);
+
+  // Transform seasons data to match the expected format
+  const seasons = useMemo(() => {
+    if (!seasonsData) return [];
+    return seasonsData.map(season => ({ id: season.id, name: season.name }));
+  }, [seasonsData]);
 
   if (targetType === 'none') return null;
 

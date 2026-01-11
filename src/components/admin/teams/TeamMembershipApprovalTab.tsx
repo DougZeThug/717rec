@@ -1,5 +1,5 @@
 import { CheckCircle, Clock, Loader2, Users, XCircle } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { TeamLogo } from '@/components/shared/TeamLogo';
 import {
@@ -15,96 +15,49 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { useApproveMembership, usePendingMemberships } from '@/hooks/useTeamMembershipAdmin';
 import { errorLog } from '@/utils/logger';
 
-interface PendingMembership {
-  id: string;
-  user_id: string;
-  team_id: string;
-  joined_at: string;
-  is_approved: boolean;
-  user: {
-    id: string;
-    username?: string;
-    full_name?: string;
-    avatar_url?: string;
-  };
-  team: {
-    id: string;
-    name: string;
-    logo_url?: string;
-    image_url?: string;
-  };
-}
-
 const TeamMembershipApprovalTab: React.FC = () => {
-  const [pendingMemberships, setPendingMemberships] = useState<PendingMembership[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { data: pendingMemberships = [], isLoading, error } = usePendingMemberships();
+  const approveMembership = useApproveMembership();
 
-  useEffect(() => {
-    fetchPendingMemberships();
-  }, []);
-
-  const fetchPendingMemberships = async () => {
-    try {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('team_memberships')
-        .select(
-          `
-          id,
-          user_id,
-          team_id,
-          joined_at,
-          is_approved,
-          user:profiles(id, username, full_name, avatar_url),
-          team:teams(id, name, logo_url, image_url)
-        `
-        )
-        .eq('is_approved', false)
-        .order('joined_at', { ascending: false });
-
-      if (error) throw error;
-      setPendingMemberships(data || []);
-    } catch (error) {
+  // Show error toast if query failed
+  React.useEffect(() => {
+    if (error) {
       errorLog('Error fetching pending memberships:', error);
       toast({
         title: 'Error',
         description: 'Failed to load pending team memberships',
         variant: 'destructive',
       });
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }, [error, toast]);
 
   const handleApproval = async (membershipId: string, approved: boolean) => {
+    if (!user?.id) {
+      toast({
+        title: 'Error',
+        description: 'You must be logged in to approve memberships',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       setProcessingId(membershipId);
 
-      const updateData: any = {
-        is_approved: approved,
-      };
-
-      if (approved) {
-        updateData.approved_at = new Date().toISOString();
-        updateData.approved_by = (await supabase.auth.getUser()).data.user?.id;
-      }
-
-      const { error } = await supabase
-        .from('team_memberships')
-        .update(updateData)
-        .eq('id', membershipId);
-
-      if (error) throw error;
-
-      // Remove from pending list
-      setPendingMemberships((prev) => prev.filter((m) => m.id !== membershipId));
+      await approveMembership.mutateAsync({
+        membershipId,
+        approved,
+        approvedBy: user.id,
+      });
 
       toast({
         title: approved ? 'Membership Approved' : 'Membership Rejected',

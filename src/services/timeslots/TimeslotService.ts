@@ -33,8 +33,8 @@ export class TimeslotService {
           pair_slot,
           match_sequence,
           teams:team_id (
-            id, 
-            name, 
+            id,
+            name,
             logo_url,
             image_url
           )
@@ -59,6 +59,48 @@ export class TimeslotService {
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       errorLog('Unexpected error fetching timeslots:', error);
+      return {
+        success: false,
+        error: `Unexpected error: ${message}`,
+      };
+    }
+  }
+
+  /**
+   * Fetch timeslots for a specific team within a date range
+   */
+  static async fetchByTeamAndDateRange(
+    teamId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<TimeslotOperationResult> {
+    try {
+      const formattedStartDate = format(startDate, 'yyyy-MM-dd');
+      const formattedEndDate = format(endDate, 'yyyy-MM-dd');
+
+      const { data, error } = await supabase
+        .from('team_timeslots')
+        .select('*')
+        .eq('team_id', teamId)
+        .gte('match_date', formattedStartDate)
+        .lte('match_date', formattedEndDate)
+        .order('match_date', { ascending: true });
+
+      if (error) {
+        errorLog('Error fetching timeslots by date range:', error);
+        return {
+          success: false,
+          error: `Failed to fetch timeslots: ${error.message}`,
+        };
+      }
+
+      return {
+        success: true,
+        data: data || [],
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      errorLog('Unexpected error fetching timeslots by date range:', error);
       return {
         success: false,
         error: `Unexpected error: ${message}`,

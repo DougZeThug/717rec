@@ -9,11 +9,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useTeamBasicUpdate } from '@/hooks/useTeamBasicUpdate';
 import { useTeamMembership } from '@/hooks/useTeamMembership';
-import { supabase } from '@/integrations/supabase/client';
 
 const TeamEditSection: React.FC = () => {
   const { membership, refreshMembership } = useTeamMembership();
+  const { updateTeamBasicInfo } = useTeamBasicUpdate();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -42,15 +43,10 @@ const TeamEditSection: React.FC = () => {
     try {
       setIsLoading(true);
 
-      const { error } = await supabase
-        .from('teams')
-        .update({
-          name: formData.name.trim(),
-          image_url: formData.image_url.trim() || null,
-        })
-        .eq('id', membership.team.id);
-
-      if (error) throw error;
+      await updateTeamBasicInfo(membership.team.id, {
+        name: formData.name,
+        image_url: formData.image_url || null,
+      });
 
       toast({
         title: 'Team Updated',

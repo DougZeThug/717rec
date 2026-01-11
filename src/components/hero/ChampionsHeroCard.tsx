@@ -1,11 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Crown, Trophy } from 'lucide-react';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import { useChampionTeams } from '@/hooks/useChampionTeams';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
-import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
 import { HeroCard } from '@/types/heroCard';
@@ -173,27 +172,18 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
   const championsMap = (card.metadata?.champions as Record<string, string>) || {};
   const championIds = Object.values(championsMap);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['champions', championIds],
-    queryFn: async () => {
-      if (championIds.length === 0) return { teams: [], divisionMap: {} };
+  const { data: teams, isLoading, error } = useChampionTeams(championIds);
 
-      const { data, error } = await supabase
-        .from('teams')
-        .select('id, name, image_url')
-        .in('id', championIds);
+  const data = useMemo(() => {
+    if (!teams) return null;
 
-      if (error) throw error;
+    const divisionMap: Record<string, string> = {};
+    Object.entries(championsMap).forEach(([division, teamId]) => {
+      divisionMap[teamId] = division;
+    });
 
-      const divisionMap: Record<string, string> = {};
-      Object.entries(championsMap).forEach(([division, teamId]) => {
-        divisionMap[teamId] = division;
-      });
-
-      return { teams: data as TeamData[], divisionMap };
-    },
-    enabled: championIds.length > 0,
-  });
+    return { teams: teams as TeamData[], divisionMap };
+  }, [teams, championsMap]);
 
   const sectionClasses = cn(
     'relative rounded-2xl shadow-2xl hover:shadow-3xl p-4 md:p-6 transition-shadow duration-200',
