@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { ArrowUpDown, Calendar, Download, Search, Swords, Trophy, X } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { Badge } from '@/components/ui/badge';
@@ -34,23 +34,27 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
   // Use fresh database data directly
   const displayRecords = records || [];
 
-  const filteredRecords = displayRecords
-    .filter((record) => record.opponent_name.toLowerCase().includes(searchTerm.toLowerCase()))
-    .sort((a, b) => {
-      let aValue: any = a[sortField];
-      let bValue: any = b[sortField];
+  const filteredRecords = useMemo(
+    () =>
+      displayRecords
+        .filter((record) => record.opponent_name.toLowerCase().includes(searchTerm.toLowerCase()))
+        .sort((a, b) => {
+          let aValue: any = a[sortField];
+          let bValue: any = b[sortField];
 
-      if (sortField === 'opponent_name') {
-        aValue = aValue.toLowerCase();
-        bValue = bValue.toLowerCase();
-      }
+          if (sortField === 'opponent_name') {
+            aValue = aValue.toLowerCase();
+            bValue = bValue.toLowerCase();
+          }
 
-      if (sortDirection === 'asc') {
-        return aValue > bValue ? 1 : -1;
-      } else {
-        return aValue < bValue ? 1 : -1;
-      }
-    });
+          if (sortDirection === 'asc') {
+            return aValue > bValue ? 1 : -1;
+          } else {
+            return aValue < bValue ? 1 : -1;
+          }
+        }),
+    [displayRecords, searchTerm, sortField, sortDirection]
+  );
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {

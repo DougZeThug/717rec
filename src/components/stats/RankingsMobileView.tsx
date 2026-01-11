@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowDown, ArrowUp, Bolt, Scale, Search, User } from 'lucide-react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -126,20 +126,24 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
   };
 
   // Group by display divisions using divisionName which now contains display_division
-  const rankingsByDivision = showUnified
-    ? { 'All Teams': rankings }
-    : rankings.reduce(
-        (acc, ranking) => {
-          // Use divisionName which now contains the display_division value
-          const displayDivision = ranking.divisionName || 'Unassigned';
-          if (!acc[displayDivision]) {
-            acc[displayDivision] = [];
-          }
-          acc[displayDivision].push(ranking);
-          return acc;
-        },
-        {} as Record<string, Ranking[]>
-      );
+  const rankingsByDivision = useMemo(
+    () =>
+      showUnified
+        ? { 'All Teams': rankings }
+        : rankings.reduce(
+            (acc, ranking) => {
+              // Use divisionName which now contains the display_division value
+              const displayDivision = ranking.divisionName || 'Unassigned';
+              if (!acc[displayDivision]) {
+                acc[displayDivision] = [];
+              }
+              acc[displayDivision].push(ranking);
+              return acc;
+            },
+            {} as Record<string, Ranking[]>
+          ),
+    [rankings, showUnified]
+  );
 
   return (
     <div className="font-inter">
