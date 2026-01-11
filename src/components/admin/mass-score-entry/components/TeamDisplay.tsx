@@ -1,30 +1,40 @@
 import React from 'react';
 
+import { TeamLogo } from '@/components/shared/TeamLogo';
+import { cn } from '@/lib/utils';
+
 interface TeamDisplayProps {
   team: {
     name?: string;
     logoUrl?: string;
   };
   align?: 'left' | 'right' | 'center';
+  className?: string;
 }
 
-const TeamDisplay: React.FC<TeamDisplayProps> = ({ team, align = 'left' }) => {
-  const containerClassName = `flex items-center gap-2 ${
-    align === 'right' ? 'flex-row-reverse' : 'flex-row'
-  }`;
+const TeamDisplay: React.FC<TeamDisplayProps> = ({ team, align = 'left', className }) => {
+  const containerClassName = cn(
+    'flex items-center gap-2 min-w-0',
+    align === 'right' && 'flex-row-reverse',
+    align === 'center' && 'justify-center',
+    className
+  );
 
   return (
     <div className={containerClassName}>
-      {team.logoUrl && (
-        <img
-          src={team.logoUrl}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          className="h-8 w-8 rounded-full object-cover"
-        />
-      )}
-      <span className="font-medium truncate">{team.name || 'TBD'}</span>
+      <TeamLogo
+        imageUrl={team.logoUrl}
+        teamName={team.name || 'TBD'}
+        size="sm"
+        rounded
+      />
+      <span className={cn(
+        'font-medium text-sm leading-tight',
+        align === 'right' && 'text-right',
+        align === 'center' && 'text-center'
+      )}>
+        {team.name || 'TBD'}
+      </span>
     </div>
   );
 };
