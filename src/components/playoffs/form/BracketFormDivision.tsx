@@ -1,8 +1,15 @@
-import React from "react";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UseFormReturn } from "react-hook-form";
-import { errorLog } from "@/utils/logger";
+import React from 'react';
+import { UseFormReturn } from 'react-hook-form';
+
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { errorLog } from '@/utils/logger';
 
 interface BracketFormDivisionProps {
   form: UseFormReturn<any>;
@@ -14,24 +21,29 @@ interface BracketFormDivisionProps {
  * Get unique display divisions (Competitive, Intermediate, Recreational)
  * Filters out "Hidden" division and groups by display_division
  */
-const getUniqueDisplayDivisions = (divisions: { id: string; name: string; display_division?: string }[]) => {
-  const displayDivisionMap = new Map<string, { id: string; name: string; display_division: string }>();
-  
-  divisions.forEach(div => {
+const getUniqueDisplayDivisions = (
+  divisions: { id: string; name: string; display_division?: string }[]
+) => {
+  const displayDivisionMap = new Map<
+    string,
+    { id: string; name: string; display_division: string }
+  >();
+
+  divisions.forEach((div) => {
     const displayDiv = div.display_division || div.name;
     // Skip Hidden division
     if (displayDiv === 'Hidden') return;
-    
+
     // Store the first division of each display group
     if (!displayDivisionMap.has(displayDiv)) {
       displayDivisionMap.set(displayDiv, {
         id: div.id,
         name: displayDiv,
-        display_division: displayDiv
+        display_division: displayDiv,
       });
     }
   });
-  
+
   return Array.from(displayDivisionMap.values());
 };
 
@@ -50,20 +62,20 @@ export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({
    */
   const handleDivisionChange = (divisionId: string) => {
     try {
-      const selectedDivision = divisions.find(d => d.id === divisionId);
-      
+      const selectedDivision = divisions.find((d) => d.id === divisionId);
+
       // Set the division ID in the form
       form.setValue('divisionId', divisionId);
-      
+
       // Set division name if available for easier filtering
       if (selectedDivision?.name) {
         form.setValue('divisionName', selectedDivision.name);
       }
-      
+
       // Call the parent handler
       onDivisionChange(divisionId);
     } catch (error) {
-      errorLog("BracketFormDivision: Error handling division change:", error);
+      errorLog('BracketFormDivision: Error handling division change:', error);
     }
   };
 
@@ -74,7 +86,12 @@ export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({
   );
 
   // Show message if no divisions available
-  if (!divisions || !Array.isArray(divisions) || divisions.length === 0 || uniqueDisplayDivisions.length === 0) {
+  if (
+    !divisions ||
+    !Array.isArray(divisions) ||
+    divisions.length === 0 ||
+    uniqueDisplayDivisions.length === 0
+  ) {
     return (
       <FormField
         control={form.control}

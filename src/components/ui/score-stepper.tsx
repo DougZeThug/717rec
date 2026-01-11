@@ -1,8 +1,9 @@
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Minus, Plus } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from 'framer-motion';
+import { Minus, Plus } from 'lucide-react';
+import React, { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface ScoreStepperProps {
   value: number;
@@ -12,8 +13,8 @@ interface ScoreStepperProps {
   label?: string;
   teamLogo?: string | null;
   teamName?: string;
-  accentColor?: "blue" | "red";
-  size?: "sm" | "md" | "lg";
+  accentColor?: 'blue' | 'red';
+  size?: 'sm' | 'md' | 'lg';
   disabled?: boolean;
   showWinnerIndicator?: boolean;
   isWinning?: boolean;
@@ -27,18 +28,18 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
   label,
   teamLogo,
   teamName,
-  accentColor = "blue",
-  size = "md",
+  accentColor = 'blue',
+  size = 'md',
   disabled = false,
   showWinnerIndicator = false,
   isWinning = false,
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
-  const [direction, setDirection] = useState<"up" | "down">("up");
+  const [direction, setDirection] = useState<'up' | 'down'>('up');
 
   const handleIncrement = () => {
     if (value < max && !disabled) {
-      setDirection("up");
+      setDirection('up');
       setIsAnimating(true);
       onChange(value + 1);
       setTimeout(() => setIsAnimating(false), 150);
@@ -47,7 +48,7 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
 
   const handleDecrement = () => {
     if (value > min && !disabled) {
-      setDirection("down");
+      setDirection('down');
       setIsAnimating(true);
       onChange(value - 1);
       setTimeout(() => setIsAnimating(false), 150);
@@ -56,38 +57,38 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
 
   const sizeClasses = {
     sm: {
-      container: "gap-1",
-      button: "h-8 w-8",
-      score: "text-xl min-w-[3rem]",
-      label: "text-xs",
-      logo: "w-4 h-4",
+      container: 'gap-1',
+      button: 'h-8 w-8',
+      score: 'text-xl min-w-[3rem]',
+      label: 'text-xs',
+      logo: 'w-4 h-4',
     },
     md: {
-      container: "gap-2",
-      button: "h-10 w-10",
-      score: "text-2xl min-w-[4rem]",
-      label: "text-sm",
-      logo: "w-5 h-5",
+      container: 'gap-2',
+      button: 'h-10 w-10',
+      score: 'text-2xl min-w-[4rem]',
+      label: 'text-sm',
+      logo: 'w-5 h-5',
     },
     lg: {
-      container: "gap-3",
-      button: "h-12 w-12",
-      score: "text-3xl min-w-[5rem]",
-      label: "text-base",
-      logo: "w-6 h-6",
+      container: 'gap-3',
+      button: 'h-12 w-12',
+      score: 'text-3xl min-w-[5rem]',
+      label: 'text-base',
+      logo: 'w-6 h-6',
     },
   };
 
   const accentClasses = {
     blue: {
-      button: "hover:bg-blue-100 hover:text-blue-600 active:bg-blue-200 dark:hover:bg-blue-900/30",
-      ring: "focus-visible:ring-blue-500",
-      winning: "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20",
+      button: 'hover:bg-blue-100 hover:text-blue-600 active:bg-blue-200 dark:hover:bg-blue-900/30',
+      ring: 'focus-visible:ring-blue-500',
+      winning: 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20',
     },
     red: {
-      button: "hover:bg-red-100 hover:text-red-600 active:bg-red-200 dark:hover:bg-red-900/30",
-      ring: "focus-visible:ring-red-500",
-      winning: "ring-2 ring-red-500 bg-red-50 dark:bg-red-900/20",
+      button: 'hover:bg-red-100 hover:text-red-600 active:bg-red-200 dark:hover:bg-red-900/30',
+      ring: 'focus-visible:ring-red-500',
+      winning: 'ring-2 ring-red-500 bg-red-50 dark:bg-red-900/20',
     },
   };
 
@@ -95,32 +96,30 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
   const accent = accentClasses[accentColor];
 
   return (
-    <div className={cn("flex flex-col items-center", sizes.container)}>
+    <div className={cn('flex flex-col items-center', sizes.container)}>
       {/* Team Label */}
       {label && (
-        <div className={cn("flex items-center gap-1.5 mb-1", sizes.label)}>
+        <div className={cn('flex items-center gap-1.5 mb-1', sizes.label)}>
           {teamLogo && (
-            <div className={cn("rounded-full overflow-hidden bg-muted", sizes.logo)}>
+            <div className={cn('rounded-full overflow-hidden bg-muted', sizes.logo)}>
               <img
                 src={teamLogo}
-                alt={teamName || "Team"}
+                alt={teamName || 'Team'}
                 className="w-full h-full object-contain"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
+                  (e.target as HTMLImageElement).style.display = 'none';
                 }}
               />
             </div>
           )}
-          <span className="font-medium text-muted-foreground truncate max-w-[120px]">
-            {label}
-          </span>
+          <span className="font-medium text-muted-foreground truncate max-w-[120px]">{label}</span>
         </div>
       )}
 
       {/* Stepper Controls */}
       <div
         className={cn(
-          "flex items-center rounded-xl border bg-card p-1 transition-all duration-200",
+          'flex items-center rounded-xl border bg-card p-1 transition-all duration-200',
           sizes.container,
           showWinnerIndicator && isWinning && accent.winning
         )}
@@ -133,11 +132,11 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
           onClick={handleDecrement}
           disabled={disabled || value <= min}
           className={cn(
-            "rounded-lg transition-all duration-150",
+            'rounded-lg transition-all duration-150',
             sizes.button,
             accent.button,
             accent.ring,
-            "disabled:opacity-40"
+            'disabled:opacity-40'
           )}
           aria-label="Decrease score"
         >
@@ -147,7 +146,7 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
         {/* Score Display */}
         <div
           className={cn(
-            "relative flex items-center justify-center font-bold tabular-nums overflow-hidden",
+            'relative flex items-center justify-center font-bold tabular-nums overflow-hidden',
             sizes.score
           )}
         >
@@ -155,7 +154,7 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
             <motion.span
               key={value}
               initial={{
-                y: direction === "up" ? 20 : -20,
+                y: direction === 'up' ? 20 : -20,
                 opacity: 0,
               }}
               animate={{
@@ -163,18 +162,16 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
                 opacity: 1,
               }}
               exit={{
-                y: direction === "up" ? -20 : 20,
+                y: direction === 'up' ? -20 : 20,
                 opacity: 0,
               }}
               transition={{
-                type: "spring",
+                type: 'spring',
                 stiffness: 500,
                 damping: 30,
                 duration: 0.15,
               }}
-              className={cn(
-                isAnimating && "text-primary"
-              )}
+              className={cn(isAnimating && 'text-primary')}
             >
               {value}
             </motion.span>
@@ -189,11 +186,11 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
           onClick={handleIncrement}
           disabled={disabled || value >= max}
           className={cn(
-            "rounded-lg transition-all duration-150",
+            'rounded-lg transition-all duration-150',
             sizes.button,
             accent.button,
             accent.ring,
-            "disabled:opacity-40"
+            'disabled:opacity-40'
           )}
           aria-label="Increase score"
         >

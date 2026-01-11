@@ -1,12 +1,14 @@
-import React from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { useTheme } from "next-themes";
-import PowerScoreChart from "./PowerScoreChart";
-import { PowerScoreDataItem } from "@/types/chart";
-import { cn } from "@/lib/utils";
-import { animations } from "@/styles/design-system";
-import { useIsMobile } from "@/hooks/use-mobile";
-import AnimatedChartWrapper from "@/components/ui/animated-chart-wrapper";
+import { useTheme } from 'next-themes';
+import React from 'react';
+
+import AnimatedChartWrapper from '@/components/ui/animated-chart-wrapper';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
+import { animations } from '@/styles/design-system';
+import { PowerScoreDataItem } from '@/types/chart';
+
+import PowerScoreChart from './PowerScoreChart';
 
 interface PowerScoreChartCardProps {
   data: PowerScoreDataItem[];
@@ -18,23 +20,34 @@ const PowerScoreChartCard: React.FC<PowerScoreChartCardProps> = ({ data }) => {
 
   return (
     <AnimatedChartWrapper delay={0.1}>
-      <Card className={cn(
-        "bg-white text-gray-900 border border-gray-200 dark:bg-gray-900 dark:border-0 dark:text-white rounded-xl shadow-sm",
-        animations.fadeInSlideUp,
-        "animation-delay-200"
-      )}>
-        <CardHeader 
-          className={isMobile ? "py-2 px-3" : "pb-1.5"}
-          style={resolvedTheme === "light" ? { borderBottom: "1px solid hsl(var(--border))", borderTopLeftRadius: 12, borderTopRightRadius: 12, background: "hsl(var(--background))" } : {}}
+      <Card
+        className={cn(
+          'bg-white text-gray-900 border border-gray-200 dark:bg-gray-900 dark:border-0 dark:text-white rounded-xl shadow-sm',
+          animations.fadeInSlideUp,
+          'animation-delay-200'
+        )}
+      >
+        <CardHeader
+          className={isMobile ? 'py-2 px-3' : 'pb-1.5'}
+          style={
+            resolvedTheme === 'light'
+              ? {
+                  borderBottom: '1px solid hsl(var(--border))',
+                  borderTopLeftRadius: 12,
+                  borderTopRightRadius: 12,
+                  background: 'hsl(var(--background))',
+                }
+              : {}
+          }
         >
           <CardTitle
             className={cn(
-              "font-semibold font-inter tracking-wide text-gray-800 dark:text-white uppercase",
-              isMobile ? "text-base" : "text-lg"
+              'font-semibold font-inter tracking-wide text-gray-800 dark:text-white uppercase',
+              isMobile ? 'text-base' : 'text-lg'
             )}
-            style={{ letterSpacing: ".03em" }}
+            style={{ letterSpacing: '.03em' }}
           >
-            Top {isMobile ? "5" : "8"} Power Scores
+            Top {isMobile ? '5' : '8'} Power Scores
           </CardTitle>
           {!isMobile && (
             <CardDescription className="text-sm text-gray-600 dark:text-gray-300 font-inter">
@@ -42,7 +55,7 @@ const PowerScoreChartCard: React.FC<PowerScoreChartCardProps> = ({ data }) => {
             </CardDescription>
           )}
         </CardHeader>
-        <CardContent className={isMobile ? "p-2 pt-1" : "p-4 pt-2"}>
+        <CardContent className={isMobile ? 'p-2 pt-1' : 'p-4 pt-2'}>
           <PowerScoreChart data={data} />
         </CardContent>
       </Card>

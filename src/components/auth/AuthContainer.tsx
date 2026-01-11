@@ -1,7 +1,14 @@
+import React from 'react';
 
-import React from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import PageTransition from "@/components/transitions/PageTransition";
+import PageTransition from '@/components/transitions/PageTransition';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 interface AuthContainerProps {
   title?: string;
@@ -11,10 +18,10 @@ interface AuthContainerProps {
 }
 
 const AuthContainer: React.FC<AuthContainerProps> = ({
-  title = "Welcome to 717Rec",
-  description = "Login or create an account to access all features",
+  title = 'Welcome to 717Rec',
+  description = 'Login or create an account to access all features',
   children,
-  footer
+  footer,
 }) => {
   return (
     <PageTransition>
@@ -24,9 +31,7 @@ const AuthContainer: React.FC<AuthContainerProps> = ({
             <CardTitle className="text-2xl">{title}</CardTitle>
             <CardDescription>{description}</CardDescription>
           </CardHeader>
-          <CardContent>
-            {children}
-          </CardContent>
+          <CardContent>{children}</CardContent>
           {footer && (
             <CardFooter className="flex justify-center text-sm text-muted-foreground">
               {footer}

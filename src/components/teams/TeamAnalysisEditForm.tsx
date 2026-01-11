@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Plus, X, Save, Loader2 } from "lucide-react";
-import { TeamAnalysis, TeamAnalysisInput } from "@/hooks/useTeamAnalysis";
+import { Loader2, Plus, Save, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { TeamAnalysis, TeamAnalysisInput } from '@/hooks/useTeamAnalysis';
 
 interface TeamAnalysisEditFormProps {
   analysis: TeamAnalysis | null;
@@ -19,24 +20,24 @@ export const TeamAnalysisEditForm: React.FC<TeamAnalysisEditFormProps> = ({
   onCancel,
   isSaving,
 }) => {
-  const [overall, setOverall] = useState(analysis?.overall || "");
-  const [strengths, setStrengths] = useState<string[]>(analysis?.strengths || [""]);
-  const [weaknesses, setWeaknesses] = useState<string[]>(analysis?.weaknesses || [""]);
-  const [trends, setTrends] = useState(analysis?.trends || "");
-  const [rivalryInsights, setRivalryInsights] = useState(analysis?.rivalry_insights || "");
+  const [overall, setOverall] = useState(analysis?.overall || '');
+  const [strengths, setStrengths] = useState<string[]>(analysis?.strengths || ['']);
+  const [weaknesses, setWeaknesses] = useState<string[]>(analysis?.weaknesses || ['']);
+  const [trends, setTrends] = useState(analysis?.trends || '');
+  const [rivalryInsights, setRivalryInsights] = useState(analysis?.rivalry_insights || '');
 
   useEffect(() => {
     if (analysis) {
-      setOverall(analysis.overall || "");
-      setStrengths(analysis.strengths?.length ? analysis.strengths : [""]);
-      setWeaknesses(analysis.weaknesses?.length ? analysis.weaknesses : [""]);
-      setTrends(analysis.trends || "");
-      setRivalryInsights(analysis.rivalry_insights || "");
+      setOverall(analysis.overall || '');
+      setStrengths(analysis.strengths?.length ? analysis.strengths : ['']);
+      setWeaknesses(analysis.weaknesses?.length ? analysis.weaknesses : ['']);
+      setTrends(analysis.trends || '');
+      setRivalryInsights(analysis.rivalry_insights || '');
     }
   }, [analysis]);
 
-  const handleAddStrength = () => setStrengths([...strengths, ""]);
-  const handleAddWeakness = () => setWeaknesses([...weaknesses, ""]);
+  const handleAddStrength = () => setStrengths([...strengths, '']);
+  const handleAddWeakness = () => setWeaknesses([...weaknesses, '']);
 
   const handleRemoveStrength = (index: number) => {
     setStrengths(strengths.filter((_, i) => i !== index));
@@ -62,8 +63,8 @@ export const TeamAnalysisEditForm: React.FC<TeamAnalysisEditFormProps> = ({
     e.preventDefault();
     onSave({
       overall: overall || undefined,
-      strengths: strengths.filter(s => s.trim()),
-      weaknesses: weaknesses.filter(w => w.trim()),
+      strengths: strengths.filter((s) => s.trim()),
+      weaknesses: weaknesses.filter((w) => w.trim()),
       trends: trends || undefined,
       rivalry_insights: rivalryInsights || undefined,
     });

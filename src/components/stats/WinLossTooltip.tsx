@@ -1,5 +1,4 @@
-
-import React from "react";
+import React from 'react';
 
 // Tooltip for Win-Loss Chart
 interface WinLossTooltipProps {
@@ -8,19 +7,12 @@ interface WinLossTooltipProps {
   label?: string;
 }
 
-const WinLossTooltip: React.FC<WinLossTooltipProps> = ({
-  active,
-  payload,
-  label,
-}) => {
+const WinLossTooltip: React.FC<WinLossTooltipProps> = ({ active, payload, label }) => {
   if (!active || !payload || !payload.length) return null;
 
   // Try to find original team name from the payload
   const firstItem = payload[0]?.payload || {};
-  const tooltipName =
-    typeof firstItem.tooltipName === "string"
-      ? firstItem.tooltipName
-      : label; // fallback to label
+  const tooltipName = typeof firstItem.tooltipName === 'string' ? firstItem.tooltipName : label; // fallback to label
 
   return (
     <div className="rounded-md shadow-lg p-2 bg-popover border border-border">

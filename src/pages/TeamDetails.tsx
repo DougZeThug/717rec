@@ -1,45 +1,51 @@
-import { useParams, useNavigate } from "react-router";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Trophy } from "lucide-react";
-import { useTeamDetails } from "@/hooks/useTeamDetails";
-import TeamHeader from "@/components/teams/TeamHeader";
-import StatBreakdown from "@/components/teams/StatBreakdown";
-import MatchList from "@/components/teams/MatchList";
-import PlayerList from "@/components/teams/PlayerList";
-import TeamBadgeCollection from "@/components/badges/TeamBadgeCollection";
-import { useTeamMatches } from "@/hooks/useTeamMatches";
-import { useTeamRankings } from "@/hooks/useTeamRankings";
-import HeadToHeadRecords from "@/components/stats/HeadToHeadRecords";
-import TeamTotals from "@/components/teams/TeamTotals";
-import { calculateSweepRate } from "@/utils/teamDetailsUtils/sweepRateUtils";
-import TeamCareerPowerScoreChart from "@/components/teams/TeamCareerPowerScoreChart";
-import TeamAdvancedStatsSection from "@/components/teams/TeamAdvancedStatsSection";
-import { teamLog } from "@/utils/logger";
-import AnimatedBreadcrumbs from "@/components/navigation/AnimatedBreadcrumbs";
-import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
-import TeamDetailsStickyNav from "@/components/teams/TeamDetailsStickyNav";
-import TeamAnalysis from "@/components/teams/TeamAnalysis";
+import { ArrowLeft, Trophy } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router';
+
+import TeamBadgeCollection from '@/components/badges/TeamBadgeCollection';
+import AnimatedBreadcrumbs from '@/components/navigation/AnimatedBreadcrumbs';
+import HeadToHeadRecords from '@/components/stats/HeadToHeadRecords';
+import MatchList from '@/components/teams/MatchList';
+import PlayerList from '@/components/teams/PlayerList';
+import StatBreakdown from '@/components/teams/StatBreakdown';
+import TeamAdvancedStatsSection from '@/components/teams/TeamAdvancedStatsSection';
+import TeamAnalysis from '@/components/teams/TeamAnalysis';
+import TeamCareerPowerScoreChart from '@/components/teams/TeamCareerPowerScoreChart';
+import TeamDetailsStickyNav from '@/components/teams/TeamDetailsStickyNav';
+import TeamHeader from '@/components/teams/TeamHeader';
+import TeamTotals from '@/components/teams/TeamTotals';
+import { Button } from '@/components/ui/button';
+import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useTeamDetails } from '@/hooks/useTeamDetails';
+import { useTeamMatches } from '@/hooks/useTeamMatches';
+import { useTeamRankings } from '@/hooks/useTeamRankings';
+import { teamLog } from '@/utils/logger';
+import { calculateSweepRate } from '@/utils/teamDetailsUtils/sweepRateUtils';
 
 const TeamDetails = () => {
   const { teamId } = useParams<{ teamId: string }>();
   const navigate = useNavigate();
-  
+
   const { team, isLoading } = useTeamDetails(teamId);
   const { pastMatches, isLoadingMatches } = useTeamMatches(teamId);
   const { rankings } = useTeamRankings();
-  
-  const teamRanking = rankings?.find(r => r.teamId === teamId);
-  const teamRank = teamRanking ? rankings.findIndex(r => r.teamId === teamId) + 1 : undefined;
+
+  const teamRanking = rankings?.find((r) => r.teamId === teamId);
+  const teamRank = teamRanking ? rankings.findIndex((r) => r.teamId === teamId) + 1 : undefined;
   const totalTeams = rankings?.length;
 
-  teamLog("TeamDetails rendering with team data:", team ? {
-    name: team.name,
-    power_score: team.power_score,
-    sos: team.sos,
-    win_percentage: team.win_percentage || 0,
-    game_win_percentage: team.game_win_percentage || 0
-  } : "Loading team...");
+  teamLog(
+    'TeamDetails rendering with team data:',
+    team
+      ? {
+          name: team.name,
+          power_score: team.power_score,
+          sos: team.sos,
+          win_percentage: team.win_percentage || 0,
+          game_win_percentage: team.game_win_percentage || 0,
+        }
+      : 'Loading team...'
+  );
 
   if (isLoading || isLoadingMatches) {
     return (
@@ -57,7 +63,7 @@ const TeamDetails = () => {
       <div className="container mx-auto px-4 py-8 text-center">
         <h1 className="text-2xl font-bold mb-4">Team Not Found</h1>
         <p className="mb-4">The team you're looking for doesn't exist.</p>
-        <Button onClick={() => navigate("/teams")}>Back to Teams</Button>
+        <Button onClick={() => navigate('/teams')}>Back to Teams</Button>
       </div>
     );
   }
@@ -68,8 +74,8 @@ const TeamDetails = () => {
 
   // Custom breadcrumbs with team name
   const breadcrumbs = [
-    { label: "Home", href: "/" },
-    { label: "Teams", href: "/teams" },
+    { label: 'Home', href: '/' },
+    { label: 'Teams', href: '/teams' },
     { label: team.name },
   ];
 
@@ -81,18 +87,18 @@ const TeamDetails = () => {
         <div className="hidden md:block">
           <AnimatedBreadcrumbs items={breadcrumbs} className="mb-4" />
         </div>
-        
-        <Button 
-          variant="ghost" 
-          className="mb-2 md:mb-4 min-h-11 px-3 md:h-10 md:px-4" 
+
+        <Button
+          variant="ghost"
+          className="mb-2 md:mb-4 min-h-11 px-3 md:h-10 md:px-4"
           onClick={() => navigate(-1)}
         >
           <ArrowLeft size={16} className="mr-1 md:mr-2" /> Back
         </Button>
-        
+
         {/* Hero Section - Tighter on mobile */}
         <TeamHeader team={team} winPercentage={winPct.toFixed(1)} pastMatches={pastMatches} />
-        
+
         {/* 1. Team Stats */}
         <section id="stats" className="scroll-mt-20">
           <StatBreakdown
@@ -102,7 +108,7 @@ const TeamDetails = () => {
             gamesWon={team.game_wins || 0}
             gamesLost={team.game_losses || 0}
             gameWinPercentage={gamePct.toFixed(1)}
-            strengthOfSchedule={team.sos?.toFixed(3) || "0.000"}
+            strengthOfSchedule={team.sos?.toFixed(3) || '0.000'}
             closeMatchLosses={team.close_match_losses || 0}
             powerScore={team.power_score || 0}
             rank={teamRank}
@@ -122,12 +128,12 @@ const TeamDetails = () => {
         <section id="analysis" className="scroll-mt-20">
           {teamId && <TeamAnalysis teamId={teamId} teamName={team.name} />}
         </section>
-        
+
         {/* 3. Head-to-Head Records */}
         <section id="h2h" className="scroll-mt-20">
           {teamId && <HeadToHeadRecords teamId={teamId} teamName={team.name} />}
         </section>
-        
+
         {/* 4. Match History */}
         <section id="matches" className="scroll-mt-20">
           <MatchList
@@ -152,7 +158,7 @@ const TeamDetails = () => {
           {/* Career Power Score Trend */}
           {teamId && <TeamCareerPowerScoreChart teamId={teamId} />}
         </section>
-        
+
         {/* 7. Team Achievements */}
         <section id="achievements" className="scroll-mt-20">
           {teamId && (

@@ -1,8 +1,8 @@
-
+import { AlertCircle, RefreshCw } from 'lucide-react';
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   children: ReactNode;
@@ -31,7 +31,7 @@ class BracketErrorBoundary extends Component<Props, State> {
     console.error('[717REC] BracketErrorBoundary componentDidCatch:', {
       error,
       errorInfo,
-      bracketId: this.props.bracketId
+      bracketId: this.props.bracketId,
     });
     this.setState({ error, errorInfo });
   }
@@ -56,10 +56,10 @@ class BracketErrorBoundary extends Component<Props, State> {
               </div>
             </AlertDescription>
           </Alert>
-          
+
           <div className="flex justify-center">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={this.handleRetry}
               className="flex items-center gap-2"
             >

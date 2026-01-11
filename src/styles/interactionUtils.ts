@@ -1,5 +1,4 @@
-
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 /**
  * Utility function to apply consistent interactive feedback styles
@@ -18,21 +17,21 @@ export const getInteractionStyles = (
     withHover = true,
     withActive = true,
     withScale = true,
-    withShadow = true
+    withShadow = true,
   } = options || {};
 
   return cn(
     // Base styles
-    "transition-all duration-150",
-    
+    'transition-all duration-150',
+
     // Hover styles (desktop)
-    withHover && "hover:bg-gray-50 hover:cursor-pointer",
-    withShadow && "hover:shadow-md",
-    
+    withHover && 'hover:bg-gray-50 hover:cursor-pointer',
+    withShadow && 'hover:shadow-md',
+
     // Active/tap styles (mobile & desktop)
-    withActive && "active:bg-gray-100",
-    withScale && "active:scale-[0.98]",
-    
+    withActive && 'active:bg-gray-100',
+    withScale && 'active:scale-[0.98]',
+
     // Custom classes
     className
   );
@@ -42,27 +41,23 @@ export const getInteractionStyles = (
  * Utility function specifically for card-based interactions
  */
 export const getCardInteractionStyles = (className?: string) => {
-  return getInteractionStyles(
-    cn("hover:shadow-md active:shadow", className)
-  );
+  return getInteractionStyles(cn('hover:shadow-md active:shadow', className));
 };
 
 /**
  * Utility function for button interactions
  */
 export const getButtonInteractionStyles = (className?: string) => {
-  return getInteractionStyles(
-    cn("hover:bg-opacity-90 active:bg-opacity-100", className),
-    { withShadow: false }
-  );
+  return getInteractionStyles(cn('hover:bg-opacity-90 active:bg-opacity-100', className), {
+    withShadow: false,
+  });
 };
 
 /**
  * Utility function for row/item interactions
  */
 export const getRowInteractionStyles = (className?: string) => {
-  return getInteractionStyles(
-    cn("hover:bg-gray-50 active:bg-gray-100", className),
-    { withShadow: false }
-  );
+  return getInteractionStyles(cn('hover:bg-gray-50 active:bg-gray-100', className), {
+    withShadow: false,
+  });
 };

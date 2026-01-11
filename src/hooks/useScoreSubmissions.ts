@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from 'react';
+
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface ScoreSubmission {
   id: string;
@@ -33,7 +34,7 @@ export function useScoreSubmissions() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
+
       setSubmissions(data || []);
     } catch (error) {
       console.error('Error fetching score submissions:', error);
@@ -54,14 +55,14 @@ export function useScoreSubmissions() {
         .update({
           status: 'approved',
           reviewed_by: (await supabase.auth.getUser()).data.user?.id,
-          reviewed_at: new Date().toISOString()
+          reviewed_at: new Date().toISOString(),
         })
         .eq('id', submissionId);
 
       if (error) throw error;
 
-      setSubmissions(prev => prev.filter(sub => sub.id !== submissionId));
-      
+      setSubmissions((prev) => prev.filter((sub) => sub.id !== submissionId));
+
       toast({
         title: 'Success',
         description: 'Score submission approved successfully.',
@@ -83,14 +84,14 @@ export function useScoreSubmissions() {
         .update({
           status: 'rejected',
           reviewed_by: (await supabase.auth.getUser()).data.user?.id,
-          reviewed_at: new Date().toISOString()
+          reviewed_at: new Date().toISOString(),
         })
         .eq('id', submissionId);
 
       if (error) throw error;
 
-      setSubmissions(prev => prev.filter(sub => sub.id !== submissionId));
-      
+      setSubmissions((prev) => prev.filter((sub) => sub.id !== submissionId));
+
       toast({
         title: 'Success',
         description: 'Score submission rejected.',
@@ -110,6 +111,6 @@ export function useScoreSubmissions() {
     isLoading,
     handleApproveSubmission,
     handleRejectSubmission,
-    refetch: fetchScoreSubmissions
+    refetch: fetchScoreSubmissions,
   };
 }

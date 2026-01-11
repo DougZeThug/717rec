@@ -1,2 +1,1 @@
-
-export { default } from "./MessageInputForm";
+export { default } from './MessageInputForm';

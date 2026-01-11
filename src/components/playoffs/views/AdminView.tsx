@@ -1,11 +1,12 @@
+import React from 'react';
 
-import React from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import BracketList from "../BracketList";
-import BracketDetail from "../BracketDetail";
-import TeamDivisionTable from "../TeamDivisionTable";
-import { PlayoffPageData } from "../hooks/usePlayoffPageData";
-import { usePlayoffHandlers } from "../hooks/usePlayoffHandlers";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+import BracketDetail from '../BracketDetail';
+import BracketList from '../BracketList';
+import { usePlayoffHandlers } from '../hooks/usePlayoffHandlers';
+import { PlayoffPageData } from '../hooks/usePlayoffPageData';
+import TeamDivisionTable from '../TeamDivisionTable';
 
 interface AdminViewProps {
   bracketDialogOpen: boolean;
@@ -15,18 +16,18 @@ interface AdminViewProps {
   data: PlayoffPageData;
 }
 
-const PLAYOFF_VIEW_TAB_KEY = "playoffViewActiveTab";
+const PLAYOFF_VIEW_TAB_KEY = 'playoffViewActiveTab';
 
-const AdminView: React.FC<AdminViewProps> = ({ 
+const AdminView: React.FC<AdminViewProps> = ({
   bracketDialogOpen,
   setBracketDialogOpen,
   onCreateBracket,
   onDeleteBracket,
-  data
+  data,
 }) => {
   const handlers = usePlayoffHandlers(data);
   const [activeTab, setActiveTab] = React.useState(() => {
-    return sessionStorage.getItem(PLAYOFF_VIEW_TAB_KEY) || "brackets";
+    return sessionStorage.getItem(PLAYOFF_VIEW_TAB_KEY) || 'brackets';
   });
 
   const handleTabChange = (tabId: string) => {
@@ -39,15 +40,20 @@ const AdminView: React.FC<AdminViewProps> = ({
   };
 
   return (
-    <Tabs value={activeTab} onValueChange={handleTabChange} defaultValue="brackets" className="space-y-4">
+    <Tabs
+      value={activeTab}
+      onValueChange={handleTabChange}
+      defaultValue="brackets"
+      className="space-y-4"
+    >
       <TabsList>
         <TabsTrigger value="brackets">Brackets</TabsTrigger>
         <TabsTrigger value="teams">Teams</TabsTrigger>
       </TabsList>
-      
+
       <TabsContent value="brackets" className="space-y-6">
         <div className={!data.selectedBracketId || !data.bracket ? 'block' : 'hidden'}>
-          <BracketList 
+          <BracketList
             divisions={data.availableDivisions}
             bracketsByDivision={data.typesafeBracketsByDivision}
             onCreateBracket={handleCreateBracketClick}
@@ -58,25 +64,28 @@ const AdminView: React.FC<AdminViewProps> = ({
           />
         </div>
 
-        {data.ready && data.selectedBracketId && data.bracket && data.bracket.id === data.selectedBracketId && (
-          <BracketDetail 
-            bracketId={data.selectedBracketId}
-            bracket={data.bracket}
-            teams={data.teams}
-            bracketLoading={data.isLoading}
-            onEditBracket={handleCreateBracketClick}
-            onEditMatch={handlers.handleEditMatch}
-            onDeleteBracket={async (bracketId: string, bracketName: string) => {
-              await onDeleteBracket(bracketId, bracketName);
-              data.setSelectedBracketId(null);
-            }}
-          />
-        )}
+        {data.ready &&
+          data.selectedBracketId &&
+          data.bracket &&
+          data.bracket.id === data.selectedBracketId && (
+            <BracketDetail
+              bracketId={data.selectedBracketId}
+              bracket={data.bracket}
+              teams={data.teams}
+              bracketLoading={data.isLoading}
+              onEditBracket={handleCreateBracketClick}
+              onEditMatch={handlers.handleEditMatch}
+              onDeleteBracket={async (bracketId: string, bracketName: string) => {
+                await onDeleteBracket(bracketId, bracketName);
+                data.setSelectedBracketId(null);
+              }}
+            />
+          )}
       </TabsContent>
-      
+
       <TabsContent value="teams">
-        <TeamDivisionTable 
-          divisions={data.availableDivisions} 
+        <TeamDivisionTable
+          divisions={data.availableDivisions}
           teams={data.teams}
           isLoading={data.isLoading}
         />

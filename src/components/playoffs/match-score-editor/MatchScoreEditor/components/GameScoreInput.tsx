@@ -1,6 +1,7 @@
-import React from "react";
-import { Team } from "@/types";
-import { ScoreStepper } from "@/components/ui/score-stepper";
+import React from 'react';
+
+import { ScoreStepper } from '@/components/ui/score-stepper';
+import { Team } from '@/types';
 
 interface GameScoreInputProps {
   index: number;
@@ -32,7 +33,7 @@ const GameScoreInput: React.FC<GameScoreInputProps> = ({
       label={label}
       teamLogo={team?.imageUrl || team?.logoUrl}
       teamName={team?.name}
-      accentColor={teamNumber === 1 ? "blue" : "red"}
+      accentColor={teamNumber === 1 ? 'blue' : 'red'}
       size="md"
       showWinnerIndicator
       isWinning={score > opponentScore && score > 0}

@@ -1,5 +1,4 @@
-
-import { PlayoffMatch, Team } from "@/types";
+import { PlayoffMatch, Team } from '@/types';
 
 export default interface MatchCardProps {
   match: PlayoffMatch;

@@ -1,10 +1,11 @@
 /**
  * Global Error Boundary for catching and reporting uncaught errors
  */
+import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { captureError } from '@/utils/sentry';
+
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { captureError } from '@/utils/sentry';
 
 interface Props {
   children: ReactNode;
@@ -55,11 +56,9 @@ export class ErrorBoundary extends Component<Props, State> {
                 <AlertTriangle className="h-12 w-12 text-destructive" />
               </div>
             </div>
-            
+
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold text-foreground">
-                Something went wrong
-              </h1>
+              <h1 className="text-2xl font-bold text-foreground">Something went wrong</h1>
               <p className="text-muted-foreground">
                 We've been notified and are working on a fix. Please try refreshing the page.
               </p>

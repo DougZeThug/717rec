@@ -1,7 +1,8 @@
+import React from 'react';
 
-import React from "react";
-import { MessageCategory } from "@/types/reactions";
-import MessageInputForm from "./message-input";
+import { MessageCategory } from '@/types/reactions';
+
+import MessageInputForm from './message-input';
 
 interface MessageInputProps {
   onSend: (content: string, category: MessageCategory) => Promise<void>;

@@ -1,15 +1,16 @@
-
+import { AlertCircle, Save, Settings, Trophy, Users, X, Zap } from 'lucide-react';
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Trophy, Zap, AlertCircle, Settings, Save, X } from 'lucide-react';
-import { ProcessedTeam, BracketFormStateResult, SeedValidationState } from '../types';
+
+import { useFormStateManager } from '../hooks/useFormStateManager';
+import { BracketFormStateResult, ProcessedTeam, SeedValidationState } from '../types';
 import { SeedOverrideControls } from './SeedOverrideControls';
 import { SeedStatusBadge } from './SeedStatusBadge';
-import { useFormStateManager } from '../hooks/useFormStateManager';
 
 interface TeamSelectionFormProps {
   teams: ProcessedTeam[];
@@ -32,20 +33,15 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
   minTeams,
   divisionId,
   seedValidation,
-  onSeedChange
+  onSeedChange,
 }) => {
   const [activeTab, setActiveTab] = useState<'select' | 'seeds'>('select');
-  
+
   // Initialize form state manager for coordinated state management
-  const formStateManager = useFormStateManager(
-    teams,
-    formState,
-    seedValidation,
-    onSeedChange
-  );
+  const formStateManager = useFormStateManager(teams, formState, seedValidation, onSeedChange);
   // Ensure we have valid arrays and objects to prevent React error #300
   const validTeams = Array.isArray(teams) ? teams : [];
-  
+
   // Ensure formState has all required properties with proper defaults
   const safeFormState = {
     selected: formState?.selected || new Set(),
@@ -68,8 +64,8 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
       selected: 0,
       required: minTeams,
       maximum: maxTeams,
-      available: validTeams.length
-    }
+      available: validTeams.length,
+    },
   };
 
   /**
@@ -77,20 +73,20 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
    */
   const renderTeamButton = (team: ProcessedTeam) => {
     if (!team || !team.id) return null;
-    
+
     const isSelected = safeFormState.selected.has(team.id);
     const canSelect = !isSelected && safeFormState.canSelectMore;
     const isDisabled = !isSelected && !canSelect;
 
     // Check if this team has seed conflicts or pending changes
-    const hasConflict = seedValidation?.conflicts?.some(c => c.team_id === team.id) || false;
+    const hasConflict = seedValidation?.conflicts?.some((c) => c.team_id === team.id) || false;
     const isPending = formStateManager.seedManagementState.state.pendingChanges.has(team.id);
     const isManual = formStateManager.seedManagementState.state.mode === 'manual';
 
     return (
       <Button
         key={team.id}
-        variant={isSelected ? "default" : "outline"}
+        variant={isSelected ? 'default' : 'outline'}
         size="sm"
         onClick={() => safeFormState.handleTeamToggle(team.id)}
         disabled={isDisabled}
@@ -104,8 +100,8 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
       >
         <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
           {team.logoUrl ? (
-            <img 
-              src={team.logoUrl} 
+            <img
+              src={team.logoUrl}
               alt={`${team.name} logo`}
               className="w-6 h-6 object-contain flex-shrink-0"
             />
@@ -114,7 +110,7 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
           )}
           <span className="font-medium truncate">{team.name || 'Unnamed Team'}</span>
         </div>
-        
+
         <div className="flex-shrink-0">
           <SeedStatusBadge
             seed={team.seed || 0}
@@ -125,7 +121,7 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
             onEdit={() => setActiveTab('seeds')}
           />
         </div>
-        
+
         {team.powerScore && (
           <div className="flex items-center gap-1 text-xs opacity-75 flex-shrink-0">
             <Zap className="w-3 h-3" />
@@ -172,7 +168,7 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
               )}
             </TabsTrigger>
           </TabsList>
-          
+
           {/* Form-level save/cancel controls */}
           {formStateManager.hasUnsavedChanges && (
             <div className="flex items-center gap-2">
@@ -205,89 +201,89 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">Select Teams</CardTitle>
-                <Badge variant={safeFormState.isValid ? "default" : "secondary"}>
+                <Badge variant={safeFormState.isValid ? 'default' : 'secondary'}>
                   {safeFormState.count}/{maxTeams}
                 </Badge>
               </div>
             </CardHeader>
-        <CardContent className="space-y-3">
-          <Progress value={safeFormState.progress.percentage} className="w-full" />
-          
-          <div className="flex items-center justify-between text-sm">
-            <div className={`flex items-center gap-2 ${statusDisplay.color}`}>
-              {StatusIcon && <StatusIcon className="w-4 h-4" />}
-              <span>{safeFormState.statusMessage}</span>
-            </div>
-            
-            {safeFormState.hasSelection && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={safeFormState.clearSelection}
-                className="h-auto p-1 text-muted-foreground hover:text-foreground"
-              >
-                Clear all
-              </Button>
-            )}
-          </div>
+            <CardContent className="space-y-3">
+              <Progress value={safeFormState.progress.percentage} className="w-full" />
 
-          {/* Selection guidance */}
-          <div className="text-xs text-muted-foreground border-t pt-2">
-            <div className="flex justify-between">
-              <span>Minimum: {minTeams} teams</span>
-              <span>Maximum: {maxTeams} teams</span>
-            </div>
-            {safeFormState.count >= minTeams && !safeFormState.isAtMaximum && (
-              <div className="mt-1 text-blue-600 font-medium">
-                ✓ Ready to create bracket • Add more teams or click "Create Bracket"
+              <div className="flex items-center justify-between text-sm">
+                <div className={`flex items-center gap-2 ${statusDisplay.color}`}>
+                  {StatusIcon && <StatusIcon className="w-4 h-4" />}
+                  <span>{safeFormState.statusMessage}</span>
+                </div>
+
+                {safeFormState.hasSelection && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={safeFormState.clearSelection}
+                    className="h-auto p-1 text-muted-foreground hover:text-foreground"
+                  >
+                    Clear all
+                  </Button>
+                )}
               </div>
-            )}
-          </div>
 
-          {/* Error/Warning messages */}
-          {safeFormState.errorMessage && (
-            <div className="text-sm text-destructive bg-destructive/10 p-2 rounded border border-destructive/20">
-              {safeFormState.errorMessage}
-            </div>
-          )}
-          
-          {safeFormState.warningMessage && (
-            <div className="text-sm text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border border-yellow-200 dark:border-yellow-800">
-              {safeFormState.warningMessage}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              {/* Selection guidance */}
+              <div className="text-xs text-muted-foreground border-t pt-2">
+                <div className="flex justify-between">
+                  <span>Minimum: {minTeams} teams</span>
+                  <span>Maximum: {maxTeams} teams</span>
+                </div>
+                {safeFormState.count >= minTeams && !safeFormState.isAtMaximum && (
+                  <div className="mt-1 text-blue-600 font-medium">
+                    ✓ Ready to create bracket • Add more teams or click "Create Bracket"
+                  </div>
+                )}
+              </div>
 
-      {/* Teams grid */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Available Teams ({validTeams.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {formStateManager.syncedTeams.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {formStateManager.syncedTeams.map(renderTeamButton)}
-            </div>
-          ) : (
-            <div className="text-center py-4 text-muted-foreground">
-              No teams available for selection
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </TabsContent>
+              {/* Error/Warning messages */}
+              {safeFormState.errorMessage && (
+                <div className="text-sm text-destructive bg-destructive/10 p-2 rounded border border-destructive/20">
+                  {safeFormState.errorMessage}
+                </div>
+              )}
 
-    <TabsContent value="seeds" className="space-y-4">
-      <SeedOverrideControls
-        teams={formStateManager.syncedTeams}
-        divisionId={divisionId || ''}
-        validation={seedValidation}
-        onSeedChange={onSeedChange}
-        show={!!(divisionId && seedValidation)}
-      />
-    </TabsContent>
-  </Tabs>
-</div>
+              {safeFormState.warningMessage && (
+                <div className="text-sm text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border border-yellow-200 dark:border-yellow-800">
+                  {safeFormState.warningMessage}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Teams grid */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Available Teams ({validTeams.length})</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {formStateManager.syncedTeams.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {formStateManager.syncedTeams.map(renderTeamButton)}
+                </div>
+              ) : (
+                <div className="text-center py-4 text-muted-foreground">
+                  No teams available for selection
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="seeds" className="space-y-4">
+          <SeedOverrideControls
+            teams={formStateManager.syncedTeams}
+            divisionId={divisionId || ''}
+            validation={seedValidation}
+            onSeedChange={onSeedChange}
+            show={!!(divisionId && seedValidation)}
+          />
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };

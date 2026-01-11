@@ -5,23 +5,23 @@
  */
 export function getHistoryDivisionDisplayName(divisionName: string | null): string {
   if (!divisionName) return 'No Division';
-  
+
   const normalized = divisionName.toLowerCase().trim();
-  
+
   // Handle specific mappings for history display
   if (normalized === 'intermediate 2' || normalized === 'intermediate low') {
     return 'Intermediate 2';
   }
-  
+
   if (normalized === 'intermediate high') {
     return 'Intermediate 1';
   }
-  
+
   // For recreational divisions, just return "Recreational" to avoid split
   if (normalized.includes('recreational')) {
     return 'Recreational';
   }
-  
+
   // Return the original name for other divisions (like "Competitive", "Intermediate High")
   return divisionName;
 }
@@ -32,12 +32,12 @@ export function getHistoryDivisionDisplayName(divisionName: string | null): stri
  */
 export function getHistoryDivisionOrder(divisionName: string): number {
   const normalized = divisionName.toLowerCase();
-  
+
   if (normalized.includes('competitive')) return 1;
   if (normalized.includes('intermediate high')) return 2;
   if (normalized.includes('intermediate low') || normalized.includes('intermediate 2')) return 3;
   if (normalized.includes('recreational')) return 4;
-  
+
   // Default order for unknown divisions
   return 999;
 }

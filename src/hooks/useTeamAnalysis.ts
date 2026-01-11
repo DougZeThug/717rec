@@ -1,8 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "@/hooks/use-toast";
-import { errorLog } from "@/utils/logger";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { errorLog } from '@/utils/logger';
 
 export interface TeamAnalysis {
   id: string;
@@ -95,16 +96,16 @@ export const useTeamAnalysis = (teamId: string | undefined) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team-analysis', teamId] });
       toast({
-        title: "Analysis saved",
-        description: "Team analysis has been updated successfully.",
+        title: 'Analysis saved',
+        description: 'Team analysis has been updated successfully.',
       });
     },
     onError: (error) => {
       errorLog('Error saving team analysis:', error);
       toast({
-        title: "Error saving analysis",
+        title: 'Error saving analysis',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });

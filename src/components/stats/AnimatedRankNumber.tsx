@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
-import { useSeasonalThemeBase } from "@/hooks/useSeasonalTheme";
+import { AnimatePresence, motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+
+import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
+import { cn } from '@/lib/utils';
 
 interface AnimatedRankNumberProps {
   rank: number;
@@ -14,33 +15,37 @@ export const AnimatedRankNumber: React.FC<AnimatedRankNumberProps> = ({
   previousRank,
   showFlash = true,
 }) => {
-  const [flashColor, setFlashColor] = useState<"green" | "red" | null>(null);
+  const [flashColor, setFlashColor] = useState<'green' | 'red' | null>(null);
   const { isWinterTheme } = useSeasonalThemeBase();
-  
+
   const getRankStyles = (index: number) => {
     // Winter theme: Use darker backgrounds with icy borders
     if (isWinterTheme) {
-      if (index === 1) return "bg-amber-900/50 text-amber-300 font-bold border border-amber-500/30"; // Gold
-      if (index === 2) return "bg-slate-700/60 text-slate-200 font-bold border border-slate-500/30"; // Silver
-      if (index === 3) return "bg-orange-900/50 text-orange-300 font-bold border border-orange-500/30"; // Bronze
-      return "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]";
+      if (index === 1) return 'bg-amber-900/50 text-amber-300 font-bold border border-amber-500/30'; // Gold
+      if (index === 2) return 'bg-slate-700/60 text-slate-200 font-bold border border-slate-500/30'; // Silver
+      if (index === 3)
+        return 'bg-orange-900/50 text-orange-300 font-bold border border-orange-500/30'; // Bronze
+      return 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]';
     }
-    
-    if (index === 1) return "bg-amber-100 text-amber-800 font-bold dark:bg-amber-900/50 dark:text-amber-300"; // Gold
-    if (index === 2) return "bg-slate-100 text-slate-700 font-bold dark:bg-slate-800 dark:text-slate-300"; // Silver
-    if (index === 3) return "bg-orange-100 text-orange-800 font-bold dark:bg-orange-900/50 dark:text-orange-300"; // Bronze
-    return "bg-muted text-muted-foreground";
+
+    if (index === 1)
+      return 'bg-amber-100 text-amber-800 font-bold dark:bg-amber-900/50 dark:text-amber-300'; // Gold
+    if (index === 2)
+      return 'bg-slate-100 text-slate-700 font-bold dark:bg-slate-800 dark:text-slate-300'; // Silver
+    if (index === 3)
+      return 'bg-orange-100 text-orange-800 font-bold dark:bg-orange-900/50 dark:text-orange-300'; // Bronze
+    return 'bg-muted text-muted-foreground';
   };
 
   useEffect(() => {
     if (previousRank && previousRank !== rank && showFlash) {
       // Rank improved (lower number = better rank)
       if (rank < previousRank) {
-        setFlashColor("green");
+        setFlashColor('green');
       } else if (rank > previousRank) {
-        setFlashColor("red");
+        setFlashColor('red');
       }
-      
+
       const timer = setTimeout(() => setFlashColor(null), 1500);
       return () => clearTimeout(timer);
     }
@@ -54,23 +59,23 @@ export const AnimatedRankNumber: React.FC<AnimatedRankNumberProps> = ({
           initial={{ scale: 0.8, opacity: 0, y: -10 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.8, opacity: 0, y: 10 }}
-          transition={{ 
-            type: "spring", 
-            stiffness: 300, 
+          transition={{
+            type: 'spring',
+            stiffness: 300,
             damping: 20,
-            duration: 0.3 
+            duration: 0.3,
           }}
           className={cn(
-            "w-7 h-7 flex items-center justify-center rounded-full text-sm font-medium",
+            'w-7 h-7 flex items-center justify-center rounded-full text-sm font-medium',
             getRankStyles(rank),
-            flashColor === "green" && "ring-2 ring-green-500 ring-offset-1",
-            flashColor === "red" && "ring-2 ring-red-500 ring-offset-1"
+            flashColor === 'green' && 'ring-2 ring-green-500 ring-offset-1',
+            flashColor === 'red' && 'ring-2 ring-red-500 ring-offset-1'
           )}
         >
           {rank}
         </motion.div>
       </AnimatePresence>
-      
+
       {/* Flash overlay */}
       <AnimatePresence>
         {flashColor && (
@@ -80,8 +85,8 @@ export const AnimatedRankNumber: React.FC<AnimatedRankNumberProps> = ({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6 }}
             className={cn(
-              "absolute inset-0 rounded-full pointer-events-none",
-              flashColor === "green" ? "bg-green-500" : "bg-red-500"
+              'absolute inset-0 rounded-full pointer-events-none',
+              flashColor === 'green' ? 'bg-green-500' : 'bg-red-500'
             )}
           />
         )}

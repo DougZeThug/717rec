@@ -1,12 +1,13 @@
+import React from 'react';
 
-import React from "react";
-import { useMessageReactions } from "@/hooks/message-board/useMessageReactions";
-import { cn } from "@/lib/utils";
-import { animations } from "@/styles/design-system";
-import { toast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
-import ReactionButton from "./ReactionButton";
-import ReactionPicker from "./ReactionPicker";
+import { useAuth } from '@/contexts/AuthContext';
+import { useMessageReactions } from '@/hooks/message-board/useMessageReactions';
+import { toast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+import { animations } from '@/styles/design-system';
+
+import ReactionButton from './ReactionButton';
+import ReactionPicker from './ReactionPicker';
 
 interface MessageReactionsProps {
   messageId: string;
@@ -14,30 +15,30 @@ interface MessageReactionsProps {
   onPickerClose?: () => void;
 }
 
-const MessageReactions: React.FC<MessageReactionsProps> = ({ 
+const MessageReactions: React.FC<MessageReactionsProps> = ({
   messageId,
   showPicker = false,
-  onPickerClose 
+  onPickerClose,
 }) => {
   const { reactionCounts, addReaction, isLoading } = useMessageReactions(messageId);
   const { user } = useAuth();
-  
+
   const handleAddReaction = (emoji: string) => {
     if (!user) {
       toast({
-        title: "Sign in required",
-        description: "Please sign in to react to messages",
-        variant: "default",
+        title: 'Sign in required',
+        description: 'Please sign in to react to messages',
+        variant: 'default',
       });
       return;
     }
-    
+
     addReaction(emoji);
     if (onPickerClose) {
       onPickerClose();
     }
   };
-  
+
   if (isLoading) {
     return (
       <div className="flex items-center gap-1 mt-2 h-6">
@@ -45,17 +46,17 @@ const MessageReactions: React.FC<MessageReactionsProps> = ({
       </div>
     );
   }
-  
+
   if (reactionCounts.length === 0 && !showPicker) {
     return null; // Don't show anything if there are no reactions and picker is hidden
   }
-  
+
   return (
-    <div 
+    <div
       className={cn(
-        "flex flex-wrap items-center gap-1.5 mt-2",
+        'flex flex-wrap items-center gap-1.5 mt-2',
         animations.fadeIn,
-        "animation-delay-300"
+        'animation-delay-300'
       )}
       role="group"
       aria-label="Message reactions"
@@ -69,14 +70,9 @@ const MessageReactions: React.FC<MessageReactionsProps> = ({
           onClick={() => handleAddReaction(reaction.emoji)}
         />
       ))}
-      
+
       {/* Only show picker when explicitly requested via long press */}
-      {showPicker && (
-        <ReactionPicker 
-          onSelect={handleAddReaction} 
-          onClose={onPickerClose}
-        />
-      )}
+      {showPicker && <ReactionPicker onSelect={handleAddReaction} onClose={onPickerClose} />}
     </div>
   );
 };

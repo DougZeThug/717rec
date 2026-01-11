@@ -1,7 +1,7 @@
+import { Match } from '@/types';
+import { errorLog, timezoneLog } from '@/utils/logger';
 
-import { Match } from "@/types";
-import { extractTimeSlotFromUTC, formatTimeToUTC } from "./timezone";
-import { timezoneLog, errorLog } from "@/utils/logger";
+import { extractTimeSlotFromUTC, formatTimeToUTC } from './timezone';
 
 /**
  * Groups an array of matches by time slot.
@@ -12,12 +12,12 @@ import { timezoneLog, errorLog } from "@/utils/logger";
 export const groupMatchesByTimeSlot = (matches: Match[]): { [timeSlot: string]: Match[] } => {
   return matches.reduce((acc: { [timeSlot: string]: Match[] }, match: Match) => {
     // Use our utility to extract time slot from UTC date
-    const timeSlot = match.date ? extractTimeSlotFromUTC(match.date) : "No Time";
-    
+    const timeSlot = match.date ? extractTimeSlotFromUTC(match.date) : 'No Time';
+
     if (!acc[timeSlot]) {
       acc[timeSlot] = [];
     }
-    
+
     acc[timeSlot].push(match);
     return acc;
   }, {});
@@ -28,17 +28,17 @@ export const groupMatchesByTimeSlot = (matches: Match[]): { [timeSlot: string]: 
  */
 export const normalizeTimeFormat = (timeString: string): string => {
   if (!timeString) return '';
-  
+
   // Remove any extra spaces
   const cleanedTime = timeString.trim();
-  
+
   // Check if time already has AM/PM indicator
   if (cleanedTime.toLowerCase().includes('am') || cleanedTime.toLowerCase().includes('pm')) {
     // Ensure consistent formatting (e.g., "7:00 PM" instead of "7:00PM")
     const [timePart, meridiem] = cleanedTime.split(/(?=[AP]M)/i);
     return `${timePart.trim()} ${meridiem.toUpperCase()}`;
   }
-  
+
   // Assume 24-hour format and convert to 12-hour
   try {
     const [hours, minutes] = cleanedTime.split(':').map(Number);
@@ -56,7 +56,7 @@ export const normalizeTimeFormat = (timeString: string): string => {
  */
 export const getTimeBlock = (time: string): string | null => {
   const normalizedTime = normalizeTimeFormat(time);
-  
+
   if (normalizedTime.includes('6:30') || normalizedTime.includes('7:00')) {
     return '6:30';
   } else if (normalizedTime.includes('7:30') || normalizedTime.includes('8:00')) {
@@ -64,7 +64,7 @@ export const getTimeBlock = (time: string): string | null => {
   } else if (normalizedTime.includes('8:30') || normalizedTime.includes('9:00')) {
     return '8:30';
   }
-  
+
   return null;
 };
 
@@ -73,10 +73,14 @@ export const getTimeBlock = (time: string): string | null => {
  */
 export const getTimePairForBlock = (block: string): [string, string] | null => {
   switch (block) {
-    case '6:30': return ['6:30 PM', '7:00 PM'];
-    case '7:30': return ['7:30 PM', '8:00 PM'];
-    case '8:30': return ['8:30 PM', '9:00 PM'];
-    default: return null;
+    case '6:30':
+      return ['6:30 PM', '7:00 PM'];
+    case '7:30':
+      return ['7:30 PM', '8:00 PM'];
+    case '8:30':
+      return ['8:30 PM', '9:00 PM'];
+    default:
+      return null;
   }
 };
 
@@ -95,34 +99,34 @@ export const extractTimeSlot = (dateString: string): string => {
 export const testTimeConversion = (timeString: string): void => {
   timezoneLog(`Testing time conversion for "${timeString}":`, {
     original: timeString,
-    normalized: normalizeTimeFormat(timeString)
+    normalized: normalizeTimeFormat(timeString),
   });
-  
+
   // Create a test date with the time
   const testDate = new Date();
   const utcDate = new Date(testDate);
-  
+
   // Parse hours and minutes
   let hours = 0;
   let minutes = 0;
-  
+
   if (timeString.includes('PM') || timeString.includes('AM')) {
     const [time, period] = timeString.split(' ');
     const [hourStr, minuteStr] = time.split(':');
-    
+
     hours = parseInt(hourStr);
     minutes = parseInt(minuteStr);
-    
+
     if (period === 'PM' && hours < 12) hours += 12;
     if (period === 'AM' && hours === 12) hours = 0;
   }
-  
+
   // Set the local time
   testDate.setHours(hours, minutes, 0, 0);
-  
+
   // Set the UTC time directly
   utcDate.setUTCHours(hours, minutes, 0, 0);
-  
+
   timezoneLog(`Conversion results:`, {
     localTimeString: testDate.toLocaleTimeString(),
     localISOString: testDate.toISOString(),

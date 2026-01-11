@@ -1,13 +1,7 @@
-
-import { fetchTeamsFromApi } from "./teams/TeamFetchService";
-import { createTeamApi } from "./teams/TeamCreateService";
-import { updateTeamApi } from "./teams/TeamUpdateService";
-import { deleteTeamApi } from "./teams/TeamDeleteService";
+import { createTeamApi } from './teams/TeamCreateService';
+import { deleteTeamApi } from './teams/TeamDeleteService';
+import { fetchTeamsFromApi } from './teams/TeamFetchService';
+import { updateTeamApi } from './teams/TeamUpdateService';
 
 // Re-export all team services from one central file
-export {
-  fetchTeamsFromApi,
-  createTeamApi,
-  updateTeamApi,
-  deleteTeamApi
-};
+export { createTeamApi, deleteTeamApi, fetchTeamsFromApi, updateTeamApi };

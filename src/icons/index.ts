@@ -1,54 +1,54 @@
 /**
  * Icon System - Main Export Barrel
- * 
+ *
  * This is the central export point for the icon system.
  * Import everything you need from here:
- * 
+ *
  * @example
  * ```tsx
- * import { 
- *   getIcon, 
- *   getWinterGlyph, 
+ * import {
+ *   getIcon,
+ *   getWinterGlyph,
  *   Snowflake,
- *   WINTER_ICONS_ENABLED 
+ *   WINTER_ICONS_ENABLED
  * } from "@/icons";
  * ```
  */
 
 // Types
-export type { 
-  IconName, 
-  WinterGlyphName, 
-  SvgIconComponent, 
-  IconRegistryEntry,
+export type {
+  IconName,
   IconProps,
+  IconRegistryEntry,
   SeasonalIconProps,
-} from "./types";
+  SvgIconComponent,
+  WinterGlyphName,
+} from './types';
 
 // Icon Registry
-export { 
-  iconRegistry, 
-  getIcon, 
-  getIconWinterVariant, 
-  hasWinterVariant,
+export {
+  getIcon,
   getIconsByCategory,
-} from "./iconRegistry";
+  getIconWinterVariant,
+  hasWinterVariant,
+  iconRegistry,
+} from './iconRegistry';
 
 // Winter Glyph Registry
-export { 
-  winterGlyphRegistry, 
-  getWinterGlyph, 
+export {
+  FrostCrystal,
+  FrozenTrophy,
+  getWinterGlyph,
   hasWinterGlyph,
-  WINTER_ICONS_ENABLED,
+  IceShard,
+  Icicle,
+  SnowCloud,
+  SnowDrift,
   // Individual winter glyphs for direct import
   Snowflake,
   SnowflakeSparkle,
-  Icicle,
-  FrostCrystal,
-  WinterStar,
-  SnowDrift,
-  FrozenTrophy,
   SparkleFrost,
-  IceShard,
-  SnowCloud,
-} from "./winterGlyphRegistry";
+  WINTER_ICONS_ENABLED,
+  winterGlyphRegistry,
+  WinterStar,
+} from './winterGlyphRegistry';

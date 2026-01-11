@@ -1,13 +1,13 @@
+import { AlertCircle, Loader2, RefreshCw, Trophy } from 'lucide-react';
+import React, { useCallback, useMemo } from 'react';
 
-import React, { useCallback, useMemo } from "react";
-import { Loader2, RefreshCw, AlertCircle, Trophy } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import DivisionBracketsCard from "@/components/playoffs/DivisionBracketsCard";
-import EmptyBracketState from "@/components/playoffs/EmptyBracketState";
-import { ChallongeFallback } from "@/components/playoffs/embeds/ChallongeFallback";
-import { PlayoffBracket } from "@/utils/playoffs/playoffTypes";
-import { warnLog } from "@/utils/logger";
+import DivisionBracketsCard from '@/components/playoffs/DivisionBracketsCard';
+import { ChallongeFallback } from '@/components/playoffs/embeds/ChallongeFallback';
+import EmptyBracketState from '@/components/playoffs/EmptyBracketState';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { warnLog } from '@/utils/logger';
+import { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
 interface PlayoffPageContentProps {
   availableDivisions: string[];
@@ -28,7 +28,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
   onCreateBracket,
   onDeleteBracket,
   onRefreshData,
-  isAdmin = false
+  isAdmin = false,
 }) => {
   // Enhanced refresh state management
   const [isRefreshing, setIsRefreshing] = React.useState(false);
@@ -37,15 +37,15 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
   // Enhanced refresh handler with optimistic updates
   const handleRefreshClick = useCallback(async () => {
     if (!onRefreshData || isRefreshing) return;
-    
+
     setIsRefreshing(true);
     const startTime = new Date();
-    
+
     try {
       await onRefreshData();
       setLastRefreshTime(new Date());
     } catch (error) {
-      warnLog("Failed to refresh data:", error);
+      warnLog('Failed to refresh data:', error);
       // Show user-friendly error without throwing
     } finally {
       setIsRefreshing(false);
@@ -57,14 +57,14 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
 
   // Memoized division cards for performance - only show divisions with actual brackets
   const divisionsWithBrackets = useMemo(() => {
-    return availableDivisions.filter(division => 
-      bracketsByDivision[division] && bracketsByDivision[division].length > 0
+    return availableDivisions.filter(
+      (division) => bracketsByDivision[division] && bracketsByDivision[division].length > 0
     );
   }, [availableDivisions, bracketsByDivision]);
 
   const divisionCards = useMemo(() => {
     return divisionsWithBrackets.map((division) => (
-      <DivisionBracketsCard 
+      <DivisionBracketsCard
         key={division}
         division={division}
         brackets={bracketsByDivision[division] || []}
@@ -102,7 +102,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
     <div className="space-y-8">
       {/* Challonge fallback hidden - using brackets-viewer now */}
       {/* <ChallongeFallback /> */}
-      
+
       {/* Refresh Button */}
       {onRefreshData && allBracketsData.length > 0 && (
         <div className="flex justify-end">
@@ -120,8 +120,9 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
       )}
 
       {/* Empty State - No brackets at all */}
-      {!displayLoading && allBracketsData.length === 0 && (
-        isAdmin ? (
+      {!displayLoading &&
+        allBracketsData.length === 0 &&
+        (isAdmin ? (
           <EmptyBracketState onCreateBracket={onCreateBracket} />
         ) : (
           <div className="text-center py-12 bg-card rounded-lg border">
@@ -131,14 +132,11 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
               Brackets will appear here once they are created.
             </p>
           </div>
-        )
-      )}
+        ))}
 
       {/* Division Cards - Show brackets grouped by division */}
       {!displayLoading && divisionsWithBrackets.length > 0 && (
-        <div className="space-y-6">
-          {divisionCards}
-        </div>
+        <div className="space-y-6">{divisionCards}</div>
       )}
 
       {/* Info message if data loaded but no divisions have brackets */}
@@ -146,7 +144,8 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Brackets exist but are not assigned to any division. Please assign brackets to divisions to see them here.
+            Brackets exist but are not assigned to any division. Please assign brackets to divisions
+            to see them here.
           </AlertDescription>
         </Alert>
       )}

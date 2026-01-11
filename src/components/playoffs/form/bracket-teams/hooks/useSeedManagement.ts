@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import { ProcessedTeam, SeedValidationState } from '../types';
 import { handleDragDropReorder } from '../utils/dragAndDrop';
 
@@ -33,13 +34,13 @@ export const useSeedManagement = (
 ): SeedManagementResult => {
   // Ensure we have valid arrays and objects to prevent React errors
   const safeInitialTeams = Array.isArray(initialTeams) ? initialTeams : [];
-  const safeValidation = validation || { 
-    hasConflicts: false, 
-    conflicts: [], 
-    isLoading: false, 
-    errorMessage: null 
+  const safeValidation = validation || {
+    hasConflicts: false,
+    conflicts: [],
+    isLoading: false,
+    errorMessage: null,
   };
-  
+
   const [mode, setMode] = useState<'automatic' | 'manual'>('automatic');
   const [pendingChanges, setPendingChanges] = useState<Map<string, number>>(new Map());
   const [draggedTeam, setDraggedTeam] = useState<ProcessedTeam | null>(null);
@@ -57,50 +58,56 @@ export const useSeedManagement = (
   const isDirty = pendingChanges.size > 0;
   const hasConflicts = safeValidation.hasConflicts;
 
-  const updateTeamSeed = useCallback((teamId: string, seed: number | null) => {
-    setPendingChanges(prev => {
-      const next = new Map(prev);
-      if (seed === null) {
-        next.delete(teamId);
-      } else {
-        next.set(teamId, seed);
-      }
-      return next;
-    });
+  const updateTeamSeed = useCallback(
+    (teamId: string, seed: number | null) => {
+      setPendingChanges((prev) => {
+        const next = new Map(prev);
+        if (seed === null) {
+          next.delete(teamId);
+        } else {
+          next.set(teamId, seed);
+        }
+        return next;
+      });
 
-    // Update local team state
-    setProcessedTeams(prev => prev.map(team => 
-      team.id === teamId ? { ...team, seed: seed || team.seed } : team
-    ));
+      // Update local team state
+      setProcessedTeams((prev) =>
+        prev.map((team) => (team.id === teamId ? { ...team, seed: seed || team.seed } : team))
+      );
 
-    // Call external handler if provided
-    if (onSeedChange) {
-      onSeedChange(teamId, seed);
-    }
-  }, [onSeedChange]);
-
-  const reorderTeams = useCallback((reorderedTeams: ProcessedTeam[]) => {
-    setProcessedTeams(reorderedTeams);
-    
-    // Update pending changes for all reordered teams
-    const changes = new Map<string, number>();
-    reorderedTeams.forEach(team => {
-      changes.set(team.id, team.seed);
+      // Call external handler if provided
       if (onSeedChange) {
-        onSeedChange(team.id, team.seed);
+        onSeedChange(teamId, seed);
       }
-    });
-    setPendingChanges(changes);
-  }, [onSeedChange]);
+    },
+    [onSeedChange]
+  );
+
+  const reorderTeams = useCallback(
+    (reorderedTeams: ProcessedTeam[]) => {
+      setProcessedTeams(reorderedTeams);
+
+      // Update pending changes for all reordered teams
+      const changes = new Map<string, number>();
+      reorderedTeams.forEach((team) => {
+        changes.set(team.id, team.seed);
+        if (onSeedChange) {
+          onSeedChange(team.id, team.seed);
+        }
+      });
+      setPendingChanges(changes);
+    },
+    [onSeedChange]
+  );
 
   const resetToAutomatic = useCallback(() => {
     setMode('automatic');
     setPendingChanges(new Map());
     setProcessedTeams(safeInitialTeams);
     isInitializedRef.current = false; // Allow resync with initialTeams
-    
+
     // Clear all manual seeds
-    safeInitialTeams.forEach(team => {
+    safeInitialTeams.forEach((team) => {
       if (onSeedChange) {
         onSeedChange(team.id, null);
       }
@@ -117,12 +124,15 @@ export const useSeedManagement = (
     isInitializedRef.current = false; // Allow resync with initialTeams
   }, [safeInitialTeams]);
 
-  const switchMode = useCallback((newMode: 'automatic' | 'manual') => {
-    setMode(newMode);
-    if (newMode === 'automatic') {
-      resetToAutomatic();
-    }
-  }, [resetToAutomatic]);
+  const switchMode = useCallback(
+    (newMode: 'automatic' | 'manual') => {
+      setMode(newMode);
+      if (newMode === 'automatic') {
+        resetToAutomatic();
+      }
+    },
+    [resetToAutomatic]
+  );
 
   return {
     state: {

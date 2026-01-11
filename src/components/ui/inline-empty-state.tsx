@@ -1,6 +1,7 @@
-import React from "react";
-import { cn } from "@/lib/utils";
-import { LucideIcon } from "lucide-react";
+import { LucideIcon } from 'lucide-react';
+import React from 'react';
+
+import { cn } from '@/lib/utils';
 
 interface InlineEmptyStateProps {
   icon: LucideIcon;
@@ -21,19 +22,14 @@ const InlineEmptyState: React.FC<InlineEmptyStateProps> = ({
 }) => {
   return (
     <div
-      className={cn(
-        "flex flex-col items-center justify-center py-8 px-4 text-center",
-        className
-      )}
+      className={cn('flex flex-col items-center justify-center py-8 px-4 text-center', className)}
     >
       <div className="flex items-center justify-center w-12 h-12 rounded-full bg-muted/50 border border-border/50 mb-3">
         <Icon className="w-6 h-6 text-muted-foreground" />
       </div>
       <p className="text-sm font-medium text-muted-foreground">{message}</p>
       {description && (
-        <p className="text-xs text-muted-foreground/70 mt-1 max-w-xs">
-          {description}
-        </p>
+        <p className="text-xs text-muted-foreground/70 mt-1 max-w-xs">{description}</p>
       )}
     </div>
   );

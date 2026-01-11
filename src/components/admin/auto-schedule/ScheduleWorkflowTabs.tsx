@@ -1,12 +1,17 @@
+import React from 'react';
 
-import React from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
-import TeamsTab from "@/components/admin/auto-schedule/tabs/TeamsTab";
-import MatchesTab from "@/components/admin/auto-schedule/tabs/MatchesTab";
-import ExportTab from "@/components/admin/auto-schedule/tabs/ExportTab";
-import { TimeBlockTeamsMap, TeamPairingMap, MatchQualityMetrics, AutoScheduleMatch } from "@/types/autoSchedule";
-import { ValidationResult } from "@/utils/autoSchedule/validation";
+import ExportTab from '@/components/admin/auto-schedule/tabs/ExportTab';
+import MatchesTab from '@/components/admin/auto-schedule/tabs/MatchesTab';
+import TeamsTab from '@/components/admin/auto-schedule/tabs/TeamsTab';
+import { Card } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  AutoScheduleMatch,
+  MatchQualityMetrics,
+  TeamPairingMap,
+  TimeBlockTeamsMap,
+} from '@/types/autoSchedule';
+import { ValidationResult } from '@/utils/autoSchedule/validation';
 
 interface ScheduleWorkflowTabsProps {
   activeTab: string;
@@ -66,7 +71,7 @@ const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
   onSwapTeams,
   onRemoveMatch,
   onResetEdits,
-  hasUnsavedEdits
+  hasUnsavedEdits,
 }) => {
   return (
     <div className="lg:col-span-2">
@@ -77,7 +82,7 @@ const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
             <TabsTrigger value="pairings">2. Matches</TabsTrigger>
             <TabsTrigger value="export">3. Export</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="teams" className="p-4">
             <TeamsTab
               timeBlockTeams={timeBlockTeams}
@@ -89,7 +94,7 @@ const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
               originalTimeBlockTeams={originalTimeBlockTeams}
             />
           </TabsContent>
-          
+
           <TabsContent value="pairings" className="p-4">
             <MatchesTab
               selectedDate={selectedDate}
@@ -114,7 +119,7 @@ const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
               hasUnsavedEdits={hasUnsavedEdits}
             />
           </TabsContent>
-          
+
           <TabsContent value="export" className="p-4">
             <ExportTab
               selectedDate={selectedDate}

@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useBracketResponsive } from '@/hooks/use-bracket-responsive';
-import { ZoomIn, ZoomOut, Move, RotateCcw } from 'lucide-react';
+import { Move, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+
 import { Button } from '@/components/ui/button';
+import { useBracketResponsive } from '@/hooks/use-bracket-responsive';
 
 interface BracketTouchControlsProps {
   children: React.ReactNode;
@@ -21,7 +22,7 @@ interface TouchState {
 
 export const BracketTouchControls: React.FC<BracketTouchControlsProps> = ({
   children,
-  className = ''
+  className = '',
 }) => {
   const responsive = useBracketResponsive();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -33,7 +34,7 @@ export const BracketTouchControls: React.FC<BracketTouchControlsProps> = ({
     isPinching: false,
     isDragging: false,
     startX: 0,
-    startY: 0
+    startY: 0,
   });
 
   // Only enable touch controls on mobile
@@ -51,69 +52,69 @@ export const BracketTouchControls: React.FC<BracketTouchControlsProps> = ({
     if (e.touches.length === 2) {
       // Pinch start
       const distance = getTouchDistance(e.touches[0], e.touches[1]);
-      setTouchState(prev => ({
+      setTouchState((prev) => ({
         ...prev,
         isPinching: true,
-        lastTouchDistance: distance
+        lastTouchDistance: distance,
       }));
     } else if (e.touches.length === 1) {
       // Drag start
-      setTouchState(prev => ({
+      setTouchState((prev) => ({
         ...prev,
         isDragging: true,
         startX: e.touches[0].clientX - prev.x,
-        startY: e.touches[0].clientY - prev.y
+        startY: e.touches[0].clientY - prev.y,
       }));
     }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
     e.preventDefault();
-    
+
     if (e.touches.length === 2 && touchState.isPinching) {
       // Pinch zoom
       const distance = getTouchDistance(e.touches[0], e.touches[1]);
       const scale = touchState.scale * (distance / touchState.lastTouchDistance);
-      
-      setTouchState(prev => ({
+
+      setTouchState((prev) => ({
         ...prev,
         scale: Math.max(0.5, Math.min(3, scale)),
-        lastTouchDistance: distance
+        lastTouchDistance: distance,
       }));
     } else if (e.touches.length === 1 && touchState.isDragging && touchState.scale > 1) {
       // Pan when zoomed
       const newX = e.touches[0].clientX - touchState.startX;
       const newY = e.touches[0].clientY - touchState.startY;
-      
-      setTouchState(prev => ({
+
+      setTouchState((prev) => ({
         ...prev,
         x: newX,
-        y: newY
+        y: newY,
       }));
     }
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (e.touches.length === 0) {
-      setTouchState(prev => ({
+      setTouchState((prev) => ({
         ...prev,
         isPinching: false,
-        isDragging: false
+        isDragging: false,
       }));
     }
   };
 
   const handleZoomIn = () => {
-    setTouchState(prev => ({
+    setTouchState((prev) => ({
       ...prev,
-      scale: Math.min(3, prev.scale * 1.2)
+      scale: Math.min(3, prev.scale * 1.2),
     }));
   };
 
   const handleZoomOut = () => {
-    setTouchState(prev => ({
+    setTouchState((prev) => ({
       ...prev,
-      scale: Math.max(0.5, prev.scale / 1.2)
+      scale: Math.max(0.5, prev.scale / 1.2),
     }));
   };
 
@@ -126,14 +127,14 @@ export const BracketTouchControls: React.FC<BracketTouchControlsProps> = ({
       isPinching: false,
       isDragging: false,
       startX: 0,
-      startY: 0
+      startY: 0,
     });
   };
 
   const transformStyle = {
     transform: `scale(${touchState.scale}) translate(${touchState.x / touchState.scale}px, ${touchState.y / touchState.scale}px)`,
     transformOrigin: 'center center',
-    transition: touchState.isPinching || touchState.isDragging ? 'none' : 'transform 0.2s ease-out'
+    transition: touchState.isPinching || touchState.isDragging ? 'none' : 'transform 0.2s ease-out',
   };
 
   return (
@@ -158,12 +159,7 @@ export const BracketTouchControls: React.FC<BracketTouchControlsProps> = ({
         >
           <ZoomOut className="h-5 w-5" />
         </Button>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={handleReset}
-          className="h-10 w-10 p-0"
-        >
+        <Button variant="secondary" size="sm" onClick={handleReset} className="h-10 w-10 p-0">
           <RotateCcw className="h-5 w-5" />
         </Button>
       </div>
@@ -192,9 +188,7 @@ export const BracketTouchControls: React.FC<BracketTouchControlsProps> = ({
         onTouchEnd={handleTouchEnd}
         style={{ touchAction: 'none' }}
       >
-        <div style={transformStyle}>
-          {children}
-        </div>
+        <div style={transformStyle}>{children}</div>
       </div>
     </div>
   );

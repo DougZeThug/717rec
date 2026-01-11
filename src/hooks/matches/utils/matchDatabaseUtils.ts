@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { BadgeProcessingService } from '@/services/BadgeProcessingService';
 import { FailedBadgeOperationsService } from '@/services/FailedBadgeOperationsService';
-import { matchLog, badgeLog, errorLog, warnLog } from "@/utils/logger";
+import { badgeLog, errorLog, matchLog, warnLog } from '@/utils/logger';
 
 export interface UpdateMatchScoreParams {
   matchId: string;
@@ -23,14 +23,14 @@ export const updateMatchScore = async ({
   team1Score,
   team2Score,
   team1GameWins,
-  team2GameWins
+  team2GameWins,
 }: UpdateMatchScoreParams): Promise<UpdateMatchScoreResult> => {
   matchLog('updateMatchScore called with:', {
     matchId,
     team1Score,
     team2Score,
     team1GameWins,
-    team2GameWins
+    team2GameWins,
   });
 
   // First get the match to extract team IDs
@@ -45,7 +45,7 @@ export const updateMatchScore = async ({
   }
 
   const { team1_id, team2_id } = matchData;
-  
+
   // Determine winner based on scores
   const team1Win = team1Score > team2Score;
   const winnerId = team1Win ? team1_id : team2_id;
@@ -56,7 +56,7 @@ export const updateMatchScore = async ({
     winnerId,
     loserId,
     team1_id,
-    team2_id
+    team2_id,
   });
 
   // Update the match with scores and completion status
@@ -69,7 +69,7 @@ export const updateMatchScore = async ({
       team2_game_wins: team2GameWins,
       winner_id: winnerId,
       loser_id: loserId,
-      iscompleted: true
+      iscompleted: true,
     })
     .eq('id', matchId)
     .select()
@@ -98,7 +98,8 @@ export const updateMatchScore = async ({
     {
       type: 'clutch_performer' as const,
       params: { winnerId, team1GameWins, team2GameWins },
-      execute: () => BadgeProcessingService.processClutchPerformerBadge(winnerId, team1GameWins, team2GameWins),
+      execute: () =>
+        BadgeProcessingService.processClutchPerformerBadge(winnerId, team1GameWins, team2GameWins),
     },
     {
       type: 'consistent_performer' as const,
@@ -114,7 +115,7 @@ export const updateMatchScore = async ({
       badgeLog(`${operation.type} badge processing completed:`, result);
     } catch (badgeError) {
       warnLog(`${operation.type} badge processing failed:`, badgeError);
-      
+
       // Queue the failed operation for retry and admin notification
       FailedBadgeOperationsService.queueFailedOperation(
         operation.type,
@@ -129,6 +130,6 @@ export const updateMatchScore = async ({
     data,
     team1_id,
     team2_id,
-    team1Win
+    team1Win,
   };
 };

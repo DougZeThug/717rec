@@ -1,18 +1,19 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Users } from 'lucide-react';
+import React from 'react';
+import { useForm } from 'react-hook-form';
 
-import React from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
-import { BracketFormTitle } from "./form/BracketFormTitle";
-import { BracketFormDivision } from "./form/BracketFormDivision";
-import { BracketFormFormat } from "./form/BracketFormFormat";
-import { BracketFormGrandFinal } from "./form/BracketFormGrandFinal";
-import { BracketFormTeamsContainer } from "./form/bracket-teams/components/BracketFormTeamsContainer";
-import { bracketFormSchema, BracketFormValues } from "./form/BracketFormSchema";
-import { Team, Division } from "@/types";
-import { Users } from "lucide-react";
-import { errorLog } from "@/utils/logger";
+import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
+import { Division, Team } from '@/types';
+import { errorLog } from '@/utils/logger';
+
+import { BracketFormTeamsContainer } from './form/bracket-teams/components/BracketFormTeamsContainer';
+import { BracketFormDivision } from './form/BracketFormDivision';
+import { BracketFormFormat } from './form/BracketFormFormat';
+import { BracketFormGrandFinal } from './form/BracketFormGrandFinal';
+import { bracketFormSchema, BracketFormValues } from './form/BracketFormSchema';
+import { BracketFormTitle } from './form/BracketFormTitle';
 
 const isPowerOf2 = (n: number) => n > 0 && (n & (n - 1)) === 0;
 
@@ -43,24 +44,24 @@ const BracketForm: React.FC<BracketFormProps> = ({
   const form = useForm({
     resolver: zodResolver(bracketFormSchema),
     defaultValues: {
-      title: "",
-      divisionId: "",
-      format: "Single Elimination" as const,
+      title: '',
+      divisionId: '',
+      format: 'Single Elimination' as const,
       teams: [] as string[],
-      grandFinalType: "simple" as const,
+      grandFinalType: 'simple' as const,
     },
-    mode: "onBlur",
+    mode: 'onBlur',
   });
 
   const { watch, setValue, handleSubmit, formState, trigger } = form;
-  const watchedDivisionId = watch("divisionId");
-  const watchedTitle = watch("title");
+  const watchedDivisionId = watch('divisionId');
+  const watchedTitle = watch('title');
 
   // Update teams field when selection changes and trigger validation
   React.useEffect(() => {
-    setValue("teams", selectedTeams, { shouldValidate: true });
+    setValue('teams', selectedTeams, { shouldValidate: true });
     // Manually trigger validation to ensure form state is updated
-    trigger("teams");
+    trigger('teams');
   }, [selectedTeams, setValue, trigger]);
 
   // Handle team selection changes - ONLY updates state, NEVER submits
@@ -68,7 +69,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
     ({ ids, isValid }: { ids: string[]; isValid: boolean }) => {
       setSelectedTeams(ids);
       setTeamsValidationState(isValid);
-      
+
       // Notify parent of validity change - DOES NOT TRIGGER SUBMISSION
       if (onTeamsValidityChange) {
         onTeamsValidityChange(isValid);
@@ -85,7 +86,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
 
   // Handle seed change - track manual seed overrides
   const handleSeedChange = React.useCallback((teamId: string, seed: number | null) => {
-    setTeamSeeds(prev => {
+    setTeamSeeds((prev) => {
       const updated = { ...prev };
       if (seed === null) {
         delete updated[teamId];
@@ -102,22 +103,22 @@ const BracketForm: React.FC<BracketFormProps> = ({
     if (!isExplicitSubmissionRef.current) {
       return;
     }
-    
+
     // Reset the explicit submission flag
     isExplicitSubmissionRef.current = false;
-    
+
     // Additional validation before submission
     if (!data.teams || data.teams.length < 2) {
-      errorLog("BracketForm: Insufficient teams selected - blocking submission");
+      errorLog('BracketForm: Insufficient teams selected - blocking submission');
       return;
     }
 
     // Find division name for the selected division
-    const selectedDivision = divisions?.find(d => d.id === data.divisionId);
+    const selectedDivision = divisions?.find((d) => d.id === data.divisionId);
     const formDataWithDivision = {
       ...data,
-      divisionName: selectedDivision?.name || "Unknown Division",
-      teamSeeds // Include manual seed overrides
+      divisionName: selectedDivision?.name || 'Unknown Division',
+      teamSeeds, // Include manual seed overrides
     };
 
     onSubmit(formDataWithDivision);
@@ -142,9 +143,9 @@ const BracketForm: React.FC<BracketFormProps> = ({
 
   // Simplified button state logic - check individual field requirements
   const isButtonEnabled = !!(
-    watchedTitle && 
-    watchedDivisionId && 
-    teamsValidationState && 
+    watchedTitle &&
+    watchedDivisionId &&
+    teamsValidationState &&
     selectedTeamCount >= minTeams &&
     selectedTeamCount <= maxTeams &&
     !isSubmitting
@@ -157,9 +158,9 @@ const BracketForm: React.FC<BracketFormProps> = ({
         <BracketFormTitle form={form} />
 
         {/* Division Selection */}
-        <BracketFormDivision 
+        <BracketFormDivision
           form={form}
-          divisions={divisions || []} 
+          divisions={divisions || []}
           onDivisionChange={handleDivisionChange}
         />
 
@@ -177,7 +178,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
               Select Teams ({selectedTeamCount}/{maxTeams})
             </label>
           </div>
-          
+
           <BracketFormTeamsContainer
             divisionId={watchedDivisionId}
             teams={teams}
@@ -190,14 +191,17 @@ const BracketForm: React.FC<BracketFormProps> = ({
         </div>
 
         {/* Validation Messages */}
-        {selectedTeamCount > 0 && selectedTeamCount >= minTeams && selectedTeamCount <= maxTeams && (
-          <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
-            <Users className="w-4 h-4" />
-            <span>
-              Ready to create bracket with {selectedTeamCount} teams{!isPowerOf2(selectedTeamCount) ? ' (BYEs will be added)' : ''}
-            </span>
-          </div>
-        )}
+        {selectedTeamCount > 0 &&
+          selectedTeamCount >= minTeams &&
+          selectedTeamCount <= maxTeams && (
+            <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
+              <Users className="w-4 h-4" />
+              <span>
+                Ready to create bracket with {selectedTeamCount} teams
+                {!isPowerOf2(selectedTeamCount) ? ' (BYEs will be added)' : ''}
+              </span>
+            </div>
+          )}
 
         {/* Form Actions */}
         <div className="flex gap-3 pt-4 border-t">

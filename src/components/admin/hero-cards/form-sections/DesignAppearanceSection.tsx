@@ -1,17 +1,19 @@
-import React from "react";
-import { Palette } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ColorPresetPicker } from "../ColorPresetPicker";
-import { IconPicker } from "../IconPicker";
-import { FormSectionProps } from "./types";
-import { SectionHeader } from "./SectionHeader";
+import { Palette } from 'lucide-react';
+import React from 'react';
+
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+
+import { ColorPresetPicker } from '../ColorPresetPicker';
+import { IconPicker } from '../IconPicker';
+import { SectionHeader } from './SectionHeader';
+import { FormSectionProps } from './types';
 
 export const DesignAppearanceSection: React.FC<FormSectionProps> = ({ formData, onChange }) => {
   return (
     <div className="bg-card rounded-lg border p-4">
       <SectionHeader icon={Palette} title="Design & Appearance" />
-      
+
       <div className="space-y-6">
         <div>
           <Label className="mb-3 block">Color Theme</Label>

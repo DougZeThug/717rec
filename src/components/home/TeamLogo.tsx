@@ -1,6 +1,6 @@
+import React from 'react';
 
-import React from "react";
-import { imageErrorLog } from "@/utils/logger";
+import { imageErrorLog } from '@/utils/logger';
 
 interface TeamLogoProps {
   imageUrl: string | undefined | null;
@@ -11,8 +11,8 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({ imageUrl, teamName }) => {
   return (
     <div className="h-full w-full flex items-center justify-center">
       {imageUrl ? (
-        <img 
-          src={imageUrl} 
+        <img
+          src={imageUrl}
           alt={teamName}
           width={144}
           height={144}
@@ -21,7 +21,8 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({ imageUrl, teamName }) => {
           className="max-h-36 max-w-full object-contain"
           onError={(e) => {
             imageErrorLog(teamName, imageUrl);
-            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
+            (e.target as HTMLImageElement).src =
+              'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
           }}
         />
       ) : (

@@ -1,34 +1,49 @@
-
 export class ChallongeError extends Error {
-  constructor(message: string, public readonly operation?: string) {
+  constructor(
+    message: string,
+    public readonly operation?: string
+  ) {
     super(message);
     this.name = 'ChallongeError';
   }
 }
 
 export class SupabaseError extends Error {
-  constructor(message: string, public readonly table?: string, public readonly operation?: string) {
+  constructor(
+    message: string,
+    public readonly table?: string,
+    public readonly operation?: string
+  ) {
     super(message);
     this.name = 'SupabaseError';
   }
 }
 
 export class BracketValidationError extends Error {
-  constructor(message: string, public readonly field?: string) {
+  constructor(
+    message: string,
+    public readonly field?: string
+  ) {
     super(message);
     this.name = 'BracketValidationError';
   }
 }
 
 export class TeamValidationError extends Error {
-  constructor(message: string, public readonly teamId?: string) {
+  constructor(
+    message: string,
+    public readonly teamId?: string
+  ) {
     super(message);
     this.name = 'TeamValidationError';
   }
 }
 
 export class MatchSyncError extends Error {
-  constructor(message: string, public readonly matchId?: string) {
+  constructor(
+    message: string,
+    public readonly matchId?: string
+  ) {
     super(message);
     this.name = 'MatchSyncError';
   }
@@ -82,40 +97,40 @@ export function categorizeError(error: unknown): {
     return {
       category: 'challonge',
       message: error.message,
-      userMessage: 'Failed to communicate with Challonge. Please check your API configuration.'
+      userMessage: 'Failed to communicate with Challonge. Please check your API configuration.',
     };
   }
-  
+
   if (isSupabaseError(error)) {
     return {
       category: 'database',
       message: error.message,
-      userMessage: 'Database operation failed. Please try again or contact support.'
+      userMessage: 'Database operation failed. Please try again or contact support.',
     };
   }
-  
+
   if (isBracketValidationError(error)) {
     return {
       category: 'validation',
       message: error.message,
-      userMessage: error.message // Validation errors are already user-friendly
+      userMessage: error.message, // Validation errors are already user-friendly
     };
   }
-  
+
   const message = getErrorMessage(error);
-  
+
   if (message.toLowerCase().includes('network') || message.toLowerCase().includes('fetch')) {
     return {
       category: 'network',
       message,
-      userMessage: 'Network error. Please check your connection and try again.'
+      userMessage: 'Network error. Please check your connection and try again.',
     };
   }
-  
+
   return {
     category: 'unknown',
     message,
-    userMessage: 'An unexpected error occurred. Please try again.'
+    userMessage: 'An unexpected error occurred. Please try again.',
   };
 }
 
@@ -127,20 +142,20 @@ export function processError(error: unknown): {
   if (error instanceof Error) {
     return {
       message: error.message,
-      originalError: error
+      originalError: error,
     };
   }
-  
+
   if (typeof error === 'string') {
     return {
       message: error,
-      originalError: null
+      originalError: null,
     };
   }
-  
+
   return {
     message: 'An unknown error occurred',
-    originalError: null
+    originalError: null,
   };
 }
 
@@ -152,22 +167,24 @@ export function getUIErrorMessage(error: unknown, context?: string): string {
 // Utility to log errors consistently
 export function logError(error: unknown, context: string, additionalData?: any): void {
   const processed = processError(error);
-  
+
   // Import errorLog dynamically to avoid circular dependency
-  import('./logger').then(({ errorLog }) => {
-    errorLog(`${context}:`, {
-      message: processed.message,
-      originalError: processed.originalError,
-      context,
-      additionalData
+  import('./logger')
+    .then(({ errorLog }) => {
+      errorLog(`${context}:`, {
+        message: processed.message,
+        originalError: processed.originalError,
+        context,
+        additionalData,
+      });
+    })
+    .catch(() => {
+      // Fallback if logger can't be imported
+      console.error(`${context}:`, {
+        message: processed.message,
+        originalError: processed.originalError,
+        context,
+        additionalData,
+      });
     });
-  }).catch(() => {
-    // Fallback if logger can't be imported
-    console.error(`${context}:`, {
-      message: processed.message,
-      originalError: processed.originalError,
-      context,
-      additionalData
-    });
-  });
 }

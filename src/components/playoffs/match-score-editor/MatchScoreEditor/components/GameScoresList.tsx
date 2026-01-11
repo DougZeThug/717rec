@@ -1,10 +1,11 @@
+import React from 'react';
 
-import React from "react";
-import { cn } from "@/lib/utils";
-import { animations } from "@/styles/design-system";
-import { Team } from "@/types";
-import GameScoreRow from "./GameScoreRow";
-import { GameData } from "../types";
+import { cn } from '@/lib/utils';
+import { animations } from '@/styles/design-system';
+import { Team } from '@/types';
+
+import { GameData } from '../types';
+import GameScoreRow from './GameScoreRow';
 
 interface GamesScoresListProps {
   games: GameData[];
@@ -21,12 +22,12 @@ const GameScoresList: React.FC<GamesScoresListProps> = ({
   team2,
   onScoreChange,
   onRemoveGame,
-  canRemoveGame
+  canRemoveGame,
 }) => {
   return (
     <div>
       {games.map((game, index) => (
-        <div 
+        <div
           key={index}
           className={animations.fadeIn}
           style={{ animationDelay: `${(index + 1) * 0.1}s` }}

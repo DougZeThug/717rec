@@ -1,10 +1,11 @@
+import React, { useMemo, useState, useTransition } from 'react';
 
-import React, { useState, useMemo, useTransition } from "react";
-import { Ranking } from "@/types";
-import { useIsMobile } from "@/hooks/use-mobile";
-import RankingsMobileView from "./RankingsMobileView";
-import RankingsDesktopView from "./RankingsDesktopView";
-import { sortRankings } from "@/utils/rankingUtils";
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Ranking } from '@/types';
+import { sortRankings } from '@/utils/rankingUtils';
+
+import RankingsDesktopView from './RankingsDesktopView';
+import RankingsMobileView from './RankingsMobileView';
 
 interface RankingsTableProps {
   rankings: Ranking[];
@@ -18,19 +19,23 @@ export interface SortOptions {
   direction: SortDirection;
 }
 
-const RankingsTable: React.FC<RankingsTableProps> = ({ rankings, showUnified = false, myTeamId }) => {
+const RankingsTable: React.FC<RankingsTableProps> = ({
+  rankings,
+  showUnified = false,
+  myTeamId,
+}) => {
   const isMobile = useIsMobile();
   const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [sortOptions, setSortOptions] = useState<SortOptions>(() => {
-    const savedSort = localStorage.getItem("rankingsSortOptions");
+    const savedSort = localStorage.getItem('rankingsSortOptions');
     if (savedSort) {
       try {
         const parsed = JSON.parse(savedSort);
         const direction: SortDirection = parsed.direction === 'asc' ? 'asc' : 'desc';
-        return { 
-          field: parsed.field || 'powerScore', 
-          direction 
+        return {
+          field: parsed.field || 'powerScore',
+          direction,
         };
       } catch {
         // Silently use defaults if parsing fails
@@ -44,41 +49,45 @@ const RankingsTable: React.FC<RankingsTableProps> = ({ rankings, showUnified = f
   };
 
   // Memoize sorted rankings - only recalculate when rankings or sort options change
-  const sortedRankings = useMemo(() => 
-    sortRankings(rankings, sortOptions.field, sortOptions.direction),
+  const sortedRankings = useMemo(
+    () => sortRankings(rankings, sortOptions.field, sortOptions.direction),
     [rankings, sortOptions.field, sortOptions.direction]
   );
-  
+
   // Memoize division rank calculations - only recalculate when sorted rankings change
-  const rankingsWithDivisionRanks = useMemo(() => 
-    sortedRankings.map(ranking => {
-      const divisionTeams = sortedRankings.filter(
-        r => r.divisionName === ranking.divisionName
-      );
-      const sortedDivisionTeams = sortRankings(divisionTeams, sortOptions.field, sortOptions.direction);
-      const divisionRank = sortedDivisionTeams.findIndex(r => r.teamId === ranking.teamId) + 1;
-      
-      return {
-        ...ranking,
-        divisionRank: ranking.divisionName ? divisionRank : undefined,
-      };
-    }),
+  const rankingsWithDivisionRanks = useMemo(
+    () =>
+      sortedRankings.map((ranking) => {
+        const divisionTeams = sortedRankings.filter((r) => r.divisionName === ranking.divisionName);
+        const sortedDivisionTeams = sortRankings(
+          divisionTeams,
+          sortOptions.field,
+          sortOptions.direction
+        );
+        const divisionRank = sortedDivisionTeams.findIndex((r) => r.teamId === ranking.teamId) + 1;
+
+        return {
+          ...ranking,
+          divisionRank: ranking.divisionName ? divisionRank : undefined,
+        };
+      }),
     [sortedRankings, sortOptions.field, sortOptions.direction]
   );
 
   const handleSortChange = (field: string) => {
-    const newDirection: SortDirection = sortOptions.field === field && sortOptions.direction === 'desc' ? 'asc' : 'desc';
+    const newDirection: SortDirection =
+      sortOptions.field === field && sortOptions.direction === 'desc' ? 'asc' : 'desc';
     const newSortOptions: SortOptions = {
       field,
-      direction: newDirection
+      direction: newDirection,
     };
-    
+
     // Use startTransition for non-urgent UI update
     startTransition(() => {
       setSortOptions(newSortOptions);
     });
-    
-    localStorage.setItem("rankingsSortOptions", JSON.stringify(newSortOptions));
+
+    localStorage.setItem('rankingsSortOptions', JSON.stringify(newSortOptions));
   };
 
   if (isMobile) {

@@ -1,27 +1,27 @@
-import React, { lazy, Suspense } from "react";
-import { useTeams } from "@/hooks/useTeams";
-import { usePendingScoresMatches } from "@/hooks/usePendingScoresMatches";
-import { useHeroCards } from "@/hooks/useHeroCards";
-import { useWeeklyPowerScoreTrends } from "@/hooks/useWeeklyPowerScoreTrends";
-import { useConfirmationSeason } from "@/hooks/useSeasonParticipation";
-import { useMyNextMatch } from "@/hooks/useMyNextMatch";
-import TopTeams from "@/components/home/TopTeams";
-import HeroSection from "@/components/home/HeroSection";
-import PendingScoresCard from "@/components/home/PendingScoresCard";
-import TeamOfTheWeekCard from "@/components/home/TeamOfTheWeekCard";
-import TeamOfTheWeekSkeleton from "@/components/home/TeamOfTheWeekSkeleton";
-import MyNextMatchCard from "@/components/home/MyNextMatchCard";
-import MyNextMatchSkeleton from "@/components/home/MyNextMatchSkeleton";
-import HeroCard from "@/components/hero/HeroCard";
-import HeroCardSkeleton from "@/components/hero/HeroCardSkeleton";
-import ParticipationHeroCard from "@/components/hero/ParticipationHeroCard";
-import PageLayout from "@/components/layout/PageLayout";
+import React, { lazy, Suspense } from 'react';
 
-import { useIsMobile } from "@/hooks/use-mobile";
-import PageTransition from "@/components/transitions/PageTransition";
+import HeroCard from '@/components/hero/HeroCard';
+import HeroCardSkeleton from '@/components/hero/HeroCardSkeleton';
+import ParticipationHeroCard from '@/components/hero/ParticipationHeroCard';
+import HeroSection from '@/components/home/HeroSection';
+import MyNextMatchCard from '@/components/home/MyNextMatchCard';
+import MyNextMatchSkeleton from '@/components/home/MyNextMatchSkeleton';
+import PendingScoresCard from '@/components/home/PendingScoresCard';
+import TeamOfTheWeekCard from '@/components/home/TeamOfTheWeekCard';
+import TeamOfTheWeekSkeleton from '@/components/home/TeamOfTheWeekSkeleton';
+import TopTeams from '@/components/home/TopTeams';
+import PageLayout from '@/components/layout/PageLayout';
+import PageTransition from '@/components/transitions/PageTransition';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useHeroCards } from '@/hooks/useHeroCards';
+import { useMyNextMatch } from '@/hooks/useMyNextMatch';
+import { usePendingScoresMatches } from '@/hooks/usePendingScoresMatches';
+import { useConfirmationSeason } from '@/hooks/useSeasonParticipation';
+import { useTeams } from '@/hooks/useTeams';
+import { useWeeklyPowerScoreTrends } from '@/hooks/useWeeklyPowerScoreTrends';
 
 // Lazy load CallToAction since it's below the fold
-const CallToAction = lazy(() => import("@/components/home/CallToAction"));
+const CallToAction = lazy(() => import('@/components/home/CallToAction'));
 
 const Index: React.FC = () => {
   const { teams, isLoading: teamsLoading } = useTeams();
@@ -31,41 +31,42 @@ const Index: React.FC = () => {
   const { data: confirmationSeason } = useConfirmationSeason();
   const myNextMatch = useMyNextMatch();
   const isMobile = useIsMobile();
-  
+
   const hasPendingScores = !pendingScoresLoading && pendingMatches.length > 0;
   const topGainer = trendData?.trends?.[0];
   const hasTeamOfWeek = !trendLoading && topGainer && topGainer.delta > 0;
   const showParticipationCard = !!confirmationSeason;
-  
+
   // Top teams by power score
   const topTeams = React.useMemo(() => {
     if (!teams?.length) return [];
-    return [...teams]
-      .sort((a, b) => (b.power_score ?? 0) - (a.power_score ?? 0))
-      .slice(0, 10);
+    return [...teams].sort((a, b) => (b.power_score ?? 0) - (a.power_score ?? 0)).slice(0, 10);
   }, [teams]);
-  
+
   const getDelay = (index: number) => {
     if (index === 0) return 'short' as const;
     if (index === 1) return 'medium' as const;
     return 'long' as const;
   };
-  
+
   return (
-    <PageLayout 
-      className="flex flex-col gap-4 md:gap-8" 
+    <PageLayout
+      className="flex flex-col gap-4 md:gap-8"
       compact={isMobile}
       gradientVariant="blueOrange"
     >
       <PageTransition animation="fadeInSlideDown" immediate>
         <HeroSection />
       </PageTransition>
-      
+
       <div className="container mx-auto px-4 flex flex-col gap-4 md:gap-8">
         {/* My Next Match - shown for authenticated users with a team */}
         {myNextMatch.isLoading ? (
           <MyNextMatchSkeleton />
-        ) : myNextMatch.hasTeamMembership && myNextMatch.nextMatch && myNextMatch.myTeam && myNextMatch.opponent ? (
+        ) : myNextMatch.hasTeamMembership &&
+          myNextMatch.nextMatch &&
+          myNextMatch.myTeam &&
+          myNextMatch.opponent ? (
           <PageTransition animation="fadeInSlideUp" delay="short">
             <MyNextMatchCard
               match={myNextMatch.nextMatch}
@@ -88,11 +89,7 @@ const Index: React.FC = () => {
           <HeroCardSkeleton />
         ) : (
           heroCards?.map((card, index) => (
-            <PageTransition 
-              key={card.id} 
-              animation="fadeInSlideUp" 
-              delay={getDelay(index)}
-            >
+            <PageTransition key={card.id} animation="fadeInSlideUp" delay={getDelay(index)}>
               <HeroCard card={card} />
             </PageTransition>
           ))

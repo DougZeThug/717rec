@@ -1,6 +1,5 @@
-
-import React from "react";
-import { Check, Edit } from "lucide-react";
+import { Check, Edit } from 'lucide-react';
+import React from 'react';
 
 interface MatchStatusIndicatorProps {
   isEdited?: boolean;
@@ -13,7 +12,7 @@ const MatchStatusIndicator: React.FC<MatchStatusIndicatorProps> = ({
   isEdited = false,
   wasCompletedAndEdited = false,
   isCompleted,
-  isValid
+  isValid,
 }) => {
   return (
     <div className="flex items-center space-x-2">
@@ -35,11 +34,7 @@ const MatchStatusIndicator: React.FC<MatchStatusIndicatorProps> = ({
           Completed
         </span>
       )}
-      {!isValid && (
-        <span className="text-xs text-red-500 flex items-center">
-          Invalid Score
-        </span>
-      )}
+      {!isValid && <span className="text-xs text-red-500 flex items-center">Invalid Score</span>}
     </div>
   );
 };

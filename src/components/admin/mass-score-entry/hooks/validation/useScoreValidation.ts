@@ -1,6 +1,6 @@
+import { useState } from 'react';
 
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from '@/hooks/use-toast';
 
 export const useScoreValidation = () => {
   const { toast } = useToast();
@@ -18,7 +18,7 @@ export const useScoreValidation = () => {
     // Game wins must be non-negative integers and cannot be tied (except 0-0)
     if (team1GameWins < 0 || team2GameWins < 0) return false;
     if (team1GameWins === team2GameWins && team1GameWins !== 0) return false;
-    
+
     return true;
   };
 
@@ -34,9 +34,7 @@ export const useScoreValidation = () => {
     const team2_game_wins = match.team2_game_wins ?? 0;
 
     const validMatchScore =
-      [0, 1].includes(team1Score) &&
-      [0, 1].includes(team2Score) &&
-      team1Score !== team2Score;
+      [0, 1].includes(team1Score) && [0, 1].includes(team2Score) && team1Score !== team2Score;
 
     const totalGameWins = team1_game_wins + team2_game_wins;
     const validGameWinSum = totalGameWins === 2 || totalGameWins === 3;
@@ -49,11 +47,11 @@ export const useScoreValidation = () => {
   };
 
   const setValidationError = (matchId: string, message: string) => {
-    setValidationErrors(prev => ({ ...prev, [matchId]: message }));
+    setValidationErrors((prev) => ({ ...prev, [matchId]: message }));
   };
 
   const clearValidationError = (matchId: string) => {
-    setValidationErrors(prev => {
+    setValidationErrors((prev) => {
       const newErrors = { ...prev };
       delete newErrors[matchId];
       return newErrors;
@@ -66,6 +64,6 @@ export const useScoreValidation = () => {
     validateGameWins,
     validateMatch,
     setValidationError,
-    clearValidationError
+    clearValidationError,
   };
 };

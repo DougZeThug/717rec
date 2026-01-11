@@ -1,15 +1,17 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router";
-import { useHeadToHead } from "@/hooks/useHeadToHead";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { ArrowUpDown, Search, Calendar, Trophy, X, Swords, Download } from "lucide-react";
-import { exportHeadToHeadToCSV } from "@/utils/exportUtils";
-import { OpponentHistoryModal } from "./OpponentHistoryModal";
-import { format } from "date-fns";
-import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
-import { LoadingState } from "@/components/ui/loading-state";
+import { format } from 'date-fns';
+import { ArrowUpDown, Calendar, Download, Search, Swords, Trophy, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
+import { Input } from '@/components/ui/input';
+import { LoadingState } from '@/components/ui/loading-state';
+import { useHeadToHead } from '@/hooks/useHeadToHead';
+import { exportHeadToHeadToCSV } from '@/utils/exportUtils';
+
+import { OpponentHistoryModal } from './OpponentHistoryModal';
 
 interface HeadToHeadRecordsProps {
   teamId: string;
@@ -22,27 +24,27 @@ type SortDirection = 'asc' | 'desc';
 const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName = 'Team' }) => {
   const navigate = useNavigate();
   const { data: records, isLoading, error } = useHeadToHead(teamId);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<SortField>('wins');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [selectedOpponent, setSelectedOpponent] = useState<{ id: string; name: string } | null>(null);
+  const [selectedOpponent, setSelectedOpponent] = useState<{ id: string; name: string } | null>(
+    null
+  );
 
-  // Use fresh database data directly  
+  // Use fresh database data directly
   const displayRecords = records || [];
 
   const filteredRecords = displayRecords
-    .filter(record => 
-      record.opponent_name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    .filter((record) => record.opponent_name.toLowerCase().includes(searchTerm.toLowerCase()))
     .sort((a, b) => {
       let aValue: any = a[sortField];
       let bValue: any = b[sortField];
-      
+
       if (sortField === 'opponent_name') {
         aValue = aValue.toLowerCase();
         bValue = bValue.toLowerCase();
       }
-      
+
       if (sortDirection === 'asc') {
         return aValue > bValue ? 1 : -1;
       } else {
@@ -63,7 +65,10 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
     navigate(`/teams/${opponentId}`);
   };
 
-  const SortButton: React.FC<{ field: SortField; children: React.ReactNode }> = ({ field, children }) => (
+  const SortButton: React.FC<{ field: SortField; children: React.ReactNode }> = ({
+    field,
+    children,
+  }) => (
     <Button
       variant="ghost"
       size="sm"
@@ -81,7 +86,9 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
     }
 
     if (error) {
-      return <div className="text-center py-4 text-rose-600">Error loading head-to-head records</div>;
+      return (
+        <div className="text-center py-4 text-rose-600">Error loading head-to-head records</div>
+      );
     }
 
     if (displayRecords.length === 0) {
@@ -151,13 +158,13 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
                   {filteredRecords.map((record) => (
                     <tr key={record.opponent_name} className="border-b hover:bg-muted/50">
                       <td className="py-3">
-                        <div 
+                        <div
                           className="flex items-center space-x-3 cursor-pointer hover:bg-muted/30 rounded-md p-1 -m-1 transition-colors"
                           onClick={() => handleTeamClick(record.opponent_id)}
                         >
                           {record.opponent_image_url ? (
-                            <img 
-                              src={record.opponent_image_url} 
+                            <img
+                              src={record.opponent_image_url}
                               alt={`${record.opponent_name} logo`}
                               className="w-8 h-8 rounded-sm object-cover flex-shrink-0"
                             />
@@ -168,7 +175,9 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
                               </span>
                             </div>
                           )}
-                          <span className="font-medium hover:text-primary transition-colors">{record.opponent_name}</span>
+                          <span className="font-medium hover:text-primary transition-colors">
+                            {record.opponent_name}
+                          </span>
                         </div>
                       </td>
                       <td className="text-center">
@@ -181,7 +190,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
                         </div>
                       </td>
                       <td className="text-center">
-                        <Badge variant={record.win_pct >= 50 ? "default" : "secondary"}>
+                        <Badge variant={record.win_pct >= 50 ? 'default' : 'secondary'}>
                           {Number(record.win_pct).toFixed(1)}%
                         </Badge>
                       </td>
@@ -193,7 +202,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
                         {record.last_played_at ? (
                           <div className="flex items-center space-x-1">
                             <Calendar className="w-3 h-3" />
-                            <span>{format(new Date(record.last_played_at), "MMM d, yyyy")}</span>
+                            <span>{format(new Date(record.last_played_at), 'MMM d, yyyy')}</span>
                           </div>
                         ) : (
                           '-'
@@ -204,10 +213,12 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setSelectedOpponent({ 
-                              id: record.opponent_id, 
-                              name: record.opponent_name 
-                            })}
+                            onClick={() =>
+                              setSelectedOpponent({
+                                id: record.opponent_id,
+                                name: record.opponent_name,
+                              })
+                            }
                           >
                             View Details
                           </Button>

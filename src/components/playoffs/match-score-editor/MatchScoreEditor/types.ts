@@ -1,5 +1,4 @@
-
-import type { PlayoffMatch, Team } from "@/types";
+import type { PlayoffMatch, Team } from '@/types';
 
 export interface MatchScoreEditorProps {
   match: PlayoffMatch;

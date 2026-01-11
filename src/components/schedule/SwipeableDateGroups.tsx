@@ -1,11 +1,12 @@
+import { format, isSameDay, isToday } from 'date-fns';
+import { AnimatePresence, motion, PanInfo } from 'framer-motion';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useEffect } from 'react';
 
-import React, { useEffect } from "react";
-import { motion, AnimatePresence, PanInfo } from "framer-motion";
-import { Match } from "@/types";
-import DateMatchGroup from "./DateMatchGroup";
-import { format, isToday, isSameDay } from "date-fns";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
+import { Match } from '@/types';
+
+import DateMatchGroup from './DateMatchGroup';
 
 interface DateGroup {
   date: Date;
@@ -36,10 +37,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
     }
   }, [activeIndex, groupedMatches.length, onIndexChange]);
 
-  const handleDragEnd = (
-    _event: MouseEvent | TouchEvent | PointerEvent,
-    info: PanInfo
-  ) => {
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const threshold = 50;
     const velocity = info.velocity.x;
     const offset = info.offset.x;
@@ -75,11 +73,11 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
           onClick={() => canGoPrev && onIndexChange(activeIndex - 1)}
           disabled={!canGoPrev}
           className={cn(
-            "flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all",
-            "min-h-[44px] min-w-[44px]", // Touch target
+            'flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all',
+            'min-h-[44px] min-w-[44px]', // Touch target
             canGoPrev
-              ? "text-primary hover:bg-primary/10 active:scale-95"
-              : "text-muted-foreground/50 cursor-not-allowed"
+              ? 'text-primary hover:bg-primary/10 active:scale-95'
+              : 'text-muted-foreground/50 cursor-not-allowed'
           )}
         >
           <ChevronLeft className="w-5 h-5" />
@@ -92,10 +90,10 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
               key={idx}
               onClick={() => onIndexChange(idx)}
               className={cn(
-                "w-2 h-2 rounded-full transition-all min-w-[20px] min-h-[20px] flex items-center justify-center",
+                'w-2 h-2 rounded-full transition-all min-w-[20px] min-h-[20px] flex items-center justify-center',
                 idx === safeIndex
-                  ? "bg-primary scale-125"
-                  : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                  ? 'bg-primary scale-125'
+                  : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
               )}
             >
               <span className="w-2 h-2 rounded-full" />
@@ -107,11 +105,11 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
           onClick={() => canGoNext && onIndexChange(activeIndex + 1)}
           disabled={!canGoNext}
           className={cn(
-            "flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all",
-            "min-h-[44px] min-w-[44px]", // Touch target
+            'flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all',
+            'min-h-[44px] min-w-[44px]', // Touch target
             canGoNext
-              ? "text-primary hover:bg-primary/10 active:scale-95"
-              : "text-muted-foreground/50 cursor-not-allowed"
+              ? 'text-primary hover:bg-primary/10 active:scale-95'
+              : 'text-muted-foreground/50 cursor-not-allowed'
           )}
         >
           <span className="hidden sm:inline">Next</span>
@@ -125,7 +123,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
         {canGoPrev && (
           <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-muted/50 to-transparent z-10 pointer-events-none sm:hidden" />
         )}
-        
+
         <div className="overflow-hidden touch-pan-y">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
@@ -133,7 +131,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.2}
@@ -143,7 +141,9 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
               <DateMatchGroup
                 date={currentGroup.date}
                 matches={currentGroup.matches}
-                isCurrentDay={isToday(currentGroup.date) || isSameDay(currentGroup.date, selectedDate)}
+                isCurrentDay={
+                  isToday(currentGroup.date) || isSameDay(currentGroup.date, selectedDate)
+                }
                 isFirstGroup={safeIndex === 0}
                 onEditMatch={onEditMatch}
                 onDeleteMatch={onDeleteMatch}
@@ -151,7 +151,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
             </motion.div>
           </AnimatePresence>
         </div>
-        
+
         {/* Right peek indicator */}
         {canGoNext && (
           <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-muted/50 to-transparent z-10 pointer-events-none sm:hidden" />

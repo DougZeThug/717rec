@@ -1,14 +1,24 @@
+import { CheckCircle, Clock, Loader2, Users, XCircle } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
-import React, { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { TeamLogo } from "@/components/shared/TeamLogo";
-import { CheckCircle, XCircle, Clock, Loader2, Users } from "lucide-react";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { errorLog } from "@/utils/logger";
+import { TeamLogo } from '@/components/shared/TeamLogo';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { errorLog } from '@/utils/logger';
 
 interface PendingMembership {
   id: string;
@@ -44,8 +54,9 @@ const TeamMembershipApprovalTab: React.FC = () => {
     try {
       setIsLoading(true);
       const { data, error } = await supabase
-        .from("team_memberships")
-        .select(`
+        .from('team_memberships')
+        .select(
+          `
           id,
           user_id,
           team_id,
@@ -53,18 +64,19 @@ const TeamMembershipApprovalTab: React.FC = () => {
           is_approved,
           user:profiles(id, username, full_name, avatar_url),
           team:teams(id, name, logo_url, image_url)
-        `)
-        .eq("is_approved", false)
-        .order("joined_at", { ascending: false });
+        `
+        )
+        .eq('is_approved', false)
+        .order('joined_at', { ascending: false });
 
       if (error) throw error;
       setPendingMemberships(data || []);
     } catch (error) {
-      errorLog("Error fetching pending memberships:", error);
+      errorLog('Error fetching pending memberships:', error);
       toast({
-        title: "Error",
-        description: "Failed to load pending team memberships",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to load pending team memberships',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -74,7 +86,7 @@ const TeamMembershipApprovalTab: React.FC = () => {
   const handleApproval = async (membershipId: string, approved: boolean) => {
     try {
       setProcessingId(membershipId);
-      
+
       const updateData: any = {
         is_approved: approved,
       };
@@ -85,27 +97,27 @@ const TeamMembershipApprovalTab: React.FC = () => {
       }
 
       const { error } = await supabase
-        .from("team_memberships")
+        .from('team_memberships')
         .update(updateData)
-        .eq("id", membershipId);
+        .eq('id', membershipId);
 
       if (error) throw error;
 
       // Remove from pending list
-      setPendingMemberships(prev => prev.filter(m => m.id !== membershipId));
+      setPendingMemberships((prev) => prev.filter((m) => m.id !== membershipId));
 
       toast({
-        title: approved ? "Membership Approved" : "Membership Rejected",
-        description: approved 
-          ? "The user can now edit team details" 
-          : "The membership request has been rejected",
+        title: approved ? 'Membership Approved' : 'Membership Rejected',
+        description: approved
+          ? 'The user can now edit team details'
+          : 'The membership request has been rejected',
       });
     } catch (error) {
-      errorLog("Error updating membership:", error);
+      errorLog('Error updating membership:', error);
       toast({
-        title: "Error",
-        description: "Failed to update membership status",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to update membership status',
+        variant: 'destructive',
       });
     } finally {
       setProcessingId(null);
@@ -125,9 +137,7 @@ const TeamMembershipApprovalTab: React.FC = () => {
       <div className="flex items-center gap-2">
         <Users className="h-5 w-5" />
         <h2 className="text-xl font-semibold">Team Membership Approvals</h2>
-        <Badge variant="secondary">
-          {pendingMemberships.length} pending
-        </Badge>
+        <Badge variant="secondary">{pendingMemberships.length} pending</Badge>
       </div>
 
       {pendingMemberships.length === 0 ? (
@@ -161,7 +171,7 @@ const TeamMembershipApprovalTab: React.FC = () => {
                           />
                         ) : (
                           <span className="text-sm font-medium">
-                            {(membership.user.full_name || membership.user.username || "User")
+                            {(membership.user.full_name || membership.user.username || 'User')
                               .charAt(0)
                               .toUpperCase()}
                           </span>
@@ -169,11 +179,11 @@ const TeamMembershipApprovalTab: React.FC = () => {
                       </div>
                       <div>
                         <p className="font-medium">
-                          {membership.user.full_name || membership.user.username || "Anonymous User"}
+                          {membership.user.full_name ||
+                            membership.user.username ||
+                            'Anonymous User'}
                         </p>
-                        <p className="text-xs text-muted-foreground">
-                          wants to join
-                        </p>
+                        <p className="text-xs text-muted-foreground">wants to join</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -209,7 +219,7 @@ const TeamMembershipApprovalTab: React.FC = () => {
                       </>
                     )}
                   </Button>
-                  
+
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button
@@ -226,7 +236,8 @@ const TeamMembershipApprovalTab: React.FC = () => {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Reject membership request?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to reject this membership request? The user will be removed from the team.
+                          Are you sure you want to reject this membership request? The user will be
+                          removed from the team.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>

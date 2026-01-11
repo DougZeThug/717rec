@@ -1,17 +1,19 @@
-import React from "react";
-import { Target } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { TargetTypeSelector, TargetEntitySelector } from "../TargetSelector";
-import { FormSectionProps } from "./types";
-import { SectionHeader } from "./SectionHeader";
+import { Target } from 'lucide-react';
+import React from 'react';
+
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+
+import { TargetEntitySelector, TargetTypeSelector } from '../TargetSelector';
+import { SectionHeader } from './SectionHeader';
+import { FormSectionProps } from './types';
 
 export const TargetingDisplaySection: React.FC<FormSectionProps> = ({ formData, onChange }) => {
   return (
     <div className="bg-card rounded-lg border p-4">
       <SectionHeader icon={Target} title="Targeting & Display" />
-      
+
       <div className="space-y-4">
         <TargetTypeSelector
           value={formData.target_type}
@@ -44,7 +46,9 @@ export const TargetingDisplaySection: React.FC<FormSectionProps> = ({ formData, 
 
         <div className="flex items-center justify-between py-2">
           <div>
-            <Label htmlFor="is_visible" className="cursor-pointer">Show on Homepage</Label>
+            <Label htmlFor="is_visible" className="cursor-pointer">
+              Show on Homepage
+            </Label>
             <p className="text-xs text-muted-foreground">
               Toggle to make this card visible to players
             </p>

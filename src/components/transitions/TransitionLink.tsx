@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link, LinkProps, useNavigate } from 'react-router';
-import { cn } from "@/lib/utils";
-import { interactive } from "@/styles/design-system";
+
+import { cn } from '@/lib/utils';
+import { interactive } from '@/styles/design-system';
 
 export interface TransitionLinkProps extends Omit<LinkProps, 'onClick'> {
   color?: string;
@@ -30,7 +31,7 @@ export const TransitionLink: React.FC<TransitionLinkProps> = ({
         return interactive.link.default;
     }
   };
-  
+
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     // Call custom onClick handler if provided
     if (onClick) {
@@ -43,7 +44,7 @@ export const TransitionLink: React.FC<TransitionLinkProps> = ({
     <Link
       to={to}
       className={cn(
-        "touch-manipulation min-h-[44px] min-w-[44px] flex items-center",
+        'touch-manipulation min-h-[44px] min-w-[44px] flex items-center',
         getLinkStyle(),
         className
       )}

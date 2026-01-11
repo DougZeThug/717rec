@@ -1,7 +1,7 @@
+import { Search } from 'lucide-react';
+import React from 'react';
 
-import React from "react";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Input } from '@/components/ui/input';
 
 interface ScheduleSearchProps {
   value: string;
@@ -17,7 +17,7 @@ const ScheduleSearch: React.FC<ScheduleSearchProps> = ({ value, onChange }) => {
         placeholder="Search matches"
         value={value}
         autoComplete="off"
-        onChange={e => onChange(e.target.value)}
+        onChange={(e) => onChange(e.target.value)}
         className="
           pl-9 h-9 rounded-md text-sm font-inter tracking-wide
           border border-gray-300 dark:border-gray-700
@@ -31,4 +31,3 @@ const ScheduleSearch: React.FC<ScheduleSearchProps> = ({ value, onChange }) => {
 };
 
 export default ScheduleSearch;
-

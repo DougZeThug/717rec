@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface IcicleProps extends React.SVGProps<SVGSVGElement> {
   size?: number | string;
@@ -8,11 +8,7 @@ interface IcicleProps extends React.SVGProps<SVGSVGElement> {
  * Icicle glyph - Decorative winter accent
  * Used for borders, dividers, hanging decorations
  */
-const Icicle: React.FC<IcicleProps> = ({ 
-  size = 24, 
-  className,
-  ...props 
-}) => (
+const Icicle: React.FC<IcicleProps> = ({ size = 24, className, ...props }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}

@@ -1,19 +1,28 @@
-import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import type { TooltipProps } from 'recharts';
-import { useAllTeamsCareerPowerScores, TeamCareerData } from '@/hooks/useAllTeamsCareerPowerScores';
-import { getTeamColor } from '@/utils/colors/teamColors';
 import { useTheme } from 'next-themes';
-import { useIsMobile } from '@/hooks/use-mobile';
+import React, { useMemo, useState } from 'react';
+import { Link } from 'react-router';
+import type { TooltipProps } from 'recharts';
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { TeamCareerData, useAllTeamsCareerPowerScores } from '@/hooks/useAllTeamsCareerPowerScores';
+import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { gradients } from '@/styles/design-system';
-import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
+import { getTeamColor } from '@/utils/colors/teamColors';
 
 const transformDataForChart = (teamsData?: TeamCareerData[]) => {
   if (!teamsData) return [];
@@ -21,8 +30,8 @@ const transformDataForChart = (teamsData?: TeamCareerData[]) => {
   const allSeasons = new Set<string>();
   const seasonOrderMap = new Map<string, number>();
 
-  teamsData.forEach(team => {
-    team.seasonData.forEach(s => {
+  teamsData.forEach((team) => {
+    team.seasonData.forEach((s) => {
       allSeasons.add(s.seasonName);
       seasonOrderMap.set(s.seasonName, s.seasonOrder);
     });
@@ -30,12 +39,13 @@ const transformDataForChart = (teamsData?: TeamCareerData[]) => {
 
   return Array.from(allSeasons)
     .sort((a, b) => (seasonOrderMap.get(a) || 0) - (seasonOrderMap.get(b) || 0))
-    .map(seasonName => {
+    .map((seasonName) => {
       const dataPoint: any = { seasonName };
-      
-      teamsData.forEach(team => {
-        const seasonStat = team.seasonData.find(s => s.seasonName === seasonName);
-        dataPoint[`team_${team.teamId}`] = seasonStat?.powerScore != null ? seasonStat.powerScore * 100 : null;
+
+      teamsData.forEach((team) => {
+        const seasonStat = team.seasonData.find((s) => s.seasonName === seasonName);
+        dataPoint[`team_${team.teamId}`] =
+          seasonStat?.powerScore != null ? seasonStat.powerScore * 100 : null;
       });
 
       return dataPoint;
@@ -49,11 +59,16 @@ interface CustomTooltipProps {
   selectedTeamIds: string[];
 }
 
-const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, teamsData, selectedTeamIds }) => {
+const CustomTooltip: React.FC<CustomTooltipProps> = ({
+  active,
+  payload,
+  teamsData,
+  selectedTeamIds,
+}) => {
   if (!active || !payload || payload.length === 0) return null;
 
   const seasonName = payload[0]?.payload?.seasonName;
-  
+
   // Show only selected teams in tooltip if any are selected, otherwise show all
   const visibleTeams = payload
     .filter((p: any) => p.value !== null)
@@ -80,8 +95,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, teamsDat
             >
               {team?.teamName}
             </Link>
-            :{' '}
-            <span className="font-bold">{entry.value?.toFixed(1)}</span>
+            : <span className="font-bold">{entry.value?.toFixed(1)}</span>
           </p>
         );
       })}
@@ -102,10 +116,13 @@ export const AllTeamsCareerPowerScoreChart: React.FC = () => {
   const isLight = !isWinterTheme && resolvedTheme === 'light';
 
   const teamOptions = useMemo(
-    () => teamsData?.map(t => ({
-      value: t.teamId,
-      label: t.teamName
-    })).sort((a, b) => a.label.localeCompare(b.label)) || [],
+    () =>
+      teamsData
+        ?.map((t) => ({
+          value: t.teamId,
+          label: t.teamName,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)) || [],
     [teamsData]
   );
 
@@ -129,52 +146,55 @@ export const AllTeamsCareerPowerScoreChart: React.FC = () => {
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-4">
-      <Card className={cn(
-        "border-t-2",
-        isWinterTheme 
-          ? "border-frost-border/50 bg-[hsl(var(--card))]" 
-          : "border-blue-300 dark:border-blue-700/80",
-        "shadow-lg hover:shadow-xl transition-shadow duration-300",
-        isLight ? gradients.card.blueOrange : ""
-      )}>
+      <Card
+        className={cn(
+          'border-t-2',
+          isWinterTheme
+            ? 'border-frost-border/50 bg-[hsl(var(--card))]'
+            : 'border-blue-300 dark:border-blue-700/80',
+          'shadow-lg hover:shadow-xl transition-shadow duration-300',
+          isLight ? gradients.card.blueOrange : ''
+        )}
+      >
         <CollapsibleTrigger className="w-full">
-          <CardHeader className={cn(
-            isMobile ? "py-2.5 px-3" : "py-4",
-            isWinterTheme 
-              ? "bg-[hsl(var(--card))]" 
-              : isLight 
-                ? "bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30" 
-                : "bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-gray-900/80",
-            isWinterTheme 
-              ? "border-b border-frost-border/30" 
-              : "border-b border-blue-100 dark:border-blue-900/30",
-            "rounded-t-lg cursor-pointer hover:bg-muted/50 transition-colors"
-          )}>
+          <CardHeader
+            className={cn(
+              isMobile ? 'py-2.5 px-3' : 'py-4',
+              isWinterTheme
+                ? 'bg-[hsl(var(--card))]'
+                : isLight
+                  ? 'bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30'
+                  : 'bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-gray-900/80',
+              isWinterTheme
+                ? 'border-b border-frost-border/30'
+                : 'border-b border-blue-100 dark:border-blue-900/30',
+              'rounded-t-lg cursor-pointer hover:bg-muted/50 transition-colors'
+            )}
+          >
             <div className="flex items-center justify-between">
               <div className="text-left">
-                <CardTitle 
+                <CardTitle
                   className={cn(
-                    "font-bebas uppercase tracking-wide",
-                    isMobile ? "text-lg" : "text-xl sm:text-2xl",
-                    "bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400",
-                    "heading-winter"
+                    'font-bebas uppercase tracking-wide',
+                    isMobile ? 'text-lg' : 'text-xl sm:text-2xl',
+                    'bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400',
+                    'heading-winter'
                   )}
-                  style={{ letterSpacing: "0.5px" }}
+                  style={{ letterSpacing: '0.5px' }}
                 >
                   Career Power Score Trends
                 </CardTitle>
                 {!isMobile && (
-                  <CardDescription className={cn(
-                    isLight ? "text-gray-600 font-medium font-inter" : "text-gray-400 font-inter"
-                  )}>
+                  <CardDescription
+                    className={cn(
+                      isLight ? 'text-gray-600 font-medium font-inter' : 'text-gray-400 font-inter'
+                    )}
+                  >
                     Compare team performance across multiple seasons
                   </CardDescription>
                 )}
               </div>
-              <ChevronDown className={cn(
-                "h-5 w-5 transition-transform",
-                isOpen && "rotate-180"
-              )} />
+              <ChevronDown className={cn('h-5 w-5 transition-transform', isOpen && 'rotate-180')} />
             </div>
           </CardHeader>
         </CollapsibleTrigger>
@@ -206,21 +226,21 @@ export const AllTeamsCareerPowerScoreChart: React.FC = () => {
                   height={80}
                   tick={{ fontSize: 11 }}
                 />
-                <YAxis 
-                  domain={[0, 100]} 
-                  label={{ value: 'Power Score', angle: -90, position: 'insideLeft' }} 
+                <YAxis
+                  domain={[0, 100]}
+                  label={{ value: 'Power Score', angle: -90, position: 'insideLeft' }}
                 />
-            <Tooltip 
-              content={<CustomTooltip teamsData={teamsData} selectedTeamIds={selectedTeamIds} />} 
-              wrapperStyle={{ pointerEvents: "auto" }}
-            />
-                
-                {teamsData?.map(team => {
+                <Tooltip
+                  content={
+                    <CustomTooltip teamsData={teamsData} selectedTeamIds={selectedTeamIds} />
+                  }
+                  wrapperStyle={{ pointerEvents: 'auto' }}
+                />
+
+                {teamsData?.map((team) => {
                   const isSelected = selectedTeamIds.includes(team.teamId);
-                  const color = isSelected 
-                    ? getTeamColor(team.teamId, isDark)
-                    : '#9ca3af';
-                  
+                  const color = isSelected ? getTeamColor(team.teamId, isDark) : '#9ca3af';
+
                   return (
                     <Line
                       key={team.teamId}
@@ -241,8 +261,8 @@ export const AllTeamsCareerPowerScoreChart: React.FC = () => {
 
             {selectedTeamIds.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-3">
-                {selectedTeamIds.map(teamId => {
-                  const team = teamsData?.find(t => t.teamId === teamId);
+                {selectedTeamIds.map((teamId) => {
+                  const team = teamsData?.find((t) => t.teamId === teamId);
                   if (!team) return null;
                   const color = getTeamColor(teamId, isDark);
                   return (

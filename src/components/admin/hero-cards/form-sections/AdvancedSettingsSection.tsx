@@ -1,11 +1,13 @@
-import React from "react";
-import { Settings, ChevronDown } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { cn } from "@/lib/utils";
-import { FormSectionProps } from "./types";
+import { ChevronDown, Settings } from 'lucide-react';
+import React from 'react';
+
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
+
+import { FormSectionProps } from './types';
 
 interface AdvancedSettingsSectionProps extends FormSectionProps {
   isOpen: boolean;
@@ -29,10 +31,12 @@ export const AdvancedSettingsSection: React.FC<AdvancedSettingsSectionProps> = (
             <Settings className="h-4 w-4 text-muted-foreground" />
             <span className="font-medium text-sm">Advanced Settings</span>
           </div>
-          <ChevronDown className={cn(
-            "h-4 w-4 text-muted-foreground transition-transform",
-            isOpen && "rotate-180"
-          )} />
+          <ChevronDown
+            className={cn(
+              'h-4 w-4 text-muted-foreground transition-transform',
+              isOpen && 'rotate-180'
+            )}
+          />
         </button>
       </CollapsibleTrigger>
       <CollapsibleContent className="mt-2">

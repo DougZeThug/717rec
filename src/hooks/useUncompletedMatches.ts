@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from 'react';
+
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { Match } from '@/types';
+import { errorLog } from '@/utils/logger';
 import { transformDatabaseMatches } from '@/utils/matchTransformers';
+
 import { useMatchScoresState } from './matches/useMatchScoresState';
 import { useMatchSubmission } from './matches/useMatchSubmission';
 import { useTeamsMap } from './teams';
-import { errorLog } from "@/utils/logger";
 
 export function useUncompletedMatches() {
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
@@ -15,7 +17,11 @@ export function useUncompletedMatches() {
   const { handleSubmitScore } = useMatchSubmission();
   const { teams, refetch: fetchTeams } = useTeamsMap();
 
-  const { data: matches = [], isLoading, refetch } = useQuery<Match[]>({
+  const {
+    data: matches = [],
+    isLoading,
+    refetch,
+  } = useQuery<Match[]>({
     queryKey: ['matches', 'uncompleted'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -33,7 +39,7 @@ export function useUncompletedMatches() {
         });
         throw error;
       }
-      
+
       return transformDatabaseMatches(data || []);
     },
     staleTime: 1000 * 60 * 2, // 2 minutes
@@ -55,9 +61,9 @@ export function useUncompletedMatches() {
   }, [fetchTeams]);
 
   const toggleItem = (id: string) => {
-    setOpenItems(prev => ({
+    setOpenItems((prev) => ({
       ...prev,
-      [id]: !prev[id]
+      [id]: !prev[id],
     }));
   };
 
@@ -69,6 +75,6 @@ export function useUncompletedMatches() {
     scores,
     toggleItem,
     handleScoreChange,
-    handleSubmitScore
+    handleSubmitScore,
   };
 }

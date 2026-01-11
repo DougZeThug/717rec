@@ -1069,19 +1069,18 @@
   --tw-bg-opacity: 1;
 }
 
-.winter-frozen [data-state="active"].data-\\[state\\=active\\]\\:bg-white,
-.winter-frozen [data-state="active"][class*="data-[state=active]:bg-white"] {
+.winter-frozen [data-state='active'][class*='bg-white'] {
   background-color: hsla(222, 35%, 18%, 0.95) !important;
   border-color: hsla(199, 60%, 50%, 0.3) !important;
 }
 
 /* Tab content areas */
-.winter-frozen .dark\\:bg-gray-900 {
+.winter-frozen [class*='dark:bg-gray-900'] {
   background-color: transparent !important;
 }
 
 /* Override loading state containers */
-.winter-frozen .dark\\:bg-\\[\\#1E1E1E\\] {
+.winter-frozen [class*='dark:bg-[#1E1E1E]'] {
   background-color: hsl(222, 35%, 12%) !important;
 }
 

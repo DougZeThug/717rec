@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from '@tanstack/react-query';
+
+import { supabase } from '@/integrations/supabase/client';
 
 export interface TeamCareerData {
   teamId: string;
@@ -25,8 +26,7 @@ export const useAllTeamsCareerPowerScores = () => {
       if (seasonsError) throw seasonsError;
 
       // Fetch all team_season_stats with team info
-      const { data: allStats, error: statsError } = await supabase
-        .from('team_season_stats')
+      const { data: allStats, error: statsError } = await supabase.from('team_season_stats')
         .select(`
           team_id,
           season_id,
@@ -51,18 +51,18 @@ export const useAllTeamsCareerPowerScores = () => {
 
       // Group stats by team
       const teamStatsMap = new Map<string, TeamCareerData>();
-      
-      teams?.forEach(team => {
+
+      teams?.forEach((team) => {
         teamStatsMap.set(team.id, {
           teamId: team.id,
           teamName: team.name,
           divisionName: null,
-          seasonData: []
+          seasonData: [],
         });
       });
 
       // Populate season data for each team
-      allStats?.forEach(stat => {
+      allStats?.forEach((stat) => {
         const teamData = teamStatsMap.get(stat.team_id);
         if (!teamData) return;
 
@@ -72,7 +72,7 @@ export const useAllTeamsCareerPowerScores = () => {
         teamData.seasonData.push({
           seasonName: seasonInfo.name,
           powerScore: stat.power_score,
-          seasonOrder: seasonInfo.order
+          seasonOrder: seasonInfo.order,
         });
 
         if (!teamData.divisionName && stat.division_name) {
@@ -82,12 +82,12 @@ export const useAllTeamsCareerPowerScores = () => {
 
       // Filter out teams with no data and sort season data
       return Array.from(teamStatsMap.values())
-        .filter(team => team.seasonData.length > 0)
-        .map(team => ({
+        .filter((team) => team.seasonData.length > 0)
+        .map((team) => ({
           ...team,
-          seasonData: team.seasonData.sort((a, b) => a.seasonOrder - b.seasonOrder)
+          seasonData: team.seasonData.sort((a, b) => a.seasonOrder - b.seasonOrder),
         }));
     },
-    staleTime: 60000
+    staleTime: 60000,
   });
 };

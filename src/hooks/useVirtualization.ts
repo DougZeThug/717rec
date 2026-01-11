@@ -18,13 +18,13 @@ interface UseVirtualizationResult {
 
 /**
  * Hook to determine whether to virtualize a list based on item count.
- * 
+ *
  * Virtualization has overhead, so for small lists it's more efficient
  * to render all items. This hook provides a threshold-based decision.
- * 
+ *
  * @example
  * const { shouldVirtualize } = useVirtualization({ itemCount: teams.length });
- * 
+ *
  * if (shouldVirtualize) {
  *   return <VirtualizedList items={teams} ... />;
  * }

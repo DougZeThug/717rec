@@ -1,8 +1,9 @@
-import { useMemo } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useTeamMembership } from "@/hooks/useTeamMembership";
-import { useScheduleData } from "@/hooks/useScheduleData";
-import { Match } from "@/types";
+import { useMemo } from 'react';
+
+import { useAuth } from '@/contexts/AuthContext';
+import { useScheduleData } from '@/hooks/useScheduleData';
+import { useTeamMembership } from '@/hooks/useTeamMembership';
+import { Match } from '@/types';
 
 interface TeamInfo {
   id: string;
@@ -52,13 +53,13 @@ export const useMyNextMatch = (): MyNextMatchResult => {
     }
 
     const myTeamId = membership.team_id;
-    const myTeamName = membership.team?.name || "My Team";
+    const myTeamName = membership.team?.name || 'My Team';
     const myTeamLogo = membership.team?.logoUrl || null;
 
     // Find the first upcoming match that involves the user's team
     // Filter out postponed/canceled matches
     const nextMatch = upcomingMatches.find((match) => {
-      if (match.status === "postponed" || match.status === "canceled") {
+      if (match.status === 'postponed' || match.status === 'canceled') {
         return false;
       }
       return match.team1Id === myTeamId || match.team2Id === myTeamId;
@@ -76,7 +77,7 @@ export const useMyNextMatch = (): MyNextMatchResult => {
 
     // Determine which team is mine and which is opponent
     const isTeam1 = nextMatch.team1Id === myTeamId;
-    
+
     const myTeam: TeamInfo = {
       id: myTeamId,
       name: myTeamName,
@@ -88,7 +89,7 @@ export const useMyNextMatch = (): MyNextMatchResult => {
 
     const opponent: TeamInfo = {
       id: opponentId,
-      name: opponentDetails?.name || "TBD",
+      name: opponentDetails?.name || 'TBD',
       logoUrl: opponentDetails?.logo_url || opponentDetails?.image_url || null,
     };
 

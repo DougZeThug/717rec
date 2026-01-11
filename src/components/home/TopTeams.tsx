@@ -1,20 +1,18 @@
-import React from "react";
-import { Link } from "react-router";
-import { Button } from "@/components/ui/button";
-import { Team } from "@/types";
-import TeamCard from "./TeamCard";
-import TeamCardCompact from "./TeamCardCompact";
-import { cn } from "@/lib/utils";
-import { animations } from "@/styles/design-system";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Trophy } from "lucide-react";
-import { SectionHeader } from "@/components/ui/CollapsibleSection";
-import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel";
+import { Trophy } from 'lucide-react';
+import React from 'react';
+import { Link } from 'react-router';
+
+import { Button } from '@/components/ui/button';
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import { SectionHeader } from '@/components/ui/CollapsibleSection';
+import { EmptyState } from '@/components/ui/empty-state';
+import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
+import { cn } from '@/lib/utils';
+import { animations } from '@/styles/design-system';
+import { Team } from '@/types';
+
+import TeamCard from './TeamCard';
+import TeamCardCompact from './TeamCardCompact';
 
 interface TopTeamsProps {
   teams: Team[];
@@ -25,12 +23,12 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
   const topTenTeams = teams.slice(0, 10);
 
   const sectionClasses = cn(
-    "py-6 md:py-8 px-4 md:px-6 rounded-xl shadow-sm mb-4 mt-4",
+    'py-6 md:py-8 px-4 md:px-6 rounded-xl shadow-sm mb-4 mt-4',
     shouldApplyWinter
-      ? "winter-card-full winter-card-surface"
+      ? 'winter-card-full winter-card-surface'
       : cn(
-          "bg-gradient-to-br from-blue-50/50 via-gray-50 to-orange-50/30",
-          "dark:from-gray-900 dark:via-gray-900/90 dark:to-gray-900/80"
+          'bg-gradient-to-br from-blue-50/50 via-gray-50 to-orange-50/30',
+          'dark:from-gray-900 dark:via-gray-900/90 dark:to-gray-900/80'
         ),
     animations.fadeIn
   );
@@ -44,10 +42,10 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
           description="Teams will appear here once the season starts and matches are played."
           actions={[
             {
-              label: "View All Teams",
-              onClick: () => window.location.href = "/teams",
-              variant: "default"
-            }
+              label: 'View All Teams',
+              onClick: () => (window.location.href = '/teams'),
+              variant: 'default',
+            },
           ]}
         />
       </section>
@@ -59,15 +57,15 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
       <SectionHeader
         title="Top 10 Teams"
         icon={Trophy}
-        iconColor={shouldApplyWinter ? "text-cyan-400" : "text-amber-500"}
+        iconColor={shouldApplyWinter ? 'text-cyan-400' : 'text-amber-500'}
         description="Based on highest power score ranking"
         action={
-          <Button 
-            asChild 
+          <Button
+            asChild
             variant="blueOrange"
             className={cn(
-              "shadow-md hover:shadow-lg transition-all duration-200 font-semibold",
-              shouldApplyWinter && "btn-winter-primary"
+              'shadow-md hover:shadow-lg transition-all duration-200 font-semibold',
+              shouldApplyWinter && 'btn-winter-primary'
             )}
           >
             <Link to="/teams">View All</Link>
@@ -79,7 +77,7 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
       <div className="block md:hidden">
         <Carousel
           opts={{
-            align: "start",
+            align: 'start',
             loop: false,
             dragFree: true,
             skipSnaps: true,
@@ -97,10 +95,12 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
             ))}
           </CarouselContent>
         </Carousel>
-        <p className={cn(
-          "text-xs text-center mt-3",
-          shouldApplyWinter ? "text-cyan-300/60" : "text-muted-foreground"
-        )}>
+        <p
+          className={cn(
+            'text-xs text-center mt-3',
+            shouldApplyWinter ? 'text-cyan-300/60' : 'text-muted-foreground'
+          )}
+        >
           Swipe to see more →
         </p>
       </div>
@@ -108,12 +108,7 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
       {/* Desktop: Grid Layout (show top 4) */}
       <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {topTenTeams.slice(0, 4).map((team, index) => (
-          <TeamCard 
-            key={team.id} 
-            team={team} 
-            delay={index * 0.1}
-            isWinter={shouldApplyWinter}
-          />
+          <TeamCard key={team.id} team={team} delay={index * 0.1} isWinter={shouldApplyWinter} />
         ))}
       </div>
     </section>

@@ -1,14 +1,16 @@
+import { AlertCircle, RefreshCw, Save, X } from 'lucide-react';
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { RefreshCw, AlertCircle, Save, X } from 'lucide-react';
-import { ProcessedTeam, SeedValidationState } from '../types';
-import { SeedOrderList } from './SeedOrderList';
+import { Switch } from '@/components/ui/switch';
+
 import { useSeedManagement } from '../hooks/useSeedManagement';
 import { useTeamSeedMutation } from '../hooks/useTeamSeedMutation';
+import { ProcessedTeam, SeedValidationState } from '../types';
+import { SeedOrderList } from './SeedOrderList';
 
 interface SeedOverrideControlsProps {
   teams: ProcessedTeam[];
@@ -26,35 +28,26 @@ export const SeedOverrideControls: React.FC<SeedOverrideControlsProps> = ({
   show = true,
 }) => {
   // ALWAYS call hooks first (before any conditional logic)
-  const {
-    state,
-    actions,
-    processedTeams,
-    hasConflicts,
-  } = useSeedManagement(teams, validation, onSeedChange);
+  const { state, actions, processedTeams, hasConflicts } = useSeedManagement(
+    teams,
+    validation,
+    onSeedChange
+  );
 
-  const {
-    bulkUpdateSeeds,
-    resetDivisionSeeds,
-    isUpdating,
-  } = useTeamSeedMutation();
+  const { bulkUpdateSeeds, resetDivisionSeeds, isUpdating } = useTeamSeedMutation();
 
   // Early return AFTER all hooks are called
   if (!show) {
     return (
       <Card>
         <CardContent className="py-6">
-          <div className="text-center text-muted-foreground">
-            Select a division to manage seeds
-          </div>
+          <div className="text-center text-muted-foreground">Select a division to manage seeds</div>
         </CardContent>
       </Card>
     );
   }
 
-  const conflictTeamIds = new Set(
-    validation.conflicts.map(conflict => conflict.team_id)
-  );
+  const conflictTeamIds = new Set(validation.conflicts.map((conflict) => conflict.team_id));
 
   const handleSaveChanges = async () => {
     if (state.pendingChanges.size === 0) return;
@@ -105,7 +98,7 @@ export const SeedOverrideControls: React.FC<SeedOverrideControlsProps> = ({
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         {state.mode === 'manual' && (
           <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">

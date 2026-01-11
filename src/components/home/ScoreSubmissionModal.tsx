@@ -1,7 +1,19 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Users } from 'lucide-react';
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -10,20 +22,10 @@ import {
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Users } from 'lucide-react';
 import { PendingMatch, usePendingScoresMatches } from '@/hooks/usePendingScoresMatches';
+
 import { formatDate, formatTime } from './utils';
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from '@/components/ui/form';
 
 const scoreSubmissionSchema = z.object({
   submitter_name: z.string().min(1, 'Your name is required'),
@@ -42,10 +44,10 @@ interface ScoreSubmissionModalProps {
 export const ScoreSubmissionModal: React.FC<ScoreSubmissionModalProps> = ({
   match,
   open,
-  onClose
+  onClose,
 }) => {
   const { submitScore, isSubmitting } = usePendingScoresMatches();
-  
+
   const form = useForm<ScoreSubmissionFormData>({
     resolver: zodResolver(scoreSubmissionSchema),
     defaultValues: {
@@ -87,8 +89,8 @@ export const ScoreSubmissionModal: React.FC<ScoreSubmissionModalProps> = ({
           <div className="flex items-center justify-between gap-3 mb-2">
             <div className="flex items-center gap-2">
               {match.team1_logo && (
-                <img 
-                  src={match.team1_logo} 
+                <img
+                  src={match.team1_logo}
                   alt={`${match.team1_name} logo`}
                   className="w-6 h-6 rounded-full object-cover"
                 />
@@ -99,8 +101,8 @@ export const ScoreSubmissionModal: React.FC<ScoreSubmissionModalProps> = ({
             <div className="flex items-center gap-2">
               <span className="font-medium text-sm">{match.team2_name}</span>
               {match.team2_logo && (
-                <img 
-                  src={match.team2_logo} 
+                <img
+                  src={match.team2_logo}
                   alt={`${match.team2_name} logo`}
                   className="w-6 h-6 rounded-full object-cover"
                 />
@@ -120,7 +122,9 @@ export const ScoreSubmissionModal: React.FC<ScoreSubmissionModalProps> = ({
               name="submitter_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Your Name <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel>
+                    Your Name <span className="text-destructive">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="Enter your name" {...field} />
                   </FormControl>
@@ -148,12 +152,14 @@ export const ScoreSubmissionModal: React.FC<ScoreSubmissionModalProps> = ({
               name="message"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Score Report <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel>
+                    Score Report <span className="text-destructive">*</span>
+                  </FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <Textarea
                       placeholder="e.g., Team Alpha beat Team Beta 2-1. Great match!"
                       rows={3}
-                      {...field} 
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -165,18 +171,10 @@ export const ScoreSubmissionModal: React.FC<ScoreSubmissionModalProps> = ({
             />
 
             <ResponsiveDialogFooter>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={handleClose}
-                disabled={isSubmitting}
-              >
+              <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
-                disabled={isSubmitting}
-              >
+              <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? 'Submitting...' : 'Submit Report'}
               </Button>
             </ResponsiveDialogFooter>

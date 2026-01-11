@@ -2,7 +2,7 @@
  * Playoff-related type definitions for component props
  */
 
-import type { PlayoffTeam } from "@/utils/playoffs/playoffTypes";
+import type { PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 
 /**
  * Bracket data structure for BracketView component

@@ -1,8 +1,9 @@
+import React from 'react';
 
-import React from "react";
-import BracketList from "@/components/playoffs/BracketList";
-import BracketDetail from "@/components/playoffs/BracketDetail";
-import { PlayoffPageData } from "../hooks/usePlayoffPageData";
+import BracketDetail from '@/components/playoffs/BracketDetail';
+import BracketList from '@/components/playoffs/BracketList';
+
+import { PlayoffPageData } from '../hooks/usePlayoffPageData';
 
 interface PlayoffViewProps {
   bracketDialogOpen: boolean;
@@ -12,12 +13,12 @@ interface PlayoffViewProps {
   data: PlayoffPageData;
 }
 
-const PlayoffView: React.FC<PlayoffViewProps> = ({ 
+const PlayoffView: React.FC<PlayoffViewProps> = ({
   bracketDialogOpen,
   setBracketDialogOpen,
   onCreateBracket,
   onDeleteBracket,
-  data
+  data,
 }) => {
   const handleCreateBracketClick = () => {
     onCreateBracket();
@@ -27,7 +28,7 @@ const PlayoffView: React.FC<PlayoffViewProps> = ({
     <>
       {/* Show BracketList only when no bracket is selected */}
       <div className={!data.selectedBracketId || !data.bracket ? 'block' : 'hidden'}>
-        <BracketList 
+        <BracketList
           divisions={data.availableDivisions}
           bracketsByDivision={data.typesafeBracketsByDivision}
           onCreateBracket={data.isAdmin ? handleCreateBracketClick : undefined}
@@ -39,17 +40,20 @@ const PlayoffView: React.FC<PlayoffViewProps> = ({
       </div>
 
       {/* Show BracketDetail when a bracket is selected */}
-      {data.ready && data.selectedBracketId && data.bracket && data.bracket.id === data.selectedBracketId && (
-        <BracketDetail 
-          bracketId={data.selectedBracketId}
-          bracket={data.bracket}
-          teams={data.teams}
-          bracketLoading={data.isLoading}
-          onEditBracket={undefined}
-          onEditMatch={undefined}
-          onDeleteBracket={undefined}
-        />
-      )}
+      {data.ready &&
+        data.selectedBracketId &&
+        data.bracket &&
+        data.bracket.id === data.selectedBracketId && (
+          <BracketDetail
+            bracketId={data.selectedBracketId}
+            bracket={data.bracket}
+            teams={data.teams}
+            bracketLoading={data.isLoading}
+            onEditBracket={undefined}
+            onEditMatch={undefined}
+            onDeleteBracket={undefined}
+          />
+        )}
     </>
   );
 };

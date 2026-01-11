@@ -1,4 +1,3 @@
-
 import { useMemo } from 'react';
 
 export interface ValidationResult {
@@ -15,10 +14,10 @@ export function useBracketFormValidation(
 ): ValidationResult {
   return useMemo(() => {
     if (availableTeams === 0) {
-      return { 
-        isValid: false, 
-        status: 'empty', 
-        message: 'No teams available in this division.' 
+      return {
+        isValid: false,
+        status: 'empty',
+        message: 'No teams available in this division.',
       };
     }
 

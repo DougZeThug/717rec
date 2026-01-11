@@ -1,11 +1,11 @@
+import { AnimatePresence, motion } from 'framer-motion';
+import { Check, Loader2, LucideIcon } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Button, ButtonProps } from "@/components/ui/button";
-import { Loader2, Check, LucideIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Button, ButtonProps } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
-type ActionState = "idle" | "loading" | "success" | "error";
+type ActionState = 'idle' | 'loading' | 'success' | 'error';
 
 interface ActionButtonProps extends Omit<ButtonProps, 'children'> {
   children: React.ReactNode;
@@ -21,67 +21,70 @@ interface ActionButtonProps extends Omit<ButtonProps, 'children'> {
 /**
  * ActionButton - A button with loading → success → reset confirmation pattern.
  * Provides visual feedback for async actions with smooth icon transitions.
- * 
+ *
  * Usage:
  * <ActionButton onAction={async () => await submitForm()}>
  *   Submit Score
  * </ActionButton>
  */
 export const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(
-  ({ 
-    children, 
-    icon: Icon,
-    loadingText,
-    successText,
-    successDuration = 1500,
-    onAction,
-    onClick,
-    state: controlledState,
-    onStateChange,
-    className,
-    disabled,
-    ...props 
-  }, ref) => {
-    const [internalState, setInternalState] = useState<ActionState>("idle");
+  (
+    {
+      children,
+      icon: Icon,
+      loadingText,
+      successText,
+      successDuration = 1500,
+      onAction,
+      onClick,
+      state: controlledState,
+      onStateChange,
+      className,
+      disabled,
+      ...props
+    },
+    ref
+  ) => {
+    const [internalState, setInternalState] = useState<ActionState>('idle');
     const state = controlledState ?? internalState;
     const setState = onStateChange ?? setInternalState;
 
     // Auto-reset after success
     useEffect(() => {
-      if (state === "success") {
+      if (state === 'success') {
         const timer = setTimeout(() => {
-          setState("idle");
+          setState('idle');
         }, successDuration);
         return () => clearTimeout(timer);
       }
     }, [state, successDuration, setState]);
 
     const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
-      if (state === "loading") return;
-      
+      if (state === 'loading') return;
+
       onClick?.(e);
-      
+
       if (onAction) {
-        setState("loading");
+        setState('loading');
         try {
           await onAction();
-          setState("success");
+          setState('success');
         } catch (error) {
-          setState("error");
+          setState('error');
           // Reset to idle after showing error briefly
-          setTimeout(() => setState("idle"), 1500);
+          setTimeout(() => setState('idle'), 1500);
         }
       }
     };
 
-    const isLoading = state === "loading";
-    const isSuccess = state === "success";
+    const isLoading = state === 'loading';
+    const isSuccess = state === 'success';
 
     // Icon animation variants
     const iconVariants = {
       initial: { opacity: 0, scale: 0.5, rotate: -90 },
       animate: { opacity: 1, scale: 1, rotate: 0 },
-      exit: { opacity: 0, scale: 0.5, rotate: 90 }
+      exit: { opacity: 0, scale: 0.5, rotate: 90 },
     };
 
     return (
@@ -90,8 +93,8 @@ export const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProp
         onClick={handleClick}
         disabled={disabled || isLoading}
         className={cn(
-          "relative overflow-hidden",
-          isSuccess && "ring-2 ring-green-500/30 ring-offset-1 bg-green-500/10",
+          'relative overflow-hidden',
+          isSuccess && 'ring-2 ring-green-500/30 ring-offset-1 bg-green-500/10',
           className
         )}
         {...props}
@@ -116,7 +119,7 @@ export const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProp
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                transition={{ duration: 0.15, type: "spring", stiffness: 500 }}
+                transition={{ duration: 0.15, type: 'spring', stiffness: 500 }}
               >
                 <Check className="h-4 w-4 text-green-500" />
               </motion.span>
@@ -133,9 +136,13 @@ export const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProp
               </motion.span>
             ) : null}
           </AnimatePresence>
-          
+
           <span>
-            {isLoading ? (loadingText ?? children) : isSuccess ? (successText ?? children) : children}
+            {isLoading
+              ? (loadingText ?? children)
+              : isSuccess
+                ? (successText ?? children)
+                : children}
           </span>
         </span>
       </Button>
@@ -143,6 +150,6 @@ export const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProp
   }
 );
 
-ActionButton.displayName = "ActionButton";
+ActionButton.displayName = 'ActionButton';
 
 export default ActionButton;

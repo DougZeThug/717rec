@@ -1,19 +1,21 @@
-import React from "react";
-import { Type } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
-import { HERO_CARD_TYPES } from "@/constants/heroCardPresets";
-import { HeroCardType } from "@/types/heroCard";
-import { FormSectionProps } from "./types";
-import { SectionHeader } from "./SectionHeader";
+import { Type } from 'lucide-react';
+import React from 'react';
+
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { HERO_CARD_TYPES } from '@/constants/heroCardPresets';
+import { cn } from '@/lib/utils';
+import { HeroCardType } from '@/types/heroCard';
+
+import { SectionHeader } from './SectionHeader';
+import { FormSectionProps } from './types';
 
 export const CardBasicsSection: React.FC<FormSectionProps> = ({ formData, onChange }) => {
   return (
     <div className="bg-card rounded-lg border p-4">
       <SectionHeader icon={Type} title="Card Basics" />
-      
+
       <div className="space-y-4">
         <div>
           <Label htmlFor="slug">Card Name (for admins)</Label>
@@ -38,10 +40,10 @@ export const CardBasicsSection: React.FC<FormSectionProps> = ({ formData, onChan
                 type="button"
                 onClick={() => onChange('card_type', type.id as HeroCardType)}
                 className={cn(
-                  "p-3 rounded-lg border-2 text-left transition-all",
+                  'p-3 rounded-lg border-2 text-left transition-all',
                   formData.card_type === type.id
-                    ? "border-primary bg-primary/10"
-                    : "border-border hover:border-primary/50"
+                    ? 'border-primary bg-primary/10'
+                    : 'border-border hover:border-primary/50'
                 )}
               >
                 <span className="font-medium text-sm">{type.name}</span>

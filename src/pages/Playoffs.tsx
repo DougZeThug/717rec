@@ -1,11 +1,11 @@
+import React from 'react';
 
-import React from "react";
-import PlayoffPageLayout from "@/components/playoffs/layout/PlayoffPageLayout";
-import { usePlayoffPageData } from "@/components/playoffs/hooks/usePlayoffPageData";
+import { usePlayoffPageData } from '@/components/playoffs/hooks/usePlayoffPageData';
+import PlayoffPageLayout from '@/components/playoffs/layout/PlayoffPageLayout';
 
 const Playoffs = () => {
   const data = usePlayoffPageData();
-  
+
   return <PlayoffPageLayout data={data} />;
 };
 

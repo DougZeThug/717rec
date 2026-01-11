@@ -1,4 +1,3 @@
-
 export interface SubmitScoreParams {
   matchId: string;
   team1Score: number;
@@ -12,8 +11,8 @@ export interface MatchResultData {
   loserId: string | null;
   team1GameWins: number;
   team2GameWins: number;
-  team1Id: string; 
-  team2Id: string; 
+  team1Id: string;
+  team2Id: string;
 }
 
 // Add this interface to align with what's being used in PlayoffDatabaseAdapter

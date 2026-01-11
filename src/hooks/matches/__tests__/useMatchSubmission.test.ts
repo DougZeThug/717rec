@@ -1,49 +1,50 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { useMatchSubmission } from '../useMatchSubmission';
 
 // Mock dependencies
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
-    from: vi.fn()
-  }
+    from: vi.fn(),
+  },
 }));
 
 vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({
-    toast: vi.fn()
-  })
+    toast: vi.fn(),
+  }),
 }));
 
 vi.mock('../useTeamRecordUpdate', () => ({
   useTeamRecordUpdate: () => ({
-    updateTeamStats: vi.fn().mockResolvedValue(true)
-  })
+    updateTeamStats: vi.fn().mockResolvedValue(true),
+  }),
 }));
 
 vi.mock('../utils/matchDatabaseUtils', () => ({
-  updateMatchScore: vi.fn()
+  updateMatchScore: vi.fn(),
 }));
 
 vi.mock('../utils/queryCacheUtils', () => ({
-  invalidateMatchRelatedQueries: vi.fn().mockResolvedValue(undefined)
+  invalidateMatchRelatedQueries: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('@/utils/logger', () => ({
   matchLog: vi.fn(),
   warnLog: vi.fn(),
-  errorLog: vi.fn()
+  errorLog: vi.fn(),
 }));
 
+import { useTeamRecordUpdate } from '../useTeamRecordUpdate';
 import { updateMatchScore } from '../utils/matchDatabaseUtils';
 import { invalidateMatchRelatedQueries } from '../utils/queryCacheUtils';
-import { useTeamRecordUpdate } from '../useTeamRecordUpdate';
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } }
+    defaultOptions: { queries: { retry: false } },
   });
   const Wrapper = ({ children }: { children: React.ReactNode }) => {
     return React.createElement(QueryClientProvider, { client: queryClient }, children);
@@ -67,18 +68,18 @@ describe('useMatchSubmission', () => {
       data: { id: 'match-1', team1_score: 2, team2_score: 1 },
       team1_id: 'team-1',
       team2_id: 'team-2',
-      team1Win: true
+      team1Win: true,
     };
     vi.mocked(updateMatchScore).mockResolvedValue(mockResult);
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
-    
+
     const success = await result.current.handleSubmitScore({
       matchId: 'match-1',
       team1Score: 2,
       team2Score: 1,
       team1GameWins: 3,
-      team2GameWins: 1
+      team2GameWins: 1,
     });
 
     expect(success).toBe(true);
@@ -87,7 +88,7 @@ describe('useMatchSubmission', () => {
       team1Score: 2,
       team2Score: 1,
       team1GameWins: 3,
-      team2GameWins: 1
+      team2GameWins: 1,
     });
   });
 
@@ -96,16 +97,16 @@ describe('useMatchSubmission', () => {
       data: { id: 'match-1' },
       team1_id: 'team-1',
       team2_id: 'team-2',
-      team1Win: true
+      team1Win: true,
     };
     vi.mocked(updateMatchScore).mockResolvedValue(mockResult);
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
-    
+
     await result.current.handleSubmitScore({
       matchId: 'match-1',
       team1Score: 3,
-      team2Score: 1
+      team2Score: 1,
     });
 
     expect(updateMatchScore).toHaveBeenCalled();
@@ -116,16 +117,16 @@ describe('useMatchSubmission', () => {
       data: { id: 'match-1' },
       team1_id: 'team-1',
       team2_id: 'team-2',
-      team1Win: false
+      team1Win: false,
     };
     vi.mocked(updateMatchScore).mockResolvedValue(mockResult);
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
-    
+
     await result.current.handleSubmitScore({
       matchId: 'match-1',
       team1Score: 1,
-      team2Score: 3
+      team2Score: 3,
     });
 
     expect(updateMatchScore).toHaveBeenCalled();
@@ -136,16 +137,16 @@ describe('useMatchSubmission', () => {
       data: { id: 'match-1' },
       team1_id: 'team-1',
       team2_id: 'team-2',
-      team1Win: true
+      team1Win: true,
     };
     vi.mocked(updateMatchScore).mockResolvedValue(mockResult);
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
-    
+
     await result.current.handleSubmitScore({
       matchId: 'match-1',
       team1Score: 2,
-      team2Score: 1
+      team2Score: 1,
     });
 
     expect(invalidateMatchRelatedQueries).toHaveBeenCalled();
@@ -155,11 +156,11 @@ describe('useMatchSubmission', () => {
     vi.mocked(updateMatchScore).mockRejectedValue(new Error('Database error'));
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
-    
+
     const success = await result.current.handleSubmitScore({
       matchId: 'match-1',
       team1Score: 2,
-      team2Score: 1
+      team2Score: 1,
     });
 
     expect(success).toBe(false);
@@ -170,24 +171,24 @@ describe('useMatchSubmission', () => {
       data: { id: 'match-1' },
       team1_id: 'team-1',
       team2_id: 'team-2',
-      team1Win: true
+      team1Win: true,
     };
     vi.mocked(updateMatchScore).mockResolvedValue(mockResult);
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
-    
+
     await result.current.handleSubmitScore({
       matchId: 'match-1',
       team1Score: 2,
       team2Score: 1,
       team1GameWins: '3' as any,
-      team2GameWins: '1' as any
+      team2GameWins: '1' as any,
     });
 
     expect(updateMatchScore).toHaveBeenCalledWith(
       expect.objectContaining({
         team1GameWins: 3,
-        team2GameWins: 1
+        team2GameWins: 1,
       })
     );
   });
@@ -197,22 +198,22 @@ describe('useMatchSubmission', () => {
       data: { id: 'match-1' },
       team1_id: 'team-1',
       team2_id: 'team-2',
-      team1Win: true
+      team1Win: true,
     };
     vi.mocked(updateMatchScore).mockResolvedValue(mockResult);
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
-    
+
     await result.current.handleSubmitScore({
       matchId: 'match-1',
       team1Score: 2,
-      team2Score: 1
+      team2Score: 1,
     });
 
     expect(updateMatchScore).toHaveBeenCalledWith(
       expect.objectContaining({
         team1GameWins: 0,
-        team2GameWins: 0
+        team2GameWins: 0,
       })
     );
   });

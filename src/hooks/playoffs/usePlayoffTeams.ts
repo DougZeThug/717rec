@@ -1,7 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import type { Team } from "@/utils/playoffs/playoffTypes";
-import { useTeamsQuery, TEAMS_QUERY_KEY } from "@/hooks/teams";
+import { useQuery } from '@tanstack/react-query';
+
+import { TEAMS_QUERY_KEY, useTeamsQuery } from '@/hooks/teams';
+import { supabase } from '@/integrations/supabase/client';
+import type { Team } from '@/utils/playoffs/playoffTypes';
 
 /**
  * Hook for fetching playoff teams with seed information
@@ -16,9 +17,7 @@ export const usePlayoffTeams = () => {
     queryFn: async (): Promise<Team[]> => {
       // Get team details with seed values
       const [teamDetailsResult, teamsResult] = await Promise.all([
-        supabase
-          .from('v_team_details')
-          .select(`
+        supabase.from('v_team_details').select(`
             team_id,
             name,
             logo_url,
@@ -36,18 +35,16 @@ export const usePlayoffTeams = () => {
             game_win_percentage,
             close_match_losses
           `),
-        supabase
-          .from('teams')
-          .select('id, seed')
+        supabase.from('teams').select('id, seed'),
       ]);
 
       if (teamDetailsResult.error) throw teamDetailsResult.error;
       if (teamsResult.error) throw teamsResult.error;
 
       const teamDetails = teamDetailsResult.data ?? [];
-      const teamSeeds = new Map((teamsResult.data ?? []).map(t => [t.id, t.seed]));
+      const teamSeeds = new Map((teamsResult.data ?? []).map((t) => [t.id, t.seed]));
 
-      return teamDetails.map(row => ({
+      return teamDetails.map((row) => ({
         id: row.team_id,
         name: row.name ?? 'Unnamed Team',
         logoUrl: row.logo_url ?? null,
@@ -66,7 +63,7 @@ export const usePlayoffTeams = () => {
         sos: row.sos ?? 0.5,
         win_percentage: row.win_percentage ?? 0,
         game_win_percentage: row.game_win_percentage ?? 0,
-        close_match_losses: row.close_match_losses ?? 0
+        close_match_losses: row.close_match_losses ?? 0,
       })) as Team[];
     },
     staleTime: 1000 * 60 * 5, // 5 minutes

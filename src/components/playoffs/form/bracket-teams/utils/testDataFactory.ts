@@ -1,9 +1,8 @@
-
 /**
  * Test data factory functions for bracket form testing
  */
 
-import { ProcessedTeam, Ranking, DivisionMappingResult } from '../types';
+import { DivisionMappingResult, ProcessedTeam, Ranking } from '../types';
 
 /**
  * Creates mock processed team data for testing
@@ -30,7 +29,7 @@ export const createMockTeam = (overrides: Partial<ProcessedTeam> = {}): Processe
   win_percentage: 0.83,
   game_win_percentage: 0.8,
   close_match_losses: 1,
-  ...overrides
+  ...overrides,
 });
 
 /**
@@ -39,12 +38,12 @@ export const createMockTeam = (overrides: Partial<ProcessedTeam> = {}): Processe
  * @returns Array of mock ProcessedTeam objects
  */
 export const createMockTeams = (count: number): ProcessedTeam[] => {
-  return Array.from({ length: count }, (_, index) => 
+  return Array.from({ length: count }, (_, index) =>
     createMockTeam({
       id: `team-${index + 1}`,
       name: `Team ${index + 1}`,
       seed: index + 1,
-      powerScore: 1000 - (index * 10)
+      powerScore: 1000 - index * 10,
     })
   );
 };
@@ -67,7 +66,7 @@ export const createMockRanking = (overrides: Partial<Ranking> = {}): Ranking => 
   sos: 0.6,
   divisionName: 'Test Division',
   closeMatchLosses: 1,
-  ...overrides
+  ...overrides,
 });
 
 /**
@@ -76,11 +75,11 @@ export const createMockRanking = (overrides: Partial<Ranking> = {}): Ranking => 
  * @returns Array of mock Ranking objects
  */
 export const createMockRankings = (count: number): Ranking[] => {
-  return Array.from({ length: count }, (_, index) => 
+  return Array.from({ length: count }, (_, index) =>
     createMockRanking({
       teamId: `team-${index + 1}`,
       teamName: `Team ${index + 1}`,
-      powerScore: 1000 - (index * 10)
+      powerScore: 1000 - index * 10,
     })
   );
 };
@@ -90,7 +89,9 @@ export const createMockRankings = (count: number): Ranking[] => {
  * @param divisions - Array of division names to create mappings for
  * @returns Mock DivisionMappingResult object
  */
-export const createMockDivisionMapping = (divisions: string[] = ['Test Division']): DivisionMappingResult => {
+export const createMockDivisionMapping = (
+  divisions: string[] = ['Test Division']
+): DivisionMappingResult => {
   const divisionMap = new Map<string, string>();
   divisions.forEach((name, index) => {
     divisionMap.set(name, `div-${index + 1}`);
@@ -98,7 +99,7 @@ export const createMockDivisionMapping = (divisions: string[] = ['Test Division'
 
   return {
     divisionMap,
-    mapDivisionName: (name: string) => divisionMap.get(name) || null
+    mapDivisionName: (name: string) => divisionMap.get(name) || null,
   };
 };
 
@@ -120,7 +121,7 @@ export const createMockValidationState = (overrides: any = {}) => ({
     selected: 4,
     required: 2,
     maximum: 16,
-    available: 10
+    available: 10,
   },
-  ...overrides
+  ...overrides,
 });

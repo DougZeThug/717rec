@@ -1,6 +1,7 @@
-
 import { format } from 'date-fns';
-import { TeamPairingMap, MatchQualityMetrics, TimeBlockTeamsMap } from '@/types/autoSchedule';
+
+import { MatchQualityMetrics, TeamPairingMap, TimeBlockTeamsMap } from '@/types/autoSchedule';
+
 import { calculateComprehensiveQualityMetrics } from './qualityAnalysis';
 
 /**
@@ -8,16 +9,16 @@ import { calculateComprehensiveQualityMetrics } from './qualityAnalysis';
  */
 export const formatScheduleDate = (date: Date | null): string => {
   if (!date) return '';
-  
+
   try {
     // Use UTC methods to avoid timezone issues
     const year = date.getUTCFullYear();
     const month = date.getUTCMonth();
     const day = date.getUTCDate();
-    
+
     // Reconstruct date using fixed timezone
     const normalizedDate = new Date(Date.UTC(year, month, day));
-    
+
     return format(normalizedDate, 'EEEE, MMMM d, yyyy');
   } catch (error) {
     console.error('Error formatting schedule date:', error);
@@ -30,19 +31,19 @@ export const formatScheduleDate = (date: Date | null): string => {
  */
 export const getTimeBlocksStatistics = (timeBlockTeams: TimeBlockTeamsMap) => {
   const blocks = Object.keys(timeBlockTeams);
-  
+
   if (blocks.length === 0) {
     return { total: 0, odd: 0 };
   }
-  
+
   let totalTeams = 0;
   let oddBlocks = 0;
-  
+
   Object.entries(timeBlockTeams).forEach(([block, teams]) => {
     totalTeams += teams.length;
     if (teams.length % 2 !== 0) oddBlocks++;
   });
-  
+
   return { total: totalTeams, odd: oddBlocks };
 };
 

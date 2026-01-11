@@ -1,6 +1,7 @@
-import React, { useState, useEffect, memo } from "react";
-import { Timer } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
+import { Timer } from 'lucide-react';
+import React, { memo, useEffect, useState } from 'react';
+
+import { Progress } from '@/components/ui/progress';
 
 interface MatchCountdownProps {
   matchDate: string;
@@ -11,35 +12,35 @@ interface MatchCountdownProps {
  * Isolated to prevent parent MatchCard from re-rendering on timer updates.
  */
 const MatchCountdown: React.FC<MatchCountdownProps> = memo(({ matchDate }) => {
-  const [countdownText, setCountdownText] = useState("");
+  const [countdownText, setCountdownText] = useState('');
   const [countdownPercent, setCountdownPercent] = useState(100);
 
   useEffect(() => {
     const targetDate = new Date(matchDate);
     const now = new Date();
-    
+
     // Only show countdown if match is in the future
     if (targetDate <= now) return;
 
     const updateCountdown = () => {
       const now = new Date();
       const diff = targetDate.getTime() - now.getTime();
-      
+
       if (diff <= 0) {
-        setCountdownText("Starting now!");
+        setCountdownText('Starting now!');
         setCountdownPercent(0);
         return;
       }
-      
+
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      
+
       // Calculate percentage for progress bar (using 12 hours max for more responsive feedback)
       const maxDiff = 12 * 60 * 60 * 1000; // 12 hours in ms
       const percentage = Math.max(0, Math.min(100, (diff / maxDiff) * 100));
       setCountdownPercent(100 - percentage); // Invert so it fills up as time gets closer
-      
+
       if (days > 0) {
         setCountdownText(`${days}d ${hours}h until match`);
       } else if (hours > 0) {
@@ -48,10 +49,10 @@ const MatchCountdown: React.FC<MatchCountdownProps> = memo(({ matchDate }) => {
         setCountdownText(`${minutes}m until match`);
       }
     };
-    
+
     updateCountdown();
     const intervalId = setInterval(updateCountdown, 60000); // Update every minute
-    
+
     return () => clearInterval(intervalId);
   }, [matchDate]);
 
@@ -68,6 +69,6 @@ const MatchCountdown: React.FC<MatchCountdownProps> = memo(({ matchDate }) => {
   );
 });
 
-MatchCountdown.displayName = "MatchCountdown";
+MatchCountdown.displayName = 'MatchCountdown';
 
 export default MatchCountdown;

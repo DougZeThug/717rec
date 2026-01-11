@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient } from '@tanstack/react-query';
-import { invalidateMatchRelatedQueries, batchInvalidateQueries } from '../utils/queryCacheUtils';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { batchInvalidateQueries, invalidateMatchRelatedQueries } from '../utils/queryCacheUtils';
 
 vi.mock('@/utils/logger', () => ({
-  cacheLog: vi.fn()
+  cacheLog: vi.fn(),
 }));
 
 describe('queryCacheUtils', () => {
@@ -28,7 +29,7 @@ describe('queryCacheUtils', () => {
       // First call should use predicate for team variations
       expect(queryClient.invalidateQueries).toHaveBeenCalledWith(
         expect.objectContaining({
-          predicate: expect.any(Function)
+          predicate: expect.any(Function),
         })
       );
     });
@@ -39,8 +40,8 @@ describe('queryCacheUtils', () => {
       // Check that specific keys are invalidated
       const calls = vi.mocked(queryClient.invalidateQueries).mock.calls;
       const queryKeys = calls
-        .filter(call => call[0]?.queryKey)
-        .map(call => call[0]?.queryKey?.[0]);
+        .filter((call) => call[0]?.queryKey)
+        .map((call) => call[0]?.queryKey?.[0]);
 
       expect(queryKeys).toContain('matches');
       expect(queryKeys).toContain('rankings');
@@ -52,8 +53,8 @@ describe('queryCacheUtils', () => {
 
       const calls = vi.mocked(queryClient.invalidateQueries).mock.calls;
       const queryKeys = calls
-        .filter(call => call[0]?.queryKey)
-        .map(call => call[0]?.queryKey?.[0]);
+        .filter((call) => call[0]?.queryKey)
+        .map((call) => call[0]?.queryKey?.[0]);
 
       expect(queryKeys).toContain('careerRankings');
       expect(queryKeys).toContain('all-teams-career-power-scores');
@@ -64,8 +65,8 @@ describe('queryCacheUtils', () => {
 
       const calls = vi.mocked(queryClient.invalidateQueries).mock.calls;
       const queryKeys = calls
-        .filter(call => call[0]?.queryKey)
-        .map(call => call[0]?.queryKey?.[0]);
+        .filter((call) => call[0]?.queryKey)
+        .map((call) => call[0]?.queryKey?.[0]);
 
       expect(queryKeys).toContain('playoff-matches');
       expect(queryKeys).toContain('bracket-data');
@@ -75,7 +76,7 @@ describe('queryCacheUtils', () => {
   describe('batchInvalidateQueries', () => {
     it('invalidates all provided keys', async () => {
       const keys = ['key1', 'key2', 'key3'];
-      
+
       await batchInvalidateQueries(queryClient, keys);
 
       expect(queryClient.invalidateQueries).toHaveBeenCalledTimes(keys.length);
@@ -83,10 +84,10 @@ describe('queryCacheUtils', () => {
 
     it('invalidates keys in parallel', async () => {
       const keys = ['matches', 'teams', 'rankings'];
-      
+
       await batchInvalidateQueries(queryClient, keys);
 
-      keys.forEach(key => {
+      keys.forEach((key) => {
         expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: [key] });
       });
     });

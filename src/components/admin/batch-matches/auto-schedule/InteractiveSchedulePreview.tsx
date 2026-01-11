@@ -1,19 +1,6 @@
-import React, { useState, useMemo } from "react";
-import { Team } from "@/types";
-import { TimeBlockTeamsMap } from "@/types/autoSchedule";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Clock, Edit3, Trash2, Move } from "lucide-react";
-import { TimeBlockTeamsList } from "./TimeBlockTeamsList";
-import { validateTeamCounts } from "@/utils/autoSchedule/edgeCaseUtils";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Clock, Edit3, Move, Trash2 } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,7 +10,22 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Team } from '@/types';
+import { TimeBlockTeamsMap } from '@/types/autoSchedule';
+import { validateTeamCounts } from '@/utils/autoSchedule/edgeCaseUtils';
+
+import { TimeBlockTeamsList } from './TimeBlockTeamsList';
 
 interface InteractiveSchedulePreviewProps {
   timeBlockTeams: TimeBlockTeamsMap;
@@ -33,15 +35,15 @@ interface InteractiveSchedulePreviewProps {
   onTeamUpdate?: (updatedTeams: TimeBlockTeamsMap) => void;
 }
 
-const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({ 
-  timeBlockTeams, 
+const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
+  timeBlockTeams,
   date,
   unmatchedTeamIds = [],
   isEditMode = false,
-  onTeamUpdate
+  onTeamUpdate,
 }) => {
   const [selectedTeams, setSelectedTeams] = useState<Record<string, string[]>>({});
-  const [moveToBlock, setMoveToBlock] = useState<string>("");
+  const [moveToBlock, setMoveToBlock] = useState<string>('');
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{
     type: 'remove' | 'clear' | 'move';
@@ -50,11 +52,11 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
   } | null>(null);
 
   // Check if we have teams loaded
-  const hasTeams = Object.values(timeBlockTeams).some(teams => teams?.length > 0);
-  
+  const hasTeams = Object.values(timeBlockTeams).some((teams) => teams?.length > 0);
+
   // Validate team counts
   const { insufficientBlocks } = validateTeamCounts(timeBlockTeams);
-  
+
   const availableBlocks = Object.keys(timeBlockTeams);
 
   // Helper functions
@@ -63,31 +65,31 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
   };
 
   const handleTeamToggle = (blockKey: string, teamId: string) => {
-    setSelectedTeams(prev => {
+    setSelectedTeams((prev) => {
       const blockSelected = prev[blockKey] || [];
       const isSelected = blockSelected.includes(teamId);
-      
+
       return {
         ...prev,
-        [blockKey]: isSelected 
-          ? blockSelected.filter(id => id !== teamId)
-          : [...blockSelected, teamId]
+        [blockKey]: isSelected
+          ? blockSelected.filter((id) => id !== teamId)
+          : [...blockSelected, teamId],
       };
     });
   };
 
   const handleSelectAll = (blockKey: string) => {
     const teams = timeBlockTeams[blockKey] || [];
-    setSelectedTeams(prev => ({
+    setSelectedTeams((prev) => ({
       ...prev,
-      [blockKey]: teams.map(team => team.id)
+      [blockKey]: teams.map((team) => team.id),
     }));
   };
 
   const handleDeselectAll = (blockKey: string) => {
-    setSelectedTeams(prev => ({
+    setSelectedTeams((prev) => ({
       ...prev,
-      [blockKey]: []
+      [blockKey]: [],
     }));
   };
 
@@ -101,7 +103,7 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
         if (confirmAction.blockKey) {
           const selectedIds = selectedTeams[confirmAction.blockKey] || [];
           updatedTeams[confirmAction.blockKey] = updatedTeams[confirmAction.blockKey].filter(
-            team => !selectedIds.includes(team.id)
+            (team) => !selectedIds.includes(team.id)
           );
         }
         break;
@@ -115,39 +117,39 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
       case 'move':
         if (confirmAction.blockKey && confirmAction.targetBlock) {
           const selectedIds = selectedTeams[confirmAction.blockKey] || [];
-          const teamsToMove = updatedTeams[confirmAction.blockKey].filter(
-            team => selectedIds.includes(team.id)
+          const teamsToMove = updatedTeams[confirmAction.blockKey].filter((team) =>
+            selectedIds.includes(team.id)
           );
-          
+
           // Remove from source
           updatedTeams[confirmAction.blockKey] = updatedTeams[confirmAction.blockKey].filter(
-            team => !selectedIds.includes(team.id)
+            (team) => !selectedIds.includes(team.id)
           );
-          
+
           // Add to target (avoid duplicates)
-          const existingIds = updatedTeams[confirmAction.targetBlock]?.map(t => t.id) || [];
-          const newTeams = teamsToMove.filter(team => !existingIds.includes(team.id));
+          const existingIds = updatedTeams[confirmAction.targetBlock]?.map((t) => t.id) || [];
+          const newTeams = teamsToMove.filter((team) => !existingIds.includes(team.id));
           updatedTeams[confirmAction.targetBlock] = [
             ...(updatedTeams[confirmAction.targetBlock] || []),
-            ...newTeams
+            ...newTeams,
           ];
         }
         break;
     }
 
     onTeamUpdate?.(updatedTeams);
-    
+
     // Clear selections for affected blocks
     if (confirmAction.blockKey) {
-      setSelectedTeams(prev => ({
+      setSelectedTeams((prev) => ({
         ...prev,
-        [confirmAction.blockKey!]: []
+        [confirmAction.blockKey!]: [],
       }));
     }
-    
+
     setShowConfirmDialog(false);
     setConfirmAction(null);
-    setMoveToBlock("");
+    setMoveToBlock('');
   };
 
   if (!date || !hasTeams) {
@@ -161,11 +163,11 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium">Teams Available by Time Block</h3>
-      
+
       {Object.entries(timeBlockTeams).map(([block, teams]) => {
         const selectedForBlock = getSelectedTeamsForBlock(block);
         const hasSelection = selectedForBlock.length > 0;
-        
+
         return (
           <Card key={block} className="overflow-hidden">
             <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2 flex items-center justify-between">
@@ -174,13 +176,13 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
                 <span className="font-medium">{block} Block</span>
               </div>
               <div className="flex items-center gap-2">
-                <Badge 
-                  variant={teams.length % 2 === 0 ? "outline" : "destructive"} 
+                <Badge
+                  variant={teams.length % 2 === 0 ? 'outline' : 'destructive'}
                   className="text-xs"
                 >
-                  {teams.length} Teams {teams.length % 2 !== 0 && "(Odd Number)"}
+                  {teams.length} Teams {teams.length % 2 !== 0 && '(Odd Number)'}
                 </Badge>
-                
+
                 {isEditMode && hasSelection && (
                   <div className="flex items-center gap-1 ml-2">
                     <Button
@@ -195,32 +197,31 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
                       <Trash2 className="h-3 w-3 mr-1" />
                       Remove ({selectedForBlock.length})
                     </Button>
-                    
+
                     <Select value={moveToBlock} onValueChange={setMoveToBlock}>
                       <SelectTrigger className="h-6 w-24 text-xs">
                         <Move className="h-3 w-3" />
                       </SelectTrigger>
                       <SelectContent>
                         {availableBlocks
-                          .filter(b => b !== block)
-                          .map(blockKey => (
+                          .filter((b) => b !== block)
+                          .map((blockKey) => (
                             <SelectItem key={blockKey} value={blockKey}>
                               {blockKey}
                             </SelectItem>
-                          ))
-                        }
+                          ))}
                       </SelectContent>
                     </Select>
-                    
+
                     {moveToBlock && (
                       <Button
                         variant="outline"
                         size="xs"
                         onClick={() => {
-                          setConfirmAction({ 
-                            type: 'move', 
-                            blockKey: block, 
-                            targetBlock: moveToBlock 
+                          setConfirmAction({
+                            type: 'move',
+                            blockKey: block,
+                            targetBlock: moveToBlock,
                           });
                           setShowConfirmDialog(true);
                         }}
@@ -233,12 +234,12 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
                 )}
               </div>
             </div>
-            
+
             <CardContent className="p-3">
-              <TimeBlockTeamsList 
-                teams={teams} 
-                unmatchedTeamIds={unmatchedTeamIds.filter(id => 
-                  teams.some(team => team.id === id)
+              <TimeBlockTeamsList
+                teams={teams}
+                unmatchedTeamIds={unmatchedTeamIds.filter((id) =>
+                  teams.some((team) => team.id === id)
                 )}
                 isInteractive={isEditMode}
                 selectedTeamIds={selectedForBlock}
@@ -246,7 +247,7 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
                 onSelectAll={() => handleSelectAll(block)}
                 onDeselectAll={() => handleDeselectAll(block)}
               />
-              
+
               {isEditMode && teams.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-border">
                   <Button
@@ -267,7 +268,7 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
           </Card>
         );
       })}
-      
+
       {insufficientBlocks.length > 0 && (
         <div className="text-sm text-amber-500 mt-2">
           <p>Note: Some time blocks have insufficient teams to create matches.</p>
@@ -279,22 +280,17 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Action</AlertDialogTitle>
             <AlertDialogDescription>
-              {confirmAction?.type === 'remove' && 
-                `Remove ${selectedTeams[confirmAction.blockKey!]?.length || 0} selected team(s) from ${confirmAction.blockKey} block?`
-              }
-              {confirmAction?.type === 'clear' && 
-                `Clear all teams from ${confirmAction.blockKey} block?`
-              }
-              {confirmAction?.type === 'move' && 
-                `Move ${selectedTeams[confirmAction.blockKey!]?.length || 0} selected team(s) from ${confirmAction.blockKey} to ${confirmAction.targetBlock} block?`
-              }
+              {confirmAction?.type === 'remove' &&
+                `Remove ${selectedTeams[confirmAction.blockKey!]?.length || 0} selected team(s) from ${confirmAction.blockKey} block?`}
+              {confirmAction?.type === 'clear' &&
+                `Clear all teams from ${confirmAction.blockKey} block?`}
+              {confirmAction?.type === 'move' &&
+                `Move ${selectedTeams[confirmAction.blockKey!]?.length || 0} selected team(s) from ${confirmAction.blockKey} to ${confirmAction.targetBlock} block?`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={executeTeamOperation}>
-              Confirm
-            </AlertDialogAction>
+            <AlertDialogAction onClick={executeTeamOperation}>Confirm</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

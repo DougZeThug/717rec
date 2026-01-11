@@ -1,19 +1,20 @@
-import React from "react";
-import { Helmet } from "react-helmet-async";
-import { Accordion } from "@/components/ui/accordion";
-import { HelpCircle } from "lucide-react";
-import { useAdminAccess } from "@/hooks/useAdminAccess";
-import { HelpQuickLinks } from "@/components/help/HelpQuickLinks";
-import { HelpAdminCTA } from "@/components/help/HelpAdminCTA";
-import { WelcomeSection } from "@/components/help/sections/WelcomeSection";
-import { StandingsSection } from "@/components/help/sections/StandingsSection";
-import { ScheduleSection } from "@/components/help/sections/ScheduleSection";
-import { TeamsSection } from "@/components/help/sections/TeamsSection";
-import { PlayoffsSection } from "@/components/help/sections/PlayoffsSection";
-import { MessageBoardSection } from "@/components/help/sections/MessageBoardSection";
-import { HistorySection } from "@/components/help/sections/HistorySection";
-import { FAQSection } from "@/components/help/sections/FAQSection";
-import { AdminSections } from "@/components/help/sections/admin/AdminSections";
+import { HelpCircle } from 'lucide-react';
+import React from 'react';
+import { Helmet } from 'react-helmet-async';
+
+import { HelpAdminCTA } from '@/components/help/HelpAdminCTA';
+import { HelpQuickLinks } from '@/components/help/HelpQuickLinks';
+import { AdminSections } from '@/components/help/sections/admin/AdminSections';
+import { FAQSection } from '@/components/help/sections/FAQSection';
+import { HistorySection } from '@/components/help/sections/HistorySection';
+import { MessageBoardSection } from '@/components/help/sections/MessageBoardSection';
+import { PlayoffsSection } from '@/components/help/sections/PlayoffsSection';
+import { ScheduleSection } from '@/components/help/sections/ScheduleSection';
+import { StandingsSection } from '@/components/help/sections/StandingsSection';
+import { TeamsSection } from '@/components/help/sections/TeamsSection';
+import { WelcomeSection } from '@/components/help/sections/WelcomeSection';
+import { Accordion } from '@/components/ui/accordion';
+import { useAdminAccess } from '@/hooks/useAdminAccess';
 
 const Help: React.FC = () => {
   const { isAdminAccessGranted } = useAdminAccess();
@@ -35,8 +36,7 @@ const Help: React.FC = () => {
             <h1 className="text-3xl font-bold">Help & Getting Started</h1>
           </div>
           <p className="text-muted-foreground">
-            Everything you need to know about using 717REC for league management
-            and participation.
+            Everything you need to know about using 717REC for league management and participation.
           </p>
         </div>
 

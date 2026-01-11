@@ -1,15 +1,16 @@
+import { SmilePlus } from 'lucide-react';
+import React, { useState } from 'react';
 
-import React, { useState } from "react";
-import { cn } from "@/lib/utils";
-import { animations } from "@/styles/design-system";
-import { toast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
-import { useMatchReactions } from "@/hooks/matches/useMatchReactions";
-import MatchReactionButton from "./MatchReactionButton";
-import MatchReactionPicker from "./MatchReactionPicker";
-import { Button } from "@/components/ui/button";
-import { SmilePlus } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useAuth } from '@/contexts/AuthContext';
+import { useMatchReactions } from '@/hooks/matches/useMatchReactions';
+import { toast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+import { animations } from '@/styles/design-system';
+
+import MatchReactionButton from './MatchReactionButton';
+import MatchReactionPicker from './MatchReactionPicker';
 
 interface MatchReactionsProps {
   matchId: string;
@@ -19,21 +20,21 @@ const MatchReactions: React.FC<MatchReactionsProps> = ({ matchId }) => {
   const { reactionCounts, toggleReaction, isLoading } = useMatchReactions(matchId);
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
-  
+
   const handleReaction = (emoji: string) => {
     if (!user) {
       toast({
-        title: "Sign in required",
-        description: "Please sign in to react to matches",
-        variant: "default",
+        title: 'Sign in required',
+        description: 'Please sign in to react to matches',
+        variant: 'default',
       });
       return;
     }
-    
+
     toggleReaction(emoji);
     setOpen(false);
   };
-  
+
   if (isLoading) {
     return (
       <div className="flex items-center gap-1 mt-2 h-6">
@@ -41,13 +42,10 @@ const MatchReactions: React.FC<MatchReactionsProps> = ({ matchId }) => {
       </div>
     );
   }
-  
+
   return (
-    <div 
-      className={cn(
-        "flex flex-wrap items-center gap-1.5 mt-2",
-        animations.fadeIn
-      )}
+    <div
+      className={cn('flex flex-wrap items-center gap-1.5 mt-2', animations.fadeIn)}
       role="group"
       aria-label="Match reactions"
     >
@@ -60,7 +58,7 @@ const MatchReactions: React.FC<MatchReactionsProps> = ({ matchId }) => {
           onClick={() => handleReaction(reaction.emoji)}
         />
       ))}
-      
+
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -73,9 +71,7 @@ const MatchReactions: React.FC<MatchReactionsProps> = ({ matchId }) => {
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0 border-none shadow-md" align="start" sideOffset={5}>
-          <MatchReactionPicker 
-            onSelect={handleReaction}
-          />
+          <MatchReactionPicker onSelect={handleReaction} />
         </PopoverContent>
       </Popover>
     </div>

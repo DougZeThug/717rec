@@ -1,17 +1,18 @@
-import React, { useState } from "react";
-import { PlayoffMatch, Team } from "@/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Edit, RefreshCcw } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Edit, RefreshCcw } from 'lucide-react';
+import React, { useState } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { cn } from '@/lib/utils';
+import { PlayoffMatch, Team } from '@/types';
 
 interface PlayoffMatchListProps {
   matches: PlayoffMatch[];
@@ -26,54 +27,59 @@ const PlayoffMatchList: React.FC<PlayoffMatchListProps> = ({
   matches,
   teams,
   onEditMatch,
-  title = "Playoff Matches",
+  title = 'Playoff Matches',
   roundFilter,
-  matchTypeFilter
+  matchTypeFilter,
 }) => {
-  const [selectedRound, setSelectedRound] = useState<string>(roundFilter ? roundFilter.toString() : "all");
-  const [selectedType, setSelectedType] = useState<string>(matchTypeFilter || "all");
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [selectedRound, setSelectedRound] = useState<string>(
+    roundFilter ? roundFilter.toString() : 'all'
+  );
+  const [selectedType, setSelectedType] = useState<string>(matchTypeFilter || 'all');
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
 
   // Get available rounds and match types
-  const rounds = Array.from(new Set(matches.map(match => match.round))).sort((a, b) => a - b);
-  const matchTypes = Array.from(new Set(matches.map(match => match.matchType)));
+  const rounds = Array.from(new Set(matches.map((match) => match.round))).sort((a, b) => a - b);
+  const matchTypes = Array.from(new Set(matches.map((match) => match.matchType)));
 
   // Filter matches based on selections
-  const filteredMatches = matches.filter(match => {
-    const roundMatch = selectedRound === "all" || match.round === parseInt(selectedRound);
-    const typeMatch = selectedType === "all" || match.matchType === selectedType;
-    
+  const filteredMatches = matches.filter((match) => {
+    const roundMatch = selectedRound === 'all' || match.round === parseInt(selectedRound);
+    const typeMatch = selectedType === 'all' || match.matchType === selectedType;
+
     let statusMatch = true;
-    if (selectedStatus === "pending") {
+    if (selectedStatus === 'pending') {
       statusMatch = !match.team1Id || !match.team2Id || (!match.winnerId && !match.loserId);
-    } else if (selectedStatus === "complete") {
+    } else if (selectedStatus === 'complete') {
       statusMatch = !!match.winnerId;
-    } else if (selectedStatus === "in_progress") {
+    } else if (selectedStatus === 'in_progress') {
       statusMatch = !!(match.team1Id && match.team2Id) && !match.winnerId;
     }
-    
+
     return roundMatch && typeMatch && statusMatch;
   });
 
   // Group matches by round for display
-  const matchesByRound = filteredMatches.reduce((acc, match) => {
-    const round = match.round;
-    if (!acc[round]) acc[round] = [];
-    acc[round].push(match);
-    return acc;
-  }, {} as Record<number, PlayoffMatch[]>);
+  const matchesByRound = filteredMatches.reduce(
+    (acc, match) => {
+      const round = match.round;
+      if (!acc[round]) acc[round] = [];
+      acc[round].push(match);
+      return acc;
+    },
+    {} as Record<number, PlayoffMatch[]>
+  );
 
   // Sort matches within each round by position
-  Object.keys(matchesByRound).forEach(round => {
+  Object.keys(matchesByRound).forEach((round) => {
     matchesByRound[parseInt(round)].sort((a, b) => a.position - b.position);
   });
 
   // Get team name by ID
   const getTeamNameById = (teamId?: string) => {
-    if (!teamId) return "TBD";
+    if (!teamId) return 'TBD';
     if (teamId.startsWith('play-in-')) return `Winner of Play-in ${teamId.split('-')[2]}`;
-    const team = teams.find(t => t.id === teamId);
-    return team?.name || "Unknown Team";
+    const team = teams.find((t) => t.id === teamId);
+    return team?.name || 'Unknown Team';
   };
 
   // Format match status
@@ -90,11 +96,16 @@ const PlayoffMatchList: React.FC<PlayoffMatchListProps> = ({
   // Get match type display name
   const getMatchTypeDisplay = (type: string) => {
     switch (type) {
-      case "winners": return "Winners Bracket";
-      case "losers": return "Losers Bracket";
-      case "finals": return "Finals";
-      case "play-in": return "Play-in";
-      default: return type;
+      case 'winners':
+        return 'Winners Bracket';
+      case 'losers':
+        return 'Losers Bracket';
+      case 'finals':
+        return 'Finals';
+      case 'play-in':
+        return 'Play-in';
+      default:
+        return type;
     }
   };
 
@@ -110,28 +121,28 @@ const PlayoffMatchList: React.FC<PlayoffMatchListProps> = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Rounds</SelectItem>
-                {rounds.map(round => (
+                {rounds.map((round) => (
                   <SelectItem key={round} value={round.toString()}>
                     Round {round}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            
+
             <Select value={selectedType} onValueChange={setSelectedType}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Match Type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
-                {matchTypes.map(type => (
+                {matchTypes.map((type) => (
                   <SelectItem key={type} value={type}>
                     {getMatchTypeDisplay(type)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            
+
             <Select value={selectedStatus} onValueChange={setSelectedStatus}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Status" />
@@ -154,28 +165,30 @@ const PlayoffMatchList: React.FC<PlayoffMatchListProps> = ({
         ) : (
           Object.keys(matchesByRound)
             .sort((a, b) => parseInt(a) - parseInt(b))
-            .map(roundKey => {
+            .map((roundKey) => {
               const roundNumber = parseInt(roundKey);
               const roundMatches = matchesByRound[roundNumber];
-              
+
               return (
                 <div key={roundKey} className="mb-6">
                   <h3 className="text-lg font-semibold mb-2">
-                    Round {roundNumber} 
+                    Round {roundNumber}
                     {roundMatches[0] && (
                       <span className="text-muted-foreground text-sm ml-2">
                         ({getMatchTypeDisplay(roundMatches[0].matchType)})
                       </span>
                     )}
                   </h3>
-                  
+
                   <div className="space-y-2">
-                    {roundMatches.map(match => (
-                      <div 
-                        key={match.id} 
+                    {roundMatches.map((match) => (
+                      <div
+                        key={match.id}
                         className={cn(
-                          "p-3 rounded-lg border flex items-center justify-between",
-                          match.winnerId ? "bg-gray-50 dark:bg-gray-800/50" : "bg-white dark:bg-gray-900"
+                          'p-3 rounded-lg border flex items-center justify-between',
+                          match.winnerId
+                            ? 'bg-gray-50 dark:bg-gray-800/50'
+                            : 'bg-white dark:bg-gray-900'
                         )}
                       >
                         <div className="flex-1">
@@ -185,18 +198,21 @@ const PlayoffMatchList: React.FC<PlayoffMatchListProps> = ({
                             </span>
                             {getStatusBadge(match)}
                           </div>
-                          
+
                           <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-center">
                             <div className="text-left">
                               {match.team1Id ? (
-                                <span className="font-medium">{getTeamNameById(match.team1Id)}</span>
+                                <span className="font-medium">
+                                  {getTeamNameById(match.team1Id)}
+                                </span>
                               ) : (
                                 <span className="italic text-muted-foreground">TBD</span>
                               )}
                             </div>
-                            
+
                             <div className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-center min-w-[60px]">
-                              {match.team1GameWins !== undefined && match.team2GameWins !== undefined ? (
+                              {match.team1GameWins !== undefined &&
+                              match.team2GameWins !== undefined ? (
                                 <span className="font-mono">
                                   {match.team1GameWins}-{match.team2GameWins}
                                 </span>
@@ -204,20 +220,22 @@ const PlayoffMatchList: React.FC<PlayoffMatchListProps> = ({
                                 <span className="text-muted-foreground">vs</span>
                               )}
                             </div>
-                            
+
                             <div className="text-right">
                               {match.team2Id ? (
-                                <span className="font-medium">{getTeamNameById(match.team2Id)}</span>
+                                <span className="font-medium">
+                                  {getTeamNameById(match.team2Id)}
+                                </span>
                               ) : (
                                 <span className="italic text-muted-foreground">TBD</span>
                               )}
                             </div>
                           </div>
                         </div>
-                        
+
                         <div className="ml-4 flex items-center space-x-2">
-                          <Button 
-                            variant="outline" 
+                          <Button
+                            variant="outline"
                             size="sm"
                             onClick={() => onEditMatch(match.id, false)}
                             disabled={!match.team1Id || !match.team2Id}
@@ -225,9 +243,9 @@ const PlayoffMatchList: React.FC<PlayoffMatchListProps> = ({
                             <Edit className="h-4 w-4 mr-1" />
                             Edit
                           </Button>
-                          
-                          <Button 
-                            variant="outline" 
+
+                          <Button
+                            variant="outline"
                             size="sm"
                             onClick={() => onEditMatch(match.id, true)}
                             disabled={!match.team1Id || !match.team2Id}

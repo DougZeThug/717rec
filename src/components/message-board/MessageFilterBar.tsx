@@ -1,22 +1,18 @@
+import { RefreshCw } from 'lucide-react';
+import React, { useState } from 'react';
 
-import React, { useState } from "react";
-import { RefreshCw } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { animations } from "@/styles/design-system";
-import { FilterOptions } from "@/hooks/message-board/types";
-import { MessageCategory } from "@/types/reactions";
-import { useTeams } from "@/hooks/useTeams";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { FilterOptions } from '@/hooks/message-board/types';
+import { useTeams } from '@/hooks/useTeams';
+import { cn } from '@/lib/utils';
+import { animations } from '@/styles/design-system';
+import { MessageCategory } from '@/types/reactions';
 
+import ActiveFilters from './filter/ActiveFilters';
+import FilterSection from './filter/FilterSection';
+import FilterToggleButton from './filter/FilterToggleButton';
 // Import our newly created components
-import SearchBar from "./filter/SearchBar";
-import FilterToggleButton from "./filter/FilterToggleButton";
-import FilterSection from "./filter/FilterSection";
-import ActiveFilters from "./filter/ActiveFilters";
+import SearchBar from './filter/SearchBar';
 
 interface MessageFilterBarProps {
   filterOptions: FilterOptions;
@@ -32,7 +28,7 @@ const MessageFilterBar: React.FC<MessageFilterBarProps> = ({
   isRefreshing,
 }) => {
   const { teams } = useTeams();
-  const [searchInput, setSearchInput] = useState(filterOptions.searchQuery || "");
+  const [searchInput, setSearchInput] = useState(filterOptions.searchQuery || '');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -41,7 +37,7 @@ const MessageFilterBar: React.FC<MessageFilterBarProps> = ({
   };
 
   const clearFilters = () => {
-    setSearchInput("");
+    setSearchInput('');
     onFilterChange({
       category: null,
       teamId: null,
@@ -51,7 +47,7 @@ const MessageFilterBar: React.FC<MessageFilterBarProps> = ({
   };
 
   return (
-    <div className={cn("space-y-2", animations.fadeIn)}>
+    <div className={cn('space-y-2', animations.fadeIn)}>
       {/* Search Bar with Inline Refresh Button */}
       <div className="flex gap-2">
         <SearchBar
@@ -61,7 +57,7 @@ const MessageFilterBar: React.FC<MessageFilterBarProps> = ({
           onRefresh={onRefresh}
           isRefreshing={isRefreshing}
         />
-        
+
         <FilterToggleButton
           filterOptions={filterOptions}
           onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
@@ -71,13 +67,13 @@ const MessageFilterBar: React.FC<MessageFilterBarProps> = ({
 
       {/* Advanced Filters (Collapsible) */}
       <Collapsible open={showAdvancedFilters} onOpenChange={setShowAdvancedFilters}>
-        <CollapsibleContent className={cn("space-y-2", animations.fadeIn)}>
+        <CollapsibleContent className={cn('space-y-2', animations.fadeIn)}>
           <FilterSection
             filterOptions={filterOptions}
             onFilterChange={onFilterChange}
             onClearFilters={clearFilters}
           />
-          
+
           <ActiveFilters
             filterOptions={filterOptions}
             onFilterChange={onFilterChange}

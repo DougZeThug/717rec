@@ -1,6 +1,5 @@
-
-import { PlayoffBracket, PlayoffMatch, Team } from "@/types";
-import { BRACKET_FORMATS, BRACKET_STATES, BracketState, BracketFormat } from "@/constants/brackets";
+import { BRACKET_FORMATS, BRACKET_STATES, BracketFormat, BracketState } from '@/constants/brackets';
+import { PlayoffBracket, PlayoffMatch, Team } from '@/types';
 
 /**
  * Determines the champion of a bracket if it exists
@@ -10,10 +9,7 @@ import { BRACKET_FORMATS, BRACKET_STATES, BracketState, BracketFormat } from "@/
 export const determineChampion = (matches: PlayoffMatch[]): string | null => {
   // Find champion if exists (winner of the finals match)
   if (matches.length > 0) {
-    const finalMatch = matches.find(m => 
-      m.matchType === 'finals' && 
-      m.winnerId !== null
-    );
+    const finalMatch = matches.find((m) => m.matchType === 'finals' && m.winnerId !== null);
     if (finalMatch) {
       return finalMatch.winnerId!;
     }
@@ -28,11 +24,11 @@ export const determineChampion = (matches: PlayoffMatch[]): string | null => {
  */
 export const normalizeBracketState = (stateValue: string | null): BracketState => {
   if (!stateValue) return BRACKET_STATES.PENDING;
-  
+
   if (Object.values(BRACKET_STATES).includes(stateValue as any)) {
     return stateValue as BracketState;
   }
-  
+
   // Default to pending if invalid value
   return BRACKET_STATES.PENDING;
 };

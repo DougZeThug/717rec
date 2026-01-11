@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { useTeamRecordUpdate } from '../useTeamRecordUpdate';
 
 // Mock dependencies
@@ -9,24 +10,24 @@ const mockValidateTeamStats = vi.fn();
 
 vi.mock('@/hooks/useTeamRecords', () => ({
   useTeamRecords: () => ({
-    updateTeamRecords: mockUpdateTeamRecords
-  })
+    updateTeamRecords: mockUpdateTeamRecords,
+  }),
 }));
 
 vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({
-    toast: mockToast
-  })
+    toast: mockToast,
+  }),
 }));
 
 vi.mock('../validation/useTeamStatsValidation', () => ({
   useTeamStatsValidation: () => ({
-    validateTeamStats: mockValidateTeamStats
-  })
+    validateTeamStats: mockValidateTeamStats,
+  }),
 }));
 
 vi.mock('@/utils/logger', () => ({
-  warnLog: vi.fn()
+  warnLog: vi.fn(),
 }));
 
 describe('useTeamRecordUpdate', () => {
@@ -44,46 +45,28 @@ describe('useTeamRecordUpdate', () => {
 
   it('successfully updates team stats with valid data', async () => {
     const { result } = renderHook(() => useTeamRecordUpdate());
-    
-    const success = await result.current.updateTeamStats(
-      'winner-id',
-      'loser-id',
-      [],
-      3,
-      1
-    );
+
+    const success = await result.current.updateTeamStats('winner-id', 'loser-id', [], 3, 1);
 
     expect(success).toBe(true);
-    expect(mockUpdateTeamRecords).toHaveBeenCalledWith(
-      'winner-id',
-      'loser-id',
-      [],
-      3,
-      1
-    );
+    expect(mockUpdateTeamRecords).toHaveBeenCalledWith('winner-id', 'loser-id', [], 3, 1);
   });
 
   it('returns false when validation fails - missing winner', async () => {
     mockValidateTeamStats.mockReturnValue({
       isValid: false,
-      errorMessage: 'Missing winner or loser ID for team stats update'
+      errorMessage: 'Missing winner or loser ID for team stats update',
     });
 
     const { result } = renderHook(() => useTeamRecordUpdate());
-    
-    const success = await result.current.updateTeamStats(
-      '',
-      'loser-id',
-      [],
-      3,
-      1
-    );
+
+    const success = await result.current.updateTeamStats('', 'loser-id', [], 3, 1);
 
     expect(success).toBe(false);
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Validation Error',
-        variant: 'destructive'
+        variant: 'destructive',
       })
     );
     expect(mockUpdateTeamRecords).not.toHaveBeenCalled();
@@ -92,23 +75,17 @@ describe('useTeamRecordUpdate', () => {
   it('returns false when validation fails - negative game wins', async () => {
     mockValidateTeamStats.mockReturnValue({
       isValid: false,
-      errorMessage: 'Game wins cannot be negative'
+      errorMessage: 'Game wins cannot be negative',
     });
 
     const { result } = renderHook(() => useTeamRecordUpdate());
-    
-    const success = await result.current.updateTeamStats(
-      'winner-id',
-      'loser-id',
-      [],
-      -1,
-      1
-    );
+
+    const success = await result.current.updateTeamStats('winner-id', 'loser-id', [], -1, 1);
 
     expect(success).toBe(false);
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({
-        title: 'Validation Error'
+        title: 'Validation Error',
       })
     );
   });
@@ -117,43 +94,25 @@ describe('useTeamRecordUpdate', () => {
     mockUpdateTeamRecords.mockResolvedValue(false);
 
     const { result } = renderHook(() => useTeamRecordUpdate());
-    
-    const success = await result.current.updateTeamStats(
-      'winner-id',
-      'loser-id',
-      [],
-      3,
-      1
-    );
+
+    const success = await result.current.updateTeamStats('winner-id', 'loser-id', [], 3, 1);
 
     expect(success).toBe(false);
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Partial Update',
-        variant: 'default'
+        variant: 'default',
       })
     );
   });
 
   it('calls updateTeamRecords with correct parameters', async () => {
     const mockTeams = [{ id: 'team-1' }, { id: 'team-2' }];
-    
-    const { result } = renderHook(() => useTeamRecordUpdate());
-    
-    await result.current.updateTeamStats(
-      'winner-id',
-      'loser-id',
-      mockTeams,
-      5,
-      2
-    );
 
-    expect(mockUpdateTeamRecords).toHaveBeenCalledWith(
-      'winner-id',
-      'loser-id',
-      mockTeams,
-      5,
-      2
-    );
+    const { result } = renderHook(() => useTeamRecordUpdate());
+
+    await result.current.updateTeamStats('winner-id', 'loser-id', mockTeams, 5, 2);
+
+    expect(mockUpdateTeamRecords).toHaveBeenCalledWith('winner-id', 'loser-id', mockTeams, 5, 2);
   });
 });

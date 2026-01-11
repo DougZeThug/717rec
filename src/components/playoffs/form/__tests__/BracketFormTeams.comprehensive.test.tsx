@@ -1,7 +1,8 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import React from 'react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { BracketFormTeamsContainer } from '../bracket-teams/components/BracketFormTeamsContainer';
 import type { BracketFormTeamsContainerProps } from '../bracket-teams/types';
 
@@ -9,7 +10,7 @@ import type { BracketFormTeamsContainerProps } from '../bracket-teams/types';
 const mockContainerComponent = vi.fn();
 
 vi.mock('../bracket-teams/components/TeamSelectionForm', () => ({
-  TeamSelectionForm: (props: any) => mockContainerComponent(props)
+  TeamSelectionForm: (props: any) => mockContainerComponent(props),
 }));
 
 describe('BracketFormTeamsContainer - Comprehensive Tests', () => {
@@ -20,15 +21,15 @@ describe('BracketFormTeamsContainer - Comprehensive Tests', () => {
     onChange: vi.fn(),
     divisions: [
       { id: 'div-1', name: 'Division A' },
-      { id: 'div-2', name: 'Division B' }
-    ]
+      { id: 'div-2', name: 'Division B' },
+    ],
   });
 
   const createEdgeCaseProps = () => ({
     divisionId: null,
     maxTeams: 0,
     onChange: vi.fn(),
-    divisions: []
+    divisions: [],
   });
 
   const createLargeDatasetProps = () => ({
@@ -37,13 +38,13 @@ describe('BracketFormTeamsContainer - Comprehensive Tests', () => {
     onChange: vi.fn(),
     divisions: Array.from({ length: 50 }, (_, i) => ({
       id: `div-${i}`,
-      name: `Division ${i}`
-    }))
+      name: `Division ${i}`,
+    })),
   });
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Default mock implementation
     mockContainerComponent.mockImplementation((props) => (
       <div data-testid="bracket-form-teams-container">
@@ -65,10 +66,10 @@ describe('BracketFormTeamsContainer - Comprehensive Tests', () => {
         { id: 'team1', name: 'Team 1', division_id: 'div-1' },
         { id: 'team2', name: 'Team 2', division_id: 'div-2' },
       ];
-      
+
       const props = { ...createBasicProps(), teams: mockTeams, divisionId: 'div-1' };
       render(<BracketFormTeamsContainer {...props} />);
-      
+
       expect(screen.getByTestId('bracket-form-teams-container')).toBeInTheDocument();
     });
 
@@ -77,10 +78,10 @@ describe('BracketFormTeamsContainer - Comprehensive Tests', () => {
         { id: 'team1', name: 'Team 1', division_id: 'div-1' },
         { id: 'team2', name: 'Team 2', division_id: 'div-2' },
       ];
-      
+
       const props = { ...createBasicProps(), teams: mockTeams, divisionId: null };
       render(<BracketFormTeamsContainer {...props} />);
-      
+
       expect(screen.getByTestId('bracket-form-teams-container')).toBeInTheDocument();
     });
   });
@@ -89,19 +90,19 @@ describe('BracketFormTeamsContainer - Comprehensive Tests', () => {
     it('forwards all required props to container', () => {
       const props = createBasicProps();
       render(<BracketFormTeamsContainer {...props} />);
-      
+
       expect(screen.getByTestId('bracket-form-teams-container')).toBeInTheDocument();
     });
 
     it('forwards onChange callback correctly', async () => {
       const mockOnChange = vi.fn();
       const props = { ...createBasicProps(), onChange: mockOnChange };
-      
+
       render(<BracketFormTeamsContainer {...props} />);
-      
+
       const changeButton = screen.getByText('Mock Change');
       await userEvent.click(changeButton);
-      
+
       expect(mockOnChange).toHaveBeenCalledWith(['team-1']);
       expect(mockOnChange).toHaveBeenCalledTimes(1);
     });
@@ -112,10 +113,10 @@ describe('BracketFormTeamsContainer - Comprehensive Tests', () => {
         { id: 'div-2', name: 'Division B with Special Characters !@#$%' },
         { id: 'div-3', name: '' }, // Edge case: empty name
       ];
-      
+
       const props = { ...createBasicProps(), divisions: complexDivisions };
       render(<BracketFormTeamsContainer {...props} />);
-      
+
       expect(screen.getByTestId('divisions-count')).toHaveTextContent('3');
     });
   });
@@ -124,17 +125,17 @@ describe('BracketFormTeamsContainer - Comprehensive Tests', () => {
     it('sets minTeams to 2 by default', () => {
       const props = createBasicProps();
       render(<BracketFormTeamsContainer {...props} />);
-      
+
       expect(screen.getByTestId('min-teams')).toHaveTextContent('2');
     });
 
     it('maintains minTeams default across re-renders', () => {
       const props = createBasicProps();
       const { rerender } = render(<BracketFormTeamsContainer {...props} />);
-      
+
       // Re-render with different props
       rerender(<BracketFormTeamsContainer {...props} maxTeams={32} />);
-      
+
       expect(screen.getByTestId('min-teams')).toHaveTextContent('2');
     });
   });
@@ -143,28 +144,28 @@ describe('BracketFormTeamsContainer - Comprehensive Tests', () => {
     it('handles empty divisions array', () => {
       const props = { ...createBasicProps(), divisions: [] };
       render(<BracketFormTeamsContainer {...props} />);
-      
+
       expect(screen.getByTestId('divisions-count')).toHaveTextContent('0');
     });
 
     it('handles undefined divisions', () => {
       const props = { ...createBasicProps(), divisions: undefined };
       render(<BracketFormTeamsContainer {...props} />);
-      
+
       expect(screen.getByTestId('divisions-count')).toHaveTextContent('0');
     });
 
     it('handles zero maxTeams', () => {
       const props = { ...createBasicProps(), maxTeams: 0 };
       render(<BracketFormTeamsContainer {...props} />);
-      
+
       expect(screen.getByTestId('max-teams')).toHaveTextContent('0');
     });
 
     it('handles large maxTeams values', () => {
       const props = { ...createBasicProps(), maxTeams: 1024 };
       render(<BracketFormTeamsContainer {...props} />);
-      
+
       expect(screen.getByTestId('max-teams')).toHaveTextContent('1024');
     });
   });
@@ -173,18 +174,18 @@ describe('BracketFormTeamsContainer - Comprehensive Tests', () => {
     it('renders container component on mount', () => {
       const props = createBasicProps();
       render(<BracketFormTeamsContainer {...props} />);
-      
+
       expect(screen.getByTestId('bracket-form-teams-container')).toBeInTheDocument();
     });
 
     it('cleans up properly on unmount', () => {
       const props = createBasicProps();
       const { unmount } = render(<BracketFormTeamsContainer {...props} />);
-      
+
       expect(screen.getByTestId('bracket-form-teams-container')).toBeInTheDocument();
-      
+
       unmount();
-      
+
       expect(screen.queryByTestId('bracket-form-teams-container')).not.toBeInTheDocument();
     });
   });
@@ -192,11 +193,11 @@ describe('BracketFormTeamsContainer - Comprehensive Tests', () => {
   describe('Performance Tests', () => {
     it('handles large datasets efficiently', () => {
       const props = createLargeDatasetProps();
-      
+
       const startTime = performance.now();
       render(<BracketFormTeamsContainer {...props} />);
       const endTime = performance.now();
-      
+
       // Should render within reasonable time (less than 100ms for large dataset)
       expect(endTime - startTime).toBeLessThan(100);
       expect(screen.getByTestId('divisions-count')).toHaveTextContent('50');

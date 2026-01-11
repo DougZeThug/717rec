@@ -1,12 +1,7 @@
+import { X } from 'lucide-react';
+import React from 'react';
 
-import React from "react";
-import { X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { animations } from "@/styles/design-system";
-import { FilterOptions } from "@/hooks/message-board/types";
-import { MESSAGE_CATEGORIES, MessageCategory } from "@/types/reactions";
-import { useTeams } from "@/hooks/useTeams";
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -14,7 +9,12 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
+import { FilterOptions } from '@/hooks/message-board/types';
+import { useTeams } from '@/hooks/useTeams';
+import { cn } from '@/lib/utils';
+import { animations } from '@/styles/design-system';
+import { MESSAGE_CATEGORIES, MessageCategory } from '@/types/reactions';
 
 interface FilterSectionProps {
   filterOptions: FilterOptions;
@@ -25,27 +25,24 @@ interface FilterSectionProps {
 const FilterSection: React.FC<FilterSectionProps> = ({
   filterOptions,
   onFilterChange,
-  onClearFilters
+  onClearFilters,
 }) => {
   const { teams } = useTeams();
-  
+
   const handleCategoryChange = (value: string) => {
-    onFilterChange({ category: value === "all" ? null : value as MessageCategory });
+    onFilterChange({ category: value === 'all' ? null : (value as MessageCategory) });
   };
 
   const handleTeamChange = (value: string) => {
-    onFilterChange({ teamId: value === "all" ? null : value });
+    onFilterChange({ teamId: value === 'all' ? null : value });
   };
-  
+
   return (
-    <div className={cn("space-y-2", animations.fadeIn)}>
+    <div className={cn('space-y-2', animations.fadeIn)}>
       <div className="flex flex-wrap gap-2">
         {/* Category Filter */}
         <div className="w-full sm:w-auto flex-1">
-          <Select
-            value={filterOptions.category || "all"}
-            onValueChange={handleCategoryChange}
-          >
+          <Select value={filterOptions.category || 'all'} onValueChange={handleCategoryChange}>
             <SelectTrigger>
               <SelectValue placeholder="Category" />
             </SelectTrigger>
@@ -64,10 +61,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
 
         {/* Team Filter */}
         <div className="w-full sm:w-auto flex-1">
-          <Select
-            value={filterOptions.teamId || "all"}
-            onValueChange={handleTeamChange}
-          >
+          <Select value={filterOptions.teamId || 'all'} onValueChange={handleTeamChange}>
             <SelectTrigger>
               <SelectValue placeholder="Team" />
             </SelectTrigger>
@@ -81,14 +75,9 @@ const FilterSection: React.FC<FilterSectionProps> = ({
             </SelectContent>
           </Select>
         </div>
-        
+
         {/* Clear Filters button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onClearFilters}
-          className="ml-auto"
-        >
+        <Button variant="ghost" size="sm" onClick={onClearFilters} className="ml-auto">
           <X className="h-3.5 w-3.5 mr-1" />
           Clear filters
         </Button>

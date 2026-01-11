@@ -1,9 +1,9 @@
-
-import React from 'react';
-import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { render, screen } from '@testing-library/react';
+import React from 'react';
 import { BrowserRouter } from 'react-router';
-import { vi, describe, it, expect } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
 import HistoryPageContent from '../HistoryPageContent';
 
 // Mock the supabase client
@@ -18,31 +18,30 @@ vi.mock('@/integrations/supabase/client', () => ({
               name: 'Spring 2025',
               start_date: '2025-01-01',
               end_date: '2025-04-01',
-              is_active: false
-            }
+              is_active: false,
+            },
           ],
-          error: null
-        }))
-      }))
-    }))
-  }
+          error: null,
+        })),
+      })),
+    })),
+  },
 }));
 
-const createTestQueryClient = () => new QueryClient({
-  defaultOptions: {
-    queries: { retry: false },
-    mutations: { retry: false },
-  },
-});
+const createTestQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
 
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const queryClient = createTestQueryClient();
-  
+
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        {children}
-      </BrowserRouter>
+      <BrowserRouter>{children}</BrowserRouter>
     </QueryClientProvider>
   );
 };

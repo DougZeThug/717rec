@@ -1,7 +1,8 @@
+import React from 'react';
 
-import React from "react";
-import TeamCard from "./TeamCard";
-import type { Team } from "@/types";
+import type { Team } from '@/types';
+
+import TeamCard from './TeamCard';
 
 interface Props {
   teams: (Team & { seed?: number })[];
@@ -17,7 +18,7 @@ const SimpleTeamSelectionList: React.FC<Props> = ({ teams, selected, onToggle, m
         {teams.map((team) => {
           const isSelected = selected.has(team.id);
           const canSelect = !isSelected || selected.size < (maxTeams || 16);
-          
+
           return (
             <TeamCard
               key={team.id}
@@ -30,9 +31,7 @@ const SimpleTeamSelectionList: React.FC<Props> = ({ teams, selected, onToggle, m
         })}
       </div>
     ) : (
-      <p className="text-center py-4 text-gray-500">
-        No teams available
-      </p>
+      <p className="text-center py-4 text-gray-500">No teams available</p>
     )}
   </div>
 );

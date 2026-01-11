@@ -1,12 +1,13 @@
-import React from "react";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { CalendarIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { normalizeDate } from "@/utils/dateNormalization";
-import { timezoneLog } from "@/utils/logger";
+import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
+import React from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import { normalizeDate } from '@/utils/dateNormalization';
+import { timezoneLog } from '@/utils/logger';
 
 interface ThursdayDatePickerProps {
   selected: Date | null;
@@ -24,18 +25,18 @@ export const ThursdayDatePicker = ({ selected, onSelect }: ThursdayDatePickerPro
       onSelect(null);
       return;
     }
-    
-    timezoneLog("ThursdayDatePicker - Date selected:", {
+
+    timezoneLog('ThursdayDatePicker - Date selected:', {
       date,
       dateString: date.toString(),
       dateIso: date.toISOString(),
-      normalizedDate: normalizeDate(date, 'ThursdayDatePicker')
+      normalizedDate: normalizeDate(date, 'ThursdayDatePicker'),
     });
-    
+
     // Create a new Date object at noon to avoid timezone issues
     const safeDate = new Date(date);
     safeDate.setHours(12, 0, 0, 0);
-    
+
     onSelect(safeDate);
   };
 
@@ -46,14 +47,14 @@ export const ThursdayDatePicker = ({ selected, onSelect }: ThursdayDatePickerPro
           <Button
             variant="outline"
             className={cn(
-              "w-[240px] justify-start text-left font-normal",
-              !selected && "text-muted-foreground"
+              'w-[240px] justify-start text-left font-normal',
+              !selected && 'text-muted-foreground'
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {selected ? (
               <span>
-                {format(selected, "PPP")}
+                {format(selected, 'PPP')}
                 <span className="ml-1 text-xs opacity-50">
                   ({normalizeDate(selected, 'display')})
                 </span>

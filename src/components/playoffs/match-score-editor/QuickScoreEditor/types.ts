@@ -1,5 +1,4 @@
-
-import { PlayoffMatch, Team } from "@/types";
+import { PlayoffMatch, Team } from '@/types';
 
 export interface QuickScoreEditorProps {
   match: PlayoffMatch;
@@ -20,5 +19,5 @@ export interface ScoreOption {
   team1GameWins: number;
   team2GameWins: number;
   label: string;
-  winner: "team1" | "team2";
+  winner: 'team1' | 'team2';
 }

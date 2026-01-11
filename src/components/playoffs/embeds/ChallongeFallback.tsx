@@ -1,13 +1,13 @@
+import { ChevronDown, ChevronUp, Expand, Minimize } from 'lucide-react';
+import React, { useState } from 'react';
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Expand, Minimize, ChevronDown, ChevronUp } from "lucide-react";
+import { Button } from '@/components/ui/button';
 
 const brackets = [
-  { slug: "5hy558bb", title: "Competitive" },
-  { slug: "d8uwweii", title: "Intermediate 1" },
-  { slug: "1a2md5x5", title: "Intermediate 2" },
-  { slug: "9eg7l6f", title: "Recreational" },
+  { slug: '5hy558bb', title: 'Competitive' },
+  { slug: 'd8uwweii', title: 'Intermediate 1' },
+  { slug: '1a2md5x5', title: 'Intermediate 2' },
+  { slug: '9eg7l6f', title: 'Recreational' },
 ];
 
 export const ChallongeFallback: React.FC = () => {
@@ -25,14 +25,11 @@ export const ChallongeFallback: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
           <h2 className="text-2xl font-bold text-foreground mb-2">2025 Summer 2 Playoffs</h2>
-          <p className="text-muted-foreground">Live tournament brackets - click any bracket to view details</p>
+          <p className="text-muted-foreground">
+            Live tournament brackets - click any bracket to view details
+          </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={toggleAll}
-          className="flex items-center gap-2"
-        >
+        <Button variant="outline" size="sm" onClick={toggleAll} className="flex items-center gap-2">
           {allExpanded ? (
             <>
               <Minimize className="h-4 w-4" />
@@ -46,13 +43,13 @@ export const ChallongeFallback: React.FC = () => {
           )}
         </Button>
       </div>
-      
+
       <div className="grid grid-cols-1 gap-4">
         {brackets.map(({ slug, title }) => (
-          <ChallongeEmbedWithToggle 
-            key={slug} 
-            slug={slug} 
-            title={title} 
+          <ChallongeEmbedWithToggle
+            key={slug}
+            slug={slug}
+            title={title}
             forceExpanded={allExpanded}
           />
         ))}
@@ -62,9 +59,9 @@ export const ChallongeFallback: React.FC = () => {
 };
 
 // Wrapper component to handle the expand all functionality
-const ChallongeEmbedWithToggle: React.FC<{ 
-  slug: string; 
-  title: string; 
+const ChallongeEmbedWithToggle: React.FC<{
+  slug: string;
+  title: string;
   forceExpanded: boolean;
 }> = ({ slug, title, forceExpanded }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -90,9 +87,7 @@ const ChallongeEmbedWithToggle: React.FC<{
         onClick={() => setIsOpen(!isOpen)}
         className="w-full p-4 text-left bg-muted border-b border-border hover:bg-muted/80 transition-colors duration-200 flex items-center justify-between group"
       >
-        <h3 className="text-lg font-semibold text-foreground">
-          {title}
-        </h3>
+        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
         <div className="flex items-center gap-2">
           {!isOpen && (
             <span className="text-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -106,7 +101,7 @@ const ChallongeEmbedWithToggle: React.FC<{
           )}
         </div>
       </button>
-      
+
       {isOpen && (
         <div className="transition-all duration-300 ease-in-out">
           <iframe
@@ -118,9 +113,9 @@ const ChallongeEmbedWithToggle: React.FC<{
             allowTransparency
             title={`${title} Bracket`}
             className="border-0 w-full min-w-full"
-            style={{ 
+            style={{
               colorScheme: 'normal',
-              minWidth: '100%'
+              minWidth: '100%',
             }}
           />
         </div>

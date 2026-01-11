@@ -1,17 +1,19 @@
 import { useMemo } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { useAutoScheduleState } from './useAutoScheduleState';
-import { useTeamOperations } from './useTeamOperations';
-import { usePairingOperations } from './usePairingOperations';
-import { useAutoScheduleSave } from './useAutoScheduleSave';
-import { useEditableMatches } from './useEditableMatches';
-import { formatDate } from './utils';
+
 import { useTeamsMap } from '@/hooks/teams';
+import { useToast } from '@/hooks/use-toast';
+
+import { useAutoScheduleSave } from './useAutoScheduleSave';
+import { useAutoScheduleState } from './useAutoScheduleState';
+import { useEditableMatches } from './useEditableMatches';
+import { usePairingOperations } from './usePairingOperations';
+import { useTeamOperations } from './useTeamOperations';
+import { formatDate } from './utils';
 
 export function useAutoSchedule() {
   const { toast } = useToast();
   const { teams } = useTeamsMap();
-  
+
   // Get state management
   const {
     selectedDate,
@@ -35,7 +37,7 @@ export function useAutoSchedule() {
     isEditMode,
     setIsEditMode,
     teamBlockMap,
-    setTeamBlockMap
+    setTeamBlockMap,
   } = useAutoScheduleState();
 
   // Get editable matches operations
@@ -47,7 +49,7 @@ export function useAutoSchedule() {
     removeMatch: removeMatchBase,
     resetToGenerated: resetToGeneratedBase,
     validateMatches,
-    hasUnsavedEdits: checkHasUnsavedEdits
+    hasUnsavedEdits: checkHasUnsavedEdits,
   } = useEditableMatches(editableMatches, isEditMode);
 
   // Wrap editing functions to pass setEditableMatches
@@ -81,7 +83,7 @@ export function useAutoSchedule() {
     teamBlockMap: loadedTeamBlockMap,
     setTimeBlockTeams, // Expose this function for manual team assignment
     handleLoadTeams,
-    getTeamCountStatus
+    getTeamCountStatus,
   } = useTeamOperations();
 
   // Get pairing operations
@@ -90,14 +92,11 @@ export function useAutoSchedule() {
     generatedPairings,
     unmatchedTeamIds,
     handleGenerateClick,
-    handleApplySchedule
+    handleApplySchedule,
   } = usePairingOperations(setActiveTab, loadedTeamBlockMap, Object.values(teams));
 
   // Get save operations
-  const {
-    saveMatches,
-    isSaving
-  } = useAutoScheduleSave();
+  const { saveMatches, isSaving } = useAutoScheduleSave();
 
   // Combined loading state
   const isLoadingState = isLoading || isGenerating || isProcessing || isSaving;
@@ -135,47 +134,46 @@ export function useAutoSchedule() {
       setMatchQualityMetrics,
       setEditableMatches
     );
-    
+
     // Reset edit mode when applying new schedule
     if (result) {
       setIsEditMode(false);
     }
-    
+
     return result;
   };
 
   const saveSchedule = async () => {
     // Use editable matches if in edit mode, otherwise use generated matches
-    const matchesToSave = isEditMode && editableMatches.length > 0 
-      ? editableMatches 
-      : generatedMatches;
-    
+    const matchesToSave =
+      isEditMode && editableMatches.length > 0 ? editableMatches : generatedMatches;
+
     if (!matchesToSave || matchesToSave.length === 0) {
       toast({
-        title: "No Matches to Save",
-        description: "Please generate and apply a schedule first",
-        variant: "destructive"
+        title: 'No Matches to Save',
+        description: 'Please generate and apply a schedule first',
+        variant: 'destructive',
       });
       return false;
     }
-    
+
     // Validate before saving if in edit mode
     if (isEditMode) {
       const currentValidation = await validateMatches();
       if (!currentValidation.isValid) {
         toast({
-          title: "Cannot Save",
+          title: 'Cannot Save',
           description: `Schedule has ${currentValidation.errors.length} error(s). Please fix them first.`,
-          variant: "destructive"
+          variant: 'destructive',
         });
         return false;
       }
     }
-    
+
     return await saveMatches(matchesToSave, selectedDate, dualMatchMode);
   };
 
-  // Team statistics 
+  // Team statistics
   const { total, odd } = useMemo(() => {
     return getTeamCountStatus();
   }, [timeBlockTeams, getTeamCountStatus]);
@@ -200,14 +198,14 @@ export function useAutoSchedule() {
     setDualMatchMode,
     generatedMatches,
     matchQualityMetrics,
-    
+
     // Edit state
     editableMatches,
     isEditMode,
     setIsEditMode,
     validation,
     hasUnsavedEdits,
-    
+
     // Data
     isLoading: isLoadingState,
     isGenerating,
@@ -220,13 +218,13 @@ export function useAutoSchedule() {
     unmatchedTeamIds,
     totalTeams: total,
     oddBlocks: odd,
-    
+
     // Actions
     handleLoadTeams: loadTeams,
     handleGenerateClick: generateSchedule,
     handleApplySchedule: applySchedule,
     handleSaveSchedule: saveSchedule,
-    
+
     // Edit actions
     updateMatchTeam,
     updateMatchTimeslot,
@@ -234,8 +232,8 @@ export function useAutoSchedule() {
     removeMatch,
     resetToGenerated,
     validateMatches,
-    
+
     // Formatted utilities
-    formattedDate: formatDate(selectedDate)
+    formattedDate: formatDate(selectedDate),
   };
 }

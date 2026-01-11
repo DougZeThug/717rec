@@ -1,6 +1,7 @@
-import { AutoScheduleMatch, Team } from "@/types";
-import { haveTeamsPlayedBefore } from "./matchHistoryService";
-import { warnLog } from "@/utils/logger";
+import { AutoScheduleMatch, Team } from '@/types';
+import { warnLog } from '@/utils/logger';
+
+import { haveTeamsPlayedBefore } from './matchHistoryService';
 
 export interface ValidationResult {
   isValid: boolean;
@@ -30,32 +31,34 @@ export interface TeamConflict {
 /**
  * Validate match schedule for conflicts and errors
  */
-export async function validateMatchSchedule(matches: AutoScheduleMatch[]): Promise<ValidationResult> {
+export async function validateMatchSchedule(
+  matches: AutoScheduleMatch[]
+): Promise<ValidationResult> {
   const errors: ValidationError[] = [];
   const warnings: ValidationWarning[] = [];
 
   // Check for duplicate team assignments in same timeslot
   const conflicts = findTeamConflicts(matches);
-  conflicts.forEach(conflict => {
-    conflict.matchIds.forEach(matchId => {
+  conflicts.forEach((conflict) => {
+    conflict.matchIds.forEach((matchId) => {
       errors.push({
         matchId,
         type: 'duplicate-team',
         message: `Team is scheduled for multiple matches at ${conflict.timeslot}`,
-        severity: 'error'
+        severity: 'error',
       });
     });
   });
 
   // Check each match for basic validity
-  matches.forEach(match => {
+  matches.forEach((match) => {
     // Check for same team playing itself
     if (match.team1Id === match.team2Id) {
       errors.push({
         matchId: match.id,
         type: 'same-team',
         message: 'Team cannot play against itself',
-        severity: 'error'
+        severity: 'error',
       });
     }
 
@@ -65,7 +68,7 @@ export async function validateMatchSchedule(matches: AutoScheduleMatch[]): Promi
         matchId: match.id,
         type: 'missing-team',
         message: 'Match is missing a team assignment',
-        severity: 'error'
+        severity: 'error',
       });
     }
 
@@ -75,7 +78,7 @@ export async function validateMatchSchedule(matches: AutoScheduleMatch[]): Promi
         matchId: match.id,
         type: 'invalid-timeslot',
         message: 'Match has invalid or missing timeslot',
-        severity: 'error'
+        severity: 'error',
       });
     }
   });
@@ -86,26 +89,29 @@ export async function validateMatchSchedule(matches: AutoScheduleMatch[]): Promi
   return {
     isValid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   };
 }
 
 /**
  * Check if any match pairings are rematches (teams have played before)
  */
-async function checkForRematches(matches: AutoScheduleMatch[], errors: ValidationError[]): Promise<void> {
+async function checkForRematches(
+  matches: AutoScheduleMatch[],
+  errors: ValidationError[]
+): Promise<void> {
   const rematchChecks = matches.map(async (match) => {
     if (!match.team1Id || !match.team2Id) return;
-    
+
     try {
       const hasPlayed = await haveTeamsPlayedBefore(match.team1Id, match.team2Id);
-      
+
       if (hasPlayed) {
         errors.push({
           matchId: match.id,
           type: 'rematch',
           message: 'These teams have already played each other this season',
-          severity: 'error'
+          severity: 'error',
         });
       }
     } catch (error) {
@@ -121,35 +127,35 @@ async function checkForRematches(matches: AutoScheduleMatch[], errors: Validatio
  */
 export function findTeamConflicts(matches: AutoScheduleMatch[]): TeamConflict[] {
   const teamTimeslots = new Map<string, Map<string, string[]>>();
-  
-  matches.forEach(match => {
+
+  matches.forEach((match) => {
     const timeslot = match.timeslot;
-    
-    [match.team1Id, match.team2Id].forEach(teamId => {
+
+    [match.team1Id, match.team2Id].forEach((teamId) => {
       if (!teamId) return;
-      
+
       if (!teamTimeslots.has(teamId)) {
         teamTimeslots.set(teamId, new Map());
       }
-      
+
       const teamSlots = teamTimeslots.get(teamId)!;
       if (!teamSlots.has(timeslot)) {
         teamSlots.set(timeslot, []);
       }
-      
+
       teamSlots.get(timeslot)!.push(match.id);
     });
   });
 
   const conflicts: TeamConflict[] = [];
-  
+
   teamTimeslots.forEach((timeslots, teamId) => {
     timeslots.forEach((matchIds, timeslot) => {
       if (matchIds.length > 1) {
         conflicts.push({
           teamId,
           timeslot,
-          matchIds
+          matchIds,
         });
       }
     });
@@ -165,13 +171,13 @@ export async function calculateScheduleHealth(matches: AutoScheduleMatch[]): Pro
   if (matches.length === 0) return 0;
 
   const validation = await validateMatchSchedule(matches);
-  
+
   // Deduct points for errors and warnings
   const errorPenalty = validation.errors.length * 20;
   const warningPenalty = validation.warnings.length * 5;
-  
+
   const health = Math.max(0, 100 - errorPenalty - warningPenalty);
-  
+
   return health;
 }
 
@@ -180,12 +186,12 @@ export async function calculateScheduleHealth(matches: AutoScheduleMatch[]): Pro
  */
 export function getValidationSummary(validation: ValidationResult): string {
   if (validation.isValid) {
-    return "Schedule is valid with no conflicts";
+    return 'Schedule is valid with no conflicts';
   }
-  
+
   const errorCount = validation.errors.length;
   const warningCount = validation.warnings.length;
-  
+
   const parts = [];
   if (errorCount > 0) {
     parts.push(`${errorCount} error${errorCount !== 1 ? 's' : ''}`);
@@ -193,6 +199,6 @@ export function getValidationSummary(validation: ValidationResult): string {
   if (warningCount > 0) {
     parts.push(`${warningCount} warning${warningCount !== 1 ? 's' : ''}`);
   }
-  
+
   return `Schedule has ${parts.join(' and ')}`;
 }

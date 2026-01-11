@@ -1,7 +1,8 @@
 import React from 'react';
-import { Card } from "@/components/ui/card";
-import { ShimmerSkeleton, AvatarSkeleton } from "@/components/ui/shimmer-skeleton";
-import { AutoStagger } from "@/components/ui/staggered-content";
+
+import { Card } from '@/components/ui/card';
+import { AvatarSkeleton, ShimmerSkeleton } from '@/components/ui/shimmer-skeleton';
+import { AutoStagger } from '@/components/ui/staggered-content';
 
 interface TeamListSkeletonProps {
   viewMode: 'grid' | 'list';
@@ -45,7 +46,7 @@ export const TeamListSkeleton: React.FC<TeamListSkeletonProps> = ({ viewMode }) 
 
   // Grid view skeleton
   return (
-    <AutoStagger 
+    <AutoStagger
       className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
       staggerDelay={0.08}
     >

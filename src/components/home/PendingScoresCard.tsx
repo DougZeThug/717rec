@@ -1,54 +1,58 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Clock } from 'lucide-react';
+import React, { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { usePendingScoresMatches } from '@/hooks/usePendingScoresMatches';
-import { ScoreSubmissionModal } from './ScoreSubmissionModal';
-import { formatDate, formatTime } from './utils';
-import { cn } from '@/lib/utils';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { SnowflakeSparkle, WINTER_ICONS_ENABLED } from '@/icons';
+import { cn } from '@/lib/utils';
+
+import { ScoreSubmissionModal } from './ScoreSubmissionModal';
+import { formatDate, formatTime } from './utils';
 
 const PendingScoresCard = () => {
   const { matches, isLoading } = usePendingScoresMatches();
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const { shouldApplyWinter } = useSeasonalTheme();
 
-  const cardClasses = cn(
-    "w-full",
-    shouldApplyWinter && "winter-card-full"
-  );
+  const cardClasses = cn('w-full', shouldApplyWinter && 'winter-card-full');
 
   if (isLoading) {
     return (
       <Card className={cardClasses}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Clock className={cn("h-5 w-5", shouldApplyWinter ? "text-cyan-400" : "text-primary")} />
+            <Clock
+              className={cn('h-5 w-5', shouldApplyWinter ? 'text-cyan-400' : 'text-primary')}
+            />
             Pending Scores
             {shouldApplyWinter && WINTER_ICONS_ENABLED && (
               <SnowflakeSparkle size={12} className="text-cyan-400/60" />
             )}
           </CardTitle>
-          <CardDescription className={shouldApplyWinter ? "text-cyan-300/70" : undefined}>
+          <CardDescription className={shouldApplyWinter ? 'text-cyan-300/70' : undefined}>
             Matches awaiting score reports
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className={cn(
-                "flex items-center justify-between p-3 rounded-lg border animate-pulse",
-                shouldApplyWinter && "border-cyan-500/20"
-              )}>
+              <div
+                key={i}
+                className={cn(
+                  'flex items-center justify-between p-3 rounded-lg border animate-pulse',
+                  shouldApplyWinter && 'border-cyan-500/20'
+                )}
+              >
                 <div className="flex items-center gap-3">
-                   <div className="w-8 h-8 bg-muted" />
-                   <div className="space-y-1">
-                     <div className="w-20 h-4 bg-muted rounded" />
-                     <div className="w-16 h-3 bg-muted rounded" />
-                   </div>
-                   <div className="w-4 h-4 bg-muted mx-2" />
-                   <div className="w-8 h-8 bg-muted" />
+                  <div className="w-8 h-8 bg-muted" />
+                  <div className="space-y-1">
+                    <div className="w-20 h-4 bg-muted rounded" />
+                    <div className="w-16 h-3 bg-muted rounded" />
+                  </div>
+                  <div className="w-4 h-4 bg-muted mx-2" />
+                  <div className="w-8 h-8 bg-muted" />
                   <div className="space-y-1">
                     <div className="w-20 h-4 bg-muted rounded" />
                     <div className="w-16 h-3 bg-muted rounded" />
@@ -68,7 +72,9 @@ const PendingScoresCard = () => {
       <Card className={cardClasses}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Clock className={cn("h-5 w-5", shouldApplyWinter ? "text-cyan-400" : "text-primary")} />
+            <Clock
+              className={cn('h-5 w-5', shouldApplyWinter ? 'text-cyan-400' : 'text-primary')}
+            />
             Pending Scores
             {shouldApplyWinter && WINTER_ICONS_ENABLED && (
               <SnowflakeSparkle size={12} className="text-cyan-400/60" />
@@ -77,8 +83,15 @@ const PendingScoresCard = () => {
         </CardHeader>
         <CardContent className="text-center py-8">
           <div className="text-4xl mb-2">🎉</div>
-          <p className={shouldApplyWinter ? "text-cyan-100/80" : "text-muted-foreground"}>All caught up!</p>
-          <p className={cn("text-sm mt-1", shouldApplyWinter ? "text-cyan-300/60" : "text-muted-foreground")}>
+          <p className={shouldApplyWinter ? 'text-cyan-100/80' : 'text-muted-foreground'}>
+            All caught up!
+          </p>
+          <p
+            className={cn(
+              'text-sm mt-1',
+              shouldApplyWinter ? 'text-cyan-300/60' : 'text-muted-foreground'
+            )}
+          >
             No pending score reports
           </p>
         </CardContent>
@@ -86,20 +99,22 @@ const PendingScoresCard = () => {
     );
   }
 
-  const selectedMatch = matches.find(m => m.id === selectedMatchId);
+  const selectedMatch = matches.find((m) => m.id === selectedMatchId);
 
   return (
     <>
       <Card className={cardClasses}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Clock className={cn("h-5 w-5", shouldApplyWinter ? "text-cyan-400" : "text-primary")} />
+            <Clock
+              className={cn('h-5 w-5', shouldApplyWinter ? 'text-cyan-400' : 'text-primary')}
+            />
             Pending Scores
             {shouldApplyWinter && WINTER_ICONS_ENABLED && (
               <SnowflakeSparkle size={12} className="text-cyan-400/60" />
             )}
           </CardTitle>
-          <CardDescription className={shouldApplyWinter ? "text-cyan-300/70" : undefined}>
+          <CardDescription className={shouldApplyWinter ? 'text-cyan-300/70' : undefined}>
             {matches.length} match{matches.length !== 1 ? 'es' : ''} awaiting score reports
           </CardDescription>
         </CardHeader>
@@ -109,10 +124,10 @@ const PendingScoresCard = () => {
               <div
                 key={match.id}
                 className={cn(
-                  "flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border gap-3 transition-colors",
+                  'flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border gap-3 transition-colors',
                   shouldApplyWinter
-                    ? "bg-slate-800/50 border-cyan-500/20 hover:bg-slate-800/70"
-                    : "bg-card hover:bg-accent/50"
+                    ? 'bg-slate-800/50 border-cyan-500/20 hover:bg-slate-800/70'
+                    : 'bg-card hover:bg-accent/50'
                 )}
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -120,56 +135,76 @@ const PendingScoresCard = () => {
                   <div className="flex items-center gap-2 min-w-0">
                     <div className="w-8 h-8 flex-shrink-0">
                       {match.team1_logo ? (
-                        <img 
-                          src={match.team1_logo} 
+                        <img
+                          src={match.team1_logo}
                           alt={`${match.team1_name} logo`}
-                           className="w-8 h-8 object-cover"
+                          className="w-8 h-8 object-cover"
                         />
                       ) : (
-                         <div className={cn(
-                           "w-8 h-8 flex items-center justify-center text-xs font-medium",
-                           shouldApplyWinter ? "bg-slate-700 text-cyan-300" : "bg-muted text-muted-foreground"
-                         )}>
+                        <div
+                          className={cn(
+                            'w-8 h-8 flex items-center justify-center text-xs font-medium',
+                            shouldApplyWinter
+                              ? 'bg-slate-700 text-cyan-300'
+                              : 'bg-muted text-muted-foreground'
+                          )}
+                        >
                           {match.team1_name.charAt(0).toUpperCase()}
                         </div>
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className={cn(
-                        "font-medium text-sm truncate",
-                        shouldApplyWinter && "text-cyan-50"
-                      )}>{match.team1_name}</p>
+                      <p
+                        className={cn(
+                          'font-medium text-sm truncate',
+                          shouldApplyWinter && 'text-cyan-50'
+                        )}
+                      >
+                        {match.team1_name}
+                      </p>
                     </div>
                   </div>
 
                   {/* VS */}
                   <div className="flex-shrink-0 px-2">
-                    <span className={cn(
-                      "text-xs font-medium",
-                      shouldApplyWinter ? "text-cyan-400/70" : "text-muted-foreground"
-                    )}>vs</span>
+                    <span
+                      className={cn(
+                        'text-xs font-medium',
+                        shouldApplyWinter ? 'text-cyan-400/70' : 'text-muted-foreground'
+                      )}
+                    >
+                      vs
+                    </span>
                   </div>
 
                   {/* Team 2 */}
                   <div className="flex items-center gap-2 min-w-0">
                     <div className="min-w-0">
-                      <p className={cn(
-                        "font-medium text-sm truncate",
-                        shouldApplyWinter && "text-cyan-50"
-                      )}>{match.team2_name}</p>
+                      <p
+                        className={cn(
+                          'font-medium text-sm truncate',
+                          shouldApplyWinter && 'text-cyan-50'
+                        )}
+                      >
+                        {match.team2_name}
+                      </p>
                     </div>
                     <div className="w-8 h-8 flex-shrink-0">
                       {match.team2_logo ? (
-                        <img 
-                          src={match.team2_logo} 
+                        <img
+                          src={match.team2_logo}
                           alt={`${match.team2_name} logo`}
                           className="w-8 h-8 object-cover"
                         />
                       ) : (
-                        <div className={cn(
-                          "w-8 h-8 flex items-center justify-center text-xs font-medium",
-                          shouldApplyWinter ? "bg-slate-700 text-cyan-300" : "bg-muted text-muted-foreground"
-                        )}>
+                        <div
+                          className={cn(
+                            'w-8 h-8 flex items-center justify-center text-xs font-medium',
+                            shouldApplyWinter
+                              ? 'bg-slate-700 text-cyan-300'
+                              : 'bg-muted text-muted-foreground'
+                          )}
+                        >
                           {match.team2_name.charAt(0).toUpperCase()}
                         </div>
                       )}
@@ -179,10 +214,12 @@ const PendingScoresCard = () => {
 
                 {/* Match Info & Action */}
                 <div className="flex items-center gap-3 flex-shrink-0">
-                  <div className={cn(
-                    "text-xs text-right tabular-nums",
-                    shouldApplyWinter ? "text-cyan-300/70" : "text-muted-foreground"
-                  )}>
+                  <div
+                    className={cn(
+                      'text-xs text-right tabular-nums',
+                      shouldApplyWinter ? 'text-cyan-300/70' : 'text-muted-foreground'
+                    )}
+                  >
                     <div>{formatDate(match.date)}</div>
                     <div>{formatTime(match.date)}</div>
                   </div>
@@ -190,7 +227,7 @@ const PendingScoresCard = () => {
                     size="sm"
                     variant="outline"
                     onClick={() => setSelectedMatchId(match.id)}
-                    className={shouldApplyWinter ? "btn-winter-secondary" : undefined}
+                    className={shouldApplyWinter ? 'btn-winter-secondary' : undefined}
                   >
                     Report
                   </Button>

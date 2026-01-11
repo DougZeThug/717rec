@@ -1,7 +1,7 @@
+import { useQuery } from '@tanstack/react-query';
 
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { teamLog, errorLog } from "@/utils/logger";
+import { supabase } from '@/integrations/supabase/client';
+import { errorLog, teamLog } from '@/utils/logger';
 
 interface Division {
   id: string;
@@ -19,23 +19,26 @@ export const useDivisions = () => {
         .from('divisions')
         .select('*')
         .order('division_weight', { ascending: false }); // Order by weight (highest first)
-      
+
       if (error) {
         errorLog('Error fetching divisions:', error);
         throw error;
       }
-      
-      teamLog('Divisions loaded with new divisions:', data?.map(d => ({
-        name: d.name,
-        weight: d.division_weight,
-        display: d.display_division
-      })));
-      
+
+      teamLog(
+        'Divisions loaded with new divisions:',
+        data?.map((d) => ({
+          name: d.name,
+          weight: d.division_weight,
+          display: d.display_division,
+        }))
+      );
+
       return data || [];
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
-  
+
   return {
     divisions: query.data || [],
     isLoading: query.isLoading,

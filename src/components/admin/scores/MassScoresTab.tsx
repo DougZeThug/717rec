@@ -1,6 +1,6 @@
+import React from 'react';
 
-import React from "react";
-import MassScoreEntryTool from "@/components/admin/MassScoreEntryTool";
+import MassScoreEntryTool from '@/components/admin/MassScoreEntryTool';
 
 const MassScoresTab = () => {
   return <MassScoreEntryTool />;

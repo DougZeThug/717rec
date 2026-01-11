@@ -1,9 +1,9 @@
+import { Loader2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 
-import React, { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router";
-import { Loader2 } from "lucide-react";
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface LoginRequiredProps {
   children: React.ReactNode;
@@ -11,10 +11,10 @@ interface LoginRequiredProps {
   fallback?: React.ReactNode;
 }
 
-const LoginRequired: React.FC<LoginRequiredProps> = ({ 
-  children, 
-  message = "You must log in to use this feature.",
-  fallback
+const LoginRequired: React.FC<LoginRequiredProps> = ({
+  children,
+  message = 'You must log in to use this feature.',
+  fallback,
 }) => {
   const { user, isLoading, authInitialized } = useAuth();
   const navigate = useNavigate();
@@ -53,7 +53,7 @@ const LoginRequired: React.FC<LoginRequiredProps> = ({
   return (
     <div className="border rounded-md p-4 flex flex-col items-center justify-center text-center gap-2 bg-muted/50">
       <p className="text-muted-foreground">{message}</p>
-      <Button size="sm" onClick={() => navigate("/auth")}>
+      <Button size="sm" onClick={() => navigate('/auth')}>
         Login / Sign Up
       </Button>
     </div>

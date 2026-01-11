@@ -1,10 +1,11 @@
+import React from 'react';
 
-import React from "react";
-import { ViewType } from '../hooks/useViewSelection';
-import { PlayoffLoadingView } from './PlayoffLoadingView';
 import AdminView from '@/components/playoffs/views/AdminView';
 import PlayoffView from '@/components/playoffs/views/PlayoffView';
+
 import { PlayoffPageData } from '../hooks/usePlayoffPageData';
+import { ViewType } from '../hooks/useViewSelection';
+import { PlayoffLoadingView } from './PlayoffLoadingView';
 
 interface Props {
   view: ViewType;
@@ -15,20 +16,20 @@ interface Props {
   data: PlayoffPageData;
 }
 
-export const PlayoffViewSelector: React.FC<Props> = ({ 
-  view, 
-  bracketDialogOpen, 
-  setBracketDialogOpen, 
+export const PlayoffViewSelector: React.FC<Props> = ({
+  view,
+  bracketDialogOpen,
+  setBracketDialogOpen,
   onCreateBracket,
   onDeleteBracket,
-  data 
+  data,
 }) => {
   switch (view) {
     case 'loading':
       return <PlayoffLoadingView />;
     case 'admin':
       return (
-        <AdminView 
+        <AdminView
           bracketDialogOpen={bracketDialogOpen}
           setBracketDialogOpen={setBracketDialogOpen}
           onCreateBracket={onCreateBracket}
@@ -38,7 +39,7 @@ export const PlayoffViewSelector: React.FC<Props> = ({
       );
     case 'public':
       return (
-        <PlayoffView 
+        <PlayoffView
           bracketDialogOpen={bracketDialogOpen}
           setBracketDialogOpen={setBracketDialogOpen}
           onCreateBracket={onCreateBracket}
@@ -49,7 +50,7 @@ export const PlayoffViewSelector: React.FC<Props> = ({
     default:
       // Fallback to public view to ensure Challonge brackets are always shown
       return (
-        <PlayoffView 
+        <PlayoffView
           bracketDialogOpen={bracketDialogOpen}
           setBracketDialogOpen={setBracketDialogOpen}
           onCreateBracket={onCreateBracket}

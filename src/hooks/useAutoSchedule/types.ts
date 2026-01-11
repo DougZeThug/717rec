@@ -1,4 +1,3 @@
-
 import { MatchQualityMetrics, TeamPairingMap, TimeBlockTeamsMap } from '@/types/autoSchedule';
 
 export interface UseAutoScheduleState {
@@ -7,7 +6,7 @@ export interface UseAutoScheduleState {
   setSelectedDate: (date: Date | null) => void;
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  
+
   // Algorithm settings
   avoidRematches: boolean;
   setAvoidRematches: (value: boolean) => void;
@@ -15,11 +14,11 @@ export interface UseAutoScheduleState {
   setPrioritizeQuality: (value: boolean) => void;
   dualMatchMode: boolean;
   setDualMatchMode: (value: boolean) => void;
-  
+
   // Processing state
   isProcessing: boolean;
   setIsProcessing: (isProcessing: boolean) => void;
-  
+
   // Generated data
   generatedMatches: any[] | null;
   setGeneratedMatches: (matches: any[]) => void;

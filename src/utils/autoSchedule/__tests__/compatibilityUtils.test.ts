@@ -1,8 +1,9 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { calculateTeamCompatibility, haveTeamsPlayed } from '../compatibilityUtils';
-import { mockTeams } from '@/utils/test/autoSchedule/mockData';
 import { supabase } from '@/integrations/supabase/client';
+import { mockTeams } from '@/utils/test/autoSchedule/mockData';
+
+import { calculateTeamCompatibility, haveTeamsPlayed } from '../compatibilityUtils';
 
 // Mock Supabase client
 vi.mock('@/integrations/supabase/client', () => ({
@@ -10,8 +11,8 @@ vi.mock('@/integrations/supabase/client', () => ({
     from: vi.fn().mockReturnThis(),
     select: vi.fn().mockReturnThis(),
     or: vi.fn().mockReturnThis(),
-    limit: vi.fn().mockReturnThis()
-  }
+    limit: vi.fn().mockReturnThis(),
+  },
 }));
 
 describe('compatibilityUtils', () => {
@@ -29,8 +30,8 @@ describe('compatibilityUtils', () => {
     });
 
     it('should return a value between 0 and 10', () => {
-      mockTeams.forEach(team1 => {
-        mockTeams.forEach(team2 => {
+      mockTeams.forEach((team1) => {
+        mockTeams.forEach((team2) => {
           if (team1.id !== team2.id) {
             const score = calculateTeamCompatibility(team1, team2);
             expect(score).toBeGreaterThanOrEqual(0);
@@ -43,7 +44,7 @@ describe('compatibilityUtils', () => {
     it('should handle teams with missing stats gracefully', () => {
       const incompleteTeam = { ...mockTeams[0], sos: undefined, power_score: undefined };
       const score = calculateTeamCompatibility(incompleteTeam, mockTeams[1]);
-      
+
       // Should still calculate a score without errors
       expect(score).toBeGreaterThanOrEqual(0);
       expect(score).toBeLessThanOrEqual(10);
@@ -62,7 +63,7 @@ describe('compatibilityUtils', () => {
       const mockOr = vi.fn().mockReturnValue({ limit: mockLimit });
       const mockSelect = vi.fn().mockReturnValue({ or: mockOr });
       const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
-      
+
       vi.mocked(supabase.from).mockImplementation(mockFrom);
 
       const result = await haveTeamsPlayed('team1', 'team2');
@@ -77,7 +78,7 @@ describe('compatibilityUtils', () => {
       const mockOr = vi.fn().mockReturnValue({ limit: mockLimit });
       const mockSelect = vi.fn().mockReturnValue({ or: mockOr });
       const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
-      
+
       vi.mocked(supabase.from).mockImplementation(mockFrom);
 
       const result = await haveTeamsPlayed('team1', 'team3');
@@ -91,7 +92,7 @@ describe('compatibilityUtils', () => {
       const mockOr = vi.fn().mockReturnValue({ limit: mockLimit });
       const mockSelect = vi.fn().mockReturnValue({ or: mockOr });
       const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
-      
+
       vi.mocked(supabase.from).mockImplementation(mockFrom);
 
       const result = await haveTeamsPlayed('team1', 'team4');

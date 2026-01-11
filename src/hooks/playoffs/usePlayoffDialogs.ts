@@ -1,23 +1,23 @@
-
 import { useState } from 'react';
+
+import { useToast } from '@/hooks/use-toast';
 import { PlayoffMatch } from '@/types';
-import { useToast } from "@/hooks/use-toast";
 
 export const usePlayoffDialogs = () => {
   // Team division dialog state
   const [teamDialogOpen, setTeamDialogOpen] = useState(false);
-  
+
   // Bracket creation/edit dialog state
   const [bracketDialogOpen, setBracketDialogOpen] = useState(false);
-  
+
   // Match editor state
   const [editingMatch, setEditingMatch] = useState<PlayoffMatch | null>(null);
   const [isQuickEdit, setIsQuickEdit] = useState(false);
-  
+
   // Delete bracket confirmation dialog state
-  const [deletingBracket, setDeletingBracket] = useState<{ id: string, name: string } | null>(null);
+  const [deletingBracket, setDeletingBracket] = useState<{ id: string; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  
+
   const { toast } = useToast();
 
   // Handle opening match editor
@@ -47,17 +47,17 @@ export const usePlayoffDialogs = () => {
     // Team dialog
     teamDialogOpen,
     setTeamDialogOpen,
-    
+
     // Bracket dialog
     bracketDialogOpen,
     setBracketDialogOpen,
-    
+
     // Match editor
     editingMatch,
     isQuickEdit,
     openMatchEditor,
     closeMatchEditor,
-    
+
     // Delete bracket dialog
     deletingBracket,
     setDeletingBracket,

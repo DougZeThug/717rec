@@ -1,8 +1,8 @@
+import React from 'react';
 
-import React from "react";
-import { cn } from "@/lib/utils";
-import { getPowerScoreColor } from "@/utils/colors";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { getPowerScoreColor } from '@/utils/colors';
 
 interface TeamNameDisplayProps {
   username: string;
@@ -12,29 +12,25 @@ interface TeamNameDisplayProps {
   compact?: boolean;
 }
 
-const TeamNameDisplay: React.FC<TeamNameDisplayProps> = ({ 
-  username, 
-  teamName, 
+const TeamNameDisplay: React.FC<TeamNameDisplayProps> = ({
+  username,
+  teamName,
   powerScore,
   className,
-  compact = false
+  compact = false,
 }) => {
   // Get the appropriate color class based on the team's power score
   const scoreColorClass = getPowerScoreColor(powerScore);
-  
+
   return (
-    <div className={cn(
-      "font-medium flex items-center gap-1", 
-      compact ? "text-sm" : "", 
-      className
-    )}>
+    <div className={cn('font-medium flex items-center gap-1', compact ? 'text-sm' : '', className)}>
       <span className="font-semibold">{username}</span>
       {teamName && (
-        <Badge 
-          variant="outline" 
+        <Badge
+          variant="outline"
           className={cn(
-            "py-0 h-5 text-xs font-normal", 
-            compact ? "px-1.5" : "px-2", 
+            'py-0 h-5 text-xs font-normal',
+            compact ? 'px-1.5' : 'px-2',
             scoreColorClass
           )}
         >

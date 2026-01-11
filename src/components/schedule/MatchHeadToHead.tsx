@@ -1,7 +1,8 @@
-import React from "react";
-import { useMatchHeadToHead } from "@/hooks/useMatchHeadToHead";
-import { Skeleton } from "@/components/ui/skeleton";
-import type { HeadToHeadData } from "@/hooks/useBatchHeadToHead";
+import React from 'react';
+
+import { Skeleton } from '@/components/ui/skeleton';
+import type { HeadToHeadData } from '@/hooks/useBatchHeadToHead';
+import { useMatchHeadToHead } from '@/hooks/useMatchHeadToHead';
 
 interface MatchHeadToHeadProps {
   team1Id: string | null;
@@ -17,7 +18,7 @@ interface MatchHeadToHeadProps {
 /**
  * Displays head-to-head record between two teams
  * Shows as a small text line under the match card
- * 
+ *
  * Supports two modes:
  * 1. Prefetched data from useBatchHeadToHead (preferred for lists)
  * 2. Individual fetch via useMatchHeadToHead (fallback)
@@ -55,7 +56,7 @@ export const MatchHeadToHead: React.FC<MatchHeadToHeadProps> = ({
   // Format the display text
   const getDisplayText = (): string => {
     if (isFirstMeeting) {
-      return "H2H: First meeting";
+      return 'H2H: First meeting';
     }
 
     const { team1Wins, team2Wins } = data;
@@ -70,16 +71,11 @@ export const MatchHeadToHead: React.FC<MatchHeadToHeadProps> = ({
     const trailingWins = Math.min(team1Wins, team2Wins);
 
     // Truncate team name if too long (for mobile)
-    const truncatedName = leadingTeam.length > 20 
-      ? leadingTeam.substring(0, 17) + "..." 
-      : leadingTeam;
+    const truncatedName =
+      leadingTeam.length > 20 ? leadingTeam.substring(0, 17) + '...' : leadingTeam;
 
     return `H2H: ${truncatedName} leads ${leadingWins}–${trailingWins}`;
   };
 
-  return (
-    <div className="text-xs text-muted-foreground text-center mt-1">
-      {getDisplayText()}
-    </div>
-  );
+  return <div className="text-xs text-muted-foreground text-center mt-1">{getDisplayText()}</div>;
 };

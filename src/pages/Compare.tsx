@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from "react";
-import { useSearchParams } from "react-router";
-import { Helmet } from "react-helmet-async";
-import { useTeamsQuery } from "@/hooks/teams";
-import { useTeamComparison } from "@/hooks/useTeamComparison";
-import { TeamCompareSelector } from "@/components/compare/TeamCompareSelector";
-import { TeamComparisonView } from "@/components/compare/TeamComparisonView";
-import { Team } from "@/types";
-import LoadingState from "@/components/ui/loading-state";
-import { Scale } from "lucide-react";
+import { Scale } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { useSearchParams } from 'react-router';
+
+import { TeamCompareSelector } from '@/components/compare/TeamCompareSelector';
+import { TeamComparisonView } from '@/components/compare/TeamComparisonView';
+import LoadingState from '@/components/ui/loading-state';
+import { useTeamsQuery } from '@/hooks/teams';
+import { useTeamComparison } from '@/hooks/useTeamComparison';
+import { Team } from '@/types';
 
 const Compare: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: teams, isLoading: teamsLoading } = useTeamsQuery();
-  
+
   const [team1, setTeam1] = useState<Team | null>(null);
   const [team2, setTeam2] = useState<Team | null>(null);
 
@@ -20,8 +21,8 @@ const Compare: React.FC = () => {
   useEffect(() => {
     if (!teams || teams.length === 0) return;
 
-    const team1Id = searchParams.get("team1");
-    const team2Id = searchParams.get("team2");
+    const team1Id = searchParams.get('team1');
+    const team2Id = searchParams.get('team2');
 
     if (team1Id && !team1) {
       const found = teams.find((t) => t.id === team1Id);
@@ -36,12 +37,17 @@ const Compare: React.FC = () => {
   // Sync selection to URL
   useEffect(() => {
     const params = new URLSearchParams();
-    if (team1) params.set("team1", team1.id);
-    if (team2) params.set("team2", team2.id);
+    if (team1) params.set('team1', team1.id);
+    if (team2) params.set('team2', team2.id);
     setSearchParams(params, { replace: true });
   }, [team1, team2, setSearchParams]);
 
-  const { team1: comparison1, team2: comparison2, headToHead, isLoading: comparisonLoading } = useTeamComparison(team1, team2);
+  const {
+    team1: comparison1,
+    team2: comparison2,
+    headToHead,
+    isLoading: comparisonLoading,
+  } = useTeamComparison(team1, team2);
 
   const handleSwap = () => {
     setTeam1(team2);
@@ -60,7 +66,10 @@ const Compare: React.FC = () => {
     <>
       <Helmet>
         <title>Team Comparison | Volleyball League</title>
-        <meta name="description" content="Compare two volleyball teams side by side with detailed statistics and head-to-head records" />
+        <meta
+          name="description"
+          content="Compare two volleyball teams side by side with detailed statistics and head-to-head records"
+        />
       </Helmet>
 
       <div className="container mx-auto px-4 py-6 max-w-3xl">
@@ -96,7 +105,7 @@ const Compare: React.FC = () => {
         {(team1 || team2) && (!team1 || !team2) && (
           <div className="text-center py-16">
             <p className="text-muted-foreground">
-              Select {!team1 ? "the first" : "the second"} team to start comparing
+              Select {!team1 ? 'the first' : 'the second'} team to start comparing
             </p>
           </div>
         )}
@@ -108,11 +117,7 @@ const Compare: React.FC = () => {
         )}
 
         {team1 && team2 && comparison1 && comparison2 && !comparisonLoading && (
-          <TeamComparisonView
-            team1={comparison1}
-            team2={comparison2}
-            headToHead={headToHead}
-          />
+          <TeamComparisonView team1={comparison1} team2={comparison2} headToHead={headToHead} />
         )}
       </div>
     </>

@@ -1,11 +1,13 @@
-import React from "react";
-import { HeroCard as HeroCardType } from "@/types/heroCard";
-import StandardHeroCard from "./StandardHeroCard";
-import ChampionsHeroCard from "./ChampionsHeroCard";
-import EventHeroCard from "./EventHeroCard";
-import AnnouncementHeroCard from "./AnnouncementHeroCard";
-import ParticipationHeroCard from "./ParticipationHeroCard";
-import RequestHeroCard from "./RequestHeroCard";
+import React from 'react';
+
+import { HeroCard as HeroCardType } from '@/types/heroCard';
+
+import AnnouncementHeroCard from './AnnouncementHeroCard';
+import ChampionsHeroCard from './ChampionsHeroCard';
+import EventHeroCard from './EventHeroCard';
+import ParticipationHeroCard from './ParticipationHeroCard';
+import RequestHeroCard from './RequestHeroCard';
+import StandardHeroCard from './StandardHeroCard';
 
 interface HeroCardProps {
   card: HeroCardType;

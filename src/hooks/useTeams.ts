@@ -1,6 +1,7 @@
-import { Team } from "@/types";
-import { useTeamsArray } from "./teams";
-import { useTeamMutations } from "./useTeamMutations";
+import { Team } from '@/types';
+
+import { useTeamsArray } from './teams';
+import { useTeamMutations } from './useTeamMutations';
 
 export function useTeams() {
   const { teams, isLoading, fetchTeams } = useTeamsArray();
@@ -12,6 +13,6 @@ export function useTeams() {
     fetchTeams,
     createTeam,
     updateTeam,
-    deleteTeam
+    deleteTeam,
   };
 }

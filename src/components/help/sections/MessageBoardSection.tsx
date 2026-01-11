@@ -1,13 +1,14 @@
-import React from "react";
-import { MessageSquare } from "lucide-react";
-import { HelpAccordionItem } from "../HelpAccordionItem";
+import { MessageSquare } from 'lucide-react';
+import React from 'react';
+
+import { HelpAccordionItem } from '../HelpAccordionItem';
 
 export const MessageBoardSection: React.FC = () => {
   return (
     <HelpAccordionItem value="messages" icon={MessageSquare} title="Message Board">
       <p>
-        The message board is where league members can communicate,
-        post updates, and engage with the community.
+        The message board is where league members can communicate, post updates, and engage with the
+        community.
       </p>
       <ul className="list-disc pl-5 space-y-2">
         <li>Post announcements and updates</li>

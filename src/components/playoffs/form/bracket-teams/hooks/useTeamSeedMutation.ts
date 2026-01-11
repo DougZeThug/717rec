@@ -1,7 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+
 import { useToast } from '@/hooks/use-toast';
-import { withRetry, formatUserError } from '../utils/mutationErrorHandling';
+import { supabase } from '@/integrations/supabase/client';
+
+import { formatUserError, withRetry } from '../utils/mutationErrorHandling';
 
 export interface TeamSeedUpdate {
   teamId: string;
@@ -53,19 +55,14 @@ export const useTeamSeedMutation = () => {
   const bulkUpdateSeeds = useMutation({
     mutationFn: async ({ updates, divisionId }: BulkSeedUpdateParams) => {
       const results = await Promise.allSettled(
-        updates.map(({ teamId, seed }) => 
-          supabase
-            .from('teams')
-            .update({ seed })
-            .eq('id', teamId)
-            .select()
-            .single()
+        updates.map(({ teamId, seed }) =>
+          supabase.from('teams').update({ seed }).eq('id', teamId).select().single()
         )
       );
 
       const errors = results
         .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
-        .map(result => result.reason);
+        .map((result) => result.reason);
 
       if (errors.length > 0) {
         throw new Error(`Failed to update ${errors.length} team seeds`);
@@ -73,7 +70,7 @@ export const useTeamSeedMutation = () => {
 
       return results
         .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled')
-        .map(result => result.value.data);
+        .map((result) => result.value.data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['playoff-teams'] });
@@ -97,7 +94,7 @@ export const useTeamSeedMutation = () => {
   const resetDivisionSeeds = useMutation({
     mutationFn: async (divisionId: string) => {
       const { error } = await supabase.rpc('reset_division_seeds', {
-        p_division_id: divisionId
+        p_division_id: divisionId,
       });
 
       if (error) throw error;
@@ -124,6 +121,7 @@ export const useTeamSeedMutation = () => {
     updateSingleTeamSeed,
     bulkUpdateSeeds,
     resetDivisionSeeds,
-    isUpdating: updateSingleTeamSeed.isPending || bulkUpdateSeeds.isPending || resetDivisionSeeds.isPending,
+    isUpdating:
+      updateSingleTeamSeed.isPending || bulkUpdateSeeds.isPending || resetDivisionSeeds.isPending,
   };
 };

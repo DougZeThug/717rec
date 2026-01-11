@@ -1,36 +1,29 @@
+import { Tag, X } from 'lucide-react';
+import React from 'react';
 
-import React from "react";
-import { X, Tag } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { FilterOptions } from "@/hooks/message-board/types";
+import { Badge } from '@/components/ui/badge';
+import { FilterOptions } from '@/hooks/message-board/types';
+import { cn } from '@/lib/utils';
 
 interface ActiveFiltersProps {
   filterOptions: FilterOptions;
   onFilterChange: (filter: Partial<FilterOptions>) => void;
-  teams?: Array<{id: string, name: string}>;
+  teams?: Array<{ id: string; name: string }>;
 }
 
-const ActiveFilters: React.FC<ActiveFiltersProps> = ({
-  filterOptions,
-  onFilterChange,
-  teams
-}) => {
+const ActiveFilters: React.FC<ActiveFiltersProps> = ({ filterOptions, onFilterChange, teams }) => {
   // Only show when there are active filters
   const hasActiveFilters =
     filterOptions.category !== null ||
     filterOptions.teamId !== null ||
     filterOptions.searchQuery !== null;
-    
+
   if (!hasActiveFilters) return null;
-  
+
   return (
     <div className="flex flex-wrap gap-1 mt-1">
       {filterOptions.category && (
-        <Badge
-          variant="outline"
-          className="flex items-center gap-1 text-xs"
-        >
+        <Badge variant="outline" className="flex items-center gap-1 text-xs">
           <Tag className="h-3 w-3" />
           {filterOptions.category}
           <button
@@ -44,11 +37,8 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({
         </Badge>
       )}
       {filterOptions.teamId && (
-        <Badge
-          variant="outline"
-          className="flex items-center gap-1 text-xs"
-        >
-          Team: {teams?.find(t => t.id === filterOptions.teamId)?.name || "Unknown"}
+        <Badge variant="outline" className="flex items-center gap-1 text-xs">
+          Team: {teams?.find((t) => t.id === filterOptions.teamId)?.name || 'Unknown'}
           <button
             type="button"
             onClick={() => onFilterChange({ teamId: null })}
@@ -60,10 +50,7 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({
         </Badge>
       )}
       {filterOptions.searchQuery && (
-        <Badge
-          variant="outline"
-          className="flex items-center gap-1 text-xs"
-        >
+        <Badge variant="outline" className="flex items-center gap-1 text-xs">
           "{filterOptions.searchQuery}"
           <button
             type="button"

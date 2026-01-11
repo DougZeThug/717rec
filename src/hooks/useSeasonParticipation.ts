@@ -1,8 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useActiveSeason } from "./useSeasons";
-import { errorLog } from "@/utils/logger";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { errorLog } from '@/utils/logger';
+
+import { useActiveSeason } from './useSeasons';
 
 export type ParticipationStatus = 'PLAYING' | 'NOT_PLAYING';
 
@@ -105,20 +107,25 @@ export const useSubmitParticipation = () => {
       status: ParticipationStatus;
       submittedByName?: string;
     }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       const { data, error } = await supabase
         .from('season_team_participation')
-        .upsert({
-          season_id: seasonId,
-          team_id: teamId,
-          status,
-          submitted_by: user?.id ?? null,
-          submitted_by_name: submittedByName ?? null,
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'season_id,team_id',
-        })
+        .upsert(
+          {
+            season_id: seasonId,
+            team_id: teamId,
+            status,
+            submitted_by: user?.id ?? null,
+            submitted_by_name: submittedByName ?? null,
+            updated_at: new Date().toISOString(),
+          },
+          {
+            onConflict: 'season_id,team_id',
+          }
+        )
         .select()
         .single();
 
@@ -126,7 +133,9 @@ export const useSubmitParticipation = () => {
       return data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['season-participation', variables.seasonId, variables.teamId] });
+      queryClient.invalidateQueries({
+        queryKey: ['season-participation', variables.seasonId, variables.teamId],
+      });
       queryClient.invalidateQueries({ queryKey: ['season-participations', variables.seasonId] });
       toast({
         title: 'Saved',

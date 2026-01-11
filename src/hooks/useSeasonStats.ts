@@ -1,8 +1,8 @@
+import { useState } from 'react';
 
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
-import { errorLog } from "@/utils/logger";
+import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { errorLog } from '@/utils/logger';
 
 export interface SeasonStat {
   season_id: string;
@@ -31,19 +31,19 @@ export function useSeasonStats() {
         .order('season_id');
 
       if (error) throw error;
-      
+
       // Process the data to get unique season_ids
-      const seasonIds = data.map(item => item.season_id);
+      const seasonIds = data.map((item) => item.season_id);
       const uniqueSeasons = [...new Set(seasonIds)];
-      
+
       setSeasons(uniqueSeasons);
       return uniqueSeasons;
     } catch (error) {
-      errorLog("Error fetching seasons:", error);
+      errorLog('Error fetching seasons:', error);
       toast({
-        title: "Error",
-        description: "Failed to fetch seasons.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to fetch seasons.',
+        variant: 'destructive',
       });
       return [];
     } finally {
@@ -56,7 +56,8 @@ export function useSeasonStats() {
     try {
       const { data, error } = await supabase
         .from('team_season_stats')
-        .select(`
+        .select(
+          `
           season_id,
           team_id,
           match_wins,
@@ -67,25 +68,26 @@ export function useSeasonStats() {
           sos,
           recorded_at,
           teams:team_id (name)
-        `)
+        `
+        )
         .eq('season_id', seasonId)
         .order('power_score', { ascending: false });
 
       if (error) throw error;
-      
-      const statsWithTeamNames = data.map(stat => ({
+
+      const statsWithTeamNames = data.map((stat) => ({
         ...stat,
         team_name: stat.teams?.name,
       }));
-      
+
       setSeasonStats(statsWithTeamNames);
       return statsWithTeamNames;
     } catch (error) {
-      errorLog("Error fetching season stats:", error);
+      errorLog('Error fetching season stats:', error);
       toast({
-        title: "Error",
-        description: "Failed to fetch season stats.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to fetch season stats.',
+        variant: 'destructive',
       });
       return [];
     } finally {

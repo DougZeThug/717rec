@@ -1,4 +1,3 @@
-
 /**
  * Mocked types for Storybook to fix build errors
  * This allows us to use Storybook types without needing to install the full package
@@ -7,7 +6,7 @@
 import React from 'react';
 
 // Define a proper constraint for component types
-type ComponentType = 
+type ComponentType =
   | React.ComponentType<any>
   | React.JSXElementConstructor<any>
   | keyof JSX.IntrinsicElements;

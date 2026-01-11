@@ -1,22 +1,21 @@
-
-import { Ranking } from "@/types";
-import { sortRankings, updateRankChanges, saveRankingsToStorage } from "@/utils/rankingUtils";
+import { Ranking } from '@/types';
+import { saveRankingsToStorage, sortRankings, updateRankChanges } from '@/utils/rankingUtils';
 
 /**
  * Sort rankings and update rank changes
  */
 export const sortAndUpdateRankings = (
-  rankings: Ranking[], 
+  rankings: Ranking[],
   previousRankings: Record<string, number>
 ): Ranking[] => {
   // Sort by power score (descending)
   const sortedRankings = sortRankings(rankings, 'powerScore', 'desc');
-  
+
   // Update rank changes
   const finalRankings = updateRankChanges(sortedRankings);
-  
+
   // Save current rankings for next calculation
   saveRankingsToStorage(finalRankings);
-  
+
   return finalRankings;
 };

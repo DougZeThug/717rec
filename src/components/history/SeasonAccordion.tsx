@@ -1,17 +1,19 @@
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Trophy, Calendar, RefreshCw, Users, Crown } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
-import DivisionPanel from "./DivisionPanel";
-import SeasonMetaBar from "./SeasonMetaBar";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { getHistoryDivisionDisplayName, sortHistoryDivisions } from "@/utils/historyDivisionUtils";
-import { dbLog, errorLog } from "@/utils/logger";
-import SeasonAccordionSkeleton from "./SeasonAccordionSkeleton";
-import { useSeasonalThemeBase } from "@/hooks/useSeasonalTheme";
+import { useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Calendar, ChevronDown, Crown, RefreshCw, Trophy, Users } from 'lucide-react';
+import React, { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
+import { supabase } from '@/integrations/supabase/client';
+import { cn } from '@/lib/utils';
+import { getHistoryDivisionDisplayName, sortHistoryDivisions } from '@/utils/historyDivisionUtils';
+import { dbLog, errorLog } from '@/utils/logger';
+
+import DivisionPanel from './DivisionPanel';
+import SeasonAccordionSkeleton from './SeasonAccordionSkeleton';
+import SeasonMetaBar from './SeasonMetaBar';
 
 interface Season {
   id: string;
@@ -44,11 +46,12 @@ const useSeasonData = (seasonId: string, enabled: boolean) => {
     queryKey: ['season-data', seasonId],
     queryFn: async () => {
       dbLog(`Season ${seasonId}: Starting season data query...`);
-      
+
       try {
         const { data, error } = await supabase
           .from('team_season_stats')
-          .select(`
+          .select(
+            `
             team_id,
             season_id,
             match_wins,
@@ -66,7 +69,8 @@ const useSeasonData = (seasonId: string, enabled: boolean) => {
               logo_url,
               image_url
             )
-          `)
+          `
+          )
           .eq('season_id', seasonId)
           .order('division_name', { ascending: true })
           .order('playoff_rank', { ascending: true, nullsFirst: false });
@@ -114,7 +118,13 @@ interface SeasonAccordionProps {
 
 const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { data: seasonData, isLoading, error, refetch, isRefetching } = useSeasonData(season.id, true);
+  const {
+    data: seasonData,
+    isLoading,
+    error,
+    refetch,
+    isRefetching,
+  } = useSeasonData(season.id, true);
   const { isWinterTheme } = useSeasonalThemeBase();
 
   const handleToggle = () => {
@@ -124,38 +134,43 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
   // Group data by division with proper display names and ordering
   const divisionData = React.useMemo(() => {
     if (!seasonData) return {};
-    
+
     // Filter out Hidden divisions and group by display division name
     const grouped = seasonData
-      .filter(team => {
+      .filter((team) => {
         const displayDivision = getHistoryDivisionDisplayName(team.division_name);
         return !displayDivision.toLowerCase().startsWith('hidden');
       })
-      .reduce((acc, team) => {
-        const displayDivision = getHistoryDivisionDisplayName(team.division_name);
-        if (!acc[displayDivision]) {
-          acc[displayDivision] = [];
-        }
-        acc[displayDivision].push(team);
-        return acc;
-      }, {} as Record<string, SeasonData[]>);
+      .reduce(
+        (acc, team) => {
+          const displayDivision = getHistoryDivisionDisplayName(team.division_name);
+          if (!acc[displayDivision]) {
+            acc[displayDivision] = [];
+          }
+          acc[displayDivision].push(team);
+          return acc;
+        },
+        {} as Record<string, SeasonData[]>
+      );
 
     return grouped;
   }, [seasonData, season.name]);
 
-  const hasChampions = seasonData?.some(team => team.champion) || false;
-  
+  const hasChampions = seasonData?.some((team) => team.champion) || false;
+
   // Get champion names for preview
-  const champions = seasonData?.filter(team => team.champion).map(team => team.team_name) || [];
+  const champions = seasonData?.filter((team) => team.champion).map((team) => team.team_name) || [];
 
   // Count total teams and matches
-  const teamCount = seasonData?.filter(team => {
-    const displayDivision = getHistoryDivisionDisplayName(team.division_name);
-    return !displayDivision.toLowerCase().startsWith('hidden');
-  }).length || 0;
-  const totalMatches = seasonData?.reduce((sum, t) => sum + (t.match_wins || 0) + (t.match_losses || 0), 0) || 0;
+  const teamCount =
+    seasonData?.filter((team) => {
+      const displayDivision = getHistoryDivisionDisplayName(team.division_name);
+      return !displayDivision.toLowerCase().startsWith('hidden');
+    }).length || 0;
+  const totalMatches =
+    seasonData?.reduce((sum, t) => sum + (t.match_wins || 0) + (t.match_losses || 0), 0) || 0;
   const matchCount = Math.floor(totalMatches / 2); // Each match counted twice (once per team)
-  
+
   // Format date range
   const formatDateRange = () => {
     if (!season.start_date) return null;
@@ -166,69 +181,82 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
     }
     return startMonth;
   };
-  
+
   const dateRange = formatDateRange();
 
   return (
-    <div className={cn(
-      "rounded-2xl shadow-lg overflow-hidden border",
-      isWinterTheme 
-        ? "frost-card winter-card-surface border-[hsla(199,60%,50%,0.2)]" 
-        : "bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700"
-    )}>
+    <div
+      className={cn(
+        'rounded-2xl shadow-lg overflow-hidden border',
+        isWinterTheme
+          ? 'frost-card winter-card-surface border-[hsla(199,60%,50%,0.2)]'
+          : 'bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700'
+      )}
+    >
       <button
         onClick={handleToggle}
         className={cn(
-          "w-full p-4 md:p-6 text-left transition-all duration-200",
-          "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset",
-          isWinterTheme 
-            ? cn("hover:bg-white/5", isExpanded && "bg-white/5")
+          'w-full p-4 md:p-6 text-left transition-all duration-200',
+          'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset',
+          isWinterTheme
+            ? cn('hover:bg-white/5', isExpanded && 'bg-white/5')
             : cn(
-                "hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-amber-50/30",
-                "dark:hover:from-slate-700/50 dark:hover:to-slate-700/30",
-                isExpanded && "bg-gradient-to-r from-blue-50/30 to-amber-50/20 dark:from-slate-700/40 dark:to-slate-700/20"
+                'hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-amber-50/30',
+                'dark:hover:from-slate-700/50 dark:hover:to-slate-700/30',
+                isExpanded &&
+                  'bg-gradient-to-r from-blue-50/30 to-amber-50/20 dark:from-slate-700/40 dark:to-slate-700/20'
               )
         )}
         aria-expanded={isExpanded}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className={cn(
-              "w-10 h-10 rounded-full flex items-center justify-center",
-              isWinterTheme
-                ? hasChampions 
-                  ? "bg-gradient-to-br from-yellow-500/30 to-amber-500/20" 
-                  : "bg-white/10"
-                : hasChampions 
-                  ? "bg-gradient-to-br from-yellow-100 to-amber-200 dark:from-yellow-900/40 dark:to-amber-800/40" 
-                  : "bg-gray-100 dark:bg-gray-700"
-            )}>
-              <Trophy className={cn(
-                "w-5 h-5",
-                hasChampions ? "text-yellow-600 dark:text-yellow-400" : "text-gray-400"
-              )} />
+            <div
+              className={cn(
+                'w-10 h-10 rounded-full flex items-center justify-center',
+                isWinterTheme
+                  ? hasChampions
+                    ? 'bg-gradient-to-br from-yellow-500/30 to-amber-500/20'
+                    : 'bg-white/10'
+                  : hasChampions
+                    ? 'bg-gradient-to-br from-yellow-100 to-amber-200 dark:from-yellow-900/40 dark:to-amber-800/40'
+                    : 'bg-gray-100 dark:bg-gray-700'
+              )}
+            >
+              <Trophy
+                className={cn(
+                  'w-5 h-5',
+                  hasChampions ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-400'
+                )}
+              />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className={cn(
-                  "text-lg md:text-xl font-bebas uppercase tracking-wide",
-                  isWinterTheme ? "text-white" : "text-slate-900 dark:text-white"
-                )}>
+                <h3
+                  className={cn(
+                    'text-lg md:text-xl font-bebas uppercase tracking-wide',
+                    isWinterTheme ? 'text-white' : 'text-slate-900 dark:text-white'
+                  )}
+                >
                   {season.name}
                 </h3>
                 {dateRange && (
-                  <span className={cn(
-                    "text-xs font-inter",
-                    isWinterTheme ? "text-white/60" : "text-gray-500 dark:text-gray-400"
-                  )}>
+                  <span
+                    className={cn(
+                      'text-xs font-inter',
+                      isWinterTheme ? 'text-white/60' : 'text-gray-500 dark:text-gray-400'
+                    )}
+                  >
                     ({dateRange})
                   </span>
                 )}
               </div>
-              <div className={cn(
-                "flex items-center gap-3 text-sm flex-wrap",
-                isWinterTheme ? "text-white/60" : "text-gray-500 dark:text-gray-400"
-              )}>
+              <div
+                className={cn(
+                  'flex items-center gap-3 text-sm flex-wrap',
+                  isWinterTheme ? 'text-white/60' : 'text-gray-500 dark:text-gray-400'
+                )}
+              >
                 {isLoading ? (
                   <span className="text-gray-400 text-xs animate-pulse">•••</span>
                 ) : (
@@ -261,11 +289,13 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
               </div>
             </div>
           </div>
-          <ChevronDown className={cn(
-            "w-5 h-5 transition-transform duration-200",
-            isWinterTheme ? "text-white/50" : "text-gray-400",
-            isExpanded && "rotate-180"
-          )} />
+          <ChevronDown
+            className={cn(
+              'w-5 h-5 transition-transform duration-200',
+              isWinterTheme ? 'text-white/50' : 'text-gray-400',
+              isExpanded && 'rotate-180'
+            )}
+          />
         </div>
       </button>
 
@@ -273,15 +303,17 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
         {isExpanded && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
+            animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <div className={cn(
-              "p-4 md:p-6 pt-0 border-t",
-              isWinterTheme ? "border-white/10" : "border-gray-200 dark:border-slate-600"
-            )}>
+            <div
+              className={cn(
+                'p-4 md:p-6 pt-0 border-t',
+                isWinterTheme ? 'border-white/10' : 'border-gray-200 dark:border-slate-600'
+              )}
+            >
               {isLoading ? (
                 <SeasonAccordionSkeleton />
               ) : error ? (
@@ -292,8 +324,8 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                       {error instanceof Error ? error.message : 'An unexpected error occurred'}
                     </p>
-                    <Button 
-                      onClick={() => refetch()} 
+                    <Button
+                      onClick={() => refetch()}
                       disabled={isRefetching}
                       variant="outline"
                       size="sm"
@@ -312,19 +344,18 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
               ) : (
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {sortHistoryDivisions(Object.entries(divisionData)).map(([divisionName, teams]) => (
-                      <DivisionPanel
-                        key={divisionName}
-                        divisionName={divisionName}
-                        teams={teams}
-                      />
-                    ))}
+                    {sortHistoryDivisions(Object.entries(divisionData)).map(
+                      ([divisionName, teams]) => (
+                        <DivisionPanel
+                          key={divisionName}
+                          divisionName={divisionName}
+                          teams={teams}
+                        />
+                      )
+                    )}
                   </div>
-                  
-                  <SeasonMetaBar 
-                    season={season}
-                    seasonData={seasonData || []}
-                  />
+
+                  <SeasonMetaBar season={season} seasonData={seasonData || []} />
                 </div>
               )}
             </div>

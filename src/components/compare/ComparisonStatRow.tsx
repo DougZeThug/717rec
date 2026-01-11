@@ -1,7 +1,8 @@
-import React from "react";
-import { cn } from "@/lib/utils";
-import { PercentileBadge } from "@/components/ui/PercentileBadge";
-import { PercentileResult } from "@/utils/percentileUtils";
+import React from 'react';
+
+import { PercentileBadge } from '@/components/ui/PercentileBadge';
+import { cn } from '@/lib/utils';
+import { PercentileResult } from '@/utils/percentileUtils';
 
 interface ComparisonStatRowProps {
   label: string;
@@ -26,18 +27,20 @@ export const ComparisonStatRow: React.FC<ComparisonStatRowProps> = ({
   percentile2,
   higherIsBetter = true,
   showPercentiles = true,
-  suffix = "",
+  suffix = '',
 }) => {
   // Determine winner
-  const num1 = numericValue1 ?? (typeof value1 === "number" ? value1 : parseFloat(String(value1)) || 0);
-  const num2 = numericValue2 ?? (typeof value2 === "number" ? value2 : parseFloat(String(value2)) || 0);
-  
-  let winner: "team1" | "team2" | "tie" = "tie";
+  const num1 =
+    numericValue1 ?? (typeof value1 === 'number' ? value1 : parseFloat(String(value1)) || 0);
+  const num2 =
+    numericValue2 ?? (typeof value2 === 'number' ? value2 : parseFloat(String(value2)) || 0);
+
+  let winner: 'team1' | 'team2' | 'tie' = 'tie';
   if (num1 !== num2) {
     if (higherIsBetter) {
-      winner = num1 > num2 ? "team1" : "team2";
+      winner = num1 > num2 ? 'team1' : 'team2';
     } else {
-      winner = num1 < num2 ? "team1" : "team2";
+      winner = num1 < num2 ? 'team1' : 'team2';
     }
   }
 
@@ -47,11 +50,12 @@ export const ComparisonStatRow: React.FC<ComparisonStatRowProps> = ({
       <div className="flex flex-col items-start gap-1">
         <span
           className={cn(
-            "text-base font-semibold tabular-nums",
-            winner === "team1" && "text-primary"
+            'text-base font-semibold tabular-nums',
+            winner === 'team1' && 'text-primary'
           )}
         >
-          {value1}{suffix}
+          {value1}
+          {suffix}
         </span>
         {showPercentiles && percentile1 && (
           <PercentileBadge
@@ -74,11 +78,12 @@ export const ComparisonStatRow: React.FC<ComparisonStatRowProps> = ({
       <div className="flex flex-col items-end gap-1">
         <span
           className={cn(
-            "text-base font-semibold tabular-nums",
-            winner === "team2" && "text-primary"
+            'text-base font-semibold tabular-nums',
+            winner === 'team2' && 'text-primary'
           )}
         >
-          {value2}{suffix}
+          {value2}
+          {suffix}
         </span>
         {showPercentiles && percentile2 && (
           <PercentileBadge

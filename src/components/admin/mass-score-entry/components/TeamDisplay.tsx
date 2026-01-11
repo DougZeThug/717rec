@@ -1,17 +1,16 @@
-
-import React from "react";
+import React from 'react';
 
 interface TeamDisplayProps {
   team: {
     name?: string;
     logoUrl?: string;
   };
-  align?: "left" | "right" | "center";
+  align?: 'left' | 'right' | 'center';
 }
 
-const TeamDisplay: React.FC<TeamDisplayProps> = ({ team, align = "left" }) => {
+const TeamDisplay: React.FC<TeamDisplayProps> = ({ team, align = 'left' }) => {
   const containerClassName = `flex items-center gap-2 ${
-    align === "right" ? "flex-row-reverse" : "flex-row"
+    align === 'right' ? 'flex-row-reverse' : 'flex-row'
   }`;
 
   return (
@@ -25,7 +24,7 @@ const TeamDisplay: React.FC<TeamDisplayProps> = ({ team, align = "left" }) => {
           className="h-6 w-6 rounded-full object-cover"
         />
       )}
-      <span className="font-medium">{team.name || "TBD"}</span>
+      <span className="font-medium">{team.name || 'TBD'}</span>
     </div>
   );
 };

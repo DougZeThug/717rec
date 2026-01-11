@@ -1,7 +1,9 @@
-import React from "react";
-import { PlayerChip } from "./shared/PlayerChip";
-import { Users } from "lucide-react";
-import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
+import { Users } from 'lucide-react';
+import React from 'react';
+
+import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
+
+import { PlayerChip } from './shared/PlayerChip';
 
 interface PlayerListProps {
   players: string[];
@@ -9,12 +11,7 @@ interface PlayerListProps {
 
 const PlayerList = ({ players }: PlayerListProps) => {
   return (
-    <CollapsibleSection
-      title="Players"
-      icon={Users}
-      iconColor="text-blue-500"
-      defaultOpen={true}
-    >
+    <CollapsibleSection title="Players" icon={Users} iconColor="text-blue-500" defaultOpen={true}>
       {!players?.length ? (
         <div className="text-center py-6">
           <Users className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
@@ -26,10 +23,7 @@ const PlayerList = ({ players }: PlayerListProps) => {
       ) : (
         <div className="flex flex-wrap gap-2">
           {players.map((player, index) => (
-            <PlayerChip 
-              key={`${player}-${index}`}
-              playerName={player}
-            />
+            <PlayerChip key={`${player}-${index}`} playerName={player} />
           ))}
         </div>
       )}

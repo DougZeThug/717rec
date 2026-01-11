@@ -1,5 +1,7 @@
+import { AlertTriangle } from 'lucide-react';
+import React, { useState } from 'react';
 
-import React, { useState } from "react";
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,12 +11,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle } from "lucide-react";
-import { useSeasonMutations } from "@/hooks/useSeasonMutations";
-import { useSeasons } from "@/hooks/useSeasons";
-import { toast } from "@/hooks/use-toast";
+} from '@/components/ui/alert-dialog';
+import { toast } from '@/hooks/use-toast';
+import { useSeasonMutations } from '@/hooks/useSeasonMutations';
+import { useSeasons } from '@/hooks/useSeasons';
 
 interface SeasonActivationDialogProps {
   isOpen: boolean;
@@ -31,7 +31,7 @@ const SeasonActivationDialog: React.FC<SeasonActivationDialogProps> = ({
   const { activateSeason } = useSeasonMutations();
   const [isActivating, setIsActivating] = useState(false);
 
-  const activeSeason = seasons?.find(s => s.is_active);
+  const activeSeason = seasons?.find((s) => s.is_active);
   const hasActiveSeason = !!activeSeason;
 
   const handleActivate = async () => {
@@ -39,16 +39,16 @@ const SeasonActivationDialog: React.FC<SeasonActivationDialogProps> = ({
     try {
       await activateSeason.mutateAsync(season.id);
       toast({
-        title: "Success",
+        title: 'Success',
         description: `${season.name} is now the active season`,
       });
       onClose();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to activate season';
       toast({
-        title: "Error",
+        title: 'Error',
         description: message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     } finally {
       setIsActivating(false);
@@ -69,8 +69,9 @@ const SeasonActivationDialog: React.FC<SeasonActivationDialogProps> = ({
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              <strong>Warning:</strong> The current active season "{activeSeason?.name}" will be automatically deactivated.
-              All new matches and activities will be associated with "{season?.name}".
+              <strong>Warning:</strong> The current active season "{activeSeason?.name}" will be
+              automatically deactivated. All new matches and activities will be associated with "
+              {season?.name}".
             </AlertDescription>
           </Alert>
         )}
@@ -92,7 +93,7 @@ const SeasonActivationDialog: React.FC<SeasonActivationDialogProps> = ({
             disabled={isActivating}
             className="bg-green-600 hover:bg-green-700"
           >
-            {isActivating ? "Activating..." : "Activate Season"}
+            {isActivating ? 'Activating...' : 'Activate Season'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

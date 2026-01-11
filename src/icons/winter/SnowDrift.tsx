@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface SnowDriftProps extends React.SVGProps<SVGSVGElement> {
   size?: number | string;
@@ -8,11 +8,7 @@ interface SnowDriftProps extends React.SVGProps<SVGSVGElement> {
  * Snow Drift glyph - Wavy snow pile
  * Used for section dividers, decorative breaks
  */
-const SnowDrift: React.FC<SnowDriftProps> = ({ 
-  size = 24, 
-  className,
-  ...props 
-}) => (
+const SnowDrift: React.FC<SnowDriftProps> = ({ size = 24, className, ...props }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -27,11 +23,7 @@ const SnowDrift: React.FC<SnowDriftProps> = ({
     {...props}
   >
     {/* Main snow drift curve */}
-    <path 
-      d="M2 18 Q6 14 10 16 Q14 18 18 14 Q20 12 22 14" 
-      fill="currentColor" 
-      fillOpacity="0.1" 
-    />
+    <path d="M2 18 Q6 14 10 16 Q14 18 18 14 Q20 12 22 14" fill="currentColor" fillOpacity="0.1" />
     <path d="M2 18 Q6 14 10 16 Q14 18 18 14 Q20 12 22 14" />
     {/* Secondary drift layer */}
     <path d="M4 20 Q8 17 12 19 Q16 21 20 18" strokeWidth="1" opacity="0.7" />

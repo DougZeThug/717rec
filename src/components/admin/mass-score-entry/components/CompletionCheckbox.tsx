@@ -1,6 +1,6 @@
+import React from 'react';
 
-import React from "react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface CompletionCheckboxProps {
   id?: string;
@@ -13,11 +13,11 @@ const CompletionCheckbox: React.FC<CompletionCheckboxProps> = ({
   id,
   checked,
   onCheckedChange,
-  disabled = false
+  disabled = false,
 }) => {
   // Generate an ID if not provided
   const checkboxId = id || `completion-checkbox-${Math.random().toString(36).substring(2, 11)}`;
-  
+
   return (
     <div className="flex items-center space-x-2">
       <Checkbox

@@ -1,9 +1,9 @@
+import { useCallback, useState } from 'react';
 
-import { useState, useCallback } from 'react';
-import { Team } from "@/types";
-import { useTeams } from "@/hooks/useTeams";
-import { useToast } from "@/hooks/use-toast";
-import { errorLog } from "@/utils/logger";
+import { useToast } from '@/hooks/use-toast';
+import { useTeams } from '@/hooks/useTeams';
+import { Team } from '@/types';
+import { errorLog } from '@/utils/logger';
 
 export function useTeamManagement() {
   const { teams, isLoading, fetchTeams, updateTeam, deleteTeam } = useTeams();
@@ -14,33 +14,36 @@ export function useTeamManagement() {
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const { toast } = useToast();
 
-  const handleUpdateTeam = useCallback(async (teamData: Omit<Team, "id" | "created_at">) => {
-    if (!teamToEdit) return;
-    try {
-      await updateTeam(teamToEdit.id, teamData);
-      setTeamToEdit(null);
-    } catch (error) {
-      errorLog("Error updating team:", error);
-    }
-  }, [teamToEdit, updateTeam]);
+  const handleUpdateTeam = useCallback(
+    async (teamData: Omit<Team, 'id' | 'created_at'>) => {
+      if (!teamToEdit) return;
+      try {
+        await updateTeam(teamToEdit.id, teamData);
+        setTeamToEdit(null);
+      } catch (error) {
+        errorLog('Error updating team:', error);
+      }
+    },
+    [teamToEdit, updateTeam]
+  );
 
   const handleDeleteTeam = useCallback(async () => {
     if (!deleteTeamId) return;
-    
+
     setIsDeleting(true);
     try {
       await deleteTeam(deleteTeamId);
       setDeleteTeamId(null);
       toast({
-        title: "Team Deleted",
-        description: "The team has been successfully deleted.",
+        title: 'Team Deleted',
+        description: 'The team has been successfully deleted.',
       });
     } catch (error) {
-      errorLog("Error deleting team:", error);
+      errorLog('Error deleting team:', error);
       toast({
-        title: "Deletion Failed",
-        description: "There was a problem deleting the team. Please try again.",
-        variant: "destructive"
+        title: 'Deletion Failed',
+        description: 'There was a problem deleting the team. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsDeleting(false);
@@ -52,11 +55,11 @@ export function useTeamManagement() {
     try {
       await fetchTeams();
       toast({
-        title: "Teams Refreshed",
-        description: "Team list has been refreshed successfully.",
+        title: 'Teams Refreshed',
+        description: 'Team list has been refreshed successfully.',
       });
     } catch (error) {
-      errorLog("Error refreshing teams:", error);
+      errorLog('Error refreshing teams:', error);
     } finally {
       setIsRefreshing(false);
     }
@@ -75,6 +78,6 @@ export function useTeamManagement() {
     isDeleting,
     handleUpdateTeam,
     handleDeleteTeam,
-    handleRefresh
+    handleRefresh,
   };
 }

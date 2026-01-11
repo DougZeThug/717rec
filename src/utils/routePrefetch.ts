@@ -5,18 +5,18 @@
 
 // Prefetch functions matching lazy imports in App.tsx
 export const prefetchRoutes = {
-  index: () => import("../pages/Index"),
-  teams: () => import("../pages/TeamsPage"),
-  teamDetails: () => import("../pages/TeamDetails"),
-  schedule: () => import("../pages/Schedule"),
-  stats: () => import("../pages/Stats"),
-  playoffs: () => import("../pages/Playoffs"),
-  history: () => import("../pages/History"),
-  messageBoard: () => import("../pages/MessageBoard"),
-  help: () => import("../pages/Help"),
-  contact: () => import("../pages/Contact"),
-  admin: () => import("../pages/AdminDashboard"),
-  auth: () => import("../pages/Auth"),
+  index: () => import('../pages/Index'),
+  teams: () => import('../pages/TeamsPage'),
+  teamDetails: () => import('../pages/TeamDetails'),
+  schedule: () => import('../pages/Schedule'),
+  stats: () => import('../pages/Stats'),
+  playoffs: () => import('../pages/Playoffs'),
+  history: () => import('../pages/History'),
+  messageBoard: () => import('../pages/MessageBoard'),
+  help: () => import('../pages/Help'),
+  contact: () => import('../pages/Contact'),
+  admin: () => import('../pages/AdminDashboard'),
+  auth: () => import('../pages/Auth'),
 } as const;
 
 // Map routes to prefetch functions

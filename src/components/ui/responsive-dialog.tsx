@@ -1,15 +1,14 @@
+import * as React from 'react';
 
-import * as React from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Drawer,
   DrawerClose,
@@ -18,8 +17,9 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-} from "@/components/ui/drawer";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/drawer';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 interface ResponsiveDialogProps {
   open: boolean;
@@ -93,19 +93,13 @@ export const ResponsiveDialogContent: React.FC<ResponsiveDialogContentProps> = (
 
   if (isMobile) {
     return (
-      <DrawerContent className={cn("max-h-[90vh]", className)}>
-        <div className="overflow-y-auto max-h-[80vh] px-4 pb-4">
-          {children}
-        </div>
+      <DrawerContent className={cn('max-h-[90vh]', className)}>
+        <div className="overflow-y-auto max-h-[80vh] px-4 pb-4">{children}</div>
       </DrawerContent>
     );
   }
 
-  return (
-    <DialogContent className={className}>
-      {children}
-    </DialogContent>
-  );
+  return <DialogContent className={className}>{children}</DialogContent>;
 };
 
 export const ResponsiveDialogHeader: React.FC<ResponsiveDialogHeaderProps> = ({

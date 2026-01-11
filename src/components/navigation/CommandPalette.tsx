@@ -1,6 +1,19 @@
+import {
+  BarChart3,
+  Calendar,
+  Clock,
+  Home,
+  MessageSquare,
+  Search,
+  Settings,
+  Trophy,
+  User,
+  Users,
+} from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 
-import React, { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router";
+import { Button } from '@/components/ui/button';
 import {
   CommandDialog,
   CommandEmpty,
@@ -9,22 +22,9 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from "@/components/ui/command";
-import {
-  BarChart3,
-  Calendar,
-  Home,
-  Trophy,
-  Users,
-  Clock,
-  MessageSquare,
-  Search,
-  Settings,
-  User,
-} from "lucide-react";
-import { useTeamsQuery } from "@/hooks/teams";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/command';
+import { useTeamsQuery } from '@/hooks/teams';
+import { cn } from '@/lib/utils';
 
 interface CommandPaletteProps {
   open?: boolean;
@@ -32,13 +32,13 @@ interface CommandPaletteProps {
 }
 
 const quickActions = [
-  { name: "Go to Home", icon: Home, path: "/" },
-  { name: "View Standings", icon: BarChart3, path: "/stats" },
-  { name: "View Schedule", icon: Calendar, path: "/schedule" },
-  { name: "Browse Teams", icon: Users, path: "/teams" },
-  { name: "View Playoffs", icon: Trophy, path: "/playoffs" },
-  { name: "Season History", icon: Clock, path: "/history" },
-  { name: "Message Board", icon: MessageSquare, path: "/message-board" },
+  { name: 'Go to Home', icon: Home, path: '/' },
+  { name: 'View Standings', icon: BarChart3, path: '/stats' },
+  { name: 'View Schedule', icon: Calendar, path: '/schedule' },
+  { name: 'Browse Teams', icon: Users, path: '/teams' },
+  { name: 'View Playoffs', icon: Trophy, path: '/playoffs' },
+  { name: 'Season History', icon: Clock, path: '/history' },
+  { name: 'Message Board', icon: MessageSquare, path: '/message-board' },
 ];
 
 export const CommandPalette: React.FC<CommandPaletteProps> = ({
@@ -55,14 +55,14 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   // Keyboard shortcut handler
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen(!open);
       }
     };
 
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
+    document.addEventListener('keydown', down);
+    return () => document.removeEventListener('keydown', down);
   }, [open, setOpen]);
 
   const handleSelect = useCallback(
@@ -80,8 +80,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         variant="outline"
         onClick={() => setOpen(true)}
         className={cn(
-          "relative h-9 w-9 p-0 xl:h-10 xl:w-60 xl:justify-start xl:px-3 xl:py-2",
-          "text-muted-foreground"
+          'relative h-9 w-9 p-0 xl:h-10 xl:w-60 xl:justify-start xl:px-3 xl:py-2',
+          'text-muted-foreground'
         )}
       >
         <Search className="h-4 w-4 xl:mr-2" />
@@ -135,7 +135,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               {teams.length > 10 && (
                 <CommandItem
                   value="view all teams"
-                  onSelect={() => handleSelect("/teams")}
+                  onSelect={() => handleSelect('/teams')}
                   className="cursor-pointer text-muted-foreground"
                 >
                   <Users className="mr-2 h-4 w-4" />

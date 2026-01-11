@@ -1,11 +1,13 @@
-import React, { useMemo } from "react";
-import { format } from "date-fns";
-import { MatchWithTeams } from "./types";
-import { Card, CardContent } from "@/components/ui/card";
-import DateMatchGroup from "./components/DateMatchGroup";
-import { Search } from "lucide-react";
-import { EmptyState } from "@/components/ui/empty-state";
-import MatchesTableSkeleton from "./MatchesTableSkeleton";
+import { format } from 'date-fns';
+import { Search } from 'lucide-react';
+import React, { useMemo } from 'react';
+
+import { Card, CardContent } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
+
+import DateMatchGroup from './components/DateMatchGroup';
+import MatchesTableSkeleton from './MatchesTableSkeleton';
+import { MatchWithTeams } from './types';
 
 interface MatchesTableProps {
   matches: MatchWithTeams[];
@@ -28,33 +30,34 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
   submitting = false,
   failedMatches = [],
   errorMessages = {},
-  onClearError
+  onClearError,
 }) => {
   // Add index reference to each match for stable references
   const indexedMatches = useMemo(() => {
     return matches.map((match, index) => ({
       ...match,
-      id: `${match.id}-index-${index}` // Store original index in ID for reference
+      id: `${match.id}-index-${index}`, // Store original index in ID for reference
     }));
   }, [matches]);
 
   const matchesByDate = useMemo(() => {
-    const groups = indexedMatches.reduce((acc, match) => {
-      if (!match.date) return acc;
-      const dateKey = format(new Date(match.date), "yyyy-MM-dd");
-      if (!acc[dateKey]) {
-        acc[dateKey] = {
-          date: new Date(match.date),
-          matches: []
-        };
-      }
-      acc[dateKey].matches.push(match);
-      return acc;
-    }, {} as Record<string, { date: Date; matches: MatchWithTeams[] }>);
-
-    return Object.values(groups).sort((a, b) => 
-      a.date.getTime() - b.date.getTime()
+    const groups = indexedMatches.reduce(
+      (acc, match) => {
+        if (!match.date) return acc;
+        const dateKey = format(new Date(match.date), 'yyyy-MM-dd');
+        if (!acc[dateKey]) {
+          acc[dateKey] = {
+            date: new Date(match.date),
+            matches: [],
+          };
+        }
+        acc[dateKey].matches.push(match);
+        return acc;
+      },
+      {} as Record<string, { date: Date; matches: MatchWithTeams[] }>
     );
+
+    return Object.values(groups).sort((a, b) => a.date.getTime() - b.date.getTime());
   }, [indexedMatches]);
 
   if (loading) {
@@ -83,7 +86,7 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
     <div className="space-y-4">
       {matchesByDate.map(({ date, matches: dateMatches }) => (
         <DateMatchGroup
-          key={format(date, "yyyy-MM-dd")}
+          key={format(date, 'yyyy-MM-dd')}
           date={date}
           matches={dateMatches}
           defaultExpanded={defaultExpanded}

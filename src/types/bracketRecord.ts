@@ -1,4 +1,3 @@
-
 export interface BracketRecord {
   id: string;
   challonge_tournament_id: number;

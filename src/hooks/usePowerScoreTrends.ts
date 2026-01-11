@@ -1,8 +1,8 @@
+import { useQuery } from '@tanstack/react-query';
 
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { PowerScoreTrend, TrendDirection } from "@/types/powerScoreTrends";
-import { warnLog } from "@/utils/logger";
+import { supabase } from '@/integrations/supabase/client';
+import { PowerScoreTrend, TrendDirection } from '@/types/powerScoreTrends';
+import { warnLog } from '@/utils/logger';
 
 export const usePowerScoreTrends = (direction: TrendDirection = 'up', limit: number = 10) => {
   return useQuery({
@@ -57,7 +57,7 @@ export const usePowerScoreTrends = (direction: TrendDirection = 'up', limit: num
 
       // Create a map of previous scores for quick lookup
       const previousScoresMap = new Map(
-        previousData.map(team => [team.team_id, team.power_score])
+        previousData.map((team) => [team.team_id, team.power_score])
       );
 
       // Get visible divisions (exclude hidden ones)
@@ -65,13 +65,15 @@ export const usePowerScoreTrends = (direction: TrendDirection = 'up', limit: num
         .from('divisions')
         .select('id')
         .neq('display_division', 'Hidden');
-      
-      const visibleDivisionIds = new Set(visibleDivisions?.map(d => d.id) || []);
+
+      const visibleDivisionIds = new Set(visibleDivisions?.map((d) => d.id) || []);
 
       // Calculate trends for teams that have both current and previous data and are in visible divisions
       const trends: PowerScoreTrend[] = currentData
-        .filter(team => previousScoresMap.has(team.team_id) && visibleDivisionIds.has(team.division_id))
-        .map(team => {
+        .filter(
+          (team) => previousScoresMap.has(team.team_id) && visibleDivisionIds.has(team.division_id)
+        )
+        .map((team) => {
           const previousScore = previousScoresMap.get(team.team_id) || 0;
           const currentScore = team.power_score || 0;
           const delta = currentScore - previousScore;

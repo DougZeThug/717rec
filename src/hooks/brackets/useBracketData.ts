@@ -1,7 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
-import { useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { bracketLog, errorLog, debugLog } from "@/utils/logger";
+import { useQuery } from '@tanstack/react-query';
+import { useCallback, useState } from 'react';
+
+import { supabase } from '@/integrations/supabase/client';
+import { bracketLog, debugLog, errorLog } from '@/utils/logger';
 
 export type BracketLoadingStep = 'bracket' | 'stage' | 'matches' | 'teams' | 'done';
 
@@ -52,7 +53,7 @@ export interface SimpleBracketData {
     logo_url?: string;
     image_url?: string;
   }>;
-  stageId?: number;  // Stage ID for realtime subscriptions
+  stageId?: number; // Stage ID for realtime subscriptions
 }
 
 // Progress steps configuration
@@ -61,31 +62,31 @@ const LOADING_STEPS: Record<BracketLoadingStep, { label: string; percent: number
   stage: { label: 'Fetching stage & participants...', percent: 50 },
   matches: { label: 'Loading matches...', percent: 75 },
   teams: { label: 'Fetching team details...', percent: 90 },
-  done: { label: 'Complete', percent: 100 }
+  done: { label: 'Complete', percent: 100 },
 };
 
 export const useBracketData = (bracketId: string | null) => {
   const [loadingProgress, setLoadingProgress] = useState<BracketLoadingProgress>({
     step: 'bracket',
     label: LOADING_STEPS.bracket.label,
-    percent: LOADING_STEPS.bracket.percent
+    percent: LOADING_STEPS.bracket.percent,
   });
 
   const updateProgress = useCallback((step: BracketLoadingStep) => {
     setLoadingProgress({
       step,
       label: LOADING_STEPS[step].label,
-      percent: LOADING_STEPS[step].percent
+      percent: LOADING_STEPS[step].percent,
     });
   }, []);
 
   bracketLog('useBracketData hook called', { bracketId });
-  
+
   const query = useQuery({
     queryKey: ['bracket-data', bracketId],
     queryFn: async (): Promise<SimpleBracketData | null> => {
       bracketLog('Starting fetch for bracket:', bracketId);
-      
+
       if (!bracketId) {
         debugLog('No bracketId provided, returning null');
         return null;
@@ -97,7 +98,8 @@ export const useBracketData = (bracketId: string | null) => {
         bracketLog('Step 1 - Fetching bracket info for ID:', bracketId);
         const { data: bracket, error: bracketError } = await supabase
           .from('brackets')
-          .select(`
+          .select(
+            `
             id, 
             title, 
             format, 
@@ -107,7 +109,8 @@ export const useBracketData = (bracketId: string | null) => {
             challonge_tournament_id, 
             uses_brackets_manager, 
             bracket_data
-          `)
+          `
+          )
           .eq('id', bracketId)
           .single();
 
@@ -124,19 +127,19 @@ export const useBracketData = (bracketId: string | null) => {
         bracketLog('Step 1 Complete - Bracket found:', {
           id: bracket.id,
           title: bracket.title,
-          uses_brackets_manager: bracket.uses_brackets_manager
+          uses_brackets_manager: bracket.uses_brackets_manager,
         });
 
         // Step 2: Check if this is a brackets-manager bracket
         if (bracket.uses_brackets_manager) {
           bracketLog('Step 2 - Fetching from SQL tables (brackets-manager)');
-          
+
           // PARALLEL BATCH 1: Fetch stage and participants concurrently (both need bracketId)
           updateProgress('stage');
           bracketLog('Parallel Batch 1 - Fetching stage and participants concurrently');
           const [stageResult, participantsResult] = await Promise.all([
             supabase.from('stage').select('*').eq('tournament_id', bracketId),
-            supabase.from('participant').select('*').eq('tournament_id', bracketId)
+            supabase.from('participant').select('*').eq('tournament_id', bracketId),
           ]);
 
           // Check stage result
@@ -167,7 +170,7 @@ export const useBracketData = (bracketId: string | null) => {
           bracketLog('Parallel Batch 2 - Fetching groups and matches concurrently');
           const [groupsResult, matchesResult] = await Promise.all([
             supabase.from('group').select('*').eq('stage_id', stage.id),
-            supabase.from('match').select('*').eq('stage_id', stage.id)
+            supabase.from('match').select('*').eq('stage_id', stage.id),
           ]);
 
           // Check groups result
@@ -179,7 +182,7 @@ export const useBracketData = (bracketId: string | null) => {
           const groups = groupsResult.data;
           // Build group_id to group.number mapping
           const groupIdToNumberMap = new Map<number, number>();
-          groups?.forEach(group => {
+          groups?.forEach((group) => {
             groupIdToNumberMap.set(group.id, group.number);
           });
           bracketLog('Groups mapped:', groupIdToNumberMap.size);
@@ -195,13 +198,13 @@ export const useBracketData = (bracketId: string | null) => {
 
           // Step 6: Build participant to team mapping
           const participantToTeamMap = new Map<number, string>();
-          participants?.forEach(p => {
+          participants?.forEach((p) => {
             participantToTeamMap.set(p.id, p.name); // Map participant ID to team name
           });
 
           // Step 7: Extract team IDs from participant names (match with teams table)
           updateProgress('teams');
-          const teamNames = participants?.map(p => p.name) || [];
+          const teamNames = participants?.map((p) => p.name) || [];
           const { data: teamDetails, error: teamsError } = await supabase
             .from('teams')
             .select('id, name, image_url')
@@ -213,7 +216,7 @@ export const useBracketData = (bracketId: string | null) => {
           }
 
           const teamLookup = new Map();
-          teamDetails?.forEach(team => {
+          teamDetails?.forEach((team) => {
             teamLookup.set(team.name, team);
           });
 
@@ -221,18 +224,26 @@ export const useBracketData = (bracketId: string | null) => {
 
           // Helper function to map group.number to matchType
           const getMatchType = (groupNumber: number): string => {
-            switch(groupNumber) {
-              case 1: return 'winners';
-              case 2: return 'losers';
-              case 3: return 'finals';
-              default: return 'winners';
+            switch (groupNumber) {
+              case 1:
+                return 'winners';
+              case 2:
+                return 'losers';
+              case 3:
+                return 'finals';
+              default:
+                return 'winners';
             }
           };
 
           // Step 8: Transform matches - convert opponent1_id back to opponent1 object
           const transformedMatches = (matches || []).map((match: any) => {
-            const team1Name = match.opponent1_id ? participantToTeamMap.get(match.opponent1_id) : null;
-            const team2Name = match.opponent2_id ? participantToTeamMap.get(match.opponent2_id) : null;
+            const team1Name = match.opponent1_id
+              ? participantToTeamMap.get(match.opponent1_id)
+              : null;
+            const team2Name = match.opponent2_id
+              ? participantToTeamMap.get(match.opponent2_id)
+              : null;
             const team1 = team1Name ? teamLookup.get(team1Name) : null;
             const team2 = team2Name ? teamLookup.get(team2Name) : null;
 
@@ -269,22 +280,23 @@ export const useBracketData = (bracketId: string | null) => {
               nextWinMatchId: null,
               nextLoseMatchId: null,
               team1Seed: null,
-              team2Seed: null
+              team2Seed: null,
             };
           });
 
           bracketLog('Matches transformed:', transformedMatches.length);
 
           // Step 9: Transform participants
-          const transformedParticipants = participants?.map(p => {
-            const team = teamLookup.get(p.name);
-            return {
-              position: p.position,
-              team_id: team?.id || '',
-              name: p.name,
-              image_url: team?.image_url
-            };
-          }) || [];
+          const transformedParticipants =
+            participants?.map((p) => {
+              const team = teamLookup.get(p.name);
+              return {
+                position: p.position,
+                team_id: team?.id || '',
+                name: p.name,
+                image_url: team?.image_url,
+              };
+            }) || [];
 
           if (!bracket.divisions) {
             debugLog('Bracket has no division data:', bracketId);
@@ -301,7 +313,7 @@ export const useBracketData = (bracketId: string | null) => {
             matches: transformedMatches,
             teams: Array.from(teamLookup.values()),
             participants: transformedParticipants,
-            stageId: stage.id  // Include stageId for realtime subscriptions
+            stageId: stage.id, // Include stageId for realtime subscriptions
           };
 
           updateProgress('done');
@@ -309,7 +321,7 @@ export const useBracketData = (bracketId: string | null) => {
             bracketId: result.id,
             matchesCount: result.matches.length,
             teamsCount: result.teams.length,
-            stageId: stage.id
+            stageId: stage.id,
           });
 
           return result;
@@ -318,12 +330,10 @@ export const useBracketData = (bracketId: string | null) => {
         // Fallback: Non-brackets-manager bracket
         debugLog('Not a brackets-manager bracket');
         return null;
-
-
       } catch (error) {
         errorLog('CRITICAL ERROR in useBracketData:', {
           bracketId,
-          error: error.message
+          error: error.message,
         });
         throw error;
       }
@@ -333,16 +343,16 @@ export const useBracketData = (bracketId: string | null) => {
     retry: (failureCount, error) => {
       debugLog(`Query retry attempt ${failureCount} for bracket ${bracketId}:`, {
         error: error?.message,
-        willRetry: failureCount < 2
+        willRetry: failureCount < 2,
       });
       return failureCount < 2; // Retry up to 2 times
     },
     refetchOnMount: true,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
   });
 
   return {
     ...query,
-    loadingProgress
+    loadingProgress,
   };
 };

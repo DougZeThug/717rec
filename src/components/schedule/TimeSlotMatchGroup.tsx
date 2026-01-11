@@ -1,15 +1,13 @@
-import React, { useMemo } from "react";
-import { Match } from "@/types";
-import { ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
-import MatchCard from "./MatchCard";
-import { Badge } from "@/components/ui/badge";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger
-} from "@/components/ui/collapsible";
-import { useBatchHeadToHead } from "@/hooks/useBatchHeadToHead";
+import { ChevronDown } from 'lucide-react';
+import React, { useMemo } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useBatchHeadToHead } from '@/hooks/useBatchHeadToHead';
+import { cn } from '@/lib/utils';
+import { Match } from '@/types';
+
+import MatchCard from './MatchCard';
 
 interface TimeSlotMatchGroupProps {
   timeSlot: string;
@@ -24,32 +22,29 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
   matches,
   onEditMatch,
   onDeleteMatch,
-  isFirstTimeSlot = false
+  isFirstTimeSlot = false,
 }) => {
   const [isOpen, setIsOpen] = React.useState(isFirstTimeSlot);
-  
+
   // Extract all team pairs for batch H2H query
-  const teamPairs = useMemo(() => 
-    matches.map(match => ({
-      team1Id: match.team1Id,
-      team2Id: match.team2Id
-    })),
+  const teamPairs = useMemo(
+    () =>
+      matches.map((match) => ({
+        team1Id: match.team1Id,
+        team2Id: match.team2Id,
+      })),
     [matches]
   );
-  
+
   // Batch fetch H2H data for all matches in this time slot
   const { getHeadToHead, isLoading: isH2HLoading } = useBatchHeadToHead(teamPairs);
-  
+
   return (
-    <Collapsible
-      open={isOpen}
-      onOpenChange={setIsOpen}
-      className="mb-2 overflow-hidden"
-    >
-      <CollapsibleTrigger 
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-2 overflow-hidden">
+      <CollapsibleTrigger
         className={cn(
-          "flex w-full items-center justify-between p-2 text-left text-sm rounded transition-all",
-          "bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
+          'flex w-full items-center justify-between p-2 text-left text-sm rounded transition-all',
+          'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
         )}
       >
         <div className="flex items-center gap-2">
@@ -58,18 +53,18 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
             {matches.length} {matches.length === 1 ? 'match' : 'matches'}
           </Badge>
         </div>
-        <ChevronDown 
+        <ChevronDown
           className={cn(
-            "h-4 w-4 transition-transform duration-200",
-            isOpen ? "transform rotate-180" : ""
-          )} 
+            'h-4 w-4 transition-transform duration-200',
+            isOpen ? 'transform rotate-180' : ''
+          )}
         />
       </CollapsibleTrigger>
       <CollapsibleContent>
         <div className="pt-2 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {matches.map(match => (
-            <MatchCard 
-              key={match.id} 
+          {matches.map((match) => (
+            <MatchCard
+              key={match.id}
               match={match}
               isCompleted={!!match.iscompleted}
               onEdit={onEditMatch}

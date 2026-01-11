@@ -1,6 +1,6 @@
-
 import { Capacitor } from '@capacitor/core';
 import { SocialLogin } from '@capgo/capacitor-social-login';
+
 import { supabase } from '@/integrations/supabase/client';
 import { authLog, errorLog } from '@/utils/logger';
 
@@ -10,7 +10,7 @@ export const isNativePlatform = (): boolean => {
 
 export const loginWithGoogleNative = async () => {
   if (!isNativePlatform()) {
-    return { success: false, error: "This method is only available on native mobile platforms" };
+    return { success: false, error: 'This method is only available on native mobile platforms' };
   }
 
   try {
@@ -18,16 +18,16 @@ export const loginWithGoogleNative = async () => {
     // Need to provide an empty options object to satisfy TypeScript
     const response = await SocialLogin.login({
       provider: 'google',
-      options: {} // Empty options object to satisfy the type requirement
+      options: {}, // Empty options object to satisfy the type requirement
     });
 
     // Log the response structure to understand what we're getting
-    authLog("Google login response structure:", JSON.stringify(response));
+    authLog('Google login response structure:', JSON.stringify(response));
 
     // Based on the GoogleLoginResponseOnline type, we need to access the id token differently
     // The structure is different between platforms, so we need to handle multiple possible locations
     let idToken: string | undefined;
-    
+
     // Try to access idToken from different possible locations in the response
     if (response.result) {
       if ('idToken' in response.result) {
@@ -41,25 +41,25 @@ export const loginWithGoogleNative = async () => {
         idToken = resultObj.idToken || resultObj.accessToken || resultObj.token;
       }
     }
-    
+
     if (!idToken) {
-      throw new Error("Failed to retrieve ID token from Google login response");
+      throw new Error('Failed to retrieve ID token from Google login response');
     }
-    
+
     // Use the ID token to sign in with Supabase
     const { data, error } = await supabase.auth.signInWithIdToken({
       provider: 'google',
-      token: idToken
+      token: idToken,
     });
 
     if (error) {
-      errorLog("Error signing in with Google Native:", error);
+      errorLog('Error signing in with Google Native:', error);
       return { success: false, error };
     }
 
     return { success: true, user: data.user };
   } catch (err: any) {
-    errorLog("Exception during native Google login:", err);
-    return { success: false, error: err.message || "An error occurred during native Google login" };
+    errorLog('Exception during native Google login:', err);
+    return { success: false, error: err.message || 'An error occurred during native Google login' };
   }
 };

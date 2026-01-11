@@ -1,8 +1,9 @@
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import React from 'react';
 
-import React from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { TeamLogo } from "./TeamLogo";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+import { TeamLogo } from './TeamLogo';
 
 interface TeamCellProps {
   teamName: string;
@@ -13,25 +14,20 @@ interface TeamCellProps {
   gameLosses?: number;
 }
 
-export const TeamCell: React.FC<TeamCellProps> = ({ 
-  teamName, 
+export const TeamCell: React.FC<TeamCellProps> = ({
+  teamName,
   teamId,
-  imageUrl, 
+  imageUrl,
   isExpanded,
   gameWins,
-  gameLosses
+  gameLosses,
 }) => {
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex items-center space-x-3">
-            <TeamLogo 
-              imageUrl={imageUrl} 
-              teamName={teamName} 
-              teamId={teamId}
-              clickable
-            />
+            <TeamLogo imageUrl={imageUrl} teamName={teamName} teamId={teamId} clickable />
             <div className="flex flex-col">
               <div className="flex items-center space-x-1">
                 <span className="font-medium">{teamName}</span>

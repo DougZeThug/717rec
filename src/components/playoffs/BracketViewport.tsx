@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { ZoomIn, ZoomOut, Maximize2, Move, RotateCcw } from 'lucide-react';
+import { Maximize2, Move, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { useBracketResponsive } from '@/hooks/use-bracket-responsive';
 
@@ -25,15 +26,12 @@ const MIN_SCALE = 0.1;
 const MAX_SCALE = 3;
 const SCALE_STEP = 0.2;
 
-export const BracketViewport: React.FC<BracketViewportProps> = ({
-  children,
-  className = ''
-}) => {
+export const BracketViewport: React.FC<BracketViewportProps> = ({ children, className = '' }) => {
   const responsive = useBracketResponsive();
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  
+
   const [viewportState, setViewportState] = useState<ViewportState>({
     scale: 1,
     x: 0,
@@ -44,40 +42,40 @@ export const BracketViewport: React.FC<BracketViewportProps> = ({
     startX: 0,
     startY: 0,
     mouseStartX: 0,
-    mouseStartY: 0
+    mouseStartY: 0,
   });
 
   // Auto-fit function to calculate initial zoom level - using requestAnimationFrame to prevent forced reflow
   const autoFit = useCallback(() => {
     if (!containerRef.current || !contentRef.current) return;
-    
+
     const container = containerRef.current;
     const content = contentRef.current;
-    
+
     // Use requestAnimationFrame to batch layout reads and prevent forced reflow
     requestAnimationFrame(() => {
       // Get container dimensions
       const containerRect = container.getBoundingClientRect();
       const contentRect = content.getBoundingClientRect();
-      
+
       // Calculate scale to fit content in container with padding
       const padding = responsive.containerPadding * 2;
       const scaleX = (containerRect.width - padding) / contentRect.width;
       const scaleY = (containerRect.height - padding) / contentRect.height;
-      
+
       // Use the smaller scale to ensure content fits both dimensions
       const fitScale = Math.min(scaleX, scaleY, 1); // Don't zoom in beyond 100%
       const clampedScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, fitScale));
-      
+
       // Center the content
       const centerX = (containerRect.width - contentRect.width * clampedScale) / 2;
       const centerY = (containerRect.height - contentRect.height * clampedScale) / 2;
-      
-      setViewportState(prev => ({
+
+      setViewportState((prev) => ({
         ...prev,
         scale: clampedScale,
         x: centerX,
-        y: centerY
+        y: centerY,
       }));
     });
   }, [responsive.containerPadding]);
@@ -105,66 +103,67 @@ export const BracketViewport: React.FC<BracketViewportProps> = ({
     if (e.touches.length === 2) {
       // Pinch start
       const distance = getTouchDistance(e.touches[0], e.touches[1]);
-      setViewportState(prev => ({
+      setViewportState((prev) => ({
         ...prev,
         isPinching: true,
-        lastTouchDistance: distance
+        lastTouchDistance: distance,
       }));
     } else if (e.touches.length === 1) {
       // Drag start
-      setViewportState(prev => ({
+      setViewportState((prev) => ({
         ...prev,
         isDragging: true,
         startX: e.touches[0].clientX - prev.x,
-        startY: e.touches[0].clientY - prev.y
+        startY: e.touches[0].clientY - prev.y,
       }));
     }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
     e.preventDefault();
-    
+
     if (e.touches.length === 2 && viewportState.isPinching) {
       // Pinch zoom
       const distance = getTouchDistance(e.touches[0], e.touches[1]);
       const scale = viewportState.scale * (distance / viewportState.lastTouchDistance);
-      
-      setViewportState(prev => ({
+
+      setViewportState((prev) => ({
         ...prev,
         scale: Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale)),
-        lastTouchDistance: distance
+        lastTouchDistance: distance,
       }));
     } else if (e.touches.length === 1 && viewportState.isDragging) {
       // Pan
       const newX = e.touches[0].clientX - viewportState.startX;
       const newY = e.touches[0].clientY - viewportState.startY;
-      
-      setViewportState(prev => ({
+
+      setViewportState((prev) => ({
         ...prev,
         x: newX,
-        y: newY
+        y: newY,
       }));
     }
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (e.touches.length === 0) {
-      setViewportState(prev => ({
+      setViewportState((prev) => ({
         ...prev,
         isPinching: false,
-        isDragging: false
+        isDragging: false,
       }));
     }
   };
 
   // Mouse event handlers for desktop
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.button === 0) { // Left mouse button
-      setViewportState(prev => ({
+    if (e.button === 0) {
+      // Left mouse button
+      setViewportState((prev) => ({
         ...prev,
         isDragging: true,
         mouseStartX: e.clientX - prev.x,
-        mouseStartY: e.clientY - prev.y
+        mouseStartY: e.clientY - prev.y,
       }));
       e.preventDefault();
     }
@@ -174,19 +173,19 @@ export const BracketViewport: React.FC<BracketViewportProps> = ({
     if (viewportState.isDragging) {
       const newX = e.clientX - viewportState.mouseStartX;
       const newY = e.clientY - viewportState.mouseStartY;
-      
-      setViewportState(prev => ({
+
+      setViewportState((prev) => ({
         ...prev,
         x: newX,
-        y: newY
+        y: newY,
       }));
     }
   };
 
   const handleMouseUp = () => {
-    setViewportState(prev => ({
+    setViewportState((prev) => ({
       ...prev,
-      isDragging: false
+      isDragging: false,
     }));
   };
 
@@ -195,10 +194,10 @@ export const BracketViewport: React.FC<BracketViewportProps> = ({
     e.preventDefault();
     const delta = e.deltaY < 0 ? SCALE_STEP : -SCALE_STEP;
     const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, viewportState.scale + delta));
-    
-    setViewportState(prev => ({
+
+    setViewportState((prev) => ({
       ...prev,
-      scale: newScale
+      scale: newScale,
     }));
   };
 
@@ -230,32 +229,33 @@ export const BracketViewport: React.FC<BracketViewportProps> = ({
 
   // Control functions
   const handleZoomIn = () => {
-    setViewportState(prev => ({
+    setViewportState((prev) => ({
       ...prev,
-      scale: Math.min(MAX_SCALE, prev.scale + SCALE_STEP)
+      scale: Math.min(MAX_SCALE, prev.scale + SCALE_STEP),
     }));
   };
 
   const handleZoomOut = () => {
-    setViewportState(prev => ({
+    setViewportState((prev) => ({
       ...prev,
-      scale: Math.max(MIN_SCALE, prev.scale - SCALE_STEP)
+      scale: Math.max(MIN_SCALE, prev.scale - SCALE_STEP),
     }));
   };
 
   const handleReset = () => {
-    setViewportState(prev => ({
+    setViewportState((prev) => ({
       ...prev,
       scale: 1,
       x: 0,
-      y: 0
+      y: 0,
     }));
   };
 
   const transformStyle = {
     transform: `scale(${viewportState.scale}) translate(${viewportState.x / viewportState.scale}px, ${viewportState.y / viewportState.scale}px)`,
     transformOrigin: 'top left',
-    transition: viewportState.isPinching || viewportState.isDragging ? 'none' : 'transform 0.2s ease-out'
+    transition:
+      viewportState.isPinching || viewportState.isDragging ? 'none' : 'transform 0.2s ease-out',
   };
 
   const isZoomedOut = viewportState.scale < 0.8;
@@ -312,7 +312,7 @@ export const BracketViewport: React.FC<BracketViewportProps> = ({
         <div className="bg-background/90 backdrop-blur-sm rounded-md px-2 py-1 text-sm">
           {Math.round(viewportState.scale * 100)}%
         </div>
-        
+
         {/* Instructions */}
         {isZoomedOut && (
           <div className="bg-primary/10 backdrop-blur-sm rounded-md px-2 py-1 text-xs text-primary">
@@ -348,9 +348,9 @@ export const BracketViewport: React.FC<BracketViewportProps> = ({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         onWheel={handleWheel}
-        style={{ 
+        style={{
           touchAction: 'none',
-          cursor: viewportState.isDragging ? 'grabbing' : 'grab'
+          cursor: viewportState.isDragging ? 'grabbing' : 'grab',
         }}
       >
         <div ref={contentRef} style={transformStyle}>

@@ -1,11 +1,12 @@
+import { Calendar } from 'lucide-react';
+import React from 'react';
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "lucide-react";
-import ScheduleSearch from "./ScheduleSearch";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import DateStrip from "./DateStrip";
+import { Button } from '@/components/ui/button';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+
+import DateStrip from './DateStrip';
+import ScheduleSearch from './ScheduleSearch';
 
 interface ScheduleHeaderProps {
   searchTerm: string;
@@ -21,7 +22,7 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
   setSearchTerm,
   selectedDate = new Date(),
   onDateSelect,
-  matchDates = new Set()
+  matchDates = new Set(),
 }) => {
   const handleDateSelect = (date: Date | undefined) => {
     if (date && onDateSelect) {
@@ -36,7 +37,7 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
         <div className="flex items-center justify-between gap-4">
           <h1
             className="font-bebas text-2xl sm:text-3xl font-semibold uppercase tracking-wide text-cornhole-navy dark:text-white"
-            style={{ letterSpacing: "0.07em" }}
+            style={{ letterSpacing: '0.07em' }}
           >
             Schedule
           </h1>
@@ -46,15 +47,14 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
             {onDateSelect && (
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="shrink-0 h-10 w-10"
-                  >
+                  <Button variant="outline" size="icon" className="shrink-0 h-10 w-10">
                     <Calendar className="h-4 w-4" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 shadow-md border border-border bg-popover" align="end">
+                <PopoverContent
+                  className="w-auto p-0 shadow-md border border-border bg-popover"
+                  align="end"
+                >
                   <CalendarComponent
                     mode="single"
                     selected={selectedDate}
@@ -67,7 +67,7 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
             )}
           </div>
         </div>
-        
+
         {/* Date Strip - swipeable horizontal date picker */}
         {onDateSelect && (
           <DateStrip

@@ -24,13 +24,11 @@ export function calculatePercentile(
   }
 
   // Sort values in the appropriate direction
-  const sorted = [...allValues].sort((a, b) => 
-    higherIsBetter ? b - a : a - b
-  );
-  
+  const sorted = [...allValues].sort((a, b) => (higherIsBetter ? b - a : a - b));
+
   // Find rank (1-indexed)
-  const rank = sorted.findIndex(v => v === value) + 1;
-  
+  const rank = sorted.findIndex((v) => v === value) + 1;
+
   // Calculate percentile: how many teams are below this one
   const teamsBelow = total - rank;
   const percentile = Math.round((teamsBelow / (total - 1)) * 100) || 0;
@@ -39,7 +37,7 @@ export function calculatePercentile(
     value,
     percentile: Math.min(100, Math.max(0, percentile)),
     rank,
-    total
+    total,
   };
 }
 
@@ -47,7 +45,7 @@ export function calculatePercentile(
  * Format a number as an ordinal (1st, 2nd, 3rd, etc.)
  */
 export function formatOrdinal(n: number): string {
-  const suffixes = ["th", "st", "nd", "rd"];
+  const suffixes = ['th', 'st', 'nd', 'rd'];
   const v = n % 100;
   return n + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
 }
@@ -85,12 +83,12 @@ export function calculateAllPercentiles(
   teams: { id: string; value: number }[],
   higherIsBetter: boolean = true
 ): Map<string, PercentileResult> {
-  const values = teams.map(t => t.value);
+  const values = teams.map((t) => t.value);
   const result = new Map<string, PercentileResult>();
-  
+
   for (const team of teams) {
     result.set(team.id, calculatePercentile(team.value, values, higherIsBetter));
   }
-  
+
   return result;
 }

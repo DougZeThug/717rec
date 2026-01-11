@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { BracketManagerService } from '@/services/brackets/manager/BracketManagerService';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { supabase } from '@/integrations/supabase/client';
+import { BracketManagerService } from '@/services/brackets/manager/BracketManagerService';
 
 // Mock supabase client
 vi.mock('@/integrations/supabase/client', () => ({
@@ -11,7 +12,7 @@ vi.mock('@/integrations/supabase/client', () => ({
 
 describe('Bracket Manager Schema Integration Tests', () => {
   let mockSupabaseFrom: any;
-  
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockSupabaseFrom = {
@@ -44,15 +45,32 @@ describe('Bracket Manager Schema Integration Tests', () => {
 
     it('should have all required columns in match table', () => {
       const requiredColumns = [
-        'id', 'stage_id', 'group_id', 'round_id', 'number', 'status',
-        'opponent1_id', 'opponent2_id', 'opponent1_score', 'opponent2_score',
-        'opponent1_result', 'opponent2_result', 'child_count'
+        'id',
+        'stage_id',
+        'group_id',
+        'round_id',
+        'number',
+        'status',
+        'opponent1_id',
+        'opponent2_id',
+        'opponent1_score',
+        'opponent2_score',
+        'opponent1_result',
+        'opponent2_result',
+        'child_count',
       ];
       expect(requiredColumns).toHaveLength(13);
     });
 
     it('should have all required columns in match_game table', () => {
-      const requiredColumns = ['id', 'match_id', 'number', 'opponent1_score', 'opponent2_score', 'status'];
+      const requiredColumns = [
+        'id',
+        'match_id',
+        'number',
+        'opponent1_score',
+        'opponent2_score',
+        'status',
+      ];
       expect(requiredColumns).toHaveLength(6);
     });
 
@@ -76,7 +94,7 @@ describe('Bracket Manager Schema Integration Tests', () => {
       mockSupabaseFrom.select.mockResolvedValue({ data: [], error: null });
 
       const service = new BracketManagerService();
-      
+
       await expect(
         service.createBracket({
           bracketId,
@@ -97,7 +115,7 @@ describe('Bracket Manager Schema Integration Tests', () => {
       mockSupabaseFrom.select.mockResolvedValue({ data: [], error: null });
 
       const service = new BracketManagerService();
-      
+
       await expect(
         service.createBracket({
           bracketId,
@@ -122,7 +140,7 @@ describe('Bracket Manager Schema Integration Tests', () => {
       mockSupabaseFrom.select.mockResolvedValue({ data: [], error: null });
 
       const service = new BracketManagerService();
-      
+
       await expect(
         service.createBracket({
           bracketId,
@@ -143,7 +161,7 @@ describe('Bracket Manager Schema Integration Tests', () => {
       mockSupabaseFrom.select.mockResolvedValue({ data: [], error: null });
 
       const service = new BracketManagerService();
-      
+
       await expect(
         service.createBracket({
           bracketId,
@@ -167,7 +185,7 @@ describe('Bracket Manager Schema Integration Tests', () => {
       mockSupabaseFrom.select.mockResolvedValue({ data: [], error: null });
 
       const service = new BracketManagerService();
-      
+
       await expect(
         service.createBracket({
           bracketId,
@@ -188,7 +206,7 @@ describe('Bracket Manager Schema Integration Tests', () => {
       mockSupabaseFrom.select.mockResolvedValue({ data: [], error: null });
 
       const service = new BracketManagerService();
-      
+
       await expect(
         service.createBracket({
           bracketId,
@@ -206,19 +224,19 @@ describe('Bracket Manager Schema Integration Tests', () => {
       const team2Score = 1;
 
       mockSupabaseFrom.update.mockResolvedValue({ data: {}, error: null });
-      mockSupabaseFrom.select.mockResolvedValue({ 
-        data: { 
-          id: matchId, 
-          opponent1_id: 1, 
+      mockSupabaseFrom.select.mockResolvedValue({
+        data: {
+          id: matchId,
+          opponent1_id: 1,
           opponent2_id: 2,
           opponent1_score: null,
-          opponent2_score: null 
-        }, 
-        error: null 
+          opponent2_score: null,
+        },
+        error: null,
       });
 
       const service = new BracketManagerService();
-      
+
       await expect(
         service.updateMatch({
           matchId,
@@ -230,22 +248,22 @@ describe('Bracket Manager Schema Integration Tests', () => {
 
     it('should propagate winner to next match', async () => {
       const matchId = 1;
-      
+
       mockSupabaseFrom.update.mockResolvedValue({ data: {}, error: null });
-      mockSupabaseFrom.select.mockResolvedValue({ 
-        data: { 
-          id: matchId, 
-          opponent1_id: 1, 
+      mockSupabaseFrom.select.mockResolvedValue({
+        data: {
+          id: matchId,
+          opponent1_id: 1,
           opponent2_id: 2,
           opponent1_score: 2,
           opponent2_score: 1,
-          status: 4 // Completed
-        }, 
-        error: null 
+          status: 4, // Completed
+        },
+        error: null,
       });
 
       const service = new BracketManagerService();
-      
+
       await expect(
         service.updateMatch({
           matchId,

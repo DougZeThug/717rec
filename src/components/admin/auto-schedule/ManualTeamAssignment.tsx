@@ -1,34 +1,41 @@
-import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/hooks/use-toast";
-import { useTeamsQuery } from "@/hooks/teams";
-import { LoadingState } from "@/components/ui/loading-state";
-import { TIME_BLOCKS } from "@/utils/autoSchedule/constants";
-import { TimeBlockTeamsMap } from "@/types/autoSchedule";
+import React, { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { LoadingState } from '@/components/ui/loading-state';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useTeamsQuery } from '@/hooks/teams';
+import { useToast } from '@/hooks/use-toast';
+import { TimeBlockTeamsMap } from '@/types/autoSchedule';
+import { TIME_BLOCKS } from '@/utils/autoSchedule/constants';
 
 interface ManualTeamAssignmentProps {
   selectedDate: Date | null;
   onTeamsAssigned: (timeBlockTeams: TimeBlockTeamsMap) => void;
 }
 
-const ManualTeamAssignment: React.FC<ManualTeamAssignmentProps> = ({ 
-  selectedDate, 
-  onTeamsAssigned 
+const ManualTeamAssignment: React.FC<ManualTeamAssignmentProps> = ({
+  selectedDate,
+  onTeamsAssigned,
 }) => {
   const { data: teams, isLoading } = useTeamsQuery();
   const { toast } = useToast();
-  const [selectedTimeBlock, setSelectedTimeBlock] = useState<string>("");
+  const [selectedTimeBlock, setSelectedTimeBlock] = useState<string>('');
   const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
   const [isAssigning, setIsAssigning] = useState(false);
 
   // Handle team selection toggle
   const handleTeamToggle = (teamId: string) => {
-    setSelectedTeamIds(prev => {
+    setSelectedTeamIds((prev) => {
       if (prev.includes(teamId)) {
-        return prev.filter(id => id !== teamId);
+        return prev.filter((id) => id !== teamId);
       } else {
         return [...prev, teamId];
       }
@@ -39,59 +46,59 @@ const ManualTeamAssignment: React.FC<ManualTeamAssignmentProps> = ({
   const handleAssignTeams = async () => {
     if (!selectedDate) {
       toast({
-        title: "Date Required",
-        description: "Please select a date before assigning teams.",
-        variant: "destructive"
+        title: 'Date Required',
+        description: 'Please select a date before assigning teams.',
+        variant: 'destructive',
       });
       return;
     }
 
     if (!selectedTimeBlock) {
       toast({
-        title: "Time Block Required",
-        description: "Please select a time block for the teams.",
-        variant: "destructive"
+        title: 'Time Block Required',
+        description: 'Please select a time block for the teams.',
+        variant: 'destructive',
       });
       return;
     }
 
     if (selectedTeamIds.length === 0) {
       toast({
-        title: "No Teams Selected",
-        description: "Please select at least one team to assign.",
-        variant: "destructive"
+        title: 'No Teams Selected',
+        description: 'Please select at least one team to assign.',
+        variant: 'destructive',
       });
       return;
     }
 
     setIsAssigning(true);
-    
+
     try {
       // Create a map of the manually assigned teams
       const assignedTeams: TimeBlockTeamsMap = {};
-      
+
       // Find the selected teams from the team data
       if (teams) {
-        const selectedTeams = teams.filter(team => selectedTeamIds.includes(team.id));
+        const selectedTeams = teams.filter((team) => selectedTeamIds.includes(team.id));
         assignedTeams[selectedTimeBlock] = selectedTeams;
       }
-      
+
       // Call the callback to update parent component state
       onTeamsAssigned(assignedTeams);
-      
+
       toast({
-        title: "Teams Assigned",
-        description: `${selectedTeamIds.length} teams assigned to ${selectedTimeBlock} time block.`
+        title: 'Teams Assigned',
+        description: `${selectedTeamIds.length} teams assigned to ${selectedTimeBlock} time block.`,
       });
-      
+
       // Reset selection after successful assignment
       setSelectedTeamIds([]);
     } catch (error) {
-      console.error("Error assigning teams manually:", error);
+      console.error('Error assigning teams manually:', error);
       toast({
-        title: "Assignment Error",
-        description: "There was an error assigning teams. Please try again.",
-        variant: "destructive"
+        title: 'Assignment Error',
+        description: 'There was an error assigning teams. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsAssigning(false);
@@ -124,30 +131,30 @@ const ManualTeamAssignment: React.FC<ManualTeamAssignmentProps> = ({
               </SelectContent>
             </Select>
           </div>
-          
+
           <div className="flex-none mt-auto">
-            <Button 
-              onClick={handleAssignTeams} 
+            <Button
+              onClick={handleAssignTeams}
               disabled={isAssigning || !selectedTimeBlock || selectedTeamIds.length === 0}
             >
-              {isAssigning ? "Assigning..." : "Assign Teams"}
+              {isAssigning ? 'Assigning...' : 'Assign Teams'}
             </Button>
           </div>
         </div>
-        
+
         {selectedTimeBlock && (
           <div className="border rounded-md p-4">
             <h4 className="font-medium mb-2">Select Teams for {selectedTimeBlock} Block</h4>
             <div className="max-h-60 overflow-y-auto space-y-2">
               {teams && teams.length > 0 ? (
-                teams.map(team => (
+                teams.map((team) => (
                   <div key={team.id} className="flex items-center space-x-2">
                     <Checkbox
                       id={`team-${team.id}`}
                       checked={selectedTeamIds.includes(team.id)}
                       onCheckedChange={() => handleTeamToggle(team.id)}
                     />
-                    <label 
+                    <label
                       htmlFor={`team-${team.id}`}
                       className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                     >

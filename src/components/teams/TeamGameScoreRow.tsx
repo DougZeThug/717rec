@@ -1,10 +1,10 @@
+import { format } from 'date-fns';
+import React from 'react';
 
-import React from "react";
-import { Match } from "@/types";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { TransitionLink } from "@/components/transitions/TransitionLink";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { TransitionLink } from '@/components/transitions/TransitionLink';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
+import { Match } from '@/types';
 
 interface TeamGameScoreRowProps {
   match: Match;
@@ -20,17 +20,21 @@ interface TeamDetails {
   divisionname?: string | null;
 }
 
-export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamId, highlightWinnerLoser }) => {
+export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({
+  match,
+  teamId,
+  highlightWinnerLoser,
+}) => {
   // Identify teams
-  const homeTeam = match.team1Details || {} as TeamDetails;
-  const awayTeam = match.team2Details || {} as TeamDetails;
+  const homeTeam = match.team1Details || ({} as TeamDetails);
+  const awayTeam = match.team2Details || ({} as TeamDetails);
   const homeTeamId = match.team1Id;
   const awayTeamId = match.team2Id;
 
-  const homeName = homeTeam.name || "Unknown Team";
-  const awayName = awayTeam.name || "Unknown Team";
-  const homeLogo = homeTeam.image_url || homeTeam.logo_url || "";
-  const awayLogo = awayTeam.image_url || awayTeam.logo_url || "";
+  const homeName = homeTeam.name || 'Unknown Team';
+  const awayName = awayTeam.name || 'Unknown Team';
+  const homeLogo = homeTeam.image_url || homeTeam.logo_url || '';
+  const awayLogo = awayTeam.image_url || awayTeam.logo_url || '';
 
   // Get game wins from match fields
   const homeGameWins = match.team1_game_wins ?? 0;
@@ -42,7 +46,7 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamI
   // Determine winner/loser for coloring
   let winnerTeamId: string | null = null;
   let loserTeamId: string | null = null;
-  if (typeof homeGameWins === "number" && typeof awayGameWins === "number") {
+  if (typeof homeGameWins === 'number' && typeof awayGameWins === 'number') {
     if (homeGameWins > awayGameWins) {
       winnerTeamId = homeTeamId;
       loserTeamId = awayTeamId;
@@ -56,15 +60,12 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamI
     <div className="flex flex-col w-full py-2">
       {/* Match date display */}
       {matchDate && (
-        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 px-2">
-          {matchDate}
-        </div>
+        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 px-2">{matchDate}</div>
       )}
-      
-      <div className={cn(
-        "flex items-center w-full justify-between gap-x-3",
-        "text-sm md:text-base"
-      )}>
+
+      <div
+        className={cn('flex items-center w-full justify-between gap-x-3', 'text-sm md:text-base')}
+      >
         {/* Home - Left side */}
         <div className="flex items-center min-w-0 gap-x-2 flex-1">
           <TransitionLink to={`/teams/${homeTeamId}`} className="shrink-0">
@@ -76,10 +77,10 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamI
           <TransitionLink to={`/teams/${homeTeamId}`} className="truncate hover:underline">
             <span
               className={cn(
-                "truncate",
-                "font-bebas uppercase tracking-wide",
-                highlightWinnerLoser && winnerTeamId === homeTeamId && "text-green-600 font-medium",
-                highlightWinnerLoser && loserTeamId === homeTeamId && "text-red-500"
+                'truncate',
+                'font-bebas uppercase tracking-wide',
+                highlightWinnerLoser && winnerTeamId === homeTeamId && 'text-green-600 font-medium',
+                highlightWinnerLoser && loserTeamId === homeTeamId && 'text-red-500'
               )}
               title={homeName}
             >
@@ -88,10 +89,12 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamI
           </TransitionLink>
         </div>
         {/* Game score - center */}
-        <div className={cn(
-          "flex items-center justify-center px-2 flex-shrink-0 whitespace-nowrap font-bold text-base md:text-lg min-w-[3ch] text-center",
-          "font-mono"
-        )}>
+        <div
+          className={cn(
+            'flex items-center justify-center px-2 flex-shrink-0 whitespace-nowrap font-bold text-base md:text-lg min-w-[3ch] text-center',
+            'font-mono'
+          )}
+        >
           {homeGameWins} <span className="mx-1">–</span> {awayGameWins}
         </div>
         {/* Away - Right side */}
@@ -99,10 +102,10 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamI
           <TransitionLink to={`/teams/${awayTeamId}`} className="truncate hover:underline">
             <span
               className={cn(
-                "truncate text-right",
-                "font-bebas uppercase tracking-wide",
-                highlightWinnerLoser && winnerTeamId === awayTeamId && "text-green-600 font-medium",
-                highlightWinnerLoser && loserTeamId === awayTeamId && "text-red-500"
+                'truncate text-right',
+                'font-bebas uppercase tracking-wide',
+                highlightWinnerLoser && winnerTeamId === awayTeamId && 'text-green-600 font-medium',
+                highlightWinnerLoser && loserTeamId === awayTeamId && 'text-red-500'
               )}
               title={awayName}
             >

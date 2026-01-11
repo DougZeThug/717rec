@@ -1,8 +1,8 @@
+import { Loader2, Plus, X } from 'lucide-react';
+import React from 'react';
+import { UseFormReturn } from 'react-hook-form';
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Loader2, Plus, X } from "lucide-react";
-import { UseFormReturn } from "react-hook-form";
+import { Button } from '@/components/ui/button';
 
 interface BracketFormActionsProps {
   isSubmitting: boolean;
@@ -15,26 +15,17 @@ export const BracketFormActions: React.FC<BracketFormActionsProps> = ({
   isSubmitting,
   teamsValid = false,
   onCancel,
-  form
+  form,
 }) => {
   const isFormValid = form.formState.isValid && teamsValid;
 
   return (
     <div className="flex justify-end space-x-2 pt-4">
-      <Button
-        type="button"
-        variant="outline"
-        onClick={onCancel}
-        disabled={isSubmitting}
-      >
+      <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
         <X className="w-4 h-4 mr-2" />
         Cancel
       </Button>
-      <Button
-        type="submit"
-        disabled={isSubmitting || !isFormValid}
-        className="min-w-[120px]"
-      >
+      <Button type="submit" disabled={isSubmitting || !isFormValid} className="min-w-[120px]">
         {isSubmitting ? (
           <>
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />

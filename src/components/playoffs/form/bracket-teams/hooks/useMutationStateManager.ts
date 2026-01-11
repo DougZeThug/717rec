@@ -1,6 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
-import { useOptimisticTeamMutations } from './useOptimisticTeamMutations';
+import { useCallback, useEffect, useState } from 'react';
+
 import { useToast } from '@/hooks/use-toast';
+
+import { useOptimisticTeamMutations } from './useOptimisticTeamMutations';
 import { TeamSeedUpdate } from './useTeamSeedMutation';
 
 export interface MutationStateManagerConfig {
@@ -34,14 +36,8 @@ export interface MutationActions {
   disableAutoSave: () => void;
 }
 
-export const useMutationStateManager = (
-  config: MutationStateManagerConfig = {}
-) => {
-  const {
-    autoSaveDelay = 2000,
-    maxRetries = 3,
-    batchThreshold = 5
-  } = config;
+export const useMutationStateManager = (config: MutationStateManagerConfig = {}) => {
+  const { autoSaveDelay = 2000, maxRetries = 3, batchThreshold = 5 } = config;
 
   const { toast } = useToast();
   const optimisticMutations = useOptimisticTeamMutations();
@@ -62,13 +58,17 @@ export const useMutationStateManager = (
   useEffect(() => {
     const hasOptimisticChanges = optimisticMutations.state.pendingUpdates.size > 0;
     const hasPendingChanges = mutationState.pendingChanges.size > 0;
-    
-    setMutationState(prev => ({
+
+    setMutationState((prev) => ({
       ...prev,
       hasUnsavedChanges: hasOptimisticChanges || hasPendingChanges,
       isSaving: optimisticMutations.isLoading,
     }));
-  }, [optimisticMutations.state.pendingUpdates, optimisticMutations.isLoading, mutationState.pendingChanges.size]);
+  }, [
+    optimisticMutations.state.pendingUpdates,
+    optimisticMutations.isLoading,
+    mutationState.pendingChanges.size,
+  ]);
 
   // Auto-save functionality
   const scheduleAutoSave = useCallback(() => {
@@ -86,32 +86,35 @@ export const useMutationStateManager = (
   }, [autoSaveEnabled, mutationState.pendingChanges.size, autoSaveDelay]);
 
   // Add or update a pending change
-  const addPendingChange = useCallback((teamId: string, seed: number | null) => {
-    setMutationState(prev => {
-      const newPendingChanges = new Map(prev.pendingChanges);
-      newPendingChanges.set(teamId, { teamId, seed });
-      
-      return {
-        ...prev,
-        pendingChanges: newPendingChanges,
-        hasUnsavedChanges: true,
-      };
-    });
+  const addPendingChange = useCallback(
+    (teamId: string, seed: number | null) => {
+      setMutationState((prev) => {
+        const newPendingChanges = new Map(prev.pendingChanges);
+        newPendingChanges.set(teamId, { teamId, seed });
 
-    if (autoSaveEnabled) {
-      scheduleAutoSave();
-    }
-  }, [autoSaveEnabled, scheduleAutoSave]);
+        return {
+          ...prev,
+          pendingChanges: newPendingChanges,
+          hasUnsavedChanges: true,
+        };
+      });
+
+      if (autoSaveEnabled) {
+        scheduleAutoSave();
+      }
+    },
+    [autoSaveEnabled, scheduleAutoSave]
+  );
 
   // Save all pending changes
   const saveChanges = useCallback(async () => {
     if (mutationState.pendingChanges.size === 0) return;
 
-    setMutationState(prev => ({ ...prev, isSaving: true }));
+    setMutationState((prev) => ({ ...prev, isSaving: true }));
 
     try {
       const changes = Array.from(mutationState.pendingChanges.values());
-      
+
       if (changes.length >= batchThreshold) {
         // Use batch update for multiple changes
         await new Promise<void>((resolve, reject) => {
@@ -143,7 +146,7 @@ export const useMutationStateManager = (
       }
 
       // Clear pending changes on success
-      setMutationState(prev => ({
+      setMutationState((prev) => ({
         ...prev,
         pendingChanges: new Map(),
         lastSaveTime: new Date(),
@@ -155,9 +158,8 @@ export const useMutationStateManager = (
         title: 'Changes Saved',
         description: `Successfully saved ${changes.length} seed changes`,
       });
-
     } catch (error) {
-      setMutationState(prev => ({
+      setMutationState((prev) => ({
         ...prev,
         isSaving: false,
         retryCount: prev.retryCount + 1,
@@ -167,7 +169,7 @@ export const useMutationStateManager = (
             id: Date.now().toString(),
             message: error instanceof Error ? error.message : 'Save failed',
             timestamp: new Date(),
-          }
+          },
         ],
       }));
 
@@ -180,35 +182,37 @@ export const useMutationStateManager = (
   }, [mutationState.pendingChanges, batchThreshold, optimisticMutations, toast]);
 
   // Save individual change immediately
-  const saveIndividualChange = useCallback(async (teamId: string, seed: number | null) => {
-    try {
-      optimisticMutations.updateSingle({ teamId, seed });
-      
-      // Remove from pending changes if it exists
-      setMutationState(prev => {
-        const newPendingChanges = new Map(prev.pendingChanges);
-        newPendingChanges.delete(teamId);
-        return {
-          ...prev,
-          pendingChanges: newPendingChanges,
-        };
-      });
+  const saveIndividualChange = useCallback(
+    async (teamId: string, seed: number | null) => {
+      try {
+        optimisticMutations.updateSingle({ teamId, seed });
 
-    } catch (error) {
-      setMutationState(prev => ({
-        ...prev,
-        errors: [
-          ...prev.errors,
-          {
-            id: Date.now().toString(),
-            message: error instanceof Error ? error.message : 'Update failed',
-            timestamp: new Date(),
-            teamId,
-          }
-        ],
-      }));
-    }
-  }, [optimisticMutations]);
+        // Remove from pending changes if it exists
+        setMutationState((prev) => {
+          const newPendingChanges = new Map(prev.pendingChanges);
+          newPendingChanges.delete(teamId);
+          return {
+            ...prev,
+            pendingChanges: newPendingChanges,
+          };
+        });
+      } catch (error) {
+        setMutationState((prev) => ({
+          ...prev,
+          errors: [
+            ...prev.errors,
+            {
+              id: Date.now().toString(),
+              message: error instanceof Error ? error.message : 'Update failed',
+              timestamp: new Date(),
+              teamId,
+            },
+          ],
+        }));
+      }
+    },
+    [optimisticMutations]
+  );
 
   // Discard all pending changes
   const discardChanges = useCallback(() => {
@@ -217,7 +221,7 @@ export const useMutationStateManager = (
       setAutoSaveTimeout(null);
     }
 
-    setMutationState(prev => ({
+    setMutationState((prev) => ({
       ...prev,
       pendingChanges: new Map(),
       hasUnsavedChanges: false,
@@ -233,18 +237,21 @@ export const useMutationStateManager = (
   }, [autoSaveTimeout, optimisticMutations, toast]);
 
   // Discard individual change
-  const discardIndividualChange = useCallback((teamId: string) => {
-    setMutationState(prev => {
-      const newPendingChanges = new Map(prev.pendingChanges);
-      newPendingChanges.delete(teamId);
-      return {
-        ...prev,
-        pendingChanges: newPendingChanges,
-      };
-    });
+  const discardIndividualChange = useCallback(
+    (teamId: string) => {
+      setMutationState((prev) => {
+        const newPendingChanges = new Map(prev.pendingChanges);
+        newPendingChanges.delete(teamId);
+        return {
+          ...prev,
+          pendingChanges: newPendingChanges,
+        };
+      });
 
-    optimisticMutations.rollback([teamId]);
-  }, [optimisticMutations]);
+      optimisticMutations.rollback([teamId]);
+    },
+    [optimisticMutations]
+  );
 
   // Retry failed updates
   const retryFailedUpdates = useCallback(async () => {
@@ -262,7 +269,7 @@ export const useMutationStateManager = (
 
   // Clear errors
   const clearErrors = useCallback(() => {
-    setMutationState(prev => ({ ...prev, errors: [] }));
+    setMutationState((prev) => ({ ...prev, errors: [] }));
     optimisticMutations.clearError();
   }, [optimisticMutations]);
 

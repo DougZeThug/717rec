@@ -1,13 +1,14 @@
-import React from "react";
-import { Star } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Star } from 'lucide-react';
+import React from 'react';
+
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const TeamOfTheWeekSkeleton: React.FC = () => {
   return (
     <Card className="relative overflow-hidden border-amber-500/20 bg-gradient-to-br from-amber-500/5 via-background to-orange-500/5">
       <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-transparent to-orange-500/10 opacity-50" />
-      
+
       <CardContent className="relative p-4 md:p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">

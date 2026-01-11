@@ -1,16 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Shuffle, Users, Trash2, Calendar, AlertCircle, Loader2 } from "lucide-react";
-import { DestructiveIconButton } from "@/components/ui/destructive-icon-button";
-import { format, nextThursday } from "date-fns";
-import {
-  useBlindDrawSignups,
-  useDeleteBlindDrawSignup,
-  useClearBlindDrawSignups,
-} from "@/hooks/useBlindDrawSignups";
+import { format, nextThursday } from 'date-fns';
+import { AlertCircle, Calendar, Loader2, Shuffle, Trash2, Users } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,8 +12,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import SignupsListSkeleton from "./SignupsListSkeleton";
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DestructiveIconButton } from '@/components/ui/destructive-icon-button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  useBlindDrawSignups,
+  useClearBlindDrawSignups,
+  useDeleteBlindDrawSignup,
+} from '@/hooks/useBlindDrawSignups';
+
+import SignupsListSkeleton from './SignupsListSkeleton';
 
 interface SignupToDelete {
   id: string;
@@ -35,9 +37,9 @@ const BlindDrawSignupsTab: React.FC = () => {
     const now = new Date();
     // Use getDay() directly: 0=Sunday, 4=Thursday
     if (now.getDay() === 4) {
-      return format(now, "yyyy-MM-dd");
+      return format(now, 'yyyy-MM-dd');
     }
-    return format(nextThursday(now), "yyyy-MM-dd");
+    return format(nextThursday(now), 'yyyy-MM-dd');
   };
 
   const [selectedDate, setSelectedDate] = useState(calculateThursdayDate);
@@ -121,8 +123,8 @@ const BlindDrawSignupsTab: React.FC = () => {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Clear all signups?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This will remove all {signups.length} signups for{" "}
-                      {format(new Date(selectedDate), "MMMM d, yyyy")}. This action cannot be
+                      This will remove all {signups.length} signups for{' '}
+                      {format(new Date(selectedDate), 'MMMM d, yyyy')}. This action cannot be
                       undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
@@ -148,9 +150,15 @@ const BlindDrawSignupsTab: React.FC = () => {
               <table className="w-full">
                 <thead className="bg-muted/50">
                   <tr>
-                    <th className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium w-8">#</th>
-                    <th className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium">Name</th>
-                    <th className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium hidden sm:table-cell">Signed Up</th>
+                    <th className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium w-8">
+                      #
+                    </th>
+                    <th className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium">
+                      Name
+                    </th>
+                    <th className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium hidden sm:table-cell">
+                      Signed Up
+                    </th>
                     <th className="text-right px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium w-12"></th>
                   </tr>
                 </thead>
@@ -161,20 +169,24 @@ const BlindDrawSignupsTab: React.FC = () => {
                         {index + 1}
                       </td>
                       <td className="px-2 sm:px-4 py-2">
-                        <div className="font-medium text-sm">{signup.first_name} {signup.last_initial}.</div>
+                        <div className="font-medium text-sm">
+                          {signup.first_name} {signup.last_initial}.
+                        </div>
                         <div className="text-xs text-muted-foreground sm:hidden">
-                          {format(new Date(signup.created_at), "MMM d, h:mm a")}
+                          {format(new Date(signup.created_at), 'MMM d, h:mm a')}
                         </div>
                       </td>
                       <td className="px-2 sm:px-4 py-2 text-sm text-muted-foreground hidden sm:table-cell">
-                        {format(new Date(signup.created_at), "MMM d, h:mm a")}
+                        {format(new Date(signup.created_at), 'MMM d, h:mm a')}
                       </td>
-                        <td className="px-2 sm:px-4 py-2 text-right">
+                      <td className="px-2 sm:px-4 py-2 text-right">
                         <DestructiveIconButton
-                          onClick={() => setDeletingSignup({
-                            id: signup.id,
-                            name: `${signup.first_name} ${signup.last_initial}.`
-                          })}
+                          onClick={() =>
+                            setDeletingSignup({
+                              id: signup.id,
+                              name: `${signup.first_name} ${signup.last_initial}.`,
+                            })
+                          }
                           disabled={deleteSignup.isPending}
                           title="Remove signup"
                           size="sm"
@@ -189,19 +201,23 @@ const BlindDrawSignupsTab: React.FC = () => {
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <Users className="h-12 w-12 mx-auto mb-2 opacity-30" />
-              <p>No signups yet for {format(new Date(selectedDate), "MMMM d, yyyy")}</p>
+              <p>No signups yet for {format(new Date(selectedDate), 'MMMM d, yyyy')}</p>
             </div>
           )}
         </CardContent>
       </Card>
 
       {/* Individual signup delete confirmation */}
-      <AlertDialog open={!!deletingSignup} onOpenChange={(open) => !open && setDeletingSignup(null)}>
+      <AlertDialog
+        open={!!deletingSignup}
+        onOpenChange={(open) => !open && setDeletingSignup(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Remove Signup</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove <strong>{deletingSignup?.name}</strong> from the signup list? This action cannot be undone.
+              Are you sure you want to remove <strong>{deletingSignup?.name}</strong> from the
+              signup list? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -220,7 +236,7 @@ const BlindDrawSignupsTab: React.FC = () => {
                   Removing...
                 </>
               ) : (
-                "Remove"
+                'Remove'
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

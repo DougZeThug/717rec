@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from '@tanstack/react-query';
+
+import { supabase } from '@/integrations/supabase/client';
 
 export interface BracketsManagerMatchData {
   id: number;
@@ -83,23 +84,27 @@ export const useBracketsManagerMatch = (matchId: number | null) => {
         round_id: matchData.round_id,
         number: matchData.number,
         status: matchData.status,
-        opponent1: opponent1Data ? {
-          id: opponent1Data.id,
-          name: opponent1Data.name,
-          score: matchData.opponent1_score,
-          result: matchData.opponent1_result
-        } : null,
-        opponent2: opponent2Data ? {
-          id: opponent2Data.id,
-          name: opponent2Data.name,
-          score: matchData.opponent2_score,
-          result: matchData.opponent2_result
-        } : null,
-        games: gamesData || []
+        opponent1: opponent1Data
+          ? {
+              id: opponent1Data.id,
+              name: opponent1Data.name,
+              score: matchData.opponent1_score,
+              result: matchData.opponent1_result,
+            }
+          : null,
+        opponent2: opponent2Data
+          ? {
+              id: opponent2Data.id,
+              name: opponent2Data.name,
+              score: matchData.opponent2_score,
+              result: matchData.opponent2_result,
+            }
+          : null,
+        games: gamesData || [],
       };
 
       return result;
     },
-    enabled: !!matchId
+    enabled: !!matchId,
   });
 };

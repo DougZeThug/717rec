@@ -1,10 +1,25 @@
-import React, { useState } from "react";
-import { BarChart3, TrendingUp, TrendingDown, Minus, Trophy, Shield, Users, Star, Target, Zap, Award, ChevronDown, ChevronRight } from "lucide-react";
-import { useTeamSeasonBreakdown } from "@/hooks/useTeamSeasonBreakdown";
-import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SeasonBreakdown } from "@/types/teamAdvancedStats";
-import { cn } from "@/lib/utils";
+import {
+  Award,
+  BarChart3,
+  ChevronDown,
+  ChevronRight,
+  Minus,
+  Shield,
+  Star,
+  Target,
+  TrendingDown,
+  TrendingUp,
+  Trophy,
+  Users,
+  Zap,
+} from 'lucide-react';
+import React, { useState } from 'react';
+
+import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useTeamSeasonBreakdown } from '@/hooks/useTeamSeasonBreakdown';
+import { cn } from '@/lib/utils';
+import { SeasonBreakdown } from '@/types/teamAdvancedStats';
 
 interface TeamAdvancedStatsSectionProps {
   teamId: string;
@@ -12,7 +27,8 @@ interface TeamAdvancedStatsSectionProps {
 
 const getDivisionBadgeColor = (division: string) => {
   const name = division.toLowerCase();
-  if (name.includes('competitive') || name.includes('hidden')) return 'bg-red-500/20 text-red-400 border-red-500/30';
+  if (name.includes('competitive') || name.includes('hidden'))
+    return 'bg-red-500/20 text-red-400 border-red-500/30';
   if (name.includes('intermediate')) return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
   if (name.includes('recreational')) return 'bg-green-500/20 text-green-400 border-green-500/30';
   return 'bg-muted text-muted-foreground';
@@ -33,22 +49,26 @@ const getPowerScoreColor = (score: number | null) => {
   return 'text-red-500';
 };
 
-const SeasonRow = ({ season, isExpanded, onToggle }: { 
-  season: SeasonBreakdown; 
+const SeasonRow = ({
+  season,
+  isExpanded,
+  onToggle,
+}: {
+  season: SeasonBreakdown;
   isExpanded: boolean;
   onToggle: () => void;
 }) => {
-  const hasDivisionRecords = 
+  const hasDivisionRecords =
     season.divisionRecords.competitive.wins + season.divisionRecords.competitive.losses > 0 ||
     season.divisionRecords.intermediate.wins + season.divisionRecords.intermediate.losses > 0 ||
     season.divisionRecords.recreational.wins + season.divisionRecords.recreational.losses > 0;
 
   return (
     <>
-      <tr 
+      <tr
         className={cn(
-          "border-b border-border/50 hover:bg-muted/30 transition-colors cursor-pointer",
-          isExpanded && "bg-muted/20"
+          'border-b border-border/50 hover:bg-muted/30 transition-colors cursor-pointer',
+          isExpanded && 'bg-muted/20'
         )}
         onClick={onToggle}
       >
@@ -56,11 +76,22 @@ const SeasonRow = ({ season, isExpanded, onToggle }: {
         <td className="py-3 px-2 md:px-4">
           <div className="flex items-center gap-2">
             {hasDivisionRecords ? (
-              isExpanded ? <ChevronDown size={14} className="text-muted-foreground" /> : <ChevronRight size={14} className="text-muted-foreground" />
-            ) : <div className="w-[14px]" />}
+              isExpanded ? (
+                <ChevronDown size={14} className="text-muted-foreground" />
+              ) : (
+                <ChevronRight size={14} className="text-muted-foreground" />
+              )
+            ) : (
+              <div className="w-[14px]" />
+            )}
             <div>
               <div className="font-medium text-sm">{season.seasonName}</div>
-              <span className={cn("text-xs px-1.5 py-0.5 rounded border", getDivisionBadgeColor(season.divisionName))}>
+              <span
+                className={cn(
+                  'text-xs px-1.5 py-0.5 rounded border',
+                  getDivisionBadgeColor(season.divisionName)
+                )}
+              >
                 {season.divisionName}
               </span>
             </div>
@@ -72,7 +103,7 @@ const SeasonRow = ({ season, isExpanded, onToggle }: {
           <div className="font-mono text-sm font-medium">
             {season.matchWins}-{season.matchLosses}
           </div>
-          <div className={cn("text-xs font-medium", getWinPctColor(season.winPct))}>
+          <div className={cn('text-xs font-medium', getWinPctColor(season.winPct))}>
             {season.winPct.toFixed(0)}%
           </div>
         </td>
@@ -82,14 +113,16 @@ const SeasonRow = ({ season, isExpanded, onToggle }: {
           <div className="font-mono text-sm">
             {season.gameWins}-{season.gameLosses}
           </div>
-          <div className={cn("text-xs", getWinPctColor(season.gameWinPct))}>
+          <div className={cn('text-xs', getWinPctColor(season.gameWinPct))}>
             {season.gameWinPct.toFixed(0)}%
           </div>
         </td>
 
         {/* Power Score */}
         <td className="py-3 px-2 md:px-4 text-center">
-          <div className={cn("font-mono text-sm font-medium", getPowerScoreColor(season.powerScore))}>
+          <div
+            className={cn('font-mono text-sm font-medium', getPowerScoreColor(season.powerScore))}
+          >
             {season.powerScore !== null ? season.powerScore.toFixed(1) : '-'}
           </div>
         </td>
@@ -100,10 +133,16 @@ const SeasonRow = ({ season, isExpanded, onToggle }: {
             <div className="flex items-center justify-center gap-1">
               {season.isChampion && <Trophy size={14} className="text-yellow-500" />}
               {season.isRunnerUp && <Award size={14} className="text-slate-400" />}
-              <span className={cn(
-                "font-mono text-sm font-medium",
-                season.isChampion ? "text-yellow-500" : season.isTop3 ? "text-emerald-500" : "text-foreground"
-              )}>
+              <span
+                className={cn(
+                  'font-mono text-sm font-medium',
+                  season.isChampion
+                    ? 'text-yellow-500'
+                    : season.isTop3
+                      ? 'text-emerald-500'
+                      : 'text-foreground'
+                )}
+              >
                 #{season.playoffRank}
               </span>
               <span className="text-xs text-muted-foreground">
@@ -132,19 +171,24 @@ const SeasonRow = ({ season, isExpanded, onToggle }: {
         <tr className="bg-muted/10">
           <td colSpan={6} className="py-2 px-4 md:px-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {season.divisionRecords.competitive.wins + season.divisionRecords.competitive.losses > 0 && (
+              {season.divisionRecords.competitive.wins + season.divisionRecords.competitive.losses >
+                0 && (
                 <DivisionRecordCard
                   tier="competitive"
                   record={season.divisionRecords.competitive}
                 />
               )}
-              {season.divisionRecords.intermediate.wins + season.divisionRecords.intermediate.losses > 0 && (
+              {season.divisionRecords.intermediate.wins +
+                season.divisionRecords.intermediate.losses >
+                0 && (
                 <DivisionRecordCard
                   tier="intermediate"
                   record={season.divisionRecords.intermediate}
                 />
               )}
-              {season.divisionRecords.recreational.wins + season.divisionRecords.recreational.losses > 0 && (
+              {season.divisionRecords.recreational.wins +
+                season.divisionRecords.recreational.losses >
+                0 && (
                 <DivisionRecordCard
                   tier="recreational"
                   record={season.divisionRecords.recreational}
@@ -158,10 +202,10 @@ const SeasonRow = ({ season, isExpanded, onToggle }: {
   );
 };
 
-const DivisionRecordCard = ({ 
-  tier, 
-  record 
-}: { 
+const DivisionRecordCard = ({
+  tier,
+  record,
+}: {
   tier: 'competitive' | 'intermediate' | 'recreational';
   record: { wins: number; losses: number; gameWins: number; gameLosses: number };
 }) => {
@@ -187,9 +231,7 @@ const DivisionRecordCard = ({
         <div className="text-xs text-muted-foreground">{labels[tier]}</div>
         <div className="font-mono text-sm font-medium">
           {record.wins}-{record.losses}
-          <span className={cn("ml-2 text-xs", getWinPctColor(winPct))}>
-            ({winPct.toFixed(0)}%)
-          </span>
+          <span className={cn('ml-2 text-xs', getWinPctColor(winPct))}>({winPct.toFixed(0)}%)</span>
         </div>
         <div className="text-xs text-muted-foreground">
           Games: {record.gameWins}-{record.gameLosses}
@@ -204,7 +246,7 @@ const TeamAdvancedStatsSection: React.FC<TeamAdvancedStatsSectionProps> = ({ tea
   const [expandedSeasons, setExpandedSeasons] = useState<Set<string>>(new Set());
 
   const toggleSeason = (seasonId: string) => {
-    setExpandedSeasons(prev => {
+    setExpandedSeasons((prev) => {
       const next = new Set(prev);
       if (next.has(seasonId)) {
         next.delete(seasonId);
@@ -252,17 +294,19 @@ const TeamAdvancedStatsSection: React.FC<TeamAdvancedStatsSectionProps> = ({ tea
     );
   }
 
-  const TrendIcon = advancedStats.powerScoreTrend === 'improving' 
-    ? TrendingUp 
-    : advancedStats.powerScoreTrend === 'declining' 
-      ? TrendingDown 
-      : Minus;
+  const TrendIcon =
+    advancedStats.powerScoreTrend === 'improving'
+      ? TrendingUp
+      : advancedStats.powerScoreTrend === 'declining'
+        ? TrendingDown
+        : Minus;
 
-  const trendColor = advancedStats.powerScoreTrend === 'improving'
-    ? 'text-emerald-500'
-    : advancedStats.powerScoreTrend === 'declining'
-      ? 'text-red-500'
-      : 'text-muted-foreground';
+  const trendColor =
+    advancedStats.powerScoreTrend === 'improving'
+      ? 'text-emerald-500'
+      : advancedStats.powerScoreTrend === 'declining'
+        ? 'text-red-500'
+        : 'text-muted-foreground';
 
   return (
     <CollapsibleSection
@@ -273,8 +317,12 @@ const TeamAdvancedStatsSection: React.FC<TeamAdvancedStatsSectionProps> = ({ tea
     >
       <Tabs defaultValue="seasons" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-4">
-          <TabsTrigger value="seasons" className="text-xs md:text-sm">Season-by-Season</TabsTrigger>
-          <TabsTrigger value="insights" className="text-xs md:text-sm">Insights</TabsTrigger>
+          <TabsTrigger value="seasons" className="text-xs md:text-sm">
+            Season-by-Season
+          </TabsTrigger>
+          <TabsTrigger value="insights" className="text-xs md:text-sm">
+            Insights
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="seasons">
@@ -292,7 +340,12 @@ const TeamAdvancedStatsSection: React.FC<TeamAdvancedStatsSectionProps> = ({ tea
                 <Zap size={14} className="text-amber-500" />
                 <span className="text-xs text-muted-foreground">Avg Power Score</span>
               </div>
-              <div className={cn("font-mono text-lg font-semibold", getPowerScoreColor(advancedStats.averagePowerScore))}>
+              <div
+                className={cn(
+                  'font-mono text-lg font-semibold',
+                  getPowerScoreColor(advancedStats.averagePowerScore)
+                )}
+              >
                 {advancedStats.averagePowerScore.toFixed(1)}
               </div>
             </div>
@@ -301,7 +354,7 @@ const TeamAdvancedStatsSection: React.FC<TeamAdvancedStatsSectionProps> = ({ tea
                 <TrendIcon size={14} className={trendColor} />
                 <span className="text-xs text-muted-foreground">Trend</span>
               </div>
-              <div className={cn("font-medium text-sm capitalize", trendColor)}>
+              <div className={cn('font-medium text-sm capitalize', trendColor)}>
                 {advancedStats.powerScoreTrend}
               </div>
             </div>
@@ -311,7 +364,7 @@ const TeamAdvancedStatsSection: React.FC<TeamAdvancedStatsSectionProps> = ({ tea
                 <span className="text-xs text-muted-foreground">Championships</span>
               </div>
               <div className="font-mono text-lg font-semibold">
-                {advancedStats.seasons.filter(s => s.isChampion).length}
+                {advancedStats.seasons.filter((s) => s.isChampion).length}
               </div>
             </div>
           </div>
@@ -322,11 +375,21 @@ const TeamAdvancedStatsSection: React.FC<TeamAdvancedStatsSectionProps> = ({ tea
               <thead>
                 <tr className="border-b border-border text-left">
                   <th className="py-2 px-2 md:px-4 font-medium text-muted-foreground">Season</th>
-                  <th className="py-2 px-2 md:px-4 font-medium text-muted-foreground text-center">Record</th>
-                  <th className="py-2 px-2 md:px-4 font-medium text-muted-foreground text-center hidden md:table-cell">Games</th>
-                  <th className="py-2 px-2 md:px-4 font-medium text-muted-foreground text-center">Power</th>
-                  <th className="py-2 px-2 md:px-4 font-medium text-muted-foreground text-center hidden lg:table-cell">Playoff</th>
-                  <th className="py-2 px-2 md:px-4 font-medium text-muted-foreground text-center hidden xl:table-cell">Quality</th>
+                  <th className="py-2 px-2 md:px-4 font-medium text-muted-foreground text-center">
+                    Record
+                  </th>
+                  <th className="py-2 px-2 md:px-4 font-medium text-muted-foreground text-center hidden md:table-cell">
+                    Games
+                  </th>
+                  <th className="py-2 px-2 md:px-4 font-medium text-muted-foreground text-center">
+                    Power
+                  </th>
+                  <th className="py-2 px-2 md:px-4 font-medium text-muted-foreground text-center hidden lg:table-cell">
+                    Playoff
+                  </th>
+                  <th className="py-2 px-2 md:px-4 font-medium text-muted-foreground text-center hidden xl:table-cell">
+                    Quality
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -355,8 +418,9 @@ const TeamAdvancedStatsSection: React.FC<TeamAdvancedStatsSectionProps> = ({ tea
                 <div className="text-lg font-semibold">{advancedStats.bestSeason.seasonName}</div>
                 <div className="text-sm text-muted-foreground">
                   {advancedStats.bestSeason.matchWins}-{advancedStats.bestSeason.matchLosses} record
-                  {advancedStats.bestSeason.isChampion && " • Champion"}
-                  {advancedStats.bestSeason.powerScore !== null && ` • ${advancedStats.bestSeason.powerScore.toFixed(1)} Power Score`}
+                  {advancedStats.bestSeason.isChampion && ' • Champion'}
+                  {advancedStats.bestSeason.powerScore !== null &&
+                    ` • ${advancedStats.bestSeason.powerScore.toFixed(1)} Power Score`}
                 </div>
               </div>
             )}
@@ -369,22 +433,27 @@ const TeamAdvancedStatsSection: React.FC<TeamAdvancedStatsSectionProps> = ({ tea
                     <TrendingUp size={16} className="text-emerald-500" />
                     <span className="font-medium text-sm">Strongest Against</span>
                   </div>
-                  <div className="text-lg font-semibold capitalize">{advancedStats.bestDivisionTier}</div>
-                </div>
-              )}
-              {advancedStats.worstDivisionTier && advancedStats.worstDivisionTier !== advancedStats.bestDivisionTier && (
-                <div className="p-4 rounded-lg bg-muted/50 border border-border">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingDown size={16} className="text-red-500" />
-                    <span className="font-medium text-sm">Toughest Matchup</span>
+                  <div className="text-lg font-semibold capitalize">
+                    {advancedStats.bestDivisionTier}
                   </div>
-                  <div className="text-lg font-semibold capitalize">{advancedStats.worstDivisionTier}</div>
                 </div>
               )}
+              {advancedStats.worstDivisionTier &&
+                advancedStats.worstDivisionTier !== advancedStats.bestDivisionTier && (
+                  <div className="p-4 rounded-lg bg-muted/50 border border-border">
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrendingDown size={16} className="text-red-500" />
+                      <span className="font-medium text-sm">Toughest Matchup</span>
+                    </div>
+                    <div className="text-lg font-semibold capitalize">
+                      {advancedStats.worstDivisionTier}
+                    </div>
+                  </div>
+                )}
             </div>
 
             {/* Championship History */}
-            {advancedStats.seasons.some(s => s.isChampion || s.isRunnerUp) && (
+            {advancedStats.seasons.some((s) => s.isChampion || s.isRunnerUp) && (
               <div className="p-4 rounded-lg bg-muted/50 border border-border">
                 <div className="flex items-center gap-2 mb-3">
                   <Award size={16} className="text-yellow-500" />
@@ -392,13 +461,15 @@ const TeamAdvancedStatsSection: React.FC<TeamAdvancedStatsSectionProps> = ({ tea
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {advancedStats.seasons
-                    .filter(s => s.isChampion || s.isRunnerUp)
-                    .map(s => (
-                      <div 
+                    .filter((s) => s.isChampion || s.isRunnerUp)
+                    .map((s) => (
+                      <div
                         key={s.seasonId}
                         className={cn(
-                          "px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-1.5",
-                          s.isChampion ? "bg-yellow-500/20 text-yellow-400" : "bg-slate-500/20 text-slate-400"
+                          'px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-1.5',
+                          s.isChampion
+                            ? 'bg-yellow-500/20 text-yellow-400'
+                            : 'bg-slate-500/20 text-slate-400'
                         )}
                       >
                         {s.isChampion ? <Trophy size={12} /> : <Award size={12} />}

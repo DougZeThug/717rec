@@ -1,9 +1,10 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, Clock, User, Users, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
+import { CheckCircle, Clock, MessageSquare, User, Users, XCircle } from 'lucide-react';
+import React from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScoreSubmission } from '@/hooks/useScoreSubmissions';
 
 interface ScoreSubmissionsListProps {
@@ -12,11 +13,7 @@ interface ScoreSubmissionsListProps {
   onReject: (submissionId: string) => void;
 }
 
-const ScoreSubmissionsList = ({
-  submissions,
-  onApprove,
-  onReject
-}: ScoreSubmissionsListProps) => {
+const ScoreSubmissionsList = ({ submissions, onApprove, onReject }: ScoreSubmissionsListProps) => {
   if (submissions.length === 0) {
     return (
       <Card>
@@ -48,7 +45,7 @@ const ScoreSubmissionsList = ({
                 <span className="text-sm text-muted-foreground">Submitter:</span>
                 <span className="font-medium">{submission.submitter_name}</span>
               </div>
-              
+
               {submission.submitter_team && (
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-muted-foreground" />
@@ -70,9 +67,9 @@ const ScoreSubmissionsList = ({
 
             <div className="flex items-center justify-between pt-4 border-t">
               <span className="text-xs text-muted-foreground">
-                Submitted {format(new Date(submission.created_at), 'MMM d, yyyy \'at\' h:mm a')}
+                Submitted {format(new Date(submission.created_at), "MMM d, yyyy 'at' h:mm a")}
               </span>
-              
+
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -83,10 +80,7 @@ const ScoreSubmissionsList = ({
                   <XCircle className="h-4 w-4 mr-1" />
                   Reject
                 </Button>
-                <Button
-                  size="sm"
-                  onClick={() => onApprove(submission.id)}
-                >
+                <Button size="sm" onClick={() => onApprove(submission.id)}>
                   <CheckCircle className="h-4 w-4 mr-1" />
                   Approve
                 </Button>

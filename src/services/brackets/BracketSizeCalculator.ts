@@ -1,4 +1,3 @@
-
 /**
  * Utility class for calculating bracket sizes and related information
  */
@@ -43,6 +42,6 @@ export class BracketSizeCalculator {
    * @returns Number of play-in matches needed
    */
   static calculatePlayInMatchCount(teamCount: number, bracketSize: number): number {
-    return teamCount - (bracketSize / 2);
+    return teamCount - bracketSize / 2;
   }
 }

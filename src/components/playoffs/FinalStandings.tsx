@@ -1,12 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Trophy, Medal, Award } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Award, Medal, Trophy } from 'lucide-react';
 import { useEffect, useRef } from 'react';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SeasonalIcon } from '@/components/ui/seasonal-icon';
+import { supabase } from '@/integrations/supabase/client';
+import type { TeamStanding } from '@/types/schedule';
 import { log } from '@/utils/logger';
-import { SeasonalIcon } from "@/components/ui/seasonal-icon";
-import type { TeamStanding } from "@/types/schedule";
-import FinalStandingsSkeleton from "./FinalStandingsSkeleton";
+
+import FinalStandingsSkeleton from './FinalStandingsSkeleton';
 interface FinalStandingsProps {
   bracketId: string;
   show?: boolean;
@@ -14,10 +16,10 @@ interface FinalStandingsProps {
 
 export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) {
   const renderCount = useRef(0);
-  
+
   renderCount.current++;
   log(`🏆 FinalStandings render #${renderCount.current}`, { bracketId, show });
-  
+
   // Track component lifecycle
   useEffect(() => {
     log('✅ FinalStandings MOUNTED', { bracketId });
@@ -25,13 +27,14 @@ export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) 
       log('❌ FinalStandings UNMOUNTED', { bracketId });
     };
   }, [bracketId]);
-  
+
   const { data: standings, isLoading } = useQuery({
     queryKey: ['final-standings', bracketId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('playoff_team_records')
-        .select(`
+        .select(
+          `
           placement,
           wins,
           losses,
@@ -42,7 +45,8 @@ export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) 
             name,
             logo_url
           )
-        `)
+        `
+        )
         .eq('bracket_id', bracketId)
         .not('placement', 'is', null)
         .order('placement', { ascending: true });
@@ -50,7 +54,7 @@ export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) 
       if (error) throw error;
       return data;
     },
-    enabled: show && !!bracketId
+    enabled: show && !!bracketId,
   });
 
   if (!show) return null;
@@ -58,9 +62,33 @@ export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) 
   if (!standings || standings.length === 0) return null;
 
   const getPlacementIcon = (placement: number) => {
-    if (placement === 1) return <SeasonalIcon defaultIcon={Trophy} winterGlyph="frozen-trophy" size={20} className="text-yellow-500" />;
-    if (placement === 2) return <SeasonalIcon defaultIcon={Medal} winterGlyph="frozen-trophy" size={20} className="text-gray-400" />;
-    if (placement === 3) return <SeasonalIcon defaultIcon={Award} winterGlyph="frozen-trophy" size={20} className="text-amber-600" />;
+    if (placement === 1)
+      return (
+        <SeasonalIcon
+          defaultIcon={Trophy}
+          winterGlyph="frozen-trophy"
+          size={20}
+          className="text-yellow-500"
+        />
+      );
+    if (placement === 2)
+      return (
+        <SeasonalIcon
+          defaultIcon={Medal}
+          winterGlyph="frozen-trophy"
+          size={20}
+          className="text-gray-400"
+        />
+      );
+    if (placement === 3)
+      return (
+        <SeasonalIcon
+          defaultIcon={Award}
+          winterGlyph="frozen-trophy"
+          size={20}
+          className="text-amber-600"
+        />
+      );
     return null;
   };
 
@@ -80,9 +108,7 @@ export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) 
               className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent"
             >
               <div className="flex items-center gap-3">
-                <div className="w-8 text-center font-bold">
-                  {record.placement}
-                </div>
+                <div className="w-8 text-center font-bold">{record.placement}</div>
                 {getPlacementIcon(record.placement)}
                 <div className="flex items-center gap-2">
                   {record.teams.logo_url && (

@@ -1,4 +1,3 @@
-
 // Core domain types ---------------------------------------------
 export interface PlayoffBracket {
   id: string;
@@ -41,7 +40,7 @@ export interface PlayoffMatch {
   nextWinMatchId?: string | null;
   nextLoseMatchId?: string | null;
   bracket_id: string;
-  status?: "pending" | "in_progress" | "completed";
+  status?: 'pending' | 'in_progress' | 'completed';
 }
 
 export interface PlayoffGame {
@@ -69,7 +68,7 @@ export interface PlayoffTeam {
   players?: string[];
 }
 
-export type PlayoffMatchType = "winners" | "losers" | "finals" | "play-in" | "play-in-2";
+export type PlayoffMatchType = 'winners' | 'losers' | 'finals' | 'play-in' | 'play-in-2';
 export type BracketState = 'pending' | 'in_progress' | 'completed';
 export type BracketFormat = 'Single Elimination' | 'Double Elimination';
 
@@ -135,18 +134,18 @@ export interface PlayoffViewModel {
   isLoading: boolean;
   error: string | null; // Updated to use string for UI consistency
   bracketMatchesByType: BracketMatchesByType | null;
-  
+
   // Teams data
   teams: PlayoffTeam[];
   teamsLoading: boolean;
-  
+
   // Actions
   refetch: () => Promise<void>;
   deleteBracket: (bracketId: string, bracketName: string) => Promise<void>;
   updateMatchResult: (
-    matchId: string, 
-    winnerId: string, 
-    team1Score: number, 
+    matchId: string,
+    winnerId: string,
+    team1Score: number,
     team2Score: number,
     team1GameWins?: number,
     team2GameWins?: number,

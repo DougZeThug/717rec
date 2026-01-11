@@ -1,8 +1,8 @@
+import React from 'react';
 
-import React from "react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { TeamListSkeleton } from "@/components/teams/TeamListSkeleton";
+import { TeamListSkeleton } from '@/components/teams/TeamListSkeleton';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const LoadingStateContainer = () => {
   return (
@@ -19,7 +19,10 @@ const LoadingStateContainer = () => {
           <CardContent className="p-4 pt-1 sm:pt-4">
             <div className="space-y-4">
               {Array.from({ length: 5 }).map((_, idx) => (
-                <div key={idx} className="flex items-center gap-3 p-2 border-b border-gray-100 dark:border-gray-800">
+                <div
+                  key={idx}
+                  className="flex items-center gap-3 p-2 border-b border-gray-100 dark:border-gray-800"
+                >
                   <Skeleton className="h-5 w-5" />
                   <Skeleton className="h-8 w-8 rounded-full" />
                   <Skeleton className="h-4 w-40" />
@@ -36,7 +39,7 @@ const LoadingStateContainer = () => {
             </div>
           </CardContent>
         </Card>
-        
+
         <div className="mb-5">
           <Skeleton className="h-6 w-48 mb-4" />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

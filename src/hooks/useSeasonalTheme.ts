@@ -1,5 +1,5 @@
-import { useTheme } from "next-themes";
-import { useLocation } from "react-router";
+import { useTheme } from 'next-themes';
+import { useLocation } from 'react-router';
 
 /**
  * Base hook for seasonal theme - NO location dependency
@@ -7,19 +7,19 @@ import { useLocation } from "react-router";
  */
 export function useSeasonalThemeBase() {
   const { theme, resolvedTheme } = useTheme();
-  
-  const isWinterTheme = theme === "winter-frozen";
-  
+
+  const isWinterTheme = theme === 'winter-frozen';
+
   // For winter theme, we want dark-style colors
-  const isDark = isWinterTheme || resolvedTheme === "dark";
-  
+  const isDark = isWinterTheme || resolvedTheme === 'dark';
+
   return {
     isWinterTheme,
     isDark,
     // Light winter effects (background, cards, ice pattern) - all pages when winter theme active
     shouldApplyWinterBase: isWinterTheme,
     // Class to add to containers for winter styling
-    winterClass: isWinterTheme ? "winter-frozen" : "",
+    winterClass: isWinterTheme ? 'winter-frozen' : '',
   };
 }
 
@@ -30,9 +30,9 @@ export function useSeasonalThemeBase() {
 export function useSeasonalTheme() {
   const baseTheme = useSeasonalThemeBase();
   const location = useLocation();
-  
-  const isHomepage = location.pathname === "/";
-  
+
+  const isHomepage = location.pathname === '/';
+
   return {
     ...baseTheme,
     isHomepage,

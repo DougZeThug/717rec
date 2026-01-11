@@ -1,8 +1,14 @@
+import React from 'react';
+import { UseFormReturn } from 'react-hook-form';
 
-import React from "react";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UseFormReturn } from "react-hook-form";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface BracketFormFormatProps {
   form: UseFormReturn<any>;
@@ -16,10 +22,7 @@ export const BracketFormFormat: React.FC<BracketFormFormatProps> = ({ form }) =>
       render={({ field }) => (
         <FormItem>
           <FormLabel>Tournament Format</FormLabel>
-          <Select
-            onValueChange={field.onChange}
-            defaultValue={field.value}
-          >
+          <Select onValueChange={field.onChange} defaultValue={field.value}>
             <FormControl>
               <SelectTrigger>
                 <SelectValue placeholder="Select a format" />

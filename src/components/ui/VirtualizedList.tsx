@@ -1,5 +1,6 @@
 import React, { CSSProperties, ReactElement, useMemo } from 'react';
 import { List, RowComponentProps } from 'react-window';
+
 import { cn } from '@/lib/utils';
 
 interface VirtualizedListProps<T> {
@@ -28,10 +29,10 @@ function RowComponent<T>(props: FullRowProps<T>): ReactElement {
 
 /**
  * VirtualizedList - A wrapper around react-window's List component
- * 
+ *
  * Only renders visible items to improve performance for large lists.
  * Use for lists with 50+ items for meaningful performance gains.
- * 
+ *
  * @example
  * <VirtualizedList
  *   items={teams}
@@ -53,10 +54,13 @@ export function VirtualizedList<T>({
   className,
 }: VirtualizedListProps<T>): ReactElement {
   // Memoize rowProps to prevent unnecessary re-renders
-  const rowProps = useMemo(() => ({
-    items,
-    renderRow,
-  }), [items, renderRow]);
+  const rowProps = useMemo(
+    () => ({
+      items,
+      renderRow,
+    }),
+    [items, renderRow]
+  );
 
   // Create a typed row component to satisfy List requirements
   const TypedRowComponent = RowComponent as (props: FullRowProps<T>) => ReactElement;

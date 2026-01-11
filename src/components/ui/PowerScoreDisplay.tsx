@@ -1,15 +1,14 @@
 import React from 'react';
+
 import { cn } from '@/lib/utils';
-import { PowerScoreGauge } from './power-score-gauge';
-import { 
-  normalizePowerScore, 
-  type PowerScoreSource 
-} from '@/utils/powerScore/normalizePowerScore';
-import { 
-  formatPowerScore, 
-  getPowerScoreColor, 
-  getPowerScoreBackgroundColor 
+import {
+  formatPowerScore,
+  getPowerScoreBackgroundColor,
+  getPowerScoreColor,
 } from '@/utils/colors/powerScoreColors';
+import { normalizePowerScore, type PowerScoreSource } from '@/utils/powerScore/normalizePowerScore';
+
+import { PowerScoreGauge } from './power-score-gauge';
 
 export interface PowerScoreDisplayProps {
   /** The raw power score value from the data source */
@@ -28,19 +27,19 @@ export interface PowerScoreDisplayProps {
 
 /**
  * Standardized Power Score Display Component
- * 
+ *
  * Automatically handles scaling based on the data source to prevent
  * scaling bugs. Use this wrapper instead of directly using PowerScoreGauge
  * or manual formatting.
- * 
+ *
  * @example
  * // From v_team_details view (0-100 scale)
  * <PowerScoreDisplay score={team.power_score} source="v_team_details" display="gauge" />
- * 
+ *
  * @example
  * // From team_season_stats table (0-1 scale)
  * <PowerScoreDisplay score={seasonStats.power_score} source="team_season_stats" display="text" />
- * 
+ *
  * @example
  * // From career calculations (0-100 scale)
  * <PowerScoreDisplay score={careerPowerScore} source="calculated" display="badge" />
@@ -55,38 +54,31 @@ export const PowerScoreDisplay: React.FC<PowerScoreDisplayProps> = ({
 }) => {
   // Normalize to 0-100 scale
   const normalizedScore = normalizePowerScore(score, source);
-  
+
   // Handle null/undefined
   if (normalizedScore === null) {
     if (display === 'gauge') {
-      return (
-        <PowerScoreGauge 
-          score={0} 
-          size={size} 
-          showLabel={showLabel}
-          className={className}
-        />
-      );
+      return <PowerScoreGauge score={0} size={size} showLabel={showLabel} className={className} />;
     }
-    return <span className={cn("text-muted-foreground", className)}>N/A</span>;
+    return <span className={cn('text-muted-foreground', className)}>N/A</span>;
   }
-  
+
   switch (display) {
     case 'gauge':
       return (
-        <PowerScoreGauge 
-          score={normalizedScore} 
-          size={size} 
+        <PowerScoreGauge
+          score={normalizedScore}
+          size={size}
           showLabel={showLabel}
           className={className}
         />
       );
-      
+
     case 'badge':
       return (
-        <span 
+        <span
           className={cn(
-            "inline-flex items-center px-2 py-0.5 rounded-full text-sm font-medium",
+            'inline-flex items-center px-2 py-0.5 rounded-full text-sm font-medium',
             getPowerScoreBackgroundColor(normalizedScore),
             getPowerScoreColor(normalizedScore),
             className
@@ -95,24 +87,18 @@ export const PowerScoreDisplay: React.FC<PowerScoreDisplayProps> = ({
           {formatPowerScore(normalizedScore)}
         </span>
       );
-      
+
     case 'compact':
       return (
-        <span className={cn("font-mono text-sm", className)}>
+        <span className={cn('font-mono text-sm', className)}>
           {formatPowerScore(normalizedScore)}
         </span>
       );
-      
+
     case 'text':
     default:
       return (
-        <span 
-          className={cn(
-            "font-semibold",
-            getPowerScoreColor(normalizedScore),
-            className
-          )}
-        >
+        <span className={cn('font-semibold', getPowerScoreColor(normalizedScore), className)}>
           {formatPowerScore(normalizedScore)}
         </span>
       );

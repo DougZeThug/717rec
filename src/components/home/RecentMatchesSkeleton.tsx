@@ -1,7 +1,8 @@
-import React from "react";
-import { Card } from "@/components/ui/card";
-import { ShimmerSkeleton, AvatarSkeleton } from "@/components/ui/shimmer-skeleton";
-import { AutoStagger } from "@/components/ui/staggered-content";
+import React from 'react';
+
+import { Card } from '@/components/ui/card';
+import { AvatarSkeleton, ShimmerSkeleton } from '@/components/ui/shimmer-skeleton';
+import { AutoStagger } from '@/components/ui/staggered-content';
 
 const MatchCardSkeleton = () => {
   return (
@@ -19,7 +20,7 @@ const MatchCardSkeleton = () => {
             <AvatarSkeleton size="md" />
           </div>
         </div>
-        
+
         {/* Match Info */}
         <div className="flex justify-between text-sm mt-4">
           <div className="space-y-2">
@@ -39,7 +40,7 @@ const MatchCardSkeleton = () => {
 const RecentMatchesSkeleton: React.FC = () => {
   return (
     <section id="recent-matches-skeleton" className="mb-12">
-      <AutoStagger 
+      <AutoStagger
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         staggerDelay={0.08}
       >

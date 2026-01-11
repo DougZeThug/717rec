@@ -1,8 +1,8 @@
+import React from 'react';
+import { UseFormReturn } from 'react-hook-form';
 
-import React from "react";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { UseFormReturn } from "react-hook-form";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 
 interface BracketFormTitleProps {
   form: UseFormReturn<any>;

@@ -1,7 +1,8 @@
-import React from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { ShimmerSkeleton, AvatarSkeleton } from "@/components/ui/shimmer-skeleton";
-import { Trophy } from "lucide-react";
+import { Trophy } from 'lucide-react';
+import React from 'react';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AvatarSkeleton, ShimmerSkeleton } from '@/components/ui/shimmer-skeleton';
 
 /**
  * Skeleton loader for FinalStandings component

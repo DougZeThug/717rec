@@ -1,7 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { HeroCard, HeroCardFormData } from "@/types/heroCard";
-import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { HeroCard, HeroCardFormData } from '@/types/heroCard';
 
 // Hook for fetching visible hero cards (homepage)
 export const useHeroCards = () => {
@@ -13,10 +14,10 @@ export const useHeroCards = () => {
         .select('*')
         .eq('is_visible', true)
         .order('sort_order', { ascending: true });
-      
+
       if (error) throw error;
       return data as HeroCard[];
-    }
+    },
   });
 };
 
@@ -29,10 +30,10 @@ export const useAllHeroCards = () => {
         .from('hero_cards')
         .select('*')
         .order('sort_order', { ascending: true });
-      
+
       if (error) throw error;
       return data as HeroCard[];
-    }
+    },
   });
 };
 
@@ -42,16 +43,12 @@ export const useHeroCard = (id: string | null) => {
     queryKey: ['hero-cards', id],
     queryFn: async () => {
       if (!id) return null;
-      const { data, error } = await supabase
-        .from('hero_cards')
-        .select('*')
-        .eq('id', id)
-        .single();
-      
+      const { data, error } = await supabase.from('hero_cards').select('*').eq('id', id).single();
+
       if (error) throw error;
       return data as HeroCard;
     },
-    enabled: !!id
+    enabled: !!id,
   });
 };
 
@@ -67,7 +64,7 @@ export const useHeroCardMutations = () => {
         .insert([formData])
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -84,7 +81,7 @@ export const useHeroCardMutations = () => {
         description: `Failed to create hero card: ${error.message}`,
         variant: 'destructive',
       });
-    }
+    },
   });
 
   const updateMutation = useMutation({
@@ -95,7 +92,7 @@ export const useHeroCardMutations = () => {
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -112,16 +109,13 @@ export const useHeroCardMutations = () => {
         description: `Failed to update hero card: ${error.message}`,
         variant: 'destructive',
       });
-    }
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('hero_cards')
-        .delete()
-        .eq('id', id);
-      
+      const { error } = await supabase.from('hero_cards').delete().eq('id', id);
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -137,7 +131,7 @@ export const useHeroCardMutations = () => {
         description: `Failed to delete hero card: ${error.message}`,
         variant: 'destructive',
       });
-    }
+    },
   });
 
   const toggleVisibilityMutation = useMutation({
@@ -146,7 +140,7 @@ export const useHeroCardMutations = () => {
         .from('hero_cards')
         .update({ is_visible, updated_at: new Date().toISOString() })
         .eq('id', id);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -162,7 +156,7 @@ export const useHeroCardMutations = () => {
         description: `Failed to update visibility: ${error.message}`,
         variant: 'destructive',
       });
-    }
+    },
   });
 
   return {
@@ -172,6 +166,6 @@ export const useHeroCardMutations = () => {
     toggleVisibility: toggleVisibilityMutation.mutateAsync,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
-    isDeleting: deleteMutation.isPending
+    isDeleting: deleteMutation.isPending,
   };
 };

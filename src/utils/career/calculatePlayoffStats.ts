@@ -1,4 +1,3 @@
-
 import { PlayoffMatchData, PlayoffStatsResult } from './types';
 
 interface PlayoffStatsInput {
@@ -14,7 +13,7 @@ interface PlayoffStatsInput {
 export const calculatePlayoffStats = ({
   playoffMatches,
   bracketDivisionWeights,
-  teamId
+  teamId,
 }: PlayoffStatsInput): PlayoffStatsResult => {
   let career_playoff_wins = 0;
   let career_playoff_losses = 0;
@@ -24,14 +23,14 @@ export const calculatePlayoffStats = ({
     return {
       career_playoff_wins,
       career_playoff_losses,
-      competitive_playoff_wins
+      competitive_playoff_wins,
     };
   }
 
   for (const match of playoffMatches) {
     const bracketDivisionWeight = bracketDivisionWeights[match.bracket_id || ''] || 0.85;
     const isCompetitiveDivision = bracketDivisionWeight >= 0.89;
-    
+
     if (match.winner_id === teamId) {
       career_playoff_wins++;
       if (isCompetitiveDivision) {
@@ -45,6 +44,6 @@ export const calculatePlayoffStats = ({
   return {
     career_playoff_wins,
     career_playoff_losses,
-    competitive_playoff_wins
+    competitive_playoff_wins,
   };
 };

@@ -1,7 +1,7 @@
-
 import React from 'react';
 import { Link, LinkProps, useNavigate } from 'react-router';
-import { cn } from "@/lib/utils";
+
+import { cn } from '@/lib/utils';
 
 export interface RouterLinkProps extends Omit<LinkProps, 'onClick'> {
   onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
@@ -26,12 +26,7 @@ export const RouterLink: React.FC<RouterLinkProps> = ({
   };
 
   return (
-    <Link
-      to={to}
-      className={cn(className)}
-      onClick={handleClick}
-      {...rest}
-    >
+    <Link to={to} className={cn(className)} onClick={handleClick} {...rest}>
       {children}
     </Link>
   );

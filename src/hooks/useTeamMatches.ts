@@ -1,17 +1,18 @@
+import { useQuery } from '@tanstack/react-query';
 
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Match } from "@/types";
+import { supabase } from '@/integrations/supabase/client';
+import { Match } from '@/types';
 
 export const useTeamMatches = (teamId: string | undefined) => {
   const matchesQuery = useQuery({
-    queryKey: ["team-matches", teamId],
+    queryKey: ['team-matches', teamId],
     queryFn: async () => {
       if (!teamId) return { upcomingMatches: [], pastMatches: [] };
 
       const { data, error } = await supabase
         .from('matches')
-        .select(`
+        .select(
+          `
           *,
           team1:v_team_details!team1_id(
             team_id,
@@ -27,16 +28,17 @@ export const useTeamMatches = (teamId: string | undefined) => {
             logo_url,
             divisionname
           )
-        `)
+        `
+        )
         .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
         .order('date');
 
       if (error) throw error;
 
       const matchData = data || [];
-      
+
       // Map database rows to Match interface with camelCase properties
-      const mappedMatches = matchData.map(row => ({
+      const mappedMatches = matchData.map((row) => ({
         id: row.id,
         team1Id: row.team1_id,
         team2Id: row.team2_id,
@@ -58,12 +60,12 @@ export const useTeamMatches = (teamId: string | undefined) => {
         team1_game_wins: row.team1_game_wins,
         team2_game_wins: row.team2_game_wins,
         team1Details: row.team1 ? (Array.isArray(row.team1) ? row.team1[0] : row.team1) : null,
-        team2Details: row.team2 ? (Array.isArray(row.team2) ? row.team2[0] : row.team2) : null
+        team2Details: row.team2 ? (Array.isArray(row.team2) ? row.team2[0] : row.team2) : null,
       })) as Match[];
-      
+
       return {
-        upcomingMatches: mappedMatches.filter(m => !m.iscompleted),
-        pastMatches: mappedMatches.filter(m => m.iscompleted),
+        upcomingMatches: mappedMatches.filter((m) => !m.iscompleted),
+        pastMatches: mappedMatches.filter((m) => m.iscompleted),
       };
     },
     enabled: !!teamId,

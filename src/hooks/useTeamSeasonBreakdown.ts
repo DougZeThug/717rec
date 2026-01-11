@@ -1,8 +1,15 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { SeasonBreakdown, TeamAdvancedStats, DivisionSeasonRecord } from "@/types/teamAdvancedStats";
+import { useQuery } from '@tanstack/react-query';
 
-const categorizeDivision = (divisionName: string | null): 'competitive' | 'intermediate' | 'recreational' | null => {
+import { supabase } from '@/integrations/supabase/client';
+import {
+  DivisionSeasonRecord,
+  SeasonBreakdown,
+  TeamAdvancedStats,
+} from '@/types/teamAdvancedStats';
+
+const categorizeDivision = (
+  divisionName: string | null
+): 'competitive' | 'intermediate' | 'recreational' | null => {
   if (!divisionName) return null;
   const name = divisionName.toLowerCase();
   if (name.includes('competitive') || name.includes('hidden')) return 'competitive';
@@ -22,7 +29,8 @@ const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedSta
   // Get season stats
   const { data: seasonStats, error: seasonError } = await supabase
     .from('team_season_stats')
-    .select(`
+    .select(
+      `
       season_id,
       match_wins,
       match_losses,
@@ -35,7 +43,8 @@ const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedSta
       playoff_rank,
       division_name,
       seasons!inner(id, name, start_date)
-    `)
+    `
+    )
     .eq('team_id', teamId)
     .order('seasons(start_date)', { ascending: false });
 
@@ -45,14 +54,14 @@ const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedSta
   }
 
   if (!seasonStats || seasonStats.length === 0) {
-    return { 
-      seasons: [], 
-      bestSeason: null, 
-      worstSeason: null, 
+    return {
+      seasons: [],
+      bestSeason: null,
+      worstSeason: null,
       averagePowerScore: 0,
       powerScoreTrend: 'stable',
       bestDivisionTier: null,
-      worstDivisionTier: null
+      worstDivisionTier: null,
     };
   }
 
@@ -73,7 +82,8 @@ const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedSta
   // Get archived matches for sweep and close match calculations
   const { data: archivedMatches } = await supabase
     .from('matches_archive')
-    .select(`
+    .select(
+      `
       winner_id,
       loser_id,
       team1_game_wins,
@@ -81,14 +91,16 @@ const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedSta
       team1_id,
       team2_id,
       season_id
-    `)
+    `
+    )
     .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
     .eq('iscompleted', true);
 
   // Get playoff matches with bracket info
   const { data: playoffMatchesRaw } = await supabase
     .from('playoff_matches')
-    .select(`
+    .select(
+      `
       winner_id,
       loser_id,
       team1_score,
@@ -96,34 +108,37 @@ const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedSta
       team1_id,
       team2_id,
       bracket_id
-    `)
+    `
+    )
     .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
     .not('winner_id', 'is', null);
 
   // Get bracket info separately to avoid type depth issues
-  const bracketIds = [...new Set((playoffMatchesRaw || []).map(m => m.bracket_id).filter(Boolean))];
-  
-  let bracketInfoMap: Record<string, { season_id: string; division_weight: number }> = {};
+  const bracketIds = [
+    ...new Set((playoffMatchesRaw || []).map((m) => m.bracket_id).filter(Boolean)),
+  ];
+
+  const bracketInfoMap: Record<string, { season_id: string; division_weight: number }> = {};
   if (bracketIds.length > 0) {
     const { data: brackets } = await supabase
       .from('brackets')
       .select('id, season_id, divisions(division_weight)')
       .in('id', bracketIds);
-    
+
     if (brackets) {
       for (const b of brackets) {
         bracketInfoMap[b.id] = {
           season_id: b.season_id || '',
-          division_weight: (b.divisions as any)?.division_weight || 0.85
+          division_weight: (b.divisions as any)?.division_weight || 0.85,
         };
       }
     }
   }
 
   // Enrich playoff matches with bracket info
-  const playoffMatches = (playoffMatchesRaw || []).map(m => ({
+  const playoffMatches = (playoffMatchesRaw || []).map((m) => ({
     ...m,
-    bracketInfo: m.bracket_id ? bracketInfoMap[m.bracket_id] : null
+    bracketInfo: m.bracket_id ? bracketInfoMap[m.bracket_id] : null,
   }));
 
   // Group matches by season
@@ -150,7 +165,7 @@ const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedSta
   }
 
   // Build season breakdowns
-  const seasons: SeasonBreakdown[] = seasonStats.map(stat => {
+  const seasons: SeasonBreakdown[] = seasonStats.map((stat) => {
     const seasonId = stat.season_id;
     const seasonMatches = matchesBySeason.get(seasonId) || [];
     const seasonPlayoffMatches = playoffMatchesBySeason.get(seasonId) || [];
@@ -169,8 +184,8 @@ const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedSta
     // Process regular season matches
     for (const match of seasonMatches) {
       const isTeam1 = match.team1_id === teamId;
-      const teamGameWins = isTeam1 ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0);
-      const opponentGameWins = isTeam1 ? (match.team2_game_wins || 0) : (match.team1_game_wins || 0);
+      const teamGameWins = isTeam1 ? match.team1_game_wins || 0 : match.team2_game_wins || 0;
+      const opponentGameWins = isTeam1 ? match.team2_game_wins || 0 : match.team1_game_wins || 0;
       const isWinner = match.winner_id === teamId;
 
       // Sweep/close match detection
@@ -211,8 +226,8 @@ const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedSta
 
     for (const match of seasonPlayoffMatches) {
       const isTeam1 = match.team1_id === teamId;
-      const teamScore = isTeam1 ? (match.team1_score || 0) : (match.team2_score || 0);
-      const opponentScore = isTeam1 ? (match.team2_score || 0) : (match.team1_score || 0);
+      const teamScore = isTeam1 ? match.team1_score || 0 : match.team2_score || 0;
+      const opponentScore = isTeam1 ? match.team2_score || 0 : match.team1_score || 0;
       const isWinner = match.winner_id === teamId;
 
       if (isWinner) {
@@ -233,7 +248,7 @@ const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedSta
       const bracketWeight = match.bracketInfo?.division_weight || 0.85;
       let tier: 'competitive' | 'intermediate' | 'recreational';
       if (bracketWeight >= 0.89) tier = 'competitive';
-      else if (bracketWeight >= 0.40) tier = 'intermediate';
+      else if (bracketWeight >= 0.4) tier = 'intermediate';
       else tier = 'recreational';
 
       if (isWinner) {
@@ -249,7 +264,7 @@ const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedSta
 
     const totalMatches = (stat.match_wins || 0) + (stat.match_losses || 0);
     const winPct = totalMatches > 0 ? ((stat.match_wins || 0) / totalMatches) * 100 : 0;
-    
+
     const totalGames = (stat.game_wins || 0) + (stat.game_losses || 0);
     const gameWinPct = totalGames > 0 ? ((stat.game_wins || 0) / totalGames) * 100 : 0;
 
@@ -274,7 +289,7 @@ const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedSta
       playoffRank: stat.playoff_rank,
       isChampion: stat.champion || false,
       isRunnerUp: stat.runner_up || false,
-      isTop3: (stat.playoff_rank !== null && stat.playoff_rank <= 3),
+      isTop3: stat.playoff_rank !== null && stat.playoff_rank <= 3,
       sweeps,
       sweepRate,
       closeWins,
@@ -285,25 +300,37 @@ const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedSta
   });
 
   // Calculate aggregated stats
-  const seasonsWithPowerScore = seasons.filter(s => s.powerScore !== null);
-  const averagePowerScore = seasonsWithPowerScore.length > 0
-    ? seasonsWithPowerScore.reduce((sum, s) => sum + (s.powerScore || 0), 0) / seasonsWithPowerScore.length
-    : 0;
+  const seasonsWithPowerScore = seasons.filter((s) => s.powerScore !== null);
+  const averagePowerScore =
+    seasonsWithPowerScore.length > 0
+      ? seasonsWithPowerScore.reduce((sum, s) => sum + (s.powerScore || 0), 0) /
+        seasonsWithPowerScore.length
+      : 0;
 
   // Find best/worst season by power score
-  const bestSeason = seasonsWithPowerScore.length > 0
-    ? seasonsWithPowerScore.reduce((best, s) => (s.powerScore || 0) > (best.powerScore || 0) ? s : best)
-    : null;
-  const worstSeason = seasonsWithPowerScore.length > 0
-    ? seasonsWithPowerScore.reduce((worst, s) => (s.powerScore || 0) < (worst.powerScore || 0) ? s : worst)
-    : null;
+  const bestSeason =
+    seasonsWithPowerScore.length > 0
+      ? seasonsWithPowerScore.reduce((best, s) =>
+          (s.powerScore || 0) > (best.powerScore || 0) ? s : best
+        )
+      : null;
+  const worstSeason =
+    seasonsWithPowerScore.length > 0
+      ? seasonsWithPowerScore.reduce((worst, s) =>
+          (s.powerScore || 0) < (worst.powerScore || 0) ? s : worst
+        )
+      : null;
 
   // Calculate power score trend (compare first half to second half of seasons)
   let powerScoreTrend: 'improving' | 'declining' | 'stable' = 'stable';
   if (seasonsWithPowerScore.length >= 2) {
     const midpoint = Math.floor(seasonsWithPowerScore.length / 2);
-    const recentAvg = seasonsWithPowerScore.slice(0, midpoint).reduce((sum, s) => sum + (s.powerScore || 0), 0) / midpoint;
-    const olderAvg = seasonsWithPowerScore.slice(midpoint).reduce((sum, s) => sum + (s.powerScore || 0), 0) / (seasonsWithPowerScore.length - midpoint);
+    const recentAvg =
+      seasonsWithPowerScore.slice(0, midpoint).reduce((sum, s) => sum + (s.powerScore || 0), 0) /
+      midpoint;
+    const olderAvg =
+      seasonsWithPowerScore.slice(midpoint).reduce((sum, s) => sum + (s.powerScore || 0), 0) /
+      (seasonsWithPowerScore.length - midpoint);
     const diff = recentAvg - olderAvg;
     if (diff > 3) powerScoreTrend = 'improving';
     else if (diff < -3) powerScoreTrend = 'declining';
@@ -329,16 +356,16 @@ const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedSta
   };
 
   const tiers = ['competitive', 'intermediate', 'recreational'] as const;
-  const tiersWithGames = tiers.filter(t => divisionTotals[t].wins + divisionTotals[t].losses > 0);
-  
+  const tiersWithGames = tiers.filter((t) => divisionTotals[t].wins + divisionTotals[t].losses > 0);
+
   let bestDivisionTier: 'competitive' | 'intermediate' | 'recreational' | null = null;
   let worstDivisionTier: 'competitive' | 'intermediate' | 'recreational' | null = null;
 
   if (tiersWithGames.length > 0) {
-    bestDivisionTier = tiersWithGames.reduce((best, tier) => 
+    bestDivisionTier = tiersWithGames.reduce((best, tier) =>
       getWinRate(divisionTotals[tier]) > getWinRate(divisionTotals[best]) ? tier : best
     );
-    worstDivisionTier = tiersWithGames.reduce((worst, tier) => 
+    worstDivisionTier = tiersWithGames.reduce((worst, tier) =>
       getWinRate(divisionTotals[tier]) < getWinRate(divisionTotals[worst]) ? tier : worst
     );
   }
@@ -355,7 +382,11 @@ const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedSta
 };
 
 export const useTeamSeasonBreakdown = (teamId: string | undefined) => {
-  const { data: advancedStats, isLoading, error } = useQuery({
+  const {
+    data: advancedStats,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['team-season-breakdown', teamId],
     queryFn: () => fetchTeamSeasonBreakdown(teamId!),
     enabled: !!teamId,

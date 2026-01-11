@@ -1,11 +1,11 @@
+import { AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import React from 'react';
 
-import React from "react";
-import { TeamPairing } from "@/types/autoSchedule";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { AlertTriangle, Info, CheckCircle } from "lucide-react";
-import TeamLogo from "@/components/ui/team/TeamLogo";
-import { TIME_BLOCKS } from "@/utils/autoSchedule/constants";
-import { useSeasonalThemeBase } from "@/hooks/useSeasonalTheme";
+import TeamLogo from '@/components/ui/team/TeamLogo';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
+import { TeamPairing } from '@/types/autoSchedule';
+import { TIME_BLOCKS } from '@/utils/autoSchedule/constants';
 
 interface MatchPairingItemProps {
   pairing: TeamPairing;
@@ -14,19 +14,18 @@ interface MatchPairingItemProps {
   isDualMatchMode?: boolean;
 }
 
-export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({ 
-  pairing, 
+export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
+  pairing,
   index,
   blockName,
-  isDualMatchMode
+  isDualMatchMode,
 }) => {
   const { isWinterTheme } = useSeasonalThemeBase();
-  
+
   // Determine UI state based on compatibility score and match history
   const isWarning = pairing.compatibilityScore < 5 || pairing.hasPlayedBefore;
-  const timeslot = index % 2 === 0 
-    ? TIME_BLOCKS[blockName]?.main 
-    : TIME_BLOCKS[blockName]?.secondary;
+  const timeslot =
+    index % 2 === 0 ? TIME_BLOCKS[blockName]?.main : TIME_BLOCKS[blockName]?.secondary;
 
   const getCardClasses = () => {
     if (isWinterTheme) {
@@ -34,8 +33,8 @@ export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
         ? 'border-amber-500/40 bg-amber-900/30'
         : 'border-[hsl(199,60%,40%,0.3)] bg-[hsl(222,30%,15%)]';
     }
-    return isWarning 
-      ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20' 
+    return isWarning
+      ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20'
       : 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/10';
   };
 
@@ -54,20 +53,22 @@ export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
                 ) : (
                   <CheckCircle className="h-4 w-4 text-green-500" />
                 )}
-                <span className={`text-xs px-2 py-1 rounded-full ${
-                  isWinterTheme ? 'bg-[hsl(222,30%,20%)]' : 'bg-gray-100 dark:bg-gray-800'
-                }`}>
+                <span
+                  className={`text-xs px-2 py-1 rounded-full ${
+                    isWinterTheme ? 'bg-[hsl(222,30%,20%)]' : 'bg-gray-100 dark:bg-gray-800'
+                  }`}
+                >
                   Score: {pairing.compatibilityScore.toFixed(1)}/10
                 </span>
               </div>
             </TooltipTrigger>
             <TooltipContent>
               <p>
-                {pairing.hasPlayedBefore 
-                  ? "These teams have played against each other before" 
-                  : pairing.compatibilityScore < 5 
-                    ? "These teams may not be evenly matched" 
-                    : "Good match pairing"}
+                {pairing.hasPlayedBefore
+                  ? 'These teams have played against each other before'
+                  : pairing.compatibilityScore < 5
+                    ? 'These teams may not be evenly matched'
+                    : 'Good match pairing'}
               </p>
             </TooltipContent>
           </Tooltip>
@@ -77,10 +78,10 @@ export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
       <div className="grid grid-cols-[1fr,auto,1fr] gap-2 items-center min-w-0">
         {/* Team 1 */}
         <div className="flex items-center gap-2 min-w-0 overflow-hidden">
-          <TeamLogo 
-            imageUrl={pairing.team1.imageUrl || pairing.team1.logoUrl} 
-            teamName={pairing.team1.name} 
-            className="h-6 w-6 flex-shrink-0" 
+          <TeamLogo
+            imageUrl={pairing.team1.imageUrl || pairing.team1.logoUrl}
+            teamName={pairing.team1.name}
+            className="h-6 w-6 flex-shrink-0"
           />
           <span className="text-sm truncate font-medium">{pairing.team1.name}</span>
         </div>
@@ -90,10 +91,10 @@ export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
         {/* Team 2 */}
         <div className="flex items-center gap-2 justify-end min-w-0 overflow-hidden">
           <span className="text-sm truncate font-medium">{pairing.team2.name}</span>
-          <TeamLogo 
-            imageUrl={pairing.team2.imageUrl || pairing.team2.logoUrl} 
-            teamName={pairing.team2.name} 
-            className="h-6 w-6 flex-shrink-0" 
+          <TeamLogo
+            imageUrl={pairing.team2.imageUrl || pairing.team2.logoUrl}
+            teamName={pairing.team2.name}
+            className="h-6 w-6 flex-shrink-0"
           />
         </div>
       </div>
@@ -103,9 +104,11 @@ export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
           {pairing.team1.wins}-{pairing.team1.losses}
         </div>
         <div className="text-center">
-          {isDualMatchMode && blockName === 'Early' ? TIME_BLOCKS[blockName]?.main : 
-           isDualMatchMode && blockName === 'Late' ? TIME_BLOCKS[blockName]?.secondary : 
-           timeslot}
+          {isDualMatchMode && blockName === 'Early'
+            ? TIME_BLOCKS[blockName]?.main
+            : isDualMatchMode && blockName === 'Late'
+              ? TIME_BLOCKS[blockName]?.secondary
+              : timeslot}
         </div>
         <div>
           {pairing.team2.wins}-{pairing.team2.losses}

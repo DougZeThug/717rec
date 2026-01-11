@@ -1,9 +1,9 @@
+import { formatDistanceToNow } from 'date-fns';
+import { useTheme } from 'next-themes';
+import React from 'react';
 
-import React from "react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
-import { formatDistanceToNow } from "date-fns";
-import { useTheme } from "next-themes";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 interface MessageContentProps {
   content: string;
@@ -11,14 +11,10 @@ interface MessageContentProps {
   updatedAt?: string;
 }
 
-const MessageContent: React.FC<MessageContentProps> = ({ 
-  content, 
-  isEdited,
-  updatedAt
-}) => {
+const MessageContent: React.FC<MessageContentProps> = ({ content, isEdited, updatedAt }) => {
   const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-  
+  const isDark = resolvedTheme === 'dark';
+
   const formattedText = content.split('\n').map((line, i) => (
     <React.Fragment key={i}>
       {line}
@@ -29,15 +25,17 @@ const MessageContent: React.FC<MessageContentProps> = ({
   return (
     <div className="text-sm mt-1">
       <p className="whitespace-pre-wrap break-words">{formattedText}</p>
-      
+
       {isEdited && updatedAt && (
         <TooltipProvider>
           <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
-              <span className={cn(
-                "text-xs inline-block mt-1 cursor-default",
-                isDark ? "text-gray-400" : "text-muted-foreground"
-              )}>
+              <span
+                className={cn(
+                  'text-xs inline-block mt-1 cursor-default',
+                  isDark ? 'text-gray-400' : 'text-muted-foreground'
+                )}
+              >
                 (edited)
               </span>
             </TooltipTrigger>

@@ -4,23 +4,23 @@ import { errorLog } from '@/utils/logger';
  * Parse a time string into hours and minutes
  * Handles both 12-hour and 24-hour formats
  */
-export const parseTimeString = (timeString: string): { hours: number, minutes: number } => {
+export const parseTimeString = (timeString: string): { hours: number; minutes: number } => {
   let hours = 0;
   let minutes = 0;
-  
+
   if (!timeString) {
     return { hours, minutes };
   }
-  
+
   try {
     if (timeString.includes('PM') || timeString.includes('AM')) {
       // 12-hour format like "6:30 PM"
       const [time, period] = timeString.split(' ');
       const [hourStr, minuteStr] = time.split(':');
-      
+
       hours = parseInt(hourStr);
       minutes = parseInt(minuteStr);
-      
+
       // Convert to 24-hour format
       if (period === 'PM' && hours < 12) {
         hours += 12;
@@ -33,7 +33,7 @@ export const parseTimeString = (timeString: string): { hours: number, minutes: n
       hours = parseInt(hourStr);
       minutes = parseInt(minuteStr);
     }
-    
+
     return { hours, minutes };
   } catch (error) {
     errorLog('Error parsing time string', error);

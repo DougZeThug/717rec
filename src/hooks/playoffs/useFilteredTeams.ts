@@ -1,12 +1,9 @@
+import { useMemo } from 'react';
 
-import { useMemo } from "react";
-import type { Team } from "@/types";
-import { errorLog } from "@/utils/logger";
+import type { Team } from '@/types';
+import { errorLog } from '@/utils/logger';
 
-export const useFilteredTeams = (
-  allTeams: Team[],
-  divisionFilter: string | null,
-) => {
+export const useFilteredTeams = (allTeams: Team[], divisionFilter: string | null) => {
   return useMemo(() => {
     // Handle empty or null division filter
     if (!divisionFilter || !allTeams || !Array.isArray(allTeams)) {
@@ -33,7 +30,7 @@ export const useFilteredTeams = (
 
       return filteredByDivisionName;
     } catch (error) {
-      errorLog("Error filtering teams by division:", error);
+      errorLog('Error filtering teams by division:', error);
       return allTeams || [];
     }
   }, [allTeams, divisionFilter]);

@@ -1,4 +1,4 @@
-import type { Team } from "./index";
+import type { Team } from './index';
 
 export interface TeamPair {
   team1: Team;
@@ -85,32 +85,32 @@ export interface MatchQualityMetrics {
   rematchCount: number;
   averageCompatibilityScore: number;
   qualityRating: 'Excellent' | 'Good' | 'Fair' | 'Poor';
-  
+
   // Enhanced metrics for detailed analysis
   opponentDiversity: {
     duplicateOpponents: number;
     uniqueOpponents: number;
     diversityScore: number; // 0-100, higher is better
   };
-  
+
   powerScoreAnalysis: {
     averagePowerScoreDifference: number;
     balancedMatches: number; // matches within acceptable power score range
     unbalancedMatches: number;
   };
-  
+
   blockAnalysis?: {
     primaryBlockQuality: number;
     secondaryBlockQuality: number;
     crossBlockDiversity: number;
   };
-  
+
   performanceMetrics: {
     generationTimeMs: number;
     algorithmsUsed: string[];
     optimizationLevel: 'basic' | 'standard' | 'advanced';
   };
-  
+
   feedback: {
     strengths: string[];
     improvements: string[];

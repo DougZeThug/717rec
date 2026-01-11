@@ -1,10 +1,11 @@
+import { Archive, Trophy } from 'lucide-react';
+import React, { useState } from 'react';
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Archive, Trophy } from "lucide-react";
-import SeasonActivationDialog from "./SeasonActivationDialog";
-import SeasonArchivalDialog from "./SeasonArchivalDialog";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+
+import SeasonActivationDialog from './SeasonActivationDialog';
+import SeasonArchivalDialog from './SeasonArchivalDialog';
 
 interface SeasonActionsProps {
   season: any;
@@ -19,7 +20,7 @@ const SeasonActions: React.FC<SeasonActionsProps> = ({ season }) => {
       <Badge variant="default" className="bg-green-500">
         Current Active Season
       </Badge>
-      
+
       <Button
         variant="outline"
         size="sm"

@@ -1,5 +1,6 @@
-import { MatchWithTeams } from '../../types';
 import { scoreLog, warnLog } from '@/utils/logger';
+
+import { MatchWithTeams } from '../../types';
 
 export const useGameWinsHandler = () => {
   const calculateMatchScore = (team1GameWins: number, team2GameWins: number) => {
@@ -18,27 +19,32 @@ export const useGameWinsHandler = () => {
   ): Partial<MatchWithTeams> => {
     const numericTeam1GameWins = Number(team1GameWins);
     const numericTeam2GameWins = Number(team2GameWins);
-    
+
     scoreLog(`useGameWinsHandler handleGameWinsChange for match ${match.id}:`, {
       matchId: match.id,
       matchDate: match.date,
       newGameWins: {
         team1GameWins: numericTeam1GameWins,
-        team2GameWins: numericTeam2GameWins
+        team2GameWins: numericTeam2GameWins,
       },
       gameWinsTypes: {
         team1GameWinsType: typeof numericTeam1GameWins,
-        team2GameWinsType: typeof numericTeam2GameWins
-      }
+        team2GameWinsType: typeof numericTeam2GameWins,
+      },
     });
-    
+
     const matchScore = calculateMatchScore(numericTeam1GameWins, numericTeam2GameWins);
     if (!matchScore) {
-      warnLog(`Cannot determine match score from game wins: ${numericTeam1GameWins}-${numericTeam2GameWins}`);
+      warnLog(
+        `Cannot determine match score from game wins: ${numericTeam1GameWins}-${numericTeam2GameWins}`
+      );
       return {};
     }
 
-    scoreLog(`Match score calculated from game wins ${numericTeam1GameWins}-${numericTeam2GameWins}:`, matchScore);
+    scoreLog(
+      `Match score calculated from game wins ${numericTeam1GameWins}-${numericTeam2GameWins}:`,
+      matchScore
+    );
 
     return {
       team1_game_wins: numericTeam1GameWins,
@@ -46,12 +52,12 @@ export const useGameWinsHandler = () => {
       team1Score: matchScore.team1Score,
       team2Score: matchScore.team2Score,
       isEdited: true,
-      isValid: true
+      isValid: true,
     };
   };
 
   return {
     handleGameWinsChange,
-    calculateMatchScore
+    calculateMatchScore,
   };
 };

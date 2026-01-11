@@ -1,14 +1,14 @@
+import { Filter } from 'lucide-react';
+import React from 'react';
 
-import React from "react";
-import { Filter } from "lucide-react";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Division } from "@/types";
+} from '@/components/ui/select';
+import { Division } from '@/types';
 
 interface StatsHeaderProps {
   onDivisionChange: (value: string) => void;
@@ -19,7 +19,7 @@ const StatsHeader = ({ onDivisionChange, divisions }: StatsHeaderProps) => {
   return (
     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
       <h1 className="text-3xl font-bold text-cornhole-navy dark:text-white">Team Statistics</h1>
-      
+
       <div className="flex items-center gap-2">
         <Filter size={18} className="text-gray-500 dark:text-gray-400" />
         <div className="w-[180px]">
@@ -29,11 +29,12 @@ const StatsHeader = ({ onDivisionChange, divisions }: StatsHeaderProps) => {
             </SelectTrigger>
             <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
               <SelectItem value="all">All Divisions</SelectItem>
-              {divisions && divisions.map((division) => (
-                <SelectItem key={division.id} value={division.id}>
-                  {division.name}
-                </SelectItem>
-              ))}
+              {divisions &&
+                divisions.map((division) => (
+                  <SelectItem key={division.id} value={division.id}>
+                    {division.name}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         </div>

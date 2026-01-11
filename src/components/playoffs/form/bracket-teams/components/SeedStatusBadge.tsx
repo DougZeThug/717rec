@@ -1,7 +1,8 @@
+import { AlertCircle, Clock, Settings, Trophy } from 'lucide-react';
 import React from 'react';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Trophy, Settings, AlertCircle, Clock } from 'lucide-react';
 
 interface SeedStatusBadgeProps {
   seed: number;
@@ -18,7 +19,7 @@ export const SeedStatusBadge: React.FC<SeedStatusBadgeProps> = ({
   hasConflict = false,
   isPending = false,
   onEdit,
-  size = 'md'
+  size = 'md',
 }) => {
   const getVariant = () => {
     if (hasConflict) return 'destructive';
@@ -38,7 +39,7 @@ export const SeedStatusBadge: React.FC<SeedStatusBadgeProps> = ({
   const variant = getVariant();
 
   const badge = (
-    <Badge 
+    <Badge
       variant={variant}
       className={`
         flex items-center gap-1 font-medium
@@ -50,15 +51,9 @@ export const SeedStatusBadge: React.FC<SeedStatusBadgeProps> = ({
     >
       <Icon className={`${size === 'sm' ? 'w-3 h-3' : 'w-4 h-4'}`} />
       <span>#{seed}</span>
-      {isManual && !hasConflict && (
-        <span className="text-xs opacity-75">Manual</span>
-      )}
-      {hasConflict && (
-        <span className="text-xs opacity-75">Conflict</span>
-      )}
-      {isPending && (
-        <span className="text-xs opacity-75">Pending</span>
-      )}
+      {isManual && !hasConflict && <span className="text-xs opacity-75">Manual</span>}
+      {hasConflict && <span className="text-xs opacity-75">Conflict</span>}
+      {isPending && <span className="text-xs opacity-75">Pending</span>}
     </Badge>
   );
 

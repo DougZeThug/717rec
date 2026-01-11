@@ -1,4 +1,4 @@
-import { Match } from "@/types";
+import { Match } from '@/types';
 
 export const calculateSweepRate = (teamId: string, matches: Match[] | undefined) => {
   if (!matches || matches.length === 0) {
@@ -11,7 +11,7 @@ export const calculateSweepRate = (teamId: string, matches: Match[] | undefined)
 
   // Filter for completed matches involving this team
   const completedMatches = matches.filter(
-    match => match.iscompleted && (match.team1Id === teamId || match.team2Id === teamId)
+    (match) => match.iscompleted && (match.team1Id === teamId || match.team2Id === teamId)
   );
 
   const totalMatches = completedMatches.length;
@@ -25,10 +25,10 @@ export const calculateSweepRate = (teamId: string, matches: Match[] | undefined)
   }
 
   // Filter for matches where this team won
-  const wins = completedMatches.filter(match => match.winnerId === teamId);
+  const wins = completedMatches.filter((match) => match.winnerId === teamId);
 
   // Count sweeps (2-0 wins where opponent got 0 game wins)
-  const sweeps = wins.filter(match => {
+  const sweeps = wins.filter((match) => {
     // Skip if game wins data is missing
     if (match.team1_game_wins === undefined || match.team2_game_wins === undefined) {
       return false;

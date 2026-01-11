@@ -1,5 +1,4 @@
-
-import { Message, MessageCategory } from "@/types/reactions";
+import { Message, MessageCategory } from '@/types/reactions';
 
 export interface MessageQueryOptions {
   limit?: number;

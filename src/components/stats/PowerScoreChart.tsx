@@ -1,13 +1,23 @@
-import React from "react";
+import { useTheme } from 'next-themes';
+import React from 'react';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList, Cell,
-} from "recharts";
-import { useTheme } from "next-themes";
-import { formatPowerScore } from "@/utils/colors/powerScoreColors";
-import { useChartColors } from "@/utils/charts/chartStyleUtils";
-import { PowerScoreDataItem } from "@/types/chart";
-import { useIsMobile } from "@/hooks/use-mobile";
-import ChartEmptyState from "./ChartEmptyState";
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  LabelList,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+
+import { useIsMobile } from '@/hooks/use-mobile';
+import { PowerScoreDataItem } from '@/types/chart';
+import { useChartColors } from '@/utils/charts/chartStyleUtils';
+import { formatPowerScore } from '@/utils/colors/powerScoreColors';
+
+import ChartEmptyState from './ChartEmptyState';
 
 interface PowerScoreChartProps {
   data: PowerScoreDataItem[];
@@ -15,12 +25,12 @@ interface PowerScoreChartProps {
 
 const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
   const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
+  const isDark = resolvedTheme === 'dark';
   const colors = useChartColors();
   const isMobile = useIsMobile();
 
   // Check for empty/zero data
-  const hasData = data && data.length > 0 && data.some(d => d.powerScore > 0);
+  const hasData = data && data.length > 0 && data.some((d) => d.powerScore > 0);
 
   if (!hasData) {
     return <ChartEmptyState message="Power scores available after matches" />;
@@ -55,19 +65,19 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
     );
   };
 
-  const chartMargins = isMobile 
-    ? { top: 5, right: 45, left: 35, bottom: 5 } 
+  const chartMargins = isMobile
+    ? { top: 5, right: 45, left: 35, bottom: 5 }
     : { top: 5, right: 45, left: 40, bottom: 5 };
 
   const displayData = isMobile && data.length > 5 ? data.slice(0, 5) : data;
 
   return (
-    <div 
-      className="w-full rounded-xl overflow-hidden" 
-      style={{ 
+    <div
+      className="w-full rounded-xl overflow-hidden"
+      style={{
         backgroundColor: colors.background,
-        height: isMobile ? "220px" : "240px",
-        maxHeight: isMobile ? "220px" : "280px"
+        height: isMobile ? '220px' : '240px',
+        maxHeight: isMobile ? '220px' : '280px',
       }}
     >
       <ResponsiveContainer width="100%" height="100%">
@@ -87,19 +97,21 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
             tick={{
               fill: colors.textColor,
               fontSize: 11,
-              fontFamily: "'Inter', sans-serif"
+              fontFamily: "'Inter', sans-serif",
             }}
           />
           <YAxis
             type="category"
             dataKey="name"
             width={isMobile ? 62 : 68}
-            tickFormatter={(value: string) => value.length > (isMobile ? 8 : 10) ? `${value.slice(0, isMobile ? 8 : 10)}...` : value}
+            tickFormatter={(value: string) =>
+              value.length > (isMobile ? 8 : 10) ? `${value.slice(0, isMobile ? 8 : 10)}...` : value
+            }
             stroke={colors.mutedTextColor}
             tick={{
               fill: colors.textColor,
               fontSize: 11,
-              fontFamily: "'Inter', sans-serif"
+              fontFamily: "'Inter', sans-serif",
             }}
           />
           <Tooltip content={<CustomPowerScoreTooltip />} />
@@ -111,13 +123,12 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
             radius={[0, 5, 5, 0]}
           >
             {displayData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={index === 0 ? colors.powerScore.highlight : colors.powerScore.bar} />
+              <Cell
+                key={`cell-${index}`}
+                fill={index === 0 ? colors.powerScore.highlight : colors.powerScore.bar}
+              />
             ))}
-            <LabelList
-              dataKey="powerScore"
-              position="right"
-              content={renderCustomizedLabel}
-            />
+            <LabelList dataKey="powerScore" position="right" content={renderCustomizedLabel} />
           </Bar>
         </BarChart>
       </ResponsiveContainer>

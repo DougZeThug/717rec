@@ -1,25 +1,26 @@
+import React from 'react';
 
-import React from "react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { formatDateForInput, parseDateFromInput } from "./form-utils";
-import { DateTimeSelectionProps } from "./types";
-import { timezoneLog } from "@/utils/logger";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { timezoneLog } from '@/utils/logger';
+
+import { formatDateForInput, parseDateFromInput } from './form-utils';
+import { DateTimeSelectionProps } from './types';
 
 const DateTimeSelection: React.FC<DateTimeSelectionProps> = ({
   selectedDate,
   setSelectedDate,
   selectedTimeSlot,
   setSelectedTimeSlot,
-  timeSlots
+  timeSlots,
 }) => {
   // Add debug logging when time slot is selected
   const handleTimeSlotSelect = (timeSlot: string) => {
     timezoneLog(`Time slot selected: "${timeSlot}" (will be converted to UTC for storage)`);
     setSelectedTimeSlot(timeSlot);
   };
-  
+
   return (
     <>
       <div>
@@ -37,11 +38,11 @@ const DateTimeSelection: React.FC<DateTimeSelectionProps> = ({
       <div className="space-y-2">
         <Label>Time Slot</Label>
         <div className="flex flex-wrap gap-3">
-          {timeSlots.map(time => (
+          {timeSlots.map((time) => (
             <div key={time} className="flex items-center">
               <Button
                 type="button"
-                variant={selectedTimeSlot === time ? "default" : "outline"}
+                variant={selectedTimeSlot === time ? 'default' : 'outline'}
                 className={`
                   w-28 transition-colors py-2
                   ${selectedTimeSlot === time ? 'bg-cornhole-navy text-white' : 'border-cornhole-navy text-cornhole-navy'}

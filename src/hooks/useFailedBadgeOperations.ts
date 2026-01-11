@@ -1,6 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
-import { FailedBadgeOperationsService, FailedBadgeOperation } from '@/services/FailedBadgeOperationsService';
+import { useCallback, useEffect, useState } from 'react';
+
 import { useToast } from '@/hooks/use-toast';
+import {
+  FailedBadgeOperation,
+  FailedBadgeOperationsService,
+} from '@/services/FailedBadgeOperationsService';
 
 /**
  * Hook to manage failed badge operations for admin users.
@@ -70,7 +74,7 @@ export function useFailedBadgeOperations() {
 
   const removeOperation = useCallback((operationId: string) => {
     FailedBadgeOperationsService.removeOperation(operationId);
-    setFailedOperations(prev => prev.filter(op => op.id !== operationId));
+    setFailedOperations((prev) => prev.filter((op) => op.id !== operationId));
   }, []);
 
   return {

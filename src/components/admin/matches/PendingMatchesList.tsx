@@ -1,6 +1,7 @@
-
 import React from 'react';
+
 import { Match, Team } from '@/types';
+
 import MatchApprovalItem from './MatchApprovalItem';
 
 interface PendingMatchesListProps {
@@ -18,7 +19,7 @@ const PendingMatchesList = ({
   openItems,
   onToggleItem,
   onApproveResult,
-  onMarkAsTie
+  onMarkAsTie,
 }: PendingMatchesListProps) => {
   if (matches.length === 0) {
     return <div className="p-4 bg-slate-50 rounded-md">No pending matches to approve.</div>;
@@ -26,7 +27,7 @@ const PendingMatchesList = ({
 
   return (
     <div className="space-y-4">
-      {matches.map(match => (
+      {matches.map((match) => (
         <MatchApprovalItem
           key={match.id}
           match={match}

@@ -1,13 +1,12 @@
+import { useTheme } from 'next-themes';
+import * as React from 'react';
 
-import * as React from "react"
-
-import { cn } from "@/lib/utils"
-import { useTheme } from "next-themes"
-import { gradients, getDivisionGradientClass } from "@/styles/design-system"
-import { useSeasonalTheme } from "@/hooks/useSeasonalTheme"
+import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
+import { cn } from '@/lib/utils';
+import { getDivisionGradientClass, gradients } from '@/styles/design-system';
 
 interface CardVariantProps {
-  variant?: "default" | "subtle" | "highlight" | "elevated" | "interactive";
+  variant?: 'default' | 'subtle' | 'highlight' | 'elevated' | 'interactive';
   division?: string | null;
   /** Disable winter styling for this card */
   noWinter?: boolean;
@@ -16,117 +15,106 @@ interface CardVariantProps {
 const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & CardVariantProps
->(({ className, variant = "default", division, noWinter = false, ...props }, ref) => {
+>(({ className, variant = 'default', division, noWinter = false, ...props }, ref) => {
   const { resolvedTheme } = useTheme();
   const { isWinterTheme } = useSeasonalTheme();
-  const isLight = resolvedTheme === "light";
-  
+  const isLight = resolvedTheme === 'light';
+
   // Get the appropriate gradient based on variant and division
-  const gradientClass = division 
+  const gradientClass = division
     ? gradients.card.division[division.toLowerCase()] || getDivisionGradientClass(division)
     : gradients.card[variant];
-  
+
   // Check if this is an interactive card (has onClick or is variant="interactive")
-  const isInteractive = variant === "interactive" || props.onClick;
-  
+  const isInteractive = variant === 'interactive' || props.onClick;
+
   // Apply winter styling unless disabled
   const applyWinter = isWinterTheme && !noWinter;
-  
+
   return (
     <div
       ref={ref}
       className={cn(
         // Unified: rounded-card, border only (no shadow), consistent border color
-        "rounded-card border border-border bg-card text-card-foreground shadow-none",
+        'rounded-card border border-border bg-card text-card-foreground shadow-none',
         // Fast transition for pressed states
-        "transition-all duration-100",
+        'transition-all duration-100',
         // Interactive cards get pressed feedback and focus ring
-        isInteractive && "cursor-pointer hover:shadow-md active:scale-[0.98] active:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        isInteractive &&
+          'cursor-pointer hover:shadow-md active:scale-[0.98] active:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         // Winter theme: frosted card surface with frost edge
-        applyWinter && "winter-card-surface frost-edge relative",
+        applyWinter && 'winter-card-surface frost-edge relative',
         // Light mode gradient (skip when winter theme active)
-        isLight && !applyWinter ? gradientClass : "",
-        isLight && !applyWinter ? "!text-[#222222]" : "",
+        isLight && !applyWinter ? gradientClass : '',
+        isLight && !applyWinter ? '!text-[#222222]' : '',
         className
       )}
       {...props}
     />
-  )
-})
-Card.displayName = "Card"
+  );
+});
+Card.displayName = 'Card';
 
-const CardHeader = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-6", className)}
-    {...props}
-  />
-))
-CardHeader.displayName = "CardHeader"
-
-const CardTitle = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => {
-  const { resolvedTheme } = useTheme();
-  const isLight = resolvedTheme === "light";
-  
-  return (
-    <h3
-      ref={ref}
-      className={cn(
-        "text-2xl font-semibold leading-none tracking-tight",
-        isLight ? "!text-[#111111]" : "",
-        className
-      )}
-      {...props}
-    />
+const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn('flex flex-col space-y-1.5 p-6', className)} {...props} />
   )
-})
-CardTitle.displayName = "CardTitle"
+);
+CardHeader.displayName = 'CardHeader';
+
+const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
+  ({ className, ...props }, ref) => {
+    const { resolvedTheme } = useTheme();
+    const isLight = resolvedTheme === 'light';
+
+    return (
+      <h3
+        ref={ref}
+        className={cn(
+          'text-2xl font-semibold leading-none tracking-tight',
+          isLight ? '!text-[#111111]' : '',
+          className
+        )}
+        {...props}
+      />
+    );
+  }
+);
+CardTitle.displayName = 'CardTitle';
 
 const CardDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => {
   const { resolvedTheme } = useTheme();
-  const isLight = resolvedTheme === "light";
-  
+  const isLight = resolvedTheme === 'light';
+
   return (
     <p
       ref={ref}
       className={cn(
-        "text-sm text-muted-foreground leading-relaxed",
-        isLight ? "!text-[#444444] !font-medium" : "",
+        'text-sm text-muted-foreground leading-relaxed',
+        isLight ? '!text-[#444444] !font-medium' : '',
         className
       )}
       {...props}
     />
+  );
+});
+CardDescription.displayName = 'CardDescription';
+
+const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn('p-6 pt-0', className)} {...props} />
   )
-})
-CardDescription.displayName = "CardDescription"
+);
+CardContent.displayName = 'CardContent';
 
-const CardContent = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
-))
-CardContent.displayName = "CardContent"
+const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn('flex items-center p-6 pt-0', className)} {...props} />
+  )
+);
+CardFooter.displayName = 'CardFooter';
 
-const CardFooter = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("flex items-center p-6 pt-0", className)}
-    {...props}
-  />
-))
-CardFooter.displayName = "CardFooter"
-
-export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
+export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle };

@@ -1,5 +1,6 @@
-import React from "react";
-import { SectionHeaderProps } from "./types";
+import React from 'react';
+
+import { SectionHeaderProps } from './types';
 
 export const SectionHeader: React.FC<SectionHeaderProps> = ({ icon: Icon, title }) => (
   <div className="flex items-center gap-2 mb-4 pb-2 border-b">

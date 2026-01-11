@@ -1,6 +1,6 @@
+import { useState } from 'react';
 
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from '@/hooks/use-toast';
 
 export const useSubmissionState = () => {
   const [submitting, setSubmitting] = useState<boolean>(false);
@@ -10,12 +10,12 @@ export const useSubmissionState = () => {
 
   const clearErrors = (matchId?: string) => {
     if (matchId) {
-      setErrorMessages(prev => {
-        const newErrors = {...prev};
+      setErrorMessages((prev) => {
+        const newErrors = { ...prev };
         delete newErrors[matchId];
         return newErrors;
       });
-      setFailedMatches(prev => prev.filter(id => id !== matchId));
+      setFailedMatches((prev) => prev.filter((id) => id !== matchId));
     } else {
       setErrorMessages({});
       setFailedMatches([]);
@@ -23,8 +23,8 @@ export const useSubmissionState = () => {
   };
 
   const addError = (matchId: string, message: string) => {
-    setFailedMatches(prev => [...prev, matchId]);
-    setErrorMessages(prev => ({ ...prev, [matchId]: message }));
+    setFailedMatches((prev) => [...prev, matchId]);
+    setErrorMessages((prev) => ({ ...prev, [matchId]: message }));
   };
 
   return {
@@ -36,6 +36,6 @@ export const useSubmissionState = () => {
     setErrorMessages,
     clearErrors,
     addError,
-    toast
+    toast,
   };
 };

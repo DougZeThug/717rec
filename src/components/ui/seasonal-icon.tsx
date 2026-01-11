@@ -1,13 +1,10 @@
-import React from "react";
-import { LucideIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
-import { 
-  getWinterGlyph, 
-  WINTER_ICONS_ENABLED,
-  SvgIconComponent,
-} from "@/icons";
-import type { WinterGlyphName } from "@/icons";
+import { LucideIcon } from 'lucide-react';
+import React from 'react';
+
+import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
+import type { WinterGlyphName } from '@/icons';
+import { getWinterGlyph, SvgIconComponent, WINTER_ICONS_ENABLED } from '@/icons';
+import { cn } from '@/lib/utils';
 
 export interface SeasonalIconProps {
   /** Default icon (used in non-winter themes) */
@@ -28,24 +25,24 @@ export interface SeasonalIconProps {
 
 /**
  * SeasonalIcon - Auto-switches between default and winter icons based on theme
- * 
+ *
  * This component follows the same pattern as other winter-themed components,
  * using useSeasonalTheme() to detect when winter-frozen theme is active.
- * 
+ *
  * @example
  * ```tsx
  * // Using a winter glyph name
- * <SeasonalIcon 
- *   defaultIcon={Trophy} 
- *   winterGlyph="frozen-trophy" 
- *   size={24} 
+ * <SeasonalIcon
+ *   defaultIcon={Trophy}
+ *   winterGlyph="frozen-trophy"
+ *   size={24}
  * />
- * 
+ *
  * // Using a direct winter icon component
- * <SeasonalIcon 
- *   defaultIcon={Star} 
- *   winterIcon={WinterStar} 
- *   size={24} 
+ * <SeasonalIcon
+ *   defaultIcon={Star}
+ *   winterIcon={WinterStar}
+ *   size={24}
  * />
  * ```
  */
@@ -59,31 +56,31 @@ export const SeasonalIcon: React.FC<SeasonalIconProps> = ({
   color,
 }) => {
   const { isWinterTheme } = useSeasonalTheme();
-  
+
   // Determine which icon to render
   const shouldUseWinter = isWinterTheme && WINTER_ICONS_ENABLED && (winterGlyph || winterIcon);
-  
+
   if (shouldUseWinter) {
     // Get winter icon - either from glyph registry or direct component
     const WinterIcon = winterGlyph ? getWinterGlyph(winterGlyph) : winterIcon;
-    
+
     if (WinterIcon) {
       return (
         <WinterIcon
           size={size}
-          className={cn("transition-all duration-300", className)}
+          className={cn('transition-all duration-300', className)}
           strokeWidth={strokeWidth}
           color={color}
         />
       );
     }
   }
-  
+
   // Render default icon
   return (
     <DefaultIcon
       size={size}
-      className={cn("transition-all duration-300", className)}
+      className={cn('transition-all duration-300', className)}
       strokeWidth={strokeWidth}
       color={color}
     />

@@ -1,12 +1,12 @@
+import { AlertTriangle, CheckCircle, Clock, Info, Users } from 'lucide-react';
+import React from 'react';
 
-import React from "react";
-import { Team, Match } from "@/types";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Clock, Users, AlertTriangle, CheckCircle, Info } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import TeamLogo from "@/components/ui/team/TeamLogo";
-import { TIME_BLOCKS } from "@/utils/autoScheduleUtils";
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import TeamLogo from '@/components/ui/team/TeamLogo';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Match, Team } from '@/types';
+import { TIME_BLOCKS } from '@/utils/autoScheduleUtils';
 
 interface TeamPairing {
   team1: Team;
@@ -26,11 +26,11 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
   pairings,
   date,
   isGenerating,
-  onApplyPairings
+  onApplyPairings,
 }) => {
   // Check if we have any pairings
-  const hasPairings = Object.values(pairings).some(blockPairings => blockPairings?.length > 0);
-  
+  const hasPairings = Object.values(pairings).some((blockPairings) => blockPairings?.length > 0);
+
   if (!date || !hasPairings) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -41,14 +41,15 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
 
   // Count total matches
   const totalMatches = Object.values(pairings).reduce(
-    (acc, blockPairings) => acc + blockPairings.length, 0
+    (acc, blockPairings) => acc + blockPairings.length,
+    0
   );
 
   // Count warnings (low compatibility scores or previous matches)
   const warningCount = Object.values(pairings).reduce(
-    (acc, blockPairings) => acc + blockPairings.filter(
-      pair => pair.compatibilityScore < 5 || pair.hasPlayedBefore
-    ).length, 
+    (acc, blockPairings) =>
+      acc +
+      blockPairings.filter((pair) => pair.compatibilityScore < 5 || pair.hasPlayedBefore).length,
     0
   );
 
@@ -67,7 +68,7 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
           )}
         </div>
       </div>
-      
+
       {Object.entries(pairings).map(([block, blockPairings]) => (
         <Card key={block} className="overflow-hidden">
           <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2 flex items-center justify-between">
@@ -86,8 +87,8 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
             {blockPairings.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {blockPairings.map((pairing, idx) => (
-                  <div 
-                    key={`${pairing.team1.id}-${pairing.team2.id}`} 
+                  <div
+                    key={`${pairing.team1.id}-${pairing.team2.id}`}
                     className={`p-3 border rounded-md ${pairing.compatibilityScore < 5 || pairing.hasPlayedBefore ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20' : 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/10'}`}
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -110,11 +111,11 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>
-                              {pairing.hasPlayedBefore 
-                                ? "These teams have played against each other before" 
-                                : pairing.compatibilityScore < 5 
-                                  ? "These teams may not be evenly matched" 
-                                  : "Good match pairing"}
+                              {pairing.hasPlayedBefore
+                                ? 'These teams have played against each other before'
+                                : pairing.compatibilityScore < 5
+                                  ? 'These teams may not be evenly matched'
+                                  : 'Good match pairing'}
                             </p>
                           </TooltipContent>
                         </Tooltip>
@@ -124,10 +125,10 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
                     <div className="grid grid-cols-[1fr,auto,1fr] gap-2 items-center">
                       {/* Team 1 */}
                       <div className="flex items-center gap-2">
-                        <TeamLogo 
-                          imageUrl={pairing.team1.logoUrl} 
-                          teamName={pairing.team1.name} 
-                          className="h-6 w-6" 
+                        <TeamLogo
+                          imageUrl={pairing.team1.logoUrl}
+                          teamName={pairing.team1.name}
+                          className="h-6 w-6"
                         />
                         <span className="text-sm truncate font-medium">{pairing.team1.name}</span>
                       </div>
@@ -137,10 +138,10 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
                       {/* Team 2 */}
                       <div className="flex items-center gap-2 justify-end">
                         <span className="text-sm truncate font-medium">{pairing.team2.name}</span>
-                        <TeamLogo 
-                          imageUrl={pairing.team2.logoUrl} 
-                          teamName={pairing.team2.name} 
-                          className="h-6 w-6" 
+                        <TeamLogo
+                          imageUrl={pairing.team2.logoUrl}
+                          teamName={pairing.team2.name}
+                          className="h-6 w-6"
                         />
                       </div>
                     </div>
@@ -167,9 +168,11 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
           </CardContent>
         </Card>
       ))}
-      
+
       <div className="text-xs text-muted-foreground mt-2">
-        <p>* Match compatibility score is based on team records, power scores, and previous matches</p>
+        <p>
+          * Match compatibility score is based on team records, power scores, and previous matches
+        </p>
         <p>* Teams with similar skill levels are paired for more competitive matches</p>
       </div>
     </div>

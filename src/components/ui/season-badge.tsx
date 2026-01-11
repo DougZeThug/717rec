@@ -1,7 +1,8 @@
-import React from "react";
-import { useSeasonWeek } from "@/hooks/useSeasonWeek";
-import { cn } from "@/lib/utils";
-import { ICON_SIZES, ICON_STROKE } from "@/styles/icon-system";
+import React from 'react';
+
+import { useSeasonWeek } from '@/hooks/useSeasonWeek';
+import { cn } from '@/lib/utils';
+import { ICON_SIZES, ICON_STROKE } from '@/styles/icon-system';
 
 interface SeasonBadgeProps {
   className?: string;
@@ -21,17 +22,17 @@ export const SeasonBadge: React.FC<SeasonBadgeProps> = ({ className }) => {
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-1.5 px-3 py-1 rounded-full",
-        "bg-muted/50 border border-border/50",
-        "text-xs font-medium text-muted-foreground",
-        "transition-colors hover:bg-muted/70",
+        'inline-flex items-center gap-1.5 px-3 py-1 rounded-full',
+        'bg-muted/50 border border-border/50',
+        'text-xs font-medium text-muted-foreground',
+        'transition-colors hover:bg-muted/70',
         className
       )}
     >
-      <SeasonIcon 
-        size={ICON_SIZES.sm} 
+      <SeasonIcon
+        size={ICON_SIZES.sm}
         strokeWidth={ICON_STROKE.normal}
-        className="text-muted-foreground/80" 
+        className="text-muted-foreground/80"
       />
       <span>{seasonName}</span>
       {weekNumber !== null && (

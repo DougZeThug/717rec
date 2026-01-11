@@ -1,7 +1,7 @@
+import { PlusCircle, Save, X } from 'lucide-react';
+import React from 'react';
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { PlusCircle, Save, X } from "lucide-react";
+import { Button } from '@/components/ui/button';
 
 interface MatchScoreActionsProps {
   onAddGame: () => void;
@@ -22,7 +22,7 @@ const MatchScoreActions: React.FC<MatchScoreActionsProps> = ({
   hasValidationError,
   canAddGames,
   team1Wins,
-  team2Wins
+  team2Wins,
 }) => {
   return (
     <div className="space-y-4">
@@ -37,12 +37,15 @@ const MatchScoreActions: React.FC<MatchScoreActionsProps> = ({
           <PlusCircle className="h-4 w-4 mr-1" />
           Add Game
         </Button>
-        
+
         <div className="text-sm">
-          Score: <span className="font-bold">{team1Wins} - {team2Wins}</span>
+          Score:{' '}
+          <span className="font-bold">
+            {team1Wins} - {team2Wins}
+          </span>
         </div>
       </div>
-      
+
       <div className="flex justify-end space-x-2 pt-2 border-t">
         <Button variant="outline" onClick={onCancel} disabled={isSubmitting}>
           <X className="h-4 w-4 mr-1" />

@@ -1,12 +1,14 @@
-import React, { useState } from "react";
-import { FileText, Trophy, Target, TrendingUp, Swords, Edit, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
-import { useTeamAnalysis, TeamAnalysis as TeamAnalysisType } from "@/hooks/useTeamAnalysis";
-import { useAdminAccess } from "@/hooks/useAdminAccess";
-import { TeamAnalysisEditForm } from "./TeamAnalysisEditForm";
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion';
+import { AlertCircle, Edit, FileText, Swords, Target, TrendingUp, Trophy } from 'lucide-react';
+import React, { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useAdminAccess } from '@/hooks/useAdminAccess';
+import { TeamAnalysis as TeamAnalysisType, useTeamAnalysis } from '@/hooks/useTeamAnalysis';
+
+import { TeamAnalysisEditForm } from './TeamAnalysisEditForm';
 
 interface TeamAnalysisProps {
   teamId: string;
@@ -34,16 +36,16 @@ const AnalysisSkeleton = () => (
   </div>
 );
 
-const AnalysisContent = ({ 
-  analysis, 
+const AnalysisContent = ({
+  analysis,
   onEdit,
-  isAdmin
-}: { 
-  analysis: TeamAnalysisType; 
+  isAdmin,
+}: {
+  analysis: TeamAnalysisType;
   onEdit: () => void;
   isAdmin: boolean;
 }) => (
-  <motion.div 
+  <motion.div
     className="space-y-4 p-4"
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
@@ -52,12 +54,7 @@ const AnalysisContent = ({
     {/* Header with edit button */}
     {isAdmin && (
       <div className="flex justify-end">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onEdit}
-          className="text-xs h-7"
-        >
+        <Button variant="ghost" size="sm" onClick={onEdit} className="text-xs h-7">
           <Edit className="h-3 w-3 mr-1" />
           Edit
         </Button>
@@ -82,7 +79,7 @@ const AnalysisContent = ({
           </div>
           <ul className="space-y-1.5">
             {analysis.strengths.map((strength, i) => (
-              <motion.li 
+              <motion.li
                 key={i}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -106,7 +103,7 @@ const AnalysisContent = ({
           </div>
           <ul className="space-y-1.5">
             {analysis.weaknesses.map((weakness, i) => (
-              <motion.li 
+              <motion.li
                 key={i}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -146,13 +143,7 @@ const AnalysisContent = ({
   </motion.div>
 );
 
-const EmptyState = ({ 
-  onEdit, 
-  isAdmin 
-}: { 
-  onEdit: () => void; 
-  isAdmin: boolean;
-}) => (
+const EmptyState = ({ onEdit, isAdmin }: { onEdit: () => void; isAdmin: boolean }) => (
   <div className="p-6 flex flex-col items-center justify-center text-center space-y-3">
     <FileText className="h-10 w-10 text-muted-foreground/40" />
     <div>
@@ -187,13 +178,13 @@ const TeamAnalysisComponent: React.FC<TeamAnalysisProps> = ({ teamId, teamName }
     });
   };
 
-  const hasContent = analysis && (
-    analysis.overall || 
-    (analysis.strengths && analysis.strengths.length > 0) || 
-    (analysis.weaknesses && analysis.weaknesses.length > 0) ||
-    analysis.trends ||
-    analysis.rivalry_insights
-  );
+  const hasContent =
+    analysis &&
+    (analysis.overall ||
+      (analysis.strengths && analysis.strengths.length > 0) ||
+      (analysis.weaknesses && analysis.weaknesses.length > 0) ||
+      analysis.trends ||
+      analysis.rivalry_insights);
 
   return (
     <section id="team-analysis">
@@ -215,16 +206,13 @@ const TeamAnalysisComponent: React.FC<TeamAnalysisProps> = ({ teamId, teamName }
             isSaving={isSaving}
           />
         ) : hasContent ? (
-          <AnalysisContent 
-            analysis={analysis!} 
+          <AnalysisContent
+            analysis={analysis!}
             onEdit={() => setIsEditing(true)}
             isAdmin={isAdminAccessGranted}
           />
         ) : (
-          <EmptyState 
-            onEdit={() => setIsEditing(true)} 
-            isAdmin={isAdminAccessGranted}
-          />
+          <EmptyState onEdit={() => setIsEditing(true)} isAdmin={isAdminAccessGranted} />
         )}
       </CollapsibleSection>
     </section>

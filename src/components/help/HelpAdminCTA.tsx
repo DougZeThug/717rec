@@ -1,8 +1,9 @@
-import React from "react";
-import { Link } from "react-router";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
+import { Settings } from 'lucide-react';
+import React from 'react';
+import { Link } from 'react-router';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
 export const HelpAdminCTA: React.FC = () => {
   return (

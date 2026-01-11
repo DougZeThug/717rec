@@ -1,8 +1,15 @@
-import React from "react";
-import { Team } from "@/types";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import TeamLogo from "@/components/ui/team/TeamLogo";
-import { DestructiveIconButton } from "@/components/ui/destructive-icon-button";
+import React from 'react';
+
+import { DestructiveIconButton } from '@/components/ui/destructive-icon-button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import TeamLogo from '@/components/ui/team/TeamLogo';
+import { Team } from '@/types';
 
 export interface MatchPair {
   id: string;
@@ -18,12 +25,7 @@ interface MatchPairsListProps {
   onRemove: (id: string) => void;
 }
 
-const MatchPairsList: React.FC<MatchPairsListProps> = ({
-  pairs,
-  teams,
-  onUpdate,
-  onRemove
-}) => {
+const MatchPairsList: React.FC<MatchPairsListProps> = ({ pairs, teams, onUpdate, onRemove }) => {
   if (pairs.length === 0) {
     return (
       <div className="text-center py-6 border rounded-lg bg-card text-muted-foreground">
@@ -35,7 +37,7 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({
 
   const getTeamById = (id: string | null) => {
     if (!id) return null;
-    return teams.find(t => t.id === id) || null;
+    return teams.find((t) => t.id === id) || null;
   };
 
   const timeSlotOptions = [
@@ -49,12 +51,12 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({
     '8:30 PM',
     '9:00 PM',
     '9:30 PM',
-    '10:00 PM'
+    '10:00 PM',
   ];
 
   return (
     <div className="space-y-3">
-      {pairs.map(pair => (
+      {pairs.map((pair) => (
         <div key={pair.id} className="p-3 border rounded-lg bg-card shadow-sm">
           <div className="flex flex-col md:flex-row gap-3">
             {/* Team 1 Selection */}
@@ -68,7 +70,7 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({
                   <SelectValue placeholder="Select team">
                     {pair.team1Id && (
                       <div className="flex items-center gap-2">
-                        <TeamLogo 
+                        <TeamLogo
                           imageUrl={getTeamById(pair.team1Id)?.imageUrl || ''}
                           teamName={getTeamById(pair.team1Id)?.name || ''}
                           className="h-4 w-4"
@@ -81,11 +83,11 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({
                 <SelectContent>
                   <div className="max-h-[300px] overflow-auto">
                     {teams
-                      .filter(team => team.id !== pair.team2Id)
-                      .map(team => (
+                      .filter((team) => team.id !== pair.team2Id)
+                      .map((team) => (
                         <SelectItem key={team.id} value={team.id}>
                           <div className="flex items-center gap-2">
-                            <TeamLogo 
+                            <TeamLogo
                               imageUrl={team.imageUrl || ''}
                               teamName={team.name}
                               className="h-4 w-4"
@@ -115,7 +117,7 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({
                   <SelectValue placeholder="Select team">
                     {pair.team2Id && (
                       <div className="flex items-center gap-2">
-                        <TeamLogo 
+                        <TeamLogo
                           imageUrl={getTeamById(pair.team2Id)?.imageUrl || ''}
                           teamName={getTeamById(pair.team2Id)?.name || ''}
                           className="h-4 w-4"
@@ -128,11 +130,11 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({
                 <SelectContent>
                   <div className="max-h-[300px] overflow-auto">
                     {teams
-                      .filter(team => team.id !== pair.team1Id)
-                      .map(team => (
+                      .filter((team) => team.id !== pair.team1Id)
+                      .map((team) => (
                         <SelectItem key={team.id} value={team.id}>
                           <div className="flex items-center gap-2">
-                            <TeamLogo 
+                            <TeamLogo
                               imageUrl={team.imageUrl || ''}
                               teamName={team.name}
                               className="h-4 w-4"
@@ -157,7 +159,7 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({
                   <SelectValue placeholder="Select time" />
                 </SelectTrigger>
                 <SelectContent>
-                  {timeSlotOptions.map(time => (
+                  {timeSlotOptions.map((time) => (
                     <SelectItem key={time} value={time}>
                       {time}
                     </SelectItem>

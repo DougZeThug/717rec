@@ -1,8 +1,8 @@
+import React from 'react';
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 interface MatchReactionButtonProps {
   emoji: string;
@@ -11,11 +11,11 @@ interface MatchReactionButtonProps {
   onClick: () => void;
 }
 
-const MatchReactionButton: React.FC<MatchReactionButtonProps> = ({ 
-  emoji, 
-  count, 
-  hasReacted, 
-  onClick 
+const MatchReactionButton: React.FC<MatchReactionButtonProps> = ({
+  emoji,
+  count,
+  hasReacted,
+  onClick,
 }) => {
   return (
     <TooltipProvider>
@@ -25,10 +25,10 @@ const MatchReactionButton: React.FC<MatchReactionButtonProps> = ({
             variant="outline"
             size="xs"
             className={cn(
-              "py-0 h-6 px-1.5 gap-1 text-xs border transition-all duration-150",
-              hasReacted 
-                ? "bg-accent/30 border-primary/30 hover:bg-accent/40" 
-                : "bg-background/80 border-gray-200 dark:border-gray-700 hover:bg-accent/10"
+              'py-0 h-6 px-1.5 gap-1 text-xs border transition-all duration-150',
+              hasReacted
+                ? 'bg-accent/30 border-primary/30 hover:bg-accent/40'
+                : 'bg-background/80 border-gray-200 dark:border-gray-700 hover:bg-accent/10'
             )}
             onClick={onClick}
             aria-label={`${emoji} reaction (${count})`}
@@ -38,7 +38,7 @@ const MatchReactionButton: React.FC<MatchReactionButtonProps> = ({
           </Button>
         </TooltipTrigger>
         <TooltipContent side="top" className="px-3 py-1.5">
-          <p className="text-xs">{hasReacted ? "Remove reaction" : "Add reaction"}</p>
+          <p className="text-xs">{hasReacted ? 'Remove reaction' : 'Add reaction'}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

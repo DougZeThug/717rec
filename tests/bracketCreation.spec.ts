@@ -1,15 +1,15 @@
-
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { v4 as uuidv4 } from 'uuid';
-import { insertedRows, resetInsertedRows, isValidUUID } from './__mocks__/supabase';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { BracketCreationService } from '../src/services/brackets/services/BracketCreationService';
+import { insertedRows, isValidUUID, resetInsertedRows } from './__mocks__/supabase';
 
 // Mock the brackets-manager
 vi.mock('../src/services/brackets/manager/BracketManager', () => ({
   bracketManager: {
     registerParticipants: vi.fn().mockResolvedValue(undefined),
     createStage: vi.fn().mockResolvedValue(undefined),
-  }
+  },
 }));
 
 // Mock the supabase client
@@ -58,14 +58,19 @@ describe('Bracket Creation Safety Tests', () => {
 
     // Check for playoff_matches if they were inserted
     if (insertedRows['playoff_matches']) {
-      insertedRows['playoff_matches'].forEach(match => {
+      insertedRows['playoff_matches'].forEach((match) => {
         // Check all foreign key fields that should be UUID or null
         const foreignKeyFields = [
-          'team1_id', 'team2_id', 'winner_id', 'loser_id',
-          'next_win_match_id', 'next_lose_match_id', 'bracket_id'
+          'team1_id',
+          'team2_id',
+          'winner_id',
+          'loser_id',
+          'next_win_match_id',
+          'next_lose_match_id',
+          'bracket_id',
         ];
 
-        foreignKeyFields.forEach(field => {
+        foreignKeyFields.forEach((field) => {
           const value = match[field];
           if (value !== null) {
             expect(typeof value).toBe('string');

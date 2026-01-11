@@ -1,7 +1,7 @@
+import React from 'react';
 
-import React from "react";
-import FilterBar from "../FilterBar";
-import { FilterState } from "../types";
+import FilterBar from '../FilterBar';
+import { FilterState } from '../types';
 
 interface ScoreEntryToolbarProps {
   filters: FilterState;
@@ -16,7 +16,7 @@ const ScoreEntryToolbar: React.FC<ScoreEntryToolbarProps> = ({
   brackets,
   onDateChange,
   onBracketChange,
-  onClearFilters
+  onClearFilters,
 }) => {
   return (
     <div className="w-full">

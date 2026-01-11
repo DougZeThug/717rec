@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface SnowCloudProps extends React.SVGProps<SVGSVGElement> {
   size?: number | string;
@@ -8,11 +8,7 @@ interface SnowCloudProps extends React.SVGProps<SVGSVGElement> {
  * Snow Cloud glyph - Weather/seasonal indicator
  * Used for weather themes, seasonal indicators
  */
-const SnowCloud: React.FC<SnowCloudProps> = ({ 
-  size = 24, 
-  className,
-  ...props 
-}) => (
+const SnowCloud: React.FC<SnowCloudProps> = ({ size = 24, className, ...props }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -27,10 +23,10 @@ const SnowCloud: React.FC<SnowCloudProps> = ({
     {...props}
   >
     {/* Cloud shape */}
-    <path 
-      d="M4 14 Q2 14 2 12 Q2 10 4 10 Q4 6 8 6 Q10 4 13 5 Q16 4 18 7 Q21 7 21 10 Q22 12 20 13 Q20 14 18 14 Z" 
-      fill="currentColor" 
-      fillOpacity="0.1" 
+    <path
+      d="M4 14 Q2 14 2 12 Q2 10 4 10 Q4 6 8 6 Q10 4 13 5 Q16 4 18 7 Q21 7 21 10 Q22 12 20 13 Q20 14 18 14 Z"
+      fill="currentColor"
+      fillOpacity="0.1"
     />
     <path d="M4 14 Q2 14 2 12 Q2 10 4 10 Q4 6 8 6 Q10 4 13 5 Q16 4 18 7 Q21 7 21 10 Q22 12 20 13 Q20 14 18 14 Z" />
     {/* Falling snow - small snowflakes */}

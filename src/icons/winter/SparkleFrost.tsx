@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface SparkleFrostProps extends React.SVGProps<SVGSVGElement> {
   size?: number | string;
@@ -8,11 +8,7 @@ interface SparkleFrostProps extends React.SVGProps<SVGSVGElement> {
  * Sparkle Frost glyph - Celebration/success winter accent
  * Used for success animations, celebration effects
  */
-const SparkleFrost: React.FC<SparkleFrostProps> = ({ 
-  size = 24, 
-  className,
-  ...props 
-}) => (
+const SparkleFrost: React.FC<SparkleFrostProps> = ({ size = 24, className, ...props }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}

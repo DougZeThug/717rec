@@ -1,7 +1,7 @@
+import { Team } from '@/types';
+import { TimeBlockTeamsMap } from '@/types/autoSchedule';
 
-import { Team } from "@/types";
-import { TimeBlockTeamsMap } from "@/types/autoSchedule";
-import { BACK_TO_BACK_PAIRS } from "./constants";
+import { BACK_TO_BACK_PAIRS } from './constants';
 
 /**
  * Handle odd team counts in back-to-back pairs
@@ -39,16 +39,16 @@ export function handleOddTeams(timeBlockTeams: TimeBlockTeamsMap): {
       // Odd number - remove one team (the last one by default)
       const teamsCopy = [...teams];
       const removedTeam = teamsCopy.pop();
-      
+
       if (removedTeam) {
         unmatchedTeamIds.push(removedTeam.id);
         unmatchedTeamDetails.push({
           teamId: removedTeam.id,
           teamName: removedTeam.name,
-          block: pairName
+          block: pairName,
         });
       }
-      
+
       adjustedTeams[pairName] = teamsCopy;
     }
   });
@@ -74,12 +74,12 @@ export function validateTeamCounts(timeBlockTeams: TimeBlockTeamsMap): {
   Object.entries(timeBlockTeams).forEach(([pairName, teams]) => {
     const teamCount = teams?.length || 0;
     totalTeams += teamCount;
-    
+
     // For back-to-back pairs, minimum is 4 teams (2 matches)
     if (teamCount > 0 && teamCount < 4) {
       insufficientBlocks.push(pairName);
     }
-    
+
     // Check for odd numbers
     if (teamCount % 2 !== 0) {
       oddBlocks.push(pairName);
@@ -94,7 +94,7 @@ export function validateTeamCounts(timeBlockTeams: TimeBlockTeamsMap): {
     insufficientBlocks,
     hasOddBlocks,
     oddBlocks,
-    totalTeams
+    totalTeams,
   };
 }
 
@@ -126,19 +126,19 @@ export function generateTeamDistributionSummary(timeBlockTeams: TimeBlockTeamsMa
     const teamCount = teams?.length || 0;
     const matchCount = Math.floor(teamCount / 2); // Each match requires 2 teams
     const hasOddTeams = teamCount % 2 !== 0;
-    
+
     totalTeams += teamCount;
     totalMatches += matchCount;
-    
+
     if (hasOddTeams) {
       unpairedTeams += 1; // One unpaired team per odd pair
     }
-    
+
     pairSummary.push({
       pairName,
       teamCount,
       matchCount,
-      hasOddTeams
+      hasOddTeams,
     });
   });
 
@@ -146,7 +146,7 @@ export function generateTeamDistributionSummary(timeBlockTeams: TimeBlockTeamsMa
     totalTeams,
     totalMatches,
     unpairedTeams,
-    pairSummary
+    pairSummary,
   };
 }
 
@@ -154,9 +154,7 @@ export function generateTeamDistributionSummary(timeBlockTeams: TimeBlockTeamsMa
  * Validate back-to-back pair assignments
  * Ensures teams are properly assigned to both timeslots in a pair
  */
-export function validateBackToBackPairAssignments(
-  timeBlockTeams: TimeBlockTeamsMap
-): {
+export function validateBackToBackPairAssignments(timeBlockTeams: TimeBlockTeamsMap): {
   isValid: boolean;
   errors: string[];
   warnings: string[];
@@ -178,16 +176,20 @@ export function validateBackToBackPairAssignments(
 
     // Check minimum team count for meaningful matches
     if (teams.length < 4) {
-      warnings.push(`${pairName} pair has only ${teams.length} teams (minimum 4 recommended for 2 matches)`);
+      warnings.push(
+        `${pairName} pair has only ${teams.length} teams (minimum 4 recommended for 2 matches)`
+      );
     }
 
     // Check for odd team counts
     if (teams.length % 2 !== 0) {
-      warnings.push(`${pairName} pair has odd number of teams (${teams.length}) - one team will be unmatched`);
+      warnings.push(
+        `${pairName} pair has odd number of teams (${teams.length}) - one team will be unmatched`
+      );
     }
 
     // Check for duplicate teams within the pair
-    const teamIds = teams.map(team => team.id);
+    const teamIds = teams.map((team) => team.id);
     const uniqueTeamIds = new Set(teamIds);
     if (teamIds.length !== uniqueTeamIds.size) {
       errors.push(`${pairName} pair contains duplicate team assignments`);
@@ -196,10 +198,10 @@ export function validateBackToBackPairAssignments(
 
   // Check for teams assigned to multiple pairs
   const allTeamIds: string[] = [];
-  Object.values(timeBlockTeams).forEach(teams => {
-    teams?.forEach(team => allTeamIds.push(team.id));
+  Object.values(timeBlockTeams).forEach((teams) => {
+    teams?.forEach((team) => allTeamIds.push(team.id));
   });
-  
+
   const uniqueAllTeamIds = new Set(allTeamIds);
   if (allTeamIds.length !== uniqueAllTeamIds.size) {
     errors.push('Some teams are assigned to multiple back-to-back pairs');
@@ -208,7 +210,7 @@ export function validateBackToBackPairAssignments(
   return {
     isValid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   };
 }
 
@@ -217,11 +219,11 @@ export function validateBackToBackPairAssignments(
  */
 export function getRecommendedTeamCount(currentCount: number): number {
   if (currentCount <= 0) return 4; // Minimum for 2 matches
-  
+
   // Round up to next even number if odd
   if (currentCount % 2 !== 0) {
     return currentCount + 1;
   }
-  
+
   return currentCount;
 }

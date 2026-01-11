@@ -1,8 +1,9 @@
-import React from "react";
-import { BarChart3 } from "lucide-react";
-import { ShimmerSkeleton, CardSkeleton } from "@/components/ui/shimmer-skeleton";
-import { StaggerItem, StaggeredContent } from "@/components/ui/staggered-content";
-import { AutoStagger } from "@/components/ui/staggered-content";
+import { BarChart3 } from 'lucide-react';
+import React from 'react';
+
+import { CardSkeleton, ShimmerSkeleton } from '@/components/ui/shimmer-skeleton';
+import { StaggeredContent, StaggerItem } from '@/components/ui/staggered-content';
+import { AutoStagger } from '@/components/ui/staggered-content';
 
 const StatsLoadingState: React.FC = () => {
   return (
@@ -19,7 +20,7 @@ const StatsLoadingState: React.FC = () => {
 
           {/* Stats cards grid - staggered appearance */}
           <StaggerItem priority="medium">
-            <AutoStagger 
+            <AutoStagger
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
               baseDelay={0.1}
               staggerDelay={0.06}

@@ -1,8 +1,9 @@
-
-import React from 'react';
-import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
+import React from 'react';
+
+import { cn } from '@/lib/utils';
 import { blueAmber } from '@/styles/design-system';
+
 import { roundAppearAnimation } from '../animation/BracketAnimationUtils';
 
 interface RoundHeaderProps {
@@ -12,15 +13,10 @@ interface RoundHeaderProps {
   matchCount: number;
 }
 
-const RoundHeader: React.FC<RoundHeaderProps> = ({
-  round,
-  type,
-  roundIndex,
-  matchCount
-}) => {
+const RoundHeader: React.FC<RoundHeaderProps> = ({ round, type, roundIndex, matchCount }) => {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
-  
+
   const getTypeColor = () => {
     switch (type) {
       case 'winners':
@@ -36,38 +32,45 @@ const RoundHeader: React.FC<RoundHeaderProps> = ({
         return 'bg-gray-500/10 text-gray-700 dark:bg-gray-500/20 dark:text-gray-300 border-gray-300 dark:border-gray-800';
     }
   };
-  
+
   const getTypeLabel = () => {
     switch (type) {
-      case 'winners': return 'Winners Bracket';
-      case 'losers': return 'Losers Bracket';
-      case 'finals': return 'Finals';
-      case 'play-in': return 'Play-In';
-      case 'play-in-2': return 'Play-In Round 2';
-      default: return type.charAt(0).toUpperCase() + type.slice(1);
+      case 'winners':
+        return 'Winners Bracket';
+      case 'losers':
+        return 'Losers Bracket';
+      case 'finals':
+        return 'Finals';
+      case 'play-in':
+        return 'Play-In';
+      case 'play-in-2':
+        return 'Play-In Round 2';
+      default:
+        return type.charAt(0).toUpperCase() + type.slice(1);
     }
   };
 
   return (
-    <div 
+    <div
       className={cn(
-        "px-4 py-2 rounded-t-lg mb-4 text-center border-b-2",
+        'px-4 py-2 rounded-t-lg mb-4 text-center border-b-2',
         getTypeColor(),
-        "opacity-0"
+        'opacity-0'
       )}
-      style={{ 
+      style={{
         animation: roundAppearAnimation,
         animationDelay: `${roundIndex * 0.1}s`,
-        animationFillMode: 'forwards'
+        animationFillMode: 'forwards',
       }}
     >
-      <div className={cn(blueAmber.text.heading, "heading-winter")}>
-        {type === 'finals' 
+      <div className={cn(blueAmber.text.heading, 'heading-winter')}>
+        {type === 'finals'
           ? `${getTypeLabel()}${parseInt(round) > 1 ? ' - Game ' + round : ''}`
-          : `Round ${round}`
-        }
+          : `Round ${round}`}
       </div>
-      <div className="text-xs opacity-70">{getTypeLabel()} · {matchCount} match{matchCount !== 1 ? 'es' : ''}</div>
+      <div className="text-xs opacity-70">
+        {getTypeLabel()} · {matchCount} match{matchCount !== 1 ? 'es' : ''}
+      </div>
     </div>
   );
 };

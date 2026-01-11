@@ -1,25 +1,24 @@
-
-import { Team, Match } from "@/types";
-import { calculateSOS } from "@/utils/rankingUtils/calculateSOS";
-import { calculateWinPercentage as calculateWinPercentageUtil } from "@/utils/rankingUtils/calculateWinPercentage";
-import { fetchDivisionWeights } from "@/utils/rankingUtils/divisionWeightsCache";
+import { Match, Team } from '@/types';
+import { calculateSOS } from '@/utils/rankingUtils/calculateSOS';
+import { calculateWinPercentage as calculateWinPercentageUtil } from '@/utils/rankingUtils/calculateWinPercentage';
+import { fetchDivisionWeights } from '@/utils/rankingUtils/divisionWeightsCache';
 
 /**
  * Calculate win percentage
  */
 export const calculateWinPercentage = (team: Team | undefined) => {
-  if (!team) return "0.0";
-  
+  if (!team) return '0.0';
+
   // Ensure we have numbers for wins and losses
   const wins = typeof team.wins === 'number' ? team.wins : 0;
   const losses = typeof team.losses === 'number' ? team.losses : 0;
-  
+
   // Use the common utility function to ensure consistency
   const percentage = calculateWinPercentageUtil(wins, losses);
-  
+
   // Format as percentage string with 1 decimal place
   const formattedPercentage = (percentage * 100).toFixed(1);
-  
+
   return formattedPercentage;
 };
 
@@ -29,31 +28,32 @@ export const calculateWinPercentage = (team: Team | undefined) => {
  * Kept for backward compatibility with any remaining call sites.
  */
 export const calculateTeamStats = async (
-  team: Team | undefined, 
-  allTeams: Team[] | undefined, 
+  team: Team | undefined,
+  allTeams: Team[] | undefined,
   matches: Match[] | undefined
 ) => {
-  if (!team || !matches) return {
-    gamesWon: 0,
-    gamesLost: 0,
-    gameWinPercentage: "0.0",
-    strengthOfSchedule: "0.00",
-    closeMatchLosses: 0,
-    powerScore: 0.0
-  };
-  
+  if (!team || !matches)
+    return {
+      gamesWon: 0,
+      gamesLost: 0,
+      gameWinPercentage: '0.0',
+      strengthOfSchedule: '0.00',
+      closeMatchLosses: 0,
+      powerScore: 0.0,
+    };
+
   let gamesWon = 0;
   let gamesLost = 0;
   let closeMatchLosses = 0;
-  
+
   // Calculate games won and lost
-  matches.forEach(match => {
+  matches.forEach((match) => {
     if (!match.iscompleted) return;
-    
+
     if (match.team1Id === team.id) {
       gamesWon += match.team1_game_wins || 0;
       gamesLost += match.team2_game_wins || 0;
-      
+
       // Check for close match loss (lost match but won at least one game)
       if (match.loserId === team.id && (match.team1_game_wins || 0) > 0) {
         closeMatchLosses++;
@@ -61,40 +61,40 @@ export const calculateTeamStats = async (
     } else if (match.team2Id === team.id) {
       gamesWon += match.team2_game_wins || 0;
       gamesLost += match.team1_game_wins || 0;
-      
+
       // Check for close match loss (lost match but won at least one game)
       if (match.loserId === team.id && (match.team2_game_wins || 0) > 0) {
         closeMatchLosses++;
       }
     }
   });
-  
+
   const totalGames = gamesWon + gamesLost;
-  const gameWinPercentage = totalGames > 0 ? ((gamesWon / totalGames) * 100).toFixed(1) : "0.0";
-  
+  const gameWinPercentage = totalGames > 0 ? ((gamesWon / totalGames) * 100).toFixed(1) : '0.0';
+
   // Calculate SOS using cached division weights
   let strengthOfSchedule = 0.5;
   if (team && allTeams) {
     const divisionWeights = await fetchDivisionWeights();
     strengthOfSchedule = calculateSOS(team, allTeams, matches, divisionWeights);
   }
-  
+
   // Note: We now rely on the database view to calculate the power score with the weighted algorithm
   // We provide a simple version here as fallback, but the actual weighted calculations
   // should come from v_team_details
   const winPercentValue = calculateWinPercentageUtil(team.wins || 0, team.losses || 0);
   const gameWinPercentValue = parseFloat(gameWinPercentage) / 100;
-  
+
   // Use the new weighted formula (40/45/15)
-  const powerScore = (winPercentValue * 0.4) + (strengthOfSchedule * 0.45) + (gameWinPercentValue * 0.15);
+  const powerScore = winPercentValue * 0.4 + strengthOfSchedule * 0.45 + gameWinPercentValue * 0.15;
   const formattedPowerScore = (powerScore * 100).toFixed(1);
-  
+
   return {
     gamesWon,
     gamesLost,
     gameWinPercentage,
     strengthOfSchedule: strengthOfSchedule.toFixed(2),
     closeMatchLosses,
-    powerScore: parseFloat(formattedPowerScore)
+    powerScore: parseFloat(formattedPowerScore),
   };
 };

@@ -1,20 +1,21 @@
+import { format } from 'date-fns';
+import { motion } from 'framer-motion';
+import { CalendarIcon, Filter, Info, X } from 'lucide-react';
+import React from 'react';
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { CalendarIcon, Filter, Info, X } from "lucide-react";
-import { format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { FilterState } from "./types";
-import { motion } from "framer-motion";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+} from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+import { FilterState } from './types';
 
 interface FilterBarProps {
   filters: FilterState;
@@ -29,21 +30,21 @@ const FilterBar: React.FC<FilterBarProps> = ({
   brackets,
   onDateChange,
   onBracketChange,
-  onClearFilters
+  onClearFilters,
 }) => {
   const hasActiveFilters = filters.date || filters.bracketId;
-  
+
   return (
     <div className="flex flex-col gap-3 w-full">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Popover>
           <PopoverTrigger asChild>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full justify-start min-h-[44px] transition-all duration-200 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:text-gray-200"
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {filters.date ? format(filters.date, "MMM d, yyyy") : "Filter by Date"}
+              {filters.date ? format(filters.date, 'MMM d, yyyy') : 'Filter by Date'}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -57,8 +58,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
           </PopoverContent>
         </Popover>
 
-        <Select 
-          value={filters.bracketId || undefined} 
+        <Select
+          value={filters.bracketId || undefined}
           onValueChange={(value) => onBracketChange(value || undefined)}
         >
           <SelectTrigger className="w-full min-h-[44px] dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:text-gray-200">
@@ -66,7 +67,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Brackets</SelectItem>
-            {brackets.map(bracket => (
+            {brackets.map((bracket) => (
               <SelectItem key={bracket.id} value={bracket.id}>
                 {bracket.title}
               </SelectItem>
@@ -96,13 +97,13 @@ const FilterBar: React.FC<FilterBarProps> = ({
       )}
 
       {hasActiveFilters ? (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="self-start"
         >
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             onClick={onClearFilters}
             size="sm"
             className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors duration-200 dark:text-gray-400 dark:hover:text-gray-200"

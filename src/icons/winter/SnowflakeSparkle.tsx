@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface SnowflakeSparkleProps extends React.SVGProps<SVGSVGElement> {
   size?: number | string;
@@ -8,11 +8,7 @@ interface SnowflakeSparkleProps extends React.SVGProps<SVGSVGElement> {
  * Snowflake with sparkle effect - Enhanced winter accent
  * Used for hero sections, special highlights
  */
-const SnowflakeSparkle: React.FC<SnowflakeSparkleProps> = ({ 
-  size = 24, 
-  className,
-  ...props 
-}) => (
+const SnowflakeSparkle: React.FC<SnowflakeSparkleProps> = ({ size = 24, className, ...props }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}

@@ -1,6 +1,6 @@
+import { act, renderHook } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
 import { useTeamSelectionState } from '../useTeamSelectionState';
 
 describe('useTeamSelectionState', () => {
@@ -9,9 +9,7 @@ describe('useTeamSelectionState', () => {
   });
 
   it('should initialize with correct state', () => {
-    const { result } = renderHook(() => 
-      useTeamSelectionState(16, new Set(), 10, 2)
-    );
+    const { result } = renderHook(() => useTeamSelectionState(16, new Set(), 10, 2));
 
     expect(result.current.count).toBe(0);
     expect(result.current.canSelectMore).toBe(true);
@@ -21,9 +19,7 @@ describe('useTeamSelectionState', () => {
   });
 
   it('should handle team toggle correctly', () => {
-    const { result } = renderHook(() => 
-      useTeamSelectionState(16, new Set(), 10, 2)
-    );
+    const { result } = renderHook(() => useTeamSelectionState(16, new Set(), 10, 2));
 
     act(() => {
       result.current.handleTeamToggle('team-1');
@@ -35,9 +31,7 @@ describe('useTeamSelectionState', () => {
   });
 
   it('should prevent selection beyond maximum', () => {
-    const { result } = renderHook(() => 
-      useTeamSelectionState(2, new Set(), 10, 2)
-    );
+    const { result } = renderHook(() => useTeamSelectionState(2, new Set(), 10, 2));
 
     // Add first team
     act(() => {
@@ -62,9 +56,7 @@ describe('useTeamSelectionState', () => {
   });
 
   it('should clear selection correctly', () => {
-    const { result } = renderHook(() => 
-      useTeamSelectionState(16, new Set(['team-1']), 10, 2)
-    );
+    const { result } = renderHook(() => useTeamSelectionState(16, new Set(['team-1']), 10, 2));
 
     expect(result.current.count).toBe(1);
 
@@ -79,9 +71,7 @@ describe('useTeamSelectionState', () => {
   });
 
   it('should toggle teams on and off correctly', () => {
-    const { result } = renderHook(() => 
-      useTeamSelectionState(16, new Set(), 10, 2)
-    );
+    const { result } = renderHook(() => useTeamSelectionState(16, new Set(), 10, 2));
 
     // Add team
     act(() => {
@@ -101,9 +91,7 @@ describe('useTeamSelectionState', () => {
   });
 
   it('should validate selection correctly', () => {
-    const { result } = renderHook(() => 
-      useTeamSelectionState(16, new Set(), 10, 2)
-    );
+    const { result } = renderHook(() => useTeamSelectionState(16, new Set(), 10, 2));
 
     // Not valid with 0 teams (minimum is 2)
     expect(result.current.isValid).toBe(false);

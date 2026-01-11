@@ -1,10 +1,11 @@
+import { motion } from 'framer-motion';
+import { Users } from 'lucide-react';
+import React from 'react';
 
-import React from "react";
-import { Team } from "@/types";
-import { Users } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { motion } from "framer-motion";
-import MatchPairsList, { MatchPair } from "./MatchPairsList";
+import { Switch } from '@/components/ui/switch';
+import { Team } from '@/types';
+
+import MatchPairsList, { MatchPair } from './MatchPairsList';
 
 interface MatchPairsSectionProps {
   matchPairs: MatchPair[];
@@ -21,7 +22,7 @@ export const MatchPairsSection: React.FC<MatchPairsSectionProps> = ({
   updateMatchPair,
   removeMatchPair,
   showAutoSchedule,
-  setShowAutoSchedule
+  setShowAutoSchedule,
 }) => {
   return (
     <>
@@ -30,13 +31,10 @@ export const MatchPairsSection: React.FC<MatchPairsSectionProps> = ({
           <Users className="h-4 w-4 text-muted-foreground" />
           <span className="font-medium">Match Pairings</span>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <span className="text-sm text-muted-foreground">Auto Schedule</span>
-          <Switch 
-            checked={showAutoSchedule} 
-            onCheckedChange={setShowAutoSchedule}
-          />
+          <Switch checked={showAutoSchedule} onCheckedChange={setShowAutoSchedule} />
         </div>
       </div>
 

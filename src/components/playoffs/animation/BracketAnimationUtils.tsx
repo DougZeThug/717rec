@@ -1,5 +1,4 @@
-
-import { animations } from "@/styles/design-system";
+import { animations } from '@/styles/design-system';
 
 // Animation keyframes for bracket updates
 export const matchUpdateKeyframes = `

@@ -87,21 +87,21 @@ ORDER BY g.number, r.number, m.number;
 
 /**
  * Usage examples:
- * 
+ *
  * // In Supabase SQL Editor or via supabase client:
- * 
+ *
  * // 1. Check LB R1 state after QF updates
- * const { data } = await supabase.rpc('execute_sql', { 
- *   query: LB_R1_SNAPSHOT(32) 
+ * const { data } = await supabase.rpc('execute_sql', {
+ *   query: LB_R1_SNAPSHOT(32)
  * });
- * 
+ *
  * // 2. Reset a specific LB match for re-testing
- * await supabase.rpc('execute_sql', { 
- *   query: RESET_LB_R1_MATCH(439) 
+ * await supabase.rpc('execute_sql', {
+ *   query: RESET_LB_R1_MATCH(439)
  * });
- * 
+ *
  * // 3. Get full bracket state
- * const { data } = await supabase.rpc('execute_sql', { 
- *   query: STAGE_MATCHES_SNAPSHOT(32) 
+ * const { data } = await supabase.rpc('execute_sql', {
+ *   query: STAGE_MATCHES_SNAPSHOT(32)
  * });
  */

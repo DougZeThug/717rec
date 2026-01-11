@@ -1,11 +1,11 @@
+import { describe, expect, it } from 'vitest';
 
-import { describe, it, expect } from 'vitest';
-import { 
-  calculateDivisionRecords, 
-  categorizeDivision, 
-  getTierFromWeight 
+import {
+  calculateDivisionRecords,
+  categorizeDivision,
+  getTierFromWeight,
 } from '../calculateDivisionRecords';
-import { MatchData, ArchivedMatchData, PlayoffMatchData } from '../types';
+import { ArchivedMatchData, MatchData, PlayoffMatchData } from '../types';
 
 describe('categorizeDivision', () => {
   it('returns null for null input', () => {
@@ -45,7 +45,7 @@ describe('getTierFromWeight', () => {
   it('returns intermediate for weight >= 0.40 and < 0.89', () => {
     expect(getTierFromWeight(0.88)).toBe('intermediate');
     expect(getTierFromWeight(0.7)).toBe('intermediate');
-    expect(getTierFromWeight(0.40)).toBe('intermediate');
+    expect(getTierFromWeight(0.4)).toBe('intermediate');
   });
 
   it('returns recreational for weight < 0.40', () => {
@@ -65,13 +65,13 @@ describe('calculateDivisionRecords', () => {
       playoffMatches: null,
       teamDivisionMap: new Map(),
       bracketDivisionWeights: {},
-      teamId
+      teamId,
     });
 
     expect(result).toEqual({
       competitive: { wins: 0, losses: 0 },
       intermediate: { wins: 0, losses: 0 },
-      recreational: { wins: 0, losses: 0 }
+      recreational: { wins: 0, losses: 0 },
     });
   });
 
@@ -85,8 +85,8 @@ describe('calculateDivisionRecords', () => {
         team1_game_wins: 2,
         team2_game_wins: 0,
         season_id: 'season-1',
-        team2: { id: 'team-2', divisions: { name: 'Competitive' } }
-      }
+        team2: { id: 'team-2', divisions: { name: 'Competitive' } },
+      },
     ];
 
     const result = calculateDivisionRecords({
@@ -95,7 +95,7 @@ describe('calculateDivisionRecords', () => {
       playoffMatches: null,
       teamDivisionMap: new Map(),
       bracketDivisionWeights: {},
-      teamId
+      teamId,
     });
 
     expect(result.competitive.wins).toBe(1);
@@ -112,8 +112,8 @@ describe('calculateDivisionRecords', () => {
         team1_game_wins: 1,
         team2_game_wins: 2,
         season_id: 'season-1',
-        team2: { id: 'team-2', divisions: { name: 'Intermediate' } }
-      }
+        team2: { id: 'team-2', divisions: { name: 'Intermediate' } },
+      },
     ];
 
     const result = calculateDivisionRecords({
@@ -122,7 +122,7 @@ describe('calculateDivisionRecords', () => {
       playoffMatches: null,
       teamDivisionMap: new Map(),
       bracketDivisionWeights: {},
-      teamId
+      teamId,
     });
 
     expect(result.intermediate.wins).toBe(0);
@@ -138,8 +138,8 @@ describe('calculateDivisionRecords', () => {
         team2_id: 'team-2',
         team1_game_wins: 2,
         team2_game_wins: 0,
-        season_id: 'season-old'
-      }
+        season_id: 'season-old',
+      },
     ];
 
     const teamDivisionMap = new Map<string, string>();
@@ -151,7 +151,7 @@ describe('calculateDivisionRecords', () => {
       playoffMatches: null,
       teamDivisionMap,
       bracketDivisionWeights: {},
-      teamId
+      teamId,
     });
 
     expect(result.recreational.wins).toBe(1);
@@ -166,7 +166,7 @@ describe('calculateDivisionRecords', () => {
         team2_id: 'team-2',
         team1_score: 2,
         team2_score: 0,
-        bracket_id: 'comp-bracket'
+        bracket_id: 'comp-bracket',
       },
       {
         winner_id: 'team-1',
@@ -175,8 +175,8 @@ describe('calculateDivisionRecords', () => {
         team2_id: 'team-3',
         team1_score: 2,
         team2_score: 1,
-        bracket_id: 'rec-bracket'
-      }
+        bracket_id: 'rec-bracket',
+      },
     ];
 
     const result = calculateDivisionRecords({
@@ -186,9 +186,9 @@ describe('calculateDivisionRecords', () => {
       teamDivisionMap: new Map(),
       bracketDivisionWeights: {
         'comp-bracket': 1.0,
-        'rec-bracket': 0.25
+        'rec-bracket': 0.25,
       },
-      teamId
+      teamId,
     });
 
     expect(result.competitive.wins).toBe(1);
@@ -204,8 +204,8 @@ describe('calculateDivisionRecords', () => {
         team2_id: 'team-2',
         team1_score: 2,
         team2_score: 0,
-        bracket_id: null
-      }
+        bracket_id: null,
+      },
     ];
 
     const result = calculateDivisionRecords({
@@ -214,7 +214,7 @@ describe('calculateDivisionRecords', () => {
       playoffMatches,
       teamDivisionMap: new Map(),
       bracketDivisionWeights: {},
-      teamId
+      teamId,
     });
 
     expect(result.competitive.wins).toBe(0);

@@ -1,11 +1,12 @@
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
-import { useMemo } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Team } from "@/types";
-import { teamLog, errorLog } from "@/utils/logger";
+import { useQuery, UseQueryResult } from '@tanstack/react-query';
+import { useMemo } from 'react';
+
+import { supabase } from '@/integrations/supabase/client';
+import { Team } from '@/types';
+import { errorLog, teamLog } from '@/utils/logger';
 
 // Unified query key for teams
-export const TEAMS_QUERY_KEY = "teams" as const;
+export const TEAMS_QUERY_KEY = 'teams' as const;
 
 // Options for team queries
 export interface TeamsQueryOptions {
@@ -43,7 +44,7 @@ interface VTeamDetailsRow {
 export function transformTeamRow(row: VTeamDetailsRow): Team {
   return {
     id: row.team_id,
-    name: row.name || "Unnamed Team",
+    name: row.name || 'Unnamed Team',
     logoUrl: row.logo_url || null,
     imageUrl: row.image_url || null,
     players: Array.isArray(row.players) ? row.players : [],
@@ -55,8 +56,8 @@ export function transformTeamRow(row: VTeamDetailsRow): Team {
     division_id: row.division_id || null,
     division: row.division_id || null, // Legacy compatibility
     divisionName: row.divisionname || null,
-    sos: typeof row.sos === "number" ? row.sos : 0.5,
-    power_score: typeof row.power_score === "number" ? row.power_score : 0,
+    sos: typeof row.sos === 'number' ? row.sos : 0.5,
+    power_score: typeof row.power_score === 'number' ? row.power_score : 0,
     win_percentage: row.win_percentage || 0,
     game_win_percentage: row.game_win_percentage || 0,
     close_match_losses: row.close_match_losses,
@@ -78,7 +79,7 @@ function buildQueryKey(options?: TeamsQueryOptions): (string | TeamsQueryOptions
  */
 async function fetchTeams(options?: TeamsQueryOptions): Promise<Team[]> {
   let query = supabase
-    .from("v_team_details")
+    .from('v_team_details')
     .select(
       `
       team_id,
@@ -100,16 +101,16 @@ async function fetchTeams(options?: TeamsQueryOptions): Promise<Team[]> {
       close_match_losses
     `
     )
-    .order("name");
+    .order('name');
 
   if (options?.divisionId) {
-    query = query.eq("division_id", options.divisionId);
+    query = query.eq('division_id', options.divisionId);
   }
 
   const { data, error } = await query;
 
   if (error) {
-    errorLog("Error fetching teams:", error);
+    errorLog('Error fetching teams:', error);
     throw error;
   }
 
@@ -126,7 +127,7 @@ async function fetchTeams(options?: TeamsQueryOptions): Promise<Team[]> {
   // Filter out hidden teams unless explicitly included
   const filteredTeams = options?.includeHidden
     ? uniqueTeams
-    : uniqueTeams.filter((team) => team.divisionname !== "Hidden");
+    : uniqueTeams.filter((team) => team.divisionname !== 'Hidden');
 
   teamLog(
     `Loaded ${filteredTeams.length} of ${uniqueTeams.length} teams (hidden filtered: ${!options?.includeHidden})`
@@ -139,9 +140,7 @@ async function fetchTeams(options?: TeamsQueryOptions): Promise<Team[]> {
  * Primary hook for fetching teams as an array
  * Uses TanStack Query for caching and deduplication
  */
-export function useTeamsQuery(
-  options?: TeamsQueryOptions
-): UseQueryResult<Team[], Error> {
+export function useTeamsQuery(options?: TeamsQueryOptions): UseQueryResult<Team[], Error> {
   return useQuery({
     queryKey: buildQueryKey(options),
     queryFn: () => fetchTeams(options),

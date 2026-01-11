@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const MOBILE_BREAKPOINT = 768;
 
@@ -16,19 +15,19 @@ export function useIsMobile(): boolean {
     }
     return false;
   });
-  
+
   useEffect(() => {
     // Check if we're in a browser environment
     if (typeof window === 'undefined' || !window.matchMedia) return;
-    
+
     // Use matchMedia to avoid forced reflow from reading innerWidth
     const mediaQuery = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
-    
+
     // Handler for media query changes
     const handleChange = (e: MediaQueryListEvent) => {
       setIsMobile(e.matches);
     };
-    
+
     // Modern browsers use addEventListener, older use addListener
     if (mediaQuery.addEventListener) {
       mediaQuery.addEventListener('change', handleChange);
@@ -36,7 +35,7 @@ export function useIsMobile(): boolean {
       // Fallback for older browsers
       mediaQuery.addListener(handleChange);
     }
-    
+
     // Clean up
     return () => {
       if (mediaQuery.removeEventListener) {
@@ -46,7 +45,7 @@ export function useIsMobile(): boolean {
       }
     };
   }, []);
-  
+
   return isMobile;
 }
 

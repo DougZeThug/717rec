@@ -35,7 +35,7 @@ export const initAnalytics = () => {
   window.gtag = function gtag(...args: unknown[]) {
     window.dataLayer.push(args);
   };
-  
+
   window.gtag('js', new Date());
   window.gtag('config', GA_MEASUREMENT_ID, {
     send_page_view: false, // We'll track manually for SPA

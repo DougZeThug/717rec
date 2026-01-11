@@ -1,15 +1,17 @@
-import React from "react";
-import { MousePointer } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { FormSectionProps } from "./types";
-import { SectionHeader } from "./SectionHeader";
+import { MousePointer } from 'lucide-react';
+import React from 'react';
+
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+
+import { SectionHeader } from './SectionHeader';
+import { FormSectionProps } from './types';
 
 export const CallToActionSection: React.FC<FormSectionProps> = ({ formData, onChange }) => {
   return (
     <div className="bg-card rounded-lg border p-4">
       <SectionHeader icon={MousePointer} title="Call to Action" />
-      
+
       <div className="space-y-4">
         <div>
           <Label htmlFor="cta_label">Button Text</Label>

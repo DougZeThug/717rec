@@ -1,6 +1,6 @@
+import React from 'react';
 
-import React from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 
 interface ReactionPickerSectionProps {
   emojis: string[];
@@ -8,10 +8,10 @@ interface ReactionPickerSectionProps {
   label: string;
 }
 
-const ReactionPickerSection: React.FC<ReactionPickerSectionProps> = ({ 
-  emojis, 
-  onSelect, 
-  label 
+const ReactionPickerSection: React.FC<ReactionPickerSectionProps> = ({
+  emojis,
+  onSelect,
+  label,
 }) => (
   <div className="space-y-1">
     <div className="text-xs font-medium text-muted-foreground px-1">{label}</div>

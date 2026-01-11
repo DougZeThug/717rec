@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { CareerRanking } from '@/types/career';
+
 import { useIsMobile } from '@/hooks/use-mobile';
-import CareerRankingsMobileView from './CareerRankingsMobileView';
+import { CareerRanking } from '@/types/career';
+
 import CareerRankingsDesktopView from './CareerRankingsDesktopView';
+import CareerRankingsMobileView from './CareerRankingsMobileView';
 
 interface CareerRankingsTableProps {
   rankings: CareerRanking[];
@@ -15,17 +17,20 @@ export interface CareerSortOptions {
   direction: CareerSortDirection;
 }
 
-const CareerRankingsTable: React.FC<CareerRankingsTableProps> = ({ rankings, showHidden = false }) => {
+const CareerRankingsTable: React.FC<CareerRankingsTableProps> = ({
+  rankings,
+  showHidden = false,
+}) => {
   const isMobile = useIsMobile();
   const [sortOptions, setSortOptions] = useState<CareerSortOptions>({
     field: 'careerPowerScore',
-    direction: 'desc'
+    direction: 'desc',
   });
 
   const handleSortChange = (field: string) => {
-    setSortOptions(prev => ({
+    setSortOptions((prev) => ({
       field,
-      direction: prev.field === field && prev.direction === 'desc' ? 'asc' : 'desc'
+      direction: prev.field === field && prev.direction === 'desc' ? 'asc' : 'desc',
     }));
   };
 
@@ -35,7 +40,7 @@ const CareerRankingsTable: React.FC<CareerRankingsTableProps> = ({ rankings, sho
       const { field, direction } = sortOptions;
       const aVal = a[field as keyof CareerRanking] as number;
       const bVal = b[field as keyof CareerRanking] as number;
-      
+
       const result = direction === 'asc' ? aVal - bVal : bVal - aVal;
       return result;
     });

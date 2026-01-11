@@ -1,13 +1,13 @@
-import { defineConfig, type PluginOption } from "vite";
-import react from "@vitejs/plugin-react-swc";
-import path from "path";
-import { componentTagger } from "lovable-tagger";
-import { beasties } from "vite-plugin-beasties";
+import react from '@vitejs/plugin-react-swc';
+import { componentTagger } from 'lovable-tagger';
+import path from 'path';
+import { defineConfig, type PluginOption } from 'vite';
+import { beasties } from 'vite-plugin-beasties';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "::",
+    host: '::',
     port: 8080,
   },
   build: {
@@ -21,27 +21,28 @@ export default defineConfig(({ mode }) => ({
           'vendor-dnd': ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities'],
           'vendor-supabase': ['@supabase/supabase-js'],
           'vendor-brackets': ['brackets-manager', 'brackets-model', 'brackets-memory-db'],
-        }
-      }
-    }
+        },
+      },
+    },
   },
   plugins: [
     react(),
     mode === 'development' && componentTagger(),
-    mode === 'production' && beasties({
-      options: {
-        preload: 'swap',
-        pruneSource: false,
-        inlineThreshold: 2000,
-        reduceInlineStyles: true,
-        mergeStylesheets: true,
-        additionalStylesheets: [],
-      },
-    }),
+    mode === 'production' &&
+      beasties({
+        options: {
+          preload: 'swap',
+          pruneSource: false,
+          inlineThreshold: 2000,
+          reduceInlineStyles: true,
+          mergeStylesheets: true,
+          additionalStylesheets: [],
+        },
+      }),
   ].filter(Boolean) as PluginOption[],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      '@': path.resolve(__dirname, './src'),
     },
   },
   test: {

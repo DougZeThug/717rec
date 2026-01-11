@@ -1,6 +1,5 @@
-
-import React from "react";
-import { HelpCircle } from "lucide-react";
+import { HelpCircle } from 'lucide-react';
+import React from 'react';
 
 /**
  * Provides helpful information about how auto-scheduling works
@@ -12,7 +11,7 @@ const InformationSection: React.FC = () => {
         <HelpCircle className="h-3.5 w-3.5" />
         <h4 className="font-medium">How Auto-scheduling Works:</h4>
       </div>
-      
+
       <ul className="list-disc pl-5 space-y-1">
         <li>Teams are matched based on skill levels using power scores and win records</li>
         <li>Algorithm avoids pairing teams that have already played against each other</li>

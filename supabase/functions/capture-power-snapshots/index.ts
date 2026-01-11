@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,27 +14,27 @@ Deno.serve(async (req) => {
   // Validate webhook secret for cron calls
   const webhookSecret = Deno.env.get('CRON_WEBHOOK_SECRET');
   const authHeader = req.headers.get('Authorization');
-  
+
   if (!webhookSecret) {
     console.error('[capture-power-snapshots] CRON_WEBHOOK_SECRET not configured');
-    return new Response(
-      JSON.stringify({ success: false, error: 'Server configuration error' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-    );
+    return new Response(JSON.stringify({ success: false, error: 'Server configuration error' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
+    });
   }
-  
+
   if (authHeader !== `Bearer ${webhookSecret}`) {
     console.warn('[capture-power-snapshots] Unauthorized request attempt');
-    return new Response(
-      JSON.stringify({ success: false, error: 'Unauthorized' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
-    );
+    return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 401,
+    });
   }
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     console.log('[capture-power-snapshots] Starting weekly snapshot capture...');
@@ -48,20 +48,21 @@ Deno.serve(async (req) => {
 
     if (seasonError || !activeSeason) {
       console.error('[capture-power-snapshots] No active season found:', seasonError);
-      return new Response(
-        JSON.stringify({ success: false, error: 'No active season found' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
+      return new Response(JSON.stringify({ success: false, error: 'No active season found' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
     }
 
-    console.log(`[capture-power-snapshots] Active season: ${activeSeason.name} (${activeSeason.id})`);
+    console.log(
+      `[capture-power-snapshots] Active season: ${activeSeason.name} (${activeSeason.id})`
+    );
 
     // 2. Calculate current week number
-    const { data: weekData, error: weekError } = await supabase
-      .rpc('get_season_week_number', { 
-        p_season_id: activeSeason.id,
-        p_date: new Date().toISOString().split('T')[0]
-      });
+    const { data: weekData, error: weekError } = await supabase.rpc('get_season_week_number', {
+      p_season_id: activeSeason.id,
+      p_date: new Date().toISOString().split('T')[0],
+    });
 
     if (weekError) {
       console.error('[capture-power-snapshots] Error calculating week number:', weekError);
@@ -85,10 +86,10 @@ Deno.serve(async (req) => {
     if (existingSnapshot && existingSnapshot.length > 0) {
       console.log(`[capture-power-snapshots] Snapshot already exists for week ${weekNumber}`);
       return new Response(
-        JSON.stringify({ 
-          success: true, 
+        JSON.stringify({
+          success: true,
           message: `Snapshot already exists for week ${weekNumber}`,
-          skipped: true 
+          skipped: true,
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -102,24 +103,28 @@ Deno.serve(async (req) => {
 
     if (teamsError) {
       console.error('[capture-power-snapshots] Error fetching team data:', teamsError);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Failed to fetch team data' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-      );
+      return new Response(JSON.stringify({ success: false, error: 'Failed to fetch team data' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      });
     }
 
     console.log(`[capture-power-snapshots] Found ${teams?.length || 0} teams with power scores`);
 
     if (!teams || teams.length === 0) {
       return new Response(
-        JSON.stringify({ success: true, message: 'No teams with power scores to snapshot', count: 0 }),
+        JSON.stringify({
+          success: true,
+          message: 'No teams with power scores to snapshot',
+          count: 0,
+        }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     // 5. Prepare snapshot records
     const snapshotDate = new Date().toISOString().split('T')[0];
-    const snapshots = teams.map(team => ({
+    const snapshots = teams.map((team) => ({
       team_id: team.team_id,
       season_id: activeSeason.id,
       week_number: weekNumber,
@@ -130,7 +135,7 @@ Deno.serve(async (req) => {
       match_losses: team.losses || 0,
       game_wins: team.game_wins || 0,
       game_losses: team.game_losses || 0,
-      division_id: team.division_id
+      division_id: team.division_id,
     }));
 
     // 6. Batch insert into power_score_snapshots
@@ -141,24 +146,29 @@ Deno.serve(async (req) => {
     if (insertError) {
       console.error('[capture-power-snapshots] Error inserting snapshots:', insertError);
       return new Response(
-        JSON.stringify({ success: false, error: 'Failed to insert snapshots', details: insertError.message }),
+        JSON.stringify({
+          success: false,
+          error: 'Failed to insert snapshots',
+          details: insertError.message,
+        }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
       );
     }
 
-    console.log(`[capture-power-snapshots] Successfully captured ${snapshots.length} team snapshots for week ${weekNumber}`);
+    console.log(
+      `[capture-power-snapshots] Successfully captured ${snapshots.length} team snapshots for week ${weekNumber}`
+    );
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         message: `Captured ${snapshots.length} team snapshots`,
         season: activeSeason.name,
         week: weekNumber,
-        count: snapshots.length
+        count: snapshots.length,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
-
   } catch (error) {
     console.error('[capture-power-snapshots] Unexpected error:', error);
     return new Response(

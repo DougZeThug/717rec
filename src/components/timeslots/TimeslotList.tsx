@@ -1,16 +1,6 @@
-import React, { useState } from "react";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { Clock, Loader2 } from "lucide-react";
-import { Team, TeamTimeslot } from "@/types";
-import { InlineEmptyState } from "@/components/ui/inline-empty-state";
-import { DestructiveIconButton } from "@/components/ui/destructive-icon-button";
+import { Clock, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,7 +10,18 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
+import { DestructiveIconButton } from '@/components/ui/destructive-icon-button';
+import { InlineEmptyState } from '@/components/ui/inline-empty-state';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Team, TeamTimeslot } from '@/types';
 
 interface TimeslotListProps {
   timeslots: TeamTimeslot[];
@@ -28,21 +29,17 @@ interface TimeslotListProps {
   onDelete: (id: string) => void;
 }
 
-const TimeslotList: React.FC<TimeslotListProps> = ({ 
-  timeslots, 
-  teams,
-  onDelete 
-}) => {
+const TimeslotList: React.FC<TimeslotListProps> = ({ timeslots, teams, onDelete }) => {
   const [deletingTimeslotId, setDeletingTimeslotId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Helper function to get team name by ID
   const getTeamName = (teamId: string | null): string => {
     if (!teamId) return 'Unknown Team';
-    const team = teams.find(t => t.id === teamId);
+    const team = teams.find((t) => t.id === teamId);
     return team ? team.name : 'Unknown Team';
   };
-  
+
   // Sort timeslots by time
   const sortedTimeslots = [...timeslots].sort((a, b) => {
     if (a.timeslot < b.timeslot) return -1;
@@ -50,8 +47,8 @@ const TimeslotList: React.FC<TimeslotListProps> = ({
     return 0;
   });
 
-  const timeslotToDelete = deletingTimeslotId 
-    ? timeslots.find(t => t.id === deletingTimeslotId) 
+  const timeslotToDelete = deletingTimeslotId
+    ? timeslots.find((t) => t.id === deletingTimeslotId)
     : null;
 
   const handleConfirmDelete = async () => {
@@ -64,7 +61,7 @@ const TimeslotList: React.FC<TimeslotListProps> = ({
       setIsDeleting(false);
     }
   };
-  
+
   if (timeslots.length === 0) {
     return (
       <InlineEmptyState
@@ -103,14 +100,25 @@ const TimeslotList: React.FC<TimeslotListProps> = ({
         </Table>
       </div>
 
-      <AlertDialog open={!!deletingTimeslotId} onOpenChange={(open) => !open && setDeletingTimeslotId(null)}>
+      <AlertDialog
+        open={!!deletingTimeslotId}
+        onOpenChange={(open) => !open && setDeletingTimeslotId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Remove Timeslot</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove the timeslot{timeslotToDelete ? (
-                <> for <strong>{getTeamName(timeslotToDelete.team_id)}</strong> at <strong>{timeslotToDelete.timeslot}</strong></>
-              ) : ''}? This action cannot be undone.
+              Are you sure you want to remove the timeslot
+              {timeslotToDelete ? (
+                <>
+                  {' '}
+                  for <strong>{getTeamName(timeslotToDelete.team_id)}</strong> at{' '}
+                  <strong>{timeslotToDelete.timeslot}</strong>
+                </>
+              ) : (
+                ''
+              )}
+              ? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -129,7 +137,7 @@ const TimeslotList: React.FC<TimeslotListProps> = ({
                   Removing...
                 </>
               ) : (
-                "Remove"
+                'Remove'
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

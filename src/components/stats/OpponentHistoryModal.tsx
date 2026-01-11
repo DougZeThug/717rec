@@ -1,11 +1,12 @@
-import React from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { useOpponentHistory } from "@/hooks/useHeadToHead";
-import { format } from "date-fns";
-import { MapPin, Calendar } from "lucide-react";
-import { LoadingState } from "@/components/ui/loading-state";
+import { format } from 'date-fns';
+import { Calendar, MapPin } from 'lucide-react';
+import React from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { LoadingState } from '@/components/ui/loading-state';
+import { useOpponentHistory } from '@/hooks/useHeadToHead';
 
 interface OpponentHistoryModalProps {
   isOpen: boolean;
@@ -20,7 +21,7 @@ export const OpponentHistoryModal: React.FC<OpponentHistoryModalProps> = ({
   onClose,
   teamId,
   opponentId,
-  opponentName
+  opponentName,
 }) => {
   const { data: history, isLoading } = useOpponentHistory(teamId, opponentId);
 
@@ -32,9 +33,7 @@ export const OpponentHistoryModal: React.FC<OpponentHistoryModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
-            Head-to-Head vs {opponentName}
-          </DialogTitle>
+          <DialogTitle className="text-xl font-bold">Head-to-Head vs {opponentName}</DialogTitle>
         </DialogHeader>
 
         {/* Summary Stats */}
@@ -59,9 +58,9 @@ export const OpponentHistoryModal: React.FC<OpponentHistoryModalProps> = ({
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-               <div className="text-2xl font-bold text-primary">
-                 {Number(summary.win_pct).toFixed(1)}%
-               </div>
+              <div className="text-2xl font-bold text-primary">
+                {Number(summary.win_pct).toFixed(1)}%
+              </div>
               <div className="text-sm text-muted-foreground">Win Rate</div>
             </CardContent>
           </Card>
@@ -80,10 +79,12 @@ export const OpponentHistoryModal: React.FC<OpponentHistoryModalProps> = ({
           <Card>
             <CardContent className="p-4 text-center">
               <div className="text-xl font-bold text-primary">
-                {summary.game_wins + summary.game_losses > 0 
-                  ? ((summary.game_wins / (summary.game_wins + summary.game_losses)) * 100).toFixed(1)
-                  : '0.0'
-                }%
+                {summary.game_wins + summary.game_losses > 0
+                  ? ((summary.game_wins / (summary.game_wins + summary.game_losses)) * 100).toFixed(
+                      1
+                    )
+                  : '0.0'}
+                %
               </div>
               <div className="text-sm text-muted-foreground">Game Win Rate</div>
             </CardContent>
@@ -100,14 +101,16 @@ export const OpponentHistoryModal: React.FC<OpponentHistoryModalProps> = ({
           ) : (
             <div className="space-y-3">
               {matches.map((match) => {
-                const isWin = match.winner_name === (teamId === match.team1_name ? match.team1_name : match.team2_name);
+                const isWin =
+                  match.winner_name ===
+                  (teamId === match.team1_name ? match.team1_name : match.team2_name);
                 return (
                   <Card key={match.id}>
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
-                          <Badge variant={isWin ? "default" : "secondary"}>
-                            {isWin ? "W" : "L"}
+                          <Badge variant={isWin ? 'default' : 'secondary'}>
+                            {isWin ? 'W' : 'L'}
                           </Badge>
                           <div>
                             <div className="font-medium">
@@ -115,7 +118,7 @@ export const OpponentHistoryModal: React.FC<OpponentHistoryModalProps> = ({
                             </div>
                             <div className="text-sm text-muted-foreground flex items-center space-x-2">
                               <Calendar className="w-3 h-3" />
-                              <span>{format(new Date(match.date), "MMM d, yyyy")}</span>
+                              <span>{format(new Date(match.date), 'MMM d, yyyy')}</span>
                               {match.location && (
                                 <>
                                   <MapPin className="w-3 h-3" />

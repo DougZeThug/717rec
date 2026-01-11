@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useMemo } from 'react';
 import {
-  DndContext,
   closestCenter,
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
-  DragStartEvent,
-  DragOverlay,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -16,6 +15,13 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
+import { useQueryClient } from '@tanstack/react-query';
+import { AnimatePresence } from 'framer-motion';
+import { AlertTriangle, Loader2 } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -24,15 +30,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, AlertTriangle } from 'lucide-react';
-import { bracketManagerService } from '@/services/brackets/manager';
 import { useToast } from '@/hooks/use-toast';
-import { useQueryClient } from '@tanstack/react-query';
-import { SortableTeamItem } from './form/bracket-teams/components/SortableTeamItem';
+import { bracketManagerService } from '@/services/brackets/manager';
+
 import { DragOverlayItem } from './form/bracket-teams/components/DragOverlayItem';
-import { AnimatePresence } from 'framer-motion';
+import { SortableTeamItem } from './form/bracket-teams/components/SortableTeamItem';
 
 interface Participant {
   id: number;
@@ -61,7 +63,7 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
   bracketId,
   bracketName,
   currentParticipants,
-  bracketState
+  bracketState,
 }) => {
   const [teams, setTeams] = useState<TeamItem[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -84,23 +86,20 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
   // Update teams whenever currentParticipants changes
   useEffect(() => {
     const processedTeams = currentParticipants
-      .filter(p => p.name !== null)
+      .filter((p) => p.name !== null)
       .sort((a, b) => (a.position || 0) - (b.position || 0))
       .map((p, idx) => ({
         id: String(p.id),
         name: p.name,
-        seed: p.position || idx + 1
+        seed: p.position || idx + 1,
       }));
-    
+
     setTeams(processedTeams);
   }, [currentParticipants]);
 
   const canUpdate = bracketState === 'pending';
 
-  const activeTeam = useMemo(() => 
-    teams.find(t => t.id === activeId),
-    [teams, activeId]
-  );
+  const activeTeam = useMemo(() => teams.find((t) => t.id === activeId), [teams, activeId]);
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(String(event.active.id));
@@ -115,13 +114,13 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
     setTeams((items) => {
       const oldIndex = items.findIndex((item) => item.id === active.id);
       const newIndex = items.findIndex((item) => item.id === over.id);
-      
+
       const reordered = arrayMove(items, oldIndex, newIndex);
-      
+
       // Reassign seeds based on new order
       return reordered.map((team, idx) => ({
         ...team,
-        seed: idx + 1
+        seed: idx + 1,
       }));
     });
   };
@@ -132,7 +131,7 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
       await bracketManagerService.updateSeeding({
         bracketId,
         newSeeding: teams,
-        keepSameSize: true
+        keepSameSize: true,
       });
 
       toast({
@@ -143,7 +142,7 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
       queryClient.invalidateQueries({ queryKey: ['bracket', bracketId] });
       queryClient.invalidateQueries({ queryKey: ['brackets'] });
       queryClient.invalidateQueries({ queryKey: ['bracket-participants', bracketId] });
-      
+
       onOpenChange(false);
     } catch (error) {
       toast({
@@ -160,7 +159,7 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
     const sorted = [...teams].sort((a, b) => a.seed - b.seed);
     const matchups = [];
     const halfPoint = Math.ceil(sorted.length / 2);
-    
+
     for (let i = 0; i < halfPoint; i++) {
       const team1 = sorted[i];
       const team2 = sorted[sorted.length - 1 - i];
@@ -169,15 +168,15 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
           seed1: team1.seed,
           team1: team1.name,
           seed2: team2.seed,
-          team2: team2.name
+          team2: team2.name,
         });
       }
     }
-    
+
     return matchups;
   };
 
-  const teamIds = useMemo(() => teams.map(t => t.id), [teams]);
+  const teamIds = useMemo(() => teams.map((t) => t.id), [teams]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -185,7 +184,8 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Update Bracket Seeding</DialogTitle>
           <DialogDescription>
-            Drag teams to reorder seeding. Changes will update matchups if no results have been entered yet.
+            Drag teams to reorder seeding. Changes will update matchups if no results have been
+            entered yet.
           </DialogDescription>
         </DialogHeader>
 
@@ -193,15 +193,15 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Cannot update seeding after matches have started. 
-              This bracket is currently {bracketState.replace('_', ' ')}.
+              Cannot update seeding after matches have started. This bracket is currently{' '}
+              {bracketState.replace('_', ' ')}.
             </AlertDescription>
           </Alert>
         )}
 
         <div className="py-4">
           <h3 className="text-sm font-medium mb-3">Drag to Reorder Teams:</h3>
-          
+
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
@@ -224,15 +224,14 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
               </div>
             </SortableContext>
 
-            <DragOverlay dropAnimation={{
-              duration: 200,
-              easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
-            }}>
+            <DragOverlay
+              dropAnimation={{
+                duration: 200,
+                easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+              }}
+            >
               {activeTeam ? (
-                <DragOverlayItem
-                  name={activeTeam.name}
-                  seed={activeTeam.seed}
-                />
+                <DragOverlayItem name={activeTeam.name} seed={activeTeam.seed} />
               ) : null}
             </DragOverlay>
           </DndContext>
@@ -243,26 +242,23 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
           <div className="space-y-1 text-sm">
             {generateFirstRoundPreview().map((matchup, idx) => (
               <div key={idx} className="flex justify-between items-center py-1">
-                <span className="flex-1">#{matchup.seed1} {matchup.team1}</span>
+                <span className="flex-1">
+                  #{matchup.seed1} {matchup.team1}
+                </span>
                 <span className="text-muted-foreground px-2">vs</span>
-                <span className="flex-1 text-right">#{matchup.seed2} {matchup.team2}</span>
+                <span className="flex-1 text-right">
+                  #{matchup.seed2} {matchup.team2}
+                </span>
               </div>
             ))}
           </div>
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isSubmitting}
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
             Cancel
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={!canUpdate || isSubmitting}
-          >
+          <Button onClick={handleSubmit} disabled={!canUpdate || isSubmitting}>
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Update Seeding
           </Button>

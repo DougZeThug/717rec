@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface FrostCrystalProps extends React.SVGProps<SVGSVGElement> {
   size?: number | string;
@@ -8,11 +8,7 @@ interface FrostCrystalProps extends React.SVGProps<SVGSVGElement> {
  * Frost Crystal glyph - Geometric winter accent
  * Used for card accents, decorative corners
  */
-const FrostCrystal: React.FC<FrostCrystalProps> = ({ 
-  size = 24, 
-  className,
-  ...props 
-}) => (
+const FrostCrystal: React.FC<FrostCrystalProps> = ({ size = 24, className, ...props }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -27,10 +23,10 @@ const FrostCrystal: React.FC<FrostCrystalProps> = ({
     {...props}
   >
     {/* Central hexagon */}
-    <polygon 
-      points="12,3 18.5,7.5 18.5,16.5 12,21 5.5,16.5 5.5,7.5" 
-      fill="currentColor" 
-      fillOpacity="0.1" 
+    <polygon
+      points="12,3 18.5,7.5 18.5,16.5 12,21 5.5,16.5 5.5,7.5"
+      fill="currentColor"
+      fillOpacity="0.1"
     />
     <polygon points="12,3 18.5,7.5 18.5,16.5 12,21 5.5,16.5 5.5,7.5" />
     {/* Inner crystal lines */}

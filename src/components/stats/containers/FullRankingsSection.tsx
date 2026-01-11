@@ -1,6 +1,8 @@
-import React from "react";
-import FullRankings from "../FullRankings";
-import { Ranking } from "@/types";
+import React from 'react';
+
+import { Ranking } from '@/types';
+
+import FullRankings from '../FullRankings';
 
 interface FullRankingsSectionProps {
   rankings: Ranking[];

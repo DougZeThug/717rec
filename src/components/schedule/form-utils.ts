@@ -1,6 +1,5 @@
-
+import { timezoneLog } from '@/utils/logger';
 import { createUTCDateWithTime, formatUTCToLocalTimeString } from '@/utils/timezone';
-import { timezoneLog } from "@/utils/logger";
 
 /**
  * Format a date object for use in an HTML date input
@@ -23,27 +22,27 @@ export const parseDateFromInput = (dateString: string): Date => {
  */
 export const createDateWithTime = (date: Date, timeSlot: string | null): Date => {
   if (!timeSlot) {
-    timezoneLog("No time slot provided, returning date with default time");
+    timezoneLog('No time slot provided, returning date with default time');
     return date;
   }
-  
-  timezoneLog("Creating date with time:", {
+
+  timezoneLog('Creating date with time:', {
     date: date.toString(),
     timeSlot,
-    action: "Converting to UTC for storage"
+    action: 'Converting to UTC for storage',
   });
-  
+
   // Use our fixed utility to handle time conversion properly
   const utcDate = createUTCDateWithTime(date, timeSlot);
-  
+
   // Add extra validation logging
-  timezoneLog("Time conversion complete:", {
+  timezoneLog('Time conversion complete:', {
     originalTimeSlot: timeSlot,
     resultTime: utcDate.toISOString(),
     utcHours: utcDate.getUTCHours(),
-    utcMinutes: utcDate.getUTCMinutes()
+    utcMinutes: utcDate.getUTCMinutes(),
   });
-  
+
   return utcDate;
 };
 
@@ -63,17 +62,17 @@ export const determineMatchOutcome = (
   team2Id: string,
   team1Score: number | undefined,
   team2Score: number | undefined
-): { winnerId?: string, loserId?: string } => {
+): { winnerId?: string; loserId?: string } => {
   if (!isCompleted || team1Score === undefined || team2Score === undefined) {
     return {};
   }
-  
+
   if (team1Score > team2Score) {
     return { winnerId: team1Id, loserId: team2Id };
   } else if (team2Score > team1Score) {
     return { winnerId: team2Id, loserId: team1Id };
   }
-  
+
   return {};
 };
 
@@ -83,8 +82,8 @@ export const determineMatchOutcome = (
  */
 export const isEveningMatch = (date: Date): boolean => {
   if (!date) return false;
-  
+
   const hours = date.getHours();
   // Consider matches after 6pm to be "evening" matches
-  return hours >= 18; 
+  return hours >= 18;
 };

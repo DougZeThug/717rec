@@ -1,13 +1,15 @@
-import React from "react";
-import { cn } from "@/lib/utils";
-import { Ranking } from "@/types";
-import { Link } from "react-router";
-import { TeamLogo } from "@/components/shared/TeamLogo";
-import RankTrendIndicator from "./RankTrendIndicator";
-import TeamBadgeCollection from "@/components/badges/TeamBadgeCollection";
-import { getPowerScoreColor, getSosColor, formatPowerScore } from "@/utils/colors";
-import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
-import { EntityCard } from "@/components/ui/entity-card";
+import React from 'react';
+import { Link } from 'react-router';
+
+import TeamBadgeCollection from '@/components/badges/TeamBadgeCollection';
+import { TeamLogo } from '@/components/shared/TeamLogo';
+import { EntityCard } from '@/components/ui/entity-card';
+import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
+import { cn } from '@/lib/utils';
+import { Ranking } from '@/types';
+import { formatPowerScore, getPowerScoreColor, getSosColor } from '@/utils/colors';
+
+import RankTrendIndicator from './RankTrendIndicator';
 
 interface RankingCardProps {
   ranking: Ranking;
@@ -19,14 +21,14 @@ interface RankingCardProps {
   showDivision?: boolean;
 }
 
-const RankingCard: React.FC<RankingCardProps> = ({ 
-  ranking, 
-  index, 
+const RankingCard: React.FC<RankingCardProps> = ({
+  ranking,
+  index,
   showRankChange = true,
   expandedTeam,
   onToggleExpand,
   compactView = false,
-  showDivision = false
+  showDivision = false,
 }) => {
   const { isWinterTheme } = useSeasonalTheme();
   const globalRank = index + 1;
@@ -57,7 +59,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
   if (compactView) {
     return (
       <EntityCard
-        className={cn("ranking-card p-3 cursor-pointer")}
+        className={cn('ranking-card p-3 cursor-pointer')}
         onClick={handleToggleExpand}
         withGradient={false}
       >
@@ -66,21 +68,12 @@ const RankingCard: React.FC<RankingCardProps> = ({
             <span className="text-sm font-bold whitespace-nowrap text-foreground">
               {formatRankDisplay()}
             </span>
-            {showRankChange && (
-              <RankTrendIndicator rankChange={ranking.rankChange} />
-            )}
+            {showRankChange && <RankTrendIndicator rankChange={ranking.rankChange} />}
           </div>
-          <TeamBadgeCollection
-            teamId={ranking.teamId}
-            size="sm"
-            maxDisplay={2}
-          />
+          <TeamBadgeCollection teamId={ranking.teamId} size="sm" maxDisplay={2} />
         </div>
-        
-        <Link 
-          to={`/teams/${ranking.teamId}`}
-          className="flex items-center gap-2 mt-2 group"
-        >
+
+        <Link to={`/teams/${ranking.teamId}`} className="flex items-center gap-2 mt-2 group">
           <TeamLogo
             imageUrl={ranking.imageUrl || ranking.logoUrl}
             teamName={ranking.teamName}
@@ -92,9 +85,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
               {ranking.teamName}
             </h3>
             {showDivision && ranking.divisionName && (
-              <p className="text-xs text-muted-foreground">
-                {ranking.divisionName}
-              </p>
+              <p className="text-xs text-muted-foreground">{ranking.divisionName}</p>
             )}
           </div>
         </Link>
@@ -103,33 +94,41 @@ const RankingCard: React.FC<RankingCardProps> = ({
           <span className="tabular-nums text-muted-foreground">
             {ranking.wins}-{ranking.losses}
           </span>
-          <span className={cn("font-medium tabular-nums", getPowerScoreColor(ranking.powerScore))}>
+          <span className={cn('font-medium tabular-nums', getPowerScoreColor(ranking.powerScore))}>
             {formatPowerScore(ranking.powerScore)}
           </span>
         </div>
 
         {isExpanded && (
-          <div className={cn(
-            "mt-3 pt-3 border-t",
-            isWinterTheme ? "border-frost-border/30" : "border-border"
-          )}>
+          <div
+            className={cn(
+              'mt-3 pt-3 border-t',
+              isWinterTheme ? 'border-frost-border/30' : 'border-border'
+            )}
+          >
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div>
                 <p className="text-muted-foreground">Win %</p>
-                <p className={cn(
-                  "font-bold tabular-nums",
-                  !hasGames ? "text-muted-foreground" :
-                  winPercentage >= 75 ? "text-green-600 dark:text-green-500" :
-                  winPercentage >= 60 ? "text-blue-600 dark:text-blue-500" :
-                  winPercentage >= 40 ? "text-orange-500 dark:text-orange-400" :
-                  "text-red-600 dark:text-red-500"
-                )}>
+                <p
+                  className={cn(
+                    'font-bold tabular-nums',
+                    !hasGames
+                      ? 'text-muted-foreground'
+                      : winPercentage >= 75
+                        ? 'text-green-600 dark:text-green-500'
+                        : winPercentage >= 60
+                          ? 'text-blue-600 dark:text-blue-500'
+                          : winPercentage >= 40
+                            ? 'text-orange-500 dark:text-orange-400'
+                            : 'text-red-600 dark:text-red-500'
+                  )}
+                >
                   {hasGames ? `${winPercentage.toFixed(1)}%` : '—'}
                 </p>
               </div>
               <div>
                 <p className="text-muted-foreground">SOS</p>
-                <p className={cn("font-bold tabular-nums", getSosColor(ranking.sos || 0))}>
+                <p className={cn('font-bold tabular-nums', getSosColor(ranking.sos || 0))}>
                   {(ranking.sos || 0).toFixed(3)}
                 </p>
               </div>
@@ -147,21 +146,12 @@ const RankingCard: React.FC<RankingCardProps> = ({
           <span className="text-lg font-bold whitespace-nowrap text-foreground">
             {formatRankDisplay()}
           </span>
-          {showRankChange && (
-            <RankTrendIndicator rankChange={ranking.rankChange} />
-          )}
+          {showRankChange && <RankTrendIndicator rankChange={ranking.rankChange} />}
         </div>
-        <TeamBadgeCollection 
-          teamId={ranking.teamId}
-          size="sm"
-          maxDisplay={3}
-        />
+        <TeamBadgeCollection teamId={ranking.teamId} size="sm" maxDisplay={3} />
       </div>
-      
-      <Link 
-        to={`/teams/${ranking.teamId}`}
-        className="flex items-center gap-3 mb-4 group"
-      >
+
+      <Link to={`/teams/${ranking.teamId}`} className="flex items-center gap-3 mb-4 group">
         <TeamLogo
           imageUrl={ranking.imageUrl || ranking.logoUrl}
           teamName={ranking.teamName}
@@ -172,9 +162,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
           <h3 className="font-semibold transition-colors truncate text-foreground group-hover:text-primary">
             {ranking.teamName}
           </h3>
-          <p className="text-sm text-muted-foreground">
-            {ranking.divisionName}
-          </p>
+          <p className="text-sm text-muted-foreground">{ranking.divisionName}</p>
         </div>
       </Link>
 
@@ -187,14 +175,20 @@ const RankingCard: React.FC<RankingCardProps> = ({
         </div>
         <div>
           <p className="font-medium text-muted-foreground">Win %</p>
-          <p className={cn(
-            "font-bold tabular-nums",
-            !hasGames ? "text-muted-foreground" :
-            winPercentage >= 75 ? "text-green-600 dark:text-green-500" :
-            winPercentage >= 60 ? "text-blue-600 dark:text-blue-500" :
-            winPercentage >= 40 ? "text-orange-500 dark:text-orange-400" :
-            "text-red-600 dark:text-red-500"
-          )}>
+          <p
+            className={cn(
+              'font-bold tabular-nums',
+              !hasGames
+                ? 'text-muted-foreground'
+                : winPercentage >= 75
+                  ? 'text-green-600 dark:text-green-500'
+                  : winPercentage >= 60
+                    ? 'text-blue-600 dark:text-blue-500'
+                    : winPercentage >= 40
+                      ? 'text-orange-500 dark:text-orange-400'
+                      : 'text-red-600 dark:text-red-500'
+            )}
+          >
             {hasGames ? `${winPercentage.toFixed(1)}%` : '—'}
           </p>
         </div>
@@ -206,25 +200,30 @@ const RankingCard: React.FC<RankingCardProps> = ({
         </div>
         <div>
           <p className="font-medium text-muted-foreground">Game %</p>
-          <p className={cn(
-            "font-bold tabular-nums",
-            gameWinPercentage >= 75 ? "text-green-600 dark:text-green-500" :
-            gameWinPercentage >= 60 ? "text-blue-600 dark:text-blue-500" :
-            gameWinPercentage >= 40 ? "text-orange-500 dark:text-orange-400" :
-            "text-red-600 dark:text-red-500"
-          )}>
+          <p
+            className={cn(
+              'font-bold tabular-nums',
+              gameWinPercentage >= 75
+                ? 'text-green-600 dark:text-green-500'
+                : gameWinPercentage >= 60
+                  ? 'text-blue-600 dark:text-blue-500'
+                  : gameWinPercentage >= 40
+                    ? 'text-orange-500 dark:text-orange-400'
+                    : 'text-red-600 dark:text-red-500'
+            )}
+          >
             {gameWinPercentage.toFixed(1)}%
           </p>
         </div>
         <div>
           <p className="font-medium text-muted-foreground">Power</p>
-          <p className={cn("font-bold tabular-nums", getPowerScoreColor(ranking.powerScore))}>
+          <p className={cn('font-bold tabular-nums', getPowerScoreColor(ranking.powerScore))}>
             {formatPowerScore(ranking.powerScore)}
           </p>
         </div>
         <div>
           <p className="font-medium text-muted-foreground">SOS</p>
-          <p className={cn("font-bold tabular-nums", getSosColor(ranking.sos || 0))}>
+          <p className={cn('font-bold tabular-nums', getSosColor(ranking.sos || 0))}>
             {(ranking.sos || 0).toFixed(3)}
           </p>
         </div>

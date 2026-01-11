@@ -1,12 +1,11 @@
-
-import { PlayoffMatch, PlayoffMatchType } from "@/utils/playoffs/playoffTypes";
+import { PlayoffMatch, PlayoffMatchType } from '@/utils/playoffs/playoffTypes';
 
 /**
  * Maps database match records to the PlayoffMatch type used in the application
  */
 export function toRuntime(dbMatch: any): PlayoffMatch {
   if (!dbMatch) return null as any;
-  
+
   return {
     id: dbMatch.id,
     round: dbMatch.round || dbMatch.round_number,
@@ -19,14 +18,14 @@ export function toRuntime(dbMatch: any): PlayoffMatch {
     team2Score: dbMatch.team2_score || null,
     team1GameWins: dbMatch.team1_game_wins || null,
     team2GameWins: dbMatch.team2_game_wins || null,
-    matchType: (dbMatch.match_type || "winners") as PlayoffMatchType,
+    matchType: (dbMatch.match_type || 'winners') as PlayoffMatchType,
     bestOf: dbMatch.best_of || 3,
     team1Seed: dbMatch.team1_seed || dbMatch.metadata?.team1_seed || null,
     team2Seed: dbMatch.team2_seed || dbMatch.metadata?.team2_seed || null,
     nextWinMatchId: dbMatch.next_win_match_id || dbMatch.next_match_id || null,
     nextLoseMatchId: dbMatch.next_lose_match_id || dbMatch.next_loser_match_id || null,
     bracket_id: dbMatch.bracket_id,
-    status: dbMatch.status || (dbMatch.iscompleted ? "completed" : "pending")
+    status: dbMatch.status || (dbMatch.iscompleted ? 'completed' : 'pending'),
   };
 }
 
@@ -51,13 +50,13 @@ export function toDatabase(match: PlayoffMatch): any {
     best_of: match.bestOf,
     metadata: {
       team1_seed: match.team1Seed,
-      team2_seed: match.team2Seed
+      team2_seed: match.team2Seed,
     },
     next_win_match_id: match.nextWinMatchId,
     next_lose_match_id: match.nextLoseMatchId,
     next_match_id: match.nextWinMatchId,
     next_loser_match_id: match.nextLoseMatchId,
     bracket_id: match.bracket_id,
-    status: match.status
+    status: match.status,
   };
 }

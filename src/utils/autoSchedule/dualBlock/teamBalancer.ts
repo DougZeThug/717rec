@@ -1,7 +1,6 @@
-
-import { Team } from "@/types";
-import { DualBlockConfig } from "@/types/autoSchedule";
-import { NotificationCallback } from "@/types/dualBlock";
+import { Team } from '@/types';
+import { DualBlockConfig } from '@/types/autoSchedule';
+import { NotificationCallback } from '@/types/dualBlock';
 
 /**
  * Result of balancing teams between blocks
@@ -25,7 +24,7 @@ export interface TeamBalanceResult {
 
 /**
  * Balances teams between two time blocks to ensure even counts in each
- * 
+ *
  * @param primaryTeams - Teams in the primary block
  * @param secondaryTeams - Teams in the secondary block
  * @param config - Configuration for dual block pairing
@@ -42,33 +41,33 @@ export const balanceTeamsBetweenBlocks = (
   const primaryAdjusted = [...primaryTeams];
   const secondaryAdjusted = [...secondaryTeams];
   const unmatchedTeamIds: string[] = [];
-  
+
   // Check if both blocks have even numbers of teams
   const primaryIsEven = primaryAdjusted.length % 2 === 0;
   const secondaryIsEven = secondaryAdjusted.length % 2 === 0;
-  
+
   if (!primaryIsEven && !secondaryIsEven) {
     // Both blocks have odd counts
     // Strategy: Move lowest ranked team to unmatched
-    
+
     const strategy = config.unmatchedTeamStrategy || 'lowest-rank';
-    
+
     if (strategy === 'lowest-rank') {
       // Sort by power score (ascending)
       primaryAdjusted.sort((a, b) => (a.power_score || 0) - (b.power_score || 0));
       secondaryAdjusted.sort((a, b) => (a.power_score || 0) - (b.power_score || 0));
-      
+
       // Remove lowest ranked team from primary block
       const removedTeam = primaryAdjusted.shift();
-      
+
       if (removedTeam) {
         unmatchedTeamIds.push(removedTeam.id);
-        
+
         if (notifyCallback) {
           notifyCallback({
-            title: "Team Balancing",
+            title: 'Team Balancing',
             description: `Team "${removedTeam.name}" was removed from scheduling due to odd team count.`,
-            variant: "default"
+            variant: 'default',
           });
         }
       }
@@ -83,11 +82,10 @@ export const balanceTeamsBetweenBlocks = (
       }
     }
     // For 'manual' strategy, we don't automatically adjust teams
-    
   } else if (!primaryIsEven) {
     // Only primary block has odd count - remove one team from primary to make it even
     const strategy = config.unmatchedTeamStrategy || 'lowest-rank';
-    
+
     if (strategy === 'lowest-rank') {
       primaryAdjusted.sort((a, b) => (a.power_score || 0) - (b.power_score || 0));
       const removedTeam = primaryAdjusted.shift();
@@ -95,9 +93,9 @@ export const balanceTeamsBetweenBlocks = (
         unmatchedTeamIds.push(removedTeam.id);
         if (notifyCallback) {
           notifyCallback({
-            title: "Team Balancing",
+            title: 'Team Balancing',
             description: `Team "${removedTeam.name}" was removed from scheduling due to odd team count.`,
-            variant: "default"
+            variant: 'default',
           });
         }
       }
@@ -109,7 +107,7 @@ export const balanceTeamsBetweenBlocks = (
   } else if (!secondaryIsEven) {
     // Only secondary block has odd count - remove one team from secondary to make it even
     const strategy = config.unmatchedTeamStrategy || 'lowest-rank';
-    
+
     if (strategy === 'lowest-rank') {
       secondaryAdjusted.sort((a, b) => (a.power_score || 0) - (b.power_score || 0));
       const removedTeam = secondaryAdjusted.shift();
@@ -117,9 +115,9 @@ export const balanceTeamsBetweenBlocks = (
         unmatchedTeamIds.push(removedTeam.id);
         if (notifyCallback) {
           notifyCallback({
-            title: "Team Balancing",
+            title: 'Team Balancing',
             description: `Team "${removedTeam.name}" was removed from scheduling due to odd team count.`,
-            variant: "default"
+            variant: 'default',
           });
         }
       }
@@ -129,11 +127,11 @@ export const balanceTeamsBetweenBlocks = (
       if (removedTeam) unmatchedTeamIds.push(removedTeam.id);
     }
   }
-  
+
   // Return the balanced teams
   return {
     primaryAdjusted,
     secondaryAdjusted,
-    unmatchedTeamIds
+    unmatchedTeamIds,
   };
 };

@@ -1,17 +1,18 @@
-import React, { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { UserPlus, Check, Loader2 } from "lucide-react";
-import { useAddBlindDrawSignup } from "@/hooks/useBlindDrawSignups";
-import { z } from "zod";
+import { Check, Loader2, UserPlus } from 'lucide-react';
+import React, { useState } from 'react';
+import { z } from 'zod';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useAddBlindDrawSignup } from '@/hooks/useBlindDrawSignups';
 
 const signupSchema = z.object({
-  firstName: z.string().trim().min(1, "Name required").max(30, "Too long"),
+  firstName: z.string().trim().min(1, 'Name required').max(30, 'Too long'),
   lastInitial: z
     .string()
     .trim()
-    .length(1, "Single letter")
-    .regex(/^[A-Za-z]$/, "Letter only"),
+    .length(1, 'Single letter')
+    .regex(/^[A-Za-z]$/, 'Letter only'),
 });
 
 interface BlindDrawSignupFormProps {
@@ -19,8 +20,8 @@ interface BlindDrawSignupFormProps {
 }
 
 const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) => {
-  const [firstName, setFirstName] = useState("");
-  const [lastInitial, setLastInitial] = useState("");
+  const [firstName, setFirstName] = useState('');
+  const [lastInitial, setLastInitial] = useState('');
   const [errors, setErrors] = useState<{ firstName?: string; lastInitial?: string }>({});
   const [isSignedUp, setIsSignedUp] = useState(false);
 
@@ -32,10 +33,10 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
 
     const result = signupSchema.safeParse({ firstName, lastInitial });
     if (!result.success) {
-    const fieldErrors: { firstName?: string; lastInitial?: string } = {};
+      const fieldErrors: { firstName?: string; lastInitial?: string } = {};
       result.error.issues.forEach((err) => {
-        if (err.path[0] === "firstName") fieldErrors.firstName = err.message;
-        if (err.path[0] === "lastInitial") fieldErrors.lastInitial = err.message;
+        if (err.path[0] === 'firstName') fieldErrors.firstName = err.message;
+        if (err.path[0] === 'lastInitial') fieldErrors.lastInitial = err.message;
       });
       setErrors(fieldErrors);
       return;
@@ -48,8 +49,8 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
         lastInitial: result.data.lastInitial,
       });
       setIsSignedUp(true);
-      setFirstName("");
-      setLastInitial("");
+      setFirstName('');
+      setLastInitial('');
     } catch (error) {
       // Error handled by mutation
     }
@@ -74,7 +75,7 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
         <UserPlus className="h-4 w-4 text-white" />
         <span className="text-white font-semibold text-sm">Sign Up</span>
       </div>
-      
+
       <form onSubmit={handleSubmit} className="space-y-2">
         <div className="flex gap-2">
           <div className="flex-1">
@@ -91,7 +92,7 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
               <span className="text-xs text-red-300 mt-0.5 block">{errors.firstName}</span>
             )}
           </div>
-          
+
           <div className="w-14">
             <Input
               type="text"
@@ -106,17 +107,13 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
             )}
           </div>
         </div>
-        
+
         <Button
           type="submit"
           disabled={addSignup.isPending}
           className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30 h-11 text-base"
         >
-          {addSignup.isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            "Sign Up"
-          )}
+          {addSignup.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Sign Up'}
         </Button>
       </form>
     </div>

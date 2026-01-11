@@ -1,15 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { MatchWithTeams } from "../types";
-import { ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger
-} from "@/components/ui/collapsible";
-import MatchRow from "../MatchRow";
-import { motion } from "framer-motion";
-import { scoreLog } from "@/utils/logger";
+import { motion } from 'framer-motion';
+import { ChevronDown } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { cn } from '@/lib/utils';
+import { scoreLog } from '@/utils/logger';
+
+import MatchRow from '../MatchRow';
+import { MatchWithTeams } from '../types';
 
 interface TimeSlotMatchGroupProps {
   timeSlot: string;
@@ -34,32 +32,29 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
   failedMatches = [],
   errorMessages = {},
   onClearError,
-  defaultOpen = false
+  defaultOpen = false,
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
-  
+
   // Debug log to track the matches in this group
   useEffect(() => {
-    scoreLog(`TimeSlotMatchGroup "${timeSlot}" rendering with ${matches.length} matches:`, 
+    scoreLog(
+      `TimeSlotMatchGroup "${timeSlot}" rendering with ${matches.length} matches:`,
       matches.map((m, idx) => ({
         id: m.id,
         localIndex: idx,
-        globalIndex: parseInt(m.id.split("-index-")[1] || "0", 10),
-        teams: `${m.team1?.name || 'Unknown'} vs ${m.team2?.name || 'Unknown'}`
+        globalIndex: parseInt(m.id.split('-index-')[1] || '0', 10),
+        teams: `${m.team1?.name || 'Unknown'} vs ${m.team2?.name || 'Unknown'}`,
       }))
     );
   }, [timeSlot, matches]);
 
   return (
-    <Collapsible
-      open={isOpen}
-      onOpenChange={setIsOpen}
-      className="mb-2 overflow-hidden"
-    >
-      <CollapsibleTrigger 
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-2 overflow-hidden">
+      <CollapsibleTrigger
         className={cn(
-          "flex w-full items-center justify-between p-2 text-left text-sm rounded transition-all",
-          "bg-accent/60 hover:bg-accent"
+          'flex w-full items-center justify-between p-2 text-left text-sm rounded transition-all',
+          'bg-accent/60 hover:bg-accent'
         )}
       >
         <div className="flex items-center gap-2">
@@ -68,11 +63,11 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
             {matches.length} {matches.length === 1 ? 'match' : 'matches'}
           </span>
         </div>
-        <ChevronDown 
+        <ChevronDown
           className={cn(
-            "h-4 w-4 transition-transform duration-200",
-            isOpen ? "transform rotate-180" : ""
-          )} 
+            'h-4 w-4 transition-transform duration-200',
+            isOpen ? 'transform rotate-180' : ''
+          )}
         />
       </CollapsibleTrigger>
       <CollapsibleContent>
@@ -84,15 +79,15 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
         >
           {matches.map((match, localIndex) => {
             // Extract the global index from the match ID
-            const globalIndex = parseInt(match.id.split("-index-")[1] || "0", 10);
-            
+            const globalIndex = parseInt(match.id.split('-index-')[1] || '0', 10);
+
             scoreLog(`Rendering match at timeslot "${timeSlot}":`, {
               id: match.id,
               localIndex,
               globalIndex,
-              isCompleted: match.iscompleted
+              isCompleted: match.iscompleted,
             });
-            
+
             return (
               <div key={match.id} className="relative">
                 <MatchRow
@@ -101,17 +96,20 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
                   isSubmitting={submitting}
                   hasError={failedMatches?.includes(match.id)}
                   errorMessage={errorMessages?.[match.id]}
-                  onScoreChange={(team1Score, team2Score) => 
+                  onScoreChange={(team1Score, team2Score) =>
                     onScoreChange(globalIndex, team1Score, team2Score)
                   }
-                  onGameWinsChange={(team1GameWins, team2GameWins) => 
+                  onGameWinsChange={(team1GameWins, team2GameWins) =>
                     onGameWinsChange(globalIndex, team1GameWins, team2GameWins)
                   }
                   onMarkCompleted={(checked) => {
-                    scoreLog(`TimeSlotMatchGroup: Marking match ${match.id} as ${checked ? 'completed' : 'incomplete'}`, {
-                      globalIndex,
-                      localIndex
-                    });
+                    scoreLog(
+                      `TimeSlotMatchGroup: Marking match ${match.id} as ${checked ? 'completed' : 'incomplete'}`,
+                      {
+                        globalIndex,
+                        localIndex,
+                      }
+                    );
                     onMarkCompleted(globalIndex, checked);
                   }}
                   onClearError={onClearError}

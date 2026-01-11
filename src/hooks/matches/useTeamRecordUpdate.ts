@@ -1,8 +1,8 @@
+import { useToast } from '@/hooks/use-toast';
+import { useTeamRecords } from '@/hooks/useTeamRecords';
+import { warnLog } from '@/utils/logger';
 
-import { useTeamRecords } from "@/hooks/useTeamRecords";
-import { useToast } from "@/hooks/use-toast";
-import { useTeamStatsValidation } from "./validation/useTeamStatsValidation";
-import { warnLog } from "@/utils/logger";
+import { useTeamStatsValidation } from './validation/useTeamStatsValidation';
 
 export const useTeamRecordUpdate = () => {
   const { updateTeamRecords } = useTeamRecords();
@@ -10,7 +10,7 @@ export const useTeamRecordUpdate = () => {
   const { validateTeamStats } = useTeamStatsValidation();
 
   const updateTeamStats = async (
-    winnerId: string, 
+    winnerId: string,
     loserId: string,
     teams: any[],
     winnerGameWins: number,
@@ -23,7 +23,7 @@ export const useTeamRecordUpdate = () => {
       toast({
         title: 'Validation Error',
         description: validation.errorMessage,
-        variant: 'destructive'
+        variant: 'destructive',
       });
       return false;
     }
@@ -41,7 +41,7 @@ export const useTeamRecordUpdate = () => {
       toast({
         title: 'Partial Update',
         description: 'Match scores updated, but team records may not be fully synchronized.',
-        variant: 'default'
+        variant: 'default',
       });
       return false;
     }

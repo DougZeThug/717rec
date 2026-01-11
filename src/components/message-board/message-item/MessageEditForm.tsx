@@ -1,8 +1,8 @@
+import { Check, Loader2, X } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 
-import React, { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { Loader2, X, Check } from "lucide-react";
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface MessageEditFormProps {
   content: string;
@@ -15,12 +15,12 @@ const MessageEditForm: React.FC<MessageEditFormProps> = ({
   content,
   onSave,
   onCancel,
-  isProcessing = false
+  isProcessing = false,
 }) => {
   const [editedContent, setEditedContent] = useState(content);
   const [isSaving, setIsSaving] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  
+
   useEffect(() => {
     // Focus the textarea when the component mounts
     if (textareaRef.current) {
@@ -33,18 +33,18 @@ const MessageEditForm: React.FC<MessageEditFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (editedContent.trim() === "") {
+
+    if (editedContent.trim() === '') {
       return;
     }
-    
+
     if (editedContent === content) {
       onCancel();
       return;
     }
-    
+
     setIsSaving(true);
-    
+
     try {
       await onSave(editedContent);
     } finally {
@@ -53,13 +53,13 @@ const MessageEditForm: React.FC<MessageEditFormProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") {
+    if (e.key === 'Escape') {
       onCancel();
-    } else if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+    } else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
       handleSubmit(e);
     }
   };
-  
+
   return (
     <form onSubmit={handleSubmit} className="mt-2 space-y-2">
       <div className="relative">
@@ -69,8 +69,8 @@ const MessageEditForm: React.FC<MessageEditFormProps> = ({
           onChange={(e) => setEditedContent(e.target.value)}
           onKeyDown={handleKeyDown}
           className={cn(
-            "w-full min-h-[80px] p-2 border rounded-md focus:outline-none focus:ring-1",
-            "focus:ring-primary/40 resize-none text-sm"
+            'w-full min-h-[80px] p-2 border rounded-md focus:outline-none focus:ring-1',
+            'focus:ring-primary/40 resize-none text-sm'
           )}
           placeholder="Edit message..."
           disabled={isProcessing || isSaving}
@@ -79,7 +79,7 @@ const MessageEditForm: React.FC<MessageEditFormProps> = ({
           Press Esc to cancel, Ctrl+Enter to save
         </div>
       </div>
-      
+
       <div className="flex justify-end space-x-2">
         <Button
           type="button"
@@ -91,7 +91,7 @@ const MessageEditForm: React.FC<MessageEditFormProps> = ({
           <X className="h-4 w-4 mr-1" />
           Cancel
         </Button>
-        <Button 
+        <Button
           type="submit"
           size="sm"
           disabled={isProcessing || isSaving || !editedContent.trim() || editedContent === content}

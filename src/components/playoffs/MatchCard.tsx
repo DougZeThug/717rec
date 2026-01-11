@@ -1,7 +1,8 @@
+import React from 'react';
 
-import React from "react";
-import PlayoffMatchCard from "./match-card/PlayoffMatchCard";
-import type { PlayoffMatch, Team } from "@/types";
+import type { PlayoffMatch, Team } from '@/types';
+
+import PlayoffMatchCard from './match-card/PlayoffMatchCard';
 
 interface MatchCardProps {
   match: PlayoffMatch;
@@ -15,12 +16,18 @@ interface MatchCardProps {
  * MatchCard component for rendering playoff match cards
  * This is now a thin wrapper around the PlayoffMatchCard component
  */
-const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onEditMatch, hasNextMatch, isUpdated }) => {
+const MatchCard: React.FC<MatchCardProps> = ({
+  match,
+  teams,
+  onEditMatch,
+  hasNextMatch,
+  isUpdated,
+}) => {
   return (
-    <PlayoffMatchCard 
-      match={match} 
-      teams={teams} 
-      onEditMatch={onEditMatch} 
+    <PlayoffMatchCard
+      match={match}
+      teams={teams}
+      onEditMatch={onEditMatch}
       hasNextMatch={hasNextMatch}
       isUpdated={isUpdated}
     />

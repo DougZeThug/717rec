@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
-import { CareerRanking } from '@/types/career';
-import { useTeamsQuery } from './teams';
 import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+
+import { CareerRanking } from '@/types/career';
+import { errorLog, warnLog } from '@/utils/logger';
+
+import { useTeamsQuery } from './teams';
 import { fetchTeamTotals } from './useTeamTotals';
-import { warnLog, errorLog } from '@/utils/logger';
 
 const STORAGE_KEY = 'career-stats-show-hidden';
 
@@ -21,16 +23,20 @@ export function useCareerRankingsWithHidden() {
 
   // Always fetch all teams to count hidden teams
   const { data: allTeams } = useTeamsQuery({ includeHidden: true });
-  
+
   // Fetch teams based on toggle state
-  const { data: teams, isLoading: isLoadingTeams, error: teamsError } = useTeamsQuery({ includeHidden: showHidden });
+  const {
+    data: teams,
+    isLoading: isLoadingTeams,
+    error: teamsError,
+  } = useTeamsQuery({ includeHidden: showHidden });
 
   const toggleShowHidden = () => {
     setShowHidden(!showHidden);
   };
 
   const careerQuery = useQuery({
-    queryKey: ['careerRankings', teams?.map(t => t.id), showHidden],
+    queryKey: ['careerRankings', teams?.map((t) => t.id), showHidden],
     queryFn: async (): Promise<CareerRanking[]> => {
       if (!teams) return [];
 
@@ -45,40 +51,43 @@ export function useCareerRankingsWithHidden() {
           }
 
           const totalCareerMatches = totals.career_match_wins + totals.career_match_losses;
-          const careerWinPercentage = totalCareerMatches > 0 ? totals.career_match_wins / totalCareerMatches : 0;
-          
+          const careerWinPercentage =
+            totalCareerMatches > 0 ? totals.career_match_wins / totalCareerMatches : 0;
+
           const totalCareerGames = totals.career_game_wins + totals.career_game_losses;
-          const careerGameWinPercentage = totalCareerGames > 0 ? totals.career_game_wins / totalCareerGames : 0;
-          
+          const careerGameWinPercentage =
+            totalCareerGames > 0 ? totals.career_game_wins / totalCareerGames : 0;
+
           const totalPlayoffMatches = totals.career_playoff_wins + totals.career_playoff_losses;
-          const careerPlayoffWinPercentage = totalPlayoffMatches > 0 ? totals.career_playoff_wins / totalPlayoffMatches : 0;
+          const careerPlayoffWinPercentage =
+            totalPlayoffMatches > 0 ? totals.career_playoff_wins / totalPlayoffMatches : 0;
 
           const careerRanking: CareerRanking = {
             teamId: team.id,
             teamName: team.name,
             logoUrl: team.logoUrl,
             imageUrl: team.imageUrl,
-            divisionName: team.divisionName,  // Include division info
-            
+            divisionName: team.divisionName, // Include division info
+
             // Career match stats
             careerMatchWins: totals.career_match_wins,
             careerMatchLosses: totals.career_match_losses,
             careerWinPercentage,
-            
+
             // Career game stats
             careerGameWins: totals.career_game_wins,
             careerGameLosses: totals.career_game_losses,
             careerGameWinPercentage,
-            
+
             // Career playoff stats
             careerPlayoffWins: totals.career_playoff_wins,
             careerPlayoffLosses: totals.career_playoff_losses,
             careerPlayoffWinPercentage,
-            
+
             // Achievements
             championships: totals.championships,
             runnerUps: totals.runner_ups,
-            
+
             // Career power score and meta stats
             careerPowerScore: totals.career_power_score,
             careerSos: totals.career_sos,
@@ -94,7 +103,7 @@ export function useCareerRankingsWithHidden() {
 
       const results = await Promise.all(careerPromises);
       const validRankings = results.filter((ranking): ranking is CareerRanking => ranking !== null);
-      
+
       // Sort by career power score (descending)
       return validRankings.sort((a, b) => b.careerPowerScore - a.careerPowerScore);
     },
@@ -103,7 +112,9 @@ export function useCareerRankingsWithHidden() {
   });
 
   // Count hidden teams from all teams (not filtered teams)
-  const hiddenTeamCount = allTeams ? allTeams.filter(team => team.divisionName === 'Hidden').length : 0;
+  const hiddenTeamCount = allTeams
+    ? allTeams.filter((team) => team.divisionName === 'Hidden').length
+    : 0;
 
   return {
     ...careerQuery,

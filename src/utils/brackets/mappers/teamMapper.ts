@@ -1,4 +1,4 @@
-import { PlayoffTeam } from "@/utils/playoffs/playoffTypes";
+import { PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 
 /**
  * Enhanced team mapping utilities for bracket display
@@ -13,7 +13,7 @@ export interface TeamMapperOptions {
  * Creates a team lookup map for efficient team resolution
  */
 export function createTeamMap(teams: PlayoffTeam[]): Map<string, PlayoffTeam> {
-  return new Map(teams.map(team => [team.id, team]));
+  return new Map(teams.map((team) => [team.id, team]));
 }
 
 /**
@@ -25,30 +25,27 @@ export function getTeamById(
   options: TeamMapperOptions = {}
 ): PlayoffTeam | null {
   if (!teamId) return null;
-  
+
   const team = teamMap.get(teamId);
   if (team) return team;
-  
+
   // If team not found and placeholders are enabled
   if (options.includePlaceholders) {
     return createPlaceholderTeam(teamId, options.placeholderPrefix);
   }
-  
+
   return null;
 }
 
 /**
  * Creates a placeholder team for missing team references
  */
-export function createPlaceholderTeam(
-  teamId: string, 
-  prefix: string = "Team"
-): PlayoffTeam {
+export function createPlaceholderTeam(teamId: string, prefix: string = 'Team'): PlayoffTeam {
   return {
     id: teamId,
     name: `${prefix} ${teamId.substring(0, 8)}`,
     logo_url: null,
-    image_url: null
+    image_url: null,
   };
 }
 
@@ -61,15 +58,15 @@ export function validateTeamData(teams: PlayoffTeam[]): {
 } {
   const valid: PlayoffTeam[] = [];
   const invalid: any[] = [];
-  
-  teams.forEach(team => {
+
+  teams.forEach((team) => {
     if (team && typeof team === 'object' && team.id && team.name) {
       valid.push(team);
     } else {
       invalid.push(team);
     }
   });
-  
+
   return { valid, invalid };
 }
 
@@ -77,10 +74,10 @@ export function validateTeamData(teams: PlayoffTeam[]): {
  * Ensures all teams have required display properties
  */
 export function normalizeTeamsForDisplay(teams: PlayoffTeam[]): PlayoffTeam[] {
-  return teams.map(team => ({
+  return teams.map((team) => ({
     ...team,
     name: team.name || `Team ${team.id.substring(0, 8)}`,
     logo_url: team.logo_url || null,
-    image_url: team.image_url || null
+    image_url: team.image_url || null,
   }));
 }

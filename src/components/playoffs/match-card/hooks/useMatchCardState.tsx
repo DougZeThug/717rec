@@ -1,11 +1,10 @@
-
 // I'm not modifying this file, just confirming its behavior
 // The existing implementation already handles play-in placeholders:
 //
 // ```
 // const getTeamById = (id?: string | null) => {
 //   if (!id) return null;
-//   
+//
 //   // Special handling for play-in placeholders
 //   if (id.startsWith('play-in-')) {
 //     return {
@@ -14,7 +13,7 @@
 //       seed: match.team1Seed || match.team2Seed || 0
 //     } as Team;
 //   }
-//   
+//
 //   return teams.find(team => team.id === id) || null;
 // };
 // ```
@@ -25,8 +24,9 @@
 // The changes in the adapter will ensure that placeholder IDs are not sent to the database,
 // but the UI will still work correctly with null team IDs.
 
-import { useMemo } from "react";
-import { PlayoffMatch, Team } from "@/types";
+import { useMemo } from 'react';
+
+import { PlayoffMatch, Team } from '@/types';
 
 interface UseMatchCardStateProps {
   match: PlayoffMatch;
@@ -36,17 +36,17 @@ interface UseMatchCardStateProps {
 export const useMatchCardState = ({ match, teams }: UseMatchCardStateProps) => {
   const getTeamById = (id?: string | null) => {
     if (!id) return null;
-    
+
     // Special handling for play-in placeholders
     if (id.startsWith('play-in-')) {
       return {
         id,
         name: `Winner of Play-in ${id.split('-')[2]}`,
-        seed: match.team1Seed || match.team2Seed || 0
+        seed: match.team1Seed || match.team2Seed || 0,
       } as Team;
     }
-    
-    return teams.find(team => team.id === id) || null;
+
+    return teams.find((team) => team.id === id) || null;
   };
 
   const team1 = getTeamById(match.team1Id);
@@ -54,8 +54,8 @@ export const useMatchCardState = ({ match, teams }: UseMatchCardStateProps) => {
   const winner = getTeamById(match.winnerId);
 
   // Determine team seeds
-  const team1Seed = match.team1Seed || (team1?.seed || 0);
-  const team2Seed = match.team2Seed || (team2?.seed || 0);
+  const team1Seed = match.team1Seed || team1?.seed || 0;
+  const team2Seed = match.team2Seed || team2?.seed || 0;
 
   // Determine match state
   const isPending = !match.team1Id || !match.team2Id;
@@ -79,6 +79,6 @@ export const useMatchCardState = ({ match, teams }: UseMatchCardStateProps) => {
     isComplete,
     isPlayIn,
     isResetMatch,
-    seriesScoreText: getSeriesScoreText()
+    seriesScoreText: getSeriesScoreText(),
   };
 };

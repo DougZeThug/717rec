@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { BarChart3, Clock, Users, Trophy, TrendingUp, Swords } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { motion } from 'framer-motion';
+import { BarChart3, Clock, Swords, TrendingUp, Trophy, Users } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 interface Section {
   id: string;
@@ -11,22 +12,20 @@ interface Section {
 }
 
 const sections: Section[] = [
-  { id: "stats", label: "Stats", icon: BarChart3 },
-  { id: "analysis", label: "Analysis", icon: TrendingUp },
-  { id: "h2h", label: "H2H", icon: Swords },
-  { id: "matches", label: "Matches", icon: Clock },
-  { id: "career", label: "Career", icon: TrendingUp },
-  { id: "achievements", label: "Awards", icon: Trophy },
+  { id: 'stats', label: 'Stats', icon: BarChart3 },
+  { id: 'analysis', label: 'Analysis', icon: TrendingUp },
+  { id: 'h2h', label: 'H2H', icon: Swords },
+  { id: 'matches', label: 'Matches', icon: Clock },
+  { id: 'career', label: 'Career', icon: TrendingUp },
+  { id: 'achievements', label: 'Awards', icon: Trophy },
 ];
 
 interface TeamDetailsStickyNavProps {
   className?: string;
 }
 
-export const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({
-  className,
-}) => {
-  const [activeSection, setActiveSection] = useState<string>("stats");
+export const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ className }) => {
+  const [activeSection, setActiveSection] = useState<string>('stats');
   const [isVisible, setIsVisible] = useState(false);
 
   // Track which section is currently in view
@@ -40,7 +39,7 @@ export const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({
         });
       },
       {
-        rootMargin: "-80px 0px -60% 0px",
+        rootMargin: '-80px 0px -60% 0px',
         threshold: 0,
       }
     );
@@ -62,9 +61,9 @@ export const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({
       setIsVisible(window.scrollY > 200);
     };
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll(); // Check initial position
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const scrollToSection = useCallback((sectionId: string) => {
@@ -76,7 +75,7 @@ export const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({
 
       window.scrollTo({
         top: offsetPosition,
-        behavior: "smooth",
+        behavior: 'smooth',
       });
     }
   }, []);
@@ -88,12 +87,12 @@ export const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: -100, opacity: 0 }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
       className={cn(
-        "fixed top-0 left-0 right-0 z-30",
-        "bg-background/95 backdrop-blur-lg",
-        "border-b border-border",
-        "shadow-sm",
+        'fixed top-0 left-0 right-0 z-30',
+        'bg-background/95 backdrop-blur-lg',
+        'border-b border-border',
+        'shadow-sm',
         className
       )}
     >
@@ -106,11 +105,11 @@ export const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({
                 key={id}
                 onClick={() => scrollToSection(id)}
                 className={cn(
-                  "relative flex items-center gap-1.5 px-3 py-1.5 rounded-full",
-                  "text-sm font-medium transition-all whitespace-nowrap",
+                  'relative flex items-center gap-1.5 px-3 py-1.5 rounded-full',
+                  'text-sm font-medium transition-all whitespace-nowrap',
                   isActive
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'bg-muted/50 text-muted-foreground hover:bg-muted'
                 )}
               >
                 <Icon size={14} strokeWidth={isActive ? 2.5 : 2} />

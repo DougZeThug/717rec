@@ -1,14 +1,14 @@
+import { Tag } from 'lucide-react';
+import React from 'react';
 
-import React from "react";
-import { Tag } from "lucide-react";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { MessageCategory } from "@/types/reactions";
+} from '@/components/ui/select';
+import { MessageCategory } from '@/types/reactions';
 
 interface CategorySelectorProps {
   value: MessageCategory;
@@ -16,11 +16,13 @@ interface CategorySelectorProps {
   adminOnly?: boolean;
 }
 
-const CategorySelector: React.FC<CategorySelectorProps> = ({ value, onChange, adminOnly = false }) => {
-  const categories: MessageCategory[] = adminOnly 
-    ? ['General', 'Announcement'] 
-    : ['General'];
-  
+const CategorySelector: React.FC<CategorySelectorProps> = ({
+  value,
+  onChange,
+  adminOnly = false,
+}) => {
+  const categories: MessageCategory[] = adminOnly ? ['General', 'Announcement'] : ['General'];
+
   return (
     <div className="flex items-center gap-1">
       <Tag className="h-4 w-4 text-muted-foreground" />

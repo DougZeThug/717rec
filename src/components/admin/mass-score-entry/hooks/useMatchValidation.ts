@@ -1,5 +1,4 @@
-
-import { MatchWithTeams } from "../types";
+import { MatchWithTeams } from '../types';
 
 export const useMatchValidation = () => {
   const validateMatchScores = (score1?: number | null, score2?: number | null): boolean => {
@@ -14,12 +13,12 @@ export const useMatchValidation = () => {
   ): MatchWithTeams[] => {
     const newMatches = [...matches];
     const match = newMatches[index];
-    
+
     match.team1Score = team1Score;
     match.team2Score = team2Score;
     match.isEdited = true;
     match.isValid = validateMatchScores(match.team1Score, match.team2Score);
-    
+
     return newMatches;
   };
 
@@ -37,6 +36,6 @@ export const useMatchValidation = () => {
   return {
     validateMatchScores,
     handleScoreChange,
-    handleMarkCompleted
+    handleMarkCompleted,
   };
 };

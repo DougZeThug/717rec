@@ -1,9 +1,11 @@
-import React from "react";
-import { getSosColor } from "@/utils/colors";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
-import RankTrendIndicator from "../RankTrendIndicator";
-import { PowerScoreDisplay } from "@/components/ui/PowerScoreDisplay";
+import React from 'react';
+
+import { PowerScoreDisplay } from '@/components/ui/PowerScoreDisplay';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
+import { getSosColor } from '@/utils/colors';
+
+import RankTrendIndicator from '../RankTrendIndicator';
 
 interface TeamStatsGridProps {
   wins: number;
@@ -28,7 +30,7 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
   streak,
   powerScore,
   rankChange,
-  compactView = false
+  compactView = false,
 }) => {
   const isMobile = useIsMobile();
   const sosColorClass = getSosColor(sos);
@@ -36,8 +38,15 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
   if (compactView || !isMobile) {
     return (
       <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
-        <span className="tabular-nums">{wins}-{losses}</span>
-        <PowerScoreDisplay score={powerScore} source="v_team_details" display="text" className="tabular-nums" />
+        <span className="tabular-nums">
+          {wins}-{losses}
+        </span>
+        <PowerScoreDisplay
+          score={powerScore}
+          source="v_team_details"
+          display="text"
+          className="tabular-nums"
+        />
       </div>
     );
   }
@@ -49,19 +58,27 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex flex-col items-center">
           <span className="text-gray-500 dark:text-gray-400 text-xs">Record</span>
-          <span className="font-medium tabular-nums text-gray-900 dark:text-white">{wins}-{losses}</span>
+          <span className="font-medium tabular-nums text-gray-900 dark:text-white">
+            {wins}-{losses}
+          </span>
         </div>
-        
+
         <div className="flex flex-col items-center">
           <span className="text-gray-500 dark:text-gray-400 text-xs">Power</span>
-          <PowerScoreDisplay score={powerScore} source="v_team_details" display="gauge" size="sm" showLabel={false} />
+          <PowerScoreDisplay
+            score={powerScore}
+            source="v_team_details"
+            display="gauge"
+            size="sm"
+            showLabel={false}
+          />
         </div>
-        
+
         <div className="flex flex-col items-center">
           <span className="text-gray-500 dark:text-gray-400 text-xs">SOS</span>
-          <span className={cn("font-medium tabular-nums", sosColorClass)}>{sos.toFixed(3)}</span>
+          <span className={cn('font-medium tabular-nums', sosColorClass)}>{sos.toFixed(3)}</span>
         </div>
-        
+
         <div className="flex flex-col items-center">
           <span className="text-gray-500 dark:text-gray-400 text-xs">Trend</span>
           <RankTrendIndicator rankChange={rankChange} />

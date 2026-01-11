@@ -32,14 +32,7 @@ const DEFAULT_RETRY_CONFIG: RetryConfig = {
 
 // Error pattern matching
 const ERROR_PATTERNS = {
-  network: [
-    /network/i,
-    /connection/i,
-    /timeout/i,
-    /fetch/i,
-    /ECONNRESET/i,
-    /ENOTFOUND/i,
-  ],
+  network: [/network/i, /connection/i, /timeout/i, /fetch/i, /ECONNRESET/i, /ENOTFOUND/i],
   validation: [
     /invalid.*seed/i,
     /constraint.*violation/i,
@@ -47,26 +40,9 @@ const ERROR_PATTERNS = {
     /not null violation/i,
     /foreign key/i,
   ],
-  permission: [
-    /permission/i,
-    /unauthorized/i,
-    /access.*denied/i,
-    /row.*level.*security/i,
-    /rls/i,
-  ],
-  conflict: [
-    /duplicate/i,
-    /unique.*constraint/i,
-    /already.*exists/i,
-    /conflict/i,
-  ],
-  server: [
-    /internal.*server/i,
-    /500/i,
-    /502/i,
-    /503/i,
-    /504/i,
-  ],
+  permission: [/permission/i, /unauthorized/i, /access.*denied/i, /row.*level.*security/i, /rls/i],
+  conflict: [/duplicate/i, /unique.*constraint/i, /already.*exists/i, /conflict/i],
+  server: [/internal.*server/i, /500/i, /502/i, /503/i, /504/i],
 };
 
 /**
@@ -83,7 +59,7 @@ export const categorizeError = (error: unknown): ErrorCategory => {
 
   // Check against pattern categories
   for (const [category, patterns] of Object.entries(ERROR_PATTERNS)) {
-    if (patterns.some(pattern => pattern.test(errorMessage) || pattern.test(errorCode))) {
+    if (patterns.some((pattern) => pattern.test(errorMessage) || pattern.test(errorCode))) {
       return createErrorCategory(category as keyof typeof ERROR_PATTERNS, errorMessage);
     }
   }
@@ -109,12 +85,12 @@ export const shouldRetryError = (
   const retryConfig = { ...DEFAULT_RETRY_CONFIG, ...config };
   const category = categorizeError(error);
 
-  const shouldRetry = 
-    category.retryable && 
+  const shouldRetry =
+    category.retryable &&
     attemptCount < retryConfig.maxAttempts &&
     category.severity !== 'critical';
 
-  const retryDelay = shouldRetry 
+  const retryDelay = shouldRetry
     ? Math.min(
         retryConfig.baseDelay * Math.pow(retryConfig.backoffMultiplier, attemptCount),
         retryConfig.maxDelay
@@ -135,7 +111,7 @@ export const shouldRetryError = (
 export const formatUserError = (error: unknown, context?: string): string => {
   const category = categorizeError(error);
   const contextPrefix = context ? `${context}: ` : '';
-  
+
   return `${contextPrefix}${category.userMessage}`;
 };
 
@@ -148,25 +124,25 @@ export const withRetry = async <T>(
 ): Promise<T> => {
   const retryConfig = { ...DEFAULT_RETRY_CONFIG, ...config };
   let lastError: unknown;
-  
+
   for (let attempt = 0; attempt < retryConfig.maxAttempts; attempt++) {
     try {
       return await fn();
     } catch (error) {
       lastError = error;
       const retryResult = shouldRetryError(error, attempt, retryConfig);
-      
+
       if (!retryResult.shouldRetry) {
         throw error;
       }
-      
+
       // Wait before retrying
       if (retryResult.retryDelay > 0) {
-        await new Promise(resolve => setTimeout(resolve, retryResult.retryDelay));
+        await new Promise((resolve) => setTimeout(resolve, retryResult.retryDelay));
       }
     }
   }
-  
+
   throw lastError;
 };
 
@@ -189,11 +165,13 @@ function getErrorCode(error: unknown): string {
 }
 
 function isSupabaseError(error: unknown): error is PostgrestError {
-  return error !== null && 
-         typeof error === 'object' && 
-         'code' in error && 
-         'message' in error &&
-         'details' in error;
+  return (
+    error !== null &&
+    typeof error === 'object' &&
+    'code' in error &&
+    'message' in error &&
+    'details' in error
+  );
 }
 
 function categorizeSupabaseError(error: PostgrestError): ErrorCategory {
@@ -210,7 +188,7 @@ function categorizeSupabaseError(error: PostgrestError): ErrorCategory {
         userMessage: 'This seed value is already in use. Please choose a different one.',
         technicalMessage: error.message,
       };
-    
+
     case '23503': // foreign_key_violation
       return {
         type: 'validation',
@@ -219,7 +197,7 @@ function categorizeSupabaseError(error: PostgrestError): ErrorCategory {
         userMessage: 'Invalid team reference. Please refresh and try again.',
         technicalMessage: error.message,
       };
-    
+
     case '23514': // check_violation
       return {
         type: 'validation',
@@ -228,7 +206,7 @@ function categorizeSupabaseError(error: PostgrestError): ErrorCategory {
         userMessage: 'Invalid seed value. Seeds must be positive numbers.',
         technicalMessage: error.message,
       };
-    
+
     case '42501': // insufficient_privilege
       return {
         type: 'permission',
@@ -237,7 +215,7 @@ function categorizeSupabaseError(error: PostgrestError): ErrorCategory {
         userMessage: 'You do not have permission to update team seeds.',
         technicalMessage: error.message,
       };
-    
+
     default:
       // Check message patterns for unhandled codes
       if (message.includes('row level security')) {
@@ -249,7 +227,7 @@ function categorizeSupabaseError(error: PostgrestError): ErrorCategory {
           technicalMessage: error.message,
         };
       }
-      
+
       return {
         type: 'server',
         severity: 'medium',
@@ -261,7 +239,10 @@ function categorizeSupabaseError(error: PostgrestError): ErrorCategory {
 }
 
 function createErrorCategory(type: keyof typeof ERROR_PATTERNS, message: string): ErrorCategory {
-  const categoryMap: Record<keyof typeof ERROR_PATTERNS, Omit<ErrorCategory, 'technicalMessage'>> = {
+  const categoryMap: Record<
+    keyof typeof ERROR_PATTERNS,
+    Omit<ErrorCategory, 'technicalMessage'>
+  > = {
     network: {
       type: 'network',
       severity: 'medium',

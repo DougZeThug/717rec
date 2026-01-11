@@ -1,7 +1,8 @@
-import React from "react";
-import { motion } from "framer-motion";
-import { useInView } from "react-intersection-observer";
-import { cn } from "@/lib/utils";
+import { motion } from 'framer-motion';
+import React from 'react';
+import { useInView } from 'react-intersection-observer';
+
+import { cn } from '@/lib/utils';
 
 interface AnimatedChartWrapperProps {
   children: React.ReactNode;
@@ -29,7 +30,7 @@ export const AnimatedChartWrapper: React.FC<AnimatedChartWrapperProps> = ({
         delay,
         ease: [0.25, 0.46, 0.45, 0.94],
       }}
-      className={cn("w-full h-full", className)}
+      className={cn('w-full h-full', className)}
     >
       {children}
     </motion.div>

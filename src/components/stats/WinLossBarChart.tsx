@@ -1,20 +1,14 @@
-import React from "react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-import WinLossTooltip from "./WinLossTooltip";
-import { useTheme } from "next-themes";
-import { chartLog } from "@/utils/logger";
-import ChartEmptyState from "./ChartEmptyState";
+import { useTheme } from 'next-themes';
+import React from 'react';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+
+import { chartLog } from '@/utils/logger';
+
+import ChartEmptyState from './ChartEmptyState';
+import WinLossTooltip from './WinLossTooltip';
 
 const truncateLabel = (label: string, max = 10) =>
-  label.length > max ? label.slice(0, max - 1) + "…" : label;
+  label.length > max ? label.slice(0, max - 1) + '…' : label;
 
 interface BarChartProps {
   data: Array<any>;
@@ -23,17 +17,17 @@ interface BarChartProps {
 
 const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
   const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-  const chartBgColor = isDark ? "#1f2937" : "#ffffff";
-  const chartGridColor = isDark ? "#374151" : "#e5e7eb";
-  const barColorWin = "#10b981";
-  const barColorLoss = "#ef4444";
+  const isDark = resolvedTheme === 'dark';
+  const chartBgColor = isDark ? '#1f2937' : '#ffffff';
+  const chartGridColor = isDark ? '#374151' : '#e5e7eb';
+  const barColorWin = '#10b981';
+  const barColorLoss = '#ef4444';
   const maxLabelLength = isMobile ? 7 : 12;
 
   const CustomXAxisTick = (props: any) => {
     const { x, y, payload } = props;
-    if (!payload || typeof payload.value === "undefined") return null;
-    const label = payload.value || "";
+    if (!payload || typeof payload.value === 'undefined') return null;
+    const label = payload.value || '';
     const truncated = truncateLabel(label, maxLabelLength);
 
     return (
@@ -44,12 +38,12 @@ const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
           x={0}
           dy={14}
           textAnchor="end"
-          fill={isDark ? "#e5e7eb" : "#334155"}
+          fill={isDark ? '#e5e7eb' : '#334155'}
           fontSize={isMobile ? 10 : 11}
           fontFamily="'Inter', sans-serif"
           transform={`rotate(-24)`}
           style={{
-            cursor: label.length > maxLabelLength ? "pointer" : undefined,
+            cursor: label.length > maxLabelLength ? 'pointer' : undefined,
           }}
         >
           {truncated}
@@ -58,23 +52,26 @@ const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
     );
   };
 
-  chartLog("WinLossBarChart rendering with data length:", data?.length);
+  chartLog('WinLossBarChart rendering with data length:', data?.length);
 
   // Check for empty/zero data
-  const hasData = data && Array.isArray(data) && data.length > 0 && 
-    data.some(d => (d.wins || 0) + (d.losses || 0) > 0);
-  
+  const hasData =
+    data &&
+    Array.isArray(data) &&
+    data.length > 0 &&
+    data.some((d) => (d.wins || 0) + (d.losses || 0) > 0);
+
   if (!hasData) {
     return <ChartEmptyState message="Records available after matches" />;
   }
 
   chartLog(
-    "Rendering chart with data",
+    'Rendering chart with data',
     data.map((t: any, i: number) => ({
       displayName: t.displayName,
       wins: t.wins,
       losses: t.losses,
-      idx: i
+      idx: i,
     }))
   );
 
@@ -111,7 +108,7 @@ const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
             tickLine={false}
             stroke="#64748b"
             tick={{
-              fill: isDark ? "#e5e7eb" : "#334155",
+              fill: isDark ? '#e5e7eb' : '#334155',
               fontSize: 11,
               fontFamily: "'Inter', sans-serif",
             }}

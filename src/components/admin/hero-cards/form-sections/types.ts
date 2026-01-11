@@ -1,4 +1,4 @@
-import { HeroCardFormData } from "@/types/heroCard";
+import { HeroCardFormData } from '@/types/heroCard';
 
 export interface FormSectionProps {
   formData: HeroCardFormData;

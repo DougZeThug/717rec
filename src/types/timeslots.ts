@@ -1,5 +1,4 @@
-
-import { Team } from "./index";
+import { Team } from './index';
 
 export interface TeamTimeslot {
   id: string;

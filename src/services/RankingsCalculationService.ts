@@ -1,9 +1,8 @@
-
-import { Team, Match, Ranking } from "@/types";
-import { createRankingObject } from "@/utils/rankingUtils/createRankingObject";
-import { sortRankings, updateRankChanges, saveRankingsToStorage } from "@/utils/rankingUtils";
-import { fetchDivisionWeights } from "@/utils/rankingUtils/divisionWeightsCache";
-import { errorLog } from "@/utils/logger";
+import { Match, Ranking, Team } from '@/types';
+import { errorLog } from '@/utils/logger';
+import { saveRankingsToStorage, sortRankings, updateRankChanges } from '@/utils/rankingUtils';
+import { createRankingObject } from '@/utils/rankingUtils/createRankingObject';
+import { fetchDivisionWeights } from '@/utils/rankingUtils/divisionWeightsCache';
 
 export const calculateRankings = async (
   teams: Team[] | undefined,
@@ -17,9 +16,9 @@ export const calculateRankings = async (
   try {
     // Fetch division weights ONCE before processing all teams
     const divisionWeights = await fetchDivisionWeights();
-    
+
     // Create ranking objects for each team (now synchronous)
-    const unsortedRankings = teams.map(team => 
+    const unsortedRankings = teams.map((team) =>
       createRankingObject(team, teams, matches, previousRankings, divisionWeights)
     );
 

@@ -1,5 +1,4 @@
-
-import { BracketFormat } from "@/constants/brackets";
+import { BracketFormat } from '@/constants/brackets';
 
 export interface BracketFormData {
   title: string;

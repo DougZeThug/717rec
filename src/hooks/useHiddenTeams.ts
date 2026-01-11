@@ -1,7 +1,14 @@
 import { useState } from 'react';
-import { hideTeam, unhideTeam, getHiddenTeams, HideTeamResult, UnhideTeamResult } from '@/services/teams/TeamHiddenService';
+
 import { useToast } from '@/hooks/use-toast';
-import { teamLog, errorLog } from '@/utils/logger';
+import {
+  getHiddenTeams,
+  hideTeam,
+  HideTeamResult,
+  unhideTeam,
+  UnhideTeamResult,
+} from '@/services/teams/TeamHiddenService';
+import { errorLog, teamLog } from '@/utils/logger';
 
 export function useHiddenTeams() {
   const [isLoading, setIsLoading] = useState(false);
@@ -11,72 +18,75 @@ export function useHiddenTeams() {
     setIsLoading(true);
     try {
       const result = await hideTeam(teamId);
-      
+
       if (result.success) {
         toast({
-          title: "Team Hidden",
+          title: 'Team Hidden',
           description: result.message,
         });
       } else {
         toast({
-          title: "Error",
+          title: 'Error',
           description: result.message,
-          variant: "destructive"
+          variant: 'destructive',
         });
       }
-      
+
       return result;
     } catch (error) {
       errorLog('Error hiding team:', error);
       const errorResult: HideTeamResult = {
         success: false,
-        message: 'An unexpected error occurred'
+        message: 'An unexpected error occurred',
       };
-      
+
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorResult.message,
-        variant: "destructive"
+        variant: 'destructive',
       });
-      
+
       return errorResult;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleUnhideTeam = async (teamId: string, targetDivisionId: string): Promise<UnhideTeamResult> => {
+  const handleUnhideTeam = async (
+    teamId: string,
+    targetDivisionId: string
+  ): Promise<UnhideTeamResult> => {
     setIsLoading(true);
     try {
       const result = await unhideTeam(teamId, targetDivisionId);
-      
+
       if (result.success) {
         toast({
-          title: "Team Restored",
+          title: 'Team Restored',
           description: result.message,
         });
       } else {
         toast({
-          title: "Error",
+          title: 'Error',
           description: result.message,
-          variant: "destructive"
+          variant: 'destructive',
         });
       }
-      
+
       return result;
     } catch (error) {
       errorLog('Error unhiding team:', error);
       const errorResult: UnhideTeamResult = {
         success: false,
-        message: 'An unexpected error occurred'
+        message: 'An unexpected error occurred',
       };
-      
+
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorResult.message,
-        variant: "destructive"
+        variant: 'destructive',
       });
-      
+
       return errorResult;
     } finally {
       setIsLoading(false);
@@ -100,6 +110,6 @@ export function useHiddenTeams() {
     isLoading,
     hideTeam: handleHideTeam,
     unhideTeam: handleUnhideTeam,
-    getHiddenTeams: fetchHiddenTeams
+    getHiddenTeams: fetchHiddenTeams,
   };
 }
