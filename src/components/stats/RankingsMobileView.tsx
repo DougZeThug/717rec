@@ -261,7 +261,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
         variant="default"
         size="sm"
         className={cn(
-          'fixed bottom-20 right-4 z-30 rounded-full shadow-lg px-4',
+          'fixed bottom-24 right-4 z-50 rounded-full shadow-lg',
           isWinterTheme
             ? 'bg-frost-primary hover:bg-frost-primary/90 text-white'
             : 'bg-primary hover:bg-primary/90'
@@ -269,15 +269,9 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
         onClick={handleFindMyTeam}
       >
         {myTeamId ? (
-          <>
-            <User className="h-4 w-4 mr-2" />
-            My Team
-          </>
+          <User className="h-4 w-4" />
         ) : (
-          <>
-            <Search className="h-4 w-4 mr-2" />
-            Find Team
-          </>
+          <Search className="h-4 w-4" />
         )}
       </Button>
 
