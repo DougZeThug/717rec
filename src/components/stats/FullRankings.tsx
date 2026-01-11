@@ -1,6 +1,6 @@
 import { ChevronDown, Download } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,9 +28,11 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings, myTeamId }) => {
   const isLight = resolvedTheme === 'light';
   const isMobile = useIsMobile();
 
-  // Sort rankings by power score for the unified view
-  const sortedRankings =
-    view === 'all' ? [...rankings].sort((a, b) => b.powerScore - a.powerScore) : rankings;
+  // Sort rankings by power score for the unified view - memoized to prevent recreating array
+  const sortedRankings = useMemo(
+    () => (view === 'all' ? [...rankings].sort((a, b) => b.powerScore - a.powerScore) : rankings),
+    [rankings, view]
+  );
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-4">

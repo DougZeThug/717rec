@@ -1,5 +1,5 @@
 import { Trophy } from 'lucide-react';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router';
 
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,8 @@ interface TopTeamsProps {
 
 const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
   const { shouldApplyWinter } = useSeasonalTheme();
-  const topTenTeams = teams.slice(0, 10);
+  // Memoize to prevent creating new array reference on every render
+  const topTenTeams = useMemo(() => teams.slice(0, 10), [teams]);
 
   const sectionClasses = cn(
     'py-6 md:py-8 px-4 md:px-6 rounded-xl shadow-sm mb-4 mt-4',

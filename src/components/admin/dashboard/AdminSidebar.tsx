@@ -17,7 +17,7 @@ import {
   Users,
   Users2,
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import AutoScheduleTab from '@/components/admin/auto-schedule/AutoScheduleTab';
 import BatchMatchCreationTab from '@/components/admin/batch-matches/BatchMatchCreationTab';
@@ -46,41 +46,47 @@ interface AdminMenuItem {
   id: string;
   label: string;
   icon: React.ElementType;
-  component: React.ReactNode;
+  Component: React.ComponentType;
 }
 
 const adminMenuItems: AdminMenuItem[] = [
-  { id: 'timeslots', label: 'Timeslots', icon: Timer, component: <TimeslotsTab /> },
+  { id: 'timeslots', label: 'Timeslots', icon: Timer, Component: TimeslotsTab },
   {
     id: 'batch-matches',
     label: 'Match Creation',
     icon: Sparkles,
-    component: <BatchMatchCreationTab />,
+    Component: BatchMatchCreationTab,
   },
   {
     id: 'auto-schedule',
     label: 'Auto Schedule',
     icon: CalendarClock,
-    component: <AutoScheduleTab />,
+    Component: AutoScheduleTab,
   },
-  { id: 'matchups', label: 'Matchups', icon: Users2, component: <OpponentHistoryTab /> },
-  { id: 'scores', label: 'Scores', icon: ListChecks, component: <MassScoresTab /> },
-  { id: 'seasons', label: 'Season', icon: Calendar, component: <SeasonManagementTab /> },
+  { id: 'matchups', label: 'Matchups', icon: Users2, Component: OpponentHistoryTab },
+  { id: 'scores', label: 'Scores', icon: ListChecks, Component: MassScoresTab },
+  { id: 'seasons', label: 'Season', icon: Calendar, Component: SeasonManagementTab },
   {
     id: 'participation',
     label: 'Participation',
     icon: ClipboardCheck,
-    component: <SeasonParticipationTab />,
+    Component: SeasonParticipationTab,
   },
-  { id: 'requests', label: 'Requests', icon: Inbox, component: <RequestsTab /> },
-  { id: 'teams', label: 'Teams', icon: Users, component: <TeamManagementTab /> },
-  { id: 'pending-matches', label: 'Pending', icon: Clock, component: <PendingMatchesSection /> },
-  { id: 'hero-cards', label: 'Hero', icon: LayoutGrid, component: <HeroCardsTab /> },
-  { id: 'blind-draw', label: 'Blind Draw', icon: Shuffle, component: <BlindDrawSignupsTab /> },
-  { id: 'help', label: 'Help', icon: HelpCircle, component: <GettingStartedTab /> },
+  { id: 'requests', label: 'Requests', icon: Inbox, Component: RequestsTab },
+  { id: 'teams', label: 'Teams', icon: Users, Component: TeamManagementTab },
+  { id: 'pending-matches', label: 'Pending', icon: Clock, Component: PendingMatchesSection },
+  { id: 'hero-cards', label: 'Hero', icon: LayoutGrid, Component: HeroCardsTab },
+  { id: 'blind-draw', label: 'Blind Draw', icon: Shuffle, Component: BlindDrawSignupsTab },
+  { id: 'help', label: 'Help', icon: HelpCircle, Component: GettingStartedTab },
 ];
 
 const STORAGE_KEY = 'adminActiveTab';
+
+// Memoized animation props to prevent recreating objects on every render
+const sidebarAnimateProps = { expanded: { width: 240 }, collapsed: { width: 60 } };
+const sidebarTransition = { type: 'spring' as const, stiffness: 300, damping: 30 };
+const searchAnimateProps = { initial: { opacity: 0, height: 0 }, animate: { opacity: 1, height: 'auto' }, exit: { opacity: 0, height: 0 } };
+const labelAnimateProps = { initial: { opacity: 0, width: 0 }, animate: { opacity: 1, width: 'auto' }, exit: { opacity: 0, width: 0 } };
 
 const AdminSidebar: React.FC = () => {
   const isMobile = useIsMobile();
@@ -89,21 +95,30 @@ const AdminSidebar: React.FC = () => {
     return sessionStorage.getItem(STORAGE_KEY) || 'timeslots';
   });
 
-  const handleTabChange = (tabId: string) => {
+  const handleTabChange = useCallback((tabId: string) => {
     setActiveTab(tabId);
     sessionStorage.setItem(STORAGE_KEY, tabId);
-  };
+  }, []);
+
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredItems = adminMenuItems.filter((item) =>
-    item.label.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredItems = useMemo(
+    () => adminMenuItems.filter((item) =>
+      item.label.toLowerCase().includes(searchQuery.toLowerCase())
+    ),
+    [searchQuery]
   );
 
-  const activeItem = adminMenuItems.find((item) => item.id === activeTab);
+  const activeItem = useMemo(
+    () => adminMenuItems.find((item) => item.id === activeTab),
+    [activeTab]
+  );
 
   // Mobile: Use grouped collapsible navigation
   if (isMobile) {
+    const ActiveComponent = activeItem?.Component;
+
     return (
       <div className="space-y-4">
         <AdminMobileNav
@@ -112,24 +127,22 @@ const AdminSidebar: React.FC = () => {
           pendingRequestsCount={pendingRequestsCount}
         />
 
-        {/* Content - render active tab */}
-        {adminMenuItems.map((item) => (
-          <div key={item.id} className={cn(activeTab === item.id ? 'block' : 'hidden')}>
-            {item.component}
-          </div>
-        ))}
+        {/* Content - render only active tab to avoid mounting all components */}
+        {ActiveComponent && <ActiveComponent />}
       </div>
     );
   }
 
   // Desktop: Use sidebar
+  const ActiveComponent = activeItem?.Component;
+
   return (
     <div className="flex gap-6 min-h-[600px]">
       {/* Sidebar */}
       <motion.aside
         initial={false}
-        animate={{ width: isCollapsed ? 60 : 240 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        animate={isCollapsed ? sidebarAnimateProps.collapsed : sidebarAnimateProps.expanded}
+        transition={sidebarTransition}
         className={cn(
           'flex flex-col bg-card border border-border rounded-lg overflow-hidden',
           'shrink-0'
@@ -166,9 +179,7 @@ const AdminSidebar: React.FC = () => {
         <AnimatePresence>
           {!isCollapsed && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
+              {...searchAnimateProps}
               className="p-3 border-b border-border"
             >
               <div className="relative">
@@ -205,9 +216,7 @@ const AdminSidebar: React.FC = () => {
                   {!isCollapsed && (
                     <>
                       <motion.span
-                        initial={{ opacity: 0, width: 0 }}
-                        animate={{ opacity: 1, width: 'auto' }}
-                        exit={{ opacity: 0, width: 0 }}
+                        {...labelAnimateProps}
                         className="truncate flex-1 text-left"
                       >
                         {item.label}
@@ -231,13 +240,9 @@ const AdminSidebar: React.FC = () => {
         </ScrollArea>
       </motion.aside>
 
-      {/* Content area - all tabs stay mounted to preserve state */}
+      {/* Content area - render only active tab to improve performance */}
       <div className="flex-1 min-w-0">
-        {adminMenuItems.map((item) => (
-          <div key={item.id} className={cn(activeTab === item.id ? 'block' : 'hidden')}>
-            {item.component}
-          </div>
-        ))}
+        {ActiveComponent && <ActiveComponent />}
       </div>
     </div>
   );

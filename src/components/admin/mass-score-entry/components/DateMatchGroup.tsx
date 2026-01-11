@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
@@ -38,9 +38,12 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
   const [isOpen, setIsOpen] = useState(defaultExpanded);
   const formattedDate = format(date, 'EEEE, MMMM d, yyyy');
 
-  // Group matches by time slot for this date
-  const matchesByTimeSlot = groupMatchesByTimeSlot(matches);
-  const sortedTimeSlots = sortTimeSlots(Object.keys(matchesByTimeSlot));
+  // Group matches by time slot for this date - memoized to avoid recalculation on every render
+  const matchesByTimeSlot = useMemo(() => groupMatchesByTimeSlot(matches), [matches]);
+  const sortedTimeSlots = useMemo(
+    () => sortTimeSlots(Object.keys(matchesByTimeSlot)),
+    [matchesByTimeSlot]
+  );
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-4 overflow-hidden bg-card">
