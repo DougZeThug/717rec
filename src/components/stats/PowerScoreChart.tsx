@@ -1,5 +1,5 @@
 import { useTheme } from 'next-themes';
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Bar,
   BarChart,
@@ -69,7 +69,10 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
     ? { top: 5, right: 45, left: 35, bottom: 5 }
     : { top: 5, right: 45, left: 40, bottom: 5 };
 
-  const displayData = isMobile && data.length > 5 ? data.slice(0, 5) : data;
+  const displayData = useMemo(
+    () => (isMobile && data.length > 5 ? data.slice(0, 5) : data),
+    [data, isMobile]
+  );
 
   return (
     <div

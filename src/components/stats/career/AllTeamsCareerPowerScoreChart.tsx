@@ -70,7 +70,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
   const seasonName = payload[0]?.payload?.seasonName;
 
   // Show only selected teams in tooltip if any are selected, otherwise show all
-  const visibleTeams = payload
+  const visibleTeams = (payload ?? [])
     .filter((p: any) => p.value !== null)
     .filter((p: any) => {
       if (selectedTeamIds.length === 0) return true;
@@ -78,6 +78,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
       return selectedTeamIds.includes(teamId);
     })
     .sort((a: any, b: any) => (b.value || 0) - (a.value || 0));
+  );
 
   return (
     <div className="bg-card border border-border rounded-lg p-3 shadow-lg max-h-64 overflow-y-auto">
