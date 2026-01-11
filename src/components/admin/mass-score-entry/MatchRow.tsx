@@ -1,5 +1,5 @@
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import { Switch } from '@/components/ui/switch';
 import { scoreLog } from '@/utils/logger';
@@ -45,17 +45,38 @@ const MatchRow: React.FC<MatchRowProps> = ({
     isEdited: match.isEdited,
   });
 
-  const handleCompletedChange = (checked: boolean) => {
-    scoreLog(
-      `MatchRow: handleCompletedChange called with ${checked} for match ${match.id} at index ${index}`
-    );
-    onMarkCompleted(checked);
-  };
+  const handleCompletedChange = useCallback(
+    (checked: boolean) => {
+      scoreLog(
+        `MatchRow: handleCompletedChange called with ${checked} for match ${match.id} at index ${index}`
+      );
+      onMarkCompleted(checked);
+    },
+    [match.id, index, onMarkCompleted]
+  );
 
-  const handleAutoComplete = () => {
+  const handleAutoComplete = useCallback(() => {
     scoreLog(`MatchRow: Auto-completing match ${match.id} at index ${index}`);
     onMarkCompleted(true);
-  };
+  }, [match.id, index, onMarkCompleted]);
+
+  const handleScoreChangeWrapper = useCallback(
+    (scores: { team1Score: number; team2Score: number }) => {
+      onScoreChange(scores.team1Score, scores.team2Score);
+    },
+    [onScoreChange]
+  );
+
+  const handleGameWinsChangeWrapper = useCallback(
+    (gameWins: { team1GameWins: number; team2GameWins: number }) => {
+      onGameWinsChange(gameWins.team1GameWins, gameWins.team2GameWins);
+    },
+    [onGameWinsChange]
+  );
+
+  const handleClearError = useCallback(() => {
+    onClearError?.(match.id);
+  }, [onClearError, match.id]);
 
   return (
     <div
@@ -91,15 +112,13 @@ const MatchRow: React.FC<MatchRowProps> = ({
         {/* Score Section */}
         <ScoreSection
           match={match}
-          onScoreChange={(scores) => onScoreChange(scores.team1Score, scores.team2Score)}
-          onGameWinsChange={(gameWins) =>
-            onGameWinsChange(gameWins.team1GameWins, gameWins.team2GameWins)
-          }
+          onScoreChange={handleScoreChangeWrapper}
+          onGameWinsChange={handleGameWinsChangeWrapper}
           onAutoComplete={handleAutoComplete}
           isSubmitting={isSubmitting}
           hasError={hasError}
           errorMessage={errorMessage}
-          onClearError={() => onClearError?.(match.id)}
+          onClearError={handleClearError}
         />
 
         {/* Match Status & Completion Toggle combined */}
