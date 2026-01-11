@@ -51,7 +51,7 @@ export const StatBlock: React.FC<StatBlockProps> = ({
 
   const baseClasses = cn(
     getGradient(),
-    'p-2 sm:p-3 rounded-lg text-left transition-all duration-200 hover:shadow-md border',
+    'p-3 sm:p-4 rounded-lg text-left transition-all duration-200 hover:shadow-md border',
     isWinterTheme
       ? 'border-[hsl(199,60%,50%,0.3)]'
       : highlight
@@ -66,7 +66,7 @@ export const StatBlock: React.FC<StatBlockProps> = ({
 
   // Apply gradient to the value text based on variant
   const valueClasses = cn(
-    'font-mono text-sm sm:text-base font-medium',
+    'font-mono text-base sm:text-lg font-medium',
     isWinterTheme
       ? 'text-[hsl(210,40%,96%)]'
       : highlight
@@ -92,7 +92,7 @@ export const StatBlock: React.FC<StatBlockProps> = ({
 
   return (
     <div className={`${baseClasses} flex flex-col ${className}`}>
-      <div className="flex items-center gap-1 sm:gap-2 mb-0.5 sm:mb-1">
+      <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-1.5">
         {icon && (
           <span className="text-gray-600 dark:text-gray-300 [&>svg]:w-3.5 [&>svg]:h-3.5 sm:[&>svg]:w-[18px] sm:[&>svg]:h-[18px]">
             {icon}
@@ -100,7 +100,7 @@ export const StatBlock: React.FC<StatBlockProps> = ({
         )}
         <span className={labelClasses}>{label}</span>
       </div>
-      <div className={`${valueClasses} text-center text-base sm:text-lg`}>{value}</div>
+      <div className={`${valueClasses} text-center text-lg sm:text-xl`}>{value}</div>
     </div>
   );
 };

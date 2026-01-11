@@ -94,7 +94,7 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
 
   return (
     <div className="space-y-2">
-      <div className="flex gap-2 flex-wrap justify-center">
+      <div className="flex gap-2 sm:gap-3 flex-wrap justify-center">
         {SCORE_OPTIONS.map((option) => (
           <ScoreButton
             key={`${matchId}-${option.label}`}
