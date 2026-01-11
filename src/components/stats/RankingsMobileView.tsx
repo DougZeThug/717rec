@@ -145,8 +145,8 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
     <div className="font-inter">
       <div className="mb-2 space-y-1">
         <div className="flex flex-col gap-1">
-          <div className="overflow-x-auto pb-1 touch-pan-x">
-            <div className="flex space-x-1">
+          <div className="overflow-x-auto pb-1.5 touch-pan-x -mx-1 px-1">
+            <div className="flex space-x-2">
               {sortableFields.map((field) => (
                 <Button
                   key={field.id}
@@ -154,7 +154,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                   size="sm"
                   onClick={() => onSortChange(field.id)}
                   className={cn(
-                    'rounded-lg py-1 px-2 text-xs font-medium transition-all whitespace-nowrap',
+                    'rounded-lg py-2 px-3 text-xs font-medium transition-all whitespace-nowrap min-h-[36px]',
                     isWinterTheme &&
                       (sortOptions.field === field.id
                         ? 'btn-winter-primary'

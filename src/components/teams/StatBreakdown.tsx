@@ -144,7 +144,7 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
 
               {/* Core Stats Tab */}
               <TabsContent value="core" className="space-y-4">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                   {/* Power Score with Gauge */}
                   <StatBlock
                     label="Power Score"
@@ -212,7 +212,7 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
 
               {/* Game Stats Tab */}
               <TabsContent value="games" className="space-y-4">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                   {/* Game Record */}
                   <StatBlock
                     label="Game Record"
@@ -271,7 +271,7 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
 
               {/* Advanced Stats Tab */}
               <TabsContent value="advanced" className="space-y-4">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                   {/* Strength of Schedule */}
                   <StatBlock
                     label="Strength of Schedule"
