@@ -45,17 +45,21 @@ const PendingScoresCard = () => {
                   shouldApplyWinter && 'border-cyan-500/20'
                 )}
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-muted" />
-                  <div className="space-y-1">
-                    <div className="w-20 h-4 bg-muted rounded" />
-                    <div className="w-16 h-3 bg-muted rounded" />
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-8 h-8 bg-muted rounded" />
+                    <div className="min-w-0">
+                      <div className="w-20 h-4 bg-muted rounded" />
+                    </div>
                   </div>
-                  <div className="w-4 h-4 bg-muted mx-2" />
-                  <div className="w-8 h-8 bg-muted" />
-                  <div className="space-y-1">
-                    <div className="w-20 h-4 bg-muted rounded" />
-                    <div className="w-16 h-3 bg-muted rounded" />
+                  <div className="flex-shrink-0 px-2">
+                    <div className="w-6 h-3 bg-muted rounded" />
+                  </div>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="min-w-0">
+                      <div className="w-20 h-4 bg-muted rounded" />
+                    </div>
+                    <div className="w-8 h-8 bg-muted rounded" />
                   </div>
                 </div>
                 <div className="w-20 h-8 bg-muted rounded" />

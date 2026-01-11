@@ -65,8 +65,8 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
               {errorMessage || 'Error submitting match score'}
             </AlertDescription>
             {onClearError && (
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={onClearError}>
-                <X className="h-3 w-3" />
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={onClearError}>
+                <X className="h-4 w-4" />
               </Button>
             )}
           </div>

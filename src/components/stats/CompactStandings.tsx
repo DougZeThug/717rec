@@ -214,7 +214,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                   )}
                   <span
                     className={cn(
-                      'font-bebas tracking-wide uppercase text-base text-foreground',
+                      'font-bebas tracking-wide uppercase text-base text-foreground truncate',
                       index < 3 && 'text-lg'
                     )}
                   >
