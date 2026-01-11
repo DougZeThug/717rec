@@ -1,8 +1,7 @@
-import { ChevronDown, Download } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React, { useMemo, useState } from 'react';
 
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -10,7 +9,6 @@ import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { gradients } from '@/styles/design-system';
 import { Ranking } from '@/types';
-import { exportStandingsToCSV } from '@/utils/exportUtils';
 
 import RankingsTable from './RankingsTable';
 import ViewToggle from './ViewToggle';
@@ -89,20 +87,6 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings, myTeamId }) => {
               </div>
               <div className="flex items-center gap-2 ml-auto">
                 {isOpen && <ViewToggle view={view} onViewChange={setView} />}
-                {isOpen && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      exportStandingsToCSV(sortedRankings);
-                    }}
-                    className="h-8 px-2"
-                    title="Export to CSV"
-                  >
-                    <Download className="h-4 w-4" />
-                  </Button>
-                )}
                 <ChevronDown
                   className={cn(
                     'h-5 w-5 transition-transform',
