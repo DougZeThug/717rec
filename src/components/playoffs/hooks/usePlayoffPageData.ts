@@ -8,7 +8,7 @@ import { useBracketData } from '@/hooks/brackets/useBracketData';
 import { usePlayoffTeams } from '@/hooks/playoffs/usePlayoffTeams';
 import { useDivisions } from '@/hooks/useDivisions';
 import { usePlayoffData } from '@/hooks/usePlayoffViewModel.compat';
-import { supabase } from '@/integrations/supabase/client';
+import { deleteBracket as deleteBracketService } from '@/services/brackets/BracketWriteService';
 import { convertErrorToString, getUIErrorMessage, logError } from '@/utils/errors';
 import { bracketLog, cacheLog, errorLog, playoffLog } from '@/utils/logger';
 import { BracketFormat, BracketState, PlayoffBracket } from '@/utils/playoffs/playoffTypes';
@@ -183,11 +183,7 @@ export function usePlayoffPageData(): PlayoffPageData {
       playoffLog('Deleting bracket:', { bracketId, bracketName });
 
       try {
-        const { error } = await supabase.from('brackets').delete().eq('id', bracketId);
-
-        if (error) {
-          throw error;
-        }
+        await deleteBracketService(bracketId);
 
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: ['brackets'] }),

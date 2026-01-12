@@ -3,7 +3,11 @@ import { useState } from 'react';
 
 import { createDateWithTime } from '@/components/schedule/form-utils';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  batchCreateMatches,
+  fetchActiveSeason,
+  MatchCreateData,
+} from '@/services/matches/MatchWriteService';
 import { Team } from '@/types';
 import { errorLog, matchLog, timezoneLog } from '@/utils/logger';
 import { normalizeTimeFormat } from '@/utils/timeUtils';
@@ -105,18 +109,10 @@ export const useBatchMatchForm = (teams: Team[]) => {
     setIsSubmitting(true);
 
     try {
-      // Get active season
-      const { data: activeSeason, error: seasonError } = await supabase
-        .from('seasons')
-        .select('id')
-        .eq('is_active', true)
-        .maybeSingle();
+      // Get active season using service layer
+      const activeSeasonId = await fetchActiveSeason();
 
-      if (seasonError) {
-        errorLog('Error fetching active season:', seasonError);
-      }
-
-      const matchesToCreate = matchPairs.map((pair) => {
+      const matchesToCreate: MatchCreateData[] = matchPairs.map((pair) => {
         // Ensure the timeslot is properly formatted
         const timeslot = pair.timeslot || '6:30 PM'; // Default to 6:30 PM if missing
 
@@ -142,15 +138,13 @@ export const useBatchMatchForm = (teams: Team[]) => {
           team2_score: 0,
           team1_game_wins: 0,
           team2_game_wins: 0,
-          season_id: activeSeason?.id || null,
+          season_id: activeSeasonId,
         };
       });
 
       matchLog('Batch creating matches:', matchesToCreate);
 
-      const { data, error } = await supabase.from('matches').insert(matchesToCreate).select();
-
-      if (error) throw error;
+      const data = await batchCreateMatches(matchesToCreate);
 
       matchLog('Successfully created matches:', data);
 

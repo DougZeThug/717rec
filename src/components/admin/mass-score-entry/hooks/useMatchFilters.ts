@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { supabase } from '@/integrations/supabase/client';
+import { fetchBracketsForSelector } from '@/services/brackets/BracketReadService';
 import { errorLog, filterLog } from '@/utils/logger';
 
 import { FilterState } from '../types';
@@ -11,10 +11,8 @@ export const useMatchFilters = () => {
 
   const fetchBrackets = async () => {
     try {
-      const { data, error } = await supabase.from('brackets').select('id, title').order('title');
-
-      if (error) throw error;
-      setBrackets(data || []);
+      const data = await fetchBracketsForSelector();
+      setBrackets(data);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       errorLog('Error fetching brackets:', errorMessage);

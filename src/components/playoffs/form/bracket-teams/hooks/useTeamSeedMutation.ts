@@ -1,7 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  bulkUpdateTeamSeeds,
+  resetDivisionSeeds as resetDivisionSeedsService,
+  updateTeamSeed,
+} from '@/services/teams/TeamSeedService';
 
 import { formatUserError, withRetry } from '../utils/mutationErrorHandling';
 
@@ -26,15 +30,7 @@ export const useTeamSeedMutation = () => {
   const updateSingleTeamSeed = useMutation({
     mutationFn: async ({ teamId, seed }: { teamId: string; seed: number | null }) => {
       return withRetry(async () => {
-        const { data, error } = await supabase
-          .from('teams')
-          .update({ seed })
-          .eq('id', teamId)
-          .select()
-          .single();
-
-        if (error) throw error;
-        return data;
+        return await updateTeamSeed(teamId, seed);
       });
     },
     onSuccess: () => {
@@ -54,23 +50,7 @@ export const useTeamSeedMutation = () => {
   // Bulk seed updates
   const bulkUpdateSeeds = useMutation({
     mutationFn: async ({ updates, divisionId }: BulkSeedUpdateParams) => {
-      const results = await Promise.allSettled(
-        updates.map(({ teamId, seed }) =>
-          supabase.from('teams').update({ seed }).eq('id', teamId).select().single()
-        )
-      );
-
-      const errors = results
-        .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
-        .map((result) => result.reason);
-
-      if (errors.length > 0) {
-        throw new Error(`Failed to update ${errors.length} team seeds`);
-      }
-
-      return results
-        .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled')
-        .map((result) => result.value.data);
+      return await bulkUpdateTeamSeeds(updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['playoff-teams'] });
@@ -93,11 +73,7 @@ export const useTeamSeedMutation = () => {
   // Reset all seeds in a division to automatic
   const resetDivisionSeeds = useMutation({
     mutationFn: async (divisionId: string) => {
-      const { error } = await supabase.rpc('reset_division_seeds', {
-        p_division_id: divisionId,
-      });
-
-      if (error) throw error;
+      return await resetDivisionSeedsService(divisionId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['playoff-teams'] });
