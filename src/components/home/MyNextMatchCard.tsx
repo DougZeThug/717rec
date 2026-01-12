@@ -1,5 +1,5 @@
 import { format, isValid, parseISO } from 'date-fns';
-import { Calendar, ChevronRight, Clock } from 'lucide-react';
+import { Calendar, ChevronRight, Clock, Trophy } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router';
 
@@ -24,6 +24,9 @@ interface MyNextMatchCardProps {
   myTeam: TeamInfo;
   opponent: TeamInfo;
   weekNumber?: number | null;
+  isPrevious?: boolean;
+  showHeader?: boolean;
+  headerText?: string;
 }
 
 const MyNextMatchCard: React.FC<MyNextMatchCardProps> = ({
@@ -31,6 +34,9 @@ const MyNextMatchCard: React.FC<MyNextMatchCardProps> = ({
   myTeam,
   opponent,
   weekNumber,
+  isPrevious = false,
+  showHeader = true,
+  headerText,
 }) => {
   const { shouldApplyWinter } = useSeasonalTheme();
 
@@ -39,8 +45,17 @@ const MyNextMatchCard: React.FC<MyNextMatchCardProps> = ({
   const isValidDate = matchDate && isValid(matchDate);
 
   const formattedDate = isValidDate ? format(matchDate, 'EEEE, MMM d') : 'Date TBD';
-
   const formattedTime = isValidDate ? format(matchDate, 'h:mm a') : null;
+
+  // Determine if user's team won (for completed matches)
+  const isTeam1 = match.team1Id === myTeam.id;
+  const myTeamWins = isTeam1 ? match.team1_game_wins : match.team2_game_wins;
+  const opponentWins = isTeam1 ? match.team2_game_wins : match.team1_game_wins;
+  const didWin = isPrevious && myTeamWins !== null && opponentWins !== null && myTeamWins > opponentWins;
+  const didLose = isPrevious && myTeamWins !== null && opponentWins !== null && myTeamWins < opponentWins;
+
+  // Default header text based on isPrevious
+  const displayHeaderText = headerText || (isPrevious ? 'Your Last Match' : 'Your Next Match');
 
   return (
     <Card
@@ -48,7 +63,8 @@ const MyNextMatchCard: React.FC<MyNextMatchCardProps> = ({
         'relative overflow-hidden',
         shouldApplyWinter
           ? 'my-next-match-card winter-card-full'
-          : 'border-primary/20 bg-gradient-to-br from-primary/5 via-background to-accent/5'
+          : 'border-primary/20 bg-gradient-to-br from-primary/5 via-background to-accent/5',
+        isPrevious && 'opacity-90'
       )}
     >
       {/* Subtle glow effect */}
@@ -63,33 +79,47 @@ const MyNextMatchCard: React.FC<MyNextMatchCardProps> = ({
 
       <CardContent className="relative p-4 md:p-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <SeasonalIcon
-              defaultIcon={Calendar}
-              winterIcon={SnowflakeSparkle}
-              size={16}
-              className={shouldApplyWinter ? 'text-cyan-400 animate-pulse' : 'text-primary'}
-            />
-            <span
-              className={cn(
-                'text-xs font-semibold uppercase tracking-wider',
-                shouldApplyWinter ? 'text-cyan-300' : 'text-primary'
+        {showHeader && (
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <SeasonalIcon
+                defaultIcon={isPrevious ? Trophy : Calendar}
+                winterIcon={SnowflakeSparkle}
+                size={16}
+                className={shouldApplyWinter ? 'text-cyan-400 animate-pulse' : 'text-primary'}
+              />
+              <span
+                className={cn(
+                  'text-xs font-semibold uppercase tracking-wider',
+                  shouldApplyWinter ? 'text-cyan-300' : 'text-primary'
+                )}
+              >
+                {displayHeaderText}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              {isPrevious && didWin && (
+                <Badge variant="default" className="text-xs bg-green-600 hover:bg-green-600">
+                  Win
+                </Badge>
               )}
-            >
-              Your Next Match
-            </span>
+              {isPrevious && didLose && (
+                <Badge variant="destructive" className="text-xs">
+                  Loss
+                </Badge>
+              )}
+              {weekNumber && (
+                <Badge
+                  variant={shouldApplyWinter ? 'winter' : 'outline'}
+                  className={cn('text-xs', !shouldApplyWinter && 'border-muted-foreground/30')}
+                >
+                  {shouldApplyWinter && <SnowflakeSparkle size={12} className="mr-1" />}
+                  Week {weekNumber}
+                </Badge>
+              )}
+            </div>
           </div>
-          {weekNumber && (
-            <Badge
-              variant={shouldApplyWinter ? 'winter' : 'outline'}
-              className={cn('text-xs', !shouldApplyWinter && 'border-muted-foreground/30')}
-            >
-              {shouldApplyWinter && <SnowflakeSparkle size={12} className="mr-1" />}
-              Week {weekNumber}
-            </Badge>
-          )}
-        </div>
+        )}
 
         <Link to="/schedule" className="group block">
           <div className="flex items-center gap-4 md:gap-6">
@@ -117,15 +147,26 @@ const MyNextMatchCard: React.FC<MyNextMatchCardProps> = ({
                 />
               </div>
 
-              {/* VS */}
-              <span
-                className={cn(
-                  'text-xs font-bold uppercase',
-                  shouldApplyWinter ? 'text-cyan-300/70' : 'text-muted-foreground'
-                )}
-              >
-                vs
-              </span>
+              {/* VS or Score */}
+              {isPrevious && myTeamWins !== null && opponentWins !== null ? (
+                <span
+                  className={cn(
+                    'text-sm font-bold tabular-nums',
+                    shouldApplyWinter ? 'text-cyan-200' : 'text-foreground'
+                  )}
+                >
+                  {myTeamWins} - {opponentWins}
+                </span>
+              ) : (
+                <span
+                  className={cn(
+                    'text-xs font-bold uppercase',
+                    shouldApplyWinter ? 'text-cyan-300/70' : 'text-muted-foreground'
+                  )}
+                >
+                  vs
+                </span>
+              )}
 
               {/* Opponent Logo */}
               <div className="relative">
@@ -211,21 +252,23 @@ const MyNextMatchCard: React.FC<MyNextMatchCardProps> = ({
           </div>
         </Link>
 
-        {/* CTA Link */}
-        <div className="mt-4 text-center">
-          <Link
-            to="/schedule"
-            className={cn(
-              'text-xs font-medium transition-colors inline-flex items-center gap-1',
-              shouldApplyWinter
-                ? 'text-cyan-400/70 hover:text-cyan-300'
-                : 'text-primary/70 hover:text-primary'
-            )}
-          >
-            See full schedule
-            <ChevronRight className="h-3 w-3" />
-          </Link>
-        </div>
+        {/* CTA Link - only show on first card */}
+        {showHeader && (
+          <div className="mt-4 text-center">
+            <Link
+              to="/schedule"
+              className={cn(
+                'text-xs font-medium transition-colors inline-flex items-center gap-1',
+                shouldApplyWinter
+                  ? 'text-cyan-400/70 hover:text-cyan-300'
+                  : 'text-primary/70 hover:text-primary'
+              )}
+            >
+              See full schedule
+              <ChevronRight className="h-3 w-3" />
+            </Link>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
