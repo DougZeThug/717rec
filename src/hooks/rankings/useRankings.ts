@@ -25,13 +25,29 @@ export const useRankings = () => {
       try {
         setIsLoading(true);
 
-        // Load previous rankings from localStorage (wrapped in try/catch for iOS Safari private browsing)
+        // Load previous rankings from database (with localStorage fallback)
         let previousRankings: Record<string, number> = {};
         try {
-          const savedRankings = localStorage.getItem('previousRankings');
-          previousRankings = savedRankings ? JSON.parse(savedRankings) : {};
+          const { loadRankingsFromDatabase } = await import('@/services/RankingSnapshotService');
+          previousRankings = await loadRankingsFromDatabase();
+
+          // If no database rankings found, try localStorage as fallback
+          if (Object.keys(previousRankings).length === 0) {
+            try {
+              const savedRankings = localStorage.getItem('previousRankings');
+              previousRankings = savedRankings ? JSON.parse(savedRankings) : {};
+            } catch {
+              // localStorage unavailable (e.g., iOS Safari private browsing)
+            }
+          }
         } catch {
-          // localStorage unavailable (e.g., iOS Safari private browsing)
+          // If database load fails, try localStorage as fallback
+          try {
+            const savedRankings = localStorage.getItem('previousRankings');
+            previousRankings = savedRankings ? JSON.parse(savedRankings) : {};
+          } catch {
+            // localStorage unavailable (e.g., iOS Safari private browsing)
+          }
         }
 
         // Delegate calculation to service

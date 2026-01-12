@@ -75,8 +75,20 @@ export const updateRankChanges = (rankings: Ranking[]): Ranking[] => {
   });
 };
 
-export const saveRankingsToStorage = (rankings: Ranking[]): void => {
+export const saveRankingsToStorage = async (rankings: Ranking[]): Promise<void> => {
+  // Import database service dynamically to avoid circular dependencies
+  const { saveRankingsToDatabase } = await import('@/services/RankingSnapshotService');
+
   try {
+    // Save to database
+    const dbSuccess = await saveRankingsToDatabase(rankings);
+
+    // Keep localStorage as fallback for backwards compatibility
+    if (!dbSuccess) {
+      console.warn('Database save failed, falling back to localStorage');
+    }
+
+    // Also save to localStorage as a backup
     const rankingMap = rankings.reduce(
       (acc, ranking, index) => {
         acc[ranking.teamId] = index + 1;
@@ -92,16 +104,51 @@ export const saveRankingsToStorage = (rankings: Ranking[]): void => {
   }
 };
 
-export const loadRankingsFromStorage = (): {
+export const loadRankingsFromStorage = async (): Promise<{
   rankings: Record<string, number>;
   lastUpdated: string | null;
-} => {
+}> => {
+  // Import database service dynamically to avoid circular dependencies
+  const { loadRankingsFromDatabase, migrateLocalStorageToDatabase } = await import(
+    '@/services/RankingSnapshotService'
+  );
+
   try {
+    // Try to load from database first
+    const dbRankings = await loadRankingsFromDatabase();
+
+    // If database has rankings, use them
+    if (Object.keys(dbRankings).length > 0) {
+      return { rankings: dbRankings, lastUpdated: new Date().toISOString() };
+    }
+
+    // If database is empty, try to migrate from localStorage
+    const localRankings = localStorage.getItem('previousRankings');
+    if (localRankings) {
+      // Attempt migration
+      await migrateLocalStorageToDatabase();
+
+      // Try loading from database again after migration
+      const migratedRankings = await loadRankingsFromDatabase();
+      if (Object.keys(migratedRankings).length > 0) {
+        return { rankings: migratedRankings, lastUpdated: new Date().toISOString() };
+      }
+    }
+
+    // Fallback to localStorage if all else fails
     const rankings = JSON.parse(localStorage.getItem('previousRankings') || '{}');
     const lastUpdated = localStorage.getItem('rankingsLastUpdated');
     return { rankings, lastUpdated };
   } catch (error) {
     console.error('Failed to load rankings from storage:', error);
-    return { rankings: {}, lastUpdated: null };
+
+    // Final fallback to localStorage
+    try {
+      const rankings = JSON.parse(localStorage.getItem('previousRankings') || '{}');
+      const lastUpdated = localStorage.getItem('rankingsLastUpdated');
+      return { rankings, lastUpdated };
+    } catch {
+      return { rankings: {}, lastUpdated: null };
+    }
   }
 };

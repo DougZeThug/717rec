@@ -14,8 +14,10 @@ export const sortAndUpdateRankings = (
   // Update rank changes
   const finalRankings = updateRankChanges(sortedRankings);
 
-  // Save current rankings for next calculation
-  saveRankingsToStorage(finalRankings);
+  // Save current rankings for next calculation (async, don't wait)
+  saveRankingsToStorage(finalRankings).catch((err) =>
+    console.error('Failed to save rankings:', err)
+  );
 
   return finalRankings;
 };

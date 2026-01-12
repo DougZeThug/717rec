@@ -28,8 +28,10 @@ export const calculateRankings = async (
     // Update rank changes
     const finalRankings = updateRankChanges(sortedRankings);
 
-    // Save current rankings to localStorage
-    saveRankingsToStorage(finalRankings);
+    // Save current rankings to database (async, don't wait)
+    saveRankingsToStorage(finalRankings).catch((err) =>
+      errorLog('Failed to save rankings:', err)
+    );
 
     return finalRankings;
   } catch (error) {
