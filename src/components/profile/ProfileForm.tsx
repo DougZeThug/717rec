@@ -2,7 +2,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -17,18 +16,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { errorLog } from '@/utils/logger';
-
-const profileSchema = z.object({
-  username: z
-    .string()
-    .min(3, 'First name must be at least 3 characters')
-    .regex(/^[a-zA-Z0-9_]+$/, 'First name can only contain letters, numbers, and underscores'),
-  fullName: z.string().optional(),
-});
-
-type ProfileFormData = z.infer<typeof profileSchema>;
+import {
+  checkUsernameAvailability,
+  profileSchema,
+  type ProfileFormData,
+  updateProfile,
+} from '@/services/profile/ProfileService';
 
 interface ProfileFormProps {
   initialUsername: string;
@@ -57,50 +50,30 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   const username = form.watch('username');
 
   // Check username availability
-  const checkUsernameAvailability = async (value: string) => {
+  const handleUsernameAvailabilityCheck = async (value: string) => {
     if (value.length < 3) {
       setUsernameAvailable(null);
       return;
     }
 
-    try {
-      setIsCheckingUsername(true);
+    setIsCheckingUsername(true);
+    const { available } = await checkUsernameAvailability({
+      username: value,
+      currentUsername: initialUsername,
+    });
 
-      // Skip the check if it's their current username
-      if (initialUsername === value) {
-        setUsernameAvailable(true);
-        return;
-      }
+    setUsernameAvailable(available);
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('username', value)
-        .maybeSingle();
-
-      if (error) {
-        errorLog('Error checking username:', error);
-        setUsernameAvailable(null);
-        return;
-      }
-
-      const isAvailable = !data;
-      setUsernameAvailable(isAvailable);
-
-      if (!isAvailable) {
-        form.setError('username', {
-          type: 'manual',
-          message: 'This name is already taken',
-        });
-      } else {
-        form.clearErrors('username');
-      }
-    } catch (error) {
-      errorLog('Unexpected error checking username:', error);
-      setUsernameAvailable(null);
-    } finally {
-      setIsCheckingUsername(false);
+    if (available === false) {
+      form.setError('username', {
+        type: 'manual',
+        message: 'This name is already taken',
+      });
+    } else {
+      form.clearErrors('username');
     }
+
+    setIsCheckingUsername(false);
   };
 
   // Debounce username checks
@@ -108,7 +81,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     if (!username || username.length < 3) return;
 
     const handler = setTimeout(() => {
-      checkUsernameAvailability(username);
+      handleUsernameAvailabilityCheck(username);
     }, 500);
 
     return () => clearTimeout(handler);
@@ -127,21 +100,15 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     }
 
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          username: data.username,
-          full_name: data.fullName || null,
-        })
-        .eq('id', user.id);
+      const { error } = await updateProfile(user.id, data);
 
       if (error) {
         toast({
           title: 'Error updating profile',
-          description: error.message,
+          description: error,
           variant: 'destructive',
         });
-        throw error;
+        return;
       }
 
       toast({
@@ -150,8 +117,12 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       });
 
       onProfileUpdated();
-    } catch (error) {
-      errorLog('Error updating profile:', error);
+    } catch {
+      toast({
+        title: 'Error updating profile',
+        description: 'Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
