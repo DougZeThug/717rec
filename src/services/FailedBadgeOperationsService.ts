@@ -1,9 +1,25 @@
 import { supabase } from '@/integrations/supabase/client';
 import { badgeLog, errorLog, warnLog } from '@/utils/logger';
 
+export type BadgeOperationType = 
+  | 'match_badges' 
+  | 'kingslayer' 
+  | 'clutch_performer' 
+  | 'consistent_performer'
+  | 'ice_cold_winner'
+  | 'ice_cold_loser'
+  | 'broom_crew_winner'
+  | 'broom_crew_loser'
+  | 'gatekeeper_winner'
+  | 'gatekeeper_loser'
+  | 'chaos_agent_winner'
+  | 'chaos_agent_loser'
+  | 'bully_winner'
+  | 'bully_loser';
+
 export interface FailedBadgeOperation {
   id: string;
-  type: 'match_badges' | 'kingslayer' | 'clutch_performer' | 'consistent_performer';
+  type: BadgeOperationType;
   params: Record<string, any>;
   error: string;
   matchId: string;
@@ -199,7 +215,7 @@ export class FailedBadgeOperationsService {
 
     switch (type) {
       case 'match_badges': {
-        const { data, error } = await supabase.rpc('process_match_badges', {
+        const { error } = await supabase.rpc('process_match_badges', {
           p_team1_id: params.team1Id,
           p_team2_id: params.team2Id,
         });
@@ -208,7 +224,7 @@ export class FailedBadgeOperationsService {
       }
 
       case 'kingslayer': {
-        const { data, error } = await supabase.rpc('award_kingslayer_badge', {
+        const { error } = await supabase.rpc('award_kingslayer_badge', {
           p_winner_id: params.winnerId,
           p_loser_id: params.loserId,
         });
@@ -217,7 +233,7 @@ export class FailedBadgeOperationsService {
       }
 
       case 'clutch_performer': {
-        const { data, error } = await supabase.rpc('award_clutch_performer_badge', {
+        const { error } = await supabase.rpc('award_clutch_performer_badge', {
           p_team_id: params.winnerId,
         });
         if (error) throw error;
@@ -225,8 +241,53 @@ export class FailedBadgeOperationsService {
       }
 
       case 'consistent_performer': {
-        const { data, error } = await supabase.rpc('award_consistent_performer_badge', {
+        const { error } = await supabase.rpc('award_consistent_performer_badge', {
           p_team_id: params.winnerId,
+        });
+        if (error) throw error;
+        return;
+      }
+
+      case 'ice_cold_winner':
+      case 'ice_cold_loser': {
+        const { error } = await supabase.rpc('award_ice_cold_badge', {
+          p_team_id: params.teamId,
+        });
+        if (error) throw error;
+        return;
+      }
+
+      case 'broom_crew_winner':
+      case 'broom_crew_loser': {
+        const { error } = await supabase.rpc('award_broom_crew_badge', {
+          p_team_id: params.teamId,
+        });
+        if (error) throw error;
+        return;
+      }
+
+      case 'gatekeeper_winner':
+      case 'gatekeeper_loser': {
+        const { error } = await supabase.rpc('award_gatekeeper_badge', {
+          p_team_id: params.teamId,
+        });
+        if (error) throw error;
+        return;
+      }
+
+      case 'chaos_agent_winner':
+      case 'chaos_agent_loser': {
+        const { error } = await supabase.rpc('award_chaos_agent_badge', {
+          p_team_id: params.teamId,
+        });
+        if (error) throw error;
+        return;
+      }
+
+      case 'bully_winner':
+      case 'bully_loser': {
+        const { error } = await supabase.rpc('award_bully_badge', {
+          p_team_id: params.teamId,
         });
         if (error) throw error;
         return;

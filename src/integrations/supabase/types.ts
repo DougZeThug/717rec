@@ -3929,6 +3929,9 @@ export type Database = {
     }
     Functions: {
       auto_assign_seeds: { Args: { p_division_id: string }; Returns: undefined }
+      award_broom_crew_badge: { Args: { p_team_id: string }; Returns: Json }
+      award_bully_badge: { Args: { p_team_id: string }; Returns: Json }
+      award_chaos_agent_badge: { Args: { p_team_id: string }; Returns: Json }
       award_clutch_performer_badge: {
         Args: { p_team_id: string }
         Returns: Json
@@ -3937,6 +3940,8 @@ export type Database = {
         Args: { p_team_id: string }
         Returns: Json
       }
+      award_gatekeeper_badge: { Args: { p_team_id: string }; Returns: Json }
+      award_ice_cold_badge: { Args: { p_team_id: string }; Returns: Json }
       award_kingslayer_badge: {
         Args: { p_loser_id: string; p_winner_id: string }
         Returns: Json
@@ -4130,6 +4135,11 @@ export type Database = {
         | "hot_streak"
         | "cold_streak"
         | "cool_fun_team"
+        | "ice_cold"
+        | "broom_crew"
+        | "gatekeeper"
+        | "chaos_agent"
+        | "bully"
       match_type: "winners" | "losers" | "finals"
       playoff_match_type:
         | "winners"
@@ -4280,6 +4290,11 @@ export const Constants = {
         "hot_streak",
         "cold_streak",
         "cool_fun_team",
+        "ice_cold",
+        "broom_crew",
+        "gatekeeper",
+        "chaos_agent",
+        "bully",
       ],
       match_type: ["winners", "losers", "finals"],
       playoff_match_type: [
