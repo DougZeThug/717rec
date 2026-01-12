@@ -61,126 +61,135 @@ const MatchRow: React.FC<MatchRowProps> = ({
 
   return (
     <Link to="/schedule" className="group block">
-      <div className="flex items-center gap-3 py-3">
-        {/* Team Logos & Score - Compact mobile-friendly layout */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {/* My Team Logo */}
-          <div className="relative">
-            <div
-              className={cn(
-                'absolute inset-0 rounded-full blur-xl scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-300',
-                shouldApplyWinter ? 'bg-cyan-400/20' : 'bg-primary/20'
-              )}
-            />
-            <TeamLogo
-              imageUrl={myTeam.logoUrl}
-              teamName={myTeam.name}
-              size="md"
-              rounded
-              className={cn(
-                'relative z-10 transition-all duration-300 !w-10 !h-10 !min-w-10 !min-h-10 md:!w-12 md:!h-12 md:!min-w-12 md:!min-h-12',
-                shouldApplyWinter
-                  ? 'ring-2 ring-cyan-400/30 group-hover:ring-cyan-400/50'
-                  : 'ring-2 ring-primary/20 group-hover:ring-primary/40'
-              )}
-            />
-          </div>
-
-          {/* VS or Score */}
-          {isPrevious && myTeamWins !== null && opponentWins !== null ? (
-            <div className="flex items-center gap-1 min-w-[3.5rem] justify-center">
-              <span
+      <div className="flex items-center justify-between py-3 gap-2">
+        {/* Teams with logos stacked above names */}
+        <div className="flex items-center justify-center gap-3 flex-1">
+          {/* My Team - Logo + Name stacked */}
+          <div className="flex flex-col items-center gap-1 min-w-0">
+            <div className="relative">
+              <div
                 className={cn(
-                  'text-sm md:text-base font-bold tabular-nums',
-                  myTeamWins > opponentWins
-                    ? 'text-green-500'
-                    : myTeamWins < opponentWins
-                      ? 'text-red-500'
-                      : shouldApplyWinter
-                        ? 'text-cyan-200'
-                        : 'text-foreground'
+                  'absolute inset-0 rounded-full blur-xl scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-300',
+                  shouldApplyWinter ? 'bg-cyan-400/20' : 'bg-primary/20'
                 )}
-              >
-                {myTeamWins}
-              </span>
-              <span
+              />
+              <TeamLogo
+                imageUrl={myTeam.logoUrl}
+                teamName={myTeam.name}
+                size="md"
+                rounded
                 className={cn(
-                  'text-sm md:text-base font-bold',
-                  shouldApplyWinter ? 'text-cyan-300/50' : 'text-muted-foreground'
+                  'relative z-10 transition-all duration-300 !w-12 !h-12 !min-w-12 !min-h-12',
+                  shouldApplyWinter
+                    ? 'ring-2 ring-cyan-400/30 group-hover:ring-cyan-400/50'
+                    : 'ring-2 ring-primary/20 group-hover:ring-primary/40'
                 )}
-              >
-                -
-              </span>
-              <span
-                className={cn(
-                  'text-sm md:text-base font-bold tabular-nums',
-                  opponentWins > myTeamWins
-                    ? 'text-green-500'
-                    : opponentWins < myTeamWins
-                      ? 'text-red-500'
-                      : shouldApplyWinter
-                        ? 'text-cyan-200'
-                        : 'text-foreground'
-                )}
-              >
-                {opponentWins}
-              </span>
+              />
             </div>
-          ) : (
             <span
               className={cn(
-                'text-xs font-bold uppercase min-w-[3.5rem] text-center',
-                shouldApplyWinter ? 'text-cyan-300/70' : 'text-muted-foreground'
+                'text-xs font-medium text-center truncate max-w-[80px]',
+                shouldApplyWinter ? 'text-cyan-100' : 'text-foreground'
               )}
             >
-              vs
+              {myTeam.name}
             </span>
-          )}
-
-          {/* Opponent Logo */}
-          <div className="relative">
-            <TeamLogo
-              imageUrl={opponent.logoUrl}
-              teamName={opponent.name}
-              size="md"
-              rounded
-              className={cn(
-                'relative z-10 transition-all duration-300 !w-10 !h-10 !min-w-10 !min-h-10 md:!w-12 md:!h-12 md:!min-w-12 md:!min-h-12',
-                shouldApplyWinter
-                  ? 'ring-2 ring-cyan-400/30 group-hover:ring-cyan-400/50'
-                  : 'ring-2 ring-muted/30 group-hover:ring-muted/50'
-              )}
-            />
           </div>
-        </div>
 
-        {/* Match Info - Stacked layout for mobile */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span
-              className={cn(
-                'text-sm font-semibold truncate max-w-[120px] md:max-w-none',
-                shouldApplyWinter
-                  ? 'text-cyan-50 group-hover:text-cyan-300'
-                  : 'text-foreground group-hover:text-primary'
-              )}
-            >
-              {opponent.name}
-            </span>
+          {/* VS or Score - Center */}
+          <div className="flex flex-col items-center gap-1">
+            {isPrevious && myTeamWins !== null && opponentWins !== null ? (
+              <div className="flex items-center gap-1.5">
+                <span
+                  className={cn(
+                    'text-lg font-bold tabular-nums',
+                    myTeamWins > opponentWins
+                      ? 'text-green-500'
+                      : myTeamWins < opponentWins
+                        ? 'text-red-500'
+                        : shouldApplyWinter
+                          ? 'text-cyan-200'
+                          : 'text-foreground'
+                  )}
+                >
+                  {myTeamWins}
+                </span>
+                <span
+                  className={cn(
+                    'text-lg font-bold',
+                    shouldApplyWinter ? 'text-cyan-300/50' : 'text-muted-foreground'
+                  )}
+                >
+                  -
+                </span>
+                <span
+                  className={cn(
+                    'text-lg font-bold tabular-nums',
+                    opponentWins > myTeamWins
+                      ? 'text-green-500'
+                      : opponentWins < myTeamWins
+                        ? 'text-red-500'
+                        : shouldApplyWinter
+                          ? 'text-cyan-200'
+                          : 'text-foreground'
+                  )}
+                >
+                  {opponentWins}
+                </span>
+              </div>
+            ) : (
+              <span
+                className={cn(
+                  'text-sm font-bold uppercase',
+                  shouldApplyWinter ? 'text-cyan-300/70' : 'text-muted-foreground'
+                )}
+              >
+                vs
+              </span>
+            )}
+            {/* Win/Loss Badge */}
             {isPrevious && didWin && (
-              <Badge variant="default" className="text-[10px] px-1.5 py-0 h-5 bg-green-600 hover:bg-green-600 flex-shrink-0">
+              <Badge variant="default" className="text-[10px] px-1.5 py-0 h-5 bg-green-600 hover:bg-green-600">
                 Win
               </Badge>
             )}
             {isPrevious && didLose && (
-              <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-5 flex-shrink-0">
+              <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-5">
                 Loss
               </Badge>
             )}
           </div>
 
-          {/* Date & Time - Compact row */}
-          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+          {/* Opponent - Logo + Name stacked */}
+          <div className="flex flex-col items-center gap-1 min-w-0">
+            <div className="relative">
+              <TeamLogo
+                imageUrl={opponent.logoUrl}
+                teamName={opponent.name}
+                size="md"
+                rounded
+                className={cn(
+                  'relative z-10 transition-all duration-300 !w-12 !h-12 !min-w-12 !min-h-12',
+                  shouldApplyWinter
+                    ? 'ring-2 ring-cyan-400/30 group-hover:ring-cyan-400/50'
+                    : 'ring-2 ring-muted/30 group-hover:ring-muted/50'
+                )}
+              />
+            </div>
+            <span
+              className={cn(
+                'text-xs font-medium text-center truncate max-w-[80px]',
+                shouldApplyWinter ? 'text-cyan-100' : 'text-foreground'
+              )}
+            >
+              {opponent.name}
+            </span>
+          </div>
+        </div>
+
+        {/* Date/Time & Arrow - Right side */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex flex-col items-end gap-0.5">
             <div className="flex items-center gap-1">
               <Calendar
                 className={cn(
@@ -216,17 +225,15 @@ const MatchRow: React.FC<MatchRowProps> = ({
               </div>
             )}
           </div>
+          <ChevronRight
+            className={cn(
+              'h-5 w-5 group-hover:translate-x-1 transition-all duration-200',
+              shouldApplyWinter
+                ? 'text-cyan-400/50 group-hover:text-cyan-400'
+                : 'text-muted-foreground/50 group-hover:text-primary'
+            )}
+          />
         </div>
-
-        {/* Arrow */}
-        <ChevronRight
-          className={cn(
-            'h-4 w-4 md:h-5 md:w-5 group-hover:translate-x-1 transition-all duration-200 flex-shrink-0',
-            shouldApplyWinter
-              ? 'text-cyan-400/50 group-hover:text-cyan-400'
-              : 'text-muted-foreground/50 group-hover:text-primary'
-          )}
-        />
       </div>
     </Link>
   );
