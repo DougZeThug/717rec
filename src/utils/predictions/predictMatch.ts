@@ -197,8 +197,8 @@ export function predictMatch(
   teamAStats: TeamStats,
   teamBStats: TeamStats,
   divisionWeights: Map<string, number>,
-  teamAName: string = 'Team A',
-  teamBName: string = 'Team B'
+  teamAName = 'Team A',
+  teamBName = 'Team B'
 ): PredictionResult {
   // Get raw values with defaults
   const powerScoreA = teamAStats.power_score ?? DEFAULT_POWER_SCORE;
