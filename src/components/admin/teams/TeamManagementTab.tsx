@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
-import { Edit, Image, Plus, Search, Settings, Trash2, Users } from 'lucide-react';
-import React, { useState } from 'react';
+import { Edit, Image, Plus, Search, Settings, UserCheck, Users } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 import TeamForm from '@/components/teams/TeamForm';
 import { Badge } from '@/components/ui/badge';
@@ -28,11 +28,13 @@ import { useTeamsQuery } from '@/hooks/teams';
 import { useToast } from '@/hooks/use-toast';
 import { useDivisions } from '@/hooks/useDivisions';
 import { useTeams } from '@/hooks/useTeams';
+import { supabase } from '@/integrations/supabase/client';
 import { updateTeamApi } from '@/services/TeamService';
 import { Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 
 import BulkLogoUpdateTab from './BulkLogoUpdateTab';
+import TeamMembershipApprovalTab from './TeamMembershipApprovalTab';
 
 const TeamManagementTab = () => {
   const { toast } = useToast();
@@ -47,6 +49,21 @@ const TeamManagementTab = () => {
   const [selectedDivision, setSelectedDivision] = useState('all');
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
+  const [pendingMembershipCount, setPendingMembershipCount] = useState(0);
+
+  useEffect(() => {
+    const fetchPendingCount = async () => {
+      const { count, error } = await supabase
+        .from('team_memberships')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_approved', false);
+      
+      if (!error && count !== null) {
+        setPendingMembershipCount(count);
+      }
+    };
+    fetchPendingCount();
+  }, []);
 
   const handleTeamSubmit = async (teamData: Omit<Team, 'id' | 'created_at'>) => {
     try {
@@ -173,6 +190,15 @@ const TeamManagementTab = () => {
           <TabsTrigger value="logos" className="gap-1.5">
             <Image className="h-3.5 w-3.5" />
             Update Logos
+          </TabsTrigger>
+          <TabsTrigger value="approvals" className="gap-1.5">
+            <UserCheck className="h-3.5 w-3.5" />
+            Member Approvals
+            {pendingMembershipCount > 0 && (
+              <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-xs">
+                {pendingMembershipCount}
+              </Badge>
+            )}
           </TabsTrigger>
         </TabsList>
 
@@ -308,6 +334,10 @@ const TeamManagementTab = () => {
 
         <TabsContent value="logos">
           <BulkLogoUpdateTab />
+        </TabsContent>
+
+        <TabsContent value="approvals">
+          <TeamMembershipApprovalTab />
         </TabsContent>
       </Tabs>
 
