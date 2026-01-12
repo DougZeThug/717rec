@@ -1,8 +1,8 @@
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 
+import { useBracketsQuery } from '@/hooks/brackets/useBracketsQuery';
 import { useToast } from '@/hooks/use-toast';
-import { fetchBracketsForSelector } from '@/services/brackets/BracketReadService';
 import { fetchMatchesWithTeams } from '@/services/matches/MatchReadService';
 import { updateMatchScore } from '@/services/matches/MatchWriteService';
 
@@ -13,19 +13,8 @@ export const useScoreEntryData = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [filters, setFilters] = useState<FilterState>({});
-  const [brackets, setBrackets] = useState<{ id: string; title: string }[]>([]);
+  const { brackets } = useBracketsQuery();
   const { toast } = useToast();
-
-  // Fetch brackets for filtering
-  const fetchBrackets = async () => {
-    try {
-      const data = await fetchBracketsForSelector();
-      setBrackets(data);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error fetching brackets:', message);
-    }
-  };
 
   // Main function to fetch matches
   const fetchMatches = async () => {
@@ -221,7 +210,6 @@ export const useScoreEntryData = () => {
 
   // Load data when filters change
   useEffect(() => {
-    fetchBrackets();
     fetchMatches();
   }, [filters.date, filters.bracketId]);
 

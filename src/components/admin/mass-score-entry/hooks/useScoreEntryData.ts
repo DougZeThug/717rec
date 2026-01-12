@@ -25,7 +25,6 @@ export const useScoreEntryData = () => {
   const {
     filters,
     brackets,
-    fetchBrackets,
     setFilterDate,
     setBracketFilter,
     clearFilters,
@@ -44,7 +43,6 @@ export const useScoreEntryData = () => {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      await fetchBrackets();
       const fetchedMatches = await fetchMatches(filters);
 
       if (fetchedMatches.length > 0 && !filters.date) {
