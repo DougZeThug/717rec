@@ -157,4 +157,128 @@ export class BadgeProcessingService {
       throw error;
     }
   }
+
+  // =========================================================================
+  // FUN BADGES
+  // =========================================================================
+
+  /**
+   * Process Ice Cold badge - 3 consecutive 2-1 wins
+   */
+  static async processIceColdBadge(teamId: string): Promise<any> {
+    try {
+      badgeLog('Processing Ice Cold badge for:', teamId);
+
+      const { data, error } = await supabase.rpc('award_ice_cold_badge', {
+        p_team_id: teamId,
+      });
+
+      if (error) {
+        errorLog('Error processing Ice Cold badge:', error);
+        throw error;
+      }
+
+      badgeLog('Ice Cold badge processed:', data);
+      return data;
+    } catch (error) {
+      errorLog('Ice Cold badge processing error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Process Broom Crew badge - 3 consecutive sweeps (2-0 wins)
+   */
+  static async processBroomCrewBadge(teamId: string): Promise<any> {
+    try {
+      badgeLog('Processing Broom Crew badge for:', teamId);
+
+      const { data, error } = await supabase.rpc('award_broom_crew_badge', {
+        p_team_id: teamId,
+      });
+
+      if (error) {
+        errorLog('Error processing Broom Crew badge:', error);
+        throw error;
+      }
+
+      badgeLog('Broom Crew badge processed:', data);
+      return data;
+    } catch (error) {
+      errorLog('Broom Crew badge processing error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Process Gatekeeper badge - beats 3+ teams with higher power score
+   */
+  static async processGatekeeperBadge(teamId: string): Promise<any> {
+    try {
+      badgeLog('Processing Gatekeeper badge for:', teamId);
+
+      const { data, error } = await supabase.rpc('award_gatekeeper_badge', {
+        p_team_id: teamId,
+      });
+
+      if (error) {
+        errorLog('Error processing Gatekeeper badge:', error);
+        throw error;
+      }
+
+      badgeLog('Gatekeeper badge processed:', data);
+      return data;
+    } catch (error) {
+      errorLog('Gatekeeper badge processing error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Process Chaos Agent badge - alternating W/L for 6+ matches
+   */
+  static async processChaosAgentBadge(teamId: string): Promise<any> {
+    try {
+      badgeLog('Processing Chaos Agent badge for:', teamId);
+
+      const { data, error } = await supabase.rpc('award_chaos_agent_badge', {
+        p_team_id: teamId,
+      });
+
+      if (error) {
+        errorLog('Error processing Chaos Agent badge:', error);
+        throw error;
+      }
+
+      badgeLog('Chaos Agent badge processed:', data);
+      return data;
+    } catch (error) {
+      errorLog('Chaos Agent badge processing error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Process Bully badge - 4+ game wins against teams with 20+ lower division weight
+   */
+  static async processBullyBadge(teamId: string): Promise<any> {
+    try {
+      badgeLog('Processing Bully badge for:', teamId);
+
+      const { data, error } = await supabase.rpc('award_bully_badge', {
+        p_team_id: teamId,
+      });
+
+      if (error) {
+        errorLog('Error processing Bully badge:', error);
+        throw error;
+      }
+
+      badgeLog('Bully badge processed:', data);
+      return data;
+    } catch (error) {
+      errorLog('Bully badge processing error:', error);
+      throw error;
+    }
+  }
 }

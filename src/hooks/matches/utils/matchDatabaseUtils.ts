@@ -106,6 +106,57 @@ export const updateMatchScore = async ({
       params: { winnerId },
       execute: () => BadgeProcessingService.processConsistentPerformerBadge(winnerId),
     },
+    // Fun badges - processed for both teams
+    {
+      type: 'ice_cold_winner' as const,
+      params: { teamId: winnerId },
+      execute: () => BadgeProcessingService.processIceColdBadge(winnerId),
+    },
+    {
+      type: 'ice_cold_loser' as const,
+      params: { teamId: loserId },
+      execute: () => BadgeProcessingService.processIceColdBadge(loserId),
+    },
+    {
+      type: 'broom_crew_winner' as const,
+      params: { teamId: winnerId },
+      execute: () => BadgeProcessingService.processBroomCrewBadge(winnerId),
+    },
+    {
+      type: 'broom_crew_loser' as const,
+      params: { teamId: loserId },
+      execute: () => BadgeProcessingService.processBroomCrewBadge(loserId),
+    },
+    {
+      type: 'gatekeeper_winner' as const,
+      params: { teamId: winnerId },
+      execute: () => BadgeProcessingService.processGatekeeperBadge(winnerId),
+    },
+    {
+      type: 'gatekeeper_loser' as const,
+      params: { teamId: loserId },
+      execute: () => BadgeProcessingService.processGatekeeperBadge(loserId),
+    },
+    {
+      type: 'chaos_agent_winner' as const,
+      params: { teamId: winnerId },
+      execute: () => BadgeProcessingService.processChaosAgentBadge(winnerId),
+    },
+    {
+      type: 'chaos_agent_loser' as const,
+      params: { teamId: loserId },
+      execute: () => BadgeProcessingService.processChaosAgentBadge(loserId),
+    },
+    {
+      type: 'bully_winner' as const,
+      params: { teamId: winnerId },
+      execute: () => BadgeProcessingService.processBullyBadge(winnerId),
+    },
+    {
+      type: 'bully_loser' as const,
+      params: { teamId: loserId },
+      execute: () => BadgeProcessingService.processBullyBadge(loserId),
+    },
   ];
 
   // Process each badge operation independently
