@@ -56,16 +56,16 @@ export const useScheduleData = () => {
 
       // Filter out matches with missing team details (safety check for race conditions)
       const validMatches = transformedMatches.filter((match) => {
-        const hasTeam1 = match.team1Details && match.team1Details.name;
-        const hasTeam2 = match.team2Details && match.team2Details.name;
+        const hasTeam1 = match.team1Details?.name;
+        const hasTeam2 = match.team2Details?.name;
 
         if (!hasTeam1 || !hasTeam2) {
           errorLog('Match missing team details:', {
             matchId: match.id,
             team1Id: match.team1Id,
             team2Id: match.team2Id,
-            hasTeam1Details: !!hasTeam1,
-            hasTeam2Details: !!hasTeam2,
+            hasTeam1Details: Boolean(hasTeam1),
+            hasTeam2Details: Boolean(hasTeam2),
           });
           return false;
         }
