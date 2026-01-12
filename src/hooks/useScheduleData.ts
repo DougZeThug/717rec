@@ -80,7 +80,7 @@ export const useScheduleData = () => {
       return validMatches;
     },
     refetchOnWindowFocus: true,
-    refetchOnMount: true, // Always refetch on mount to ensure fresh team data
+    refetchOnMount: 'always', // Always refetch on mount to ensure fresh team data
     staleTime: 1000 * 60 * 2, // 2 minutes - schedule rarely changes
   });
 
