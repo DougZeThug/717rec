@@ -20,24 +20,38 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { errorLog } from '@/utils/logger';
 
+interface UserProfile {
+  id: string;
+  username?: string;
+  full_name?: string;
+  avatar_url?: string;
+}
+
+interface TeamInfo {
+  id: string;
+  name: string;
+  logo_url?: string;
+  image_url?: string;
+}
+
+interface PendingMembershipRaw {
+  id: string;
+  user_id: string;
+  team_id: string;
+  joined_at: string;
+  is_approved: boolean;
+  user: UserProfile | UserProfile[] | null;
+  team: TeamInfo | TeamInfo[] | null;
+}
+
 interface PendingMembership {
   id: string;
   user_id: string;
   team_id: string;
   joined_at: string;
   is_approved: boolean;
-  user: {
-    id: string;
-    username?: string;
-    full_name?: string;
-    avatar_url?: string;
-  };
-  team: {
-    id: string;
-    name: string;
-    logo_url?: string;
-    image_url?: string;
-  };
+  user: UserProfile;
+  team: TeamInfo;
 }
 
 const TeamMembershipApprovalTab: React.FC = () => {
@@ -70,7 +84,25 @@ const TeamMembershipApprovalTab: React.FC = () => {
         .order('joined_at', { ascending: false });
 
       if (error) throw error;
-      setPendingMemberships(data || []);
+      
+      // Normalize data - Supabase returns joined relations as arrays
+      const normalized: PendingMembership[] = ((data as PendingMembershipRaw[]) || [])
+        .map((item) => {
+          const user = Array.isArray(item.user) ? item.user[0] : item.user;
+          const team = Array.isArray(item.team) ? item.team[0] : item.team;
+          
+          // Skip if user or team data is missing
+          if (!user || !team) return null;
+          
+          return {
+            ...item,
+            user,
+            team,
+          };
+        })
+        .filter((item): item is PendingMembership => item !== null);
+      
+      setPendingMemberships(normalized);
     } catch (error) {
       errorLog('Error fetching pending memberships:', error);
       toast({
