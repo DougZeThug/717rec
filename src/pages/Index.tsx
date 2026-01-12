@@ -4,7 +4,7 @@ import HeroCard from '@/components/hero/HeroCard';
 import HeroCardSkeleton from '@/components/hero/HeroCardSkeleton';
 import ParticipationHeroCard from '@/components/hero/ParticipationHeroCard';
 import HeroSection from '@/components/home/HeroSection';
-import MyNextMatchCard from '@/components/home/MyNextMatchCard';
+import MyMatchesSection from '@/components/home/MyMatchesSection';
 import MyNextMatchSkeleton from '@/components/home/MyNextMatchSkeleton';
 import PendingScoresCard from '@/components/home/PendingScoresCard';
 import TeamOfTheWeekCard from '@/components/home/TeamOfTheWeekCard';
@@ -60,19 +60,17 @@ const Index: React.FC = () => {
       </PageTransition>
 
       <div className="container mx-auto px-4 flex flex-col gap-4 md:gap-8">
-        {/* My Next Match - shown for authenticated users with a team */}
+        {/* My Next Match(es) - shown for authenticated users with a team */}
         {myNextMatch.isLoading ? (
           <MyNextMatchSkeleton />
         ) : myNextMatch.hasTeamMembership &&
-          myNextMatch.nextMatch &&
-          myNextMatch.myTeam &&
-          myNextMatch.opponent ? (
+          myNextMatch.matches.length > 0 &&
+          myNextMatch.myTeam ? (
           <PageTransition animation="fadeInSlideUp" delay="short">
-            <MyNextMatchCard
-              match={myNextMatch.nextMatch}
+            <MyMatchesSection
+              matches={myNextMatch.matches}
               myTeam={myNextMatch.myTeam}
-              opponent={myNextMatch.opponent}
-              weekNumber={myNextMatch.weekNumber}
+              isPreviousMatches={myNextMatch.isPreviousMatches}
             />
           </PageTransition>
         ) : null}
