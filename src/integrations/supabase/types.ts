@@ -3956,6 +3956,10 @@ export type Database = {
           streak_type: string
         }[]
       }
+      cleanup_orphaned_team_season_stat: {
+        Args: { p_season_id: string; p_team_id: string }
+        Returns: undefined
+      }
       current_user_is_admin: { Args: never; Returns: boolean }
       get_all_team_badges: {
         Args: never
