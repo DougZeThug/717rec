@@ -1,23 +1,13 @@
 import { useState } from 'react';
 
-import { fetchBracketsForSelector } from '@/services/brackets/BracketReadService';
-import { errorLog, filterLog } from '@/utils/logger';
+import { useBracketsQuery } from '@/hooks/brackets/useBracketsQuery';
+import { filterLog } from '@/utils/logger';
 
 import { FilterState } from '../../types';
 
 export const useFiltersState = () => {
   const [filters, setFilters] = useState<FilterState>({});
-  const [brackets, setBrackets] = useState<{ id: string; title: string }[]>([]);
-
-  const fetchBrackets = async () => {
-    try {
-      const data = await fetchBracketsForSelector();
-      setBrackets(data);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      errorLog('Error fetching brackets:', message);
-    }
-  };
+  const { brackets } = useBracketsQuery();
 
   const setFilterDate = (date?: Date) => {
     filterLog('Setting filter date:', date);
@@ -44,7 +34,6 @@ export const useFiltersState = () => {
   return {
     filters,
     brackets,
-    fetchBrackets,
     setFilterDate,
     setBracketFilter,
     clearFilters,
