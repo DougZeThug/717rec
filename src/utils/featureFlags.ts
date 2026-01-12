@@ -7,19 +7,14 @@
  * - In components: const enabled = useFeatureFlag('SHOW_POWER_SCORES');
  * - In services: if (isFeatureEnabled('ENABLE_BLIND_DRAW')) { ... }
  * - Override via .env: VITE_FF_SHOW_POWER_SCORES=false
+ *
+ * Configuration is centralized in @/config/features.ts
  */
 
-// Feature flag definitions with defaults
-const FLAGS = {
-  SHOW_POWER_SCORES: true, // Power score display on team cards
-  ENABLE_WINTER_THEME: false, // Seasonal winter theme
-  SHOW_HISTORICAL_BRACKETS: true, // Historical bracket archive
-  ENABLE_BLIND_DRAW: true, // Blind draw signup feature
-  SHOW_BADGE_SYSTEM: true, // Team badge display
-  ENABLE_SNOWFALL: false, // Winter snowfall animation
-} as const;
+import { FEATURE_FLAGS, type FeatureFlag } from '@/config/features';
 
-export type FeatureFlag = keyof typeof FLAGS;
+// Re-export the type for backward compatibility
+export type { FeatureFlag };
 
 /**
  * Check if a feature flag is enabled.
@@ -33,7 +28,7 @@ export function isFeatureEnabled(flag: FeatureFlag): boolean {
     return envValue === 'true' || envValue === '1';
   }
 
-  return FLAGS[flag];
+  return FEATURE_FLAGS[flag];
 }
 
 /**
@@ -49,7 +44,7 @@ export function useFeatureFlag(flag: FeatureFlag): boolean {
  * Useful for debugging or admin panels.
  */
 export function getAllFeatureFlags(): Record<FeatureFlag, boolean> {
-  return (Object.keys(FLAGS) as FeatureFlag[]).reduce(
+  return (Object.keys(FEATURE_FLAGS) as FeatureFlag[]).reduce(
     (acc, key) => {
       acc[key] = isFeatureEnabled(key);
       return acc;
