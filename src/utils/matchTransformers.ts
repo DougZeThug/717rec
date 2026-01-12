@@ -20,6 +20,7 @@ export interface TransformMatchOptions {
 
 /**
  * Extract team details from nested join results (handles array or object format)
+ * Includes stats fields (power_score, sos, division_id) for predictions
  */
 function extractTeamDetails(team: any): Match['team1Details'] {
   if (!team) return null;
@@ -32,6 +33,9 @@ function extractTeamDetails(team: any): Match['team1Details'] {
     image_url: t.image_url ?? null,
     logo_url: t.logo_url ?? null,
     divisionName: t.divisionname ?? t.divisionName ?? null,
+    division_id: t.division_id ?? null,
+    power_score: t.power_score ?? null,
+    sos: t.sos ?? null,
   };
 }
 

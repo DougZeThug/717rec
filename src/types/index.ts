@@ -52,6 +52,9 @@ export interface Match {
     image_url: string | null;
     logo_url: string | null;
     divisionName: string | null;
+    division_id: string | null;
+    power_score: number | null;
+    sos: number | null;
   } | null;
   team2Details?: {
     team_id: string;
@@ -59,6 +62,9 @@ export interface Match {
     image_url: string | null;
     logo_url: string | null;
     divisionName: string | null;
+    division_id: string | null;
+    power_score: number | null;
+    sos: number | null;
   } | null;
 }
 

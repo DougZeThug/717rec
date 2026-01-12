@@ -23,14 +23,20 @@ export const useScheduleData = () => {
             name,
             image_url,
             logo_url,
-            divisionname
+            divisionname,
+            division_id,
+            power_score,
+            sos
           ),
           team2:v_team_details!team2_id(
             team_id,
             name,
             image_url,
             logo_url,
-            divisionname
+            divisionname,
+            division_id,
+            power_score,
+            sos
           )
         `
         )

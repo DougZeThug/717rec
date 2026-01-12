@@ -8,12 +8,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { TeamLogo } from '@/components/ui/team';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import type { HeadToHeadData } from '@/hooks/useBatchHeadToHead';
+import { useMatchPrediction } from '@/hooks/useMatchPrediction';
 import { cn } from '@/lib/utils';
 import { animations, elevation, gradients } from '@/styles/design-system';
 import { Match } from '@/types';
 
 import MatchCountdown from './MatchCountdown';
 import { MatchHeadToHead } from './MatchHeadToHead';
+import { MatchPrediction } from './MatchPrediction';
+import { UpsetTag } from './UpsetTag';
 
 interface MatchCardProps {
   match: Match;
@@ -46,6 +49,14 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const team2Name = match.team2Details?.name || 'Unknown Team';
   const team1Logo = match.team1Details?.image_url || '';
   const team2Logo = match.team2Details?.image_url || '';
+
+  // Get match prediction (for upcoming) and upset detection (for completed)
+  const { prediction, isUpsetResult } = useMatchPrediction({
+    team1Details: match.team1Details,
+    team2Details: match.team2Details,
+    isCompleted,
+    winnerId: match.winnerId,
+  });
 
   const team1IsWinner =
     isCompleted &&
@@ -117,13 +128,16 @@ const MatchCard: React.FC<MatchCardProps> = ({
     >
       {/* Status indicators */}
       {isCompleted && (
-        <div
-          className={cn(
-            'absolute -top-3 left-4 z-10 px-3 py-1 text-[10px] font-bold tracking-wider uppercase',
-            'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-md transform -translate-y-1/2 shadow-sm'
-          )}
-        >
-          Final
+        <div className="absolute -top-3 left-4 z-10 flex items-center gap-2 transform -translate-y-1/2">
+          <div
+            className={cn(
+              'px-3 py-1 text-[10px] font-bold tracking-wider uppercase',
+              'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-md shadow-sm'
+            )}
+          >
+            Final
+          </div>
+          {isUpsetResult && <UpsetTag />}
         </div>
       )}
 
@@ -230,6 +244,15 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
           {/* Countdown for upcoming matches - isolated to prevent parent re-renders */}
           {!isCompleted && match.date && <MatchCountdown matchDate={match.date} />}
+
+          {/* Model Prediction for upcoming matches */}
+          {!isCompleted && prediction && (
+            <MatchPrediction
+              prediction={prediction}
+              team1Name={team1Name}
+              team2Name={team2Name}
+            />
+          )}
 
           {/* Action buttons - Admin can manage all matches, non-admins only incomplete matches */}
           {((onEdit && !isCompleted) || (onDelete && (!isCompleted || isAdminAccessGranted))) &&
