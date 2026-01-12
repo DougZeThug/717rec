@@ -1827,48 +1827,6 @@ export type Database = {
           },
         ]
       }
-      ranking_snapshots: {
-        Row: {
-          id: string
-          team_id: string
-          season_id: string
-          rank_position: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          team_id: string
-          season_id: string
-          rank_position: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          team_id?: string
-          season_id?: string
-          rank_position?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ranking_snapshots_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ranking_snapshots_season_id_fkey"
-            columns: ["season_id"]
-            isOneToOne: false
-            referencedRelation: "seasons"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       playoff_team_records: {
         Row: {
           bracket_id: string | null
