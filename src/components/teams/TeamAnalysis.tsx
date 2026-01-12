@@ -186,6 +186,11 @@ const TeamAnalysisComponent: React.FC<TeamAnalysisProps> = ({ teamId, teamName }
       analysis.trends ||
       analysis.rivalry_insights);
 
+  // Hide the entire section for non-admins when there's no content
+  if (!isLoading && !error && !hasContent && !isAdminAccessGranted) {
+    return null;
+  }
+
   return (
     <section id="team-analysis">
       <CollapsibleSection
