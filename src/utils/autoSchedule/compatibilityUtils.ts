@@ -1,9 +1,9 @@
-import { supabase } from '@/integrations/supabase/client';
 import { getDisplayDivision } from '@/styles/design-system/divisions';
 import { Team } from '@/types';
-import { debugLog, errorLog } from '@/utils/logger';
+import { debugLog } from '@/utils/logger';
 
 import { getCachedCompatibilityScore, getCachedMatchHistory } from './cachingUtils';
+import { fetchTeamsPlayedHistory } from './matchHistoryDataAccess';
 
 /**
  * Get tier distance between two teams (0 = same tier, 1 = adjacent, 2 = extreme)
@@ -85,34 +85,7 @@ export function getCompatibilityScore(team1: Team, team2: Team): number {
  * Check if two teams have played each other before
  */
 export async function haveTeamsPlayed(team1Id: string, team2Id: string): Promise<boolean> {
-  return getCachedMatchHistory(team1Id, team2Id, checkTeamsPlayedHistory);
-}
-
-/**
- * Actual database query to check if teams have played before
- */
-async function checkTeamsPlayedHistory(team1Id: string, team2Id: string): Promise<boolean> {
-  try {
-    // Build a query to find matches between these teams
-    const { data, error } = await supabase
-      .from('matches')
-      .select('id')
-      .or(
-        `and(team1_id.eq.${team1Id},team2_id.eq.${team2Id}),and(team1_id.eq.${team2Id},team2_id.eq.${team1Id})`
-      )
-      .limit(1);
-
-    if (error) {
-      errorLog('Error checking if teams have played:', error);
-      throw error;
-    }
-
-    return data && data.length > 0;
-  } catch (error) {
-    errorLog('Error in checkTeamsPlayedHistory:', error);
-    // Return false as a fallback to avoid blocking match generation
-    return false;
-  }
+  return getCachedMatchHistory(team1Id, team2Id, fetchTeamsPlayedHistory);
 }
 
 /**
