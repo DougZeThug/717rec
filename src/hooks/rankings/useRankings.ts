@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
 
 import { useTeamsArray } from '@/hooks/teams';
+import { calculateRankings } from '@/services/RankingsCalculationService';
 import { Ranking } from '@/types';
 import { errorLog } from '@/utils/logger';
-import { createRankingObject } from '@/utils/rankingUtils/createRankingObject';
-import { fetchDivisionWeights } from '@/utils/rankingUtils/divisionWeightsCache';
-import { sortAndUpdateRankings } from '@/utils/rankingUtils/sortAndUpdateRankings';
 
 import { useRankingsData } from './useRankingsData';
 
@@ -18,7 +16,7 @@ export const useRankings = () => {
   const { latestMatches, matchesLoading } = useRankingsData();
 
   useEffect(() => {
-    const calculateRankings = async () => {
+    const performRankingsCalculation = async () => {
       if (teamsLoading || matchesLoading) {
         setIsLoading(true);
         return;
@@ -26,9 +24,6 @@ export const useRankings = () => {
 
       try {
         setIsLoading(true);
-
-        // Fetch division weights ONCE before processing all teams
-        const divisionWeights = await fetchDivisionWeights();
 
         // Load previous rankings from localStorage (wrapped in try/catch for iOS Safari private browsing)
         let previousRankings: Record<string, number> = {};
@@ -39,22 +34,10 @@ export const useRankings = () => {
           // localStorage unavailable (e.g., iOS Safari private browsing)
         }
 
-        // Create ranking objects for all teams (now synchronous)
-        const unsortedRankings = teams.map((team) =>
-          createRankingObject(team, teams, latestMatches, previousRankings, divisionWeights)
-        );
+        // Delegate calculation to service
+        const calculatedRankings = await calculateRankings(teams, latestMatches, previousRankings);
 
-        // Sort and update rank changes
-        const sortedRankings = sortAndUpdateRankings(unsortedRankings, previousRankings);
-
-        // Save current rankings as previous for next calculation
-        const currentRankings: Record<string, number> = {};
-        sortedRankings.forEach((ranking, index) => {
-          currentRankings[ranking.teamId] = index + 1;
-        });
-        localStorage.setItem('previousRankings', JSON.stringify(currentRankings));
-
-        setRankings(sortedRankings);
+        setRankings(calculatedRankings);
         setError(null);
       } catch (err) {
         errorLog('Error calculating rankings:', err);
@@ -64,7 +47,7 @@ export const useRankings = () => {
       }
     };
 
-    calculateRankings();
+    performRankingsCalculation();
   }, [teams, latestMatches, teamsLoading, matchesLoading]);
 
   return {
