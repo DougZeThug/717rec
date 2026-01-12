@@ -1361,7 +1361,6 @@ export type Database = {
           created_at: string | null
           id: string
           loser_id: string | null
-          match_id: number | null
           match_type: Database["public"]["Enums"]["playoff_match_type"]
           next_lose_match_id: string | null
           next_win_match_id: string | null
@@ -1383,7 +1382,6 @@ export type Database = {
           created_at?: string | null
           id?: string
           loser_id?: string | null
-          match_id?: number | null
           match_type?: Database["public"]["Enums"]["playoff_match_type"]
           next_lose_match_id?: string | null
           next_win_match_id?: string | null
@@ -1405,7 +1403,6 @@ export type Database = {
           created_at?: string | null
           id?: string
           loser_id?: string | null
-          match_id?: number | null
           match_type?: Database["public"]["Enums"]["playoff_match_type"]
           next_lose_match_id?: string | null
           next_win_match_id?: string | null
@@ -1826,13 +1823,6 @@ export type Database = {
             columns: ["winner_id"]
             isOneToOne: false
             referencedRelation: "v_visible_teams"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "playoff_matches_match_id_fkey"
-            columns: ["match_id"]
-            isOneToOne: true
-            referencedRelation: "match"
             referencedColumns: ["id"]
           },
         ]
