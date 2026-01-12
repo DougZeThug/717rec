@@ -17,7 +17,12 @@ export type BadgeType =
   | 'consistent_performer'
   | 'hot_streak'
   | 'cold_streak'
-  | 'cool_fun_team';
+  | 'cool_fun_team'
+  | 'ice_cold'
+  | 'broom_crew'
+  | 'gatekeeper'
+  | 'chaos_agent'
+  | 'bully';
 
 export interface TeamBadgeEvent {
   id: string;
