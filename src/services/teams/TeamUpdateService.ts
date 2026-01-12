@@ -90,8 +90,8 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, 'id' | 
   return {
     id: data.id,
     name: data.name,
-    logoUrl: data.logo_url,
-    imageUrl: data.image_url,
+    logoUrl: data.image_url || data.logo_url,
+    imageUrl: data.image_url || data.logo_url,
     players: data.players || [],
     // Use the values from teamData since they're not in the database schema
     wins: teamData.wins || 0,

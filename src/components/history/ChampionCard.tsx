@@ -71,9 +71,9 @@ const ChampionCard: React.FC<ChampionCardProps> = ({ team }) => {
                 : 'ring-amber-400 dark:ring-amber-500 bg-white dark:bg-slate-700'
             )}
           >
-            {team.team_logo_url || team.team_image_url ? (
+            {team.team_image_url || team.team_logo_url ? (
               <img
-                src={team.team_logo_url || team.team_image_url || ''}
+                src={team.team_image_url || team.team_logo_url || ''}
                 alt={`${team.team_name} logo`}
                 className="h-16 w-16 rounded-lg object-contain"
                 onError={(e) => {

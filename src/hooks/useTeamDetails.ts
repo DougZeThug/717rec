@@ -52,8 +52,8 @@ export const useTeamDetails = (teamId: string | undefined) => {
       return {
         id: data.team_id,
         name: data.name,
-        logoUrl: data.logo_url,
-        imageUrl: data.image_url,
+        logoUrl: data.image_url || data.logo_url,
+        imageUrl: data.image_url || data.logo_url,
         wins: data.wins || 0,
         losses: data.losses || 0,
         game_wins: data.game_wins || 0,

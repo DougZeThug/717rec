@@ -45,8 +45,8 @@ export function transformTeamRow(row: VTeamDetailsRow): Team {
   return {
     id: row.team_id,
     name: row.name || 'Unnamed Team',
-    logoUrl: row.logo_url || null,
-    imageUrl: row.image_url || null,
+    logoUrl: row.image_url || row.logo_url || null,
+    imageUrl: row.image_url || row.logo_url || null,
     players: Array.isArray(row.players) ? row.players : [],
     wins: row.wins || 0,
     losses: row.losses || 0,

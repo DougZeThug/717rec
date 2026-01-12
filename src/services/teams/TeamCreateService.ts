@@ -32,8 +32,8 @@ export const createTeamApi = async (teamData: Omit<Team, 'id' | 'created_at'>) =
   return {
     id: data.id,
     name: data.name,
-    logoUrl: data.logo_url,
-    imageUrl: data.image_url,
+    logoUrl: data.image_url || data.logo_url,
+    imageUrl: data.image_url || data.logo_url,
     players: data.players || [],
     wins: 0,
     losses: 0,

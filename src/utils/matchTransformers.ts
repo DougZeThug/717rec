@@ -49,7 +49,7 @@ function extractPlayoffTeam(
   return {
     id: team.id,
     name: team.name,
-    logo_url: team.logo_url || team.image_url || null,
+    logo_url: team.image_url || team.logo_url || null,
   };
 }
 

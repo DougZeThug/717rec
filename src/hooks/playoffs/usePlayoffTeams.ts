@@ -47,8 +47,8 @@ export const usePlayoffTeams = () => {
       return teamDetails.map((row) => ({
         id: row.team_id,
         name: row.name ?? 'Unnamed Team',
-        logoUrl: row.logo_url ?? null,
-        imageUrl: row.image_url ?? null,
+        logoUrl: row.image_url ?? row.logo_url ?? null,
+        imageUrl: row.image_url ?? row.logo_url ?? null,
         division_id: row.division_id ?? null,
         division: row.division_id ?? null,
         divisionName: row.divisionname ?? null,

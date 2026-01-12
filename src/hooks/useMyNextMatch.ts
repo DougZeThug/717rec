@@ -84,7 +84,7 @@ export const useMyNextMatch = (): MyNextMatchResult => {
       const opponent: TeamInfo = {
         id: opponentId,
         name: opponentDetails?.name || 'TBD',
-        logoUrl: opponentDetails?.logo_url || opponentDetails?.image_url || null,
+        logoUrl: opponentDetails?.image_url || opponentDetails?.logo_url || null,
       };
 
       return {

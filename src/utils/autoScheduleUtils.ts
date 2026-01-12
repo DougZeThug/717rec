@@ -74,8 +74,8 @@ export async function getTeamsByTimeBlock(date: Date, timeBlock: string): Promis
       return {
         id: teamData.id,
         name: teamData.name,
-        logoUrl: teamData.logo_url,
-        imageUrl: teamData.image_url,
+        logoUrl: teamData.image_url || teamData.logo_url,
+        imageUrl: teamData.image_url || teamData.logo_url,
         division: teamData.division_id,
         divisionName: teamData.divisionName?.name,
         wins: teamData.wins || 0,
