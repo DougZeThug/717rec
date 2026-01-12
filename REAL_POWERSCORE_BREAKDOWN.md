@@ -3,6 +3,18 @@
 
 ---
 
+## ⚠️ **STATUS: FIXED**
+
+This document was created to diagnose the power score discrepancy between the Stats page and History page.
+
+**The issue has been resolved** in migration `20260112170000_fix_history_weighted_powerscore.sql`.
+
+Both pages now use the **same weighted formula** for consistent power score calculations.
+
+---
+
+---
+
 ## 📊 SEASON RECORD
 
 **Match Record:** 1 win - 1 loss
