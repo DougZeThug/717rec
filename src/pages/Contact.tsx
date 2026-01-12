@@ -7,7 +7,6 @@ import { CheckCircle, Mail, MessageSquare, Send } from 'lucide-react';
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 
 import PageLayout from '@/components/layout/PageLayout';
 import PageTransition from '@/components/transitions/PageTransition';
@@ -32,17 +31,12 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  contactSchema,
+  submitContactRequest,
+  type ContactFormData,
+} from '@/services/support/ContactService';
 import { trackContactForm } from '@/utils/analytics';
-
-const contactSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email address'),
-  subject: z.string().min(1, 'Please select a subject'),
-  message: z.string().min(10, 'Message must be at least 10 characters'),
-});
-
-type ContactFormData = z.infer<typeof contactSchema>;
 
 const SUBJECT_OPTIONS = [
   { value: 'bug_report', label: 'Bug Report' },
@@ -72,12 +66,9 @@ export default function Contact() {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.functions.invoke('send-support-email', {
-        body: data,
-      });
-
+      const { error } = await submitContactRequest(data);
       if (error) {
-        throw new Error(error.message || 'Failed to send message');
+        throw new Error(error);
       }
 
       trackContactForm(data.subject);
@@ -87,8 +78,7 @@ export default function Contact() {
         title: 'Success',
         description: 'Message sent successfully!',
       });
-    } catch (error) {
-      console.error('Contact form error:', error);
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to send message. Please try again.',
