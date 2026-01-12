@@ -2,7 +2,9 @@ import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchBracketsForSelector } from '@/services/brackets/BracketReadService';
+import { fetchMatchesWithTeams } from '@/services/matches/MatchReadService';
+import { updateMatchScore } from '@/services/matches/MatchWriteService';
 
 import { FilterState, MatchWithTeams } from './types';
 
@@ -17,10 +19,8 @@ export const useScoreEntryData = () => {
   // Fetch brackets for filtering
   const fetchBrackets = async () => {
     try {
-      const { data, error } = await supabase.from('brackets').select('id, title').order('title');
-
-      if (error) throw error;
-      setBrackets(data || []);
+      const data = await fetchBracketsForSelector();
+      setBrackets(data);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       console.error('Error fetching brackets:', message);
@@ -30,31 +30,9 @@ export const useScoreEntryData = () => {
   // Main function to fetch matches
   const fetchMatches = async () => {
     setLoading(true);
-    let query = supabase
-      .from('matches')
-      .select(
-        `
-        *,
-        team1:teams!matches_team1_id_fkey(id, name, logo_url),
-        team2:teams!matches_team2_id_fkey(id, name, logo_url)
-      `
-      )
-      .order('date', { ascending: true });
-
-    // Apply date filter if selected
-    if (filters.date) {
-      const dateStr = format(filters.date, 'yyyy-MM-dd');
-      query = query.gte('date', `${dateStr}T00:00:00`).lt('date', `${dateStr}T23:59:59`);
-    }
-
-    // Apply bracket filter if selected
-    if (filters.bracketId) {
-      query = query.eq('bracket_id', filters.bracketId);
-    }
 
     try {
-      const { data, error } = await query;
-      if (error) throw error;
+      const data = await fetchMatchesWithTeams(filters);
 
       const formattedMatches: MatchWithTeams[] = (data || []).map((match) => {
         // Convert from database snake_case to our TypeScript camelCase
@@ -197,19 +175,14 @@ export const useScoreEntryData = () => {
             loserId = match.team1Id;
           }
 
-          // Update match in database
-          const { error } = await supabase
-            .from('matches')
-            .update({
-              team1_score: match.team1Score,
-              team2_score: match.team2Score,
-              iscompleted: match.iscompleted,
-              winner_id: winnerId,
-              loser_id: loserId,
-            })
-            .eq('id', match.id);
-
-          if (error) throw error;
+          // Update match in database using service layer
+          await updateMatchScore(match.id, {
+            team1_score: match.team1Score,
+            team2_score: match.team2Score,
+            iscompleted: match.iscompleted,
+            winner_id: winnerId,
+            loser_id: loserId,
+          });
         }
       }
 

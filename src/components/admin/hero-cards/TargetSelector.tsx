@@ -10,7 +10,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { TARGET_TYPE_OPTIONS } from '@/constants/heroCardPresets';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  fetchDivisionsForSelector,
+  fetchSeasonsForSelector,
+  fetchTeamsForSelector,
+} from '@/services/selectors/SelectorService';
 import { HeroCardTargetType } from '@/types/heroCard';
 
 interface TargetTypeSelectorProps {
@@ -54,34 +58,19 @@ export const TargetEntitySelector: React.FC<TargetEntitySelectorProps> = ({
 }) => {
   const { data: teams } = useQuery({
     queryKey: ['teams-for-selector'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('teams').select('id, name').order('name');
-      if (error) throw error;
-      return data;
-    },
+    queryFn: fetchTeamsForSelector,
     enabled: targetType === 'team',
   });
 
   const { data: divisions } = useQuery({
     queryKey: ['divisions-for-selector'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('divisions').select('id, name').order('name');
-      if (error) throw error;
-      return data;
-    },
+    queryFn: fetchDivisionsForSelector,
     enabled: targetType === 'division',
   });
 
   const { data: seasons } = useQuery({
     queryKey: ['seasons-for-selector'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('seasons')
-        .select('id, name')
-        .order('start_date', { ascending: false });
-      if (error) throw error;
-      return data;
-    },
+    queryFn: fetchSeasonsForSelector,
     enabled: targetType === 'season',
   });
 
