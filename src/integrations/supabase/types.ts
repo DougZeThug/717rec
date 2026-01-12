@@ -3826,6 +3826,7 @@ export type Database = {
       }
       v_team_season_agg: {
         Row: {
+          division_name: string | null
           game_losses: number | null
           game_win_percentage: number | null
           game_wins: number | null
