@@ -64,8 +64,8 @@ export function useTeamMembership() {
           team: data.team
             ? {
                 ...data.team,
-                logoUrl: data.team.logo_url,
-                imageUrl: data.team.image_url,
+                logoUrl: data.team.image_url || data.team.logo_url,
+                imageUrl: data.team.image_url || data.team.logo_url,
                 power_score: 0, // Default values for required properties
                 sos: 0,
                 win_percentage: 0,
@@ -98,8 +98,8 @@ export function useTeamMembership() {
       const transformedTeams: Team[] = (data || []).map((team) => ({
         id: team.id,
         name: team.name,
-        logoUrl: team.logo_url,
-        imageUrl: team.image_url,
+        logoUrl: team.image_url || team.logo_url,
+        imageUrl: team.image_url || team.logo_url,
         division: team.division_id,
         wins: team.wins,
         losses: team.losses,

@@ -41,7 +41,7 @@ export const fetchTeamsForMatch = async (teamIds: string[]): Promise<Team[]> => 
     const formattedTeams: Team[] = teamArray.map((team) => ({
       id: team.team_id,
       name: team.name,
-      logoUrl: team.logo_url || null,
+      logoUrl: team.image_url || team.logo_url || null,
       imageUrl: team.image_url || team.logo_url || null,
       players: Array.isArray(team.players) ? team.players : [],
       wins: team.wins || 0,

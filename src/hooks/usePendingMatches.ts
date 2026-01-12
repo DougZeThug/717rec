@@ -64,8 +64,8 @@ export function usePendingMatches() {
         teamsMap[team.team_id] = {
           id: team.team_id,
           name: team.name,
-          logoUrl: team.logo_url,
-          imageUrl: team.image_url,
+          logoUrl: team.image_url || team.logo_url,
+          imageUrl: team.image_url || team.logo_url,
           players: Array.isArray(team.players) ? team.players : [],
           wins: team.wins || 0,
           losses: team.losses || 0,

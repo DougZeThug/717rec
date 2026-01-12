@@ -35,7 +35,7 @@ export const usePowerScoreTrends = (direction: TrendDirection = 'up', limit: num
       // Get current season power scores from v_team_details, excluding hidden divisions
       const { data: currentData, error: currentError } = await supabase
         .from('v_team_details')
-        .select('team_id, name, divisionname, division_id, logo_url, power_score')
+        .select('team_id, name, divisionname, division_id, logo_url, image_url, power_score')
         .not('power_score', 'is', null);
 
       if (currentError || !currentData) {
@@ -83,7 +83,7 @@ export const usePowerScoreTrends = (direction: TrendDirection = 'up', limit: num
             teamId: team.team_id,
             teamName: team.name,
             division: team.divisionname || 'Unknown',
-            logoUrl: team.logo_url,
+            logoUrl: team.image_url || team.logo_url,
             currentScore,
             previousScore,
             delta,

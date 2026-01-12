@@ -132,7 +132,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
                       <div className="flex items-center min-w-0 flex-1 gap-6">
                         <div className="shrink-0">
                           <TeamLogo
-                            imageUrl={teamTimeslot.teams?.logo_url || teamTimeslot.teams?.image_url}
+                            imageUrl={teamTimeslot.teams?.image_url || teamTimeslot.teams?.logo_url}
                             teamName={teamTimeslot.teams?.name || 'Unknown Team'}
                             teamId={teamTimeslot.team_id}
                             size="sm"
@@ -258,7 +258,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
                       <div className="flex items-center min-w-0 flex-1 gap-6">
                         <div className="shrink-0">
                           <TeamLogo
-                            imageUrl={teamTimeslot.teams?.logo_url || teamTimeslot.teams?.image_url}
+                            imageUrl={teamTimeslot.teams?.image_url || teamTimeslot.teams?.logo_url}
                             teamName={teamTimeslot.teams?.name || 'Unknown Team'}
                             teamId={teamTimeslot.team_id}
                             size="sm"

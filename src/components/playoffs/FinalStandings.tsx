@@ -43,7 +43,8 @@ export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) 
           teams:team_id (
             id,
             name,
-            logo_url
+            logo_url,
+            image_url
           )
         `
         )
@@ -111,9 +112,9 @@ export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) 
                 <div className="w-8 text-center font-bold">{record.placement}</div>
                 {getPlacementIcon(record.placement)}
                 <div className="flex items-center gap-2">
-                  {record.teams.logo_url && (
+                  {(record.teams.image_url || record.teams.logo_url) && (
                     <img
-                      src={record.teams.logo_url}
+                      src={record.teams.image_url || record.teams.logo_url}
                       alt={record.teams.name}
                       loading="lazy"
                       decoding="async"

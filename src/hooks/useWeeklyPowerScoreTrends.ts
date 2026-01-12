@@ -79,7 +79,7 @@ export const useWeeklyPowerScoreTrends = (direction: TrendDirection = 'up', limi
 
       const { data: teamDetails } = await supabase
         .from('v_team_details')
-        .select('team_id, name, divisionname, division_id, logo_url')
+        .select('team_id, name, divisionname, division_id, logo_url, image_url')
         .in('team_id', teamIds);
 
       const teamDetailsMap = new Map(teamDetails?.map((t) => [t.team_id, t]) || []);
@@ -105,7 +105,7 @@ export const useWeeklyPowerScoreTrends = (direction: TrendDirection = 'up', limi
             teamId: snapshot.team_id,
             teamName: teamDetail?.name || 'Unknown',
             division: teamDetail?.divisionname || 'Unknown',
-            logoUrl: teamDetail?.logo_url,
+            logoUrl: teamDetail?.image_url || teamDetail?.logo_url,
             currentScore,
             previousScore,
             delta,
