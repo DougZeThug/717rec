@@ -61,9 +61,9 @@ const MatchRow: React.FC<MatchRowProps> = ({
 
   return (
     <Link to="/schedule" className="group block">
-      <div className="flex items-center gap-4 md:gap-6 py-3">
-        {/* Team Logos - VS Layout */}
-        <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+      <div className="flex items-center gap-3 py-3">
+        {/* Team Logos & Score - Compact mobile-friendly layout */}
+        <div className="flex items-center gap-2 flex-shrink-0">
           {/* My Team Logo */}
           <div className="relative">
             <div
@@ -78,7 +78,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
               size="md"
               rounded
               className={cn(
-                'relative z-10 transition-all duration-300 !w-12 !h-12 !min-w-12 !min-h-12',
+                'relative z-10 transition-all duration-300 !w-10 !h-10 !min-w-10 !min-h-10 md:!w-12 md:!h-12 md:!min-w-12 md:!min-h-12',
                 shouldApplyWinter
                   ? 'ring-2 ring-cyan-400/30 group-hover:ring-cyan-400/50'
                   : 'ring-2 ring-primary/20 group-hover:ring-primary/40'
@@ -88,18 +88,48 @@ const MatchRow: React.FC<MatchRowProps> = ({
 
           {/* VS or Score */}
           {isPrevious && myTeamWins !== null && opponentWins !== null ? (
-            <span
-              className={cn(
-                'text-sm font-bold tabular-nums min-w-[3rem] text-center',
-                shouldApplyWinter ? 'text-cyan-200' : 'text-foreground'
-              )}
-            >
-              {myTeamWins} - {opponentWins}
-            </span>
+            <div className="flex items-center gap-1 min-w-[3.5rem] justify-center">
+              <span
+                className={cn(
+                  'text-sm md:text-base font-bold tabular-nums',
+                  myTeamWins > opponentWins
+                    ? 'text-green-500'
+                    : myTeamWins < opponentWins
+                      ? 'text-red-500'
+                      : shouldApplyWinter
+                        ? 'text-cyan-200'
+                        : 'text-foreground'
+                )}
+              >
+                {myTeamWins}
+              </span>
+              <span
+                className={cn(
+                  'text-sm md:text-base font-bold',
+                  shouldApplyWinter ? 'text-cyan-300/50' : 'text-muted-foreground'
+                )}
+              >
+                -
+              </span>
+              <span
+                className={cn(
+                  'text-sm md:text-base font-bold tabular-nums',
+                  opponentWins > myTeamWins
+                    ? 'text-green-500'
+                    : opponentWins < myTeamWins
+                      ? 'text-red-500'
+                      : shouldApplyWinter
+                        ? 'text-cyan-200'
+                        : 'text-foreground'
+                )}
+              >
+                {opponentWins}
+              </span>
+            </div>
           ) : (
             <span
               className={cn(
-                'text-xs font-bold uppercase min-w-[3rem] text-center',
+                'text-xs font-bold uppercase min-w-[3.5rem] text-center',
                 shouldApplyWinter ? 'text-cyan-300/70' : 'text-muted-foreground'
               )}
             >
@@ -115,7 +145,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
               size="md"
               rounded
               className={cn(
-                'relative z-10 transition-all duration-300 !w-12 !h-12 !min-w-12 !min-h-12',
+                'relative z-10 transition-all duration-300 !w-10 !h-10 !min-w-10 !min-h-10 md:!w-12 md:!h-12 md:!min-w-12 md:!min-h-12',
                 shouldApplyWinter
                   ? 'ring-2 ring-cyan-400/30 group-hover:ring-cyan-400/50'
                   : 'ring-2 ring-muted/30 group-hover:ring-muted/50'
@@ -124,46 +154,43 @@ const MatchRow: React.FC<MatchRowProps> = ({
           </div>
         </div>
 
-        {/* Team Names & Details */}
+        {/* Match Info - Stacked layout for mobile */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h3
+          <div className="flex items-center gap-2 flex-wrap">
+            <span
               className={cn(
-                typeScale.body,
-                'font-semibold transition-colors truncate',
+                'text-sm font-semibold truncate max-w-[120px] md:max-w-none',
                 shouldApplyWinter
                   ? 'text-cyan-50 group-hover:text-cyan-300'
                   : 'text-foreground group-hover:text-primary'
               )}
             >
-              <span className="font-bold">{myTeam.name}</span>
-              <span className="text-muted-foreground mx-2">vs</span>
-              <span>{opponent.name}</span>
-            </h3>
+              {opponent.name}
+            </span>
             {isPrevious && didWin && (
-              <Badge variant="default" className="text-xs bg-green-600 hover:bg-green-600 flex-shrink-0">
+              <Badge variant="default" className="text-[10px] px-1.5 py-0 h-5 bg-green-600 hover:bg-green-600 flex-shrink-0">
                 Win
               </Badge>
             )}
             {isPrevious && didLose && (
-              <Badge variant="destructive" className="text-xs flex-shrink-0">
+              <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-5 flex-shrink-0">
                 Loss
               </Badge>
             )}
           </div>
 
-          {/* Date & Time */}
-          <div className="flex items-center gap-3 mt-1">
-            <div className="flex items-center gap-1.5">
+          {/* Date & Time - Compact row */}
+          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+            <div className="flex items-center gap-1">
               <Calendar
                 className={cn(
-                  'h-3.5 w-3.5',
+                  'h-3 w-3',
                   shouldApplyWinter ? 'text-cyan-400/70' : 'text-muted-foreground'
                 )}
               />
               <span
                 className={cn(
-                  typeScale.caption,
+                  'text-xs',
                   shouldApplyWinter ? 'text-cyan-200/70' : 'text-muted-foreground'
                 )}
               >
@@ -171,16 +198,16 @@ const MatchRow: React.FC<MatchRowProps> = ({
               </span>
             </div>
             {formattedTime && (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1">
                 <Clock
                   className={cn(
-                    'h-3.5 w-3.5',
+                    'h-3 w-3',
                     shouldApplyWinter ? 'text-cyan-400/70' : 'text-muted-foreground'
                   )}
                 />
                 <span
                   className={cn(
-                    typeScale.caption,
+                    'text-xs',
                     shouldApplyWinter ? 'text-cyan-200/70' : 'text-muted-foreground'
                   )}
                 >
@@ -188,21 +215,13 @@ const MatchRow: React.FC<MatchRowProps> = ({
                 </span>
               </div>
             )}
-            {weekNumber && (
-              <Badge
-                variant={shouldApplyWinter ? 'winter' : 'outline'}
-                className={cn('text-xs', !shouldApplyWinter && 'border-muted-foreground/30')}
-              >
-                Week {weekNumber}
-              </Badge>
-            )}
           </div>
         </div>
 
         {/* Arrow */}
         <ChevronRight
           className={cn(
-            'h-5 w-5 group-hover:translate-x-1 transition-all duration-200 flex-shrink-0',
+            'h-4 w-4 md:h-5 md:w-5 group-hover:translate-x-1 transition-all duration-200 flex-shrink-0',
             shouldApplyWinter
               ? 'text-cyan-400/50 group-hover:text-cyan-400'
               : 'text-muted-foreground/50 group-hover:text-primary'
