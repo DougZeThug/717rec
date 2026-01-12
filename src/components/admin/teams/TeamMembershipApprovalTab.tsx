@@ -22,16 +22,16 @@ import { errorLog } from '@/utils/logger';
 
 interface UserProfile {
   id: string;
-  username?: string;
-  full_name?: string;
-  avatar_url?: string;
+  username: string | null;
+  full_name: string | null;
+  avatar_url: string | null;
 }
 
 interface TeamInfo {
   id: string;
   name: string;
-  logo_url?: string;
-  image_url?: string;
+  logo_url: string | null;
+  image_url: string | null;
 }
 
 interface PendingMembershipRaw {
@@ -67,35 +67,58 @@ const TeamMembershipApprovalTab: React.FC = () => {
   const fetchPendingMemberships = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
+      
+      // First, get all pending memberships
+      const { data: memberships, error: membershipsError } = await supabase
         .from('team_memberships')
-        .select(
-          `
-          id,
-          user_id,
-          team_id,
-          joined_at,
-          is_approved,
-          user:profiles(id, username, full_name, avatar_url),
-          team:teams(id, name, logo_url, image_url)
-        `
-        )
+        .select('id, user_id, team_id, joined_at, is_approved')
         .eq('is_approved', false)
         .order('joined_at', { ascending: false });
 
-      if (error) throw error;
-      
-      // Normalize data - Supabase returns joined relations as arrays
-      const normalized: PendingMembership[] = ((data as PendingMembershipRaw[]) || [])
-        .map((item) => {
-          const user = Array.isArray(item.user) ? item.user[0] : item.user;
-          const team = Array.isArray(item.team) ? item.team[0] : item.team;
+      if (membershipsError) throw membershipsError;
+      if (!memberships || memberships.length === 0) {
+        setPendingMemberships([]);
+        return;
+      }
+
+      // Get unique user IDs and team IDs
+      const userIds = [...new Set(memberships.map(m => m.user_id))];
+      const teamIds = [...new Set(memberships.map(m => m.team_id))];
+
+      // Fetch profiles and teams in parallel
+      const [profilesResult, teamsResult] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('id, username, full_name, avatar_url')
+          .in('id', userIds),
+        supabase
+          .from('teams')
+          .select('id, name, logo_url, image_url')
+          .in('id', teamIds)
+      ]);
+
+      if (profilesResult.error) throw profilesResult.error;
+      if (teamsResult.error) throw teamsResult.error;
+
+      // Create lookup maps
+      const profilesMap = new Map(
+        (profilesResult.data || []).map(p => [p.id, p])
+      );
+      const teamsMap = new Map(
+        (teamsResult.data || []).map(t => [t.id, t])
+      );
+
+      // Combine the data
+      const normalized: PendingMembership[] = memberships
+        .map((membership) => {
+          const user = profilesMap.get(membership.user_id);
+          const team = teamsMap.get(membership.team_id);
           
           // Skip if user or team data is missing
           if (!user || !team) return null;
           
           return {
-            ...item,
+            ...membership,
             user,
             team,
           };
