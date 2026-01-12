@@ -8,28 +8,7 @@
  */
 
 import { captureError, captureMessage } from '@/utils/sentry';
-
-// Vite-compatible environment detection
-const isDev = typeof import.meta !== 'undefined' && import.meta.env?.DEV === true;
-
-// Log level control (can be overridden via environment variable)
-type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'none';
-const LOG_LEVEL: LogLevel =
-  (typeof import.meta !== 'undefined' ? (import.meta.env?.VITE_LOG_LEVEL as LogLevel) : 'info') ||
-  'info';
-
-const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
-  debug: 0,
-  info: 1,
-  warn: 2,
-  error: 3,
-  none: 99,
-};
-
-const shouldLog = (level: LogLevel): boolean => {
-  if (!isDev) return false;
-  return LOG_LEVEL_PRIORITY[level] >= LOG_LEVEL_PRIORITY[LOG_LEVEL];
-};
+import { isDev, shouldLog, type LogLevel } from '@/utils/logger-types';
 
 // Base logging functions
 export const log = (...args: unknown[]) => {

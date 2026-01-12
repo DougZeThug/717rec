@@ -1,3 +1,5 @@
+import { errorLog } from '@/utils/logger';
+
 export class ChallongeError extends Error {
   constructor(
     message: string,
@@ -168,23 +170,10 @@ export function getUIErrorMessage(error: unknown, context?: string): string {
 export function logError(error: unknown, context: string, additionalData?: any): void {
   const processed = processError(error);
 
-  // Import errorLog dynamically to avoid circular dependency
-  import('./logger')
-    .then(({ errorLog }) => {
-      errorLog(`${context}:`, {
-        message: processed.message,
-        originalError: processed.originalError,
-        context,
-        additionalData,
-      });
-    })
-    .catch(() => {
-      // Fallback if logger can't be imported
-      console.error(`${context}:`, {
-        message: processed.message,
-        originalError: processed.originalError,
-        context,
-        additionalData,
-      });
-    });
+  errorLog(`${context}:`, {
+    message: processed.message,
+    originalError: processed.originalError,
+    context,
+    additionalData,
+  });
 }
