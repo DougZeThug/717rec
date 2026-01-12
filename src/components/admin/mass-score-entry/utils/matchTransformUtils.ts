@@ -25,7 +25,8 @@ export const transformDatabaseMatchToMatchWithTeams = (match: any): MatchWithTea
       ? {
           id: match.team1.id,
           name: match.team1.name,
-          logoUrl: match.team1.logo_url,
+          logoUrl: match.team1.logo_url || match.team1.image_url,
+          imageUrl: match.team1.image_url,
           players: [],
           wins: 0,
           losses: 0,
@@ -42,7 +43,8 @@ export const transformDatabaseMatchToMatchWithTeams = (match: any): MatchWithTea
       ? {
           id: match.team2.id,
           name: match.team2.name,
-          logoUrl: match.team2.logo_url,
+          logoUrl: match.team2.logo_url || match.team2.image_url,
+          imageUrl: match.team2.image_url,
           players: [],
           wins: 0,
           losses: 0,

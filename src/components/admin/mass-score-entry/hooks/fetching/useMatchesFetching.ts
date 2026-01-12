@@ -15,8 +15,8 @@ export const useMatchesFetching = () => {
       .select(
         `
         *,
-        team1:teams!matches_team1_id_fkey(id, name, logo_url),
-        team2:teams!matches_team2_id_fkey(id, name, logo_url)
+        team1:teams!matches_team1_id_fkey(id, name, logo_url, image_url),
+        team2:teams!matches_team2_id_fkey(id, name, logo_url, image_url)
       `
       )
       .order('date', { ascending: true });
