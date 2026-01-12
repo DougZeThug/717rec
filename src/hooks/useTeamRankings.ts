@@ -104,8 +104,10 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
         // Update rank changes based on previous rankings
         const finalRankings = updateRankChanges(sortedRankings);
 
-        // Save current rankings for future rank change calculations
-        saveRankingsToStorage(finalRankings);
+        // Save current rankings for future rank change calculations (async, don't wait)
+        saveRankingsToStorage(finalRankings).catch((err) =>
+          errorLog('Failed to save rankings:', err)
+        );
 
         setRankings(finalRankings);
       } catch (error) {

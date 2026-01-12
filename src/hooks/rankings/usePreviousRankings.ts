@@ -20,65 +20,79 @@ export const usePreviousRankings = (): {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      // Load historical rankings (used for trend comparison)
-      const savedHistoricalData = localStorage.getItem('previousRankings');
-      // Load current rankings (latest calculated values)
-      const savedCurrentData = localStorage.getItem('currentRankings');
+    const loadRankings = async () => {
+      try {
+        debugLog('Loading historical and current ranking data');
 
-      debugLog('Loading historical and current ranking data');
+        // Try to load from database first
+        const { loadRankingsFromDatabase } = await import('@/services/RankingSnapshotService');
+        const dbRankings = await loadRankingsFromDatabase();
 
-      if (savedHistoricalData) {
-        try {
-          const parsedHistoricalData: RankingsData = JSON.parse(savedHistoricalData);
-          debugLog('Loaded historical rankings data');
+        if (Object.keys(dbRankings).length > 0) {
+          debugLog('Loaded rankings from database');
+          setPreviousRankings(dbRankings);
+          setLastUpdated(new Date().toISOString());
+          return;
+        }
 
-          setPreviousRankings(parsedHistoricalData.rankings);
-          setLastUpdated(parsedHistoricalData.timestamp);
+        // Fallback to localStorage if database is empty
+        const savedHistoricalData = localStorage.getItem('previousRankings');
+        const savedCurrentData = localStorage.getItem('currentRankings');
 
-          // If there's current data available, check if we need to update historical data
+        if (savedHistoricalData) {
+          try {
+            const parsedHistoricalData: RankingsData = JSON.parse(savedHistoricalData);
+            debugLog('Loaded historical rankings data from localStorage');
+
+            setPreviousRankings(parsedHistoricalData.rankings);
+            setLastUpdated(parsedHistoricalData.timestamp);
+
+            // If there's current data available, check if we need to update historical data
+            if (savedCurrentData) {
+              try {
+                const parsedCurrentData: RankingsData = JSON.parse(savedCurrentData);
+
+                // Check if historical data should be updated based on timestamp
+                if (shouldUpdateHistoricalData(parsedHistoricalData.timestamp)) {
+                  debugLog('Historical data needs updating - threshold time has passed');
+
+                  // Update historical data with the current data
+                  localStorage.setItem('previousRankings', savedCurrentData);
+                  setPreviousRankings(parsedCurrentData.rankings);
+                  setLastUpdated(parsedCurrentData.timestamp);
+                }
+              } catch (parseError) {
+                errorLog('Error parsing current rankings:', parseError);
+              }
+            }
+          } catch (parseError) {
+            errorLog('Error parsing historical rankings:', parseError);
+            // Clear invalid data
+            localStorage.removeItem('previousRankings');
+            setPreviousRankings({});
+          }
+        } else {
+          debugLog('No historical rankings found');
+
+          // If no historical data but we have current data, use that as baseline
           if (savedCurrentData) {
             try {
               const parsedCurrentData: RankingsData = JSON.parse(savedCurrentData);
-
-              // Check if historical data should be updated based on timestamp
-              if (shouldUpdateHistoricalData(parsedHistoricalData.timestamp)) {
-                debugLog('Historical data needs updating - threshold time has passed');
-
-                // Update historical data with the current data
-                localStorage.setItem('previousRankings', savedCurrentData);
-                setPreviousRankings(parsedCurrentData.rankings);
-                setLastUpdated(parsedCurrentData.timestamp);
-              }
+              localStorage.setItem('previousRankings', savedCurrentData);
+              setPreviousRankings(parsedCurrentData.rankings);
+              setLastUpdated(parsedCurrentData.timestamp);
+              debugLog('Current rankings promoted to historical rankings (first run)');
             } catch (parseError) {
-              errorLog('Error parsing current rankings:', parseError);
+              errorLog('Error parsing current rankings during promotion:', parseError);
             }
           }
-        } catch (parseError) {
-          errorLog('Error parsing historical rankings:', parseError);
-          // Clear invalid data
-          localStorage.removeItem('previousRankings');
-          setPreviousRankings({});
         }
-      } else {
-        debugLog('No historical rankings found');
-
-        // If no historical data but we have current data, use that as baseline
-        if (savedCurrentData) {
-          try {
-            const parsedCurrentData: RankingsData = JSON.parse(savedCurrentData);
-            localStorage.setItem('previousRankings', savedCurrentData);
-            setPreviousRankings(parsedCurrentData.rankings);
-            setLastUpdated(parsedCurrentData.timestamp);
-            debugLog('Current rankings promoted to historical rankings (first run)');
-          } catch (parseError) {
-            errorLog('Error parsing current rankings during promotion:', parseError);
-          }
-        }
+      } catch (error) {
+        errorLog('Error loading rankings data:', error);
       }
-    } catch (error) {
-      errorLog('Error loading rankings data:', error);
-    }
+    };
+
+    loadRankings();
   }, []);
 
   // Helper to determine if historical data should be updated based on timestamp
