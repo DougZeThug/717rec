@@ -1,7 +1,9 @@
 -- Fix History Page Power Score to use Weighted Formula (same as Current Season View)
 -- This ensures both views calculate power scores consistently
 
-CREATE OR REPLACE VIEW v_team_season_agg AS
+CREATE OR REPLACE VIEW v_team_season_agg
+WITH (security_invoker=on)
+AS
 WITH regular_season_matches AS (
     SELECT ('reg_'::text || (m.id)::text) AS match_key,
         m.season_id,
