@@ -1,17 +1,19 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useToast } from '@/hooks/use-toast';
-import { errorLog, matchLog, warnLog } from '@/utils/logger';
+import { errorLog, matchLog } from '@/utils/logger';
 
 import { SubmitScoreParams } from './types/matchSubmissionTypes';
 import { useTeamRecordUpdate } from './useTeamRecordUpdate';
 import { updateMatchScore } from './utils/matchDatabaseUtils';
 import { invalidateMatchRelatedQueries } from './utils/queryCacheUtils';
+import { useScoreValidation } from './validation/useScoreValidation';
 
 export const useMatchSubmission = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { updateTeamStats } = useTeamRecordUpdate();
+  const { validateScore } = useScoreValidation();
 
   const handleSubmitScore = async ({
     matchId,
@@ -30,9 +32,15 @@ export const useMatchSubmission = () => {
         team2GameWins: parsedTeam2GameWins,
       });
 
-      // Validation for completed matches with zero game wins
-      if (parsedTeam1GameWins === 0 && parsedTeam2GameWins === 0) {
-        warnLog('Attempting to submit match with zero game wins:', matchId);
+      // Validate scores before database operations
+      const validation = validateScore(team1Score, team2Score);
+      if (!validation.isValid) {
+        toast({
+          title: 'Validation Error',
+          description: validation.errorMessage,
+          variant: 'destructive',
+        });
+        return false;
       }
 
       // Update match score and get result details
