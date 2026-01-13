@@ -104,25 +104,40 @@ const TeamDetails = () => {
     <>
       <TeamDetailsStickyNav />
       <div className="container mx-auto px-4 py-4 md:py-8 space-y-4">
-        {/* Breadcrumbs - hidden on mobile */}
+        {/* Breadcrumbs - full version on desktop */}
         <div className="hidden md:block">
           <AnimatedBreadcrumbs items={breadcrumbs} className="mb-4" />
         </div>
 
+        {/* Mobile breadcrumb - compact version with back button */}
+        <div className="flex items-center gap-2 md:hidden mb-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="min-h-11 px-3"
+            onClick={() => navigate(-1)}
+            aria-label="Go back to previous page"
+          >
+            <ArrowLeft size={16} className="mr-1" aria-hidden="true" />
+            Back
+          </Button>
+          <div className="flex items-center text-xs text-muted-foreground">
+            <span>Teams</span>
+            <span className="mx-1">/</span>
+            <span className="text-foreground font-medium">{team.name}</span>
+          </div>
+        </div>
+
+        {/* Desktop back button */}
         <Button
           variant="ghost"
-          className="mb-2 md:mb-4 min-h-11 px-3 md:h-10 md:px-4"
-          onClick={handleBack}
-        >
-          <ArrowLeft size={16} className="mr-1 md:mr-2" />{' '}
-          {locationState?.from === '/stats' ? 'Back to Standings' : 'Back'}
         </Button>
 
         {/* Hero Section - Tighter on mobile */}
         <TeamHeader team={team} winPercentage={winPct.toFixed(1)} pastMatches={pastMatches} />
 
         {/* 1. Team Stats */}
-        <section id="stats" className="scroll-mt-20">
+        <section id="stats" className="scroll-mt-20" aria-labelledby="stats-heading">
           <StatBreakdown
             wins={team.wins}
             losses={team.losses}
@@ -147,31 +162,32 @@ const TeamDetails = () => {
         </section>
 
         {/* Team Analysis */}
-        <section id="analysis" className="scroll-mt-20">
+        <section id="analysis" className="scroll-mt-20" aria-labelledby="analysis-heading">
           {teamId && <TeamAnalysis teamId={teamId} teamName={team.name} />}
         </section>
 
         {/* 3. Head-to-Head Records */}
-        <section id="h2h" className="scroll-mt-20">
+        <section id="h2h" className="scroll-mt-20" aria-labelledby="h2h-heading">
           {teamId && <HeadToHeadRecords teamId={teamId} teamName={team.name} />}
         </section>
 
         {/* 4. Match History */}
-        <section id="matches" className="scroll-mt-20">
+        <section id="matches" className="scroll-mt-20" aria-labelledby="matches-heading">
           <MatchList
             title="Match History"
             matches={pastMatches}
             isLoading={isLoadingMatches}
             teamId={teamId || ''}
-            isPast={true}
-            highlightWinnerLoser={true}
-            collapsible={true}
+            isPast
+            highlightWinnerLoser
+            collapsible
             defaultOpen={false}
+            headingId="matches-heading"
           />
         </section>
 
         {/* 5. Career Stats */}
-        <section id="career" className="scroll-mt-20">
+        <section id="career" className="scroll-mt-20" aria-labelledby="career-heading">
           {teamId && <TeamTotals teamId={teamId} />}
 
           {/* 6. Advanced Stats - Season-by-Season Breakdown */}
@@ -182,13 +198,14 @@ const TeamDetails = () => {
         </section>
 
         {/* 7. Team Achievements */}
-        <section id="achievements" className="scroll-mt-20">
+        <section id="achievements" className="scroll-mt-20" aria-labelledby="achievements-heading">
           {teamId && (
             <CollapsibleSection
               title="Team Achievements"
               icon={Trophy}
               iconColor="text-amber-500"
               defaultOpen={false}
+              headingId="achievements-heading"
             >
               <TeamBadgeCollection
                 teamId={teamId}
@@ -196,7 +213,7 @@ const TeamDetails = () => {
                 maxDisplay={12}
                 orientation="horizontal"
                 className="gap-3"
-                showEmptyState={true}
+                showEmptyState
               />
             </CollapsibleSection>
           )}

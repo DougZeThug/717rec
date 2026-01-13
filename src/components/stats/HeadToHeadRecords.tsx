@@ -247,6 +247,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
         icon={Swords}
         iconColor="text-emerald-500"
         defaultOpen={false}
+        headingId="h2h-heading"
       >
         {renderContent()}
       </CollapsibleSection>
