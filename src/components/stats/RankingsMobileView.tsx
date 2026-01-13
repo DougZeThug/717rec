@@ -267,6 +267,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
             : 'bg-primary hover:bg-primary/90'
         )}
         onClick={handleFindMyTeam}
+        aria-label={myTeamId ? 'Scroll to my team' : 'Search for a team'}
       >
         {myTeamId ? (
           <User className="h-4 w-4" />

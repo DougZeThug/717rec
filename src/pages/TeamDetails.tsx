@@ -1,5 +1,6 @@
 import { ArrowLeft, Trophy } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router';
+import { useEffect } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router';
 
 import TeamBadgeCollection from '@/components/badges/TeamBadgeCollection';
 import AnimatedBreadcrumbs from '@/components/navigation/AnimatedBreadcrumbs';
@@ -25,6 +26,8 @@ import { calculateSweepRate } from '@/utils/teamDetailsUtils/sweepRateUtils';
 const TeamDetails = () => {
   const { teamId } = useParams<{ teamId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const locationState = location.state as { from?: string; scrollPosition?: number } | undefined;
 
   const { team, isLoading } = useTeamDetails(teamId);
   const { pastMatches, isLoadingMatches } = useTeamMatches(teamId);
@@ -46,6 +49,24 @@ const TeamDetails = () => {
         }
       : 'Loading team...'
   );
+
+  // Handle back navigation with scroll restoration
+  const handleBack = () => {
+    if (locationState?.from) {
+      navigate(locationState.from);
+      // Restore scroll position after navigation
+      if (locationState.scrollPosition !== undefined) {
+        setTimeout(() => {
+          window.scrollTo({
+            top: locationState.scrollPosition,
+            behavior: 'smooth',
+          });
+        }, 100);
+      }
+    } else {
+      navigate(-1);
+    }
+  };
 
   if (isLoading || isLoadingMatches) {
     return (
@@ -110,12 +131,6 @@ const TeamDetails = () => {
         {/* Desktop back button */}
         <Button
           variant="ghost"
-          className="hidden md:flex mb-4 h-10 px-4"
-          onClick={() => navigate(-1)}
-          aria-label="Go back to previous page"
-        >
-          <ArrowLeft size={16} className="mr-2" aria-hidden="true" />
-          Back to Teams
         </Button>
 
         {/* Hero Section - Tighter on mobile */}

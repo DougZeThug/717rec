@@ -138,16 +138,22 @@ const CareerRankingsSection: React.FC = () => {
                 )}
                 {isOpen && careerRankings && careerRankings.length > 0 && (
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
                       exportCareerStatsToCSV(careerRankings);
                     }}
-                    className="h-8 px-2"
+                    className={cn(
+                      'h-8 px-3 gap-2',
+                      isWinterTheme
+                        ? 'border-frost-border/50 hover:bg-frost-primary/10'
+                        : 'border-muted-foreground/30 hover:bg-muted'
+                    )}
                     title="Export to CSV"
                   >
                     <Download className="h-4 w-4" />
+                    <span className="sr-only sm:not-sr-only">Export</span>
                   </Button>
                 )}
                 <ChevronDown
