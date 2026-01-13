@@ -281,4 +281,4 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
   );
 };
 
-export default CareerRankingsMobileView;
+export default React.memo(CareerRankingsMobileView);

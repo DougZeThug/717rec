@@ -40,7 +40,7 @@ interface BracketsViewerComponentProps {
   onMatchClick?: (matchId: string) => void;
 }
 
-export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = ({
+const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
   bracket,
   teams,
   onMatchClick,
@@ -449,3 +449,5 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
     </>
   );
 };
+
+export const BracketsViewerComponent = React.memo(BracketsViewerComponentInner);

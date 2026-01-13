@@ -346,4 +346,4 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
   );
 };
 
-export default StatBreakdown;
+export default React.memo(StatBreakdown);

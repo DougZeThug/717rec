@@ -317,4 +317,4 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
   );
 };
 
-export default MatchesTab;
+export default React.memo(MatchesTab);

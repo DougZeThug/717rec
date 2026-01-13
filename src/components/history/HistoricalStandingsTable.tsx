@@ -378,4 +378,4 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
   );
 };
 
-export default HistoricalStandingsTable;
+export default React.memo(HistoricalStandingsTable);

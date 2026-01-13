@@ -275,4 +275,4 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
   );
 };
 
-export default BracketCreationDialog;
+export default React.memo(BracketCreationDialog);

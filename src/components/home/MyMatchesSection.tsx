@@ -383,4 +383,4 @@ const MyMatchesSection: React.FC<MyMatchesSectionProps> = ({
   );
 };
 
-export default MyMatchesSection;
+export default React.memo(MyMatchesSection);

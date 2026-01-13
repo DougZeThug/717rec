@@ -287,4 +287,4 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
   );
 };
 
-export default RankingsMobileView;
+export default React.memo(RankingsMobileView);

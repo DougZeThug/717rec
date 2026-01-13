@@ -493,4 +493,4 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
   );
 };
 
-export default EventHeroCard;
+export default React.memo(EventHeroCard);

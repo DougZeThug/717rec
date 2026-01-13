@@ -295,4 +295,4 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
   );
 };
 
-export default DivisionRankingsTable;
+export default React.memo(DivisionRankingsTable);

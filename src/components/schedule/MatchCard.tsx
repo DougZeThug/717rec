@@ -309,4 +309,4 @@ const MatchCard: React.FC<MatchCardProps> = ({
   );
 };
 
-export default MatchCard;
+export default React.memo(MatchCard);
