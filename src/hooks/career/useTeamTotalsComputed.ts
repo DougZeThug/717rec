@@ -136,8 +136,9 @@ export const useTeamTotalsComputed = (teamId: string) => {
     queryKey: ['team-totals', teamId],
     queryFn: () => (teamId ? computeTeamTotals(teamId) : Promise.resolve(null)),
     enabled: !!teamId,
-    staleTime: 0,
-    refetchOnMount: 'always',
+    staleTime: 5 * 60 * 1000, // 5 minutes - career stats change rarely
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    refetchOnMount: false, // Trust the cache
     refetchOnWindowFocus: false,
   });
 

@@ -79,8 +79,8 @@ export const useScheduleData = () => {
 
       return validMatches;
     },
-    refetchOnWindowFocus: true,
-    refetchOnMount: 'always', // Always refetch on mount to ensure fresh team data
+    refetchOnWindowFocus: false, // Don't refetch on tab focus
+    refetchOnMount: false, // Trust the cache
     staleTime: 1000 * 60 * 2, // 2 minutes - schedule rarely changes
   });
 
