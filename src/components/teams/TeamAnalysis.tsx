@@ -198,6 +198,7 @@ const TeamAnalysisComponent: React.FC<TeamAnalysisProps> = ({ teamId, teamName }
         icon={FileText}
         iconColor="text-purple-500"
         defaultOpen={true}
+        headingId="analysis-heading"
       >
         {isLoading ? (
           <AnalysisSkeleton />

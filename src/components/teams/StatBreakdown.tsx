@@ -89,8 +89,9 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
       >
         <CollapsibleTrigger className="flex items-center justify-between w-full p-3 md:p-4 hover:bg-accent/50 transition-colors">
           <div className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-blue-500" />
+            <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-blue-500" aria-hidden="true" />
             <h2
+              id="stats-heading"
               className="font-bebas text-lg md:text-xl tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent heading-winter"
               style={{ letterSpacing: '0.5px' }}
             >

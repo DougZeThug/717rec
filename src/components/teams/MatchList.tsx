@@ -19,6 +19,7 @@ interface MatchListProps {
   highlightWinnerLoser?: boolean;
   collapsible?: boolean;
   defaultOpen?: boolean;
+  headingId?: string;
 }
 
 // Row component for virtualized list
@@ -45,6 +46,7 @@ const MatchList: React.FC<MatchListProps> = ({
   highlightWinnerLoser = false,
   collapsible = false,
   defaultOpen = true,
+  headingId,
 }) => {
   const { shouldVirtualize } = useVirtualization({ itemCount: matches.length, threshold: 20 });
 
@@ -106,6 +108,7 @@ const MatchList: React.FC<MatchListProps> = ({
         icon={History}
         iconColor="text-blue-500"
         defaultOpen={defaultOpen}
+        headingId={headingId}
       >
         {matchContent}
       </CollapsibleSection>
@@ -114,7 +117,11 @@ const MatchList: React.FC<MatchListProps> = ({
 
   return (
     <div>
-      {title && <h2 className="text-lg sm:text-xl font-semibold mb-3">{title}</h2>}
+      {title && (
+        <h2 id={headingId} className="text-lg sm:text-xl font-semibold mb-3">
+          {title}
+        </h2>
+      )}
       {matchContent}
     </div>
   );
