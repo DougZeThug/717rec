@@ -178,9 +178,9 @@ const TeamDetails = () => {
             matches={pastMatches}
             isLoading={isLoadingMatches}
             teamId={teamId || ''}
-            isPast={true}
-            highlightWinnerLoser={true}
-            collapsible={true}
+            isPast
+            highlightWinnerLoser
+            collapsible
             defaultOpen={false}
             headingId="matches-heading"
           />
@@ -213,7 +213,7 @@ const TeamDetails = () => {
                 maxDisplay={12}
                 orientation="horizontal"
                 className="gap-3"
-                showEmptyState={true}
+                showEmptyState
               />
             </CollapsibleSection>
           )}
