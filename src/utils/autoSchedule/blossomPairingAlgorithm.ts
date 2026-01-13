@@ -3,6 +3,7 @@ import edmondsBlossom from 'edmonds-blossom';
 import { Team } from '@/types';
 import { TeamPairing } from '@/types/autoSchedule';
 import { debugLog, errorLog, scheduleLog, warnLog } from '@/utils/logger';
+import { fetchSeasonHistoryForTeams } from './matchHistoryService';
 
 type TeamPairingConfig = {
   avoidRematches?: boolean;
@@ -16,6 +17,7 @@ type TeamPairingConfig = {
     gameRecordWeight?: number;
     tierPenalty?: number;
   };
+  playedPairsSet?: Set<string>; // Pre-fetched match history for performance
 };
 
 type Edge = {
@@ -25,6 +27,23 @@ type Edge = {
   hasPlayedBefore: boolean;
   pairingKey: string;
 };
+
+/**
+ * Check if two teams have played before using the pre-fetched Set (synchronous)
+ * Falls back to async function call if Set is not available
+ */
+function haveTeamsPlayedBeforeSync(
+  team1Id: string,
+  team2Id: string,
+  config: TeamPairingConfig
+): boolean {
+  if (config.playedPairsSet) {
+    const pairingKey = [team1Id, team2Id].sort().join('-');
+    return config.playedPairsSet.has(pairingKey);
+  }
+  // Should not reach here if pre-fetch worked, but included for safety
+  return false;
+}
 
 /**
  * Generate team pairings using Edmonds' Blossom algorithm for optimal maximum weight matching
@@ -45,8 +64,24 @@ export async function generatePairingsWithBlossom(
   const startTime = performance.now();
 
   try {
+    // Pre-fetch match history once if not provided (avoids N+1 queries)
+    if (!config.playedPairsSet && config.avoidRematches) {
+      scheduleLog('Pre-fetching season history for all teams...');
+      const teamIds = teams.map((team) => team.id);
+      const historyPairs = await fetchSeasonHistoryForTeams(teamIds);
+
+      // Build Set for O(1) lookup
+      config.playedPairsSet = new Set<string>();
+      historyPairs.forEach(([team1Id, team2Id]) => {
+        const pairingKey = [team1Id, team2Id].sort().join('-');
+        config.playedPairsSet!.add(pairingKey);
+      });
+
+      scheduleLog(`Loaded ${historyPairs.length} historical match pairs into memory`);
+    }
+
     // Build weighted graph with all valid edges
-    const edges = await buildWeightedGraph(teams, config);
+    const edges = buildWeightedGraph(teams, config);
     debugLog(`Built graph with ${edges.length} valid edges`);
 
     // Run Blossom algorithm twice to ensure each team gets 2 matches
@@ -79,7 +114,7 @@ export async function generatePairingsWithBlossom(
  * Build weighted graph with compatibility scores as edge weights
  * Apply hard constraints by excluding invalid edges
  */
-async function buildWeightedGraph(teams: Team[], config: TeamPairingConfig): Promise<Edge[]> {
+function buildWeightedGraph(teams: Team[], config: TeamPairingConfig): Edge[] {
   const edges: Edge[] = [];
 
   // Generate all possible team pairs
@@ -89,16 +124,16 @@ async function buildWeightedGraph(teams: Team[], config: TeamPairingConfig): Pro
       const team2 = teams[j];
 
       // Apply hard constraints (exclude invalid edges)
-      if (await shouldExcludeEdge(team1, team2, config)) {
+      if (shouldExcludeEdge(team1, team2, config)) {
         continue;
       }
 
       // Calculate compatibility score (no bonus needed - score is already appropriate)
       const weight = config.getCompatibilityScoreFn(team1, team2);
 
-      // Check if teams have played before
+      // Check if teams have played before (using pre-fetched Set for O(1) lookup)
       const hasPlayedBefore = config.avoidRematches
-        ? await config.haveTeamsPlayedFn(team1.id, team2.id)
+        ? haveTeamsPlayedBeforeSync(team1.id, team2.id, config)
         : false;
 
       const pairingKey = [team1.id, team2.id].sort().join('-');
@@ -119,11 +154,7 @@ async function buildWeightedGraph(teams: Team[], config: TeamPairingConfig): Pro
 /**
  * Check if edge should be excluded based on hard constraints
  */
-async function shouldExcludeEdge(
-  team1: Team,
-  team2: Team,
-  config: TeamPairingConfig
-): Promise<boolean> {
+function shouldExcludeEdge(team1: Team, team2: Team, config: TeamPairingConfig): boolean {
   // Hard constraint: Block T1 vs T3 (extreme tier difference)
   if (isExtremeTierDifference(team1, team2)) {
     debugLog(`Blocking extreme tier difference: ${team1.name} vs ${team2.name}`);
@@ -132,7 +163,7 @@ async function shouldExcludeEdge(
 
   // Hard constraint: Block rematches (except T3 vs T3)
   if (config.avoidRematches) {
-    const hasPlayedBefore = await config.haveTeamsPlayedFn(team1.id, team2.id);
+    const hasPlayedBefore = haveTeamsPlayedBeforeSync(team1.id, team2.id, config);
     if (hasPlayedBefore && !isBothRecreational(team1, team2)) {
       debugLog(`Blocking rematch: ${team1.name} vs ${team2.name}`);
       return true;
@@ -341,7 +372,7 @@ async function findRelaxedSolution(
 ): Promise<TeamPairing[]> {
   debugLog('Applying relaxed constraints: allowing rematches if necessary');
 
-  const edges = await buildRelaxedGraph(teams, config);
+  const edges = buildRelaxedGraph(teams, config);
   const teamMatchCounts = new Map<string, number>();
   const usedPairings = new Set<string>();
   const finalPairings: TeamPairing[] = [];
@@ -395,7 +426,7 @@ async function findRelaxedSolution(
 /**
  * Build graph with very relaxed constraints for fallback
  */
-async function buildRelaxedGraph(teams: Team[], config: TeamPairingConfig): Promise<Edge[]> {
+function buildRelaxedGraph(teams: Team[], config: TeamPairingConfig): Edge[] {
   const edges: Edge[] = [];
 
   for (let i = 0; i < teams.length - 1; i++) {
@@ -410,7 +441,7 @@ async function buildRelaxedGraph(teams: Team[], config: TeamPairingConfig): Prom
 
       const weight = config.getCompatibilityScoreFn(team1, team2);
       const hasPlayedBefore = config.avoidRematches
-        ? await config.haveTeamsPlayedFn(team1.id, team2.id)
+        ? haveTeamsPlayedBeforeSync(team1.id, team2.id, config)
         : false;
 
       const pairingKey = [team1.id, team2.id].sort().join('-');

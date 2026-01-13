@@ -225,6 +225,22 @@ export const usePairingGenerator = () => {
           scheduleLog(`   Timeslots used: ${Object.keys(pairings).join(', ')}`);
         } else {
           // Standard single-block pairing algorithm
+
+          // Pre-fetch season history once for all teams (avoids N+1 queries)
+          const allTeamIds = new Set<string>();
+          Object.values(timeBlockTeams).forEach((teamsInBlock) => {
+            teamsInBlock?.forEach((team) => allTeamIds.add(team.id));
+          });
+          const historyPairs = await fetchSeasonHistoryForTeams(Array.from(allTeamIds));
+          scheduleLog(`Pre-fetched season history: ${historyPairs.length} pairs`);
+
+          // Build Set for O(1) lookup
+          const playedPairsSet = new Set<string>();
+          historyPairs.forEach(([team1Id, team2Id]) => {
+            const pairingKey = [team1Id, team2Id].sort().join('-');
+            playedPairsSet.add(pairingKey);
+          });
+
           for (const [block, teamsInBlock] of Object.entries(timeBlockTeams)) {
             // Skip empty blocks
             if (!teamsInBlock || teamsInBlock.length < 2) {
@@ -246,6 +262,7 @@ export const usePairingGenerator = () => {
               haveTeamsPlayedFn: haveTeamsPlayedBefore,
               getCompatibilityScoreFn: calculateDivisionOnlyCompatibility,
               weights: config.weights,
+              playedPairsSet: playedPairsSet,
             });
 
             // Store pairings for this block
