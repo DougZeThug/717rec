@@ -339,7 +339,8 @@ export const useBracketData = (bracketId: string | null) => {
       }
     },
     enabled: true, // Always enabled - null check handled in queryFn
-    staleTime: 1000 * 30, // 30 seconds - reduced for faster updates
+    staleTime: 1000 * 60, // 1 minute - brackets don't change frequently
+    gcTime: 1000 * 60 * 5, // Keep in cache for 5 minutes
     retry: (failureCount, error) => {
       debugLog(`Query retry attempt ${failureCount} for bracket ${bracketId}:`, {
         error: error?.message,
@@ -347,7 +348,7 @@ export const useBracketData = (bracketId: string | null) => {
       });
       return failureCount < 2; // Retry up to 2 times
     },
-    refetchOnMount: true,
+    refetchOnMount: false, // Trust the cache
     refetchOnWindowFocus: false,
   });
 
