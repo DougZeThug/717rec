@@ -131,6 +131,12 @@ const TeamDetails = () => {
         {/* Desktop back button */}
         <Button
           variant="ghost"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="hidden md:inline-flex items-center gap-1 text-muted-foreground hover:text-foreground mb-4"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
         </Button>
 
         {/* Hero Section - Tighter on mobile */}
