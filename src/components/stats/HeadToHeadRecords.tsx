@@ -76,7 +76,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
       variant="ghost"
       size="sm"
       onClick={() => handleSort(field)}
-      className="h-auto p-1 font-medium justify-start"
+      className="h-auto p-1 font-medium justify-start text-foreground hover:text-foreground hover:bg-muted/80"
     >
       {children}
       <ArrowUpDown className="ml-1 h-3 w-3" />
