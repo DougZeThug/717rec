@@ -45,6 +45,12 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
     );
   };
 
+  // Get aria-sort value for table headers
+  const getAriaSort = (field: string): 'ascending' | 'descending' | 'none' => {
+    if (sortOptions.field !== field) return 'none';
+    return sortOptions.direction === 'asc' ? 'ascending' : 'descending';
+  };
+
   // Use the rankings as-is since divisionRank is already calculated correctly in RankingsTable.tsx
   const rankedDivisionTeams = rankings;
 
@@ -129,12 +135,16 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
               <TableHead
                 className={cn('w-12 transition-colors cursor-pointer font-medium', headerTextColor)}
                 onClick={() => onSortChange('rank')}
+                aria-sort={getAriaSort('rank')}
+                scope="col"
               >
                 # {getSortIndicator('rank')}
               </TableHead>
               <TableHead
                 className={cn('transition-colors cursor-pointer font-medium', headerTextColor)}
                 onClick={() => onSortChange('teamName')}
+                aria-sort={getAriaSort('teamName')}
+                scope="col"
               >
                 Team {getSortIndicator('teamName')}
               </TableHead>
@@ -144,6 +154,7 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
                     'font-medium',
                     isWinterTheme ? 'text-card-foreground' : 'text-gray-700 dark:text-gray-200'
                   )}
+                  scope="col"
                 >
                   Division
                 </TableHead>
@@ -151,18 +162,24 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
               <TableHead
                 className={cn('text-center cursor-pointer font-medium', headerTextColor)}
                 onClick={() => onSortChange('powerScore')}
+                aria-sort={getAriaSort('powerScore')}
+                scope="col"
               >
                 Power {getSortIndicator('powerScore')}
               </TableHead>
               <TableHead
                 className={cn('text-center cursor-pointer font-medium', headerTextColor)}
                 onClick={() => onSortChange('wins')}
+                aria-sort={getAriaSort('wins')}
+                scope="col"
               >
                 W-L {getSortIndicator('wins')}
               </TableHead>
               <TableHead
                 className={cn('text-center cursor-pointer font-medium', headerTextColor)}
                 onClick={() => onSortChange('winPercentage')}
+                aria-sort={getAriaSort('winPercentage')}
+                scope="col"
               >
                 Win % {getSortIndicator('winPercentage')}
               </TableHead>
@@ -172,6 +189,8 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
                   headerTextColor
                 )}
                 onClick={() => onSortChange('gamesWon')}
+                aria-sort={getAriaSort('gamesWon')}
+                scope="col"
               >
                 Games {getSortIndicator('gamesWon')}
               </TableHead>
@@ -181,18 +200,24 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
                   headerTextColor
                 )}
                 onClick={() => onSortChange('gameWinPercentage')}
+                aria-sort={getAriaSort('gameWinPercentage')}
+                scope="col"
               >
                 Game % {getSortIndicator('gameWinPercentage')}
               </TableHead>
               <TableHead
                 className={cn('text-center cursor-pointer font-medium', headerTextColor)}
                 onClick={() => onSortChange('sos')}
+                aria-sort={getAriaSort('sos')}
+                scope="col"
               >
                 SOS {getSortIndicator('sos')}
               </TableHead>
               <TableHead
                 className={cn('text-center cursor-pointer font-medium', headerTextColor)}
                 onClick={() => onSortChange('streak')}
+                aria-sort={getAriaSort('streak')}
+                scope="col"
               >
                 Streak {getSortIndicator('streak')}
               </TableHead>
@@ -201,6 +226,7 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
                   'text-center font-medium',
                   isWinterTheme ? 'text-card-foreground' : 'text-gray-700 dark:text-gray-200'
                 )}
+                scope="col"
               >
                 Trend
               </TableHead>

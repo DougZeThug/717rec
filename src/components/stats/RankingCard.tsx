@@ -1,8 +1,10 @@
+import { Scale } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router';
 
 import TeamBadgeCollection from '@/components/badges/TeamBadgeCollection';
 import { TeamLogo } from '@/components/shared/TeamLogo';
+import { Button } from '@/components/ui/button';
 import { EntityCard } from '@/components/ui/entity-card';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
@@ -73,7 +75,12 @@ const RankingCard: React.FC<RankingCardProps> = ({
           <TeamBadgeCollection teamId={ranking.teamId} size="sm" maxDisplay={2} />
         </div>
 
-        <Link to={`/teams/${ranking.teamId}`} className="flex items-center gap-2 mt-2 group">
+        <Link
+          to={`/teams/${ranking.teamId}`}
+          state={{ from: '/stats', scrollPosition: window.scrollY }}
+          aria-label={`View ${ranking.teamName} team details`}
+          className="flex items-center gap-2 mt-2 group"
+        >
           <TeamLogo
             imageUrl={ranking.imageUrl || ranking.logoUrl}
             teamName={ranking.teamName}
@@ -106,7 +113,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
               isWinterTheme ? 'border-frost-border/30' : 'border-border'
             )}
           >
-            <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="grid grid-cols-2 gap-2 text-xs mb-3">
               <div>
                 <p className="text-muted-foreground">Win %</p>
                 <p
@@ -133,6 +140,17 @@ const RankingCard: React.FC<RankingCardProps> = ({
                 </p>
               </div>
             </div>
+            <Link to={`/compare?team1=${ranking.teamId}`}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full text-xs"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Scale className="h-3 w-3 mr-1" />
+                Compare Team
+              </Button>
+            </Link>
           </div>
         )}
       </EntityCard>
@@ -151,7 +169,12 @@ const RankingCard: React.FC<RankingCardProps> = ({
         <TeamBadgeCollection teamId={ranking.teamId} size="sm" maxDisplay={3} />
       </div>
 
-      <Link to={`/teams/${ranking.teamId}`} className="flex items-center gap-3 mb-4 group">
+      <Link
+        to={`/teams/${ranking.teamId}`}
+        state={{ from: '/stats', scrollPosition: window.scrollY }}
+        aria-label={`View ${ranking.teamName} team details`}
+        className="flex items-center gap-3 mb-4 group"
+      >
         <TeamLogo
           imageUrl={ranking.imageUrl || ranking.logoUrl}
           teamName={ranking.teamName}

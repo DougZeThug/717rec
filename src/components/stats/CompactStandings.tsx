@@ -29,7 +29,9 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
 
   const handleTeamClick = useCallback(
     (teamId: string) => {
-      navigate(`/teams/${teamId}`);
+      navigate(`/teams/${teamId}`, {
+        state: { from: '/stats', scrollPosition: window.scrollY },
+      });
     },
     [navigate]
   );
@@ -181,6 +183,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
               key={team.teamId}
               role="button"
               tabIndex={0}
+              aria-label={`View ${team.teamName} team details`}
               className={cn(
                 getRowInteractionStyles('cursor-pointer font-inter'),
                 isLight && index % 2 === 0 ? 'bg-white' : '',
@@ -191,7 +194,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                 index === 1 ? 'border-l-4 border-blue-400 dark:border-blue-600' : '',
                 index === 2 ? 'border-l-4 border-orange-400 dark:border-orange-600' : '',
                 'hover:bg-gradient-to-r hover:from-blue-50/40 hover:to-orange-50/20 dark:hover:from-blue-900/10 dark:hover:to-orange-900/5',
-                'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset'
+                'focus:outline-none focus:ring-4 focus:ring-primary focus:ring-offset-2'
               )}
               onClick={() => handleTeamClick(team.teamId)}
               onKeyDown={(e) => handleRowKeyDown(e, team.teamId)}
