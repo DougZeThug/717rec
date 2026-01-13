@@ -282,4 +282,4 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
   );
 };
 
-export default AdminMobileNav;
+export default React.memo(AdminMobileNav);

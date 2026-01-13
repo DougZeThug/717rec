@@ -310,4 +310,4 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCanc
   );
 };
 
-export default MatchFormRHF;
+export default React.memo(MatchFormRHF);

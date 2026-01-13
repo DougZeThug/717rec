@@ -277,4 +277,4 @@ const SeasonParticipationTab: React.FC = () => {
   );
 };
 
-export default SeasonParticipationTab;
+export default React.memo(SeasonParticipationTab);

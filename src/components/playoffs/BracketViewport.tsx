@@ -26,7 +26,7 @@ const MIN_SCALE = 0.1;
 const MAX_SCALE = 3;
 const SCALE_STEP = 0.2;
 
-export const BracketViewport: React.FC<BracketViewportProps> = ({ children, className = '' }) => {
+const BracketViewportComponent: React.FC<BracketViewportProps> = ({ children, className = '' }) => {
   const responsive = useBracketResponsive();
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -360,3 +360,5 @@ export const BracketViewport: React.FC<BracketViewportProps> = ({ children, clas
     </div>
   );
 };
+
+export const BracketViewport = React.memo(BracketViewportComponent);

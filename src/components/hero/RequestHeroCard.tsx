@@ -367,4 +367,4 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
   );
 };
 
-export default RequestHeroCard;
+export default React.memo(RequestHeroCard);

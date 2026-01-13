@@ -26,7 +26,7 @@ interface TeamSelectionFormProps {
  * Team selection form component
  * Displays available teams with selection controls and validation feedback
  */
-export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
+const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
   teams,
   formState,
   maxTeams,
@@ -287,3 +287,5 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
     </div>
   );
 };
+
+export const TeamSelectionForm = React.memo(TeamSelectionFormComponent);

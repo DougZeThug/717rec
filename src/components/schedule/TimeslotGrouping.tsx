@@ -319,4 +319,4 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
   );
 };
 
-export default TimeslotGrouping;
+export default React.memo(TimeslotGrouping);

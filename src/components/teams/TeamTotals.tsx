@@ -302,4 +302,4 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
   );
 };
 
-export default TeamTotals;
+export default React.memo(TeamTotals);

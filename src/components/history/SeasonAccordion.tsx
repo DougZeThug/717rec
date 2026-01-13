@@ -366,4 +366,4 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
   );
 };
 
-export default SeasonAccordion;
+export default React.memo(SeasonAccordion);

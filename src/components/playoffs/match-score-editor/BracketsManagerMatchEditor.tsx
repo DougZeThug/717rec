@@ -18,7 +18,7 @@ interface BracketsManagerMatchEditorProps {
   onClose: () => void;
 }
 
-export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProps> = ({
+const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorProps> = ({
   matchId,
   bracketId,
   isOpen,
@@ -466,3 +466,5 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
     </Dialog>
   );
 };
+
+export const BracketsManagerMatchEditor = React.memo(BracketsManagerMatchEditorComponent);

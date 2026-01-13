@@ -343,4 +343,4 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
   );
 };
 
-export default ChampionsHeroCard;
+export default React.memo(ChampionsHeroCard);

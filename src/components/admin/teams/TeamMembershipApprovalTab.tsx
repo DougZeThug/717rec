@@ -316,4 +316,4 @@ const TeamMembershipApprovalTab: React.FC = () => {
   );
 };
 
-export default TeamMembershipApprovalTab;
+export default React.memo(TeamMembershipApprovalTab);

@@ -360,4 +360,4 @@ const TeamManagementTab = () => {
   );
 };
 
-export default TeamManagementTab;
+export default React.memo(TeamManagementTab);

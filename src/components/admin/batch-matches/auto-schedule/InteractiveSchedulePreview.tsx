@@ -298,4 +298,4 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
   );
 };
 
-export default InteractiveSchedulePreview;
+export default React.memo(InteractiveSchedulePreview);

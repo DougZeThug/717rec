@@ -487,4 +487,4 @@ const TeamAdvancedStatsSection: React.FC<TeamAdvancedStatsSectionProps> = ({ tea
   );
 };
 
-export default TeamAdvancedStatsSection;
+export default React.memo(TeamAdvancedStatsSection);

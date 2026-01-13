@@ -103,7 +103,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
   );
 };
 
-export const AllTeamsCareerPowerScoreChart: React.FC = () => {
+const AllTeamsCareerPowerScoreChartComponent: React.FC = () => {
   const { data: teamsData, isLoading } = useAllTeamsCareerPowerScores();
   const { theme, resolvedTheme } = useTheme();
   const isMobile = useIsMobile();
@@ -285,3 +285,5 @@ export const AllTeamsCareerPowerScoreChart: React.FC = () => {
     </Collapsible>
   );
 };
+
+export const AllTeamsCareerPowerScoreChart = React.memo(AllTeamsCareerPowerScoreChartComponent);
