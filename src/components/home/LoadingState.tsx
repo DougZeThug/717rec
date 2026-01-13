@@ -3,9 +3,13 @@ import React from 'react';
 
 const LoadingState = () => {
   return (
-    <div className="min-h-screen cornhole-bg flex items-center justify-center">
+    <div
+      className="min-h-screen cornhole-bg flex items-center justify-center"
+      role="status"
+      aria-live="polite"
+    >
       <div className="flex flex-col items-center">
-        <Loader2 className="h-10 w-10 text-cornhole-navy animate-spin mb-4" />
+        <Loader2 className="h-10 w-10 text-cornhole-navy animate-spin mb-4" aria-hidden="true" />
         <p className="text-lg">Loading team data...</p>
       </div>
     </div>

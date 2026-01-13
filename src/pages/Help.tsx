@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 
 import { HelpAdminCTA } from '@/components/help/HelpAdminCTA';
 import { HelpQuickLinks } from '@/components/help/HelpQuickLinks';
+import { AccessibilitySection } from '@/components/help/sections/AccessibilitySection';
 import { AdminSections } from '@/components/help/sections/admin/AdminSections';
 import { FAQSection } from '@/components/help/sections/FAQSection';
 import { HistorySection } from '@/components/help/sections/HistorySection';
@@ -50,6 +51,7 @@ const Help: React.FC = () => {
           <PlayoffsSection />
           <MessageBoardSection />
           <HistorySection />
+          <AccessibilitySection />
           {isAdminAccessGranted && <AdminSections />}
           <FAQSection />
         </Accordion>

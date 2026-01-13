@@ -266,6 +266,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
                       'bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700',
                       'hover:shadow-sm active:scale-95'
                     )}
+                    aria-label="Edit match"
                   >
                     <Pencil className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                   </button>
@@ -280,6 +281,9 @@ const MatchCard: React.FC<MatchCardProps> = ({
                         : 'bg-gray-100 hover:bg-red-100 dark:bg-gray-800 dark:hover:bg-red-900/30',
                       'hover:shadow-sm active:scale-95'
                     )}
+                    aria-label={
+                      isCompleted ? 'Permanently delete completed match' : 'Delete match'
+                    }
                     title={
                       isCompleted ? 'Permanently delete completed match' : 'Delete incomplete match'
                     }

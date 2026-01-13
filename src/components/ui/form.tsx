@@ -1,5 +1,6 @@
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { Slot } from '@radix-ui/react-slot';
+import { AlertCircle } from 'lucide-react';
 import * as React from 'react';
 import {
   Controller,
@@ -99,13 +100,24 @@ FormLabel.displayName = 'FormLabel';
 const FormControl = React.forwardRef<
   React.ElementRef<typeof Slot>,
   React.ComponentPropsWithoutRef<typeof Slot>
->(({ ...props }, ref) => {
+>(({ className, ...props }, ref) => {
   const { error, formItemId, formDescriptionId, formMessageId } = useFormField();
+  const [shouldShake, setShouldShake] = React.useState(false);
+
+  // Trigger shake animation when error appears
+  React.useEffect(() => {
+    if (error) {
+      setShouldShake(true);
+      const timer = setTimeout(() => setShouldShake(false), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   return (
     <Slot
       ref={ref}
       id={formItemId}
+      className={cn(shouldShake && 'animate-shake', className)}
       aria-describedby={!error ? `${formDescriptionId}` : `${formDescriptionId} ${formMessageId}`}
       aria-invalid={!!error}
       {...props}
@@ -137,6 +149,16 @@ const FormMessage = React.forwardRef<
 >(({ className, children, ...props }, ref) => {
   const { error, formMessageId } = useFormField();
   const body = error ? String(error?.message) : children;
+  const [shouldShake, setShouldShake] = React.useState(false);
+
+  // Trigger shake animation when error appears
+  React.useEffect(() => {
+    if (body) {
+      setShouldShake(true);
+      const timer = setTimeout(() => setShouldShake(false), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [body]);
 
   if (!body) {
     return null;
@@ -146,10 +168,15 @@ const FormMessage = React.forwardRef<
     <p
       ref={ref}
       id={formMessageId}
-      className={cn('text-sm font-medium text-destructive', className)}
+      className={cn(
+        'text-sm font-medium text-destructive flex items-center gap-1.5',
+        shouldShake && 'animate-shake',
+        className
+      )}
       {...props}
     >
-      {body}
+      <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
+      <span>{body}</span>
     </p>
   );
 });

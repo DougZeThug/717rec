@@ -45,8 +45,10 @@ export function ErrorDisplay({
           'flex flex-col items-center justify-center gap-4 p-6 rounded-lg border border-destructive/20 bg-destructive/5',
           className
         )}
+        role="alert"
+        aria-live="assertive"
       >
-        <AlertCircle className="h-10 w-10 text-destructive" />
+        <AlertCircle className="h-10 w-10 text-destructive" aria-hidden="true" />
         <div className="text-center">
           {context && <p className="text-sm text-muted-foreground mb-1">{context}</p>}
           <p className="text-destructive font-medium">{error}</p>
@@ -62,8 +64,13 @@ export function ErrorDisplay({
   }
 
   return (
-    <Alert variant="destructive" className={cn('flex items-center gap-2', className)}>
-      <AlertCircle className="h-4 w-4 flex-shrink-0" />
+    <Alert
+      variant="destructive"
+      className={cn('flex items-center gap-2', className)}
+      role="alert"
+      aria-live="assertive"
+    >
+      <AlertCircle className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
       <AlertDescription className="flex-1 flex items-center justify-between gap-2">
         <span>
           {context && <span className="font-medium">{context}: </span>}
