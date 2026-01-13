@@ -78,7 +78,9 @@ const PageLayout: React.FC<PageLayoutProps> = ({
       {/* Snow effect for winter theme - homepage only (controlled by WinterSnowfall) */}
       <WinterSnowfall />
 
-      <div className="max-w-full w-full relative z-10">{children}</div>
+      <main id="main-content" className="max-w-full w-full relative z-10">
+        {children}
+      </main>
     </div>
   );
 };

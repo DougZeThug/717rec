@@ -54,8 +54,11 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   // Inline variant uses horizontal layout
   if (effectiveVariant === 'inline') {
     return (
-      <div className={cn(containerClasses.inline, className)}>
-        <Loader2 className={cn('text-primary animate-spin', sizeClasses[effectiveSize])} />
+      <div className={cn(containerClasses.inline, className)} role="status" aria-live="polite">
+        <Loader2
+          className={cn('text-primary animate-spin', sizeClasses[effectiveSize])}
+          aria-hidden="true"
+        />
         {message && (
           <span className={cn('text-muted-foreground', textSizeClasses[effectiveSize])}>
             {message}
@@ -66,9 +69,12 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   }
 
   return (
-    <div className={cn(containerClasses[effectiveVariant], className)}>
+    <div className={cn(containerClasses[effectiveVariant], className)} role="status" aria-live="polite">
       <div className="flex flex-col items-center">
-        <Loader2 className={cn('text-primary animate-spin mb-3', sizeClasses[effectiveSize])} />
+        <Loader2
+          className={cn('text-primary animate-spin mb-3', sizeClasses[effectiveSize])}
+          aria-hidden="true"
+        />
         <p className={cn('text-muted-foreground', textSizeClasses[effectiveSize])}>{message}</p>
       </div>
     </div>

@@ -58,7 +58,12 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className }) => {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative text-base font-normal p-1" size="sm">
+        <Button
+          variant="ghost"
+          className="relative text-base font-normal p-1"
+          size="sm"
+          aria-label="User menu"
+        >
           <User className="h-4 w-4 mr-1" />
           {profile?.username || 'User'}
         </Button>
