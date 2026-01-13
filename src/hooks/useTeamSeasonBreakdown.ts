@@ -26,33 +26,88 @@ const createEmptyDivisionRecord = (): DivisionSeasonRecord => ({
 });
 
 const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedStats | null> => {
-  // Get season stats
-  const { data: seasonStats, error: seasonError } = await supabase
-    .from('team_season_stats')
-    .select(
+  // Phase 1: Execute independent queries in parallel
+  const [
+    seasonStatsResult,
+    allTeamSeasonStatsResult,
+    archivedMatchesResult,
+    playoffMatchesResult
+  ] = await Promise.all([
+    // Query 1: Get season stats
+    supabase
+      .from('team_season_stats')
+      .select(
+        `
+        season_id,
+        match_wins,
+        match_losses,
+        game_wins,
+        game_losses,
+        sos,
+        power_score,
+        champion,
+        runner_up,
+        playoff_rank,
+        division_name,
+        seasons!inner(id, name, start_date)
       `
-      season_id,
-      match_wins,
-      match_losses,
-      game_wins,
-      game_losses,
-      sos,
-      power_score,
-      champion,
-      runner_up,
-      playoff_rank,
-      division_name,
-      seasons!inner(id, name, start_date)
-    `
-    )
-    .eq('team_id', teamId)
-    .order('seasons(start_date)', { ascending: false });
+      )
+      .eq('team_id', teamId)
+      .order('seasons(start_date)', { ascending: false }),
 
-  if (seasonError) {
-    console.error('Error fetching team season stats:', seasonError);
+    // Query 2: Get all team_season_stats for opponent division lookup
+    supabase
+      .from('team_season_stats')
+      .select('team_id, season_id, division_name'),
+
+    // Query 3: Get archived matches for sweep and close match calculations
+    supabase
+      .from('matches_archive')
+      .select(
+        `
+        winner_id,
+        loser_id,
+        team1_game_wins,
+        team2_game_wins,
+        team1_id,
+        team2_id,
+        season_id
+      `
+      )
+      .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
+      .eq('iscompleted', true),
+
+    // Query 4: Get playoff matches with bracket info
+    supabase
+      .from('playoff_matches')
+      .select(
+        `
+        winner_id,
+        loser_id,
+        team1_score,
+        team2_score,
+        team1_id,
+        team2_id,
+        bracket_id
+      `
+      )
+      .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
+      .not('winner_id', 'is', null)
+  ]);
+
+  // Handle errors from critical query
+  if (seasonStatsResult.error) {
+    console.error('Error fetching team season stats:', seasonStatsResult.error);
     return null;
   }
 
+  // Extract data from results
+  const seasonStats = seasonStatsResult.data;
+  const allTeamSeasonStats = allTeamSeasonStatsResult.data;
+  const archivedMatches = archivedMatchesResult.data;
+  const playoffMatchesRaw = playoffMatchesResult.data;
+
+  // Early return if no season stats
   if (!seasonStats || seasonStats.length === 0) {
     return {
       seasons: [],
@@ -65,11 +120,7 @@ const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedSta
     };
   }
 
-  // Get all team_season_stats for opponent division lookup
-  const { data: allTeamSeasonStats } = await supabase
-    .from('team_season_stats')
-    .select('team_id, season_id, division_name');
-
+  // Build team division map for opponent lookups
   const teamDivisionMap = new Map<string, string>();
   if (allTeamSeasonStats) {
     for (const stat of allTeamSeasonStats) {
@@ -79,41 +130,7 @@ const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedSta
     }
   }
 
-  // Get archived matches for sweep and close match calculations
-  const { data: archivedMatches } = await supabase
-    .from('matches_archive')
-    .select(
-      `
-      winner_id,
-      loser_id,
-      team1_game_wins,
-      team2_game_wins,
-      team1_id,
-      team2_id,
-      season_id
-    `
-    )
-    .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
-    .eq('iscompleted', true);
-
-  // Get playoff matches with bracket info
-  const { data: playoffMatchesRaw } = await supabase
-    .from('playoff_matches')
-    .select(
-      `
-      winner_id,
-      loser_id,
-      team1_score,
-      team2_score,
-      team1_id,
-      team2_id,
-      bracket_id
-    `
-    )
-    .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
-    .not('winner_id', 'is', null);
-
-  // Get bracket info separately to avoid type depth issues
+  // Phase 2: Fetch bracket info (depends on playoffMatchesRaw from Phase 1)
   const bracketIds = [
     ...new Set((playoffMatchesRaw || []).map((m) => m.bracket_id).filter(Boolean)),
   ];
