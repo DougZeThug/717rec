@@ -34,8 +34,10 @@ export function getHistoryDivisionOrder(divisionName: string): number {
   const normalized = divisionName.toLowerCase();
 
   if (normalized.includes('competitive')) return 1;
-  if (normalized.includes('intermediate high')) return 2;
+  if (normalized.includes('intermediate high') || normalized === 'intermediate 1') return 2;
   if (normalized.includes('intermediate low') || normalized.includes('intermediate 2')) return 3;
+  // Catch-all for any other intermediate divisions (e.g., just "Intermediate")
+  if (normalized.includes('intermediate')) return 3;
   if (normalized.includes('recreational')) return 4;
 
   // Default order for unknown divisions
