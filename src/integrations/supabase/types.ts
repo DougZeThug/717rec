@@ -3597,6 +3597,7 @@ export type Database = {
           created_at: string | null
           id: string
           is_back_to_back: boolean
+          is_double_header: boolean | null
           match_date: string
           match_sequence: number | null
           pair_slot: string | null
@@ -3607,6 +3608,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_back_to_back?: boolean
+          is_double_header?: boolean | null
           match_date: string
           match_sequence?: number | null
           pair_slot?: string | null
@@ -3617,6 +3619,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_back_to_back?: boolean
+          is_double_header?: boolean | null
           match_date?: string
           match_sequence?: number | null
           pair_slot?: string | null
