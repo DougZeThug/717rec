@@ -7,11 +7,20 @@ const SENTRY_DSN =
   import.meta.env.VITE_SENTRY_DSN ||
   'https://4118ea1dd42747921364d1aa6c4e2c8e@o4510601435152384.ingest.us.sentry.io/4510601452847104';
 
+let isInitialized = false;
+
 export const initSentry = () => {
+  // Prevent multiple initializations (HMR can cause this)
+  if (isInitialized) {
+    return;
+  }
+
   if (!SENTRY_DSN) {
     console.warn('[Sentry] DSN not configured - error reporting disabled');
     return;
   }
+
+  isInitialized = true;
 
   Sentry.init({
     dsn: SENTRY_DSN,
