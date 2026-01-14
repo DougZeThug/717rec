@@ -1,5 +1,5 @@
 import { Calendar, ChevronDown, ChevronRight } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 
 import { AppCard } from '@/components/ui/app-card';
@@ -32,6 +32,51 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
     return initialState;
   });
 
+  // Process double headers: find teams with double header and their second timeslot
+  const { processedTimeslots, doubleHeaderInfo } = useMemo(() => {
+    const allTimeslots = Object.values(groupedTimeslots).flat();
+    const doubleHeaderTeams = new Map<string, { slot1: string; slot2: string }>();
+    const seenDoubleHeaderTeams = new Set<string>();
+
+    // First pass: identify all double header teams and their slots
+    allTimeslots.forEach((ts) => {
+      if (ts.is_double_header && !doubleHeaderTeams.has(ts.team_id)) {
+        // Find both slots for this team
+        const teamSlots = allTimeslots
+          .filter((t) => t.team_id === ts.team_id && t.is_double_header)
+          .sort((a, b) => (a.match_sequence || 0) - (b.match_sequence || 0));
+
+        if (teamSlots.length === 2) {
+          doubleHeaderTeams.set(ts.team_id, {
+            slot1: teamSlots[0].timeslot,
+            slot2: teamSlots[1].timeslot,
+          });
+        }
+      }
+    });
+
+    // Second pass: filter out duplicate double header entries (keep only first occurrence)
+    const processed: Record<string, TeamTimeslot[]> = {};
+
+    Object.entries(groupedTimeslots).forEach(([timeslot, teams]) => {
+      const filteredTeams = teams.filter((ts) => {
+        if (ts.is_double_header) {
+          if (seenDoubleHeaderTeams.has(ts.team_id)) {
+            return false; // Skip, already shown in first slot
+          }
+          seenDoubleHeaderTeams.add(ts.team_id);
+        }
+        return true;
+      });
+      processed[timeslot] = filteredTeams;
+    });
+
+    return {
+      processedTimeslots: processed,
+      doubleHeaderInfo: doubleHeaderTeams,
+    };
+  }, [groupedTimeslots]);
+
   const toggleTimeslot = (timeslot: string) => {
     setExpandedTimeslots((prev) => ({
       ...prev,
@@ -43,7 +88,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
     return <LoadingState message="Loading timeslots..." />;
   }
 
-  if (Object.keys(groupedTimeslots).length === 0) {
+  if (Object.keys(processedTimeslots).length === 0) {
     return (
       <div
         className={cn(
@@ -59,11 +104,11 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
     );
   }
 
-  // Separate bye weeks from regular timeslots
-  const regularTimeslots = Object.entries(groupedTimeslots).filter(
+  // Separate bye weeks from regular timeslots (using processed timeslots)
+  const regularTimeslots = Object.entries(processedTimeslots).filter(
     ([timeslot]) => timeslot !== 'BYE'
   );
-  const byeWeekTimeslots = Object.entries(groupedTimeslots).filter(
+  const byeWeekTimeslots = Object.entries(processedTimeslots).filter(
     ([timeslot]) => timeslot === 'BYE'
   );
 
@@ -160,17 +205,26 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
                         </div>
                       </div>
 
-                      {teamTimeslot.teams?.divisionName && (
-                        <Badge
-                          className={cn(
-                            'ml-2 text-xs font-medium px-2.5 py-0.5 shrink-0',
-                            getDivisionStyles(teamTimeslot.teams.divisionName, 'bg'),
-                            getDivisionStyles(teamTimeslot.teams.divisionName, 'text')
+                      <div className="flex items-center gap-2 shrink-0">
+                        {teamTimeslot.is_double_header &&
+                          doubleHeaderInfo.has(teamTimeslot.team_id) && (
+                            <Badge variant="doubleHeader" className="text-xs">
+                              Double Header ({doubleHeaderInfo.get(teamTimeslot.team_id)?.slot1} &{' '}
+                              {doubleHeaderInfo.get(teamTimeslot.team_id)?.slot2})
+                            </Badge>
                           )}
-                        >
-                          {teamTimeslot.teams.divisionName}
-                        </Badge>
-                      )}
+                        {teamTimeslot.teams?.divisionName && (
+                          <Badge
+                            className={cn(
+                              'text-xs font-medium px-2.5 py-0.5',
+                              getDivisionStyles(teamTimeslot.teams.divisionName, 'bg'),
+                              getDivisionStyles(teamTimeslot.teams.divisionName, 'text')
+                            )}
+                          >
+                            {teamTimeslot.teams.divisionName}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

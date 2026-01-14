@@ -10,7 +10,8 @@ import { useTimeslotQuery } from './useTimeslotQuery';
 export const useTimeslots = (date: Date) => {
   const queryClient = useQueryClient();
   const { timeslots, groupedTimeslots, isLoading, error } = useTimeslotQuery(date);
-  const { isSubmitting, addTimeslot, deleteTimeslot, batchAssignTimeslots } = useTimeslotMutation();
+  const { isSubmitting, addTimeslot, deleteTimeslot, batchAssignTimeslots, batchAssignDoubleHeaders } =
+    useTimeslotMutation();
 
   // Function to refresh timeslots data (useful after bye week operations)
   const refreshTimeslots = () => {
@@ -27,6 +28,7 @@ export const useTimeslots = (date: Date) => {
     addTimeslot,
     deleteTimeslot,
     batchAssignTimeslots,
+    batchAssignDoubleHeaders,
     refreshTimeslots,
   };
 };

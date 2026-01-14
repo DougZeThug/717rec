@@ -27,6 +27,7 @@ const TimeslotsTab = () => {
     addTimeslot,
     deleteTimeslot,
     batchAssignTimeslots,
+    batchAssignDoubleHeaders,
   } = useTimeslots(selectedDate);
 
   const handleTimeslotAssign = async (teamId: string, timeslot: string) => {
@@ -78,6 +79,23 @@ const TimeslotsTab = () => {
       toast({
         title: 'Error',
         description: 'Failed to assign timeslots. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleBatchDoubleHeaderAssign = async (teamIds: string[], slot1: string, slot2: string) => {
+    try {
+      await batchAssignDoubleHeaders(selectedDate, teamIds, slot1, slot2);
+      toast({
+        title: 'Double Headers Assigned',
+        description: `${teamIds.length} team double headers (${slot1} & ${slot2}) have been set for ${format(selectedDate, 'MMMM d, yyyy')}`,
+      });
+    } catch (error) {
+      errorLog('Error during double header assignment:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to assign double header timeslots. Please try again.',
         variant: 'destructive',
       });
     }
@@ -151,6 +169,7 @@ const TimeslotsTab = () => {
                 existingTimeslots={timeslots}
                 onAssign={handleTimeslotAssign}
                 onBatchAssign={handleBatchTimeslotAssign}
+                onBatchAssignDoubleHeaders={handleBatchDoubleHeaderAssign}
               />
             )}
           </div>

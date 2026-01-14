@@ -27,6 +27,9 @@ const badgeVariants = cva(
         winter: 'badge-winter',
         winterAccent: 'badge-winter-accent',
         winterRank: 'badge-rank',
+        // Double header variant - amber/orange gradient
+        doubleHeader:
+          'border-transparent bg-gradient-to-br from-amber-500 to-orange-500 text-white hover:from-amber-400 hover:to-orange-400',
       },
     },
     defaultVariants: {

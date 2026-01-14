@@ -30,11 +30,12 @@ export class TimeslotService {
           team_id,
           created_at,
           is_back_to_back,
+          is_double_header,
           pair_slot,
           match_sequence,
           teams:team_id (
-            id, 
-            name, 
+            id,
+            name,
             logo_url,
             image_url
           )
@@ -324,5 +325,155 @@ export class TimeslotService {
     }
 
     return this.batchAssignBackToBackTimeslots(date, teamIds, pairName);
+  }
+
+  /**
+   * Assign a double header to a team (two separate timeslot blocks)
+   * Creates two timeslot entries for the team, one for each selected slot
+   */
+  static async assignDoubleHeader(
+    date: Date,
+    teamId: string,
+    slot1: string,
+    slot2: string
+  ): Promise<TimeslotOperationResult> {
+    try {
+      const formattedDate = format(date, 'yyyy-MM-dd');
+
+      // Create two separate timeslot entries with is_double_header flag
+      const timeslotData = [
+        {
+          match_date: formattedDate,
+          team_id: teamId,
+          timeslot: slot1,
+          is_back_to_back: false,
+          is_double_header: true,
+          pair_slot: null,
+          match_sequence: 1,
+        },
+        {
+          match_date: formattedDate,
+          team_id: teamId,
+          timeslot: slot2,
+          is_back_to_back: false,
+          is_double_header: true,
+          pair_slot: null,
+          match_sequence: 2,
+        },
+      ];
+
+      scheduleLog(
+        `Adding double header timeslots for team ${teamId}: ${slot1} and ${slot2}`,
+        timeslotData
+      );
+
+      const { data, error } = await supabase
+        .from('team_timeslots')
+        .insert(timeslotData)
+        .select('*, teams:team_id(id, name, logo_url, image_url)');
+
+      if (error) {
+        errorLog('Error adding double header timeslots:', error);
+        return {
+          success: false,
+          error: `Failed to add double header timeslots: ${error.message}`,
+        };
+      }
+
+      const formattedData = TimeslotTransformer.formatTimeslotResponse(data);
+
+      return {
+        success: true,
+        data: formattedData,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      errorLog('Error adding double header timeslot:', error);
+      return {
+        success: false,
+        error: `Failed to assign double header timeslot: ${message}`,
+      };
+    }
+  }
+
+  /**
+   * Batch assign double headers to multiple teams
+   * Each team gets two timeslot entries for the selected slots
+   */
+  static async batchAssignDoubleHeaders(
+    date: Date,
+    teamIds: string[],
+    slot1: string,
+    slot2: string
+  ): Promise<TimeslotOperationResult> {
+    try {
+      const formattedDate = format(date, 'yyyy-MM-dd');
+
+      interface TimeslotInsert {
+        match_date: string;
+        team_id: string;
+        timeslot: string;
+        is_back_to_back: boolean;
+        is_double_header: boolean;
+        pair_slot: string | null;
+        match_sequence: number;
+      }
+
+      const allTimeslotData: TimeslotInsert[] = [];
+
+      teamIds.forEach((teamId) => {
+        allTimeslotData.push(
+          {
+            match_date: formattedDate,
+            team_id: teamId,
+            timeslot: slot1,
+            is_back_to_back: false,
+            is_double_header: true,
+            pair_slot: null,
+            match_sequence: 1,
+          },
+          {
+            match_date: formattedDate,
+            team_id: teamId,
+            timeslot: slot2,
+            is_back_to_back: false,
+            is_double_header: true,
+            pair_slot: null,
+            match_sequence: 2,
+          }
+        );
+      });
+
+      scheduleLog(
+        `Batch assigning double header timeslots for ${teamIds.length} teams: ${slot1} and ${slot2}`
+      );
+
+      const { data, error } = await supabase
+        .from('team_timeslots')
+        .insert(allTimeslotData)
+        .select('*, teams:team_id(id, name, logo_url, image_url)');
+
+      if (error) {
+        errorLog('Batch double header insert error:', error);
+        return {
+          success: false,
+          error: `Failed to batch assign double header timeslots: ${error.message}`,
+        };
+      }
+
+      const formattedData = TimeslotTransformer.formatTimeslotResponse(data);
+
+      return {
+        success: true,
+        data: formattedData,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      errorLog('Error in batch double header assignment:', error);
+      return {
+        success: false,
+        error: `Failed to batch assign double header timeslots: ${message}`,
+      };
+    }
   }
 }
