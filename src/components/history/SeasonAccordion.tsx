@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Calendar, ChevronDown, Crown, RefreshCw, Trophy, Users } from 'lucide-react';
+import { Calendar, ChevronDown, Crown, Pencil, RefreshCw, Trophy, Users } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -12,6 +13,7 @@ import { getHistoryDivisionDisplayName, sortHistoryDivisions } from '@/utils/his
 import { dbLog, errorLog } from '@/utils/logger';
 
 import DivisionPanel from './DivisionPanel';
+import EditModeContainer from './editing/EditModeContainer';
 import SeasonAccordionSkeleton from './SeasonAccordionSkeleton';
 import SeasonMetaBar from './SeasonMetaBar';
 
@@ -118,6 +120,7 @@ interface SeasonAccordionProps {
 
 const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const {
     data: seasonData,
     isLoading,
@@ -126,6 +129,7 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
     isRefetching,
   } = useSeasonData(season.id, true);
   const { isWinterTheme } = useSeasonalThemeBase();
+  const { isAdminAccessGranted } = useAdminAccess();
 
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
@@ -341,8 +345,32 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
                   <Trophy className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                   <p>Season in progress – check back later</p>
                 </div>
+              ) : isEditMode ? (
+                <EditModeContainer
+                  seasonId={season.id}
+                  seasonData={seasonData || []}
+                  onSave={() => {
+                    setIsEditMode(false);
+                    refetch();
+                  }}
+                  onCancel={() => setIsEditMode(false)}
+                />
               ) : (
                 <div className="space-y-6">
+                  {isAdminAccessGranted && (
+                    <div className="flex justify-end">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsEditMode(true)}
+                        className="gap-2"
+                      >
+                        <Pencil className="w-4 h-4" />
+                        Edit Divisions
+                      </Button>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {sortHistoryDivisions(Object.entries(divisionData)).map(
                       ([divisionName, teams]) => (
