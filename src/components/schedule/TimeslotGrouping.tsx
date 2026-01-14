@@ -160,7 +160,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
                     <div
                       key={teamTimeslot.id}
                       className={cn(
-                        'flex items-center justify-between p-3',
+                        'flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between',
                         // Alternating row shading
                         teamIndex % 2 === 1 &&
                           (isWinterTheme ? 'bg-white/5' : 'bg-gray-50 dark:bg-white/5'),
@@ -174,7 +174,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
                         'touch-manipulation'
                       )}
                     >
-                      <div className="flex items-center min-w-0 flex-1 gap-6">
+                      <div className="flex w-full items-center min-w-0 gap-3 sm:flex-1 sm:gap-6">
                         <div className="shrink-0">
                           <TeamLogo
                             imageUrl={teamTimeslot.teams?.image_url || teamTimeslot.teams?.logo_url}
@@ -198,19 +198,27 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
                               {teamTimeslot.teams.name}
                             </Link>
                           ) : (
-                            <span className="text-gray-500 dark:text-gray-400 truncate">
-                              Unknown Team
-                            </span>
+                            <span className="text-gray-500 dark:text-gray-400 truncate">Unknown Team</span>
                           )}
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
                         {teamTimeslot.is_double_header &&
                           doubleHeaderInfo.has(teamTimeslot.team_id) && (
-                            <Badge variant="doubleHeader" className="text-xs">
-                              Double Header ({doubleHeaderInfo.get(teamTimeslot.team_id)?.slot1} &{' '}
-                              {doubleHeaderInfo.get(teamTimeslot.team_id)?.slot2})
+                            <Badge
+                              variant="doubleHeader"
+                              className={cn(
+                                'w-full max-w-full text-[11px] leading-tight',
+                                'flex-col items-start gap-0.5 whitespace-normal break-words',
+                                'sm:w-auto sm:flex-row sm:items-center sm:gap-1 sm:text-xs'
+                              )}
+                            >
+                              <span className="font-semibold">Double Header</span>
+                              <span className="opacity-90">
+                                ({doubleHeaderInfo.get(teamTimeslot.team_id)?.slot1} &{' '}
+                                {doubleHeaderInfo.get(teamTimeslot.team_id)?.slot2})
+                              </span>
                             </Badge>
                           )}
                         {teamTimeslot.teams?.divisionName && (
