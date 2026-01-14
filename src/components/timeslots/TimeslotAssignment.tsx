@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
@@ -10,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Team } from '@/types';
 import { TeamTimeslot } from '@/types';
@@ -20,6 +23,7 @@ interface TimeslotAssignmentProps {
   existingTimeslots: TeamTimeslot[];
   onAssign: (teamId: string, timeslot: string) => void;
   onBatchAssign?: (teamIds: string[], timeslot: string) => void;
+  onBatchAssignDoubleHeaders?: (teamIds: string[], slot1: string, slot2: string) => void;
 }
 
 const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
@@ -28,11 +32,14 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
   existingTimeslots,
   onAssign,
   onBatchAssign,
+  onBatchAssignDoubleHeaders,
 }) => {
   const [teamId, setTeamId] = useState<string>('');
   const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
   const [selectedTimeslot, setSelectedTimeslot] = useState<string>('');
   const [batchMode, setBatchMode] = useState<boolean>(true); // Default to true for batch mode
+  const [isDoubleHeader, setIsDoubleHeader] = useState<boolean>(false);
+  const [selectedTimeslots, setSelectedTimeslots] = useState<string[]>([]);
 
   // Updated time slots to include BYE and all consecutive 30-minute slots
   const timeSlots = [
@@ -67,26 +74,66 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
     }
   };
 
+  const handleTimeslotToggle = (timeslot: string) => {
+    if (isDoubleHeader) {
+      // In double header mode, allow selecting up to 2 timeslots
+      setSelectedTimeslots((prev) => {
+        if (prev.includes(timeslot)) {
+          return prev.filter((t) => t !== timeslot);
+        }
+        if (prev.length < 2) {
+          return [...prev, timeslot];
+        }
+        // Replace the first selection if already have 2
+        return [prev[1], timeslot];
+      });
+    } else {
+      // Single timeslot mode
+      setSelectedTimeslot(timeslot);
+    }
+  };
+
+  const handleDoubleHeaderToggle = (checked: boolean) => {
+    setIsDoubleHeader(checked);
+    // Reset selections when toggling mode
+    setSelectedTimeslot('');
+    setSelectedTimeslots([]);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!selectedTimeslot) {
-      return;
-    }
-
-    if (batchMode) {
-      if (selectedTeamIds.length > 0 && onBatchAssign) {
-        onBatchAssign(selectedTeamIds, selectedTimeslot);
-        setSelectedTeamIds([]);
+    if (isDoubleHeader) {
+      // Double header mode - need two timeslots selected
+      if (selectedTimeslots.length !== 2) {
+        return;
+      }
+      if (batchMode) {
+        if (selectedTeamIds.length > 0 && onBatchAssignDoubleHeaders) {
+          onBatchAssignDoubleHeaders(selectedTeamIds, selectedTimeslots[0], selectedTimeslots[1]);
+          setSelectedTeamIds([]);
+        }
       }
     } else {
-      if (teamId) {
-        onAssign(teamId, selectedTimeslot);
-        setTeamId('');
+      // Regular single timeslot mode
+      if (!selectedTimeslot) {
+        return;
+      }
+
+      if (batchMode) {
+        if (selectedTeamIds.length > 0 && onBatchAssign) {
+          onBatchAssign(selectedTeamIds, selectedTimeslot);
+          setSelectedTeamIds([]);
+        }
+      } else {
+        if (teamId) {
+          onAssign(teamId, selectedTimeslot);
+          setTeamId('');
+        }
       }
     }
 
-    // Keep the selected timeslot for convenience when making multiple assignments
+    // Keep the selected timeslot(s) for convenience when making multiple assignments
   };
 
   return (
@@ -186,47 +233,112 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
         </div>
       )}
 
+      {/* Double Header Toggle */}
+      <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+        <div className="space-y-0.5">
+          <Label htmlFor="double-header-toggle" className="text-sm font-medium">
+            Double Header
+          </Label>
+          <p className="text-xs text-muted-foreground">
+            Schedule team for two separate timeslot blocks
+          </p>
+        </div>
+        <Switch
+          id="double-header-toggle"
+          checked={isDoubleHeader}
+          onCheckedChange={handleDoubleHeaderToggle}
+        />
+      </div>
+
       <div className="space-y-2">
-        <label className="block text-sm font-medium">Select Timeslot</label>
-        <ToggleGroup
-          type="single"
-          value={selectedTimeslot}
-          onValueChange={setSelectedTimeslot}
-          className="flex flex-wrap justify-start gap-2"
-        >
-          {timeSlots.map((time) => (
-            <ToggleGroupItem
-              key={time}
-              value={time}
-              className={`
-                px-4 py-2 transition-colors
-                ${
-                  time === 'BYE'
-                    ? selectedTimeslot === time
-                      ? 'bg-orange-600 text-white'
-                      : 'border-orange-600 text-orange-600 hover:bg-orange-50'
-                    : selectedTimeslot === time
-                      ? 'bg-cornhole-navy text-white'
-                      : 'border-cornhole-navy text-cornhole-navy'
-                }
-              `}
-            >
-              {time === 'BYE' ? 'BYE WEEK' : time}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+        <div className="flex items-center gap-2">
+          <label className="block text-sm font-medium">
+            {isDoubleHeader ? 'Select Two Timeslots' : 'Select Timeslot'}
+          </label>
+          {isDoubleHeader && (
+            <Badge variant="doubleHeader" className="text-xs">
+              {selectedTimeslots.length}/2 selected
+            </Badge>
+          )}
+        </div>
+        {isDoubleHeader ? (
+          // Double header mode - multiple selection
+          <div className="flex flex-wrap justify-start gap-2">
+            {timeSlots
+              .filter((time) => time !== 'BYE')
+              .map((time) => {
+                const isSelected = selectedTimeslots.includes(time);
+                return (
+                  <Button
+                    key={time}
+                    type="button"
+                    variant="outline"
+                    onClick={() => handleTimeslotToggle(time)}
+                    className={`
+                      px-4 py-2 transition-colors
+                      ${
+                        isSelected
+                          ? 'bg-gradient-to-br from-amber-500 to-orange-500 text-white border-transparent hover:from-amber-400 hover:to-orange-400'
+                          : 'border-cornhole-navy text-cornhole-navy hover:bg-cornhole-navy/10'
+                      }
+                    `}
+                  >
+                    {time}
+                  </Button>
+                );
+              })}
+          </div>
+        ) : (
+          // Single timeslot mode
+          <ToggleGroup
+            type="single"
+            value={selectedTimeslot}
+            onValueChange={setSelectedTimeslot}
+            className="flex flex-wrap justify-start gap-2"
+          >
+            {timeSlots.map((time) => (
+              <ToggleGroupItem
+                key={time}
+                value={time}
+                className={`
+                  px-4 py-2 transition-colors
+                  ${
+                    time === 'BYE'
+                      ? selectedTimeslot === time
+                        ? 'bg-orange-600 text-white'
+                        : 'border-orange-600 text-orange-600 hover:bg-orange-50'
+                      : selectedTimeslot === time
+                        ? 'bg-cornhole-navy text-white'
+                        : 'border-cornhole-navy text-cornhole-navy'
+                  }
+                `}
+              >
+                {time === 'BYE' ? 'BYE WEEK' : time}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        )}
       </div>
 
       <Button
         type="submit"
-        className="w-full bg-cornhole-navy hover:bg-cornhole-navy/90"
+        className={`w-full ${isDoubleHeader ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400' : 'bg-cornhole-navy hover:bg-cornhole-navy/90'}`}
         disabled={
-          (batchMode && (!selectedTimeslot || selectedTeamIds.length === 0)) ||
-          (!batchMode && (!teamId || !selectedTimeslot)) ||
+          (isDoubleHeader &&
+            (selectedTimeslots.length !== 2 ||
+              (batchMode && selectedTeamIds.length === 0) ||
+              (!batchMode && !teamId))) ||
+          (!isDoubleHeader &&
+            ((batchMode && (!selectedTimeslot || selectedTeamIds.length === 0)) ||
+              (!batchMode && (!teamId || !selectedTimeslot)))) ||
           availableTeams.length === 0
         }
       >
-        {batchMode ? `Assign Timeslot to ${selectedTeamIds.length} Team(s)` : 'Assign Timeslot'}
+        {isDoubleHeader
+          ? `Assign Double Header to ${selectedTeamIds.length} Team(s)`
+          : batchMode
+            ? `Assign Timeslot to ${selectedTeamIds.length} Team(s)`
+            : 'Assign Timeslot'}
       </Button>
     </form>
   );

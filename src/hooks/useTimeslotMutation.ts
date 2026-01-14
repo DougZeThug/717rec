@@ -103,10 +103,65 @@ export const useTimeslotMutation = () => {
     }
   };
 
+  // Batch assign double headers to multiple teams (two separate timeslot blocks)
+  const batchAssignDoubleHeaders = async (
+    date: Date,
+    teamIds: string[],
+    slot1: string,
+    slot2: string
+  ): Promise<TeamTimeslot[] | null> => {
+    // Basic validation
+    if (!teamIds.length) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please select at least one team',
+        variant: 'destructive',
+      });
+      return null;
+    }
+
+    if (!slot1 || !slot2) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please select two timeslots for double header',
+        variant: 'destructive',
+      });
+      return null;
+    }
+
+    if (slot1 === slot2) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please select two different timeslots for double header',
+        variant: 'destructive',
+      });
+      return null;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const result = await TimeslotService.batchAssignDoubleHeaders(date, teamIds, slot1, slot2);
+
+      if (!result.success) {
+        toast({
+          title: 'Error',
+          description: result.error || 'Failed to batch assign double header timeslots',
+          variant: 'destructive',
+        });
+        return null;
+      }
+
+      return result.data as TeamTimeslot[];
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return {
     isSubmitting,
     addTimeslot,
     deleteTimeslot,
     batchAssignTimeslots,
+    batchAssignDoubleHeaders,
   };
 };
