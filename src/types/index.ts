@@ -136,6 +136,7 @@ export interface TeamTimeslot {
   team_id: string;
   created_at: string;
   is_back_to_back: boolean;
+  is_double_header: boolean;
   pair_slot: string | null;
   match_sequence: number | null;
   teams?: {
