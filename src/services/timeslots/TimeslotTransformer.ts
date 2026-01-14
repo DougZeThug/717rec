@@ -25,6 +25,7 @@ export class TimeslotTransformer {
       team_id: item.team_id,
       created_at: item.created_at,
       is_back_to_back: item.is_back_to_back || false,
+      is_double_header: item.is_double_header || false,
       pair_slot: item.pair_slot || null,
       match_sequence: item.match_sequence || null,
       teams: item.teams

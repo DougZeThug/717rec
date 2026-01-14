@@ -30,6 +30,7 @@ export const useTimeslotOperations = () => {
           team_id,
           created_at,
           is_back_to_back,
+          is_double_header,
           pair_slot,
           match_sequence,
           teams:team_id (
@@ -49,6 +50,7 @@ export const useTimeslotOperations = () => {
       const formattedData: TeamTimeslot[] =
         data?.map((item) => ({
           ...item,
+          is_double_header: item.is_double_header || false,
           teams: item.teams
             ? {
                 id: item.teams.id,

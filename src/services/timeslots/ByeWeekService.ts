@@ -18,6 +18,7 @@ export class ByeWeekService {
         team_id: teamId,
         timeslot: 'BYE',
         is_back_to_back: false,
+        is_double_header: false,
         pair_slot: null,
         match_sequence: null,
       })
@@ -29,6 +30,7 @@ export class ByeWeekService {
         team_id,
         created_at,
         is_back_to_back,
+        is_double_header,
         pair_slot,
         match_sequence,
         teams:team_id (
@@ -48,6 +50,7 @@ export class ByeWeekService {
 
     return {
       ...data,
+      is_double_header: data.is_double_header || false,
       teams: data.teams
         ? {
             id: data.teams.id,
@@ -71,6 +74,7 @@ export class ByeWeekService {
       team_id: teamId,
       timeslot: 'BYE',
       is_back_to_back: false,
+      is_double_header: false,
       pair_slot: null,
       match_sequence: null,
     }));
@@ -82,6 +86,7 @@ export class ByeWeekService {
         team_id,
         created_at,
         is_back_to_back,
+        is_double_header,
         pair_slot,
         match_sequence,
         teams:team_id (
@@ -99,6 +104,7 @@ export class ByeWeekService {
 
     return data.map((item) => ({
       ...item,
+      is_double_header: item.is_double_header || false,
       teams: item.teams
         ? {
             id: item.teams.id,

@@ -341,23 +341,24 @@ export class TimeslotService {
       const formattedDate = format(date, 'yyyy-MM-dd');
 
       // Create two separate timeslot entries with is_double_header flag
+      // Use is_back_to_back: true and pair_slot linkage so auto-scheduler recognizes paired slots
       const timeslotData = [
         {
           match_date: formattedDate,
           team_id: teamId,
           timeslot: slot1,
-          is_back_to_back: false,
+          is_back_to_back: true,
           is_double_header: true,
-          pair_slot: null,
+          pair_slot: slot2,
           match_sequence: 1,
         },
         {
           match_date: formattedDate,
           team_id: teamId,
           timeslot: slot2,
-          is_back_to_back: false,
+          is_back_to_back: true,
           is_double_header: true,
-          pair_slot: null,
+          pair_slot: slot1,
           match_sequence: 2,
         },
       ];
@@ -421,24 +422,25 @@ export class TimeslotService {
 
       const allTimeslotData: TimeslotInsert[] = [];
 
+      // Use is_back_to_back: true and pair_slot linkage so auto-scheduler recognizes paired slots
       teamIds.forEach((teamId) => {
         allTimeslotData.push(
           {
             match_date: formattedDate,
             team_id: teamId,
             timeslot: slot1,
-            is_back_to_back: false,
+            is_back_to_back: true,
             is_double_header: true,
-            pair_slot: null,
+            pair_slot: slot2,
             match_sequence: 1,
           },
           {
             match_date: formattedDate,
             team_id: teamId,
             timeslot: slot2,
-            is_back_to_back: false,
+            is_back_to_back: true,
             is_double_header: true,
-            pair_slot: null,
+            pair_slot: slot1,
             match_sequence: 2,
           }
         );

@@ -22,6 +22,7 @@ export function createMockTimeslot(overrides: Partial<TeamTimeslot> = {}): TeamT
     team_id: 'team-1',
     created_at: '2023-06-10T10:00:00Z',
     is_back_to_back: false,
+    is_double_header: false,
     pair_slot: null,
     match_sequence: null,
     teams: {
