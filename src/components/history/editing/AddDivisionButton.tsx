@@ -75,7 +75,7 @@ export const AddDivisionButton: React.FC<AddDivisionButtonProps> = ({
               }}
               onKeyDown={handleKeyDown}
               className={cn('h-9', error && 'border-destructive')}
-              autoFocus
+              
               placeholder="Enter division name (e.g., Intermediate 2)"
             />
             {error && <p className="text-destructive text-xs mt-1">{error}</p>}

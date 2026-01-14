@@ -83,7 +83,7 @@ export const EditableDivisionHeader: React.FC<EditableDivisionHeaderProps> = ({
               }}
               onKeyDown={handleKeyDown}
               className={cn('h-9', error && 'border-destructive')}
-              autoFocus
+              
               placeholder="Division name"
             />
             {error && <p className="text-destructive text-xs mt-1">{error}</p>}
