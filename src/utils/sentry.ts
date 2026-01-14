@@ -20,12 +20,20 @@ export const initSentry = () => {
     // Only send errors in production
     enabled: import.meta.env.PROD,
 
+    // Send default PII data to Sentry (e.g., automatic IP address collection)
+    sendDefaultPii: true,
+
+    // Session Replay integration
+    integrations: [
+      Sentry.replayIntegration(),
+    ],
+
     // Sample rate for performance monitoring (0 = disabled, 1 = 100%)
     tracesSampleRate: 0.1,
 
-    // Sample rate for session replays
-    replaysSessionSampleRate: 0,
-    replaysOnErrorSampleRate: 0.1,
+    // Session Replay sample rates
+    replaysSessionSampleRate: 0.1, // 10% of sessions
+    replaysOnErrorSampleRate: 1.0, // 100% of sessions with errors
 
     // Filter out known non-critical errors
     beforeSend(event, hint) {
