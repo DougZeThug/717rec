@@ -328,8 +328,11 @@ export class TimeslotService {
   }
 
   /**
-   * Assign a double header to a team (two separate timeslot blocks)
-   * Creates two timeslot entries for the team, one for each selected slot
+   * Assign a double header to a team (two separate back-to-back pairs)
+   * Creates 4 timeslot entries: 2 for each back-to-back pair
+   * Example: slot1=6:00PM, slot2=7:00PM creates:
+   *   - 6:00PM ↔ 6:30PM (first back-to-back pair)
+   *   - 7:00PM ↔ 7:30PM (second back-to-back pair)
    */
   static async assignDoubleHeader(
     date: Date,
@@ -340,31 +343,71 @@ export class TimeslotService {
     try {
       const formattedDate = format(date, 'yyyy-MM-dd');
 
-      // Create two separate timeslot entries with is_double_header flag
-      // Use is_back_to_back: true and pair_slot linkage so auto-scheduler recognizes paired slots
+      // Get the back-to-back pair configurations for each selected slot
+      const pair1Name = getBackToBackPairName(slot1);
+      const pair2Name = getBackToBackPairName(slot2);
+
+      if (!pair1Name || !pair2Name) {
+        return {
+          success: false,
+          error: `Invalid timeslots for double header: ${slot1} or ${slot2}`,
+        };
+      }
+
+      const pair1Config = getPairConfig(pair1Name);
+      const pair2Config = getPairConfig(pair2Name);
+
+      if (!pair1Config || !pair2Config) {
+        return {
+          success: false,
+          error: `Could not find pair config for: ${pair1Name} or ${pair2Name}`,
+        };
+      }
+
+      // Create 4 records: 2 for each back-to-back pair, all marked as double header
       const timeslotData = [
+        // First back-to-back pair
         {
           match_date: formattedDate,
           team_id: teamId,
-          timeslot: slot1,
+          timeslot: pair1Config.primary,
           is_back_to_back: true,
           is_double_header: true,
-          pair_slot: slot2,
+          pair_slot: pair1Config.secondary,
           match_sequence: 1,
         },
         {
           match_date: formattedDate,
           team_id: teamId,
-          timeslot: slot2,
+          timeslot: pair1Config.secondary,
           is_back_to_back: true,
           is_double_header: true,
-          pair_slot: slot1,
+          pair_slot: pair1Config.primary,
+          match_sequence: 2,
+        },
+        // Second back-to-back pair
+        {
+          match_date: formattedDate,
+          team_id: teamId,
+          timeslot: pair2Config.primary,
+          is_back_to_back: true,
+          is_double_header: true,
+          pair_slot: pair2Config.secondary,
+          match_sequence: 1,
+        },
+        {
+          match_date: formattedDate,
+          team_id: teamId,
+          timeslot: pair2Config.secondary,
+          is_back_to_back: true,
+          is_double_header: true,
+          pair_slot: pair2Config.primary,
           match_sequence: 2,
         },
       ];
 
       scheduleLog(
-        `Adding double header timeslots for team ${teamId}: ${slot1} and ${slot2}`,
+        `Adding double header timeslots for team ${teamId}: ${pair1Name} (${pair1Config.primary}/${pair1Config.secondary}) and ${pair2Name} (${pair2Config.primary}/${pair2Config.secondary})`,
         timeslotData
       );
 
@@ -399,7 +442,7 @@ export class TimeslotService {
 
   /**
    * Batch assign double headers to multiple teams
-   * Each team gets two timeslot entries for the selected slots
+   * Each team gets 4 timeslot entries: 2 for each back-to-back pair
    */
   static async batchAssignDoubleHeaders(
     date: Date,
@@ -410,44 +453,85 @@ export class TimeslotService {
     try {
       const formattedDate = format(date, 'yyyy-MM-dd');
 
+      // Get the back-to-back pair configurations for each selected slot
+      const pair1Name = getBackToBackPairName(slot1);
+      const pair2Name = getBackToBackPairName(slot2);
+
+      if (!pair1Name || !pair2Name) {
+        return {
+          success: false,
+          error: `Invalid timeslots for double header: ${slot1} or ${slot2}`,
+        };
+      }
+
+      const pair1Config = getPairConfig(pair1Name);
+      const pair2Config = getPairConfig(pair2Name);
+
+      if (!pair1Config || !pair2Config) {
+        return {
+          success: false,
+          error: `Could not find pair config for: ${pair1Name} or ${pair2Name}`,
+        };
+      }
+
       interface TimeslotInsert {
         match_date: string;
         team_id: string;
         timeslot: string;
         is_back_to_back: boolean;
         is_double_header: boolean;
-        pair_slot: string | null;
+        pair_slot: string;
         match_sequence: number;
       }
 
       const allTimeslotData: TimeslotInsert[] = [];
 
-      // Use is_back_to_back: true and pair_slot linkage so auto-scheduler recognizes paired slots
+      // Create 4 records per team: 2 for each back-to-back pair
       teamIds.forEach((teamId) => {
         allTimeslotData.push(
+          // First back-to-back pair
           {
             match_date: formattedDate,
             team_id: teamId,
-            timeslot: slot1,
+            timeslot: pair1Config.primary,
             is_back_to_back: true,
             is_double_header: true,
-            pair_slot: slot2,
+            pair_slot: pair1Config.secondary,
             match_sequence: 1,
           },
           {
             match_date: formattedDate,
             team_id: teamId,
-            timeslot: slot2,
+            timeslot: pair1Config.secondary,
             is_back_to_back: true,
             is_double_header: true,
-            pair_slot: slot1,
+            pair_slot: pair1Config.primary,
+            match_sequence: 2,
+          },
+          // Second back-to-back pair
+          {
+            match_date: formattedDate,
+            team_id: teamId,
+            timeslot: pair2Config.primary,
+            is_back_to_back: true,
+            is_double_header: true,
+            pair_slot: pair2Config.secondary,
+            match_sequence: 1,
+          },
+          {
+            match_date: formattedDate,
+            team_id: teamId,
+            timeslot: pair2Config.secondary,
+            is_back_to_back: true,
+            is_double_header: true,
+            pair_slot: pair2Config.primary,
             match_sequence: 2,
           }
         );
       });
 
       scheduleLog(
-        `Batch assigning double header timeslots for ${teamIds.length} teams: ${slot1} and ${slot2}`
+        `Batch assigning double header timeslots for ${teamIds.length} teams: ${pair1Name} and ${pair2Name}`
       );
 
       const { data, error } = await supabase
