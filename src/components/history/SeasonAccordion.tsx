@@ -346,9 +346,12 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
                   <p>Season in progress – check back later</p>
                 </div>
               ) : isEditMode ? (
-                <EditModeContainer
+              <EditModeContainer
                   seasonId={season.id}
-                  seasonData={seasonData || []}
+                  seasonData={(seasonData || []).filter(team => {
+                    const displayDivision = getHistoryDivisionDisplayName(team.division_name);
+                    return !displayDivision.toLowerCase().startsWith('hidden');
+                  })}
                   onSave={() => {
                     setIsEditMode(false);
                     refetch();
