@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { getHistoryDivisionOrder } from '@/utils/historyDivisionUtils';
 
 export interface EditableTeam {
   team_id: string;
@@ -64,7 +65,10 @@ export const useHistoryEditing = ({
   const divisions = useMemo(() => {
     const teamDivisions = new Set(teams.map((t) => t.division_name));
     customDivisions.forEach((d) => teamDivisions.add(d));
-    return Array.from(teamDivisions).sort();
+    // Sort by proper division order: Competitive → Intermediate → Recreational
+    return Array.from(teamDivisions).sort((a, b) => {
+      return getHistoryDivisionOrder(a) - getHistoryDivisionOrder(b);
+    });
   }, [teams, customDivisions]);
 
   // Get teams for a specific division, sorted by playoff_rank
