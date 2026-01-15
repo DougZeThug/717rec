@@ -9,7 +9,7 @@ import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { getHistoryDivisionDisplayName, sortHistoryDivisions } from '@/utils/historyDivisionUtils';
+import { getHistoryDivisionDisplayName, getHistoryDivisionDisplayNameWithRank, sortHistoryDivisions } from '@/utils/historyDivisionUtils';
 import { dbLog, errorLog } from '@/utils/logger';
 
 import DivisionPanel from './DivisionPanel';
@@ -138,6 +138,7 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
   };
 
   // Group data by division with proper display names and ordering
+  // Uses rank-based splitting for Intermediate division -> Int 1 / Int 2
   const divisionData = React.useMemo(() => {
     if (!seasonData) return {};
 
@@ -149,7 +150,11 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
       })
       .reduce(
         (acc, team) => {
-          const displayDivision = getHistoryDivisionDisplayName(team.division_name);
+          // Use rank-aware function to split Intermediate into Int 1/2
+          const displayDivision = getHistoryDivisionDisplayNameWithRank(
+            team.division_name, 
+            team.playoff_rank
+          );
           if (!acc[displayDivision]) {
             acc[displayDivision] = [];
           }
