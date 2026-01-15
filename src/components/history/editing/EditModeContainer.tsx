@@ -14,6 +14,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
+import { restrictToWindowEdges, snapCenterToCursor } from '@dnd-kit/modifiers';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import React, { useCallback, useMemo, useState } from 'react';
 
@@ -348,6 +349,7 @@ export const EditModeContainer: React.FC<EditModeContainerProps> = ({
         </div>
 
         <DragOverlay
+          modifiers={[snapCenterToCursor, restrictToWindowEdges]}
           dropAnimation={{
             duration: 200,
             easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
