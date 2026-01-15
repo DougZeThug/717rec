@@ -11,6 +11,14 @@ interface TeamUpdate {
   playoff_rank: number | null;
 }
 
+// Normalize division names - map "Intermediate 1" and "Intermediate 2" to "Intermediate"
+const normalizeDivisionName = (divisionName: string): string => {
+  if (divisionName.toLowerCase().startsWith('intermediate')) {
+    return 'Intermediate';
+  }
+  return divisionName;
+};
+
 interface UseUpdateSeasonStatsReturn {
   updateStats: (updates: TeamUpdate[]) => Promise<boolean>;
   isUpdating: boolean;
@@ -43,18 +51,37 @@ export const useUpdateSeasonStats = (): UseUpdateSeasonStatsReturn => {
       for (const batch of batches) {
         // Use Promise.all for parallel updates within each batch
         const updatePromises = batch.map(async (update) => {
-          const { error: updateError } = await supabase
+          const normalizedDivision = normalizeDivisionName(update.division_name);
+
+          // Update team_season_stats
+          const { error: statsError } = await supabase
             .from('team_season_stats')
             .update({
-              division_name: update.division_name,
+              division_name: normalizedDivision,
               playoff_rank: update.playoff_rank,
             })
             .eq('team_id', update.team_id)
             .eq('season_id', update.season_id);
 
-          if (updateError) {
+          if (statsError) {
             throw new Error(
-              `Failed to update team ${update.team_id}: ${updateError.message}`
+              `Failed to update team_season_stats for ${update.team_id}: ${statsError.message}`
+            );
+          }
+
+          // Also update team_details_archive to keep historical data in sync
+          const { error: archiveError } = await supabase
+            .from('team_details_archive')
+            .update({
+              divisionname: normalizedDivision,
+            })
+            .eq('team_id', update.team_id)
+            .eq('season_id', update.season_id);
+
+          if (archiveError) {
+            // Log but don't fail - archive entry might not exist for this team/season
+            console.warn(
+              `Could not update team_details_archive for ${update.team_id}: ${archiveError.message}`
             );
           }
 
