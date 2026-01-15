@@ -1,17 +1,21 @@
 import {
-  closestCenter,
+  closestCorners,
+  CollisionDetection,
   DndContext,
   DragEndEvent,
   DragOverEvent,
   DragOverlay,
   DragStartEvent,
   KeyboardSensor,
+  MeasuringStrategy,
   PointerSensor,
+  pointerWithin,
+  TouchSensor,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import { toast } from '@/hooks/use-toast';
 import { sortHistoryDivisions } from '@/utils/historyDivisionUtils';
@@ -48,6 +52,38 @@ interface EditModeContainerProps {
   onCancel: () => void;
 }
 
+interface PendingMove {
+  teamId: string;
+  targetDivision: string;
+}
+
+// Custom collision detection for multi-container drag
+// Uses pointerWithin for precise container detection, falls back to closestCorners for items
+const customCollisionDetection: CollisionDetection = (args) => {
+  // First check if pointer is within any droppable (division containers)
+  const pointerCollisions = pointerWithin(args);
+
+  // If we're over a division container, prioritize that
+  const divisionCollision = pointerCollisions.find((collision) =>
+    String(collision.id).startsWith('division-')
+  );
+
+  if (divisionCollision) {
+    // Return the division plus any sortable items within it
+    return pointerCollisions;
+  }
+
+  // Otherwise use closestCorners for sorting within divisions
+  return closestCorners(args);
+};
+
+// Measuring configuration for accurate drop detection
+const measuringConfig = {
+  droppable: {
+    strategy: MeasuringStrategy.Always,
+  },
+};
+
 export const EditModeContainer: React.FC<EditModeContainerProps> = ({
   seasonId,
   seasonData,
@@ -82,11 +118,19 @@ export const EditModeContainer: React.FC<EditModeContainerProps> = ({
 
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeDivision, setActiveDivision] = useState<string | null>(null);
+  const [pendingMove, setPendingMove] = useState<PendingMove | null>(null);
 
+  // Improved sensors with TouchSensor for mobile support
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 10, // Slightly increased for stability
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200, // 200ms delay to distinguish from scroll
+        tolerance: 8, // Allow 8px movement during delay
       },
     }),
     useSensor(KeyboardSensor, {
@@ -106,62 +150,104 @@ export const EditModeContainer: React.FC<EditModeContainerProps> = ({
     return index >= 0 ? index + 1 : 1;
   }, [activeTeam, activeDivision, getTeamsByDivision]);
 
-  const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event;
-    setActiveId(String(active.id));
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      const { active } = event;
+      setActiveId(String(active.id));
 
-    // Get the division of the dragged team
-    const team = teams.find((t) => t.team_id === active.id);
-    if (team) {
-      setActiveDivision(team.division_name);
-    }
-  };
-
-  const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
-    if (!over) return;
-
-    const activeTeamData = teams.find((t) => t.team_id === active.id);
-    if (!activeTeamData) return;
-
-    // Check if we're dragging over a division container
-    const overId = String(over.id);
-    if (overId.startsWith('division-')) {
-      const targetDivision = overId.replace('division-', '');
-      if (targetDivision !== activeTeamData.division_name) {
-        // Move to end of division for now (handleDragEnd will finalize position)
-        const targetTeams = getTeamsByDivision(targetDivision);
-        moveTeam(activeTeamData.team_id, targetDivision, targetTeams.length);
+      // Get the division of the dragged team
+      const team = teams.find((t) => t.team_id === active.id);
+      if (team) {
+        setActiveDivision(team.division_name);
       }
-    }
-  };
+      setPendingMove(null);
+    },
+    [teams]
+  );
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    setActiveId(null);
-    setActiveDivision(null);
+  // Track pending move during drag - don't apply immediately
+  const handleDragOver = useCallback(
+    (event: DragOverEvent) => {
+      const { active, over } = event;
+      if (!over) {
+        setPendingMove(null);
+        return;
+      }
 
-    if (!over) return;
+      const activeTeamData = teams.find((t) => t.team_id === active.id);
+      if (!activeTeamData) return;
 
-    const activeTeamData = teams.find((t) => t.team_id === active.id);
-    if (!activeTeamData) return;
+      const overId = String(over.id);
 
-    const overId = String(over.id);
-
-    // If dropping on another team, reorder within division
-    if (!overId.startsWith('division-')) {
-      const overTeam = teams.find((t) => t.team_id === over.id);
-      if (overTeam && overTeam.division_name === activeTeamData.division_name) {
-        const divisionTeams = getTeamsByDivision(activeTeamData.division_name);
-        const oldIndex = divisionTeams.findIndex((t) => t.team_id === active.id);
-        const newIndex = divisionTeams.findIndex((t) => t.team_id === over.id);
-
-        if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
-          reorderTeamInDivision(activeTeamData.division_name, oldIndex, newIndex);
+      // Check if we're dragging over a division container
+      if (overId.startsWith('division-')) {
+        const targetDivision = overId.replace('division-', '');
+        if (targetDivision !== activeTeamData.division_name) {
+          setPendingMove({ teamId: activeTeamData.team_id, targetDivision });
+        } else {
+          setPendingMove(null);
+        }
+      } else {
+        // Dragging over a team - check if it's in a different division
+        const overTeam = teams.find((t) => t.team_id === over.id);
+        if (overTeam && overTeam.division_name !== activeTeamData.division_name) {
+          setPendingMove({
+            teamId: activeTeamData.team_id,
+            targetDivision: overTeam.division_name,
+          });
+        } else {
+          setPendingMove(null);
         }
       }
-    }
-  };
+    },
+    [teams]
+  );
+
+  // Apply moves only on drag end for stability
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+
+      // Apply pending cross-division move first
+      if (pendingMove) {
+        const targetTeams = getTeamsByDivision(pendingMove.targetDivision);
+        const overTeam = over ? teams.find((t) => t.team_id === over.id) : null;
+
+        // Find insertion index
+        let insertIndex = targetTeams.length;
+        if (overTeam && overTeam.division_name === pendingMove.targetDivision) {
+          const idx = targetTeams.findIndex((t) => t.team_id === over?.id);
+          if (idx !== -1) insertIndex = idx;
+        }
+
+        moveTeam(pendingMove.teamId, pendingMove.targetDivision, Math.max(0, insertIndex));
+      } else if (over) {
+        // Same-division reorder
+        const activeTeamData = teams.find((t) => t.team_id === active.id);
+        const overTeam = teams.find((t) => t.team_id === over.id);
+
+        if (
+          activeTeamData &&
+          overTeam &&
+          activeTeamData.division_name === overTeam.division_name
+        ) {
+          const divisionTeams = getTeamsByDivision(activeTeamData.division_name);
+          const oldIndex = divisionTeams.findIndex((t) => t.team_id === active.id);
+          const newIndex = divisionTeams.findIndex((t) => t.team_id === over.id);
+
+          if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
+            reorderTeamInDivision(activeTeamData.division_name, oldIndex, newIndex);
+          }
+        }
+      }
+
+      // Reset state
+      setActiveId(null);
+      setActiveDivision(null);
+      setPendingMove(null);
+    },
+    [pendingMove, teams, getTeamsByDivision, moveTeam, reorderTeamInDivision]
+  );
 
   const handleSave = async () => {
     const changes = getChanges();
@@ -237,7 +323,8 @@ export const EditModeContainer: React.FC<EditModeContainerProps> = ({
 
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCenter}
+        collisionDetection={customCollisionDetection}
+        measuring={measuringConfig}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
@@ -251,6 +338,7 @@ export const EditModeContainer: React.FC<EditModeContainerProps> = ({
               onRenameDivision={renameDivision}
               onRemoveDivision={handleRemoveDivision}
               existingDivisions={divisions}
+              isPendingTarget={pendingMove?.targetDivision === divisionName}
             />
           ))}
 

@@ -13,6 +13,8 @@ interface DraggableTeamRowProps {
   rank: number;
 }
 
+// Larger drag handle with better touch target
+
 export const DraggableTeamRow: React.FC<DraggableTeamRowProps> = ({ team, rank }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging, isOver } =
     useSortable({
@@ -52,13 +54,14 @@ export const DraggableTeamRow: React.FC<DraggableTeamRowProps> = ({ team, rank }
         team.runner_up && 'border-gray-400/50 bg-gray-50/50 dark:bg-gray-800/20'
       )}
     >
-      {/* Drag Handle */}
+      {/* Drag Handle - Larger touch target */}
       <div
         {...attributes}
         {...listeners}
-        className="touch-none p-1 -m-1 rounded hover:bg-muted-foreground/10 transition-colors"
+        className="touch-none p-2 -m-1 rounded-md hover:bg-muted-foreground/20 active:bg-primary/20 transition-colors cursor-grab active:cursor-grabbing"
+        aria-label="Drag to reorder"
       >
-        <GripVertical className="w-4 h-4 text-muted-foreground" />
+        <GripVertical className="w-5 h-5 text-muted-foreground" />
       </div>
 
       {/* Rank Badge */}
