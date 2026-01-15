@@ -2,10 +2,11 @@ import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
 import { fetchDivisionWeights } from '@/utils/rankingUtils/divisionWeightsCache';
-import type { PredictionResult, TeamStats } from '@/utils/predictions';
+import type { HeadToHeadStats, PredictionResult, TeamStats } from '@/utils/predictions';
 import { isUpset, predictMatch } from '@/utils/predictions';
 
 import { useCareerRankings } from './useCareerRankings';
+import { useMatchHeadToHead } from './useMatchHeadToHead';
 
 interface TeamDetails {
   team_id: string;
@@ -34,7 +35,7 @@ interface UseMatchPredictionResult {
  * For upcoming matches: returns prediction with probabilities
  * For completed matches: also determines if result was an upset
  *
- * Uses a 65-35 split: 65% Career Performance + 35% Current Season
+ * Uses: 65% Career Performance + 25% Current Season + 10% Head-to-Head
  */
 export function useMatchPrediction({
   team1Details,
@@ -51,6 +52,12 @@ export function useMatchPrediction({
 
   // Fetch career rankings (cached, used for career stats)
   const { data: careerRankings, isLoading: loadingCareer } = useCareerRankings();
+
+  // Fetch head-to-head data between the two teams
+  const { data: h2hData, isLoading: loadingH2H } = useMatchHeadToHead(
+    team1Details?.team_id,
+    team2Details?.team_id
+  );
 
   // Compute prediction using memoization to avoid recalculation
   const result = useMemo(() => {
@@ -85,12 +92,22 @@ export function useMatchPrediction({
       career_win_percentage: team2Career?.careerWinPercentage ?? null,
     };
 
+    // Prepare H2H data for prediction (if available)
+    const h2hStats: HeadToHeadStats | null = h2hData
+      ? {
+          team1Wins: h2hData.team1Wins,
+          team2Wins: h2hData.team2Wins,
+          totalMatches: h2hData.totalMatches,
+        }
+      : null;
+
     const prediction = predictMatch(
       team1Stats,
       team2Stats,
       divisionWeights,
       team1Details.name,
-      team2Details.name
+      team2Details.name,
+      h2hStats
     );
 
     // For completed matches, check if result was an upset
@@ -103,10 +120,10 @@ export function useMatchPrediction({
     }
 
     return { prediction, isUpsetResult };
-  }, [team1Details, team2Details, divisionWeights, careerRankings, isCompleted, winnerId]);
+  }, [team1Details, team2Details, divisionWeights, careerRankings, h2hData, isCompleted, winnerId]);
 
   return {
     ...result,
-    isLoading: loadingDivisions || loadingCareer,
+    isLoading: loadingDivisions || loadingCareer || loadingH2H,
   };
 }

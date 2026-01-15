@@ -14,6 +14,7 @@ export {
 
 export type {
   ConfidenceLevel,
+  HeadToHeadStats,
   PredictionBreakdown,
   PredictionResult,
   TeamStats,

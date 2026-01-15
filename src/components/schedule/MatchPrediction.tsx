@@ -94,7 +94,7 @@ export const MatchPrediction: React.FC<MatchPredictionProps> = ({
             {formatBreakdown(breakdown)}
           </p>
           <p className="text-[10px] text-muted-foreground/70 text-center mt-1 italic">
-            Heuristic model: 65% Career (Power, SOS, Win%) + 35% Current Season
+            Heuristic model: 65% Career + 25% Season + 10% Head-to-Head
           </p>
         </div>
       )}
