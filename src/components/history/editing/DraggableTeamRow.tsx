@@ -40,14 +40,13 @@ export const DraggableTeamRow: React.FC<DraggableTeamRowProps> = ({ team, rank }
     <motion.div
       ref={setNodeRef}
       style={style}
-      layout
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       className={cn(
         'flex items-center gap-3 p-3 rounded-lg border transition-all duration-200',
         'bg-card hover:bg-muted/50',
-        isDragging && 'z-50 shadow-lg ring-2 ring-primary/50 scale-[1.02] opacity-90',
+        isDragging && 'opacity-30 shadow-none',
         isOver && !isDragging && 'border-primary/50 bg-primary/5',
         'cursor-grab active:cursor-grabbing',
         team.champion && 'border-yellow-400/50 bg-yellow-50/50 dark:bg-yellow-900/10',
