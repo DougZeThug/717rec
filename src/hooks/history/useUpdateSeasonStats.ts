@@ -53,15 +53,16 @@ export const useUpdateSeasonStats = (): UseUpdateSeasonStatsReturn => {
         const updatePromises = batch.map(async (update) => {
           const normalizedDivision = normalizeDivisionName(update.division_name);
 
-          // Update team_season_stats
-          const { error: statsError } = await supabase
+          // Update team_season_stats with verification
+          const { data: statsData, error: statsError } = await supabase
             .from('team_season_stats')
             .update({
               division_name: normalizedDivision,
               playoff_rank: update.playoff_rank,
             })
             .eq('team_id', update.team_id)
-            .eq('season_id', update.season_id);
+            .eq('season_id', update.season_id)
+            .select('team_id');
 
           if (statsError) {
             throw new Error(
@@ -69,20 +70,41 @@ export const useUpdateSeasonStats = (): UseUpdateSeasonStatsReturn => {
             );
           }
 
+          if (!statsData || statsData.length === 0) {
+            console.error(`Update verification failed for team_season_stats:`, {
+              team_id: update.team_id,
+              season_id: update.season_id,
+              division_name: normalizedDivision,
+            });
+            throw new Error(
+              `No rows updated for team ${update.team_id} in team_season_stats - check RLS policies or if record exists`
+            );
+          }
+
           // Also update team_details_archive to keep historical data in sync
-          const { error: archiveError } = await supabase
+          const { data: archiveData, error: archiveError } = await supabase
             .from('team_details_archive')
             .update({
               divisionname: normalizedDivision,
             })
             .eq('team_id', update.team_id)
-            .eq('season_id', update.season_id);
+            .eq('season_id', update.season_id)
+            .select('team_id');
 
           if (archiveError) {
-            // Log but don't fail - archive entry might not exist for this team/season
-            console.warn(
-              `Could not update team_details_archive for ${update.team_id}: ${archiveError.message}`
+            console.error(`Failed to update team_details_archive:`, {
+              team_id: update.team_id,
+              season_id: update.season_id,
+              error: archiveError.message,
+            });
+            throw new Error(
+              `Failed to update team_details_archive for ${update.team_id}: ${archiveError.message}`
             );
+          }
+
+          if (!archiveData || archiveData.length === 0) {
+            console.warn(`No archive record found for team ${update.team_id} in season ${update.season_id}`);
+            // Don't fail - archive entry might not exist for this team/season
           }
 
           return true;
