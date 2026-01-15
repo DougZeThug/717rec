@@ -15,6 +15,7 @@ interface EditableDivisionPanelProps {
   onRenameDivision: (oldName: string, newName: string) => void;
   onRemoveDivision: (name: string) => boolean;
   existingDivisions: string[];
+  isPendingTarget?: boolean;
 }
 
 export const EditableDivisionPanel: React.FC<EditableDivisionPanelProps> = ({
@@ -23,6 +24,7 @@ export const EditableDivisionPanel: React.FC<EditableDivisionPanelProps> = ({
   onRenameDivision,
   onRemoveDivision,
   existingDivisions,
+  isPendingTarget = false,
 }) => {
   const { setNodeRef, isOver } = useDroppable({
     id: `division-${divisionName}`,
@@ -42,7 +44,8 @@ export const EditableDivisionPanel: React.FC<EditableDivisionPanelProps> = ({
       className={cn(
         'rounded-xl border-2 border-dashed p-4 transition-all duration-200',
         isOver && 'border-primary bg-primary/5 scale-[1.01]',
-        !isOver && 'border-muted-foreground/30 bg-card/50',
+        isPendingTarget && !isOver && 'border-primary/50 bg-primary/5',
+        !isOver && !isPendingTarget && 'border-muted-foreground/30 bg-card/50',
         isEmpty && 'min-h-[120px]'
       )}
     >

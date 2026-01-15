@@ -20,8 +20,8 @@ export const TeamDragOverlay: React.FC<TeamDragOverlayProps> = ({ team, rank }) 
     <div
       className={cn(
         'flex items-center gap-3 p-3 rounded-lg border-2 border-primary',
-        'bg-card shadow-2xl scale-105',
-        'cursor-grabbing',
+        'bg-card shadow-2xl scale-105 pointer-events-none',
+        'ring-4 ring-primary/20',
         team.champion && 'border-yellow-500',
         team.runner_up && 'border-gray-500'
       )}
