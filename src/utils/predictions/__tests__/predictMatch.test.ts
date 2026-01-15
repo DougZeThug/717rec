@@ -328,6 +328,13 @@ describe('formatBreakdown', () => {
       careerSosB: 0.85,
       careerWinPctA: 0.65,
       careerWinPctB: 0.55,
+      h2hWinsA: 3,
+      h2hWinsB: 1,
+      h2hTotalMatches: 4,
+      h2hRatingA: 0.6,
+      h2hRatingB: 0.4,
+      h2hDominanceFactor: 0.5,
+      hasH2HData: true,
       seasonRatingA: 0.5,
       seasonRatingB: 0.4,
       careerRatingA: 0.6,
@@ -344,6 +351,7 @@ describe('formatBreakdown', () => {
     expect(formatted).toContain('Season: 65 vs 55');
     expect(formatted).toContain('Career: 70 vs 60');
     expect(formatted).toContain('Win%: 65% vs 55%');
+    expect(formatted).toContain('H2H: 3-1');
   });
 
   it('should only show season when no career data', () => {
@@ -360,6 +368,13 @@ describe('formatBreakdown', () => {
       careerSosB: 0.85,
       careerWinPctA: 0.5,
       careerWinPctB: 0.5,
+      h2hWinsA: 0,
+      h2hWinsB: 0,
+      h2hTotalMatches: 0,
+      h2hRatingA: 0.5,
+      h2hRatingB: 0.5,
+      h2hDominanceFactor: 0,
+      hasH2HData: false,
       seasonRatingA: 0.5,
       seasonRatingB: 0.4,
       careerRatingA: 0.5,
@@ -376,5 +391,43 @@ describe('formatBreakdown', () => {
     expect(formatted).toContain('Season: 65 vs 55');
     expect(formatted).not.toContain('Career:');
     expect(formatted).not.toContain('Win%:');
+    expect(formatted).not.toContain('H2H:');
+  });
+
+  it('should show H2H record when sufficient matches exist', () => {
+    const breakdown = {
+      powerScoreA: 50,
+      powerScoreB: 50,
+      sosA: 0.85,
+      sosB: 0.85,
+      divisionWeightA: 1.0,
+      divisionWeightB: 1.0,
+      careerPowerA: 50,
+      careerPowerB: 50,
+      careerSosA: 0.85,
+      careerSosB: 0.85,
+      careerWinPctA: 0.5,
+      careerWinPctB: 0.5,
+      h2hWinsA: 5,
+      h2hWinsB: 2,
+      h2hTotalMatches: 7,
+      h2hRatingA: 0.65,
+      h2hRatingB: 0.35,
+      h2hDominanceFactor: 0.43,
+      hasH2HData: true,
+      seasonRatingA: 0.5,
+      seasonRatingB: 0.5,
+      careerRatingA: 0.5,
+      careerRatingB: 0.5,
+      teamRatingA: 0.5,
+      teamRatingB: 0.5,
+      ratingDiff: 0,
+      hasCareerDataA: false,
+      hasCareerDataB: false,
+    };
+
+    const formatted = formatBreakdown(breakdown);
+
+    expect(formatted).toContain('H2H: 5-2');
   });
 });

@@ -3,11 +3,12 @@
  *
  * A simple, honest heuristic for predicting match outcomes.
  * This is NOT a sophisticated ML model - it's a transparent calculation
- * using existing metrics: Power Score, SOS, and Division Weight.
+ * using existing metrics: Power Score, SOS, Division Weight, and Head-to-Head record.
  *
- * The prediction uses a 65-35 split favoring career performance over
- * current season data, since 4+ seasons of data is more statistically
- * robust than a few weeks of current season play.
+ * The prediction uses:
+ * - 65% Career Performance (Power Score, SOS, Win%)
+ * - 25% Current Season (Power Score, SOS, Division)
+ * - 10% Head-to-Head (with dominance scaling, min 2 matches)
  *
  * The prediction is deterministic and designed to be variance-tolerant
  * for a recreational volleyball league where upsets are common.
@@ -27,6 +28,12 @@ export interface TeamStats {
   career_win_percentage?: number | null;
 }
 
+export interface HeadToHeadStats {
+  team1Wins: number;
+  team2Wins: number;
+  totalMatches: number;
+}
+
 export interface PredictionBreakdown {
   // Current season stats
   powerScoreA: number;
@@ -43,6 +50,15 @@ export interface PredictionBreakdown {
   careerSosB: number;
   careerWinPctA: number;
   careerWinPctB: number;
+
+  // Head-to-Head stats
+  h2hWinsA: number;
+  h2hWinsB: number;
+  h2hTotalMatches: number;
+  h2hRatingA: number;
+  h2hRatingB: number;
+  h2hDominanceFactor: number;
+  hasH2HData: boolean;
 
   // Ratings
   seasonRatingA: number;
@@ -76,17 +92,26 @@ export interface PredictionResult {
 // ============= Constants =============
 
 /**
- * Season vs Career weighting split.
- * 65% Career, 35% Current Season - career data is more statistically robust.
+ * Main bucket weights:
+ * - 65% Career Performance (most statistically robust)
+ * - 25% Current Season (recent form)
+ * - 10% Head-to-Head (historical matchup advantage)
  */
-const WEIGHT_CURRENT_SEASON = 0.35;
+const WEIGHT_CURRENT_SEASON = 0.25;
 const WEIGHT_CAREER = 0.65;
+const WEIGHT_H2H = 0.10;
 
 /**
- * Current season component weights (within the 35% bucket):
- * - Power Score: 70% of 35% = 24.5% total
- * - SOS: 15% of 35% = 5.25% total
- * - Division: 15% of 35% = 5.25% total
+ * Minimum head-to-head matches required for H2H factor to apply.
+ * Below this threshold, H2H weight is redistributed to Career and Season.
+ */
+const MIN_H2H_MATCHES = 2;
+
+/**
+ * Current season component weights (within the 25% bucket):
+ * - Power Score: 70% of 25% = 17.5% total
+ * - SOS: 15% of 25% = 3.75% total
+ * - Division: 15% of 25% = 3.75% total
  */
 const WEIGHT_POWER_SCORE = 0.70;
 const WEIGHT_SOS = 0.15;
@@ -201,18 +226,89 @@ function calculateCareerRating(
 }
 
 /**
- * Combine season and career ratings into composite rating
- * Falls back to 100% season if no career data available
+ * Calculate head-to-head advantage rating with dominance scaling.
+ *
+ * Dominance Factor: How one-sided is the record?
+ * - 6-0 (100% dominance) -> Full H2H weight applied
+ * - 4-2 (67% win rate) -> Moderate H2H weight
+ * - 4-3 (57% win rate) -> Reduced H2H weight (close series)
+ *
+ * Formula: H2H Rating = base + (winRate - 0.5) * dominance boost
+ * This gives:
+ * - 6-0: Strong advantage (rating ~0.75)
+ * - 4-2: Moderate advantage (rating ~0.60)
+ * - 3-3: Neutral (rating = 0.50)
+ */
+function calculateH2HRating(wins: number, losses: number): { rating: number; dominanceFactor: number } {
+  const total = wins + losses;
+
+  if (total < MIN_H2H_MATCHES) {
+    return { rating: 0.5, dominanceFactor: 0 }; // Neutral, no H2H applied
+  }
+
+  const winRate = wins / total;
+
+  // Dominance factor: how far from 50-50 is the record?
+  // |winRate - 0.5| * 2 gives 0 for 50-50, 1 for 100-0
+  const dominanceFactor = Math.abs(winRate - 0.5) * 2;
+
+  // Scale the rating: 0.5 is neutral, deviations scaled by dominance
+  // More dominant records get amplified effect
+  const scaledRating = 0.5 + (winRate - 0.5) * (1 + dominanceFactor) / 2;
+
+  return {
+    rating: Math.max(0, Math.min(1, scaledRating)),
+    dominanceFactor,
+  };
+}
+
+/**
+ * Calculate effective weights when H2H data is missing or insufficient.
+ * Redistributes H2H weight proportionally to Career and Season.
+ */
+function getEffectiveWeights(hasH2H: boolean): {
+  seasonWeight: number;
+  careerWeight: number;
+  h2hWeight: number;
+} {
+  if (hasH2H) {
+    return {
+      seasonWeight: WEIGHT_CURRENT_SEASON, // 0.25
+      careerWeight: WEIGHT_CAREER,          // 0.65
+      h2hWeight: WEIGHT_H2H,                // 0.10
+    };
+  }
+
+  // Redistribute H2H weight proportionally
+  // Career:Season ratio is 65:25 = 72.2%:27.8%
+  const totalNonH2H = WEIGHT_CAREER + WEIGHT_CURRENT_SEASON;
+  const careerRatio = WEIGHT_CAREER / totalNonH2H;
+  const seasonRatio = WEIGHT_CURRENT_SEASON / totalNonH2H;
+
+  return {
+    seasonWeight: WEIGHT_CURRENT_SEASON + WEIGHT_H2H * seasonRatio,  // ~0.278
+    careerWeight: WEIGHT_CAREER + WEIGHT_H2H * careerRatio,          // ~0.722
+    h2hWeight: 0,
+  };
+}
+
+/**
+ * Calculate composite team rating from all factors
  */
 function calculateCompositeRating(
   seasonRating: number,
   careerRating: number,
-  hasCareerData: boolean
+  h2hRating: number,
+  hasCareerData: boolean,
+  weights: { seasonWeight: number; careerWeight: number; h2hWeight: number }
 ): number {
-  if (!hasCareerData) {
-    return seasonRating;
-  }
-  return seasonRating * WEIGHT_CURRENT_SEASON + careerRating * WEIGHT_CAREER;
+  const effectiveCareerRating = hasCareerData ? careerRating : seasonRating;
+
+  return (
+    seasonRating * weights.seasonWeight +
+    effectiveCareerRating * weights.careerWeight +
+    h2hRating * weights.h2hWeight
+  );
 }
 
 /**
@@ -258,13 +354,14 @@ function getExpectedText(probA: number, teamAName: string, teamBName: string): s
 /**
  * Predict match outcome between two teams
  *
- * Uses a 65-35 split: 65% Career Performance + 35% Current Season
+ * Uses: 65% Career Performance + 25% Current Season + 10% Head-to-Head
  *
  * @param teamAStats - Stats for Team A (power_score, sos, division_id, career stats)
  * @param teamBStats - Stats for Team B (power_score, sos, division_id, career stats)
  * @param divisionWeights - Map of division_id to division_weight (from cache)
  * @param teamAName - Display name for Team A (for outcome text)
  * @param teamBName - Display name for Team B (for outcome text)
+ * @param h2hData - Optional head-to-head stats between teams
  * @returns Prediction result with probabilities, text, confidence, and breakdown
  */
 export function predictMatch(
@@ -272,7 +369,8 @@ export function predictMatch(
   teamBStats: TeamStats,
   divisionWeights: Map<string, number>,
   teamAName = 'Team A',
-  teamBName = 'Team B'
+  teamBName = 'Team B',
+  h2hData?: HeadToHeadStats | null
 ): PredictionResult {
   // === Current Season Stats ===
   const powerScoreA = teamAStats.power_score ?? DEFAULT_POWER_SCORE;
@@ -324,9 +422,24 @@ export function predictMatch(
   const careerRatingA = calculateCareerRating(normalizedCareerPowerA, scaledCareerSosA, careerWinPctA);
   const careerRatingB = calculateCareerRating(normalizedCareerPowerB, scaledCareerSosB, careerWinPctB);
 
-  // Composite ratings (65% career + 35% season)
-  const teamRatingA = calculateCompositeRating(seasonRatingA, careerRatingA, hasCareerDataA);
-  const teamRatingB = calculateCompositeRating(seasonRatingB, careerRatingB, hasCareerDataB);
+  // === Head-to-Head ===
+  const h2hWinsA = h2hData?.team1Wins ?? 0;
+  const h2hWinsB = h2hData?.team2Wins ?? 0;
+  const h2hTotalMatches = h2hData?.totalMatches ?? 0;
+  const hasH2HData = h2hTotalMatches >= MIN_H2H_MATCHES;
+
+  const h2hResultA = calculateH2HRating(h2hWinsA, h2hWinsB);
+  const h2hResultB = calculateH2HRating(h2hWinsB, h2hWinsA);
+  const h2hRatingA = h2hResultA.rating;
+  const h2hRatingB = h2hResultB.rating;
+  const h2hDominanceFactor = h2hResultA.dominanceFactor;
+
+  // Get effective weights (redistributes H2H weight if insufficient data)
+  const weights = getEffectiveWeights(hasH2HData);
+
+  // Composite ratings (65% career + 25% season + 10% H2H)
+  const teamRatingA = calculateCompositeRating(seasonRatingA, careerRatingA, h2hRatingA, hasCareerDataA, weights);
+  const teamRatingB = calculateCompositeRating(seasonRatingB, careerRatingB, h2hRatingB, hasCareerDataB, weights);
 
   // Rating difference (positive = Team A stronger)
   const ratingDiff = teamRatingA - teamRatingB;
@@ -359,6 +472,14 @@ export function predictMatch(
       careerSosB,
       careerWinPctA,
       careerWinPctB,
+      // Head-to-Head
+      h2hWinsA,
+      h2hWinsB,
+      h2hTotalMatches,
+      h2hRatingA,
+      h2hRatingB,
+      h2hDominanceFactor,
+      hasH2HData,
       // Ratings
       seasonRatingA,
       seasonRatingB,
@@ -399,7 +520,9 @@ export function formatBreakdown(breakdown: PredictionBreakdown): string {
     powerScoreA, powerScoreB,
     careerPowerA, careerPowerB,
     careerWinPctA, careerWinPctB,
+    h2hWinsA, h2hWinsB,
     hasCareerDataA, hasCareerDataB,
+    hasH2HData,
   } = breakdown;
 
   const parts = [
@@ -410,6 +533,11 @@ export function formatBreakdown(breakdown: PredictionBreakdown): string {
   if (hasCareerDataA || hasCareerDataB) {
     parts.push(`Career: ${Math.round(careerPowerA)} vs ${Math.round(careerPowerB)}`);
     parts.push(`Win%: ${Math.round(careerWinPctA * 100)}% vs ${Math.round(careerWinPctB * 100)}%`);
+  }
+
+  // Show H2H record if sufficient matches
+  if (hasH2HData) {
+    parts.push(`H2H: ${h2hWinsA}-${h2hWinsB}`);
   }
 
   return parts.join(' · ');
