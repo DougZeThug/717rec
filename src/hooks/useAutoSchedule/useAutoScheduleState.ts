@@ -28,8 +28,8 @@ export const useAutoScheduleState = () => {
   const [editableMatches, setEditableMatches] = useState<AutoScheduleMatch[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
 
-  // Team block mapping for validation (array to support double-header teams)
-  const [teamBlockMap, setTeamBlockMap] = useState<Record<string, string[]>>({});
+  // Team block mapping for validation
+  const [teamBlockMap, setTeamBlockMap] = useState<Record<string, string>>({});
 
   return {
     // State

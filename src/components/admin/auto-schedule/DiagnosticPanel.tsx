@@ -8,7 +8,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { TimeBlockTeamsMap } from '@/types/autoSchedule';
 
 interface DiagnosticPanelProps {
-  teamBlockMap: Record<string, string[]>;
+  teamBlockMap: Record<string, string>;
   timeBlockTeams: TimeBlockTeamsMap;
   isVisible?: boolean;
 }
@@ -17,7 +17,7 @@ interface TeamAssignment {
   teamId: string;
   teamName: string;
   block: string;
-  isDoubleHeader: boolean;
+  isDuplicate: boolean;
 }
 
 /**
@@ -42,7 +42,7 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
     const teamBlocks = new Map<string, string[]>();
     const blockStats = new Map<string, number>();
 
-    // Build team assignments list and detect double-headers
+    // Build team assignments list and detect duplicates
     Object.entries(timeBlockTeams).forEach(([block, teams]) => {
       blockStats.set(block, teams.length);
 
@@ -55,13 +55,13 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
           teamId: team.id,
           teamName: team.name,
           block: block,
-          isDoubleHeader: currentBlocks.length > 1,
+          isDuplicate: currentBlocks.length > 1,
         });
       });
     });
 
-    // Find teams with double-header assignments (multiple blocks)
-    const doubleHeaderTeams = Array.from(teamBlocks.entries())
+    // Find teams with duplicate assignments
+    const duplicateTeams = Array.from(teamBlocks.entries())
       .filter(([_, blocks]) => blocks.length > 1)
       .map(([teamId, blocks]) => {
         const team = Object.values(timeBlockTeams)
@@ -77,18 +77,17 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
     // Calculate validation status
     const totalTeams = new Set(Object.keys(teamBlockMap)).size;
     const teamsWithAssignments = Object.keys(teamBlockMap).length;
-    // Double-headers are now valid - they're teams playing in multiple blocks
-    const hasDoubleHeaders = doubleHeaderTeams.length > 0;
-    const isValid = teamsWithAssignments > 0;
+    const hasDuplicates = duplicateTeams.length > 0;
+    const isValid = !hasDuplicates && teamsWithAssignments > 0;
 
     return {
       teamAssignments,
-      doubleHeaderTeams,
+      duplicateTeams,
       blockStats,
       totalTeams,
       teamsWithAssignments,
       isValid,
-      hasDoubleHeaders,
+      hasDuplicates,
     };
   }, [teamBlockMap, timeBlockTeams]);
 
@@ -130,16 +129,16 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
               </span>
             </div>
 
-            {/* Double-Header Info */}
-            {analysis.hasDoubleHeaders && (
-              <Alert>
-                <CheckCircle2 className="h-4 w-4" />
+            {/* Duplicate Warnings */}
+            {analysis.hasDuplicates && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
                 <AlertDescription className="text-xs font-mono">
-                  <strong>Double-Header Teams:</strong> {analysis.doubleHeaderTeams.length} team(s)
-                  playing in multiple blocks
-                  {analysis.doubleHeaderTeams.map((team) => (
-                    <div key={team.teamId} className="mt-1 pl-4 border-l-2 border-primary/50">
-                      ⚡ {team.teamName}: {team.blocks.join(', ')}
+                  <strong>Critical Error:</strong> {analysis.duplicateTeams.length} team(s) assigned
+                  to multiple blocks
+                  {analysis.duplicateTeams.map((dup) => (
+                    <div key={dup.teamId} className="mt-1 pl-4 border-l-2 border-destructive/50">
+                      {dup.teamName}: {dup.blocks.join(', ')}
                     </div>
                   ))}
                 </AlertDescription>
@@ -177,17 +176,14 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
                       <div
                         key={`${assignment.teamId}-${index}`}
                         className={`flex items-center justify-between p-2 rounded text-xs font-mono ${
-                          assignment.isDoubleHeader
-                            ? 'bg-primary/10 border border-primary'
+                          assignment.isDuplicate
+                            ? 'bg-destructive/10 border border-destructive'
                             : 'bg-background border'
                         }`}
                       >
-                        <span className="truncate flex-1">
-                          {assignment.isDoubleHeader && '⚡ '}
-                          {assignment.teamName}
-                        </span>
+                        <span className="truncate flex-1">{assignment.teamName}</span>
                         <Badge
-                          variant={assignment.isDoubleHeader ? 'default' : 'secondary'}
+                          variant={assignment.isDuplicate ? 'destructive' : 'secondary'}
                           className="text-xs ml-2"
                         >
                           {assignment.block}

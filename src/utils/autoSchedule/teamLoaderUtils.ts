@@ -120,19 +120,19 @@ export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Pr
       const primarySlot = slots.primary;
       const secondarySlot = slots.secondary;
 
-      // Simply verify the slots reference each other correctly (self-referential check)
-      const slotsReferenceEachOther =
-        primarySlot.pair_slot === secondarySlot.timeslot &&
-        secondarySlot.pair_slot === primarySlot.timeslot;
-
-      // Also verify the timeslots match what we expect for this pair
-      const timeslotsMatchPair =
+      // For a valid pair:
+      // - The primary slot (sequence 1) should have pair_slot pointing to secondary timeslot
+      // - The secondary slot (sequence 2) should have pair_slot pointing to primary timeslot
+      const isPrimaryValid =
         primarySlot.timeslot === pairConfig.primary &&
-        secondarySlot.timeslot === pairConfig.secondary;
+        primarySlot.pair_slot === pairConfig.secondary;
+      const isSecondaryValid =
+        secondarySlot.timeslot === pairConfig.secondary &&
+        secondarySlot.pair_slot === pairConfig.primary;
 
-      if (!slotsReferenceEachOther || !timeslotsMatchPair) {
+      if (!isPrimaryValid || !isSecondaryValid) {
         scheduleLog(
-          `Team ${teamId} excluded from ${pairName} - timeslots don't form a valid pair. ` +
+          `Team ${teamId} excluded from ${pairName} - timeslots don't form a valid ${pairName} pair. ` +
             `Primary: ${primarySlot.timeslot} (pair_slot: ${primarySlot.pair_slot}), ` +
             `Secondary: ${secondarySlot.timeslot} (pair_slot: ${secondarySlot.pair_slot})`
         );
