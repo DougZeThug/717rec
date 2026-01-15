@@ -105,12 +105,37 @@ export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Pr
       teamSlotMap.set(slot.team_id, teamData);
     });
 
-    // Only include teams that have BOTH timeslots assigned
+    // Only include teams that have BOTH timeslots assigned AND form a valid pair
     const validTeams: Team[] = [];
 
     teamSlotMap.forEach((slots, teamId) => {
       if (!slots.primary || !slots.secondary) {
         warnLog(`Team ${teamId} missing complete back-to-back assignment for ${pairName} pair`);
+        return;
+      }
+
+      // Validate that the pair_slot values correctly reference each other
+      // This prevents false positives from double-header teams who have timeslots
+      // that span across different back-to-back pairs
+      const primarySlot = slots.primary;
+      const secondarySlot = slots.secondary;
+
+      // For a valid pair:
+      // - The primary slot (sequence 1) should have pair_slot pointing to secondary timeslot
+      // - The secondary slot (sequence 2) should have pair_slot pointing to primary timeslot
+      const isPrimaryValid =
+        primarySlot.timeslot === pairConfig.primary &&
+        primarySlot.pair_slot === pairConfig.secondary;
+      const isSecondaryValid =
+        secondarySlot.timeslot === pairConfig.secondary &&
+        secondarySlot.pair_slot === pairConfig.primary;
+
+      if (!isPrimaryValid || !isSecondaryValid) {
+        scheduleLog(
+          `Team ${teamId} excluded from ${pairName} - timeslots don't form a valid ${pairName} pair. ` +
+            `Primary: ${primarySlot.timeslot} (pair_slot: ${primarySlot.pair_slot}), ` +
+            `Secondary: ${secondarySlot.timeslot} (pair_slot: ${secondarySlot.pair_slot})`
+        );
         return;
       }
 
