@@ -17,12 +17,14 @@ interface DivisionRecordsInput {
 
 /**
  * Categorizes a division name into a tier.
- * Maps "Hidden" to competitive since it has weight 1.0.
+ * Hidden/Hidden2 are excluded (return null) - they are administrative divisions.
  */
 export const categorizeDivision = (divisionName: string | null): DivisionTier | null => {
   if (!divisionName) return null;
   const name = divisionName.toLowerCase();
-  if (name.includes('competitive') || name.includes('hidden')) return 'competitive';
+  // Exclude hidden divisions from tier categorization
+  if (name.includes('hidden')) return null;
+  if (name.includes('competitive')) return 'competitive';
   if (name.includes('intermediate') || name === 'cuspers') return 'intermediate';
   if (name.includes('recreational')) return 'recreational';
   return null;
@@ -75,14 +77,19 @@ export const calculateDivisionRecords = ({
     }
   }
 
-  // Add current season matches based on opponent's current division
+  // Add current season matches - look up opponent's division at time of match
   if (currentMatches) {
     for (const match of currentMatches) {
       const isTeam1 = match.team1_id === teamId;
-      const opponentDivision = isTeam1
+      const opponentId = isTeam1 ? match.team2_id : match.team1_id;
+      if (!opponentId || !match.season_id) continue;
+
+      // Use historical lookup, fallback to current division for active season
+      const historicalDivision = teamDivisionMap.get(`${opponentId}_${match.season_id}`);
+      const fallbackDivision = isTeam1
         ? match.team2?.divisions?.name
         : match.team1?.divisions?.name;
-      const tier = categorizeDivision(opponentDivision || null);
+      const tier = categorizeDivision(historicalDivision || fallbackDivision || null);
 
       if (tier) {
         if (match.winner_id === teamId) {
