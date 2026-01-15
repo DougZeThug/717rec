@@ -38,10 +38,28 @@ interface UseHistoryEditingReturn {
   resetChanges: () => void;
 }
 
+// Rank offset for Intermediate 2 teams - teams with rank > this are in Int 2
+const INTERMEDIATE_2_RANK_OFFSET = 8;
+
 // Helper to get display division name for editing (splits Intermediate into Int 1/2)
 const getEditDisplayDivision = (divisionName: string | null, playoffRank: number | null): string => {
   if (!divisionName) return 'Uncategorized';
   return getHistoryDivisionDisplayNameWithRank(divisionName, playoffRank);
+};
+
+// Helper to get the display rank for editing (adjusts Int 2 ranks to 1-based within division)
+const getEditDisplayRank = (divisionName: string | null, playoffRank: number | null): number | null => {
+  if (!divisionName || playoffRank === null) return playoffRank;
+  
+  const normalized = divisionName.toLowerCase().trim();
+  
+  // If this is an Intermediate team that will display as "Intermediate 2", 
+  // adjust rank for within-division ordering (e.g., rank 9 → 1, rank 10 → 2)
+  if (normalized === 'intermediate' && playoffRank > INTERMEDIATE_2_RANK_OFFSET) {
+    return playoffRank - INTERMEDIATE_2_RANK_OFFSET;
+  }
+  
+  return playoffRank;
 };
 
 // Helper to get the storage division name (maps Int 1/2 back to Intermediate)
@@ -57,19 +75,21 @@ export const useHistoryEditing = ({
   initialTeams,
   seasonId: _seasonId,
 }: UseHistoryEditingProps): UseHistoryEditingReturn => {
-  // Local state for teams being edited - uses display divisions (Int 1/2)
+  // Local state for teams being edited - uses display divisions (Int 1/2) and adjusted ranks
   const [teams, setTeams] = useState<EditableTeam[]>(() =>
     initialTeams.map((t) => ({
       ...t,
       division_name: getEditDisplayDivision(t.division_name, t.playoff_rank),
+      playoff_rank: getEditDisplayRank(t.division_name, t.playoff_rank),
     }))
   );
 
-  // Track original state to detect changes - also uses display divisions
+  // Track original state to detect changes - also uses display divisions and adjusted ranks
   const [originalTeams, setOriginalTeams] = useState<EditableTeam[]>(() =>
     initialTeams.map((t) => ({
       ...t,
       division_name: getEditDisplayDivision(t.division_name, t.playoff_rank),
+      playoff_rank: getEditDisplayRank(t.division_name, t.playoff_rank),
     }))
   );
 
@@ -81,6 +101,7 @@ export const useHistoryEditing = ({
     const newTeams = initialTeams.map((t) => ({
       ...t,
       division_name: getEditDisplayDivision(t.division_name, t.playoff_rank),
+      playoff_rank: getEditDisplayRank(t.division_name, t.playoff_rank),
     }));
     setOriginalTeams(newTeams);
     setTeams(newTeams);
@@ -255,6 +276,7 @@ export const useHistoryEditing = ({
   }, [teams, originalTeams, customDivisions]);
 
   // Get all teams that have changed - maps display divisions back to storage divisions
+  // and adjusts playoff_rank for Intermediate 2 teams (adds offset so they persist correctly)
   const getChanges = useCallback((): EditableTeam[] => {
     return teams
       .filter((team) => {
@@ -264,11 +286,23 @@ export const useHistoryEditing = ({
           team.division_name !== original.division_name || team.playoff_rank !== original.playoff_rank
         );
       })
-      .map((team) => ({
-        ...team,
-        // Convert display division (Int 1/2) back to storage division (Intermediate)
-        division_name: getStorageDivisionName(team.division_name),
-      }));
+      .map((team) => {
+        let adjustedRank = team.playoff_rank;
+        
+        // Offset rank for Intermediate 2 teams so they persist correctly
+        // e.g., rank 1 in Int 2 → saved as rank 9
+        const normalized = team.division_name.toLowerCase().trim();
+        if (normalized === 'intermediate 2' && adjustedRank !== null) {
+          adjustedRank = adjustedRank + INTERMEDIATE_2_RANK_OFFSET;
+        }
+        
+        return {
+          ...team,
+          playoff_rank: adjustedRank,
+          // Convert display division (Int 1/2) back to storage division (Intermediate)
+          division_name: getStorageDivisionName(team.division_name),
+        };
+      });
   }, [teams, originalTeams]);
 
   // Reset all changes
