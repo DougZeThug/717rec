@@ -16,7 +16,7 @@ export const useTeamOperations = () => {
   const [timeBlockTeams, setTimeBlockTeams] = useState<TimeBlockTeamsMap>({});
   const [originalTimeBlockTeams, setOriginalTimeBlockTeams] = useState<TimeBlockTeamsMap>({});
   const [pairedTimeBlockTeams, setPairedTimeBlockTeams] = useState<PairedTimeBlockTeamsMap>({});
-  const [teamBlockMap, setTeamBlockMap] = useState<Record<string, string>>({});
+  const [teamBlockMap, setTeamBlockMap] = useState<Record<string, string[]>>({});
 
   /**
    * Load teams for all back-to-back pairs for a specific date
@@ -51,19 +51,25 @@ export const useTeamOperations = () => {
         const backToBackTeams = await getAllBackToBackTeams(date);
 
         // Build team-to-block mapping for defensive validation
-        const blockMap: Record<string, string> = {};
+        // Now stores arrays to support double-header teams who play in multiple blocks
+        const blockMap: Record<string, string[]> = {};
 
         scheduleLog('Team Loading Summary by Block:');
         Object.entries(backToBackTeams).forEach(([pairName, teams]) => {
           scheduleLog(`  ${pairName}: ${teams.length} teams`);
           teams.forEach((team) => {
-            // Check for duplicate assignments (critical error)
-            if (blockMap[team.id] && blockMap[team.id] !== pairName) {
-              errorLog(
-                `CRITICAL: Team "${team.name}" appears in multiple blocks: ${blockMap[team.id]} and ${pairName}`
-              );
+            // Initialize array if not exists
+            if (!blockMap[team.id]) {
+              blockMap[team.id] = [];
             }
-            blockMap[team.id] = pairName;
+            // Add block if not already present
+            if (!blockMap[team.id].includes(pairName)) {
+              blockMap[team.id].push(pairName);
+              // Log informational message for double-header teams
+              if (blockMap[team.id].length > 1) {
+                scheduleLog(`    ⚡ Double-header: ${team.name} now in blocks: ${blockMap[team.id].join(', ')}`);
+              }
+            }
             scheduleLog(`    - ${team.name} (${team.divisionName || 'No Division'})`);
           });
         });
