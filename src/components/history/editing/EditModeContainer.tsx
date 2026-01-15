@@ -50,6 +50,7 @@ interface EditModeContainerProps {
   seasonData: SeasonData[];
   onSave: () => void;
   onCancel: () => void;
+  isSaving?: boolean;
 }
 
 interface PendingMove {
@@ -89,6 +90,7 @@ export const EditModeContainer: React.FC<EditModeContainerProps> = ({
   seasonData,
   onSave,
   onCancel,
+  isSaving = false,
 }) => {
   // Convert SeasonData to EditableTeam format
   const initialTeams: EditableTeam[] = useMemo(
@@ -314,7 +316,7 @@ export const EditModeContainer: React.FC<EditModeContainerProps> = ({
     <div className="space-y-6">
       <EditModeToolbar
         hasChanges={hasChanges}
-        isSaving={isUpdating}
+        isSaving={isUpdating || isSaving}
         changeCount={changeCount}
         onSave={handleSave}
         onCancel={handleCancel}
