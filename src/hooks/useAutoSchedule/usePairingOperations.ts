@@ -23,7 +23,7 @@ import { errorLog, scheduleLog } from '@/utils/logger';
 
 export const usePairingOperations = (
   setActiveTab: (tab: string) => void,
-  teamBlockMap?: Record<string, string>,
+  teamBlockMap?: Record<string, string[]>,
   allTeams?: Team[]
 ) => {
   const [generatedPairings, setGeneratedPairings] = useState<TeamPairingMap>({});
