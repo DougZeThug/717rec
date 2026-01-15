@@ -6,10 +6,10 @@ interface TeamData {
   divisions: { division_weight: number } | null;
 }
 
-interface AllTeamSeasonStats {
+interface TeamDetailsArchive {
   team_id: string;
   season_id: string;
-  division_name: string | null;
+  divisionname: string | null;
 }
 
 export interface CareerData {
@@ -94,8 +94,8 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
       )
       .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
       .eq('iscompleted', true),
-    // Fetch all team_season_stats for opponent division lookup
-    supabase.from('team_season_stats').select('team_id, season_id, division_name'),
+    // Fetch historical team divisions from team_details_archive (authoritative source for past seasons)
+    supabase.from('team_details_archive').select('team_id, season_id, divisionname'),
     // Get playoff matches with bracket information
     supabase
       .from('playoff_matches')
@@ -137,7 +137,7 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
   const seasonStats = seasonStatsResult.data as SeasonStats[] | null;
   const currentMatches = currentMatchesResult.data as unknown as MatchData[] | null;
   const archivedMatches = archivedMatchesResult.data as ArchivedMatchData[] | null;
-  const allTeamSeasonStats = allTeamSeasonStatsResult.data as AllTeamSeasonStats[] | null;
+  const allTeamDetailsArchive = allTeamSeasonStatsResult.data as TeamDetailsArchive[] | null;
   const playoffMatches = playoffMatchesResult.data as PlayoffMatchData[] | null;
   const activeSeason = activeSeasonResult.data as { id: string } | null;
 
@@ -169,12 +169,12 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
     }
   }
 
-  // Build lookup map: "teamId_seasonId" -> division_name
+  // Build lookup map: "teamId_seasonId" -> divisionname (from team_details_archive)
   const teamDivisionMap = new Map<string, string>();
-  if (allTeamSeasonStats) {
-    for (const stat of allTeamSeasonStats) {
-      if (stat.team_id && stat.season_id && stat.division_name) {
-        teamDivisionMap.set(`${stat.team_id}_${stat.season_id}`, stat.division_name);
+  if (allTeamDetailsArchive) {
+    for (const archive of allTeamDetailsArchive) {
+      if (archive.team_id && archive.season_id && archive.divisionname) {
+        teamDivisionMap.set(`${archive.team_id}_${archive.season_id}`, archive.divisionname);
       }
     }
   }
