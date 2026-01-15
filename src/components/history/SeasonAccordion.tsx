@@ -109,6 +109,7 @@ const useSeasonData = (seasonId: string, enabled: boolean) => {
       }
     },
     enabled,
+    staleTime: 0, // Always refetch - important for admin edits
     retry: 2,
     retryDelay: 1000,
   });
@@ -121,6 +122,7 @@ interface SeasonAccordionProps {
 const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const {
     data: seasonData,
     isLoading,
@@ -346,14 +348,21 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
                   <p>Season in progress – check back later</p>
                 </div>
               ) : isEditMode ? (
-              <EditModeContainer
+                <EditModeContainer
                   seasonId={season.id}
                   seasonData={seasonData || []}
-                  onSave={() => {
-                    setIsEditMode(false);
-                    refetch();
+                  onSave={async () => {
+                    setIsSaving(true);
+                    try {
+                      // Wait for fresh data before closing edit mode
+                      await refetch();
+                      setIsEditMode(false);
+                    } finally {
+                      setIsSaving(false);
+                    }
                   }}
                   onCancel={() => setIsEditMode(false)}
+                  isSaving={isSaving}
                 />
               ) : (
                 <div className="space-y-6">

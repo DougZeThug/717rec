@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getHistoryDivisionOrder } from '@/utils/historyDivisionUtils';
 
 export interface EditableTeam {
@@ -51,7 +51,7 @@ export const useHistoryEditing = ({
   );
 
   // Track original state to detect changes
-  const [originalTeams] = useState<EditableTeam[]>(() =>
+  const [originalTeams, setOriginalTeams] = useState<EditableTeam[]>(() =>
     initialTeams.map((t) => ({
       ...t,
       division_name: t.division_name || 'Uncategorized',
@@ -60,6 +60,17 @@ export const useHistoryEditing = ({
 
   // Track custom divisions (ones that don't have any teams yet)
   const [customDivisions, setCustomDivisions] = useState<string[]>([]);
+
+  // Sync state when initialTeams changes (e.g., after save/refetch)
+  useEffect(() => {
+    const newTeams = initialTeams.map((t) => ({
+      ...t,
+      division_name: t.division_name || 'Uncategorized',
+    }));
+    setOriginalTeams(newTeams);
+    setTeams(newTeams);
+    setCustomDivisions([]);
+  }, [initialTeams]);
 
   // Get all unique division names
   const divisions = useMemo(() => {
