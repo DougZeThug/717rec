@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { getHistoryDivisionOrder } from '@/utils/historyDivisionUtils';
+import { getHistoryDivisionOrder, getHistoryDivisionDisplayNameWithRank } from '@/utils/historyDivisionUtils';
 
 export interface EditableTeam {
   team_id: string;
@@ -38,23 +38,38 @@ interface UseHistoryEditingReturn {
   resetChanges: () => void;
 }
 
+// Helper to get display division name for editing (splits Intermediate into Int 1/2)
+const getEditDisplayDivision = (divisionName: string | null, playoffRank: number | null): string => {
+  if (!divisionName) return 'Uncategorized';
+  return getHistoryDivisionDisplayNameWithRank(divisionName, playoffRank);
+};
+
+// Helper to get the storage division name (maps Int 1/2 back to Intermediate)
+const getStorageDivisionName = (displayDivision: string): string => {
+  const normalized = displayDivision.toLowerCase().trim();
+  if (normalized === 'intermediate 1' || normalized === 'intermediate 2') {
+    return 'Intermediate';
+  }
+  return displayDivision;
+};
+
 export const useHistoryEditing = ({
   initialTeams,
   seasonId: _seasonId,
 }: UseHistoryEditingProps): UseHistoryEditingReturn => {
-  // Local state for teams being edited
+  // Local state for teams being edited - uses display divisions (Int 1/2)
   const [teams, setTeams] = useState<EditableTeam[]>(() =>
     initialTeams.map((t) => ({
       ...t,
-      division_name: t.division_name || 'Uncategorized',
+      division_name: getEditDisplayDivision(t.division_name, t.playoff_rank),
     }))
   );
 
-  // Track original state to detect changes
+  // Track original state to detect changes - also uses display divisions
   const [originalTeams, setOriginalTeams] = useState<EditableTeam[]>(() =>
     initialTeams.map((t) => ({
       ...t,
-      division_name: t.division_name || 'Uncategorized',
+      division_name: getEditDisplayDivision(t.division_name, t.playoff_rank),
     }))
   );
 
@@ -65,7 +80,7 @@ export const useHistoryEditing = ({
   useEffect(() => {
     const newTeams = initialTeams.map((t) => ({
       ...t,
-      division_name: t.division_name || 'Uncategorized',
+      division_name: getEditDisplayDivision(t.division_name, t.playoff_rank),
     }));
     setOriginalTeams(newTeams);
     setTeams(newTeams);
@@ -239,15 +254,21 @@ export const useHistoryEditing = ({
     return customDivisions.length > 0;
   }, [teams, originalTeams, customDivisions]);
 
-  // Get all teams that have changed
+  // Get all teams that have changed - maps display divisions back to storage divisions
   const getChanges = useCallback((): EditableTeam[] => {
-    return teams.filter((team) => {
-      const original = originalTeams.find((t) => t.team_id === team.team_id);
-      if (!original) return true;
-      return (
-        team.division_name !== original.division_name || team.playoff_rank !== original.playoff_rank
-      );
-    });
+    return teams
+      .filter((team) => {
+        const original = originalTeams.find((t) => t.team_id === team.team_id);
+        if (!original) return true;
+        return (
+          team.division_name !== original.division_name || team.playoff_rank !== original.playoff_rank
+        );
+      })
+      .map((team) => ({
+        ...team,
+        // Convert display division (Int 1/2) back to storage division (Intermediate)
+        division_name: getStorageDivisionName(team.division_name),
+      }));
   }, [teams, originalTeams]);
 
   // Reset all changes
