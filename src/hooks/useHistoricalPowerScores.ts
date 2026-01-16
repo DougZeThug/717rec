@@ -18,42 +18,64 @@ export const useHistoricalPowerScores = (teamId?: string) => {
   } = useQuery({
     queryKey: ['historical-power-scores', teamId ?? 'all'],
     queryFn: async () => {
-      // In a real implementation, you would fetch from a table that stores historical power scores
-      // For now, we'll simulate by using current scores and applying small random changes
-      const { data: teams, error } = await supabase
+      // Fetch current team data to get latest scores
+      const { data: teams, error: teamsError } = await supabase
         .from('v_team_details')
-        .select('team_id, name, power_score')
+        .select('team_id, name, power_score, season_id')
         .order('name');
 
-      if (error) throw error;
+      if (teamsError) throw teamsError;
 
-      // Process data to create historical records
-      // In a real implementation, this would come from a dedicated history table
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      // Fetch historical snapshots from power_score_snapshots table
+      let snapshotsQuery = supabase
+        .from('power_score_snapshots')
+        .select('team_id, power_score, snapshot_date, week_number, season_id')
+        .order('snapshot_date', { ascending: true });
 
-      const twoWeeksAgo = new Date();
-      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+      // Filter by team if specified
+      if (teamId) {
+        snapshotsQuery = snapshotsQuery.eq('team_id', teamId);
+      }
 
-      // Generate previous scores with small variations
+      const { data: snapshots, error: snapshotsError } = await snapshotsQuery;
+
+      if (snapshotsError) throw snapshotsError;
+
+      // Group snapshots by team
+      const snapshotsByTeam: Record<string, Array<{ date: string; score: number }>> = {};
+      snapshots?.forEach((snapshot) => {
+        if (!snapshotsByTeam[snapshot.team_id]) {
+          snapshotsByTeam[snapshot.team_id] = [];
+        }
+        snapshotsByTeam[snapshot.team_id].push({
+          date: snapshot.snapshot_date,
+          score: snapshot.power_score || 0,
+        });
+      });
+
+      // Calculate last week's scores for trending
       const lastWeekScores: Record<string, number> = {};
 
       const processedData = teams.map((team) => {
         const currentScore = team.power_score || 50;
-        // Simulate previous scores with variations
-        const weekOldScore = Math.max(0, currentScore - (Math.random() * 10 - 2));
-        const twoWeekOldScore = Math.max(0, weekOldScore - (Math.random() * 8 - 2));
+        const historicalScores = snapshotsByTeam[team.team_id] || [];
 
-        // Store last week's scores for trending calculation
-        lastWeekScores[team.team_id] = weekOldScore;
+        // Add current score as the most recent data point
+        const allScores = [
+          ...historicalScores,
+          { date: new Date().toISOString(), score: currentScore },
+        ];
+
+        // Get last week's score (second-to-last entry if available)
+        if (allScores.length >= 2) {
+          lastWeekScores[team.team_id] = allScores[allScores.length - 2].score;
+        } else {
+          lastWeekScores[team.team_id] = currentScore;
+        }
 
         return {
           team_id: team.team_id,
-          power_scores: [
-            { date: twoWeeksAgo.toISOString(), score: twoWeekOldScore },
-            { date: oneWeekAgo.toISOString(), score: weekOldScore },
-            { date: new Date().toISOString(), score: currentScore },
-          ],
+          power_scores: allScores,
         };
       });
 
