@@ -57,6 +57,15 @@ export const useSeasonMutations = () => {
 
   const activateSeason = useMutation({
     mutationFn: async (seasonId: string) => {
+      // First, deactivate all other seasons
+      const { error: deactivateError } = await supabase
+        .from('seasons')
+        .update({ is_active: false })
+        .neq('id', seasonId);
+
+      if (deactivateError) throw deactivateError;
+
+      // Then, activate the selected season
       const { data: season, error } = await supabase
         .from('seasons')
         .update({ is_active: true })
