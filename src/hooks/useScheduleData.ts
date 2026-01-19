@@ -7,7 +7,7 @@ import { transformDatabaseMatches } from '@/utils/matchTransformers';
 
 export const useScheduleData = () => {
   const { data: matchesData, isLoading: matchesLoading } = useQuery({
-    queryKey: ['matches'],
+    queryKey: ['matches', 'schedule'],
     queryFn: async () => {
       scheduleLog('Fetching matches data');
 

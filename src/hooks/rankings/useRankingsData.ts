@@ -12,7 +12,7 @@ export const useRankingsData = () => {
     isLoading: matchesLoading,
     error,
   } = useQuery({
-    queryKey: ['matches'],
+    queryKey: ['matches', 'rankings'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('matches')
