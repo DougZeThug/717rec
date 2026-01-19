@@ -18,6 +18,7 @@ export const useHeroCards = () => {
       if (error) throw error;
       return data as HeroCard[];
     },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 };
 
@@ -34,6 +35,7 @@ export const useAllHeroCards = () => {
       if (error) throw error;
       return data as HeroCard[];
     },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 };
 
@@ -49,6 +51,7 @@ export const useHeroCard = (id: string | null) => {
       return data as HeroCard;
     },
     enabled: !!id,
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 };
 

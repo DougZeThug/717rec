@@ -10,5 +10,6 @@ export const useTeamGameStats = (teamId?: string) => {
       return fetchTeamData(teamId);
     },
     enabled: !!teamId,
+    staleTime: 1000 * 60 * 2, // Cache for 2 minutes
   });
 };

@@ -54,6 +54,7 @@ export const useTeamBadges = (teamId: string) => {
       return (data || []).map((badge) => transformBadge(badge as RawBadgeData));
     },
     enabled: !!teamId,
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 };
 
@@ -74,6 +75,7 @@ export const useAllTeamBadges = () => {
 
       return (data || []).map((badge) => transformBadge(badge as RawBadgeData));
     },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 };
 
@@ -96,5 +98,6 @@ export const useSeasonBadges = (seasonId: string) => {
       return (data || []).map((badge) => transformBadge(badge as RawBadgeData));
     },
     enabled: !!seasonId,
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 };
