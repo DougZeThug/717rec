@@ -21,7 +21,7 @@ export const useHistoricalPowerScores = (teamId?: string) => {
       // Fetch current team data to get latest scores
       const { data: teams, error: teamsError } = await supabase
         .from('v_team_details')
-        .select('team_id, name, power_score, season_id')
+        .select('team_id, name, power_score')
         .order('name');
 
       if (teamsError) throw teamsError;
