@@ -50,20 +50,20 @@ export const useScoreSubmission = (
 
     try {
       for (const match of editedMatches) {
-        if (
-          !validateMatch({
-            ...match,
-            team1Score: match.team1Score ?? 0,
-            team2Score: match.team2Score ?? 0,
-            team1_game_wins: match.team1_game_wins ?? 0,
-            team2_game_wins: match.team2_game_wins ?? 0,
-          })
-        ) {
+        const validationResult = validateMatch({
+          ...match,
+          team1Score: match.team1Score ?? 0,
+          team2Score: match.team2Score ?? 0,
+          team1_game_wins: match.team1_game_wins ?? 0,
+          team2_game_wins: match.team2_game_wins ?? 0,
+        });
+
+        if (!validationResult.isValid || !validationResult.correctedMatch) {
           scoreLog(`Match ${match.id} failed validation`);
           continue;
         }
 
-        const success = await updateMatch(match);
+        const success = await updateMatch(validationResult.correctedMatch);
         if (success) {
           successCount++;
         }
