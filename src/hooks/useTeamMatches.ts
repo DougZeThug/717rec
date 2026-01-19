@@ -69,6 +69,7 @@ export const useTeamMatches = (teamId: string | undefined) => {
       };
     },
     enabled: !!teamId,
+    staleTime: 1000 * 60 * 2, // Cache for 2 minutes
   });
 
   return {

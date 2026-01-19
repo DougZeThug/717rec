@@ -25,6 +25,7 @@ export const useBlindDrawSignupCount = (eventDate?: string) => {
       return data as number;
     },
     enabled: !!eventDate,
+    staleTime: 1000 * 60 * 2, // Cache for 2 minutes
   });
 };
 
@@ -46,6 +47,7 @@ export const useBlindDrawSignups = (eventDate?: string) => {
       if (error) throw error;
       return data as BlindDrawSignup[];
     },
+    staleTime: 1000 * 60 * 2, // Cache for 2 minutes
   });
 };
 

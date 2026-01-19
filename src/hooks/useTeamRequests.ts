@@ -23,6 +23,7 @@ export const usePendingRequestsCount = () => {
       return count || 0;
     },
     refetchInterval: 30000, // Refresh every 30 seconds
+    staleTime: 1000 * 60 * 2, // Cache for 2 minutes
   });
 };
 
@@ -44,6 +45,7 @@ export const useTeamRequests = (teamId: string | undefined) => {
       return data as TeamRequest[];
     },
     enabled: !!teamId,
+    staleTime: 1000 * 60 * 2, // Cache for 2 minutes
   });
 };
 
@@ -70,6 +72,7 @@ export const useAllRequests = (statusFilter?: TeamRequestStatus) => {
       if (error) throw error;
       return data as TeamRequestWithTeam[];
     },
+    staleTime: 1000 * 60 * 2, // Cache for 2 minutes
   });
 };
 
