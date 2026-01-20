@@ -15,6 +15,7 @@ import { initSentry } from '@/utils/sentry';
 
 import ProtectedAdminRoute from './components/auth/ProtectedAdminRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { RouteErrorBoundary } from './components/RouteErrorBoundary';
 import Footer from './components/layout/Footer';
 import Navbar from './components/layout/Navbar';
 import AppNavigation from './components/navigation/AppNavigation';
@@ -80,18 +81,20 @@ const AppContent = () => {
               }
             >
               <Routes location={location}>
-                <Route path="/" element={<Index />} />
-                <Route path="/teams" element={<TeamsPage />} />
-                <Route path="/teams/:teamId" element={<TeamDetails />} />
-                <Route path="/schedule" element={<Schedule />} />
-                <Route path="/stats" element={<Stats />} />
-                <Route path="/playoffs" element={<Playoffs />} />
-                <Route path="/history" element={<History />} />
+                <Route path="/" element={<RouteErrorBoundary routeName="Home"><Index /></RouteErrorBoundary>} />
+                <Route path="/teams" element={<RouteErrorBoundary routeName="Teams"><TeamsPage /></RouteErrorBoundary>} />
+                <Route path="/teams/:teamId" element={<RouteErrorBoundary routeName="Team Details"><TeamDetails /></RouteErrorBoundary>} />
+                <Route path="/schedule" element={<RouteErrorBoundary routeName="Schedule"><Schedule /></RouteErrorBoundary>} />
+                <Route path="/stats" element={<RouteErrorBoundary routeName="Stats"><Stats /></RouteErrorBoundary>} />
+                <Route path="/playoffs" element={<RouteErrorBoundary routeName="Playoffs"><Playoffs /></RouteErrorBoundary>} />
+                <Route path="/history" element={<RouteErrorBoundary routeName="History"><History /></RouteErrorBoundary>} />
                 <Route
                   path="/timeslots"
                   element={
                     <ProtectedAdminRoute>
-                      <Timeslots />
+                      <RouteErrorBoundary routeName="Timeslots">
+                        <Timeslots />
+                      </RouteErrorBoundary>
                     </ProtectedAdminRoute>
                   }
                 />
@@ -99,17 +102,19 @@ const AppContent = () => {
                   path="/admin"
                   element={
                     <ProtectedAdminRoute>
-                      <AdminDashboard />
+                      <RouteErrorBoundary routeName="Admin Dashboard">
+                        <AdminDashboard />
+                      </RouteErrorBoundary>
                     </ProtectedAdminRoute>
                   }
                 />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/setup-profile" element={<ProfileSetup />} />
-                <Route path="/message-board" element={<MessageBoard />} />
-                <Route path="/my-team" element={<MyTeam />} />
-                <Route path="/help" element={<Help />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/compare" element={<Compare />} />
+                <Route path="/auth" element={<RouteErrorBoundary routeName="Sign In"><Auth /></RouteErrorBoundary>} />
+                <Route path="/setup-profile" element={<RouteErrorBoundary routeName="Profile Setup"><ProfileSetup /></RouteErrorBoundary>} />
+                <Route path="/message-board" element={<RouteErrorBoundary routeName="Message Board"><MessageBoard /></RouteErrorBoundary>} />
+                <Route path="/my-team" element={<RouteErrorBoundary routeName="My Team"><MyTeam /></RouteErrorBoundary>} />
+                <Route path="/help" element={<RouteErrorBoundary routeName="Help"><Help /></RouteErrorBoundary>} />
+                <Route path="/contact" element={<RouteErrorBoundary routeName="Contact"><Contact /></RouteErrorBoundary>} />
+                <Route path="/compare" element={<RouteErrorBoundary routeName="Compare"><Compare /></RouteErrorBoundary>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
