@@ -141,6 +141,10 @@ export function usePendingMatches() {
 
       if (fetchError) throw fetchError;
 
+      if (!currentMatch) {
+        throw new Error('Match not found');
+      }
+
       // If match currently has a winner, reverse the stats first
       if (currentMatch.winner_id && currentMatch.loser_id) {
         const winnerGameWins =

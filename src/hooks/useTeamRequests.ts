@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import type {
@@ -133,6 +134,7 @@ export const useSubmitRequest = () => {
 export const useUpdateRequestStatus = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async ({
@@ -144,14 +146,12 @@ export const useUpdateRequestStatus = () => {
       status: TeamRequestStatus;
       admin_notes?: string;
     }) => {
-      const { data: userData } = await supabase.auth.getUser();
-
       const { data, error } = await supabase
         .from('team_requests')
         .update({
           status,
           admin_notes,
-          processed_by: userData.user?.id,
+          processed_by: user?.id,
           processed_at: new Date().toISOString(),
         })
         .eq('id', id)
