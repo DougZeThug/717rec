@@ -88,12 +88,20 @@ export const useAuth = () => {
     authLog('Initializing auth state...');
     let retryCount = 0;
     const maxRetries = 2;
+    let isCancelled = false; // Track if effect is cleaned up or session changed
+    let currentUserId: string | null = null; // Track which user's profile we're fetching
 
     // Set up auth state listener
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, currentSession) => {
       authLog('Auth state changed:', event);
+
+      // Update the current user ID to track which profile fetch is valid
+      const newUserId = currentSession?.user?.id ?? null;
+      const userChanged = currentUserId !== newUserId;
+      currentUserId = newUserId;
+
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
 
@@ -112,10 +120,26 @@ export const useAuth = () => {
         // Set loading state BEFORE setTimeout to prevent race condition
         setIsProfileLoading(true);
 
+        // Capture the user ID for this specific fetch operation
+        const fetchUserId = currentSession.user.id;
+
         // Use setTimeout to prevent Supabase auth deadlocks
         setTimeout(async () => {
+          // Skip if effect was cleaned up or user changed since this fetch started
+          if (isCancelled || currentUserId !== fetchUserId) {
+            authLog('Skipping stale profile fetch for user:', fetchUserId);
+            return;
+          }
+
           try {
-            const profileData = await fetchProfile(currentSession.user.id);
+            const profileData = await fetchProfile(fetchUserId);
+
+            // Double-check we're still fetching for the current user
+            if (isCancelled || currentUserId !== fetchUserId) {
+              authLog('Discarding stale profile data for user:', fetchUserId);
+              return;
+            }
+
             authLog('Profile loaded successfully:', {
               username: profileData?.username,
               full_name: profileData?.full_name,
@@ -127,16 +151,22 @@ export const useAuth = () => {
               checkProfileSetup(profileData);
             }
           } catch (error) {
-            errorLog(`Error fetching user profile for ${event}:`, error);
-            if (event === 'SIGNED_IN') {
-              toast({
-                title: 'Profile error',
-                description: 'Failed to load your profile data',
-                variant: 'destructive',
-              });
+            // Only show error if this fetch is still relevant
+            if (!isCancelled && currentUserId === fetchUserId) {
+              errorLog(`Error fetching user profile for ${event}:`, error);
+              if (event === 'SIGNED_IN') {
+                toast({
+                  title: 'Profile error',
+                  description: 'Failed to load your profile data',
+                  variant: 'destructive',
+                });
+              }
             }
           } finally {
-            setIsProfileLoading(false);
+            // Only update loading state if this fetch is still relevant
+            if (!isCancelled && currentUserId === fetchUserId) {
+              setIsProfileLoading(false);
+            }
           }
         }, 0);
       }
@@ -194,6 +224,7 @@ export const useAuth = () => {
     initializeAuth();
 
     return () => {
+      isCancelled = true;
       subscription.unsubscribe();
     };
   }, []);

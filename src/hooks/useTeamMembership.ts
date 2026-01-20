@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Team } from '@/types';
+import { errorLog } from '@/utils/logger';
 
 interface TeamMembershipData {
   id: string;
@@ -78,7 +79,7 @@ export function useTeamMembership() {
         setMembership(null);
       }
     } catch (err) {
-      console.error('Error fetching team membership:', err);
+      errorLog('Error fetching team membership:', err);
       setError('Failed to load team membership');
     } finally {
       setIsFetching(false);
@@ -111,7 +112,7 @@ export function useTeamMembership() {
 
       setAvailableTeams(transformedTeams);
     } catch (error) {
-      console.error('Error fetching teams:', error);
+      errorLog('Error fetching teams:', error);
     }
   };
 
@@ -166,7 +167,7 @@ export function useTeamMembership() {
       await fetchMembership();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Please try again later';
-      console.error('Error joining team:', error);
+      errorLog('Error joining team:', error);
       toast({
         title: 'Failed to submit request',
         description: message,
@@ -193,7 +194,7 @@ export function useTeamMembership() {
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Please try again later';
-      console.error('Error leaving team:', error);
+      errorLog('Error leaving team:', error);
       toast({
         title: 'Failed to leave team',
         description: message,

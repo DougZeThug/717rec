@@ -1,11 +1,23 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { supabase } from '@/integrations/supabase/client';
+import { errorLog } from '@/utils/logger';
 import {
   DivisionSeasonRecord,
   SeasonBreakdown,
   TeamAdvancedStats,
 } from '@/types/teamAdvancedStats';
+
+// Type definitions for Supabase query results with nested relations
+interface DivisionRelation {
+  division_weight?: number;
+}
+
+interface SeasonRelation {
+  id: string;
+  name: string;
+  start_date: string;
+}
 
 const categorizeDivision = (
   divisionName: string | null
@@ -97,7 +109,7 @@ const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedSta
 
   // Handle errors from critical query
   if (seasonStatsResult.error) {
-    console.error('Error fetching team season stats:', seasonStatsResult.error);
+    errorLog('Error fetching team season stats:', seasonStatsResult.error);
     return null;
   }
 
@@ -144,9 +156,10 @@ const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedSta
 
     if (brackets) {
       for (const b of brackets) {
+        const divisions = b.divisions as DivisionRelation | null;
         bracketInfoMap[b.id] = {
           season_id: b.season_id || '',
-          division_weight: (b.divisions as any)?.division_weight || 0.85,
+          division_weight: divisions?.division_weight ?? 0.85,
         };
       }
     }
@@ -289,9 +302,10 @@ const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedSta
     const totalCloseMatches = closeWins + closeLosses;
     const clutchFactor = totalCloseMatches > 0 ? closeWins / totalCloseMatches : null;
 
+    const seasons = stat.seasons as SeasonRelation | null;
     return {
       seasonId,
-      seasonName: (stat.seasons as any)?.name || 'Unknown',
+      seasonName: seasons?.name ?? 'Unknown',
       divisionName: stat.division_name || 'Unknown',
       matchWins: stat.match_wins || 0,
       matchLosses: stat.match_losses || 0,
