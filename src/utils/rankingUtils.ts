@@ -1,4 +1,5 @@
 import { Match, Ranking, Team } from '@/types';
+import { errorLog, warnLog } from '@/utils/logger';
 
 // Ranking utilities - now handles NULL power scores for teams with no matches
 // The power score calculation is handled in v_team_details using the 40/45/15 formula:
@@ -85,7 +86,7 @@ export const saveRankingsToStorage = async (rankings: Ranking[]): Promise<void> 
 
     // Keep localStorage as fallback for backwards compatibility
     if (!dbSuccess) {
-      console.warn('Database save failed, falling back to localStorage');
+      warnLog('Database save failed, falling back to localStorage');
     }
 
     // Also save to localStorage as a backup
@@ -100,7 +101,7 @@ export const saveRankingsToStorage = async (rankings: Ranking[]): Promise<void> 
     localStorage.setItem('previousRankings', JSON.stringify(rankingMap));
     localStorage.setItem('rankingsLastUpdated', new Date().toISOString());
   } catch (error) {
-    console.error('Failed to save rankings to storage:', error);
+    errorLog('Failed to save rankings to storage:', error);
   }
 };
 
@@ -140,7 +141,7 @@ export const loadRankingsFromStorage = async (): Promise<{
     const lastUpdated = localStorage.getItem('rankingsLastUpdated');
     return { rankings, lastUpdated };
   } catch (error) {
-    console.error('Failed to load rankings from storage:', error);
+    errorLog('Failed to load rankings from storage:', error);
 
     // Final fallback to localStorage
     try {

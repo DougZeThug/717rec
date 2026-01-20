@@ -9,6 +9,7 @@ import type {
   TeamRequestType,
   TeamRequestWithTeam,
 } from '@/types/teamRequest';
+import { errorLog } from '@/utils/logger';
 
 // Fetch pending requests count for admin badge
 export const usePendingRequestsCount = () => {
@@ -125,7 +126,7 @@ export const useSubmitRequest = () => {
         description: 'Failed to submit request. Please try again.',
         variant: 'destructive',
       });
-      console.error('Submit request error:', error);
+      errorLog('Submit request error:', error);
     },
   });
 };
@@ -174,7 +175,7 @@ export const useUpdateRequestStatus = () => {
         description: 'Failed to update request. Please try again.',
         variant: 'destructive',
       });
-      console.error('Update request error:', error);
+      errorLog('Update request error:', error);
     },
   });
 };

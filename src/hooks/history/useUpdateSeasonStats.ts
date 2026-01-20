@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { dbLog, errorLog } from '@/utils/logger';
+import { dbLog, errorLog, warnLog } from '@/utils/logger';
 
 interface TeamUpdate {
   team_id: string;
@@ -73,7 +73,7 @@ export const useUpdateSeasonStats = (): UseUpdateSeasonStatsReturn => {
           }
 
           if (!statsData || statsData.length === 0) {
-            console.error(`Update verification failed for team_season_stats:`, {
+            errorLog(`Update verification failed for team_season_stats:`, {
               team_id: update.team_id,
               season_id: update.season_id,
               division_name: normalizedDivision,
@@ -94,7 +94,7 @@ export const useUpdateSeasonStats = (): UseUpdateSeasonStatsReturn => {
             .select('team_id');
 
           if (archiveError) {
-            console.error(`Failed to update team_details_archive:`, {
+            errorLog(`Failed to update team_details_archive:`, {
               team_id: update.team_id,
               season_id: update.season_id,
               error: archiveError.message,
@@ -105,7 +105,7 @@ export const useUpdateSeasonStats = (): UseUpdateSeasonStatsReturn => {
           }
 
           if (!archiveData || archiveData.length === 0) {
-            console.warn(`No archive record found for team ${update.team_id} in season ${update.season_id}`);
+            warnLog(`No archive record found for team ${update.team_id} in season ${update.season_id}`);
             // Don't fail - archive entry might not exist for this team/season
           }
 

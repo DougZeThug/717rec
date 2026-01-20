@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { errorLog } from '@/utils/logger';
 
 export interface ScoreSubmission {
   id: string;
@@ -37,7 +38,7 @@ export function useScoreSubmissions() {
 
       setSubmissions(data || []);
     } catch (error) {
-      console.error('Error fetching score submissions:', error);
+      errorLog('Error fetching score submissions:', error);
       toast({
         title: 'Error',
         description: 'Failed to load score submissions. Please try again.',
@@ -68,7 +69,7 @@ export function useScoreSubmissions() {
         description: 'Score submission approved successfully.',
       });
     } catch (error) {
-      console.error('Error approving submission:', error);
+      errorLog('Error approving submission:', error);
       toast({
         title: 'Error',
         description: 'Failed to approve submission. Please try again.',
@@ -97,7 +98,7 @@ export function useScoreSubmissions() {
         description: 'Score submission rejected.',
       });
     } catch (error) {
-      console.error('Error rejecting submission:', error);
+      errorLog('Error rejecting submission:', error);
       toast({
         title: 'Error',
         description: 'Failed to reject submission. Please try again.',

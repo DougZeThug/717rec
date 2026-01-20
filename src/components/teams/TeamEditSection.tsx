@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useTeamMembership } from '@/hooks/useTeamMembership';
 import { supabase } from '@/integrations/supabase/client';
+import { errorLog } from '@/utils/logger';
 
 const TeamEditSection: React.FC = () => {
   const { membership, refreshMembership } = useTeamMembership();
@@ -61,7 +62,7 @@ const TeamEditSection: React.FC = () => {
       await refreshMembership(); // Refresh to get updated team data
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to update team details';
-      console.error('Error updating team:', error);
+      errorLog('Error updating team:', error);
       toast({
         title: 'Update Failed',
         description: message,

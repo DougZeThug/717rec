@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Match, Team } from '@/types';
 import { transformDatabaseMatches } from '@/utils/matchTransformers';
+import { errorLog, warnLog } from '@/utils/logger';
 
 export function usePendingMatches() {
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
@@ -29,7 +30,7 @@ export function usePendingMatches() {
         .order('date');
 
       if (error) {
-        console.error('Error fetching pending matches:', error);
+        errorLog('Error fetching pending matches:', error);
         toast({
           title: 'Error',
           description: 'Failed to load pending matches. Please try again.',
@@ -50,7 +51,7 @@ export function usePendingMatches() {
       const { data, error } = await supabase.from('v_team_details').select('*');
 
       if (error) {
-        console.error('Error fetching teams:', error);
+        errorLog('Error fetching teams:', error);
         toast({
           title: 'Error',
           description: 'Failed to load teams. Please try again.',
@@ -120,7 +121,7 @@ export function usePendingMatches() {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
     },
     onError: (error) => {
-      console.error('Error approving result:', error);
+      errorLog('Error approving result:', error);
       toast({
         title: 'Error',
         description: 'Failed to approve result. Please try again.',
@@ -170,7 +171,7 @@ export function usePendingMatches() {
         // Refresh season stats for historical accuracy
         const { error: seasonStatsError } = await supabase.rpc('upsert_team_season_stats');
         if (seasonStatsError) {
-          console.warn('Failed to refresh season stats:', seasonStatsError);
+          warnLog('Failed to refresh season stats:', seasonStatsError);
         }
       }
 
@@ -194,7 +195,7 @@ export function usePendingMatches() {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
     },
     onError: (error) => {
-      console.error('Error marking as tie:', error);
+      errorLog('Error marking as tie:', error);
       toast({
         title: 'Error',
         description: 'Failed to mark match as tie. Please try again.',

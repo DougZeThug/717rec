@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
 import { supabase } from '@/integrations/supabase/client';
+import { errorLog } from '@/utils/logger';
 
 export interface HeadToHeadData {
   team1Wins: number;
@@ -64,7 +65,7 @@ export const useBatchHeadToHead = (teamPairs: TeamPair[]): BatchHeadToHeadResult
       });
 
       if (error) {
-        console.error('Batch H2H error:', error);
+        errorLog('Batch H2H error:', error);
         return new Map<string, HeadToHeadData>();
       }
 

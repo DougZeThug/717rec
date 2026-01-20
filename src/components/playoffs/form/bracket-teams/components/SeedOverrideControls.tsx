@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { errorLog } from '@/utils/logger';
 
 import { useSeedManagement } from '../hooks/useSeedManagement';
 import { useTeamSeedMutation } from '../hooks/useTeamSeedMutation';
@@ -61,7 +62,7 @@ export const SeedOverrideControls: React.FC<SeedOverrideControlsProps> = ({
       await bulkUpdateSeeds.mutateAsync({ updates, divisionId });
       actions.commitChanges();
     } catch (error) {
-      console.error('Failed to save seed changes:', error);
+      errorLog('Failed to save seed changes:', error);
     }
   };
 
@@ -70,7 +71,7 @@ export const SeedOverrideControls: React.FC<SeedOverrideControlsProps> = ({
       await resetDivisionSeeds.mutateAsync(divisionId);
       actions.resetToAutomatic();
     } catch (error) {
-      console.error('Failed to reset seeds:', error);
+      errorLog('Failed to reset seeds:', error);
     }
   };
 

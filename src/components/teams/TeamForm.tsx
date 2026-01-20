@@ -26,6 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useDivisions } from '@/hooks/useDivisions';
 import { Team } from '@/types';
 import { uploadTeamImage } from '@/utils/imageUpload';
+import { errorLog } from '@/utils/logger';
 
 const teamSchema = z.object({
   name: z.string().min(1, 'Team name is required'),
@@ -91,7 +92,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
         description: 'Image successfully processed and uploaded.',
       });
     } catch (error) {
-      console.error('Upload error:', error);
+      errorLog('Upload error:', error);
       toast({
         title: 'Image Upload Failed',
         description: 'Could not upload the image. Please try again with a different image.',

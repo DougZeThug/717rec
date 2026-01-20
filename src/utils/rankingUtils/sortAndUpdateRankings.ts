@@ -1,4 +1,5 @@
 import { Ranking } from '@/types';
+import { errorLog } from '@/utils/logger';
 import { saveRankingsToStorage, sortRankings, updateRankChanges } from '@/utils/rankingUtils';
 
 /**
@@ -16,7 +17,7 @@ export const sortAndUpdateRankings = (
 
   // Save current rankings for next calculation (async, don't wait)
   saveRankingsToStorage(finalRankings).catch((err) =>
-    console.error('Failed to save rankings:', err)
+    errorLog('Failed to save rankings:', err)
   );
 
   return finalRankings;

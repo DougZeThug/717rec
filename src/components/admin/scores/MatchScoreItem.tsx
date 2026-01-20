@@ -6,6 +6,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Input } from '@/components/ui/input';
 import { validateGameScore } from '@/hooks/matches/utils/matchValidationUtils';
 import { Match, Team } from '@/types';
+import { imageErrorLog } from '@/utils/logger';
 
 interface MatchScoreItemProps {
   match: Match;
@@ -92,10 +93,7 @@ const MatchScoreItem = ({
                   decoding="async"
                   className="w-full h-full object-contain"
                   onError={(e) => {
-                    console.error(
-                      `Image load error for ${teams[match.team1Id].name}:`,
-                      teams[match.team1Id].imageUrl
-                    );
+                    imageErrorLog(teams[match.team1Id].name, teams[match.team1Id].imageUrl);
                     (e.target as HTMLImageElement).src =
                       'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
                   }}
@@ -112,10 +110,7 @@ const MatchScoreItem = ({
                   decoding="async"
                   className="w-full h-full object-contain"
                   onError={(e) => {
-                    console.error(
-                      `Image load error for ${teams[match.team2Id].name}:`,
-                      teams[match.team2Id].imageUrl
-                    );
+                    imageErrorLog(teams[match.team2Id].name, teams[match.team2Id].imageUrl);
                     (e.target as HTMLImageElement).src =
                       'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
                   }}

@@ -5,6 +5,7 @@ import { useBracketsQuery } from '@/hooks/brackets/useBracketsQuery';
 import { useToast } from '@/hooks/use-toast';
 import { fetchMatchesWithTeams } from '@/services/matches/MatchReadService';
 import { updateMatchScore } from '@/services/matches/MatchWriteService';
+import { errorLog } from '@/utils/logger';
 
 import { FilterState, MatchWithTeams } from './types';
 
@@ -89,7 +90,7 @@ export const useScoreEntryData = () => {
       setMatches(formattedMatches);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error fetching matches:', message);
+      errorLog('Error fetching matches:', message);
       toast({
         title: 'Error',
         description: `Failed to fetch matches: ${message}`,
@@ -184,7 +185,7 @@ export const useScoreEntryData = () => {
       fetchMatches();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error updating matches:', message);
+      errorLog('Error updating matches:', message);
       toast({
         title: 'Error',
         description: `Failed to update matches: ${message}`,

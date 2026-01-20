@@ -6,6 +6,7 @@ import {
   resetDivisionSeeds as resetDivisionSeedsService,
   updateTeamSeed,
 } from '@/services/teams/TeamSeedService';
+import { errorLog } from '@/utils/logger';
 
 import { formatUserError, withRetry } from '../utils/mutationErrorHandling';
 
@@ -38,7 +39,7 @@ export const useTeamSeedMutation = () => {
       queryClient.invalidateQueries({ queryKey: ['seed-validation'] });
     },
     onError: (error) => {
-      console.error('Failed to update team seed:', error);
+      errorLog('Failed to update team seed:', error);
       toast({
         title: 'Error',
         description: formatUserError(error, 'Seed update'),
@@ -61,7 +62,7 @@ export const useTeamSeedMutation = () => {
       });
     },
     onError: (error) => {
-      console.error('Failed to bulk update seeds:', error);
+      errorLog('Failed to bulk update seeds:', error);
       toast({
         title: 'Error',
         description: formatUserError(error, 'Bulk seed update'),
@@ -84,7 +85,7 @@ export const useTeamSeedMutation = () => {
       });
     },
     onError: (error) => {
-      console.error('Failed to reset seeds:', error);
+      errorLog('Failed to reset seeds:', error);
       toast({
         title: 'Error',
         description: formatUserError(error, 'Seed reset'),
