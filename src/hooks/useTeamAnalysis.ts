@@ -56,42 +56,25 @@ export const useTeamAnalysis = (teamId: string | undefined) => {
       if (!teamId) throw new Error('Team ID is required');
       if (!user) throw new Error('Must be logged in');
 
-      const { data: existing } = await supabase
+      // Use upsert to avoid check-then-act pattern and reduce queries
+      const { data, error } = await supabase
         .from('team_analysis')
-        .select('id')
-        .eq('team_id', teamId)
-        .maybeSingle();
-
-      if (existing) {
-        // Update existing
-        const { data, error } = await supabase
-          .from('team_analysis')
-          .update({
-            ...input,
-            updated_by: user.id,
-          })
-          .eq('team_id', teamId)
-          .select()
-          .single();
-
-        if (error) throw error;
-        return data;
-      } else {
-        // Insert new
-        const { data, error } = await supabase
-          .from('team_analysis')
-          .insert({
+        .upsert(
+          {
             team_id: teamId,
             ...input,
             created_by: user.id,
             updated_by: user.id,
-          })
-          .select()
-          .single();
+          },
+          {
+            onConflict: 'team_id',
+          }
+        )
+        .select()
+        .single();
 
-        if (error) throw error;
-        return data;
-      }
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team-analysis', teamId] });

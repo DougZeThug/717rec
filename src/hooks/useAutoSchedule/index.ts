@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import { useActiveSeason } from '@/hooks/useSeasons';
 import { useTeamsMap } from '@/hooks/teams';
 import { useToast } from '@/hooks/use-toast';
 
@@ -13,6 +14,7 @@ import { formatDate } from './utils';
 export function useAutoSchedule() {
   const { toast } = useToast();
   const { teams } = useTeamsMap();
+  const { data: activeSeason } = useActiveSeason();
 
   // Get state management
   const {
@@ -170,7 +172,8 @@ export function useAutoSchedule() {
       }
     }
 
-    return await saveMatches(matchesToSave, selectedDate, dualMatchMode);
+    // Pass seasonId from already-fetched active season to avoid redundant query
+    return await saveMatches(matchesToSave, selectedDate, dualMatchMode, activeSeason?.id);
   };
 
   // Team statistics
