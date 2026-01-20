@@ -108,6 +108,37 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Validate that winner and loser are participants in this match
+    if (winnerId !== team1Id && winnerId !== team2Id) {
+      return new Response(
+        JSON.stringify({ error: 'Winner must be one of the match participants' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    if (loserId !== team1Id && loserId !== team2Id) {
+      return new Response(
+        JSON.stringify({ error: 'Loser must be one of the match participants' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    if (winnerId === loserId) {
+      return new Response(
+        JSON.stringify({ error: 'Winner and loser cannot be the same team' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     // Parse game wins for each team
     const team1GameWins = match.team1_game_wins || 0;
     const team2GameWins = match.team2_game_wins || 0;
