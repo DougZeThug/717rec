@@ -72,10 +72,15 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
           };
         });
 
+        // Create lookup map for O(1) power score access (avoid O(n²) find() in sort)
+        const powerScoreMap = new Map(
+          teamsToUse.map(t => [t.id, t.power_score])
+        );
+
         // Sort by power score with NULL handling - teams with NULL scores go to the end
         const sortedRankings = calculatedRankings.sort((a, b) => {
-          const aOriginalPowerScore = teamsToUse.find((t) => t.id === a.teamId)?.power_score;
-          const bOriginalPowerScore = teamsToUse.find((t) => t.id === b.teamId)?.power_score;
+          const aOriginalPowerScore = powerScoreMap.get(a.teamId);
+          const bOriginalPowerScore = powerScoreMap.get(b.teamId);
 
           // Handle NULL values - put them at the end
           if (aOriginalPowerScore === null && bOriginalPowerScore === null) {
