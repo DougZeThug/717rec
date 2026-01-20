@@ -15,7 +15,8 @@ export function useAutoScheduleSave() {
   const saveMatches = async (
     matches: AutoScheduleMatch[],
     selectedDate: Date | null,
-    dualMatchMode: boolean = false
+    dualMatchMode: boolean = false,
+    seasonId?: string | null
   ): Promise<boolean> => {
     if (!selectedDate || !matches || matches.length === 0) {
       toast({
@@ -29,14 +30,20 @@ export function useAutoScheduleSave() {
     setIsSaving(true);
 
     try {
-      // Get active season
-      const { data: activeSeason, error: seasonError } = await supabase
-        .from('seasons')
-        .select('id')
-        .eq('is_active', true)
-        .maybeSingle();
+      // Use provided seasonId to avoid redundant fetch
+      let activeSeasonId = seasonId;
 
-      if (seasonError) throw seasonError;
+      // Fallback: fetch active season if not provided (backwards compatibility)
+      if (!activeSeasonId) {
+        const { data: activeSeason, error: seasonError } = await supabase
+          .from('seasons')
+          .select('id')
+          .eq('is_active', true)
+          .maybeSingle();
+
+        if (seasonError) throw seasonError;
+        activeSeasonId = activeSeason?.id;
+      }
 
       // Validate matches based on mode
       if (dualMatchMode) {
@@ -116,7 +123,7 @@ export function useAutoScheduleSave() {
           team2_score: 0,
           team1_game_wins: 0,
           team2_game_wins: 0,
-          season_id: activeSeason?.id || null,
+          season_id: activeSeasonId || null,
           metadata: {
             timeslot: match.timeslot,
             blockType: match.blockType,

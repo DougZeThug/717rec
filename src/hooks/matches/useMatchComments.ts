@@ -91,27 +91,30 @@ export const useMatchComments = (matchId: string) => {
     if (!content.trim()) return null;
 
     try {
-      // First get the user's profile for username
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', user.id)
-        .single();
+      // Fetch profile and team membership in parallel to avoid sequential queries
+      const [profileResult, membershipResult] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', user.id)
+          .single(),
+        supabase
+          .from('team_memberships')
+          .select('team:teams(name)')
+          .eq('user_id', user.id)
+          .maybeSingle(),
+      ]);
 
-      if (profileError) {
-        warnLog('Error fetching profile:', profileError);
+      if (profileResult.error) {
+        warnLog('Error fetching profile:', profileResult.error);
       }
 
-      // Get the user's team membership
-      const { data: membership, error: membershipError } = await supabase
-        .from('team_memberships')
-        .select('team:teams(name)')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (membershipError) {
-        warnLog('Error fetching team membership:', membershipError);
+      if (membershipResult.error) {
+        warnLog('Error fetching team membership:', membershipResult.error);
       }
+
+      const profile = profileResult.data;
+      const membership = membershipResult.data;
 
       // Prepare data for insertion
       const username =
