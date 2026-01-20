@@ -180,6 +180,16 @@ export const useSchedulePreview = () => {
       return null;
     }
 
+    // Check if teams have been loaded
+    if (!timeBlockTeams || Object.keys(timeBlockTeams).length === 0) {
+      toast({
+        title: 'No Teams Loaded',
+        description: 'Please preview the schedule first to load teams.',
+        variant: 'destructive',
+      });
+      return null;
+    }
+
     // Add performance tracking
     const startTime = performance.now();
 
