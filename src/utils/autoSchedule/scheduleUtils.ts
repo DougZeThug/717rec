@@ -1,6 +1,7 @@
 import { format } from 'date-fns';
 
 import { MatchQualityMetrics, TeamPairingMap, TimeBlockTeamsMap } from '@/types/autoSchedule';
+import { errorLog } from '@/utils/logger';
 
 import { calculateComprehensiveQualityMetrics } from './qualityAnalysis';
 
@@ -21,7 +22,7 @@ export const formatScheduleDate = (date: Date | null): string => {
 
     return format(normalizedDate, 'EEEE, MMMM d, yyyy');
   } catch (error) {
-    console.error('Error formatting schedule date:', error);
+    errorLog('Error formatting schedule date:', error);
     return format(date, 'EEEE, MMMM d, yyyy');
   }
 };

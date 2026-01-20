@@ -1,4 +1,4 @@
-import { timezoneLog } from '@/utils/logger';
+import { errorLog, timezoneLog } from '@/utils/logger';
 
 import { parseTimeString } from './parsers';
 
@@ -108,7 +108,7 @@ export const formatTimeToUTC = (date: Date, timeString: string): string => {
 
     return isoString;
   } catch (error) {
-    console.error('Error formatting time to UTC:', error);
+    errorLog('Error formatting time to UTC:', error);
     return '';
   }
 };

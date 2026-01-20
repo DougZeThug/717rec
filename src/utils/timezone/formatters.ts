@@ -2,7 +2,7 @@
  * Format utility functions for timezone display
  */
 
-import { timezoneLog } from '@/utils/logger';
+import { errorLog, timezoneLog } from '@/utils/logger';
 
 import { TimeDisplayOptions } from './types';
 
@@ -38,7 +38,7 @@ export const formatUTCToLocalTimeString = (
 
     return formattedTime;
   } catch (error) {
-    console.error('Error formatting UTC date to local time:', error);
+    errorLog('Error formatting UTC date to local time:', error);
     return '';
   }
 };
@@ -135,7 +135,7 @@ export const normalizeTimeString = (timeString: string): string => {
 
     return timeString; // Return original if normalization failed
   } catch (error) {
-    console.error('Error normalizing time string:', error);
+    errorLog('Error normalizing time string:', error);
     return timeString; // Return original on error
   }
 };
@@ -212,7 +212,7 @@ export const extractTimeSlotFromUTC = (date: Date | string): string => {
       return '9:30 PM'; // 9:15-9:44 PM
     else return '10:00 PM'; // 9:45 PM and later
   } catch (error) {
-    console.error('Error extracting time slot from UTC date:', error);
+    errorLog('Error extracting time slot from UTC date:', error);
     return 'No Time';
   }
 };
