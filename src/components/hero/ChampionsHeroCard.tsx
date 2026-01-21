@@ -92,13 +92,17 @@ const ChampionCardCompact: React.FC<{
   );
 };
 
-const ChampionDisplay: React.FC<{
-  team: TeamData;
-  division: string;
-  isWinter?: boolean;
-}> = ({ team, division, isWinter }) => {
+const ChampionDisplay = React.forwardRef<
+  HTMLDivElement,
+  {
+    team: TeamData;
+    division: string;
+    isWinter?: boolean;
+  }
+>(({ team, division, isWinter }, ref) => {
   return (
     <div
+      ref={ref}
       className={cn(
         'flex items-center gap-3 group p-2 rounded-lg transition-colors duration-200',
         isWinter ? 'hover:bg-amber-800/20' : 'hover:bg-white/10'
@@ -166,7 +170,8 @@ const ChampionDisplay: React.FC<{
       </div>
     </div>
   );
-};
+});
+ChampionDisplay.displayName = 'ChampionDisplay';
 
 const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
   const { shouldApplyWinter } = useSeasonalTheme();
