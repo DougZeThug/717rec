@@ -1,9 +1,11 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Team } from '@/types';
-import { errorLog, teamLog } from '@/utils/logger';
+import { teamLog } from '@/utils/logger';
+import { handleDatabaseError } from '@/utils/errorHandler';
 
 /**
  * Create a new team
+ * @throws {DatabaseError} When database operations fail
  */
 export const createTeamApi = async (teamData: Omit<Team, 'id' | 'created_at'>) => {
   teamLog('Creating team:', teamData.name);
@@ -22,8 +24,7 @@ export const createTeamApi = async (teamData: Omit<Team, 'id' | 'created_at'>) =
     .single();
 
   if (error) {
-    errorLog('Error creating team:', error);
-    throw error;
+    handleDatabaseError(error, 'Failed to create team');
   }
 
   teamLog('Team created successfully:', data.id);

@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { dbLog } from '@/utils/logger';
+import { handleDatabaseError } from '@/utils/errorHandler';
 
 /**
  * Service layer for match read operations
@@ -13,6 +13,7 @@ export interface MatchFilters {
 
 /**
  * Fetch matches with team details, optionally filtered by date and/or bracket
+ * @throws {DatabaseError} When database operations fail
  */
 export const fetchMatchesWithTeams = async (filters?: MatchFilters) => {
   let query = supabase
@@ -40,8 +41,7 @@ export const fetchMatchesWithTeams = async (filters?: MatchFilters) => {
   const { data, error } = await query;
 
   if (error) {
-    dbLog('Error fetching matches with teams:', error);
-    throw error;
+    handleDatabaseError(error, 'Failed to fetch matches with teams');
   }
 
   return data || [];

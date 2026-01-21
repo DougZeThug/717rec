@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
-import { dbLog } from '@/utils/logger';
+import { handleDatabaseError } from '@/utils/errorHandler';
+import { DatabaseError } from '@/types/errors';
 
 /**
  * Service layer for team seed operations
@@ -8,6 +9,7 @@ import { dbLog } from '@/utils/logger';
 
 /**
  * Update a single team's seed value
+ * @throws {DatabaseError} When database operations fail
  */
 export const updateTeamSeed = async (
   teamId: string,
@@ -21,8 +23,7 @@ export const updateTeamSeed = async (
     .single();
 
   if (error) {
-    dbLog('Error updating team seed:', error);
-    throw error;
+    handleDatabaseError(error, 'Failed to update team seed');
   }
 
   return data;
@@ -30,6 +31,7 @@ export const updateTeamSeed = async (
 
 /**
  * Update multiple team seeds in bulk
+ * @throws {DatabaseError} When database operations fail
  */
 export const bulkUpdateTeamSeeds = async (
   updates: Array<{ teamId: string; seed: number | null }>
@@ -45,8 +47,7 @@ export const bulkUpdateTeamSeeds = async (
     .map((result) => result.reason);
 
   if (errors.length > 0) {
-    dbLog('Error in bulk update team seeds:', errors);
-    throw new Error(`Failed to update ${errors.length} team seeds`);
+    throw new DatabaseError(`Failed to update ${errors.length} team seeds`, errors);
   }
 
   return results
@@ -56,6 +57,7 @@ export const bulkUpdateTeamSeeds = async (
 
 /**
  * Reset all seeds in a division to automatic using RPC
+ * @throws {DatabaseError} When database operations fail
  */
 export const resetDivisionSeeds = async (divisionId: string): Promise<void> => {
   const { error } = await supabase.rpc('reset_division_seeds', {
@@ -63,7 +65,6 @@ export const resetDivisionSeeds = async (divisionId: string): Promise<void> => {
   });
 
   if (error) {
-    dbLog('Error resetting division seeds:', error);
-    throw error;
+    handleDatabaseError(error, 'Failed to reset division seeds');
   }
 };

@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { dbLog, errorLog } from '@/utils/logger';
+import { handleDatabaseError, ensureFound } from '@/utils/errorHandler';
 
 /**
  * Service layer for match write operations
@@ -30,8 +30,10 @@ export interface MatchUpdateData {
 
 /**
  * Fetch the active season ID
+ * @throws {DatabaseError} When database operations fail
+ * @throws {NotFoundError} When no active season exists
  */
-export const fetchActiveSeason = async (): Promise<string | null> => {
+export const fetchActiveSeason = async (): Promise<string> => {
   const { data, error } = await supabase
     .from('seasons')
     .select('id')
@@ -39,22 +41,21 @@ export const fetchActiveSeason = async (): Promise<string | null> => {
     .maybeSingle();
 
   if (error) {
-    errorLog('Error fetching active season:', error);
-    return null;
+    handleDatabaseError(error, 'Failed to fetch active season');
   }
 
-  return data?.id || null;
+  return ensureFound(data?.id, 'Active season');
 };
 
 /**
  * Batch create multiple matches
+ * @throws {DatabaseError} When database operations fail
  */
 export const batchCreateMatches = async (matches: MatchCreateData[]) => {
   const { data, error } = await supabase.from('matches').insert(matches).select();
 
   if (error) {
-    dbLog('Error batch creating matches:', error);
-    throw error;
+    handleDatabaseError(error, 'Failed to batch create matches');
   }
 
   return data;
@@ -62,12 +63,12 @@ export const batchCreateMatches = async (matches: MatchCreateData[]) => {
 
 /**
  * Update a single match with scores and completion status
+ * @throws {DatabaseError} When database operations fail
  */
 export const updateMatchScore = async (matchId: string, updates: MatchUpdateData) => {
   const { error } = await supabase.from('matches').update(updates).eq('id', matchId);
 
   if (error) {
-    dbLog('Error updating match score:', error);
-    throw error;
+    handleDatabaseError(error, 'Failed to update match score');
   }
 };

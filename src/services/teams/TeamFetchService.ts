@@ -1,8 +1,12 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Team } from '@/types';
-import { dbLog } from '@/utils/logger';
+import { handleDatabaseError } from '@/utils/errorHandler';
 import { transformTeamRow, TeamRowData } from '@/utils/teamTransformer';
 
+/**
+ * Fetch all teams from the database
+ * @throws {DatabaseError} When database operations fail
+ */
 export const fetchTeamsFromApi = async () => {
   const { data, error } = await supabase
     .from('v_team_details')
@@ -30,8 +34,7 @@ export const fetchTeamsFromApi = async () => {
     .order('name');
 
   if (error) {
-    dbLog('Error fetching teams:', error);
-    throw error;
+    handleDatabaseError(error, 'Failed to fetch teams');
   }
 
   // Transform data using the centralized teamTransformer utility
