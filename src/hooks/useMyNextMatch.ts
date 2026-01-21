@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { useScheduleData } from '@/hooks/useScheduleData';
+import { useTeamMatches } from '@/hooks/useTeamMatches';
 import { useTeamMembership } from '@/hooks/useTeamMembership';
 import { Match } from '@/types';
 
@@ -41,7 +41,14 @@ const getMatchDateKey = (match: Match): string | null => {
 export const useMyNextMatch = (): MyNextMatchResult => {
   const { user } = useAuth();
   const { membership, isLoading: membershipLoading } = useTeamMembership();
-  const { upcomingMatches, completedMatches, matchesLoading } = useScheduleData();
+
+  // Use lightweight team-specific hook instead of loading all matches
+  const myTeamId = membership?.team_id;
+  const {
+    upcomingMatches,
+    pastMatches: completedMatches,
+    isLoadingMatches: matchesLoading,
+  } = useTeamMatches(myTeamId);
 
   const result = useMemo(() => {
     // No user or still loading
@@ -64,13 +71,12 @@ export const useMyNextMatch = (): MyNextMatchResult => {
       };
     }
 
-    const myTeamId = membership.team_id;
     const myTeamName = membership.team?.name || 'My Team';
     // Use logoUrl first, fall back to imageUrl
     const myTeamLogo = membership.team?.logoUrl || membership.team?.imageUrl || null;
 
     const myTeam: TeamInfo = {
-      id: myTeamId,
+      id: myTeamId!,
       name: myTeamName,
       logoUrl: myTeamLogo,
     };
@@ -94,20 +100,17 @@ export const useMyNextMatch = (): MyNextMatchResult => {
       };
     };
 
-    // Find all upcoming matches for user's team (excluding postponed/canceled)
-    const myUpcomingMatches = upcomingMatches.filter((match) => {
-      if (match.status === 'postponed' || match.status === 'canceled') {
-        return false;
-      }
-      return match.team1Id === myTeamId || match.team2Id === myTeamId;
+    // Filter out postponed/canceled matches (useTeamMatches already filtered by team)
+    const validUpcomingMatches = upcomingMatches.filter((match) => {
+      return match.status !== 'postponed' && match.status !== 'canceled';
     });
 
     // If there are upcoming matches, get all on the earliest date
-    if (myUpcomingMatches.length > 0) {
-      const earliestDateKey = getMatchDateKey(myUpcomingMatches[0]);
-      
+    if (validUpcomingMatches.length > 0) {
+      const earliestDateKey = getMatchDateKey(validUpcomingMatches[0]);
+
       // Get all matches on that same date
-      const matchesOnEarliestDate = myUpcomingMatches.filter(
+      const matchesOnEarliestDate = validUpcomingMatches.filter(
         (match) => getMatchDateKey(match) === earliestDateKey
       );
 
@@ -120,16 +123,12 @@ export const useMyNextMatch = (): MyNextMatchResult => {
     }
 
     // No upcoming matches - fall back to most recent completed matches
-    const myCompletedMatches = completedMatches.filter(
-      (match) => match.team1Id === myTeamId || match.team2Id === myTeamId
-    );
+    // completedMatches from useTeamMatches are already filtered by team and sorted
+    if (completedMatches.length > 0) {
+      const mostRecentDateKey = getMatchDateKey(completedMatches[0]);
 
-    if (myCompletedMatches.length > 0) {
-      // completedMatches are already sorted by date descending (most recent first)
-      const mostRecentDateKey = getMatchDateKey(myCompletedMatches[0]);
-      
       // Get all matches on that same date
-      const matchesOnMostRecentDate = myCompletedMatches.filter(
+      const matchesOnMostRecentDate = completedMatches.filter(
         (match) => getMatchDateKey(match) === mostRecentDateKey
       );
 
@@ -148,7 +147,7 @@ export const useMyNextMatch = (): MyNextMatchResult => {
       hasTeamMembership: true,
       isPreviousMatches: false,
     };
-  }, [user, membership, membershipLoading, matchesLoading, upcomingMatches, completedMatches]);
+  }, [user, membership, membershipLoading, matchesLoading, upcomingMatches, completedMatches, myTeamId]);
 
   return {
     ...result,

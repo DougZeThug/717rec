@@ -11,8 +11,21 @@ export const useScheduleData = () => {
     queryFn: async () => {
       scheduleLog('Fetching matches data');
 
+      // First get the active season to filter matches
+      const { data: activeSeason } = await supabase
+        .from('seasons')
+        .select('id')
+        .eq('is_active', true)
+        .single();
+
+      if (!activeSeason) {
+        scheduleLog('No active season found');
+        return [];
+      }
+
       // Join with v_team_details to get team information using LEFT JOIN instead of INNER JOIN
       // Also fix column name to use divisionname (lowercase) instead of divisionName
+      // Filter by active season to avoid loading historical data
       const { data, error } = await supabase
         .from('matches')
         .select(
@@ -40,6 +53,7 @@ export const useScheduleData = () => {
           )
         `
         )
+        .eq('season_id', activeSeason.id)
         .order('date');
 
       if (error) {
