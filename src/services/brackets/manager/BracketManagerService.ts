@@ -5,146 +5,22 @@ import { bracketLog, errorLog, failureLog, successLog, warnLog } from '@/utils/l
 
 import { matchUpdateQueue } from './MatchUpdateQueue';
 import { SupabaseSqlStorage } from './SupabaseSqlStorage';
+import type {
+  BracketOpponent,
+  StorageMatch,
+  StorageStage,
+  StorageGroup,
+  StorageRound,
+  StorageParticipant,
+  MatchUpdatePayload,
+  CreateBracketOptions,
+  UpdateMatchOptions,
+  UpdateSeedingOptions,
+} from './types/BracketServiceTypes';
+import { isErrorLike, serializeError } from './utils/BracketErrorUtils';
 
-/** Extended error object with common properties from Supabase/API errors */
-interface ErrorLike {
-  message?: string;
-  code?: string;
-  details?: string;
-  hint?: string;
-  table?: string;
-  operation?: string;
-  statusCode?: number;
-}
-
-/** Opponent data in bracket match */
-interface BracketOpponent {
-  id?: number | null;
-  position?: number;
-  score?: number | null;
-  result?: 'win' | 'loss' | 'draw' | null;
-}
-
-/** Match data from brackets-manager storage */
-interface StorageMatch {
-  id: number;
-  stage_id: number;
-  group_id: number;
-  round_id: number;
-  number: number;
-  status: number;
-  opponent1?: BracketOpponent | null;
-  opponent2?: BracketOpponent | null;
-}
-
-/** Stage data from brackets-manager storage */
-interface StorageStage {
-  id: number;
-  tournament_id: string;
-  name: string;
-  type: string;
-  number: number;
-  settings: Record<string, unknown>;
-}
-
-/** Group data from brackets-manager storage */
-interface StorageGroup {
-  id: number;
-  stage_id: number;
-  number: number;
-}
-
-/** Round data from brackets-manager storage */
-interface StorageRound {
-  id: number;
-  stage_id: number;
-  group_id: number;
-  number: number;
-}
-
-/** Participant data from brackets-manager storage */
-interface StorageParticipant {
-  id: number;
-  tournament_id: string;
-  name: string | null;
-  team_id?: string;
-}
-
-/** Match update payload for brackets-manager */
-interface MatchUpdatePayload {
-  id: number;
-  opponent1?: {
-    score?: number;
-    result?: 'win' | 'loss' | 'draw';
-  };
-  opponent2?: {
-    score?: number;
-    result?: 'win' | 'loss' | 'draw';
-  };
-}
-
-/**
- * Type guard to check if error is an ErrorLike object
- */
-function isErrorLike(error: unknown): error is ErrorLike {
-  return error !== null && typeof error === 'object';
-}
-
-/**
- * Safely serialize any error type to a readable string
- */
-function serializeError(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  try {
-    // Try to extract meaningful info from plain objects
-    if (isErrorLike(error)) {
-      const parts: string[] = [];
-
-      // Common error properties
-      if (error.message) parts.push(`Message: ${error.message}`);
-      if (error.code) parts.push(`Code: ${error.code}`);
-      if (error.details) parts.push(`Details: ${error.details}`);
-      if (error.hint) parts.push(`Hint: ${error.hint}`);
-      if (error.table) parts.push(`Table: ${error.table}`);
-      if (error.operation) parts.push(`Operation: ${error.operation}`);
-
-      if (parts.length > 0) {
-        return parts.join(' | ');
-      }
-
-      // Fallback: full JSON
-      return JSON.stringify(error, Object.getOwnPropertyNames(error), 2);
-    }
-
-    return String(error);
-  } catch {
-    return 'Unable to serialize error';
-  }
-}
-
-export interface CreateBracketOptions {
-  bracketId: string;
-  format: 'single_elimination' | 'double_elimination';
-  teams: Array<{ id: string; name: string; seed: number }>;
-  grandFinalType?: 'simple' | 'double';
-}
-
-export interface UpdateMatchOptions {
-  matchId: number;
-  scores: {
-    opponent1: { score?: number; result?: 'win' | 'loss' | 'draw' };
-    opponent2: { score?: number; result?: 'win' | 'loss' | 'draw' };
-  };
-}
-
-export interface UpdateSeedingOptions {
-  bracketId: string;
-  newSeeding: Array<{ id: string; name: string; seed: number }>;
-  keepSameSize?: boolean;
-}
+// Re-export public types for consumers
+export type { CreateBracketOptions, UpdateMatchOptions, UpdateSeedingOptions } from './types/BracketServiceTypes';
 
 /**
  * Service wrapper for brackets-manager.js with SQL Storage
