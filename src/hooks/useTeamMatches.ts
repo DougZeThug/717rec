@@ -9,6 +9,17 @@ export const useTeamMatches = (teamId: string | undefined) => {
     queryFn: async () => {
       if (!teamId) return { upcomingMatches: [], pastMatches: [] };
 
+      // Get active season first to filter matches
+      const { data: activeSeason } = await supabase
+        .from('seasons')
+        .select('id')
+        .eq('is_active', true)
+        .single();
+
+      if (!activeSeason) {
+        return { upcomingMatches: [], pastMatches: [] };
+      }
+
       const { data, error } = await supabase
         .from('matches')
         .select(
@@ -30,6 +41,7 @@ export const useTeamMatches = (teamId: string | undefined) => {
           )
         `
         )
+        .eq('season_id', activeSeason.id)
         .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
         .order('date');
 

@@ -12,7 +12,7 @@ export const useWeeklyPowerScoreTrends = (direction: TrendDirection = 'up', limi
       hasData: boolean;
       latestWeek: number | null;
     }> => {
-      // 1. Get active season
+      // 1. Get active season first (required for other queries)
       const { data: activeSeason } = await supabase
         .from('seasons')
         .select('id')
@@ -23,12 +23,22 @@ export const useWeeklyPowerScoreTrends = (direction: TrendDirection = 'up', limi
         return { trends: [], hasData: false, latestWeek: null };
       }
 
-      // 2. Get the two most recent weeks of snapshots
-      const { data: weekNumbers } = await supabase
-        .from('power_score_snapshots')
-        .select('week_number')
-        .eq('season_id', activeSeason.id)
-        .order('week_number', { ascending: false });
+      // 2. Run week numbers and visible divisions queries IN PARALLEL
+      const [weekNumbersResult, visibleDivisionsResult] = await Promise.all([
+        supabase
+          .from('power_score_snapshots')
+          .select('week_number')
+          .eq('season_id', activeSeason.id)
+          .order('week_number', { ascending: false }),
+        supabase
+          .from('divisions')
+          .select('id')
+          .neq('display_division', 'Hidden'),
+      ]);
+
+      const weekNumbers = weekNumbersResult.data;
+      const visibleDivisions = visibleDivisionsResult.data;
+      const visibleDivisionIds = new Set(visibleDivisions?.map((d) => d.id) || []);
 
       if (!weekNumbers || weekNumbers.length === 0) {
         return { trends: [], hasData: false, latestWeek: null };
@@ -44,20 +54,24 @@ export const useWeeklyPowerScoreTrends = (direction: TrendDirection = 'up', limi
 
       const [currentWeek, previousWeek] = uniqueWeeks;
 
-      // 3. Get snapshots for both weeks
-      const { data: currentSnapshots } = await supabase
-        .from('power_score_snapshots')
-        .select('team_id, power_score')
-        .eq('season_id', activeSeason.id)
-        .eq('week_number', currentWeek)
-        .not('power_score', 'is', null);
+      // 3. Get snapshots for both weeks IN PARALLEL
+      const [currentSnapshotsResult, previousSnapshotsResult] = await Promise.all([
+        supabase
+          .from('power_score_snapshots')
+          .select('team_id, power_score')
+          .eq('season_id', activeSeason.id)
+          .eq('week_number', currentWeek)
+          .not('power_score', 'is', null),
+        supabase
+          .from('power_score_snapshots')
+          .select('team_id, power_score')
+          .eq('season_id', activeSeason.id)
+          .eq('week_number', previousWeek)
+          .not('power_score', 'is', null),
+      ]);
 
-      const { data: previousSnapshots } = await supabase
-        .from('power_score_snapshots')
-        .select('team_id, power_score')
-        .eq('season_id', activeSeason.id)
-        .eq('week_number', previousWeek)
-        .not('power_score', 'is', null);
+      const currentSnapshots = currentSnapshotsResult.data;
+      const previousSnapshots = previousSnapshotsResult.data;
 
       if (!currentSnapshots || !previousSnapshots) {
         return { trends: [], hasData: true, latestWeek: currentWeek };
@@ -68,14 +82,6 @@ export const useWeeklyPowerScoreTrends = (direction: TrendDirection = 'up', limi
 
       // 5. Get team details for names, divisions, logos
       const teamIds = currentSnapshots.map((s) => s.team_id);
-
-      // Get visible divisions
-      const { data: visibleDivisions } = await supabase
-        .from('divisions')
-        .select('id')
-        .neq('display_division', 'Hidden');
-
-      const visibleDivisionIds = new Set(visibleDivisions?.map((d) => d.id) || []);
 
       const { data: teamDetails } = await supabase
         .from('v_team_details')
@@ -130,6 +136,6 @@ export const useWeeklyPowerScoreTrends = (direction: TrendDirection = 'up', limi
         latestWeek: currentWeek,
       };
     },
-    staleTime: 60000,
+    staleTime: 1000 * 60 * 5, // 5 minutes - trends don't change frequently
   });
 };
