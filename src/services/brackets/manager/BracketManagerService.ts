@@ -575,7 +575,7 @@ export class BracketManagerService {
               lbWinnerId: winnerId,
             });
 
-            await this.storage.update('match', gfMatch.id, {
+            await this.storage.update('match', { id: gfMatch.id }, {
               opponent2: { id: winnerId, position: undefined },
               status: gfMatch.status,
             });
@@ -672,7 +672,7 @@ export class BracketManagerService {
         // If only opponent2 is filled, shift to opponent1
         if (!opponent1Id && opponent2Id) {
           bracketLog(`[NORMALIZE] Shifting opponent2 to opponent1 in LB R1 Match ${match.id}`);
-          await this.storage.update('match', match.id, {
+          await this.storage.update('match', { id: match.id }, {
             opponent1: { id: opponent2Id, score: null, result: null },
             opponent2: { id: null, score: null, result: null },
             status: match.status,
