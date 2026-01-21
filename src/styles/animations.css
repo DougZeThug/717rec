@@ -97,13 +97,11 @@
 .animate-fade-in-slide-up {
   animation: fadeInSlideUp 0.4s ease-out forwards;
   animation-fill-mode: backwards;
-  will-change: opacity, transform;
 }
 
 .animate-fade-in-slide-down {
   animation: fadeInSlideDown 0.4s ease-out forwards;
   animation-fill-mode: backwards;
-  will-change: opacity, transform;
 }
 
 .animate-entrance-left {
@@ -124,7 +122,6 @@
 
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out forwards;
-  will-change: opacity;
 }
 
 .animate-scale-in {

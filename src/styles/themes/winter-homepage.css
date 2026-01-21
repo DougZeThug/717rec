@@ -705,10 +705,7 @@
   z-index: 1;
 }
 
-/* GPU acceleration for smooth transitions */
-.winter-frozen .navbar-winter {
-  will-change: transform;
-}
+/* Navbar transition - removed will-change for memory optimization */
 
 /* Subtle hover glow instead of animation */
 .winter-frozen .navbar-winter:hover::after {

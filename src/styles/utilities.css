@@ -127,7 +127,6 @@
 
   /* Prevent layout shifts from animations */
   .animate-fade-in {
-    will-change: opacity;
     contain: layout style;
   }
 

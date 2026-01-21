@@ -16,6 +16,7 @@ import type {
   CreateBracketOptions,
   UpdateMatchOptions,
   UpdateSeedingOptions,
+  ErrorLike,
 } from './types/BracketServiceTypes';
 import { isErrorLike, serializeError } from './utils/BracketErrorUtils';
 
