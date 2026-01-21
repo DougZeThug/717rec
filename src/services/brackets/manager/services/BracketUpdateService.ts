@@ -68,11 +68,10 @@ export class BracketUpdateService {
           // ⭐ Update the local object to match the database
           currentMatch.status = 2;
 
-          bracketLog(`BYE match ${matchId} unlocked successfully`);
+          bracketLog(`BYE match ${matchId} unlocked successfully - continuing to apply scores`);
 
-          // ⭐ FIX: Return early to prevent calling manager.update.match() without scores
-          // This prevents BYE matches from being marked as Completed (status 4) without a winner
-          return;
+          // ⭐ FIX: Don't return early - continue to apply scores in the same transaction
+          // This allows BYE matches to be unlocked and scored in a single operation
         }
 
         // ⭐ Load participants into cache before update
