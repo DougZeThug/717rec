@@ -9,11 +9,35 @@ interface CachedMatchSnapshot {
   team1Score: number | null;
   team2Score: number | null;
   winnerId: string | null;
-  status: string;
+  status: string | number;
+}
+
+/** Match data in bracket cache (supports both legacy and brackets-manager formats) */
+interface BracketMatch {
+  id: string | number;
+  // Legacy format fields
+  team1Score?: number | null;
+  team2Score?: number | null;
+  team1_score?: number | null;
+  team2_score?: number | null;
+  winnerId?: string | null;
+  winner_id?: string | null;
+  status?: string | number;
+  // Brackets-manager format fields
+  opponent1_id?: string | null;
+  opponent1_score?: number | null;
+  opponent2_id?: string | null;
+  opponent2_score?: number | null;
+}
+
+/** Cached bracket data structure */
+interface BracketCacheData {
+  matches?: BracketMatch[];
+  [key: string]: unknown;
 }
 
 // Helper to match IDs that may have "match-" prefix
-const matchIdMatches = (cachedId: any, targetId: string): boolean => {
+const matchIdMatches = (cachedId: string | number | undefined, targetId: string): boolean => {
   const cachedStr = cachedId?.toString() || '';
   const numericCached = cachedStr.replace('match-', '');
   const numericTarget = targetId.replace('match-', '');
@@ -49,9 +73,9 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
       });
 
       // Save snapshot for rollback
-      const currentData = queryClient.getQueryData(['bracket-data', bracketId]) as any;
+      const currentData = queryClient.getQueryData<BracketCacheData>(['bracket-data', bracketId]);
       if (currentData?.matches) {
-        const currentMatch = currentData.matches.find((m: any) => matchIdMatches(m.id, matchId));
+        const currentMatch = currentData.matches.find((m) => matchIdMatches(m.id, matchId));
         if (currentMatch) {
           snapshotRef.current = {
             matchId,
@@ -64,12 +88,12 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
       }
 
       // Update cache optimistically
-      queryClient.setQueryData(['bracket-data', bracketId], (oldData: any) => {
+      queryClient.setQueryData<BracketCacheData>(['bracket-data', bracketId], (oldData) => {
         if (!oldData?.matches) return oldData;
 
         return {
           ...oldData,
-          matches: oldData.matches.map((match: any) => {
+          matches: oldData.matches.map((match) => {
             const isMatch = matchIdMatches(match.id, matchId);
             if (!isMatch) return match;
 
@@ -123,12 +147,12 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
     const snapshot = snapshotRef.current;
     scoreLog('Rolling back score update', snapshot);
 
-    queryClient.setQueryData(['bracket-data', bracketId], (oldData: any) => {
+    queryClient.setQueryData<BracketCacheData>(['bracket-data', bracketId], (oldData) => {
       if (!oldData?.matches) return oldData;
 
       return {
         ...oldData,
-        matches: oldData.matches.map((match: any) => {
+        matches: oldData.matches.map((match) => {
           const isMatch = matchIdMatches(match.id, snapshot.matchId);
           if (!isMatch) return match;
 

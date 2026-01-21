@@ -6,6 +6,90 @@ import { bracketLog, errorLog, failureLog, successLog, warnLog } from '@/utils/l
 import { matchUpdateQueue } from './MatchUpdateQueue';
 import { SupabaseSqlStorage } from './SupabaseSqlStorage';
 
+/** Extended error object with common properties from Supabase/API errors */
+interface ErrorLike {
+  message?: string;
+  code?: string;
+  details?: string;
+  hint?: string;
+  table?: string;
+  operation?: string;
+  statusCode?: number;
+}
+
+/** Opponent data in bracket match */
+interface BracketOpponent {
+  id?: number | null;
+  position?: number;
+  score?: number | null;
+  result?: 'win' | 'loss' | 'draw' | null;
+}
+
+/** Match data from brackets-manager storage */
+interface StorageMatch {
+  id: number;
+  stage_id: number;
+  group_id: number;
+  round_id: number;
+  number: number;
+  status: number;
+  opponent1?: BracketOpponent | null;
+  opponent2?: BracketOpponent | null;
+}
+
+/** Stage data from brackets-manager storage */
+interface StorageStage {
+  id: number;
+  tournament_id: string;
+  name: string;
+  type: string;
+  number: number;
+  settings: Record<string, unknown>;
+}
+
+/** Group data from brackets-manager storage */
+interface StorageGroup {
+  id: number;
+  stage_id: number;
+  number: number;
+}
+
+/** Round data from brackets-manager storage */
+interface StorageRound {
+  id: number;
+  stage_id: number;
+  group_id: number;
+  number: number;
+}
+
+/** Participant data from brackets-manager storage */
+interface StorageParticipant {
+  id: number;
+  tournament_id: string;
+  name: string | null;
+  team_id?: string;
+}
+
+/** Match update payload for brackets-manager */
+interface MatchUpdatePayload {
+  id: number;
+  opponent1?: {
+    score?: number;
+    result?: 'win' | 'loss' | 'draw';
+  };
+  opponent2?: {
+    score?: number;
+    result?: 'win' | 'loss' | 'draw';
+  };
+}
+
+/**
+ * Type guard to check if error is an ErrorLike object
+ */
+function isErrorLike(error: unknown): error is ErrorLike {
+  return error !== null && typeof error === 'object';
+}
+
 /**
  * Safely serialize any error type to a readable string
  */
@@ -16,24 +100,23 @@ function serializeError(error: unknown): string {
 
   try {
     // Try to extract meaningful info from plain objects
-    const errorObj = error as any;
-    if (errorObj && typeof errorObj === 'object') {
+    if (isErrorLike(error)) {
       const parts: string[] = [];
 
       // Common error properties
-      if (errorObj.message) parts.push(`Message: ${errorObj.message}`);
-      if (errorObj.code) parts.push(`Code: ${errorObj.code}`);
-      if (errorObj.details) parts.push(`Details: ${errorObj.details}`);
-      if (errorObj.hint) parts.push(`Hint: ${errorObj.hint}`);
-      if (errorObj.table) parts.push(`Table: ${errorObj.table}`);
-      if (errorObj.operation) parts.push(`Operation: ${errorObj.operation}`);
+      if (error.message) parts.push(`Message: ${error.message}`);
+      if (error.code) parts.push(`Code: ${error.code}`);
+      if (error.details) parts.push(`Details: ${error.details}`);
+      if (error.hint) parts.push(`Hint: ${error.hint}`);
+      if (error.table) parts.push(`Table: ${error.table}`);
+      if (error.operation) parts.push(`Operation: ${error.operation}`);
 
       if (parts.length > 0) {
         return parts.join(' | ');
       }
 
       // Fallback: full JSON
-      return JSON.stringify(errorObj, Object.getOwnPropertyNames(errorObj), 2);
+      return JSON.stringify(error, Object.getOwnPropertyNames(error), 2);
     }
 
     return String(error);
@@ -157,6 +240,7 @@ export class BracketManagerService {
         .select('*');
 
       if (participantsError) {
+        const errLike = participantsError as ErrorLike;
         errorLog('Participant insertion failed - FULL ERROR:', {
           error: participantsError,
           errorType: participantsError?.constructor?.name,
@@ -164,7 +248,7 @@ export class BracketManagerService {
           message: participantsError.message,
           details: participantsError.details,
           hint: participantsError.hint,
-          statusCode: (participantsError as any).statusCode,
+          statusCode: errLike.statusCode,
           inserts: participantInserts,
           serialized: serializeError(participantsError),
         });
@@ -222,13 +306,13 @@ export class BracketManagerService {
       };
 
       // Check if it's a Supabase error
-      if (error && typeof error === 'object' && 'code' in error) {
+      if (isErrorLike(error) && error.code) {
         Object.assign(errorDetails, {
-          supabaseCode: (error as any).code,
-          supabaseMessage: (error as any).message,
-          supabaseDetails: (error as any).details,
-          supabaseHint: (error as any).hint,
-          supabaseStatusCode: (error as any).statusCode,
+          supabaseCode: error.code,
+          supabaseMessage: error.message,
+          supabaseDetails: error.details,
+          supabaseHint: error.hint,
+          supabaseStatusCode: error.statusCode,
         });
       }
 
@@ -292,10 +376,11 @@ export class BracketManagerService {
         }
 
         // ⭐ Load participants into cache before update
-        const stage = await this.storage.select('stage', (currentMatch as any).stage_id);
+        const matchData = currentMatch as StorageMatch;
+        const stage = (await this.storage.select('stage', matchData.stage_id)) as StorageStage;
         if (stage) {
           await (this.storage as SupabaseSqlStorage).loadParticipantsForTournament(
-            (stage as any).tournament_id
+            stage.tournament_id
           );
         }
 
@@ -306,7 +391,7 @@ export class BracketManagerService {
         });
 
         // Build update payload - only include opponents that exist
-        const updatePayload: any = { id: matchId };
+        const updatePayload: MatchUpdatePayload = { id: matchId };
 
         if (scores.opponent1) {
           updatePayload.opponent1 = {
@@ -396,33 +481,34 @@ export class BracketManagerService {
   /**
    * Find the LB Final match for a given stage
    */
-  private async findLBFinalMatch(stageId: number): Promise<any | null> {
+  private async findLBFinalMatch(stageId: number): Promise<StorageMatch | null> {
     try {
       // Find LB group (group number 2 in double elimination)
-      const groups = await this.storage.select('group', { stage_id: stageId } as any);
-      const groupsArray = Array.isArray(groups) ? groups : [groups];
-      const lbGroup = groupsArray.find((g: any) => g.number === 2);
+      const groups = await this.storage.select('group', { stage_id: stageId });
+      const groupsArray = (Array.isArray(groups) ? groups : [groups]) as StorageGroup[];
+      const lbGroup = groupsArray.find((g) => g.number === 2);
 
       if (!lbGroup) return null;
 
-      const lbGroupId = (lbGroup as any).id;
+      const lbGroupId = lbGroup.id;
 
       // Find all LB rounds
-      const rounds = await this.storage.select('round', { group_id: lbGroupId } as any);
-      const roundsArray = Array.isArray(rounds) ? rounds : [rounds];
+      const rounds = await this.storage.select('round', { group_id: lbGroupId });
+      const roundsArray = (Array.isArray(rounds) ? rounds : [rounds]) as StorageRound[];
 
       // The final round is the max round number
-      const maxRoundNumber = Math.max(...roundsArray.map((r: any) => r.number));
-      const lbFinalRound = roundsArray.find((r: any) => r.number === maxRoundNumber);
+      const maxRoundNumber = Math.max(...roundsArray.map((r) => r.number));
+      const lbFinalRound = roundsArray.find((r) => r.number === maxRoundNumber);
 
       if (!lbFinalRound) return null;
 
       // Get the LB Final match (should be the only match in that round)
       const matches = await this.storage.select('match', {
-        round_id: (lbFinalRound as any).id,
-      } as any);
+        round_id: lbFinalRound.id,
+      });
 
-      return Array.isArray(matches) ? matches[0] : matches;
+      const matchesArray = (Array.isArray(matches) ? matches : [matches]) as StorageMatch[];
+      return matchesArray[0] || null;
     } catch (error) {
       errorLog('Error finding LB Final match:', error);
       return null;
@@ -438,21 +524,21 @@ export class BracketManagerService {
       bracketLog('🔍 Checking Grand Final population...', { stageId });
 
       // Find GF group (group number 3 in double elimination)
-      const groups = await this.storage.select('group', { stage_id: stageId } as any);
-      const groupsArray = Array.isArray(groups) ? groups : [groups];
-      const gfGroup = groupsArray.find((g: any) => g.number === 3);
+      const groups = await this.storage.select('group', { stage_id: stageId });
+      const groupsArray = (Array.isArray(groups) ? groups : [groups]) as StorageGroup[];
+      const gfGroup = groupsArray.find((g) => g.number === 3);
 
       if (!gfGroup) {
         bracketLog('No GF group found, skipping normalization');
         return;
       }
 
-      const gfGroupId = (gfGroup as any).id;
+      const gfGroupId = gfGroup.id;
 
       // Get GF Round 1
-      const rounds = await this.storage.select('round', { group_id: gfGroupId } as any);
-      const roundsArray = Array.isArray(rounds) ? rounds : [rounds];
-      const gfRound1 = roundsArray.find((r: any) => r.number === 1);
+      const rounds = await this.storage.select('round', { group_id: gfGroupId });
+      const roundsArray = (Array.isArray(rounds) ? rounds : [rounds]) as StorageRound[];
+      const gfRound1 = roundsArray.find((r) => r.number === 1);
 
       if (!gfRound1) {
         bracketLog('No GF Round 1 found, skipping normalization');
@@ -460,19 +546,18 @@ export class BracketManagerService {
       }
 
       const gfMatches = await this.storage.select('match', {
-        round_id: (gfRound1 as any).id,
-      } as any);
-      const gfMatch = Array.isArray(gfMatches) ? gfMatches[0] : gfMatches;
+        round_id: gfRound1.id,
+      });
+      const gfMatchesArray = (Array.isArray(gfMatches) ? gfMatches : [gfMatches]) as StorageMatch[];
+      const gfMatch = gfMatchesArray[0];
 
       if (!gfMatch) {
         bracketLog('No GF match found, skipping normalization');
         return;
       }
 
-      const m = gfMatch as any;
-
       // If opponent2 is missing, populate from LB Final
-      if (!m.opponent2?.id) {
+      if (!gfMatch.opponent2?.id) {
         bracketLog('🔧 GF opponent2 missing, checking LB Final...');
 
         const lbFinalMatch = await this.findLBFinalMatch(stageId);
@@ -486,14 +571,14 @@ export class BracketManagerService {
 
           if (winnerId) {
             bracketLog('✅ [NORMALIZE GF] Populating opponent2 from LB Final winner', {
-              gfMatchId: m.id,
+              gfMatchId: gfMatch.id,
               lbWinnerId: winnerId,
             });
 
-            await this.storage.update('match', m.id, {
+            await this.storage.update('match', gfMatch.id, {
               opponent2: { id: winnerId, position: undefined },
-              status: m.status,
-            } as any);
+              status: gfMatch.status,
+            });
 
             successLog('Grand Final normalized', `Populated opponent2 with LB winner ${winnerId}`);
           }
@@ -515,45 +600,44 @@ export class BracketManagerService {
       (this.storage as SupabaseSqlStorage).clearParticipantCache();
 
       // Find LB group (group number 2 in double elimination)
-      const groups = await this.storage.select('group', { stage_id: stageId } as any);
-      const groupsArray = Array.isArray(groups) ? groups : [groups];
-      const lbGroup = groupsArray.find((g: any) => g.number === 2);
+      const groups = await this.storage.select('group', { stage_id: stageId });
+      const groupsArray = (Array.isArray(groups) ? groups : [groups]) as StorageGroup[];
+      const lbGroup = groupsArray.find((g) => g.number === 2);
 
       if (!lbGroup) {
         bracketLog('No LB group found, skipping normalization');
         return;
       }
 
-      const lbGroupId = (lbGroup as any).id;
+      const lbGroupId = lbGroup.id;
 
       // Find LB R1 (first round in LB group)
-      const rounds = await this.storage.select('round', { group_id: lbGroupId } as any);
-      const roundsArray = Array.isArray(rounds) ? rounds : [rounds];
-      const minRoundNumber = Math.min(...roundsArray.map((r: any) => r.number));
-      const lbR1 = roundsArray.find((r: any) => r.number === minRoundNumber);
+      const rounds = await this.storage.select('round', { group_id: lbGroupId });
+      const roundsArray = (Array.isArray(rounds) ? rounds : [rounds]) as StorageRound[];
+      const minRoundNumber = Math.min(...roundsArray.map((r) => r.number));
+      const lbR1 = roundsArray.find((r) => r.number === minRoundNumber);
 
       if (!lbR1) {
         bracketLog('No LB R1 found, skipping normalization');
         return;
       }
 
-      const lbR1Id = (lbR1 as any).id;
+      const lbR1Id = lbR1.id;
 
       // Get all LB R1 matches
-      const matches = await this.storage.select('match', { round_id: lbR1Id } as any);
-      const matchesArray = Array.isArray(matches) ? matches : [matches];
+      const matches = await this.storage.select('match', { round_id: lbR1Id });
+      const matchesArray = (Array.isArray(matches) ? matches : [matches]) as StorageMatch[];
 
       bracketLog(`[NORMALIZE] Checking ${matchesArray.length} LB R1 matches for duplicates`);
 
       for (const match of matchesArray) {
-        const m = match as any;
-        const opponent1Id = m.opponent1?.id;
-        const opponent2Id = m.opponent2?.id;
+        const opponent1Id = match.opponent1?.id;
+        const opponent2Id = match.opponent2?.id;
 
         // CRITICAL FIX: Detect if same participant is in both slots (duplicate bug)
         if (opponent1Id && opponent2Id && opponent1Id === opponent2Id) {
           bracketLog(
-            `[NORMALIZE] DUPLICATE DETECTED in LB R1 Match ${m.id}: Participant ${opponent1Id} in both slots`
+            `[NORMALIZE] DUPLICATE DETECTED in LB R1 Match ${match.id}: Participant ${opponent1Id} in both slots`
           );
           bracketLog(
             `[NORMALIZE] Force-clearing opponent2 using direct SQL to bypass defensive merge`
@@ -569,15 +653,15 @@ export class BracketManagerService {
               opponent2_result: null,
               status: 4, // Set to waiting/ready status for BYE
             })
-            .eq('id', m.id);
+            .eq('id', match.id);
 
           if (error) {
-            errorLog(`[NORMALIZE] Failed to clear duplicate in match ${m.id}:`, error);
+            errorLog(`[NORMALIZE] Failed to clear duplicate in match ${match.id}:`, error);
             // Log full error details for debugging
             errorLog(`[NORMALIZE] Error details:`, JSON.stringify(error, null, 2));
           } else {
             bracketLog(
-              `[NORMALIZE] Successfully cleared duplicate in match ${m.id}, converted to BYE`
+              `[NORMALIZE] Successfully cleared duplicate in match ${match.id}, converted to BYE`
             );
             // Clear cache to reflect changes
             (this.storage as SupabaseSqlStorage).clearParticipantCache();
@@ -587,12 +671,12 @@ export class BracketManagerService {
 
         // If only opponent2 is filled, shift to opponent1
         if (!opponent1Id && opponent2Id) {
-          bracketLog(`[NORMALIZE] Shifting opponent2 to opponent1 in LB R1 Match ${m.id}`);
-          await this.storage.update('match', m.id, {
+          bracketLog(`[NORMALIZE] Shifting opponent2 to opponent1 in LB R1 Match ${match.id}`);
+          await this.storage.update('match', match.id, {
             opponent1: { id: opponent2Id, score: null, result: null },
             opponent2: { id: null, score: null, result: null },
-            status: m.status,
-          } as any);
+            status: match.status,
+          });
         }
       }
 
@@ -623,14 +707,15 @@ export class BracketManagerService {
       // Step 1: Get the stage ID for this bracket
       const stages = await this.storage.select('stage', {
         tournament_id: bracketId,
-      } as any);
+      });
 
       if (!stages || (Array.isArray(stages) && stages.length === 0)) {
         throw new Error(`No stage found for bracket: ${bracketId}`);
       }
 
-      const stage = Array.isArray(stages) ? stages[0] : stages;
-      const stageId = (stage as any).id;
+      const stagesArray = (Array.isArray(stages) ? stages : [stages]) as StorageStage[];
+      const stage = stagesArray[0];
+      const stageId = stage.id;
 
       // Step 2: Sort teams by seed
       const teamsBySeed = [...newSeeding].sort((a, b) => a.seed - b.seed);
@@ -663,19 +748,21 @@ export class BracketManagerService {
       // Step 7: Update participant positions in database
       const participants = await this.storage.select('participant', {
         tournament_id: bracketId,
-      } as any);
+      });
 
       if (participants) {
-        const participantArray = Array.isArray(participants) ? participants : [participants];
+        const participantArray = (
+          Array.isArray(participants) ? participants : [participants]
+        ) as StorageParticipant[];
 
         // Update positions for each participant
         for (const participant of participantArray) {
-          const team = teamsBySeed.find((t) => t.name === (participant as any).name);
+          const team = teamsBySeed.find((t) => t.name === participant.name);
           if (team) {
             await supabase
               .from('participant')
               .update({ position: team.seed })
-              .eq('id', (participant as any).id);
+              .eq('id', participant.id);
           }
         }
       }
@@ -727,47 +814,55 @@ export class BracketManagerService {
 
     try {
       // Get all stages for this bracket from SQL tables
-      const stages = await this.storage.select('stage', { tournament_id: bracketId } as any);
+      const stages = await this.storage.select('stage', { tournament_id: bracketId });
 
       if (!stages || (Array.isArray(stages) && stages.length === 0)) {
         warnLog('No stages found for bracket:', bracketId);
         return;
       }
 
-      const stage = Array.isArray(stages) ? stages[0] : stages;
+      const stagesArray = (Array.isArray(stages) ? stages : [stages]) as StorageStage[];
+      const stage = stagesArray[0];
 
       // Get final standings from brackets-manager
-      const finalStandings = await this.manager.get.finalStandings((stage as any).id);
+      const finalStandings = await this.manager.get.finalStandings(stage.id);
 
       bracketLog('Final standings calculated:', {
-        stageId: (stage as any).id,
+        stageId: stage.id,
         standings: finalStandings,
       });
 
       // Get participants to map back to team IDs
       const participants = await this.storage.select('participant', {
         tournament_id: bracketId,
-      } as any);
+      });
 
       if (!participants) {
         errorLog('No participants found for bracket:', bracketId);
         return;
       }
 
-      const participantArray = Array.isArray(participants) ? participants : [participants];
+      const participantArray = (
+        Array.isArray(participants) ? participants : [participants]
+      ) as StorageParticipant[];
 
       // Create a Map for O(1) lookups by participant ID
-      const participantMap = new Map<number, any>();
+      const participantMap = new Map<number, StorageParticipant>();
       participantArray.forEach((p) => {
-        participantMap.set((p as any).id, p);
+        participantMap.set(p.id, p);
       });
 
       // Update playoff_team_records
-      const recordUpdates = (finalStandings as any[])
+      interface FinalStanding {
+        id: number;
+        name: string;
+        rank: number;
+      }
+      const recordUpdates = (finalStandings as FinalStanding[])
         .map((standing, index) => {
           const participant = participantMap.get(standing.id);
           return {
-            team_id: (participant as any)?.team_id,
+            team_id: participant?.team_id,
             bracket_id: bracketId,
             placement: index + 1,
           };

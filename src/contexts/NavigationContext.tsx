@@ -5,14 +5,19 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { routeLog } from '@/utils/logger';
 
+/** Route state passed during navigation */
+export interface RouteState {
+  isAppNavigating?: boolean;
+  [key: string]: unknown;
+}
+
+interface NavigationOptions {
+  state?: RouteState;
+  replace?: boolean;
+}
+
 interface NavigationContextType {
-  navigateWithTransition: (
-    to: string,
-    options?: {
-      state?: any;
-      replace?: boolean;
-    }
-  ) => void;
+  navigateWithTransition: (to: string, options?: NavigationOptions) => void;
   isNavigating: boolean;
 }
 
@@ -37,13 +42,7 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
   const [isNavigating, setIsNavigating] = useState(false);
 
   const navigateWithTransition = useCallback(
-    (
-      to: string,
-      options?: {
-        state?: any;
-        replace?: boolean;
-      }
-    ) => {
+    (to: string, options?: NavigationOptions) => {
       routeLog(`Navigating to ${to}`);
       setIsNavigating(true);
 

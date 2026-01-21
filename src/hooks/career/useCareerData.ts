@@ -163,7 +163,8 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
 
       if (bracketData) {
         for (const bracket of bracketData) {
-          bracketDivisionWeights[bracket.id] = (bracket.divisions as any)?.division_weight || 0.85;
+          const divisions = bracket.divisions as { division_weight: number } | null;
+          bracketDivisionWeights[bracket.id] = divisions?.division_weight || 0.85;
         }
       }
     }
