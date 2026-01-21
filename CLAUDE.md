@@ -213,6 +213,76 @@ src/
 - Responsive design (mobile-first)
 - Dark mode support (next-themes)
 
+### Error Handling
+**All service layer functions throw errors consistently** - no mixed patterns of returning null/boolean/result objects.
+
+#### Standard Pattern
+```typescript
+// ✅ CORRECT: Services throw standardized errors
+import { handleDatabaseError, ensureFound } from '@/utils/errorHandler';
+
+export const fetchTeam = async (teamId: string) => {
+  const { data, error } = await supabase
+    .from('teams')
+    .select('*')
+    .eq('id', teamId)
+    .single();
+
+  if (error) {
+    handleDatabaseError(error, 'Failed to fetch team');
+  }
+
+  return ensureFound(data, 'Team', teamId);
+};
+```
+
+#### Error Types (`src/types/errors.ts`)
+- `DatabaseError` - Database operation failures (Supabase queries/mutations)
+- `NotFoundError` - Resource not found (missing teams, seasons, etc.)
+- `ValidationError` - Invalid input or missing required fields
+- `BusinessLogicError` - Invalid state transitions or rule violations
+- `AuthorizationError` - Insufficient permissions
+
+#### Error Handling Utilities (`src/utils/errorHandler.ts`)
+- `handleDatabaseError(error, context)` - Wraps Supabase errors as DatabaseError and throws
+- `ensureFound(data, resourceName, identifier?)` - Throws NotFoundError if data is null/undefined
+- `withErrorHandling(operation, context)` - Wraps async operations with consistent error handling
+
+#### Why This Pattern?
+- **TanStack Query Integration**: React Query automatically catches thrown errors and exposes them via `error` state
+- **Explicit Failures**: No need to check for null returns - errors are always thrown
+- **Better Stack Traces**: Easier debugging with proper error objects
+- **Retry Logic**: Works naturally with React Query's built-in retry mechanisms
+- **Consistency**: One error path instead of multiple return types
+
+#### Hooks Handle Errors
+```typescript
+// Hooks use React Query which catches thrown errors automatically
+const { data, error, isLoading } = useQuery({
+  queryKey: ['team', teamId],
+  queryFn: () => TeamService.fetchTeam(teamId),
+});
+
+if (error) {
+  // Display error to user
+  return <ErrorMessage error={error} />;
+}
+```
+
+#### When Returning Null is OK
+Returning null is acceptable when it represents **absence of data, not an error**:
+```typescript
+// ✅ OK: No matches between teams is valid business state
+const history = await getOpponentHistory(team1, team2);
+if (!history) {
+  return <EmptyState message="No matches yet" />;
+}
+
+// ❌ WRONG: Database error should throw, not return null
+const team = await fetchTeam(teamId);
+if (!team) { /* This should never happen - throws NotFoundError */ }
+```
+
 ---
 
 ## 🚨 Common Gotchas
@@ -225,4 +295,4 @@ src/
 
 ---
 
-*Last updated: 2026-01-10*
+*Last updated: 2026-01-21*

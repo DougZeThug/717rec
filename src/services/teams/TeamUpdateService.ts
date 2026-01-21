@@ -1,9 +1,13 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Team } from '@/types';
-import { errorLog, teamLog } from '@/utils/logger';
+import { teamLog } from '@/utils/logger';
+import { handleDatabaseError, ensureFound } from '@/utils/errorHandler';
+import { NotFoundError } from '@/types/errors';
 
 /**
  * Update an existing team
+ * @throws {DatabaseError} When database operations fail
+ * @throws {NotFoundError} When team or division is not found
  */
 export const updateTeamApi = async (teamId: string, teamData: Omit<Team, 'id' | 'created_at'>) => {
   teamLog('Updating team:', teamId);
@@ -15,9 +19,12 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, 'id' | 
     .eq('id', teamId)
     .single();
 
-  if (checkError || !teamExists) {
-    errorLog('Team not found:', teamId);
-    throw new Error(`Team with ID ${teamId} not found.`);
+  if (checkError) {
+    handleDatabaseError(checkError, 'Failed to check if team exists');
+  }
+
+  if (!teamExists) {
+    throw new NotFoundError('Team', teamId);
   }
 
   let divisionName = null;
@@ -31,9 +38,12 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, 'id' | 
       .eq('id', teamData.division_id)
       .single();
 
-    if (divCheckError || !divisionExists) {
-      errorLog('Division not found:', teamData.division_id);
-      throw new Error(`Division with ID ${teamData.division_id} not found.`);
+    if (divCheckError) {
+      handleDatabaseError(divCheckError, 'Failed to check if division exists');
+    }
+
+    if (!divisionExists) {
+      throw new NotFoundError('Division', teamData.division_id);
     }
 
     divisionName = divisionExists.name;
@@ -54,8 +64,7 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, 'id' | 
     .single();
 
   if (error) {
-    errorLog('Error updating team:', error);
-    throw error;
+    handleDatabaseError(error, 'Failed to update team');
   }
 
   teamLog('Team updated successfully:', data.id);
@@ -69,8 +78,10 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, 'id' | 
     .single();
 
   if (seasonError) {
-    errorLog('Error fetching active season:', seasonError);
-  } else if (activeSeason) {
+    handleDatabaseError(seasonError, 'Failed to fetch active season');
+  }
+
+  if (activeSeason) {
     // Update only the current season's record to preserve historical data
     const { error: seasonStatsError } = await supabase
       .from('team_season_stats')
@@ -81,7 +92,7 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, 'id' | 
       .eq('season_id', activeSeason.id);
 
     if (seasonStatsError) {
-      errorLog('Error updating team_season_stats division_name:', seasonStatsError);
+      handleDatabaseError(seasonStatsError, 'Failed to update team season stats division name');
     }
   }
 

@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { dbLog } from '@/utils/logger';
+import { handleDatabaseError } from '@/utils/errorHandler';
 
 /**
  * Service layer for fetching data used in selectors/dropdowns
@@ -13,13 +13,13 @@ export interface SelectorOption {
 
 /**
  * Fetch all teams ordered by name for selector dropdowns
+ * @throws {DatabaseError} When database operations fail
  */
 export const fetchTeamsForSelector = async (): Promise<SelectorOption[]> => {
   const { data, error } = await supabase.from('teams').select('id, name').order('name');
 
   if (error) {
-    dbLog('Error fetching teams for selector:', error);
-    throw error;
+    handleDatabaseError(error, 'Failed to fetch teams for selector');
   }
 
   return data || [];
@@ -27,20 +27,21 @@ export const fetchTeamsForSelector = async (): Promise<SelectorOption[]> => {
 
 /**
  * Fetch all divisions ordered by name for selector dropdowns
+ * @throws {DatabaseError} When database operations fail
  */
 export const fetchDivisionsForSelector = async (): Promise<SelectorOption[]> => {
   const { data, error } = await supabase.from('divisions').select('id, name').order('name');
 
   if (error) {
-    dbLog('Error fetching divisions for selector:', error);
-    throw error;
+    handleDatabaseError(error, 'Failed to fetch divisions for selector');
   }
 
   return data || [];
 };
 
 /**
- * Fetch all seasons ordered by start date (most recent first) for selector dropdowns
+ * Fetch all seasons ordered by name for selector dropdowns
+ * @throws {DatabaseError} When database operations fail
  */
 export const fetchSeasonsForSelector = async (): Promise<SelectorOption[]> => {
   const { data, error } = await supabase
@@ -49,8 +50,7 @@ export const fetchSeasonsForSelector = async (): Promise<SelectorOption[]> => {
     .order('start_date', { ascending: false });
 
   if (error) {
-    dbLog('Error fetching seasons for selector:', error);
-    throw error;
+    handleDatabaseError(error, 'Failed to fetch seasons for selector');
   }
 
   return data || [];
