@@ -52,31 +52,34 @@ const BracketViewportComponent: React.FC<BracketViewportProps> = ({ children, cl
     const container = containerRef.current;
     const content = contentRef.current;
 
-    // Use requestAnimationFrame to batch layout reads and prevent forced reflow
+    // Use double requestAnimationFrame to ensure styles are applied before reading layout
+    // This prevents forced reflow by separating read/write phases
     requestAnimationFrame(() => {
-      // Get container dimensions
-      const containerRect = container.getBoundingClientRect();
-      const contentRect = content.getBoundingClientRect();
+      requestAnimationFrame(() => {
+        // Get container dimensions - batch layout reads together
+        const containerRect = container.getBoundingClientRect();
+        const contentRect = content.getBoundingClientRect();
 
-      // Calculate scale to fit content in container with padding
-      const padding = responsive.containerPadding * 2;
-      const scaleX = (containerRect.width - padding) / contentRect.width;
-      const scaleY = (containerRect.height - padding) / contentRect.height;
+        // Calculate scale to fit content in container with padding
+        const padding = responsive.containerPadding * 2;
+        const scaleX = (containerRect.width - padding) / contentRect.width;
+        const scaleY = (containerRect.height - padding) / contentRect.height;
 
-      // Use the smaller scale to ensure content fits both dimensions
-      const fitScale = Math.min(scaleX, scaleY, 1); // Don't zoom in beyond 100%
-      const clampedScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, fitScale));
+        // Use the smaller scale to ensure content fits both dimensions
+        const fitScale = Math.min(scaleX, scaleY, 1); // Don't zoom in beyond 100%
+        const clampedScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, fitScale));
 
-      // Center the content
-      const centerX = (containerRect.width - contentRect.width * clampedScale) / 2;
-      const centerY = (containerRect.height - contentRect.height * clampedScale) / 2;
+        // Center the content
+        const centerX = (containerRect.width - contentRect.width * clampedScale) / 2;
+        const centerY = (containerRect.height - contentRect.height * clampedScale) / 2;
 
-      setViewportState((prev) => ({
-        ...prev,
-        scale: clampedScale,
-        x: centerX,
-        y: centerY,
-      }));
+        setViewportState((prev) => ({
+          ...prev,
+          scale: clampedScale,
+          x: centerX,
+          y: centerY,
+        }));
+      });
     });
   }, [responsive.containerPadding]);
 

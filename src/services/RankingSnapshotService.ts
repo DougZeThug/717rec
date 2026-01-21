@@ -30,34 +30,27 @@ async function getCurrentSeasonId(): Promise<string | null> {
   }
 }
 
-/** Division data with season_id from joined query */
-interface DivisionWithSeason {
-  season_id: string;
-}
-
 /**
- * Get season ID for a specific team through its division
+ * Get season ID for a specific team through team_season_stats
+ * Since divisions don't have season_id, we look up via team_season_stats
  */
 async function getSeasonIdForTeam(teamId: string): Promise<string | null> {
   try {
+    // First try to get the active season for this team from team_season_stats
     const { data, error } = await supabase
-      .from('teams')
-      .select(
-        `
-        division_id,
-        divisions!inner(season_id)
-      `
-      )
-      .eq('id', teamId)
+      .from('team_season_stats')
+      .select('season_id')
+      .eq('team_id', teamId)
+      .order('season_id', { ascending: false })
+      .limit(1)
       .single();
 
     if (error) {
-      errorLog('Error fetching season for team:', error);
-      return null;
+      // If no stats exist for this team, fall back to current active season
+      return getCurrentSeasonId();
     }
 
-    const divisions = data?.divisions as DivisionWithSeason | null;
-    return divisions?.season_id || null;
+    return data?.season_id || null;
   } catch (error) {
     errorLog('Error in getSeasonIdForTeam:', error);
     return null;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -95,41 +95,66 @@ const DESKTOP_CONFIG: Partial<BracketResponsiveConfig> = {
   roundHeaderHeight: 64,
 };
 
+/**
+ * Determines device type using matchMedia to avoid forced reflow
+ */
+function getDeviceType(): { isTablet: boolean; isDesktop: boolean; isLandscape: boolean } {
+  if (typeof window === 'undefined' || !window.matchMedia) {
+    return { isTablet: false, isDesktop: false, isLandscape: false };
+  }
+  
+  const isTablet = window.matchMedia('(min-width: 768px) and (max-width: 1023px)').matches;
+  const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+  const isLandscape = window.matchMedia('(orientation: landscape)').matches;
+  
+  return { isTablet, isDesktop, isLandscape };
+}
+
 export const useBracketResponsive = (): BracketResponsiveConfig => {
   const isMobile = useIsMobile();
-  const [dimensions, setDimensions] = useState({
-    width: typeof window !== 'undefined' ? window.innerWidth : 0,
-    height: typeof window !== 'undefined' ? window.innerHeight : 0,
-  });
+  const [deviceType, setDeviceType] = useState(getDeviceType);
   const [isTouch, setIsTouch] = useState(false);
+  const rafIdRef = useRef<number | null>(null);
+
+  // Debounced update using requestAnimationFrame to prevent forced reflow
+  const updateDeviceType = useCallback(() => {
+    if (rafIdRef.current) {
+      cancelAnimationFrame(rafIdRef.current);
+    }
+    rafIdRef.current = requestAnimationFrame(() => {
+      setDeviceType(getDeviceType());
+    });
+  }, []);
 
   useEffect(() => {
-    const handleResize = () => {
-      setDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-    };
+    if (typeof window === 'undefined' || !window.matchMedia) return;
 
-    const handleTouchStart = () => {
-      setIsTouch(true);
-    };
+    // Use matchMedia listeners instead of resize events for better performance
+    const tabletQuery = window.matchMedia('(min-width: 768px) and (max-width: 1023px)');
+    const desktopQuery = window.matchMedia('(min-width: 1024px)');
+    const landscapeQuery = window.matchMedia('(orientation: landscape)');
 
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('touchstart', handleTouchStart, { once: true });
+    const handleChange = () => updateDeviceType();
 
-    // Detect if device supports touch
+    // Modern browsers use addEventListener
+    tabletQuery.addEventListener?.('change', handleChange);
+    desktopQuery.addEventListener?.('change', handleChange);
+    landscapeQuery.addEventListener?.('change', handleChange);
+
+    // Detect if device supports touch (doesn't cause reflow)
     setIsTouch('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('touchstart', handleTouchStart);
+      if (rafIdRef.current) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+      tabletQuery.removeEventListener?.('change', handleChange);
+      desktopQuery.removeEventListener?.('change', handleChange);
+      landscapeQuery.removeEventListener?.('change', handleChange);
     };
-  }, []);
+  }, [updateDeviceType]);
 
-  const isTablet = dimensions.width >= 768 && dimensions.width < 1024;
-  const isDesktop = dimensions.width >= 1024;
-  const isLandscape = dimensions.width > dimensions.height;
+  const { isTablet, isDesktop, isLandscape } = deviceType;
 
   const getConfig = (): BracketResponsiveConfig => {
     let baseConfig: Partial<BracketResponsiveConfig>;
