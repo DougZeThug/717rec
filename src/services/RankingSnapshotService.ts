@@ -30,6 +30,11 @@ async function getCurrentSeasonId(): Promise<string | null> {
   }
 }
 
+/** Division data with season_id from joined query */
+interface DivisionWithSeason {
+  season_id: string;
+}
+
 /**
  * Get season ID for a specific team through its division
  */
@@ -51,7 +56,8 @@ async function getSeasonIdForTeam(teamId: string): Promise<string | null> {
       return null;
     }
 
-    return (data?.divisions as any)?.season_id || null;
+    const divisions = data?.divisions as DivisionWithSeason | null;
+    return divisions?.season_id || null;
   } catch (error) {
     errorLog('Error in getSeasonIdForTeam:', error);
     return null;

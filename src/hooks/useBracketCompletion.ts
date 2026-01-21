@@ -5,6 +5,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { bracketManagerService } from '@/services/brackets/manager';
 import { errorLog, log } from '@/utils/logger';
 
+/** Bracket record from realtime payload */
+interface BracketPayload {
+  state: string;
+  uses_brackets_manager: boolean;
+}
+
 export function useBracketCompletion(bracketId: string | undefined) {
   const { toast } = useToast();
 
@@ -27,7 +33,7 @@ export function useBracketCompletion(bracketId: string | undefined) {
           filter: `id=eq.${bracketId}`,
         },
         async (payload) => {
-          const bracket = payload.new as any;
+          const bracket = payload.new as BracketPayload;
 
           // If bracket just completed, calculate final standings
           if (bracket.state === 'completed' && bracket.uses_brackets_manager) {

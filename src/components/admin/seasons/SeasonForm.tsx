@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { toast } from '@/hooks/use-toast';
 import { useSeasonMutations } from '@/hooks/useSeasonMutations';
+import { Season } from '@/types/season';
 
 const seasonSchema = z.object({
   name: z.string().min(1, 'Season name is required'),
@@ -27,7 +28,7 @@ const seasonSchema = z.object({
 type SeasonFormData = z.infer<typeof seasonSchema>;
 
 interface SeasonFormProps {
-  season?: any;
+  season?: Season;
   onClose: () => void;
 }
 

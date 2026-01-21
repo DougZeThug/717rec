@@ -70,9 +70,9 @@ export const useMessageApi = () => {
       }
 
       return data as Message[];
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Ignore abort errors - these are intentional cancellations
-      if (err.name === 'AbortError' || err.message?.includes('aborted')) {
+      if (err instanceof Error && (err.name === 'AbortError' || err.message?.includes('aborted'))) {
         return [] as Message[];
       }
       throw err;
