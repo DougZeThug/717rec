@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import {
   AlgorithmConfig,
   PairingResult,
+  SchedulingDiagnostics,
   TeamPairing,
   TeamPairingMap,
   TimeBlockTeamsMap,
@@ -98,6 +99,12 @@ export const usePairingGenerator = () => {
 
         const pairings: TeamPairingMap = {};
         let allUnmatchedTeamIds: string[] = [];
+        // Track diagnostics from all scheduler calls
+        let aggregateDiagnostics: SchedulingDiagnostics = {
+          relaxationApplied: 0,
+          constraintsRelaxed: [],
+          repairAttempted: false,
+        };
 
         // Handle dual match mode with greedy back-to-back scheduler
         if (config.dualMatchMode) {
@@ -180,9 +187,34 @@ export const usePairingGenerator = () => {
             });
 
             const scheduledMatches = schedulerResult.matches;
+            const { diagnostics } = schedulerResult;
+
+            // Aggregate diagnostics from this scheduler call
+            if (diagnostics.relaxationApplied > aggregateDiagnostics.relaxationApplied) {
+              aggregateDiagnostics.relaxationApplied = diagnostics.relaxationApplied;
+            }
+            if (diagnostics.repairAttempted) {
+              aggregateDiagnostics.repairAttempted = true;
+            }
+            diagnostics.constraintsRelaxed.forEach((c) => {
+              if (!aggregateDiagnostics.constraintsRelaxed.includes(c)) {
+                aggregateDiagnostics.constraintsRelaxed.push(c);
+              }
+            });
 
             // Add new pairs to sessionPairs for cross-block tracking
             schedulerResult.newPairs.forEach((pair) => sessionPairs.add(pair));
+
+            // Log diagnostics if relaxation was applied
+            if (diagnostics.relaxationApplied > 0) {
+              scheduleLog(
+                `   ⚠️ Constraint relaxation applied for ${pairName}: level ${diagnostics.relaxationApplied} ` +
+                  `(${diagnostics.constraintsRelaxed.join(', ')})`
+              );
+            }
+            if (diagnostics.repairAttempted) {
+              scheduleLog(`   🔧 Repair pass was needed for ${pairName}`);
+            }
 
             scheduleLog(
               `   Generated ${scheduledMatches.length} matches for ${pairName} (${schedulerResult.newPairs.size} new pairs, ${sessionPairs.size} total session pairs)`
@@ -316,10 +348,21 @@ export const usePairingGenerator = () => {
         setGeneratedPairings(pairings);
         setUnmatchedTeamIds(allUnmatchedTeamIds);
 
-        // Return the generated pairings and unmatched team IDs
+        // Log summary of diagnostics if any relaxation was applied
+        if (aggregateDiagnostics.relaxationApplied > 0 || aggregateDiagnostics.repairAttempted) {
+          scheduleLog(
+            `📊 Scheduling completed with constraint adjustments: ` +
+              `relaxation level ${aggregateDiagnostics.relaxationApplied}, ` +
+              `constraints relaxed: [${aggregateDiagnostics.constraintsRelaxed.join(', ') || 'none'}], ` +
+              `repair attempted: ${aggregateDiagnostics.repairAttempted}`
+          );
+        }
+
+        // Return the generated pairings, unmatched team IDs, and diagnostics
         return {
           pairings,
           unmatchedTeamIds: allUnmatchedTeamIds,
+          diagnostics: config.dualMatchMode ? aggregateDiagnostics : undefined,
         };
       } catch (error) {
         errorLog('Error generating match pairings:', error);
