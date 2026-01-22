@@ -77,28 +77,44 @@ export const initSentry = () => {
 
 /**
  * Capture an error and send to Sentry
+ * Wrapped in try/catch to handle CORS failures gracefully
  */
 export const captureError = (error: Error, context?: Record<string, unknown>) => {
+  // Always log to console for debugging
+  console.error('[Error]:', error, context);
+
   if (!import.meta.env.PROD) {
-    console.error('[Sentry would capture]:', error, context);
     return;
   }
 
-  Sentry.captureException(error, {
-    extra: context,
-  });
+  try {
+    Sentry.captureException(error, {
+      extra: context,
+    });
+  } catch (sentryError) {
+    // Sentry failed (likely CORS or network issue) - error is already logged above
+    console.warn('[Sentry] Failed to send error report (CORS/network issue):', sentryError);
+  }
 };
 
 /**
  * Capture a message and send to Sentry
+ * Wrapped in try/catch to handle CORS failures gracefully
  */
 export const captureMessage = (message: string, level: Sentry.SeverityLevel = 'info') => {
+  // Always log to console for debugging
+  console.log(`[${level}]:`, message);
+
   if (!import.meta.env.PROD) {
-    console.log(`[Sentry would capture ${level}]:`, message);
     return;
   }
 
-  Sentry.captureMessage(message, level);
+  try {
+    Sentry.captureMessage(message, level);
+  } catch (sentryError) {
+    // Sentry failed (likely CORS or network issue) - message is already logged above
+    console.warn('[Sentry] Failed to send message (CORS/network issue):', sentryError);
+  }
 };
 
 /**

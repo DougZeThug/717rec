@@ -56,6 +56,13 @@ export function useAutoScheduleSave() {
         // 3. No duplicate opponents (can't play same team twice)
         const teamAppearances = new Map<string, string[]>();
         const teamOpponents = new Map<string, Set<string>>();
+        // Build a map of team IDs to names for better error messages
+        const teamNames = new Map<string, string>();
+        matches.forEach((m) => {
+          // Try to extract team names from match metadata if available
+          teamNames.set(m.team1Id, m.team1Id);
+          teamNames.set(m.team2Id, m.team2Id);
+        });
 
         for (const match of matches) {
           if (!match.team1Id || !match.team2Id) {
@@ -67,10 +74,16 @@ export function useAutoScheduleSave() {
           // Check team1 appearances - allow up to 4 for double headers
           const team1Slots = teamAppearances.get(team1Id) || [];
           if (team1Slots.length >= 4) {
-            throw new Error('Team appears in more than 4 matches (max for double headers)');
+            errorLog(`Team ${team1Id} already has 4 matches:`, team1Slots);
+            throw new Error(
+              `Team ${team1Id} appears in more than 4 matches (max for double headers). Existing slots: ${team1Slots.join(', ')}`
+            );
           }
           if (team1Slots.includes(timeslot)) {
-            throw new Error('Team has duplicate matches in same timeslot');
+            errorLog(`Team ${team1Id} has duplicate timeslot ${timeslot}:`, team1Slots);
+            throw new Error(
+              `Team ${team1Id} has duplicate matches in timeslot ${timeslot}`
+            );
           }
           team1Slots.push(timeslot);
           teamAppearances.set(team1Id, team1Slots);
@@ -78,10 +91,16 @@ export function useAutoScheduleSave() {
           // Check team2 appearances - allow up to 4 for double headers
           const team2Slots = teamAppearances.get(team2Id) || [];
           if (team2Slots.length >= 4) {
-            throw new Error('Team appears in more than 4 matches (max for double headers)');
+            errorLog(`Team ${team2Id} already has 4 matches:`, team2Slots);
+            throw new Error(
+              `Team ${team2Id} appears in more than 4 matches (max for double headers). Existing slots: ${team2Slots.join(', ')}`
+            );
           }
           if (team2Slots.includes(timeslot)) {
-            throw new Error('Team has duplicate matches in same timeslot');
+            errorLog(`Team ${team2Id} has duplicate timeslot ${timeslot}:`, team2Slots);
+            throw new Error(
+              `Team ${team2Id} has duplicate matches in timeslot ${timeslot}`
+            );
           }
           team2Slots.push(timeslot);
           teamAppearances.set(team2Id, team2Slots);
@@ -89,7 +108,13 @@ export function useAutoScheduleSave() {
           // Check for duplicate opponents
           const team1OpponentSet = teamOpponents.get(team1Id) || new Set();
           if (team1OpponentSet.has(team2Id)) {
-            throw new Error('Teams are matched against each other multiple times');
+            errorLog(
+              `Duplicate opponent detected: ${team1Id} vs ${team2Id}`,
+              { team1Opponents: Array.from(team1OpponentSet), timeslot }
+            );
+            throw new Error(
+              `Teams ${team1Id} and ${team2Id} are matched against each other multiple times. This can happen with double header teams that share multiple blocks.`
+            );
           }
           team1OpponentSet.add(team2Id);
           teamOpponents.set(team1Id, team1OpponentSet);
