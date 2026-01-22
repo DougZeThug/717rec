@@ -3,6 +3,9 @@
 // Re-export power score utilities from centralized location
 export { formatPowerScore, getPowerScoreColor } from '@/utils/colors/powerScoreColors';
 
+// Re-export division badge color from centralized location
+export { getDivisionBadgeColor } from '@/utils/colors/divisionColors';
+
 // FIXED: Corrected SOS color mapping - higher SOS (harder schedule) = red, lower SOS (easier schedule) = green
 export const getSosColor = (sos: number | null | undefined): string => {
   if (sos === null || sos === undefined) {

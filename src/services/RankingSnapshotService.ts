@@ -57,31 +57,38 @@ async function getSeasonIdForTeam(teamId: string): Promise<string> {
  * @throws {DatabaseError} When database operations fail
  * @throws {NotFoundError} When no active season exists
  */
-export async function saveRankingsToDatabase(rankings: Ranking[]): Promise<void> {
+export async function saveRankingsToDatabase(rankings: Ranking[]): Promise<boolean> {
   // For each ranking, we need to determine the season
   // We'll get the season from the first team's division
   if (rankings.length === 0) {
-    return;
+    return true;
   }
 
-  // Get season ID from the first team
-  const seasonId = await getSeasonIdForTeam(rankings[0].teamId);
+  try {
+    // Get season ID from the first team
+    const seasonId = await getSeasonIdForTeam(rankings[0].teamId);
 
-  // Prepare ranking snapshots for upsert
-  const snapshots = rankings.map((ranking, index) => ({
-    team_id: ranking.teamId,
-    season_id: seasonId,
-    rank_position: index + 1,
-  }));
+    // Prepare ranking snapshots for upsert
+    const snapshots = rankings.map((ranking, index) => ({
+      team_id: ranking.teamId,
+      season_id: seasonId,
+      rank_position: index + 1,
+    }));
 
-  // Upsert all rankings in one batch
-  const { error } = await supabase.from('ranking_snapshots').upsert(snapshots, {
-    onConflict: 'team_id,season_id',
-    ignoreDuplicates: false,
-  });
+    // Upsert all rankings in one batch
+    const { error } = await supabase.from('ranking_snapshots').upsert(snapshots, {
+      onConflict: 'team_id,season_id',
+      ignoreDuplicates: false,
+    });
 
-  if (error) {
-    handleDatabaseError(error, 'Failed to save rankings to database');
+    if (error) {
+      handleDatabaseError(error, 'Failed to save rankings to database');
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
   }
 }
 
