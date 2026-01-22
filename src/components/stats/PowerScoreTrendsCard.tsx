@@ -1,10 +1,11 @@
 import { Calendar, CalendarDays, TrendingDown, TrendingUp } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import AnimatedChartWrapper from '@/components/ui/animated-chart-wrapper';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingState } from '@/components/ui/loading-state';
+import { ToggleButtonGroup, ToggleOption } from '@/components/ui/ToggleButtonGroup';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { usePowerScoreTrends } from '@/hooks/usePowerScoreTrends';
 import { useWeeklyPowerScoreTrends } from '@/hooks/useWeeklyPowerScoreTrends';
@@ -24,6 +25,32 @@ const PowerScoreTrendsCard: React.FC = () => {
 
   const { data: seasonalTrends, isLoading: seasonalLoading } = usePowerScoreTrends(direction, 10);
   const { data: weeklyData, isLoading: weeklyLoading } = useWeeklyPowerScoreTrends(direction, 10);
+
+  const viewModeOptions: ToggleOption<ViewMode>[] = useMemo(
+    () => [
+      { value: 'weekly', label: 'Weekly', icon: Calendar },
+      { value: 'seasonal', label: 'Seasonal', icon: CalendarDays },
+    ],
+    []
+  );
+
+  const directionOptions: ToggleOption<TrendDirection>[] = useMemo(
+    () => [
+      {
+        value: 'up',
+        label: 'Trending Up',
+        icon: TrendingUp,
+        activeClassName: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
+      },
+      {
+        value: 'down',
+        label: 'Trending Down',
+        icon: TrendingDown,
+        activeClassName: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
+      },
+    ],
+    []
+  );
 
   const isLoading = viewMode === 'weekly' ? weeklyLoading : seasonalLoading;
   const trends = viewMode === 'weekly' ? weeklyData?.trends : seasonalTrends;
@@ -81,64 +108,20 @@ const PowerScoreTrendsCard: React.FC = () => {
           </CardDescription>
 
           {/* View Mode Toggle */}
-          <div className="flex gap-2 mt-3">
-            <button
-              onClick={() => setViewMode('weekly')}
-              className={cn(
-                'flex-1 px-3 py-1.5 rounded-lg font-medium text-sm transition-colors',
-                'flex items-center justify-center gap-1.5',
-                viewMode === 'weekly'
-                  ? 'bg-primary/10 text-primary dark:bg-primary/20'
-                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
-              )}
-            >
-              <Calendar className="h-4 w-4" />
-              Weekly
-            </button>
-            <button
-              onClick={() => setViewMode('seasonal')}
-              className={cn(
-                'flex-1 px-3 py-1.5 rounded-lg font-medium text-sm transition-colors',
-                'flex items-center justify-center gap-1.5',
-                viewMode === 'seasonal'
-                  ? 'bg-primary/10 text-primary dark:bg-primary/20'
-                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
-              )}
-            >
-              <CalendarDays className="h-4 w-4" />
-              Seasonal
-            </button>
-          </div>
+          <ToggleButtonGroup
+            options={viewModeOptions}
+            value={viewMode}
+            onChange={setViewMode}
+            className="mt-3"
+          />
 
           {/* Direction Toggle */}
-          <div className="flex gap-2 mt-2">
-            <button
-              onClick={() => setDirection('up')}
-              className={cn(
-                'flex-1 px-3 py-1.5 rounded-lg font-medium text-sm transition-colors',
-                'flex items-center justify-center gap-1.5',
-                direction === 'up'
-                  ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
-              )}
-            >
-              <TrendingUp className="h-4 w-4" />
-              Trending Up
-            </button>
-            <button
-              onClick={() => setDirection('down')}
-              className={cn(
-                'flex-1 px-3 py-1.5 rounded-lg font-medium text-sm transition-colors',
-                'flex items-center justify-center gap-1.5',
-                direction === 'down'
-                  ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
-              )}
-            >
-              <TrendingDown className="h-4 w-4" />
-              Trending Down
-            </button>
-          </div>
+          <ToggleButtonGroup
+            options={directionOptions}
+            value={direction}
+            onChange={setDirection}
+            className="mt-2"
+          />
         </CardHeader>
 
         <CardContent className={isMobile ? 'p-2 pt-2' : 'p-4 pt-3'}>
