@@ -7,11 +7,19 @@
  * - Even teams: Everyone plays in S1 and S2 (one match per slot)
  * - Odd teams: Bye1 sits out S1, Bye2 sits out S2, they play each other in S3
  *
- * CONSTRAINTS:
- * - No rematches against season history
- * - No session rematches (can't play same team twice tonight)
- * - Max tier gap = 1 (blocks T1 vs T3+)
+ * CONSTRAINTS (with progressive relaxation):
+ * - No rematches against season history (relaxed at level 1)
+ * - No session rematches (can't play same team twice tonight - never relaxed)
+ * - Max tier gap = 1 (blocks T1 vs T3+) (relaxed at level 2)
  * - Favor same-division first, then adjacent-tier
+ *
+ * CONSTRAINT RELAXATION:
+ * When constraints are too tight (e.g., T1 teams can only play T1, but all have
+ * played each other), the scheduler progressively relaxes constraints:
+ * - Level 0: All constraints enforced
+ * - Level 1: Allow season rematches
+ * - Level 2: Allow tier gap > 1 (T1 vs T3)
+ * - Level 3: Full relaxation (only session rematches blocked)
  *
  * GUARANTEES:
  * - Every team gets exactly 2 matches
@@ -44,6 +52,15 @@
 
 import { Team } from '@/types';
 import { scheduleLog, warnLog } from '@/utils/logger';
+
+/**
+ * Constraint relaxation levels for progressive fallback
+ * - 0: All constraints enforced (default)
+ * - 1: Allow season rematches
+ * - 2: Allow tier gap > 1
+ * - 3: Full relaxation (emergency - only blocks session rematches)
+ */
+export type RelaxationLevel = 0 | 1 | 2 | 3;
 
 export interface GreedySchedulerInput {
   teams: Team[];
@@ -117,26 +134,108 @@ function tierDistance(teamA: Team, teamB: Team): number {
 
 /**
  * Check if two teams can play against each other
+ * @param relaxationLevel - Level of constraint relaxation (0-3)
+ *   0: All constraints enforced
+ *   1: Allow season rematches
+ *   2: Allow tier gap > maxTierGap
+ *   3: Full relaxation (only session rematches blocked)
  */
 function canPlay(
   teamA: Team,
   teamB: Team,
   playedSet: Set<string>,
   tonightPairs: Set<string>,
-  maxTierGap: number
+  maxTierGap: number,
+  relaxationLevel: RelaxationLevel = 0
 ): boolean {
   const key = pairKey(teamA.id, teamB.id);
 
-  // Can't play if they've already played this season
-  if (playedSet.has(key)) return false;
-
-  // Can't play if they've already been paired tonight
+  // NEVER relax session rematches - teams can't play twice in same session
   if (tonightPairs.has(key)) return false;
 
-  // Can't play if tier gap is too large
-  if (tierDistance(teamA, teamB) > maxTierGap) return false;
+  // Check season rematches (relaxed at level 1+)
+  if (relaxationLevel < 1 && playedSet.has(key)) return false;
+
+  // Check tier gap (relaxed at level 2+)
+  if (relaxationLevel < 2 && tierDistance(teamA, teamB) > maxTierGap) return false;
 
   return true;
+}
+
+/**
+ * Analyze if a valid pairing is feasible with current constraints
+ * Returns the recommended relaxation level needed
+ */
+function analyzeGreedyFeasibility(
+  teams: Team[],
+  playedSet: Set<string>,
+  tonightPairs: Set<string>,
+  maxTierGap: number
+): { isFeasible: boolean; recommendedLevel: RelaxationLevel; atRiskTeams: string[] } {
+  const targetMatchesPerTeam = 2;
+  const atRiskTeams: string[] = [];
+
+  // For each team, count how many valid opponents they have
+  for (const team of teams) {
+    let validOpponents = 0;
+    for (const other of teams) {
+      if (other.id !== team.id && canPlay(team, other, playedSet, tonightPairs, maxTierGap, 0)) {
+        validOpponents++;
+      }
+    }
+    // Each team needs at least 2 valid opponents for 2 matches
+    // (since opponents get "used up" by other teams, we need some buffer)
+    if (validOpponents < targetMatchesPerTeam) {
+      atRiskTeams.push(team.id);
+    }
+  }
+
+  if (atRiskTeams.length === 0) {
+    return { isFeasible: true, recommendedLevel: 0, atRiskTeams: [] };
+  }
+
+  // Check if relaxing season rematches would help
+  let wouldHelpWithRematch = false;
+  for (const teamId of atRiskTeams) {
+    const team = teams.find((t) => t.id === teamId)!;
+    let validWithRematch = 0;
+    for (const other of teams) {
+      if (other.id !== team.id && canPlay(team, other, playedSet, tonightPairs, maxTierGap, 1)) {
+        validWithRematch++;
+      }
+    }
+    if (validWithRematch >= targetMatchesPerTeam) {
+      wouldHelpWithRematch = true;
+      break;
+    }
+  }
+
+  if (wouldHelpWithRematch) {
+    return { isFeasible: false, recommendedLevel: 1, atRiskTeams };
+  }
+
+  // Check if relaxing tier constraints would help
+  let wouldHelpWithTier = false;
+  for (const teamId of atRiskTeams) {
+    const team = teams.find((t) => t.id === teamId)!;
+    let validWithTier = 0;
+    for (const other of teams) {
+      if (other.id !== team.id && canPlay(team, other, playedSet, tonightPairs, maxTierGap, 2)) {
+        validWithTier++;
+      }
+    }
+    if (validWithTier >= targetMatchesPerTeam) {
+      wouldHelpWithTier = true;
+      break;
+    }
+  }
+
+  if (wouldHelpWithTier) {
+    return { isFeasible: false, recommendedLevel: 2, atRiskTeams };
+  }
+
+  // Full relaxation needed
+  return { isFeasible: false, recommendedLevel: 3, atRiskTeams };
 }
 
 /**
@@ -148,25 +247,35 @@ function findBestOpponent(
   playedSet: Set<string>,
   tonightPairs: Set<string>,
   teamMatchCounts: Map<string, number>,
-  maxTierGap: number
+  maxTierGap: number,
+  relaxationLevel: RelaxationLevel = 0
 ): Team | null {
   const validCandidates = candidates.filter(
     (candidate) =>
-      candidate.id !== team.id && canPlay(team, candidate, playedSet, tonightPairs, maxTierGap)
+      candidate.id !== team.id &&
+      canPlay(team, candidate, playedSet, tonightPairs, maxTierGap, relaxationLevel)
   );
 
   if (validCandidates.length === 0) return null;
 
   // Sort by priority:
-  // 1. Same division (tier distance = 0)
+  // 1. Same division (tier distance = 0) - prioritize even with relaxation
   // 2. Adjacent tier (tier distance = 1)
-  // 3. Fewer total matches scheduled tonight
-  // 4. Alphabetically by name (stable tie-break)
+  // 3. Not a season rematch (prefer fresh opponents even when rematches allowed)
+  // 4. Fewer total matches scheduled tonight
+  // 5. Alphabetically by name (stable tie-break)
   validCandidates.sort((a, b) => {
     const distA = tierDistance(team, a);
     const distB = tierDistance(team, b);
 
     if (distA !== distB) return distA - distB;
+
+    // When relaxation allows rematches, still prefer non-rematches
+    if (relaxationLevel >= 1) {
+      const aIsRematch = playedSet.has(pairKey(team.id, a.id));
+      const bIsRematch = playedSet.has(pairKey(team.id, b.id));
+      if (aIsRematch !== bIsRematch) return aIsRematch ? 1 : -1;
+    }
 
     const matchesA = teamMatchCounts.get(a.id) || 0;
     const matchesB = teamMatchCounts.get(b.id) || 0;
@@ -187,7 +296,8 @@ function pickBye(
   strategy: 'last' | 'fewestPartners',
   playedSet: Set<string>,
   maxTierGap: number,
-  excludeIds: Set<string> = new Set()
+  excludeIds: Set<string> = new Set(),
+  relaxationLevel: RelaxationLevel = 0
 ): Team {
   const availableTeams = teams.filter((t) => !excludeIds.has(t.id));
 
@@ -204,7 +314,7 @@ function pickBye(
       (other) =>
         other.id !== team.id &&
         !excludeIds.has(other.id) &&
-        canPlay(team, other, playedSet, new Set(), maxTierGap)
+        canPlay(team, other, playedSet, new Set(), maxTierGap, relaxationLevel)
     ).length;
 
     if (validPartners < minPartners) {
@@ -227,7 +337,8 @@ function generateSlotPairings(
   teamMatchCounts: Map<string, number>,
   maxTierGap: number,
   byeTeamId?: string,
-  newPairs?: Set<string>
+  newPairs?: Set<string>,
+  relaxationLevel: RelaxationLevel = 0
 ): ScheduledMatch[] {
   const matches: ScheduledMatch[] = [];
   const pairedInSlot = new Set<string>();
@@ -246,11 +357,12 @@ function generateSlotPairings(
       playedSet,
       tonightPairs,
       teamMatchCounts,
-      maxTierGap
+      maxTierGap,
+      relaxationLevel
     );
 
     if (!opponent) {
-      warnLog(`No opponent found for team ${team.name} in slot ${slotName}`);
+      warnLog(`No opponent found for team ${team.name} in slot ${slotName} (relaxation: ${relaxationLevel})`);
       continue;
     }
 
@@ -293,6 +405,12 @@ export interface GreedySchedulerResult {
   matches: ScheduledMatch[];
   // New pairs created in this call (for tracking across multiple blocks)
   newPairs: Set<string>;
+  // Diagnostic info about constraint relaxation applied
+  diagnostics: {
+    relaxationApplied: RelaxationLevel;
+    constraintsRelaxed: string[];
+    repairAttempted: boolean;
+  };
 }
 
 /**
@@ -304,8 +422,85 @@ export function generateScheduleGreedy(input: GreedySchedulerInput): ScheduledMa
 }
 
 /**
+ * Attempt repair pass to match remaining unmatched teams
+ */
+function attemptRepairPass(
+  unmatchedTeams: Team[],
+  allTeams: Team[],
+  slot: string,
+  playedSet: Set<string>,
+  tonightPairs: Set<string>,
+  teamMatchCounts: Map<string, number>,
+  maxTierGap: number,
+  newPairs: Set<string>,
+  relaxationLevel: RelaxationLevel
+): ScheduledMatch[] {
+  const repairMatches: ScheduledMatch[] = [];
+
+  // Sort unmatched teams by fewest available opponents (most constrained first)
+  const sortedUnmatched = [...unmatchedTeams].sort((a, b) => {
+    const aOpponents = allTeams.filter(
+      (t) => t.id !== a.id && canPlay(a, t, playedSet, tonightPairs, maxTierGap, relaxationLevel)
+    ).length;
+    const bOpponents = allTeams.filter(
+      (t) => t.id !== b.id && canPlay(b, t, playedSet, tonightPairs, maxTierGap, relaxationLevel)
+    ).length;
+    return aOpponents - bOpponents;
+  });
+
+  const pairedInRepair = new Set<string>();
+
+  for (const team of sortedUnmatched) {
+    if (pairedInRepair.has(team.id)) continue;
+
+    // Find teams that also need matches and can play this team
+    const candidates = sortedUnmatched.filter(
+      (t) =>
+        t.id !== team.id &&
+        !pairedInRepair.has(t.id) &&
+        canPlay(team, t, playedSet, tonightPairs, maxTierGap, relaxationLevel)
+    );
+
+    if (candidates.length === 0) continue;
+
+    // Pick the first valid candidate
+    const opponent = candidates[0];
+
+    const match: ScheduledMatch = {
+      slot,
+      teamAId: team.id,
+      teamBId: opponent.id,
+      teamAName: team.name,
+      teamBName: opponent.name,
+      divisionA: team.divisionName || 'Unknown',
+      divisionB: opponent.divisionName || 'Unknown',
+      tierA: getTier(team),
+      tierB: getTier(opponent),
+    };
+
+    repairMatches.push(match);
+    pairedInRepair.add(team.id);
+    pairedInRepair.add(opponent.id);
+
+    const matchKey = pairKey(team.id, opponent.id);
+    tonightPairs.add(matchKey);
+    newPairs.add(matchKey);
+
+    teamMatchCounts.set(team.id, (teamMatchCounts.get(team.id) || 0) + 1);
+    teamMatchCounts.set(opponent.id, (teamMatchCounts.get(opponent.id) || 0) + 1);
+  }
+
+  return repairMatches;
+}
+
+/**
  * Main greedy scheduler function with pair tracking
  * Use this when scheduling multiple blocks with double header teams
+ *
+ * Enhanced with:
+ * - Pre-validation to detect constraint issues
+ * - Progressive constraint relaxation
+ * - Repair pass for unmatched teams
  */
 export function generateScheduleGreedyWithTracking(input: GreedySchedulerInput): GreedySchedulerResult {
   const { teams, historyPairs, slots, thirdSlot, config, forbiddenPairs } = input;
@@ -318,29 +513,69 @@ export function generateScheduleGreedyWithTracking(input: GreedySchedulerInput):
     playedSet.add(pairKey(idA, idB));
   }
 
-  // Sort teams for deterministic order (by tier, then name)
+  // Sort teams by constraint pressure (fewest valid opponents first)
+  // This ensures most constrained teams get paired first
+  const baseTonightPairs = new Set<string>(forbiddenPairs || []);
   const sortedTeams = [...teams].sort((a, b) => {
+    // Count valid opponents for each team
+    const aOpponents = teams.filter(
+      (t) => t.id !== a.id && canPlay(a, t, playedSet, baseTonightPairs, maxTierGap, 0)
+    ).length;
+    const bOpponents = teams.filter(
+      (t) => t.id !== b.id && canPlay(b, t, playedSet, baseTonightPairs, maxTierGap, 0)
+    ).length;
+
+    // Most constrained (fewest opponents) first
+    if (aOpponents !== bOpponents) return aOpponents - bOpponents;
+
+    // Fall back to tier, then name for stability
     const tierA = getTier(a);
     const tierB = getTier(b);
     if (tierA !== tierB) return tierA - tierB;
     return a.name.localeCompare(b.name);
   });
 
-  // Initialize tonightPairs with forbidden pairs (from other blocks)
-  // This prevents double header teams from playing the same opponent twice
-  const tonightPairs = new Set<string>(forbiddenPairs || []);
-  // Track which pairs WE create (not inherited from forbiddenPairs)
-  const newPairs = new Set<string>();
-  const teamMatchCounts = new Map<string, number>();
   const [slot1, slot2] = slots;
   const isOdd = teams.length % 2 === 1;
+
+  // Pre-validation: check if scheduling is feasible with current constraints
+  const feasibility = analyzeGreedyFeasibility(sortedTeams, playedSet, baseTonightPairs, maxTierGap);
+  let relaxationLevel: RelaxationLevel = feasibility.recommendedLevel;
+
+  if (!feasibility.isFeasible) {
+    const relaxationNames: Record<RelaxationLevel, string> = {
+      0: 'none',
+      1: 'allow season rematches',
+      2: 'allow cross-tier matches',
+      3: 'full relaxation',
+    };
+    scheduleLog(
+      `Constraint pre-check: ${feasibility.atRiskTeams.length} teams at risk. ` +
+        `Applying relaxation level ${relaxationLevel} (${relaxationNames[relaxationLevel]})`
+    );
+  }
+
+  // Track diagnostics
+  const diagnostics: GreedySchedulerResult['diagnostics'] = {
+    relaxationApplied: relaxationLevel,
+    constraintsRelaxed: [],
+    repairAttempted: false,
+  };
+
+  if (relaxationLevel >= 1) diagnostics.constraintsRelaxed.push('season_rematches');
+  if (relaxationLevel >= 2) diagnostics.constraintsRelaxed.push('tier_constraints');
+
+  // Initialize tonightPairs with forbidden pairs (from other blocks)
+  const tonightPairs = new Set<string>(forbiddenPairs || []);
+  const newPairs = new Set<string>();
+  const teamMatchCounts = new Map<string, number>();
 
   if (!isOdd) {
     // ============ EVEN TEAM COUNT ============
     scheduleLog(`Scheduling ${teams.length} teams (even) for slots ${slot1} and ${slot2}`);
 
-    // Generate S1 pairings
-    const s1Matches = generateSlotPairings(
+    // Generate S1 pairings with current relaxation level
+    let s1Matches = generateSlotPairings(
       sortedTeams,
       slot1,
       playedSet,
@@ -348,11 +583,12 @@ export function generateScheduleGreedyWithTracking(input: GreedySchedulerInput):
       teamMatchCounts,
       maxTierGap,
       undefined,
-      newPairs
+      newPairs,
+      relaxationLevel
     );
 
     // Generate S2 pairings
-    const s2Matches = generateSlotPairings(
+    let s2Matches = generateSlotPairings(
       sortedTeams,
       slot2,
       playedSet,
@@ -360,12 +596,106 @@ export function generateScheduleGreedyWithTracking(input: GreedySchedulerInput):
       teamMatchCounts,
       maxTierGap,
       undefined,
-      newPairs
+      newPairs,
+      relaxationLevel
     );
 
-    const allMatches = [...s1Matches, ...s2Matches];
+    // Check if we have the expected number of matches
+    const expectedMatches = teams.length; // N teams = N matches (N/2 per slot)
+    let allMatches = [...s1Matches, ...s2Matches];
 
-    // Validation: every team should have exactly 2 matches
+    // If we don't have enough matches, try progressive relaxation
+    while (allMatches.length < expectedMatches && relaxationLevel < 3) {
+      relaxationLevel = (relaxationLevel + 1) as RelaxationLevel;
+      diagnostics.relaxationApplied = relaxationLevel;
+      if (relaxationLevel === 1) diagnostics.constraintsRelaxed.push('season_rematches');
+      if (relaxationLevel === 2) diagnostics.constraintsRelaxed.push('tier_constraints');
+
+      scheduleLog(
+        `Only ${allMatches.length}/${expectedMatches} matches created. ` +
+          `Retrying with relaxation level ${relaxationLevel}`
+      );
+
+      // Reset and retry
+      tonightPairs.clear();
+      forbiddenPairs?.forEach((p) => tonightPairs.add(p));
+      newPairs.clear();
+      teamMatchCounts.clear();
+
+      s1Matches = generateSlotPairings(
+        sortedTeams,
+        slot1,
+        playedSet,
+        tonightPairs,
+        teamMatchCounts,
+        maxTierGap,
+        undefined,
+        newPairs,
+        relaxationLevel
+      );
+
+      s2Matches = generateSlotPairings(
+        sortedTeams,
+        slot2,
+        playedSet,
+        tonightPairs,
+        teamMatchCounts,
+        maxTierGap,
+        undefined,
+        newPairs,
+        relaxationLevel
+      );
+
+      allMatches = [...s1Matches, ...s2Matches];
+    }
+
+    // If still missing matches, attempt repair pass
+    if (allMatches.length < expectedMatches) {
+      diagnostics.repairAttempted = true;
+
+      // Find teams that don't have matches in each slot
+      const s1TeamIds = new Set(s1Matches.flatMap((m) => [m.teamAId, m.teamBId]));
+      const s2TeamIds = new Set(s2Matches.flatMap((m) => [m.teamAId, m.teamBId]));
+
+      const unmatchedInS1 = sortedTeams.filter((t) => !s1TeamIds.has(t.id));
+      const unmatchedInS2 = sortedTeams.filter((t) => !s2TeamIds.has(t.id));
+
+      if (unmatchedInS1.length >= 2) {
+        scheduleLog(`Attempting repair pass for ${unmatchedInS1.length} unmatched teams in ${slot1}`);
+        const repairS1 = attemptRepairPass(
+          unmatchedInS1,
+          sortedTeams,
+          slot1,
+          playedSet,
+          tonightPairs,
+          teamMatchCounts,
+          maxTierGap,
+          newPairs,
+          3 // Use full relaxation for repair
+        );
+        s1Matches.push(...repairS1);
+      }
+
+      if (unmatchedInS2.length >= 2) {
+        scheduleLog(`Attempting repair pass for ${unmatchedInS2.length} unmatched teams in ${slot2}`);
+        const repairS2 = attemptRepairPass(
+          unmatchedInS2,
+          sortedTeams,
+          slot2,
+          playedSet,
+          tonightPairs,
+          teamMatchCounts,
+          maxTierGap,
+          newPairs,
+          3 // Use full relaxation for repair
+        );
+        s2Matches.push(...repairS2);
+      }
+
+      allMatches = [...s1Matches, ...s2Matches];
+    }
+
+    // Final validation
     const matchCountsArray = Array.from(teamMatchCounts.values());
     const allHaveTwoMatches = matchCountsArray.every((count) => count === 2);
 
@@ -374,9 +704,13 @@ export function generateScheduleGreedyWithTracking(input: GreedySchedulerInput):
     }
 
     scheduleLog(
-      `Generated ${allMatches.length} matches (${s1Matches.length} in ${slot1}, ${s2Matches.length} in ${slot2})`
+      `Generated ${allMatches.length} matches (${s1Matches.length} in ${slot1}, ${s2Matches.length} in ${slot2})` +
+        (diagnostics.relaxationApplied > 0
+          ? ` [relaxation: ${diagnostics.constraintsRelaxed.join(', ')}]`
+          : '')
     );
-    return { matches: allMatches, newPairs };
+
+    return { matches: allMatches, newPairs, diagnostics };
   } else {
     // ============ ODD TEAM COUNT ============
     scheduleLog(
@@ -384,11 +718,11 @@ export function generateScheduleGreedyWithTracking(input: GreedySchedulerInput):
     );
 
     // Select Bye1 for S1
-    const bye1 = pickBye(sortedTeams, byeStrategy, playedSet, maxTierGap);
+    const bye1 = pickBye(sortedTeams, byeStrategy, playedSet, maxTierGap, new Set(), relaxationLevel);
     scheduleLog(`Selected Bye1: ${bye1.name} (sits out ${slot1})`);
 
     // Generate S1 pairings (excluding Bye1)
-    const s1Matches = generateSlotPairings(
+    let s1Matches = generateSlotPairings(
       sortedTeams,
       slot1,
       playedSet,
@@ -396,18 +730,26 @@ export function generateScheduleGreedyWithTracking(input: GreedySchedulerInput):
       teamMatchCounts,
       maxTierGap,
       bye1.id,
-      newPairs
+      newPairs,
+      relaxationLevel
     );
 
-    // Select Bye2 for S2 (must be different from Bye1 and not have played Bye1)
+    // Select Bye2 for S2 (must be different from Bye1 and able to play Bye1)
     let bye2: Team | null = null;
     const excludeForBye2 = new Set([bye1.id]);
 
-    // Try to find a valid Bye2 (max 3 attempts with different strategies)
-    for (let attempt = 0; attempt < 3 && !bye2; attempt++) {
-      const candidate = pickBye(sortedTeams, byeStrategy, playedSet, maxTierGap, excludeForBye2);
+    // Try to find a valid Bye2 with progressive relaxation
+    for (let attempt = 0; attempt < sortedTeams.length && !bye2; attempt++) {
+      const candidate = pickBye(
+        sortedTeams,
+        byeStrategy,
+        playedSet,
+        maxTierGap,
+        excludeForBye2,
+        relaxationLevel
+      );
 
-      if (canPlay(bye1, candidate, playedSet, tonightPairs, maxTierGap)) {
+      if (canPlay(bye1, candidate, playedSet, tonightPairs, maxTierGap, relaxationLevel)) {
         bye2 = candidate;
       } else {
         excludeForBye2.add(candidate.id);
@@ -415,15 +757,20 @@ export function generateScheduleGreedyWithTracking(input: GreedySchedulerInput):
     }
 
     if (!bye2) {
-      // Fallback: just pick any team that isn't Bye1
-      bye2 = sortedTeams.find((t) => t.id !== bye1.id) || sortedTeams[0];
+      // Emergency fallback with full relaxation
+      bye2 = sortedTeams.find(
+        (t) => t.id !== bye1.id && canPlay(bye1, t, playedSet, tonightPairs, maxTierGap, 3)
+      );
+      if (!bye2) {
+        bye2 = sortedTeams.find((t) => t.id !== bye1.id) || sortedTeams[0];
+      }
       warnLog(`Could not find ideal Bye2, using fallback: ${bye2.name}`);
     } else {
       scheduleLog(`Selected Bye2: ${bye2.name} (sits out ${slot2})`);
     }
 
     // Generate S2 pairings (excluding Bye2)
-    const s2Matches = generateSlotPairings(
+    let s2Matches = generateSlotPairings(
       sortedTeams,
       slot2,
       playedSet,
@@ -431,8 +778,51 @@ export function generateScheduleGreedyWithTracking(input: GreedySchedulerInput):
       teamMatchCounts,
       maxTierGap,
       bye2.id,
-      newPairs
+      newPairs,
+      relaxationLevel
     );
+
+    // Check if we need repair pass for odd teams
+    const expectedMatchesPerSlot = Math.floor((teams.length - 1) / 2);
+    if (s1Matches.length < expectedMatchesPerSlot || s2Matches.length < expectedMatchesPerSlot) {
+      diagnostics.repairAttempted = true;
+
+      const s1TeamIds = new Set([bye1.id, ...s1Matches.flatMap((m) => [m.teamAId, m.teamBId])]);
+      const s2TeamIds = new Set([bye2.id, ...s2Matches.flatMap((m) => [m.teamAId, m.teamBId])]);
+
+      const unmatchedInS1 = sortedTeams.filter((t) => !s1TeamIds.has(t.id));
+      const unmatchedInS2 = sortedTeams.filter((t) => !s2TeamIds.has(t.id));
+
+      if (unmatchedInS1.length >= 2) {
+        const repairS1 = attemptRepairPass(
+          unmatchedInS1,
+          sortedTeams,
+          slot1,
+          playedSet,
+          tonightPairs,
+          teamMatchCounts,
+          maxTierGap,
+          newPairs,
+          3
+        );
+        s1Matches.push(...repairS1);
+      }
+
+      if (unmatchedInS2.length >= 2) {
+        const repairS2 = attemptRepairPass(
+          unmatchedInS2,
+          sortedTeams,
+          slot2,
+          playedSet,
+          tonightPairs,
+          teamMatchCounts,
+          maxTierGap,
+          newPairs,
+          3
+        );
+        s2Matches.push(...repairS2);
+      }
+    }
 
     // Generate S3 match: Bye1 vs Bye2
     const slot3Name = thirdSlot || 'S3';
@@ -465,11 +855,14 @@ export function generateScheduleGreedyWithTracking(input: GreedySchedulerInput):
     }
 
     scheduleLog(
-      `Generated ${allMatches.length} matches (${s1Matches.length} in ${slot1}, ${s2Matches.length} in ${slot2}, 1 in ${slot3Name})`
+      `Generated ${allMatches.length} matches (${s1Matches.length} in ${slot1}, ${s2Matches.length} in ${slot2}, 1 in ${slot3Name})` +
+        (diagnostics.relaxationApplied > 0
+          ? ` [relaxation: ${diagnostics.constraintsRelaxed.join(', ')}]`
+          : '')
     );
     scheduleLog(`Bye1 (${bye1.name}) plays in ${slot2} + ${slot3Name}`);
     scheduleLog(`Bye2 (${bye2.name}) plays in ${slot1} + ${slot3Name}`);
 
-    return { matches: allMatches, newPairs };
+    return { matches: allMatches, newPairs, diagnostics };
   }
 }

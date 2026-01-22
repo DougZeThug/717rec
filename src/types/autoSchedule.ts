@@ -118,9 +118,23 @@ export interface MatchQualityMetrics {
   };
 }
 
+/**
+ * Diagnostics information about constraint relaxation applied during scheduling
+ */
+export interface SchedulingDiagnostics {
+  /** Level of constraint relaxation applied (0=none, 1=rematches, 2=tiers, 3=full) */
+  relaxationApplied: 0 | 1 | 2 | 3;
+  /** List of constraints that were relaxed */
+  constraintsRelaxed: string[];
+  /** Whether a repair pass was needed to match remaining teams */
+  repairAttempted: boolean;
+}
+
 export interface PairingResult {
   pairings: TeamPairingMap;
   unmatchedTeamIds: string[];
+  /** Optional diagnostics about constraint relaxation */
+  diagnostics?: SchedulingDiagnostics;
 }
 
 export interface PreviewResult {
