@@ -243,8 +243,16 @@ export const usePairingOperations = (
                 : 'Poor';
 
         // 🛡️ DEFENSIVE VALIDATION: Check for cross-block matches
-        const activeBlockMap = teamBlockMap || generatorBlockMap;
-        if (activeBlockMap && Object.keys(activeBlockMap).length > 0 && allTeams) {
+        // Use teamBlockMap if it has entries, otherwise fall back to generatorBlockMap
+        // IMPORTANT: Check for non-empty, not just truthy (empty objects are truthy)
+        const hasTeamBlockMap = teamBlockMap && Object.keys(teamBlockMap).length > 0;
+        const hasGeneratorBlockMap = generatorBlockMap && Object.keys(generatorBlockMap).length > 0;
+        const activeBlockMap = hasTeamBlockMap
+          ? teamBlockMap
+          : hasGeneratorBlockMap
+            ? generatorBlockMap
+            : null;
+        if (activeBlockMap && allTeams) {
           const validation = validateNoCrossBlockMatches(matches, activeBlockMap, allTeams);
 
           if (!validation.isValid) {
