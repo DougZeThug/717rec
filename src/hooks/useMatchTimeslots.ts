@@ -107,7 +107,7 @@ export const useMatchTimeslots = (date: Date | null) => {
       };
     },
     enabled: !!date,
-    staleTime: 1000 * 60 * 2, // Consider data fresh for 2 minutes
+    staleTime: 0, // Always fresh - instant updates
     refetchInterval: 30000, // Auto-refetch every 30 seconds
   });
 

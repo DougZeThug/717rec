@@ -57,7 +57,7 @@ export function usePendingScoresMatches() {
         location: match.location || '',
       }));
     },
-    staleTime: 1000 * 60 * 2, // 2 minutes
+    staleTime: 0, // Always fresh - instant updates
   });
 
   const submitMutation = useMutation({

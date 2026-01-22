@@ -51,7 +51,7 @@ export const usePlayoffMatches = (bracketId: string | null) => {
       return transformedMatches;
     },
     enabled: !!bracketId,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 0, // Always fresh - instant updates
     retry: 2,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
