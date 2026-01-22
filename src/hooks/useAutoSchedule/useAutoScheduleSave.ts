@@ -47,7 +47,13 @@ export function useAutoScheduleSave() {
 
       // Validate matches based on mode
       if (dualMatchMode) {
-        // In dual match mode: teams can appear in up to 2 matches with different timeslots
+        // In dual match mode: teams can appear in up to 4 matches (double headers = 2 back-to-back pairs)
+        // Regular teams: 2 matches (1 back-to-back pair)
+        // Double header teams: 4 matches (2 back-to-back pairs)
+        // Validation ensures:
+        // 1. Max 4 matches per team
+        // 2. No duplicate timeslots (can't play 2 matches at same time)
+        // 3. No duplicate opponents (can't play same team twice)
         const teamAppearances = new Map<string, string[]>();
         const teamOpponents = new Map<string, Set<string>>();
 
@@ -58,10 +64,10 @@ export function useAutoScheduleSave() {
 
           const { team1Id, team2Id, timeslot } = match;
 
-          // Check team1 appearances
+          // Check team1 appearances - allow up to 4 for double headers
           const team1Slots = teamAppearances.get(team1Id) || [];
-          if (team1Slots.length >= 2) {
-            throw new Error('Team appears in more than 2 matches');
+          if (team1Slots.length >= 4) {
+            throw new Error('Team appears in more than 4 matches (max for double headers)');
           }
           if (team1Slots.includes(timeslot)) {
             throw new Error('Team has duplicate matches in same timeslot');
@@ -69,10 +75,10 @@ export function useAutoScheduleSave() {
           team1Slots.push(timeslot);
           teamAppearances.set(team1Id, team1Slots);
 
-          // Check team2 appearances
+          // Check team2 appearances - allow up to 4 for double headers
           const team2Slots = teamAppearances.get(team2Id) || [];
-          if (team2Slots.length >= 2) {
-            throw new Error('Team appears in more than 2 matches');
+          if (team2Slots.length >= 4) {
+            throw new Error('Team appears in more than 4 matches (max for double headers)');
           }
           if (team2Slots.includes(timeslot)) {
             throw new Error('Team has duplicate matches in same timeslot');

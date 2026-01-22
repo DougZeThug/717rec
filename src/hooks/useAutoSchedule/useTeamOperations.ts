@@ -16,7 +16,8 @@ export const useTeamOperations = () => {
   const [timeBlockTeams, setTimeBlockTeams] = useState<TimeBlockTeamsMap>({});
   const [originalTimeBlockTeams, setOriginalTimeBlockTeams] = useState<TimeBlockTeamsMap>({});
   const [pairedTimeBlockTeams, setPairedTimeBlockTeams] = useState<PairedTimeBlockTeamsMap>({});
-  const [teamBlockMap, setTeamBlockMap] = useState<Record<string, string>>({});
+  // Maps team ID to array of block names (supports double headers in multiple blocks)
+  const [teamBlockMap, setTeamBlockMap] = useState<Record<string, string[]>>({});
 
   /**
    * Load teams for all back-to-back pairs for a specific date
@@ -51,19 +52,27 @@ export const useTeamOperations = () => {
         const backToBackTeams = await getAllBackToBackTeams(date);
 
         // Build team-to-block mapping for defensive validation
-        const blockMap: Record<string, string> = {};
+        // Now supports arrays to handle double header teams in multiple blocks
+        const blockMap: Record<string, string[]> = {};
 
         scheduleLog('Team Loading Summary by Block:');
         Object.entries(backToBackTeams).forEach(([pairName, teams]) => {
           scheduleLog(`  ${pairName}: ${teams.length} teams`);
           teams.forEach((team) => {
-            // Check for duplicate assignments (critical error)
-            if (blockMap[team.id] && blockMap[team.id] !== pairName) {
-              errorLog(
-                `CRITICAL: Team "${team.name}" appears in multiple blocks: ${blockMap[team.id]} and ${pairName}`
-              );
+            // Initialize array if needed
+            if (!blockMap[team.id]) {
+              blockMap[team.id] = [];
             }
-            blockMap[team.id] = pairName;
+            // Add this block to the team's list (supports double headers)
+            if (!blockMap[team.id].includes(pairName)) {
+              blockMap[team.id].push(pairName);
+              // Log double header detection
+              if (blockMap[team.id].length > 1) {
+                scheduleLog(
+                  `Double header detected: Team "${team.name}" is in blocks: ${blockMap[team.id].join(', ')}`
+                );
+              }
+            }
             scheduleLog(`    - ${team.name} (${team.divisionName || 'No Division'})`);
           });
         });

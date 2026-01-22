@@ -20,20 +20,23 @@ export interface CrossBlockValidation {
  * - Teams in "SuperEarly" (6:00-6:30) should NEVER play teams in "LateMid" (9:00-9:30)
  * - Each back-to-back block is completely isolated
  * - Cross-block matches indicate a data or algorithm error
+ *
+ * Note: Teams can be in multiple blocks (double headers), so we check if they
+ * share at least one common block.
  */
 export function validateNoCrossBlockMatches(
   matches: AutoScheduleMatch[],
-  teamBlockMap: Record<string, string>,
+  teamBlockMap: Record<string, string[]>,
   teams: Team[]
 ): CrossBlockValidation {
   const violations: CrossBlockViolation[] = [];
 
   for (const match of matches) {
-    const team1Block = teamBlockMap[match.team1Id];
-    const team2Block = teamBlockMap[match.team2Id];
+    const team1Blocks = teamBlockMap[match.team1Id] || [];
+    const team2Blocks = teamBlockMap[match.team2Id] || [];
 
     // Check if teams are in the block map - fail-safe if missing
-    if (!team1Block || !team2Block) {
+    if (team1Blocks.length === 0 || team2Blocks.length === 0) {
       errorLog(`Team missing from block map: ${match.team1Id} or ${match.team2Id}`);
       const team1 = teams.find((t) => t.id === match.team1Id);
       const team2 = teams.find((t) => t.id === match.team2Id);
@@ -43,20 +46,23 @@ export function validateNoCrossBlockMatches(
         team1: {
           id: match.team1Id,
           name: team1?.name || 'Unknown Team',
-          block: team1Block || 'MISSING',
+          block: team1Blocks.join(', ') || 'MISSING',
         },
         team2: {
           id: match.team2Id,
           name: team2?.name || 'Unknown Team',
-          block: team2Block || 'MISSING',
+          block: team2Blocks.join(', ') || 'MISSING',
         },
         timeslot: match.timeslot,
       });
       continue;
     }
 
-    // Critical check: teams must be in the same block
-    if (team1Block !== team2Block) {
+    // Critical check: teams must share at least one common block
+    // This allows double header teams (in multiple blocks) to play teams in any of their shared blocks
+    const hasCommonBlock = team1Blocks.some((block) => team2Blocks.includes(block));
+
+    if (!hasCommonBlock) {
       const team1 = teams.find((t) => t.id === match.team1Id);
       const team2 = teams.find((t) => t.id === match.team2Id);
 
@@ -65,12 +71,12 @@ export function validateNoCrossBlockMatches(
         team1: {
           id: match.team1Id,
           name: team1?.name || 'Unknown Team',
-          block: team1Block,
+          block: team1Blocks.join(', '),
         },
         team2: {
           id: match.team2Id,
           name: team2?.name || 'Unknown Team',
-          block: team2Block,
+          block: team2Blocks.join(', '),
         },
         timeslot: match.timeslot,
       });

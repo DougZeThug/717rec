@@ -8,7 +8,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { TimeBlockTeamsMap } from '@/types/autoSchedule';
 
 interface DiagnosticPanelProps {
-  teamBlockMap: Record<string, string>;
+  // Maps team ID to array of block names (supports double headers in multiple blocks)
+  teamBlockMap: Record<string, string[]>;
   timeBlockTeams: TimeBlockTeamsMap;
   isVisible?: boolean;
 }
@@ -17,7 +18,8 @@ interface TeamAssignment {
   teamId: string;
   teamName: string;
   block: string;
-  isDuplicate: boolean;
+  isDoubleHeader: boolean; // Team is in 2 blocks (valid double header)
+  isInvalid: boolean; // Team is in 3+ blocks (invalid)
 }
 
 /**
@@ -42,7 +44,7 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
     const teamBlocks = new Map<string, string[]>();
     const blockStats = new Map<string, number>();
 
-    // Build team assignments list and detect duplicates
+    // Build team assignments list and detect double headers vs invalid (3+ blocks)
     Object.entries(timeBlockTeams).forEach(([block, teams]) => {
       blockStats.set(block, teams.length);
 
@@ -55,14 +57,22 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
           teamId: team.id,
           teamName: team.name,
           block: block,
-          isDuplicate: currentBlocks.length > 1,
+          isDoubleHeader: currentBlocks.length === 2, // Exactly 2 blocks = valid double header
+          isInvalid: currentBlocks.length > 2, // 3+ blocks = invalid
         });
       });
     });
 
-    // Find teams with duplicate assignments
-    const duplicateTeams = Array.from(teamBlocks.entries())
-      .filter(([_, blocks]) => blocks.length > 1)
+    // Update isDoubleHeader/isInvalid flags based on final block counts
+    teamAssignments.forEach((assignment) => {
+      const blockCount = teamBlocks.get(assignment.teamId)?.length || 0;
+      assignment.isDoubleHeader = blockCount === 2;
+      assignment.isInvalid = blockCount > 2;
+    });
+
+    // Find double header teams (2 blocks - valid)
+    const doubleHeaderTeams = Array.from(teamBlocks.entries())
+      .filter(([_, blocks]) => blocks.length === 2)
       .map(([teamId, blocks]) => {
         const team = Object.values(timeBlockTeams)
           .flat()
@@ -74,20 +84,36 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
         };
       });
 
-    // Calculate validation status
+    // Find invalid teams (3+ blocks - error)
+    const invalidTeams = Array.from(teamBlocks.entries())
+      .filter(([_, blocks]) => blocks.length > 2)
+      .map(([teamId, blocks]) => {
+        const team = Object.values(timeBlockTeams)
+          .flat()
+          .find((t) => t.id === teamId);
+        return {
+          teamId,
+          teamName: team?.name || 'Unknown',
+          blocks,
+        };
+      });
+
+    // Calculate validation status - only 3+ blocks is an error, 2 blocks is valid (double header)
     const totalTeams = new Set(Object.keys(teamBlockMap)).size;
     const teamsWithAssignments = Object.keys(teamBlockMap).length;
-    const hasDuplicates = duplicateTeams.length > 0;
-    const isValid = !hasDuplicates && teamsWithAssignments > 0;
+    const hasInvalidAssignments = invalidTeams.length > 0;
+    const isValid = !hasInvalidAssignments && teamsWithAssignments > 0;
 
     return {
       teamAssignments,
-      duplicateTeams,
+      doubleHeaderTeams,
+      invalidTeams,
       blockStats,
       totalTeams,
       teamsWithAssignments,
       isValid,
-      hasDuplicates,
+      hasInvalidAssignments,
+      hasDoubleHeaders: doubleHeaderTeams.length > 0,
     };
   }, [teamBlockMap, timeBlockTeams]);
 
@@ -129,16 +155,32 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
               </span>
             </div>
 
-            {/* Duplicate Warnings */}
-            {analysis.hasDuplicates && (
+            {/* Invalid Assignments (3+ blocks) */}
+            {analysis.hasInvalidAssignments && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription className="text-xs font-mono">
-                  <strong>Critical Error:</strong> {analysis.duplicateTeams.length} team(s) assigned
-                  to multiple blocks
-                  {analysis.duplicateTeams.map((dup) => (
-                    <div key={dup.teamId} className="mt-1 pl-4 border-l-2 border-destructive/50">
-                      {dup.teamName}: {dup.blocks.join(', ')}
+                  <strong>Critical Error:</strong> {analysis.invalidTeams.length} team(s) assigned
+                  to 3+ blocks (max is 2 for double headers)
+                  {analysis.invalidTeams.map((inv) => (
+                    <div key={inv.teamId} className="mt-1 pl-4 border-l-2 border-destructive/50">
+                      {inv.teamName}: {inv.blocks.join(', ')}
+                    </div>
+                  ))}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Double Header Info */}
+            {analysis.hasDoubleHeaders && (
+              <Alert>
+                <CheckCircle2 className="h-4 w-4 text-amber-500" />
+                <AlertDescription className="text-xs font-mono">
+                  <strong>Double Headers:</strong> {analysis.doubleHeaderTeams.length} team(s)
+                  scheduled for 2 back-to-back pairs (4 matches total)
+                  {analysis.doubleHeaderTeams.map((dh) => (
+                    <div key={dh.teamId} className="mt-1 pl-4 border-l-2 border-amber-500/50">
+                      {dh.teamName}: {dh.blocks.join(' & ')}
                     </div>
                   ))}
                 </AlertDescription>
@@ -176,15 +218,23 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
                       <div
                         key={`${assignment.teamId}-${index}`}
                         className={`flex items-center justify-between p-2 rounded text-xs font-mono ${
-                          assignment.isDuplicate
+                          assignment.isInvalid
                             ? 'bg-destructive/10 border border-destructive'
-                            : 'bg-background border'
+                            : assignment.isDoubleHeader
+                              ? 'bg-amber-500/10 border border-amber-500/50'
+                              : 'bg-background border'
                         }`}
                       >
                         <span className="truncate flex-1">{assignment.teamName}</span>
                         <Badge
-                          variant={assignment.isDuplicate ? 'destructive' : 'secondary'}
-                          className="text-xs ml-2"
+                          variant={
+                            assignment.isInvalid
+                              ? 'destructive'
+                              : assignment.isDoubleHeader
+                                ? 'outline'
+                                : 'secondary'
+                          }
+                          className={`text-xs ml-2 ${assignment.isDoubleHeader ? 'border-amber-500 text-amber-600' : ''}`}
                         >
                           {assignment.block}
                         </Badge>
