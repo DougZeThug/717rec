@@ -95,7 +95,7 @@ export const useScheduleData = () => {
     },
     refetchOnWindowFocus: false, // Don't refetch on tab focus
     refetchOnMount: false, // Trust the cache
-    staleTime: 1000 * 60 * 2, // 2 minutes - schedule rarely changes
+    staleTime: 0, // Always fresh - instant updates
   });
 
   // Process and separate upcoming vs completed matches

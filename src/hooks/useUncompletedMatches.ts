@@ -42,7 +42,7 @@ export function useUncompletedMatches() {
 
       return transformDatabaseMatches(data || []);
     },
-    staleTime: 1000 * 60 * 2, // 2 minutes
+    staleTime: 0, // Always fresh - instant updates
   });
 
   // Score state management - initialized from matches

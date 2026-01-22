@@ -61,7 +61,7 @@ export const useTimeslotsByDate = (date: Date | null) => {
       return formattedData;
     },
     enabled: !!date,
-    staleTime: 1000 * 60 * 2, // 2 minutes
+    staleTime: 0, // Always fresh - instant updates
   });
 
   return { timeslots, isLoading };

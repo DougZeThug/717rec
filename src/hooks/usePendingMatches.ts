@@ -41,7 +41,7 @@ export function usePendingMatches() {
 
       return transformDatabaseMatches(data || [], { normalizeDate: false });
     },
-    staleTime: 1000 * 60 * 2, // 2 minutes
+    staleTime: 0, // Always fresh - instant updates
   });
 
   // Fetch teams
@@ -84,7 +84,7 @@ export function usePendingMatches() {
 
       return teamsMap;
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 0, // Always fresh - instant updates
   });
 
   // Mutation for approving match results

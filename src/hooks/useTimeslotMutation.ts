@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { useState } from 'react';
 
@@ -9,6 +10,7 @@ import { TeamTimeslot } from '@/types/timeslots';
 export const useTimeslotMutation = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Add a new timeslot assignment
   const addTimeslot = async (
@@ -40,6 +42,11 @@ export const useTimeslotMutation = () => {
         return null;
       }
 
+      // Invalidate timeslot queries to refresh UI
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      queryClient.invalidateQueries({ queryKey: ['timeslots', formattedDate] });
+      queryClient.invalidateQueries({ queryKey: ['match-timeslots', formattedDate] });
+
       return result.data as TeamTimeslot;
     } finally {
       setIsSubmitting(false);
@@ -60,6 +67,10 @@ export const useTimeslotMutation = () => {
         });
         return false;
       }
+
+      // Invalidate all timeslot queries to refresh UI
+      queryClient.invalidateQueries({ queryKey: ['timeslots'] });
+      queryClient.invalidateQueries({ queryKey: ['match-timeslots'] });
 
       return true;
     } finally {
@@ -96,6 +107,11 @@ export const useTimeslotMutation = () => {
         });
         return null;
       }
+
+      // Invalidate timeslot queries to refresh UI
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      queryClient.invalidateQueries({ queryKey: ['timeslots', formattedDate] });
+      queryClient.invalidateQueries({ queryKey: ['match-timeslots', formattedDate] });
 
       return result.data as TeamTimeslot[];
     } finally {
@@ -150,6 +166,11 @@ export const useTimeslotMutation = () => {
         });
         return null;
       }
+
+      // Invalidate timeslot queries to refresh UI
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      queryClient.invalidateQueries({ queryKey: ['timeslots', formattedDate] });
+      queryClient.invalidateQueries({ queryKey: ['match-timeslots', formattedDate] });
 
       return result.data as TeamTimeslot[];
     } finally {
