@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,6 +10,14 @@ export function usePlayoffRealtime(bracketId: string | null) {
   const [realtimeEnabled, setRealtimeEnabled] = useState(false);
   const [lastUpdatedMatch, setLastUpdatedMatch] = useState<PlayoffMatch | null>(null);
   const { toast } = useToast();
+
+  // Use ref to hold toast function to prevent subscription recreation
+  const toastRef = useRef(toast);
+
+  // Update ref when toast changes
+  useEffect(() => {
+    toastRef.current = toast;
+  }, [toast]);
 
   useEffect(() => {
     if (!bracketId) return;
@@ -33,8 +41,8 @@ export function usePlayoffRealtime(bracketId: string | null) {
 
           setLastUpdatedMatch(updatedMatch);
 
-          // Show toast notification
-          toast({
+          // Show toast notification using ref to prevent subscription recreation
+          toastRef.current({
             title: 'Match Updated',
             description: `Match #${updatedMatch.position} in round ${updatedMatch.round} has been updated.`,
             duration: 3000,
@@ -54,7 +62,7 @@ export function usePlayoffRealtime(bracketId: string | null) {
       supabase.removeChannel(channel);
       setRealtimeEnabled(false);
     };
-  }, [bracketId, toast]);
+  }, [bracketId]); // Only depend on bracketId - toast is accessed via ref
 
   return {
     realtimeEnabled,
