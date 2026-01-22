@@ -49,12 +49,15 @@ export function useScoreSubmissions() {
     }
   };
 
-  const handleApproveSubmission = async (submissionId: string) => {
+  const handleSubmissionAction = async (
+    submissionId: string,
+    status: 'approved' | 'rejected'
+  ) => {
     try {
       const { error } = await supabase
         .from('score_submissions')
         .update({
-          status: 'approved',
+          status,
           reviewed_by: (await supabase.auth.getUser()).data.user?.id,
           reviewed_at: new Date().toISOString(),
         })
@@ -66,46 +69,23 @@ export function useScoreSubmissions() {
 
       toast({
         title: 'Success',
-        description: 'Score submission approved successfully.',
+        description: `Score submission ${status} successfully.`,
       });
     } catch (error) {
-      errorLog('Error approving submission:', error);
+      errorLog(`Error ${status === 'approved' ? 'approving' : 'rejecting'} submission:`, error);
       toast({
         title: 'Error',
-        description: 'Failed to approve submission. Please try again.',
+        description: `Failed to ${status === 'approved' ? 'approve' : 'reject'} submission. Please try again.`,
         variant: 'destructive',
       });
     }
   };
 
-  const handleRejectSubmission = async (submissionId: string) => {
-    try {
-      const { error } = await supabase
-        .from('score_submissions')
-        .update({
-          status: 'rejected',
-          reviewed_by: (await supabase.auth.getUser()).data.user?.id,
-          reviewed_at: new Date().toISOString(),
-        })
-        .eq('id', submissionId);
+  const handleApproveSubmission = (submissionId: string) =>
+    handleSubmissionAction(submissionId, 'approved');
 
-      if (error) throw error;
-
-      setSubmissions((prev) => prev.filter((sub) => sub.id !== submissionId));
-
-      toast({
-        title: 'Success',
-        description: 'Score submission rejected.',
-      });
-    } catch (error) {
-      errorLog('Error rejecting submission:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to reject submission. Please try again.',
-        variant: 'destructive',
-      });
-    }
-  };
+  const handleRejectSubmission = (submissionId: string) =>
+    handleSubmissionAction(submissionId, 'rejected');
 
   return {
     submissions,
