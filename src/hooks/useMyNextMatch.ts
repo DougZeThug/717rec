@@ -123,9 +123,11 @@ export const useMyNextMatch = (): MyNextMatchResult => {
     }
 
     // No upcoming matches - fall back to most recent completed matches
-    // completedMatches from useTeamMatches are already filtered by team and sorted
+    // completedMatches from useTeamMatches are sorted by date ascending (oldest first)
+    // so we need to get matches from the END of the array for the most recent
     if (completedMatches.length > 0) {
-      const mostRecentDateKey = getMatchDateKey(completedMatches[0]);
+      const mostRecentMatch = completedMatches[completedMatches.length - 1];
+      const mostRecentDateKey = getMatchDateKey(mostRecentMatch);
 
       // Get all matches on that same date
       const matchesOnMostRecentDate = completedMatches.filter(
