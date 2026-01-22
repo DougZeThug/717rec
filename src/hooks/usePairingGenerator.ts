@@ -67,7 +67,13 @@ export const usePairingGenerator = () => {
         // Use provided block map or build one from timeBlockTeams
         // Block map now uses arrays to support double header teams in multiple blocks
         const blockMap: Record<string, string[]> = providedTeamBlockMap || {};
-        if (!providedTeamBlockMap) {
+
+        // Check if providedTeamBlockMap has actual entries
+        // If empty or not provided, build from timeBlockTeams
+        const hasProvidedEntries =
+          providedTeamBlockMap && Object.keys(providedTeamBlockMap).length > 0;
+
+        if (!hasProvidedEntries) {
           Object.entries(timeBlockTeams).forEach(([blockKey, teamsInBlock]) => {
             teamsInBlock?.forEach((team) => {
               if (!blockMap[team.id]) {
