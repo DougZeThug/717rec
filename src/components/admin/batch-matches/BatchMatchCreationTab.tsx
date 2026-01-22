@@ -4,7 +4,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 import AdminSectionWrapper from '../AdminSectionWrapper';
-import BatchMatchForm from './BatchMatchForm';
+import BatchMatchFormContainer from './BatchMatchFormContainer';
 
 const BatchMatchCreationTab = () => {
   return (
@@ -14,7 +14,7 @@ const BatchMatchCreationTab = () => {
           <CardTitle>Create Multiple Matches</CardTitle>
         </CardHeader>
         <CardContent>
-          <BatchMatchForm />
+          <BatchMatchFormContainer />
         </CardContent>
       </Card>
     </AdminSectionWrapper>
