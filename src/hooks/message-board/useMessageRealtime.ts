@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { supabase } from '@/integrations/supabase/client';
 import { Message } from '@/types/reactions';
@@ -8,6 +8,22 @@ export const useMessageRealtime = (
   onMessageUpdated: (message: Message) => void,
   onMessageDeleted: (message: Message) => void
 ) => {
+  // Use ref to hold callbacks to prevent subscription recreation
+  const handlersRef = useRef({
+    onMessageInserted,
+    onMessageUpdated,
+    onMessageDeleted,
+  });
+
+  // Update ref when callbacks change
+  useEffect(() => {
+    handlersRef.current = {
+      onMessageInserted,
+      onMessageUpdated,
+      onMessageDeleted,
+    };
+  }, [onMessageInserted, onMessageUpdated, onMessageDeleted]);
+
   useEffect(() => {
     const channel = supabase
       .channel('message-board-realtime')
@@ -20,7 +36,7 @@ export const useMessageRealtime = (
         },
         (payload) => {
           const newMessage = payload.new as Message;
-          onMessageInserted(newMessage);
+          handlersRef.current.onMessageInserted(newMessage);
         }
       )
       .on(
@@ -32,7 +48,7 @@ export const useMessageRealtime = (
         },
         (payload) => {
           const updatedMessage = payload.new as Message;
-          onMessageUpdated(updatedMessage);
+          handlersRef.current.onMessageUpdated(updatedMessage);
         }
       )
       .on(
@@ -44,7 +60,7 @@ export const useMessageRealtime = (
         },
         (payload) => {
           const deletedMessage = payload.old as Message;
-          onMessageDeleted(deletedMessage);
+          handlersRef.current.onMessageDeleted(deletedMessage);
         }
       )
       .subscribe();
@@ -52,5 +68,5 @@ export const useMessageRealtime = (
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [onMessageInserted, onMessageUpdated, onMessageDeleted]);
+  }, []); // Empty deps - callbacks are accessed via ref
 };
