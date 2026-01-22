@@ -1,5 +1,5 @@
 import { ChevronDown } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import {
   DropdownMenu,
@@ -7,6 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ToggleButtonGroup, ToggleOption } from '@/components/ui/ToggleButtonGroup';
 import WinterSection from '@/components/winter/WinterSection';
 import { useIsMobile } from '@/hooks/use-mobile';
 import useScrollRestoration from '@/hooks/useScrollRestoration';
@@ -42,6 +43,22 @@ const TeamsPageContainer: React.FC = () => {
     const savedSortMode = localStorage.getItem('teamsSortMode');
     return (savedSortMode as SortMode) || 'rank';
   });
+
+  const viewModeOptions: ToggleOption<ViewMode>[] = useMemo(
+    () => [
+      { value: 'grid', label: 'Grid' },
+      { value: 'list', label: 'List' },
+    ],
+    []
+  );
+
+  const displayModeOptions: ToggleOption<DisplayMode>[] = useMemo(
+    () => [
+      { value: 'all', label: 'All Teams' },
+      { value: 'grouped', label: 'By Division' },
+    ],
+    []
+  );
 
   // Save to local storage when preferences change
   useEffect(() => {
@@ -110,56 +127,20 @@ const TeamsPageContainer: React.FC = () => {
           </DropdownMenu>
         </div>
 
-        {/* Desktop: Original toggle buttons */}
+        {/* Desktop: Toggle buttons */}
         <div className="hidden sm:flex flex-wrap gap-3 mt-2 sm:mt-0">
-          <div className="inline-flex rounded-lg bg-muted p-0.5 shadow-sm">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={cn(
-                'px-3 py-1 text-sm rounded-md transition-all',
-                viewMode === 'grid'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'hover:bg-muted-foreground/10'
-              )}
-            >
-              Grid
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={cn(
-                'px-3 py-1 text-sm rounded-md transition-all',
-                viewMode === 'list'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'hover:bg-muted-foreground/10'
-              )}
-            >
-              List
-            </button>
-          </div>
-          <div className="inline-flex rounded-lg bg-muted p-0.5 shadow-sm">
-            <button
-              onClick={() => setDisplayMode('all')}
-              className={cn(
-                'px-3 py-1 text-sm rounded-md transition-all',
-                displayMode === 'all'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'hover:bg-muted-foreground/10'
-              )}
-            >
-              All Teams
-            </button>
-            <button
-              onClick={() => setDisplayMode('grouped')}
-              className={cn(
-                'px-3 py-1 text-sm rounded-md transition-all',
-                displayMode === 'grouped'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'hover:bg-muted-foreground/10'
-              )}
-            >
-              By Division
-            </button>
-          </div>
+          <ToggleButtonGroup
+            options={viewModeOptions}
+            value={viewMode}
+            onChange={setViewMode}
+            variant="segmented"
+          />
+          <ToggleButtonGroup
+            options={displayModeOptions}
+            value={displayMode}
+            onChange={setDisplayMode}
+            variant="segmented"
+          />
         </div>
       </TeamsHeader>
 
