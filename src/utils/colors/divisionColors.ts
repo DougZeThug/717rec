@@ -74,3 +74,22 @@ export const getDivisionTextClass = (division: string): string => {
 
   return 'text-gray-700 dark:text-gray-400';
 };
+
+// Division badge color classes (for small badges/chips)
+export const getDivisionBadgeColor = (division: string): string => {
+  const divisionNameLower = division.toLowerCase();
+
+  if (divisionNameLower.includes('competitive') || divisionNameLower.includes('hidden')) {
+    return 'bg-red-500/20 text-red-400 border-red-500/30';
+  }
+
+  if (divisionNameLower.includes('intermediate')) {
+    return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+  }
+
+  if (divisionNameLower.includes('recreational')) {
+    return 'bg-green-500/20 text-green-400 border-green-500/30';
+  }
+
+  return 'bg-muted text-muted-foreground';
+};
