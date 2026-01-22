@@ -54,6 +54,9 @@ export interface GreedySchedulerInput {
     maxTierGap?: number; // Default: 1 (blocks T1 vs T3)
     byeStrategy?: 'last' | 'fewestPartners'; // Default: 'last'
   };
+  // Pairs already created in other blocks (for double header teams)
+  // These pairs will be forbidden to prevent duplicate opponents across blocks
+  forbiddenPairs?: Set<string>;
 }
 
 export interface ScheduledMatch {
@@ -73,8 +76,9 @@ const DEFAULT_BYE_STRATEGY = 'last';
 
 /**
  * Generate canonical pairing key (sorted IDs)
+ * Exported so callers can build forbiddenPairs sets
  */
-function pairKey(idA: string, idB: string): string {
+export function pairKey(idA: string, idB: string): string {
   return idA < idB ? `${idA}||${idB}` : `${idB}||${idA}`;
 }
 
@@ -222,7 +226,8 @@ function generateSlotPairings(
   tonightPairs: Set<string>,
   teamMatchCounts: Map<string, number>,
   maxTierGap: number,
-  byeTeamId?: string
+  byeTeamId?: string,
+  newPairs?: Set<string>
 ): ScheduledMatch[] {
   const matches: ScheduledMatch[] = [];
   const pairedInSlot = new Set<string>();
@@ -269,7 +274,12 @@ function generateSlotPairings(
     pairedInSlot.add(opponent.id);
 
     // Add to tonight pairs to prevent session rematches
-    tonightPairs.add(pairKey(team.id, opponent.id));
+    const matchKey = pairKey(team.id, opponent.id);
+    tonightPairs.add(matchKey);
+    // Track this as a new pair we created (for cross-block tracking)
+    if (newPairs) {
+      newPairs.add(matchKey);
+    }
 
     // Increment match counts
     teamMatchCounts.set(team.id, (teamMatchCounts.get(team.id) || 0) + 1);
@@ -279,11 +289,26 @@ function generateSlotPairings(
   return matches;
 }
 
+export interface GreedySchedulerResult {
+  matches: ScheduledMatch[];
+  // New pairs created in this call (for tracking across multiple blocks)
+  newPairs: Set<string>;
+}
+
 /**
  * Main greedy scheduler function
  */
 export function generateScheduleGreedy(input: GreedySchedulerInput): ScheduledMatch[] {
-  const { teams, historyPairs, slots, thirdSlot, config } = input;
+  const result = generateScheduleGreedyWithTracking(input);
+  return result.matches;
+}
+
+/**
+ * Main greedy scheduler function with pair tracking
+ * Use this when scheduling multiple blocks with double header teams
+ */
+export function generateScheduleGreedyWithTracking(input: GreedySchedulerInput): GreedySchedulerResult {
+  const { teams, historyPairs, slots, thirdSlot, config, forbiddenPairs } = input;
   const maxTierGap = config?.maxTierGap ?? MAX_TIER_GAP;
   const byeStrategy = config?.byeStrategy ?? DEFAULT_BYE_STRATEGY;
 
@@ -301,7 +326,11 @@ export function generateScheduleGreedy(input: GreedySchedulerInput): ScheduledMa
     return a.name.localeCompare(b.name);
   });
 
-  const tonightPairs = new Set<string>();
+  // Initialize tonightPairs with forbidden pairs (from other blocks)
+  // This prevents double header teams from playing the same opponent twice
+  const tonightPairs = new Set<string>(forbiddenPairs || []);
+  // Track which pairs WE create (not inherited from forbiddenPairs)
+  const newPairs = new Set<string>();
   const teamMatchCounts = new Map<string, number>();
   const [slot1, slot2] = slots;
   const isOdd = teams.length % 2 === 1;
@@ -317,7 +346,9 @@ export function generateScheduleGreedy(input: GreedySchedulerInput): ScheduledMa
       playedSet,
       tonightPairs,
       teamMatchCounts,
-      maxTierGap
+      maxTierGap,
+      undefined,
+      newPairs
     );
 
     // Generate S2 pairings
@@ -327,7 +358,9 @@ export function generateScheduleGreedy(input: GreedySchedulerInput): ScheduledMa
       playedSet,
       tonightPairs,
       teamMatchCounts,
-      maxTierGap
+      maxTierGap,
+      undefined,
+      newPairs
     );
 
     const allMatches = [...s1Matches, ...s2Matches];
@@ -343,7 +376,7 @@ export function generateScheduleGreedy(input: GreedySchedulerInput): ScheduledMa
     scheduleLog(
       `Generated ${allMatches.length} matches (${s1Matches.length} in ${slot1}, ${s2Matches.length} in ${slot2})`
     );
-    return allMatches;
+    return { matches: allMatches, newPairs };
   } else {
     // ============ ODD TEAM COUNT ============
     scheduleLog(
@@ -362,7 +395,8 @@ export function generateScheduleGreedy(input: GreedySchedulerInput): ScheduledMa
       tonightPairs,
       teamMatchCounts,
       maxTierGap,
-      bye1.id
+      bye1.id,
+      newPairs
     );
 
     // Select Bye2 for S2 (must be different from Bye1 and not have played Bye1)
@@ -396,7 +430,8 @@ export function generateScheduleGreedy(input: GreedySchedulerInput): ScheduledMa
       tonightPairs,
       teamMatchCounts,
       maxTierGap,
-      bye2.id
+      bye2.id,
+      newPairs
     );
 
     // Generate S3 match: Bye1 vs Bye2
@@ -413,7 +448,9 @@ export function generateScheduleGreedy(input: GreedySchedulerInput): ScheduledMa
       tierB: getTier(bye2),
     };
 
-    tonightPairs.add(pairKey(bye1.id, bye2.id));
+    const s3PairKey = pairKey(bye1.id, bye2.id);
+    tonightPairs.add(s3PairKey);
+    newPairs.add(s3PairKey);
     teamMatchCounts.set(bye1.id, (teamMatchCounts.get(bye1.id) || 0) + 1);
     teamMatchCounts.set(bye2.id, (teamMatchCounts.get(bye2.id) || 0) + 1);
 
@@ -433,6 +470,6 @@ export function generateScheduleGreedy(input: GreedySchedulerInput): ScheduledMa
     scheduleLog(`Bye1 (${bye1.name}) plays in ${slot2} + ${slot3Name}`);
     scheduleLog(`Bye2 (${bye2.name}) plays in ${slot1} + ${slot3Name}`);
 
-    return allMatches;
+    return { matches: allMatches, newPairs };
   }
 }

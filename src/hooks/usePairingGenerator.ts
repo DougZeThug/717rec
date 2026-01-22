@@ -17,7 +17,10 @@ import {
 } from '@/utils/autoSchedule/matchHistoryService';
 import { normalizeDate } from '@/utils/dateNormalization';
 import { errorLog, scheduleLog, warnLog } from '@/utils/logger';
-import { generateScheduleGreedy } from '@/utils/scheduling/greedyBackToBackScheduler';
+import {
+  generateScheduleGreedyWithTracking,
+  pairKey,
+} from '@/utils/scheduling/greedyBackToBackScheduler';
 
 import { useTeamsMap } from './teams';
 
@@ -121,7 +124,12 @@ export const usePairingGenerator = () => {
           const historyPairs = await fetchSeasonHistoryForTeams(Array.from(allTeamIds));
           scheduleLog(`Season History Loaded: ${historyPairs.length} pairs`);
 
-          // Process each back-to-back pair independently
+          // 🔒 Cross-block opponent tracking for double header teams
+          // This Set tracks all pairs created across ALL blocks in this session
+          // Prevents double header teams from playing the same opponent in multiple blocks
+          const sessionPairs = new Set<string>();
+
+          // Process each back-to-back pair, passing sessionPairs to prevent duplicate opponents
           for (const pairName of pairsWithTeams) {
             const pairTeams = timeBlockTeams[pairName];
             if (!pairTeams || pairTeams.length === 0) continue;
@@ -152,7 +160,9 @@ export const usePairingGenerator = () => {
             });
 
             // Generate schedule for this specific pair with its specific timeslots
-            const scheduledMatches = generateScheduleGreedy({
+            // Pass sessionPairs as forbiddenPairs to prevent double header teams
+            // from playing the same opponent in multiple blocks
+            const schedulerResult = generateScheduleGreedyWithTracking({
               teams: pairTeams,
               historyPairs,
               slots,
@@ -161,9 +171,17 @@ export const usePairingGenerator = () => {
                 maxTierGap: 1,
                 byeStrategy: 'last',
               },
+              forbiddenPairs: sessionPairs,
             });
 
-            scheduleLog(`   Generated ${scheduledMatches.length} matches for ${pairName}`);
+            const scheduledMatches = schedulerResult.matches;
+
+            // Add new pairs to sessionPairs for cross-block tracking
+            schedulerResult.newPairs.forEach((pair) => sessionPairs.add(pair));
+
+            scheduleLog(
+              `   Generated ${scheduledMatches.length} matches for ${pairName} (${schedulerResult.newPairs.size} new pairs, ${sessionPairs.size} total session pairs)`
+            );
 
             // Convert scheduled matches to TeamPairingMap format
             for (const match of scheduledMatches) {
