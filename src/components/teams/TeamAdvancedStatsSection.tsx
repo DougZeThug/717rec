@@ -20,34 +20,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTeamSeasonBreakdown } from '@/hooks/useTeamSeasonBreakdown';
 import { cn } from '@/lib/utils';
 import { SeasonBreakdown } from '@/types/teamAdvancedStats';
+import { getDivisionBadgeColor, getPowerScoreColor } from '@/utils/colors';
+import { getWinPercentageColor } from '@/utils/colors/winPercentageColors';
 
 interface TeamAdvancedStatsSectionProps {
   teamId: string;
 }
-
-const getDivisionBadgeColor = (division: string) => {
-  const name = division.toLowerCase();
-  if (name.includes('competitive') || name.includes('hidden'))
-    return 'bg-red-500/20 text-red-400 border-red-500/30';
-  if (name.includes('intermediate')) return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-  if (name.includes('recreational')) return 'bg-green-500/20 text-green-400 border-green-500/30';
-  return 'bg-muted text-muted-foreground';
-};
-
-const getWinPctColor = (pct: number) => {
-  if (pct >= 70) return 'text-emerald-500';
-  if (pct >= 55) return 'text-blue-500';
-  if (pct >= 45) return 'text-yellow-500';
-  return 'text-red-500';
-};
-
-const getPowerScoreColor = (score: number | null) => {
-  if (score === null) return 'text-muted-foreground';
-  if (score >= 70) return 'text-emerald-500';
-  if (score >= 55) return 'text-blue-500';
-  if (score >= 40) return 'text-yellow-500';
-  return 'text-red-500';
-};
 
 const SeasonRow = ({
   season,
@@ -103,7 +81,7 @@ const SeasonRow = ({
           <div className="font-mono text-sm font-medium">
             {season.matchWins}-{season.matchLosses}
           </div>
-          <div className={cn('text-xs font-medium', getWinPctColor(season.winPct))}>
+          <div className={cn('text-xs font-medium', getWinPercentageColor(season.winPct / 100))}>
             {season.winPct.toFixed(0)}%
           </div>
         </td>
@@ -113,7 +91,7 @@ const SeasonRow = ({
           <div className="font-mono text-sm">
             {season.gameWins}-{season.gameLosses}
           </div>
-          <div className={cn('text-xs', getWinPctColor(season.gameWinPct))}>
+          <div className={cn('text-xs', getWinPercentageColor(season.gameWinPct / 100))}>
             {season.gameWinPct.toFixed(0)}%
           </div>
         </td>
@@ -231,7 +209,7 @@ const DivisionRecordCard = ({
         <div className="text-xs text-muted-foreground">{labels[tier]}</div>
         <div className="font-mono text-sm font-medium">
           {record.wins}-{record.losses}
-          <span className={cn('ml-2 text-xs', getWinPctColor(winPct))}>({winPct.toFixed(0)}%)</span>
+          <span className={cn('ml-2 text-xs', getWinPercentageColor(winPct / 100))}>({winPct.toFixed(0)}%)</span>
         </div>
         <div className="text-xs text-muted-foreground">
           Games: {record.gameWins}-{record.gameLosses}
