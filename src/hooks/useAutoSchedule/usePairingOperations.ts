@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import { useToast } from '@/hooks/use-toast';
-import { usePairingGenerator } from '@/hooks/usePairingGenerator';
+import { usePairingGenerator } from '@/hooks/scheduling/usePairingGenerator';
 import {
   AlgorithmConfig,
   AutoScheduleMatch,
