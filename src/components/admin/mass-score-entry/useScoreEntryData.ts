@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 
 import { useBracketsQuery } from '@/hooks/brackets/useBracketsQuery';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { fetchMatchesWithTeams } from '@/services/matches/MatchReadService';
 import { updateMatchScore } from '@/services/matches/MatchWriteService';
 import { errorLog } from '@/utils/logger';

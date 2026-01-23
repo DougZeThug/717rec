@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/useMobile';
 import { cn } from '@/lib/utils';
 import { typeScale } from '@/styles/design-system';
 import { blueAmberHeading } from '@/styles/design-system/blueAmber';

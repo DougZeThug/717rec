@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { updateTeamStatsRecord } from '@/services/TeamStatsService';
 import { Team } from '@/types';
 import { debugLog, errorLog, teamLog } from '@/utils/logger';

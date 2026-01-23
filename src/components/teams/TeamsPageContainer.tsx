@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ToggleButtonGroup, ToggleOption } from '@/components/ui/ToggleButtonGroup';
 import WinterSection from '@/components/winter/WinterSection';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/useMobile';
 import useScrollRestoration from '@/hooks/useScrollRestoration';
 import {
   DisplayMode,

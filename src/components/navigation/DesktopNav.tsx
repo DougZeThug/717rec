@@ -4,7 +4,7 @@ import { useLocation } from 'react-router';
 
 import CommandPalette from '@/components/navigation/CommandPalette';
 import { NavItem } from '@/components/navigation/NavItem';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/useMobile';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { ICON_SIZES } from '@/styles/icon-system';

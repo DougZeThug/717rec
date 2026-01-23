@@ -3,7 +3,7 @@ import React from 'react';
 
 import AnimatedChartWrapper from '@/components/ui/animated-chart-wrapper';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/useMobile';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
 import { PowerScoreDataItem } from '@/types/chart';

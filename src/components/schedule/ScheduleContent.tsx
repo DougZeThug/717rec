@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import WinterSection from '@/components/winter/WinterSection';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/useMobile';
 import { Match, Team, TeamTimeslot } from '@/types';
 
 import DateMatchGroup from './DateMatchGroup';

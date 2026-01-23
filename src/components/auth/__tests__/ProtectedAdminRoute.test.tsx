@@ -17,7 +17,7 @@ vi.mock('@/hooks/useAdminAccess', () => ({
 }));
 
 // Mock toast
-vi.mock('@/hooks/use-toast', () => ({
+vi.mock('@/hooks/useToast', () => ({
   toast: vi.fn(),
 }));
 

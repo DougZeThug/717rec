@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useTeamsQuery } from '@/hooks/teams';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { TimeBlockTeamsMap } from '@/types/autoSchedule';
 import { TIME_BLOCKS } from '@/utils/autoSchedule/constants';
 import { errorLog } from '@/utils/logger';

@@ -18,7 +18,7 @@ import { restrictToWindowEdges, snapCenterToCursor } from '@dnd-kit/modifiers';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import React, { useCallback, useMemo, useState } from 'react';
 
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/useToast';
 import { sortHistoryDivisions } from '@/utils/historyDivisionUtils';
 
 import { EditableTeam, useHistoryEditing } from '../hooks/useHistoryEditing';

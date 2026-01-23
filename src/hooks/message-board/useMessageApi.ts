@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/useToast';
 import { useTeamMembership } from '@/hooks/useTeamMembership';
 import { supabase } from '@/integrations/supabase/client';
 import { Message, MessageCategory } from '@/types/reactions';

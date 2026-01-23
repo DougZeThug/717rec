@@ -12,7 +12,7 @@ import TeamOfTheWeekSkeleton from '@/components/home/TeamOfTheWeekSkeleton';
 import TopTeams from '@/components/home/TopTeams';
 import PageLayout from '@/components/layout/PageLayout';
 import PageTransition from '@/components/transitions/PageTransition';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/useMobile';
 import { useHeroCards } from '@/hooks/useHeroCards';
 import { useMyNextMatch } from '@/hooks/useMyNextMatch';
 import { usePendingScoresMatches } from '@/hooks/usePendingScoresMatches';

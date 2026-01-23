@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import { bracketManagerService } from '@/services/brackets/manager';
 import { errorLog, log } from '@/utils/logger';

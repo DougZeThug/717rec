@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useTeamsArray } from '@/hooks/teams';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/useToast';
 import { useSeasonMutations } from '@/hooks/useSeasonMutations';
 
 interface SeasonArchivalDialogProps {

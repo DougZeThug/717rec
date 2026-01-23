@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { PowerScoreDisplay } from '@/components/ui/PowerScoreDisplay';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/useMobile';
 import { cn } from '@/lib/utils';
 import { getSosColor } from '@/utils/colors';
 

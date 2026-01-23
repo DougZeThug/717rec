@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { PairingResult } from '@/types/autoSchedule';
 import * as compatibilityUtils from '@/utils/autoSchedule/compatibilityUtils';
 import { mockDate, mockTeams, mockTimeBlockTeams } from '@/utils/test/autoSchedule/mockData';
@@ -10,7 +10,7 @@ import { usePairingGenerator } from '../scheduling/usePairingGenerator';
 
 // Mock dependencies
 vi.mock('@/utils/autoSchedule/compatibilityUtils');
-vi.mock('@/hooks/use-toast', () => ({
+vi.mock('@/hooks/useToast', () => ({
   useToast: vi.fn(),
 }));
 

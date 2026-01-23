@@ -13,7 +13,7 @@ import type { Props as DotProps } from 'recharts/types/shape/Dot';
 
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/useMobile';
 import { useTeamCareerPowerScore } from '@/hooks/useTeamCareerPowerScore';
 import { SeasonPowerScoreData } from '@/types/teamCareerPowerScore';
 import { getDivisionHexColor } from '@/utils/colors/divisionHexColors';

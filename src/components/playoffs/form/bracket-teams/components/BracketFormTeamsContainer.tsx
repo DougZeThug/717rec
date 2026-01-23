@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { Division, Team } from '@/types';
 import { warnLog } from '@/utils/logger';
 import { isDivisionArray, isDivisionIdValid, isTeamArray } from '@/utils/typeGuards';

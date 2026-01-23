@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { TimeBlockTeamsMap } from '@/types/autoSchedule';
 import * as teamLoaderUtils from '@/utils/autoSchedule/teamLoaderUtils';
 import { mockDate, mockTeams } from '@/utils/test/autoSchedule/mockData';
@@ -10,7 +10,7 @@ import { useTeamScheduleLoader } from '../useTeamScheduleLoader';
 
 // Mock dependencies
 vi.mock('@/utils/autoSchedule/teamLoaderUtils');
-vi.mock('@/hooks/use-toast', () => ({
+vi.mock('@/hooks/useToast', () => ({
   useToast: vi.fn(),
 }));
 

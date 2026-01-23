@@ -1,7 +1,7 @@
 import { Mail } from 'lucide-react';
 import React from 'react';
 
-import { useThemeConsistency } from '@/hooks/use-theme-consistency';
+import { useThemeConsistency } from '@/hooks/useThemeConsistency';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 

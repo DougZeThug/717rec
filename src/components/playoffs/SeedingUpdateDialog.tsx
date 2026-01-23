@@ -30,7 +30,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { bracketManagerService } from '@/services/brackets/manager';
 
 import { DragOverlayItem } from './form/bracket-teams/components/DragOverlayItem';

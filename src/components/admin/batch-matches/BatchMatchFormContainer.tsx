@@ -2,7 +2,7 @@ import React from 'react';
 
 import { LoadingState } from '@/components/ui/loading-state';
 import { useTeamsQuery } from '@/hooks/teams';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 
 import { AutoScheduleSection } from './AutoScheduleSection';
 import BatchMatchFormActions from './BatchMatchFormActions';

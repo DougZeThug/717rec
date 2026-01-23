@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import {
   bulkUpdateTeamSeeds,
   resetDivisionSeeds as resetDivisionSeedsService,

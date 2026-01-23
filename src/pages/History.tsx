@@ -5,7 +5,7 @@ import PageHeader from '@/components/layout/PageHeader';
 import PageLayout from '@/components/layout/PageLayout';
 import AnimatedBreadcrumbs from '@/components/navigation/AnimatedBreadcrumbs';
 import PageTransition from '@/components/transitions/PageTransition';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/useMobile';
 import useScrollRestoration from '@/hooks/useScrollRestoration';
 
 const History: React.FC = () => {

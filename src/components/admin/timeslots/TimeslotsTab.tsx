@@ -9,7 +9,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useTeamsQuery } from '@/hooks/teams';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { useTimeslots } from '@/hooks/useTimeslots';
 import { ByeWeekService } from '@/services/timeslots/ByeWeekService';
 import { Team } from '@/types';

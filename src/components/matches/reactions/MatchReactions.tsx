@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMatchReactions } from '@/hooks/matches/useMatchReactions';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/useToast';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
 

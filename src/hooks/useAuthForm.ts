@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { z } from 'zod';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/useToast';
 import { authLog, errorLog } from '@/utils/logger';
 
 export const emailSchema = z.string().email('Please enter a valid email address');

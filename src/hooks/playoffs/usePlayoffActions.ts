@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import { getUIErrorMessage, logError } from '@/utils/errors';
 import type { PlayoffGame } from '@/utils/playoffs/playoffTypes';

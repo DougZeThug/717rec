@@ -4,7 +4,7 @@ import React, { CSSProperties, useCallback } from 'react';
 import { TeamLogo } from '@/components/shared/TeamLogo';
 import { InlineEmptyState } from '@/components/ui/inline-empty-state';
 import { VirtualizedList } from '@/components/ui/VirtualizedList';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/useMobile';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { useVirtualization } from '@/hooks/useVirtualization';
 import { cn } from '@/lib/utils';

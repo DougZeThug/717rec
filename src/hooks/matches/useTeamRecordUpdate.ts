@@ -1,4 +1,4 @@
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { useTeamRecords } from '@/hooks/useTeamRecords';
 import { warnLog } from '@/utils/logger';
 

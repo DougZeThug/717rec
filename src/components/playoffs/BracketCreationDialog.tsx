@@ -4,7 +4,7 @@ import React from 'react';
 import { useNavigate } from 'react-router';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { createBracket } from '@/services/bracket-creator';
 import { BracketFormData } from '@/services/brackets/types/BracketFormData';
 import { BracketValidationService } from '@/services/brackets/validation/BracketValidationService';

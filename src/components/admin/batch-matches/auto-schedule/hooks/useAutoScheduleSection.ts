@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import { MatchPair } from '@/components/admin/batch-matches/MatchPairsList';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { useSchedulePreview } from '@/hooks/useSchedulePreview';
 import { normalizeDate } from '@/utils/dateNormalization';
 import { scheduleLog } from '@/utils/logger';
