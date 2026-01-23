@@ -132,13 +132,13 @@ const TeamsPageContainer: React.FC = () => {
           <ToggleButtonGroup
             options={viewModeOptions}
             value={viewMode}
-            onChange={setViewMode}
+            onChange={(value) => setViewMode(value)}
             variant="segmented"
           />
           <ToggleButtonGroup
             options={displayModeOptions}
             value={displayMode}
-            onChange={setDisplayMode}
+            onChange={(value) => setDisplayMode(value)}
             variant="segmented"
           />
         </div>
