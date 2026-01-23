@@ -7,6 +7,7 @@ import { DualBlockConfig, PreviewResult } from '@/types/autoSchedule';
 import { createTimeBlockPairs } from '@/utils/autoSchedule/dualBlockUtils';
 import { normalizeDate } from '@/utils/dateNormalization';
 import { errorLog, scheduleLog } from '@/utils/logger';
+import { withTiming } from '@/utils/performance';
 
 import { useDualBlockLogic } from './useDualBlockLogic';
 import { useScheduleValidation } from './useScheduleValidation';
@@ -143,9 +144,6 @@ export const useSchedulePreview = () => {
       return null;
     }
 
-    // Add performance tracking
-    const startTime = performance.now();
-
     // Log the date being used
     scheduleLog('handleGenerateSchedule date:', {
       date,
@@ -155,34 +153,36 @@ export const useSchedulePreview = () => {
       dualMatchMode: options.dualMatchMode,
     });
 
-    // If in dual match mode, use the balanced teams
-    let teamsToUse = timeBlockTeams;
+    const result = await withTiming(
+      async () => {
+        // If in dual match mode, use the balanced teams
+        let teamsToUse = timeBlockTeams;
 
-    if (options.dualMatchMode) {
-      // Create a dual block config from options
-      const dualConfig: DualBlockConfig = {
-        dualMatchMode: true,
-        primaryBlock: 'Early',
-        secondaryBlock: 'Late',
-        unmatchedTeamStrategy: 'lowest-rank',
-      };
+        if (options.dualMatchMode) {
+          // Create a dual block config from options
+          const dualConfig: DualBlockConfig = {
+            dualMatchMode: true,
+            primaryBlock: 'Early',
+            secondaryBlock: 'Late',
+            unmatchedTeamStrategy: 'lowest-rank',
+          };
 
-      // Balance teams to ensure even counts
-      const { balancedTeams } = performTeamBalancing(timeBlockTeams, dualConfig);
-      teamsToUse = balancedTeams;
+          // Balance teams to ensure even counts
+          const { balancedTeams } = performTeamBalancing(timeBlockTeams, dualConfig);
+          teamsToUse = balancedTeams;
 
-      scheduleLog('Using balanced teams for dual match mode:', teamsToUse);
-    }
+          scheduleLog('Using balanced teams for dual match mode:', teamsToUse);
+        }
 
-    const result = await generateMatchPairings(date, teamsToUse, {
-      avoidRematches: options.avoidRematches,
-      dualMatchMode: options.dualMatchMode,
-      weights: options.weights,
-    });
-
-    // Log performance metrics
-    const endTime = performance.now();
-    scheduleLog(`Schedule generation took ${(endTime - startTime).toFixed(2)}ms`);
+        return await generateMatchPairings(date, teamsToUse, {
+          avoidRematches: options.avoidRematches,
+          dualMatchMode: options.dualMatchMode,
+          weights: options.weights,
+        });
+      },
+      scheduleLog,
+      'Schedule generation'
+    );
 
     if (result) {
       const { pairings, unmatchedTeamIds } = result;
