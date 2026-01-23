@@ -52,19 +52,10 @@ export const BACK_TO_BACK_PAIRS = {
   },
 } as const;
 
-// Individual time slots for reference
-export const TIME_SLOTS = {
-  '5:00 PM': '5:00 PM',
-  '5:30 PM': '5:30 PM',
-  '6:00 PM': '6:00 PM',
-  '6:30 PM': '6:30 PM',
-  '7:00 PM': '7:00 PM',
-  '7:30 PM': '7:30 PM',
-  '8:00 PM': '8:00 PM',
-  '8:30 PM': '8:30 PM',
-  '9:00 PM': '9:00 PM',
-  '9:30 PM': '9:30 PM',
-} as const;
+// Individual time slots for reference - derived from BACK_TO_BACK_PAIRS
+export const TIME_SLOTS = Object.values(BACK_TO_BACK_PAIRS)
+  .flatMap(pair => [pair.primary, pair.secondary])
+  .reduce((acc, slot) => ({ ...acc, [slot]: slot }), {} as Record<string, string>) as const;
 
 // TIME_BLOCKS with structure expected by MatchPairingItem
 export const TIME_BLOCKS = {
@@ -106,30 +97,18 @@ export const TIME_BLOCKS = {
   },
 } as const;
 
+// Lookup maps for efficient time slot operations
+const BACK_TO_BACK_MAP = new Map(
+  Object.values(BACK_TO_BACK_PAIRS).map(pair => [pair.primary, pair.secondary])
+);
+
+const TIME_TO_PAIR_NAME_MAP = new Map(
+  Object.entries(BACK_TO_BACK_PAIRS).map(([name, pair]) => [pair.primary, name])
+);
+
 // Utility functions for consecutive back-to-back scheduling
 export const getBackToBackPair = (timeSlot: string): string | null => {
-  switch (timeSlot) {
-    case '5:00 PM':
-      return '5:30 PM';
-    case '5:30 PM':
-      return '6:00 PM';
-    case '6:00 PM':
-      return '6:30 PM';
-    case '6:30 PM':
-      return '7:00 PM';
-    case '7:00 PM':
-      return '7:30 PM';
-    case '7:30 PM':
-      return '8:00 PM';
-    case '8:00 PM':
-      return '8:30 PM';
-    case '8:30 PM':
-      return '9:00 PM';
-    case '9:00 PM':
-      return '9:30 PM';
-    default:
-      return null;
-  }
+  return BACK_TO_BACK_MAP.get(timeSlot) ?? null;
 };
 
 export const isValidBackToBackSlot = (timeSlot: string): boolean => {
@@ -137,28 +116,7 @@ export const isValidBackToBackSlot = (timeSlot: string): boolean => {
 };
 
 export const getBackToBackPairName = (timeSlot: string): string | null => {
-  switch (timeSlot) {
-    case '5:00 PM':
-      return 'SuperUltraEarly';
-    case '5:30 PM':
-      return 'UltraEarly';
-    case '6:00 PM':
-      return 'SuperEarly';
-    case '6:30 PM':
-      return 'Early';
-    case '7:00 PM':
-      return 'MidEarly';
-    case '7:30 PM':
-      return 'Mid';
-    case '8:00 PM':
-      return 'LateMid';
-    case '8:30 PM':
-      return 'Late';
-    case '9:00 PM':
-      return 'SuperLate';
-    default:
-      return null;
-  }
+  return TIME_TO_PAIR_NAME_MAP.get(timeSlot) ?? null;
 };
 
 export const getMatchSequence = (timeSlot: string): number | null => {
