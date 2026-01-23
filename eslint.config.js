@@ -6,6 +6,7 @@ import tseslint from 'typescript-eslint';
 import prettier from 'eslint-plugin-prettier';
 import eslintConfigPrettier from 'eslint-config-prettier';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
+import vitest from 'eslint-plugin-vitest';
 
 export default tseslint.config(
   { ignores: ['dist', 'node_modules', '*.config.js', 'src/integrations/supabase/types.ts'] },
@@ -53,12 +54,17 @@ export default tseslint.config(
       'no-var': 'error',
     },
   },
-  // More lenient rules for test files
+  // Stricter rules for test files
   {
     files: ['**/__tests__/**/*.{ts,tsx}', '**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}'],
+    plugins: {
+      vitest: vitest,
+    },
     rules: {
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-unused-vars': 'warn',
+      'vitest/no-focused-tests': 'error',
+      'vitest/no-disabled-tests': 'warn',
     },
   },
   // Apply Prettier config last (disables conflicting ESLint rules)
