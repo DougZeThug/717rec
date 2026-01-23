@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { ClipboardCheck } from 'lucide-react';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
@@ -38,24 +38,28 @@ const MassScoreEntryTool: React.FC = () => {
 
   // Create filter tags for active filters
   const hasActiveFilters = filters.date || filters.bracketId;
-  const filterTags = [];
+  const filterTags = useMemo(() => {
+    const tags = [];
 
-  if (filters.date) {
-    filterTags.push({
-      label: 'Date',
-      value: filters.date.toLocaleDateString(),
-    });
-  }
-
-  if (filters.bracketId) {
-    const bracket = brackets.find((b) => b.id === filters.bracketId);
-    if (bracket) {
-      filterTags.push({
-        label: 'Bracket',
-        value: bracket.title,
+    if (filters.date) {
+      tags.push({
+        label: 'Date',
+        value: filters.date.toLocaleDateString(),
       });
     }
-  }
+
+    if (filters.bracketId) {
+      const bracket = brackets.find((b) => b.id === filters.bracketId);
+      if (bracket) {
+        tags.push({
+          label: 'Bracket',
+          value: bracket.title,
+        });
+      }
+    }
+
+    return tags;
+  }, [filters.date, filters.bracketId, brackets]);
 
   return (
     <AdminSectionWrapper title="Mass Score Entry" icon={ClipboardCheck}>

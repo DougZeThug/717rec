@@ -1,5 +1,5 @@
 import { Scale } from 'lucide-react';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router';
 
 import TeamBadgeCollection from '@/components/badges/TeamBadgeCollection';
@@ -39,6 +39,23 @@ const RankingCard: React.FC<RankingCardProps> = ({
   const winPercentage = ranking.winPercentage * 100;
   const gameWinPercentage = (ranking.gameWinPercentage || 0) * 100;
   const isExpanded = expandedTeam === ranking.teamId;
+
+  // Memoize win percentage color calculation
+  const winPercentageColorClass = useMemo(() => {
+    if (!hasGames) return 'text-muted-foreground';
+    if (winPercentage >= 75) return 'text-green-600 dark:text-green-500';
+    if (winPercentage >= 60) return 'text-blue-600 dark:text-blue-500';
+    if (winPercentage >= 40) return 'text-orange-500 dark:text-orange-400';
+    return 'text-red-600 dark:text-red-500';
+  }, [hasGames, winPercentage]);
+
+  // Memoize game win percentage color calculation
+  const gameWinPercentageColorClass = useMemo(() => {
+    if (gameWinPercentage >= 75) return 'text-green-600 dark:text-green-500';
+    if (gameWinPercentage >= 60) return 'text-blue-600 dark:text-blue-500';
+    if (gameWinPercentage >= 40) return 'text-orange-500 dark:text-orange-400';
+    return 'text-red-600 dark:text-red-500';
+  }, [gameWinPercentage]);
 
   const handleToggleExpand = () => {
     if (onToggleExpand) {
@@ -116,20 +133,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
             <div className="grid grid-cols-2 gap-2 text-xs mb-3">
               <div>
                 <p className="text-muted-foreground">Win %</p>
-                <p
-                  className={cn(
-                    'font-bold tabular-nums',
-                    !hasGames
-                      ? 'text-muted-foreground'
-                      : winPercentage >= 75
-                        ? 'text-green-600 dark:text-green-500'
-                        : winPercentage >= 60
-                          ? 'text-blue-600 dark:text-blue-500'
-                          : winPercentage >= 40
-                            ? 'text-orange-500 dark:text-orange-400'
-                            : 'text-red-600 dark:text-red-500'
-                  )}
-                >
+                <p className={cn('font-bold tabular-nums', winPercentageColorClass)}>
                   {hasGames ? `${winPercentage.toFixed(1)}%` : '—'}
                 </p>
               </div>
@@ -198,20 +202,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
         </div>
         <div>
           <p className="font-medium text-muted-foreground">Win %</p>
-          <p
-            className={cn(
-              'font-bold tabular-nums',
-              !hasGames
-                ? 'text-muted-foreground'
-                : winPercentage >= 75
-                  ? 'text-green-600 dark:text-green-500'
-                  : winPercentage >= 60
-                    ? 'text-blue-600 dark:text-blue-500'
-                    : winPercentage >= 40
-                      ? 'text-orange-500 dark:text-orange-400'
-                      : 'text-red-600 dark:text-red-500'
-            )}
-          >
+          <p className={cn('font-bold tabular-nums', winPercentageColorClass)}>
             {hasGames ? `${winPercentage.toFixed(1)}%` : '—'}
           </p>
         </div>
@@ -223,18 +214,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
         </div>
         <div>
           <p className="font-medium text-muted-foreground">Game %</p>
-          <p
-            className={cn(
-              'font-bold tabular-nums',
-              gameWinPercentage >= 75
-                ? 'text-green-600 dark:text-green-500'
-                : gameWinPercentage >= 60
-                  ? 'text-blue-600 dark:text-blue-500'
-                  : gameWinPercentage >= 40
-                    ? 'text-orange-500 dark:text-orange-400'
-                    : 'text-red-600 dark:text-red-500'
-            )}
-          >
+          <p className={cn('font-bold tabular-nums', gameWinPercentageColorClass)}>
             {gameWinPercentage.toFixed(1)}%
           </p>
         </div>

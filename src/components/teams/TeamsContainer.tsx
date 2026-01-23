@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import { TeamDeleteDialog } from '@/components/teams/TeamDeleteDialog';
 import { TeamEditForm } from '@/components/teams/TeamEditForm';
@@ -48,12 +48,15 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode, 
     return groupTeamsByDisplayDivision(uniqueTeams, divisions);
   }, [uniqueTeams, divisions]);
 
-  const sortTeams = (arr: Team[]) => {
-    if (sortMode === 'alpha') {
-      return [...arr].sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
-    }
-    return [...arr].sort((a, b) => (b.power_score ?? 0) - (a.power_score ?? 0));
-  };
+  const sortTeams = useCallback(
+    (arr: Team[]) => {
+      if (sortMode === 'alpha') {
+        return [...arr].sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+      }
+      return [...arr].sort((a, b) => (b.power_score ?? 0) - (a.power_score ?? 0));
+    },
+    [sortMode]
+  );
 
   const sortedTeamsByDivision = useMemo(() => {
     const sorted: Record<string, Team[]> = {};
@@ -61,9 +64,9 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode, 
       sorted[displayDivision] = sortTeams(teamsByDisplayDivision[displayDivision]);
     }
     return sorted;
-  }, [teamsByDisplayDivision, sortMode]);
+  }, [teamsByDisplayDivision, sortTeams]);
 
-  const sortedAllTeams = useMemo(() => sortTeams(uniqueTeams), [uniqueTeams, sortMode]);
+  const sortedAllTeams = useMemo(() => sortTeams(uniqueTeams), [uniqueTeams, sortTeams]);
 
   // Updated to work with display divisions
   const getDivisionName = (displayDivision: string | undefined): string => {
