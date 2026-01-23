@@ -111,7 +111,7 @@ const PowerScoreTrendsCard: React.FC = () => {
           <ToggleButtonGroup
             options={viewModeOptions}
             value={viewMode}
-            onChange={setViewMode}
+            onChange={(value) => setViewMode(value)}
             className="mt-3"
           />
 
@@ -119,7 +119,7 @@ const PowerScoreTrendsCard: React.FC = () => {
           <ToggleButtonGroup
             options={directionOptions}
             value={direction}
-            onChange={setDirection}
+            onChange={(value) => setDirection(value)}
             className="mt-2"
           />
         </CardHeader>

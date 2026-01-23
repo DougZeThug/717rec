@@ -6,7 +6,7 @@ import { PairingResult } from '@/types/autoSchedule';
 import * as compatibilityUtils from '@/utils/autoSchedule/compatibilityUtils';
 import { mockDate, mockTeams, mockTimeBlockTeams } from '@/utils/test/autoSchedule/mockData';
 
-import { usePairingGenerator } from '../usePairingGenerator';
+import { usePairingGenerator } from '../scheduling/usePairingGenerator';
 
 // Mock dependencies
 vi.mock('@/utils/autoSchedule/compatibilityUtils');
