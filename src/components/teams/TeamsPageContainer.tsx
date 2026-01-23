@@ -1,5 +1,5 @@
 import { ChevronDown } from 'lucide-react';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 
 import {
   DropdownMenu,
@@ -11,15 +11,17 @@ import { ToggleButtonGroup, ToggleOption } from '@/components/ui/ToggleButtonGro
 import WinterSection from '@/components/winter/WinterSection';
 import { useIsMobile } from '@/hooks/use-mobile';
 import useScrollRestoration from '@/hooks/useScrollRestoration';
+import {
+  DisplayMode,
+  SortMode,
+  useTeamsPreferences,
+  ViewMode,
+} from '@/hooks/useTeamsPreferences';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
 
 import TeamContainer from './TeamsContainer';
 import TeamsHeader from './TeamsHeader';
-
-export type DisplayMode = 'all' | 'grouped';
-export type ViewMode = 'grid' | 'list';
-export type SortMode = 'rank' | 'alpha';
 
 const TeamsPageContainer: React.FC = () => {
   const isMobile = useIsMobile();
@@ -27,22 +29,13 @@ const TeamsPageContainer: React.FC = () => {
   // Preserve scroll position when navigating back from team details
   useScrollRestoration('/teams');
 
-  // Initialize display and view modes from local storage or default values
-  const [displayMode, setDisplayMode] = useState<DisplayMode>(() => {
-    const savedDisplayMode = localStorage.getItem('teamsDisplayMode');
-    if (savedDisplayMode) return savedDisplayMode as DisplayMode;
-    return isMobile ? 'grouped' : 'all';
-  });
-
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    const savedViewMode = localStorage.getItem('teamsViewMode');
-    return (savedViewMode as ViewMode) || 'grid';
-  });
-
-  const [sortMode, setSortMode] = useState<SortMode>(() => {
-    const savedSortMode = localStorage.getItem('teamsSortMode');
-    return (savedSortMode as SortMode) || 'rank';
-  });
+  // Manage display preferences with localStorage persistence
+  const { displayMode, setDisplayMode, viewMode, setViewMode, sortMode, setSortMode } =
+    useTeamsPreferences({
+      defaultDisplayMode: isMobile ? 'grouped' : 'all',
+      defaultViewMode: 'grid',
+      defaultSortMode: 'rank',
+    });
 
   const viewModeOptions: ToggleOption<ViewMode>[] = useMemo(
     () => [
@@ -59,19 +52,6 @@ const TeamsPageContainer: React.FC = () => {
     ],
     []
   );
-
-  // Save to local storage when preferences change
-  useEffect(() => {
-    localStorage.setItem('teamsDisplayMode', displayMode);
-  }, [displayMode]);
-
-  useEffect(() => {
-    localStorage.setItem('teamsViewMode', viewMode);
-  }, [viewMode]);
-
-  useEffect(() => {
-    localStorage.setItem('teamsSortMode', sortMode);
-  }, [sortMode]);
 
   return (
     <WinterSection
