@@ -22,21 +22,23 @@ const Schedule = () => {
     const today = new Date();
     const dayOfWeek = today.getDay(); // 0 = Sunday, 4 = Thursday
 
+    let targetDate: Date;
     if (dayOfWeek === 4) {
-      // Today is Thursday, return today
-      return today;
+      // Today is Thursday
+      targetDate = today;
+    } else {
+      // Calculate days until next Thursday
+      const daysUntilThursday =
+        dayOfWeek < 4
+          ? 4 - dayOfWeek // This week's Thursday
+          : 7 - dayOfWeek + 4; // Next week's Thursday
+
+      targetDate = new Date(today);
+      targetDate.setDate(today.getDate() + daysUntilThursday);
     }
 
-    // Calculate days until next Thursday
-    const daysUntilThursday =
-      dayOfWeek < 4
-        ? 4 - dayOfWeek // This week's Thursday
-        : 7 - dayOfWeek + 4; // Next week's Thursday
-
-    const upcomingThursday = new Date(today);
-    upcomingThursday.setDate(today.getDate() + daysUntilThursday);
-
-    return upcomingThursday;
+    // Normalize to midnight local time to prevent time-of-day inconsistencies
+    return new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
   };
 
   const [selectedDate, setSelectedDate] = useState<Date>(getUpcomingThursday());
@@ -146,17 +148,19 @@ const Schedule = () => {
 
   // Handle date selection with proper normalization
   const handleDateSelect = (date: Date) => {
-    // Create consistent UTC date
+    // Keep as local date - don't convert to UTC
+    // This ensures format(date, 'yyyy-MM-dd') produces the correct date string
     const year = date.getFullYear();
     const month = date.getMonth();
     const day = date.getDate();
 
-    const normalizedDate = new Date(Date.UTC(year, month, day));
+    // Create a clean local date at midnight (strips any time component)
+    const normalizedDate = new Date(year, month, day);
     scheduleLog('Date selection changed:', {
       originalDate: date,
       normalizedDate,
       dateString: normalizedDate.toString(),
-      isoString: normalizedDate.toISOString(),
+      localDateStr: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
     });
 
     setSelectedDate(normalizedDate);
