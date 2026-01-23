@@ -2,7 +2,7 @@ import React from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useMessageReactions } from '@/hooks/message-board/useMessageReactions';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/useToast';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
 

@@ -8,7 +8,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingState } from '@/components/ui/loading-state';
 import { useTeamsQuery } from '@/hooks/teams';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { useTimeslots } from '@/hooks/useTimeslots';
 import { ByeWeekService } from '@/services/timeslots/ByeWeekService';

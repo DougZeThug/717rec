@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router';
 import { AdminAccessModal } from '@/components/admin/AdminAccessModal';
 import AdminSidebar from '@/components/admin/dashboard/AdminSidebar';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/useToast';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 
 const AdminDashboard = () => {

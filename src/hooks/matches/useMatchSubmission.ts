@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { errorLog, matchLog } from '@/utils/logger';
 
 import { SubmitScoreParams } from './types/matchSubmissionTypes';

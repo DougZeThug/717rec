@@ -5,7 +5,7 @@ import { TeamLogo } from '@/components/shared/TeamLogo';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { updateTeamApi } from '@/services/TeamService';
 import { Team } from '@/types';
 import { uploadTeamImage } from '@/utils/imageUpload';

@@ -20,7 +20,7 @@ vi.mock('@/hooks/team-stats/utils/teamRecordUtils', () => ({
   applyMatchResult: vi.fn(),
 }));
 
-vi.mock('@/hooks/use-toast', () => ({
+vi.mock('@/hooks/useToast', () => ({
   useToast: () => ({
     toast: vi.fn(),
   }),

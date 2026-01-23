@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/useToast';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
 import { MessageCategory } from '@/types/reactions';

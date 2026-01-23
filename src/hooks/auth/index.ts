@@ -2,8 +2,8 @@ import { Session, User } from '@supabase/supabase-js';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { useThemeConsistency } from '@/hooks/use-theme-consistency';
-import { toast } from '@/hooks/use-toast';
+import { useThemeConsistency } from '@/hooks/useThemeConsistency';
+import { toast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import { authLog, errorLog } from '@/utils/logger';
 

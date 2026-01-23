@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router';
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import WinterSection from '@/components/winter/WinterSection';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import { dbLog, errorLog } from '@/utils/logger';
 

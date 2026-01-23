@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { debugLog, errorLog, matchLog } from '@/utils/logger';
 
 import { buildMatchQuery } from '../services/matchQueryService';

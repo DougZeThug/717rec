@@ -6,7 +6,7 @@ import AnimatedChartWrapper from '@/components/ui/animated-chart-wrapper';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingState } from '@/components/ui/loading-state';
 import { ToggleButtonGroup, ToggleOption } from '@/components/ui/ToggleButtonGroup';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/useMobile';
 import { usePowerScoreTrends } from '@/hooks/usePowerScoreTrends';
 import { useWeeklyPowerScoreTrends } from '@/hooks/useWeeklyPowerScoreTrends';
 import { cn } from '@/lib/utils';

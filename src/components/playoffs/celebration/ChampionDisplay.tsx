@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SeasonalIcon } from '@/components/ui/seasonal-icon';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { cn } from '@/lib/utils';
 import { Team } from '@/types';
 

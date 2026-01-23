@@ -2,7 +2,7 @@ import { Bolt, Scale, Star, Trophy } from 'lucide-react';
 import React from 'react';
 
 import { SummaryCard } from '@/components/ui/summary-card';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/useMobile';
 import { cn } from '@/lib/utils';
 import { listStyles } from '@/styles/design-system/lists';
 import { Ranking } from '@/types';

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/useMobile';
 import { CareerRanking } from '@/types/career';
 
 import CareerRankingsDesktopView from './CareerRankingsDesktopView';

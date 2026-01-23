@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import { errorLog, playoffLog } from '@/utils/logger';
 import type { PlayoffBracket, PlayoffMatch, PlayoffMatchType } from '@/utils/playoffs/playoffTypes';

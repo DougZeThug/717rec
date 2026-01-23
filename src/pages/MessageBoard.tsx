@@ -9,7 +9,7 @@ import MessageFilterBar from '@/components/message-board/MessageFilterBar';
 import MessageInput from '@/components/message-board/MessageInput';
 import PageTransition from '@/components/transitions/PageTransition';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/useToast';
 import { useMessageBoard } from '@/hooks/useMessageBoard';
 import { cn } from '@/lib/utils';
 import { animations, gradients } from '@/styles/design-system';

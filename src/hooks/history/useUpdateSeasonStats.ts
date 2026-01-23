@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import { dbLog, errorLog, warnLog } from '@/utils/logger';
 

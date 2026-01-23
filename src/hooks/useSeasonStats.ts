@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import { errorLog } from '@/utils/logger';
 

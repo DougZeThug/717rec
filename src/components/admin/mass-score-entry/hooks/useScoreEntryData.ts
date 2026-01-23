@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { useMatchSubmission } from '@/hooks/matches/useMatchSubmission';
 import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { errorLog, filterLog, scoreLog } from '@/utils/logger';
 
 import { MatchWithTeams } from '../types';

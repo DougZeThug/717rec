@@ -1,4 +1,4 @@
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { createTeamApi, deleteTeamApi, updateTeamApi } from '@/services/TeamService';
 import { Team } from '@/types';
 import { errorLog } from '@/utils/logger';

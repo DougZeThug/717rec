@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/useMobile';
 import { Ranking } from '@/types';
 
 import StatsCharts from '../StatsCharts';

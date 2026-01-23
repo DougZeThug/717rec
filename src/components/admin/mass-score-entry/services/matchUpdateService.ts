@@ -1,5 +1,5 @@
 import { useTeamRecordUpdate } from '@/hooks/matches/useTeamRecordUpdate';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { errorLog } from '@/utils/logger';
 
 import { MatchWithTeams } from '../types';

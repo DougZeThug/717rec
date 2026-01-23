@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { useDivisions } from '@/hooks/useDivisions';
 import { Team } from '@/types';
 import { uploadTeamImage } from '@/utils/imageUpload';

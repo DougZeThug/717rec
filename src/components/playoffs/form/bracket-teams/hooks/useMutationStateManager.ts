@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 
 import { useOptimisticTeamMutations } from './useOptimisticTeamMutations';
 import { TeamSeedUpdate } from './useTeamSeedMutation';

@@ -2,7 +2,7 @@ import { WeakPasswordReasons } from '@supabase/supabase-js';
 import { useCallback } from 'react';
 import { NavigateFunction } from 'react-router';
 
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import { AuthResponse } from '@/types/auth';
 import { loginWithGoogleNative as nativeGoogleLogin } from '@/utils/nativeAuth';

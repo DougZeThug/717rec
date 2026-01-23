@@ -2,7 +2,7 @@ import { Maximize2, Move, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { useBracketResponsive } from '@/hooks/use-bracket-responsive';
+import { useBracketResponsive } from '@/hooks/useBracketResponsive';
 
 interface BracketViewportProps {
   children: React.ReactNode;

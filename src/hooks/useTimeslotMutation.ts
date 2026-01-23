@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { useState } from 'react';
 
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { TimeslotService } from '@/services/timeslots/TimeslotService';
 import { TimeslotValidator } from '@/services/timeslots/TimeslotValidator';
 import { TeamTimeslot } from '@/types/timeslots';

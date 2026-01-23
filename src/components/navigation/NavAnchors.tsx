@@ -3,7 +3,7 @@ import { useTheme } from 'next-themes';
 import React from 'react';
 
 import { TransitionLink } from '@/components/transitions/TransitionLink';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/useMobile';
 import { cn } from '@/lib/utils';
 import { getCardInteractionStyles } from '@/styles/interactionUtils';
 

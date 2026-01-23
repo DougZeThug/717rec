@@ -1,7 +1,7 @@
 import { BarChart3, Calendar, Clock, Home, Trophy, Users } from 'lucide-react';
 import React from 'react';
 
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/useMobile';
 
 import BottomNav from './BottomNav';
 import DesktopNav from './DesktopNav';

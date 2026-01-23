@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { formatTime } from '@/components/home/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
-import { useMobile } from '@/hooks/use-mobile';
+import { useMobile } from '@/hooks/useMobile';
 import { useLongPress } from '@/hooks/useLongPress';
 import { useTeamPowerScores } from '@/hooks/useTeamPowerScores';
 import { cn } from '@/lib/utils';

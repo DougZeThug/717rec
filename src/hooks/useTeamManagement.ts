@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/useToast';
 import { useTeams } from '@/hooks/useTeams';
 import { Team } from '@/types';
 import { errorLog } from '@/utils/logger';
