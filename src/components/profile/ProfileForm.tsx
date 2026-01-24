@@ -90,7 +90,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   const onSubmit = async (data: ProfileFormData) => {
     if (!user) return;
 
-    if (!usernameAvailable) {
+    if (usernameAvailable === false) {
       toast({
         title: 'Invalid first name',
         description: 'Please choose another name',
