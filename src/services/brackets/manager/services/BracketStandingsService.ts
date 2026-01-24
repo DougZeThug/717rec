@@ -68,12 +68,12 @@ export class BracketStandingsService {
         rank: number;
       }
       const recordUpdates = (finalStandings as FinalStanding[])
-        .map((standing, index) => {
+        .map((standing) => {
           const participant = participantMap.get(standing.id);
           return {
             team_id: participant?.team_id,
             bracket_id: bracketId,
-            placement: index + 1,
+            placement: standing.rank,
           };
         })
         .filter((r) => r.team_id);
