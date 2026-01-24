@@ -26,6 +26,11 @@ export class HeadToHeadService {
         // Step 2: Get team names and logos for opponents
         const opponentIds = data?.map((record) => record.opponent_id) || [];
 
+        // Skip team query if there are no opponents to look up (avoids .in('id', []) which 400s in PostgREST)
+        if (opponentIds.length === 0) {
+          return [];
+        }
+
         const { data: teams, error: teamsError } = await supabase
           .from('teams')
           .select('id, name, image_url')
