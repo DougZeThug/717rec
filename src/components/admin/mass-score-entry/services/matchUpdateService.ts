@@ -3,7 +3,7 @@ import { useToast } from '@/hooks/useToast';
 import { errorLog } from '@/utils/logger';
 
 import { MatchWithTeams } from '../types';
-import { updateMatchInDatabase } from './matchUpdateCore';
+import { determineWinnerLoser, updateMatchInDatabase } from './matchUpdateCore';
 
 export const useMatchUpdateService = () => {
   const { updateTeamStats } = useTeamRecordUpdate();
@@ -16,18 +16,11 @@ export const useMatchUpdateService = () => {
         return false;
       }
 
-      let winnerId = null;
-      let loserId = null;
+      // Use the same winner/loser determination logic as matchUpdateCore
+      const result = determineWinnerLoser(match);
 
-      if (match.team1Score === 1) {
-        winnerId = match.team1Id;
-        loserId = match.team2Id;
-      } else if (match.team2Score === 1) {
-        winnerId = match.team2Id;
-        loserId = match.team1Id;
-      }
-
-      if (match.iscompleted && winnerId && loserId && match.team1 && match.team2) {
+      if (match.iscompleted && result && match.team1 && match.team2) {
+        const { winnerId, loserId } = result;
         const teams = [match.team1, match.team2];
 
         const winnerGameWins =
