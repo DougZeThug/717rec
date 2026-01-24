@@ -35,6 +35,11 @@ export const useMatchUpdate = ({
       const wasCompleted = editingMatch.iscompleted;
       const isNowCompleted = matchData.iscompleted;
 
+      // Check if game wins changed
+      const gameWinsChanged =
+        editingMatch.team1_game_wins !== matchData.team1_game_wins ||
+        editingMatch.team2_game_wins !== matchData.team2_game_wins;
+
       // Update the match in Supabase
       const { data, error } = await supabase
         .from('matches')
@@ -87,11 +92,11 @@ export const useMatchUpdate = ({
         description: `Match details have been successfully updated.`,
       });
 
-      // If match is newly completed or winner changed, update team records
-      if ((isNowCompleted && !wasCompleted) || (isNowCompleted && winnerChanged)) {
+      // If match is newly completed, winner changed, or game wins changed on completed match
+      if ((isNowCompleted && !wasCompleted) || (isNowCompleted && (winnerChanged || gameWinsChanged))) {
         if (updatedMatch.winnerId && updatedMatch.loserId) {
-          // If winner changed on already-completed match, reverse old stats first
-          if (wasCompleted && winnerChanged && editingMatch.winnerId && editingMatch.loserId) {
+          // If winner changed OR game wins changed on already-completed match, reverse old stats first
+          if (wasCompleted && (winnerChanged || gameWinsChanged) && editingMatch.winnerId && editingMatch.loserId) {
             const oldWinnerGameWins =
               editingMatch.winnerId === editingMatch.team1Id
                 ? editingMatch.team1_game_wins || 0
