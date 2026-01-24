@@ -75,27 +75,7 @@ Deno.serve(async (req) => {
     const weekNumber = weekData as number;
     console.log(`[capture-power-snapshots] Current week number: ${weekNumber}`);
 
-    // 3. Check if snapshot already exists for this week
-    const { data: existingSnapshot } = await supabase
-      .from('power_score_snapshots')
-      .select('id')
-      .eq('season_id', activeSeason.id)
-      .eq('week_number', weekNumber)
-      .limit(1);
-
-    if (existingSnapshot && existingSnapshot.length > 0) {
-      console.log(`[capture-power-snapshots] Snapshot already exists for week ${weekNumber}`);
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: `Snapshot already exists for week ${weekNumber}`,
-          skipped: true,
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // 4. Query v_team_details for all teams with power scores
+    // 3. Fetch teams first to know which ones need snapshots
     const { data: teams, error: teamsError } = await supabase
       .from('v_team_details')
       .select('team_id, power_score, sos, wins, losses, game_wins, game_losses, division_id')
@@ -122,9 +102,37 @@ Deno.serve(async (req) => {
       );
     }
 
-    // 5. Prepare snapshot records
+    const teamIds = teams.map(t => t.team_id);
+
+    // 4. Check which teams already have snapshots for this week
+    const { data: existingSnapshots } = await supabase
+      .from('power_score_snapshots')
+      .select('team_id')
+      .eq('season_id', activeSeason.id)
+      .eq('week_number', weekNumber)
+      .in('team_id', teamIds);
+
+    const teamsWithSnapshots = new Set(existingSnapshots?.map(s => s.team_id) || []);
+    const teamsNeedingSnapshots = teams.filter(t => !teamsWithSnapshots.has(t.team_id));
+
+    // If all teams already have snapshots, skip
+    if (teamsNeedingSnapshots.length === 0) {
+      console.log(`[capture-power-snapshots] Snapshots already exist for all ${teamIds.length} teams in week ${weekNumber}`);
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: `Snapshots already exist for all ${teamIds.length} teams in week ${weekNumber}`,
+          skipped: true,
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`[capture-power-snapshots] ${teamsWithSnapshots.size} teams already have snapshots, creating for ${teamsNeedingSnapshots.length} remaining teams`);
+
+    // 5. Prepare snapshot records only for teams that don't have one
     const snapshotDate = new Date().toISOString().split('T')[0];
-    const snapshots = teams.map((team) => ({
+    const snapshots = teamsNeedingSnapshots.map((team) => ({
       team_id: team.team_id,
       season_id: activeSeason.id,
       week_number: weekNumber,
