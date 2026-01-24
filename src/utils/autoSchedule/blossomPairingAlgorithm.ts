@@ -657,25 +657,18 @@ function runBlossomMatching(teams: Team[], edges: Edge[], round: number): TeamPa
     teamIndexMap.set(team.id, index);
   });
 
-  // Build adjacency matrix (negative weights because blossom finds minimum cost)
-  const adjacencyMatrix: number[][] = [];
-  for (let i = 0; i < teams.length; i++) {
-    adjacencyMatrix[i] = new Array(teams.length).fill(0);
-  }
-
-  // Fill matrix with edge weights (negative for maximum weight matching)
-  edges.forEach((edge) => {
+  // Build edge list in format expected by edmonds-blossom: [[node1, node2, weight], ...]
+  // Using negative weights because blossom finds minimum cost matching
+  const edgeList: number[][] = edges.map((edge) => {
     const index1 = teamIndexMap.get(edge.team1.id)!;
     const index2 = teamIndexMap.get(edge.team2.id)!;
     const weight = -edge.weight; // Negative because blossom finds minimum cost
-
-    adjacencyMatrix[index1][index2] = weight;
-    adjacencyMatrix[index2][index1] = weight;
+    return [index1, index2, weight];
   });
 
   try {
-    // Run Blossom algorithm
-    const matching = edmondsBlossom(adjacencyMatrix);
+    // Run Blossom algorithm with edge list format
+    const matching = edmondsBlossom(edgeList);
 
     // Convert matching result back to TeamPairing objects
     const pairings: TeamPairing[] = [];
