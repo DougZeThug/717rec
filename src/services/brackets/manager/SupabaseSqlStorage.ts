@@ -149,16 +149,18 @@ export class SupabaseSqlStorage implements CrudInterface {
   private async internalSelect<T extends keyof DataTypes>(
     table: T,
     filter?: Partial<DataTypes[T]> | Id
-  ): Promise<DataTypes[T][] | DataTypes[T]> {
+  ): Promise<DataTypes[T][] | DataTypes[T] | null> {
     const client = this.getClient();
     let query = client.from(table).select('*');
 
     if (filter !== undefined) {
       if (typeof filter === 'number' || typeof filter === 'string') {
         query = query.eq('id', filter);
-        const { data, error } = await query.single();
+        const { data, error } = await query.maybeSingle();
 
         if (error) throw error;
+        if (!data) return null;
+        
         // For match table, transform from DB format; cast to DataTypes[T] since TypeScript can't infer the conditional
         return (
           table === 'match' ? this.transformMatchFromDb(data as DbMatch) : data
@@ -277,7 +279,7 @@ export class SupabaseSqlStorage implements CrudInterface {
 
   // Select overloads
   async select<T extends keyof DataTypes>(table: T): Promise<DataTypes[T][]>;
-  async select<T extends keyof DataTypes>(table: T, id: Id): Promise<DataTypes[T]>;
+  async select<T extends keyof DataTypes>(table: T, id: Id): Promise<DataTypes[T] | null>;
   async select<T extends keyof DataTypes>(
     table: T,
     filter: Partial<DataTypes[T]>
@@ -286,7 +288,7 @@ export class SupabaseSqlStorage implements CrudInterface {
   async select<T extends keyof DataTypes>(
     table: T,
     filter?: Partial<DataTypes[T]> | Id
-  ): Promise<DataTypes[T][] | DataTypes[T]> {
+  ): Promise<DataTypes[T][] | DataTypes[T] | null> {
     // Use the public select method which includes logging
     return this.internalSelect(table, filter);
   }
