@@ -10,7 +10,7 @@ import { useTeamManagement } from '@/hooks/useTeamManagement';
 import { Team } from '@/types';
 import { groupTeamsByDisplayDivision } from '@/utils/teamGrouping';
 
-import { DisplayMode, SortMode } from './TeamsPageContainer';
+import { DisplayMode, SortMode } from '@/hooks/useTeamsPreferences';
 
 interface TeamsContainerProps {
   displayMode: DisplayMode;

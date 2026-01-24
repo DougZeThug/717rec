@@ -52,10 +52,22 @@ export const BACK_TO_BACK_PAIRS = {
   },
 } as const;
 
-// Individual time slots for reference - derived from BACK_TO_BACK_PAIRS
-export const TIME_SLOTS = Object.values(BACK_TO_BACK_PAIRS)
-  .flatMap(pair => [pair.primary, pair.secondary])
-  .reduce((acc, slot) => ({ ...acc, [slot]: slot }), {} as Record<string, string>) as const;
+// Valid time slot type
+export type TimeSlot = '5:00 PM' | '5:30 PM' | '6:00 PM' | '6:30 PM' | '7:00 PM' | '7:30 PM' | '8:00 PM' | '8:30 PM' | '9:00 PM' | '9:30 PM';
+
+// Individual time slots for reference
+export const TIME_SLOTS: Record<TimeSlot, TimeSlot> = {
+  '5:00 PM': '5:00 PM',
+  '5:30 PM': '5:30 PM',
+  '6:00 PM': '6:00 PM',
+  '6:30 PM': '6:30 PM',
+  '7:00 PM': '7:00 PM',
+  '7:30 PM': '7:30 PM',
+  '8:00 PM': '8:00 PM',
+  '8:30 PM': '8:30 PM',
+  '9:00 PM': '9:00 PM',
+  '9:30 PM': '9:30 PM',
+};
 
 // TIME_BLOCKS with structure expected by MatchPairingItem
 export const TIME_BLOCKS = {
@@ -98,11 +110,11 @@ export const TIME_BLOCKS = {
 } as const;
 
 // Lookup maps for efficient time slot operations
-const BACK_TO_BACK_MAP = new Map(
+const BACK_TO_BACK_MAP = new Map<string, string>(
   Object.values(BACK_TO_BACK_PAIRS).map(pair => [pair.primary, pair.secondary])
 );
 
-const TIME_TO_PAIR_NAME_MAP = new Map(
+const TIME_TO_PAIR_NAME_MAP = new Map<string, string>(
   Object.entries(BACK_TO_BACK_PAIRS).map(([name, pair]) => [pair.primary, name])
 );
 
