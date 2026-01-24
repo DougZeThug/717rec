@@ -42,17 +42,25 @@ export const bulkUpdateTeamSeeds = async (
     )
   );
 
-  const errors = results
-    .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
-    .map((result) => result.reason);
+  // Check for both rejected promises AND Supabase errors in fulfilled promises
+  const errors: any[] = [];
+  const successData: any[] = [];
+
+  results.forEach((result) => {
+    if (result.status === 'rejected') {
+      errors.push(result.reason);
+    } else if (result.value.error) {
+      errors.push(result.value.error);
+    } else {
+      successData.push(result.value.data);
+    }
+  });
 
   if (errors.length > 0) {
     throw new DatabaseError(`Failed to update ${errors.length} team seeds`, errors);
   }
 
-  return results
-    .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled')
-    .map((result) => result.value.data);
+  return successData;
 };
 
 /**
