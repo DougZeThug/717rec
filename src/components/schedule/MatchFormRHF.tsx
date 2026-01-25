@@ -245,9 +245,12 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCanc
                       type="number"
                       min="0"
                       value={field.value === undefined ? '' : field.value}
-                      onChange={(e) =>
-                        field.onChange(e.target.value ? parseInt(e.target.value) : undefined)
-                      }
+                      onChange={(e) => {
+                        const { value } = e.target;
+                        if (value === '') return field.onChange(undefined);
+                        const parsed = parseInt(value, 10);
+                        field.onChange(Number.isNaN(parsed) ? undefined : parsed);
+                      }}
                       required={isCompleted}
                     />
                   </FormControl>
@@ -269,9 +272,12 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCanc
                       type="number"
                       min="0"
                       value={field.value === undefined ? '' : field.value}
-                      onChange={(e) =>
-                        field.onChange(e.target.value ? parseInt(e.target.value) : undefined)
-                      }
+                      onChange={(e) => {
+                        const { value } = e.target;
+                        if (value === '') return field.onChange(undefined);
+                        const parsed = parseInt(value, 10);
+                        field.onChange(Number.isNaN(parsed) ? undefined : parsed);
+                      }}
                       required={isCompleted}
                     />
                   </FormControl>
