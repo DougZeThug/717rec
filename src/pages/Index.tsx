@@ -1,15 +1,12 @@
 import React, { lazy, Suspense } from 'react';
 
-import HeroCard from '@/components/hero/HeroCard';
 import HeroCardSkeleton from '@/components/hero/HeroCardSkeleton';
-import ParticipationHeroCard from '@/components/hero/ParticipationHeroCard';
 import HeroSection from '@/components/home/HeroSection';
 import MyMatchesSection from '@/components/home/MyMatchesSection';
 import MyNextMatchSkeleton from '@/components/home/MyNextMatchSkeleton';
 import PendingScoresCard from '@/components/home/PendingScoresCard';
 import TeamOfTheWeekCard from '@/components/home/TeamOfTheWeekCard';
 import TeamOfTheWeekSkeleton from '@/components/home/TeamOfTheWeekSkeleton';
-import TopTeams from '@/components/home/TopTeams';
 import PageLayout from '@/components/layout/PageLayout';
 import PageTransition from '@/components/transitions/PageTransition';
 import { useIsMobile } from '@/hooks/useMobile';
@@ -20,8 +17,11 @@ import { useConfirmationSeason } from '@/hooks/useSeasonParticipation';
 import { useTeams } from '@/hooks/useTeams';
 import { useWeeklyPowerScoreTrends } from '@/hooks/useWeeklyPowerScoreTrends';
 
-// Lazy load CallToAction since it's below the fold
+// Lazy load components that use framer-motion to defer vendor-motion chunk and improve TTI
+const HeroCard = lazy(() => import('@/components/hero/HeroCard'));
+const ParticipationHeroCard = lazy(() => import('@/components/hero/ParticipationHeroCard'));
 const CallToAction = lazy(() => import('@/components/home/CallToAction'));
+const TopTeams = lazy(() => import('@/components/home/TopTeams'));
 
 const Index: React.FC = () => {
   const { teams, isLoading: teamsLoading } = useTeams();
@@ -78,7 +78,9 @@ const Index: React.FC = () => {
         {/* Season Participation Card - shown when confirmation is open */}
         {showParticipationCard && (
           <PageTransition animation="fadeInSlideUp" delay="short">
-            <ParticipationHeroCard />
+            <Suspense fallback={<HeroCardSkeleton />}>
+              <ParticipationHeroCard />
+            </Suspense>
           </PageTransition>
         )}
 
@@ -88,7 +90,9 @@ const Index: React.FC = () => {
         ) : (
           heroCards?.map((card, index) => (
             <PageTransition key={card.id} animation="fadeInSlideUp" delay={getDelay(index)}>
-              <HeroCard card={card} />
+              <Suspense fallback={<HeroCardSkeleton />}>
+                <HeroCard card={card} />
+              </Suspense>
             </PageTransition>
           ))
         )}
@@ -112,7 +116,9 @@ const Index: React.FC = () => {
           <div className="h-48 animate-pulse bg-muted/30 rounded-lg" />
         ) : (
           <PageTransition animation="fadeInSlideUp" delay="long">
-            <TopTeams teams={topTeams} />
+            <Suspense fallback={<div className="h-64 animate-pulse bg-muted/30 rounded-lg" />}>
+              <TopTeams teams={topTeams} />
+            </Suspense>
           </PageTransition>
         )}
 

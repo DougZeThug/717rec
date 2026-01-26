@@ -24,22 +24,34 @@ export const initAnalytics = () => {
     return;
   }
 
-  // Load gtag script dynamically
-  const script = document.createElement('script');
-  script.async = true;
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
-  document.head.appendChild(script);
+  // Defer analytics loading to improve TTI
+  // Analytics is non-critical and can wait until the page is interactive
+  const loadAnalytics = () => {
+    // Load gtag script dynamically
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+    document.head.appendChild(script);
 
-  // Initialize dataLayer and gtag
-  window.dataLayer = window.dataLayer || [];
-  window.gtag = function gtag(...args: unknown[]) {
-    window.dataLayer.push(args);
+    // Initialize dataLayer and gtag
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function gtag(...args: unknown[]) {
+      window.dataLayer.push(args);
+    };
+
+    window.gtag('js', new Date());
+    window.gtag('config', GA_MEASUREMENT_ID, {
+      send_page_view: false, // We'll track manually for SPA
+    });
   };
 
-  window.gtag('js', new Date());
-  window.gtag('config', GA_MEASUREMENT_ID, {
-    send_page_view: false, // We'll track manually for SPA
-  });
+  // Use requestIdleCallback to defer until browser is idle
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(loadAnalytics, { timeout: 3000 });
+  } else {
+    // Fallback: defer by 2 seconds
+    setTimeout(loadAnalytics, 2000);
+  }
 };
 
 /**
