@@ -21,6 +21,8 @@ export default defineConfig(({ mode }) => ({
           'vendor-dnd': ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities'],
           'vendor-supabase': ['@supabase/supabase-js'],
           'vendor-brackets': ['brackets-manager', 'brackets-model', 'brackets-memory-db'],
+          // Separate Sentry into its own chunk so it doesn't block main bundle
+          'vendor-sentry': ['@sentry/react'],
         },
       },
     },

@@ -11,8 +11,6 @@ import { NavigationProvider } from '@/contexts/NavigationContext';
 import { initAnalytics, trackPageView } from '@/utils/analytics';
 import { routeLog } from '@/utils/logger';
 import { preloadCoreRoutes } from '@/utils/routePrefetch';
-import { initSentry } from '@/utils/sentry';
-
 import ProtectedAdminRoute from './components/auth/ProtectedAdminRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { RouteErrorBoundary } from './components/RouteErrorBoundary';
@@ -21,8 +19,7 @@ import Navbar from './components/layout/Navbar';
 import AppNavigation from './components/navigation/AppNavigation';
 import PageTransition from './components/transitions/PageTransition';
 
-// Initialize Sentry and Analytics on app load
-initSentry();
+// Initialize Analytics on app load (Sentry already initialized in main.tsx)
 initAnalytics();
 
 // Lazy load all page components

@@ -1,5 +1,6 @@
 /**
  * Sentry initialization and configuration for production error logging
+ * Optimized: Replay integration is lazy-loaded to reduce TTI
  */
 import * as Sentry from '@sentry/react';
 
@@ -22,6 +23,8 @@ export const initSentry = () => {
 
   isInitialized = true;
 
+  // Initialize Sentry WITHOUT replay integration for faster TTI
+  // Replay will be added lazily after page becomes interactive
   Sentry.init({
     dsn: SENTRY_DSN,
     environment: import.meta.env.MODE,
@@ -32,15 +35,13 @@ export const initSentry = () => {
     // Send default PII data to Sentry (e.g., automatic IP address collection)
     sendDefaultPii: true,
 
-    // Session Replay integration
-    integrations: [
-      Sentry.replayIntegration(),
-    ],
+    // NO integrations on initial load - replay added lazily below
+    integrations: [],
 
     // Sample rate for performance monitoring (0 = disabled, 1 = 100%)
     tracesSampleRate: 0.1,
 
-    // Session Replay sample rates
+    // Session Replay sample rates (used when replay is added)
     replaysSessionSampleRate: 0.1, // 10% of sessions
     replaysOnErrorSampleRate: 1.0, // 100% of sessions with errors
 
@@ -73,6 +74,35 @@ export const initSentry = () => {
       },
     },
   });
+
+  // Lazily add replay integration after page becomes interactive
+  // This defers ~40KB of JS until after TTI
+  if (import.meta.env.PROD) {
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => {
+        addReplayIntegration();
+      }, { timeout: 5000 });
+    } else {
+      // Fallback for browsers without requestIdleCallback
+      setTimeout(() => {
+        addReplayIntegration();
+      }, 3000);
+    }
+  }
+};
+
+/**
+ * Lazily add the replay integration to reduce initial bundle impact
+ */
+const addReplayIntegration = () => {
+  try {
+    const client = Sentry.getClient();
+    if (client) {
+      client.addIntegration(Sentry.replayIntegration());
+    }
+  } catch {
+    // Silently fail - replay is non-critical
+  }
 };
 
 /**
