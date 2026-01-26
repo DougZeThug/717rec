@@ -43,20 +43,31 @@ export const prefetchRoute = (path: string): void => {
 };
 
 // Preload core navigation pages after initial render
+// NOTE: Only preload lightweight pages to avoid loading heavy chunks (recharts, brackets)
+// that hurt TTI and increase unused JavaScript on initial load
 export const preloadCoreRoutes = (): void => {
-  const preload = () => {
-    // Preload the most commonly visited pages
+  const preloadLight = () => {
+    // Only preload pages with minimal dependencies
     prefetchRoutes.teams();
     prefetchRoutes.schedule();
+    prefetchRoutes.history();
+  };
+
+  // Defer heavy pages even further
+  const preloadHeavy = () => {
+    // These have large dependencies (recharts, brackets-manager)
+    // Only preload after page is fully interactive
     prefetchRoutes.stats();
     prefetchRoutes.playoffs();
-    prefetchRoutes.history();
   };
 
   // Use requestIdleCallback to not block initial render
   if ('requestIdleCallback' in window) {
-    requestIdleCallback(preload);
+    requestIdleCallback(preloadLight, { timeout: 2000 });
+    // Defer heavy chunks until truly idle (after 5 seconds)
+    requestIdleCallback(preloadHeavy, { timeout: 8000 });
   } else {
-    setTimeout(preload, 1000);
+    setTimeout(preloadLight, 1000);
+    setTimeout(preloadHeavy, 5000);
   }
 };
