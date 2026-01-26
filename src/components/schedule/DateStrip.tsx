@@ -26,12 +26,18 @@ const DateStrip: React.FC<DateStripProps> = ({ selectedDate, onDateSelect, match
   }, []);
 
   // Auto-scroll to selected date on mount
+  // Use double requestAnimationFrame to prevent forced reflow
   useEffect(() => {
     if (selectedRef.current) {
-      selectedRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'center',
+      const element = selectedRef.current;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'center',
+          });
+        });
       });
     }
   }, []);

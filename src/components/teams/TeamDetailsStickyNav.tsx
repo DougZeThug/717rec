@@ -68,18 +68,23 @@ export const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ clas
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Use double requestAnimationFrame to prevent forced reflow
   const scrollToSection = useCallback((sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      // Calculate offset dynamically based on actual nav height
-      const navHeight = navRef.current?.offsetHeight || 70;
-      const offset = navHeight + 10; // Add small buffer
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.scrollY - offset;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          // Calculate offset dynamically based on actual nav height
+          const navHeight = navRef.current?.offsetHeight || 70;
+          const offset = navHeight + 10; // Add small buffer
+          const elementPosition = element.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.scrollY - offset;
 
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth',
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth',
+          });
+        });
       });
     }
   }, []);

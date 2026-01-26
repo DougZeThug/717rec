@@ -32,11 +32,17 @@ export const TeamsDivisionSection: React.FC<TeamsDivisionSectionProps> = ({
 }) => {
   const sectionRef = useRef<HTMLDivElement>(null);
 
+  // Use double requestAnimationFrame to prevent forced reflow
   useEffect(() => {
     if (isExpanded && sectionRef.current) {
-      const yOffset = -80;
-      const y = sectionRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: 'smooth' });
+      const element = sectionRef.current;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const yOffset = -80;
+          const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+          window.scrollTo({ top: y, behavior: 'smooth' });
+        });
+      });
     }
   }, [isExpanded]);
 
