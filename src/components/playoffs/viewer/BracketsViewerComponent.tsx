@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { LoadingState } from '@/components/ui/loading-state';
 import { BracketsViewerAdapter, ViewerDataWithMapping } from '@/services/brackets/viewer';
+import { loadBracketStyles } from '@/styles/bracket-styles';
 import { bracketLog, errorLog, warnLog } from '@/utils/logger';
 import { PlayoffBracket, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 
@@ -109,12 +110,16 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
       return;
     }
 
-    // Dynamically load brackets-viewer script if not already loaded
+    // Dynamically load brackets-viewer script and CSS if not already loaded
     const initAndRender = async () => {
       try {
-        await loadBracketsViewerScript();
+        // Load both script and CSS in parallel
+        await Promise.all([
+          loadBracketsViewerScript(),
+          loadBracketStyles(),
+        ]);
       } catch (err) {
-        errorLog('Failed to load brackets-viewer script:', err);
+        errorLog('Failed to load brackets-viewer resources:', err);
         setError('Failed to load bracket viewer library');
         return;
       }
