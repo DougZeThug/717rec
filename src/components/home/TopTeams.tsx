@@ -34,9 +34,12 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
     animations.fadeIn
   );
 
+  // Reserve minimum height to prevent layout shift during loading
+  const sectionStyle = { minHeight: '280px', contain: 'layout style paint' as const };
+
   if (topTenTeams.length === 0) {
     return (
-      <section id="top-teams-section" className={sectionClasses}>
+      <section id="top-teams-section" className={sectionClasses} style={sectionStyle}>
         <EmptyState
           icon={Trophy}
           title="No Teams Ranked Yet"
@@ -54,7 +57,7 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
   }
 
   return (
-    <section id="top-teams-section" className={sectionClasses}>
+    <section id="top-teams-section" className={sectionClasses} style={sectionStyle}>
       <SectionHeader
         title="Top 10 Teams"
         icon={Trophy}
