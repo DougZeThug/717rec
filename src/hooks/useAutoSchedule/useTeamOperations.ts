@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Team } from '@/types';
 import { DualBlockConfig, PairedTimeBlockTeamsMap, TimeBlockTeamsMap } from '@/types/autoSchedule';
@@ -11,13 +11,38 @@ import {
 } from '@/utils/autoSchedule/teamLoaderUtils';
 import { errorLog, scheduleLog, warnLog } from '@/utils/logger';
 
+import { loadAutoScheduleState, saveAutoScheduleState } from './storage';
+
 export const useTeamOperations = () => {
+  // Load persisted state on mount
+  const persistedState = useRef(loadAutoScheduleState());
+  
   const [isLoading, setIsLoading] = useState(false);
-  const [timeBlockTeams, setTimeBlockTeams] = useState<TimeBlockTeamsMap>({});
-  const [originalTimeBlockTeams, setOriginalTimeBlockTeams] = useState<TimeBlockTeamsMap>({});
+  
+  // Initialize from persisted state if available
+  const [timeBlockTeams, setTimeBlockTeams] = useState<TimeBlockTeamsMap>(() => 
+    persistedState.current?.timeBlockTeams || {}
+  );
+  const [originalTimeBlockTeams, setOriginalTimeBlockTeams] = useState<TimeBlockTeamsMap>(() => 
+    persistedState.current?.originalTimeBlockTeams || {}
+  );
   const [pairedTimeBlockTeams, setPairedTimeBlockTeams] = useState<PairedTimeBlockTeamsMap>({});
   // Maps team ID to array of block names (supports double headers in multiple blocks)
-  const [teamBlockMap, setTeamBlockMap] = useState<Record<string, string[]>>({});
+  const [teamBlockMap, setTeamBlockMap] = useState<Record<string, string[]>>(() => 
+    persistedState.current?.teamBlockMap || {}
+  );
+
+  // Persist team data when it changes
+  useEffect(() => {
+    // Only persist if we have data
+    if (Object.keys(timeBlockTeams).length > 0 || Object.keys(teamBlockMap).length > 0) {
+      saveAutoScheduleState({
+        timeBlockTeams,
+        originalTimeBlockTeams,
+        teamBlockMap,
+      });
+    }
+  }, [timeBlockTeams, originalTimeBlockTeams, teamBlockMap]);
 
   /**
    * Load teams for all back-to-back pairs for a specific date

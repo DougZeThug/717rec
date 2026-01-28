@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
 import { usePairingGenerator } from '@/hooks/scheduling/usePairingGenerator';
@@ -21,21 +21,41 @@ import {
 } from '@/utils/autoSchedule/validationUtils';
 import { errorLog, scheduleLog } from '@/utils/logger';
 
+import { loadAutoScheduleState, saveAutoScheduleState } from './storage';
+
 export const usePairingOperations = (
   setActiveTab: (tab: string) => void,
   // Maps team ID to array of block names (supports double headers in multiple blocks)
   teamBlockMap?: Record<string, string[]>,
   allTeams?: Team[]
 ) => {
-  const [generatedPairings, setGeneratedPairings] = useState<TeamPairingMap>({});
-  const [unmatchedTeamIds, setUnmatchedTeamIds] = useState<string[]>([]);
+  // Load persisted state on mount
+  const persistedState = useRef(loadAutoScheduleState());
+  
+  const [generatedPairings, setGeneratedPairings] = useState<TeamPairingMap>(() => 
+    persistedState.current?.generatedPairings || {}
+  );
+  const [unmatchedTeamIds, setUnmatchedTeamIds] = useState<string[]>(() => 
+    persistedState.current?.unmatchedTeamIds || []
+  );
   const [qualityMetrics, setQualityMetrics] = useState<MatchQualityMetrics | null>(null);
+  
   const {
     isGenerating,
     generateMatchPairings,
     teamBlockMap: generatorBlockMap,
   } = usePairingGenerator();
   const { toast } = useToast();
+
+  // Persist pairing data when it changes
+  useEffect(() => {
+    if (Object.keys(generatedPairings).length > 0 || unmatchedTeamIds.length > 0) {
+      saveAutoScheduleState({
+        generatedPairings,
+        unmatchedTeamIds,
+      });
+    }
+  }, [generatedPairings, unmatchedTeamIds]);
 
   /**
    * Generate match pairings with enhanced quality analysis
