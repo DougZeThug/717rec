@@ -4,8 +4,25 @@ import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
 import type { StorageMatch, StorageGroup, StorageRound } from '../types/BracketServiceTypes';
 
 /**
- * Service for normalizing bracket structures
- * Handles fixing duplicate participants, Grand Final population, and LB R1 issues
+ * Service for normalizing and fixing bracket structure issues in double-elimination tournaments.
+ *
+ * ## Why This Exists
+ * The `brackets-manager` library occasionally produces edge-case bugs when propagating
+ * losers through the bracket, particularly in the Loser Bracket Round 1 and Grand Final.
+ * This service provides defensive normalization to detect and fix these issues.
+ *
+ * ## Double-Elimination Bracket Structure
+ * The library uses numbered groups to represent bracket sections:
+ * - **Group 1 (WB)**: Winner Bracket - teams advance by winning
+ * - **Group 2 (LB)**: Loser Bracket - teams drop here after first loss, eliminated on second
+ * - **Group 3 (GF)**: Grand Final - WB champion vs LB champion
+ *
+ * ## Known Issues Handled
+ * 1. **Duplicate participants in LB R1**: Same team appears in both opponent slots
+ * 2. **Grand Final population gaps**: LB Final winner doesn't propagate to GF due to timing
+ * 3. **Misplaced participants**: Opponent in wrong slot after loser propagation
+ *
+ * @see BracketManagerService - Main service that calls these normalizations
  */
 export class BracketNormalizationService {
   constructor(private storage: SupabaseSqlStorage) {}
@@ -59,8 +76,23 @@ export class BracketNormalizationService {
   }
 
   /**
-   * Normalize Grand Final population after LB Final
-   * If GF opponent2 is missing and LB Final is complete, populate it
+   * Normalizes Grand Final population by ensuring the LB Final winner is placed correctly.
+   *
+   * ## Problem This Solves
+   * Due to race conditions in score submission, the LB Final winner may not automatically
+   * propagate to the Grand Final's opponent2 slot. This leaves the GF with only the WB
+   * champion (opponent1) and a missing opponent2.
+   *
+   * ## When Called
+   * After score submissions complete, particularly after LB Final is scored.
+   *
+   * ## Algorithm
+   * 1. Find GF group (group number 3) and its Round 1 match
+   * 2. Check if opponent2 is missing
+   * 3. If LB Final (last round of group 2) is complete, extract winner
+   * 4. Populate GF opponent2 with LB Final winner
+   *
+   * @param stageId - The brackets-manager stage ID for this tournament
    */
   async normalizeGrandFinalPopulation(stageId: number): Promise<void> {
     try {
@@ -134,8 +166,33 @@ export class BracketNormalizationService {
   }
 
   /**
-   * Normalize Losers Bracket Round 1 matches to fix duplicate participant issues
-   * Detects and fixes cases where the same participant is in both opponent slots
+   * Normalizes Loser Bracket Round 1 matches to fix duplicate participant issues.
+   *
+   * ## Problem This Solves
+   * The `brackets-manager` library can create invalid match states in LB R1 when multiple
+   * losers from WB R1 are placed simultaneously. This results in the same participant
+   * appearing in both opponent1 and opponent2 slots of a single match.
+   *
+   * ## Example Bug State
+   * ```
+   * Before normalization:
+   * LB R1 Match 5: { opponent1: TeamA, opponent2: TeamA }  // INVALID - duplicate!
+   *
+   * After normalization:
+   * LB R1 Match 5: { opponent1: TeamA, opponent2: null }   // Valid BYE match
+   * ```
+   *
+   * ## Algorithm Steps
+   * 1. Find LB group (group number 2) and its first round
+   * 2. For each match, check if opponent1.id === opponent2.id
+   * 3. If duplicate detected, clear opponent2 via direct SQL (bypasses storage adapter merge)
+   * 4. If only opponent2 is filled, shift to opponent1 slot
+   *
+   * ## Why Direct SQL?
+   * The storage adapter's update method has defensive merge logic that would preserve
+   * the existing opponent2 value. Direct SQL bypasses this to force-clear duplicates.
+   *
+   * @param stageId - The brackets-manager stage ID for this tournament
    */
   async normalizeLosersR1(stageId: number): Promise<void> {
     try {
