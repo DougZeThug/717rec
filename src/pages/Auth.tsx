@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAuthForm } from '@/hooks/useAuthForm';
 import { useNativePlatform } from '@/hooks/useNativePlatform';
 import { authLog } from '@/utils/logger';
+import { sanitizeReturnTo } from '@/utils/auth/sanitizeReturnTo';
 
 interface LocationState {
   returnTo?: string;
@@ -20,7 +21,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as LocationState | undefined;
-  const returnTo = state?.returnTo || '/';
+  const returnTo = sanitizeReturnTo(state?.returnTo);
 
   const { isNative } = useNativePlatform();
   const {
