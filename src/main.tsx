@@ -4,13 +4,13 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import { initSentry } from './utils/sentry';
 
-// Defer Sentry initialization to avoid forced reflow during critical rendering
-// Error tracking is non-critical for initial page render
+// Defer Sentry initialization well beyond TTI window to avoid forced reflow during critical rendering
+// Error tracking is non-critical for initial page render - delay 8+ seconds
 if ('requestIdleCallback' in window) {
-  requestIdleCallback(() => initSentry(), { timeout: 3000 });
+  requestIdleCallback(() => initSentry(), { timeout: 8000 });
 } else {
   // Fallback for browsers without requestIdleCallback
-  setTimeout(initSentry, 2000);
+  setTimeout(initSentry, 8000);
 }
 
 // Core styles only - bracket CSS is lazy-loaded on Playoffs page
