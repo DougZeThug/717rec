@@ -65,10 +65,8 @@ export class BracketValidationService {
     }
 
     // Teams validation
-    if (!Array.isArray(data.teams) || data.teams.length === 0) {
+    if (!Array.isArray(data.teams) || data.teams.length < 2) {
       errors.push('At least 2 teams must be selected');
-    } else if (data.teams.length < 2) {
-      errors.push('Minimum 2 teams required for bracket creation');
     }
 
     validationLog('Validation result:', {

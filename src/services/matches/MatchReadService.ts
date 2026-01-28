@@ -44,5 +44,5 @@ export const fetchMatchesWithTeams = async (filters?: MatchFilters) => {
     handleDatabaseError(error, 'Failed to fetch matches with teams');
   }
 
-  return data || [];
+  return data ?? [];
 };
