@@ -75,18 +75,18 @@ export const initSentry = () => {
     },
   });
 
-  // Lazily add replay integration after page becomes interactive
-  // This defers ~40KB of JS until after TTI
+  // Lazily add replay integration well after page becomes interactive
+  // This defers ~40KB of JS until well after TTI window
   if (import.meta.env.PROD) {
     if ('requestIdleCallback' in window) {
       requestIdleCallback(() => {
         addReplayIntegration();
-      }, { timeout: 5000 });
+      }, { timeout: 15000 });
     } else {
       // Fallback for browsers without requestIdleCallback
       setTimeout(() => {
         addReplayIntegration();
-      }, 3000);
+      }, 12000);
     }
   }
 };
