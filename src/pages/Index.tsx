@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from 'react';
 
 import HeroCardSkeleton from '@/components/hero/HeroCardSkeleton';
 import HeroSection from '@/components/home/HeroSection';
+import LeagueHistoryBar from '@/components/home/LeagueHistoryBar';
 import MyMatchesSection from '@/components/home/MyMatchesSection';
 import MyNextMatchSkeleton from '@/components/home/MyNextMatchSkeleton';
 import PendingScoresCard from '@/components/home/PendingScoresCard';
@@ -60,6 +61,11 @@ const Index: React.FC = () => {
       </PageTransition>
 
       <div className="container mx-auto px-4 flex flex-col gap-4 md:gap-8">
+        {/* League History - rendered immediately for LCP optimization */}
+        <PageTransition animation="fadeInSlideUp" immediate>
+          <LeagueHistoryBar />
+        </PageTransition>
+
         {/* My Next Match(es) - shown for authenticated users with a team */}
         {myNextMatch.isLoading ? (
           <MyNextMatchSkeleton />
