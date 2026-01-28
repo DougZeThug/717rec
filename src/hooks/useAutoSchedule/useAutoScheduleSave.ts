@@ -7,6 +7,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { AutoScheduleMatch } from '@/types/autoSchedule';
 import { errorLog, scheduleLog } from '@/utils/logger';
 
+import { clearAutoScheduleState } from './storage';
+
 export function useAutoScheduleSave() {
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
@@ -178,6 +180,9 @@ export function useAutoScheduleSave() {
         title: 'Success',
         description: `Saved ${matches.length} matches to the database`,
       });
+
+      // Clear persisted state after successful save
+      clearAutoScheduleState();
 
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['matches'] });
