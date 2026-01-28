@@ -1,9 +1,25 @@
+/**
+ * Quality Analysis Module for Auto-Scheduler
+ *
+ * This module provides the scoring and analysis system for evaluating auto-generated
+ * match schedules. It measures schedule quality across multiple dimensions:
+ *
+ * - **Opponent Diversity**: Ensures teams face different opponents, avoiding rematches
+ * - **Power Score Balance**: Measures skill-level parity between matched teams
+ * - **Cross-Block Diversity**: For dual-block schedules, ensures variety across time blocks
+ *
+ * The metrics produced here drive the quality feedback shown to admins when generating
+ * schedules, helping them understand tradeoffs and optimization opportunities.
+ *
+ * @module utils/autoSchedule/qualityAnalysis
+ */
+
 import { Team } from '@/types';
 import { MatchQualityMetrics, TeamPair, TeamPairingMap } from '@/types/autoSchedule';
 import { scheduleLog } from '@/utils/logger';
 
 /**
- * Analyze opponent diversity across all pairings
+ * Analyzes opponent diversity by tracking unique opponent relationships across all pairings.
  */
 export function analyzeOpponentDiversity(pairings: TeamPairingMap): {
   duplicateOpponents: number;
@@ -94,7 +110,31 @@ export function analyzePowerScoreBalance(pairings: TeamPairingMap): {
 }
 
 /**
- * Analyze cross-block diversity for dual block schedules
+ * Analyzes cross-block opponent diversity for dual-block schedules.
+ *
+ * ## Algorithm Overview
+ * 717REC uses time blocks (Early/Mid/Late) for scheduling. This function ensures
+ * teams don't face the same opponents across different time blocks. For example,
+ * if Team A plays Team B in the Early block, they should ideally face Team C
+ * (not Team B again) in the Late block.
+ *
+ * The algorithm:
+ * 1. Groups each team's opponents by time block
+ * 2. For each team playing in multiple blocks, checks if opponent sets overlap
+ * 3. Returns percentage of teams with fully unique opponents across blocks
+ *
+ * A score of 100% means perfect cross-block diversity (no repeated opponents).
+ * Lower scores indicate some teams face the same opponent in different blocks.
+ *
+ * @param pairings - Map of block names to team pairings for that block
+ * @returns Diversity score from 0-100, where 100 = no cross-block opponent overlap
+ *
+ * @example
+ * // Perfect diversity (different opponents per block)
+ * // Early: TeamA vs TeamB, Late: TeamA vs TeamC → 100%
+ *
+ * // Imperfect diversity (same opponent in both blocks)
+ * // Early: TeamA vs TeamB, Late: TeamA vs TeamB → 0%
  */
 export function analyzeCrossBlockDiversity(pairings: TeamPairingMap): number {
   const blocks = Object.keys(pairings);
@@ -225,7 +265,32 @@ export function generateQualityFeedback(metrics: MatchQualityMetrics): {
 }
 
 /**
- * Calculate comprehensive quality metrics for generated pairings
+ * Calculates comprehensive quality metrics for auto-generated match pairings.
+ *
+ * This is the main scoring function used to evaluate schedule quality. It aggregates
+ * multiple analysis dimensions into a single `MatchQualityMetrics` object that powers
+ * the quality feedback UI shown to admins.
+ *
+ * ## Metrics Calculated
+ *
+ * | Category | Description |
+ * |----------|-------------|
+ * | **Basic Stats** | Total matches, rematch count, average compatibility score |
+ * | **Quality Rating** | "Excellent" / "Good" / "Fair" / "Poor" based on compatibility |
+ * | **Opponent Diversity** | Unique opponent relationships via `analyzeOpponentDiversity()` |
+ * | **Power Score Balance** | Skill-level parity via `analyzePowerScoreBalance()` |
+ * | **Block Analysis** | Cross-block metrics for dual-block schedules |
+ * | **Performance** | Generation time and algorithms used |
+ * | **Feedback** | Actionable strengths, improvements, recommendations |
+ *
+ * @param pairings - Map of block names to team pairings
+ * @param generationTimeMs - How long schedule generation took (for performance tracking)
+ * @param algorithmsUsed - Which scheduling algorithms were applied
+ * @returns Complete quality metrics including scores, analysis, and actionable feedback
+ *
+ * @see analyzeOpponentDiversity - Diversity scoring
+ * @see analyzePowerScoreBalance - Balance scoring
+ * @see generateQualityFeedback - Feedback generation
  */
 export function calculateComprehensiveQualityMetrics(
   pairings: TeamPairingMap,

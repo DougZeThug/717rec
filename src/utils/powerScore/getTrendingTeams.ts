@@ -1,10 +1,18 @@
 import { Team } from '@/types';
 
 /**
- * Calculate trending teams based on power score changes
- * @param teams Current team data
- * @param previousScores Previous power scores (teamId -> score)
- * @returns Teams sorted by biggest power score increase
+ * Identifies teams with the largest recent power score improvements.
+ *
+ * Used to highlight "hot" teams on the standings page - teams that are
+ * climbing the rankings based on recent match performance.
+ *
+ * @param teams - Current team data with power_score property (0-100 scale)
+ * @param previousScores - Map of teamId to previous power score for comparison
+ * @returns Teams sorted by biggest power score increase, filtered to positive gains only
+ *
+ * @example
+ * const trending = getTrendingTeams(currentTeams, lastWeekScores);
+ * // Returns: [{ team: TeamA, increase: 5.2 }, { team: TeamB, increase: 3.1 }]
  */
 export const getTrendingTeams = (
   teams: Team[],
