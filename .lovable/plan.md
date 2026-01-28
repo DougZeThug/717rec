@@ -1,56 +1,83 @@
 
-# Plan: Fix Minor Code Quality Issues
+# Plan: Fix Potential Open Redirect Vulnerability
 
 ## Overview
-Address 4 small code quality issues to improve consistency and reduce technical debt.
+Add validation for the `returnTo` parameter to prevent potential open redirect attacks. While `window.location.pathname` is already relatively safe (it only returns the path portion), adding explicit validation provides defense-in-depth.
+
+## Analysis
+
+**Current Flow:**
+1. Multiple components set `returnTo` when redirecting to `/auth`:
+   - `AuthContext.tsx` - uses `window.location.pathname`
+   - `ProtectedAdminRoute.tsx` - uses `location.pathname`
+   - `LoginPrompt.tsx` - hardcoded `/message-board`
+   - `AdminDashboard.tsx` - hardcoded `/admin`
+   - `ProfileSetup.tsx` - hardcoded `/setup-profile`
+   - `AdminAccessModal.tsx` - hardcoded `/admin`
+
+2. `Auth.tsx` (line 44) consumes and navigates to `returnTo`
+
+**Risk Assessment:**
+- `window.location.pathname` and React Router's `location.pathname` already only return the path portion (no protocol/host)
+- However, protocol-relative URLs like `//evil.com` could bypass naive checks
+- Best practice: validate at the consumption point
 
 ## Changes
 
-### 1. Fix Typo in Variable Name
-**File:** `src/components/playoffs/BracketDetail.tsx` (line 60)
+### 1. Create Utility Function
+**File:** `src/utils/auth/sanitizeReturnTo.ts` (new file)
 
-Change `divisonLower` to `divisionLower` - simple typo fix.
-
-### 2. Use Nullish Coalescing Consistently
-**File:** `src/services/matches/MatchReadService.ts` (line 47)
-
-Change `data || []` to `data ?? []` for proper nullish coalescing. This ensures we only fall back to an empty array when `data` is `null` or `undefined`, not when it's falsy (though in practice, the query returns an array or null).
-
-### 3. Remove Redundant Validation
-**File:** `src/services/brackets/validation/BracketValidationService.ts` (lines 68-72)
-
-Current code has redundant checks:
 ```typescript
-if (!Array.isArray(data.teams) || data.teams.length === 0) {
-  errors.push('At least 2 teams must be selected');
-} else if (data.teams.length < 2) {
-  errors.push('Minimum 2 teams required for bracket creation');
-}
+/**
+ * Sanitizes a return URL to prevent open redirect attacks.
+ * Only allows internal paths starting with a single slash.
+ * 
+ * @param pathname - The path to validate
+ * @returns Safe internal path or '/' as fallback
+ */
+export const sanitizeReturnTo = (pathname: string | undefined): string => {
+  // Default to home if no path provided
+  if (!pathname) return '/';
+  
+  // Must start with exactly one slash (not protocol-relative //)
+  // and not contain any protocol indicators
+  if (
+    pathname.startsWith('/') && 
+    !pathname.startsWith('//') &&
+    !pathname.includes(':')
+  ) {
+    return pathname;
+  }
+  
+  return '/';
+};
 ```
 
-The second branch only triggers when `length === 1`, but both messages say the same thing. Consolidate to:
+### 2. Apply Validation in Auth.tsx
+**File:** `src/pages/Auth.tsx` (line 23)
+
 ```typescript
-if (!Array.isArray(data.teams) || data.teams.length < 2) {
-  errors.push('At least 2 teams must be selected');
-}
+import { sanitizeReturnTo } from '@/utils/auth/sanitizeReturnTo';
+
+// Change:
+const returnTo = state?.returnTo || '/';
+
+// To:
+const returnTo = sanitizeReturnTo(state?.returnTo);
 ```
 
-### 4. Remove Incomplete Test File
-**File:** `src/components/playoffs/__tests__/MatchCard.tbd.test.tsx`
+## Why This Approach
 
-This test file:
-- Has `.tbd` in the name indicating it's incomplete
-- Only checks that the component doesn't crash (no real assertions)
-- Comments acknowledge it doesn't test the actual behavior
+1. **Single validation point**: Validate where the redirect actually happens (Auth.tsx)
+2. **Defense in depth**: Even though pathname is already safe, explicit validation adds security
+3. **Reusable utility**: Can be used elsewhere if needed
+4. **No breaking changes**: All existing hardcoded paths (`/admin`, `/message-board`, etc.) pass validation
 
-A more comprehensive test already exists at `src/components/playoffs/match-card/__tests__/PlayoffMatchCard.test.tsx`. Remove this incomplete file.
+## Files Changed
 
-## Summary
 | File | Change |
 |------|--------|
-| `BracketDetail.tsx` | Fix typo: `divisonLower` → `divisionLower` |
-| `MatchReadService.ts` | Use `??` instead of `\|\|` |
-| `BracketValidationService.ts` | Consolidate redundant validation |
-| `MatchCard.tbd.test.tsx` | Delete incomplete test file |
+| `src/utils/auth/sanitizeReturnTo.ts` | New utility function |
+| `src/pages/Auth.tsx` | Import and use sanitizeReturnTo |
 
-**Total: 4 files changed**
+**Total: 2 files**
