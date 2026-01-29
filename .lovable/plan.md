@@ -1,83 +1,213 @@
 
-# Plan: Fix Potential Open Redirect Vulnerability
+
+# Plan: Export Matchups Page to Excel
 
 ## Overview
-Add validation for the `returnTo` parameter to prevent potential open redirect attacks. While `window.location.pathname` is already relatively safe (it only returns the path portion), adding explicit validation provides defense-in-depth.
+Add an "Export to Excel" button to the Matchups tab (`OpponentHistoryTab`) in the Admin panel that generates a clean, organized Excel spreadsheet (.xlsx) with opponent history data.
 
-## Analysis
+## Current State
 
-**Current Flow:**
-1. Multiple components set `returnTo` when redirecting to `/auth`:
-   - `AuthContext.tsx` - uses `window.location.pathname`
-   - `ProtectedAdminRoute.tsx` - uses `location.pathname`
-   - `LoginPrompt.tsx` - hardcoded `/message-board`
-   - `AdminDashboard.tsx` - hardcoded `/admin`
-   - `ProfileSetup.tsx` - hardcoded `/setup-profile`
-   - `AdminAccessModal.tsx` - hardcoded `/admin`
+**Matchups Tab Location:** `src/components/admin/opponent-history/OpponentHistoryTab.tsx`
 
-2. `Auth.tsx` (line 44) consumes and navigates to `returnTo`
+**Data Source:** `useSeasonOpponentHistory()` hook returns:
+```typescript
+interface SeasonOpponentData {
+  seasonId: string;
+  seasonName: string;
+  teams: TeamOpponentHistory[];  // Each team with their opponents
+}
 
-**Risk Assessment:**
-- `window.location.pathname` and React Router's `location.pathname` already only return the path portion (no protocol/host)
-- However, protocol-relative URLs like `//evil.com` could bypass naive checks
-- Best practice: validate at the consumption point
+interface TeamOpponentHistory {
+  teamId: string;
+  teamName: string;
+  divisionName: string | null;
+  opponents: OpponentRecord[];
+  uniqueOpponentCount: number;
+  totalMatches: number;
+}
 
-## Changes
+interface OpponentRecord {
+  opponentName: string;
+  matchCount: number;
+  wins: number;
+  losses: number;
+}
+```
 
-### 1. Create Utility Function
-**File:** `src/utils/auth/sanitizeReturnTo.ts` (new file)
+**Current Export Utilities:** `src/utils/exportUtils.ts` has CSV export functions but no Excel support.
+
+## Solution
+
+### Approach: Use SheetJS (xlsx) Library
+
+SheetJS is the de-facto standard for Excel file generation in JavaScript. It's lightweight (~100KB minified) and has no dependencies.
+
+**Why xlsx over CSV:**
+- Proper Excel formatting (column widths, headers, multiple sheets)
+- Better organization for complex data
+- Native Excel file that opens without import dialogs
+- Supports styling (bold headers, frozen rows)
+
+### Export Format Design
+
+The Excel file will have **two sheets** for maximum usability:
+
+**Sheet 1: "Team Summary"** - One row per team
+| Team | Division | # Opponents | # Matches |
+|------|----------|-------------|-----------|
+| Team A | Tier 1 | 6 | 8 |
+| Team B | Tier 2 | 5 | 7 |
+
+**Sheet 2: "Matchup Details"** - One row per team-opponent pair
+| Team | Division | Opponent | Opponent Div | Matches | Wins | Losses | Record |
+|------|----------|----------|--------------|---------|------|--------|--------|
+| Team A | Tier 1 | Team B | Tier 2 | 2 | 1 | 1 | 1-1 |
+| Team A | Tier 1 | Team C | Tier 1 | 1 | 0 | 1 | 0-1 |
+
+This format allows admins to:
+1. Quickly see which teams have played the most/fewest opponents (Sheet 1)
+2. Filter/sort by any column in Excel to find specific matchups (Sheet 2)
+3. Use Excel's built-in functions for analysis
+
+## Implementation
+
+### 1. Install SheetJS Library
+
+Add `xlsx` package to dependencies.
+
+### 2. Create Export Utility
+**New file:** `src/utils/exportMatchupsToExcel.ts`
 
 ```typescript
-/**
- * Sanitizes a return URL to prevent open redirect attacks.
- * Only allows internal paths starting with a single slash.
- * 
- * @param pathname - The path to validate
- * @returns Safe internal path or '/' as fallback
- */
-export const sanitizeReturnTo = (pathname: string | undefined): string => {
-  // Default to home if no path provided
-  if (!pathname) return '/';
+import * as XLSX from 'xlsx';
+import { SeasonOpponentData } from '@/hooks/useSeasonOpponentHistory';
+
+export const exportMatchupsToExcel = (data: SeasonOpponentData): void => {
+  const workbook = XLSX.utils.book_new();
   
-  // Must start with exactly one slash (not protocol-relative //)
-  // and not contain any protocol indicators
-  if (
-    pathname.startsWith('/') && 
-    !pathname.startsWith('//') &&
-    !pathname.includes(':')
-  ) {
-    return pathname;
-  }
+  // Sheet 1: Team Summary
+  const summaryData = data.teams.map(team => ({
+    'Team': team.teamName,
+    'Division': team.divisionName || '—',
+    '# Opponents': team.uniqueOpponentCount,
+    '# Matches': team.totalMatches,
+  }));
+  const summarySheet = XLSX.utils.json_to_sheet(summaryData);
   
-  return '/';
+  // Set column widths
+  summarySheet['!cols'] = [
+    { wch: 25 },  // Team
+    { wch: 15 },  // Division
+    { wch: 12 },  // # Opponents
+    { wch: 12 },  // # Matches
+  ];
+  XLSX.utils.book_append_sheet(workbook, summarySheet, 'Team Summary');
+  
+  // Sheet 2: Matchup Details
+  const detailsData: Array<Record<string, string | number>> = [];
+  data.teams.forEach(team => {
+    team.opponents.forEach(opp => {
+      detailsData.push({
+        'Team': team.teamName,
+        'Division': team.divisionName || '—',
+        'Opponent': opp.opponentName,
+        'Opp. Division': opp.opponentDivision || '—',
+        'Matches': opp.matchCount,
+        'Wins': opp.wins,
+        'Losses': opp.losses,
+        'Record': `${opp.wins}-${opp.losses}`,
+      });
+    });
+  });
+  const detailsSheet = XLSX.utils.json_to_sheet(detailsData);
+  
+  detailsSheet['!cols'] = [
+    { wch: 25 },  // Team
+    { wch: 15 },  // Division
+    { wch: 25 },  // Opponent
+    { wch: 15 },  // Opp. Division
+    { wch: 10 },  // Matches
+    { wch: 8 },   // Wins
+    { wch: 8 },   // Losses
+    { wch: 10 },  // Record
+  ];
+  XLSX.utils.book_append_sheet(workbook, detailsSheet, 'Matchup Details');
+  
+  // Generate filename with season name and date
+  const date = new Date().toISOString().split('T')[0];
+  const safeName = data.seasonName.replace(/[^a-zA-Z0-9]/g, '_');
+  const filename = `${safeName}_Matchups_${date}.xlsx`;
+  
+  // Trigger download
+  XLSX.writeFile(workbook, filename);
 };
 ```
 
-### 2. Apply Validation in Auth.tsx
-**File:** `src/pages/Auth.tsx` (line 23)
+### 3. Update OpponentHistoryTab UI
+**File:** `src/components/admin/opponent-history/OpponentHistoryTab.tsx`
 
-```typescript
-import { sanitizeReturnTo } from '@/utils/auth/sanitizeReturnTo';
+Add an export button next to the filters:
 
-// Change:
-const returnTo = state?.returnTo || '/';
+```tsx
+import { Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { exportMatchupsToExcel } from '@/utils/exportMatchupsToExcel';
 
-// To:
-const returnTo = sanitizeReturnTo(state?.returnTo);
+// In the component, after the filters section:
+<Button
+  variant="outline"
+  size="sm"
+  onClick={() => data && exportMatchupsToExcel(data)}
+  disabled={!data}
+>
+  <Download className="h-4 w-4 mr-2" />
+  Export to Excel
+</Button>
 ```
-
-## Why This Approach
-
-1. **Single validation point**: Validate where the redirect actually happens (Auth.tsx)
-2. **Defense in depth**: Even though pathname is already safe, explicit validation adds security
-3. **Reusable utility**: Can be used elsewhere if needed
-4. **No breaking changes**: All existing hardcoded paths (`/admin`, `/message-board`, etc.) pass validation
 
 ## Files Changed
 
 | File | Change |
 |------|--------|
-| `src/utils/auth/sanitizeReturnTo.ts` | New utility function |
-| `src/pages/Auth.tsx` | Import and use sanitizeReturnTo |
+| `package.json` | Add `xlsx` dependency |
+| `src/utils/exportMatchupsToExcel.ts` | **New** - Excel export function |
+| `src/components/admin/opponent-history/OpponentHistoryTab.tsx` | Add export button |
 
-**Total: 2 files**
+**Total: 3 files (1 new, 2 modified)**
+
+## Technical Notes
+
+1. **Library Size:** SheetJS is ~100KB minified, which is acceptable for an admin-only feature
+2. **No Server Required:** File generation happens entirely client-side
+3. **Browser Compatibility:** Works in all modern browsers via Blob API
+4. **Filtered Export Option:** Could optionally export only the currently filtered teams (future enhancement)
+
+## Example Output
+
+When the admin clicks "Export to Excel", they'll get a file named like:
+`Fall_2024_Matchups_2026-01-29.xlsx`
+
+Opening it in Excel shows:
+
+**Tab 1: "Team Summary"**
+```text
++------------------+----------+-------------+----------+
+| Team             | Division | # Opponents | # Matches|
++------------------+----------+-------------+----------+
+| Bags & Brews     | Tier 1   | 6           | 8        |
+| Corn Stars       | Tier 1   | 5           | 7        |
+| ...              |          |             |          |
++------------------+----------+-------------+----------+
+```
+
+**Tab 2: "Matchup Details"**
+```text
++------------------+----------+-----------------+---------------+---------+------+--------+--------+
+| Team             | Division | Opponent        | Opp. Division | Matches | Wins | Losses | Record |
++------------------+----------+-----------------+---------------+---------+------+--------+--------+
+| Bags & Brews     | Tier 1   | Corn Stars      | Tier 1        | 2       | 1    | 1      | 1-1    |
+| Bags & Brews     | Tier 1   | Hole Patrol     | Tier 2        | 1       | 1    | 0      | 1-0    |
+| ...              |          |                 |               |         |      |        |        |
++------------------+----------+-----------------+---------------+---------+------+--------+--------+
+```
+
