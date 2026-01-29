@@ -1,7 +1,8 @@
-import { Loader2, Search, Users2 } from 'lucide-react';
+import { Download, Loader2, Search, Users2 } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
@@ -21,6 +22,7 @@ import {
 } from '@/components/ui/table';
 import { useSeasonOpponentHistory } from '@/hooks/useSeasonOpponentHistory';
 import { cn } from '@/lib/utils';
+import { exportMatchupsToExcel } from '@/utils/exportMatchupsToExcel';
 
 const OpponentHistoryTab: React.FC = () => {
   const { data, isLoading, error } = useSeasonOpponentHistory();
@@ -120,6 +122,15 @@ const OpponentHistoryTab: React.FC = () => {
               ))}
             </SelectContent>
           </Select>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => data && exportMatchupsToExcel(data)}
+            disabled={!data}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export to Excel
+          </Button>
         </div>
 
         {/* Summary */}
