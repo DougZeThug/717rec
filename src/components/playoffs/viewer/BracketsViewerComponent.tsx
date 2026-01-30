@@ -65,6 +65,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
   const lastFingerprintRef = useRef<string | null>(null);
   const hasRenderedRef = useRef(false);
   const isMountingRef = useRef(true);
+  const [refreshCounter, setRefreshCounter] = useState(0);
 
   const containerId = 'brackets-viewer-container';
 
@@ -295,7 +296,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
         try {
           window.bracketsViewer.render(viewerData, {
             selector: '#brackets-viewer-container',
-            clear: !hasRenderedRef.current, // Only clear on first render
+            clear: true, // Always clear to prevent stale bracket DOM on re-render
             participantOriginPlacement: 'before',
             separatedChildCountLabel: true,
             showSlotsOrigin: true,
@@ -390,6 +391,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
     bracket?.bracket_data,
     teams.length,
     onMatchClick,
+    refreshCounter,
   ]);
 
   if (!bracket || !teams.length) {
@@ -449,6 +451,11 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
         onClose={() => {
           setIsBMEditorOpen(false);
           setSelectedBMMatchId(null);
+        }}
+        onSaved={() => {
+          // Reset fingerprint so the useEffect re-renders with fresh data
+          lastFingerprintRef.current = null;
+          setRefreshCounter((c) => c + 1);
         }}
       />
     </>
