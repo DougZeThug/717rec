@@ -16,6 +16,7 @@ interface BracketsManagerMatchEditorProps {
   bracketId: string;
   isOpen: boolean;
   onClose: () => void;
+  onSaved?: () => void;
 }
 
 const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorProps> = ({
@@ -23,6 +24,7 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
   bracketId,
   isOpen,
   onClose,
+  onSaved,
 }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -139,6 +141,7 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
         description: 'Match score saved successfully with auto-progression',
       });
 
+      onSaved?.();
       onClose();
     } catch (err) {
       errorLog('Error updating match:', err);
@@ -173,6 +176,8 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
 
       await queryClient.invalidateQueries({ queryKey: ['brackets-manager-match', matchId] });
       await queryClient.invalidateQueries({ queryKey: ['brackets'] });
+
+      onSaved?.();
 
       setByeEligible({
         ...byeEligible,

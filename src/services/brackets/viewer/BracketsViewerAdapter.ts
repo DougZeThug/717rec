@@ -137,28 +137,44 @@ export class BracketsViewerAdapter {
     });
     bracketLog('Position map built:', positionMap.size, 'participants with positions');
 
+    // Identify WB R1 round IDs — position (seed number) is only meaningful for
+    // first-round seeding display. Setting position on later-round opponents triggers
+    // brackets-viewer's completeWithBlankMatches() Toornament detection, which
+    // reorders/hides LB R1 matches after bye advancement.
+    const wbGroup = groups.find((g: any) => g.number === 1);
+    const wbR1RoundIds = new Set(
+      rounds
+        .filter((r: any) => r.group_id === wbGroup?.id && r.number === 1)
+        .map((r: any) => r.id)
+    );
+
     // Transform matches to viewer format (always create opponent objects for connectors)
-    const transformedMatches = matches.map((match) => ({
-      id: match.id,
-      stage_id: match.stage_id,
-      group_id: match.group_id,
-      round_id: match.round_id,
-      number: match.number,
-      child_count: match.child_count,
-      opponent1: BracketsViewerAdapter.toViewerOpponent(
-        match.opponent1_id,
-        match.opponent1_score,
-        match.opponent1_result,
-        match.opponent1_id ? positionMap.get(match.opponent1_id) : undefined
-      ),
-      opponent2: BracketsViewerAdapter.toViewerOpponent(
-        match.opponent2_id,
-        match.opponent2_score,
-        match.opponent2_result,
-        match.opponent2_id ? positionMap.get(match.opponent2_id) : undefined
-      ),
-      status: this.mapStatusToString(match.status),
-    }));
+    const transformedMatches = matches.map((match) => {
+      // Only pass seed position for WB R1 matches (where seeding labels are shown)
+      const showPosition = wbR1RoundIds.has(match.round_id);
+
+      return {
+        id: match.id,
+        stage_id: match.stage_id,
+        group_id: match.group_id,
+        round_id: match.round_id,
+        number: match.number,
+        child_count: match.child_count,
+        opponent1: BracketsViewerAdapter.toViewerOpponent(
+          match.opponent1_id,
+          match.opponent1_score,
+          match.opponent1_result,
+          showPosition && match.opponent1_id ? positionMap.get(match.opponent1_id) : undefined
+        ),
+        opponent2: BracketsViewerAdapter.toViewerOpponent(
+          match.opponent2_id,
+          match.opponent2_score,
+          match.opponent2_result,
+          showPosition && match.opponent2_id ? positionMap.get(match.opponent2_id) : undefined
+        ),
+        status: this.mapStatusToString(match.status),
+      };
+    });
 
     // Calculate source_node_id for connectors
     const matchesWithSources = this.calculateSourceNodeIds(transformedMatches, groups, rounds);
