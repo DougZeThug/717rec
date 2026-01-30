@@ -29,6 +29,7 @@ const TeamOfTheWeekCard: React.FC<TeamOfTheWeekCardProps> = ({ trend, weekNumber
           ? 'team-of-week-card winter-card-full'
           : 'border-amber-500/20 bg-gradient-to-br from-amber-500/5 via-background to-orange-500/5'
       )}
+      style={{ minHeight: '140px', contain: 'layout style paint' }}
     >
       {/* Subtle glow effect */}
       <div

@@ -53,21 +53,22 @@ export const preloadCoreRoutes = (): void => {
     prefetchRoutes.history();
   };
 
-  // Defer heavy pages even further
-  const preloadHeavy = () => {
-    // These have large dependencies (recharts, brackets-manager)
-    // Only preload after page is fully interactive
-    prefetchRoutes.stats();
-    prefetchRoutes.playoffs();
-  };
-
   // Use requestIdleCallback to not block initial render
+  // Only preload lightweight pages - heavy pages (stats, playoffs) are NOT preloaded
+  // to reduce unused JavaScript and improve TTI
   if ('requestIdleCallback' in window) {
-    requestIdleCallback(preloadLight, { timeout: 2000 });
-    // Defer heavy chunks until truly idle (after 5 seconds)
-    requestIdleCallback(preloadHeavy, { timeout: 8000 });
+    requestIdleCallback(preloadLight, { timeout: 3000 });
   } else {
-    setTimeout(preloadLight, 1000);
-    setTimeout(preloadHeavy, 5000);
+    setTimeout(preloadLight, 2000);
+  }
+};
+
+// Prefetch heavy routes on-demand (e.g., on hover/focus)
+// This avoids loading unused JavaScript on initial page load
+export const prefetchHeavyRoute = (route: 'stats' | 'playoffs'): void => {
+  if (route === 'stats') {
+    prefetchRoutes.stats();
+  } else if (route === 'playoffs') {
+    prefetchRoutes.playoffs();
   }
 };
