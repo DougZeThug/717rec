@@ -34,7 +34,7 @@ const MobileMenu: React.FC<MobileMenuProps> = React.memo(({ navItems }) => {
   }, []);
 
   return (
-    <div className="md:hidden">
+    <div className="md:hidden" style={{ minWidth: '120px', minHeight: '44px' }}>
       <div className="flex items-center justify-end gap-2">
         <NavActions size="sm" />
         <Button
@@ -43,6 +43,7 @@ const MobileMenu: React.FC<MobileMenuProps> = React.memo(({ navItems }) => {
           className="text-white min-h-11 min-w-11"
           onClick={toggleMenu}
           aria-label={isOpen ? 'Close menu' : 'Open menu'}
+          style={{ width: '44px', height: '44px' }}
         >
           <motion.div
             layout={false}

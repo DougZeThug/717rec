@@ -24,8 +24,8 @@ export const initAnalytics = () => {
     return;
   }
 
-  // Defer analytics loading to improve TTI
-  // Analytics is non-critical and can wait until the page is interactive
+  // Defer analytics loading significantly to improve TTI
+  // Analytics is non-critical and should load only after page is fully interactive
   const loadAnalytics = () => {
     // Load gtag script dynamically
     const script = document.createElement('script');
@@ -45,12 +45,13 @@ export const initAnalytics = () => {
     });
   };
 
-  // Use requestIdleCallback to defer until browser is idle
+  // Use requestIdleCallback with a longer timeout to minimize TTI impact
+  // GTM adds ~75KB of unused JS on initial load - defer until truly idle
   if ('requestIdleCallback' in window) {
-    requestIdleCallback(loadAnalytics, { timeout: 3000 });
+    requestIdleCallback(loadAnalytics, { timeout: 8000 });
   } else {
-    // Fallback: defer by 2 seconds
-    setTimeout(loadAnalytics, 2000);
+    // Fallback: defer by 5 seconds to allow page to become interactive first
+    setTimeout(loadAnalytics, 5000);
   }
 };
 

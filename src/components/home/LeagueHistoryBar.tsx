@@ -13,9 +13,10 @@ const LeagueHistoryBar: React.FC = () => {
         'bg-gradient-to-r from-blue-600 to-amber-500',
         'hover:from-blue-700 hover:to-amber-600',
         'transition-all duration-200',
-        'rounded-lg shadow-md hover:shadow-lg',
+        'rounded-xl shadow-md hover:shadow-lg',
         'overflow-hidden'
       )}
+      style={{ minHeight: '56px', contain: 'layout style paint' }}
     >
       <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
 
