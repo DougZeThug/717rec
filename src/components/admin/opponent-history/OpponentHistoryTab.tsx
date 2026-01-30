@@ -28,6 +28,17 @@ const OpponentHistoryTab: React.FC = () => {
   const { data, isLoading, error } = useSeasonOpponentHistory();
   const [searchTerm, setSearchTerm] = useState('');
   const [divisionFilter, setDivisionFilter] = useState<string>('all');
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExport = async () => {
+    if (!data) return;
+    setIsExporting(true);
+    try {
+      await exportMatchupsToExcel(data);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // Get unique divisions for filter
   const divisions = useMemo(() => {
@@ -125,10 +136,14 @@ const OpponentHistoryTab: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => data && exportMatchupsToExcel(data)}
-            disabled={!data}
+            onClick={handleExport}
+            disabled={!data || isExporting}
           >
-            <Download className="h-4 w-4 mr-2" />
+            {isExporting ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4 mr-2" />
+            )}
             Export to Excel
           </Button>
         </div>

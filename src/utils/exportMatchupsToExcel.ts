@@ -1,63 +1,90 @@
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 import { SeasonOpponentData } from '@/hooks/useSeasonOpponentHistory';
 
-export const exportMatchupsToExcel = (data: SeasonOpponentData): void => {
-  const workbook = XLSX.utils.book_new();
+export const exportMatchupsToExcel = async (data: SeasonOpponentData): Promise<void> => {
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = '717 Rec League';
+  workbook.created = new Date();
 
   // Sheet 1: Team Summary
-  const summaryData = data.teams.map((team) => ({
-    Team: team.teamName,
-    Division: team.divisionName || '—',
-    '# Opponents': team.uniqueOpponentCount,
-    '# Matches': team.totalMatches,
-  }));
-  const summarySheet = XLSX.utils.json_to_sheet(summaryData);
-
-  // Set column widths
-  summarySheet['!cols'] = [
-    { wch: 25 }, // Team
-    { wch: 15 }, // Division
-    { wch: 12 }, // # Opponents
-    { wch: 12 }, // # Matches
+  const summarySheet = workbook.addWorksheet('Team Summary');
+  summarySheet.columns = [
+    { header: 'Team', key: 'team', width: 25 },
+    { header: 'Division', key: 'division', width: 15 },
+    { header: '# Opponents', key: 'opponents', width: 12 },
+    { header: '# Matches', key: 'matches', width: 12 },
   ];
-  XLSX.utils.book_append_sheet(workbook, summarySheet, 'Team Summary');
+
+  // Style header row
+  summarySheet.getRow(1).font = { bold: true };
+  summarySheet.getRow(1).fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FFE0E0E0' },
+  };
+
+  data.teams.forEach((team) => {
+    summarySheet.addRow({
+      team: team.teamName,
+      division: team.divisionName || '—',
+      opponents: team.uniqueOpponentCount,
+      matches: team.totalMatches,
+    });
+  });
 
   // Sheet 2: Matchup Details
-  const detailsData: Array<Record<string, string | number>> = [];
+  const detailsSheet = workbook.addWorksheet('Matchup Details');
+  detailsSheet.columns = [
+    { header: 'Team', key: 'team', width: 25 },
+    { header: 'Division', key: 'division', width: 15 },
+    { header: 'Opponent', key: 'opponent', width: 25 },
+    { header: 'Opp. Division', key: 'oppDivision', width: 15 },
+    { header: 'Matches', key: 'matches', width: 10 },
+    { header: 'Wins', key: 'wins', width: 8 },
+    { header: 'Losses', key: 'losses', width: 8 },
+    { header: 'Record', key: 'record', width: 10 },
+  ];
+
+  // Style header row
+  detailsSheet.getRow(1).font = { bold: true };
+  detailsSheet.getRow(1).fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FFE0E0E0' },
+  };
+
   data.teams.forEach((team) => {
     team.opponents.forEach((opp) => {
-      detailsData.push({
-        Team: team.teamName,
-        Division: team.divisionName || '—',
-        Opponent: opp.opponentName,
-        'Opp. Division': opp.opponentDivision || '—',
-        Matches: opp.matchCount,
-        Wins: opp.wins,
-        Losses: opp.losses,
-        Record: `${opp.wins}-${opp.losses}`,
+      detailsSheet.addRow({
+        team: team.teamName,
+        division: team.divisionName || '—',
+        opponent: opp.opponentName,
+        oppDivision: opp.opponentDivision || '—',
+        matches: opp.matchCount,
+        wins: opp.wins,
+        losses: opp.losses,
+        record: `${opp.wins}-${opp.losses}`,
       });
     });
   });
-  const detailsSheet = XLSX.utils.json_to_sheet(detailsData);
-
-  detailsSheet['!cols'] = [
-    { wch: 25 }, // Team
-    { wch: 15 }, // Division
-    { wch: 25 }, // Opponent
-    { wch: 15 }, // Opp. Division
-    { wch: 10 }, // Matches
-    { wch: 8 }, // Wins
-    { wch: 8 }, // Losses
-    { wch: 10 }, // Record
-  ];
-  XLSX.utils.book_append_sheet(workbook, detailsSheet, 'Matchup Details');
 
   // Generate filename with season name and date
   const date = new Date().toISOString().split('T')[0];
   const safeName = data.seasonName.replace(/[^a-zA-Z0-9]/g, '_');
   const filename = `${safeName}_Matchups_${date}.xlsx`;
 
-  // Trigger download
-  XLSX.writeFile(workbook, filename);
+  // Generate buffer and trigger download
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 };
