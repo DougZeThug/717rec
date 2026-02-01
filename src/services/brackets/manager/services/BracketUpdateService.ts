@@ -1,13 +1,15 @@
 import { BracketsManager } from 'brackets-manager';
 
 import { supabase } from '@/integrations/supabase/client';
-import { bracketLog, errorLog, failureLog, successLog } from '@/utils/logger';
+import { bracketLog, errorLog, failureLog, successLog, warnLog } from '@/utils/logger';
 
 import { matchUpdateQueue } from '../MatchUpdateQueue';
 import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
 import type {
   StorageMatch,
   StorageStage,
+  StorageGroup,
+  StorageRound,
   UpdateMatchOptions,
   MatchUpdatePayload,
 } from '../types/BracketServiceTypes';
@@ -154,6 +156,9 @@ export class BracketUpdateService {
           }))
         );
 
+        // ⭐ Auto-advance any LB BYE matches that now have one real opponent
+        await this.autoAdvanceLBByes(stageId);
+
         bracketLog('Match updated successfully in SQL tables');
         successLog('Match updated successfully', String(matchId));
       } catch (error) {
@@ -164,5 +169,100 @@ export class BracketUpdateService {
         );
       }
     });
+  }
+
+  /**
+   * Auto-advance Losers Bracket BYE matches.
+   *
+   * After a match update, some LB matches may now have exactly one real opponent
+   * and one null (BYE) opponent. This method finds those matches and auto-advances
+   * the real team by calling manager.update.match() with a win result.
+   *
+   * Runs in a loop to handle cascading BYEs (e.g., advancing a team may reveal
+   * another BYE match in the next LB round).
+   */
+  private async autoAdvanceLBByes(stageId: number): Promise<void> {
+    try {
+      // Find LB group (group number 2)
+      const groups = await this.storage.select('group', { stage_id: stageId });
+      const groupsArray = (Array.isArray(groups) ? groups : [groups]) as StorageGroup[];
+      const lbGroup = groupsArray.find((g) => g.number === 2);
+
+      if (!lbGroup) return;
+
+      // Loop to handle cascading BYEs
+      const MAX_PASSES = 10; // Safety limit
+      for (let pass = 0; pass < MAX_PASSES; pass++) {
+        // Reload participants before each pass so brackets-manager has fresh data
+        const stage = (await this.storage.select('stage', stageId)) as StorageStage;
+        if (stage) {
+          await (this.storage as SupabaseSqlStorage).loadParticipantsForTournament(
+            stage.tournament_id
+          );
+        }
+
+        // Get all LB matches
+        const matches = await this.storage.select('match', { group_id: lbGroup.id });
+        const matchesArray = (Array.isArray(matches) ? matches : [matches]) as StorageMatch[];
+
+        // Find BYE matches: exactly one real opponent, other is null, not yet completed
+        const byeMatches = matchesArray.filter((m) => {
+          if (m.status >= 4) return false; // Already completed
+          const hasOpp1 = m.opponent1 !== null && m.opponent1 !== undefined && !!m.opponent1?.id;
+          const hasOpp2 = m.opponent2 !== null && m.opponent2 !== undefined && !!m.opponent2?.id;
+          // Exactly one real opponent and one null/BYE
+          return (hasOpp1 && !hasOpp2 && m.opponent2 === null) ||
+                 (!hasOpp1 && hasOpp2 && m.opponent1 === null);
+        });
+
+        if (byeMatches.length === 0) {
+          if (pass > 0) {
+            bracketLog(`[AUTO-BYE] No more BYE matches after ${pass} pass(es)`);
+          }
+          break;
+        }
+
+        bracketLog(`[AUTO-BYE] Pass ${pass + 1}: Found ${byeMatches.length} LB BYE match(es) to auto-advance`);
+
+        for (const match of byeMatches) {
+          try {
+            const hasOpp1 = match.opponent1 !== null && match.opponent1 !== undefined && !!match.opponent1?.id;
+
+            // Unlock the match if it's locked/waiting
+            if (match.status === 0 || match.status === 1) {
+              await supabase
+                .from('match')
+                .update({ status: 2 }) // Set to Ready
+                .eq('id', match.id);
+            }
+
+            // Build scores: the real opponent wins, the BYE side gets a forfeit loss
+            const scores: MatchUpdatePayload = { id: match.id as number };
+            if (hasOpp1) {
+              scores.opponent1 = { score: 0, result: 'win' };
+              scores.opponent2 = { score: 0, result: 'loss' };
+            } else {
+              scores.opponent1 = { score: 0, result: 'loss' };
+              scores.opponent2 = { score: 0, result: 'win' };
+            }
+
+            bracketLog(`[AUTO-BYE] Auto-advancing match ${match.id}: ${hasOpp1 ? 'opponent1' : 'opponent2'} wins by BYE`);
+
+            await this.manager.update.match(scores);
+
+            bracketLog(`[AUTO-BYE] Match ${match.id} auto-advanced successfully`);
+          } catch (err) {
+            // Log but don't throw - other BYE matches might still succeed
+            warnLog(`[AUTO-BYE] Failed to auto-advance match ${match.id}:`, err);
+          }
+        }
+
+        // Small delay to let propagation settle before next pass
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+    } catch (error) {
+      // Don't throw - auto-advancement is a safety net, not critical path
+      errorLog('[AUTO-BYE] Error during LB BYE auto-advancement:', error);
+    }
   }
 }
