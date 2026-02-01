@@ -10,18 +10,79 @@ vi.mock('@/integrations/supabase/client', () => ({
   },
 }));
 
+// Mock brackets-manager
+vi.mock('brackets-manager', () => {
+  class MockBracketsManager {
+    create = {
+      stage: vi.fn().mockResolvedValue(undefined),
+    };
+    update = {
+      match: vi.fn().mockResolvedValue(undefined),
+      seeding: vi.fn().mockResolvedValue(undefined),
+    };
+    get = {
+      finalStandings: vi.fn().mockResolvedValue([]),
+    };
+  }
+
+  return {
+    BracketsManager: MockBracketsManager,
+  };
+});
+
+// Mock logger
+vi.mock('@/utils/logger', () => ({
+  bracketLog: vi.fn(),
+  errorLog: vi.fn(),
+  failureLog: vi.fn(),
+  successLog: vi.fn(),
+  warnLog: vi.fn(),
+}));
+
+// Mock MatchUpdateQueue
+vi.mock('@/services/brackets/manager/MatchUpdateQueue', () => ({
+  matchUpdateQueue: {
+    enqueue: vi.fn((fn) => fn()),
+  },
+}));
+
+// Mock SupabaseSqlStorage
+vi.mock('@/services/brackets/manager/SupabaseSqlStorage', () => {
+  class MockSupabaseSqlStorage {
+    select = vi.fn();
+    insert = vi.fn();
+    update = vi.fn();
+    delete = vi.fn();
+    loadParticipantsForTournament = vi.fn().mockResolvedValue(undefined);
+    clearParticipantCache = vi.fn();
+  }
+
+  return {
+    SupabaseSqlStorage: MockSupabaseSqlStorage,
+  };
+});
+
 describe('Bracket Manager Schema Integration Tests', () => {
   let mockSupabaseFrom: any;
 
+  // Helper to create chainable insert mock
+  const createInsertMock = (data: any[] = [{ id: 1 }]) => {
+    return vi.fn().mockReturnValue({
+      select: vi.fn().mockResolvedValue({ data, error: null }),
+    });
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
+    // Setup mock Supabase client with chainable insert().select() pattern
     mockSupabaseFrom = {
-      select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
+      select: vi.fn().mockResolvedValue({ data: [], error: null }),
+      insert: createInsertMock(),
       update: vi.fn().mockReturnThis(),
       delete: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockReturnThis(),
     };
     (supabase.from as any).mockReturnValue(mockSupabaseFrom);
   });
@@ -90,8 +151,8 @@ describe('Bracket Manager Schema Integration Tests', () => {
         { id: 'team4', name: 'Team 4' },
       ];
 
-      mockSupabaseFrom.insert.mockResolvedValue({ data: [{ id: 1 }], error: null });
-      mockSupabaseFrom.select.mockResolvedValue({ data: [], error: null });
+      // Use chainable mock pattern
+      mockSupabaseFrom.insert = createInsertMock([{ id: 1 }]);
 
       const service = new BracketManagerService();
 
@@ -111,8 +172,8 @@ describe('Bracket Manager Schema Integration Tests', () => {
         name: `Team ${i + 1}`,
       }));
 
-      mockSupabaseFrom.insert.mockResolvedValue({ data: [{ id: 1 }], error: null });
-      mockSupabaseFrom.select.mockResolvedValue({ data: [], error: null });
+      // Use chainable mock pattern
+      mockSupabaseFrom.insert = createInsertMock([{ id: 1 }]);
 
       const service = new BracketManagerService();
 
@@ -136,8 +197,8 @@ describe('Bracket Manager Schema Integration Tests', () => {
         { id: 'team4', name: 'Team 4' },
       ];
 
-      mockSupabaseFrom.insert.mockResolvedValue({ data: [{ id: 1 }], error: null });
-      mockSupabaseFrom.select.mockResolvedValue({ data: [], error: null });
+      // Use chainable mock pattern
+      mockSupabaseFrom.insert = createInsertMock([{ id: 1 }]);
 
       const service = new BracketManagerService();
 
@@ -157,8 +218,8 @@ describe('Bracket Manager Schema Integration Tests', () => {
         name: `Team ${i + 1}`,
       }));
 
-      mockSupabaseFrom.insert.mockResolvedValue({ data: [{ id: 1 }], error: null });
-      mockSupabaseFrom.select.mockResolvedValue({ data: [], error: null });
+      // Use chainable mock pattern
+      mockSupabaseFrom.insert = createInsertMock([{ id: 1 }]);
 
       const service = new BracketManagerService();
 
@@ -181,8 +242,8 @@ describe('Bracket Manager Schema Integration Tests', () => {
         { id: 'team3', name: 'Team 3' },
       ];
 
-      mockSupabaseFrom.insert.mockResolvedValue({ data: [{ id: 1 }], error: null });
-      mockSupabaseFrom.select.mockResolvedValue({ data: [], error: null });
+      // Use chainable mock pattern
+      mockSupabaseFrom.insert = createInsertMock([{ id: 1 }]);
 
       const service = new BracketManagerService();
 
@@ -202,8 +263,8 @@ describe('Bracket Manager Schema Integration Tests', () => {
         name: `Team ${i + 1}`,
       }));
 
-      mockSupabaseFrom.insert.mockResolvedValue({ data: [{ id: 1 }], error: null });
-      mockSupabaseFrom.select.mockResolvedValue({ data: [], error: null });
+      // Use chainable mock pattern
+      mockSupabaseFrom.insert = createInsertMock([{ id: 1 }]);
 
       const service = new BracketManagerService();
 
