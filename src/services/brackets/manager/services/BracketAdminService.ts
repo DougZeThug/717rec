@@ -3,7 +3,11 @@ import { bracketLog, errorLog, failureLog, successLog } from '@/utils/logger';
 import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
 
 /**
- * Service for admin operations on brackets (BYE handling, match status control)
+ * Service for admin operations on brackets (BYE handling, match status control).
+ *
+ * NOTE: LB BYE matches now auto-advance via BracketUpdateService.autoAdvanceLBByes().
+ * The manual BYE toggle below is kept as a FALLBACK for edge cases where auto-advancement
+ * doesn't fire (e.g., data inconsistencies or manual bracket repairs).
  */
 export class BracketAdminService {
   constructor(private storage: SupabaseSqlStorage) {}
