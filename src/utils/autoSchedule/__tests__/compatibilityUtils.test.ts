@@ -5,13 +5,10 @@ import { mockTeams } from '@/utils/test/autoSchedule/mockData';
 
 import { calculateTeamCompatibility, haveTeamsPlayed } from '../compatibilityUtils';
 
-// Mock Supabase client
+// Mock Supabase client (per-test implementations override in beforeEach)
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
-    from: vi.fn().mockReturnThis(),
-    select: vi.fn().mockReturnThis(),
-    or: vi.fn().mockReturnThis(),
-    limit: vi.fn().mockReturnThis(),
+    from: vi.fn(),
   },
 }));
 
