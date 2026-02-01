@@ -17,8 +17,8 @@ describe('Team Stats Updates', () => {
     // Clear all mocks before each test
     vi.resetAllMocks();
 
-    // Set up default mocks for supabase.rpc
-    (supabase.rpc as any).mockReturnValue({
+    // Set up default mocks for supabase.rpc (mockResolvedValue handles multiple async calls)
+    (supabase.rpc as any).mockResolvedValue({
       data: { success: true },
       error: null,
     });

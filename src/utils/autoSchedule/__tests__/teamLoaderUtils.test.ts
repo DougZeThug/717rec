@@ -2,26 +2,32 @@ import { format } from 'date-fns';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { supabase } from '@/integrations/supabase/client';
-import { mockTeams } from '@/utils/test/autoSchedule/mockData';
 
-import { getTeamsByTimeBlock } from '../teamLoaderUtils';
+import { getTeamsByBackToBackPair } from '../teamLoaderUtils';
 
-// Mock Supabase client
+// Mock Supabase client (per-test implementations override in beforeEach)
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
-    from: vi.fn().mockReturnThis(),
-    select: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
+    from: vi.fn(),
   },
 }));
 
-// Mock TIME_BLOCKS
+// Mock BACK_TO_BACK_PAIRS
 vi.mock('../constants', () => ({
-  TIME_BLOCKS: {
-    '6:30': { main: '6:30 PM', secondary: '7:00 PM' },
-    '7:30': { main: '7:30 PM', secondary: '8:00 PM' },
-    '8:30': { main: '8:30 PM', secondary: '9:00 PM' },
+  BACK_TO_BACK_PAIRS: {
+    Early: { primary: '6:30 PM', secondary: '7:00 PM' },
+    Mid: { primary: '7:30 PM', secondary: '8:00 PM' },
+    Late: { primary: '8:30 PM', secondary: '9:00 PM' },
   },
+  getPairConfig: vi.fn((pairName: string) => {
+    const pairs: Record<string, { primary: string; secondary: string }> = {
+      Early: { primary: '6:30 PM', secondary: '7:00 PM' },
+      Mid: { primary: '7:30 PM', secondary: '8:00 PM' },
+      Late: { primary: '8:30 PM', secondary: '9:00 PM' },
+    };
+    return pairs[pairName] || null;
+  }),
+  getBackToBackPairName: vi.fn(),
 }));
 
 describe('teamLoaderUtils', () => {
@@ -29,101 +35,112 @@ describe('teamLoaderUtils', () => {
     vi.resetAllMocks();
   });
 
-  describe('getTeamsByTimeBlock', () => {
-    it('should fetch teams for a given time block', async () => {
-      // Mock successful Supabase response
+  describe('getTeamsByBackToBackPair', () => {
+    it('should fetch teams for a given back-to-back pair', async () => {
+      // Mock successful Supabase response with valid back-to-back data
       const mockTeamData = [
         {
+          id: 'slot1',
           team_id: 'team1',
+          timeslot: '6:30 PM',
+          match_date: '2023-06-15',
+          is_back_to_back: true,
+          pair_slot: '7:00 PM',
+          match_sequence: 1,
           teams: {
             id: 'team1',
             name: 'Tigers',
             logo_url: '/logos/tigers.png',
             image_url: null,
             division_id: 'division1',
-            divisionName: { name: 'Division A' },
+            divisions: { name: 'Division A', display_division: 'Division A' },
             wins: 5,
             losses: 2,
             game_wins: 15,
             game_losses: 6,
-            sos: 0.6,
-            power_score: 75,
           },
         },
         {
-          team_id: 'team2',
+          id: 'slot2',
+          team_id: 'team1',
+          timeslot: '7:00 PM',
+          match_date: '2023-06-15',
+          is_back_to_back: true,
+          pair_slot: '6:30 PM',
+          match_sequence: 2,
           teams: {
-            id: 'team2',
-            name: 'Lions',
-            logo_url: '/logos/lions.png',
+            id: 'team1',
+            name: 'Tigers',
+            logo_url: '/logos/tigers.png',
             image_url: null,
             division_id: 'division1',
-            divisionName: { name: 'Division A' },
-            wins: 6,
-            losses: 1,
-            game_wins: 18,
-            game_losses: 3,
-            sos: 0.7,
-            power_score: 85,
+            divisions: { name: 'Division A', display_division: 'Division A' },
+            wins: 5,
+            losses: 2,
+            game_wins: 15,
+            game_losses: 6,
           },
         },
       ];
 
       const mockResponse = { data: mockTeamData, error: null };
-      const mockEq = vi.fn().mockResolvedValue(mockResponse);
-      const mockEqFirst = vi.fn().mockReturnValue({ eq: mockEq });
-      const mockSelect = vi.fn().mockReturnValue({ eq: mockEqFirst });
+      const mockEq3 = vi.fn().mockResolvedValue(mockResponse);
+      const mockIn = vi.fn().mockReturnValue({ eq: mockEq3 });
+      const mockEq2 = vi.fn().mockReturnValue({ in: mockIn });
+      const mockSelect = vi.fn().mockReturnValue({ eq: mockEq2 });
       const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
 
       vi.mocked(supabase.from).mockImplementation(mockFrom);
 
       const testDate = new Date('2023-06-15');
-      const teams = await getTeamsByTimeBlock(testDate, '6:30');
+      const teams = await getTeamsByBackToBackPair(testDate, 'Early');
 
       // Should call Supabase with correct parameters
       expect(supabase.from).toHaveBeenCalledWith('team_timeslots');
       expect(mockSelect).toHaveBeenCalled();
 
       const formattedDate = format(testDate, 'yyyy-MM-dd');
-      expect(mockEqFirst).toHaveBeenCalledWith('match_date', formattedDate);
+      expect(mockEq2).toHaveBeenCalledWith('match_date', formattedDate);
 
-      // Should return formatted team data
-      expect(teams).toHaveLength(2);
+      // Should return formatted team data (1 team with both back-to-back slots)
+      expect(teams).toHaveLength(1);
       expect(teams[0].name).toBe('Tigers');
-      expect(teams[1].name).toBe('Lions');
     });
 
     it('should handle empty results', async () => {
       // Mock empty Supabase response
       const mockResponse = { data: [], error: null };
-      const mockEq = vi.fn().mockResolvedValue(mockResponse);
-      const mockEqFirst = vi.fn().mockReturnValue({ eq: mockEq });
-      const mockSelect = vi.fn().mockReturnValue({ eq: mockEqFirst });
+      const mockEq3 = vi.fn().mockResolvedValue(mockResponse);
+      const mockIn = vi.fn().mockReturnValue({ eq: mockEq3 });
+      const mockEq2 = vi.fn().mockReturnValue({ in: mockIn });
+      const mockSelect = vi.fn().mockReturnValue({ eq: mockEq2 });
       const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
 
       vi.mocked(supabase.from).mockImplementation(mockFrom);
 
       const testDate = new Date('2023-06-15');
-      const teams = await getTeamsByTimeBlock(testDate, '6:30');
+      const teams = await getTeamsByBackToBackPair(testDate, 'Early');
 
       // Should return empty array
       expect(teams).toHaveLength(0);
     });
 
-    it('should handle database errors', async () => {
+    it('should handle database errors gracefully', async () => {
       // Mock Supabase error response
       const mockResponse = { data: null, error: new Error('Database error') };
-      const mockEq = vi.fn().mockResolvedValue(mockResponse);
-      const mockEqFirst = vi.fn().mockReturnValue({ eq: mockEq });
-      const mockSelect = vi.fn().mockReturnValue({ eq: mockEqFirst });
+      const mockEq3 = vi.fn().mockResolvedValue(mockResponse);
+      const mockIn = vi.fn().mockReturnValue({ eq: mockEq3 });
+      const mockEq2 = vi.fn().mockReturnValue({ in: mockIn });
+      const mockSelect = vi.fn().mockReturnValue({ eq: mockEq2 });
       const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
 
       vi.mocked(supabase.from).mockImplementation(mockFrom);
 
       const testDate = new Date('2023-06-15');
 
-      // Should throw the error
-      await expect(getTeamsByTimeBlock(testDate, '6:30')).rejects.toThrow();
+      // Should return empty array on error (graceful degradation)
+      const teams = await getTeamsByBackToBackPair(testDate, 'Early');
+      expect(teams).toHaveLength(0);
     });
   });
 });
