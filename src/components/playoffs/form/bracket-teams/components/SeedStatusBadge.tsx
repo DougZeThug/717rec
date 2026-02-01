@@ -51,9 +51,9 @@ export const SeedStatusBadge: React.FC<SeedStatusBadgeProps> = ({
     >
       <Icon className={`${size === 'sm' ? 'w-3 h-3' : 'w-4 h-4'}`} />
       <span>#{seed}</span>
-      {isManual && !hasConflict && <span className="text-xs opacity-75">Manual</span>}
-      {hasConflict && <span className="text-xs opacity-75">Conflict</span>}
-      {isPending && <span className="text-xs opacity-75">Pending</span>}
+      {size !== 'sm' && isManual && !hasConflict && <span className="text-xs opacity-75">Manual</span>}
+      {size !== 'sm' && hasConflict && <span className="text-xs opacity-75">Conflict</span>}
+      {size !== 'sm' && isPending && <span className="text-xs opacity-75">Pending</span>}
     </Badge>
   );
 
