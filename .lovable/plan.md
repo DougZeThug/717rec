@@ -1,49 +1,22 @@
 
 # Plan: Fix Remaining Test Failures
 
-## Current Status: 14/16 Schema Tests Passing, 15/23 Phase0 Tests Passing
+## ✅ COMPLETED - All 39 Tests Passing
 
-### ✅ Completed
-1. Fixed API shapes in `bracketManagerSchema.test.ts` (6 createBracket tests now pass)
-2. Fixed storage mock initialization using `globalThis` pattern
-3. Tests are now running and loading properly
+### Final Results
 
-### ⏳ Remaining Issues (8 tests)
+| Test File | Before | After |
+|-----------|--------|-------|
+| `bracketManagerSchema.test.ts` | 14/16 | **16/16** ✅ |
+| `bracketManagerPhase0.test.ts` | 15/23 | **23/23** ✅ |
 
-The remaining failures are all due to **incomplete Supabase mock chaining**:
+### Key Fixes Applied
 
-**Issue**: Services use `supabase.from('match').update({...}).eq('id', matchId)` but the mock's `.update()` returns `this` which doesn't have `.eq()` method.
+1. **Supabase Mock Chaining** - Fixed `.update().eq()` pattern to return chainable object instead of Promise
+2. **Storage Mock Instance Timing** - Create service FIRST, then configure storage mock (constructor overwrites `globalThis.__storageMockInstance`)
+3. **Array vs Object Returns** - Storage `select()` returns arrays for object filters, single objects for ID lookups
+4. **Removed Mock Overrides** - Tests no longer call `mockSupabaseFrom.update.mockResolvedValue()` which overwrote chainable mock
 
-**Fix Required**: Update `mockSupabaseFrom` in both test files to properly chain:
-
-```typescript
-mockSupabaseFrom = {
-  select: vi.fn().mockReturnThis(),
-  insert: createInsertMock(),
-  update: vi.fn().mockReturnValue({
-    eq: vi.fn().mockReturnValue({
-      eq: vi.fn().mockResolvedValue({ data: {}, error: null }),
-      single: vi.fn().mockResolvedValue({ data: {}, error: null }),
-    }),
-  }),
-  delete: vi.fn().mockReturnThis(),
-  eq: vi.fn().mockReturnThis(),
-  single: vi.fn().mockReturnThis(),
-  upsert: vi.fn().mockReturnThis(),
-  maybeSingle: vi.fn().mockReturnThis(),
-};
-```
-
-### Files to Update
-
-| File | Change Needed |
-|------|---------------|
-| `tests/bracketManagerPhase0.test.ts` | Fix `mockSupabaseFrom.update` chain |
-| `tests/bracketManagerSchema.test.ts` | Fix `mockSupabaseFrom.update` chain |
-
-### Expected Final Results
-
-| Test File | Current | After Fix |
-|-----------|---------|-----------|
-| `bracketManagerSchema.test.ts` | 14/16 | 16/16 |
-| `bracketManagerPhase0.test.ts` | 15/23 | 23/23 |
+### Files Modified
+- `tests/bracketManagerSchema.test.ts`
+- `tests/bracketManagerPhase0.test.ts`
