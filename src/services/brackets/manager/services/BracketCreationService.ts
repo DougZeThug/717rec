@@ -135,10 +135,6 @@ export class BracketCreationService {
           grandFinal: (format === 'double_elimination'
             ? options.grandFinalType || 'simple'
             : 'none') as 'simple' | 'double' | 'none',
-          // Distribute BYEs evenly across the bracket instead of clustering them.
-          // Without this, top seeds might face BYE-vs-BYE matchups, creating more
-          // cascading BYEs in the LB.
-          balanceByes: true,
         },
       };
 
