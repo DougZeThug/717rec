@@ -81,11 +81,18 @@ describe('Bracket Manager Schema Integration Tests', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // Setup mock Supabase client with chainable insert().select() pattern
+    // Setup mock Supabase client with chainable insert().select() and update().eq() patterns
     mockSupabaseFrom = {
       select: vi.fn().mockResolvedValue({ data: [], error: null }),
       insert: createInsertMock(),
-      update: vi.fn().mockReturnThis(),
+      update: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ data: {}, error: null }),
+          single: vi.fn().mockResolvedValue({ data: {}, error: null }),
+          then: (resolve: Function) => Promise.resolve({ data: {}, error: null }).then(resolve),
+          catch: (reject: Function) => Promise.resolve({ data: {}, error: null }).catch(reject),
+        }),
+      }),
       delete: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: vi.fn().mockReturnThis(),
@@ -289,9 +296,13 @@ describe('Bracket Manager Schema Integration Tests', () => {
     it('should update match scores correctly', async () => {
       const matchId = 1;
 
-      // Configure storage mock to return match data
-      getStorageMock().select.mockImplementation((table: string, id: number) => {
-        if (table === 'match' && id === 1) {
+      // Create service FIRST - this creates a new storage mock instance
+      const service = new BracketManagerService();
+
+      // THEN configure storage mock for THIS service instance
+      // When filter is object (e.g., { stage_id: 1 }), return array for .map() calls
+      getStorageMock().select.mockImplementation((table: string, filter: any) => {
+        if (table === 'match' && filter === 1) {
           return Promise.resolve({
             id: 1,
             opponent1: { id: 1 },
@@ -302,18 +313,20 @@ describe('Bracket Manager Schema Integration Tests', () => {
             round_id: 1,
           });
         }
-        if (table === 'stage' && id === 1) {
+        if (table === 'match' && typeof filter === 'object') {
+          return Promise.resolve([]);
+        }
+        if (table === 'stage' && filter === 1) {
           return Promise.resolve({ id: 1, tournament_id: 'test-bracket' });
         }
         if (table === 'group') {
           return Promise.resolve([]);
         }
+        if (table === 'round') {
+          return Promise.resolve([]);
+        }
         return Promise.resolve(null);
       });
-
-      mockSupabaseFrom.update.mockResolvedValue({ data: {}, error: null });
-
-      const service = new BracketManagerService();
 
       await expect(
         service.updateMatch({
@@ -329,9 +342,12 @@ describe('Bracket Manager Schema Integration Tests', () => {
     it('should propagate winner to next match', async () => {
       const matchId = 1;
 
-      // Configure storage mock to return match data
-      getStorageMock().select.mockImplementation((table: string, id: number) => {
-        if (table === 'match' && id === 1) {
+      // Create service FIRST - this creates a new storage mock instance
+      const service = new BracketManagerService();
+
+      // THEN configure storage mock for THIS service instance
+      getStorageMock().select.mockImplementation((table: string, filter: any) => {
+        if (table === 'match' && filter === 1) {
           return Promise.resolve({
             id: 1,
             opponent1: { id: 1 },
@@ -342,18 +358,20 @@ describe('Bracket Manager Schema Integration Tests', () => {
             round_id: 1,
           });
         }
-        if (table === 'stage' && id === 1) {
+        if (table === 'match' && typeof filter === 'object') {
+          return Promise.resolve([]);
+        }
+        if (table === 'stage' && filter === 1) {
           return Promise.resolve({ id: 1, tournament_id: 'test-bracket' });
         }
         if (table === 'group') {
           return Promise.resolve([]);
         }
+        if (table === 'round') {
+          return Promise.resolve([]);
+        }
         return Promise.resolve(null);
       });
-
-      mockSupabaseFrom.update.mockResolvedValue({ data: {}, error: null });
-
-      const service = new BracketManagerService();
 
       await expect(
         service.updateMatch({
