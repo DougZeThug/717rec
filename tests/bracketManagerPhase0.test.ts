@@ -76,19 +76,28 @@ vi.mock('@/services/brackets/manager/SupabaseSqlStorage', () => {
 describe('BracketManagerService - Phase 0 Public API Tests', () => {
   let service: BracketManagerService;
   let mockSupabaseFrom: any;
+  let createInsertMock: (data?: any[], error?: any) => any;
 
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Setup mock Supabase client
+    // Helper to create chainable insert mock
+    createInsertMock = (data: any[] = [{ id: 1 }], error: any = null) => {
+      return vi.fn().mockReturnValue({
+        select: vi.fn().mockResolvedValue({ data, error }),
+      });
+    };
+
+    // Setup mock Supabase client with chainable insert().select() pattern
     mockSupabaseFrom = {
       select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
+      insert: createInsertMock(),
       update: vi.fn().mockReturnThis(),
       delete: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: vi.fn().mockReturnThis(),
       upsert: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockReturnThis(),
     };
     (supabase.from as any).mockReturnValue(mockSupabaseFrom);
 
@@ -108,16 +117,13 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
         ],
       };
 
-      // Mock successful participant insertion
-      mockSupabaseFrom.insert.mockResolvedValue({
-        data: [
-          { id: 1, tournament_id: 'test-bracket-1', name: 'Team 1', position: 1 },
-          { id: 2, tournament_id: 'test-bracket-1', name: 'Team 2', position: 2 },
-          { id: 3, tournament_id: 'test-bracket-1', name: 'Team 3', position: 3 },
-          { id: 4, tournament_id: 'test-bracket-1', name: 'Team 4', position: 4 },
-        ],
-        error: null,
-      });
+      // Mock successful participant insertion using chainable pattern
+      mockSupabaseFrom.insert = createInsertMock([
+        { id: 1, tournament_id: 'test-bracket-1', name: 'Team 1', position: 1 },
+        { id: 2, tournament_id: 'test-bracket-1', name: 'Team 2', position: 2 },
+        { id: 3, tournament_id: 'test-bracket-1', name: 'Team 3', position: 3 },
+        { id: 4, tournament_id: 'test-bracket-1', name: 'Team 4', position: 4 },
+      ]);
 
       // Mock select calls for storage operations
       mockSupabaseFrom.select.mockResolvedValue({ data: [], error: null });
@@ -138,10 +144,8 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
         grandFinalType: 'double' as const,
       };
 
-      mockSupabaseFrom.insert.mockResolvedValue({
-        data: [{ id: 1 }],
-        error: null,
-      });
+      // Use chainable mock pattern
+      mockSupabaseFrom.insert = createInsertMock([{ id: 1 }]);
       mockSupabaseFrom.select.mockResolvedValue({ data: [], error: null });
 
       await expect(service.createBracket(options)).resolves.toBeUndefined();
@@ -154,12 +158,10 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
         teams: [{ id: 'team1', name: 'Team 1', seed: 1 }],
       };
 
-      mockSupabaseFrom.insert.mockResolvedValue({
-        data: null,
-        error: {
-          message: 'Database connection failed',
-          code: '500',
-        },
+      // Use chainable mock pattern with error
+      mockSupabaseFrom.insert = createInsertMock(null as any, {
+        message: 'Database connection failed',
+        code: '500',
       });
 
       await expect(service.createBracket(options)).rejects.toThrow(
