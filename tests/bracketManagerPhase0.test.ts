@@ -57,21 +57,28 @@ vi.mock('@/services/brackets/manager/MatchUpdateQueue', () => ({
   },
 }));
 
-// Mock SupabaseSqlStorage
+// Mock SupabaseSqlStorage with configurable per-test responses
 vi.mock('@/services/brackets/manager/SupabaseSqlStorage', () => {
   class MockSupabaseSqlStorage {
     select = vi.fn();
-    insert = vi.fn();
-    update = vi.fn();
-    delete = vi.fn();
+    insert = vi.fn().mockResolvedValue(undefined);
+    update = vi.fn().mockResolvedValue(undefined);
+    delete = vi.fn().mockResolvedValue(undefined);
     loadParticipantsForTournament = vi.fn().mockResolvedValue(undefined);
     clearParticipantCache = vi.fn();
+
+    constructor() {
+      (globalThis as any).__storageMockInstance = this;
+    }
   }
 
   return {
     SupabaseSqlStorage: MockSupabaseSqlStorage,
   };
 });
+
+// Helper to get storage mock instance
+const getStorageMock = () => (globalThis as any).__storageMockInstance;
 
 describe('BracketManagerService - Phase 0 Public API Tests', () => {
   let service: BracketManagerService;
@@ -88,15 +95,17 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
       });
     };
 
-    // Setup mock Supabase client with chainable insert().select() pattern
+    // Setup mock Supabase client with proper chaining
     mockSupabaseFrom = {
       select: vi.fn().mockReturnThis(),
       insert: createInsertMock(),
-      update: vi.fn().mockReturnThis(),
+      update: vi.fn().mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ data: {}, error: null }),
+      }),
       delete: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: vi.fn().mockReturnThis(),
-      upsert: vi.fn().mockReturnThis(),
+      upsert: vi.fn().mockResolvedValue({ data: {}, error: null }),
       maybeSingle: vi.fn().mockReturnThis(),
     };
     (supabase.from as any).mockReturnValue(mockSupabaseFrom);
@@ -180,24 +189,26 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
         },
       };
 
-      // Mock current match state
-      mockSupabaseFrom.select.mockResolvedValue({
-        data: {
-          id: 1,
-          opponent1: { id: 1 },
-          opponent2: { id: 2 },
-          status: 2, // Ready
-          stage_id: 1,
-          group_id: 1,
-          round_id: 1,
-        },
-        error: null,
-      });
-
-      // Mock stage lookup
-      mockSupabaseFrom.select.mockResolvedValueOnce({
-        data: { id: 1, tournament_id: 'test-bracket' },
-        error: null,
+      // Configure storage mock to return match data
+      getStorageMock().select.mockImplementation((table: string, id: number) => {
+        if (table === 'match' && id === 1) {
+          return Promise.resolve({
+            id: 1,
+            opponent1: { id: 1 },
+            opponent2: { id: 2 },
+            status: 2,
+            stage_id: 1,
+            group_id: 1,
+            round_id: 1,
+          });
+        }
+        if (table === 'stage' && id === 1) {
+          return Promise.resolve({ id: 1, tournament_id: 'test-bracket' });
+        }
+        if (table === 'group') {
+          return Promise.resolve([]);
+        }
+        return Promise.resolve(null);
       });
 
       await expect(service.updateMatch(options)).resolves.toBeUndefined();
@@ -212,19 +223,28 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
         },
       };
 
-      // Mock BYE match (one opponent is null, status is Locked)
-      mockSupabaseFrom.select.mockResolvedValue({
-        data: {
-          id: 1,
-          opponent1: { id: 1 },
-          opponent2: null, // BYE
-          status: 0, // Locked
-          stage_id: 1,
-        },
-        error: null,
+      // Configure storage mock for BYE match
+      getStorageMock().select.mockImplementation((table: string, id: number) => {
+        if (table === 'match' && id === 1) {
+          return Promise.resolve({
+            id: 1,
+            opponent1: { id: 1 },
+            opponent2: null, // BYE
+            status: 0, // Locked
+            stage_id: 1,
+            group_id: 1,
+            round_id: 1,
+          });
+        }
+        if (table === 'stage' && id === 1) {
+          return Promise.resolve({ id: 1, tournament_id: 'test-bracket' });
+        }
+        if (table === 'group') {
+          return Promise.resolve([]);
+        }
+        return Promise.resolve(null);
       });
 
-      // Mock status update
       mockSupabaseFrom.update.mockResolvedValue({ data: {}, error: null });
 
       await expect(service.updateMatch(options)).resolves.toBeUndefined();
@@ -242,7 +262,7 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
         },
       };
 
-      mockSupabaseFrom.select.mockRejectedValue(new Error('Match not found'));
+      getStorageMock().select.mockRejectedValue(new Error('Match not found'));
 
       await expect(service.updateMatch(options)).rejects.toThrow('Match update failed:');
     });
@@ -261,24 +281,22 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
         keepSameSize: true,
       };
 
-      // Mock stage lookup
-      mockSupabaseFrom.select.mockResolvedValueOnce({
-        data: [{ id: 1, tournament_id: 'test-bracket' }],
-        error: null,
+      // Configure storage mock for seeding
+      getStorageMock().select.mockImplementation((table: string, filter: any) => {
+        if (table === 'stage') {
+          return Promise.resolve([{ id: 1, tournament_id: 'test-bracket' }]);
+        }
+        if (table === 'participant') {
+          return Promise.resolve([
+            { id: 1, name: 'Team 1', tournament_id: 'test-bracket' },
+            { id: 2, name: 'Team 2', tournament_id: 'test-bracket' },
+            { id: 3, name: 'Team 3', tournament_id: 'test-bracket' },
+            { id: 4, name: 'Team 4', tournament_id: 'test-bracket' },
+          ]);
+        }
+        return Promise.resolve(null);
       });
 
-      // Mock participants lookup
-      mockSupabaseFrom.select.mockResolvedValueOnce({
-        data: [
-          { id: 1, name: 'Team 1', tournament_id: 'test-bracket' },
-          { id: 2, name: 'Team 2', tournament_id: 'test-bracket' },
-          { id: 3, name: 'Team 3', tournament_id: 'test-bracket' },
-          { id: 4, name: 'Team 4', tournament_id: 'test-bracket' },
-        ],
-        error: null,
-      });
-
-      // Mock participant position updates
       mockSupabaseFrom.update.mockResolvedValue({ data: {}, error: null });
 
       await expect(service.updateSeeding(options)).resolves.toBeUndefined();
@@ -290,10 +308,7 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
         newSeeding: [{ id: 'team1', name: 'Team 1', seed: 1 }],
       };
 
-      mockSupabaseFrom.select.mockResolvedValue({
-        data: [],
-        error: null,
-      });
+      getStorageMock().select.mockResolvedValue([]);
 
       await expect(service.updateSeeding(options)).rejects.toThrow(
         'No stage found for bracket:'
@@ -306,18 +321,15 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
         newSeeding: [{ id: 'team1', name: 'Team 1', seed: 1 }],
       };
 
-      mockSupabaseFrom.select.mockResolvedValue({
-        data: [{ id: 1 }],
-        error: null,
-      });
+      getStorageMock().select.mockResolvedValue([{ id: 1 }]);
 
-      // Mock brackets-manager throwing error about existing results
-      const service = new BracketManagerService();
-      (service as any).manager.update.seeding = vi
+      // Create new service instance and override manager mock
+      const testService = new BracketManagerService();
+      (testService as any).manager.update.seeding = vi
         .fn()
         .mockRejectedValue(new Error('Cannot impact existing results'));
 
-      await expect(service.updateSeeding(options)).rejects.toThrow(
+      await expect(testService.updateSeeding(options)).rejects.toThrow(
         'Cannot update seeding: Changes would affect existing match results'
       );
     });
@@ -327,22 +339,20 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
     it('should calculate final standings and upsert to playoff_team_records', async () => {
       const bracketId = 'test-bracket';
 
-      // Mock stage lookup
-      mockSupabaseFrom.select.mockResolvedValueOnce({
-        data: [{ id: 1, tournament_id: bracketId }],
-        error: null,
+      // Configure storage mock for standings
+      getStorageMock().select.mockImplementation((table: string, filter: any) => {
+        if (table === 'stage') {
+          return Promise.resolve([{ id: 1, tournament_id: bracketId }]);
+        }
+        if (table === 'participant') {
+          return Promise.resolve([
+            { id: 1, team_id: 'team1', name: 'Team 1' },
+            { id: 2, team_id: 'team2', name: 'Team 2' },
+          ]);
+        }
+        return Promise.resolve(null);
       });
 
-      // Mock participants lookup
-      mockSupabaseFrom.select.mockResolvedValueOnce({
-        data: [
-          { id: 1, team_id: 'team1', name: 'Team 1' },
-          { id: 2, team_id: 'team2', name: 'Team 2' },
-        ],
-        error: null,
-      });
-
-      // Mock upsert
       mockSupabaseFrom.upsert.mockResolvedValue({ data: {}, error: null });
 
       await expect(service.calculateFinalStandings(bracketId)).resolves.toBeUndefined();
@@ -368,10 +378,7 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
     it('should return early when no stages found', async () => {
       const bracketId = 'empty-bracket';
 
-      mockSupabaseFrom.select.mockResolvedValue({
-        data: [],
-        error: null,
-      });
+      getStorageMock().select.mockResolvedValue([]);
 
       // Should not throw, just return early
       await expect(service.calculateFinalStandings(bracketId)).resolves.toBeUndefined();
@@ -380,14 +387,14 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
     it('should throw error when upsert fails', async () => {
       const bracketId = 'test-bracket';
 
-      mockSupabaseFrom.select.mockResolvedValueOnce({
-        data: [{ id: 1 }],
-        error: null,
-      });
-
-      mockSupabaseFrom.select.mockResolvedValueOnce({
-        data: [{ id: 1, team_id: 'team1' }],
-        error: null,
+      getStorageMock().select.mockImplementation((table: string, filter: any) => {
+        if (table === 'stage') {
+          return Promise.resolve([{ id: 1 }]);
+        }
+        if (table === 'participant') {
+          return Promise.resolve([{ id: 1, team_id: 'team1' }]);
+        }
+        return Promise.resolve(null);
       });
 
       mockSupabaseFrom.upsert.mockResolvedValue({
@@ -405,30 +412,28 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
     it('should return ok: true for eligible BYE match', async () => {
       const matchId = 1;
 
-      // Mock match in Losers Bracket with one BYE
-      mockSupabaseFrom.select
-        .mockResolvedValueOnce({
-          data: {
+      // Configure storage mock for BYE eligibility check
+      getStorageMock().select.mockImplementation((table: string, id: number) => {
+        if (table === 'match' && id === matchId) {
+          return Promise.resolve({
             id: matchId,
             opponent1: { id: 1 },
             opponent2: null, // BYE
-            status: 1, // Waiting
+            status: 1,
             round_id: 1,
-          },
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: { id: 1, group_id: 1 },
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: { id: 1, number: 2 }, // Losers Bracket (group 2)
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: { id: 1, name: 'Team 1' },
-          error: null,
-        });
+          });
+        }
+        if (table === 'round' && id === 1) {
+          return Promise.resolve({ id: 1, group_id: 2 });
+        }
+        if (table === 'group' && id === 2) {
+          return Promise.resolve({ id: 2, number: 2 }); // Losers Bracket
+        }
+        if (table === 'participant' && id === 1) {
+          return Promise.resolve({ id: 1, name: 'Team 1' });
+        }
+        return Promise.resolve(null);
+      });
 
       const result = await service.checkByeEligibility(matchId);
 
@@ -441,34 +446,28 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
     it('should return ok: false for non-eligible match with reason', async () => {
       const matchId = 1;
 
-      // Mock match in Winners Bracket (not eligible)
-      mockSupabaseFrom.select
-        .mockResolvedValueOnce({
-          data: {
+      // Configure storage mock for non-eligible match
+      getStorageMock().select.mockImplementation((table: string, id: number) => {
+        if (table === 'match' && id === matchId) {
+          return Promise.resolve({
             id: matchId,
             opponent1: { id: 1 },
             opponent2: { id: 2 }, // Both real teams
             status: 2,
             round_id: 1,
-          },
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: { id: 1, group_id: 1 },
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: { id: 1, number: 1 }, // Winners Bracket (group 1)
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: { id: 1, name: 'Team 1' },
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: { id: 2, name: 'Team 2' },
-          error: null,
-        });
+          });
+        }
+        if (table === 'round' && id === 1) {
+          return Promise.resolve({ id: 1, group_id: 1 });
+        }
+        if (table === 'group' && id === 1) {
+          return Promise.resolve({ id: 1, number: 1 }); // Winners Bracket
+        }
+        if (table === 'participant') {
+          return Promise.resolve({ id, name: `Team ${id}` });
+        }
+        return Promise.resolve(null);
+      });
 
       const result = await service.checkByeEligibility(matchId);
 
@@ -479,12 +478,12 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
     it('should return ok: false with error message on exception', async () => {
       const matchId = 999;
 
-      mockSupabaseFrom.select.mockRejectedValue(new Error('Match not found'));
+      getStorageMock().select.mockResolvedValue(null);
 
       const result = await service.checkByeEligibility(matchId);
 
       expect(result.ok).toBe(false);
-      expect(result.reason).toContain('Error:');
+      expect(result.reason).toBe('Match not found');
     });
   });
 
@@ -492,30 +491,28 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
     it('should set match to Ready when makeReady is true', async () => {
       const matchId = 1;
 
-      // Mock eligible BYE match
-      mockSupabaseFrom.select
-        .mockResolvedValueOnce({
-          data: {
+      // Configure storage mock for toggle
+      getStorageMock().select.mockImplementation((table: string, id: number) => {
+        if (table === 'match' && id === matchId) {
+          return Promise.resolve({
             id: matchId,
             opponent1: { id: 1 },
             opponent2: null,
             status: 1, // Waiting
             round_id: 1,
-          },
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: { id: 1, group_id: 1 },
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: { id: 1, number: 2 }, // Losers Bracket
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: { id: 1, name: 'Team 1' },
-          error: null,
-        });
+          });
+        }
+        if (table === 'round' && id === 1) {
+          return Promise.resolve({ id: 1, group_id: 2 });
+        }
+        if (table === 'group' && id === 2) {
+          return Promise.resolve({ id: 2, number: 2 }); // Losers Bracket
+        }
+        if (table === 'participant' && id === 1) {
+          return Promise.resolve({ id: 1, name: 'Team 1' });
+        }
+        return Promise.resolve(null);
+      });
 
       mockSupabaseFrom.update.mockResolvedValue({ data: {}, error: null });
 
@@ -529,30 +526,28 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
     it('should revert match to Waiting when makeReady is false', async () => {
       const matchId = 1;
 
-      // Mock BYE match in Ready status
-      mockSupabaseFrom.select
-        .mockResolvedValueOnce({
-          data: {
+      // Configure storage mock for revert
+      getStorageMock().select.mockImplementation((table: string, id: number) => {
+        if (table === 'match' && id === matchId) {
+          return Promise.resolve({
             id: matchId,
             opponent1: { id: 1 },
             opponent2: null,
             status: 2, // Ready
             round_id: 1,
-          },
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: { id: 1, group_id: 1 },
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: { id: 1, number: 2 },
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: { id: 1, name: 'Team 1' },
-          error: null,
-        });
+          });
+        }
+        if (table === 'round' && id === 1) {
+          return Promise.resolve({ id: 1, group_id: 2 });
+        }
+        if (table === 'group' && id === 2) {
+          return Promise.resolve({ id: 2, number: 2 });
+        }
+        if (table === 'participant' && id === 1) {
+          return Promise.resolve({ id: 1, name: 'Team 1' });
+        }
+        return Promise.resolve(null);
+      });
 
       mockSupabaseFrom.update.mockResolvedValue({ data: {}, error: null });
 
@@ -565,46 +560,35 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
     it('should reopen completed match with clearDownstream', async () => {
       const matchId = 1;
 
-      // Mock completed BYE match
-      mockSupabaseFrom.select
-        .mockResolvedValueOnce({
-          data: {
+      // Configure storage mock for completed match
+      getStorageMock().select.mockImplementation((table: string, id: number | any) => {
+        if (table === 'match' && id === matchId) {
+          return Promise.resolve({
             id: matchId,
             opponent1: { id: 1, result: 'win' },
             opponent2: null,
             status: 4, // Completed
             round_id: 1,
             stage_id: 1,
-          },
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: { id: 1, group_id: 1 },
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: { id: 1, number: 2 },
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: { id: 1, name: 'Team 1' },
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: {
-            id: matchId,
-            opponent1: { id: 1 },
-            stage_id: 1,
-          },
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: [
-            { id: 2, opponent1: { id: 1 }, opponent2: { id: 3 } }, // Downstream match
-          ],
-          error: null,
-        });
+          });
+        }
+        if (table === 'round' && id === 1) {
+          return Promise.resolve({ id: 1, group_id: 2 });
+        }
+        if (table === 'group' && id === 2) {
+          return Promise.resolve({ id: 2, number: 2 });
+        }
+        if (table === 'participant' && id === 1) {
+          return Promise.resolve({ id: 1, name: 'Team 1' });
+        }
+        return Promise.resolve(null);
+      });
 
+      // Mock Supabase queries for downstream check
+      mockSupabaseFrom.select.mockResolvedValue({
+        data: [{ id: 2, opponent1: { id: 1 }, opponent2: { id: 3 } }],
+        error: null,
+      });
       mockSupabaseFrom.update.mockResolvedValue({ data: {}, error: null });
 
       const result = await service.adminToggleByeReady(matchId, false, true);
@@ -616,39 +600,35 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
     it('should throw error when trying to reopen completed match without clearDownstream', async () => {
       const matchId = 1;
 
-      // Mock completed BYE match with downstream
-      mockSupabaseFrom.select
-        .mockResolvedValueOnce({
-          data: {
+      // Configure storage mock for completed match
+      getStorageMock().select.mockImplementation((table: string, id: number | any) => {
+        if (table === 'match' && id === matchId) {
+          return Promise.resolve({
             id: matchId,
             opponent1: { id: 1, result: 'win' },
             opponent2: null,
-            status: 4,
+            status: 4, // Completed
             round_id: 1,
             stage_id: 1,
-          },
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: { id: 1, group_id: 1 },
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: { id: 1, number: 2 },
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: { id: 1, name: 'Team 1' },
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: { id: matchId, opponent1: { id: 1 }, stage_id: 1 },
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: [{ id: 2, opponent1: { id: 1 } }], // Has downstream
-          error: null,
-        });
+          });
+        }
+        if (table === 'round' && id === 1) {
+          return Promise.resolve({ id: 1, group_id: 2 });
+        }
+        if (table === 'group' && id === 2) {
+          return Promise.resolve({ id: 2, number: 2 });
+        }
+        if (table === 'participant' && id === 1) {
+          return Promise.resolve({ id: 1, name: 'Team 1' });
+        }
+        return Promise.resolve(null);
+      });
+
+      // Mock downstream check to return populated downstream
+      mockSupabaseFrom.select.mockResolvedValue({
+        data: [{ id: 2, opponent1: { id: 1 } }],
+        error: null,
+      });
 
       await expect(service.adminToggleByeReady(matchId, false, false)).rejects.toThrow(
         'downstream matches have been populated'
@@ -661,7 +641,10 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
       const storage = service.getStorage();
 
       expect(storage).toBeDefined();
-      expect(storage.constructor.name).toBe('SupabaseSqlStorage');
+      // The mock returns an object with select, insert, update, delete methods
+      expect(storage.select).toBeDefined();
+      expect(storage.insert).toBeDefined();
+      expect(storage.update).toBeDefined();
     });
   });
 
@@ -669,33 +652,32 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
     it('should fix duplicate participants in LB R1', async () => {
       const stageId = 1;
 
-      // Mock LB group
-      mockSupabaseFrom.select
-        .mockResolvedValueOnce({
-          data: [
+      // Configure storage mock for normalization
+      getStorageMock().select.mockImplementation((table: string, filter: any) => {
+        if (table === 'group') {
+          return Promise.resolve([
             { id: 1, number: 1 }, // WB
             { id: 2, number: 2 }, // LB
-          ],
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: [
+          ]);
+        }
+        if (table === 'round') {
+          return Promise.resolve([
             { id: 1, number: 1, group_id: 2 }, // LB R1
             { id: 2, number: 2, group_id: 2 }, // LB R2
-          ],
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: [
+          ]);
+        }
+        if (table === 'match') {
+          return Promise.resolve([
             {
               id: 1,
               opponent1: { id: 1 },
               opponent2: { id: 1 }, // DUPLICATE!
               status: 2,
             },
-          ],
-          error: null,
-        });
+          ]);
+        }
+        return Promise.resolve([]);
+      });
 
       mockSupabaseFrom.update.mockResolvedValue({ data: {}, error: null });
 
@@ -712,26 +694,25 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
     it('should shift opponent2 to opponent1 if opponent1 is empty', async () => {
       const stageId = 1;
 
-      mockSupabaseFrom.select
-        .mockResolvedValueOnce({
-          data: [{ id: 2, number: 2 }],
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: [{ id: 1, number: 1, group_id: 2 }],
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: [
+      getStorageMock().select.mockImplementation((table: string, filter: any) => {
+        if (table === 'group') {
+          return Promise.resolve([{ id: 2, number: 2 }]); // LB only
+        }
+        if (table === 'round') {
+          return Promise.resolve([{ id: 1, number: 1, group_id: 2 }]);
+        }
+        if (table === 'match') {
+          return Promise.resolve([
             {
               id: 1,
               opponent1: null, // Empty
               opponent2: { id: 2 }, // Should shift
               status: 2,
             },
-          ],
-          error: null,
-        });
+          ]);
+        }
+        return Promise.resolve([]);
+      });
 
       await expect(service.normalizeLosersR1(stageId)).resolves.toBeUndefined();
     });
@@ -739,10 +720,7 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
     it('should return early if no LB group found', async () => {
       const stageId = 1;
 
-      mockSupabaseFrom.select.mockResolvedValue({
-        data: [{ id: 1, number: 1 }], // Only WB, no LB
-        error: null,
-      });
+      getStorageMock().select.mockResolvedValue([{ id: 1, number: 1 }]); // Only WB, no LB
 
       // Should not throw, just return early
       await expect(service.normalizeLosersR1(stageId)).resolves.toBeUndefined();

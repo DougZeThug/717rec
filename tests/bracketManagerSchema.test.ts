@@ -46,21 +46,28 @@ vi.mock('@/services/brackets/manager/MatchUpdateQueue', () => ({
   },
 }));
 
-// Mock SupabaseSqlStorage
+// Mock SupabaseSqlStorage with configurable per-test responses
 vi.mock('@/services/brackets/manager/SupabaseSqlStorage', () => {
   class MockSupabaseSqlStorage {
     select = vi.fn();
-    insert = vi.fn();
-    update = vi.fn();
-    delete = vi.fn();
+    insert = vi.fn().mockResolvedValue(undefined);
+    update = vi.fn().mockResolvedValue(undefined);
+    delete = vi.fn().mockResolvedValue(undefined);
     loadParticipantsForTournament = vi.fn().mockResolvedValue(undefined);
     clearParticipantCache = vi.fn();
+
+    constructor() {
+      (globalThis as any).__storageMockInstance = this;
+    }
   }
 
   return {
     SupabaseSqlStorage: MockSupabaseSqlStorage,
   };
 });
+
+// Helper to get storage mock instance
+const getStorageMock = () => (globalThis as any).__storageMockInstance;
 
 describe('Bracket Manager Schema Integration Tests', () => {
   let mockSupabaseFrom: any;
@@ -160,7 +167,7 @@ describe('Bracket Manager Schema Integration Tests', () => {
         service.createBracket({
           bracketId,
           format: 'single_elimination',
-          teams: teams.map((t, idx) => ({ teamId: t.id, teamName: t.name, seed: idx + 1 })),
+          teams: teams.map((t, idx) => ({ id: t.id, name: t.name, seed: idx + 1 })),
         })
       ).resolves.not.toThrow();
     });
@@ -181,7 +188,7 @@ describe('Bracket Manager Schema Integration Tests', () => {
         service.createBracket({
           bracketId,
           format: 'single_elimination',
-          teams: teams.map((t, idx) => ({ teamId: t.id, teamName: t.name, seed: idx + 1 })),
+          teams: teams.map((t, idx) => ({ id: t.id, name: t.name, seed: idx + 1 })),
         })
       ).resolves.not.toThrow();
     });
@@ -206,7 +213,7 @@ describe('Bracket Manager Schema Integration Tests', () => {
         service.createBracket({
           bracketId,
           format: 'double_elimination',
-          teams: teams.map((t, idx) => ({ teamId: t.id, teamName: t.name, seed: idx + 1 })),
+          teams: teams.map((t, idx) => ({ id: t.id, name: t.name, seed: idx + 1 })),
         })
       ).resolves.not.toThrow();
     });
@@ -227,7 +234,7 @@ describe('Bracket Manager Schema Integration Tests', () => {
         service.createBracket({
           bracketId,
           format: 'double_elimination',
-          teams: teams.map((t, idx) => ({ teamId: t.id, teamName: t.name, seed: idx + 1 })),
+          teams: teams.map((t, idx) => ({ id: t.id, name: t.name, seed: idx + 1 })),
         })
       ).resolves.not.toThrow();
     });
@@ -251,7 +258,7 @@ describe('Bracket Manager Schema Integration Tests', () => {
         service.createBracket({
           bracketId,
           format: 'single_elimination',
-          teams: teams.map((t, idx) => ({ teamId: t.id, teamName: t.name, seed: idx + 1 })),
+          teams: teams.map((t, idx) => ({ id: t.id, name: t.name, seed: idx + 1 })),
         })
       ).resolves.not.toThrow();
     });
@@ -272,7 +279,7 @@ describe('Bracket Manager Schema Integration Tests', () => {
         service.createBracket({
           bracketId,
           format: 'single_elimination',
-          teams: teams.map((t, idx) => ({ teamId: t.id, teamName: t.name, seed: idx + 1 })),
+          teams: teams.map((t, idx) => ({ id: t.id, name: t.name, seed: idx + 1 })),
         })
       ).resolves.not.toThrow();
     });
@@ -281,28 +288,40 @@ describe('Bracket Manager Schema Integration Tests', () => {
   describe('Match Updates', () => {
     it('should update match scores correctly', async () => {
       const matchId = 1;
-      const team1Score = 2;
-      const team2Score = 1;
+
+      // Configure storage mock to return match data
+      getStorageMock().select.mockImplementation((table: string, id: number) => {
+        if (table === 'match' && id === 1) {
+          return Promise.resolve({
+            id: 1,
+            opponent1: { id: 1 },
+            opponent2: { id: 2 },
+            status: 2,
+            stage_id: 1,
+            group_id: 1,
+            round_id: 1,
+          });
+        }
+        if (table === 'stage' && id === 1) {
+          return Promise.resolve({ id: 1, tournament_id: 'test-bracket' });
+        }
+        if (table === 'group') {
+          return Promise.resolve([]);
+        }
+        return Promise.resolve(null);
+      });
 
       mockSupabaseFrom.update.mockResolvedValue({ data: {}, error: null });
-      mockSupabaseFrom.select.mockResolvedValue({
-        data: {
-          id: matchId,
-          opponent1_id: 1,
-          opponent2_id: 2,
-          opponent1_score: null,
-          opponent2_score: null,
-        },
-        error: null,
-      });
 
       const service = new BracketManagerService();
 
       await expect(
         service.updateMatch({
           matchId,
-          team1Score,
-          team2Score,
+          scores: {
+            opponent1: { score: 2, result: 'win' },
+            opponent2: { score: 1, result: 'loss' },
+          },
         })
       ).resolves.not.toThrow();
     });
@@ -310,26 +329,39 @@ describe('Bracket Manager Schema Integration Tests', () => {
     it('should propagate winner to next match', async () => {
       const matchId = 1;
 
-      mockSupabaseFrom.update.mockResolvedValue({ data: {}, error: null });
-      mockSupabaseFrom.select.mockResolvedValue({
-        data: {
-          id: matchId,
-          opponent1_id: 1,
-          opponent2_id: 2,
-          opponent1_score: 2,
-          opponent2_score: 1,
-          status: 4, // Completed
-        },
-        error: null,
+      // Configure storage mock to return match data
+      getStorageMock().select.mockImplementation((table: string, id: number) => {
+        if (table === 'match' && id === 1) {
+          return Promise.resolve({
+            id: 1,
+            opponent1: { id: 1 },
+            opponent2: { id: 2 },
+            status: 2,
+            stage_id: 1,
+            group_id: 1,
+            round_id: 1,
+          });
+        }
+        if (table === 'stage' && id === 1) {
+          return Promise.resolve({ id: 1, tournament_id: 'test-bracket' });
+        }
+        if (table === 'group') {
+          return Promise.resolve([]);
+        }
+        return Promise.resolve(null);
       });
+
+      mockSupabaseFrom.update.mockResolvedValue({ data: {}, error: null });
 
       const service = new BracketManagerService();
 
       await expect(
         service.updateMatch({
           matchId,
-          team1Score: 2,
-          team2Score: 1,
+          scores: {
+            opponent1: { score: 2, result: 'win' },
+            opponent2: { score: 1, result: 'loss' },
+          },
         })
       ).resolves.not.toThrow();
     });
