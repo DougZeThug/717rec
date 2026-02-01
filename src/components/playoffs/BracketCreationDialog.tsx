@@ -233,7 +233,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl lg:max-w-5xl xl:max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Playoff Bracket</DialogTitle>
         </DialogHeader>
