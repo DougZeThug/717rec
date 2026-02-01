@@ -10,6 +10,21 @@ When a bracket has byes (e.g., 10 teams in a 16-slot double elimination bracket)
 
 ---
 
+## Library Version Check
+
+Current version: `brackets-manager@^1.8.2` (from package.json)
+
+A known library bug (Issue #172, fixed in v1.5.9) caused BYE matches to get stuck at "Locked" status because `hasBye()` was checked before `isMatchCompleted()`. Our version (1.8.2) is well past this fix, so the library itself is NOT the problem. The issue is in our Supabase storage adapter.
+
+Key documentation facts from brackets-manager:
+- BYEs are only supported during stage creation (via `null` in the seeding array)
+- The library's `hasBye()` uses strict `=== null` on the entire opponent object
+- BYE propagation is recursive — BYE vs BYE creates a new BYE in the next round
+- `null` in `manager.update.seeding()` is treated as TBD (not BYE) since the tournament may have started
+- To convert TBDs to BYEs after seeding updates, use `manager.update.confirmSeeding()`
+
+---
+
 ## Root Cause Analysis
 
 There are **two root causes** working together to break automatic BYE advancement:
