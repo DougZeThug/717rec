@@ -280,8 +280,8 @@ export class BracketNormalizationService {
         }
       }
 
-      // BYE matches are auto-advanced by BracketUpdateService.autoAdvanceLBByes()
-      // Manual forfeit scoring in the match editor remains as a fallback
+      // BYE matches are handled manually via forfeit scoring in the match editor
+      // No automatic BYE detection needed
 
       bracketLog(`[NORMALIZE] LB R1 normalization complete`);
     } catch (error) {

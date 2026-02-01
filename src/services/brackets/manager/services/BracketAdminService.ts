@@ -3,12 +3,7 @@ import { bracketLog, errorLog, failureLog, successLog } from '@/utils/logger';
 import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
 
 /**
- * Service for admin operations on brackets (BYE handling, match status control).
- *
- * NOTE: With the BYE auto-advancement fix in BracketUpdateService.autoAdvanceLBByes(),
- * the manual BYE toggle below is now a FALLBACK for edge cases only. Normal BYE
- * matches should auto-advance when a team drops to the LB and faces a BYE.
- * Admins can still use the toggle to manually unlock/reopen stuck matches.
+ * Service for admin operations on brackets (BYE handling, match status control)
  */
 export class BracketAdminService {
   constructor(private storage: SupabaseSqlStorage) {}

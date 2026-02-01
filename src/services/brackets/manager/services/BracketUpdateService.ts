@@ -8,7 +8,6 @@ import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
 import type {
   StorageMatch,
   StorageStage,
-  StorageGroup,
   UpdateMatchOptions,
   MatchUpdatePayload,
 } from '../types/BracketServiceTypes';
@@ -130,9 +129,6 @@ export class BracketUpdateService {
         // ⭐ Normalize Grand Final population after every update (defensive)
         await this.normalizationService.normalizeGrandFinalPopulation(stageId);
 
-        // ⭐ Auto-advance any stuck BYE matches in the LB (safety net)
-        await this.autoAdvanceLBByes(stageId);
-
         // ⭐ Fetch and log next matches to see propagation results
         const updatedMatch = await this.storage.select('match', matchId);
         bracketLog(`UPDATED MATCH STATE - Match ${matchId}:`, {
@@ -168,89 +164,5 @@ export class BracketUpdateService {
         );
       }
     });
-  }
-
-  /**
-   * Safety net: Scan LB for stuck BYE matches and auto-advance them.
-   *
-   * After Step 1 (transformMatchFromDb returning null for BYEs), brackets-manager
-   * should handle most BYE advancement automatically. This method catches any
-   * edge cases where a BYE match still gets stuck in Locked/Waiting/Ready status.
-   *
-   * Loops until no more BYE matches are found to handle cascading BYEs
-   * (e.g., a BYE winner advances to another BYE match).
-   */
-  private async autoAdvanceLBByes(stageId: number): Promise<void> {
-    try {
-      // Find LB group (group number 2 in double elimination)
-      const groups = await this.storage.select('group', { stage_id: stageId });
-      const groupsArray = (Array.isArray(groups) ? groups : [groups]) as StorageGroup[];
-      const lbGroup = groupsArray.find((g) => g.number === 2);
-
-      if (!lbGroup) return;
-
-      let advancedAny = true;
-      let iterations = 0;
-      const MAX_ITERATIONS = 10; // Safety limit to prevent infinite loops
-
-      while (advancedAny && iterations < MAX_ITERATIONS) {
-        advancedAny = false;
-        iterations++;
-
-        // Get all LB matches
-        const matches = await this.storage.select('match', { group_id: lbGroup.id });
-        const matchesArray = (Array.isArray(matches) ? matches : [matches]) as StorageMatch[];
-
-        for (const match of matchesArray) {
-          // Skip completed or archived matches
-          if (match.status >= 4) continue;
-
-          // Detect BYE: exactly one null opponent and one real opponent
-          const o1Null = match.opponent1 === null || match.opponent1 === undefined;
-          const o2Null = match.opponent2 === null || match.opponent2 === undefined;
-
-          // Need exactly one null and one non-null
-          if (o1Null === o2Null) continue;
-
-          // The real opponent must have an actual team ID
-          const realOpponent = o1Null ? match.opponent2 : match.opponent1;
-          if (!realOpponent?.id) continue;
-
-          bracketLog(`[AUTO-BYE] Found stuck BYE match ${match.id} (status: ${match.status}), auto-advancing team ${realOpponent.id}`);
-
-          // Unlock if locked or waiting
-          if (match.status === 0 || match.status === 1) {
-            await supabase.from('match').update({ status: 2 }).eq('id', match.id);
-            bracketLog(`[AUTO-BYE] Unlocked match ${match.id} to Ready`);
-          }
-
-          // Build update payload: real team wins with score 0
-          const updatePayload: MatchUpdatePayload = { id: match.id };
-          if (o1Null) {
-            // opponent1 is BYE, opponent2 is real — opponent2 wins
-            updatePayload.opponent2 = { score: 0, result: 'win' };
-          } else {
-            // opponent2 is BYE, opponent1 is real — opponent1 wins
-            updatePayload.opponent1 = { score: 0, result: 'win' };
-          }
-
-          try {
-            await this.manager.update.match(updatePayload);
-            advancedAny = true;
-            bracketLog(`[AUTO-BYE] Successfully advanced match ${match.id}`);
-          } catch (err) {
-            errorLog(`[AUTO-BYE] Failed to advance match ${match.id}:`, err);
-            // Don't throw — this is a safety net, not critical path
-          }
-        }
-      }
-
-      if (iterations > 1) {
-        bracketLog(`[AUTO-BYE] Completed ${iterations} iteration(s) of BYE advancement`);
-      }
-    } catch (error) {
-      errorLog('[AUTO-BYE] Error during LB BYE auto-advancement:', error);
-      // Don't throw — safety net should not break the main update flow
-    }
   }
 }
