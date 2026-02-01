@@ -91,7 +91,7 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
         onClick={() => safeFormState.handleTeamToggle(team.id)}
         disabled={isDisabled}
         className={`
-          flex items-center gap-2 p-3 h-auto justify-start min-w-0 overflow-hidden min-w-[200px]
+          flex items-center gap-2 p-3 h-auto justify-start overflow-hidden min-w-[240px]
           ${isSelected ? 'bg-primary text-primary-foreground' : ''}
           ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-muted'}
           ${hasConflict ? 'border-destructive' : ''}
@@ -108,7 +108,7 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
           ) : (
             <Users className="w-4 h-4 flex-shrink-0" />
           )}
-          <span className="font-medium truncate max-w-[120px] lg:max-w-none">{team.name || 'Unnamed Team'}</span>
+          <span className="font-medium truncate flex-1 min-w-0">{team.name || 'Unnamed Team'}</span>
         </div>
 
         <div className="flex-shrink-0">
@@ -262,7 +262,7 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
             </CardHeader>
             <CardContent>
               {formStateManager.syncedTeams.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {formStateManager.syncedTeams.map(renderTeamButton)}
                 </div>
               ) : (
