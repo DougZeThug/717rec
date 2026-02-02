@@ -172,15 +172,10 @@ export class BracketUpdateService {
 
   /**
    * Safety net: Auto-advance stuck LB BYE matches after each update.
-   * Scans the losers bracket for matches that brackets-manager has already
-   * marked as Ready (status 2) or Running (status 3) but that have exactly
-   * one real opponent and one null (BYE) opponent.
-   *
-   * IMPORTANT: Only acts on matches at status >= 2. Matches at Locked (0) or
-   * Waiting (1) are still waiting for opponents from feeder matches — their
-   * empty slot is NOT a BYE, it's an unfilled slot that will be populated
-   * when the feeder match completes. Force-advancing those would cascade a
-   * team through the entire losers bracket incorrectly.
+   * Scans the losers bracket for matches with exactly one real opponent and one
+   * null (BYE) opponent that haven't been completed yet. For each, unlocks the
+   * match and uses brackets-manager to advance the real team.
+   * Loops to handle cascading BYEs (a BYE win can feed into another BYE match).
    */
   private async autoAdvanceLBByes(stageId: number): Promise<void> {
     try {
@@ -200,11 +195,9 @@ export class BracketUpdateService {
           Array.isArray(allLBMatches) ? allLBMatches : [allLBMatches]
         ) as StorageMatch[];
 
-        // Find stuck BYE matches: exactly one real opponent, status is Ready (2)
-        // or Running (3) — NOT Locked (0) or Waiting (1), because those are
-        // still waiting for a real opponent from a feeder match.
+        // Find stuck BYE matches: exactly one real opponent, not yet completed
         const stuckByes = lbMatches.filter((m) => {
-          if (m.status < 2 || m.status >= 4) return false; // Only Ready/Running
+          if (m.status >= 4) return false; // Already completed
           const hasOp1 = m.opponent1 != null && m.opponent1.id != null;
           const hasOp2 = m.opponent2 != null && m.opponent2.id != null;
           return (hasOp1 && !hasOp2) || (!hasOp1 && hasOp2);
@@ -217,6 +210,12 @@ export class BracketUpdateService {
         for (const match of stuckByes) {
           try {
             const op1Real = match.opponent1 != null && match.opponent1.id != null;
+
+            // Unlock the match if it's Locked (0) or Waiting (1)
+            if (match.status < 2) {
+              await supabase.from('match').update({ status: 2 }).eq('id', match.id);
+              bracketLog(`[AUTO-BYE] Unlocked match ${match.id} (status → 2)`);
+            }
 
             // Build update payload: real opponent wins with score 0
             const updatePayload: MatchUpdatePayload = { id: match.id };
