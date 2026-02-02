@@ -73,22 +73,18 @@ function pick<T extends Record<string, unknown>>(
 }
 
 /**
- * Helper: Defensive merge to prevent null from overwriting filled opponent slots.
- * Only protects COMPLETED matches (status >= 4) — in-progress matches allow null
- * writes so brackets-manager can propagate BYE advancement correctly.
+ * Helper: Defensive merge to prevent null from overwriting filled opponent slots
  */
 function mergeOpponentSlots(prev: DbMatch | null, patch: DbMatch): DbMatch {
   const out = { ...patch };
 
-  // Only protect completed matches from accidental null overwrites
-  if (prev?.status != null && prev.status >= 4) {
-    for (const slot of ['opponent1_id', 'opponent2_id'] as const) {
-      if (slot in patch) {
-        const incoming = patch[slot];
-        if (incoming === null && prev?.[slot] != null) {
-          bracketLog(`Defensive merge: Prevented null overwrite of ${slot} (completed match)`);
-          delete out[slot];
-        }
+  for (const slot of ['opponent1_id', 'opponent2_id'] as const) {
+    if (slot in patch) {
+      const incoming = patch[slot];
+      // If incoming is null but previous slot has a value, don't overwrite
+      if (incoming === null && prev?.[slot] != null) {
+        bracketLog(`Defensive merge: Prevented null overwrite of ${slot}`);
+        delete out[slot];
       }
     }
   }
@@ -236,19 +232,14 @@ export class SupabaseSqlStorage implements CrudInterface {
     // Re-inflate opponent1 with position from cache
     if ('opponent1_id' in data || 'opponent1_score' in data || 'opponent1_result' in data) {
       const opponentId = data.opponent1_id;
+      const cached = opponentId ? this.participantCache.get(opponentId) : null;
 
-      // When ID, score, and result are ALL null → true BYE (return null so hasBye() works)
-      if (opponentId == null && data.opponent1_score == null && data.opponent1_result == null) {
-        transformed.opponent1 = null;
-      } else {
-        const cached = opponentId ? this.participantCache.get(opponentId) : null;
-        transformed.opponent1 = {
-          id: opponentId ?? null,
-          position: cached?.position ?? undefined,
-          score: data.opponent1_score ?? null,
-          result: (data.opponent1_result as BmOpponentSlot['result']) ?? null,
-        };
-      }
+      transformed.opponent1 = {
+        id: opponentId ?? null,
+        position: cached?.position ?? undefined,
+        score: data.opponent1_score ?? null,
+        result: (data.opponent1_result as BmOpponentSlot['result']) ?? null,
+      };
       delete transformed.opponent1_id;
       delete transformed.opponent1_score;
       delete transformed.opponent1_result;
@@ -257,19 +248,14 @@ export class SupabaseSqlStorage implements CrudInterface {
     // Re-inflate opponent2 with position from cache
     if ('opponent2_id' in data || 'opponent2_score' in data || 'opponent2_result' in data) {
       const opponentId = data.opponent2_id;
+      const cached = opponentId ? this.participantCache.get(opponentId) : null;
 
-      // When ID, score, and result are ALL null → true BYE (return null so hasBye() works)
-      if (opponentId == null && data.opponent2_score == null && data.opponent2_result == null) {
-        transformed.opponent2 = null;
-      } else {
-        const cached = opponentId ? this.participantCache.get(opponentId) : null;
-        transformed.opponent2 = {
-          id: opponentId ?? null,
-          position: cached?.position ?? undefined,
-          score: data.opponent2_score ?? null,
-          result: (data.opponent2_result as BmOpponentSlot['result']) ?? null,
-        };
-      }
+      transformed.opponent2 = {
+        id: opponentId ?? null,
+        position: cached?.position ?? undefined,
+        score: data.opponent2_score ?? null,
+        result: (data.opponent2_result as BmOpponentSlot['result']) ?? null,
+      };
       delete transformed.opponent2_id;
       delete transformed.opponent2_score;
       delete transformed.opponent2_result;
