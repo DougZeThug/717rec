@@ -63,8 +63,12 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     teamId,
   });
 
-  // Calculate total matches for sweep rate
-  const totalMatches = matchStats.career_match_wins + matchStats.career_match_losses;
+  // Calculate total matches for sweep rate (include playoff matches in denominator)
+  const totalMatches =
+    matchStats.career_match_wins +
+    matchStats.career_match_losses +
+    playoffStats.career_playoff_wins +
+    playoffStats.career_playoff_losses;
 
   // Combine regular matches for sweep calculation
   const regularMatches = [
