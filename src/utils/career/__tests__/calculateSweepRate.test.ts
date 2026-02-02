@@ -191,4 +191,49 @@ describe('calculateSweepRate', () => {
     expect(result.career_sweeps).toBe(1);
     expect(result.career_sweep_rate).toBe(25); // 1/4 = 25%
   });
+
+  it('includes playoff matches in sweep rate denominator', () => {
+    const regularMatches: MatchData[] = [
+      {
+        winner_id: 'team-1',
+        loser_id: 'team-2',
+        team1_id: 'team-1',
+        team2_id: 'team-2',
+        team1_game_wins: 2,
+        team2_game_wins: 0, // 1 regular sweep
+        season_id: 'season-1',
+      },
+      {
+        winner_id: 'team-2',
+        loser_id: 'team-1',
+        team1_id: 'team-1',
+        team2_id: 'team-2',
+        team1_game_wins: 0,
+        team2_game_wins: 2, // 1 loss
+        season_id: 'season-1',
+      },
+    ];
+
+    const playoffMatches: PlayoffMatchData[] = [
+      {
+        winner_id: 'team-1',
+        loser_id: 'team-2',
+        team1_id: 'team-1',
+        team2_id: 'team-2',
+        team1_score: 2,
+        team2_score: 0, // 1 playoff sweep
+        bracket_id: 'bracket-1',
+      },
+    ];
+
+    const result = calculateSweepRate({
+      regularMatches,
+      playoffMatches,
+      teamId: 'team-1',
+      totalMatches: 3, // 2 regular + 1 playoff (caller must include playoffs in denominator)
+    });
+
+    expect(result.career_sweeps).toBe(2); // 1 regular + 1 playoff
+    expect(result.career_sweep_rate).toBeCloseTo(66.67, 1); // 2/3 = 66.67%
+  });
 });
