@@ -20,13 +20,17 @@ interface TeamData {
   image_url: string | null;
 }
 
-const ChampionCardCompact: React.FC<{
-  team: TeamData;
-  division: string;
-  isWinter?: boolean;
-}> = ({ team, division, isWinter }) => {
+const ChampionCardCompact = React.forwardRef<
+  HTMLDivElement,
+  {
+    team: TeamData;
+    division: string;
+    isWinter?: boolean;
+  }
+>(({ team, division, isWinter }, ref) => {
   return (
     <motion.div
+      ref={ref}
       whileTap={{ scale: 0.97 }}
       className={cn(
         'flex flex-col items-center backdrop-blur-sm rounded-xl p-3 w-[130px]',
@@ -90,7 +94,8 @@ const ChampionCardCompact: React.FC<{
       </p>
     </motion.div>
   );
-};
+});
+ChampionCardCompact.displayName = 'ChampionCardCompact';
 
 const ChampionDisplay = React.forwardRef<
   HTMLDivElement,
