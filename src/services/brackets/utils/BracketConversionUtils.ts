@@ -49,9 +49,9 @@ export function convertToAppMatch(match: any, bracketId: string): PlayoffMatch {
     team2Score: match.opponent2?.score || null,
     winnerId:
       match.opponent1?.result === 'win'
-        ? match.opponent1?.id
+        ? match.opponent1.id
         : match.opponent2?.result === 'win'
-          ? match.opponent2?.id
+          ? match.opponent2.id
           : null,
     nextWinMatchId: match.child_match_id || null,
     nextLoseMatchId: match.child_match_id_loser || null,
