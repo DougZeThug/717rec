@@ -102,6 +102,12 @@ function mergeOpponentSlots(prev: DbMatch | null, patch: DbMatch): DbMatch {
  */
 export class SupabaseSqlStorage implements CrudInterface {
   private participantCache: Map<number, ParticipantCacheEntry> = new Map();
+  /**
+   * Cache mapping group_id → group_number
+   * Used to determine if a match is in Losers Bracket (number=2)
+   * Critical for BYE vs TBD detection
+   */
+  private groupCache: Map<number, number> = new Map();
 
   /**
    * Load participants into cache for a tournament
@@ -138,6 +144,43 @@ export class SupabaseSqlStorage implements CrudInterface {
   clearParticipantCache(): void {
     this.participantCache.clear();
     bracketLog('Participant cache cleared');
+  }
+
+  /**
+   * Load groups into cache for a stage
+   * Call this before bracket operations to enable BYE vs TBD detection
+   */
+  async loadGroupsForStage(stageId: number): Promise<void> {
+    const groups = await this.internalSelect('group', { stage_id: stageId } as any);
+    const groupsArray = Array.isArray(groups) ? groups : groups ? [groups] : [];
+
+    bracketLog(`Loading ${groupsArray.length} groups into cache for stage ${stageId}`);
+
+    for (const g of groupsArray) {
+      const group = g as { id: number; number: number };
+      if (group.id && typeof group.number === 'number') {
+        this.groupCache.set(group.id, group.number);
+      }
+    }
+
+    bracketLog(`Group cache loaded: ${this.groupCache.size} entries`);
+  }
+
+  /**
+   * Clear group cache
+   */
+  clearGroupCache(): void {
+    this.groupCache.clear();
+    bracketLog('Group cache cleared');
+  }
+
+  /**
+   * Check if a group_id is Losers Bracket (group number 2)
+   */
+  private isLosersBracket(groupId: number | undefined): boolean {
+    if (groupId === undefined) return false;
+    const groupNumber = this.groupCache.get(groupId);
+    return groupNumber === 2;
   }
 
   /**
@@ -229,17 +272,34 @@ export class SupabaseSqlStorage implements CrudInterface {
    * Transform match data from SQL format to brackets-manager format
    * Re-inflates separate columns into opponent1/opponent2 objects
    * Includes position field from participant cache for proper bracket routing
+   *
+   * CRITICAL: Handles BYE vs TBD detection based on bracket group:
+   * - Winners Bracket (group 1): Empty slots return null → library auto-completes BYEs
+   * - Losers Bracket (group 2): Empty slots return {id: null} → TBD, NO auto-completion
+   * - Finals (group 3): Empty slots return {id: null} → TBD, NO auto-completion
+   *
+   * This prevents the cascading auto-advancement bug where teams advance through
+   * the entire LB because empty TBD slots were incorrectly treated as BYEs.
    */
   private transformMatchFromDb(data: DbMatch): BmMatch {
     const transformed: BmMatch & DbMatch = { ...data };
+
+    // Check if this match is in Losers Bracket (group number 2)
+    // LB matches should NEVER have null opponents (which triggers hasBye())
+    // because LB empty slots are TBD, not BYEs
+    const isLB = this.isLosersBracket(data.group_id);
 
     // Re-inflate opponent1 with position from cache
     if ('opponent1_id' in data || 'opponent1_score' in data || 'opponent1_result' in data) {
       const opponentId = data.opponent1_id;
 
-      // True BYE: no participant, no score, no result → return null so hasBye() works
-      if (opponentId == null && !data.opponent1_score && !data.opponent1_result) {
-        transformed.opponent1 = null;
+      // Empty slot detection: no participant, no score, no result
+      const isEmpty = opponentId == null && !data.opponent1_score && !data.opponent1_result;
+
+      if (isEmpty) {
+        // LB matches: return TBD object so hasBye() returns false, preventing auto-completion
+        // WB/GF matches: return null so hasBye() returns true, allowing BYE handling
+        transformed.opponent1 = isLB ? { id: null, score: null, result: null } : null;
       } else {
         const cached = opponentId ? this.participantCache.get(opponentId) : null;
         transformed.opponent1 = {
@@ -258,9 +318,13 @@ export class SupabaseSqlStorage implements CrudInterface {
     if ('opponent2_id' in data || 'opponent2_score' in data || 'opponent2_result' in data) {
       const opponentId = data.opponent2_id;
 
-      // True BYE: no participant, no score, no result → return null so hasBye() works
-      if (opponentId == null && !data.opponent2_score && !data.opponent2_result) {
-        transformed.opponent2 = null;
+      // Empty slot detection: no participant, no score, no result
+      const isEmpty = opponentId == null && !data.opponent2_score && !data.opponent2_result;
+
+      if (isEmpty) {
+        // LB matches: return TBD object so hasBye() returns false, preventing auto-completion
+        // WB/GF matches: return null so hasBye() returns true, allowing BYE handling
+        transformed.opponent2 = isLB ? { id: null, score: null, result: null } : null;
       } else {
         const cached = opponentId ? this.participantCache.get(opponentId) : null;
         transformed.opponent2 = {

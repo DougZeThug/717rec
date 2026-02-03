@@ -48,13 +48,15 @@ export class BracketUpdateService {
           status: currentMatch.status,
         });
 
-        // ⭐ Load participants into cache before update
+        // ⭐ Load participants and groups into cache before update
+        // Groups are needed for BYE vs TBD detection in LB matches
         const matchData = currentMatch as StorageMatch;
         const stage = (await this.storage.select('stage', matchData.stage_id)) as StorageStage;
         if (stage) {
           await (this.storage as SupabaseSqlStorage).loadParticipantsForTournament(
             stage.tournament_id
           );
+          await (this.storage as SupabaseSqlStorage).loadGroupsForStage(matchData.stage_id);
         }
 
         bracketLog(`CALLING manager.update.match() with:`, {

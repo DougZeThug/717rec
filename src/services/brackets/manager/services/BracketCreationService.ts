@@ -144,7 +144,18 @@ export class BracketCreationService {
 
       bracketLog('✅ Stage created successfully in SQL tables');
 
+      // Load groups into cache for BYE vs TBD detection in subsequent operations
+      // This is critical to prevent cascading auto-advancement in Losers Bracket
+      const stages = await this.storage.select('stage', { tournament_id: bracketId } as any);
+      const stagesArray = Array.isArray(stages) ? stages : stages ? [stages] : [];
+      if (stagesArray.length > 0) {
+        const stageId = (stagesArray[0] as any).id;
+        await (this.storage as SupabaseSqlStorage).loadGroupsForStage(stageId);
+        bracketLog('✅ Groups loaded into cache for stage:', stageId);
+      }
+
       // Note: brackets-manager handles child_count and BYE propagation automatically
+      // WB BYEs are handled at creation time. LB empty slots are TBD, not BYEs.
 
       successLog('Bracket created successfully', bracketId);
     } catch (error) {
