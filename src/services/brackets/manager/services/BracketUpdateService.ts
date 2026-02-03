@@ -1,5 +1,6 @@
 import { BracketsManager } from 'brackets-manager';
 
+import { supabase } from '@/integrations/supabase/client';
 import { bracketLog, errorLog, failureLog, successLog } from '@/utils/logger';
 
 import { matchUpdateQueue } from '../MatchUpdateQueue';
@@ -47,6 +48,31 @@ export class BracketUpdateService {
           stage_id: currentMatch.stage_id,
           status: currentMatch.status,
         });
+
+        // ⭐ Check if this is a BYE match (one opponent is null)
+        const isByeMatch = !currentMatch.opponent1 || !currentMatch.opponent2;
+
+        // ⭐ If it's a BYE match and locked/waiting, unlock it for manual advancement
+        // Status: 0 = Locked, 1 = Waiting, 2 = Ready, 3 = Running, 4 = Completed, 5 = Archived
+        if (isByeMatch && (currentMatch.status === 0 || currentMatch.status === 1)) {
+          bracketLog(
+            `Unlocking BYE match ${matchId} for manual advancement (status: ${currentMatch.status} -> 2)`
+          );
+
+          // Directly update the match status in the database to Ready (2)
+          await supabase
+            .from('match')
+            .update({ status: 2 }) // 2 = Ready
+            .eq('id', matchId);
+
+          // ⭐ Update the local object to match the database
+          currentMatch.status = 2;
+
+          bracketLog(`BYE match ${matchId} unlocked successfully - continuing to apply scores`);
+
+          // ⭐ FIX: Don't return early - continue to apply scores in the same transaction
+          // This allows BYE matches to be unlocked and scored in a single operation
+        }
 
         // ⭐ Load participants into cache before update
         const matchData = currentMatch as StorageMatch;
@@ -103,9 +129,8 @@ export class BracketUpdateService {
         // ⭐ Normalize Grand Final population after every update (defensive)
         await this.normalizationService.normalizeGrandFinalPopulation(stageId);
 
-        // NOTE: BYE handling is done natively by brackets-manager when null values
-        // are in the seeding. The library automatically propagates BYE winners.
-        // See: https://github.com/Drarig29/brackets-manager.js/blob/master/test/double-elimination.spec.js
+        // ⭐ Auto-advance BYE matches (safety net for library edge cases)
+        await this.autoAdvanceByeMatches(stageId);
 
         // ⭐ Fetch and log next matches to see propagation results
         const updatedMatch = await this.storage.select('match', matchId);
@@ -142,5 +167,87 @@ export class BracketUpdateService {
         );
       }
     });
+  }
+
+  /**
+   * Safety net: Auto-advance BYE matches across the entire stage.
+   *
+   * After a match update, scans all matches in the stage for BYE situations
+   * (one opponent is strictly null, the other has a real participant ID).
+   * Auto-advances the real team by calling manager.update.match() with a win result.
+   *
+   * Repeats in a loop to handle cascading BYEs (e.g., a BYE winner faces another BYE
+   * in the next round). Capped at 10 iterations to prevent infinite loops.
+   *
+   * CRITICAL: Only auto-advances when opponent is strictly `null` (a true BYE),
+   * NOT when opponent is `{ id: null }` (TBD waiting for a real team).
+   * After Step 1 fix, the storage adapter returns null for true BYEs.
+   */
+  private async autoAdvanceByeMatches(stageId: number): Promise<void> {
+    const MAX_PASSES = 10;
+
+    for (let pass = 0; pass < MAX_PASSES; pass++) {
+      const allMatches = await this.storage.select('match', { stage_id: stageId });
+      const matchesArray = (Array.isArray(allMatches) ? allMatches : [allMatches]) as StorageMatch[];
+
+      let advancedAny = false;
+
+      for (const match of matchesArray) {
+        // Skip completed (4) or archived (5) matches
+        if (match.status >= 4) continue;
+
+        // Check for true BYE: one opponent is strictly null, the other has a real participant ID
+        const opp1IsNull = match.opponent1 === null;
+        const opp2IsNull = match.opponent2 === null;
+
+        // Both null or neither null → not a BYE match we should auto-advance
+        if (opp1IsNull === opp2IsNull) continue;
+
+        const realOpponent = opp1IsNull ? match.opponent2 : match.opponent1;
+        const realSide = opp1IsNull ? 'opponent2' : 'opponent1';
+
+        // Must have a real participant ID (not just { id: null } which is TBD)
+        if (!realOpponent?.id) continue;
+
+        // Already has a result set — skip to avoid double-processing
+        if (realOpponent.result === 'win') continue;
+
+        bracketLog(
+          `[AUTO-ADVANCE] BYE detected in match ${match.id} (pass ${pass + 1}): ` +
+          `${realSide} (participant ${realOpponent.id}) advances`
+        );
+
+        try {
+          // Unlock the match if it's locked/waiting
+          if (match.status === 0 || match.status === 1) {
+            await supabase
+              .from('match')
+              .update({ status: 2 })
+              .eq('id', match.id);
+          }
+
+          // Build the update payload: real opponent wins, BYE side stays null
+          const updatePayload: MatchUpdatePayload = { id: match.id };
+          if (realSide === 'opponent1') {
+            updatePayload.opponent1 = { score: 0, result: 'win' };
+          } else {
+            updatePayload.opponent2 = { score: 0, result: 'win' };
+          }
+
+          await this.manager.update.match(updatePayload);
+          advancedAny = true;
+
+          bracketLog(`[AUTO-ADVANCE] Match ${match.id} auto-advanced successfully`);
+        } catch (err) {
+          // Log but don't throw — auto-advance is a safety net, not critical
+          errorLog(`[AUTO-ADVANCE] Failed to auto-advance match ${match.id}:`, err);
+        }
+      }
+
+      if (!advancedAny) {
+        bracketLog(`[AUTO-ADVANCE] No more BYE matches to advance (completed in ${pass + 1} pass(es))`);
+        break;
+      }
+    }
   }
 }
