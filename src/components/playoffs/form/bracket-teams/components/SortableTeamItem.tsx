@@ -99,20 +99,30 @@ export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
         <span className="font-medium truncate">{name}</span>
       </div>
 
-      {/* Optional Seed Input for Manual Mode */}
+      {/* Seed Input for Manual Mode */}
       {showSeedInput && onSeedChange && (
-        <input
-          type="number"
-          min="1"
-          value={seed}
-          onChange={(e) => onSeedChange(parseInt(e.target.value) || null)}
-          className={cn(
-            'w-12 h-8 text-center text-sm font-medium rounded-md border',
-            'bg-background focus:ring-2 focus:ring-primary/50 focus:border-primary',
-            hasConflict && 'border-destructive focus:ring-destructive/50'
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-muted-foreground hidden sm:inline">Seed:</span>
+          <input
+            type="number"
+            min="1"
+            value={seed}
+            onChange={(e) => onSeedChange(parseInt(e.target.value) || null)}
+            onClick={(e) => e.stopPropagation()}
+            placeholder="#"
+            className={cn(
+              'w-16 h-9 text-center text-sm font-semibold rounded-md border-2',
+              'bg-background transition-all duration-150',
+              'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary',
+              'hover:border-primary/50',
+              hasConflict && 'border-destructive bg-destructive/10 focus:ring-destructive/50 focus:border-destructive'
+            )}
+            aria-label={`Seed for ${name}`}
+          />
+          {hasConflict && (
+            <span className="text-xs text-destructive font-medium">Duplicate</span>
           )}
-          aria-label={`Seed for ${name}`}
-        />
+        </div>
       )}
     </motion.div>
   );
