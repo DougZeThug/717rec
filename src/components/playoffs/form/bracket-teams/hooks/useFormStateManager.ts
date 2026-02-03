@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 
 import { BracketFormStateResult, ProcessedTeam } from '../types';
 import { SeedManagementResult, useSeedManagement } from './useSeedManagement';
@@ -28,8 +28,6 @@ export const useFormStateManager = (
   seedValidation: any,
   onSeedChange?: (teamId: string, seed: number | null) => void
 ): FormStateManagerResult => {
-  const [isSaving, setIsSaving] = useState(false);
-
   // Initialize seed management
   const seedManagementState = useSeedManagement(initialTeams, seedValidation, onSeedChange);
 
@@ -46,13 +44,7 @@ export const useFormStateManager = (
   // Save all changes
   const saveAllChanges = useCallback(async () => {
     if (!canSave) return;
-
-    setIsSaving(true);
-    try {
-      seedManagementState.actions.commitChanges();
-    } finally {
-      setIsSaving(false);
-    }
+    seedManagementState.actions.commitChanges();
   }, [canSave, seedManagementState.actions]);
 
   // Cancel all changes
