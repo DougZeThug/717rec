@@ -9,6 +9,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
+import { snapCenterToCursor } from '@dnd-kit/modifiers';
 import {
   arrayMove,
   SortableContext,
@@ -82,6 +83,7 @@ export const SeedOrderList: React.FC<SeedOrderListProps> = ({
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
+      modifiers={[snapCenterToCursor]}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
