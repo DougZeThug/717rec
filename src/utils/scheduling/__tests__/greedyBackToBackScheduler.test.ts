@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import { Team } from '@/types';
 
-import { generateScheduleGreedy, GreedySchedulerInput } from '../greedyBackToBackScheduler';
+import {
+  generateScheduleGreedy,
+  generateScheduleGreedyWithTracking,
+  GreedySchedulerInput,
+  pairKey,
+} from '../greedyBackToBackScheduler';
 
 // Helper to create mock teams
 function createMockTeam(id: string, name: string, division: string, tier: number = 1): Team {
@@ -303,6 +308,132 @@ describe('greedyBackToBackScheduler', () => {
       const result2 = generateScheduleGreedy(input);
 
       expect(result1).toEqual(result2);
+    });
+  });
+
+  describe('Avoidable repeat avoidance', () => {
+    it('should not produce season rematches when non-repeat perfect matchings exist (6 teams)', () => {
+      // 6 same-tier teams with paired history: A-B, C-D, E-F
+      // Non-repeat perfect matchings exist (e.g., A-C B-E D-F, then A-D B-F C-E)
+      const teams: Team[] = [
+        createMockTeam('1', 'Team A', 'Tier 1', 1),
+        createMockTeam('2', 'Team B', 'Tier 1', 1),
+        createMockTeam('3', 'Team C', 'Tier 1', 1),
+        createMockTeam('4', 'Team D', 'Tier 1', 1),
+        createMockTeam('5', 'Team E', 'Tier 1', 1),
+        createMockTeam('6', 'Team F', 'Tier 1', 1),
+      ];
+
+      const historyPairs: Array<[string, string]> = [
+        ['1', '2'], // A-B
+        ['3', '4'], // C-D
+        ['5', '6'], // E-F
+      ];
+
+      const input: GreedySchedulerInput = {
+        teams,
+        historyPairs,
+        slots: ['8:30', '9:00'],
+      };
+
+      const result = generateScheduleGreedy(input);
+
+      // Should produce 6 matches total (3 per slot)
+      expect(result).toHaveLength(6);
+
+      // No season rematches should exist
+      const historySet = new Set(historyPairs.map(([a, b]) => pairKey(a, b)));
+      const rematches = result.filter((m) => historySet.has(pairKey(m.teamAId, m.teamBId)));
+      expect(rematches).toHaveLength(0);
+
+      // Every team should have exactly 2 matches
+      const teamMatchCounts = new Map<string, number>();
+      for (const match of result) {
+        teamMatchCounts.set(match.teamAId, (teamMatchCounts.get(match.teamAId) || 0) + 1);
+        teamMatchCounts.set(match.teamBId, (teamMatchCounts.get(match.teamBId) || 0) + 1);
+      }
+      for (const team of teams) {
+        expect(teamMatchCounts.get(team.id)).toBe(2);
+      }
+    });
+
+    it('should not produce season rematches with 8 teams and heavy history', () => {
+      // 8 same-tier teams with 4 history pairs
+      // Each team has played exactly one opponent, but plenty of fresh options remain
+      const teams: Team[] = [
+        createMockTeam('1', 'Team A', 'Tier 2', 2),
+        createMockTeam('2', 'Team B', 'Tier 2', 2),
+        createMockTeam('3', 'Team C', 'Tier 2', 2),
+        createMockTeam('4', 'Team D', 'Tier 2', 2),
+        createMockTeam('5', 'Team E', 'Tier 2', 2),
+        createMockTeam('6', 'Team F', 'Tier 2', 2),
+        createMockTeam('7', 'Team G', 'Tier 2', 2),
+        createMockTeam('8', 'Team H', 'Tier 2', 2),
+      ];
+
+      const historyPairs: Array<[string, string]> = [
+        ['1', '2'], // A-B
+        ['3', '4'], // C-D
+        ['5', '6'], // E-F
+        ['7', '8'], // G-H
+      ];
+
+      const input: GreedySchedulerInput = {
+        teams,
+        historyPairs,
+        slots: ['8:30', '9:00'],
+      };
+
+      const result = generateScheduleGreedy(input);
+
+      expect(result).toHaveLength(8);
+
+      const historySet = new Set(historyPairs.map(([a, b]) => pairKey(a, b)));
+      const rematches = result.filter((m) => historySet.has(pairKey(m.teamAId, m.teamBId)));
+      expect(rematches).toHaveLength(0);
+    });
+
+    it('should handle the swap pass when greedy strands a pair', () => {
+      // This specifically tests the case where greedy ordering would strand
+      // two teams whose only remaining pairing is a blocked history match.
+      // The swap pass should reorganize existing matches to fix this.
+      const teams: Team[] = [
+        createMockTeam('a', 'Alpha', 'Tier 1', 1),
+        createMockTeam('b', 'Bravo', 'Tier 1', 1),
+        createMockTeam('c', 'Charlie', 'Tier 1', 1),
+        createMockTeam('d', 'Delta', 'Tier 1', 1),
+        createMockTeam('e', 'Echo', 'Tier 1', 1),
+        createMockTeam('f', 'Foxtrot', 'Tier 1', 1),
+      ];
+
+      // History: a-b, c-d, e-f (each historical pair blocks a rematch)
+      const historyPairs: Array<[string, string]> = [
+        ['a', 'b'],
+        ['c', 'd'],
+        ['e', 'f'],
+      ];
+
+      const result = generateScheduleGreedyWithTracking({
+        teams,
+        historyPairs,
+        slots: ['8:30', '9:00'],
+      });
+
+      // Should have 6 matches (3 per slot), all non-rematches
+      expect(result.matches).toHaveLength(6);
+
+      const historySet = new Set(historyPairs.map(([a, b]) => pairKey(a, b)));
+      const rematches = result.matches.filter((m) => historySet.has(pairKey(m.teamAId, m.teamBId)));
+      expect(rematches).toHaveLength(0);
+
+      // No relaxation should have been needed
+      expect(result.diagnostics.relaxationApplied).toBe(0);
+    });
+
+    it('pairKey should normalize regardless of argument order', () => {
+      expect(pairKey('abc', 'xyz')).toBe(pairKey('xyz', 'abc'));
+      expect(pairKey('1', '2')).toBe('1||2');
+      expect(pairKey('2', '1')).toBe('1||2');
     });
   });
 });
