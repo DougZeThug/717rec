@@ -430,6 +430,58 @@ describe('greedyBackToBackScheduler', () => {
       expect(result.diagnostics.relaxationApplied).toBe(0);
     });
 
+    it('should fix cross-slot dependency: S1 choices must not block S2', () => {
+      // 6 teams, same tier, with history: A-C, A-D, B-C, B-D
+      // Greedy S1 might pick (A,B),(C,D),(E,F)
+      // Then S2: A/B can only play E/F (C/D blocked by history).
+      //          C/D can only play E/F (A/B blocked by history, C-D is session rematch).
+      //          But E/F can only pair with 2 of those 4 → C and D get stranded.
+      // A valid schedule exists: S1=(A,B),(C,E),(D,F) then S2=(A,F),(B,E),(C,D)
+      // The cross-slot swap should find this rearrangement.
+      const teams: Team[] = [
+        createMockTeam('a', 'Alpha', 'Tier 1', 1),
+        createMockTeam('b', 'Bravo', 'Tier 1', 1),
+        createMockTeam('c', 'Charlie', 'Tier 1', 1),
+        createMockTeam('d', 'Delta', 'Tier 1', 1),
+        createMockTeam('e', 'Echo', 'Tier 1', 1),
+        createMockTeam('f', 'Foxtrot', 'Tier 1', 1),
+      ];
+
+      const historyPairs: Array<[string, string]> = [
+        ['a', 'c'],
+        ['a', 'd'],
+        ['b', 'c'],
+        ['b', 'd'],
+      ];
+
+      const result = generateScheduleGreedyWithTracking({
+        teams,
+        historyPairs,
+        slots: ['8:30', '9:00'],
+      });
+
+      // Should produce 6 matches (3 per slot), all teams paired
+      expect(result.matches).toHaveLength(6);
+
+      // Every team should have exactly 2 matches
+      const teamMatchCounts = new Map<string, number>();
+      for (const match of result.matches) {
+        teamMatchCounts.set(match.teamAId, (teamMatchCounts.get(match.teamAId) || 0) + 1);
+        teamMatchCounts.set(match.teamBId, (teamMatchCounts.get(match.teamBId) || 0) + 1);
+      }
+      for (const team of teams) {
+        expect(teamMatchCounts.get(team.id)).toBe(2);
+      }
+
+      // No season rematches
+      const historySet = new Set(historyPairs.map(([a, b]) => pairKey(a, b)));
+      const rematches = result.matches.filter((m) => historySet.has(pairKey(m.teamAId, m.teamBId)));
+      expect(rematches).toHaveLength(0);
+
+      // No relaxation should have been needed (cross-slot swap should handle it)
+      expect(result.diagnostics.relaxationApplied).toBe(0);
+    });
+
     it('pairKey should normalize regardless of argument order', () => {
       expect(pairKey('abc', 'xyz')).toBe(pairKey('xyz', 'abc'));
       expect(pairKey('1', '2')).toBe('1||2');
