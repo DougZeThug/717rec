@@ -4,6 +4,7 @@ import { Team } from '@/types';
 import { TeamPairing } from '@/types/autoSchedule';
 import { debugLog, errorLog, scheduleLog, warnLog } from '@/utils/logger';
 import { withTiming } from '@/utils/performance';
+
 import { fetchSeasonHistoryForTeams } from './matchHistoryService';
 
 type TeamPairingConfig = {
@@ -115,8 +116,7 @@ function analyzeGraphFeasibility(
       team2Analysis.totalEdges++;
 
       // Check tier constraint (with relaxation support)
-      const tierBlocked =
-        relaxationLevel < 2 && isExtremeTierDifference(team1, team2);
+      const tierBlocked = relaxationLevel < 2 && isExtremeTierDifference(team1, team2);
 
       if (tierBlocked) {
         team1Analysis.edgesBlockedByTier++;
@@ -233,11 +233,7 @@ function buildWeightedGraphWithRelaxation(
       // Rematch constraint check
       const hasPlayedBefore =
         config.avoidRematches && haveTeamsPlayedBeforeSync(team1.id, team2.id, config);
-      if (
-        effectiveRelaxation < 1 &&
-        hasPlayedBefore &&
-        !isBothRecreational(team1, team2)
-      ) {
+      if (effectiveRelaxation < 1 && hasPlayedBefore && !isBothRecreational(team1, team2)) {
         continue;
       }
 
@@ -439,7 +435,7 @@ export async function generatePairingsWithBlossom(
 
         // STEP 3: Filter edges and run Round 2
         const round2Edges = filterUsedEdges(edges, round1Pairings);
-        let round2Pairings = runBlossomMatching(teams, round2Edges, 2);
+        const round2Pairings = runBlossomMatching(teams, round2Edges, 2);
 
         // Combine results
         let allPairings = [...round1Pairings, ...round2Pairings];
@@ -462,8 +458,15 @@ export async function generatePairingsWithBlossom(
               const needsRelaxation = new Set(teamsNeedingRepair.map((t) => t.id));
 
               // Rebuild edges with relaxation for teams that need it
-              edges = buildWeightedGraphWithRelaxation(teams, config, needsRelaxation, relaxationLevel);
-              debugLog(`Rebuilt graph with ${edges.length} edges (relaxation level ${relaxationLevel})`);
+              edges = buildWeightedGraphWithRelaxation(
+                teams,
+                config,
+                needsRelaxation,
+                relaxationLevel
+              );
+              debugLog(
+                `Rebuilt graph with ${edges.length} edges (relaxation level ${relaxationLevel})`
+              );
             }
           }
 
@@ -547,12 +550,19 @@ function buildWeightedGraph(teams: Team[], config: TeamPairingConfig): Edge[] {
       }
 
       // Calculate compatibility score (no bonus needed - score is already appropriate)
-      const weight = config.getCompatibilityScoreFn(team1, team2);
+      let weight = config.getCompatibilityScoreFn(team1, team2);
 
       // Check if teams have played before (using pre-fetched Set for O(1) lookup)
       const hasPlayedBefore = config.avoidRematches
         ? haveTeamsPlayedBeforeSync(team1.id, team2.id, config)
         : false;
+
+      // Apply rematch penalty for T3 vs T3 (recreational) rematches.
+      // shouldExcludeEdge allows these through, but they should still be
+      // penalized so the algorithm prefers non-rematch alternatives.
+      if (hasPlayedBefore && isBothRecreational(team1, team2)) {
+        weight -= 50;
+      }
 
       const pairingKey = [team1.id, team2.id].sort().join('-');
 
@@ -958,9 +968,7 @@ async function findGuaranteedSolution(
     }
 
     if (relaxLevel < 3) {
-      debugLog(
-        `Relaxation level ${relaxLevel} incomplete, trying level ${relaxLevel + 1}...`
-      );
+      debugLog(`Relaxation level ${relaxLevel} incomplete, trying level ${relaxLevel + 1}...`);
     }
   }
 

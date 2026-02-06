@@ -239,7 +239,36 @@ function analyzeGreedyFeasibility(
 }
 
 /**
+ * Count valid opponents for a team among a set of unpaired teams
+ */
+function countValidOpponents(
+  team: Team,
+  unpairedTeams: Team[],
+  excludeId: string,
+  playedSet: Set<string>,
+  tonightPairs: Set<string>,
+  maxTierGap: number,
+  relaxationLevel: RelaxationLevel
+): number {
+  let count = 0;
+  for (const other of unpairedTeams) {
+    if (
+      other.id !== team.id &&
+      other.id !== excludeId &&
+      canPlay(team, other, playedSet, tonightPairs, maxTierGap, relaxationLevel)
+    ) {
+      count++;
+    }
+  }
+  return count;
+}
+
+/**
  * Find best opponent for a team using greedy selection
+ *
+ * When allUnpairedTeams is provided, uses constraint-aware tie-breaking:
+ * candidates with fewer remaining valid opponents are preferred first,
+ * preventing them from being stranded later in the greedy pass.
  */
 function findBestOpponent(
   team: Team,
@@ -248,7 +277,8 @@ function findBestOpponent(
   tonightPairs: Set<string>,
   teamMatchCounts: Map<string, number>,
   maxTierGap: number,
-  relaxationLevel: RelaxationLevel = 0
+  relaxationLevel: RelaxationLevel = 0,
+  allUnpairedTeams?: Team[]
 ): Team | null {
   const validCandidates = candidates.filter(
     (candidate) =>
@@ -258,12 +288,33 @@ function findBestOpponent(
 
   if (validCandidates.length === 0) return null;
 
+  // Pre-compute remaining valid opponents for each candidate (constraint-aware tie-breaking)
+  // Candidates with fewer alternatives should be picked first so they don't get stranded.
+  const candidateOptionCounts = new Map<string, number>();
+  if (allUnpairedTeams && allUnpairedTeams.length > 2) {
+    for (const candidate of validCandidates) {
+      candidateOptionCounts.set(
+        candidate.id,
+        countValidOpponents(
+          candidate,
+          allUnpairedTeams,
+          team.id,
+          playedSet,
+          tonightPairs,
+          maxTierGap,
+          relaxationLevel
+        )
+      );
+    }
+  }
+
   // Sort by priority:
   // 1. Same division (tier distance = 0) - prioritize even with relaxation
   // 2. Adjacent tier (tier distance = 1)
   // 3. Not a season rematch (prefer fresh opponents even when rematches allowed)
   // 4. Fewer total matches scheduled tonight
-  // 5. Alphabetically by name (stable tie-break)
+  // 5. Fewest remaining valid opponents (most constrained first - prevents stranding)
+  // 6. Alphabetically by name (stable tie-break)
   validCandidates.sort((a, b) => {
     const distA = tierDistance(team, a);
     const distB = tierDistance(team, b);
@@ -281,6 +332,13 @@ function findBestOpponent(
     const matchesB = teamMatchCounts.get(b.id) || 0;
 
     if (matchesA !== matchesB) return matchesA - matchesB;
+
+    // Prefer candidates with fewer remaining options (most constrained first)
+    if (candidateOptionCounts.size > 0) {
+      const optionsA = candidateOptionCounts.get(a.id) ?? Infinity;
+      const optionsB = candidateOptionCounts.get(b.id) ?? Infinity;
+      if (optionsA !== optionsB) return optionsA - optionsB;
+    }
 
     return a.name.localeCompare(b.name);
   });
@@ -327,6 +385,200 @@ function pickBye(
 }
 
 /**
+ * Swap pass: when the greedy left teams unmatched (because their only remaining
+ * opponent is a blocked pair), try swapping them into an existing match.
+ *
+ * For each pair of unmatched teams (U1, U2) that can't play each other,
+ * find an existing match M=(A,B) where we can swap to (U1,A)+(U2,B)
+ * or (U1,B)+(U2,A), resolving the stranding without creating new conflicts.
+ */
+function trySwapToFixUnmatched(
+  matches: ScheduledMatch[],
+  unmatchedTeams: Team[],
+  slotName: string,
+  allTeams: Team[],
+  playedSet: Set<string>,
+  tonightPairs: Set<string>,
+  teamMatchCounts: Map<string, number>,
+  maxTierGap: number,
+  newPairs: Set<string> | undefined,
+  relaxationLevel: RelaxationLevel
+): ScheduledMatch[] {
+  const result = [...matches];
+  const stillUnmatched = new Set(unmatchedTeams.map((t) => t.id));
+  const teamMap = new Map(allTeams.map((t) => [t.id, t]));
+
+  // Try to pair unmatched teams directly first
+  const unmatchedList = [...unmatchedTeams];
+  for (let i = 0; i < unmatchedList.length; i++) {
+    if (!stillUnmatched.has(unmatchedList[i].id)) continue;
+    for (let j = i + 1; j < unmatchedList.length; j++) {
+      if (!stillUnmatched.has(unmatchedList[j].id)) continue;
+      const u1 = unmatchedList[i];
+      const u2 = unmatchedList[j];
+      if (canPlay(u1, u2, playedSet, tonightPairs, maxTierGap, relaxationLevel)) {
+        const match: ScheduledMatch = {
+          slot: slotName,
+          teamAId: u1.id,
+          teamBId: u2.id,
+          teamAName: u1.name,
+          teamBName: u2.name,
+          divisionA: u1.divisionName || 'Unknown',
+          divisionB: u2.divisionName || 'Unknown',
+          tierA: getTier(u1),
+          tierB: getTier(u2),
+        };
+        result.push(match);
+        const mk = pairKey(u1.id, u2.id);
+        tonightPairs.add(mk);
+        if (newPairs) newPairs.add(mk);
+        teamMatchCounts.set(u1.id, (teamMatchCounts.get(u1.id) || 0) + 1);
+        teamMatchCounts.set(u2.id, (teamMatchCounts.get(u2.id) || 0) + 1);
+        stillUnmatched.delete(u1.id);
+        stillUnmatched.delete(u2.id);
+      }
+    }
+  }
+
+  if (stillUnmatched.size < 2) return result;
+
+  // For remaining unmatched pairs, try swapping with existing matches
+  const unmatchedArr = allTeams.filter((t) => stillUnmatched.has(t.id));
+  for (let i = 0; i < unmatchedArr.length - 1; i++) {
+    if (!stillUnmatched.has(unmatchedArr[i].id)) continue;
+    for (let j = i + 1; j < unmatchedArr.length; j++) {
+      if (!stillUnmatched.has(unmatchedArr[j].id)) continue;
+      const u1 = unmatchedArr[i];
+      const u2 = unmatchedArr[j];
+
+      // Try swapping with each existing match
+      for (let k = 0; k < result.length; k++) {
+        const m = result[k];
+        const teamA = teamMap.get(m.teamAId);
+        const teamB = teamMap.get(m.teamBId);
+        if (!teamA || !teamB) continue;
+
+        // Option 1: (U1, A) + (U2, B)
+        if (
+          canPlay(u1, teamA, playedSet, tonightPairs, maxTierGap, relaxationLevel) &&
+          canPlay(u2, teamB, playedSet, tonightPairs, maxTierGap, relaxationLevel)
+        ) {
+          // Remove the old match's tonight pair
+          const oldKey = pairKey(teamA.id, teamB.id);
+          tonightPairs.delete(oldKey);
+          if (newPairs) newPairs.delete(oldKey);
+          teamMatchCounts.set(teamA.id, (teamMatchCounts.get(teamA.id) || 1) - 1);
+          teamMatchCounts.set(teamB.id, (teamMatchCounts.get(teamB.id) || 1) - 1);
+
+          // Replace match k with U1 vs A
+          result[k] = {
+            slot: slotName,
+            teamAId: u1.id,
+            teamBId: teamA.id,
+            teamAName: u1.name,
+            teamBName: teamA.name,
+            divisionA: u1.divisionName || 'Unknown',
+            divisionB: teamA.divisionName || 'Unknown',
+            tierA: getTier(u1),
+            tierB: getTier(teamA),
+          };
+          const key1 = pairKey(u1.id, teamA.id);
+          tonightPairs.add(key1);
+          if (newPairs) newPairs.add(key1);
+          teamMatchCounts.set(u1.id, (teamMatchCounts.get(u1.id) || 0) + 1);
+          teamMatchCounts.set(teamA.id, (teamMatchCounts.get(teamA.id) || 0) + 1);
+
+          // Add new match U2 vs B
+          result.push({
+            slot: slotName,
+            teamAId: u2.id,
+            teamBId: teamB.id,
+            teamAName: u2.name,
+            teamBName: teamB.name,
+            divisionA: u2.divisionName || 'Unknown',
+            divisionB: teamB.divisionName || 'Unknown',
+            tierA: getTier(u2),
+            tierB: getTier(teamB),
+          });
+          const key2 = pairKey(u2.id, teamB.id);
+          tonightPairs.add(key2);
+          if (newPairs) newPairs.add(key2);
+          teamMatchCounts.set(u2.id, (teamMatchCounts.get(u2.id) || 0) + 1);
+          teamMatchCounts.set(teamB.id, (teamMatchCounts.get(teamB.id) || 0) + 1);
+
+          stillUnmatched.delete(u1.id);
+          stillUnmatched.delete(u2.id);
+          scheduleLog(
+            `Swap fix: replaced (${teamA.name} vs ${teamB.name}) with (${u1.name} vs ${teamA.name}) + (${u2.name} vs ${teamB.name})`
+          );
+          break;
+        }
+
+        // Option 2: (U1, B) + (U2, A)
+        if (
+          canPlay(u1, teamB, playedSet, tonightPairs, maxTierGap, relaxationLevel) &&
+          canPlay(u2, teamA, playedSet, tonightPairs, maxTierGap, relaxationLevel)
+        ) {
+          const oldKey = pairKey(teamA.id, teamB.id);
+          tonightPairs.delete(oldKey);
+          if (newPairs) newPairs.delete(oldKey);
+          teamMatchCounts.set(teamA.id, (teamMatchCounts.get(teamA.id) || 1) - 1);
+          teamMatchCounts.set(teamB.id, (teamMatchCounts.get(teamB.id) || 1) - 1);
+
+          result[k] = {
+            slot: slotName,
+            teamAId: u1.id,
+            teamBId: teamB.id,
+            teamAName: u1.name,
+            teamBName: teamB.name,
+            divisionA: u1.divisionName || 'Unknown',
+            divisionB: teamB.divisionName || 'Unknown',
+            tierA: getTier(u1),
+            tierB: getTier(teamB),
+          };
+          const key1 = pairKey(u1.id, teamB.id);
+          tonightPairs.add(key1);
+          if (newPairs) newPairs.add(key1);
+          teamMatchCounts.set(u1.id, (teamMatchCounts.get(u1.id) || 0) + 1);
+          teamMatchCounts.set(teamB.id, (teamMatchCounts.get(teamB.id) || 0) + 1);
+
+          result.push({
+            slot: slotName,
+            teamAId: u2.id,
+            teamBId: teamA.id,
+            teamAName: u2.name,
+            teamBName: teamA.name,
+            divisionA: u2.divisionName || 'Unknown',
+            divisionB: teamA.divisionName || 'Unknown',
+            tierA: getTier(u2),
+            tierB: getTier(teamA),
+          });
+          const key2 = pairKey(u2.id, teamA.id);
+          tonightPairs.add(key2);
+          if (newPairs) newPairs.add(key2);
+          teamMatchCounts.set(u2.id, (teamMatchCounts.get(u2.id) || 0) + 1);
+          teamMatchCounts.set(teamA.id, (teamMatchCounts.get(teamA.id) || 0) + 1);
+
+          stillUnmatched.delete(u1.id);
+          stillUnmatched.delete(u2.id);
+          scheduleLog(
+            `Swap fix: replaced (${teamA.name} vs ${teamB.name}) with (${u1.name} vs ${teamB.name}) + (${u2.name} vs ${teamA.name})`
+          );
+          break;
+        }
+      }
+      if (!stillUnmatched.has(u1.id)) break; // u1 was matched, move to next
+    }
+  }
+
+  if (stillUnmatched.size > 0) {
+    warnLog(`Swap pass: ${stillUnmatched.size} teams still unmatched after swap attempts`);
+  }
+
+  return result;
+}
+
+/**
  * Generate pairings for a single slot (greedy)
  */
 function generateSlotPairings(
@@ -358,11 +610,14 @@ function generateSlotPairings(
       tonightPairs,
       teamMatchCounts,
       maxTierGap,
-      relaxationLevel
+      relaxationLevel,
+      availableCandidates // pass all unpaired teams for constraint-aware tie-breaking
     );
 
     if (!opponent) {
-      warnLog(`No opponent found for team ${team.name} in slot ${slotName} (relaxation: ${relaxationLevel})`);
+      warnLog(
+        `No opponent found for team ${team.name} in slot ${slotName} (relaxation: ${relaxationLevel})`
+      );
       continue;
     }
 
@@ -396,6 +651,26 @@ function generateSlotPairings(
     // Increment match counts
     teamMatchCounts.set(team.id, (teamMatchCounts.get(team.id) || 0) + 1);
     teamMatchCounts.set(opponent.id, (teamMatchCounts.get(opponent.id) || 0) + 1);
+  }
+
+  // Swap pass: fix stranded teams by swapping with existing matches
+  const unmatchedTeams = teams.filter(
+    (t) => !pairedInSlot.has(t.id) && (!byeTeamId || t.id !== byeTeamId)
+  );
+  if (unmatchedTeams.length >= 2) {
+    const swapResult = trySwapToFixUnmatched(
+      matches,
+      unmatchedTeams,
+      slotName,
+      teams,
+      playedSet,
+      tonightPairs,
+      teamMatchCounts,
+      maxTierGap,
+      newPairs,
+      relaxationLevel
+    );
+    return swapResult;
   }
 
   return matches;
@@ -502,7 +777,9 @@ function attemptRepairPass(
  * - Progressive constraint relaxation
  * - Repair pass for unmatched teams
  */
-export function generateScheduleGreedyWithTracking(input: GreedySchedulerInput): GreedySchedulerResult {
+export function generateScheduleGreedyWithTracking(
+  input: GreedySchedulerInput
+): GreedySchedulerResult {
   const { teams, historyPairs, slots, thirdSlot, config, forbiddenPairs } = input;
   const maxTierGap = config?.maxTierGap ?? MAX_TIER_GAP;
   const byeStrategy = config?.byeStrategy ?? DEFAULT_BYE_STRATEGY;
@@ -539,7 +816,12 @@ export function generateScheduleGreedyWithTracking(input: GreedySchedulerInput):
   const isOdd = teams.length % 2 === 1;
 
   // Pre-validation: check if scheduling is feasible with current constraints
-  const feasibility = analyzeGreedyFeasibility(sortedTeams, playedSet, baseTonightPairs, maxTierGap);
+  const feasibility = analyzeGreedyFeasibility(
+    sortedTeams,
+    playedSet,
+    baseTonightPairs,
+    maxTierGap
+  );
   let relaxationLevel: RelaxationLevel = feasibility.recommendedLevel;
 
   if (!feasibility.isFeasible) {
@@ -661,7 +943,9 @@ export function generateScheduleGreedyWithTracking(input: GreedySchedulerInput):
       const unmatchedInS2 = sortedTeams.filter((t) => !s2TeamIds.has(t.id));
 
       if (unmatchedInS1.length >= 2) {
-        scheduleLog(`Attempting repair pass for ${unmatchedInS1.length} unmatched teams in ${slot1}`);
+        scheduleLog(
+          `Attempting repair pass for ${unmatchedInS1.length} unmatched teams in ${slot1}`
+        );
         const repairS1 = attemptRepairPass(
           unmatchedInS1,
           sortedTeams,
@@ -677,7 +961,9 @@ export function generateScheduleGreedyWithTracking(input: GreedySchedulerInput):
       }
 
       if (unmatchedInS2.length >= 2) {
-        scheduleLog(`Attempting repair pass for ${unmatchedInS2.length} unmatched teams in ${slot2}`);
+        scheduleLog(
+          `Attempting repair pass for ${unmatchedInS2.length} unmatched teams in ${slot2}`
+        );
         const repairS2 = attemptRepairPass(
           unmatchedInS2,
           sortedTeams,
@@ -718,11 +1004,18 @@ export function generateScheduleGreedyWithTracking(input: GreedySchedulerInput):
     );
 
     // Select Bye1 for S1
-    const bye1 = pickBye(sortedTeams, byeStrategy, playedSet, maxTierGap, new Set(), relaxationLevel);
+    const bye1 = pickBye(
+      sortedTeams,
+      byeStrategy,
+      playedSet,
+      maxTierGap,
+      new Set(),
+      relaxationLevel
+    );
     scheduleLog(`Selected Bye1: ${bye1.name} (sits out ${slot1})`);
 
     // Generate S1 pairings (excluding Bye1)
-    let s1Matches = generateSlotPairings(
+    const s1Matches = generateSlotPairings(
       sortedTeams,
       slot1,
       playedSet,
@@ -770,7 +1063,7 @@ export function generateScheduleGreedyWithTracking(input: GreedySchedulerInput):
     }
 
     // Generate S2 pairings (excluding Bye2)
-    let s2Matches = generateSlotPairings(
+    const s2Matches = generateSlotPairings(
       sortedTeams,
       slot2,
       playedSet,
