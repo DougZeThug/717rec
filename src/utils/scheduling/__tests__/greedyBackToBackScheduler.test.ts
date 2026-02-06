@@ -435,5 +435,56 @@ describe('greedyBackToBackScheduler', () => {
       expect(pairKey('1', '2')).toBe('1||2');
       expect(pairKey('2', '1')).toBe('1||2');
     });
+
+    it('should fix cross-slot dependency: S1 choices must not block S2', () => {
+      // 6 teams, all same tier
+      // History: A-C, A-D, B-C, B-D (A and B can't play C or D)
+      // Without cross-slot awareness, greedy picks S1=(A,B),(C,D),(E,F)
+      // which makes S2 impossible without rematches (C,D become session rematches
+      // and A/B can't play C/D due to history).
+      // But valid schedules exist: e.g. S1=(A,B),(C,E),(D,F), S2=(A,F),(B,E),(C,D)
+      const teams: Team[] = [
+        createMockTeam('1', 'Team A', 'Tier 1', 1),
+        createMockTeam('2', 'Team B', 'Tier 1', 1),
+        createMockTeam('3', 'Team C', 'Tier 1', 1),
+        createMockTeam('4', 'Team D', 'Tier 1', 1),
+        createMockTeam('5', 'Team E', 'Tier 1', 1),
+        createMockTeam('6', 'Team F', 'Tier 1', 1),
+      ];
+
+      const historyPairs: Array<[string, string]> = [
+        ['1', '3'], // A-C
+        ['1', '4'], // A-D
+        ['2', '3'], // B-C
+        ['2', '4'], // B-D
+      ];
+
+      const result = generateScheduleGreedyWithTracking({
+        teams,
+        historyPairs,
+        slots: ['8:30', '9:00'],
+      });
+
+      // Should produce 6 matches (3 per slot)
+      expect(result.matches).toHaveLength(6);
+
+      // No season rematches
+      const historySet = new Set(historyPairs.map(([a, b]) => pairKey(a, b)));
+      const rematches = result.matches.filter((m) => historySet.has(pairKey(m.teamAId, m.teamBId)));
+      expect(rematches).toHaveLength(0);
+
+      // Every team should have exactly 2 matches
+      const teamMatchCounts = new Map<string, number>();
+      for (const match of result.matches) {
+        teamMatchCounts.set(match.teamAId, (teamMatchCounts.get(match.teamAId) || 0) + 1);
+        teamMatchCounts.set(match.teamBId, (teamMatchCounts.get(match.teamBId) || 0) + 1);
+      }
+      for (const team of teams) {
+        expect(teamMatchCounts.get(team.id)).toBe(2);
+      }
+
+      // Should not have needed relaxation
+      expect(result.diagnostics.relaxationApplied).toBe(0);
+    });
   });
 });

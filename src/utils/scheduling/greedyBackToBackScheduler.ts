@@ -769,6 +769,266 @@ function attemptRepairPass(
 }
 
 /**
+ * Cross-slot swap: when S2 has unmatched teams because S1's greedy choices
+ * consumed pairings that S2 needed, try breaking one S1 match and re-pairing.
+ *
+ * Strategy: for each S2 unmatched team U, find an S1 match (A,B) where:
+ * - U can play A or B in S2
+ * - Breaking (A,B) in S1, A and B can each find new S1 partners
+ * - The S2 unmatched teams can then be paired
+ *
+ * This is a single-level retry (break one S1 match), not a full backtrack.
+ */
+function tryCrossSlotSwap(
+  s1Matches: ScheduledMatch[],
+  s2Matches: ScheduledMatch[],
+  allTeams: Team[],
+  slot1: string,
+  slot2: string,
+  playedSet: Set<string>,
+  tonightPairs: Set<string>,
+  teamMatchCounts: Map<string, number>,
+  maxTierGap: number,
+  newPairs: Set<string>,
+  relaxationLevel: RelaxationLevel
+): { s1Matches: ScheduledMatch[]; s2Matches: ScheduledMatch[] } | null {
+  const s2TeamIds = new Set(s2Matches.flatMap((m) => [m.teamAId, m.teamBId]));
+  const unmatchedInS2 = allTeams.filter((t) => !s2TeamIds.has(t.id));
+
+  if (unmatchedInS2.length < 2) return null;
+
+  const teamMap = new Map(allTeams.map((t) => [t.id, t]));
+
+  // For each S1 match, check if breaking it would help S2
+  for (let k = 0; k < s1Matches.length; k++) {
+    const s1Match = s1Matches[k];
+    const s1A = teamMap.get(s1Match.teamAId);
+    const s1B = teamMap.get(s1Match.teamBId);
+    if (!s1A || !s1B) continue;
+
+    // Check: if we free s1A and s1B from this S1 match, can we:
+    // 1. Re-pair s1A and s1B with others in S1
+    // 2. Pair the S2 unmatched teams using s1A-s1B (now free in S2)
+
+    // First check: can ANY S2 unmatched team play s1A or s1B?
+    const s2CandidatesForA = unmatchedInS2.filter((u) => {
+      // Need: u can play s1A in S2, and this pair isn't blocked
+      const pk = pairKey(u.id, s1A.id);
+      return (
+        !playedSet.has(pk) && // not a season rematch
+        !tonightPairs.has(pk) && // not already tonight (shouldn't happen since u is unmatched)
+        tierDistance(u, s1A) <= maxTierGap
+      );
+    });
+    const s2CandidatesForB = unmatchedInS2.filter((u) => {
+      const pk = pairKey(u.id, s1B.id);
+      return !playedSet.has(pk) && !tonightPairs.has(pk) && tierDistance(u, s1B) <= maxTierGap;
+    });
+
+    if (s2CandidatesForA.length === 0 && s2CandidatesForB.length === 0) continue;
+
+    // Check: can s1A and s1B each find new S1 partners from the pool?
+    // After removing match k, the S1 pool of paired teams includes everyone
+    // except the teams freed (s1A, s1B). We need them to join existing pairs.
+    // Simpler: try to re-pair ALL of S1 without the (s1A, s1B) match but with
+    // them available. This is equivalent to running S1 fresh with a hint to avoid (s1A, s1B).
+    // For efficiency, just check if swapping s1A and s1B into different S1 matches works.
+
+    // Try: find another S1 match (C,D) where we can swap to (A,C)+(B,D) or (A,D)+(B,C)
+    for (let j = 0; j < s1Matches.length; j++) {
+      if (j === k) continue;
+      const other = s1Matches[j];
+      const s1C = teamMap.get(other.teamAId);
+      const s1D = teamMap.get(other.teamBId);
+      if (!s1C || !s1D) continue;
+
+      // Try swap option 1: S1 becomes (A,C) + (B,D), removing original (A,B) and (C,D)
+      const acOk =
+        canPlay(s1A, s1C, playedSet, new Set(), maxTierGap, relaxationLevel) &&
+        !tonightPairs.has(pairKey(s1A.id, s1C.id));
+      const bdOk =
+        canPlay(s1B, s1D, playedSet, new Set(), maxTierGap, relaxationLevel) &&
+        !tonightPairs.has(pairKey(s1B.id, s1D.id));
+
+      // Try swap option 2: S1 becomes (A,D) + (B,C)
+      const adOk =
+        canPlay(s1A, s1D, playedSet, new Set(), maxTierGap, relaxationLevel) &&
+        !tonightPairs.has(pairKey(s1A.id, s1D.id));
+      const bcOk =
+        canPlay(s1B, s1C, playedSet, new Set(), maxTierGap, relaxationLevel) &&
+        !tonightPairs.has(pairKey(s1B.id, s1C.id));
+
+      const swapOptions: Array<{ newS1: [Team, Team][]; desc: string }> = [];
+      if (acOk && bdOk)
+        swapOptions.push({
+          newS1: [
+            [s1A, s1C],
+            [s1B, s1D],
+          ],
+          desc: 'AC+BD',
+        });
+      if (adOk && bcOk)
+        swapOptions.push({
+          newS1: [
+            [s1A, s1D],
+            [s1B, s1C],
+          ],
+          desc: 'AD+BC',
+        });
+
+      for (const option of swapOptions) {
+        // Now check: with new S1 matches, are the S2 unmatched teams solvable?
+        // The key change is that (A,B) is no longer a session pair and (C,D) is no longer a session pair.
+        // Instead, option.newS1 pairs become session pairs.
+        // Build a temporary tonightPairs for S2 feasibility check
+        const tempTonightPairs = new Set(tonightPairs);
+        // Remove old S1 pairs
+        tempTonightPairs.delete(pairKey(s1A.id, s1B.id));
+        tempTonightPairs.delete(pairKey(s1C.id, s1D.id));
+        // Add new S1 pairs
+        for (const [t1, t2] of option.newS1) {
+          tempTonightPairs.add(pairKey(t1.id, t2.id));
+        }
+
+        // Also remove the S2 matches that used C or D (since C,D got reshuffled in S1)
+        // Actually, C and D were already matched in S2 (they're not in unmatchedInS2).
+        // The S2 matches for C and D are fine - they don't change.
+        // What changes: A-B is no longer a session pair, so A-B becomes available for S2!
+        // And the unmatched S2 teams now have more options.
+
+        // Check: can unmatchedInS2 teams find partners given the new session pairs?
+        // The unmatched teams need to be paired among themselves + possibly with each other.
+        // Key: (A,B) was a session rematch blocking S2. Now it's not.
+        // But wait - the S2 unmatched teams couldn't play A or B due to history, not session.
+        // Actually the issue is more nuanced. Let me check if the unmatched S2 teams
+        // can now play each other (since the C-D session pair might be lifted).
+
+        // Simplest check: can we pair ALL unmatched S2 teams with this new tempTonightPairs?
+        const canPairAll = canPairUnmatchedInS2(
+          unmatchedInS2,
+          allTeams,
+          playedSet,
+          tempTonightPairs,
+          maxTierGap,
+          relaxationLevel,
+          s2Matches
+        );
+
+        if (canPairAll) {
+          // Execute the swap!
+          // 1. Update S1 matches
+          const newS1 = [...s1Matches];
+          // Replace match k with first new pair
+          const [p1a, p1b] = option.newS1[0];
+          newS1[k] = {
+            slot: slot1,
+            teamAId: p1a.id,
+            teamBId: p1b.id,
+            teamAName: p1a.name,
+            teamBName: p1b.name,
+            divisionA: p1a.divisionName || 'Unknown',
+            divisionB: p1b.divisionName || 'Unknown',
+            tierA: getTier(p1a),
+            tierB: getTier(p1b),
+          };
+          // Replace match j with second new pair
+          const [p2a, p2b] = option.newS1[1];
+          newS1[j] = {
+            slot: slot1,
+            teamAId: p2a.id,
+            teamBId: p2b.id,
+            teamAName: p2a.name,
+            teamBName: p2b.name,
+            divisionA: p2a.divisionName || 'Unknown',
+            divisionB: p2b.divisionName || 'Unknown',
+            tierA: getTier(p2a),
+            tierB: getTier(p2b),
+          };
+
+          // 2. Update tonightPairs
+          tonightPairs.delete(pairKey(s1A.id, s1B.id));
+          tonightPairs.delete(pairKey(s1C.id, s1D.id));
+          newPairs.delete(pairKey(s1A.id, s1B.id));
+          newPairs.delete(pairKey(s1C.id, s1D.id));
+
+          for (const [t1, t2] of option.newS1) {
+            tonightPairs.add(pairKey(t1.id, t2.id));
+            newPairs.add(pairKey(t1.id, t2.id));
+          }
+
+          // 3. Update match counts (S1 counts stay the same - same number of matches)
+
+          // 4. Re-generate S2 with the updated tonightPairs
+          // Reset S2 match counts
+          for (const m of s2Matches) {
+            teamMatchCounts.set(m.teamAId, (teamMatchCounts.get(m.teamAId) || 2) - 1);
+            teamMatchCounts.set(m.teamBId, (teamMatchCounts.get(m.teamBId) || 2) - 1);
+            const mk = pairKey(m.teamAId, m.teamBId);
+            tonightPairs.delete(mk);
+            newPairs.delete(mk);
+          }
+
+          const newS2 = generateSlotPairings(
+            allTeams,
+            slot2,
+            playedSet,
+            tonightPairs,
+            teamMatchCounts,
+            maxTierGap,
+            undefined,
+            newPairs,
+            relaxationLevel
+          );
+
+          scheduleLog(
+            `Cross-slot swap (${option.desc}): S1 (${s1A.name},${s1B.name})+(${s1C.name},${s1D.name}) → ` +
+              `(${p1a.name},${p1b.name})+(${p2a.name},${p2b.name})`
+          );
+
+          return { s1Matches: newS1, s2Matches: newS2 };
+        }
+      }
+    }
+  }
+
+  return null; // No cross-slot swap found
+}
+
+/**
+ * Quick feasibility check: can all unmatched S2 teams be paired
+ * given the updated tonightPairs (after a hypothetical S1 swap)?
+ */
+function canPairUnmatchedInS2(
+  unmatchedTeams: Team[],
+  _allTeams: Team[],
+  playedSet: Set<string>,
+  tonightPairs: Set<string>,
+  maxTierGap: number,
+  relaxationLevel: RelaxationLevel,
+  _existingS2Matches: ScheduledMatch[]
+): boolean {
+  // Check: can every pair of unmatched teams be paired greedily?
+  const remaining = [...unmatchedTeams];
+  const paired = new Set<string>();
+
+  for (let i = 0; i < remaining.length; i++) {
+    if (paired.has(remaining[i].id)) continue;
+    for (let j2 = i + 1; j2 < remaining.length; j2++) {
+      if (paired.has(remaining[j2].id)) continue;
+      if (
+        canPlay(remaining[i], remaining[j2], playedSet, tonightPairs, maxTierGap, relaxationLevel)
+      ) {
+        paired.add(remaining[i].id);
+        paired.add(remaining[j2].id);
+        break;
+      }
+    }
+  }
+
+  return paired.size === unmatchedTeams.length;
+}
+
+/**
  * Main greedy scheduler function with pair tracking
  * Use this when scheduling multiple blocks with double header teams
  *
@@ -776,6 +1036,7 @@ function attemptRepairPass(
  * - Pre-validation to detect constraint issues
  * - Progressive constraint relaxation
  * - Repair pass for unmatched teams
+ * - Cross-slot swap to fix S1 choices that block S2
  */
 export function generateScheduleGreedyWithTracking(
   input: GreedySchedulerInput
@@ -885,6 +1146,31 @@ export function generateScheduleGreedyWithTracking(
     // Check if we have the expected number of matches
     const expectedMatches = teams.length; // N teams = N matches (N/2 per slot)
     let allMatches = [...s1Matches, ...s2Matches];
+
+    // Cross-slot fix: if S2 has unmatched teams at level 0, try breaking an S1 match
+    // that would free opponents for the stranded S2 teams, then re-pair both.
+    // This handles the case where S1's greedy choices make S2 unsolvable.
+    if (allMatches.length < expectedMatches && relaxationLevel === 0) {
+      const crossSlotResult = tryCrossSlotSwap(
+        s1Matches,
+        s2Matches,
+        sortedTeams,
+        slot1,
+        slot2,
+        playedSet,
+        tonightPairs,
+        teamMatchCounts,
+        maxTierGap,
+        newPairs,
+        relaxationLevel
+      );
+      if (crossSlotResult) {
+        s1Matches = crossSlotResult.s1Matches;
+        s2Matches = crossSlotResult.s2Matches;
+        allMatches = [...s1Matches, ...s2Matches];
+        scheduleLog('Cross-slot swap resolved S2 stranding without relaxation');
+      }
+    }
 
     // If we don't have enough matches, try progressive relaxation
     while (allMatches.length < expectedMatches && relaxationLevel < 3) {
