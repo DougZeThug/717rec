@@ -31,7 +31,8 @@ export class BracketStandingsService {
       }
 
       const stagesArray = (Array.isArray(stages) ? stages : [stages]) as StorageStage[];
-      const stage = stagesArray[0];
+      // Use the final stage (highest number) for tournament standings
+      const stage = [...stagesArray].sort((a, b) => b.number - a.number)[0];
 
       // Get final standings from brackets-manager
       const finalStandings = await this.manager.get.finalStandings(stage.id);
