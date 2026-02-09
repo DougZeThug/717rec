@@ -6,6 +6,7 @@ import { warnLog } from '@/utils/logger';
  * This is called when:
  * 1. Deleting a completed match
  * 2. Changing the winner of an already-completed match
+ * 3. Marking a completed match as incomplete
  *
  * @param winnerId - ID of the team that won
  * @param loserId - ID of the team that lost
