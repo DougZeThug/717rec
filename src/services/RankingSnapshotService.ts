@@ -27,51 +27,26 @@ async function getCurrentSeasonId(): Promise<string> {
 }
 
 /**
- * Get season ID for a specific team through team_season_stats
- * Since divisions don't have season_id, we look up via team_season_stats
- * Falls back to current active season if team has no stats yet
- * @throws {DatabaseError} When database operations fail
- * @throws {NotFoundError} When no active season exists
- */
-async function getSeasonIdForTeam(teamId: string): Promise<string> {
-  // First try to get the active season for this team from team_season_stats
-  const { data, error } = await supabase
-    .from('team_season_stats')
-    .select('season_id')
-    .eq('team_id', teamId)
-    .order('season_id', { ascending: false })
-    .limit(1)
-    .single();
-
-  if (error) {
-    // If no stats exist for this team, fall back to current active season
-    return getCurrentSeasonId();
-  }
-
-  return ensureFound(data?.season_id, 'Season for team', teamId);
-}
-
-/**
  * Save current rankings to the database
- * Creates or updates ranking snapshots for each team in their season
+ * Creates or updates ranking snapshots for each team in a specific season
+ * @param rankings - The rankings to save
+ * @param seasonId - Optional season ID. If not provided, uses the current active season.
  * @throws {DatabaseError} When database operations fail
  * @throws {NotFoundError} When no active season exists
  */
-export async function saveRankingsToDatabase(rankings: Ranking[]): Promise<boolean> {
-  // For each ranking, we need to determine the season
-  // We'll get the season from the first team's division
+export async function saveRankingsToDatabase(rankings: Ranking[], seasonId?: string): Promise<boolean> {
   if (rankings.length === 0) {
     return true;
   }
 
   try {
-    // Get season ID from the first team
-    const seasonId = await getSeasonIdForTeam(rankings[0].teamId);
+    // Use provided seasonId, or fall back to the current active season
+    const resolvedSeasonId = seasonId ?? await getCurrentSeasonId();
 
     // Prepare ranking snapshots for upsert
     const snapshots = rankings.map((ranking, index) => ({
       team_id: ranking.teamId,
-      season_id: seasonId,
+      season_id: resolvedSeasonId,
       rank_position: index + 1,
     }));
 
@@ -93,21 +68,22 @@ export async function saveRankingsToDatabase(rankings: Ranking[]): Promise<boole
 }
 
 /**
- * Load previous rankings from the database for the current season
+ * Load previous rankings from the database for a specific season
  * Returns a map of team_id to rank_position
  * Returns empty object if no rankings exist (not an error condition)
+ * @param seasonId - Optional season ID. If not provided, uses the current active season.
  * @throws {DatabaseError} When database operations fail
  * @throws {NotFoundError} When no active season exists
  */
-export async function loadRankingsFromDatabase(): Promise<Record<string, number>> {
-  // Get current active season
-  const seasonId = await getCurrentSeasonId();
+export async function loadRankingsFromDatabase(seasonId?: string): Promise<Record<string, number>> {
+  // Use provided seasonId, or fall back to the current active season
+  const resolvedSeasonId = seasonId ?? await getCurrentSeasonId();
 
   // Fetch all ranking snapshots for this season
   const { data, error } = await supabase
     .from('ranking_snapshots')
     .select('team_id, rank_position')
-    .eq('season_id', seasonId);
+    .eq('season_id', resolvedSeasonId);
 
   if (error) {
     handleDatabaseError(error, 'Failed to load rankings from database');

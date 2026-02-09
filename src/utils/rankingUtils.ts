@@ -76,13 +76,13 @@ export const updateRankChanges = (rankings: Ranking[]): Ranking[] => {
   });
 };
 
-export const saveRankingsToStorage = async (rankings: Ranking[]): Promise<void> => {
+export const saveRankingsToStorage = async (rankings: Ranking[], seasonId?: string): Promise<void> => {
   // Import database service dynamically to avoid circular dependencies
   const { saveRankingsToDatabase } = await import('@/services/RankingSnapshotService');
 
   try {
-    // Save to database
-    const dbSuccess = await saveRankingsToDatabase(rankings);
+    // Save to database for the specified season (or active season if not provided)
+    const dbSuccess = await saveRankingsToDatabase(rankings, seasonId);
 
     // Keep localStorage as fallback for backwards compatibility
     if (!dbSuccess) {
@@ -105,7 +105,7 @@ export const saveRankingsToStorage = async (rankings: Ranking[]): Promise<void> 
   }
 };
 
-export const loadRankingsFromStorage = async (): Promise<{
+export const loadRankingsFromStorage = async (seasonId?: string): Promise<{
   rankings: Record<string, number>;
   lastUpdated: string | null;
 }> => {
@@ -115,8 +115,8 @@ export const loadRankingsFromStorage = async (): Promise<{
   );
 
   try {
-    // Try to load from database first
-    const dbRankings = await loadRankingsFromDatabase();
+    // Try to load from database first for the specified season (or active season)
+    const dbRankings = await loadRankingsFromDatabase(seasonId);
 
     // If database has rankings, use them
     if (Object.keys(dbRankings).length > 0) {
@@ -130,7 +130,7 @@ export const loadRankingsFromStorage = async (): Promise<{
       await migrateLocalStorageToDatabase();
 
       // Try loading from database again after migration
-      const migratedRankings = await loadRankingsFromDatabase();
+      const migratedRankings = await loadRankingsFromDatabase(seasonId);
       if (Object.keys(migratedRankings).length > 0) {
         return { rankings: migratedRankings, lastUpdated: new Date().toISOString() };
       }
