@@ -92,11 +92,32 @@ export const useMatchUpdate = ({
         description: `Match details have been successfully updated.`,
       });
 
-      // If match is newly completed, winner changed, or game wins changed on completed match
-      if ((isNowCompleted && !wasCompleted) || (isNowCompleted && (winnerChanged || gameWinsChanged))) {
+      const loserChanged = editingMatch.loserId !== matchData.loserId;
+
+      // Case 1: Match was completed and is now marked incomplete — reverse old stats
+      if (wasCompleted && !isNowCompleted && editingMatch.winnerId && editingMatch.loserId) {
+        const oldWinnerGameWins =
+          editingMatch.winnerId === editingMatch.team1Id
+            ? editingMatch.team1_game_wins || 0
+            : editingMatch.team2_game_wins || 0;
+        const oldLoserGameWins =
+          editingMatch.loserId === editingMatch.team1Id
+            ? editingMatch.team1_game_wins || 0
+            : editingMatch.team2_game_wins || 0;
+
+        await reverseTeamStats(
+          editingMatch.winnerId,
+          editingMatch.loserId,
+          oldWinnerGameWins,
+          oldLoserGameWins
+        );
+      }
+
+      // Case 2: Match is (still or newly) completed and stats need updating
+      if (isNowCompleted && (!wasCompleted || winnerChanged || loserChanged || gameWinsChanged)) {
         if (updatedMatch.winnerId && updatedMatch.loserId) {
-          // If winner changed OR game wins changed on already-completed match, reverse old stats first
-          if (wasCompleted && (winnerChanged || gameWinsChanged) && editingMatch.winnerId && editingMatch.loserId) {
+          // If it was already completed and something changed, reverse old stats first
+          if (wasCompleted && editingMatch.winnerId && editingMatch.loserId) {
             const oldWinnerGameWins =
               editingMatch.winnerId === editingMatch.team1Id
                 ? editingMatch.team1_game_wins || 0
