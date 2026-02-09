@@ -131,7 +131,7 @@ export const captureError = (error: Error, context?: Record<string, unknown>) =>
  * Capture a message and send to Sentry
  * Wrapped in try/catch to handle CORS failures gracefully
  */
-export const captureMessage = (message: string, level: Sentry.SeverityLevel = 'info') => {
+export const captureMessage = (message: string, level: Sentry.SeverityLevel = 'info', extra?: Record<string, unknown>) => {
   // Always log to console for debugging
   console.log(`[${level}]:`, message);
 
@@ -140,7 +140,10 @@ export const captureMessage = (message: string, level: Sentry.SeverityLevel = 'i
   }
 
   try {
-    Sentry.captureMessage(message, level);
+    Sentry.captureMessage(message, {
+      level,
+      extra,
+    });
   } catch (sentryError) {
     // Sentry failed (likely CORS or network issue) - message is already logged above
     console.warn('[Sentry] Failed to send message (CORS/network issue):', sentryError);

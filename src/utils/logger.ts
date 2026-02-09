@@ -26,13 +26,30 @@ export const errorLog = (...args: unknown[]) => {
       const errorArg = args.find((arg) => arg instanceof Error);
       const messageArg = args.find((arg) => typeof arg === 'string');
 
-      if (errorArg instanceof Error) {
-        captureError(errorArg, {
+      // Also check for Error objects nested inside plain objects
+      const nestedError = !errorArg
+        ? args.reduce<Error | undefined>((found, arg) => {
+            if (found) return found;
+            if (arg && typeof arg === 'object' && !Array.isArray(arg)) {
+              const nested = Object.values(arg as Record<string, unknown>).find(
+                (v) => v instanceof Error
+              );
+              if (nested instanceof Error) return nested;
+            }
+            return undefined;
+          }, undefined)
+        : undefined;
+
+      const resolvedError = errorArg instanceof Error ? errorArg : nestedError;
+
+      if (resolvedError) {
+        captureError(resolvedError, {
           message: messageArg,
-          additionalArgs: args.filter((a) => a !== errorArg && a !== messageArg),
+          additionalArgs: args.filter((a) => a !== resolvedError && a !== messageArg),
         });
       } else if (messageArg) {
-        captureMessage(String(messageArg), 'error');
+        const additionalArgs = args.filter((a) => a !== messageArg);
+        captureMessage(String(messageArg), 'error', additionalArgs.length > 0 ? { additionalArgs } : undefined);
       }
     } catch {
       // Sentry not available, silently fail
@@ -121,15 +138,13 @@ export const successLog = (operation: string, details?: string) =>
   log(`✅ ${operation}`, details || '');
 
 export const failureLog = (operation: string, error: string | Error) =>
-  errorLog(`❌ ${operation}:`, error instanceof Error ? error.message : error);
+  errorLog(`❌ ${operation}:`, error);
 
 // ============================================
 // Supabase-specific logging
 // ============================================
 
 export const supabaseErrorLog = (operation: string, error: unknown) => {
-  if (!isDev) return;
-
   if (error && typeof error === 'object' && 'message' in error) {
     const supabaseError = error as { message: string; code?: string; details?: string };
     errorLog(`Supabase ${operation} failed:`, {
