@@ -124,6 +124,16 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
             <div className="flex gap-2">
               <Button
                 variant="outline"
+                size="icon"
+                className="md:hidden"
+                onClick={() => setSeedingDialogOpen(true)}
+                disabled={bracket.state === 'completed'}
+                title="Update Seeding"
+              >
+                <ListOrdered className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
                 size="sm"
                 className="hidden md:flex"
                 onClick={() => setSeedingDialogOpen(true)}
@@ -134,6 +144,15 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
 
               <Button
                 variant="outline"
+                size="icon"
+                className="md:hidden"
+                onClick={onEditBracket}
+                title="Edit Bracket"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
                 size="sm"
                 className="hidden md:flex"
                 onClick={onEditBracket}
@@ -142,14 +161,25 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
               </Button>
 
               {onDeleteBracket && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="hidden md:flex"
-                  onClick={() => onDeleteBracket(bracketId, bracket.name || '')}
-                >
-                  <Trash className="h-4 w-4 mr-2" /> Delete
-                </Button>
+                <>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="md:hidden"
+                    onClick={() => onDeleteBracket(bracketId, bracket.name || '')}
+                    title="Delete Bracket"
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="hidden md:flex"
+                    onClick={() => onDeleteBracket(bracketId, bracket.name || '')}
+                  >
+                    <Trash className="h-4 w-4 mr-2" /> Delete
+                  </Button>
+                </>
               )}
             </div>
           )}

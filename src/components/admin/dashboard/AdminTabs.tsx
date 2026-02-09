@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 const AdminTabs = () => {
   return (
     <Tabs defaultValue="teams" className="space-y-4">
-      <TabsList className="flex flex-wrap md:flex-nowrap gap-2 h-auto md:h-10">
+      <TabsList className="flex flex-nowrap overflow-x-auto gap-2 h-auto md:h-10">
         <TabsTrigger value="teams">Team Management</TabsTrigger>
         <TabsTrigger value="pending-matches">Pending Matches</TabsTrigger>
         <TabsTrigger value="seasons">Season Management</TabsTrigger>

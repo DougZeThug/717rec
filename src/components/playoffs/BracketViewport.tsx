@@ -66,7 +66,8 @@ const BracketViewportComponent: React.FC<BracketViewportProps> = ({ children, cl
         const scaleY = (containerRect.height - padding) / contentRect.height;
 
         // Use the smaller scale to ensure content fits both dimensions
-        const fitScale = Math.min(scaleX, scaleY, 1); // Don't zoom in beyond 100%
+        const maxInitialScale = responsive.isMobile ? 1.5 : 1;
+        const fitScale = Math.min(scaleX, scaleY, maxInitialScale);
         const clampedScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, fitScale));
 
         // Center the content

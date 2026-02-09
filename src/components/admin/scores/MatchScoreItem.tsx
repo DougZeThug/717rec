@@ -127,7 +127,7 @@ const MatchScoreItem = ({
 
       <CollapsibleContent>
         <div className="p-4 border-t bg-secondary">
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             <div>
               <p className="text-sm font-medium mb-1">
                 {teams[match.team1Id]?.name || 'Team 1'} Game Wins

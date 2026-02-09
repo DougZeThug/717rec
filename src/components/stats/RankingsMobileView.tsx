@@ -261,7 +261,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
         variant="default"
         size="sm"
         className={cn(
-          'fixed bottom-24 right-4 z-50 rounded-full shadow-lg',
+          'fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px)+1rem)] right-4 z-50 rounded-full shadow-lg',
           isWinterTheme
             ? 'bg-frost-primary hover:bg-frost-primary/90 text-white'
             : 'bg-primary hover:bg-primary/90'
