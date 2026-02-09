@@ -170,10 +170,9 @@ export function getUIErrorMessage(error: unknown, context?: string): string {
 export function logError(error: unknown, context: string, additionalData?: any): void {
   const processed = processError(error);
 
-  errorLog(`${context}:`, {
-    message: processed.message,
-    originalError: processed.originalError,
-    context,
-    additionalData,
-  });
+  if (processed.originalError) {
+    errorLog(`${context}:`, processed.originalError, additionalData);
+  } else {
+    errorLog(`${context}:`, processed.message, additionalData);
+  }
 }
