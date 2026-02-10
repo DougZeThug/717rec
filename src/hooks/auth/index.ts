@@ -146,6 +146,12 @@ export const useAuth = () => {
     });
 
     const initializeAuth = async () => {
+      // Skip if effect has been cleaned up
+      if (isCancelled) {
+        authLog('initializeAuth: skipping because effect was cleaned up');
+        return;
+      }
+
       setIsLoading(true);
 
       try {
@@ -155,9 +161,19 @@ export const useAuth = () => {
           error: sessionError,
         } = await supabase.auth.getSession();
 
+        // Skip if cleaned up or user changed during getSession
+        if (isCancelled) {
+          authLog('initializeAuth: skipping after getSession because effect was cleaned up');
+          return;
+        }
+
         if (sessionError) throw sessionError;
 
         authLog('Session check result:', currentSession ? 'Session found' : 'No session');
+
+        // Update tracked user ID
+        const fetchUserId = currentSession?.user?.id ?? null;
+        currentUserId = fetchUserId;
 
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
@@ -168,28 +184,53 @@ export const useAuth = () => {
           setIsProfileLoading(true);
           try {
             const profileData = await fetchProfile(currentSession.user.id);
-            setProfile(profileData);
-            checkProfileSetup(profileData);
+
+            // Only set profile if we're still fetching for the same user and not cancelled
+            if (!isCancelled && currentUserId === fetchUserId) {
+              authLog('initializeAuth: setting profile for user:', fetchUserId);
+              setProfile(profileData);
+              checkProfileSetup(profileData);
+            } else {
+              authLog('initializeAuth: discarding stale profile data for user:', fetchUserId);
+            }
           } catch (profileError) {
-            errorLog('Error fetching initial profile:', profileError);
+            // Only log error if this fetch is still relevant
+            if (!isCancelled && currentUserId === fetchUserId) {
+              errorLog('Error fetching initial profile:', profileError);
+            }
           } finally {
-            setIsProfileLoading(false);
+            // Only update loading state if this fetch is still relevant
+            if (!isCancelled && currentUserId === fetchUserId) {
+              setIsProfileLoading(false);
+            }
           }
         }
 
-        setAuthInitialized(true);
-        setIsLoading(false);
+        // Only update state if not cancelled
+        if (!isCancelled) {
+          setAuthInitialized(true);
+          setIsLoading(false);
+        }
       } catch (error) {
         errorLog('Error checking session:', error);
 
-        if (retryCount < maxRetries) {
+        if (retryCount < maxRetries && !isCancelled) {
           retryCount++;
           authLog(`Retrying session check in 1s (attempt ${retryCount + 1}/${maxRetries + 1})`);
-          setTimeout(initializeAuth, 1000);
+          setTimeout(() => {
+            // Check cancellation before retrying
+            if (!isCancelled) {
+              initializeAuth();
+            } else {
+              authLog('initializeAuth: skipping retry because effect was cleaned up');
+            }
+          }, 1000);
         } else {
           authLog('Max retries reached, marking auth as initialized');
-          setAuthInitialized(true);
-          setIsLoading(false);
+          if (!isCancelled) {
+            setAuthInitialized(true);
+            setIsLoading(false);
+          }
         }
       }
     };
