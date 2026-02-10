@@ -1,7 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useToast } from '@/hooks/useToast';
-import { useTeamRecords } from '@/hooks/useTeamRecords';
 import { supabase } from '@/integrations/supabase/client';
 import { dbLog, errorLog, scoreLog, warnLog } from '@/utils/logger';
 
@@ -9,7 +8,6 @@ import { MatchWithTeams } from '../types';
 
 export const useMatchUpdates = () => {
   const { toast } = useToast();
-  const { updateTeamRecords } = useTeamRecords();
   const queryClient = useQueryClient();
 
   const updateMatchInDatabase = async (match: MatchWithTeams) => {
@@ -89,27 +87,9 @@ export const useMatchUpdates = () => {
 
       scoreLog(`Match ${match.id} updated successfully`, data);
 
-      // Update team records if match is completed and we have winner/loser
-      if (match.iscompleted && winnerId && loserId && match.team1 && match.team2) {
-        scoreLog(`Updating team records for winner ${winnerId} and loser ${loserId}`);
-        const teams = [match.team1, match.team2];
-
-        // Get the actual game wins for winner and loser
-        const winnerGameWins = winnerId === match.team1Id ? team1GameWins : team2GameWins;
-        const loserGameWins = loserId === match.team1Id ? team1GameWins : team2GameWins;
-
-        scoreLog('Team objects being passed', teams);
-        scoreLog(`Game wins - Winner: ${winnerGameWins}, Loser: ${loserGameWins}`);
-
-        const updateResult = await updateTeamRecords(
-          winnerId,
-          loserId,
-          teams,
-          winnerGameWins,
-          loserGameWins
-        );
-        scoreLog(`Team record update result: ${updateResult ? 'success' : 'failure'}`);
-      }
+      // Team stats (wins, losses, game_wins, etc.) are calculated dynamically
+      // by the v_team_details database view from completed matches.
+      // No need to manually increment the teams table columns here.
 
       // Refresh team_season_stats to keep historical data in sync
       const { error: seasonStatsError } = await supabase.rpc('upsert_team_season_stats');
