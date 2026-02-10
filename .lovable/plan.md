@@ -1,43 +1,33 @@
 
 
-## Fix: Build Error + Badge Spam on Message Board
+## Fix: Graceful Supabase Client Initialization
 
-Three issues to resolve:
+### Problem
+The Supabase client crashes at module evaluation time when environment variables are missing, causing a blank screen before React can even mount an Error Boundary.
 
-### 1. Build Error in setupTests.ts
-The `@types/node` 25.2.0 update added a `scrollMargin` property to the `IntersectionObserver` interface. The mock is missing it.
+### Solution
+Validate environment variables before calling `createClient` and fall back to placeholder values so the module loads without crashing. Log a clear error to the console. The app will still fail on actual API calls, but React will be mounted and the Error Boundary can handle it gracefully.
 
-**Fix**: Add `scrollMargin: string = '0px';` to the mock class (after line 35).
+### Technical Changes
 
-### 2. Remove Badge Failure Spam from Message Board
-The `FailedBadgeOperationsService.notifyAdminOfFailure` method posts badge errors into the public `messages` table. These show up as ugly `[object Object]` errors on the message board. Badge failures are already tracked in localStorage and surfaced in the admin panel -- the message board notification is redundant and disruptive.
+**File**: `src/integrations/supabase/client.ts`
 
-**Fix in `src/services/FailedBadgeOperationsService.ts`**:
-- Remove the `notifyAdminOfFailure` method entirely
-- Remove the call to it in `queueFailedOperation` (around line 87)
-- Remove the `supabase` import (no longer needed)
-- Remove the `badgeLog` import if no longer used
-
-### 3. Clean Up Existing Spam Messages
-Delete the existing `admin_notification` messages from the database.
-
-**SQL**: `DELETE FROM messages WHERE category = 'admin_notification';`
-
-### 4. Defensive Filter on Message Board Query
-As a safety net, update `src/hooks/message-board/useMessageApi.ts` to exclude `admin_notification` messages by default (when no category filter is selected). Add after the existing category filter block:
+Replace the current direct initialization with validated initialization:
 
 ```typescript
-if (!category) {
-  query = query.neq('category', 'admin_notification');
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+  console.error(
+    'Missing Supabase configuration. Please check VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY environment variables.'
+  );
 }
+
+export const supabase = createClient<Database>(
+  SUPABASE_URL || 'https://placeholder.supabase.co',
+  SUPABASE_PUBLISHABLE_KEY || 'placeholder-key'
+);
 ```
 
----
-
-| File | Change |
-|------|--------|
-| `src/setupTests.ts` | Add `scrollMargin` property to mock |
-| `src/services/FailedBadgeOperationsService.ts` | Remove `notifyAdminOfFailure` and related imports |
-| `src/hooks/message-board/useMessageApi.ts` | Exclude `admin_notification` from default queries |
-| Database | Delete existing spam messages |
-
+This is a single-file, ~3-line change. No other files need modification.
