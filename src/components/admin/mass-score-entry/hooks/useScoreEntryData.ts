@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
 import { useMatchSubmission } from '@/hooks/matches/useMatchSubmission';
+import { reverseTeamStats } from '@/hooks/matches/updates/utils/statReversalUtils';
 import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
 import { useToast } from '@/hooks/useToast';
 import { errorLog, filterLog, scoreLog } from '@/utils/logger';
@@ -18,7 +19,7 @@ export const useScoreEntryData = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { matches, setMatches, loading, setLoading, submitting, setSubmitting } = useMatchesState();
+  const { matches, setMatches, originalMatches, loading, setLoading, submitting, setSubmitting } = useMatchesState();
 
   const { handleSubmitScore } = useMatchSubmission();
 
@@ -88,6 +89,37 @@ export const useScoreEntryData = () => {
     );
 
     try {
+      // For each match, reverse old stats if it was already completed before applying new stats
+      for (const match of validMatches) {
+        const original = originalMatches.get(match.id);
+
+        // If the match was previously completed with a winner, reverse the old stats first
+        if (original?.iscompleted && original.winnerId && original.loserId) {
+          const oldWinnerGameWins =
+            original.winnerId === original.team1Id
+              ? original.team1_game_wins || 0
+              : original.team2_game_wins || 0;
+          const oldLoserGameWins =
+            original.loserId === original.team1Id
+              ? original.team1_game_wins || 0
+              : original.team2_game_wins || 0;
+
+          scoreLog(`Reversing old stats for already-completed match ${match.id}`, {
+            oldWinner: original.winnerId,
+            oldLoser: original.loserId,
+            oldWinnerGameWins,
+            oldLoserGameWins,
+          });
+
+          await reverseTeamStats(
+            original.winnerId,
+            original.loserId,
+            oldWinnerGameWins,
+            oldLoserGameWins
+          );
+        }
+      }
+
       // Submit all matches in parallel and track results
       const results = await Promise.allSettled(
         validMatches.map((match) =>

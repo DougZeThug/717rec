@@ -5,8 +5,24 @@ import { validateMatchScores } from '../../utils/matchValidation';
 
 export const useMatchesState = () => {
   const [matches, setMatches] = useState<MatchWithTeams[]>([]);
+  // Stores the original fetched state of matches so we can detect
+  // if a match was already completed and reverse old stats before applying new ones
+  const [originalMatches, setOriginalMatches] = useState<Map<string, MatchWithTeams>>(new Map());
   const [loading, setLoading] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
+
+  // Wrapper that also captures the original state snapshot
+  const setMatchesWithSnapshot = (matchesOrUpdater: MatchWithTeams[] | ((prev: MatchWithTeams[]) => MatchWithTeams[])) => {
+    if (typeof matchesOrUpdater === 'function') {
+      setMatches(matchesOrUpdater);
+    } else {
+      // When setting fresh fetched data, also snapshot the originals
+      const snapshot = new Map<string, MatchWithTeams>();
+      matchesOrUpdater.forEach((m) => snapshot.set(m.id, { ...m }));
+      setOriginalMatches(snapshot);
+      setMatches(matchesOrUpdater);
+    }
+  };
 
   // This is for the original style (team1/team2 toggle)
   const handleScoreChange = (index: number, team: 'team1' | 'team2', value: string) => {
@@ -34,7 +50,8 @@ export const useMatchesState = () => {
 
   return {
     matches,
-    setMatches,
+    setMatches: setMatchesWithSnapshot,
+    originalMatches,
     loading,
     setLoading,
     submitting,
