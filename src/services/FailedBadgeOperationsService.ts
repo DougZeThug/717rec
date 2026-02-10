@@ -85,11 +85,6 @@ export class FailedBadgeOperationsService {
     this.saveFailedOperations(operations);
 
     warnLog('Badge operation queued for retry:', { type, matchId, error: newOperation.error });
-
-    // Attempt to notify admin via database (non-blocking)
-    this.notifyAdminOfFailure(newOperation).catch(() => {
-      // Silent fail - notification is best-effort
-    });
   }
 
   /**
@@ -122,30 +117,6 @@ export class FailedBadgeOperationsService {
     return this.getFailedOperationCount() > 0;
   }
 
-  /**
-   * Notify admins about badge processing failures
-   * Inserts a record into a notifications table if available
-   */
-  private static async notifyAdminOfFailure(operation: FailedBadgeOperation): Promise<void> {
-    try {
-      // Try to insert into admin notifications / messages
-      // Using the messages table as a fallback admin notification channel
-      const { error } = await supabase.from('messages').insert({
-        username: 'System',
-        content: `⚠️ Badge processing failed for match ${operation.matchId}. Type: ${operation.type}. Error: ${operation.error}`,
-        category: 'admin_notification',
-      });
-
-      if (error) {
-        // Silent fail - this is a best-effort notification
-        warnLog('Could not send admin notification:', error.message);
-      } else {
-        badgeLog('Admin notified of badge failure');
-      }
-    } catch (e) {
-      // Silent fail
-    }
-  }
 
   /**
    * Retry all failed operations

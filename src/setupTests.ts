@@ -33,6 +33,7 @@ globalThis.IntersectionObserver =
     root: Element | null = null;
     rootMargin: string = '0px';
     thresholds: ReadonlyArray<number> = [];
+    scrollMargin: string = '0px';
 
     constructor() {}
     observe() {

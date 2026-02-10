@@ -52,6 +52,8 @@ export const useMessageApi = () => {
 
       if (category) {
         query = query.eq('category', category);
+      } else {
+        query = query.neq('category', 'admin_notification');
       }
 
       if (teamId) {
