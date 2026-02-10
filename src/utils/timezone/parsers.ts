@@ -13,25 +13,21 @@ export const parseTimeString = (timeString: string): { hours: number; minutes: n
   }
 
   try {
-    if (timeString.includes('PM') || timeString.includes('AM')) {
-      // 12-hour format like "6:30 PM"
-      const [time, period] = timeString.split(' ');
-      const [hourStr, minuteStr] = time.split(':');
+    const normalized = timeString.trim().toUpperCase();
+    const match = normalized.match(/(\d+):(\d+)\s?(AM|PM)?/);
 
-      hours = parseInt(hourStr);
-      minutes = parseInt(minuteStr);
+    if (!match) {
+      return { hours, minutes };
+    }
 
-      // Convert to 24-hour format
-      if (period === 'PM' && hours < 12) {
-        hours += 12;
-      } else if (period === 'AM' && hours === 12) {
-        hours = 0;
-      }
-    } else {
-      // Already in 24-hour format like "18:30"
-      const [hourStr, minuteStr] = timeString.split(':');
-      hours = parseInt(hourStr);
-      minutes = parseInt(minuteStr);
+    hours = parseInt(match[1], 10);
+    minutes = parseInt(match[2], 10);
+    const period = match[3];
+
+    if (period === 'PM' && hours < 12) {
+      hours += 12;
+    } else if (period === 'AM' && hours === 12) {
+      hours = 0;
     }
 
     return { hours, minutes };
