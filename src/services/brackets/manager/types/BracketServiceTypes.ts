@@ -60,6 +60,7 @@ export interface StorageParticipant {
   tournament_id: string;
   name: string | null;
   team_id?: string;
+  position?: number;
 }
 
 /** Match update payload for brackets-manager */

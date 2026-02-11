@@ -75,10 +75,12 @@ export class BracketCreationService {
       // Step 4: Prepare participant inserts (including BYEs)
       bracketLog('📝 Step 4/5: Preparing participant inserts...');
       const participantInserts = seeding.map((name, index) => {
+        const team = name ? teamsBySeed.find((t) => t.name === name) : null;
         return {
           tournament_id: bracketId,
           name: name, // null for BYEs
           position: index + 1, // Use bracket position (1-based), not team seed
+          team_id: team?.id ?? null, // null for BYEs
         };
       });
       bracketLog('✅ Participant inserts prepared:', {
