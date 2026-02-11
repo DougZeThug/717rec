@@ -1,33 +1,33 @@
 
 
-## Fix: Graceful Supabase Client Initialization
+## Add `team_id` Column to `participant` Table
 
-### Problem
-The Supabase client crashes at module evaluation time when environment variables are missing, causing a blank screen before React can even mount an Error Boundary.
+### What and Why
 
-### Solution
-Validate environment variables before calling `createClient` and fall back to placeholder values so the module loads without crashing. Log a clear error to the console. The app will still fail on actual API calls, but React will be mounted and the Error Boundary can handle it gracefully.
+The bracket creation code already writes `team_id` when inserting participants, and the standings service already reads it to map placements back to teams. But the column doesn't exist in the database yet, so inserts silently drop it and standings lookups always get `undefined`. This single migration closes the gap.
 
-### Technical Changes
+### Database Migration
 
-**File**: `src/integrations/supabase/client.ts`
+Run a SQL migration that:
 
-Replace the current direct initialization with validated initialization:
+1. Adds a nullable `team_id` UUID column to the `participant` table with a foreign key reference to `teams(id)`
+2. Creates an index on `participant.team_id` for lookup performance
 
-```typescript
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+```sql
+ALTER TABLE participant
+  ADD COLUMN IF NOT EXISTS team_id UUID REFERENCES teams(id);
 
-if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-  console.error(
-    'Missing Supabase configuration. Please check VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY environment variables.'
-  );
-}
-
-export const supabase = createClient<Database>(
-  SUPABASE_URL || 'https://placeholder.supabase.co',
-  SUPABASE_PUBLISHABLE_KEY || 'placeholder-key'
-);
+CREATE INDEX IF NOT EXISTS idx_participant_team_id ON participant(team_id);
 ```
 
-This is a single-file, ~3-line change. No other files need modification.
+### No Code Changes Needed
+
+The application code is already prepared from your pull request:
+- **BracketCreationService.ts** already sends `team_id` in the participant insert
+- **BracketStandingsService.ts** already reads `participant.team_id` to build standings
+- **StorageParticipant type** already has `team_id?: string`
+
+### Verification
+
+After the migration, confirm the column exists by querying `information_schema.columns` for `participant.team_id`.
+
