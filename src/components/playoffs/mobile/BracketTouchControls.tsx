@@ -146,7 +146,7 @@ export const BracketTouchControls: React.FC<BracketTouchControlsProps> = ({
           size="sm"
           onClick={handleZoomIn}
           disabled={touchState.scale >= 3}
-          className="h-10 w-10 p-0"
+          className="h-10 w-10 min-h-[44px] min-w-[44px] p-0"
         >
           <ZoomIn className="h-5 w-5" />
         </Button>
@@ -155,11 +155,16 @@ export const BracketTouchControls: React.FC<BracketTouchControlsProps> = ({
           size="sm"
           onClick={handleZoomOut}
           disabled={touchState.scale <= 0.5}
-          className="h-10 w-10 p-0"
+          className="h-10 w-10 min-h-[44px] min-w-[44px] p-0"
         >
           <ZoomOut className="h-5 w-5" />
         </Button>
-        <Button variant="secondary" size="sm" onClick={handleReset} className="h-10 w-10 p-0">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={handleReset}
+          className="h-10 w-10 min-h-[44px] min-w-[44px] p-0"
+        >
           <RotateCcw className="h-5 w-5" />
         </Button>
       </div>
