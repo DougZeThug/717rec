@@ -27,21 +27,9 @@ const RankingsTable: React.FC<RankingsTableProps> = ({
   const isMobile = useIsMobile();
   const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [sortOptions, setSortOptions] = useState<SortOptions>(() => {
-    const savedSort = localStorage.getItem('rankingsSortOptions');
-    if (savedSort) {
-      try {
-        const parsed = JSON.parse(savedSort);
-        const direction: SortDirection = parsed.direction === 'asc' ? 'asc' : 'desc';
-        return {
-          field: parsed.field || 'powerScore',
-          direction,
-        };
-      } catch {
-        // Silently use defaults if parsing fails
-      }
-    }
-    return { field: 'powerScore', direction: 'desc' };
+  const [sortOptions, setSortOptions] = useState<SortOptions>({
+    field: 'powerScore',
+    direction: 'desc',
   });
 
   const toggleExpand = (teamId: string) => {
