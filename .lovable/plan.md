@@ -1,33 +1,25 @@
 
 
-## Add `team_id` Column to `participant` Table
+## Always Default Rankings Sort to Power Score
 
-### What and Why
+### Problem
+The `RankingsTable` component reads a saved sort preference from `localStorage` on mount, so if a user previously sorted by another column (e.g., wins, team name), that sort persists on their next visit instead of always showing power score first.
 
-The bracket creation code already writes `team_id` when inserting participants, and the standings service already reads it to map placements back to teams. But the column doesn't exist in the database yet, so inserts silently drop it and standings lookups always get `undefined`. This single migration closes the gap.
+### Change
+In `src/components/stats/RankingsTable.tsx`, simplify the `sortOptions` initial state to always use `{ field: 'powerScore', direction: 'desc' }` -- remove the `localStorage` read in the initializer. Keep the `localStorage` write in `handleSortChange` so within-session sorting still works, but it will never override the default on page load.
 
-### Database Migration
+### Technical Detail
 
-Run a SQL migration that:
+**File: `src/components/stats/RankingsTable.tsx`** (lines ~33-47)
 
-1. Adds a nullable `team_id` UUID column to the `participant` table with a foreign key reference to `teams(id)`
-2. Creates an index on `participant.team_id` for lookup performance
+Replace the current `useState` initializer that reads from `localStorage`:
 
-```sql
-ALTER TABLE participant
-  ADD COLUMN IF NOT EXISTS team_id UUID REFERENCES teams(id);
-
-CREATE INDEX IF NOT EXISTS idx_participant_team_id ON participant(team_id);
+```ts
+const [sortOptions, setSortOptions] = useState<SortOptions>({
+  field: 'powerScore',
+  direction: 'desc',
+});
 ```
 
-### No Code Changes Needed
-
-The application code is already prepared from your pull request:
-- **BracketCreationService.ts** already sends `team_id` in the participant insert
-- **BracketStandingsService.ts** already reads `participant.team_id` to build standings
-- **StorageParticipant type** already has `team_id?: string`
-
-### Verification
-
-After the migration, confirm the column exists by querying `information_schema.columns` for `participant.team_id`.
+The `handleSortChange` function can optionally stop writing to `localStorage` as well (since it's no longer read), but removing the read is the only required change.
 
