@@ -1,25 +1,18 @@
 
-
-## Always Default Rankings Sort to Power Score
+## Fix Bottom Nav Being Clipped on Mobile Scroll
 
 ### Problem
-The `RankingsTable` component reads a saved sort preference from `localStorage` on mount, so if a user previously sorted by another column (e.g., wins, team name), that sort persists on their next visit instead of always showing power score first.
+On Android Chrome, when swiping down, the browser's system navigation bar overlaps the bottom navbar, clipping the labels ("Standings", "Schedule", "Teams"). The current `env(safe-area-inset-bottom)` padding only handles iOS safe areas, not Android's dynamic browser chrome.
 
-### Change
-In `src/components/stats/RankingsTable.tsx`, simplify the `sortOptions` initial state to always use `{ field: 'powerScore', direction: 'desc' }` -- remove the `localStorage` read in the initializer. Keep the `localStorage` write in `handleSortChange` so within-session sorting still works, but it will never override the default on page load.
+### Solution
+Two small changes in `src/components/navigation/BottomNav.tsx`:
+
+1. Add extra bottom padding to the nav container so labels aren't clipped by the system bar -- increase `pb-[env(safe-area-inset-bottom,0px)]` to include a minimum fallback (e.g., `pb-[max(env(safe-area-inset-bottom,0px),12px)]` or a simple additional `pb-3`)
+2. Ensure the inner container height accommodates the labels fully by keeping `h-16` but adding a small bottom margin/padding
 
 ### Technical Detail
 
-**File: `src/components/stats/RankingsTable.tsx`** (lines ~33-47)
+**File: `src/components/navigation/BottomNav.tsx`**
 
-Replace the current `useState` initializer that reads from `localStorage`:
-
-```ts
-const [sortOptions, setSortOptions] = useState<SortOptions>({
-  field: 'powerScore',
-  direction: 'desc',
-});
-```
-
-The `handleSortChange` function can optionally stop writing to `localStorage` as well (since it's no longer read), but removing the read is the only required change.
-
+- Change the nav's padding from `pb-[env(safe-area-inset-bottom,0px)]` to `pb-[calc(env(safe-area-inset-bottom,0px)+12px)]` -- this adds 12px of breathing room below the nav items on all devices, while still respecting iOS safe areas additively
+- This ensures the text labels are never clipped by the Android system navigation bar
