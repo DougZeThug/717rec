@@ -44,7 +44,7 @@ export const BottomNav = React.memo(() => {
     <nav
       className={cn(
         'fixed bottom-0 left-0 right-0 z-40',
-        'pb-[env(safe-area-inset-bottom,0px)]',
+        'pb-[calc(env(safe-area-inset-bottom,0px)+12px)]',
         // Default theme
         !isWinterTheme && [
           'bg-background/80 backdrop-blur-lg',
