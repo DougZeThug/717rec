@@ -10,6 +10,7 @@ export const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdva
   const [
     seasonStatsResult,
     allTeamSeasonStatsResult,
+    currentMatchesResult,
     archivedMatchesResult,
     playoffMatchesResult
   ] = await Promise.all([
@@ -40,7 +41,24 @@ export const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdva
       .from('team_season_stats')
       .select('team_id, season_id, division_name'),
 
-    // Query 3: Get archived matches for sweep and close match calculations
+    // Query 3: Get current season matches for sweep and close match calculations
+    supabase
+      .from('matches')
+      .select(
+        `
+        winner_id,
+        loser_id,
+        team1_game_wins,
+        team2_game_wins,
+        team1_id,
+        team2_id,
+        season_id
+      `
+      )
+      .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
+      .eq('iscompleted', true),
+
+    // Query 4: Get archived matches for sweep and close match calculations
     supabase
       .from('matches_archive')
       .select(
@@ -57,7 +75,7 @@ export const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdva
       .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
       .eq('iscompleted', true),
 
-    // Query 4: Get playoff matches with bracket info
+    // Query 5: Get playoff matches with bracket info
     supabase
       .from('playoff_matches')
       .select(
@@ -84,8 +102,15 @@ export const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdva
   // Extract data from results
   const seasonStats = seasonStatsResult.data;
   const allTeamSeasonStats = allTeamSeasonStatsResult.data;
+  const currentMatches = currentMatchesResult.data;
   const archivedMatches = archivedMatchesResult.data;
   const playoffMatchesRaw = playoffMatchesResult.data;
+
+  // Combine current and archived matches into a single array
+  const allMatches = [
+    ...(Array.isArray(currentMatches) ? currentMatches : []),
+    ...(Array.isArray(archivedMatches) ? archivedMatches : []),
+  ];
 
   // Early return if no season stats
   if (!seasonStats || seasonStats.length === 0) {
@@ -140,16 +165,14 @@ export const fetchTeamSeasonBreakdown = async (teamId: string): Promise<TeamAdva
   }));
 
   // Group matches by season
-  const matchesBySeason = new Map<string, typeof archivedMatches>();
+  const matchesBySeason = new Map<string, typeof allMatches>();
   const playoffMatchesBySeason = new Map<string, typeof playoffMatches>();
 
-  if (archivedMatches) {
-    for (const match of archivedMatches) {
-      if (!match.season_id) continue;
-      const existing = matchesBySeason.get(match.season_id) || [];
-      existing.push(match);
-      matchesBySeason.set(match.season_id, existing);
-    }
+  for (const match of allMatches) {
+    if (!match.season_id) continue;
+    const existing = matchesBySeason.get(match.season_id) || [];
+    existing.push(match);
+    matchesBySeason.set(match.season_id, existing);
   }
 
   if (playoffMatches) {
