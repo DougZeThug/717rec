@@ -8,11 +8,20 @@ import { Button } from '@/components/ui/button';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
 import { Input } from '@/components/ui/input';
 import { LoadingState } from '@/components/ui/loading-state';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useHeadToHead } from '@/hooks/useHeadToHead';
+import { useIsMobile } from '@/hooks/useMobile';
 import { cn } from '@/lib/utils';
 import { exportHeadToHeadToCSV } from '@/utils/exportUtils';
 import { getRivalryType, type RivalryType } from '@/utils/teamDetailsUtils/rivalryUtils';
 
+import H2HMobileCard from './H2HMobileCard';
 import { OpponentHistoryModal } from './OpponentHistoryModal';
 
 interface HeadToHeadRecordsProps {
@@ -25,6 +34,7 @@ type SortDirection = 'asc' | 'desc';
 
 const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName = 'Team' }) => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const { data: records, isLoading, error } = useHeadToHead(teamId);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<SortField>('wins');
@@ -123,8 +133,13 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
       );
     }
 
+    const handleCardClick = (opponentId: string, opponentName: string) => {
+      setSelectedOpponent({ id: opponentId, name: opponentName });
+    };
+
     return (
       <>
+        {/* Search + controls bar */}
         <div className="flex items-center space-x-2 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -135,6 +150,27 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
               className="pl-8"
             />
           </div>
+          {/* Mobile: sort dropdown */}
+          {isMobile && (
+            <Select
+              value={`${sortField}-${sortDirection}`}
+              onValueChange={(val) => {
+                const [field, dir] = val.split('-') as [SortField, SortDirection];
+                setSortField(field);
+                setSortDirection(dir);
+              }}
+            >
+              <SelectTrigger className="w-[130px] flex-shrink-0">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="wins-desc">Most Wins</SelectItem>
+                <SelectItem value="win_pct-desc">Best Win%</SelectItem>
+                <SelectItem value="matches_played-desc">Most Matches</SelectItem>
+                <SelectItem value="opponent_name-asc">Name A-Z</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -142,14 +178,28 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
             className="flex-shrink-0"
           >
             <Download className="h-4 w-4 mr-1" />
-            Export CSV
+            <span className="hidden sm:inline">Export CSV</span>
+            <span className="sm:hidden">CSV</span>
           </Button>
         </div>
+
         {filteredRecords.length === 0 ? (
           <div className="text-center py-4 text-muted-foreground">
             No opponents found matching "{searchTerm}"
           </div>
+        ) : isMobile ? (
+          /* Mobile: Card list */
+          <div className="space-y-2">
+            {filteredRecords.map((record) => (
+              <H2HMobileCard
+                key={record.opponent_name}
+                record={record}
+                onCardClick={handleCardClick}
+              />
+            ))}
+          </div>
         ) : (
+          /* Desktop: Table (unchanged) */
           <div className="relative">
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -267,8 +317,6 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
                 </tbody>
               </table>
             </div>
-            {/* Right edge gradient hint for horizontal scroll - visible on mobile */}
-            <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-card to-transparent pointer-events-none md:hidden" />
           </div>
         )}
       </>
