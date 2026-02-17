@@ -1,41 +1,48 @@
 
 
-## Update Rivalry Thresholds and Highlight Sorting
+## Rework Clutch Stats: Wins + Win % in 2-1 Matches
 
 ### What Changes
 
-**Badges (H2H table + schedule cards):** Nemesis and Dominated use percentage-based thresholds with 3-match minimum:
-- **Nemesis**: win_pct <= 25%, 3+ matches
-- **Dominated**: win_pct >= 75%, 3+ matches
+**Current behavior**: "Clutch Record" shows W-L (e.g., "3W - 2L") in Game 3 matches on the current season StatBreakdown. No clutch stat exists in Career Statistics.
 
-**Rivalry Highlights cards:** The top dominated/nemesis are chosen by highest/lowest win percentage (not just unbeaten/winless).
+**New behavior**: 
+- StatBreakdown shows **clutch wins count** and **clutch win percentage** (wins out of all 2-1 matches the team played in)
+- Career Statistics (TeamTotals) gets a new **Career Clutch Win %** stat
 
-### Technical Details
+### Files to Change
 
-**1. `src/utils/teamDetailsUtils/rivalryUtils.ts`**
+**1. `src/utils/teamDetailsUtils/matchOutcomeUtils.ts`**
+- Rename/update `ClutchRecord` interface: keep `clutchWins`, `clutchLosses`, add `clutchWinPct: number` (calculated as `clutchWins / game3Matches * 100`, or 0 if no game-3 matches)
+- The existing calculation logic stays the same -- it already correctly identifies 2-1 matches
 
-`classifyRivalries()`:
-- `dominantMatchups` filter: `matches >= 3 && win_pct >= 75` — sort by `win_pct desc`, then `matches_played desc`
-- `nemeses` filter: `matches >= 3 && win_pct <= 25` — sort by `win_pct asc`, then `matches_played desc`
-- Update JSDoc comments on `RivalryResults` interface
+**2. `src/components/teams/StatBreakdown.tsx`**
+- Change props: replace `clutchWins` and `clutchLosses` with `clutchWins: number` and `clutchWinPct: number`
+- Update the "Clutch Record" StatBlock display:
+  - Main value: show win percentage (e.g., "60.0%")
+  - Sub-label: show "X wins in Y game-3s" instead of "in Game 3s"
 
-`getRivalryType()` (drives badge display):
-- Nemesis: `matches_played >= 3 && win_pct <= 25`
-- Dominated: `matches_played >= 3 && win_pct >= 75`
-- Rival: unchanged
+**3. `src/pages/TeamDetails.tsx`**
+- Update the props passed to StatBreakdown: pass `clutchWins` and `clutchWinPct` (calculated from the existing `clutchRecord` object)
 
-`getRivalryLabel()`:
-- Nemesis and Dominated now show actual W-L (e.g. "1-5 all-time") instead of hardcoded "0-X" or "X-0"
+**4. `src/utils/career/types.ts`**
+- Add to `TeamTotals`: `career_clutch_wins: number`, `career_clutch_game3s: number`, `career_clutch_win_pct: number`
 
-**2. `src/components/schedule/MatchHeadToHead.tsx`**
+**5. `src/utils/career/calculateClutchRate.ts`** (new file)
+- Create a `calculateCareerClutchRate` function similar to `calculateSweepRate`
+- Counts 2-1 wins and total game-3 matches (where total games = 3) across regular + playoff matches
+- Returns `{ career_clutch_wins, career_clutch_game3s, career_clutch_win_pct }`
 
-Update inline `getRivalryTag()`:
-- Nemesis: either team's win rate <= 25% with 3+ matches (replace the `=== 0` checks)
-- Add green "Dominated" tag when either team's win rate >= 75% with 3+ matches
+**6. `src/utils/career/index.ts`**
+- Export the new `calculateCareerClutchRate`
 
-**3. `src/components/teams/RivalryHighlights.tsx`**
+**7. `src/hooks/career/useTeamTotalsComputed.ts`**
+- Call `calculateCareerClutchRate` with the same match data used for sweep rate
+- Spread results into the returned `TeamTotals`
 
-- Update sublabels to use `${wins}-${losses}` instead of hardcoded `${wins}-0` / `0-${losses}`, since top picks may no longer be unbeaten/winless
-
-No other files need changes — `HeadToHeadRecords.tsx` already consumes `getRivalryType()` and will automatically reflect the new thresholds.
+**8. `src/components/teams/TeamTotals.tsx`**
+- Add a "Career Clutch Win %" stat block (Swords icon, purple) showing:
+  - Main value: clutch win percentage
+  - Sub-label: "X wins / Y game-3s"
+- Place it after Career Sweep Rate for logical grouping
 
