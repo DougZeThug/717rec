@@ -1,7 +1,7 @@
 import {
   Award,
   BarChart3,
-  CalendarCheck,
+  
   ChevronDown,
   ChevronRight,
   Minus,
@@ -457,28 +457,6 @@ const TeamAdvancedStatsSection: React.FC<TeamAdvancedStatsSectionProps> = ({ tea
                         <span className="text-xs opacity-70">({s.divisionName})</span>
                       </div>
                     ))}
-                </div>
-              </div>
-            )}
-
-            {/* Playoff Consistency */}
-            {advancedStats.seasons.length > 1 && (
-              <div className="p-4 rounded-lg bg-indigo-500/10 border border-indigo-500/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <CalendarCheck size={16} className="text-indigo-400" />
-                  <span className="font-medium text-indigo-400">Playoff Consistency</span>
-                </div>
-                <div className="text-lg font-semibold">
-                  {advancedStats.seasons.filter((s) => s.playoffRank !== null).length} of{' '}
-                  {advancedStats.seasons.length} seasons
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {(() => {
-                    const inPlayoffs = advancedStats.seasons.filter((s) => s.playoffRank !== null).length;
-                    const total = advancedStats.seasons.length;
-                    const pct = total > 0 ? ((inPlayoffs / total) * 100).toFixed(0) : '0';
-                    return `Made playoffs ${pct}% of the time`;
-                  })()}
                 </div>
               </div>
             )}
