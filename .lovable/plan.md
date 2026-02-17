@@ -1,48 +1,38 @@
+## Mobile Card Layout for Head-to-Head Records
 
+### Problem
 
-## Rework Clutch Stats: Wins + Win % in 2-1 Matches
+The H2H records table requires horizontal scrolling on mobile, hiding all the important stats (W-L, Win%, Game W-L, Last Played) off-screen. Only the opponent name and badge are visible without scrolling.
 
-### What Changes
+### Solution
 
-**Current behavior**: "Clutch Record" shows W-L (e.g., "3W - 2L") in Game 3 matches on the current season StatBreakdown. No clutch stat exists in Career Statistics.
+On mobile (below `md` breakpoint), replace the table with a vertical card list styled similarly to the Rivalry Highlights cards. On desktop, keep the existing table unchanged.
 
-**New behavior**: 
-- StatBreakdown shows **clutch wins count** and **clutch win percentage** (wins out of all 2-1 matches the team played in)
-- Career Statistics (TeamTotals) gets a new **Career Clutch Win %** stat
+### Mobile Card Design
 
-### Files to Change
+Each opponent card will show:
 
-**1. `src/utils/teamDetailsUtils/matchOutcomeUtils.ts`**
-- Rename/update `ClutchRecord` interface: keep `clutchWins`, `clutchLosses`, add `clutchWinPct: number` (calculated as `clutchWins / game3Matches * 100`, or 0 if no game-3 matches)
-- The existing calculation logic stays the same -- it already correctly identifies 2-1 matches
+- **Left**: Team logo (same as current table)
+- **Right content**:
+  - Row 1: Opponent name + rivalry badge (if any)
+  - Row 2: W-L record and Win% badge inline (e.g., "3W - 1L | 75.0%")
+  - Row 3: Game W-L and last played date in muted text (e.g., "Games: 8-4 | Last: Feb 3, 2026")
+- Tapping the card opens the OpponentHistoryModal (replaces the "View Details" button)
+- Long-pressing or a small chevron could navigate to the team page (or just keep the card tap = View Details)
 
-**2. `src/components/teams/StatBreakdown.tsx`**
-- Change props: replace `clutchWins` and `clutchLosses` with `clutchWins: number` and `clutchWinPct: number`
-- Update the "Clutch Record" StatBlock display:
-  - Main value: show win percentage (e.g., "60.0%")
-  - Sub-label: show "X wins in Y game-3s" instead of "in Game 3s"
+### Technical Changes
 
-**3. `src/pages/TeamDetails.tsx`**
-- Update the props passed to StatBreakdown: pass `clutchWins` and `clutchWinPct` (calculated from the existing `clutchRecord` object)
+**File: `src/components/stats/HeadToHeadRecords.tsx**`
 
-**4. `src/utils/career/types.ts`**
-- Add to `TeamTotals`: `career_clutch_wins: number`, `career_clutch_game3s: number`, `career_clutch_win_pct: number`
+1. Add a `useWindowSize` or Tailwind `md:` approach to conditionally render:
+  - Below `md`: card list layout
+  - At `md` and above: existing table (unchanged)
+2. Create an inline `H2HCard` component (within the same file) for each record:
+  - Clickable card that opens `OpponentHistoryModal`
+  - Shows logo, name, rivalry badge, W-L, Win%, Game W-L, and last played
+  - Styled with `rounded-lg border p-3` similar to `RivalryCard`
+  - Rivalry-type records get a subtle colored left border accent
+3. Search bar and Export CSV button remain above both layouts
+4. Sort controls: simplify to a single dropdown/select on mobile (sort by: Wins, Win%, Matches, Name) instead of column header sort buttons
 
-**5. `src/utils/career/calculateClutchRate.ts`** (new file)
-- Create a `calculateCareerClutchRate` function similar to `calculateSweepRate`
-- Counts 2-1 wins and total game-3 matches (where total games = 3) across regular + playoff matches
-- Returns `{ career_clutch_wins, career_clutch_game3s, career_clutch_win_pct }`
-
-**6. `src/utils/career/index.ts`**
-- Export the new `calculateCareerClutchRate`
-
-**7. `src/hooks/career/useTeamTotalsComputed.ts`**
-- Call `calculateCareerClutchRate` with the same match data used for sweep rate
-- Spread results into the returned `TeamTotals`
-
-**8. `src/components/teams/TeamTotals.tsx`**
-- Add a "Career Clutch Win %" stat block (Swords icon, purple) showing:
-  - Main value: clutch win percentage
-  - Sub-label: "X wins / Y game-3s"
-- Place it after Career Sweep Rate for logical grouping
-
+No other files need changes -- this is entirely contained within `HeadToHeadRecords.tsx`.
