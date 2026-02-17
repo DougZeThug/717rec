@@ -9,7 +9,9 @@ import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
 import { Input } from '@/components/ui/input';
 import { LoadingState } from '@/components/ui/loading-state';
 import { useHeadToHead } from '@/hooks/useHeadToHead';
+import { cn } from '@/lib/utils';
 import { exportHeadToHeadToCSV } from '@/utils/exportUtils';
+import { getRivalryType, type RivalryType } from '@/utils/teamDetailsUtils/rivalryUtils';
 
 import { OpponentHistoryModal } from './OpponentHistoryModal';
 
@@ -82,6 +84,21 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
       <ArrowUpDown className="ml-1 h-3 w-3" />
     </Button>
   );
+
+  const rivalryBadgeConfig: Record<RivalryType, { label: string; className: string }> = {
+    rival: {
+      label: 'Rival',
+      className: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30',
+    },
+    dominated: {
+      label: 'Dominated',
+      className: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
+    },
+    nemesis: {
+      label: 'Nemesis',
+      className: 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30',
+    },
+  };
 
   const renderContent = () => {
     if (isLoading) {
@@ -161,27 +178,45 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
                   {filteredRecords.map((record) => (
                     <tr key={record.opponent_name} className="border-b hover:bg-muted/50">
                       <td className="py-3">
-                        <div
-                          className="flex items-center space-x-3 cursor-pointer hover:bg-muted/30 rounded-md p-1 -m-1 transition-colors"
-                          onClick={() => handleTeamClick(record.opponent_id)}
-                        >
-                          {record.opponent_image_url ? (
-                            <img
-                              src={record.opponent_image_url}
-                              alt={`${record.opponent_name} logo`}
-                              className="w-8 h-8 rounded-sm object-cover flex-shrink-0"
-                            />
-                          ) : (
-                            <div className="w-8 h-8 rounded-sm bg-muted flex items-center justify-center flex-shrink-0">
-                              <span className="text-xs font-medium text-muted-foreground">
-                                {record.opponent_name.charAt(0).toUpperCase()}
-                              </span>
+                        {(() => {
+                          const rivalryType = getRivalryType(record);
+                          const badge = rivalryType ? rivalryBadgeConfig[rivalryType] : null;
+                          return (
+                            <div
+                              className="flex items-center space-x-3 cursor-pointer hover:bg-muted/30 rounded-md p-1 -m-1 transition-colors"
+                              onClick={() => handleTeamClick(record.opponent_id)}
+                            >
+                              {record.opponent_image_url ? (
+                                <img
+                                  src={record.opponent_image_url}
+                                  alt={`${record.opponent_name} logo`}
+                                  className="w-8 h-8 rounded-sm object-cover flex-shrink-0"
+                                />
+                              ) : (
+                                <div className="w-8 h-8 rounded-sm bg-muted flex items-center justify-center flex-shrink-0">
+                                  <span className="text-xs font-medium text-muted-foreground">
+                                    {record.opponent_name.charAt(0).toUpperCase()}
+                                  </span>
+                                </div>
+                              )}
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className="font-medium hover:text-primary transition-colors truncate">
+                                  {record.opponent_name}
+                                </span>
+                                {badge && (
+                                  <span
+                                    className={cn(
+                                      'text-[10px] font-semibold px-1.5 py-0.5 rounded border whitespace-nowrap',
+                                      badge.className
+                                    )}
+                                  >
+                                    {badge.label}
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                          )}
-                          <span className="font-medium hover:text-primary transition-colors">
-                            {record.opponent_name}
-                          </span>
-                        </div>
+                          );
+                        })()}
                       </td>
                       <td className="text-center">
                         <div className="flex items-center justify-center space-x-1">

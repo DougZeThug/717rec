@@ -1,6 +1,7 @@
 import {
   Award,
   BarChart,
+  CalendarCheck,
   Scale,
   Shield,
   Star,
@@ -156,6 +157,21 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
             {totals.runner_ups || 0}
           </div>
         </div>
+
+        {totals.playoff_consistency.seasonsPlayed > 1 && (
+          <div className="flex flex-col">
+            <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">
+              Playoff Rate
+            </span>
+            <div className="font-mono text-base md:text-lg font-medium tabular-nums text-foreground flex items-center">
+              <CalendarCheck size={16} className="text-indigo-500 mr-2" />
+              {totals.playoff_consistency.seasonsInPlayoffs}/{totals.playoff_consistency.seasonsPlayed}
+            </div>
+            <span className="text-xs tabular-nums text-muted-foreground mt-1">
+              {totals.playoff_consistency.playoffRate.toFixed(0)}% of seasons
+            </span>
+          </div>
+        )}
 
         <div className="flex flex-col">
           <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">

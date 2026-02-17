@@ -5,6 +5,7 @@ import { useLocation, useNavigate, useParams } from 'react-router';
 import TeamBadgeCollection from '@/components/badges/TeamBadgeCollection';
 import AnimatedBreadcrumbs from '@/components/navigation/AnimatedBreadcrumbs';
 import HeadToHeadRecords from '@/components/stats/HeadToHeadRecords';
+import RivalryHighlights from '@/components/teams/RivalryHighlights';
 import MatchList from '@/components/teams/MatchList';
 import PlayerList from '@/components/teams/PlayerList';
 import StatBreakdown from '@/components/teams/StatBreakdown';
@@ -21,6 +22,7 @@ import { useTeamDetails } from '@/hooks/useTeamDetails';
 import { useTeamMatches } from '@/hooks/useTeamMatches';
 import { useTeamRankings } from '@/hooks/useTeamRankings';
 import { teamLog } from '@/utils/logger';
+import { calculateClutchRecord } from '@/utils/teamDetailsUtils/matchOutcomeUtils';
 import { calculateSweepRate } from '@/utils/teamDetailsUtils/sweepRateUtils';
 
 const TeamDetails = () => {
@@ -92,6 +94,7 @@ const TeamDetails = () => {
   const winPct = team.win_percentage ? team.win_percentage * 100 : 0;
   const gamePct = team.game_win_percentage ? team.game_win_percentage * 100 : 0;
   const sweepStats = calculateSweepRate(teamId || '', pastMatches);
+  const clutchRecord = calculateClutchRecord(teamId || '', pastMatches);
 
   // Custom breadcrumbs with team name
   const breadcrumbs = [
@@ -159,6 +162,8 @@ const TeamDetails = () => {
             rankChange={teamRanking?.rankChange}
             sweeps={sweepStats.sweeps}
             sweepRate={sweepStats.sweepRate}
+            clutchWins={clutchRecord.clutchWins}
+            clutchLosses={clutchRecord.clutchLosses}
           />
 
           {/* 2. Players */}
@@ -172,8 +177,9 @@ const TeamDetails = () => {
           {teamId && <TeamAnalysis teamId={teamId} teamName={team.name} />}
         </section>
 
-        {/* 3. Head-to-Head Records */}
-        <section id="h2h" className="scroll-mt-20" aria-labelledby="h2h-heading">
+        {/* 3. Rivalry Highlights & Head-to-Head Records */}
+        <section id="h2h" className="scroll-mt-20 space-y-4" aria-labelledby="h2h-heading">
+          {teamId && <RivalryHighlights teamId={teamId} />}
           {teamId && <HeadToHeadRecords teamId={teamId} teamName={team.name} />}
         </section>
 
