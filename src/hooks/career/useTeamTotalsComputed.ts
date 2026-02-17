@@ -8,6 +8,7 @@ import {
   calculatePlayoffStats,
   calculateSweepRate,
 } from '@/utils/career';
+import { calculatePlayoffConsistency } from '@/utils/career/calculatePlayoffNarratives';
 import { PlayoffFinish, TeamTotals } from '@/utils/career/types';
 
 import { fetchCareerData } from './useCareerData';
@@ -118,6 +119,9 @@ const computeTeamTotals = async (teamId: string): Promise<TeamTotals | null> => 
     teamDivisionWeight,
   });
 
+  // Calculate playoff consistency
+  const playoff_consistency = calculatePlayoffConsistency(seasonStats);
+
   return {
     ...matchStats,
     ...playoffStats,
@@ -128,6 +132,7 @@ const computeTeamTotals = async (teamId: string): Promise<TeamTotals | null> => 
     ...sweepStats,
     career_sos,
     division_records,
+    playoff_consistency,
   };
 };
 

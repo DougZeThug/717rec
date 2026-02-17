@@ -3,6 +3,7 @@ import React from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { HeadToHeadData } from '@/hooks/useBatchHeadToHead';
 import { useMatchHeadToHead } from '@/hooks/useMatchHeadToHead';
+import { cn } from '@/lib/utils';
 
 interface MatchHeadToHeadProps {
   team1Id: string | null;
@@ -53,13 +54,42 @@ export const MatchHeadToHead: React.FC<MatchHeadToHeadProps> = ({
   // Check if this is first meeting
   const isFirstMeeting = 'isFirstMeeting' in data ? data.isFirstMeeting : data.totalMatches === 0;
 
+  const { team1Wins, team2Wins, totalMatches } = data;
+
+  // Determine rivalry context for notable matchups
+  const getRivalryTag = (): { label: string; className: string } | null => {
+    if (isFirstMeeting || totalMatches < 2) return null;
+
+    // Closest rivalry: near-.500 with 3+ matches
+    if (totalMatches >= 3 && Math.abs(team1Wins - team2Wins) <= 1) {
+      return {
+        label: 'Rivalry',
+        className: 'text-amber-600 dark:text-amber-400',
+      };
+    }
+
+    // One team has never lost (dominant / nemesis)
+    if (team1Wins === 0 && team2Wins > 0) {
+      return {
+        label: 'Nemesis',
+        className: 'text-red-600 dark:text-red-400',
+      };
+    }
+    if (team2Wins === 0 && team1Wins > 0) {
+      return {
+        label: 'Nemesis',
+        className: 'text-red-600 dark:text-red-400',
+      };
+    }
+
+    return null;
+  };
+
   // Format the display text
   const getDisplayText = (): string => {
     if (isFirstMeeting) {
       return 'H2H: First meeting';
     }
-
-    const { team1Wins, team2Wins } = data;
 
     if (team1Wins === team2Wins) {
       return `H2H: Series tied ${team1Wins}–${team2Wins}`;
@@ -77,5 +107,16 @@ export const MatchHeadToHead: React.FC<MatchHeadToHeadProps> = ({
     return `H2H: ${truncatedName} leads ${leadingWins}–${trailingWins}`;
   };
 
-  return <div className="text-xs text-muted-foreground text-center mt-1">{getDisplayText()}</div>;
+  const rivalryTag = getRivalryTag();
+
+  return (
+    <div className="text-xs text-muted-foreground text-center mt-1 flex items-center justify-center gap-1.5">
+      <span>{getDisplayText()}</span>
+      {rivalryTag && (
+        <span className={cn('font-semibold', rivalryTag.className)}>
+          {rivalryTag.label}
+        </span>
+      )}
+    </div>
+  );
 };

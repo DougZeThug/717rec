@@ -11,6 +11,12 @@ export interface DivisionRecords {
   recreational: DivisionRecord;
 }
 
+export interface PlayoffConsistency {
+  seasonsPlayed: number;
+  seasonsInPlayoffs: number;
+  playoffRate: number;
+}
+
 export interface TeamTotals {
   career_match_wins: number;
   career_match_losses: number;
@@ -26,6 +32,7 @@ export interface TeamTotals {
   career_sweeps: number;
   career_sos: number;
   division_records: DivisionRecords;
+  playoff_consistency: PlayoffConsistency;
 }
 
 // Input types for calculation functions

@@ -7,6 +7,7 @@ import {
   Target,
   Trophy,
   Users,
+  Swords,
   Wind,
   X,
   Zap,
@@ -38,6 +39,8 @@ interface StatBreakdownProps {
   rankChange?: number;
   sweeps?: number;
   sweepRate?: number;
+  clutchWins?: number;
+  clutchLosses?: number;
 }
 
 const StatBreakdown: React.FC<StatBreakdownProps> = ({
@@ -55,6 +58,8 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
   rankChange,
   sweeps = 0,
   sweepRate = 0,
+  clutchWins = 0,
+  clutchLosses = 0,
 }) => {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
@@ -265,6 +270,27 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
                       }
                       gradient="bg-gradient-to-br from-white to-yellow-50/50 dark:from-gray-800/90 dark:to-gray-900/70"
                       icon={<Wind size={18} className={getSweepRateColor(sweepRate)} />}
+                    />
+                  )}
+
+                  {/* Clutch Record (Game 3s) */}
+                  {(clutchWins > 0 || clutchLosses > 0) && (
+                    <StatBlock
+                      label="Clutch Record"
+                      value={
+                        <div className="flex flex-col items-center gap-1">
+                          <div className="flex items-center justify-center gap-3">
+                            <span className="text-green-500 font-semibold">{clutchWins}W</span>
+                            <span className="text-muted-foreground">-</span>
+                            <span className="text-red-500 font-semibold">{clutchLosses}L</span>
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            in Game 3s
+                          </span>
+                        </div>
+                      }
+                      gradient="bg-gradient-to-br from-white to-purple-50/40 dark:from-gray-800/90 dark:to-gray-900/70"
+                      icon={<Swords size={18} className="text-purple-500" />}
                     />
                   )}
                 </div>
