@@ -9,6 +9,7 @@
  */
 
 import {
+  calculateCareerClutchRate,
   calculateCareerMatchStats,
   calculateCareerPowerScore,
   calculateCareerSOS,
@@ -136,6 +137,13 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
   // Calculate playoff consistency
   const playoff_consistency = calculatePlayoffConsistency(seasonStats);
 
+  // Calculate career clutch rate
+  const clutchStats = calculateCareerClutchRate({
+    regularMatches,
+    playoffMatches,
+    teamId,
+  });
+
   return {
     ...matchStats,
     ...playoffStats,
@@ -144,6 +152,7 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     playoff_finishes,
     career_power_score,
     ...sweepStats,
+    ...clutchStats,
     career_sos,
     division_records,
     playoff_consistency,

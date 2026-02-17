@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import {
+  calculateCareerClutchRate,
   calculateCareerMatchStats,
   calculateCareerPowerScore,
   calculateCareerSOS,
@@ -71,6 +72,13 @@ const computeTeamTotals = async (teamId: string): Promise<TeamTotals | null> => 
     totalMatches,
   });
 
+  // Calculate career clutch rate
+  const clutchStats = calculateCareerClutchRate({
+    regularMatches,
+    playoffMatches,
+    teamId,
+  });
+
   // Calculate career SOS
   const career_sos = calculateCareerSOS(seasonStats);
 
@@ -130,6 +138,7 @@ const computeTeamTotals = async (teamId: string): Promise<TeamTotals | null> => 
     playoff_finishes,
     career_power_score,
     ...sweepStats,
+    ...clutchStats,
     career_sos,
     division_records,
     playoff_consistency,

@@ -163,7 +163,8 @@ const TeamDetails = () => {
             sweeps={sweepStats.sweeps}
             sweepRate={sweepStats.sweepRate}
             clutchWins={clutchRecord.clutchWins}
-            clutchLosses={clutchRecord.clutchLosses}
+            clutchWinPct={clutchRecord.clutchWinPct}
+            clutchGame3s={clutchRecord.game3Matches}
           />
 
           {/* 2. Players */}
