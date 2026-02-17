@@ -40,7 +40,8 @@ interface StatBreakdownProps {
   sweeps?: number;
   sweepRate?: number;
   clutchWins?: number;
-  clutchLosses?: number;
+  clutchWinPct?: number;
+  clutchGame3s?: number;
 }
 
 const StatBreakdown: React.FC<StatBreakdownProps> = ({
@@ -59,7 +60,8 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
   sweeps = 0,
   sweepRate = 0,
   clutchWins = 0,
-  clutchLosses = 0,
+  clutchWinPct = 0,
+  clutchGame3s = 0,
 }) => {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
@@ -273,19 +275,17 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
                     />
                   )}
 
-                  {/* Clutch Record (Game 3s) */}
-                  {(clutchWins > 0 || clutchLosses > 0) && (
+                  {/* Clutch Win % (Game 3s) */}
+                  {clutchGame3s > 0 && (
                     <StatBlock
-                      label="Clutch Record"
+                      label="Clutch Win %"
                       value={
                         <div className="flex flex-col items-center gap-1">
-                          <div className="flex items-center justify-center gap-3">
-                            <span className="text-green-500 font-semibold">{clutchWins}W</span>
-                            <span className="text-muted-foreground">-</span>
-                            <span className="text-red-500 font-semibold">{clutchLosses}L</span>
-                          </div>
+                          <span className="text-purple-500 font-semibold">
+                            {clutchWinPct.toFixed(1)}%
+                          </span>
                           <span className="text-xs text-muted-foreground">
-                            in Game 3s
+                            {clutchWins} wins in {clutchGame3s} game-3s
                           </span>
                         </div>
                       }

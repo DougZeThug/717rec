@@ -1,10 +1,10 @@
 import {
   Award,
   BarChart,
-  
   Scale,
   Shield,
   Star,
+  Swords,
   Target,
   TrendingUp,
   Trophy,
@@ -189,6 +189,21 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
             matches
           </span>
         </div>
+
+        {totals.career_clutch_game3s > 0 && (
+          <div className="flex flex-col">
+            <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">
+              Career Clutch Win %
+            </span>
+            <div className="font-mono text-base md:text-lg font-medium tabular-nums flex items-center gap-2 text-purple-500">
+              <Swords size={16} className="flex-shrink-0" />
+              {totals.career_clutch_win_pct.toFixed(1)}%
+            </div>
+            <span className="text-xs tabular-nums text-muted-foreground mt-1">
+              {totals.career_clutch_wins} wins / {totals.career_clutch_game3s} game-3s
+            </span>
+          </div>
+        )}
 
         <div className="flex flex-col">
           <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">

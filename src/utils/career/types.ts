@@ -30,6 +30,9 @@ export interface TeamTotals {
   career_power_score: number;
   career_sweep_rate: number;
   career_sweeps: number;
+  career_clutch_wins: number;
+  career_clutch_game3s: number;
+  career_clutch_win_pct: number;
   career_sos: number;
   division_records: DivisionRecords;
   playoff_consistency: PlayoffConsistency;

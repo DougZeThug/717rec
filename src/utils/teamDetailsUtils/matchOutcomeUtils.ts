@@ -4,6 +4,7 @@ export interface ClutchRecord {
   clutchWins: number;
   clutchLosses: number;
   game3Matches: number;
+  clutchWinPct: number;
 }
 
 /**
@@ -12,7 +13,7 @@ export interface ClutchRecord {
  */
 export const calculateClutchRecord = (teamId: string, matches: Match[] | undefined): ClutchRecord => {
   if (!matches || matches.length === 0) {
-    return { clutchWins: 0, clutchLosses: 0, game3Matches: 0 };
+    return { clutchWins: 0, clutchLosses: 0, game3Matches: 0, clutchWinPct: 0 };
   }
 
   let clutchWins = 0;
@@ -39,9 +40,11 @@ export const calculateClutchRecord = (teamId: string, matches: Match[] | undefin
     }
   });
 
+  const game3Matches = clutchWins + clutchLosses;
   return {
     clutchWins,
     clutchLosses,
-    game3Matches: clutchWins + clutchLosses,
+    game3Matches,
+    clutchWinPct: game3Matches > 0 ? (clutchWins / game3Matches) * 100 : 0,
   };
 };
