@@ -175,7 +175,7 @@ function analyzeGreedyFeasibility(
   const targetMatchesPerTeam = 2;
   const atRiskTeams: string[] = [];
 
-  // For each team, count how many valid opponents they have
+  // Step 1: Basic count check - does each team have >= 2 valid opponents?
   for (const team of teams) {
     let validOpponents = 0;
     for (const other of teams) {
@@ -183,16 +183,43 @@ function analyzeGreedyFeasibility(
         validOpponents++;
       }
     }
-    // Each team needs at least 2 valid opponents for 2 matches
-    // (since opponents get "used up" by other teams, we need some buffer)
     if (validOpponents < targetMatchesPerTeam) {
       atRiskTeams.push(team.id);
     }
   }
 
-  if (atRiskTeams.length === 0) {
-    return { isFeasible: true, recommendedLevel: 0, atRiskTeams: [] };
+  // If basic count check fails, determine which relaxation level helps
+  if (atRiskTeams.length > 0) {
+    return determineRelaxationLevel(teams, atRiskTeams, playedSet, tonightPairs, maxTierGap);
   }
+
+  // Step 2: Simulate S1+S2 to check if opponent pool depletion causes rematches.
+  // The basic count says everyone has >= 2 opponents, but S1 and S2 consume from
+  // the SAME pool. A greedy S1 might leave S2 with only rematch options.
+  const simResult = simulateS1S2Feasibility(teams, playedSet, tonightPairs, maxTierGap);
+  if (simResult.needsRematches) {
+    scheduleLog(
+      `Feasibility simulation: S1 greedy pass would force ${simResult.s2RematchCount} S2 rematch(es). ` +
+        `Keeping level 0 (rematch-aware swap will handle this).`
+    );
+    // Don't recommend relaxation -- the rematch-aware swap (Fix 1) will fix these.
+    // Only recommend relaxation if truly necessary (basic count fails).
+  }
+
+  return { isFeasible: true, recommendedLevel: 0, atRiskTeams: [] };
+}
+
+/**
+ * Determine which relaxation level would resolve at-risk teams
+ */
+function determineRelaxationLevel(
+  teams: Team[],
+  atRiskTeams: string[],
+  playedSet: Set<string>,
+  tonightPairs: Set<string>,
+  maxTierGap: number
+): { isFeasible: boolean; recommendedLevel: RelaxationLevel; atRiskTeams: string[] } {
+  const targetMatchesPerTeam = 2;
 
   // Check if relaxing season rematches would help
   let wouldHelpWithRematch = false;
@@ -236,6 +263,88 @@ function analyzeGreedyFeasibility(
 
   // Full relaxation needed
   return { isFeasible: false, recommendedLevel: 3, atRiskTeams };
+}
+
+/**
+ * Simulate a greedy S1 pass and check if S2 would require season rematches.
+ * This models the opponent pool depletion that the simple count check misses.
+ *
+ * Returns whether the simulation predicts S2 rematches and how many.
+ */
+function simulateS1S2Feasibility(
+  teams: Team[],
+  playedSet: Set<string>,
+  tonightPairs: Set<string>,
+  maxTierGap: number
+): { needsRematches: boolean; s2RematchCount: number } {
+  // Quick greedy S1 simulation
+  const simTonightPairs = new Set<string>(tonightPairs);
+  const pairedInS1 = new Set<string>();
+
+  // Simulate S1: greedily pair teams
+  for (const team of teams) {
+    if (pairedInS1.has(team.id)) continue;
+
+    for (const other of teams) {
+      if (
+        other.id !== team.id &&
+        !pairedInS1.has(other.id) &&
+        canPlay(team, other, playedSet, simTonightPairs, maxTierGap, 0)
+      ) {
+        pairedInS1.add(team.id);
+        pairedInS1.add(other.id);
+        simTonightPairs.add(pairKey(team.id, other.id));
+        break;
+      }
+    }
+  }
+
+  // If S1 couldn't pair everyone, relaxation might be needed for other reasons
+  if (pairedInS1.size < teams.length) {
+    return { needsRematches: false, s2RematchCount: 0 };
+  }
+
+  // Simulate S2: check how many teams would need rematches
+  const pairedInS2 = new Set<string>();
+  let s2RematchCount = 0;
+
+  for (const team of teams) {
+    if (pairedInS2.has(team.id)) continue;
+
+    let foundNonRematch = false;
+    for (const other of teams) {
+      if (
+        other.id !== team.id &&
+        !pairedInS2.has(other.id) &&
+        canPlay(team, other, playedSet, simTonightPairs, maxTierGap, 0)
+      ) {
+        pairedInS2.add(team.id);
+        pairedInS2.add(other.id);
+        simTonightPairs.add(pairKey(team.id, other.id));
+        foundNonRematch = true;
+        break;
+      }
+    }
+
+    // If no non-rematch opponent available, check if a rematch opponent exists
+    if (!foundNonRematch && !pairedInS2.has(team.id)) {
+      for (const other of teams) {
+        if (
+          other.id !== team.id &&
+          !pairedInS2.has(other.id) &&
+          !simTonightPairs.has(pairKey(team.id, other.id)) // only block session rematches
+        ) {
+          pairedInS2.add(team.id);
+          pairedInS2.add(other.id);
+          simTonightPairs.add(pairKey(team.id, other.id));
+          s2RematchCount++;
+          break;
+        }
+      }
+    }
+  }
+
+  return { needsRematches: s2RematchCount > 0, s2RematchCount };
 }
 
 /**
@@ -818,6 +927,156 @@ function tryCrossSlotSwap(
   return null;
 }
 
+/**
+ * Rematch-aware cross-slot optimization: after generating S1 and S2, look for
+ * S2 matches that are season rematches and try rearranging S1 to eliminate them.
+ *
+ * For each S2 rematch (X vs Y where playedSet has that pair), scan S1 for a match
+ * (A vs B) where swapping creates valid non-rematch alternatives for both slots.
+ *
+ * This is different from tryCrossSlotSwap which only fires when S2 has *unmatched*
+ * teams. This fires when S2 "succeeded" but used rematches to do it.
+ */
+function tryRematchAwareSwap(
+  s1Matches: ScheduledMatch[],
+  s2Matches: ScheduledMatch[],
+  sortedTeams: Team[],
+  slot1: string,
+  slot2: string,
+  playedSet: Set<string>,
+  forbiddenPairs: Set<string> | undefined,
+  maxTierGap: number,
+  relaxationLevel: RelaxationLevel
+): { s1: ScheduledMatch[]; s2: ScheduledMatch[]; swapsApplied: number } | null {
+  const teamMap = new Map(sortedTeams.map((t) => [t.id, t]));
+
+  // Identify S2 rematches
+  const s2RematchIndices: number[] = [];
+  for (let i = 0; i < s2Matches.length; i++) {
+    const m = s2Matches[i];
+    if (playedSet.has(pairKey(m.teamAId, m.teamBId))) {
+      s2RematchIndices.push(i);
+    }
+  }
+
+  if (s2RematchIndices.length === 0) return null;
+
+  scheduleLog(
+    `Rematch-aware swap: found ${s2RematchIndices.length} S2 rematch(es), attempting to resolve`
+  );
+
+  // Work on mutable copies
+  const newS1 = [...s1Matches];
+  const newS2 = [...s2Matches];
+  let swapsApplied = 0;
+
+  // Helper: build tonight-pairs from current S1+S2 state (excluding a specific S1 and S2 index)
+  function buildTonightPairs(
+    excludeS1Idx: number,
+    excludeS2Idx: number
+  ): Set<string> {
+    const tp = new Set<string>(forbiddenPairs || []);
+    for (let i = 0; i < newS1.length; i++) {
+      if (i === excludeS1Idx) continue;
+      tp.add(pairKey(newS1[i].teamAId, newS1[i].teamBId));
+    }
+    for (let i = 0; i < newS2.length; i++) {
+      if (i === excludeS2Idx) continue;
+      tp.add(pairKey(newS2[i].teamAId, newS2[i].teamBId));
+    }
+    return tp;
+  }
+
+  function makeMatch(slot: string, tA: Team, tB: Team): ScheduledMatch {
+    return {
+      slot,
+      teamAId: tA.id,
+      teamBId: tB.id,
+      teamAName: tA.name,
+      teamBName: tB.name,
+      divisionA: tA.divisionName || 'Unknown',
+      divisionB: tB.divisionName || 'Unknown',
+      tierA: getTier(tA),
+      tierB: getTier(tB),
+    };
+  }
+
+  // For each S2 rematch, try to fix it by swapping with an S1 match
+  for (const s2Idx of s2RematchIndices) {
+    const s2m = newS2[s2Idx];
+    // Check if this rematch was already fixed by a previous swap
+    if (!playedSet.has(pairKey(s2m.teamAId, s2m.teamBId))) continue;
+
+    const s2TeamX = teamMap.get(s2m.teamAId);
+    const s2TeamY = teamMap.get(s2m.teamBId);
+    if (!s2TeamX || !s2TeamY) continue;
+
+    let fixed = false;
+
+    // Try each S1 match as a swap candidate
+    for (let s1Idx = 0; s1Idx < newS1.length && !fixed; s1Idx++) {
+      const s1m = newS1[s1Idx];
+      const s1TeamA = teamMap.get(s1m.teamAId);
+      const s1TeamB = teamMap.get(s1m.teamBId);
+      if (!s1TeamA || !s1TeamB) continue;
+
+      // We want to rearrange so that X or Y gets a non-rematch partner from S1.
+      // Try all 4 rearrangements of the 4 teams {A,B,X,Y} across S1 slot i and S2 slot j:
+      //
+      // Original: S1=(A,B), S2=(X,Y)  [X,Y is a rematch]
+      // Option 1: S1=(A,Y), S2=(X,B)
+      // Option 2: S1=(B,X), S2=(A,Y)  [but A,Y might be rematch too]
+      // Option 3: S1=(A,X), S2=(B,Y)
+      // Option 4: S1=(B,Y), S2=(A,X)
+
+      const arrangements: [Team, Team, Team, Team][] = [
+        [s1TeamA, s2TeamY, s2TeamX, s1TeamB], // S1=(A,Y), S2=(X,B)
+        [s1TeamB, s2TeamX, s1TeamA, s2TeamY], // S1=(B,X), S2=(A,Y)
+        [s1TeamA, s2TeamX, s1TeamB, s2TeamY], // S1=(A,X), S2=(B,Y)
+        [s1TeamB, s2TeamY, s1TeamA, s2TeamX], // S1=(B,Y), S2=(A,X)
+      ];
+
+      for (const [newS1a, newS1b, newS2a, newS2b] of arrangements) {
+        const newS1Key = pairKey(newS1a.id, newS1b.id);
+        const newS2Key = pairKey(newS2a.id, newS2b.id);
+
+        // Skip if the new S2 match is also a season rematch
+        if (playedSet.has(newS2Key)) continue;
+
+        // Skip if the new S1 match is a season rematch (don't move the problem)
+        if (playedSet.has(newS1Key)) continue;
+
+        // Build tonight-pairs excluding the two matches we're replacing
+        const tp = buildTonightPairs(s1Idx, s2Idx);
+
+        // Check that the new pairs don't conflict with session rematches or tier limits
+        if (
+          !canPlay(newS1a, newS1b, playedSet, tp, maxTierGap, relaxationLevel) ||
+          !canPlay(newS2a, newS2b, playedSet, tp, maxTierGap, relaxationLevel)
+        ) {
+          continue;
+        }
+
+        // Apply the swap
+        newS1[s1Idx] = makeMatch(slot1, newS1a, newS1b);
+        newS2[s2Idx] = makeMatch(slot2, newS2a, newS2b);
+        swapsApplied++;
+        fixed = true;
+
+        scheduleLog(
+          `Rematch-aware swap: S1 (${s1TeamA.name},${s1TeamB.name})→(${newS1a.name},${newS1b.name}), ` +
+            `S2 (${s2TeamX.name},${s2TeamY.name})→(${newS2a.name},${newS2b.name})`
+        );
+        break;
+      }
+    }
+  }
+
+  if (swapsApplied === 0) return null;
+
+  return { s1: newS1, s2: newS2, swapsApplied };
+}
+
 export interface GreedySchedulerResult {
   matches: ScheduledMatch[];
   // New pairs created in this call (for tracking across multiple blocks)
@@ -1028,9 +1287,10 @@ export function generateScheduleGreedyWithTracking(
     const expectedMatches = teams.length; // N teams = N matches (N/2 per slot)
     let allMatches = [...s1Matches, ...s2Matches];
 
-    // Cross-slot swap: if S2 has unmatched teams at level 0, try rearranging S1
+    // Cross-slot swap: if S2 has unmatched teams, try rearranging S1
     // to free up pairings that S2 needs, before falling through to relaxation
-    if (allMatches.length < expectedMatches && relaxationLevel === 0) {
+    // Fix 4: Also trigger when relaxation level > 0 (try to find level 0 solution first)
+    if (allMatches.length < expectedMatches) {
       const crossSlotResult = tryCrossSlotSwap(
         s1Matches,
         s2Matches,
@@ -1108,6 +1368,44 @@ export function generateScheduleGreedyWithTracking(
       );
 
       allMatches = [...s1Matches, ...s2Matches];
+    }
+
+    // Rematch-aware cross-slot optimization: even if all teams are matched,
+    // check if S2 used season rematches and try to fix them by rearranging S1
+    const rematchSwapResult = tryRematchAwareSwap(
+      s1Matches,
+      s2Matches,
+      sortedTeams,
+      slot1,
+      slot2,
+      playedSet,
+      forbiddenPairs,
+      maxTierGap,
+      relaxationLevel
+    );
+
+    if (rematchSwapResult) {
+      s1Matches = rematchSwapResult.s1;
+      s2Matches = rematchSwapResult.s2;
+
+      // Rebuild tonightPairs and match counts from the optimized S1+S2
+      tonightPairs.clear();
+      forbiddenPairs?.forEach((p) => tonightPairs.add(p));
+      newPairs.clear();
+      teamMatchCounts.clear();
+
+      for (const m of [...s1Matches, ...s2Matches]) {
+        const mk = pairKey(m.teamAId, m.teamBId);
+        tonightPairs.add(mk);
+        newPairs.add(mk);
+        teamMatchCounts.set(m.teamAId, (teamMatchCounts.get(m.teamAId) || 0) + 1);
+        teamMatchCounts.set(m.teamBId, (teamMatchCounts.get(m.teamBId) || 0) + 1);
+      }
+
+      allMatches = [...s1Matches, ...s2Matches];
+      scheduleLog(
+        `Rematch-aware optimization: resolved ${rematchSwapResult.swapsApplied} S2 rematch(es)`
+      );
     }
 
     // If still missing matches, attempt repair pass
