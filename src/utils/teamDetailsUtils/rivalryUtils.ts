@@ -12,9 +12,9 @@ export interface RivalryResults {
   mostPlayed: HeadToHeadRecord[];
   /** Opponents with near-.500 records (|wins - losses| <= 1, 3+ matches) */
   closestRivalries: HeadToHeadRecord[];
-  /** Opponents this team has never lost to (2+ matches) */
+  /** Opponents with >= 75% win rate (3+ matches), sorted by best win% */
   dominantMatchups: HeadToHeadRecord[];
-  /** Opponents this team has never beaten (2+ matches) */
+  /** Opponents with <= 25% win rate (3+ matches), sorted by worst win% */
   nemeses: HeadToHeadRecord[];
 }
 
@@ -36,12 +36,12 @@ export const classifyRivalries = (records: HeadToHeadRecord[]): RivalryResults =
     .sort((a, b) => b.matches_played - a.matches_played);
 
   const dominantMatchups = records
-    .filter((r) => r.matches_played >= 2 && r.wins > 0 && r.losses === 0)
-    .sort((a, b) => b.matches_played - a.matches_played);
+    .filter((r) => r.matches_played >= 3 && r.win_pct >= 75)
+    .sort((a, b) => b.win_pct - a.win_pct || b.matches_played - a.matches_played);
 
   const nemeses = records
-    .filter((r) => r.matches_played >= 2 && r.wins === 0 && r.losses > 0)
-    .sort((a, b) => b.matches_played - a.matches_played);
+    .filter((r) => r.matches_played >= 3 && r.win_pct <= 25)
+    .sort((a, b) => a.win_pct - b.win_pct || b.matches_played - a.matches_played);
 
   return { mostPlayed, closestRivalries, dominantMatchups, nemeses };
 };
@@ -51,13 +51,13 @@ export const classifyRivalries = (records: HeadToHeadRecord[]): RivalryResults =
  * Priority: nemesis > rival > dominated (most narrative-worthy first).
  */
 export const getRivalryType = (record: HeadToHeadRecord): RivalryType | null => {
-  if (record.matches_played >= 2 && record.wins === 0 && record.losses > 0) {
+  if (record.matches_played >= 3 && record.win_pct <= 25) {
     return 'nemesis';
   }
   if (record.matches_played >= 3 && Math.abs(record.wins - record.losses) <= 1) {
     return 'rival';
   }
-  if (record.matches_played >= 2 && record.wins > 0 && record.losses === 0) {
+  if (record.matches_played >= 3 && record.win_pct >= 75) {
     return 'dominated';
   }
   return null;
@@ -73,10 +73,10 @@ export const getRivalryLabel = (
 ): string => {
   switch (type) {
     case 'nemesis':
-      return `${teamName} is 0-${record.losses} all-time`;
+      return `${teamName} is ${record.wins}-${record.losses} all-time`;
     case 'rival':
       return `Rivalry: ${record.wins}-${record.losses} all-time`;
     case 'dominated':
-      return `${teamName} is ${record.wins}-0 all-time`;
+      return `${teamName} is ${record.wins}-${record.losses} all-time`;
   }
 };

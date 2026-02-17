@@ -53,7 +53,7 @@ const RivalryHighlights: React.FC<RivalryHighlightsProps> = ({ teamId }) => {
         {topDominated && (
           <RivalryCard
             label="Dominated"
-            sublabel={`${topDominated.wins}-0 all-time`}
+            sublabel={`${topDominated.wins}-${topDominated.losses} all-time`}
             opponentName={topDominated.opponent_name}
             opponentImageUrl={topDominated.opponent_image_url}
             opponentId={topDominated.opponent_id}
@@ -66,7 +66,7 @@ const RivalryHighlights: React.FC<RivalryHighlightsProps> = ({ teamId }) => {
         {topNemesis && (
           <RivalryCard
             label="Nemesis"
-            sublabel={`0-${topNemesis.losses} all-time`}
+            sublabel={`${topNemesis.wins}-${topNemesis.losses} all-time`}
             opponentName={topNemesis.opponent_name}
             opponentImageUrl={topNemesis.opponent_image_url}
             opponentId={topNemesis.opponent_id}
