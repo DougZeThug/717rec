@@ -58,27 +58,32 @@ export const MatchHeadToHead: React.FC<MatchHeadToHeadProps> = ({
 
   // Determine rivalry context for notable matchups
   const getRivalryTag = (): { label: string; className: string } | null => {
-    if (isFirstMeeting || totalMatches < 2) return null;
+    if (isFirstMeeting || totalMatches < 3) return null;
+
+    const team1WinPct = (team1Wins / totalMatches) * 100;
+    const team2WinPct = (team2Wins / totalMatches) * 100;
+
+    // Nemesis: either team has <= 25% win rate
+    if (team1WinPct <= 25 || team2WinPct <= 25) {
+      return {
+        label: 'Nemesis',
+        className: 'text-red-600 dark:text-red-400',
+      };
+    }
+
+    // Dominated: either team has >= 75% win rate
+    if (team1WinPct >= 75 || team2WinPct >= 75) {
+      return {
+        label: 'Dominated',
+        className: 'text-emerald-600 dark:text-emerald-400',
+      };
+    }
 
     // Closest rivalry: near-.500 with 3+ matches
-    if (totalMatches >= 3 && Math.abs(team1Wins - team2Wins) <= 1) {
+    if (Math.abs(team1Wins - team2Wins) <= 1) {
       return {
         label: 'Rivalry',
         className: 'text-amber-600 dark:text-amber-400',
-      };
-    }
-
-    // One team has never lost (dominant / nemesis)
-    if (team1Wins === 0 && team2Wins > 0) {
-      return {
-        label: 'Nemesis',
-        className: 'text-red-600 dark:text-red-400',
-      };
-    }
-    if (team2Wins === 0 && team1Wins > 0) {
-      return {
-        label: 'Nemesis',
-        className: 'text-red-600 dark:text-red-400',
       };
     }
 
