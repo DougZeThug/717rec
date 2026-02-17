@@ -9,7 +9,7 @@ rematches after switching to edit mode, where the validation flags them.
 
 ---
 
-## Root Causes Found (5 issues)
+## Root Causes Found (4 issues)
 
 ### Bug 1: `hasPlayedBefore` hardcoded to `false` in greedy output
 **File:** `src/hooks/scheduling/utils/dualBlockScheduler.ts` line 182
@@ -80,26 +80,7 @@ is tight and greedy local decisions cascade into bad S2 outcomes.
 
 ---
 
-### Bug 4: History only includes completed matches (misses scheduled-but-unscored)
-**File:** `src/utils/autoSchedule/matchHistoryService.ts` lines 80-86
-
-```typescript
-const { data: matches, error } = await supabase
-  .from('matches')
-  .select('team1_id, team2_id')
-  .eq('iscompleted', true)     // <-- ONLY completed matches
-  .eq('season_id', seasonData.id)
-```
-
-If a match was auto-scheduled in a previous week but never scored/completed, it
-won't appear in history. The scheduler may create the same matchup again.
-
-**Impact:** Minor compared to the other bugs, but contributes to unnecessary repeats
-when previous weeks' matches haven't been finalized.
-
----
-
-### Bug 5: Cross-slot swap is too conservative
+### Bug 4: Cross-slot swap is too conservative
 **File:** `src/utils/scheduling/greedyBackToBackScheduler.ts` lines 689-819
 
 `tryCrossSlotSwap()` only activates when:
@@ -171,23 +152,7 @@ when it doesn't actually need to.
 
 ---
 
-### Fix 4: Include scheduled (non-completed) matches in history (LOW IMPACT)
-**File to change:** `matchHistoryService.ts`
-
-Change the query to also include matches that exist in the database but aren't
-completed yet. These represent scheduled matchups that shouldn't be repeated:
-
-```typescript
-// Remove the .eq('iscompleted', true) filter
-// Or use: .or('iscompleted.eq.true,iscompleted.is.null')
-```
-
-Add a flag to distinguish "completed" vs "scheduled" history so the algorithm
-can weight them differently if desired.
-
----
-
-### Fix 5: Expand cross-slot swap trigger conditions (LOW IMPACT)
+### Fix 4: Expand cross-slot swap trigger conditions (LOW IMPACT)
 **File to change:** `greedyBackToBackScheduler.ts`, after S2 generation
 
 The existing `tryCrossSlotSwap()` should also run when:
@@ -199,21 +164,29 @@ infrastructure is used more effectively.
 
 ---
 
+## Note: Scheduled-but-unplayed matches are NOT rematches
+
+The history query in `matchHistoryService.ts` only includes `iscompleted = true`.
+This is correct behavior -- if a match was scheduled in a previous week but never
+actually played, that's not a rematch. The only place "scheduled but not played"
+matters is within the same night (S1 blocking S2), which is already handled by the
+`tonightPairs` tracking.
+
+---
+
 ## Implementation Order
 
 1. **Fix 2** first (hasPlayedBefore flag) -- smallest change, immediate user benefit
 2. **Fix 1** next (rematch-aware cross-slot optimization) -- biggest impact on match quality
-3. **Fix 5** alongside Fix 1 (expand swap triggers) -- natural extension
+3. **Fix 4** alongside Fix 1 (expand swap triggers) -- natural extension
 4. **Fix 3** (improved feasibility) -- prevents premature relaxation
-5. **Fix 4** last (include scheduled matches) -- minor edge case
 
 ## Key Files Involved
 
 | File | What Changes |
 |------|-------------|
 | `src/hooks/scheduling/utils/dualBlockScheduler.ts` | Fix hasPlayedBefore flag (Fix 2) |
-| `src/utils/scheduling/greedyBackToBackScheduler.ts` | Cross-slot optimization (Fix 1, 3, 5) |
-| `src/utils/autoSchedule/matchHistoryService.ts` | Include scheduled matches (Fix 4) |
+| `src/utils/scheduling/greedyBackToBackScheduler.ts` | Cross-slot optimization (Fix 1, 3, 4) |
 
 ## Testing Strategy
 
