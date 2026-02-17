@@ -1,18 +1,19 @@
 
-## Fix Bottom Nav Being Clipped on Mobile Scroll
 
-### Problem
-On Android Chrome, when swiping down, the browser's system navigation bar overlaps the bottom navbar, clipping the labels ("Standings", "Schedule", "Teams"). The current `env(safe-area-inset-bottom)` padding only handles iOS safe areas, not Android's dynamic browser chrome.
+## Update Dev Dependencies
 
-### Solution
-Two small changes in `src/components/navigation/BottomNav.tsx`:
+Bump three dev dependencies in `package.json`:
 
-1. Add extra bottom padding to the nav container so labels aren't clipped by the system bar -- increase `pb-[env(safe-area-inset-bottom,0px)]` to include a minimum fallback (e.g., `pb-[max(env(safe-area-inset-bottom,0px),12px)]` or a simple additional `pb-3`)
-2. Ensure the inner container height accommodates the labels fully by keeping `h-16` but adding a small bottom margin/padding
+1. `@types/node`: `^25.2.0` to `^25.2.3`
+2. `typescript-eslint`: `^8.54.0` to `^8.55.0`
+3. `eslint`: `^9.39.2` to `^10.0.0`
 
-### Technical Detail
+All are minor/patch updates except ESLint which is a major bump (9 to 10). Since `@eslint/js` was already updated to `^10.0.1` in the previous batch, this aligns the core `eslint` package to match.
 
-**File: `src/components/navigation/BottomNav.tsx`**
+### Changes
 
-- Change the nav's padding from `pb-[env(safe-area-inset-bottom,0px)]` to `pb-[calc(env(safe-area-inset-bottom,0px)+12px)]` -- this adds 12px of breathing room below the nav items on all devices, while still respecting iOS safe areas additively
-- This ensures the text labels are never clipped by the Android system navigation bar
+**File: `package.json`** -- Update three version strings in `devDependencies`:
+- Line 98: `@types/node` from `^25.2.0` to `^25.2.3`
+- Line 103: `eslint` from `^9.39.2` to `^10.0.0`
+- Line 117: `typescript-eslint` from `^8.54.0` to `^8.55.0`
+
