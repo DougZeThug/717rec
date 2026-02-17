@@ -1,19 +1,41 @@
 
 
-## Update Dev Dependencies
+## Update Rivalry Thresholds and Highlight Sorting
 
-Bump three dev dependencies in `package.json`:
+### What Changes
 
-1. `@types/node`: `^25.2.0` to `^25.2.3`
-2. `typescript-eslint`: `^8.54.0` to `^8.55.0`
-3. `eslint`: `^9.39.2` to `^10.0.0`
+**Badges (H2H table + schedule cards):** Nemesis and Dominated use percentage-based thresholds with 3-match minimum:
+- **Nemesis**: win_pct <= 25%, 3+ matches
+- **Dominated**: win_pct >= 75%, 3+ matches
 
-All are minor/patch updates except ESLint which is a major bump (9 to 10). Since `@eslint/js` was already updated to `^10.0.1` in the previous batch, this aligns the core `eslint` package to match.
+**Rivalry Highlights cards:** The top dominated/nemesis are chosen by highest/lowest win percentage (not just unbeaten/winless).
 
-### Changes
+### Technical Details
 
-**File: `package.json`** -- Update three version strings in `devDependencies`:
-- Line 98: `@types/node` from `^25.2.0` to `^25.2.3`
-- Line 103: `eslint` from `^9.39.2` to `^10.0.0`
-- Line 117: `typescript-eslint` from `^8.54.0` to `^8.55.0`
+**1. `src/utils/teamDetailsUtils/rivalryUtils.ts`**
+
+`classifyRivalries()`:
+- `dominantMatchups` filter: `matches >= 3 && win_pct >= 75` — sort by `win_pct desc`, then `matches_played desc`
+- `nemeses` filter: `matches >= 3 && win_pct <= 25` — sort by `win_pct asc`, then `matches_played desc`
+- Update JSDoc comments on `RivalryResults` interface
+
+`getRivalryType()` (drives badge display):
+- Nemesis: `matches_played >= 3 && win_pct <= 25`
+- Dominated: `matches_played >= 3 && win_pct >= 75`
+- Rival: unchanged
+
+`getRivalryLabel()`:
+- Nemesis and Dominated now show actual W-L (e.g. "1-5 all-time") instead of hardcoded "0-X" or "X-0"
+
+**2. `src/components/schedule/MatchHeadToHead.tsx`**
+
+Update inline `getRivalryTag()`:
+- Nemesis: either team's win rate <= 25% with 3+ matches (replace the `=== 0` checks)
+- Add green "Dominated" tag when either team's win rate >= 75% with 3+ matches
+
+**3. `src/components/teams/RivalryHighlights.tsx`**
+
+- Update sublabels to use `${wins}-${losses}` instead of hardcoded `${wins}-0` / `0-${losses}`, since top picks may no longer be unbeaten/winless
+
+No other files need changes — `HeadToHeadRecords.tsx` already consumes `getRivalryType()` and will automatically reflect the new thresholds.
 
