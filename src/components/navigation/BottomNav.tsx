@@ -1,4 +1,4 @@
-import { Award, Calendar, Users } from 'lucide-react';
+import { Award, Calendar, Trophy, Users } from 'lucide-react';
 import React, { useMemo } from 'react';
 import { useLocation } from 'react-router';
 
@@ -32,6 +32,11 @@ export const BottomNav = React.memo(() => {
         label: 'Teams',
         icon: <Users size={ICON_SIZES.xl} />,
       },
+      {
+        path: '/playoffs',
+        label: 'Playoffs',
+        icon: <Trophy size={ICON_SIZES.xl} />,
+      },
     ],
     []
   );
@@ -63,7 +68,7 @@ export const BottomNav = React.memo(() => {
             label={item.label}
             icon={item.icon}
             className={cn(
-              'flex-1 px-3 py-1.5 text-sm',
+              'flex-1 px-2 py-1.5 text-sm',
               'flex flex-col items-center justify-center',
               location.pathname === item.path &&
                 'bg-gradient-to-b from-transparent to-blue-50/40 dark:to-blue-900/10'
