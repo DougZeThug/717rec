@@ -61,6 +61,19 @@ const Index: React.FC = () => {
       </PageTransition>
 
       <div className="container mx-auto px-4 flex flex-col gap-4 md:gap-8">
+        {/* Dynamic hero cards from database - shown prominently below header */}
+        {heroCardsLoading ? (
+          <HeroCardSkeleton />
+        ) : (
+          heroCards?.map((card, index) => (
+            <PageTransition key={card.id} animation="fadeInSlideUp" delay={getDelay(index)}>
+              <Suspense fallback={<HeroCardSkeleton />}>
+                <HeroCard card={card} />
+              </Suspense>
+            </PageTransition>
+          ))
+        )}
+
         {/* League History - rendered immediately for LCP optimization */}
         <PageTransition animation="fadeInSlideUp" immediate>
           <LeagueHistoryBar />
@@ -88,19 +101,6 @@ const Index: React.FC = () => {
               <ParticipationHeroCard />
             </Suspense>
           </PageTransition>
-        )}
-
-        {/* Dynamic hero cards from database */}
-        {heroCardsLoading ? (
-          <HeroCardSkeleton />
-        ) : (
-          heroCards?.map((card, index) => (
-            <PageTransition key={card.id} animation="fadeInSlideUp" delay={getDelay(index)}>
-              <Suspense fallback={<HeroCardSkeleton />}>
-                <HeroCard card={card} />
-              </Suspense>
-            </PageTransition>
-          ))
         )}
 
         {/* Team of the Week */}
