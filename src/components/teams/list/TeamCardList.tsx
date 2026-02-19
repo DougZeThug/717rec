@@ -15,6 +15,7 @@ import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { Team } from '@/types';
 import { formatPowerScore, getPowerScoreColor, getSosColor } from '@/utils/colors';
+import { toTeamSlug } from '@/utils/teamSlug';
 
 import { PlayerChip } from '../shared/PlayerChip';
 import { StatBlock } from '../shared/StatBlock';
@@ -47,7 +48,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
     >
       <div className="flex flex-col md:flex-row h-full">
         <Link
-          to={`/teams/${team.id}`}
+          to={`/teams/${toTeamSlug(team.name)}`}
           className={cn(
             'team-list-card-image w-full md:w-[220px] lg:w-[240px] h-[200px] md:h-auto flex items-center justify-center p-4',
             isWinterTheme
@@ -65,7 +66,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
 
         <div className="flex flex-col flex-grow p-5">
           <div className="flex justify-between items-start mb-3">
-            <Link to={`/teams/${team.id}`} className="hover:underline">
+            <Link to={`/teams/${toTeamSlug(team.name)}`} className="hover:underline">
               <h3
                 className={cn(
                   'font-bebas font-normal uppercase tracking-wide text-2xl md:text-3xl',
@@ -102,7 +103,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem asChild>
-                  <Link to={`/teams/${team.id}`}>
+                  <Link to={`/teams/${toTeamSlug(team.name)}`}>
                     <ExternalLink className="mr-2 h-4 w-4" /> View Details
                   </Link>
                 </DropdownMenuItem>

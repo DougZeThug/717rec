@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router';
 
 import { cn } from '@/lib/utils';
+import { toTeamSlug } from '@/utils/teamSlug';
 
 interface TeamLogoProps {
   imageUrl: string | null | undefined;
@@ -52,7 +53,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
 
   if (clickable && teamId) {
     return (
-      <Link to={`/teams/${teamId}`} className="block w-10 h-10">
+      <Link to={`/teams/${toTeamSlug(teamName)}`} className="block w-10 h-10">
         {logoContent}
       </Link>
     );

@@ -11,6 +11,7 @@ import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { animations, getDivisionStyles } from '@/styles/design-system';
 import { TeamTimeslot } from '@/types';
+import { toTeamSlug } from '@/utils/teamSlug';
 
 interface TimeslotGroupingProps {
   groupedTimeslots: Record<string, TeamTimeslot[]>;
@@ -187,7 +188,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
                         <div className="flex flex-col min-w-0">
                           {teamTimeslot.teams?.name ? (
                             <Link
-                              to={`/teams/${teamTimeslot.team_id}`}
+                              to={`/teams/${toTeamSlug(teamTimeslot.teams.name)}`}
                               className={cn(
                                 'font-medium text-base truncate hover:underline transition-all duration-200',
                                 isWinterTheme
@@ -330,7 +331,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
                         <div className="flex flex-col min-w-0">
                           {teamTimeslot.teams?.name ? (
                             <Link
-                              to={`/teams/${teamTimeslot.team_id}`}
+                              to={`/teams/${toTeamSlug(teamTimeslot.teams.name)}`}
                               className={cn(
                                 'font-medium text-base truncate hover:underline transition-all duration-200',
                                 isWinterTheme

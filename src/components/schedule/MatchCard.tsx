@@ -12,6 +12,7 @@ import { useMatchPrediction } from '@/hooks/useMatchPrediction';
 import { cn } from '@/lib/utils';
 import { animations, elevation, gradients } from '@/styles/design-system';
 import { Match } from '@/types';
+import { toTeamSlug } from '@/utils/teamSlug';
 
 import MatchCountdown from './MatchCountdown';
 import { MatchHeadToHead } from './MatchHeadToHead';
@@ -160,7 +161,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
           <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4">
             {/* Team 1 Logo */}
             <TransitionLink
-              to={`/teams/${match.team1Id}`}
+              to={`/teams/${toTeamSlug(team1Name)}`}
               className="hover:opacity-80 transition-opacity"
             >
               <TeamLogo
@@ -188,7 +189,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
             {/* Team 2 Logo */}
             <TransitionLink
-              to={`/teams/${match.team2Id}`}
+              to={`/teams/${toTeamSlug(team2Name)}`}
               className="hover:opacity-80 transition-opacity"
             >
               <TeamLogo
@@ -203,7 +204,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
             {/* Team 1 Name */}
             <TransitionLink
-              to={`/teams/${match.team1Id}`}
+              to={`/teams/${toTeamSlug(team1Name)}`}
               className={cn(
                 'flex items-center gap-2 justify-center min-w-0 transition-transform duration-200 hover:translate-x-1',
                 team1IsWinner && 'font-semibold'
@@ -219,7 +220,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
             {/* Team 2 Name */}
             <TransitionLink
-              to={`/teams/${match.team2Id}`}
+              to={`/teams/${toTeamSlug(team2Name)}`}
               className={cn(
                 'flex items-center gap-2 justify-center min-w-0 transition-transform duration-200 hover:-translate-x-1',
                 team2IsWinner && 'font-semibold'

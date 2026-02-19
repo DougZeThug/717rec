@@ -20,6 +20,7 @@ import { useIsMobile } from '@/hooks/useMobile';
 import { cn } from '@/lib/utils';
 import { exportHeadToHeadToCSV } from '@/utils/exportUtils';
 import { getRivalryType, type RivalryType } from '@/utils/teamDetailsUtils/rivalryUtils';
+import { toTeamSlug } from '@/utils/teamSlug';
 
 import H2HMobileCard from './H2HMobileCard';
 import { OpponentHistoryModal } from './OpponentHistoryModal';
@@ -76,8 +77,8 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
     }
   };
 
-  const handleTeamClick = (opponentId: string) => {
-    navigate(`/teams/${opponentId}`);
+  const handleTeamClick = (opponentId: string, opponentName: string) => {
+    navigate(`/teams/${toTeamSlug(opponentName)}`);
   };
 
   const SortButton: React.FC<{ field: SortField; children: React.ReactNode }> = ({
@@ -234,7 +235,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
                           return (
                             <div
                               className="flex items-center space-x-3 cursor-pointer hover:bg-muted/30 rounded-md p-1 -m-1 transition-colors"
-                              onClick={() => handleTeamClick(record.opponent_id)}
+                              onClick={() => handleTeamClick(record.opponent_id, record.opponent_name)}
                             >
                               {record.opponent_image_url ? (
                                 <img

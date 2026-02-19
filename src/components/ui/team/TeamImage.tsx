@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 
 import { cn } from '@/lib/utils';
 import { imageErrorLog } from '@/utils/logger';
+import { toTeamSlug } from '@/utils/teamSlug';
 
 export interface TeamImageProps {
   imageUrl: string | null | undefined;
@@ -105,7 +106,7 @@ export const TeamImage: React.FC<TeamImageProps> = ({
   if (clickable && teamId) {
     return (
       <Link
-        to={`/teams/${teamId}`}
+        to={`/teams/${toTeamSlug(teamName)}`}
         className={cn(
           'block flex items-center justify-center',
           touchSizeClasses[size],

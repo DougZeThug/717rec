@@ -5,6 +5,7 @@ import { Link } from 'react-router';
 import { cn } from '@/lib/utils';
 import { ICON_SIZES, ICON_STROKE } from '@/styles/icon-system';
 import { Match } from '@/types';
+import { toTeamSlug } from '@/utils/teamSlug';
 
 interface LastMatchHighlightProps {
   teamId: string;
@@ -54,7 +55,7 @@ export const LastMatchHighlight: React.FC<LastMatchHighlightProps> = ({
       </span>
       <span className="opacity-70">vs</span>
       <Link
-        to={`/teams/${opponentId}`}
+        to={`/teams/${toTeamSlug(opponentName)}`}
         className="font-medium text-foreground hover:text-primary transition-colors inline-flex items-center gap-0.5"
       >
         {opponentName}

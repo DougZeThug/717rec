@@ -5,6 +5,7 @@ import { TransitionLink } from '@/components/transitions/TransitionLink';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { Match } from '@/types';
+import { toTeamSlug } from '@/utils/teamSlug';
 
 interface TeamGameScoreRowProps {
   match: Match;
@@ -68,13 +69,13 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({
       >
         {/* Home - Left side */}
         <div className="flex items-center min-w-0 gap-x-2 flex-1">
-          <TransitionLink to={`/teams/${homeTeamId}`} className="shrink-0">
+          <TransitionLink to={`/teams/${toTeamSlug(homeName)}`} className="shrink-0">
             <Avatar className="h-7 w-7 md:h-8 md:w-8">
               <AvatarImage src={homeLogo} alt={homeName} />
               <AvatarFallback>{homeName.charAt(0)}</AvatarFallback>
             </Avatar>
           </TransitionLink>
-          <TransitionLink to={`/teams/${homeTeamId}`} className="truncate hover:underline">
+          <TransitionLink to={`/teams/${toTeamSlug(homeName)}`} className="truncate hover:underline">
             <span
               className={cn(
                 'truncate',
@@ -99,7 +100,7 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({
         </div>
         {/* Away - Right side */}
         <div className="flex items-center min-w-0 gap-x-2 flex-1 justify-end">
-          <TransitionLink to={`/teams/${awayTeamId}`} className="truncate hover:underline">
+          <TransitionLink to={`/teams/${toTeamSlug(awayName)}`} className="truncate hover:underline">
             <span
               className={cn(
                 'truncate text-right',
@@ -112,7 +113,7 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({
               {awayName}
             </span>
           </TransitionLink>
-          <TransitionLink to={`/teams/${awayTeamId}`} className="shrink-0">
+          <TransitionLink to={`/teams/${toTeamSlug(awayName)}`} className="shrink-0">
             <Avatar className="h-7 w-7 md:h-8 md:w-8">
               <AvatarImage src={awayLogo} alt={awayName} />
               <AvatarFallback>{awayName.charAt(0)}</AvatarFallback>

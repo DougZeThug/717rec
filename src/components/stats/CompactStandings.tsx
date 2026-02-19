@@ -13,6 +13,7 @@ import {
 import { useIsMobile } from '@/hooks/useMobile';
 import { cn } from '@/lib/utils';
 import { gradients } from '@/styles/design-system';
+import { toTeamSlug } from '@/utils/teamSlug';
 import { getRowInteractionStyles } from '@/styles/interactionUtils';
 import { Ranking } from '@/types';
 import { formatPowerScore, getPowerScoreColor, getSosColor } from '@/utils/colors';
@@ -28,8 +29,8 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
   const isLight = resolvedTheme === 'light';
 
   const handleTeamClick = useCallback(
-    (teamId: string) => {
-      navigate(`/teams/${teamId}`, {
+    (teamName: string) => {
+      navigate(`/teams/${toTeamSlug(teamName)}`, {
         state: { from: '/stats', scrollPosition: window.scrollY },
       });
     },
@@ -37,10 +38,10 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
   );
 
   const handleRowKeyDown = useCallback(
-    (e: React.KeyboardEvent, teamId: string) => {
+    (e: React.KeyboardEvent, teamName: string) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        handleTeamClick(teamId);
+        handleTeamClick(teamName);
       }
     },
     [handleTeamClick]
@@ -76,7 +77,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
           <button
             type="button"
             key={team.teamId}
-            onClick={() => handleTeamClick(team.teamId)}
+            onClick={() => handleTeamClick(team.teamName)}
             className={cn(
               'w-full text-left',
               getRowInteractionStyles(
@@ -196,8 +197,8 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                 'hover:bg-gradient-to-r hover:from-blue-50/40 hover:to-orange-50/20 dark:hover:from-blue-900/10 dark:hover:to-orange-900/5',
                 'focus:outline-none focus:ring-4 focus:ring-primary focus:ring-offset-2'
               )}
-              onClick={() => handleTeamClick(team.teamId)}
-              onKeyDown={(e) => handleRowKeyDown(e, team.teamId)}
+              onClick={() => handleTeamClick(team.teamName)}
+              onKeyDown={(e) => handleRowKeyDown(e, team.teamName)}
             >
               <TableCell className={cn(getRankStyles(index), 'font-mono text-lg')}>
                 <div className="w-8 h-8 flex items-center justify-center rounded-full">

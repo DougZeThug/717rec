@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { typeScale } from '@/styles/design-system';
 import { WeeklyPowerScoreTrend } from '@/types/powerScoreSnapshot';
 import { formatPowerScore } from '@/utils/colors/powerScoreColors';
+import { toTeamSlug } from '@/utils/teamSlug';
 
 interface TeamOfTheWeekCardProps {
   trend: WeeklyPowerScoreTrend;
@@ -71,7 +72,7 @@ const TeamOfTheWeekCard: React.FC<TeamOfTheWeekCardProps> = ({ trend, weekNumber
           </Badge>
         </div>
 
-        <Link to={`/teams/${trend.teamId}`} className="group block">
+        <Link to={`/teams/${toTeamSlug(trend.teamName)}`} className="group block">
           <div className="flex items-center gap-4 md:gap-6">
             {/* Team Logo with glow */}
             <div className="relative flex-shrink-0">

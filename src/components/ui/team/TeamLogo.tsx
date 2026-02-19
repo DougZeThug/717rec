@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 
 import { cn } from '@/lib/utils';
 import { imageErrorLog } from '@/utils/logger';
+import { toTeamSlug } from '@/utils/teamSlug';
 
 export interface TeamLogoProps {
   imageUrl: string | null | undefined;
@@ -64,7 +65,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
 
   if (clickable && teamId) {
     return (
-      <Link to={`/teams/${teamId}`} className={cn('block', sizeClasses[size])}>
+      <Link to={`/teams/${toTeamSlug(teamName)}`} className={cn('block', sizeClasses[size])}>
         {logoContent}
       </Link>
     );

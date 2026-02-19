@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import { cn } from '@/lib/utils';
 import { blueAmberHeading } from '@/styles/design-system/blueAmber';
 import { Team } from '@/types';
+import { toTeamSlug } from '@/utils/teamSlug';
 
 import { TeamLogo } from './TeamLogo';
 
@@ -16,7 +17,7 @@ interface TeamCardCompactProps {
 const TeamCardCompact: React.FC<TeamCardCompactProps> = ({ team, rank, isWinter = false }) => {
   return (
     <Link
-      to={`/teams/${team.id}`}
+      to={`/teams/${toTeamSlug(team.name)}`}
       className={cn(
         'relative flex flex-col items-center p-3 rounded-lg',
         'border border-border/50',

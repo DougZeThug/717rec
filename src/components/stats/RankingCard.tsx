@@ -10,6 +10,7 @@ import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { Ranking } from '@/types';
 import { formatPowerScore, getPowerScoreColor, getSosColor } from '@/utils/colors';
+import { toTeamSlug } from '@/utils/teamSlug';
 
 import RankTrendIndicator from './RankTrendIndicator';
 
@@ -93,7 +94,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
         </div>
 
         <Link
-          to={`/teams/${ranking.teamId}`}
+          to={`/teams/${toTeamSlug(ranking.teamName)}`}
           state={{ from: '/stats', scrollPosition: window.scrollY }}
           aria-label={`View ${ranking.teamName} team details`}
           className="flex items-center gap-2 mt-2 group"
@@ -174,7 +175,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
       </div>
 
       <Link
-        to={`/teams/${ranking.teamId}`}
+        to={`/teams/${toTeamSlug(ranking.teamName)}`}
         state={{ from: '/stats', scrollPosition: window.scrollY }}
         aria-label={`View ${ranking.teamName} team details`}
         className="flex items-center gap-3 mb-4 group"
