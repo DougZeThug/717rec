@@ -2,6 +2,7 @@ import { ChevronDown } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router';
+import { toTeamSlug } from '@/utils/teamSlug';
 import type { TooltipProps } from 'recharts';
 import {
   CartesianGrid,
@@ -88,7 +89,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
         return (
           <p key={index} className="text-xs">
             <Link
-              to={`/teams/${teamId}`}
+              to={`/teams/${toTeamSlug(team?.teamName || teamId)}`}
               className="hover:underline transition-colors"
               style={{ color: entry.stroke }}
               onClick={(e) => e.stopPropagation()}
@@ -269,7 +270,7 @@ const AllTeamsCareerPowerScoreChartComponent: React.FC = () => {
                     <div key={teamId} className="flex items-center gap-2 text-sm">
                       <div className="w-6 h-0.5" style={{ backgroundColor: color }} />
                       <Link
-                        to={`/teams/${teamId}`}
+                        to={`/teams/${toTeamSlug(team?.teamName || teamId)}`}
                         className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors cursor-pointer"
                       >
                         {team.teamName}

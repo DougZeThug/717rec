@@ -15,6 +15,7 @@ import { useIsMobile } from '@/hooks/useMobile';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { Team } from '@/types';
+import { toTeamSlug } from '@/utils/teamSlug';
 
 import { TeamImage } from '../shared/TeamImage';
 
@@ -39,7 +40,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
 
   return (
     <EntityCard division={team.divisionName}>
-      <Link to={`/teams/${team.id}`} className="block">
+      <Link to={`/teams/${toTeamSlug(team.name)}`} className="block">
         <div
           className={cn(
             'relative flex items-center justify-center overflow-hidden',
@@ -64,7 +65,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
         )}
       >
         <div className="flex justify-between items-start">
-          <Link to={`/teams/${team.id}`} className="hover:underline flex-1 min-w-0">
+          <Link to={`/teams/${toTeamSlug(team.name)}`} className="hover:underline flex-1 min-w-0">
             <h3
               className={cn(
                 'font-bebas font-normal uppercase tracking-wide truncate text-foreground',
@@ -103,7 +104,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem asChild>
-                  <Link to={`/teams/${team.id}`}>
+                  <Link to={`/teams/${toTeamSlug(team.name)}`}>
                     <ExternalLink className="mr-2 h-4 w-4" /> View Details
                   </Link>
                 </DropdownMenuItem>

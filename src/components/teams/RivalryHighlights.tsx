@@ -7,6 +7,7 @@ import { TeamLogo } from '@/components/ui/team';
 import { useHeadToHead } from '@/hooks/useHeadToHead';
 import { cn } from '@/lib/utils';
 import { classifyRivalries, type RivalryResults } from '@/utils/teamDetailsUtils/rivalryUtils';
+import { toTeamSlug } from '@/utils/teamSlug';
 
 interface RivalryHighlightsProps {
   teamId: string;
@@ -47,7 +48,7 @@ const RivalryHighlights: React.FC<RivalryHighlightsProps> = ({ teamId }) => {
             icon={<Swords size={14} className="text-amber-500" />}
             borderColor="border-amber-500/30"
             bgColor="bg-amber-500/5"
-            onClick={() => navigate(`/teams/${topRival.opponent_id}`)}
+            onClick={() => navigate(`/teams/${toTeamSlug(topRival.opponent_name)}`)}
           />
         )}
         {topDominated && (
@@ -60,7 +61,7 @@ const RivalryHighlights: React.FC<RivalryHighlightsProps> = ({ teamId }) => {
             icon={<Crown size={14} className="text-emerald-500" />}
             borderColor="border-emerald-500/30"
             bgColor="bg-emerald-500/5"
-            onClick={() => navigate(`/teams/${topDominated.opponent_id}`)}
+            onClick={() => navigate(`/teams/${toTeamSlug(topDominated.opponent_name)}`)}
           />
         )}
         {topNemesis && (
@@ -73,7 +74,7 @@ const RivalryHighlights: React.FC<RivalryHighlightsProps> = ({ teamId }) => {
             icon={<ShieldAlert size={14} className="text-red-500" />}
             borderColor="border-red-500/30"
             bgColor="bg-red-500/5"
-            onClick={() => navigate(`/teams/${topNemesis.opponent_id}`)}
+            onClick={() => navigate(`/teams/${toTeamSlug(topNemesis.opponent_name)}`)}
           />
         )}
       </div>

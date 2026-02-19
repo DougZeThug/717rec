@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/command';
 import { useTeamsQuery } from '@/hooks/teams';
 import { cn } from '@/lib/utils';
+import { toTeamSlug } from '@/utils/teamSlug';
 
 interface CommandPaletteProps {
   open?: boolean;
@@ -120,7 +121,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 <CommandItem
                   key={team.id}
                   value={`team ${team.name}`}
-                  onSelect={() => handleSelect(`/teams/${team.id}`)}
+                  onSelect={() => handleSelect(`/teams/${toTeamSlug(team.name)}`)}
                   className="cursor-pointer"
                 >
                   <User className="mr-2 h-4 w-4" />

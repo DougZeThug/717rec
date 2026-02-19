@@ -3,6 +3,7 @@ import React from 'react';
 import { TransitionLink } from '@/components/transitions/TransitionLink';
 import { Card, CardContent } from '@/components/ui/card';
 import { Match } from '@/types';
+import { toTeamSlug } from '@/utils/teamSlug';
 
 interface MatchCardProps {
   match: Match;
@@ -57,7 +58,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <TransitionLink
-              to={`/teams/${opponentId}`}
+              to={`/teams/${toTeamSlug(opponentName)}`}
               className="hover:opacity-80 transition-opacity"
             >
               <SquareLogo
@@ -66,7 +67,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
                 fallback={opponentName.charAt(0)}
               />
             </TransitionLink>
-            <TransitionLink to={`/teams/${opponentId}`} className="hover:underline">
+            <TransitionLink to={`/teams/${toTeamSlug(opponentName)}`} className="hover:underline">
               <h3 className="font-bebas uppercase tracking-wide font-normal m-0">{opponentName}</h3>
             </TransitionLink>
           </div>

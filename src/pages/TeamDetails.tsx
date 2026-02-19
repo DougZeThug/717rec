@@ -18,6 +18,7 @@ import TeamTotals from '@/components/teams/TeamTotals';
 import { Button } from '@/components/ui/button';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useResolveTeamSlug } from '@/hooks/useResolveTeamSlug';
 import { useTeamDetails } from '@/hooks/useTeamDetails';
 import { useTeamMatches } from '@/hooks/useTeamMatches';
 import { useTeamRankings } from '@/hooks/useTeamRankings';
@@ -26,7 +27,8 @@ import { calculateClutchRecord } from '@/utils/teamDetailsUtils/matchOutcomeUtil
 import { calculateSweepRate } from '@/utils/teamDetailsUtils/sweepRateUtils';
 
 const TeamDetails = () => {
-  const { teamId } = useParams<{ teamId: string }>();
+  const { teamId: teamParam } = useParams<{ teamId: string }>();
+  const { teamId, isResolving } = useResolveTeamSlug(teamParam);
   const navigate = useNavigate();
   const location = useLocation();
   const locationState = location.state as { from?: string; scrollPosition?: number } | undefined;
@@ -70,7 +72,7 @@ const TeamDetails = () => {
     }
   };
 
-  if (isLoading || isLoadingMatches) {
+  if (isLoading || isLoadingMatches || isResolving) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Skeleton className="h-10 w-40 mb-4" />

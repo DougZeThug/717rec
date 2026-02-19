@@ -8,6 +8,7 @@ import { PercentileBadge } from '@/components/ui/PercentileBadge';
 import { useLeaguePercentiles } from '@/hooks/useLeaguePercentiles';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
+import { toTeamSlug } from '@/utils/teamSlug';
 import { CareerRanking } from '@/types/career';
 import { getPowerScoreColor, getSosColor } from '@/utils/colors';
 import { getChampionshipColor, getRunnerUpColor } from '@/utils/colors/championshipColors';
@@ -121,7 +122,7 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
                     #{index + 1}
                   </span>
                   <Link
-                    to={`/teams/${ranking.teamId}`}
+                    to={`/teams/${toTeamSlug(ranking.teamName)}`}
                     className="flex items-center gap-3 flex-1 min-w-0 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
                     onClick={(e) => e.stopPropagation()}
                   >
@@ -178,7 +179,7 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
                   <div className="flex items-center gap-3">
                     <span className="text-lg font-bold text-muted-foreground">#{index + 1}</span>
                     <Link
-                      to={`/teams/${ranking.teamId}`}
+                      to={`/teams/${toTeamSlug(ranking.teamName)}`}
                       className="flex items-center gap-3 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
                       onClick={(e) => e.stopPropagation()}
                     >
