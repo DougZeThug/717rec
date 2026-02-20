@@ -32,6 +32,7 @@ const computeTeamTotals = async (teamId: string): Promise<TeamTotals | null> => 
     playoffMatches,
     teamDivisionMap,
     bracketDivisionWeights,
+    bracketSeasonMap,
     teamDivisionWeight,
     currentSeasonId,
   } = careerData;
@@ -42,6 +43,8 @@ const computeTeamTotals = async (teamId: string): Promise<TeamTotals | null> => 
     currentMatches,
     teamId,
     currentSeasonId,
+    playoffMatches,
+    bracketSeasonMap,
   });
 
   // Calculate playoff stats

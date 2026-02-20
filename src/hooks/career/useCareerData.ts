@@ -20,6 +20,7 @@ export interface CareerData {
   playoffMatches: PlayoffMatchData[] | null;
   teamDivisionMap: Map<string, string>;
   bracketDivisionWeights: Record<string, number>;
+  bracketSeasonMap: Record<string, string>;
   teamDivisionWeight: number;
   currentSeasonId: string | null;
 }
@@ -170,6 +171,29 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
     }
   }
 
+  // Build bracket -> season_id map
+  const bracketSeasonMap: Record<string, string> = {};
+  if (playoffMatches && playoffMatches.length > 0) {
+    const bracketIds = [
+      ...new Set(playoffMatches.map((match) => match.bracket_id).filter(Boolean)),
+    ] as string[];
+
+    if (bracketIds.length > 0) {
+      const { data: bracketSeasonData } = await supabase
+        .from('brackets')
+        .select('id, season_id')
+        .in('id', bracketIds);
+
+      if (bracketSeasonData) {
+        for (const bracket of bracketSeasonData) {
+          if (bracket.season_id) {
+            bracketSeasonMap[bracket.id] = bracket.season_id;
+          }
+        }
+      }
+    }
+  }
+
   // Build lookup map: "teamId_seasonId" -> divisionname (from team_details_archive)
   const teamDivisionMap = new Map<string, string>();
   if (allTeamDetailsArchive) {
@@ -191,6 +215,7 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
     playoffMatches,
     teamDivisionMap,
     bracketDivisionWeights,
+    bracketSeasonMap,
     teamDivisionWeight,
     currentSeasonId,
   };
