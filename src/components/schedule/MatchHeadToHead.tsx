@@ -63,28 +63,29 @@ export const MatchHeadToHead: React.FC<MatchHeadToHeadProps> = ({
     const team1WinPct = (team1Wins / totalMatches) * 100;
     const team2WinPct = (team2Wins / totalMatches) * 100;
 
-    // Nemesis: either team has <= 25% win rate
-    if (team1WinPct <= 25 || team2WinPct <= 25) {
-      return {
-        label: 'Nemesis',
-        className: 'text-red-600 dark:text-red-400',
-      };
+    // Nemesis: either team has <= 18% win rate
+    if (team1WinPct <= 18 || team2WinPct <= 18) {
+      return { label: 'Nemesis', className: 'text-red-600 dark:text-red-400' };
     }
 
-    // Dominated: either team has >= 75% win rate
-    if (team1WinPct >= 75 || team2WinPct >= 75) {
-      return {
-        label: 'Dominated',
-        className: 'text-emerald-600 dark:text-emerald-400',
-      };
+    // Tough Matchup: either team has 18-30% win rate
+    if (team1WinPct <= 30 || team2WinPct <= 30) {
+      return { label: 'Tough Matchup', className: 'text-orange-600 dark:text-orange-400' };
     }
 
     // Closest rivalry: near-.500 with 3+ matches
     if (Math.abs(team1Wins - team2Wins) <= 1) {
-      return {
-        label: 'Rivalry',
-        className: 'text-amber-600 dark:text-amber-400',
-      };
+      return { label: 'Rivalry', className: 'text-amber-600 dark:text-amber-400' };
+    }
+
+    // Dominated: either team has >= 83% win rate
+    if (team1WinPct >= 83 || team2WinPct >= 83) {
+      return { label: 'Dominated', className: 'text-emerald-600 dark:text-emerald-400' };
+    }
+
+    // Favorite: either team has 70-82% win rate
+    if (team1WinPct >= 70 || team2WinPct >= 70) {
+      return { label: 'Favorite', className: 'text-teal-600 dark:text-teal-400' };
     }
 
     return null;

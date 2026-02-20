@@ -53,27 +53,27 @@ const RivalryHighlights: React.FC<RivalryHighlightsProps> = ({ teamId }) => {
         )}
         {topDominated && (
           <RivalryCard
-            label="Dominated"
+            label={topDominated.win_pct >= 83 ? 'Dominated' : 'Favorite'}
             sublabel={`${topDominated.wins}-${topDominated.losses} all-time`}
             opponentName={topDominated.opponent_name}
             opponentImageUrl={topDominated.opponent_image_url}
             opponentId={topDominated.opponent_id}
-            icon={<Crown size={14} className="text-emerald-500" />}
-            borderColor="border-emerald-500/30"
-            bgColor="bg-emerald-500/5"
+            icon={<Crown size={14} className={topDominated.win_pct >= 83 ? 'text-emerald-500' : 'text-teal-500'} />}
+            borderColor={topDominated.win_pct >= 83 ? 'border-emerald-500/30' : 'border-teal-500/30'}
+            bgColor={topDominated.win_pct >= 83 ? 'bg-emerald-500/5' : 'bg-teal-500/5'}
             onClick={() => navigate(`/teams/${toTeamSlug(topDominated.opponent_name)}`)}
           />
         )}
         {topNemesis && (
           <RivalryCard
-            label="Nemesis"
+            label={topNemesis.win_pct <= 18 ? 'Nemesis' : 'Tough Matchup'}
             sublabel={`${topNemesis.wins}-${topNemesis.losses} all-time`}
             opponentName={topNemesis.opponent_name}
             opponentImageUrl={topNemesis.opponent_image_url}
             opponentId={topNemesis.opponent_id}
-            icon={<ShieldAlert size={14} className="text-red-500" />}
-            borderColor="border-red-500/30"
-            bgColor="bg-red-500/5"
+            icon={<ShieldAlert size={14} className={topNemesis.win_pct <= 18 ? 'text-red-500' : 'text-orange-500'} />}
+            borderColor={topNemesis.win_pct <= 18 ? 'border-red-500/30' : 'border-orange-500/30'}
+            bgColor={topNemesis.win_pct <= 18 ? 'bg-red-500/5' : 'bg-orange-500/5'}
             onClick={() => navigate(`/teams/${toTeamSlug(topNemesis.opponent_name)}`)}
           />
         )}

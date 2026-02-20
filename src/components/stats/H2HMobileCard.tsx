@@ -16,7 +16,9 @@ interface H2HMobileCardProps {
 const rivalryBorderColors: Record<RivalryType, string> = {
   rival: 'border-l-amber-500',
   dominated: 'border-l-emerald-500',
+  favorite: 'border-l-teal-500',
   nemesis: 'border-l-red-500',
+  tough_matchup: 'border-l-orange-500',
 };
 
 const rivalryBadgeConfig: Record<RivalryType, { label: string; className: string }> = {
@@ -28,9 +30,17 @@ const rivalryBadgeConfig: Record<RivalryType, { label: string; className: string
     label: 'Dominated',
     className: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
   },
+  favorite: {
+    label: 'Favorite',
+    className: 'bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/30',
+  },
   nemesis: {
     label: 'Nemesis',
     className: 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30',
+  },
+  tough_matchup: {
+    label: 'Tough Matchup',
+    className: 'bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30',
   },
 };
 
