@@ -1,67 +1,41 @@
 
 
-## Seed Recreational Winter 1 2026 Playoff Matches
+## Fix: Link Winter 1 2026 Brackets to Season (No Code Changes Needed)
 
-### Summary
-Insert 11 double-elimination bracket matches into `playoff_matches` for the "Recreational Winter 1 2026" bracket. No BYEs, no schema changes.
+### Root Cause
+The three Winter 1 2026 playoff brackets have `season_id = NULL`. The database view `v_team_season_agg` -- which feeds `team_season_stats` -- joins `playoff_matches` to `brackets` and filters on `season_id IS NOT NULL`. Because the brackets aren't linked to a season, playoff results are invisible to the career stats pipeline.
 
-### Verified Data
+### Why Double-Counting Won't Happen (Already Handled)
 
-**Bracket:** `29a823d8-47b3-489c-a9f1-ebc6586d9baf` (Recreational Winter 1 2026)
-**Existing rows for this bracket:** 0 (clean insert)
+The existing architecture already prevents double-counting at every stage:
 
-**Team ID Map (all verified from DB):**
+1. **`v_team_season_agg` view** combines regular season + archived + playoff matches into one total per team per season. This is the single source of truth written into `team_season_stats`.
 
-| Team | ID |
-|---|---|
-| On a Mission | 00def929-de16-4f59-933f-ae0247b04358 |
-| Corn Kitties | ea3b15e7-8bc7-467c-85fc-7f91e89742a1 |
-| Here for Fireball | c577e0f9-6700-4220-a902-b368ca915bbd |
-| Sour Patch Kids | de3cb5fe-7c5f-4211-8876-a52140df49b7 |
-| Double Trouble | 31e0e752-e0fc-4bd1-892f-3b7123ad72b7 |
-| The Tomato Saucers | accd6e20-f761-4769-8cdc-6c9495cc231c |
-| The Cornholy Trinity | 34b1dacf-0c30-4a4c-8228-432701868f34 |
-| Sack to the Future | 92e9f091-82f2-446d-8990-576c89a120e1 |
+2. **Career calculation (`calculateCareerMatchStats`)** excludes the current active season's `team_season_stats` row (via the `currentSeasonId` filter) and instead counts current-season data directly from the `matches` table. This avoids stale/double data during an active season.
 
-Note: DB casing differs slightly from prompt (e.g., "On a Mission" not "On A Mission"). Using exact DB values.
+3. **After archival**, the season is no longer active, so `currentSeasonId` won't match it. The career code reads it purely from `team_season_stats` (which already includes playoffs from step 1).
 
-### Matches to Insert (11 total)
+4. **The `matches` table only contains regular season matches** -- playoff results live exclusively in `playoff_matches`. So there's no overlap between the two tables.
 
-**Winners Bracket (7 matches)**
+### The Fix (Data Only -- No Code Changes)
 
-| Round | Pos | Team 1 | Team 2 | Score | Status |
-|---|---|---|---|---|---|
-| 1 | 1 | On a Mission | Corn Kitties | 2-0 | completed |
-| 1 | 2 | Here for Fireball | Sour Patch Kids | 2-0 | completed |
-| 1 | 3 | Double Trouble | The Tomato Saucers | 2-0 | completed |
-| 1 | 4 | The Cornholy Trinity | Sack to the Future | 2-0 | completed |
-| 2 | 1 | On a Mission | Here for Fireball | 0-2 | completed |
-| 2 | 2 | Double Trouble | The Cornholy Trinity | 0-2 | completed |
-| 3 | 1 | Here for Fireball | The Cornholy Trinity | -- | pending |
+**Step 1: Set `season_id` on the three brackets**
 
-**Losers Bracket (4 matches)**
+Update the `brackets` table to link each Winter 1 2026 bracket to the active season (`4b90a1d8-b90a-4e47-8e8c-b89a7b54e106`):
 
-| Round | Pos | Team 1 | Team 2 | Score | Status |
-|---|---|---|---|---|---|
-| 1 | 1 | Corn Kitties | Sour Patch Kids | 2-1 | completed |
-| 1 | 2 | The Tomato Saucers | Sack to the Future | 0-2 | completed |
-| 2 | 1 | On a Mission | Corn Kitties | -- | pending |
-| 2 | 2 | Double Trouble | Sack to the Future | -- | pending |
+- Competitive Winter 1 2026 (`428f974f-...`)
+- Intermediate Winter 1 2026 (`dbf640b8-...`)
+- Recreational Winter 1 2026 (`29a823d8-...`)
 
-### Implementation
+**Step 2: Re-run `upsert_team_season_stats()`**
 
-Same approach as previous bracket seeds:
-1. Create a temporary edge function `seed-recreational-playoffs`
-2. Deploy and invoke it to batch-insert all 11 rows with idempotency check (skip if rows already exist for this bracket)
-3. Verify via SQL query
-4. Delete the temporary edge function
+This refreshes `team_season_stats` from the `v_team_season_agg` view, which will now include playoff matches because the brackets have a `season_id`.
 
-### Technical Details
+**Step 3: Verify**
 
-- `supabase.from('playoff_matches').insert([...])` with all 11 match objects
-- Each row uses `crypto.randomUUID()` for `id`
-- `best_of = 3`, `next_win_match_id` and `next_lose_match_id` = `null`, seeds = `null`
-- Completed (8): scores + winner_id + loser_id + status="completed"
-- Pending (3): scores null + winner/loser null + status="pending"
-- Deduplication: checks existing row count by bracket_id before inserting
+Confirm that teams with completed playoff matches (e.g., Miracle @ Marion) now show updated career W-L totals that include their playoff results.
+
+### What This Means for Career Records
+
+After this fix, career W-L will include playoff results for the current season -- matching the behavior of all archived seasons. When the season is eventually archived, nothing changes because the data pipeline is already consistent.
 
