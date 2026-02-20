@@ -1,10 +1,12 @@
-import { CareerMatchStatsResult, MatchData, SeasonStats } from './types';
+import { CareerMatchStatsResult, MatchData, PlayoffMatchData, SeasonStats } from './types';
 
 interface CareerMatchStatsInput {
   seasonStats: SeasonStats[] | null;
   currentMatches: MatchData[] | null;
   teamId: string;
   currentSeasonId?: string | null;
+  playoffMatches?: PlayoffMatchData[] | null;
+  bracketSeasonMap?: Record<string, string>;
 }
 
 /**
@@ -19,6 +21,8 @@ export const calculateCareerMatchStats = ({
   currentMatches,
   teamId,
   currentSeasonId,
+  playoffMatches,
+  bracketSeasonMap,
 }: CareerMatchStatsInput): CareerMatchStatsResult => {
   // Filter out current season from historical stats to avoid double-counting
   // (current season matches are counted separately from the matches table)
@@ -51,6 +55,30 @@ export const calculateCareerMatchStats = ({
           match.team1_id === teamId ? match.team1_game_wins || 0 : match.team2_game_wins || 0;
         career_game_losses +=
           match.team1_id === teamId ? match.team2_game_wins || 0 : match.team1_game_wins || 0;
+      }
+    }
+  }
+
+  // Add current-season playoff matches (historical ones are already in seasonStats)
+  if (playoffMatches && currentSeasonId && bracketSeasonMap) {
+    for (const match of playoffMatches) {
+      // Only count playoff matches from the current season
+      const bracketSeasonId = match.bracket_id ? bracketSeasonMap[match.bracket_id] : null;
+      if (bracketSeasonId !== currentSeasonId) continue;
+      if (!match.winner_id) continue;
+
+      if (match.winner_id === teamId) {
+        career_match_wins++;
+        career_game_wins +=
+          match.team1_id === teamId ? match.team1_score || 0 : match.team2_score || 0;
+        career_game_losses +=
+          match.team1_id === teamId ? match.team2_score || 0 : match.team1_score || 0;
+      } else if (match.loser_id === teamId) {
+        career_match_losses++;
+        career_game_wins +=
+          match.team1_id === teamId ? match.team1_score || 0 : match.team2_score || 0;
+        career_game_losses +=
+          match.team1_id === teamId ? match.team2_score || 0 : match.team1_score || 0;
       }
     }
   }
