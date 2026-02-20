@@ -1,41 +1,42 @@
 
 
-## Fix: Link Winter 1 2026 Brackets to Season (No Code Changes Needed)
+## Fix: Include Current Season Playoff Matches in Career W-L
 
-### Root Cause
-The three Winter 1 2026 playoff brackets have `season_id = NULL`. The database view `v_team_season_agg` -- which feeds `team_season_stats` -- joins `playoff_matches` to `brackets` and filters on `season_id IS NOT NULL`. Because the brackets aren't linked to a season, playoff results are invisible to the career stats pipeline.
+### Problem
+The career stats code in `calculateCareerMatchStats` intentionally excludes the current season's `team_season_stats` row to avoid stale data, then recounts from the `matches` table. But the `matches` table only has regular season data -- playoff results live in `playoff_matches`. So current-season playoff wins/losses are missing from career totals.
 
-### Why Double-Counting Won't Happen (Already Handled)
+The `team_season_stats` view correctly includes playoff data (14-0 for Offdogs), but the code never reads it for the active season.
 
-The existing architecture already prevents double-counting at every stage:
+### Solution
+Add current-season playoff match counting to `calculateCareerMatchStats`, matching how archived seasons already include them via `team_season_stats`.
 
-1. **`v_team_season_agg` view** combines regular season + archived + playoff matches into one total per team per season. This is the single source of truth written into `team_season_stats`.
+### Changes (3 files)
 
-2. **Career calculation (`calculateCareerMatchStats`)** excludes the current active season's `team_season_stats` row (via the `currentSeasonId` filter) and instead counts current-season data directly from the `matches` table. This avoids stale/double data during an active season.
+**1. `src/hooks/career/useCareerData.ts`**
+- When fetching bracket division weights for playoff matches, also store each bracket's `season_id` in a new map: `bracketSeasonMap: Record<string, string>`
+- Export this map as part of the `CareerData` interface
+- The data is already being fetched from the `brackets` table -- just need to also read `season_id` from the existing query
 
-3. **After archival**, the season is no longer active, so `currentSeasonId` won't match it. The career code reads it purely from `team_season_stats` (which already includes playoffs from step 1).
+**2. `src/utils/career/calculateCareerMatchStats.ts`**
+- Add two new optional parameters to the input interface:
+  - `playoffMatches: PlayoffMatchData[] | null`
+  - `bracketSeasonMap: Record<string, string>` (bracket_id to season_id)
+- After the existing `currentMatches` loop, add a new loop over `playoffMatches` that:
+  - Skips matches where the bracket's season doesn't match `currentSeasonId` (historical ones are already in `seasonStats`)
+  - Skips matches with no `winner_id` (pending)
+  - Counts wins/losses and game scores from `team1_score`/`team2_score`
 
-4. **The `matches` table only contains regular season matches** -- playoff results live exclusively in `playoff_matches`. So there's no overlap between the two tables.
+**3. `src/hooks/career/useTeamTotalsComputed.ts`**
+- Pass the new `bracketSeasonMap` from career data into the `calculateCareerMatchStats` call
+- Pass `playoffMatches` into the call
 
-### The Fix (Data Only -- No Code Changes)
+**Also update `src/hooks/useTeamTotals.ts`** (backward compat wrapper) with the same parameter additions.
 
-**Step 1: Set `season_id` on the three brackets**
+### Why No Double-Counting
+- Historical seasons: `seasonStats` rows already include playoffs (from `v_team_season_agg`). The new code only counts playoff matches where `bracketSeasonMap[bracket_id] === currentSeasonId`, so historical playoffs are skipped.
+- Current season: `currentSeasonId` is filtered out of `seasonStats`, so the current season's `team_season_stats` row (which includes playoffs) is never used. Instead, we count from `matches` (regular) + `playoffMatches` (playoffs) -- no overlap since they're separate tables.
+- After archival: The season is no longer active, so it won't match `currentSeasonId`. It gets read entirely from `seasonStats` (which includes playoffs). The new playoff loop won't fire for it.
 
-Update the `brackets` table to link each Winter 1 2026 bracket to the active season (`4b90a1d8-b90a-4e47-8e8c-b89a7b54e106`):
-
-- Competitive Winter 1 2026 (`428f974f-...`)
-- Intermediate Winter 1 2026 (`dbf640b8-...`)
-- Recreational Winter 1 2026 (`29a823d8-...`)
-
-**Step 2: Re-run `upsert_team_season_stats()`**
-
-This refreshes `team_season_stats` from the `v_team_season_agg` view, which will now include playoff matches because the brackets have a `season_id`.
-
-**Step 3: Verify**
-
-Confirm that teams with completed playoff matches (e.g., Miracle @ Marion) now show updated career W-L totals that include their playoff results.
-
-### What This Means for Career Records
-
-After this fix, career W-L will include playoff results for the current season -- matching the behavior of all archived seasons. When the season is eventually archived, nothing changes because the data pipeline is already consistent.
+### No Database Changes Required
+All data is already correct in the database. This is purely a frontend calculation fix.
 
