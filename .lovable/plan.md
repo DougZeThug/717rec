@@ -1,76 +1,95 @@
 
 
-## Move ranking snapshot saves to match completion events
+## Fix: Realtime Subscription Failures and Container Race Condition on Playoffs Page
 
-### Problem
-Currently, `saveRankingsToStorage` is called every time the rankings page renders -- from 3 separate locations. This causes:
-- 401 errors for anonymous visitors (the Sentry error you saw)
-- Wasteful database writes on every page load by every visitor
-- Overwrites of the "previous rankings" snapshot constantly, making the rank-change feature unreliable
+### What's Happening
 
-### What changes
+There are two related errors occurring when navigating between brackets on the Playoffs page:
 
-**1. Remove `saveRankingsToStorage` calls from page-load code (3 files)**
+1. **"Realtime subscription FAILED"** -- The realtime subscription to the `match` table keeps failing with `CHANNEL_ERROR`. The root cause is that `toast` and `queryClient` are in the `useEffect` dependency array (line 111 of `useBracketsManagerRealtime.ts`). The `toast` function from `useToast()` is **not referentially stable** -- it changes on every render. This causes the subscription effect to tear down and recreate the channel repeatedly. During rapid bracket switching, the old channel errors out while a new one spins up, triggering the Sentry error.
 
-- `src/hooks/useTeamRankings.ts` (line 113) -- remove the `saveRankingsToStorage(finalRankings)` call
-- `src/services/RankingsCalculationService.ts` (line 32) -- remove the `saveRankingsToStorage(finalRankings)` call
-- `src/utils/rankingUtils/sortAndUpdateRankings.ts` (line 19) -- remove the `saveRankingsToStorage(finalRankings)` call
+2. **"Container element not found!"** -- When switching between brackets, the `BracketsViewerComponent` starts an async render (`renderBracket`), but by the time it checks `containerRef.current`, the component has unmounted (user navigated to a different bracket). The ref is null, triggering the error log and Sentry event.
 
-These hooks/services will continue to calculate and return rankings for display, but will no longer try to persist them on every render.
+### Fix 1: Stabilize realtime subscription dependencies
 
-**2. Add ranking snapshot save to the match completion flow**
+**File: `src/hooks/brackets/useBracketsManagerRealtime.ts`**
 
-After scores are submitted, the app already calls `invalidateMatchRelatedQueries` to refresh cached data. We add a ranking snapshot save at these two key entry points:
+Use `useRef` for `toast` and `queryClient` (same pattern already used in `usePlayoffRealtime.ts`), so the subscription effect only depends on `bracketId` and `stageId`:
 
-- `src/hooks/matches/utils/queryCacheUtils.ts` -- enhance `invalidateMatchRelatedQueries` to also trigger a ranking snapshot save after cache invalidation completes. This covers all score submission paths (mass score entry, individual match updates, playoff match updates).
+- Store `toast` in a `toastRef` and `queryClient` in a `queryClientRef`
+- Update the refs when values change via a separate `useEffect`
+- Remove `toast` and `queryClient` from the subscription effect's dependency array
+- Access them via `.current` inside the callback
 
-The logic will:
-1. Check if the user is authenticated (skip for anonymous)
-2. Wait for cache invalidation to complete
-3. Fetch the freshly calculated rankings from the query cache
-4. Call `saveRankingsToStorage` with those rankings
+### Fix 2: Add unmount guard to async bracket rendering
 
-**3. Keep localStorage fallback for anonymous visitors**
+**File: `src/components/playoffs/viewer/BracketsViewerComponent.tsx`**
 
-The `usePreviousRankings` hook will continue to load from the database (for authenticated users) or localStorage (for anonymous visitors). No changes needed there -- it already handles both cases.
+Add an `isCancelled` flag in the `useEffect` that runs `renderBracket`. If the effect cleanup runs (component unmounts or deps change) before the async work completes, skip the container check and rendering:
 
-### Technical details
+- Add `let cancelled = false;` at the start of the effect
+- Return `() => { cancelled = true; }` in the cleanup
+- Check `if (cancelled) return;` before the container element check and before calling `bracketsViewer.render()`
+- Change the `containerRef.current` null check from an `errorLog` to a `warnLog` since it's a benign race condition, not a real error
 
-**queryCacheUtils.ts changes:**
+### Technical Details
+
+**useBracketsManagerRealtime.ts changes:**
 
 ```typescript
-export const invalidateMatchRelatedQueries = async (queryClient: QueryClient) => {
-  // ... existing invalidation logic ...
+const toastRef = useRef(toast);
+const queryClientRef = useRef(queryClient);
 
-  // After invalidation, save ranking snapshot (authenticated users only)
-  try {
-    const { supabase } = await import('@/integrations/supabase/client');
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      // Small delay to let React Query refetch rankings
-      setTimeout(async () => {
-        const rankingsData = queryClient.getQueryData<Ranking[]>(['rankings']);
-        if (rankingsData && rankingsData.length > 0) {
-          const { saveRankingsToStorage } = await import('@/utils/rankingUtils');
-          await saveRankingsToStorage(rankingsData);
-        }
-      }, 2000);
-    }
-  } catch {
-    // Non-critical, silently ignore
-  }
-};
+useEffect(() => {
+  toastRef.current = toast;
+}, [toast]);
+
+useEffect(() => {
+  queryClientRef.current = queryClient;
+}, [queryClient]);
+
+// In the subscription effect, use toastRef.current and queryClientRef.current
+// Dependency array becomes: [bracketId, stageId]
 ```
 
-**Files modified:**
-- `src/hooks/useTeamRankings.ts` -- remove saveRankingsToStorage call
-- `src/services/RankingsCalculationService.ts` -- remove saveRankingsToStorage call and import
-- `src/utils/rankingUtils/sortAndUpdateRankings.ts` -- remove saveRankingsToStorage call and import
-- `src/hooks/matches/utils/queryCacheUtils.ts` -- add post-invalidation ranking snapshot save
+**BracketsViewerComponent.tsx changes (inside the main useEffect):**
 
-### What this achieves
-- Eliminates the 401 Sentry errors for anonymous users
-- Ranking snapshots only update when scores actually change (not on every page view)
-- Rank change indicators become meaningful (showing change since last score update, not since last page load)
-- Reduces unnecessary database writes significantly
+```typescript
+useEffect(() => {
+  let cancelled = false;
+
+  // ... existing guards ...
+
+  const initAndRender = async () => {
+    // ... load scripts ...
+    if (cancelled) return;
+    await renderBracket();
+  };
+
+  const renderBracket = async () => {
+    // ... existing transformation logic ...
+    if (cancelled) return;
+
+    const container = containerRef.current;
+    if (!container) {
+      warnLog('Container element not found (component likely unmounted)');
+      return; // Don't set error state -- benign race
+    }
+    // ... rest of rendering ...
+  };
+
+  initAndRender();
+  return () => { cancelled = true; };
+}, [/* existing deps */]);
+```
+
+### Files Modified
+- `src/hooks/brackets/useBracketsManagerRealtime.ts` -- stabilize toast/queryClient refs
+- `src/components/playoffs/viewer/BracketsViewerComponent.tsx` -- add cancellation guard for async rendering
+
+### What This Achieves
+- Eliminates the "Realtime subscription FAILED" Sentry errors caused by unstable effect dependencies
+- Eliminates the "Container element not found!" Sentry errors caused by async race conditions during navigation
+- Realtime subscriptions become stable and only recreate when the actual bracket or stage changes
+- No behavior changes for users -- these were purely internal race condition errors
 
