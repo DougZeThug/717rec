@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,6 +21,18 @@ export function useBracketsManagerRealtime(
   const [stageId, setStageId] = useState<number | null>(providedStageId ?? null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Use refs to prevent subscription recreation when toast/queryClient change
+  const toastRef = useRef(toast);
+  const queryClientRef = useRef(queryClient);
+
+  useEffect(() => {
+    toastRef.current = toast;
+  }, [toast]);
+
+  useEffect(() => {
+    queryClientRef.current = queryClient;
+  }, [queryClient]);
 
   // Fetch stageId if not provided
   useEffect(() => {
@@ -81,11 +93,11 @@ export function useBracketsManagerRealtime(
           setLastUpdate(new Date());
 
           // Immediately invalidate and refetch the cache
-          queryClient.invalidateQueries({ queryKey: ['bracket-data', bracketId] });
-          queryClient.invalidateQueries({ queryKey: ['bracket-info', bracketId] });
-          queryClient.refetchQueries({ queryKey: ['bracket-data', bracketId] });
+          queryClientRef.current.invalidateQueries({ queryKey: ['bracket-data', bracketId] });
+          queryClientRef.current.invalidateQueries({ queryKey: ['bracket-info', bracketId] });
+          queryClientRef.current.refetchQueries({ queryKey: ['bracket-data', bracketId] });
 
-          toast({
+          toastRef.current({
             title: 'Bracket Updated',
             description: 'Match scores have been updated.',
             duration: 3000,
@@ -108,7 +120,7 @@ export function useBracketsManagerRealtime(
       supabase.removeChannel(channel);
       setRealtimeEnabled(false);
     };
-  }, [bracketId, stageId, queryClient, toast]);
+  }, [bracketId, stageId]); // Only depend on bracketId and stageId - toast/queryClient accessed via refs
 
   return { realtimeEnabled, lastUpdate, stageId };
 }
