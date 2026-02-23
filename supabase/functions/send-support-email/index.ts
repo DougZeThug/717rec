@@ -17,6 +17,15 @@ interface SupportRequest {
   message: string;
 }
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 const SUBJECT_LABELS: Record<string, string> = {
   bug_report: 'Bug Report',
   feature_request: 'Feature Request',
@@ -30,7 +39,15 @@ serve(async (req: Request) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
-  }
+    }
+
+    // Validate input lengths
+    if (name.length > 100 || email.length > 255 || subject.length > 100 || message.length > 5000) {
+      return new Response(JSON.stringify({ error: 'Input exceeds maximum length' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
   try {
     const { name, email, subject, message }: SupportRequest = await req.json();
@@ -67,19 +84,22 @@ serve(async (req: Request) => {
       });
     }
 
-    // Send email via Resend
-    const subjectLabel = SUBJECT_LABELS[subject] || subject;
+    // Send email via Resend - escape all user inputs to prevent XSS
+    const subjectLabel = SUBJECT_LABELS[subject] || escapeHtml(subject);
+    const safeName = escapeHtml(name);
+    const safeEmail = escapeHtml(email);
+    const safeMessage = escapeHtml(message);
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">New Support Request</h2>
         <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <p><strong>From:</strong> ${name}</p>
-          <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+          <p><strong>From:</strong> ${safeName}</p>
+          <p><strong>Email:</strong> <a href="mailto:${safeEmail}">${safeEmail}</a></p>
           <p><strong>Subject:</strong> ${subjectLabel}</p>
         </div>
         <div style="padding: 20px; border-left: 4px solid #0066cc;">
           <h3 style="margin-top: 0;">Message:</h3>
-          <p style="white-space: pre-wrap;">${message}</p>
+          <p style="white-space: pre-wrap;">${safeMessage}</p>
         </div>
         <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
         <p style="color: #666; font-size: 12px;">
@@ -98,7 +118,7 @@ serve(async (req: Request) => {
         from: '717REC Support <noreply@717rec.com>',
         to: ['admin@717rec.com'],
         reply_to: email,
-        subject: `[717REC Support] ${subjectLabel} from ${name}`,
+        subject: `[717REC Support] ${subjectLabel} from ${safeName}`,
         html: emailHtml,
       }),
     });
