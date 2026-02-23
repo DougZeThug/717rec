@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { toast } from '@/hooks/useToast';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
@@ -26,6 +27,7 @@ const MessageInputForm: React.FC<MessageInputFormProps> = ({ onSend }) => {
   const [isSending, setIsSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { user } = useAuth();
+  const { isAdminAccessGranted } = useAdminAccess();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,8 +77,7 @@ const MessageInputForm: React.FC<MessageInputFormProps> = ({ onSend }) => {
     });
   };
 
-  // Check if user is admin (for announcement capability)
-  const isAdmin = user?.app_metadata?.role === 'admin' || user?.user_metadata?.isAdmin === true;
+  const isAdmin = isAdminAccessGranted;
 
   return (
     <Card className={cn('border p-3 shadow-sm mt-3', animations.fadeInSlideUp)}>
