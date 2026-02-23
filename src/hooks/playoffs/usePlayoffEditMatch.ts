@@ -178,7 +178,8 @@ export const usePlayoffEditMatch = () => {
             .select(
               `
             *,
-            bracket:brackets!playoff_matches_bracket_id_fkey(id, uses_brackets_manager)
+            bracket:brackets!playoff_matches_bracket_id_fkey(id, uses_brackets_manager),
+            playoff_games(*)
           `
             )
             .eq('id', matchId)
@@ -245,6 +246,16 @@ export const usePlayoffEditMatch = () => {
             nextWinMatchId: typedMatchData.next_win_match_id,
             nextLoseMatchId: typedMatchData.next_lose_match_id,
             status: (typedMatchData.status as 'pending' | 'in_progress' | 'completed') || 'pending',
+            games: ((matchData as any).playoff_games || [])
+              .sort((a: any, b: any) => a.game_number - b.game_number)
+              .map((g: any) => ({
+                id: g.id,
+                matchId: g.match_id,
+                gameNumber: g.game_number,
+                team1Score: g.team1_score,
+                team2Score: g.team2_score,
+                winnerId: g.winner_id,
+              })),
           };
 
           playoffLog('Loaded playoff match:', playoffMatch.id);
