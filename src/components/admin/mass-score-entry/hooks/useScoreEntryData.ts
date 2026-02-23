@@ -89,48 +89,46 @@ export const useScoreEntryData = () => {
     );
 
     try {
-      // For each match, reverse old stats if it was already completed before applying new stats
-      for (const match of validMatches) {
-        const original = originalMatches.get(match.id);
-
-        // If the match was previously completed with a winner, reverse the old stats first
-        if (original?.iscompleted && original.winnerId && original.loserId) {
-          const oldWinnerGameWins =
-            original.winnerId === original.team1Id
-              ? original.team1_game_wins || 0
-              : original.team2_game_wins || 0;
-          const oldLoserGameWins =
-            original.loserId === original.team1Id
-              ? original.team1_game_wins || 0
-              : original.team2_game_wins || 0;
-
-          scoreLog(`Reversing old stats for already-completed match ${match.id}`, {
-            oldWinner: original.winnerId,
-            oldLoser: original.loserId,
-            oldWinnerGameWins,
-            oldLoserGameWins,
-          });
-
-          await reverseTeamStats(
-            original.winnerId,
-            original.loserId,
-            oldWinnerGameWins,
-            oldLoserGameWins
-          );
-        }
-      }
-
-      // Submit all matches in parallel and track results
+      // Per-match reversal + submission (paired to prevent double-decrement)
       const results = await Promise.allSettled(
-        validMatches.map((match) =>
-          handleSubmitScore({
+        validMatches.map(async (match) => {
+          const original = originalMatches.get(match.id);
+
+          // Reverse old stats for this specific match before submitting new scores
+          if (original?.iscompleted && original.winnerId && original.loserId) {
+            const oldWinnerGameWins =
+              original.winnerId === original.team1Id
+                ? original.team1_game_wins || 0
+                : original.team2_game_wins || 0;
+            const oldLoserGameWins =
+              original.loserId === original.team1Id
+                ? original.team1_game_wins || 0
+                : original.team2_game_wins || 0;
+
+            scoreLog(`Reversing old stats for match ${match.id}`, {
+              oldWinner: original.winnerId,
+              oldLoser: original.loserId,
+              oldWinnerGameWins,
+              oldLoserGameWins,
+            });
+
+            await reverseTeamStats(
+              original.winnerId,
+              original.loserId,
+              oldWinnerGameWins,
+              oldLoserGameWins
+            );
+          }
+
+          // Immediately submit new scores for this match
+          return handleSubmitScore({
             matchId: match.id,
             team1Score: match.team1Score ?? 0,
             team2Score: match.team2Score ?? 0,
             team1GameWins: match.team1_game_wins ?? 0,
             team2GameWins: match.team2_game_wins ?? 0,
-          })
-        )
+          });
+        })
       );
 
       // Determine which submissions succeeded/failed
@@ -164,10 +162,6 @@ export const useScoreEntryData = () => {
           title: '✅ Matches Submitted',
           description: `${succeededIds.length} match(es) successfully submitted.${failedIds.length > 0 ? ` ${failedIds.length} failed.` : ''}`,
         });
-
-        await invalidateMatchRelatedQueries(queryClient);
-        const fetchedMatches = await fetchMatches(filters);
-        setMatches(fetchedMatches);
       } else {
         toast({
           title: 'Error',
@@ -179,7 +173,7 @@ export const useScoreEntryData = () => {
       const errorMessage = error instanceof Error ? error.message : String(error);
       errorLog('Error submitting matches:', error);
 
-      // Rollback all on catastrophic error
+      // Rollback UI on catastrophic error
       setMatches((prev) =>
         prev.map((m) =>
           validMatchIds.includes(m.id)
@@ -194,6 +188,10 @@ export const useScoreEntryData = () => {
         variant: 'destructive',
       });
     } finally {
+      // ALWAYS refetch to reset originalMatches snapshot (prevents double-decrement on retry)
+      await invalidateMatchRelatedQueries(queryClient);
+      const fetchedMatches = await fetchMatches(filters);
+      setMatches(fetchedMatches);
       setSubmitting(false);
     }
   };

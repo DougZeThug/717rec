@@ -105,7 +105,7 @@ export const useMatchUpdate = ({
         next_loser_match_id: data.next_loser_match_id,
         best_of: data.best_of,
         created_at: data.created_at,
-        status: data.status,
+        // status field not on matches table
       };
 
       // Update the matches state
