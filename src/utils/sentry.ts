@@ -38,6 +38,19 @@ export const initSentry = () => {
     // NO integrations on initial load - replay added lazily below
     integrations: [],
 
+    // Suppress fetch breadcrumbs that are network failures (no status code)
+    beforeBreadcrumb(breadcrumb) {
+      if (
+        breadcrumb.category === 'fetch' &&
+        breadcrumb.level === 'error' &&
+        breadcrumb.data &&
+        !breadcrumb.data.status_code
+      ) {
+        return null;
+      }
+      return breadcrumb;
+    },
+
     // Sample rate for performance monitoring (0 = disabled, 1 = 100%)
     tracesSampleRate: 0.1,
 
@@ -47,6 +60,16 @@ export const initSentry = () => {
 
     // Filter out known non-critical errors
     beforeSend(event, hint) {
+      // Filter network errors from exception values (covers cases where hint may not have originalException)
+      const exceptionValue = event.exception?.values?.[0]?.value || '';
+      if (
+        exceptionValue.includes('Failed to fetch') ||
+        exceptionValue.includes('Load failed') ||
+        exceptionValue.includes('NetworkError')
+      ) {
+        return null;
+      }
+
       const error = hint.originalException;
 
       // Ignore network errors that are expected
@@ -58,6 +81,8 @@ export const initSentry = () => {
           message.includes('resizeobserver loop') ||
           message.includes('loading chunk') ||
           message.includes('failed to fetch') ||
+          message.includes('load failed') ||
+          message.includes('networkerror') ||
           message.includes('network request failed')
         ) {
           return null;
