@@ -1,5 +1,17 @@
 import { supabase } from '@/integrations/supabase/client';
 
+interface SeasonPowerScoreData {
+  power_score: number | null;
+  match_wins: number | null;
+  match_losses: number | null;
+}
+
+interface CurrentTeamPowerData {
+  power_score: number | null;
+  wins: number | null;
+  losses: number | null;
+}
+
 interface CareerPowerScoreInput {
   teamId: string;
   championshipDivisions: string[];
@@ -8,6 +20,9 @@ interface CareerPowerScoreInput {
   careerPlayoffLosses: number;
   competitivePlayoffWins: number;
   teamDivisionWeight: number;
+  // Optional pre-fetched data to avoid redundant DB queries (used by batch mode)
+  prefetchedSeasonStats?: SeasonPowerScoreData[] | null;
+  prefetchedCurrentTeamData?: CurrentTeamPowerData | null;
 }
 
 /**
@@ -34,7 +49,7 @@ const getChampionshipWeight = (divisionName: string): number => {
 
 /**
  * Calculates career power score as weighted average of season power scores + playoff bonuses.
- * This function requires database access for current season data.
+ * Accepts optional pre-fetched data to skip DB queries when called in batch mode.
  */
 export const calculateCareerPowerScore = async ({
   teamId,
@@ -44,23 +59,34 @@ export const calculateCareerPowerScore = async ({
   careerPlayoffLosses,
   competitivePlayoffWins,
   teamDivisionWeight,
+  prefetchedSeasonStats,
+  prefetchedCurrentTeamData,
 }: CareerPowerScoreInput): Promise<number> => {
-  // Fetch season stats and current team data in parallel
-  const [seasonStatsResult, currentTeamDataResult] = await Promise.all([
-    supabase
-      .from('team_season_stats')
-      .select('power_score, match_wins, match_losses')
-      .eq('team_id', teamId)
-      .not('power_score', 'is', null),
-    supabase
-      .from('v_team_details')
-      .select('power_score, wins, losses')
-      .eq('team_id', teamId)
-      .single(),
-  ]);
+  let seasonStats: SeasonPowerScoreData[] | null;
+  let currentTeamData: CurrentTeamPowerData | null;
 
-  const seasonStats = seasonStatsResult.data;
-  const currentTeamData = currentTeamDataResult.data;
+  if (prefetchedSeasonStats !== undefined && prefetchedCurrentTeamData !== undefined) {
+    // Use pre-fetched data (batch mode) — no DB queries needed
+    seasonStats = prefetchedSeasonStats;
+    currentTeamData = prefetchedCurrentTeamData;
+  } else {
+    // Fetch from DB (single-team mode — backward compatible)
+    const [seasonStatsResult, currentTeamDataResult] = await Promise.all([
+      supabase
+        .from('team_season_stats')
+        .select('power_score, match_wins, match_losses')
+        .eq('team_id', teamId)
+        .not('power_score', 'is', null),
+      supabase
+        .from('v_team_details')
+        .select('power_score, wins, losses')
+        .eq('team_id', teamId)
+        .single(),
+    ]);
+
+    seasonStats = seasonStatsResult.data;
+    currentTeamData = currentTeamDataResult.data;
+  }
 
   // Calculate weighted average of season power scores (no division penalties)
   let totalWeightedScore = 0;
