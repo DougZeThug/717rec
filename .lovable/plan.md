@@ -1,95 +1,72 @@
 
 
-## Fix: Realtime Subscription Failures and Container Race Condition on Playoffs Page
+## Fix: Reduce Sentry noise from transient network failures
 
-### What's Happening
+### Problem
 
-There are two related errors occurring when navigating between brackets on the Playoffs page:
+When a user's internet briefly drops (even for a few seconds), the stats page fires 60+ parallel Supabase requests that all fail simultaneously. Each failure gets reported to Sentry as a separate error event, creating massive noise from a single transient network blip.
 
-1. **"Realtime subscription FAILED"** -- The realtime subscription to the `match` table keeps failing with `CHANNEL_ERROR`. The root cause is that `toast` and `queryClient` are in the `useEffect` dependency array (line 111 of `useBracketsManagerRealtime.ts`). The `toast` function from `useToast()` is **not referentially stable** -- it changes on every render. This causes the subscription effect to tear down and recreate the channel repeatedly. During rapid bracket switching, the old channel errors out while a new one spins up, triggering the Sentry error.
+The Sentry logs show no HTTP status codes on the failing requests (unlike the 401 errors we fixed earlier), which confirms these are network-level failures (browser couldn't reach Supabase at all), not server errors.
 
-2. **"Container element not found!"** -- When switching between brackets, the `BracketsViewerComponent` starts an async render (`renderBracket`), but by the time it checks `containerRef.current`, the component has unmounted (user navigated to a different bracket). The ref is null, triggering the error log and Sentry event.
+### Root Cause
 
-### Fix 1: Stabilize realtime subscription dependencies
+The Sentry SDK's default breadcrumb/error handling treats every failed `fetch` as a reportable event. The app has no filtering to distinguish between:
+- **Transient network failures** (user's wifi briefly dropped) -- not actionable
+- **Real API errors** (401, 500, etc.) -- actionable
 
-**File: `src/hooks/brackets/useBracketsManagerRealtime.ts`**
+### Fix: Filter network errors in Sentry configuration
 
-Use `useRef` for `toast` and `queryClient` (same pattern already used in `usePlayoffRealtime.ts`), so the subscription effect only depends on `bracketId` and `stageId`:
+**File: Sentry initialization (likely `src/utils/sentry.ts` or `src/main.tsx`)**
 
-- Store `toast` in a `toastRef` and `queryClient` in a `queryClientRef`
-- Update the refs when values change via a separate `useEffect`
-- Remove `toast` and `queryClient` from the subscription effect's dependency array
-- Access them via `.current` inside the callback
+Add a `beforeBreadcrumb` filter to the Sentry SDK configuration that suppresses `fetch` breadcrumbs with no `status_code` (network failures). Also add a `beforeSend` filter to prevent raw `TypeError: Failed to fetch` errors from being sent as events.
 
-### Fix 2: Add unmount guard to async bracket rendering
-
-**File: `src/components/playoffs/viewer/BracketsViewerComponent.tsx`**
-
-Add an `isCancelled` flag in the `useEffect` that runs `renderBracket`. If the effect cleanup runs (component unmounts or deps change) before the async work completes, skip the container check and rendering:
-
-- Add `let cancelled = false;` at the start of the effect
-- Return `() => { cancelled = true; }` in the cleanup
-- Check `if (cancelled) return;` before the container element check and before calling `bracketsViewer.render()`
-- Change the `containerRef.current` null check from an `errorLog` to a `warnLog` since it's a benign race condition, not a real error
+This way:
+- Real HTTP errors (401, 500, etc.) still get reported
+- Network-level failures (no connectivity) are silently ignored
+- The app's existing React Query retry logic handles recovery automatically
 
 ### Technical Details
 
-**useBracketsManagerRealtime.ts changes:**
+**Sentry config changes:**
 
 ```typescript
-const toastRef = useRef(toast);
-const queryClientRef = useRef(queryClient);
-
-useEffect(() => {
-  toastRef.current = toast;
-}, [toast]);
-
-useEffect(() => {
-  queryClientRef.current = queryClient;
-}, [queryClient]);
-
-// In the subscription effect, use toastRef.current and queryClientRef.current
-// Dependency array becomes: [bracketId, stageId]
-```
-
-**BracketsViewerComponent.tsx changes (inside the main useEffect):**
-
-```typescript
-useEffect(() => {
-  let cancelled = false;
-
-  // ... existing guards ...
-
-  const initAndRender = async () => {
-    // ... load scripts ...
-    if (cancelled) return;
-    await renderBracket();
-  };
-
-  const renderBracket = async () => {
-    // ... existing transformation logic ...
-    if (cancelled) return;
-
-    const container = containerRef.current;
-    if (!container) {
-      warnLog('Container element not found (component likely unmounted)');
-      return; // Don't set error state -- benign race
+Sentry.init({
+  // ... existing config ...
+  
+  beforeBreadcrumb(breadcrumb) {
+    // Suppress fetch breadcrumbs that are network failures (no status code)
+    if (
+      breadcrumb.category === 'fetch' &&
+      breadcrumb.level === 'error' &&
+      breadcrumb.data &&
+      !breadcrumb.data.status_code
+    ) {
+      return null; // Drop this breadcrumb
     }
-    // ... rest of rendering ...
-  };
+    return breadcrumb;
+  },
 
-  initAndRender();
-  return () => { cancelled = true; };
-}, [/* existing deps */]);
+  beforeSend(event) {
+    // Filter out "Failed to fetch" / "Load failed" network errors
+    const message = event.exception?.values?.[0]?.value || '';
+    if (
+      message.includes('Failed to fetch') ||
+      message.includes('Load failed') ||
+      message.includes('NetworkError')
+    ) {
+      return null; // Don't send to Sentry
+    }
+    return event;
+  },
+});
 ```
 
 ### Files Modified
-- `src/hooks/brackets/useBracketsManagerRealtime.ts` -- stabilize toast/queryClient refs
-- `src/components/playoffs/viewer/BracketsViewerComponent.tsx` -- add cancellation guard for async rendering
+- Sentry initialization file (need to locate exact file) -- add breadcrumb and event filters for network failures
 
 ### What This Achieves
-- Eliminates the "Realtime subscription FAILED" Sentry errors caused by unstable effect dependencies
-- Eliminates the "Container element not found!" Sentry errors caused by async race conditions during navigation
-- Realtime subscriptions become stable and only recreate when the actual bracket or stage changes
-- No behavior changes for users -- these were purely internal race condition errors
+- Eliminates the flood of Sentry errors from brief connectivity drops
+- Keeps all actionable errors (auth failures, server errors, app bugs) reporting normally
+- No behavior change for users -- React Query already retries failed requests automatically
+- Reduces Sentry event volume and cost
 
