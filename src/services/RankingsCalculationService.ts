@@ -1,6 +1,6 @@
 import { Match, Ranking, Team } from '@/types';
 import { errorLog } from '@/utils/logger';
-import { saveRankingsToStorage, sortRankings, updateRankChanges } from '@/utils/rankingUtils';
+import { sortRankings, updateRankChanges } from '@/utils/rankingUtils';
 import { createRankingObject } from '@/utils/rankingUtils/createRankingObject';
 import { fetchDivisionWeights } from '@/utils/rankingUtils/divisionWeightsCache';
 
@@ -27,11 +27,6 @@ export const calculateRankings = async (
 
     // Update rank changes
     const finalRankings = updateRankChanges(sortedRankings);
-
-    // Save current rankings to database (async, don't wait)
-    saveRankingsToStorage(finalRankings).catch((err) =>
-      errorLog('Failed to save rankings:', err)
-    );
 
     return finalRankings;
   } catch (error) {
