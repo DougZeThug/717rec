@@ -81,6 +81,7 @@ export const useAuth = () => {
       if (!currentSession) {
         authLog('No session, clearing profile');
         setProfile(null);
+        setIsProfileLoading(false);
       } else if (
         event === 'SIGNED_IN' ||
         event === 'INITIAL_SESSION' ||
@@ -101,6 +102,7 @@ export const useAuth = () => {
           // Skip if effect was cleaned up or user changed since this fetch started
           if (isCancelled || currentUserId !== fetchUserId) {
             authLog('Skipping stale profile fetch for user:', fetchUserId);
+            if (!isCancelled && currentUserId === null) setIsProfileLoading(false);
             return;
           }
 
