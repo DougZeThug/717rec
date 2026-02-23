@@ -1,19 +1,26 @@
 
 
-## Fix: Published Build Failing Due to ESLint Peer Dependency Conflict
+## Approve: Production Dependency Bumps
 
-### Problem
-`eslint-plugin-react-hooks@7.0.1` only supports ESLint up to v9, but the project uses ESLint v10. The React team hasn't released a compatible version yet (open issue on GitHub). The preview works fine, but the published build uses strict `npm ci` which fails on peer dependency conflicts.
+All 9 updates are minor or patch version bumps with no breaking changes expected:
 
-### Solution
-Create an `.npmrc` file with `legacy-peer-deps=true` so the published build tolerates this known peer dependency mismatch.
+| Package | From | To | Type |
+|---|---|---|---|
+| @capgo/capacitor-social-login | 8.3.2 | 8.3.6 | patch |
+| @sentry/react | 10.38.0 | 10.39.0 | minor |
+| @supabase/supabase-js | 2.96.0 | 2.97.0 | minor |
+| framer-motion | 12.34.1 | 12.34.3 | patch |
+| lucide-react | 0.564.0 | 0.575.0 | minor |
+| react-hook-form | 7.71.1 | 7.71.2 | patch |
+| react-intersection-observer | 10.0.2 | 10.0.3 | patch |
+| react-resizable-panels | 4.6.4 | 4.6.5 | patch |
+| tailwind-merge | 3.4.1 | 3.5.0 | minor |
 
 ### Changes
 
-**New file: `.npmrc`**
-```
-legacy-peer-deps=true
-```
+**`package.json`** -- Update version ranges for all 9 dependencies to their new versions.
 
-This is a single-file addition. The plugin works fine with ESLint 10 at runtime -- it's purely a metadata issue in the package's `peerDependencies` field that hasn't been updated yet. Once the React team releases a compatible version, the `.npmrc` workaround can be removed.
+### Risk Assessment
+
+All updates stay within their major version. The `.npmrc` with `legacy-peer-deps=true` is already in place to handle any transient peer dependency mismatches. No code changes required.
 
