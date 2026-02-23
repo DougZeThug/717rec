@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 
-import { useToast } from '@/hooks/useToast';
 import { useTeamRecords } from '@/hooks/useTeamRecords';
+import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import { Match, Team } from '@/types';
 import { errorLog } from '@/utils/logger';
@@ -40,22 +40,42 @@ export const useMatchUpdate = ({
         editingMatch.team1_game_wins !== matchData.team1_game_wins ||
         editingMatch.team2_game_wins !== matchData.team2_game_wins;
 
+      const updatePayload: {
+        team1_id: string;
+        team2_id: string;
+        date: string | undefined;
+        location: string;
+        iscompleted: boolean | undefined;
+        team1_score: number | undefined;
+        team2_score: number | undefined;
+        winner_id: string | undefined;
+        loser_id: string | undefined;
+        team1_game_wins?: number;
+        team2_game_wins?: number;
+      } = {
+        team1_id: matchData.team1Id,
+        team2_id: matchData.team2Id,
+        date: matchData.date,
+        location: matchData.location || '',
+        iscompleted: matchData.iscompleted,
+        team1_score: matchData.team1Score,
+        team2_score: matchData.team2Score,
+        winner_id: matchData.winnerId,
+        loser_id: matchData.loserId,
+      };
+
+      if (matchData.team1_game_wins !== undefined) {
+        updatePayload.team1_game_wins = matchData.team1_game_wins;
+      }
+
+      if (matchData.team2_game_wins !== undefined) {
+        updatePayload.team2_game_wins = matchData.team2_game_wins;
+      }
+
       // Update the match in Supabase
       const { data, error } = await supabase
         .from('matches')
-        .update({
-          team1_id: matchData.team1Id,
-          team2_id: matchData.team2Id,
-          date: matchData.date,
-          location: matchData.location || '',
-          iscompleted: matchData.iscompleted,
-          team1_score: matchData.team1Score,
-          team2_score: matchData.team2Score,
-          winner_id: matchData.winnerId,
-          loser_id: matchData.loserId,
-          team1_game_wins: matchData.team1_game_wins || 0,
-          team2_game_wins: matchData.team2_game_wins || 0,
-        })
+        .update(updatePayload)
         .eq('id', editingMatch.id)
         .select()
         .single();
@@ -64,6 +84,7 @@ export const useMatchUpdate = ({
 
       // Transform the returned match to our app's format
       const updatedMatch: Match = {
+        ...editingMatch,
         id: data.id,
         team1Id: data.team1_id,
         team2Id: data.team2_id,
@@ -77,11 +98,19 @@ export const useMatchUpdate = ({
         team1_game_wins: data.team1_game_wins,
         team2_game_wins: data.team2_game_wins,
         round_number: data.round_number,
+        position: data.position,
+        bracket_id: data.bracket_id,
+        match_type: data.match_type,
+        next_match_id: data.next_match_id,
+        next_loser_match_id: data.next_loser_match_id,
+        best_of: data.best_of,
+        created_at: data.created_at,
+        status: data.status,
       };
 
       // Update the matches state
       const updatedMatches = matches.map((match) =>
-        match.id === updatedMatch.id ? updatedMatch : match
+        match.id === updatedMatch.id ? { ...match, ...updatedMatch } : match
       );
       setMatches(updatedMatches);
 
