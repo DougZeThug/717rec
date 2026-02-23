@@ -1,3 +1,4 @@
 // Career hooks
-export { type CareerData, fetchCareerData } from './useCareerData';
+export { type CareerData, type BulkTeamCareerData, fetchCareerData, fetchAllTeamsCareerData } from './useCareerData';
+export { computeAllTeamsTotals } from './computeAllTeamsTotals';
 export { useTeamTotalsComputed } from './useTeamTotalsComputed';
