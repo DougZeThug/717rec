@@ -54,26 +54,34 @@ export class BracketAdminService {
           }
         }
 
-        // If clearDownstream is requested, nullify downstream matches
+        // If clearDownstream is requested, selectively nullify downstream matches
         if (clearDownstream) {
           const downstream = await this.checkDownstreamPopulation(matchId);
+          const wpId = downstream.winnerParticipantId;
 
           for (const downstreamMatch of downstream.downstreamMatches) {
+            const updatePayload: Record<string, any> = {
+              status: 1, // Reset to Waiting
+              opponent1_result: null,
+              opponent2_result: null,
+              opponent1_score: null,
+              opponent2_score: null,
+            };
+
+            // Only null the slot that was fed by the reopened match
+            if (wpId && downstreamMatch.opponent1?.id === wpId) {
+              updatePayload.opponent1_id = null;
+            } else if (wpId && downstreamMatch.opponent2?.id === wpId) {
+              updatePayload.opponent2_id = null;
+            }
+
             await supabase
               .from('match')
-              .update({
-                opponent1_id: null,
-                opponent2_id: null,
-                opponent1_result: null,
-                opponent2_result: null,
-                opponent1_score: null,
-                opponent2_score: null,
-                status: 1, // Reset to Waiting
-              })
+              .update(updatePayload)
               .eq('id', downstreamMatch.id);
           }
 
-          bracketLog('Cleared downstream matches', {
+          bracketLog('Cleared downstream matches (selective)', {
             matchId,
             clearedCount: downstream.downstreamMatches.length,
             clearedIds: downstream.downstreamMatches.map((m: any) => m.id),
@@ -265,27 +273,53 @@ export class BracketAdminService {
   private async checkDownstreamPopulation(matchId: number): Promise<{
     hasDownstream: boolean;
     downstreamMatches: any[];
+    winnerParticipantId: number | string | null;
   }> {
     const currentMatch = await this.storage.select('match', matchId);
     if (!currentMatch) {
-      return { hasDownstream: false, downstreamMatches: [] };
+      return { hasDownstream: false, downstreamMatches: [], winnerParticipantId: null };
+    }
+
+    const winnerParticipantId = currentMatch.opponent1?.id || currentMatch.opponent2?.id;
+    if (!winnerParticipantId) {
+      return { hasDownstream: false, downstreamMatches: [], winnerParticipantId: null };
+    }
+
+    // Get current round to determine round number for directionality
+    const currentRound = await this.storage.select('round', currentMatch.round_id);
+    if (!currentRound) {
+      return { hasDownstream: false, downstreamMatches: [], winnerParticipantId };
+    }
+
+    // Fetch all rounds for this stage to build a round-number lookup
+    const allRounds = await this.storage.select('round', { stage_id: currentMatch.stage_id });
+    const roundNumberById = new Map<number | string, number>();
+    if (Array.isArray(allRounds)) {
+      for (const r of allRounds) {
+        roundNumberById.set(r.id, r.number);
+      }
     }
 
     // Get all matches in the same stage
     const allMatches = await this.storage.select('match', { stage_id: currentMatch.stage_id });
 
-    // Find matches that have this match's participants as opponents
-    const winnerParticipantId = currentMatch.opponent1?.id || currentMatch.opponent2?.id;
-
+    // Only consider matches in strictly later rounds that contain the winner
     const populated = allMatches.filter(
-      (m: any) =>
-        m.id !== matchId &&
-        (m.opponent1?.id === winnerParticipantId || m.opponent2?.id === winnerParticipantId)
+      (m: any) => {
+        if (m.id === matchId) return false;
+        const hasParticipant =
+          m.opponent1?.id === winnerParticipantId ||
+          m.opponent2?.id === winnerParticipantId;
+        if (!hasParticipant) return false;
+        const mRoundNumber = roundNumberById.get(m.round_id);
+        return mRoundNumber !== undefined && mRoundNumber > currentRound.number;
+      }
     );
 
     return {
       hasDownstream: populated.length > 0,
       downstreamMatches: populated,
+      winnerParticipantId,
     };
   }
 }
