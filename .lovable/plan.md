@@ -1,47 +1,26 @@
 
 
-## Fix: Load existing playoff_games when editing a match
+## Fix: Clear winner/loser fields when match is incomplete or tied
 
 ### Problem
 
-The `usePlayoffEditMatch` hook fetches match data without joining `playoff_games`, so the editor always initializes with a single default 0-0 game instead of actual historical scores. Saving overwrites the real game data.
+`determineMatchOutcome` in `src/components/schedule/form-utils.ts` returns `{}` for incomplete or tied matches. The destructured `winnerId`/`loserId` become `undefined`, and Supabase's `.update()` silently omits `undefined` properties from the PATCH payload. This means existing `winner_id`/`loser_id` values are never cleared, causing stale wins in standings.
 
-### Changes
+### Fix
 
-**File: `src/hooks/playoffs/usePlayoffEditMatch.ts`**
+**File: `src/components/schedule/form-utils.ts`**
 
-1. Add `playoff_games(*)` to the Supabase select query for the playoff_matches fetch (the UUID branch around line 136)
+Update `determineMatchOutcome` to return explicit `null` values instead of `{}`, and update the return type accordingly:
 
-2. Map the fetched `playoff_games` rows onto the `PlayoffMatch.games` property, sorted by `game_number`
+- Change return type from `{ winnerId?: string; loserId?: string }` to `{ winnerId: string | null; loserId: string | null }`
+- Return `{ winnerId: null, loserId: null }` for incomplete, missing-score, and tied cases
+- No change needed for the winner/loser determination branches (they already return string values)
 
-3. For the brackets-manager (integer ID) branch, games are stored differently (via `match_game` table / `child_count`), so no change needed there -- that path already works via the brackets-manager library
+### Why this works
 
-### Technical detail
-
-```
-// In the UUID branch (~line 136), change the select to:
-.select(`
-  *,
-  bracket:brackets!playoff_matches_bracket_id_fkey(id, uses_brackets_manager),
-  playoff_games(*)
-`)
-
-// Then when building playoffMatch (~line 178), add:
-games: ((matchData as any).playoff_games || [])
-  .sort((a: any, b: any) => a.game_number - b.game_number)
-  .map((g: any) => ({
-    id: g.id,
-    matchId: g.match_id,
-    gameNumber: g.game_number,
-    team1Score: g.team1_score,
-    team2Score: g.team2_score,
-    winnerId: g.winner_id,
-  })),
-```
-
-This ensures `useMatchScoreState` receives the real games array and initializes the editor with actual scores instead of the fallback default.
+Supabase's `.update()` includes `null` properties in the PATCH payload (setting the column to NULL), but omits `undefined` properties entirely. Changing from `undefined` to `null` ensures the database columns are actually cleared.
 
 ### Scope
 
-Only `src/hooks/playoffs/usePlayoffEditMatch.ts` is modified. No other files need changes -- `useMatchScoreState` already handles the `match.games` array correctly when it's populated.
+Only `src/components/schedule/form-utils.ts` is modified. The callers (`MatchForm.tsx`, `MatchFormRHF.tsx`) already destructure and pass these values through without type issues since `string | null` is compatible with the Supabase update payload types.
 
