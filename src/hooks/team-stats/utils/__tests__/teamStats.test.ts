@@ -113,4 +113,12 @@ describe('Team Stats Updates', () => {
     // Verify RPC was never called
     expect(supabase.rpc).not.toHaveBeenCalled();
   });
+
+  it('should throw an error when winnerId equals loserId with different casing', async () => {
+    await expect(
+      applyMatchResult('8F42B1C3-5D9E-4A7B-B2E1-9C3F4D5A6E7B', '8f42b1c3-5d9e-4a7b-b2e1-9c3f4d5a6e7b', 2, 1)
+    ).rejects.toThrow('Winner and loser must be different teams');
+
+    expect(supabase.rpc).not.toHaveBeenCalled();
+  });
 });

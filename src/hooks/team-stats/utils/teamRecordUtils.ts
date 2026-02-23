@@ -7,6 +7,10 @@ export async function applyMatchResult(
   winnerGameWins: number,
   loserGameWins: number
 ) {
+  // Normalize UUIDs to lowercase for case-insensitive comparison
+  winnerId = winnerId.toLowerCase();
+  loserId = loserId.toLowerCase();
+
   // Validate that winner and loser are different teams
   if (winnerId === loserId) {
     const errorMsg = 'Winner and loser must be different teams';
