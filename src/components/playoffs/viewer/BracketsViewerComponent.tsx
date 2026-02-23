@@ -111,6 +111,8 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
       return;
     }
 
+    let cancelled = false;
+
     // Dynamically load brackets-viewer script and CSS if not already loaded
     const initAndRender = async () => {
       try {
@@ -120,10 +122,13 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
           loadBracketStyles(),
         ]);
       } catch (err) {
+        if (cancelled) return;
         errorLog('Failed to load brackets-viewer resources:', err);
         setError('Failed to load bracket viewer library');
         return;
       }
+
+      if (cancelled) return;
 
       if (!window.bracketsViewer) {
         setError('brackets-viewer library not loaded');
@@ -138,6 +143,8 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
       try {
         // Wait for fonts to be ready (CRITICAL FIX for layout/connector timing)
         await document.fonts.ready;
+
+        if (cancelled) return;
 
         bracketLog('Starting bracket transformation', {
           usesBracketsManager: bracket.uses_brackets_manager,
@@ -157,6 +164,8 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
           // Legacy: Use playoff_matches table
           result = BracketsViewerAdapter.transform(bracket, teams, bracket.participants);
         }
+
+        if (cancelled) return;
 
         // Store the mapping function in ref
         getPlayoffMatchIdRef.current = result.getPlayoffMatchId;
@@ -239,12 +248,13 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
           }
         };
 
+        if (cancelled) return;
+
         // Verify container exists
         const container = containerRef.current;
         if (!container) {
-          errorLog('Container element not found!');
-          setError('Bracket container not ready');
-          return;
+          warnLog('Container element not found (component likely unmounted during async render)');
+          return; // Don't set error state -- benign race condition
         }
 
         // Set participant images before rendering (required by brackets-viewer API)
@@ -286,6 +296,8 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
           setError('Bracket data integrity failed: identity tags missing');
           return;
         }
+
+        if (cancelled) return;
 
         // Render using brackets-viewer v1.8.1 with try/catch
         bracketLog('Calling bracketsViewer.render', {
@@ -344,6 +356,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
 
         // Check for CSS-based connectors (not SVG)
         setTimeout(() => {
+          if (cancelled) return;
           const container = containerRef.current;
           if (!container) return;
 
@@ -371,6 +384,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
         setIsInitialized(true);
         setError(null);
       } catch (err) {
+        if (cancelled) return;
         errorLog('Error rendering brackets-viewer:', err);
         setError(err instanceof Error ? err.message : 'Unknown error');
       }
@@ -380,6 +394,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
 
     // Cleanup on unmount
     return () => {
+      cancelled = true;
       if (containerRef.current) {
         containerRef.current.innerHTML = '';
       }
