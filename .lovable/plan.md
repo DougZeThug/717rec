@@ -1,26 +1,24 @@
 
 
-## Approve: Production Dependency Bumps
+## Fix: Published Build Still Failing Despite .npmrc
 
-All 9 updates are minor or patch version bumps with no breaking changes expected:
+### Problem
+The `.npmrc` with `legacy-peer-deps=true` is present, but `npm ci` in the build environment is still failing on the peer dependency conflict between `eslint-plugin-react-hooks@7.0.1` and `eslint@10.0.0`. This is likely because the lockfile was generated with strict peer dependency metadata, and `npm ci` resolves from the lockfile before applying `.npmrc` settings.
 
-| Package | From | To | Type |
-|---|---|---|---|
-| @capgo/capacitor-social-login | 8.3.2 | 8.3.6 | patch |
-| @sentry/react | 10.38.0 | 10.39.0 | minor |
-| @supabase/supabase-js | 2.96.0 | 2.97.0 | minor |
-| framer-motion | 12.34.1 | 12.34.3 | patch |
-| lucide-react | 0.564.0 | 0.575.0 | minor |
-| react-hook-form | 7.71.1 | 7.71.2 | patch |
-| react-intersection-observer | 10.0.2 | 10.0.3 | patch |
-| react-resizable-panels | 4.6.4 | 4.6.5 | patch |
-| tailwind-merge | 3.4.1 | 3.5.0 | minor |
+### Solution
+Add an `overrides` field to `package.json` that explicitly tells npm to use `eslint@10.0.0` when resolving peer dependencies for `eslint-plugin-react-hooks`. This approach is embedded in the lockfile during regeneration and is more reliable than the `.npmrc` flag alone.
 
 ### Changes
 
-**`package.json`** -- Update version ranges for all 9 dependencies to their new versions.
+**`package.json`** -- Add an `overrides` section:
+```json
+"overrides": {
+  "eslint-plugin-react-hooks": {
+    "eslint": "$eslint"
+  }
+}
+```
 
-### Risk Assessment
+This tells npm: "when `eslint-plugin-react-hooks` asks for `eslint`, use whatever version the root project has installed." The `$eslint` syntax references the root dependency.
 
-All updates stay within their major version. The `.npmrc` with `legacy-peer-deps=true` is already in place to handle any transient peer dependency mismatches. No code changes required.
-
+The existing `.npmrc` with `legacy-peer-deps=true` will remain as a belt-and-suspenders measure.
