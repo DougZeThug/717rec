@@ -62,9 +62,9 @@ export const determineMatchOutcome = (
   team2Id: string,
   team1Score: number | undefined,
   team2Score: number | undefined
-): { winnerId?: string; loserId?: string } => {
+): { winnerId: string | null; loserId: string | null } => {
   if (!isCompleted || team1Score === undefined || team2Score === undefined) {
-    return {};
+    return { winnerId: null, loserId: null };
   }
 
   if (team1Score > team2Score) {
@@ -73,7 +73,7 @@ export const determineMatchOutcome = (
     return { winnerId: team2Id, loserId: team1Id };
   }
 
-  return {};
+  return { winnerId: null, loserId: null };
 };
 
 /**
