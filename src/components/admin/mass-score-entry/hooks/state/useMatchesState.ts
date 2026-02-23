@@ -26,26 +26,34 @@ export const useMatchesState = () => {
 
   // This is for the original style (team1/team2 toggle)
   const handleScoreChange = (index: number, team: 'team1' | 'team2', value: string) => {
-    const newMatches = [...matches];
     const scoreValue = value === '' ? null : parseInt(value, 10);
-    const match = newMatches[index];
 
-    if (team === 'team1') {
-      match.team1Score = scoreValue;
-    } else {
-      match.team2Score = scoreValue;
-    }
-
-    match.isEdited = true;
-    match.isValid = validateMatchScores(match.team1Score, match.team2Score);
-    setMatches(newMatches);
+    setMatches((prev) => {
+      const match = prev[index];
+      const newMatches = [...prev];
+      const updatedScore = team === 'team1'
+        ? { team1Score: scoreValue }
+        : { team2Score: scoreValue };
+      const merged = { ...match, ...updatedScore };
+      newMatches[index] = {
+        ...merged,
+        isEdited: true,
+        isValid: validateMatchScores(merged.team1Score, merged.team2Score),
+      };
+      return newMatches;
+    });
   };
 
   const handleMarkCompleted = (index: number, checked: boolean) => {
-    const newMatches = [...matches];
-    newMatches[index].iscompleted = checked;
-    newMatches[index].isEdited = true;
-    setMatches(newMatches);
+    setMatches((prev) => {
+      const newMatches = [...prev];
+      newMatches[index] = {
+        ...prev[index],
+        iscompleted: checked,
+        isEdited: true,
+      };
+      return newMatches;
+    });
   };
 
   return {
