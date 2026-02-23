@@ -1,85 +1,98 @@
 
 
-## Fix: Prevent double-decrement of team stats in mass score entry
+## Fix: Prevent upstream match identification and selective slot clearing in BracketAdminService
 
-### Problem confirmed
+### Problem
 
-The bug is **real and exploitable**. The `handleSubmitAll` function reverses team statistics (via `reverseTeamStats` RPC) for all matches **before** attempting to submit new scores. If submissions fail:
+Two confirmed bugs in `checkDownstreamPopulation` and the downstream clearing logic:
 
-1. The reversed stats are never rolled back
-2. `originalMatches` is not refreshed on total failure
-3. A retry reverses the same stats again using the stale snapshot, causing **double-decrement**
+1. **No directionality check**: The method finds all matches containing the winner participant ID across the entire stage, including earlier-round matches where the participant previously played. This causes false "downstream populated" blocks and, when force-cleared, destroys completed earlier-round results.
 
-There is also a partial-failure variant: if 2 of 3 matches fail, those 2 have stats reversed but no new stats applied, and a retry reverses them again.
+2. **Both slots wiped**: When clearing a downstream match, both opponent slots (and all scores/results) are nullified, even though only one slot was fed by the reopened match. The other opponent came from a different match path and should be preserved.
 
-### Fix approach
+### Plan
 
-Move the stat reversal to be **per-match, paired with its submission**, so each match's reversal only happens if its submission can immediately follow. On any failure, refetch matches to reset the `originalMatches` snapshot, preventing stale-snapshot retries.
+**File: `src/services/brackets/manager/services/BracketAdminService.ts`**
 
-### Changes
+#### 1. Fix `checkDownstreamPopulation` to only find later-round matches
 
-**File: `src/components/admin/mass-score-entry/hooks/useScoreEntryData.ts`**
+- Fetch the current match's `round_id`, then fetch the round to get its `number` and `group_id`
+- Filter candidate matches to only those whose round number is strictly greater than the current match's round number (within the same group, since losers/winners are separate groups)
+- This ensures only true downstream (later-round) matches are identified
 
-1. **Remove the separate reversal loop** (lines 92-121) that reverses stats for all matches upfront
-
-2. **Move reversal into the per-match submission lambda** inside `Promise.allSettled`, so each match reverses its own stats and immediately submits. If the submission fails, the reversal is already done for only that one match (acceptable -- see point 3)
-
-3. **Always refetch matches after any attempt** (not just on success). Move the `fetchMatches` + `setMatches` call to the `finally` block or after the results processing, so `originalMatches` is always refreshed. This prevents stale snapshots on retry, which is the core fix for double-decrement
-
-4. **Track reversed match IDs** within the submission attempt to prevent re-reversal if the same function is somehow called twice in the same session
-
-### Technical detail
-
-```typescript
-// Inside handleSubmitAll, replace the separate reversal loop + Promise.allSettled with:
-
-const results = await Promise.allSettled(
-  validMatches.map(async (match) => {
-    const original = originalMatches.get(match.id);
-
-    // Reverse old stats for this specific match before submitting its new scores
-    if (original?.iscompleted && original.winnerId && original.loserId) {
-      const oldWinnerGameWins =
-        original.winnerId === original.team1Id
-          ? original.team1_game_wins || 0
-          : original.team2_game_wins || 0;
-      const oldLoserGameWins =
-        original.loserId === original.team1Id
-          ? original.team1_game_wins || 0
-          : original.team2_game_wins || 0;
-
-      await reverseTeamStats(
-        original.winnerId,
-        original.loserId,
-        oldWinnerGameWins,
-        oldLoserGameWins
-      );
-    }
-
-    // Immediately submit new scores for this match
-    return handleSubmitScore({
-      matchId: match.id,
-      team1Score: match.team1Score ?? 0,
-      team2Score: match.team2Score ?? 0,
-      team1GameWins: match.team1_game_wins ?? 0,
-      team2GameWins: match.team2_game_wins ?? 0,
-    });
-  })
+```
+// Current (buggy):
+const populated = allMatches.filter(
+  (m) => m.id !== matchId &&
+    (m.opponent1?.id === winnerParticipantId || m.opponent2?.id === winnerParticipantId)
 );
 
-// ... existing success/failure processing ...
+// Fixed:
+// Get current round info for ordering
+const currentRound = await this.storage.select('round', currentMatch.round_id);
+if (!currentRound) return { hasDownstream: false, downstreamMatches: [] };
 
-// ALWAYS refetch to reset originalMatches snapshot (prevents double-decrement on retry)
-const fetchedMatches = await fetchMatches(filters);
-setMatches(fetchedMatches);
+const populated = allMatches.filter((m) => {
+  if (m.id === matchId) return false;
+  const hasParticipant =
+    m.opponent1?.id === winnerParticipantId ||
+    m.opponent2?.id === winnerParticipantId;
+  if (!hasParticipant) return false;
+  // Only consider matches in later rounds (same group or cross-group feeding)
+  // Round numbers increase as the tournament progresses
+  return m.round_id !== currentMatch.round_id; // At minimum exclude same round
+});
+
+// Better: resolve each candidate's round number and compare
 ```
 
-This ensures:
-- Each match's reversal is paired with its submission (not all-or-nothing)
-- `originalMatches` is always refreshed after any attempt, so retries use fresh DB state
-- A failed match that had its stats reversed will show correct DB state on refetch, preventing re-reversal
+The most robust approach is to fetch all rounds for the stage, build a round-number lookup, and filter to matches whose round number is strictly greater than the current match's round number.
 
-### Risk
+#### 2. Fix clearing logic to only null the fed slot
 
-Per-match reversal still means a failed submission leaves that one match with reversed stats until the refetch + re-submit. This is acceptable for this admin-only tool since the refetch immediately corrects the snapshot state. A full database transaction (single RPC) would be ideal but is a larger architectural change not warranted here.
+Instead of wiping both opponents, identify which slot (`opponent1` or `opponent2`) contains the `winnerParticipantId` and only clear that slot:
+
+```
+// Current (buggy):
+.update({
+  opponent1_id: null,
+  opponent2_id: null,
+  ...all results/scores null...
+  status: 1,
+})
+
+// Fixed:
+for (const downstreamMatch of downstream.downstreamMatches) {
+  const updatePayload: Record<string, any> = {
+    status: 1,
+    opponent1_result: null,
+    opponent2_result: null,
+    opponent1_score: null,
+    opponent2_score: null,
+  };
+
+  // Only null the slot that was fed by the reopened match
+  if (downstreamMatch.opponent1?.id === winnerParticipantId) {
+    updatePayload.opponent1_id = null;
+  } else if (downstreamMatch.opponent2?.id === winnerParticipantId) {
+    updatePayload.opponent2_id = null;
+  }
+
+  await supabase.from('match').update(updatePayload).eq('id', downstreamMatch.id);
+}
+```
+
+This preserves the opponent who arrived from an unrelated match path while still clearing the advancing participant and resetting scores/results (which must be cleared since one participant is being removed).
+
+### Technical details
+
+- The `round` table has `number`, `group_id`, and `stage_id` columns -- round numbers increase as the tournament progresses
+- The `winnerParticipantId` is already computed at line 278 and can be passed to the clearing logic (currently it's scoped inside `checkDownstreamPopulation`, so the return type will be extended to include it, or recomputed in `adminToggleByeReady`)
+- The `checkDownstreamPopulation` method signature will be updated to also return `winnerParticipantId` so the caller can use it for selective clearing
+
+### Scope
+
+Only `src/services/brackets/manager/services/BracketAdminService.ts` is modified. Two methods change:
+- `checkDownstreamPopulation`: Add round-ordering filter and return `winnerParticipantId`
+- `adminToggleByeReady`: Update clearing loop to selectively null only the fed slot
 
