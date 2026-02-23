@@ -72,7 +72,7 @@ export class BracketSeedingService {
       // Step 6: Update seeding via brackets-manager
       await this.manager.update.seeding(stageId, seedingArray, keepSameSize);
 
-      // Step 7: Update participant positions in database
+      // Step 7: Re-read participants (names may have been reassigned by brackets-manager)
       const participants = await this.storage.select('participant', {
         tournament_id: bracketId,
       });
@@ -82,14 +82,24 @@ export class BracketSeedingService {
           Array.isArray(participants) ? participants : [participants]
         ) as StorageParticipant[];
 
-        // Update positions for each participant
+        // Synchronize position and team_id for every participant row
         for (const participant of participantArray) {
-          const team = teamsBySeed.find((t) => t.name === participant.name);
-          if (team) {
+          if (participant.name === null) {
+            // BYE slot — clear team_id and keep a valid position
             await supabase
               .from('participant')
-              .update({ position: team.seed })
+              .update({ position: null, team_id: null })
               .eq('id', participant.id);
+          } else {
+            const team = teamsBySeed.find((t) => t.name === participant.name);
+            if (team) {
+              // Use 1-based index in the seed-ordered array as the bracket slot position
+              const slotPosition = teamsBySeed.indexOf(team) + 1;
+              await supabase
+                .from('participant')
+                .update({ position: slotPosition, team_id: team.id })
+                .eq('id', participant.id);
+            }
           }
         }
       }
