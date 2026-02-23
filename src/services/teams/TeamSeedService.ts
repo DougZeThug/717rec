@@ -1,6 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
 import { handleDatabaseError } from '@/utils/errorHandler';
-import { DatabaseError } from '@/types/errors';
 
 /**
  * Service layer for team seed operations
@@ -30,37 +29,28 @@ export const updateTeamSeed = async (
 };
 
 /**
- * Update multiple team seeds in bulk
+ * Update multiple team seeds in bulk using a single atomic RPC call.
+ * Uses batch_update_team_seeds so all updates run in one DB transaction,
+ * which allows the DEFERRABLE unique constraint on (division_id, seed) to
+ * be satisfied at the end of the transaction rather than per-row — preventing
+ * unique constraint violations during seed swaps and reorders.
  * @throws {DatabaseError} When database operations fail
  */
 export const bulkUpdateTeamSeeds = async (
   updates: Array<{ teamId: string; seed: number | null }>
 ): Promise<any[]> => {
-  const results = await Promise.allSettled(
-    updates.map(({ teamId, seed }) =>
-      supabase.from('teams').update({ seed }).eq('id', teamId).select().single()
-    )
-  );
-
-  // Check for both rejected promises AND Supabase errors in fulfilled promises
-  const errors: any[] = [];
-  const successData: any[] = [];
-
-  results.forEach((result) => {
-    if (result.status === 'rejected') {
-      errors.push(result.reason);
-    } else if (result.value.error) {
-      errors.push(result.value.error);
-    } else {
-      successData.push(result.value.data);
-    }
+  const { data, error } = await supabase.rpc('batch_update_team_seeds', {
+    p_updates: updates.map(({ teamId, seed }) => ({
+      team_id: teamId,
+      seed: seed === null ? 'null' : seed.toString(),
+    })),
   });
 
-  if (errors.length > 0) {
-    throw new DatabaseError(`Failed to update ${errors.length} team seeds`, errors);
+  if (error) {
+    handleDatabaseError(error, 'Failed to bulk update team seeds');
   }
 
-  return successData;
+  return (data as any)?.results ?? [];
 };
 
 /**
