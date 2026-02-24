@@ -1,50 +1,52 @@
 
 
-## Fix: Sentry filter not catching network errors sent as message events
+## Fix: Filter transient network-caused Sentry messages in `errorLog`
 
 ### Problem
 
-The `errorLog` function in `src/utils/logger.ts` sends errors to Sentry two ways:
-1. As **exception events** via `captureError` (when an `Error` object is found)
-2. As **message events** via `captureMessage` (when only a string is found)
+When a network request fails (status_code: 0), Supabase returns a PostgREST error object that is **not** an `Error` instance. In `errorLog`, this means:
+1. No `Error` is found in args
+2. The string arg `"Bracket query error:"` is sent via `captureMessage`
+3. The `beforeSend` filter only checks for `"Failed to fetch"` / `"Load failed"` / `"NetworkError"` in the message — but the message is just the context string
 
-The "Failed to fetch current season:" error hits path #2 because `handleDatabaseError` constructs a `DatabaseError` that wraps the original network error. When `errorLog` receives `("Failed to fetch current season:", postgrestErrorObject)`, the PostgREST error object is not an `Error` instance, so `errorLog` falls through to `captureMessage` with the string.
-
-The `beforeSend` Sentry filter only checks `event.exception?.values?.[0]?.value`, which is undefined for message events. So these "Failed to fetch" messages slip through.
+This causes generic context messages like `"Bracket query error:"` and `"CRITICAL ERROR in useBracketData:"` to be reported to Sentry whenever there's a transient network drop.
 
 ### Root Cause
 
-The `beforeSend` filter in `src/utils/sentry.ts` doesn't inspect `event.message` for network error patterns -- only `event.exception.values`.
+The `errorLog` function doesn't inspect the PostgREST error object's `.message` property for network error patterns before deciding to send to Sentry. PostgREST errors from network failures contain `"TypeError: Failed to fetch"` in their message, but since they're plain objects (not `Error` instances), `errorLog` ignores them and sends only the context string.
 
 ### Fix
 
-**File: `src/utils/sentry.ts`**
-
-Add a check for `event.message` at the top of the `beforeSend` callback, alongside the existing exception check:
+**File: `src/utils/logger.ts`** — In the `else if (messageArg)` branch (line 50-52), before calling `captureMessage`, check if any of the additional args contain network error indicators. If they do, skip the Sentry report.
 
 ```typescript
-beforeSend(event, hint) {
-  // Filter network errors from message events (sent via captureMessage)
-  const eventMessage = event.message || '';
-  if (
-    eventMessage.includes('Failed to fetch') ||
-    eventMessage.includes('Load failed') ||
-    eventMessage.includes('NetworkError')
-  ) {
-    return null;
+} else if (messageArg) {
+  const additionalArgs = args.filter((a) => a !== messageArg);
+  
+  // Check if any argument contains a network error message (e.g., PostgREST error from fetch failure)
+  const isNetworkError = additionalArgs.some((arg) => {
+    if (arg && typeof arg === 'object') {
+      const msg = (arg as any).message || '';
+      return (
+        msg.includes('Failed to fetch') ||
+        msg.includes('Load failed') ||
+        msg.includes('NetworkError')
+      );
+    }
+    return false;
+  });
+  
+  if (!isNetworkError) {
+    captureMessage(String(messageArg), 'error', additionalArgs.length > 0 ? { additionalArgs } : undefined);
   }
-
-  // Filter network errors from exception values (existing code)
-  const exceptionValue = event.exception?.values?.[0]?.value || '';
-  // ... rest of existing beforeSend logic
 }
 ```
 
-### Files Modified
-- `src/utils/sentry.ts` -- add `event.message` check in `beforeSend`
-
 ### What This Achieves
-- Catches network errors sent as Sentry message events (not just exception events)
-- Prevents "Failed to fetch current season" from being reported during transient connectivity drops
-- No change to real error reporting -- only filters messages containing network error patterns
+- Prevents context-only messages like "Bracket query error:" from being sent to Sentry when caused by transient network failures
+- Real errors with non-network PostgREST messages still get reported
+- Console logging is unaffected — all errors still appear in the browser console
+
+### Files Modified
+- `src/utils/logger.ts` — add network error check before `captureMessage` in `errorLog`
 
