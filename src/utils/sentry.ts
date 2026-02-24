@@ -60,6 +60,16 @@ export const initSentry = () => {
 
     // Filter out known non-critical errors
     beforeSend(event, hint) {
+      // Filter network errors from message events (sent via captureMessage)
+      const eventMessage = event.message || '';
+      if (
+        eventMessage.includes('Failed to fetch') ||
+        eventMessage.includes('Load failed') ||
+        eventMessage.includes('NetworkError')
+      ) {
+        return null;
+      }
+
       // Filter network errors from exception values (covers cases where hint may not have originalException)
       const exceptionValue = event.exception?.values?.[0]?.value || '';
       if (
