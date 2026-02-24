@@ -81,7 +81,7 @@ export const calculateCareerPowerScore = async ({
         .from('v_team_details')
         .select('power_score, wins, losses')
         .eq('team_id', teamId)
-        .single(),
+        .maybeSingle(),
     ]);
 
     seasonStats = seasonStatsResult.data;
@@ -105,9 +105,10 @@ export const calculateCareerPowerScore = async ({
 
   // Add current season data if available (power score already on 0-100 scale)
   if (
-    currentTeamData?.power_score !== null &&
-    currentTeamData?.wins !== null &&
-    currentTeamData?.losses !== null
+    currentTeamData &&
+    currentTeamData.power_score !== null &&
+    currentTeamData.wins !== null &&
+    currentTeamData.losses !== null
   ) {
     const currentSeasonMatches = (currentTeamData.wins || 0) + (currentTeamData.losses || 0);
     if (currentSeasonMatches > 0) {
