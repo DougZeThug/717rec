@@ -1,47 +1,50 @@
 
 
-## Fix: "Cannot read properties of null (reading 'wins')" in Career Power Score
+## Fix: Sentry filter not catching network errors sent as message events
 
 ### Problem
 
-In `src/utils/career/calculateCareerPowerScore.ts`, the null guard on lines 107-111 uses optional chaining (`?.`), which converts `null` to `undefined`. Since `undefined !== null` is `true` in JavaScript, the guard incorrectly passes when `currentTeamData` is `null`, and line 112 crashes trying to access `.wins` on `null`.
+The `errorLog` function in `src/utils/logger.ts` sends errors to Sentry two ways:
+1. As **exception events** via `captureError` (when an `Error` object is found)
+2. As **message events** via `captureMessage` (when only a string is found)
+
+The "Failed to fetch current season:" error hits path #2 because `handleDatabaseError` constructs a `DatabaseError` that wraps the original network error. When `errorLog` receives `("Failed to fetch current season:", postgrestErrorObject)`, the PostgREST error object is not an `Error` instance, so `errorLog` falls through to `captureMessage` with the string.
+
+The `beforeSend` Sentry filter only checks `event.exception?.values?.[0]?.value`, which is undefined for message events. So these "Failed to fetch" messages slip through.
 
 ### Root Cause
 
-```typescript
-// Lines 107-111 — BUG: this passes when currentTeamData is null
-if (
-  currentTeamData?.power_score !== null &&  // undefined !== null → true
-  currentTeamData?.wins !== null &&          // undefined !== null → true
-  currentTeamData?.losses !== null           // undefined !== null → true
-) {
-  const currentSeasonMatches = (currentTeamData.wins || 0) + ...  // 💥 null.wins
-```
+The `beforeSend` filter in `src/utils/sentry.ts` doesn't inspect `event.message` for network error patterns -- only `event.exception.values`.
 
 ### Fix
 
-**File: `src/utils/career/calculateCareerPowerScore.ts`**
+**File: `src/utils/sentry.ts`**
 
-Add an explicit null check for `currentTeamData` itself before checking its properties:
+Add a check for `event.message` at the top of the `beforeSend` callback, alongside the existing exception check:
 
 ```typescript
-if (
-  currentTeamData &&
-  currentTeamData.power_score !== null &&
-  currentTeamData.wins !== null &&
-  currentTeamData.losses !== null
-) {
+beforeSend(event, hint) {
+  // Filter network errors from message events (sent via captureMessage)
+  const eventMessage = event.message || '';
+  if (
+    eventMessage.includes('Failed to fetch') ||
+    eventMessage.includes('Load failed') ||
+    eventMessage.includes('NetworkError')
+  ) {
+    return null;
+  }
+
+  // Filter network errors from exception values (existing code)
+  const exceptionValue = event.exception?.values?.[0]?.value || '';
+  // ... rest of existing beforeSend logic
+}
 ```
 
-This is a one-line addition that gates entry to the block. Once `currentTeamData` is confirmed non-null, the property checks no longer need optional chaining.
-
-Additionally, in single-team mode (line 84), `.single()` should be changed to `.maybeSingle()` to avoid a PostgREST error when no row exists for a team.
-
 ### Files Modified
-- `src/utils/career/calculateCareerPowerScore.ts` -- add null guard, change `.single()` to `.maybeSingle()`
+- `src/utils/sentry.ts` -- add `event.message` check in `beforeSend`
 
 ### What This Achieves
-- Eliminates the "Cannot read properties of null (reading 'wins')" crash
-- Teams without current-season data gracefully fall through to use only historical data
-- No behavioral change for teams that do have data
+- Catches network errors sent as Sentry message events (not just exception events)
+- Prevents "Failed to fetch current season" from being reported during transient connectivity drops
+- No change to real error reporting -- only filters messages containing network error patterns
 
