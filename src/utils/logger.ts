@@ -47,9 +47,27 @@ export const errorLog = (...args: unknown[]) => {
           message: messageArg,
           additionalArgs: args.filter((a) => a !== resolvedError && a !== messageArg),
         });
-      } else if (messageArg) {
+    } else if (messageArg) {
         const additionalArgs = args.filter((a) => a !== messageArg);
-        captureMessage(String(messageArg), 'error', additionalArgs.length > 0 ? { additionalArgs } : undefined);
+
+        // Check if any argument contains a network error message (e.g., PostgREST error from fetch failure)
+        const isNetworkError = additionalArgs.some((arg) => {
+          if (arg && typeof arg === 'object') {
+            const msg = (arg as Record<string, unknown>).message;
+            if (typeof msg === 'string') {
+              return (
+                msg.includes('Failed to fetch') ||
+                msg.includes('Load failed') ||
+                msg.includes('NetworkError')
+              );
+            }
+          }
+          return false;
+        });
+
+        if (!isNetworkError) {
+          captureMessage(String(messageArg), 'error', additionalArgs.length > 0 ? { additionalArgs } : undefined);
+        }
       }
     } catch {
       // Sentry not available, silently fail
