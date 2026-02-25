@@ -138,7 +138,7 @@ export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
   king_slayer: {
     type: 'king_slayer',
     name: 'King Slayer',
-    description: 'Defeated a team with significantly higher power score',
+    description: 'Defeated a higher-ranked team from a tougher division',
     icon: Swords,
     gradient: 'from-red-500 to-red-700',
     bgColor: 'bg-red-100',
@@ -173,7 +173,7 @@ export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
   hot_streak: {
     type: 'hot_streak',
     name: 'Hot Streak',
-    description: 'Currently on a winning streak of 5+ matches',
+    description: 'Currently on a winning streak of 4+ matches',
     icon: Flame,
     gradient: 'from-orange-500 to-red-600',
     bgColor: 'bg-orange-100',
@@ -184,7 +184,7 @@ export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
   cold_streak: {
     type: 'cold_streak',
     name: 'Cold Streak',
-    description: 'Currently on a losing streak of 3+ matches',
+    description: 'Currently on a losing streak of 4+ matches',
     icon: Snowflake,
     gradient: 'from-blue-400 to-blue-600',
     bgColor: 'bg-blue-100',
@@ -255,7 +255,7 @@ export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
   bully: {
     type: 'bully',
     name: 'Bully',
-    description: 'Won 4+ games against teams from lower divisions',
+    description: 'Won 4+ matches against teams from lower divisions',
     icon: Gavel,
     gradient: 'from-red-400 to-orange-500',
     bgColor: 'bg-red-100',
