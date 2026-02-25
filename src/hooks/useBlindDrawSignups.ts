@@ -13,19 +13,17 @@ export interface BlindDrawSignup {
 }
 
 // Fetch signup count for public display (no auth required)
-export const useBlindDrawSignupCount = (eventDate?: string) => {
+export const useBlindDrawSignupCount = () => {
   return useQuery({
-    queryKey: ['blind-draw-signup-count', eventDate],
+    queryKey: ['blind-draw-signup-count'],
     queryFn: async () => {
-      if (!eventDate) return 0;
-      const { data, error } = await supabase.rpc('get_blind_draw_signup_count', {
-        p_event_date: eventDate,
-      });
+      const { count, error } = await supabase
+        .from('blind_draw_signups')
+        .select('id', { count: 'exact', head: true });
       if (error) throw error;
-      return data as number;
+      return count ?? 0;
     },
-    enabled: !!eventDate,
-    staleTime: 1000 * 60 * 2, // Cache for 2 minutes
+    staleTime: 1000 * 60 * 2,
   });
 };
 
@@ -128,11 +126,11 @@ export const useClearBlindDrawSignups = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (eventDate: string) => {
+    mutationFn: async () => {
       const { error } = await supabase
         .from('blind_draw_signups')
         .delete()
-        .eq('event_date', eventDate);
+        .neq('id', '00000000-0000-0000-0000-000000000000');
 
       if (error) throw error;
     },

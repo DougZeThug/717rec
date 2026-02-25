@@ -1,6 +1,6 @@
-import { format, nextThursday } from 'date-fns';
-import { AlertCircle, Calendar, Loader2, Shuffle, Trash2, Users } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { format } from 'date-fns';
+import { AlertCircle, Loader2, Shuffle, Trash2, Users } from 'lucide-react';
+import React, { useState } from 'react';
 
 import {
   AlertDialog,
@@ -16,8 +16,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DestructiveIconButton } from '@/components/ui/destructive-icon-button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   useBlindDrawSignups,
   useClearBlindDrawSignups,
@@ -32,30 +30,11 @@ interface SignupToDelete {
 }
 
 const BlindDrawSignupsTab: React.FC = () => {
-  // Calculate the appropriate Thursday date
-  const calculateThursdayDate = () => {
-    const now = new Date();
-    // Use getDay() directly: 0=Sunday, 4=Thursday
-    if (now.getDay() === 4) {
-      return format(now, 'yyyy-MM-dd');
-    }
-    return format(nextThursday(now), 'yyyy-MM-dd');
-  };
-
-  const [selectedDate, setSelectedDate] = useState(calculateThursdayDate);
   const [deletingSignup, setDeletingSignup] = useState<SignupToDelete | null>(null);
 
-  // Recalculate date on every mount to handle tab switching
-  useEffect(() => {
-    setSelectedDate(calculateThursdayDate());
-  }, []);
-  const { data: signups, isLoading, error } = useBlindDrawSignups(selectedDate);
+  const { data: signups, isLoading, error } = useBlindDrawSignups();
   const deleteSignup = useDeleteBlindDrawSignup();
   const clearSignups = useClearBlindDrawSignups();
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedDate(e.target.value);
-  };
 
   const handleConfirmDelete = async () => {
     if (!deletingSignup) return;
@@ -94,27 +73,12 @@ const BlindDrawSignupsTab: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent className="space-y-4 px-3 sm:px-6">
-          {/* Date selector */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-            <div className="flex items-center gap-2 sm:gap-3 flex-1">
-              <Label htmlFor="event-date" className="text-sm font-medium whitespace-nowrap">
-                Event Date
-              </Label>
-              <div className="relative flex-1 sm:max-w-xs">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="event-date"
-                  type="date"
-                  value={selectedDate}
-                  onChange={handleDateChange}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            {signups && signups.length > 0 && (
+          {/* Clear All button */}
+          {signups && signups.length > 0 && (
+            <div className="flex justify-end">
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm" className="w-full sm:w-auto">
+                  <Button variant="destructive" size="sm">
                     <Trash2 className="h-4 w-4 mr-1" />
                     Clear All
                   </Button>
@@ -123,15 +87,13 @@ const BlindDrawSignupsTab: React.FC = () => {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Clear all signups?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This will remove all {signups.length} signups for{' '}
-                      {(() => { const [y, m, d] = selectedDate.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMMM d, yyyy'); })()}. This action cannot be
-                      undone.
+                      This will remove all {signups.length} signups. This action cannot be undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
-                      onClick={() => clearSignups.mutate(selectedDate)}
+                      onClick={() => clearSignups.mutate()}
                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
                       Clear All
@@ -139,8 +101,8 @@ const BlindDrawSignupsTab: React.FC = () => {
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Signups list */}
           {isLoading ? (
@@ -201,7 +163,7 @@ const BlindDrawSignupsTab: React.FC = () => {
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <Users className="h-12 w-12 mx-auto mb-2 opacity-30" />
-              <p>No signups yet for {(() => { const [y, m, d] = selectedDate.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMMM d, yyyy'); })()}</p>
+              <p>No signups yet</p>
             </div>
           )}
         </CardContent>
