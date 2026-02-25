@@ -1,37 +1,61 @@
 
 
-## Plan: Add Event Settings (times, buy-in, payouts) to Hero Card Admin Form
+## Plan: Add Event Flyer to Homepage via New "Flyer" Hero Card Type
 
-### Problem
+### Approach
 
-The `EventHeroCard` relies on several metadata fields to render the signup form and event details:
-- `metadata.start_time` — used to derive `eventDate` for the signup form, and for the start countdown
-- `metadata.check_in_time` — used for the check-in countdown
-- `metadata.buy_in` — displayed in the event details grid
-- `metadata.payouts` — displayed in the event details grid
-- `metadata.is_active_event` — gates the signup form, countdowns, and event details (toggle already added)
-
-Currently, `start_time`, `check_in_time`, `buy_in`, and `payouts` can only be edited via raw JSON in the Advanced Settings section. Without `start_time` set, the signup form never renders because `eventDate` is null (line 477: `isActiveEvent && card.slug === 'blind-draw' && eventDate`). There is no structured UI for these fields, so admins have no obvious way to configure the blind draw signup from the hero card editor.
+The best way to do this is to add a new hero card type called `flyer` to the existing system. This keeps the flyer admin-manageable (toggle visibility, change image, reorder) without hardcoding anything. The flyer card will render a full-width, prominent image that can be placed above all other content using `sort_order`.
 
 ### Changes
 
-#### 1. `src/components/admin/hero-cards/form-sections/TargetingDisplaySection.tsx` — Add event metadata fields
+#### 1. Copy the flyer image into the project
+- Copy `user-uploads://Blind_Draw_signup.png` to `public/images/blind-draw-flyer.png` so it can be referenced by URL in the hero card's `image_url` field.
 
-When `card_type === 'event'`, add structured inputs below the "Event Active" toggle:
+#### 2. `src/types/heroCard.ts` — Add `'flyer'` to the `HeroCardType` union
+```typescript
+export type HeroCardType =
+  | 'standard'
+  | 'champions'
+  | 'event'
+  | 'announcement'
+  | 'participation'
+  | 'request'
+  | 'flyer';
+```
 
-- **Check-in Time** — `datetime-local` input, reads/writes `metadata.check_in_time` (ISO string)
-- **Start Time** — `datetime-local` input, reads/writes `metadata.start_time` (ISO string)
-- **Buy-in** — text input, reads/writes `metadata.buy_in` (e.g. "$10")
-- **Payouts** — text input, reads/writes `metadata.payouts` (e.g. "Top 3")
+#### 3. New file: `src/components/hero/FlyerHeroCard.tsx`
+A simple card component that renders a full-width image with:
+- Rounded corners, shadow, and optional click-through (uses `card.cta_url` if set)
+- Responsive sizing — constrained to a reasonable max-width so it doesn't stretch on desktop
+- Uses `card.image_url` as the image source
+- Minimal chrome — the flyer image IS the card content
 
-Each field will use the same `parseMetadata` / `JSON.stringify` pattern already used by the `handleEventActiveToggle` function. The datetime-local inputs will convert to/from ISO strings.
+#### 4. `src/components/hero/HeroCard.tsx` — Add the `'flyer'` case
+```typescript
+case 'flyer':
+  return <FlyerHeroCard card={card} />;
+```
 
-### Technical Details
+#### 5. `src/pages/Index.tsx` — Move hero cards above the HeroSection header
+Currently hero cards render inside the container div below `HeroSection`. To make the flyer appear "before anything else," the hero cards loop will be moved above `HeroSection` (or the flyer-type cards specifically rendered first). Since the hero card system already supports `sort_order`, giving the flyer card `sort_order: 0` will place it at the top.
 
-**datetime-local conversion:** HTML `datetime-local` inputs use the format `YYYY-MM-DDTHH:MM`. The metadata stores full ISO strings. On read, we slice the ISO string to the `YYYY-MM-DDTHH:MM` format. On write, we convert back by appending seconds and timezone info, or simply store the partial ISO string (the `new Date()` constructor handles both).
+Actually, looking at this more carefully — the hero cards already render right after `HeroSection` which is the first visible element. The `HeroSection` is the site header/branding. Placing the flyer *above* the site header would look odd. Instead, the flyer will render as the **first hero card** (via sort_order), immediately below the header — which is already how hero cards work. No changes needed to Index.tsx layout.
 
-**Metadata as source of truth:** All four fields are read from and written to the `formData.metadata` JSON string, consistent with the existing `is_active_event` toggle pattern. No new form fields are added to `HeroCardFormData`.
+#### 6. Admin form — Add `'flyer'` to card type options
+In `src/components/admin/hero-cards/form-sections/CardBasicsSection.tsx`, add `'flyer'` to the card type dropdown so admins can create flyer-type cards. When flyer is selected, the `image_url` field becomes the primary content field.
+
+### How to use it
+1. Go to Admin > Hero Cards > Create Card
+2. Set card type to "Flyer"
+3. Set `image_url` to `/images/blind-draw-flyer.png` (or any image URL)
+4. Optionally set `cta_url` to link somewhere when clicked
+5. Set `sort_order` to `0` and `is_visible` to true
+6. The flyer will appear as the first thing below the site header
 
 ### Files Modified
-- `src/components/admin/hero-cards/form-sections/TargetingDisplaySection.tsx` — add check-in time, start time, buy-in, and payouts inputs for event cards
+- `public/images/blind-draw-flyer.png` — copied flyer image
+- `src/types/heroCard.ts` — add `'flyer'` type
+- `src/components/hero/FlyerHeroCard.tsx` — new flyer card component
+- `src/components/hero/HeroCard.tsx` — add flyer case
+- `src/components/admin/hero-cards/form-sections/CardBasicsSection.tsx` — add flyer to type dropdown
 
