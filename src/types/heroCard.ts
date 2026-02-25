@@ -5,7 +5,8 @@ export type HeroCardType =
   | 'event'
   | 'announcement'
   | 'participation'
-  | 'request';
+  | 'request'
+  | 'flyer';
 
 export interface HeroCard {
   id: string;

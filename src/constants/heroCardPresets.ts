@@ -186,6 +186,7 @@ export const HERO_CARD_TYPES = [
     name: 'Team Request Form',
     description: 'Allow teams to submit schedule requests',
   },
+  { id: 'flyer', name: 'Flyer / Poster', description: 'Full-width image flyer or poster' },
 ] as const;
 
 export const TARGET_TYPE_OPTIONS = [
