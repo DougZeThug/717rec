@@ -1,41 +1,49 @@
 
 
-## Make Blind Draw Signups Date-Independent
+## Verification: PR Changes Are NOT Fully in Place
 
-### Problem
-The admin must manually select a date (defaulting to the next Thursday) to view blind draw signups. Since there's only ever one blind draw at a time, this date picker is unnecessary friction and introduces timezone bugs.
+After searching the codebase, several changes from the PR summary are **missing**. Here's the status:
 
-### Approach
-Remove the date filter from the admin view entirely — always show **all current signups**. The "Clear All" button clears all signups (not filtered by date). The public signup form still stores the event date for record-keeping, but the admin just sees one flat list.
+### Missing Changes
 
-### Changes
+#### 1. `calculate_career_power_score()` SQL function — NOT FOUND
+No migration contains this function. Searched all migration files for `calculate_career_power_score` and `career.power.score` — zero results. This is the helper function that replicates the TypeScript career power score logic in SQL for the King Slayer badge.
 
-#### 1. `src/components/admin/blind-draw/BlindDrawSignupsTab.tsx`
-- Remove the date state, date picker input, `calculateThursdayDate`, and the `useEffect` that sets it
-- Remove the `Calendar`, `Label`, `Input` imports and the date selector UI
-- Call `useBlindDrawSignups()` with **no date filter** (fetch all signups)
-- Update `useClearBlindDrawSignups` to clear all signups (no date param)
-- Remove date-formatted text from "No signups" and "Clear All" confirmation messages — just say "all signups"
+#### 2. Badge Config Descriptions — NOT UPDATED
+In `src/utils/badgeConfig.ts`:
+- **King Slayer** (line 141): Still says `"Defeated a team with significantly higher power score"` — should be `"Defeated a higher-ranked team from a tougher division"`
+- **Hot Streak** (line 176): Still says `"5+ matches"` — should be `"4+ matches"`
 
-#### 2. `src/hooks/useBlindDrawSignups.ts`
-- `useBlindDrawSignups()`: Make `eventDate` truly optional — when not provided, fetch all signups (already works this way since the `if (eventDate)` guard skips the filter)
-- `useClearBlindDrawSignups()`: Change to delete **all** rows instead of filtering by `event_date`, since there's only one active blind draw at a time
-- `useBlindDrawSignupCount()`: Make it work without a date param — count all rows when no date is provided (use a simple `.select('id', { count: 'exact', head: true })` instead of the RPC)
+#### 3. Bully Badge SQL — Still Counts Game Wins, Not Match Wins
+The existing migration (`20260112014518_...`) at line 310 uses `v_bully_game_wins` and sums `team1_game_wins`/`team2_game_wins`. The PR says it should count **match wins** instead.
 
-#### 3. `src/components/home/BlindDrawSignupForm.tsx`
-- Keep `eventDate` prop — the public form still associates signups with an event date for data integrity. No changes needed here.
+#### 4. King Slayer Badge SQL — Not Updated to Career Power Score Logic
+The existing `award_kingslayer_badge` function (in `20250623205357_...`) still uses division weight difference (0.25 threshold), not a 25+ career power score gap with cross-division requirement.
 
-#### 4. `src/components/hero/EventHeroCard.tsx`
-- Update `useBlindDrawSignupCount` call to not pass a date — count all current signups regardless of date
+#### 5. Consistent Performer — Cannot Confirm
+No migration was found updating the consistent performer to store display division name in metadata.
 
-### Summary
-- Admin tab: remove date picker, show all signups, "Clear All" clears everything
-- Hooks: make date filtering optional, clear-all deletes all rows
-- Public form: unchanged (still stores event date)
-- Hero card: count all signups without date filter
+### What IS in Place
+- The badge types (`bully`, `king_slayer`, etc.) exist in the enum
+- The original versions of the badge functions exist but use the old logic
 
-### Files Modified
-- `src/components/admin/blind-draw/BlindDrawSignupsTab.tsx`
-- `src/hooks/useBlindDrawSignups.ts`
-- `src/components/hero/EventHeroCard.tsx`
+### Conclusion
+The merge either didn't include the SQL migrations, or the changes were made directly to the Supabase database without corresponding migration files in the repo. The frontend badge config descriptions also weren't updated.
+
+### Recommended Fix Plan
+
+1. **Create a new migration** containing:
+   - `calculate_career_power_score()` helper function
+   - Updated `award_kingslayer_badge()` with career power score gap (25+) and cross-division check
+   - Updated `award_bully_badge()` counting match wins instead of game wins
+   - Updated `award_consistent_performer_badge()` storing display division name
+   - Proper revocation logic for all badge functions
+
+2. **Update `src/utils/badgeConfig.ts`**:
+   - King Slayer description: `"Defeated a higher-ranked team from a tougher division"`
+   - Hot Streak description: `"Currently on a winning streak of 4+ matches"`
+
+3. **Files to modify**:
+   - New migration file (SQL)
+   - `src/utils/badgeConfig.ts` (2 description changes)
 
