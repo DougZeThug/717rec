@@ -10,6 +10,7 @@ import {
   CallToActionSection,
   CardBasicsSection,
   DesignAppearanceSection,
+  EventWinnersEditor,
   FormActions,
   HeroCardPreview,
   TargetingDisplaySection,
@@ -160,6 +161,9 @@ const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
             <CallToActionSection formData={formData} onChange={handleChange} />
             <DesignAppearanceSection formData={formData} onChange={handleChange} />
             <TargetingDisplaySection formData={formData} onChange={handleChange} />
+            {formData.card_type === 'event' && (
+              <EventWinnersEditor formData={formData} onChange={handleChange} />
+            )}
             <AdvancedSettingsSection
               formData={formData}
               onChange={handleChange}

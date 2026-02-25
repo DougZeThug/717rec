@@ -2,6 +2,7 @@ export { AdvancedSettingsSection } from './AdvancedSettingsSection';
 export { CallToActionSection } from './CallToActionSection';
 export { CardBasicsSection } from './CardBasicsSection';
 export { DesignAppearanceSection } from './DesignAppearanceSection';
+export { EventWinnersEditor } from './EventWinnersEditor';
 export { FormActions } from './FormActions';
 export { HeroCardPreview } from './HeroCardPreview';
 export { SectionHeader } from './SectionHeader';
