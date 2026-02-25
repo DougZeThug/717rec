@@ -50,7 +50,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
   };
 
   const eventDate = startTimeStr ? getEventDateEST(startTimeStr) : null;
-  const { data: signupCount } = useBlindDrawSignupCount(eventDate || undefined);
+  const { data: signupCount } = useBlindDrawSignupCount();
 
   useEffect(() => {
     if (!checkInTimeStr || !startTimeStr) return;
