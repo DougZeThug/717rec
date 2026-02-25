@@ -124,7 +124,7 @@ const BlindDrawSignupsTab: React.FC = () => {
                     <AlertDialogTitle>Clear all signups?</AlertDialogTitle>
                     <AlertDialogDescription>
                       This will remove all {signups.length} signups for{' '}
-                      {format(new Date(selectedDate), 'MMMM d, yyyy')}. This action cannot be
+                      {(() => { const [y, m, d] = selectedDate.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMMM d, yyyy'); })()}. This action cannot be
                       undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
@@ -201,7 +201,7 @@ const BlindDrawSignupsTab: React.FC = () => {
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <Users className="h-12 w-12 mx-auto mb-2 opacity-30" />
-              <p>No signups yet for {format(new Date(selectedDate), 'MMMM d, yyyy')}</p>
+              <p>No signups yet for {(() => { const [y, m, d] = selectedDate.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMMM d, yyyy'); })()}</p>
             </div>
           )}
         </CardContent>
