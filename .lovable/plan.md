@@ -1,61 +1,34 @@
 
 
-## Plan: Add Event Flyer to Homepage via New "Flyer" Hero Card Type
+## Plan: Add Image Upload/Preview for Flyer Hero Cards
 
-### Approach
+### Problem
 
-The best way to do this is to add a new hero card type called `flyer` to the existing system. This keeps the flyer admin-manageable (toggle visibility, change image, reorder) without hardcoding anything. The flyer card will render a full-width, prominent image that can be placed above all other content using `sort_order`.
+The flyer card type relies entirely on `image_url` for its content, but:
+1. The image URL field is buried in "Design & Appearance" labeled as "Background Image URL (optional)" — not obvious for flyer cards
+2. There is no image preview in the form, so admins can't verify the image looks right
+3. There is no way to upload an image directly — admins must manually paste a URL
 
 ### Changes
 
-#### 1. Copy the flyer image into the project
-- Copy `user-uploads://Blind_Draw_signup.png` to `public/images/blind-draw-flyer.png` so it can be referenced by URL in the hero card's `image_url` field.
+#### 1. `src/components/admin/hero-cards/form-sections/DesignAppearanceSection.tsx` — Prominent image field for flyer cards
 
-#### 2. `src/types/heroCard.ts` — Add `'flyer'` to the `HeroCardType` union
-```typescript
-export type HeroCardType =
-  | 'standard'
-  | 'champions'
-  | 'event'
-  | 'announcement'
-  | 'participation'
-  | 'request'
-  | 'flyer';
-```
+When `card_type === 'flyer'`, restructure this section to:
+- Rename the label from "Background Image URL (optional)" to **"Flyer Image URL (required)"**
+- Move the image field to the top of the section and make it visually prominent
+- Add an **image preview** below the input that renders the current `image_url` as an `<img>` tag (with a placeholder state when empty)
+- Hide the color theme and icon pickers when card type is `flyer` since they are irrelevant — the flyer is just an image
 
-#### 3. New file: `src/components/hero/FlyerHeroCard.tsx`
-A simple card component that renders a full-width image with:
-- Rounded corners, shadow, and optional click-through (uses `card.cta_url` if set)
-- Responsive sizing — constrained to a reasonable max-width so it doesn't stretch on desktop
-- Uses `card.image_url` as the image source
-- Minimal chrome — the flyer image IS the card content
+#### 2. `src/components/admin/hero-cards/form-sections/types.ts` — Ensure `FormSectionProps` includes `formData` with `card_type`
 
-#### 4. `src/components/hero/HeroCard.tsx` — Add the `'flyer'` case
-```typescript
-case 'flyer':
-  return <FlyerHeroCard card={card} />;
-```
+Already included — `formData` has `card_type`. No changes needed.
 
-#### 5. `src/pages/Index.tsx` — Move hero cards above the HeroSection header
-Currently hero cards render inside the container div below `HeroSection`. To make the flyer appear "before anything else," the hero cards loop will be moved above `HeroSection` (or the flyer-type cards specifically rendered first). Since the hero card system already supports `sort_order`, giving the flyer card `sort_order: 0` will place it at the top.
+### Technical Details
 
-Actually, looking at this more carefully — the hero cards already render right after `HeroSection` which is the first visible element. The `HeroSection` is the site header/branding. Placing the flyer *above* the site header would look odd. Instead, the flyer will render as the **first hero card** (via sort_order), immediately below the header — which is already how hero cards work. No changes needed to Index.tsx layout.
-
-#### 6. Admin form — Add `'flyer'` to card type options
-In `src/components/admin/hero-cards/form-sections/CardBasicsSection.tsx`, add `'flyer'` to the card type dropdown so admins can create flyer-type cards. When flyer is selected, the `image_url` field becomes the primary content field.
-
-### How to use it
-1. Go to Admin > Hero Cards > Create Card
-2. Set card type to "Flyer"
-3. Set `image_url` to `/images/blind-draw-flyer.png` (or any image URL)
-4. Optionally set `cta_url` to link somewhere when clicked
-5. Set `sort_order` to `0` and `is_visible` to true
-6. The flyer will appear as the first thing below the site header
+- The image preview will use a simple `<img>` tag with `object-contain` styling inside a bordered container, with an error/fallback state showing "Invalid image URL"
+- For non-flyer card types, the section remains unchanged
+- The live preview on the right column already renders the `FlyerHeroCard` component, so once `image_url` is set it will also show there — but the inline preview in the form section gives immediate feedback without scrolling
 
 ### Files Modified
-- `public/images/blind-draw-flyer.png` — copied flyer image
-- `src/types/heroCard.ts` — add `'flyer'` type
-- `src/components/hero/FlyerHeroCard.tsx` — new flyer card component
-- `src/components/hero/HeroCard.tsx` — add flyer case
-- `src/components/admin/hero-cards/form-sections/CardBasicsSection.tsx` — add flyer to type dropdown
+- `src/components/admin/hero-cards/form-sections/DesignAppearanceSection.tsx` — conditional layout for flyer cards with image preview, hide irrelevant pickers
 
