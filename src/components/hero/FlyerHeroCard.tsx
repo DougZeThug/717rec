@@ -24,14 +24,14 @@ const FlyerHeroCard: React.FC<FlyerHeroCardProps> = ({ card }) => {
         href={card.cta_url}
         target={card.cta_url.startsWith('http') ? '_blank' : undefined}
         rel={card.cta_url.startsWith('http') ? 'noopener noreferrer' : undefined}
-        className="block max-w-3xl mx-auto hover:opacity-95 transition-opacity"
+        className="block w-full md:max-w-3xl mx-auto hover:opacity-95 transition-opacity"
       >
         {image}
       </a>
     );
   }
 
-  return <div className="max-w-3xl mx-auto">{image}</div>;
+  return <div className="w-full md:max-w-3xl mx-auto">{image}</div>;
 };
 
 export default FlyerHeroCard;
