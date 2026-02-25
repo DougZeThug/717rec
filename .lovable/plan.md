@@ -1,52 +1,47 @@
 
 
-## Fix: Filter transient network-caused Sentry messages in `errorLog`
+## Plan: Fix EventHeroCard to use admin-editable fields + add Event Settings UI in admin form
 
 ### Problem
+1. When `metadata.is_active_event` is false (or absent), the EventHeroCard hardcodes the title to "Blind Draw Results" and hides `card.subtitle` and `card.body` entirely
+2. The `is_active_event` toggle is buried in raw JSON metadata with no dedicated UI control
+3. Past winners are stored in raw JSON metadata with no structured editor -- admins must hand-edit JSON
 
-When a network request fails (status_code: 0), Supabase returns a PostgREST error object that is **not** an `Error` instance. In `errorLog`, this means:
-1. No `Error` is found in args
-2. The string arg `"Bracket query error:"` is sent via `captureMessage`
-3. The `beforeSend` filter only checks for `"Failed to fetch"` / `"Load failed"` / `"NetworkError"` in the message — but the message is just the context string
+### Changes
 
-This causes generic context messages like `"Bracket query error:"` and `"CRITICAL ERROR in useBracketData:"` to be reported to Sentry whenever there's a transient network drop.
+#### 1. `src/components/hero/EventHeroCard.tsx` -- Use admin fields in both states
 
-### Root Cause
+- **Line 192**: Replace `{isActiveEvent ? card.title : 'Blind Draw Results'}` with `{card.title}`
+- **Lines 203-216**: Show subtitle in both active and inactive states. When inactive, show `card.subtitle` if set. When active, show `card.subtitle || formatDate(checkInTimeStr)`.
+- **After line 430 (past winners section)**: Render `card.body` when present, in both states
 
-The `errorLog` function doesn't inspect the PostgREST error object's `.message` property for network error patterns before deciding to send to Sentry. PostgREST errors from network failures contain `"TypeError: Failed to fetch"` in their message, but since they're plain objects (not `Error` instances), `errorLog` ignores them and sends only the context string.
+#### 2. `src/components/admin/hero-cards/form-sections/TargetingDisplaySection.tsx` -- Add event active toggle
 
-### Fix
+Add a new toggle "Event Active" that only appears when `card_type === 'event'`. This toggle controls `metadata.is_active_event` by parsing/updating the metadata JSON string in form state. This avoids requiring admins to edit raw JSON.
 
-**File: `src/utils/logger.ts`** — In the `else if (messageArg)` branch (line 50-52), before calling `captureMessage`, check if any of the additional args contain network error indicators. If they do, skip the Sentry report.
+#### 3. New file: `src/components/admin/hero-cards/form-sections/EventWinnersEditor.tsx`
 
-```typescript
-} else if (messageArg) {
-  const additionalArgs = args.filter((a) => a !== messageArg);
-  
-  // Check if any argument contains a network error message (e.g., PostgREST error from fetch failure)
-  const isNetworkError = additionalArgs.some((arg) => {
-    if (arg && typeof arg === 'object') {
-      const msg = (arg as any).message || '';
-      return (
-        msg.includes('Failed to fetch') ||
-        msg.includes('Load failed') ||
-        msg.includes('NetworkError')
-      );
-    }
-    return false;
-  });
-  
-  if (!isNetworkError) {
-    captureMessage(String(messageArg), 'error', additionalArgs.length > 0 ? { additionalArgs } : undefined);
-  }
-}
-```
+A dedicated UI for managing `metadata.past_winners`. This component:
+- Displays a list of weeks with their winners (place + names)
+- Allows adding/removing weeks
+- Allows adding/removing winners within each week
+- Reads from and writes to the `metadata` JSON string in form state
+- Only shown when `card_type === 'event'`
 
-### What This Achieves
-- Prevents context-only messages like "Bracket query error:" from being sent to Sentry when caused by transient network failures
-- Real errors with non-network PostgREST messages still get reported
-- Console logging is unaffected — all errors still appear in the browser console
+#### 4. `src/components/admin/hero-cards/HeroCardForm.tsx` -- Add EventWinnersEditor
+
+Import and render the `EventWinnersEditor` component between TargetingDisplaySection and AdvancedSettingsSection, conditionally shown when `formData.card_type === 'event'`.
+
+### Technical Details
+
+**Event active toggle approach**: Rather than adding a separate form field, the toggle will parse `formData.metadata` (JSON string), set/unset `is_active_event`, and call `onChange('metadata', updatedJsonString)`. This keeps the metadata field as the single source of truth.
+
+**Winners editor approach**: Same pattern -- parse `formData.metadata`, extract `past_winners` array, provide structured inputs, serialize back to JSON on change. Each week entry has a week number input and 1-3 winner rows (place auto-assigned, names as text input).
 
 ### Files Modified
-- `src/utils/logger.ts` — add network error check before `captureMessage` in `errorLog`
+- `src/components/hero/EventHeroCard.tsx` -- use `card.title` always, show subtitle/body in inactive state
+- `src/components/admin/hero-cards/form-sections/TargetingDisplaySection.tsx` -- add "Event Active" toggle for event cards
+- `src/components/admin/hero-cards/form-sections/EventWinnersEditor.tsx` -- new structured winners editor
+- `src/components/admin/hero-cards/form-sections/index.ts` -- export new component
+- `src/components/admin/hero-cards/HeroCardForm.tsx` -- render EventWinnersEditor for event cards
 
