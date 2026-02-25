@@ -39,15 +39,7 @@ serve(async (req: Request) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
-    }
-
-    // Validate input lengths
-    if (name.length > 100 || email.length > 255 || subject.length > 100 || message.length > 5000) {
-      return new Response(JSON.stringify({ error: 'Input exceeds maximum length' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+  }
 
   try {
     const { name, email, subject, message }: SupportRequest = await req.json();
@@ -55,6 +47,14 @@ serve(async (req: Request) => {
     // Validate required fields
     if (!name || !email || !subject || !message) {
       return new Response(JSON.stringify({ error: 'All fields are required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Validate input lengths
+    if (name.length > 100 || email.length > 255 || subject.length > 100 || message.length > 5000) {
+      return new Response(JSON.stringify({ error: 'Input exceeds maximum length' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
