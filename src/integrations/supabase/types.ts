@@ -4146,6 +4146,10 @@ export type Database = {
       }
       award_streak_badges: { Args: { p_team_id: string }; Returns: Json }
       batch_update_team_seeds: { Args: { p_updates: Json }; Returns: Json }
+      calculate_career_power_score: {
+        Args: { p_team_id: string }
+        Returns: number
+      }
       calculate_team_streak: {
         Args: { p_team_id: string }
         Returns: {

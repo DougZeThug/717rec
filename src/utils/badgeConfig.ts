@@ -138,7 +138,7 @@ export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
   king_slayer: {
     type: 'king_slayer',
     name: 'King Slayer',
-    description: 'Defeated a higher-ranked team from a tougher division',
+    description: 'Defeated a higher-ranked team from a tougher division (25+ career power score gap)',
     icon: Swords,
     gradient: 'from-red-500 to-red-700',
     bgColor: 'bg-red-100',
