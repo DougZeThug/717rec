@@ -1,47 +1,37 @@
 
 
-## Plan: Fix EventHeroCard to use admin-editable fields + add Event Settings UI in admin form
+## Plan: Add Event Settings (times, buy-in, payouts) to Hero Card Admin Form
 
 ### Problem
-1. When `metadata.is_active_event` is false (or absent), the EventHeroCard hardcodes the title to "Blind Draw Results" and hides `card.subtitle` and `card.body` entirely
-2. The `is_active_event` toggle is buried in raw JSON metadata with no dedicated UI control
-3. Past winners are stored in raw JSON metadata with no structured editor -- admins must hand-edit JSON
+
+The `EventHeroCard` relies on several metadata fields to render the signup form and event details:
+- `metadata.start_time` — used to derive `eventDate` for the signup form, and for the start countdown
+- `metadata.check_in_time` — used for the check-in countdown
+- `metadata.buy_in` — displayed in the event details grid
+- `metadata.payouts` — displayed in the event details grid
+- `metadata.is_active_event` — gates the signup form, countdowns, and event details (toggle already added)
+
+Currently, `start_time`, `check_in_time`, `buy_in`, and `payouts` can only be edited via raw JSON in the Advanced Settings section. Without `start_time` set, the signup form never renders because `eventDate` is null (line 477: `isActiveEvent && card.slug === 'blind-draw' && eventDate`). There is no structured UI for these fields, so admins have no obvious way to configure the blind draw signup from the hero card editor.
 
 ### Changes
 
-#### 1. `src/components/hero/EventHeroCard.tsx` -- Use admin fields in both states
+#### 1. `src/components/admin/hero-cards/form-sections/TargetingDisplaySection.tsx` — Add event metadata fields
 
-- **Line 192**: Replace `{isActiveEvent ? card.title : 'Blind Draw Results'}` with `{card.title}`
-- **Lines 203-216**: Show subtitle in both active and inactive states. When inactive, show `card.subtitle` if set. When active, show `card.subtitle || formatDate(checkInTimeStr)`.
-- **After line 430 (past winners section)**: Render `card.body` when present, in both states
+When `card_type === 'event'`, add structured inputs below the "Event Active" toggle:
 
-#### 2. `src/components/admin/hero-cards/form-sections/TargetingDisplaySection.tsx` -- Add event active toggle
+- **Check-in Time** — `datetime-local` input, reads/writes `metadata.check_in_time` (ISO string)
+- **Start Time** — `datetime-local` input, reads/writes `metadata.start_time` (ISO string)
+- **Buy-in** — text input, reads/writes `metadata.buy_in` (e.g. "$10")
+- **Payouts** — text input, reads/writes `metadata.payouts` (e.g. "Top 3")
 
-Add a new toggle "Event Active" that only appears when `card_type === 'event'`. This toggle controls `metadata.is_active_event` by parsing/updating the metadata JSON string in form state. This avoids requiring admins to edit raw JSON.
-
-#### 3. New file: `src/components/admin/hero-cards/form-sections/EventWinnersEditor.tsx`
-
-A dedicated UI for managing `metadata.past_winners`. This component:
-- Displays a list of weeks with their winners (place + names)
-- Allows adding/removing weeks
-- Allows adding/removing winners within each week
-- Reads from and writes to the `metadata` JSON string in form state
-- Only shown when `card_type === 'event'`
-
-#### 4. `src/components/admin/hero-cards/HeroCardForm.tsx` -- Add EventWinnersEditor
-
-Import and render the `EventWinnersEditor` component between TargetingDisplaySection and AdvancedSettingsSection, conditionally shown when `formData.card_type === 'event'`.
+Each field will use the same `parseMetadata` / `JSON.stringify` pattern already used by the `handleEventActiveToggle` function. The datetime-local inputs will convert to/from ISO strings.
 
 ### Technical Details
 
-**Event active toggle approach**: Rather than adding a separate form field, the toggle will parse `formData.metadata` (JSON string), set/unset `is_active_event`, and call `onChange('metadata', updatedJsonString)`. This keeps the metadata field as the single source of truth.
+**datetime-local conversion:** HTML `datetime-local` inputs use the format `YYYY-MM-DDTHH:MM`. The metadata stores full ISO strings. On read, we slice the ISO string to the `YYYY-MM-DDTHH:MM` format. On write, we convert back by appending seconds and timezone info, or simply store the partial ISO string (the `new Date()` constructor handles both).
 
-**Winners editor approach**: Same pattern -- parse `formData.metadata`, extract `past_winners` array, provide structured inputs, serialize back to JSON on change. Each week entry has a week number input and 1-3 winner rows (place auto-assigned, names as text input).
+**Metadata as source of truth:** All four fields are read from and written to the `formData.metadata` JSON string, consistent with the existing `is_active_event` toggle pattern. No new form fields are added to `HeroCardFormData`.
 
 ### Files Modified
-- `src/components/hero/EventHeroCard.tsx` -- use `card.title` always, show subtitle/body in inactive state
-- `src/components/admin/hero-cards/form-sections/TargetingDisplaySection.tsx` -- add "Event Active" toggle for event cards
-- `src/components/admin/hero-cards/form-sections/EventWinnersEditor.tsx` -- new structured winners editor
-- `src/components/admin/hero-cards/form-sections/index.ts` -- export new component
-- `src/components/admin/hero-cards/HeroCardForm.tsx` -- render EventWinnersEditor for event cards
+- `src/components/admin/hero-cards/form-sections/TargetingDisplaySection.tsx` — add check-in time, start time, buy-in, and payouts inputs for event cards
 
