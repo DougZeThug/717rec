@@ -5,6 +5,7 @@ import { HeroCard as HeroCardType } from '@/types/heroCard';
 import AnnouncementHeroCard from './AnnouncementHeroCard';
 import ChampionsHeroCard from './ChampionsHeroCard';
 import EventHeroCard from './EventHeroCard';
+import FlyerHeroCard from './FlyerHeroCard';
 import ParticipationHeroCard from './ParticipationHeroCard';
 import RequestHeroCard from './RequestHeroCard';
 import StandardHeroCard from './StandardHeroCard';
@@ -25,6 +26,8 @@ const HeroCard: React.FC<HeroCardProps> = ({ card }) => {
       return <ParticipationHeroCard />;
     case 'request':
       return <RequestHeroCard card={card} />;
+    case 'flyer':
+      return <FlyerHeroCard card={card} />;
     default:
       return <StandardHeroCard card={card} />;
   }
