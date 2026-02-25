@@ -189,7 +189,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
                   <Shuffle className="h-6 w-6 md:h-8 md:w-8" />
                 </motion.div>
                 <h2 className="text-xl md:text-2xl font-bebas uppercase tracking-wide">
-                  {isActiveEvent ? card.title : 'Blind Draw Results'}
+                  {card.title}
                 </h2>
                 <motion.div
                   initial={{ rotate: 10, opacity: 0 }}
@@ -200,8 +200,8 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
                 </motion.div>
               </div>
 
-              {/* Date badge - only shown for active events */}
-              {isActiveEvent && (
+              {/* Date badge - shown when active or when subtitle is set */}
+              {(isActiveEvent || card.subtitle) && (
                 <div
                   className={cn(
                     'inline-flex items-center gap-2 backdrop-blur-sm rounded-full px-3 py-1',
@@ -210,7 +210,9 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
                 >
                   <Calendar className="h-4 w-4" />
                   <span className="font-inter font-semibold text-sm">
-                    {card.subtitle || formatDate(checkInTimeStr)}
+                    {isActiveEvent
+                      ? (card.subtitle || formatDate(checkInTimeStr))
+                      : card.subtitle}
                   </span>
                 </div>
               )}
@@ -427,6 +429,16 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
                     ))}
                   </div>
                 </div>
+              )}
+
+              {/* Body text - shown when set */}
+              {card.body && (
+                <p className={cn(
+                  'text-sm font-inter text-center md:text-left',
+                  shouldApplyWinter ? 'text-cyan-200/80' : 'text-white/80'
+                )}>
+                  {card.body}
+                </p>
               )}
 
               {/* Countdown bar - mobile only, only for active events */}

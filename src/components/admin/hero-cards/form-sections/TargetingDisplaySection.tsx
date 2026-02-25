@@ -9,12 +9,51 @@ import { TargetEntitySelector, TargetTypeSelector } from '../TargetSelector';
 import { SectionHeader } from './SectionHeader';
 import { FormSectionProps } from './types';
 
+const parseMetadata = (metadataStr: string): Record<string, any> => {
+  try {
+    return JSON.parse(metadataStr);
+  } catch {
+    return {};
+  }
+};
+
 export const TargetingDisplaySection: React.FC<FormSectionProps> = ({ formData, onChange }) => {
+  const isEvent = formData.card_type === 'event';
+
+  const handleEventActiveToggle = (checked: boolean) => {
+    const metadata = parseMetadata(formData.metadata);
+    metadata.is_active_event = checked;
+    onChange('metadata', JSON.stringify(metadata, null, 2));
+  };
+
+  const getIsActiveEvent = (): boolean => {
+    const metadata = parseMetadata(formData.metadata);
+    return (metadata.is_active_event as boolean) ?? false;
+  };
+
   return (
     <div className="bg-card rounded-lg border p-4">
       <SectionHeader icon={Target} title="Targeting & Display" />
 
       <div className="space-y-4">
+        {isEvent && (
+          <div className="flex items-center justify-between py-2 border-b border-border pb-4">
+            <div>
+              <Label htmlFor="event_active" className="cursor-pointer">
+                Event Active
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                When active, shows countdown, event details &amp; signup form
+              </p>
+            </div>
+            <Switch
+              id="event_active"
+              checked={getIsActiveEvent()}
+              onCheckedChange={handleEventActiveToggle}
+            />
+          </div>
+        )}
+
         <TargetTypeSelector
           value={formData.target_type}
           onChange={(v) => {
