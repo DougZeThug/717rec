@@ -5,6 +5,30 @@ import { supabase } from '@/integrations/supabase/client';
 import { errorLog, warnLog } from '@/utils/logger';
 
 /**
+ * Uploads an image for hero cards (flyers) WITHOUT any compression or resizing.
+ * Preserves full quality for flyer clarity.
+ * @param file Original file to upload
+ * @returns URL to the uploaded image
+ */
+export const uploadHeroCardImage = async (file: File): Promise<string> => {
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${uuidv4()}.${fileExt}`;
+  const filePath = `flyers/${fileName}`;
+
+  const { error } = await supabase.storage.from('hero-cards').upload(filePath, file);
+  if (error) {
+    errorLog('Error uploading hero card image:', error);
+    throw error;
+  }
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from('hero-cards').getPublicUrl(filePath);
+
+  return publicUrl;
+};
+
+/**
  * Verifies that a compressed image meets minimum quality requirements
  * @param file The file to verify
  * @returns Promise<boolean> True if valid, false otherwise
