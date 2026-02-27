@@ -109,9 +109,23 @@ export class BracketUpdateService {
         bracketLog(`Final update payload:`, updatePayload);
 
         // Update match using brackets-manager (automatically saves to SQL and handles propagation)
-        await this.manager.update.match(updatePayload);
-
-        bracketLog(`manager.update.match() COMPLETED for Match ${matchId}`);
+        // Wrapped in try-catch to handle known brackets-manager library bug where propagation
+        // fails with "Match not found" in 8-team double elimination LB Final rounds.
+        // The actual match data is already saved by this point (PATCH succeeds), so we treat
+        // propagation errors as non-fatal and let normalization steps fix the bracket state.
+        try {
+          await this.manager.update.match(updatePayload);
+          bracketLog(`manager.update.match() COMPLETED for Match ${matchId}`);
+        } catch (propagationError) {
+          const errorMessage = propagationError instanceof Error ? propagationError.message : String(propagationError);
+          if (errorMessage.includes('Match not found')) {
+            bracketLog(`⚠️ Non-fatal propagation error for Match ${matchId}: ${errorMessage}`);
+            bracketLog(`Match data was saved successfully. Continuing to normalization steps...`);
+          } else {
+            // Re-throw non-propagation errors
+            throw propagationError;
+          }
+        }
 
         // ⭐ Normalize LB R1 to fix same-side-twice issues
         const stageId =
