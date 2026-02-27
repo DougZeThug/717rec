@@ -1,5 +1,5 @@
 import { Trophy } from 'lucide-react';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { Label } from '@/components/ui/label';
 import {
@@ -62,6 +62,20 @@ export const ChampionsEditor: React.FC<FormSectionProps> = ({ formData, onChange
     },
     enabled: divisions.length > 0,
   });
+
+  // Auto-clean stale division keys from previous seasons
+  useEffect(() => {
+    if (formData.card_type !== 'champions' || visibleDivisions.length === 0) return;
+    const validNames = new Set(visibleDivisions.map((d) => d.display_division));
+    const currentChampions = parseMetadata(formData.metadata).champions || {};
+    const staleKeys = Object.keys(currentChampions).filter((k) => !validNames.has(k));
+    if (staleKeys.length > 0) {
+      const cleaned = { ...currentChampions };
+      staleKeys.forEach((k) => delete cleaned[k]);
+      const newMeta = { ...parseMetadata(formData.metadata), champions: cleaned };
+      onChange('metadata', JSON.stringify(newMeta, null, 2));
+    }
+  }, [visibleDivisions, formData.card_type, formData.metadata, onChange]);
 
   if (formData.card_type !== 'champions') return null;
 
