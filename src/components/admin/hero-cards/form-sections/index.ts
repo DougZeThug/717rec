@@ -1,6 +1,7 @@
 export { AdvancedSettingsSection } from './AdvancedSettingsSection';
 export { CallToActionSection } from './CallToActionSection';
 export { CardBasicsSection } from './CardBasicsSection';
+export { ChampionsEditor } from './ChampionsEditor';
 export { DesignAppearanceSection } from './DesignAppearanceSection';
 export { EventWinnersEditor } from './EventWinnersEditor';
 export { FormActions } from './FormActions';
