@@ -1,49 +1,39 @@
 
 
-## Verification: PR Changes Are NOT Fully in Place
+## Add Champions Editor to Admin Hero Card Form
 
-After searching the codebase, several changes from the PR summary are **missing**. Here's the status:
+### Problem
+When editing a "champions" type hero card, the admin has no UI to select which team won each division. The `metadata.champions` field (a `Record<divisionName, teamId>`) must be edited as raw JSON. The number of divisions varies (3-4 visible divisions per season).
 
-### Missing Changes
+### Approach
+Create a new `ChampionsEditor` form section that appears when `card_type === 'champions'`. It dynamically fetches divisions and teams, letting the admin pick a champion team per division.
 
-#### 1. `calculate_career_power_score()` SQL function — NOT FOUND
-No migration contains this function. Searched all migration files for `calculate_career_power_score` and `career.power.score` — zero results. This is the helper function that replicates the TypeScript career power score logic in SQL for the King Slayer badge.
+### Changes
 
-#### 2. Badge Config Descriptions — NOT UPDATED
-In `src/utils/badgeConfig.ts`:
-- **King Slayer** (line 141): Still says `"Defeated a team with significantly higher power score"` — should be `"Defeated a higher-ranked team from a tougher division"`
-- **Hot Streak** (line 176): Still says `"5+ matches"` — should be `"4+ matches"`
+#### 1. New file: `src/components/admin/hero-cards/form-sections/ChampionsEditor.tsx`
+- Fetch all divisions (excluding "Hidden" display divisions) via Supabase query, ordered by `division_weight` DESC
+- Group by `display_division` (since multiple internal divisions map to one display division like "Competitive", "Intermediate", "Recreational")
+- For each unique display division, show a Select dropdown populated with all non-hidden teams
+- Read current selections from `metadata.champions` (parsed from the JSON string in formData)
+- On selection change, update `metadata.champions` in the form data
+- Include a "Clear" option to remove a division's champion
+- Uses the same `FormSectionProps` pattern as other sections, with `SectionHeader` using a Trophy icon
 
-#### 3. Bully Badge SQL — Still Counts Game Wins, Not Match Wins
-The existing migration (`20260112014518_...`) at line 310 uses `v_bully_game_wins` and sums `team1_game_wins`/`team2_game_wins`. The PR says it should count **match wins** instead.
+#### 2. Update `src/components/admin/hero-cards/form-sections/index.ts`
+- Export `ChampionsEditor`
 
-#### 4. King Slayer Badge SQL — Not Updated to Career Power Score Logic
-The existing `award_kingslayer_badge` function (in `20250623205357_...`) still uses division weight difference (0.25 threshold), not a 25+ career power score gap with cross-division requirement.
+#### 3. Update `src/components/admin/hero-cards/HeroCardForm.tsx`
+- Import `ChampionsEditor`
+- Render `<ChampionsEditor>` when `formData.card_type === 'champions'` (similar to how `EventWinnersEditor` shows for event type)
 
-#### 5. Consistent Performer — Cannot Confirm
-No migration was found updating the consistent performer to store display division name in metadata.
+### Data Flow
+- Divisions query: `SELECT DISTINCT display_division, division_weight FROM divisions WHERE display_division != 'Hidden' ORDER BY division_weight DESC`
+- Teams query: `SELECT id, name FROM teams WHERE division_id NOT IN (hidden division ids) ORDER BY name`
+- Stored as `metadata.champions`: `{ "Competitive": "team-uuid", "Intermediate": "team-uuid", "Recreational": "team-uuid" }`
+- The existing `ChampionsHeroCard` component already reads this format — no rendering changes needed
 
-### What IS in Place
-- The badge types (`bully`, `king_slayer`, etc.) exist in the enum
-- The original versions of the badge functions exist but use the old logic
-
-### Conclusion
-The merge either didn't include the SQL migrations, or the changes were made directly to the Supabase database without corresponding migration files in the repo. The frontend badge config descriptions also weren't updated.
-
-### Recommended Fix Plan
-
-1. **Create a new migration** containing:
-   - `calculate_career_power_score()` helper function
-   - Updated `award_kingslayer_badge()` with career power score gap (25+) and cross-division check
-   - Updated `award_bully_badge()` counting match wins instead of game wins
-   - Updated `award_consistent_performer_badge()` storing display division name
-   - Proper revocation logic for all badge functions
-
-2. **Update `src/utils/badgeConfig.ts`**:
-   - King Slayer description: `"Defeated a higher-ranked team from a tougher division"`
-   - Hot Streak description: `"Currently on a winning streak of 4+ matches"`
-
-3. **Files to modify**:
-   - New migration file (SQL)
-   - `src/utils/badgeConfig.ts` (2 description changes)
+### Files Modified
+- `src/components/admin/hero-cards/form-sections/ChampionsEditor.tsx` (new)
+- `src/components/admin/hero-cards/form-sections/index.ts`
+- `src/components/admin/hero-cards/HeroCardForm.tsx`
 
