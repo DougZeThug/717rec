@@ -1,32 +1,43 @@
 
 
-## Problem
+## Analysis: "Match not found" Error in Bracket Score Submission
 
-The champions hero card metadata still contains Fall 2025 data with old division names ("Intermediate 1", "Intermediate 2") that no longer exist. Current season (Winter 2026) has different divisions (just "Competitive", "Intermediate", "Recreational"). The `ChampionsEditor` shows current divisions but doesn't clean up stale keys from old seasons, so the preview renders all 5 entries.
+### What Happened
+The user scored LB Final match 2028 (Here for Fireball vs On a Mission, score 1-2). The actual match update succeeded (PATCH 204), but `brackets-manager` crashed during **post-update propagation** when calling `getMatchesBeforeMinorRoundLB`.
 
-## Fix
+### Root Cause
+This is a **brackets-manager library bug**. The library's internal `findMatch` method looks for a match at `{round_id: 900, number: 4}` — WB Finals (round 900) only has 1 match (number 1), not 4. The library incorrectly calculates the corresponding WB match number for LB round 4 (the LB Final) in an 8-team double elimination bracket.
 
-**File: `src/components/admin/hero-cards/form-sections/ChampionsEditor.tsx`**
-
-Add an effect that syncs `metadata.champions` keys with current visible divisions when the editor mounts or divisions change. Any champion entries whose key doesn't match a current `display_division` get removed automatically.
-
-```typescript
-// After computing visibleDivisions and parsing metadata:
-useEffect(() => {
-  const validDivisionNames = new Set(visibleDivisions.map(d => d.display_division));
-  const currentChampions = metadata.champions || {};
-  const staleKeys = Object.keys(currentChampions).filter(k => !validDivisionNames.has(k));
-  
-  if (staleKeys.length > 0 && visibleDivisions.length > 0) {
-    const cleaned = { ...currentChampions };
-    staleKeys.forEach(k => delete cleaned[k]);
-    const newMetadata = { ...metadata, champions: cleaned };
-    onChange('metadata', JSON.stringify(newMetadata, null, 2));
-  }
-}, [visibleDivisions]);
+The error trace:
+```text
+findMatch({round_id: 900, number: 4})  →  returns []  →  throws "Match not found"
+  ← getMatchesBeforeMinorRoundLB
+    ← updatePrevious
+      ← updateRelatedMatches
+        ← updateMatch
 ```
 
-This ensures that when an admin opens the champions card editor, any leftover division keys from a previous season are automatically stripped, and the preview immediately reflects only the current season's divisions.
+### Impact
+- The match score **was saved** to the database (PATCH succeeded)
+- The error occurs in the **propagation phase** (advancing winner to Grand Final)
+- The GF opponent2 slot may not have been populated automatically
+- The existing `normalizeGrandFinalPopulation` in `BracketNormalizationService` should fix the GF population, but it never runs because the error throws before reaching it
 
-**Single file change**: `src/components/admin/hero-cards/form-sections/ChampionsEditor.tsx`
+### Fix
+
+**File: `src/services/brackets/manager/services/BracketUpdateService.ts`**
+
+Wrap the `manager.update.match()` call to catch "Match not found" errors specifically. Since the actual match data is already saved by the time propagation runs, we can:
+1. Catch the error
+2. Log a warning instead of throwing
+3. Continue to the normalization steps (which already handle GF population)
+4. This way the GF will be properly populated by `normalizeGrandFinalPopulation`
+
+The change is in the `try` block around line 92-95, wrapping `await this.manager.update.match(updatePayload)` in its own try-catch that handles "Match not found" as a non-fatal propagation error, allowing the normalization steps to still run.
+
+### Technical Details
+- Match 2028: LB group 262, round 904 (LB round number 4), match number 1
+- Library looks for WB round 900 match 4, but only match 1 exists
+- This is a known edge case in brackets-manager's double elimination logic for 8-team brackets
+- The `DialogTitle` and `aria-describedby` warnings in the logs are unrelated accessibility warnings from the bracket score dialog component
 
