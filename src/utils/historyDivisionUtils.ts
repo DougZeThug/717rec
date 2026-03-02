@@ -1,9 +1,9 @@
 // Utility functions for handling division display in history pages
 
 /**
- * Maps database division names to their proper display names for history pages
- * Note: For "Intermediate" division, use getHistoryDivisionDisplayNameWithRank() 
- * to split into Intermediate 1/2 based on playoff_rank
+ * Maps database division names to their proper display names for history pages.
+ * The archive_season RPC now stores bracket-aware division names directly
+ * (e.g., "Intermediate 1", "Intermediate 2"), so no rank-based splitting is needed.
  */
 export function getHistoryDivisionDisplayName(divisionName: string | null): string {
   if (!divisionName) return 'No Division';
@@ -26,35 +26,6 @@ export function getHistoryDivisionDisplayName(divisionName: string | null): stri
 
   // Return the original name for other divisions (like "Competitive", "Intermediate")
   return divisionName;
-}
-
-/**
- * Determines the display division based on division_name AND playoff_rank
- * Splits "Intermediate" into "Intermediate 1" (top ranks) and "Intermediate 2" (bottom ranks)
- * 
- * @param divisionName - The stored division name from database
- * @param playoffRank - The team's playoff rank within the division
- * @param intermediateRankCutoff - Ranks <= this value go to "Intermediate 1" (default: 8)
- */
-export function getHistoryDivisionDisplayNameWithRank(
-  divisionName: string | null, 
-  playoffRank: number | null,
-  intermediateRankCutoff: number = 8
-): string {
-  if (!divisionName) return 'No Division';
-  
-  const normalized = divisionName.toLowerCase().trim();
-  
-  // Split plain "Intermediate" based on playoff rank
-  if (normalized === 'intermediate') {
-    if (playoffRank !== null && playoffRank <= intermediateRankCutoff) {
-      return 'Intermediate 1';
-    }
-    return 'Intermediate 2';
-  }
-  
-  // Use existing logic for other divisions
-  return getHistoryDivisionDisplayName(divisionName);
 }
 
 /**
