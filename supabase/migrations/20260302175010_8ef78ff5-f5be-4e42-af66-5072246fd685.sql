@@ -1,0 +1,1 @@
+UPDATE public.hero_cards SET body = NULL WHERE slug = 'blind-draw' AND body = '1';
