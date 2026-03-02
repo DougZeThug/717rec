@@ -4126,6 +4126,34 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      archive_season: {
+        Args: {
+          p_champion_team_id?: string
+          p_runner_up_team_id?: string
+          p_season_id: string
+          p_third_place_team_id?: string
+        }
+        Returns: {
+          champion_team_id: string | null
+          confirmation_open: boolean
+          created_at: string
+          end_date: string | null
+          id: string
+          is_active: boolean
+          is_archived: boolean
+          name: string
+          runner_up_team_id: string | null
+          start_date: string
+          third_place_team_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "seasons"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       auto_assign_seeds: { Args: { p_division_id: string }; Returns: undefined }
       award_broom_crew_badge: { Args: { p_team_id: string }; Returns: Json }
       award_bully_badge: { Args: { p_team_id: string }; Returns: Json }

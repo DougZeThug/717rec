@@ -85,7 +85,13 @@ const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({ isOpen, onC
         <Alert>
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            <strong>Warning:</strong> Archiving will deactivate this season and preserve all stats.
+            <strong>Warning:</strong> This will perform a full archival:
+            <ul className="list-disc ml-4 mt-1 text-xs space-y-0.5">
+              <li>Snapshot all team stats &amp; power scores</li>
+              <li>Auto-detect division playoff champions from bracket data</li>
+              <li>Archive all completed matches to history</li>
+              <li>Deactivate the season permanently</li>
+            </ul>
             A new season must be activated to continue league activities.
           </AlertDescription>
         </Alert>

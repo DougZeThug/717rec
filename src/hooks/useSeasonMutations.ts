@@ -71,23 +71,29 @@ export const useSeasonMutations = () => {
   });
 
   const archiveSeason = useMutation({
-    mutationFn: async ({ id, ...championData }: ArchiveSeasonData) => {
-      const { data: season, error } = await supabase
-        .from('seasons')
-        .update({
-          is_active: false,
-          is_archived: true,
-          ...championData,
-        })
-        .eq('id', id)
-        .select()
-        .single();
+    mutationFn: async ({ id, champion_team_id, runner_up_team_id, third_place_team_id }: ArchiveSeasonData) => {
+      const { data: season, error } = await supabase.rpc('archive_season', {
+        p_season_id: id,
+        p_champion_team_id: champion_team_id ?? null,
+        p_runner_up_team_id: runner_up_team_id ?? null,
+        p_third_place_team_id: third_place_team_id ?? null,
+      });
 
       if (error) throw error;
       return season;
     },
     onSuccess: () => {
+      // Broad invalidation since archival touches matches, stats, rankings, etc.
       queryClient.invalidateQueries({ queryKey: ['seasons'] });
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      queryClient.invalidateQueries({ queryKey: ['rankings'] });
+      queryClient.invalidateQueries({ queryKey: ['v_team_details'] });
+      queryClient.invalidateQueries({ queryKey: ['teamStats'] });
+      queryClient.invalidateQueries({ queryKey: ['standings'] });
+      queryClient.invalidateQueries({ queryKey: ['careerRankings'] });
+      queryClient.invalidateQueries({ queryKey: ['bracket-data'] });
+      queryClient.invalidateQueries({ queryKey: ['playoff-matches'] });
     },
   });
 
