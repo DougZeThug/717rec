@@ -109,12 +109,6 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
                 <span className="font-medium">Created:</span>{' '}
                 {new Date(season.created_at).toLocaleDateString()}
               </div>
-              {season.champion_team_id && (
-                <div className="flex items-center gap-1">
-                  <Trophy className="h-3 w-3 text-yellow-500" />
-                  <span className="font-medium">Champion designated</span>
-                </div>
-              )}
               {season.is_archived && (
                 <div>
                   <span className="font-medium">Status:</span>{' '}

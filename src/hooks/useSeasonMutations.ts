@@ -14,9 +14,6 @@ interface UpdateSeasonData extends CreateSeasonData {
 
 interface ArchiveSeasonData {
   id: string;
-  champion_team_id?: string | null;
-  runner_up_team_id?: string | null;
-  third_place_team_id?: string | null;
 }
 
 export const useSeasonMutations = () => {
@@ -71,12 +68,12 @@ export const useSeasonMutations = () => {
   });
 
   const archiveSeason = useMutation({
-    mutationFn: async ({ id, champion_team_id, runner_up_team_id, third_place_team_id }: ArchiveSeasonData) => {
+    mutationFn: async ({ id }: ArchiveSeasonData) => {
       const { data: season, error } = await supabase.rpc('archive_season', {
         p_season_id: id,
-        p_champion_team_id: champion_team_id ?? null,
-        p_runner_up_team_id: runner_up_team_id ?? null,
-        p_third_place_team_id: third_place_team_id ?? null,
+        p_champion_team_id: null,
+        p_runner_up_team_id: null,
+        p_third_place_team_id: null,
       });
 
       if (error) throw error;
