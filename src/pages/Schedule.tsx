@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import PageLayout from '@/components/layout/PageLayout';
 import DeleteMatchDialog from '@/components/schedule/DeleteMatchDialog';
@@ -11,6 +11,7 @@ import { useMatchDates } from '@/hooks/useMatchDates';
 import { useMatchManagement } from '@/hooks/useMatchManagement';
 import { useMatchTimeslots } from '@/hooks/useMatchTimeslots';
 import { useScheduleData } from '@/hooks/useScheduleData';
+import { useScheduleTabs } from '@/hooks/useScheduleTabs';
 import { normalizeDate } from '@/utils/dateNormalization';
 import { scheduleLog } from '@/utils/logger';
 
@@ -42,16 +43,6 @@ const Schedule = () => {
   };
 
   const [selectedDate, setSelectedDate] = useState<Date>(getUpcomingThursday());
-  const SCHEDULE_TAB_KEY = 'scheduleActiveTab';
-  const [activeTab, setActiveTab] = useState(() => {
-    return sessionStorage.getItem(SCHEDULE_TAB_KEY) || 'timeslots';
-  });
-  const hasInitializedTab = useRef(false);
-
-  const handleTabChange = (tabId: string) => {
-    setActiveTab(tabId);
-    sessionStorage.setItem(SCHEDULE_TAB_KEY, tabId);
-  };
 
   // Log date for debugging
   useEffect(() => {
@@ -70,6 +61,14 @@ const Schedule = () => {
   const matchDates = useMatchDates(matchesData);
 
   const { groupedTimeslots, isLoading: timeslotsLoading } = useMatchTimeslots(selectedDate);
+
+  const { activeTab, handleTabChange } = useScheduleTabs({
+    selectedDate,
+    matchesLoading,
+    timeslotsLoading,
+    upcomingMatches,
+    groupedTimeslots,
+  });
 
   // Lazy load teams only when form dialog is open (for team selection dropdown)
   const [shouldLoadTeams, setShouldLoadTeams] = useState(false);
@@ -99,52 +98,6 @@ const Schedule = () => {
     }
     setIsFormOpen(true);
   };
-
-  // Reset initialization flag when date changes
-  useEffect(() => {
-    hasInitializedTab.current = false;
-  }, [selectedDate]);
-
-  // Smart default tab logic - only set once per date selection
-  useEffect(() => {
-    // Don't override if already initialized for this date
-    if (hasInitializedTab.current) return;
-
-    // Wait for data to load
-    if (matchesLoading || timeslotsLoading) return;
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const selected = new Date(selectedDate);
-    selected.setHours(0, 0, 0, 0);
-
-    // Mark as initialized
-    hasInitializedTab.current = true;
-
-    // If selected date is in the past, default to completed
-    if (selected < today) {
-      handleTabChange('completed');
-      return;
-    }
-
-    // For today or future dates:
-    // Priority 1: If there are upcoming matches, show upcoming tab
-    if (upcomingMatches && upcomingMatches.length > 0) {
-      handleTabChange('upcoming');
-      return;
-    }
-
-    // Priority 2: If there are timeslots, show timeslots tab
-    const hasTimeslots = Object.keys(groupedTimeslots).length > 0;
-    if (hasTimeslots) {
-      handleTabChange('timeslots');
-      return;
-    }
-
-    // Default fallback to timeslots
-    handleTabChange('timeslots');
-  }, [selectedDate, matchesLoading, timeslotsLoading, upcomingMatches, groupedTimeslots]);
 
   // Handle date selection with proper normalization
   const handleDateSelect = (date: Date) => {
