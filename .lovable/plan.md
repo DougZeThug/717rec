@@ -1,51 +1,31 @@
 
 
-## Plan: Create `archive_season` RPC Function for Full Admin Panel Archival
+## Issue: The `archive_season` RPC Has Two Bugs That Will Break History
 
-The goal is to replace the current incomplete archival flow (which only flips `is_active`/`is_archived` on `seasons`) with a single Postgres RPC function that performs the entire 6-step archival process. The admin dialog will call this function instead of a simple table update.
+### Bug 1: Grand Final runner-up detection fails
+The function on **line 69** looks for `match_type = 'finals'`, but your brackets only use `'winners'` and `'losers'`. The Grand Final is stored as `match_type = 'winners'` at the highest round number. This means the runner-up will never be detected — it silently returns NULL and skips the update.
 
-### Why an RPC Function?
+**Fix**: Change the runner-up detection to find the loser of the highest-round `winners` match (where `winner_id = wb_champion_id`), which is the Grand Final.
 
-All 6 steps must happen atomically in a single transaction. A Postgres function guarantees this — if any step fails, everything rolls back. It also keeps the logic server-side, matching the existing `activate_season` RPC pattern.
+### Bug 2: Only ranks 1-3 are set — past seasons ranked every team
+Fall 2025's history page shows `playoff_rank` for **all teams** (ranks 1 through 15), not just the top 3. The current RPC only auto-detects champion, runner-up, and 3rd place. Every other team would show `#-` on the history page.
 
-### Database Change: New `archive_season` RPC Function
+**Fix**: After setting ranks 1-3 from bracket data, auto-assign remaining teams ranks 4+ based on their elimination round in the bracket. Teams eliminated in earlier rounds get higher (worse) rank numbers. Teams eliminated in the same round share the same rank. Teams with no playoff matches get no rank (sorted by wins on the history page).
 
-Create a `SECURITY DEFINER` function `archive_season(p_season_id uuid, p_champion_team_id uuid, p_runner_up_team_id uuid, p_third_place_team_id uuid)` that performs:
+### How rank assignment works from bracket data
+For each bracket in the season:
+- Rank 1: `wb_champion_id` (already handled)
+- Rank 2: Grand Final loser (fix needed)  
+- Rank 3: Losers Final loser (already handled)
+- Rank 4+: Derived from `playoff_matches` — the earlier a team was eliminated (lower round number), the worse their rank. Teams eliminated in the same round share a rank.
 
-1. **Refresh `team_season_stats`** — Call `upsert_team_season_stats()` to ensure stats are current before snapshotting.
+Specifically, walk through all completed `playoff_matches` for the bracket, find every team that lost, and assign ranks based on the round they lost in — losers from later rounds rank higher (better).
 
-2. **Update division names** on `team_season_stats` — Sync `division_name` from `divisions` table for all teams in this season.
+### Changes
 
-3. **Record playoff finishing positions** — Read from `brackets` table for this season. For each bracket with a `wb_champion_id`, find the champion/runner-up/3rd from `playoff_matches` and set `champion = true`, `runner_up = true`, `playoff_rank` on `team_season_stats`. This auto-detects divisions and placements from bracket data rather than hardcoding team IDs.
-
-4. **Snapshot to `team_details_archive`** — INSERT INTO `team_details_archive` from `team_season_stats` joined with `teams`, calculating win/game percentages. Uses `ON CONFLICT (season_id, team_id) DO UPDATE` for idempotency.
-
-5. **Archive matches** — Delete `match_comments` for this season's matches, then copy completed matches to `matches_archive` (setting `archived_at = now()`, `season_id`), then delete from `matches`.
-
-6. **Update `seasons` row** — Set `is_active = false`, `is_archived = true`, `end_date = now()`, `champion_team_id`, `runner_up_team_id`, `third_place_team_id`, `updated_at = now()`.
-
-The function returns the updated season row.
-
-### How Playoff Rankings Are Auto-Detected
-
-For each bracket in this season:
-- Champion = `wb_champion_id` from `brackets` → `playoff_rank = 1, champion = true`
-- Runner-up = the `loser_id` from the Grand Final match (highest round in `winners` type) → `playoff_rank = 2, runner_up = true`
-- Third place = the `loser_id` from the Losers Final match (highest round in `losers` type) → `playoff_rank = 3`
-
-This eliminates the need to hardcode team IDs or pick them manually per division.
-
-### Frontend Changes
-
-**`useSeasonMutations.ts`** — Change `archiveSeason` mutation to call `supabase.rpc('archive_season', { ... })` instead of a direct table update. Add broader cache invalidation (matches, teams, rankings, season-data, etc.).
-
-**`SeasonArchivalDialog.tsx`** — The dialog already collects champion/runner-up/third-place selections for the **overall season** (Competitive division winners). These get passed to the RPC as before. The per-division playoff rankings are now auto-detected from bracket data, so no UI change needed for that. Add a progress indicator and more descriptive warning text explaining what the archival does (archives matches, snapshots stats, records playoff results).
-
-### Summary of Changes
-
-| What | Type |
+| What | Change |
 |---|---|
-| `archive_season()` RPC function | New DB migration |
-| `useSeasonMutations.ts` | Edit: call RPC, broader invalidation |
-| `SeasonArchivalDialog.tsx` | Edit: updated warning text, loading state |
+| `archive_season` RPC function | Fix `'finals'` → detect Grand Final from highest `winners` round. Add logic to assign ranks 4+ from elimination rounds. |
+
+This is a single migration to `CREATE OR REPLACE` the function with the corrected logic. No frontend changes needed — the history page already reads `playoff_rank` and sorts by it.
 
