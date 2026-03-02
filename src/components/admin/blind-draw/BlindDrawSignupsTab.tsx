@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
-import { AlertCircle, Loader2, Shuffle, Trash2, Users } from 'lucide-react';
-import React, { useState } from 'react';
+import { AlertCircle, Loader2, Save, Settings, Shuffle, Trash2, Users } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 import {
   AlertDialog,
@@ -16,6 +16,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DestructiveIconButton } from '@/components/ui/destructive-icon-button';
+import { Input } from '@/components/ui/input';
+import { useBlindDrawSettings, useUpdateBlindDrawSettings } from '@/hooks/useBlindDrawSettings';
 import {
   useBlindDrawSignups,
   useClearBlindDrawSignups,
@@ -28,6 +30,70 @@ interface SignupToDelete {
   id: string;
   name: string;
 }
+
+const BlindDrawSettingsCard: React.FC = () => {
+  const { data: settings, isLoading } = useBlindDrawSettings();
+  const updateSettings = useUpdateBlindDrawSettings();
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    if (settings) {
+      setMessage(settings.signup_confirmation_message);
+    }
+  }, [settings]);
+
+  const hasChanges = settings && message !== settings.signup_confirmation_message;
+
+  const handleSave = () => {
+    if (!settings || !hasChanges) return;
+    updateSettings.mutate({ id: settings.id, message });
+  };
+
+  if (isLoading) return null;
+
+  return (
+    <Card>
+      <CardHeader className="pb-3 px-3 sm:px-6">
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Settings className="h-5 w-5 text-muted-foreground" />
+          Settings
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="px-3 sm:px-6">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Signup Confirmation Message</label>
+          <p className="text-xs text-muted-foreground">
+            Shown to players after they sign up (toast + inline text)
+          </p>
+          <div className="flex gap-2">
+            <Input
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="You're signed up! See you there!"
+              className="flex-1"
+              maxLength={100}
+            />
+            <Button
+              onClick={handleSave}
+              disabled={!hasChanges || updateSettings.isPending}
+              size="sm"
+              className="shrink-0"
+            >
+              {updateSettings.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-1" />
+                  Save
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 const BlindDrawSignupsTab: React.FC = () => {
   const [deletingSignup, setDeletingSignup] = useState<SignupToDelete | null>(null);
@@ -57,6 +123,8 @@ const BlindDrawSignupsTab: React.FC = () => {
 
   return (
     <div className="space-y-4">
+      <BlindDrawSettingsCard />
+
       <Card>
         <CardHeader className="pb-3 px-3 sm:px-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -73,7 +141,6 @@ const BlindDrawSignupsTab: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent className="space-y-4 px-3 sm:px-6">
-          {/* Clear All button */}
           {signups && signups.length > 0 && (
             <div className="flex justify-end">
               <AlertDialog>
@@ -104,7 +171,6 @@ const BlindDrawSignupsTab: React.FC = () => {
             </div>
           )}
 
-          {/* Signups list */}
           {isLoading ? (
             <SignupsListSkeleton />
           ) : signups && signups.length > 0 ? (
@@ -169,7 +235,6 @@ const BlindDrawSignupsTab: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Individual signup delete confirmation */}
       <AlertDialog
         open={!!deletingSignup}
         onOpenChange={(open) => !open && setDeletingSignup(null)}

@@ -75,10 +75,6 @@ export const useAddBlindDrawSignup = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blind-draw-signups'] });
       queryClient.invalidateQueries({ queryKey: ['blind-draw-signup-count'] });
-      toast({
-        title: 'Success',
-        description: "You're signed up! See you Thursday!",
-      });
     },
     onError: (error) => {
       errorLog('Signup error:', error);

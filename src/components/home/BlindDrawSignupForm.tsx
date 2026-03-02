@@ -4,7 +4,9 @@ import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useBlindDrawSettings } from '@/hooks/useBlindDrawSettings';
 import { useAddBlindDrawSignup } from '@/hooks/useBlindDrawSignups';
+import { useToast } from '@/hooks/useToast';
 
 const signupSchema = z.object({
   firstName: z.string().trim().min(1, 'Name required').max(30, 'Too long'),
@@ -26,6 +28,10 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
   const [isSignedUp, setIsSignedUp] = useState(false);
 
   const addSignup = useAddBlindDrawSignup();
+  const { data: settings } = useBlindDrawSettings();
+  const { toast } = useToast();
+
+  const confirmationMessage = settings?.signup_confirmation_message || "You're signed up! See you there!";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +57,10 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
       setIsSignedUp(true);
       setFirstName('');
       setLastInitial('');
+      toast({
+        title: 'Success',
+        description: confirmationMessage,
+      });
     } catch (error) {
       // Error handled by mutation
     }
@@ -63,7 +73,7 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
           <div className="bg-green-500/30 rounded-full p-1">
             <Check className="h-5 w-5 text-green-300" />
           </div>
-          <span className="font-semibold">You're signed up! See you Thursday!</span>
+          <span className="font-semibold">{confirmationMessage}</span>
         </div>
       </div>
     );

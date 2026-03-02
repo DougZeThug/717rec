@@ -41,6 +41,27 @@ export type Database = {
         }
         Relationships: []
       }
+      blind_draw_settings: {
+        Row: {
+          created_at: string
+          id: string
+          signup_confirmation_message: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          signup_confirmation_message?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          signup_confirmation_message?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       blind_draw_signups: {
         Row: {
           created_at: string | null
