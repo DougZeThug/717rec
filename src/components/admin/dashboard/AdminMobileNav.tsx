@@ -17,12 +17,6 @@ import {
 } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -98,14 +92,6 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const getActiveGroup = (tabId: string): string => {
-    for (const group of tabGroups) {
-      if (group.tabs.includes(tabId)) {
-        return group.id;
-      }
-    }
-    return tabGroups[0].id;
-  };
 
   const getTabItem = (tabId: string): AdminMenuItem | undefined => {
     return adminMenuItems.find((item) => item.id === tabId);
@@ -210,72 +196,56 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
       ) : (
         /* Grouped Accordion Navigation */
         <ScrollArea className="max-h-[60vh]">
-          <Accordion
-            type="multiple"
-            defaultValue={[getActiveGroup(activeTab)]}
-            className="space-y-1"
-          >
+          <div className="space-y-3">
             {tabGroups.map((group) => {
               const GroupIcon = group.icon;
               const groupBadge = getGroupBadgeCount(group);
-              const hasActiveTab = group.tabs.includes(activeTab);
 
               return (
-                <AccordionItem
-                  key={group.id}
-                  value={group.id}
-                  className="border border-border rounded-lg overflow-hidden"
-                >
-                  <AccordionTrigger
-                    className={cn(
-                      'flex items-center gap-3 px-3 py-3 hover:no-underline hover:bg-accent/50 text-sm',
-                      hasActiveTab && 'bg-primary/5'
-                    )}
-                  >
-                    <GroupIcon className="h-4 w-4 shrink-0" />
-                    <span className="flex-1 text-left font-medium">{group.label}</span>
+                <div key={group.id} className="border border-border rounded-lg overflow-hidden">
+                  <div className="flex items-center gap-3 px-3 py-2.5 bg-muted/30">
+                    <GroupIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="flex-1 text-left font-medium text-sm">{group.label}</span>
                     {groupBadge > 0 && (
-                      <Badge variant="destructive" className="text-xs mr-2">
+                      <Badge variant="destructive" className="text-xs">
                         {groupBadge}
                       </Badge>
                     )}
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-0">
-                    <div className="border-t border-border">
-                      {group.tabs.map((tabId) => {
-                        const tab = getTabItem(tabId);
-                        if (!tab) return null;
-                        const TabIcon = tab.icon;
+                  </div>
+                  <div className="border-t border-border">
+                    {group.tabs.map((tabId) => {
+                      const tab = getTabItem(tabId);
+                      if (!tab) return null;
+                      const TabIcon = tab.icon;
 
-                        return (
-                          <button
-                            key={tabId}
-                            onClick={() => handleTabSelect(tabId)}
-                            className={cn(
-                              'w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors',
-                              'hover:bg-accent hover:text-accent-foreground',
-                              'border-b border-border last:border-b-0',
-                              activeTab === tabId
-                                ? 'bg-primary/10 text-primary font-medium'
-                                : 'text-muted-foreground'
-                            )}
-                          >
-                            <TabIcon className="h-4 w-4 shrink-0" />
-                            <span className="flex-1 text-left">{tab.label}</span>
-                            {tabId === 'requests' && pendingRequestsCount > 0 && (
-                              <Badge variant="destructive" className="text-xs">
-                                {pendingRequestsCount}
-                              </Badge>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
+                      return (
+                        <button
+                          key={tabId}
+                          onClick={() => handleTabSelect(tabId)}
+                          className={cn(
+                            'w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors',
+                            'hover:bg-accent hover:text-accent-foreground',
+                            'border-b border-border last:border-b-0',
+                            activeTab === tabId
+                              ? 'bg-primary/10 text-primary font-medium'
+                              : 'text-muted-foreground'
+                          )}
+                        >
+                          <TabIcon className="h-4 w-4 shrink-0" />
+                          <span className="flex-1 text-left">{tab.label}</span>
+                          {tabId === 'requests' && pendingRequestsCount > 0 && (
+                            <Badge variant="destructive" className="text-xs">
+                              {pendingRequestsCount}
+                            </Badge>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               );
             })}
-          </Accordion>
+          </div>
         </ScrollArea>
       )}
     </div>
