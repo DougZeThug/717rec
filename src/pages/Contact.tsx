@@ -66,11 +66,7 @@ export default function Contact() {
     setIsSubmitting(true);
 
     try {
-      const { error } = await submitContactRequest(data);
-      if (error) {
-        throw new Error(error);
-      }
-
+      await submitContactRequest(data);
       trackContactForm(data.subject);
       setIsSuccess(true);
       form.reset();
