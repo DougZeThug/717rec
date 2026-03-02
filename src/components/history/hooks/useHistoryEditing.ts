@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { getHistoryDivisionOrder, getHistoryDivisionDisplayNameWithRank } from '@/utils/historyDivisionUtils';
+import { getHistoryDivisionOrder, getHistoryDivisionDisplayName } from '@/utils/historyDivisionUtils';
 
 export interface EditableTeam {
   team_id: string;
@@ -44,7 +44,7 @@ const INTERMEDIATE_2_RANK_OFFSET = 8;
 // Helper to get display division name for editing (splits Intermediate into Int 1/2)
 const getEditDisplayDivision = (divisionName: string | null, playoffRank: number | null): string => {
   if (!divisionName) return 'Uncategorized';
-  return getHistoryDivisionDisplayNameWithRank(divisionName, playoffRank);
+  return getHistoryDivisionDisplayName(divisionName);
 };
 
 // Helper to get the display rank for editing (adjusts Int 2 ranks to 1-based within division)
