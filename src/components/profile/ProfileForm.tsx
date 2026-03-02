@@ -100,16 +100,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     }
 
     try {
-      const { error } = await updateProfile(user.id, data);
-
-      if (error) {
-        toast({
-          title: 'Error updating profile',
-          description: error,
-          variant: 'destructive',
-        });
-        return;
-      }
+      await updateProfile(user.id, data);
 
       toast({
         title: 'Profile updated',

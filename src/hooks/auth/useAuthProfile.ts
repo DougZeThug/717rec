@@ -3,8 +3,8 @@ import { useCallback, useState } from 'react';
 import { NavigateFunction } from 'react-router';
 
 import { supabase } from '@/integrations/supabase/client';
+import { DatabaseError } from '@/types/errors';
 import { UserProfile } from '@/types/user';
-import { errorLog } from '@/utils/logger';
 
 /**
  * Hook for managing user profile state and operations
@@ -15,19 +15,17 @@ export const useAuthProfile = (user: User | null, navigate: NavigateFunction) =>
 
   // Fetch user profile from database
   const fetchProfile = useCallback(async (userId: string): Promise<UserProfile | null> => {
-    try {
-      const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
 
-      if (error) {
-        errorLog('Error fetching profile:', error);
-        throw error;
+    if (error) {
+      // PGRST116 = no rows returned — valid for new users who don't have a profile yet
+      if (error.code === 'PGRST116') {
+        return null;
       }
-
-      return data as UserProfile;
-    } catch (error) {
-      errorLog('Unexpected error fetching profile:', error);
-      return null;
+      throw new DatabaseError(`Failed to fetch profile: ${error.message}`, { code: error.code });
     }
+
+    return data as UserProfile;
   }, []);
 
   // Check if user needs profile setup (missing username)

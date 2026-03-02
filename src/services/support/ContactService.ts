@@ -1,7 +1,8 @@
 import { z } from 'zod';
 
 import { supabase } from '@/integrations/supabase/client';
-import { errorLog } from '@/utils/logger';
+import { DatabaseError } from '@/types/errors';
+import { getErrorMessage } from '@/utils/errorHandler';
 
 export const contactSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -12,22 +13,12 @@ export const contactSchema = z.object({
 
 export type ContactFormData = z.infer<typeof contactSchema>;
 
-export const submitContactRequest = async (
-  data: ContactFormData,
-): Promise<{ error?: string }> => {
-  try {
-    const { error } = await supabase.functions.invoke('send-support-email', {
-      body: data,
-    });
+export const submitContactRequest = async (data: ContactFormData): Promise<void> => {
+  const { error } = await supabase.functions.invoke('send-support-email', {
+    body: data,
+  });
 
-    if (error) {
-      errorLog('Contact form error:', error);
-      return { error: error.message || 'Failed to send message' };
-    }
-
-    return {};
-  } catch (error) {
-    errorLog('Contact form error:', error);
-    return { error: 'Failed to send message. Please try again.' };
+  if (error) {
+    throw new DatabaseError(`Failed to send message: ${getErrorMessage(error)}`);
   }
 };

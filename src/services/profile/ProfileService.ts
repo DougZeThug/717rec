@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { supabase } from '@/integrations/supabase/client';
-import { errorLog } from '@/utils/logger';
+import { handleDatabaseError } from '@/utils/errorHandler';
 
 export const profileSchema = z.object({
   username: z
@@ -15,7 +15,6 @@ export type ProfileFormData = z.infer<typeof profileSchema>;
 
 interface UsernameAvailabilityResult {
   available: boolean | null;
-  error?: string;
 }
 
 export const checkUsernameAvailability = async ({
@@ -33,46 +32,31 @@ export const checkUsernameAvailability = async ({
     return { available: true };
   }
 
-  try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('username', username)
-      .maybeSingle();
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('username')
+    .eq('username', username)
+    .maybeSingle();
 
-    if (error) {
-      errorLog('Error checking username:', error);
-      return { available: null, error: error.message };
-    }
-
-    return { available: !data };
-  } catch (error) {
-    errorLog('Unexpected error checking username:', error);
-    return { available: null, error: 'Unexpected error checking username' };
+  if (error) {
+    // Return null (unknown) rather than throwing — a failed availability
+    // check is a best-effort UI hint, not a critical error.
+    return { available: null };
   }
+
+  return { available: !data };
 };
 
-export const updateProfile = async (
-  userId: string,
-  data: ProfileFormData,
-): Promise<{ error?: string }> => {
-  try {
-    const { error } = await supabase
-      .from('profiles')
-      .update({
-        username: data.username,
-        full_name: data.fullName || null,
-      })
-      .eq('id', userId);
+export const updateProfile = async (userId: string, data: ProfileFormData): Promise<void> => {
+  const { error } = await supabase
+    .from('profiles')
+    .update({
+      username: data.username,
+      full_name: data.fullName || null,
+    })
+    .eq('id', userId);
 
-    if (error) {
-      errorLog('Error updating profile:', error);
-      return { error: error.message };
-    }
-
-    return {};
-  } catch (error) {
-    errorLog('Unexpected error updating profile:', error);
-    return { error: 'Unexpected error updating profile' };
+  if (error) {
+    handleDatabaseError(error, 'Failed to update profile');
   }
 };
