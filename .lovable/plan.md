@@ -1,37 +1,30 @@
 
 
-## Update Competitive Winter 1 2026 Playoff Matches
+## Finalize Intermediate Winter 1 2026 Bracket
 
-The read-query tool lacks write permissions on `playoff_matches` (RLS restricts writes to admins). I'll use a **database migration** to execute all 7 match operations in a single transaction.
+All data is resolved. Single migration with 5 updates, 3 inserts, and champion metadata.
 
-### Data Resolved
+### 5 UPDATEs on existing rows
 
-| Team | ID |
-|---|---|
-| Jager Bombers | `b214167b-7f7e-4470-a811-bf2a093c9620` |
-| Offdogs | `77110b92-d2d8-495b-afed-cac65deb6253` |
-| Cuzzo's Clinic | `ad4ec289-fd85-4322-8ebb-68647607de23` |
-| Bag Babies | `626be920-071d-4aea-a1f5-1819893215ca` |
-| Pepperoni Cheesers | `c9d644a4-4e5a-43a0-9805-9d93299cda35` |
-| Seize the Maize | `8c5adea2-09b7-4298-83dc-295dae74fdb8` |
+| Row ID | Type | Round | Pos | Result |
+|---|---|---|---|---|
+| `8b048a1a` | winners | 2 | 1 | Miracle @ Marion 1 – Wrong Hole 2 → Wrong Hole wins |
+| `d6a9fa1f` | winners | 2 | 2 | Buttery Nips 1 – Bumbleweed 2 → Bumbleweed wins |
+| `9f4e8b30` | winners | 3 | 1 | Wrong Hole 0 – Bumbleweed 2 → Bumbleweed wins |
+| `3689c92b` | losers | 2 | 1 | Miracle @ Marion 1 – Happy Valley 2 → Happy Valley wins (also fixes team2_id) |
+| `4dfe4167` | losers | 2 | 2 | Buttery Nips 2 – Smooth Sliders 0 → Buttery Nips wins (also fixes team2_id) |
 
-**Bracket ID:** `428f974f-7295-410d-a3d0-d1f11280c17d`
+### 3 INSERTs for new rounds
 
-### Operations (single migration)
+| Type | Round | Pos | Result |
+|---|---|---|---|
+| losers | 3 | 1 | Happy Valley 0 – Buttery Nips 2 → Buttery Nips wins |
+| losers | 4 | 1 | Wrong Hole 0 – Buttery Nips 2 → Buttery Nips wins |
+| winners | 4 | 1 | Bumbleweed 2 – Buttery Nips 1 → Bumbleweed wins (Grand Final) |
 
-**3 UPDATEs** on existing rows:
-1. Winners R4 P1 (`1b74e515`): Jager Bombers 1 – Offdogs 2 → winner Offdogs
-2. Losers R4 P1 (`6ae7ec84`): Cuzzo's Clinic 2 – Bag Babies 0 → winner Cuzzo's
-3. Losers R4 P2 (`b376b6cc`): Pepperoni Cheesers 0 – Seize the Maize 2 → winner Seize the Maize
-
-**4 INSERTs** for new rounds:
-4. Losers R5 P1 (Losers Semi): Cuzzo's Clinic 2 – Seize the Maize 0 → winner Cuzzo's
-5. Losers R6 P1 (Losers Final): Jager Bombers 0 – Cuzzo's Clinic 2 → winner Cuzzo's
-6. Winners R5 P1 (GF1): Offdogs 0 – Cuzzo's Clinic 2 → winner Cuzzo's
-7. Winners R6 P2 (GF2): Offdogs 0 – Cuzzo's Clinic 2 → winner Cuzzo's
-
-**Champion metadata:** The `brackets` table has `wb_champion_id` but no dedicated champion/runner-up columns. I'll set `wb_champion_id` to Cuzzo's Clinic and `state` to `'completed'`. No runner-up column exists in the schema, so that will be skipped.
+### Champion metadata
+Set `wb_champion_id` = Bumbleweed, `state` = `'completed'` on brackets row.
 
 ### File Changes
-None — this is purely a data migration via the Supabase migration tool.
+None — purely a data migration.
 
