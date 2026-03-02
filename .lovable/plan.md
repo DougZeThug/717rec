@@ -1,41 +1,51 @@
 
 
-## Finalize Recreational Winter 1 2026 Bracket
+## Plan: Create `archive_season` RPC Function for Full Admin Panel Archival
 
-**Bracket ID:** `29a823d8-47b3-489c-a9f1-ebc6586d9baf`
+The goal is to replace the current incomplete archival flow (which only flips `is_active`/`is_archived` on `seasons`) with a single Postgres RPC function that performs the entire 6-step archival process. The admin dialog will call this function instead of a simple table update.
 
-### Team IDs
+### Why an RPC Function?
 
-| Team | ID |
+All 6 steps must happen atomically in a single transaction. A Postgres function guarantees this — if any step fails, everything rolls back. It also keeps the logic server-side, matching the existing `activate_season` RPC pattern.
+
+### Database Change: New `archive_season` RPC Function
+
+Create a `SECURITY DEFINER` function `archive_season(p_season_id uuid, p_champion_team_id uuid, p_runner_up_team_id uuid, p_third_place_team_id uuid)` that performs:
+
+1. **Refresh `team_season_stats`** — Call `upsert_team_season_stats()` to ensure stats are current before snapshotting.
+
+2. **Update division names** on `team_season_stats` — Sync `division_name` from `divisions` table for all teams in this season.
+
+3. **Record playoff finishing positions** — Read from `brackets` table for this season. For each bracket with a `wb_champion_id`, find the champion/runner-up/3rd from `playoff_matches` and set `champion = true`, `runner_up = true`, `playoff_rank` on `team_season_stats`. This auto-detects divisions and placements from bracket data rather than hardcoding team IDs.
+
+4. **Snapshot to `team_details_archive`** — INSERT INTO `team_details_archive` from `team_season_stats` joined with `teams`, calculating win/game percentages. Uses `ON CONFLICT (season_id, team_id) DO UPDATE` for idempotency.
+
+5. **Archive matches** — Delete `match_comments` for this season's matches, then copy completed matches to `matches_archive` (setting `archived_at = now()`, `season_id`), then delete from `matches`.
+
+6. **Update `seasons` row** — Set `is_active = false`, `is_archived = true`, `end_date = now()`, `champion_team_id`, `runner_up_team_id`, `third_place_team_id`, `updated_at = now()`.
+
+The function returns the updated season row.
+
+### How Playoff Rankings Are Auto-Detected
+
+For each bracket in this season:
+- Champion = `wb_champion_id` from `brackets` → `playoff_rank = 1, champion = true`
+- Runner-up = the `loser_id` from the Grand Final match (highest round in `winners` type) → `playoff_rank = 2, runner_up = true`
+- Third place = the `loser_id` from the Losers Final match (highest round in `losers` type) → `playoff_rank = 3`
+
+This eliminates the need to hardcode team IDs or pick them manually per division.
+
+### Frontend Changes
+
+**`useSeasonMutations.ts`** — Change `archiveSeason` mutation to call `supabase.rpc('archive_season', { ... })` instead of a direct table update. Add broader cache invalidation (matches, teams, rankings, season-data, etc.).
+
+**`SeasonArchivalDialog.tsx`** — The dialog already collects champion/runner-up/third-place selections for the **overall season** (Competitive division winners). These get passed to the RPC as before. The per-division playoff rankings are now auto-detected from bracket data, so no UI change needed for that. Add a progress indicator and more descriptive warning text explaining what the archival does (archives matches, snapshots stats, records playoff results).
+
+### Summary of Changes
+
+| What | Type |
 |---|---|
-| The Cornholy Trinity | `34b1dacf-0c30-4a4c-8228-432701868f34` |
-| Here for Fireball | `c577e0f9-6700-4220-a902-b368ca915bbd` |
-| On a Mission | `00def929-de16-4f59-933f-ae0247b04358` |
-| Double Trouble | `31e0e752-e0fc-4bd1-892f-3b7123ad72b7` |
-| Sack to the Future | `92e9f091-82f2-446d-8990-576c89a120e1` |
-| Corn Kitties | `ea3b15e7-8bc7-467c-85fc-7f91e89742a1` |
-
-### 5 UPDATEs on existing rows
-
-| Row ID | Type | Round | Pos | Result | Notes |
-|---|---|---|---|---|---|
-| `9da09b98` | winners | 2 | 1 | On a Mission 0 – Here for Fireball 2 → HfF wins | Set scores/winner/loser |
-| `6e9ace9a` | winners | 2 | 2 | Double Trouble 0 – Cornholy Trinity 2 → CT wins | Set scores/winner/loser |
-| `6a6ddb74` | winners | 3 | 1 | Here for Fireball 0 – Cornholy Trinity 2 → CT wins | pending → completed |
-| `7edc89b2` | losers | 2 | 1 | On a Mission 2 – Sack to the Future 0 → OaM wins | Fix team2_id, pending → completed |
-| `64fe17e9` | losers | 2 | 2 | Double Trouble 2 – Corn Kitties 0 → DT wins | Fix team2_id, pending → completed |
-
-### 3 INSERTs for new rounds
-
-| Type | Round | Pos | Result |
-|---|---|---|---|
-| losers | 3 | 1 | On a Mission 2 – Double Trouble 0 → On a Mission wins |
-| losers | 4 | 1 | Here for Fireball 1 – On a Mission 2 → On a Mission wins |
-| winners | 4 | 1 | Cornholy Trinity 2 – On a Mission 0 → Cornholy Trinity wins (Grand Final) |
-
-### Champion metadata
-Set `wb_champion_id` = The Cornholy Trinity (`34b1dacf`), `state` = `'completed'` on brackets row.
-
-### File Changes
-None — purely a data migration.
+| `archive_season()` RPC function | New DB migration |
+| `useSeasonMutations.ts` | Edit: call RPC, broader invalidation |
+| `SeasonArchivalDialog.tsx` | Edit: updated warning text, loading state |
 
