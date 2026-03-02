@@ -12,15 +12,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { useTeamsArray } from '@/hooks/teams';
 import { toast } from '@/hooks/useToast';
 import { useSeasonMutations } from '@/hooks/useSeasonMutations';
 
@@ -31,22 +22,13 @@ interface SeasonArchivalDialogProps {
 }
 
 const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({ isOpen, onClose, season }) => {
-  const { teams } = useTeamsArray();
   const { archiveSeason } = useSeasonMutations();
   const [isArchiving, setIsArchiving] = useState(false);
-  const [championId, setChampionId] = useState<string>('');
-  const [runnerUpId, setRunnerUpId] = useState<string>('');
-  const [thirdPlaceId, setThirdPlaceId] = useState<string>('');
 
   const handleArchive = async () => {
     setIsArchiving(true);
     try {
-      await archiveSeason.mutateAsync({
-        id: season.id,
-        champion_team_id: championId || null,
-        runner_up_team_id: runnerUpId || null,
-        third_place_team_id: thirdPlaceId || null,
-      });
+      await archiveSeason.mutateAsync({ id: season.id });
       toast({
         title: 'Success',
         description: `${season.name} has been archived`,
@@ -63,11 +45,6 @@ const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({ isOpen, onC
       setIsArchiving(false);
     }
   };
-
-  const availableTeams =
-    teams?.filter(
-      (team) => team.id !== championId && team.id !== runnerUpId && team.id !== thirdPlaceId
-    ) || [];
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
@@ -95,56 +72,6 @@ const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({ isOpen, onC
             A new season must be activated to continue league activities.
           </AlertDescription>
         </Alert>
-
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="champion">Champion (Optional)</Label>
-            <Select value={championId} onValueChange={setChampionId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select champion team" />
-              </SelectTrigger>
-              <SelectContent>
-                {teams?.map((team) => (
-                  <SelectItem key={team.id} value={team.id}>
-                    {team.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="runner-up">Runner-up (Optional)</Label>
-            <Select value={runnerUpId} onValueChange={setRunnerUpId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select runner-up team" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableTeams.map((team) => (
-                  <SelectItem key={team.id} value={team.id}>
-                    {team.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="third-place">Third Place (Optional)</Label>
-            <Select value={thirdPlaceId} onValueChange={setThirdPlaceId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select third place team" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableTeams.map((team) => (
-                  <SelectItem key={team.id} value={team.id}>
-                    {team.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
 
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
