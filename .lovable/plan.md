@@ -1,30 +1,28 @@
 
 
-## Add Season Toggle to View Historical Brackets on Playoffs Page
+## Two Fixes
 
-### What's Happening Now
+### Issue 1: Blind Draw Tab Disappearing on Mobile
 
-The Playoffs page filters out all brackets with `state = 'completed'` (line 112 in `usePlayoffViewModel.compat.ts`). Since archived seasons have all their brackets marked as completed, those brackets are invisible. There are 19 completed brackets across 5 past seasons sitting in the database.
+**Root cause**: The Radix Accordion's `AccordionContent` component uses `overflow-hidden` permanently and animates height using `--radix-accordion-content-height`. This CSS variable is calculated once when the accordion opens. If the content inside hasn't fully rendered yet (due to React.memo, paint timing, font loading, etc.), the calculated height is too short and the last items in the group (blind draw, help) get clipped — permanently hidden by `overflow-hidden`. On refresh, timing varies, which is why it's intermittent.
 
-### The Fix
+**Fix**: Replace the accordion-based mobile nav with a simple always-visible grouped list. Each group shows its label as a header with its items directly below — no expand/collapse. This guarantees every tab is always visible. The groups are small (3-4 items each) so there's no need to hide them behind accordions on mobile.
 
-Add a season selector dropdown at the top of the Playoffs page. When the current season is selected, it shows active/pending brackets (current behavior). When a past season is selected, it shows that season's completed brackets instead.
-
-### Changes
-
-| File | What |
+| File | Change |
 |---|---|
-| `src/hooks/usePlayoffViewModel.compat.ts` | Remove the hardcoded `completed` filter. Instead, accept a `seasonId` parameter and filter brackets by season. When viewing the current season, still exclude completed brackets. When viewing a past season, show only completed brackets for that season. |
-| `src/components/playoffs/hooks/usePlayoffPageData.ts` | Add `selectedSeasonId` state (defaults to current active season). Pass it down to `usePlayoffData`. Expose it and its setter in the `PlayoffPageData` interface. |
-| `src/components/playoffs/layout/PlayoffPageLayout.tsx` | Render a season selector dropdown below the header, before the bracket list. Uses the seasons data to populate options. |
-| New: `src/components/playoffs/SeasonSelector.tsx` | A simple dropdown component showing all seasons (current + archived). Displays season name, highlights the active one. When a past season is picked, the bracket list switches to show that season's completed brackets. |
+| `AdminMobileNav.tsx` | Replace the `Accordion` section with a simple grouped list — each group renders a header label followed by its tab buttons. Remove the `Accordion` import and related Radix components. Keep search and quick access as-is. |
 
-### How It Works
+### Issue 2: Hardcoded "See you Thursday!" Toast
 
-1. User lands on Playoffs page → sees current season's active brackets (no change from today)
-2. User clicks the season dropdown → sees list of all seasons (e.g., "Winter 2 2026 (Current)", "Winter 1 2026", "Fall 2025", etc.)
-3. User picks "Winter 1 2026" → the bracket query re-runs filtered to that season, including completed brackets
-4. The bracket list shows the historical brackets grouped by division, and clicking one opens the bracket viewer as usual
+**Root cause**: The confirmation message is hardcoded in `BlindDrawSignupForm.tsx` and `useBlindDrawSignups.ts`.
 
-The bracket detail/viewer components don't need changes — they already handle completed brackets fine since they load data by bracket ID.
+**Fix**: Add a `blind_draw_settings` table to store configurable settings including the signup confirmation message. Add a settings section to the admin Blind Draw tab so admins can edit the message. Update the signup flow to fetch and display the custom message.
+
+| Step | Detail |
+|---|---|
+| Migration | Create `blind_draw_settings` table with `id`, `signup_confirmation_message` (text, default "You're signed up! See you there!"), `created_at`, `updated_at`. Single-row config pattern. Public SELECT, admin-only UPDATE via RLS. Seed with one default row. |
+| New hook | `useBlindDrawSettings` — fetches the current confirmation message, plus a mutation to update it (admin only). |
+| Update `BlindDrawSignupsTab` | Add a "Settings" card at the top with an editable text input for the confirmation message and a Save button. |
+| Update `BlindDrawSignupForm.tsx` | Fetch the custom message via the new hook and use it in the success toast instead of the hardcoded text. |
+| Update `useBlindDrawSignups.ts` | Remove the hardcoded toast message from the mutation; let the form component handle it with the dynamic message. |
 
