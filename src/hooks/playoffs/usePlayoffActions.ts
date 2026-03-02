@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
 import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
-import { getUIErrorMessage, logError } from '@/utils/errors';
+import { getUIErrorMessage, logError } from '@/utils/errorHandler';
 import type { PlayoffGame } from '@/utils/playoffs/playoffTypes';
 
 export const usePlayoffActions = () => {

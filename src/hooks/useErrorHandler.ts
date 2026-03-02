@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
 import { useToast } from '@/hooks/useToast';
-import { handleHookError, HookErrorResult } from '@/utils/errorHandling';
+import { handleHookError, HookErrorResult } from '@/utils/errorHandler';
 
 /**
  * Reusable hook for consistent error handling across the app.
