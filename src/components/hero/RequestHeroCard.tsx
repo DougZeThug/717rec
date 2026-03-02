@@ -27,11 +27,12 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 import { useTeamsArray } from '@/hooks/teams';
-import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { useSubmitRequest, useTeamRequests } from '@/hooks/useTeamRequests';
 import { cn } from '@/lib/utils';
 import { HeroCard as HeroCardType } from '@/types/heroCard';
 import { REQUEST_STATUS_LABELS, REQUEST_TYPE_LABELS, TeamRequestType } from '@/types/teamRequest';
+
+import HeroCardBase from './HeroCardBase';
 
 interface RequestHeroCardProps {
   card: HeroCardType;
@@ -44,7 +45,6 @@ const REQUEST_OPTIONS: { type: TeamRequestType; icon: React.ElementType; descrip
 ];
 
 const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
-  const { shouldApplyWinter } = useSeasonalTheme();
   const { teams, isLoading: teamsLoading } = useTeamsArray({ includeHidden: false });
   const submitMutation = useSubmitRequest();
 
@@ -89,22 +89,12 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
     resetForm();
   };
 
-  const baseClasses = cn(
-    'relative w-full rounded-xl shadow-md border border-border/30',
-    shouldApplyWinter
-      ? 'winter-card-full overflow-visible bg-gradient-to-br from-cyan-900/90 to-blue-900/90 text-cyan-50'
-      : 'overflow-hidden',
-    card.background_color,
-    card.text_color
-  );
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={baseClasses}
+    <HeroCardBase
+      winterClassName="bg-gradient-to-br from-cyan-900/90 to-blue-900/90 text-cyan-50"
+      defaultClassName={cn(card.background_color, card.text_color)}
+      padded
     >
-      <div className="p-4 md:p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -362,8 +352,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
             )}
           </AnimatePresence>
         </div>
-      </div>
-    </motion.div>
+    </HeroCardBase>
   );
 };
 

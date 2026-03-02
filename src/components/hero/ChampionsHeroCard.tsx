@@ -7,8 +7,9 @@ import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carouse
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { animations } from '@/styles/design-system';
 import { HeroCard } from '@/types/heroCard';
+
+import HeroCardBase from './HeroCardBase';
 
 interface ChampionsHeroCardProps {
   card: HeroCard;
@@ -205,17 +206,23 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
     enabled: championIds.length > 0,
   });
 
-  const sectionClasses = cn(
-    'relative rounded-2xl shadow-2xl hover:shadow-3xl p-4 md:p-6 transition-shadow duration-200',
+  const baseShellClasses =
+    'rounded-2xl shadow-2xl hover:shadow-3xl p-4 md:p-6 transition-shadow duration-200';
+  const winterShellClass = 'champions-card';
+  const defaultShellClass = 'bg-gradient-to-br from-amber-600 via-amber-500 to-yellow-500';
+
+  // Plain section used for loading/error states (no motion wrapper needed)
+  const plainSectionClasses = cn(
+    'relative w-full',
+    baseShellClasses,
     shouldApplyWinter
-      ? 'champions-card winter-card-full overflow-visible'
-      : 'overflow-hidden bg-gradient-to-br from-amber-600 via-amber-500 to-yellow-500',
-    animations.fadeIn
+      ? cn('winter-card-full overflow-visible', winterShellClass)
+      : cn('overflow-hidden', defaultShellClass)
   );
 
   if (isLoading) {
     return (
-      <section className={cn(sectionClasses, 'animate-pulse')}>
+      <section className={cn(plainSectionClasses, 'animate-pulse')}>
         <div className="h-6 bg-white/20 rounded mb-4 w-48"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {[1, 2, 3, 4].map((i) => (
@@ -237,7 +244,7 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
 
   if (error || !data) {
     return (
-      <section className={sectionClasses}>
+      <section className={plainSectionClasses}>
         <h2
           className={cn(
             'text-xl md:text-2xl font-bold mb-4 flex items-center gap-2',
@@ -268,11 +275,12 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
   });
 
   return (
-    <motion.section
-      whileHover={{ scale: 1.01, y: -2 }}
-      whileTap={{ scale: 0.99 }}
-      transition={{ duration: 0.2 }}
-      className={sectionClasses}
+    <HeroCardBase
+      as="section"
+      withHover
+      winterClassName={winterShellClass}
+      defaultClassName={defaultShellClass}
+      className={baseShellClasses}
     >
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
@@ -349,7 +357,7 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
           );
         })}
       </div>
-    </motion.section>
+    </HeroCardBase>
   );
 };
 
