@@ -1,19 +1,33 @@
 
 
-## Remove Redundant Champion Selection from Archive Dialog
+## Problem: Teams Table Not Reset After Archival
 
-The archive dialog's Champion/Runner-up/Third Place dropdowns are legacy UI from before the automated bracket-based detection was built. They serve no purpose now — the RPC already:
-- Detects each division's champion from `wb_champion_id` on each bracket
-- Assigns ranks 1-3+ from bracket data
-- Awards championship badges per division
+The `v_team_details` view has this fallback pattern:
+```sql
+COALESCE(stats.wins, t.wins::bigint) AS wins
+```
+
+After archival:
+- All matches moved to `matches_archive` → `v_team_match_stats` returns NULL (no matches to count)
+- The view falls back to `t.wins` on the `teams` table, which still has the old season's numbers
+- Power score and SOS show 0/0.5 because those are calculated from the `matches` table (now empty) — but W-L and Games show stale data from the `teams` table fallback
+
+## Fix
+
+Add a single step to the `archive_season` RPC (after Step 5, match archival) that resets the `teams` table stats to 0:
+
+```sql
+UPDATE public.teams
+SET wins = 0, losses = 0, game_wins = 0, game_losses = 0;
+```
+
+This resets all teams so the next season starts clean. The historical data is already safely stored in `team_season_stats` and `team_details_archive`.
 
 ### Changes
 
 | What | Change |
 |---|---|
-| `SeasonArchivalDialog.tsx` | Remove all three team selection dropdowns (Champion, Runner-up, Third Place). Keep the warning panel and Archive button. Remove the `useTeamsArray` import since it's no longer needed. Pass empty/null values for the three params to the RPC (the RPC ignores them when null — it uses bracket data instead). |
-| `SeasonsList.tsx` | Remove the `champion_team_id` conditional badge — archival status already indicates champions were recorded. |
-| `useSeasonMutations.ts` | Simplify the `ArchiveSeasonData` interface to just `{ id: string }` since the three optional team IDs are no longer passed from the UI. Still pass nulls to the RPC so the function signature doesn't need changing. |
+| `archive_season` RPC (new migration) | Add `UPDATE teams SET wins=0, losses=0, game_wins=0, game_losses=0` after Step 5 (match archival) |
 
-No database or RPC changes needed — the RPC already handles null values for these params and falls back to auto-detection from bracket data.
+One migration file, no frontend changes needed.
 
