@@ -44,7 +44,7 @@ const mapMatchRow = (row: PlayoffMatchRow): PlayoffMatch => ({
 });
 
 /** Temporary shim exposing the legacy shape for Playoffs.tsx */
-export const usePlayoffData = (isAdmin: boolean = false) => {
+export const usePlayoffData = (isAdmin: boolean = false, seasonId?: string | null) => {
   // Call the view model without a bracketId to get overview data
   const vm = usePlayoffViewModel(null);
 
@@ -54,6 +54,9 @@ export const usePlayoffData = (isAdmin: boolean = false) => {
   // Fetch teams data to populate teamsByDivision
   const { teams, isLoading: teamsLoading } = useTeamsArray();
 
+  // Determine if we're viewing a past season
+  const isViewingPastSeason = !!seasonId && seasonId !== undefined;
+
   // Fetch brackets data from Supabase with matches included
   const {
     data: brackets = [],
@@ -61,16 +64,16 @@ export const usePlayoffData = (isAdmin: boolean = false) => {
     error: bracketsError,
     refetch: refetchBrackets,
   } = useQuery({
-    queryKey: ['playoffs-brackets-overview', { isAdmin }], // Separate cache per user role
+    queryKey: ['playoffs-brackets-overview', { isAdmin, seasonId }],
     queryFn: async () => {
-      bracketLog('Fetching brackets overview');
+      bracketLog('Fetching brackets overview for season:', seasonId);
 
       // Check authentication state
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
-      const { data, error } = (await supabase
+      let query = supabase
         .from('brackets')
         .select(
           `
@@ -78,7 +81,14 @@ export const usePlayoffData = (isAdmin: boolean = false) => {
           divisions(*)
         `
         )
-        .order('created_at', { ascending: false })) as unknown as {
+        .order('created_at', { ascending: false });
+
+      // Filter by season if a specific season is selected
+      if (seasonId) {
+        query = query.eq('season_id', seasonId);
+      }
+
+      const { data, error } = (await query) as unknown as {
         data: BracketRowWithRels[] | null;
         error: any;
       };
@@ -95,7 +105,7 @@ export const usePlayoffData = (isAdmin: boolean = false) => {
         division: br.divisions?.name,
         divisionId: br.division_id,
         format: br.format ?? 'Double Elimination',
-        matches: [], // Matches loaded by BracketsViewerComponent based on bracket type
+        matches: [],
         champion: undefined,
         state: (br.state === 'underway'
           ? 'in_progress'
@@ -107,16 +117,23 @@ export const usePlayoffData = (isAdmin: boolean = false) => {
         uses_brackets_manager: br.uses_brackets_manager ?? false,
       }));
 
-      // Filter out completed brackets for all users (admins and non-admins)
-      const originalCount = brackets.length;
-      brackets = brackets.filter((b) => b.state !== 'completed');
-      bracketLog('Filtered brackets:', { total: originalCount, active: brackets.length });
+      // For current/active season: hide completed brackets (original behavior)
+      // For past seasons: show only completed brackets
+      if (isViewingPastSeason) {
+        // Show all brackets for past seasons (they should all be completed)
+        bracketLog('Showing all brackets for past season:', { total: brackets.length });
+      } else {
+        // Current season: filter out completed brackets
+        const originalCount = brackets.length;
+        brackets = brackets.filter((b) => b.state !== 'completed');
+        bracketLog('Filtered brackets:', { total: originalCount, active: brackets.length });
+      }
 
       return brackets;
     },
-    staleTime: 0, // Always consider data stale
-    gcTime: 0, // Don't cache (formerly cacheTime)
-    refetchOnMount: 'always', // Always refetch when component mounts
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
     refetchOnWindowFocus: false,
   });
 

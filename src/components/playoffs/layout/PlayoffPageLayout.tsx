@@ -3,6 +3,7 @@ import React from 'react';
 import PlayoffDialogs from '@/components/playoffs/dialogs/PlayoffDialogs';
 import RealtimeIndicator from '@/components/playoffs/indicators/RealtimeIndicator';
 import PlayoffHeader from '@/components/playoffs/PlayoffHeader';
+import SeasonSelector from '@/components/playoffs/SeasonSelector';
 import { useBracketsManagerRealtime } from '@/hooks/brackets/useBracketsManagerRealtime';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
@@ -63,6 +64,13 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
     >
       <div className="max-w-7xl mx-auto">
         <PlayoffHeader onCreateBracket={view.handleCreateBracket} />
+
+        <div className="mb-4">
+          <SeasonSelector
+            selectedSeasonId={data.selectedSeasonId}
+            onSeasonChange={data.setSelectedSeasonId}
+          />
+        </div>
 
         <PlayoffViewSelector
           view={selectedView}

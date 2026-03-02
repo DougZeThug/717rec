@@ -6,6 +6,7 @@ import { BRACKET_FORMATS, BRACKET_STATES } from '@/constants/brackets';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBracketData } from '@/hooks/brackets/useBracketData';
 import { usePlayoffTeams } from '@/hooks/playoffs/usePlayoffTeams';
+import { useActiveSeason } from '@/hooks/useSeasons';
 import { useDivisions } from '@/hooks/useDivisions';
 import { usePlayoffData } from '@/hooks/usePlayoffViewModel.compat';
 import { deleteBracket as deleteBracketService } from '@/services/brackets/BracketWriteService';
@@ -39,6 +40,8 @@ export interface PlayoffPageData {
   teamsLoading: boolean;
   deleteBracket: (bracketId: string, bracketName: string) => Promise<void>;
   isLoading: boolean;
+  selectedSeasonId: string | null;
+  setSelectedSeasonId: (id: string) => void;
 }
 
 export function usePlayoffPageData(): PlayoffPageData {
@@ -49,6 +52,17 @@ export function usePlayoffPageData(): PlayoffPageData {
 
   const { profile, user } = useAuth();
   const isAdmin = profile?.is_admin || false;
+
+  // Season selection - defaults to active season
+  const { data: activeSeason } = useActiveSeason();
+  const [selectedSeasonId, setSelectedSeasonId] = useState<string | null>(null);
+
+  // Initialize selectedSeasonId to active season when it loads
+  useEffect(() => {
+    if (activeSeason && !selectedSeasonId) {
+      setSelectedSeasonId(activeSeason.id);
+    }
+  }, [activeSeason, selectedSeasonId]);
 
   useEffect(() => {
     const bracketParam = searchParams.get('bracket');
@@ -110,7 +124,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     handleTeamDivisionChange,
     refetchBrackets: originalRefetchBrackets,
     error: bracketsDataError,
-  } = usePlayoffData(isAdmin);
+  } = usePlayoffData(isAdmin, selectedSeasonId);
 
   // Memoize derived data transformations to prevent recalculation on every render
   const typesafeBracketsByDivision = useMemo<Record<string, PlayoffBracket[]>>(() => {
@@ -291,5 +305,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     teamsLoading,
     deleteBracket,
     isLoading,
+    selectedSeasonId,
+    setSelectedSeasonId,
   };
 }
