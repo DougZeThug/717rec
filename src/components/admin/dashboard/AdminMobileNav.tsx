@@ -195,14 +195,13 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
         </div>
       ) : (
         /* Grouped Accordion Navigation */
-        <ScrollArea className="max-h-[60vh]">
-          <div className="space-y-3">
+        <div className="space-y-3">
             {tabGroups.map((group) => {
               const GroupIcon = group.icon;
               const groupBadge = getGroupBadgeCount(group);
 
               return (
-                <div key={group.id} className="border border-border rounded-lg overflow-hidden">
+                <div key={group.id} className="border border-border rounded-lg">
                   <div className="flex items-center gap-3 px-3 py-2.5 bg-muted/30">
                     <GroupIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
                     <span className="flex-1 text-left font-medium text-sm">{group.label}</span>
@@ -246,7 +245,6 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
               );
             })}
           </div>
-        </ScrollArea>
       )}
     </div>
   );
