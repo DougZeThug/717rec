@@ -36,7 +36,7 @@ export const useMessageApi = () => {
       // Create a query builder without method chaining initially
       let query = supabase
         .from('messages')
-        .select('id, content, created_at, username, team_name, user_id, team_id, category, tags, updated_at, is_edited')
+        .select('id, content, created_at, username, team_name, user_id, team_id, category, updated_at, is_edited')
         .abortSignal(abortControllerRef.current.signal);
 
       // Apply sorting
