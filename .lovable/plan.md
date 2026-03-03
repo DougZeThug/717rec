@@ -1,28 +1,17 @@
 
 
-## Two Fixes
+## Problem
 
-### Issue 1: Blind Draw Tab Disappearing on Mobile
+The `ScrollArea` wrapping the grouped navigation has `max-h-[60vh]` (line 198 in `AdminMobileNav.tsx`). On a small mobile viewport (360x420 from session replay), that's only ~252px — not enough to display all 4 groups. The Radix `ScrollArea` component may not be properly scrolling within this constrained height, causing the bottom groups ("Teams & Players" and "Settings & Content" which contains Blind Draw) to be cut off entirely.
 
-**Root cause**: The Radix Accordion's `AccordionContent` component uses `overflow-hidden` permanently and animates height using `--radix-accordion-content-height`. This CSS variable is calculated once when the accordion opens. If the content inside hasn't fully rendered yet (due to React.memo, paint timing, font loading, etc.), the calculated height is too short and the last items in the group (blind draw, help) get clipped — permanently hidden by `overflow-hidden`. On refresh, timing varies, which is why it's intermittent.
+Additionally, the group container has `overflow-hidden` (line 205) for border-radius clipping, which could compound the issue.
 
-**Fix**: Replace the accordion-based mobile nav with a simple always-visible grouped list. Each group shows its label as a header with its items directly below — no expand/collapse. This guarantees every tab is always visible. The groups are small (3-4 items each) so there's no need to hide them behind accordions on mobile.
+## Fix
 
 | File | Change |
 |---|---|
-| `AdminMobileNav.tsx` | Replace the `Accordion` section with a simple grouped list — each group renders a header label followed by its tab buttons. Remove the `Accordion` import and related Radix components. Keep search and quick access as-is. |
+| `AdminMobileNav.tsx` line 198 | Remove the `ScrollArea` wrapper entirely. Let the groups render in normal document flow so the page itself scrolls. The admin nav is already inside a scrollable page — adding a nested scroll container causes these visibility issues. |
+| `AdminMobileNav.tsx` line 205 | Change `overflow-hidden` to `overflow-visible` on the group container divs so nothing gets clipped. Use `rounded-lg` border clipping via a different approach or just keep `overflow-visible`. |
 
-### Issue 2: Hardcoded "See you Thursday!" Toast
-
-**Root cause**: The confirmation message is hardcoded in `BlindDrawSignupForm.tsx` and `useBlindDrawSignups.ts`.
-
-**Fix**: Add a `blind_draw_settings` table to store configurable settings including the signup confirmation message. Add a settings section to the admin Blind Draw tab so admins can edit the message. Update the signup flow to fetch and display the custom message.
-
-| Step | Detail |
-|---|---|
-| Migration | Create `blind_draw_settings` table with `id`, `signup_confirmation_message` (text, default "You're signed up! See you there!"), `created_at`, `updated_at`. Single-row config pattern. Public SELECT, admin-only UPDATE via RLS. Seed with one default row. |
-| New hook | `useBlindDrawSettings` — fetches the current confirmation message, plus a mutation to update it (admin only). |
-| Update `BlindDrawSignupsTab` | Add a "Settings" card at the top with an editable text input for the confirmation message and a Save button. |
-| Update `BlindDrawSignupForm.tsx` | Fetch the custom message via the new hook and use it in the success toast instead of the hardcoded text. |
-| Update `useBlindDrawSignups.ts` | Remove the hardcoded toast message from the mutation; let the form component handle it with the dynamic message. |
+The result: all 4 groups are always visible, the page scrolls naturally, no nested scroll containers or overflow clipping.
 
