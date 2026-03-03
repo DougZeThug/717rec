@@ -292,7 +292,7 @@ Business logic lives in `src/services/`, sitting between hooks and Supabase. Ser
 - **security-audit.yml** - Weekly + on PRs:
   - `npm audit` with high severity threshold
   - Non-blocking (reports only)
-- **dependabot.yml** - Weekly dependency updates (React 19 excluded)
+- **Dependabot** (`.github/dependabot.yml`) - Weekly dependency updates (React 19 excluded)
 
 ### Code Formatting
 - **Prettier** (`.prettierrc`): Single quotes, 100 char width, 2-space indent, trailing commas (ES5)
@@ -438,7 +438,7 @@ Bracket services (`src/services/brackets/`) currently throw raw Supabase errors 
 6. **Supabase types**: `src/integrations/supabase/types.ts` is auto-generated - never edit manually
 7. **TypeScript strict mode**: Disabled in `tsconfig.app.json` (allows flexible typing)
 8. **Legacy peer deps**: `.npmrc` has `legacy-peer-deps=true` to avoid peer dependency conflicts
-9. **Edge functions**: Some require JWT auth, some don't - check `supabase/config.toml`
+9. **Edge functions**: Verify JWT requirements in `supabase/config.toml`, and keep function entries synchronized with `supabase/functions/`
 10. **Bracket services**: Don't follow the standard error handling pattern yet (see Known Inconsistency note above)
 
 ---
