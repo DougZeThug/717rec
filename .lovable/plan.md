@@ -1,26 +1,30 @@
 
 
-## Fix Image Load Error Spam in Sentry and Console
+## Add Sentry Browser Tracing Integration
 
-### Problem
-The Sentry logs show **hundreds** of "Image load error" events for the same teams repeating over and over. Two issues:
+### Current State
+Your Sentry config intentionally sets `integrations: []` to reduce TTI impact. However, this means `tracesSampleRate: 0.1` is configured but has no effect — there's no tracing integration to use it.
 
-1. **`src/components/teams/shared/TeamImage.tsx`** uses `errorLog()` instead of `imageErrorLog()`. In production, `errorLog` sends every image failure to Sentry as an error-level event — flooding the monitoring system with non-actionable noise.
+### What to Change
 
-2. **Fallback image creates an error loop**: When the primary image fails, `TeamImage.tsx` sets `src` to an Unsplash fallback URL. If *that* also fails (e.g., network issue, Unsplash down), the `onError` fires again, logging another error — creating an infinite retry loop of Sentry events.
+**`src/utils/sentry.ts`** — Add `browserTracingIntegration` lazily (same pattern as replay):
 
-### Changes
+1. Keep `integrations: []` on initial load (preserves your TTI optimization)
+2. Add `browserTracingIntegration()` lazily alongside replay in the post-TTI idle callback
+3. Add `tracePropagationTargets` to scope tracing to your Supabase API domain only (avoids CORS issues)
 
-**1. `src/components/teams/shared/TeamImage.tsx`**
-- Replace `errorLog(...)` with `imageErrorLog(teamName, imageUrl)` (consistent with all other TeamLogo/TeamImage components)
-- Instead of setting a fallback `src` (which can re-trigger `onError`), hide the broken image with `display: 'none'` — matching the pattern used in the newer `ui/team/TeamImage.tsx` and `shared/TeamLogo.tsx`
-- Import `imageErrorLog` from `@/utils/logger` instead of `errorLog`
+```text
+Current flow:
+  init() → empty integrations → idle → add replay
 
-**2. `src/utils/logger.ts`**
-- Add `"Image load error"` and `"Failed to load image"` to the Sentry filter so even if `errorLog` is accidentally used for image failures elsewhere, they won't be sent as Sentry events
+New flow:
+  init() → empty integrations → idle → add replay + browserTracing
+```
 
-### Result
-- Image failures log as warnings in dev console only (via `imageErrorLog` → `warnLog`)
-- No more Sentry spam from broken team logos
-- No more infinite error loops from fallback image failures
+### Specifics
+- Add `tracePropagationTargets: ["localhost", /^https:\/\/wcitdamvochthvxvtxyb\.supabase\.co/]` to the `Sentry.init()` config
+- In `addReplayIntegration` (rename to `addLazyIntegrations`), also add `Sentry.browserTracingIntegration()`
+- Keep `tracesSampleRate: 0.1` (10% sampling is appropriate for production)
+
+One file changed, ~5 lines added.
 
