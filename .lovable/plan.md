@@ -1,12 +1,20 @@
 
 
-## Plan: Add Typed Group/Round Interfaces to Viewer Types
+## Fix Build Error: Remove Non-Existent `tags` Column
 
-Single file change in `src/services/brackets/viewer/types.ts`:
+The `messages` table does not have a `tags` column, but two places reference it:
 
-1. Add `BracketGroupRow` and `BracketRoundRow` interfaces
-2. Update `ViewerData.groups` from `any[]` to `BracketGroupRow[]`
-3. Update `ViewerData.rounds` from `any[]` to `BracketRoundRow[]`
+1. **`src/hooks/message-board/useMessageApi.ts` line 39** — the `.select()` string includes `tags`, causing the TS2352 build error
+2. **`src/types/reactions.ts` line 25** — the `Message` interface declares `tags?: string[]`
 
-No runtime changes — pure type narrowing.
+No code in the project actually reads `.tags` from a message, so both references are dead weight.
+
+### Changes
+
+| File | Change |
+|---|---|
+| `src/hooks/message-board/useMessageApi.ts` (line 39) | Remove `tags` from the select string: `'id, content, created_at, username, team_name, user_id, team_id, category, updated_at, is_edited'` |
+| `src/types/reactions.ts` (line 25) | Remove `tags?: string[];` from the `Message` interface |
+
+Zero runtime behavior change — just aligning types with the actual database schema.
 
