@@ -43,14 +43,23 @@ npm run lint         # Run ESLint
 
 - **Frontend**: React 18 + TypeScript + Vite
 - **UI Framework**: shadcn/ui + Tailwind CSS + Radix UI
-- **Backend**: Supabase (PostgreSQL database + Auth)
+- **Backend**: Supabase (PostgreSQL database + Auth + Edge Functions)
 - **Routing**: React Router v7
 - **State Management**: TanStack Query (React Query)
 - **Forms**: React Hook Form + Zod
 - **Charts**: Recharts
 - **Animations**: Framer Motion
 - **Drag & Drop**: dnd-kit
-- **Brackets**: brackets-manager library
+- **Brackets**: brackets-manager + brackets-viewer
+- **Icons**: Lucide React + custom icon registry
+- **Toasts**: Sonner
+- **Theming**: next-themes (light, dark, system, winter-frozen)
+- **Date Utilities**: date-fns
+- **Error Tracking**: Sentry
+- **Mobile**: Capacitor (native iOS/Android support)
+- **Excel Export**: ExcelJS
+- **Virtualization**: react-window (large list performance)
+- **Image Compression**: browser-image-compression
 
 ---
 
@@ -58,37 +67,73 @@ npm run lint         # Run ESLint
 
 ```
 src/
-├── components/       # Reusable UI components
-│   ├── admin/       # Admin dashboard components
-│   ├── auth/        # Authentication components
-│   ├── hero/        # Hero cards for homepage
-│   ├── layout/      # Navbar, Footer, etc.
-│   ├── stats/       # Statistics & rankings displays
-│   ├── teams/       # Team-related components
-│   ├── ui/          # shadcn/ui base components
-│   └── ...
-├── contexts/        # React contexts (Auth, Navigation)
-├── hooks/           # Custom React hooks
-│   ├── brackets/    # Playoff bracket hooks
-│   ├── matches/     # Match data hooks
-│   ├── playoffs/    # Playoff management hooks
-│   ├── rankings/    # Rankings & standings hooks
-│   └── teams/       # Team data hooks
-├── pages/           # Route components
-├── types/           # TypeScript type definitions
-├── utils/           # Utility functions
-├── lib/             # Third-party library configs
-└── styles/          # Global styles & themes
+├── components/           # UI components organized by feature
+│   ├── admin/           # Admin dashboard (scheduling, scoring, settings)
+│   ├── auth/            # Authentication (forms, social login, protected routes)
+│   ├── badges/          # Team achievement badges
+│   ├── compare/         # Team comparison views
+│   ├── effects/         # Visual effects & animations
+│   ├── help/            # Help & FAQ sections
+│   ├── hero/            # Hero cards for homepage
+│   ├── history/         # Season history components
+│   ├── home/            # Homepage sections
+│   ├── layout/          # Navbar, Footer, PageLayout
+│   ├── matches/         # Match display & details
+│   ├── message-board/   # Community forum components
+│   ├── navigation/      # Breadcrumbs, app nav
+│   ├── playoffs/        # Bracket viewer & layout
+│   ├── profile/         # User profile components
+│   ├── schedule/        # Schedule view & date picker
+│   ├── shared/          # Reusable cross-feature components
+│   ├── stats/           # Statistics & rankings displays
+│   ├── teams/           # Team-related components
+│   ├── timeslots/       # Timeslot assignment UI
+│   ├── transitions/     # Page transition animations
+│   ├── typography/      # Text & heading components
+│   ├── ui/              # shadcn/ui base components
+│   └── winter/          # Seasonal winter theme components
+├── config/              # App configuration (admin, api, cache, features, ui)
+├── constants/           # Shared constants (brackets, heroCardPresets)
+├── contexts/            # React contexts (Auth, Navigation)
+├── data/                # Mock/seed data
+├── hooks/               # Custom React hooks (150+)
+│   ├── auth/            # Authentication hooks
+│   ├── brackets/        # Playoff bracket hooks
+│   ├── career/          # Career statistics hooks
+│   ├── history/         # Historical data hooks
+│   ├── matches/         # Match data hooks
+│   ├── message-board/   # Message board hooks
+│   ├── playoffs/        # Playoff management hooks
+│   ├── rankings/        # Rankings & standings hooks
+│   ├── scheduling/      # Schedule generation hooks
+│   ├── team-stats/      # Team statistics hooks
+│   └── teams/           # Team data hooks
+├── icons/               # Custom icon registry & seasonal icons
+├── integrations/        # External integrations (Supabase client)
+├── lib/                 # Third-party library configs
+├── pages/               # Route components (lazy-loaded)
+├── services/            # Business logic & data access layer
+│   ├── brackets/        # Bracket CRUD & management
+│   ├── matches/         # Match read/write services
+│   ├── profile/         # Profile service
+│   ├── selectors/       # Selector service
+│   ├── support/         # Contact/support service
+│   ├── teams/           # Team CRUD services
+│   └── timeslots/       # Timeslot & bye week services
+├── styles/              # Global styles & themes
+├── types/               # TypeScript type definitions
+└── utils/               # Utility functions (power scores, scheduling, etc.)
 ```
 
 ---
 
 ## 🎯 Main Feature Areas
 
-### 1. **Seasons**
+### 1. **Seasons & History**
 - Multi-season support with historical data
 - Current vs. past seasons tracking
 - Season-specific statistics and standings
+- Past champions and historical standings (`/history` page)
 
 ### 2. **Divisions**
 - Teams organized into divisions
@@ -101,13 +146,18 @@ src/
 - Head-to-head records
 - Player management (admins only)
 - Team analysis & notes
+- Team comparison side-by-side (`/compare` page)
+- Achievement badges (streaks, milestones)
+- Team membership join/leave system (`/my-team` page)
 
 ### 4. **Matches**
 - Schedule management
 - Match result entry (admins only)
 - Match history & details
 - Court/timeslot assignments
-- Auto-scheduling functionality
+- Auto-scheduling functionality (edmonds-blossom pairing algorithm)
+- Match comments and reactions
+- Score submission workflow
 
 ### 5. **Standings & Stats**
 - Real-time division standings
@@ -122,8 +172,30 @@ src/
 - Bracket visualization (brackets-viewer)
 - Playoff match management
 - Championship tracking
+- Seeding management
 
-### 7. **Admin Dashboard**
+### 7. **Message Board**
+- Community forum for teams and participants
+- Real-time messaging with Supabase subscriptions
+- Message reactions, editing, and deletion
+- Filtering and pagination
+
+### 8. **Help & Support**
+- Help center with FAQ and guides (`/help` page)
+- Contact/support request form (`/contact` page)
+- Support email via Supabase edge function
+
+### 9. **User Profiles**
+- Profile setup and editing (`/setup-profile` page)
+- Team membership selection
+- Google OAuth + email/password auth
+
+### 10. **Timeslot Management** (Admin)
+- Weekly court/time assignments
+- Bye week management
+- Batch timeslot operations
+
+### 11. **Admin Dashboard**
 - Season management (create, edit, finalize)
 - Division configuration
 - Team CRUD operations
@@ -132,6 +204,8 @@ src/
 - User role management
 - Hero card announcements
 - Blind draw functionality
+- Mass score entry
+- Batch match operations
 
 ---
 
@@ -147,8 +221,37 @@ src/
 - `profiles` - User profiles
 - `hero_cards` - Homepage announcements
 - `power_score_history` - Historical power scores
+- `team_season_stats` - Per-season team statistics
+- `power_score_snapshots` - Weekly power score snapshots
 
-**Authentication**: Supabase Auth with admin role checking
+**Authentication**: Supabase Auth with admin role checking (email/password + Google OAuth)
+
+**Edge Functions** (`supabase/functions/`):
+- `create-bracket` - Bracket creation (requires JWT)
+- `capture-power-snapshots` - Power score history capture (no JWT)
+- `send-support-email` - Support/contact email sending (no JWT)
+- `update_team_stats` - Team statistics recalculation (no JWT)
+
+**Migrations**: 90+ migration files in `supabase/migrations/`
+
+---
+
+## 🔧 Services Layer
+
+Business logic lives in `src/services/`, sitting between hooks and Supabase. Services throw standardized errors (see Error Handling below).
+
+**Key Services**:
+- `TeamService` / `teams/` - Team CRUD (create, update, delete, fetch, calculations)
+- `HeadToHeadService` - Match history between teams
+- `RankingsCalculationService` - Rankings & standings computation
+- `RankingSnapshotService` - Power score snapshot management
+- `BadgeProcessingService` - Team achievement badge processing
+- `TeamStatsService` - Team statistics aggregation
+- `brackets/` - Bracket management (read, write, seeding, standings, validation, Supabase SQL storage)
+- `matches/` - Match read/write operations
+- `profile/` - User profile service
+- `support/` - Contact form submission (via edge function)
+- `timeslots/` - Timeslot assignment & bye week management
 
 ---
 
@@ -178,40 +281,73 @@ src/
 
 ---
 
+## 🔄 CI/CD & Code Quality
+
+### GitHub Actions (`.github/workflows/`)
+- **test.yml** - Runs on push to main and all PRs:
+  - Installs dependencies (`npm ci`)
+  - Runs Vitest tests
+  - Builds the project
+  - Runs TypeScript type checking (`tsc`)
+- **security-audit.yml** - Weekly + on PRs:
+  - `npm audit` with high severity threshold
+  - Non-blocking (reports only)
+- **dependabot.yml** - Weekly dependency updates (React 19 excluded)
+
+### Code Formatting
+- **Prettier** (`.prettierrc`): Single quotes, 100 char width, 2-space indent, trailing commas (ES5)
+- **ESLint** (`eslint.config.js`): TypeScript strict linting, import sorting (`simple-import-sort`), React Hooks validation
+- **DeepSource** (`.deepsource.toml`): Static analysis with React plugins
+
+### Auto-generated Files (do not edit manually)
+- `src/integrations/supabase/types.ts` - Supabase database types
+
+---
+
 ## 🧪 Testing Notes
 
 - Test framework: Vitest + Testing Library
-- Test files: `**/__tests__/**/*.{test,spec}.tsx`
+- Test config: `vitest.config.ts` at project root
+- Integration tests: `tests/` directory at root
+- Unit tests: `src/**/__tests__/**/*.{test,spec}.tsx`
 - Setup: `src/setupTests.ts`
+- CI: Tests run automatically on push to main and all PRs
 
 ---
 
 ## 📦 Build & Deployment
 
 - **Build output**: `dist/` directory
-- **Deployment**: Lovable.dev platform
+- **Deployment**: Lovable.dev platform (`.lovable/` config directory)
 - **Custom domains**: Configure in project settings
 - **Source maps**: Enabled for debugging
+- **Code splitting**: Manual vendor chunks in `vite.config.ts` (react, motion, charts, dnd, supabase, brackets, sentry)
+- **CSS optimization**: `vite-plugin-beasties` in production builds
+- **Path alias**: `@` maps to `./src` (e.g., `@/components/ui/button`)
 
 ---
 
 ## 🔍 Key Code Patterns
 
-### Data Fetching
-- Use TanStack Query hooks for all API calls
-- Custom hooks in `src/hooks/` for feature-specific data
+### Data Flow
+- **Components** → **Hooks** (TanStack Query) → **Services** → **Supabase**
+- Custom hooks in `src/hooks/` wrap TanStack Query for feature-specific data
+- Services in `src/services/` handle business logic and Supabase calls
 - Supabase client in `src/integrations/supabase/client.ts`
 
 ### Routing
 - Lazy-loaded route components for performance
 - Protected routes for admin pages (`ProtectedAdminRoute`)
 - Page transitions with Framer Motion
+- `ErrorBoundary` and `RouteErrorBoundary` for error recovery
+- Scroll restoration per page
 
 ### Styling
 - Tailwind utility classes
 - shadcn/ui components with variants
 - Responsive design (mobile-first)
-- Dark mode support (next-themes)
+- Dark mode + seasonal themes (next-themes: light, dark, system, winter-frozen)
+- Custom cornhole-themed colors (wood, green, navy, cream) + division colors
 
 ### Error Handling
 **All service layer functions throw errors consistently** - no mixed patterns of returning null/boolean/result objects.
@@ -247,6 +383,10 @@ export const fetchTeam = async (teamId: string) => {
 - `handleDatabaseError(error, context)` - Wraps Supabase errors as DatabaseError and throws
 - `ensureFound(data, resourceName, identifier?)` - Throws NotFoundError if data is null/undefined
 - `withErrorHandling(operation, context)` - Wraps async operations with consistent error handling
+- `getErrorMessage(error)` - Safely extract error message from any error type
+- `getUIErrorMessage(error, context?)` - Get user-facing error message with optional context
+- `handleHookError(error)` - Hook-level error categorization (returns message, userMessage, category)
+- `logError(error, context)` - Consistent error logging
 
 #### Why This Pattern?
 - **TanStack Query Integration**: React Query automatically catches thrown errors and exposes them via `error` state
@@ -283,16 +423,24 @@ const team = await fetchTeam(teamId);
 if (!team) { /* This should never happen - throws NotFoundError */ }
 ```
 
+#### Known Inconsistency
+Bracket services (`src/services/brackets/`) currently throw raw Supabase errors or generic `Error` objects instead of using `handleDatabaseError()` and typed `ServiceError` classes. New bracket service code should follow the standard pattern above.
+
 ---
 
 ## 🚨 Common Gotchas
 
-1. **Admin permissions**: Check `useAdminCheck()` hook for role verification
+1. **Admin permissions**: Check `useAdminAccess()` hook for role verification
 2. **Season context**: Most data is season-specific - always filter by season
-3. **Power scores**: Complex calculation - see `src/utils/powerScore.ts`
+3. **Power scores**: Complex calculation - see `src/utils/powerScore/`
 4. **Brackets**: Use brackets-manager library - don't roll your own
 5. **Real-time updates**: Supabase subscriptions for live data
+6. **Supabase types**: `src/integrations/supabase/types.ts` is auto-generated - never edit manually
+7. **TypeScript strict mode**: Disabled in `tsconfig.app.json` (allows flexible typing)
+8. **Legacy peer deps**: `.npmrc` has `legacy-peer-deps=true` to avoid peer dependency conflicts
+9. **Edge functions**: Some require JWT auth, some don't - check `supabase/config.toml`
+10. **Bracket services**: Don't follow the standard error handling pattern yet (see Known Inconsistency note above)
 
 ---
 
-*Last updated: 2026-01-21*
+*Last updated: 2026-03-03*
