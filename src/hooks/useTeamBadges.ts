@@ -41,7 +41,7 @@ export const useTeamBadges = (teamId: string) => {
     queryFn: async (): Promise<TeamBadgeEvent[]> => {
       const { data, error } = await supabase
         .from('team_badge_events')
-        .select('*')
+        .select('id, team_id, badge_type, season_id, awarded_at, metadata, is_active, created_at')
         .eq('team_id', teamId)
         .eq('is_active', true)
         .order('awarded_at', { ascending: false });
@@ -64,7 +64,7 @@ export const useAllTeamBadges = () => {
     queryFn: async (): Promise<TeamBadgeEvent[]> => {
       const { data, error } = await supabase
         .from('team_badge_events')
-        .select('*')
+        .select('id, team_id, badge_type, season_id, awarded_at, metadata, is_active, created_at')
         .eq('is_active', true)
         .order('awarded_at', { ascending: false });
 
@@ -85,7 +85,7 @@ export const useSeasonBadges = (seasonId: string) => {
     queryFn: async (): Promise<TeamBadgeEvent[]> => {
       const { data, error } = await supabase
         .from('team_badge_events')
-        .select('*')
+        .select('id, team_id, badge_type, season_id, awarded_at, metadata, is_active, created_at')
         .eq('season_id', seasonId)
         .eq('is_active', true)
         .order('awarded_at', { ascending: false });

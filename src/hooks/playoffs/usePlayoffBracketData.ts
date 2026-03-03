@@ -41,7 +41,9 @@ export const usePlayoffBracketData = (bracketId: string | null) => {
       bracketLog('usePlayoffBracketData: Fetching bracket data from database...');
       const { data, error } = await supabase
         .from('brackets')
-        .select('*')
+        .select(
+          'id, title, format, state, division_id, challonge_tournament_id, uses_brackets_manager, created_at, wb_champion_id, bracket_data, migrated, migrated_at, reset_match_needed'
+        )
         .eq('id', bracketId)
         .single();
 

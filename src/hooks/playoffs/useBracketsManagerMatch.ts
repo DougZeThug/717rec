@@ -39,7 +39,9 @@ export const useBracketsManagerMatch = (matchId: number | null) => {
       // Fetch match data
       const { data: matchData, error: matchError } = await supabase
         .from('match')
-        .select('*')
+        .select(
+          'id, stage_id, group_id, round_id, number, status, opponent1_id, opponent1_score, opponent1_result, opponent2_id, opponent2_score, opponent2_result'
+        )
         .eq('id', matchId)
         .single();
 
@@ -49,7 +51,7 @@ export const useBracketsManagerMatch = (matchId: number | null) => {
       // Fetch games for this match
       const { data: gamesData, error: gamesError } = await supabase
         .from('match_game')
-        .select('*')
+        .select('id, number, match_id, status, opponent1_score, opponent2_score')
         .eq('match_id', matchId)
         .order('number', { ascending: true });
 

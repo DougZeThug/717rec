@@ -24,7 +24,9 @@ export function usePendingMatches() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('matches')
-        .select('*')
+        .select(
+          'id, team1_id, team2_id, team1_score, team2_score, date, location, iscompleted, winner_id, loser_id, round_number, position, bracket_id, match_type, next_match_id, next_loser_match_id, best_of, team1_game_wins, team2_game_wins, created_at'
+        )
         .eq('iscompleted', true)
         .is('winner_id', null)
         .order('date');
@@ -48,7 +50,11 @@ export function usePendingMatches() {
   const { data: teams = {} } = useQuery<Record<string, Team>>({
     queryKey: ['teams', 'map'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('v_team_details').select('*');
+      const { data, error } = await supabase
+        .from('v_team_details')
+        .select(
+          'team_id, name, image_url, logo_url, players, wins, losses, game_wins, game_losses, created_at, division_id, divisionname, sos, power_score, win_percentage, game_win_percentage'
+        );
 
       if (error) {
         errorLog('Error fetching teams:', error);

@@ -15,7 +15,11 @@ export const useAuthProfile = (user: User | null, navigate: NavigateFunction) =>
 
   // Fetch user profile from database
   const fetchProfile = useCallback(async (userId: string): Promise<UserProfile | null> => {
-    const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, username, full_name, avatar_url, created_at, is_admin')
+      .eq('id', userId)
+      .single();
 
     if (error) {
       // PGRST116 = no rows returned — valid for new users who don't have a profile yet

@@ -27,7 +27,7 @@ export const useConfirmationSeason = () => {
       // First try to find an active season with confirmation open
       const { data, error } = await supabase
         .from('seasons')
-        .select('*')
+        .select('id, name, is_active, is_archived, start_date, end_date, created_at, champion_team_id, runner_up_team_id, confirmation_open')
         .eq('is_active', true)
         .eq('confirmation_open', true)
         .single();
@@ -51,7 +51,7 @@ export const useTeamParticipation = (seasonId: string | undefined, teamId: strin
 
       const { data, error } = await supabase
         .from('season_team_participation')
-        .select('*')
+        .select('id, season_id, team_id, status, submitted_by, submitted_by_name, created_at, updated_at')
         .eq('season_id', seasonId)
         .eq('team_id', teamId)
         .maybeSingle();
@@ -76,7 +76,7 @@ export const useSeasonParticipations = (seasonId: string | undefined) => {
 
       const { data, error } = await supabase
         .from('season_team_participation')
-        .select('*')
+        .select('id, season_id, team_id, status, submitted_by, submitted_by_name, created_at, updated_at')
         .eq('season_id', seasonId);
 
       if (error) {

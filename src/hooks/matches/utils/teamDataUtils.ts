@@ -13,7 +13,9 @@ export const fetchTeamsForMatch = async (teamIds: string[]): Promise<Team[]> => 
 
     const { data, error } = await supabase
       .from('v_team_details')
-      .select('*')
+      .select(
+        'team_id, name, image_url, logo_url, players, wins, losses, game_wins, game_losses, created_at, division_id, divisionname, sos, power_score, win_percentage, game_win_percentage'
+      )
       .in('team_id', teamIds);
 
     if (error) {

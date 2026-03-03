@@ -9,7 +9,7 @@ export const useSeasons = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('seasons')
-        .select('*')
+        .select('id, name, is_active, is_archived, start_date, end_date, created_at, champion_team_id, runner_up_team_id, confirmation_open')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -30,7 +30,7 @@ export const useActiveSeason = () => {
       // Fetch all active seasons to detect data integrity issues
       const { data: activeSeasons, error } = await supabase
         .from('seasons')
-        .select('*')
+        .select('id, name, is_active, is_archived, start_date, end_date, created_at, champion_team_id, runner_up_team_id, confirmation_open')
         .eq('is_active', true);
 
       if (error) {

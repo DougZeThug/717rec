@@ -30,7 +30,7 @@ export function useScoreSubmissions() {
       setIsLoading(true);
       const { data, error } = await supabase
         .from('score_submissions')
-        .select('*')
+        .select('id, match_id, submitter_name, submitter_team, message, status, created_at, reviewed_by, reviewed_at')
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
