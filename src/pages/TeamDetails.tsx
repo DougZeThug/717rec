@@ -1,5 +1,5 @@
 import { ArrowLeft, Trophy } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 
 import TeamBadgeCollection from '@/components/badges/TeamBadgeCollection';
@@ -99,11 +99,14 @@ const TeamDetails = () => {
   const clutchRecord = calculateClutchRecord(teamId || '', pastMatches);
 
   // Custom breadcrumbs with team name
-  const breadcrumbs = [
-    { label: 'Home', href: '/' },
-    { label: 'Teams', href: '/teams' },
-    { label: team.name },
-  ];
+  const breadcrumbs = useMemo(
+    () => [
+      { label: 'Home', href: '/' },
+      { label: 'Teams', href: '/teams' },
+      { label: team.name },
+    ],
+    [team.name]
+  );
 
   return (
     <>

@@ -3,6 +3,7 @@ import React from 'react';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { errorLog } from '@/utils/logger';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -25,12 +26,12 @@ export class BracketCreationErrorBoundary extends React.Component<
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    console.error('BracketCreationErrorBoundary caught error:', error);
+    errorLog('BracketCreationErrorBoundary caught error:', error);
     return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('BracketCreationErrorBoundary error details:', error, errorInfo);
+    errorLog('BracketCreationErrorBoundary error details:', error, errorInfo);
     this.setState({ errorInfo });
   }
 
@@ -130,7 +131,7 @@ export class BracketCreationErrorBoundary extends React.Component<
                   variant="outline"
                   size="sm"
                   onClick={() =>
-                    console.error('Full error details:', this.state.error, this.state.errorInfo)
+                    errorLog('Full error details:', this.state.error, this.state.errorInfo)
                   }
                   className="flex items-center gap-2"
                 >

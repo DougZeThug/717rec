@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,21 @@ import { Switch } from '@/components/ui/switch';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Team } from '@/types';
 import { TeamTimeslot } from '@/types';
+
+// Static list of available timeslots — defined outside component to avoid re-creation on every render
+const TIME_SLOTS = [
+  'BYE',
+  '5:00 PM',
+  '5:30 PM',
+  '6:00 PM',
+  '6:30 PM',
+  '7:00 PM',
+  '7:30 PM',
+  '8:00 PM',
+  '8:30 PM',
+  '9:00 PM',
+  '9:30 PM',
+];
 
 interface TimeslotAssignmentProps {
   selectedDate: Date;
@@ -41,24 +56,15 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
   const [isDoubleHeader, setIsDoubleHeader] = useState<boolean>(false);
   const [selectedTimeslots, setSelectedTimeslots] = useState<string[]>([]);
 
-  // Updated time slots to include BYE and all consecutive 30-minute slots
-  const timeSlots = [
-    'BYE',
-    '5:00 PM',
-    '5:30 PM',
-    '6:00 PM',
-    '6:30 PM',
-    '7:00 PM',
-    '7:30 PM',
-    '8:00 PM',
-    '8:30 PM',
-    '9:00 PM',
-    '9:30 PM',
-  ];
-
   // Filter out teams that already have a timeslot for this date
-  const assignedTeamIds = existingTimeslots.map((ts) => ts.team_id);
-  const availableTeams = teams.filter((team) => !assignedTeamIds.includes(team.id));
+  const assignedTeamIds = useMemo(
+    () => existingTimeslots.map((ts) => ts.team_id),
+    [existingTimeslots]
+  );
+  const availableTeams = useMemo(
+    () => teams.filter((team) => !assignedTeamIds.includes(team.id)),
+    [teams, assignedTeamIds]
+  );
 
   const handleToggleTeam = (teamId: string) => {
     setSelectedTeamIds((prev) =>
@@ -264,7 +270,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
         {isDoubleHeader ? (
           // Double header mode - multiple selection
           <div className="flex flex-wrap justify-start gap-2">
-            {timeSlots
+            {TIME_SLOTS
               .filter((time) => time !== 'BYE')
               .map((time) => {
                 const isSelected = selectedTimeslots.includes(time);
@@ -296,7 +302,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
             onValueChange={setSelectedTimeslot}
             className="flex flex-wrap justify-start gap-2"
           >
-            {timeSlots.map((time) => (
+            {TIME_SLOTS.map((time) => (
               <ToggleGroupItem
                 key={time}
                 value={time}

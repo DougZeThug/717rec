@@ -248,9 +248,6 @@ export const useBracketsViewerRenderer = ({
 
     return () => {
       cancelled = true;
-      if (containerRef.current) {
-        containerRef.current.innerHTML = '';
-      }
       setIsInitialized(false);
     };
   }, [
