@@ -65,10 +65,23 @@ export interface ViewerParticipant {
   position?: number;
 }
 
+export interface BracketGroupRow {
+  id: number;
+  stage_id?: number;
+  number: number;
+}
+
+export interface BracketRoundRow {
+  id: number;
+  stage_id?: number;
+  group_id: number;
+  number: number;
+}
+
 export interface ViewerData {
   stages: ViewerStage[];
-  groups?: any[];
-  rounds?: any[];
+  groups?: BracketGroupRow[];
+  rounds?: BracketRoundRow[];
   matches: ViewerMatch[];
   matchGames: ViewerMatchGame[];
   participants: ViewerParticipant[];
