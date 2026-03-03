@@ -13,7 +13,7 @@ export interface Team {
   logoUrl?: string;
   players?: string[];
   seed?: number;
-  challongeParticipantId?: number;
+  
   power_score?: number;
   sos?: number;
   win_percentage?: number;
