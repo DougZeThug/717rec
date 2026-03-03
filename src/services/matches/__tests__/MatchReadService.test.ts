@@ -63,12 +63,10 @@ const makeQueryChain = (result: { data: unknown; error: unknown | null }) => {
       mockEq(...args);
       return chain;
     },
-    then: (
-      onFulfilled?: ((value: unknown) => unknown) | null,
-      onRejected?: ((reason: unknown) => unknown) | null
-    ) => Promise.resolve(result).then(onFulfilled, onRejected ?? undefined),
-    catch: (onRejected?: ((reason: unknown) => unknown) | null) =>
-      Promise.resolve(result).catch(onRejected ?? undefined),
+    then: ((onFulfilled?: any, onRejected?: any) =>
+      Promise.resolve(result).then(onFulfilled, onRejected)) as PromiseLike<unknown>['then'],
+    catch: (onRejected?: any) =>
+      Promise.resolve(result).catch(onRejected),
   };
   return chain;
 };
