@@ -22,7 +22,7 @@ export interface Message {
   user_id: string | null;
   team_id: string | null;
   category?: string;
-  tags?: string[];
+  
   updated_at?: string;
   is_edited?: boolean;
 }
