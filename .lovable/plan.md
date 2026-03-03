@@ -1,29 +1,26 @@
 
 
-## Audit Result: Dead Interface Fields in `src/types/*.ts`
+## Fix Image Load Error Spam in Sentry and Console
 
-After cross-referencing every field in the main TypeScript interfaces against actual usage across the codebase, there is **one dead field** to remove.
+### Problem
+The Sentry logs show **hundreds** of "Image load error" events for the same teams repeating over and over. Two issues:
 
-### Dead Field Found
+1. **`src/components/teams/shared/TeamImage.tsx`** uses `errorLog()` instead of `imageErrorLog()`. In production, `errorLog` sends every image failure to Sentry as an error-level event — flooding the monitoring system with non-actionable noise.
 
-| Interface | File | Field | Why it's dead |
-|---|---|---|---|
-| `Team` | `src/types/index.ts` (line 16) | `challongeParticipantId?: number` | Declared but never read or written anywhere in the codebase. No query populates it, no component accesses it. Legacy from a Challonge integration that was removed. |
+2. **Fallback image creates an error loop**: When the primary image fails, `TeamImage.tsx` sets `src` to an Unsplash fallback URL. If *that* also fails (e.g., network issue, Unsplash down), the `onError` fires again, logging another error — creating an infinite retry loop of Sentry events.
 
-### Fields Verified as Alive
+### Changes
 
-These were investigated but confirmed to be actively used:
+**1. `src/components/teams/shared/TeamImage.tsx`**
+- Replace `errorLog(...)` with `imageErrorLog(teamName, imageUrl)` (consistent with all other TeamLogo/TeamImage components)
+- Instead of setting a fallback `src` (which can re-trigger `onError`), hide the broken image with `display: 'none'` — matching the pattern used in the newer `ui/team/TeamImage.tsx` and `shared/TeamLogo.tsx`
+- Import `imageErrorLog` from `@/utils/logger` instead of `errorLog`
 
-- **`Team.division`** — used as fallback in 4+ files (`teamGrouping.ts`, `compatibilityUtils.ts`, `useBracketFormData.ts`)
-- **`Team.seed`** — used extensively in bracket/playoff components (18 files)
-- **`Match.timeSlot`** — used in match creation and scheduling (24 files)
-- **`Match.team1Details` / `team2Details`** — populated by join queries, used in 11 files
-- **`Match.match_type`** — populated from DB, used in 7 files
-- **`BracketRecord.challonge_tournament_id`** — still referenced in bracket creation and queries
+**2. `src/utils/logger.ts`**
+- Add `"Image load error"` and `"Failed to load image"` to the Sentry filter so even if `errorLog` is accidentally used for image failures elsewhere, they won't be sent as Sentry events
 
-### Change
-
-**`src/types/index.ts`** — Remove line 16 (`challongeParticipantId?: number;`) from the `Team` interface.
-
-One line removed. No other code changes needed since no code references this field.
+### Result
+- Image failures log as warnings in dev console only (via `imageErrorLog` → `warnLog`)
+- No more Sentry spam from broken team logos
+- No more infinite error loops from fallback image failures
 
