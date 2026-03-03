@@ -13,6 +13,7 @@ import {
   Timer,
   Users,
   Users2,
+  ChevronDown,
   X,
 } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
@@ -92,6 +93,21 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Auto-open the group containing the active tab
+  const initialOpen = useMemo(() => {
+    const group = tabGroups.find((g) => g.tabs.includes(activeTab));
+    return group ? new Set([group.id]) : new Set<string>();
+  }, []);
+  const [openGroups, setOpenGroups] = useState<Set<string>>(initialOpen);
+
+  const toggleGroup = (groupId: string) => {
+    setOpenGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(groupId)) next.delete(groupId);
+      else next.add(groupId);
+      return next;
+    });
+  };
 
   const getTabItem = (tabId: string): AdminMenuItem | undefined => {
     return adminMenuItems.find((item) => item.id === tabId);
@@ -202,7 +218,10 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
 
               return (
                 <div key={group.id} className="border border-border rounded-lg">
-                  <div className="flex items-center gap-3 px-3 py-2.5 bg-muted/30">
+                  <button
+                    onClick={() => toggleGroup(group.id)}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 bg-muted/30 rounded-t-lg"
+                  >
                     <GroupIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
                     <span className="flex-1 text-left font-medium text-sm">{group.label}</span>
                     {groupBadge > 0 && (
@@ -210,7 +229,14 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
                         {groupBadge}
                       </Badge>
                     )}
-                  </div>
+                    <ChevronDown
+                      className={cn(
+                        'h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200',
+                        openGroups.has(group.id) && 'rotate-180'
+                      )}
+                    />
+                  </button>
+                  {openGroups.has(group.id) && (
                   <div className="border-t border-border">
                     {group.tabs.map((tabId) => {
                       const tab = getTabItem(tabId);
@@ -241,6 +267,7 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
                       );
                     })}
                   </div>
+                  )}
                 </div>
               );
             })}
