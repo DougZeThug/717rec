@@ -261,17 +261,16 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
     );
   }
 
-  const divisionPriority: Record<string, number> = {
-    Competitive: 1,
-    'Intermediate 1': 2,
-    'Intermediate 2': 3,
-    Recreational: 4,
+  const getDivisionPriority = (name: string): number => {
+    const lower = name.toLowerCase();
+    if (lower.includes('competitive')) return 1;
+    if (lower.includes('intermediate')) return 2;
+    if (lower.includes('recreational')) return 3;
+    return 99;
   };
 
   const divisionOrder = Object.keys(championsMap).sort((a, b) => {
-    const priorityA = divisionPriority[a] ?? 99;
-    const priorityB = divisionPriority[b] ?? 99;
-    return priorityA - priorityB;
+    return getDivisionPriority(a) - getDivisionPriority(b);
   });
 
   return (
