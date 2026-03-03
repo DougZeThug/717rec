@@ -54,6 +54,9 @@ export const initSentry = () => {
     // Sample rate for performance monitoring (0 = disabled, 1 = 100%)
     tracesSampleRate: 0.1,
 
+    // Scope distributed tracing to our own API domain (avoids CORS issues)
+    tracePropagationTargets: ['localhost', /^https:\/\/wcitdamvochthvxvtxyb\.supabase\.co/],
+
     // Session Replay sample rates (used when replay is added)
     replaysSessionSampleRate: 0.1, // 10% of sessions
     replaysOnErrorSampleRate: 1.0, // 100% of sessions with errors
@@ -115,28 +118,29 @@ export const initSentry = () => {
   if (import.meta.env.PROD) {
     if ('requestIdleCallback' in window) {
       requestIdleCallback(() => {
-        addReplayIntegration();
+        addLazyIntegrations();
       }, { timeout: 15000 });
     } else {
       // Fallback for browsers without requestIdleCallback
       setTimeout(() => {
-        addReplayIntegration();
+        addLazyIntegrations();
       }, 12000);
     }
   }
 };
 
 /**
- * Lazily add the replay integration to reduce initial bundle impact
+ * Lazily add replay + browser tracing integrations to reduce initial bundle impact
  */
-const addReplayIntegration = () => {
+const addLazyIntegrations = () => {
   try {
     const client = Sentry.getClient();
     if (client) {
       client.addIntegration(Sentry.replayIntegration());
+      client.addIntegration(Sentry.browserTracingIntegration());
     }
   } catch {
-    // Silently fail - replay is non-critical
+    // Silently fail - these integrations are non-critical
   }
 };
 
