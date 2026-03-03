@@ -203,4 +203,17 @@ export const addBreadcrumb = (breadcrumb: Sentry.Breadcrumb) => {
   Sentry.addBreadcrumb(breadcrumb);
 };
 
+/**
+ * Thin metrics helpers — wraps Sentry.metrics for convenience.
+ * Metrics only fire in production (guarded by the Sentry client's `enabled` flag).
+ */
+export const metrics = {
+  count: (name: string, value?: number, attributes?: Record<string, string>) =>
+    Sentry.metrics.count(name, value ?? 1, { attributes }),
+  gauge: (name: string, value: number, attributes?: Record<string, string>) =>
+    Sentry.metrics.gauge(name, value, { attributes }),
+  distribution: (name: string, value: number, attributes?: Record<string, string>) =>
+    Sentry.metrics.distribution(name, value, { attributes }),
+};
+
 export { Sentry };

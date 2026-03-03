@@ -1,5 +1,5 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import React, { lazy, Suspense, useEffect } from 'react';
+import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React, { lazy, Suspense, useEffect, useRef } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
 
@@ -11,6 +11,7 @@ import { NavigationProvider } from '@/contexts/NavigationContext';
 import { initAnalytics, trackPageView } from '@/utils/analytics';
 import { routeLog } from '@/utils/logger';
 import { preloadCoreRoutes } from '@/utils/routePrefetch';
+import { metrics } from '@/utils/sentry';
 import ProtectedAdminRoute from './components/auth/ProtectedAdminRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { RouteErrorBoundary } from './components/RouteErrorBoundary';
@@ -48,15 +49,25 @@ const queryClient = new QueryClient({
       retry: 1,
     },
   },
+  queryCache: new QueryCache({
+    onError: () => metrics.count('query_error', 1, { type: 'query' }),
+  }),
 });
 
 const AppContent = () => {
   const location = useLocation();
+  const navigationStart = useRef(performance.now());
 
-  // Log every route change and track page views
+  // Log every route change, track page views, and emit Sentry metrics
   useEffect(() => {
     routeLog(`Navigating to: ${location.pathname}`);
     trackPageView(location.pathname);
+
+    // Sentry metrics
+    metrics.count('page_view', 1, { route: location.pathname });
+    const loadTime = performance.now() - navigationStart.current;
+    metrics.distribution('page_load_time', loadTime, { route: location.pathname });
+    navigationStart.current = performance.now();
   }, [location.pathname]);
 
   // Preload core routes after initial render
