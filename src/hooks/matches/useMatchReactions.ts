@@ -60,7 +60,7 @@ export const useMatchReactions = (matchId: string) => {
 
         const { data, error } = await supabase
           .from('match_reactions')
-          .select('*')
+          .select('id, match_id, user_id, emoji, created_at')
           .eq('match_id', matchId);
 
         if (error) {

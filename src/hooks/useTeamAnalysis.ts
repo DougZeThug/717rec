@@ -36,7 +36,7 @@ export const useTeamAnalysis = (teamId: string | undefined) => {
 
       const { data, error } = await supabase
         .from('team_analysis')
-        .select('*')
+        .select('id, team_id, overall, strengths, weaknesses, trends, rivalry_insights, created_at, updated_at')
         .eq('team_id', teamId)
         .maybeSingle();
 

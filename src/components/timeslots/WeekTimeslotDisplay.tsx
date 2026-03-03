@@ -37,7 +37,7 @@ const WeekTimeslotDisplay: React.FC<WeekTimeslotDisplayProps> = ({
 
         const { data, error } = await supabase
           .from('team_timeslots')
-          .select('*')
+          .select('id, match_date, timeslot, team_id, created_at, is_back_to_back, is_double_header, pair_slot, match_sequence')
           .eq('team_id', teamId)
           .gte('match_date', startDate)
           .lte('match_date', endDate)

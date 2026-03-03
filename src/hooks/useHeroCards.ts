@@ -11,7 +11,9 @@ export const useHeroCards = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('hero_cards')
-        .select('*')
+        .select(
+          'id, slug, title, subtitle, body, cta_label, cta_url, background_color, text_color, accent_color, image_url, icon_name, is_visible, sort_order, target_type, target_id, card_type, metadata, created_at, updated_at'
+        )
         .eq('is_visible', true)
         .order('sort_order', { ascending: true });
 
@@ -29,7 +31,9 @@ export const useAllHeroCards = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('hero_cards')
-        .select('*')
+        .select(
+          'id, slug, title, subtitle, body, cta_label, cta_url, background_color, text_color, accent_color, image_url, icon_name, is_visible, sort_order, target_type, target_id, card_type, metadata, created_at, updated_at'
+        )
         .order('sort_order', { ascending: true });
 
       if (error) throw error;
@@ -45,7 +49,13 @@ export const useHeroCard = (id: string | null) => {
     queryKey: ['hero-cards', id],
     queryFn: async () => {
       if (!id) return null;
-      const { data, error } = await supabase.from('hero_cards').select('*').eq('id', id).single();
+      const { data, error } = await supabase
+        .from('hero_cards')
+        .select(
+          'id, slug, title, subtitle, body, cta_label, cta_url, background_color, text_color, accent_color, image_url, icon_name, is_visible, sort_order, target_type, target_id, card_type, metadata, created_at, updated_at'
+        )
+        .eq('id', id)
+        .single();
 
       if (error) throw error;
       return data as HeroCard;

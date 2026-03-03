@@ -29,7 +29,7 @@ export const useMatchComments = (matchId: string) => {
 
         const { data, error } = await supabase
           .from('match_comments')
-          .select('*')
+          .select('id, match_id, user_id, username, team_name, content, created_at')
           .eq('match_id', matchId)
           .order('created_at', { ascending: true });
 
@@ -131,7 +131,7 @@ export const useMatchComments = (matchId: string) => {
           team_name: teamName,
           content: content.trim(),
         })
-        .select('*')
+        .select('id, match_id, user_id, username, team_name, content, created_at')
         .single();
 
       if (error) {

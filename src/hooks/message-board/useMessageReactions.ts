@@ -46,7 +46,7 @@ export const useMessageReactions = (messageId: string) => {
 
         const { data, error } = await supabase
           .from('message_reactions')
-          .select('*')
+          .select('id, message_id, user_id, emoji, created_at')
           .eq('message_id', messageId);
 
         if (error) {

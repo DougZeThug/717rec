@@ -94,7 +94,7 @@ export class BracketCreationService {
       const { data: insertedParticipants, error: participantsError } = await supabase
         .from('participant' as any)
         .insert(participantInserts)
-        .select('*');
+        .select('id, name, position, tournament_id, team_id');
 
       if (participantsError) {
         const errLike = participantsError as ErrorLike;

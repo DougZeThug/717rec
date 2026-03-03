@@ -45,7 +45,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('participant')
-        .select('*')
+        .select('id, name, position')
         .eq('tournament_id', bracketId)
         .order('position', { ascending: true });
 

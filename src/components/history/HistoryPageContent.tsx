@@ -52,7 +52,7 @@ const HistoryPageContent: React.FC = () => {
       // Fetch all seasons
       const { data: seasonsData, error: seasonsError } = await supabase
         .from('seasons')
-        .select('*')
+        .select('id, name, start_date, end_date, is_active')
         .order('start_date', { ascending: false });
 
       if (seasonsError) {

@@ -17,7 +17,7 @@ export const useBlindDrawSettings = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('blind_draw_settings')
-        .select('*')
+        .select('id, signup_confirmation_message, created_at, updated_at')
         .limit(1)
         .single();
       if (error) throw error;

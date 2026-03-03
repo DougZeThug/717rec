@@ -34,7 +34,7 @@ export const useBlindDrawSignups = (eventDate?: string) => {
     queryFn: async () => {
       let query = supabase
         .from('blind_draw_signups')
-        .select('*')
+        .select('id, event_date, first_name, last_initial, created_at')
         .order('created_at', { ascending: true });
 
       if (eventDate) {

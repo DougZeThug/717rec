@@ -17,7 +17,7 @@ export const useDivisions = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('divisions')
-        .select('*')
+        .select('id, name, division_weight, display_division, created_at')
         .order('division_weight', { ascending: false }); // Order by weight (highest first)
 
       if (error) {

@@ -140,8 +140,8 @@ export const useBracketData = (bracketId: string | null) => {
         updateProgress('stage');
         bracketLog('Parallel Batch 1 - Fetching stage and participants');
         const [stageResult, participantsResult] = await Promise.all([
-          supabase.from('stage').select('*').eq('tournament_id', bracketId),
-          supabase.from('participant').select('*').eq('tournament_id', bracketId),
+          supabase.from('stage').select('id, name, type, tournament_id').eq('tournament_id', bracketId),
+          supabase.from('participant').select('id, name, position, tournament_id').eq('tournament_id', bracketId),
         ]);
 
         if (stageResult.error) {
@@ -169,8 +169,13 @@ export const useBracketData = (bracketId: string | null) => {
         updateProgress('matches');
         bracketLog('Parallel Batch 2 - Fetching groups and matches');
         const [groupsResult, matchesResult] = await Promise.all([
-          supabase.from('group').select('*').eq('stage_id', stage.id),
-          supabase.from('match').select('*').eq('stage_id', stage.id),
+          supabase.from('group').select('id, number, stage_id').eq('stage_id', stage.id),
+          supabase
+            .from('match')
+            .select(
+              'id, group_id, round_id, number, status, opponent1_id, opponent1_score, opponent1_result, opponent2_id, opponent2_score, opponent2_result'
+            )
+            .eq('stage_id', stage.id),
         ]);
 
         if (groupsResult.error) {

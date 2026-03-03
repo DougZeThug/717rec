@@ -33,7 +33,7 @@ export class BracketsViewerAdapter {
     // First get stage to find stage_id
     const { data: stages, error: stageError } = await supabase
       .from('stage')
-      .select('*')
+      .select('id, name, type, tournament_id')
       .eq('tournament_id', bracketId);
 
     if (stageError) throw stageError;
@@ -46,11 +46,21 @@ export class BracketsViewerAdapter {
     // Fetch all data from SQL tables including groups and rounds for connectors
     const [matchesResult, matchGamesResult, participantsResult, groupsResult, roundsResult] =
       await Promise.all([
-        supabase.from('match').select('*').eq('stage_id', stageId),
-        supabase.from('match_game').select('*'),
-        supabase.from('participant').select('*').eq('tournament_id', bracketId),
-        supabase.from('group').select('*').eq('stage_id', stageId),
-        supabase.from('round').select('*'),
+        supabase
+          .from('match')
+          .select(
+            'id, stage_id, group_id, round_id, number, child_count, opponent1_id, opponent1_score, opponent1_result, opponent2_id, opponent2_score, opponent2_result, status'
+          )
+          .eq('stage_id', stageId),
+        supabase
+          .from('match_game')
+          .select('id, number, match_id, status, opponent1_score, opponent2_score'),
+        supabase
+          .from('participant')
+          .select('id, name, tournament_id, position')
+          .eq('tournament_id', bracketId),
+        supabase.from('group').select('id, number, stage_id').eq('stage_id', stageId),
+        supabase.from('round').select('id, group_id, number'),
       ]);
 
     if (matchesResult.error) throw matchesResult.error;

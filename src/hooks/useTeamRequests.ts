@@ -18,7 +18,7 @@ export const usePendingRequestsCount = () => {
     queryFn: async () => {
       const { count, error } = await supabase
         .from('team_requests')
-        .select('*', { count: 'exact', head: true })
+        .select('id', { count: 'exact', head: true })
         .eq('status', 'PENDING');
 
       if (error) throw error;
@@ -38,7 +38,9 @@ export const useTeamRequests = (teamId: string | undefined) => {
 
       const { data, error } = await supabase
         .from('team_requests')
-        .select('*')
+        .select(
+          'id, team_id, season_id, request_type, status, match_date, current_timeslot, requested_timeslot, reason, admin_notes, submitted_by, submitted_by_name, processed_by, processed_at, created_at, updated_at'
+        )
         .eq('team_id', teamId)
         .order('created_at', { ascending: false })
         .limit(10);

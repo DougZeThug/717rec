@@ -33,7 +33,10 @@ export function usePendingScoresMatches() {
   } = useQuery<PendingMatch[]>({
     queryKey: ['matches', 'pending-scores'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('v_pending_matches').select('*').limit(10);
+      const { data, error } = await supabase
+        .from('v_pending_matches')
+        .select('id, team1_id, team2_id, team1_name, team2_name, team1_logo, team2_logo, date, location')
+        .limit(10);
 
       if (error) {
         errorLog('Error fetching pending matches:', error);
