@@ -1,20 +1,29 @@
 
 
-## Fix Build Error: Remove Non-Existent `tags` Column
+## Audit Result: Dead Interface Fields in `src/types/*.ts`
 
-The `messages` table does not have a `tags` column, but two places reference it:
+After cross-referencing every field in the main TypeScript interfaces against actual usage across the codebase, there is **one dead field** to remove.
 
-1. **`src/hooks/message-board/useMessageApi.ts` line 39** — the `.select()` string includes `tags`, causing the TS2352 build error
-2. **`src/types/reactions.ts` line 25** — the `Message` interface declares `tags?: string[]`
+### Dead Field Found
 
-No code in the project actually reads `.tags` from a message, so both references are dead weight.
+| Interface | File | Field | Why it's dead |
+|---|---|---|---|
+| `Team` | `src/types/index.ts` (line 16) | `challongeParticipantId?: number` | Declared but never read or written anywhere in the codebase. No query populates it, no component accesses it. Legacy from a Challonge integration that was removed. |
 
-### Changes
+### Fields Verified as Alive
 
-| File | Change |
-|---|---|
-| `src/hooks/message-board/useMessageApi.ts` (line 39) | Remove `tags` from the select string: `'id, content, created_at, username, team_name, user_id, team_id, category, updated_at, is_edited'` |
-| `src/types/reactions.ts` (line 25) | Remove `tags?: string[];` from the `Message` interface |
+These were investigated but confirmed to be actively used:
 
-Zero runtime behavior change — just aligning types with the actual database schema.
+- **`Team.division`** — used as fallback in 4+ files (`teamGrouping.ts`, `compatibilityUtils.ts`, `useBracketFormData.ts`)
+- **`Team.seed`** — used extensively in bracket/playoff components (18 files)
+- **`Match.timeSlot`** — used in match creation and scheduling (24 files)
+- **`Match.team1Details` / `team2Details`** — populated by join queries, used in 11 files
+- **`Match.match_type`** — populated from DB, used in 7 files
+- **`BracketRecord.challonge_tournament_id`** — still referenced in bracket creation and queries
+
+### Change
+
+**`src/types/index.ts`** — Remove line 16 (`challongeParticipantId?: number;`) from the `Team` interface.
+
+One line removed. No other code changes needed since no code references this field.
 
