@@ -1,30 +1,35 @@
 
 
-## Add Sentry Browser Tracing Integration
+## Add Sentry Metrics to the App
 
-### Current State
-Your Sentry config intentionally sets `integrations: []` to reduce TTI impact. However, this means `tracesSampleRate: 0.1` is configured but has no effect — there's no tracing integration to use it.
+Sentry metrics are automatically enabled with `Sentry.init()` — no config changes needed. The work is deciding **where** to emit metrics that provide actionable insight.
 
-### What to Change
+### What to Add
 
-**`src/utils/sentry.ts`** — Add `browserTracingIntegration` lazily (same pattern as replay):
+**`src/utils/sentry.ts`** — Export a thin metrics helper:
 
-1. Keep `integrations: []` on initial load (preserves your TTI optimization)
-2. Add `browserTracingIntegration()` lazily alongside replay in the post-TTI idle callback
-3. Add `tracePropagationTargets` to scope tracing to your Supabase API domain only (avoids CORS issues)
-
-```text
-Current flow:
-  init() → empty integrations → idle → add replay
-
-New flow:
-  init() → empty integrations → idle → add replay + browserTracing
+```typescript
+export const metrics = {
+  count: (name: string, value?: number, tags?: Record<string, string>) => 
+    Sentry.metrics.count(name, value ?? 1, { tags }),
+  gauge: (name: string, value: number, tags?: Record<string, string>) => 
+    Sentry.metrics.gauge(name, value, { tags }),
+  distribution: (name: string, value: number, tags?: Record<string, string>) => 
+    Sentry.metrics.distribution(name, value, { tags }),
+};
 ```
 
-### Specifics
-- Add `tracePropagationTargets: ["localhost", /^https:\/\/wcitdamvochthvxvtxyb\.supabase\.co/]` to the `Sentry.init()` config
-- In `addReplayIntegration` (rename to `addLazyIntegrations`), also add `Sentry.browserTracingIntegration()`
-- Keep `tracesSampleRate: 0.1` (10% sampling is appropriate for production)
+**Instrument key user flows** (lightweight, ~1 line each):
 
-One file changed, ~5 lines added.
+| Metric | Type | Location | Purpose |
+|---|---|---|---|
+| `page_view` | count | `AppContent` (existing `useEffect`) | Track page views with route tag |
+| `query_error` | count | `QueryClient.onError` callback | Count failed API queries |
+| `page_load_time` | distribution | `AppContent` via `performance.now()` | Measure route transition speed |
+
+### Files Changed
+- `src/utils/sentry.ts` — add metrics export (~10 lines)
+- `src/App.tsx` — add 3 metric calls in existing hooks/config
+
+No new dependencies. Metrics only fire in production (guarded by existing `import.meta.env.PROD` checks in the Sentry client).
 
