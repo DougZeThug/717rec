@@ -122,6 +122,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
           style={{ position: 'relative', height: '100%', minHeight: '350px' }}
         >
           <div
+            key={`${bracket.id}-${refreshCounter}`}
             ref={containerRef}
             id={CONTAINER_ID}
             className="brackets-viewer p-4 md:p-8 font-bebas bg-background"

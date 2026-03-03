@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useCallback } from 'react';
 
 import HeroCardSkeleton from '@/components/hero/HeroCardSkeleton';
 import HeroSection from '@/components/home/HeroSection';
@@ -44,11 +44,11 @@ const Index: React.FC = () => {
     return [...teams].sort((a, b) => (b.power_score ?? 0) - (a.power_score ?? 0)).slice(0, 10);
   }, [teams]);
 
-  const getDelay = (index: number) => {
+  const getDelay = useCallback((index: number) => {
     if (index === 0) return 'short' as const;
     if (index === 1) return 'medium' as const;
     return 'long' as const;
-  };
+  }, []);
 
   return (
     <PageLayout

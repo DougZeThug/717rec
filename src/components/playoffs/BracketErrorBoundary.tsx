@@ -3,6 +3,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { errorLog } from '@/utils/logger';
 
 interface Props {
   children: ReactNode;
@@ -22,13 +23,12 @@ class BracketErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): State {
-    // Note: Using console.error here as this is an error boundary - structured logging not available
-    console.error('[717REC] BracketErrorBoundary caught error:', error);
+    errorLog('BracketErrorBoundary caught error:', error);
     return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('[717REC] BracketErrorBoundary componentDidCatch:', {
+    errorLog('BracketErrorBoundary componentDidCatch:', {
       error,
       errorInfo,
       bracketId: this.props.bracketId,

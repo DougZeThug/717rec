@@ -1,8 +1,6 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { useAuth } from '@/contexts/AuthContext';
-import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { routeLog } from '@/utils/logger';
 
 /** Route state passed during navigation */
@@ -37,8 +35,6 @@ interface NavigationProviderProps {
 
 export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children }) => {
   const navigate = useNavigate();
-  const { isAdminAccessGranted } = useAdminAccess();
-  const { user } = useAuth();
   const [isNavigating, setIsNavigating] = useState(false);
 
   const navigateWithTransition = useCallback(
@@ -63,7 +59,7 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
         }, 300);
       }, 0);
     },
-    [navigate, isAdminAccessGranted, user]
+    [navigate]
   );
 
   // Memoize context value to prevent unnecessary re-renders of consumers
