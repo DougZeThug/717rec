@@ -1,28 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
+import { BlindDrawService } from '@/services/BlindDrawService';
 import { errorLog } from '@/utils/logger';
 
-export interface BlindDrawSignup {
-  id: string;
-  event_date: string;
-  first_name: string;
-  last_initial: string;
-  created_at: string;
-}
+export type { BlindDrawSignup } from '@/services/BlindDrawService';
 
 // Fetch signup count for public display (no auth required)
 export const useBlindDrawSignupCount = () => {
   return useQuery({
     queryKey: ['blind-draw-signup-count'],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from('blind_draw_signups')
-        .select('id', { count: 'exact', head: true });
-      if (error) throw error;
-      return count ?? 0;
-    },
+    queryFn: BlindDrawService.fetchBlindDrawSignupCount,
     staleTime: 1000 * 60 * 2,
   });
 };
@@ -31,20 +19,7 @@ export const useBlindDrawSignupCount = () => {
 export const useBlindDrawSignups = (eventDate?: string) => {
   return useQuery({
     queryKey: ['blind-draw-signups', eventDate],
-    queryFn: async () => {
-      let query = supabase
-        .from('blind_draw_signups')
-        .select('id, event_date, first_name, last_initial, created_at')
-        .order('created_at', { ascending: true });
-
-      if (eventDate) {
-        query = query.eq('event_date', eventDate);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as BlindDrawSignup[];
-    },
+    queryFn: () => BlindDrawService.fetchBlindDrawSignups(eventDate),
     staleTime: 1000 * 60 * 2, // Cache for 2 minutes
   });
 };
@@ -55,23 +30,7 @@ export const useAddBlindDrawSignup = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({
-      eventDate,
-      firstName,
-      lastInitial,
-    }: {
-      eventDate: string;
-      firstName: string;
-      lastInitial: string;
-    }) => {
-      const { error } = await supabase.from('blind_draw_signups').insert({
-        event_date: eventDate,
-        first_name: firstName.trim(),
-        last_initial: lastInitial.trim().toUpperCase(),
-      });
-
-      if (error) throw error;
-    },
+    mutationFn: BlindDrawService.createSignup,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blind-draw-signups'] });
       queryClient.invalidateQueries({ queryKey: ['blind-draw-signup-count'] });
@@ -93,11 +52,7 @@ export const useDeleteBlindDrawSignup = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from('blind_draw_signups').delete().eq('id', id);
-
-      if (error) throw error;
-    },
+    mutationFn: BlindDrawService.deleteSignup,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blind-draw-signups'] });
       toast({
@@ -122,14 +77,7 @@ export const useClearBlindDrawSignups = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase
-        .from('blind_draw_signups')
-        .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000');
-
-      if (error) throw error;
-    },
+    mutationFn: BlindDrawService.clearSignups,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blind-draw-signups'] });
       toast({
