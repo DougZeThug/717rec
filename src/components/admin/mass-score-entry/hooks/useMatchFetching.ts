@@ -14,10 +14,7 @@ export const useMatchFetching = () => {
   const fetchMatches = async (filters: FilterState) => {
     setLoading(true);
     try {
-      const query = buildMatchQuery(filters);
-      const { data, error } = await query;
-
-      if (error) throw error;
+      const data = await buildMatchQuery(filters);
 
       // Log raw data type information
       matchLog('Raw matches fetched', {

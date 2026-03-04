@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
+import { deleteMatch, upsertTeamSeasonStats } from '@/services/matches/MatchWriteService';
 import { Match, Team } from '@/types';
 import { errorLog, warnLog } from '@/utils/logger';
 
@@ -56,18 +56,12 @@ export const useMatchDelete = ({
         );
       }
 
-      // Delete the match from Supabase
-      const { error } = await supabase.from('matches').delete().eq('id', deleteMatchId);
-
-      if (error) throw error;
+      // Delete the match
+      await deleteMatch(deleteMatchId);
 
       // AFTER deletion: Refresh team_season_stats to keep career data in sync
       // This must happen after the match is deleted so the recalculation doesn't include the deleted match
-      const { error: seasonStatsError } = await supabase.rpc('upsert_team_season_stats');
-      if (seasonStatsError) {
-        warnLog('Failed to refresh season stats after deletion:', seasonStatsError);
-        // Non-fatal - stats will eventually sync
-      }
+      await upsertTeamSeasonStats();
 
       // Update the matches state
       const updatedMatches = matches.filter((match) => match.id !== deleteMatchId);

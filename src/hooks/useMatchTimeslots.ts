@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 
-import { supabase } from '@/integrations/supabase/client';
+import { fetchMatchTimeslots } from '@/services/matches/MatchReadService';
 import { TeamTimeslot } from '@/types';
 import { errorLog, scheduleLog } from '@/utils/logger';
 
@@ -27,39 +27,19 @@ export const useMatchTimeslots = (date: Date | null) => {
       const formattedDate = format(date, 'yyyy-MM-dd');
       scheduleLog('Fetching timeslots for date:', formattedDate);
 
-      const { data, error } = await supabase
-        .from('team_timeslots')
-        .select(
-          `
-          id,
-          match_date,
-          timeslot,
-          team_id,
-          created_at,
-          is_back_to_back,
-          is_double_header,
-          pair_slot,
-          match_sequence,
-          teams:team_id (
-            id,
-            name,
-            logo_url,
-            image_url
-          )
-        `
-        )
-        .eq('match_date', formattedDate);
-
-      if (error) {
+      let rawData;
+      try {
+        rawData = await fetchMatchTimeslots(formattedDate);
+      } catch (error) {
         errorLog('Error fetching timeslots:', error);
-        throw new Error('Failed to load timeslots');
+        throw error;
       }
 
-      scheduleLog('Timeslots raw data:', data);
+      scheduleLog('Timeslots raw data:', rawData);
 
       // Map the data to match the TeamTimeslot type
       const formattedData: TeamTimeslot[] =
-        data?.map((item) => ({
+        rawData?.map((item) => ({
           ...item,
           is_double_header: item.is_double_header || false,
           teams: item.teams

@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchUncompletedMatches } from '@/services/matches/MatchReadService';
 import { Match } from '@/types';
 import { errorLog } from '@/utils/logger';
 import { transformDatabaseMatches } from '@/utils/matchTransformers';
@@ -24,15 +24,10 @@ export function useUncompletedMatches() {
   } = useQuery<Match[]>({
     queryKey: ['matches', 'uncompleted'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('matches')
-        .select(
-          'id, team1_id, team2_id, team1_score, team2_score, date, location, iscompleted, winner_id, loser_id, round_number, position, bracket_id, match_type, next_match_id, next_loser_match_id, best_of, team1_game_wins, team2_game_wins, created_at'
-        )
-        .eq('iscompleted', false)
-        .order('date');
-
-      if (error) {
+      let data;
+      try {
+        data = await fetchUncompletedMatches();
+      } catch (error) {
         errorLog('Error fetching uncompleted matches:', error);
         toast({
           title: 'Error',
@@ -42,7 +37,7 @@ export function useUncompletedMatches() {
         throw error;
       }
 
-      return transformDatabaseMatches(data || []);
+      return transformDatabaseMatches(data);
     },
     staleTime: 0, // Always fresh - instant updates
   });

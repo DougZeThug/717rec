@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
-import { errorLog, matchLog } from '@/utils/logger';
+import { fetchPendingScoresMatches } from '@/services/matches/MatchReadService';
+import { createScoreSubmission } from '@/services/matches/MatchWriteService';
+import { errorLog } from '@/utils/logger';
 
 export interface PendingMatch {
   id: string;
@@ -33,12 +34,10 @@ export function usePendingScoresMatches() {
   } = useQuery<PendingMatch[]>({
     queryKey: ['matches', 'pending-scores'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('v_pending_matches')
-        .select('id, team1_id, team2_id, team1_name, team2_name, team1_logo, team2_logo, date, location')
-        .limit(10);
-
-      if (error) {
+      let data;
+      try {
+        data = await fetchPendingScoresMatches();
+      } catch (error) {
         errorLog('Error fetching pending matches:', error);
         toast({
           title: 'Error',
@@ -48,7 +47,7 @@ export function usePendingScoresMatches() {
         throw error;
       }
 
-      return (data || []).map((match) => ({
+      return data.map((match) => ({
         id: match.id,
         team1_id: match.team1_id || '',
         team2_id: match.team2_id || '',
@@ -71,14 +70,12 @@ export function usePendingScoresMatches() {
       matchId: string;
       submission: ScoreSubmission;
     }) => {
-      const { error } = await supabase.from('score_submissions').insert({
+      await createScoreSubmission({
         match_id: matchId,
         submitter_name: submission.submitter_name,
         submitter_team: submission.submitter_team || null,
         message: submission.message,
       });
-
-      if (error) throw error;
       return true;
     },
     onSuccess: () => {

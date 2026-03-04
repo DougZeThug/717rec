@@ -1,12 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { applyMatchResult } from '@/hooks/team-stats/utils/teamRecordUtils';
 import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  fetchPendingMatches,
+  fetchTeamsMap,
+} from '@/services/matches/MatchReadService';
+import {
+  approveMatch,
+  fetchMatchForTie,
+  reverseTeamStats,
+  setMatchAsTie,
+  upsertTeamSeasonStats,
+} from '@/services/matches/MatchWriteService';
 import { Match, Team } from '@/types';
 import { transformDatabaseMatches } from '@/utils/matchTransformers';
-import { errorLog, warnLog } from '@/utils/logger';
+import { errorLog } from '@/utils/logger';
 
 export function usePendingMatches() {
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
@@ -22,16 +32,10 @@ export function usePendingMatches() {
   } = useQuery<Match[]>({
     queryKey: ['matches', 'pending'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('matches')
-        .select(
-          'id, team1_id, team2_id, team1_score, team2_score, date, location, iscompleted, winner_id, loser_id, round_number, position, bracket_id, match_type, next_match_id, next_loser_match_id, best_of, team1_game_wins, team2_game_wins, created_at'
-        )
-        .eq('iscompleted', true)
-        .is('winner_id', null)
-        .order('date');
-
-      if (error) {
+      let data;
+      try {
+        data = await fetchPendingMatches();
+      } catch (error) {
         errorLog('Error fetching pending matches:', error);
         toast({
           title: 'Error',
@@ -41,7 +45,7 @@ export function usePendingMatches() {
         throw error;
       }
 
-      return transformDatabaseMatches(data || [], { normalizeDate: false });
+      return transformDatabaseMatches(data, { normalizeDate: false });
     },
     staleTime: 0, // Always fresh - instant updates
   });
@@ -50,13 +54,10 @@ export function usePendingMatches() {
   const { data: teams = {} } = useQuery<Record<string, Team>>({
     queryKey: ['teams', 'map'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('v_team_details')
-        .select(
-          'team_id, name, image_url, logo_url, players, wins, losses, game_wins, game_losses, created_at, division_id, divisionname, sos, power_score, win_percentage, game_win_percentage'
-        );
-
-      if (error) {
+      let data;
+      try {
+        data = await fetchTeamsMap();
+      } catch (error) {
         errorLog('Error fetching teams:', error);
         toast({
           title: 'Error',
@@ -104,15 +105,7 @@ export function usePendingMatches() {
         winnerTeamIndex === 1 ? match.team2_game_wins || 0 : match.team1_game_wins || 0;
 
       // Update match with winner/loser
-      const { error } = await supabase
-        .from('matches')
-        .update({
-          winner_id: winnerId,
-          loser_id: loserId,
-        })
-        .eq('id', match.id);
-
-      if (error) throw error;
+      await approveMatch(match.id, winnerId, loserId);
 
       // Use atomic RPC to update team stats (prevents race conditions)
       await applyMatchResult(winnerId, loserId, winnerGameWins, loserGameWins);
@@ -139,18 +132,8 @@ export function usePendingMatches() {
   // Mutation for marking as tie
   const tieMutation = useMutation({
     mutationFn: async (matchId: string) => {
-      // First, fetch the current match to see if it has a winner/loser
-      const { data: currentMatch, error: fetchError } = await supabase
-        .from('matches')
-        .select('winner_id, loser_id, team1_id, team2_id, team1_game_wins, team2_game_wins')
-        .eq('id', matchId)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      if (!currentMatch) {
-        throw new Error('Match not found');
-      }
+      // Fetch the current match to see if it has a winner/loser
+      const currentMatch = await fetchMatchForTie(matchId);
 
       // If match currently has a winner, reverse the stats first
       if (currentMatch.winner_id && currentMatch.loser_id) {
@@ -163,34 +146,19 @@ export function usePendingMatches() {
             ? currentMatch.team1_game_wins || 0
             : currentMatch.team2_game_wins || 0;
 
-        const { error: reverseError } = await supabase.rpc('reverse_team_stats', {
-          p_winner_id: currentMatch.winner_id,
-          p_loser_id: currentMatch.loser_id,
-          p_winner_game_wins: winnerGameWins,
-          p_loser_game_wins: loserGameWins,
-        });
-
-        if (reverseError) {
-          throw new Error(`Failed to reverse team stats: ${reverseError.message}`);
-        }
+        await reverseTeamStats(
+          currentMatch.winner_id,
+          currentMatch.loser_id,
+          winnerGameWins,
+          loserGameWins
+        );
 
         // Refresh season stats for historical accuracy
-        const { error: seasonStatsError } = await supabase.rpc('upsert_team_season_stats');
-        if (seasonStatsError) {
-          warnLog('Failed to refresh season stats:', seasonStatsError);
-        }
+        await upsertTeamSeasonStats();
       }
 
       // Now update the match to mark as tie
-      const { error } = await supabase
-        .from('matches')
-        .update({
-          winner_id: null,
-          loser_id: null,
-        })
-        .eq('id', matchId);
-
-      if (error) throw error;
+      await setMatchAsTie(matchId);
     },
     onSuccess: () => {
       toast({

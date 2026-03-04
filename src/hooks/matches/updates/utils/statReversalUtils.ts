@@ -1,5 +1,7 @@
-import { supabase } from '@/integrations/supabase/client';
-import { warnLog } from '@/utils/logger';
+import {
+  reverseTeamStats as reverseTeamStatsService,
+  upsertTeamSeasonStats,
+} from '@/services/matches/MatchWriteService';
 
 /**
  * Reverses team statistics for a completed match
@@ -20,20 +22,8 @@ export const reverseTeamStats = async (
   loserGameWins: number
 ): Promise<void> => {
   // Call the RPC to reverse team stats
-  const { error: reverseError } = await supabase.rpc('reverse_team_stats', {
-    p_winner_id: winnerId,
-    p_loser_id: loserId,
-    p_winner_game_wins: winnerGameWins,
-    p_loser_game_wins: loserGameWins,
-  });
-
-  if (reverseError) {
-    throw new Error(`Failed to reverse team stats: ${reverseError.message}`);
-  }
+  await reverseTeamStatsService(winnerId, loserId, winnerGameWins, loserGameWins);
 
   // Refresh team_season_stats to keep career data in sync
-  const { error: seasonStatsError } = await supabase.rpc('upsert_team_season_stats');
-  if (seasonStatsError) {
-    warnLog('Failed to refresh season stats after reversal:', seasonStatsError);
-  }
+  await upsertTeamSeasonStats();
 };
