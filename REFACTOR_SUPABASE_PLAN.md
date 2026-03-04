@@ -11,7 +11,105 @@
 - Each batch is one PR (or one commit).
 - Batches are ordered by dependency — earlier batches don't depend on later ones.
 - Each batch lists **exactly** which files to change and what to do.
-- After each batch: run `npm run lint` and `npm run build` to verify nothing broke.
+- After each batch: run the full **Safety Net Checklist** below before merging.
+
+---
+
+## Safety Nets — Zero Functionality Changes
+
+> **CRITICAL RULE**: This refactor is purely structural. No user-facing behavior, data shape, query logic, error behavior, or return type should change. Every service function must produce the **exact same Supabase query** that the hook/component had before — same `.select()` columns, same `.eq()` filters, same `.order()` clauses, same `.single()` vs array returns.
+
+### Golden Rules
+
+1. **Copy the query exactly** — When moving a Supabase call from a hook into a service, copy the entire query chain verbatim. Do not "improve", optimize, or simplify the query while moving it.
+2. **Preserve return types** — If a hook returned `data` (possibly `null`), the service must return the same shape. If it returned an array, return an array. Do not change `null` → `[]` or vice versa unless the hook already did that conversion (move the conversion too).
+3. **Preserve error behavior** — If a hook previously swallowed an error and returned `null`, the new service should do the same. Only add `handleDatabaseError()` where the original code already threw or where TanStack Query's `queryFn` expected a throw on failure.
+4. **Preserve query keys** — Do NOT change TanStack Query `queryKey` arrays when refactoring. Changing keys would invalidate caches and cause unnecessary refetches.
+5. **Preserve `enabled` conditions** — If a hook had `enabled: !!seasonId`, keep it. Do not move `enabled` logic into the service.
+6. **Preserve `staleTime`, `gcTime`, retry settings** — Do not change any TanStack Query options during this refactor.
+7. **Preserve realtime subscriptions** — Realtime `.channel()` code stays in hooks, untouched.
+8. **No new dependencies** — Services should only import `supabase` client and error utilities. Do not add new libraries.
+
+### Per-Batch Safety Net Checklist
+
+Run **all of these** after each batch before committing:
+
+```bash
+# 1. Type safety — catches mismatched return types, missing properties
+npx tsc --noEmit
+
+# 2. Lint — catches import issues, unused vars from refactor
+npm run lint
+
+# 3. Build — full production build to catch anything tsc missed
+npm run build
+
+# 4. Tests — run existing test suite to catch regressions
+npx vitest run
+
+# 5. Verify no leftover direct Supabase imports in refactored files
+# (run manually — check that refactored hooks/components no longer import supabase client)
+grep -r "from '@/integrations/supabase/client'" <refactored-file-paths>
+# Expected: no matches in refactored hooks/components (only in new service files)
+```
+
+### Before/After Comparison Template
+
+For each function you move, document the comparison to prove nothing changed:
+
+```
+BEFORE (in hook):
+  const { data, error } = await supabase
+    .from('seasons')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+AFTER (in service — must be identical query):
+  const { data, error } = await supabase
+    .from('seasons')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) handleDatabaseError(error, 'Failed to fetch seasons');
+  return data ?? [];
+
+AFTER (in hook — now calls service):
+  const { data } = useQuery({
+    queryKey: ['seasons'],           // ← unchanged
+    queryFn: SeasonService.fetchSeasons,
+  });
+```
+
+### What NOT to Do During This Refactor
+
+| DO NOT | WHY |
+|--------|-----|
+| Change `.select('*')` to `.select('id, name, ...')` | Alters returned data shape — could break consuming components |
+| Add `.limit()` or `.range()` to existing queries | Changes data returned — could hide records |
+| Change `.order()` direction or column | Reorders data — UI will look different |
+| Remove or add `.single()` | Changes return type from object to array or vice versa |
+| Change `enabled` conditions on `useQuery` | Changes when data loads — could cause flash of empty state |
+| Add new error toasts or console logs | Alters user experience — save for a separate PR |
+| Rename query keys | Invalidates existing cache — causes unnecessary refetches |
+| Combine multiple hooks into one | Changes component re-render behavior |
+| Split one hook into multiple | Changes how components consume the hook |
+| Add loading states or skeletons | UI change — separate PR |
+| Change TypeScript types | Could mask type errors or break downstream consumers |
+| "Fix" anything unrelated to the refactor | Scope creep — file a separate issue |
+
+### Rollback Plan
+
+Each batch is one commit. If something breaks:
+
+```bash
+# Revert the last batch commit
+git revert HEAD
+
+# Or if caught before commit, discard changes
+git checkout -- .
+```
+
+Because batches are independent, reverting one batch does not affect others.
 
 ---
 
@@ -437,13 +535,22 @@ export const SeasonService = {
 
 ## Verification Checklist (per batch)
 
+### Structural checks
 - [ ] No direct `supabase.from()` calls remain in refactored hooks/components
 - [ ] New service functions use `handleDatabaseError()` and `ensureFound()` where appropriate
 - [ ] Hooks use `useQuery` / `useMutation` calling service functions
 - [ ] Realtime `.channel()` subscriptions remain in hooks (not moved to services)
-- [ ] `npm run lint` passes
-- [ ] `npm run build` passes
-- [ ] Existing functionality is preserved (no behavioral changes)
+
+### Zero-regression checks
+- [ ] `npx tsc --noEmit` passes (type safety)
+- [ ] `npm run lint` passes (no import/unused var issues)
+- [ ] `npm run build` passes (production build)
+- [ ] `npx vitest run` passes (existing tests still green)
+- [ ] Supabase queries in new services are **character-for-character identical** to the originals
+- [ ] TanStack Query keys are **unchanged** in refactored hooks
+- [ ] TanStack Query options (`enabled`, `staleTime`, `gcTime`, `retry`) are **unchanged**
+- [ ] No new UI behavior (no new toasts, loading states, error messages, etc.)
+- [ ] `grep` confirms refactored files no longer import supabase client directly
 
 ---
 
