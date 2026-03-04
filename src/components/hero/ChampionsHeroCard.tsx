@@ -5,8 +5,8 @@ import React from 'react';
 
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
-import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { HeroCardService } from '@/services/HeroCardService';
 import { HeroCard } from '@/types/heroCard';
 
 import HeroCardBase from './HeroCardBase';
@@ -189,19 +189,14 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
     queryFn: async () => {
       if (championIds.length === 0) return { teams: [], divisionMap: {} };
 
-      const { data, error } = await supabase
-        .from('teams')
-        .select('id, name, image_url')
-        .in('id', championIds);
-
-      if (error) throw error;
+      const teams = await HeroCardService.fetchChampionTeams(championIds);
 
       const divisionMap: Record<string, string> = {};
       Object.entries(championsMap).forEach(([division, teamId]) => {
         divisionMap[teamId] = division;
       });
 
-      return { teams: data as TeamData[], divisionMap };
+      return { teams, divisionMap };
     },
     enabled: championIds.length > 0,
   });

@@ -10,8 +10,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useDivisions } from '@/hooks/useDivisions';
+import { HeroCardService } from '@/services/HeroCardService';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 
 import { SectionHeader } from './SectionHeader';
 import { FormSectionProps } from './types';
@@ -48,18 +48,7 @@ export const ChampionsEditor: React.FC<FormSectionProps> = ({ formData, onChange
   // Fetch all non-hidden teams
   const { data: teams = [] } = useQuery({
     queryKey: ['teams-for-champions', hiddenDivisionIds],
-    queryFn: async () => {
-      let query = supabase.from('teams').select('id, name').order('name');
-      if (hiddenDivisionIds.length > 0) {
-        // Filter out teams in hidden divisions
-        for (const id of hiddenDivisionIds) {
-          query = query.neq('division_id', id);
-        }
-      }
-      const { data, error } = await query;
-      if (error) throw error;
-      return data || [];
-    },
+    queryFn: () => HeroCardService.fetchTeamsForChampions(hiddenDivisionIds),
     enabled: divisions.length > 0,
   });
 
