@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { supabase } from '@/integrations/supabase/client';
+import { SeasonService } from '@/services/SeasonService';
 
 interface CreateSeasonData {
   name: string;
@@ -20,65 +20,28 @@ export const useSeasonMutations = () => {
   const queryClient = useQueryClient();
 
   const createSeason = useMutation({
-    mutationFn: async (data: CreateSeasonData) => {
-      const { data: season, error } = await supabase
-        .from('seasons')
-        .insert([data])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return season;
-    },
+    mutationFn: SeasonService.createSeason,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seasons'] });
     },
   });
 
   const updateSeason = useMutation({
-    mutationFn: async ({ id, ...data }: UpdateSeasonData) => {
-      const { data: season, error } = await supabase
-        .from('seasons')
-        .update(data)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return season;
-    },
+    mutationFn: ({ id, ...data }: UpdateSeasonData) => SeasonService.updateSeason(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seasons'] });
     },
   });
 
   const activateSeason = useMutation({
-    mutationFn: async (seasonId: string) => {
-      // Use atomic RPC function to prevent leaving zero active seasons on failure
-      const { data: season, error } = await supabase.rpc('activate_season', {
-        season_id: seasonId,
-      });
-
-      if (error) throw error;
-      return season;
-    },
+    mutationFn: SeasonService.activateSeason,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seasons'] });
     },
   });
 
   const archiveSeason = useMutation({
-    mutationFn: async ({ id }: ArchiveSeasonData) => {
-      const { data: season, error } = await supabase.rpc('archive_season', {
-        p_season_id: id,
-        p_champion_team_id: null,
-        p_runner_up_team_id: null,
-        p_third_place_team_id: null,
-      });
-
-      if (error) throw error;
-      return season;
-    },
+    mutationFn: ({ id }: ArchiveSeasonData) => SeasonService.archiveSeason(id),
     onSuccess: () => {
       // Broad invalidation since archival touches matches, stats, rankings, etc.
       queryClient.invalidateQueries({ queryKey: ['seasons'] });

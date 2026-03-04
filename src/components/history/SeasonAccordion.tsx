@@ -7,10 +7,10 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
-import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { SeasonService } from '@/services/SeasonService';
 import { getHistoryDivisionDisplayName, sortHistoryDivisions } from '@/utils/historyDivisionUtils';
-import { dbLog, errorLog } from '@/utils/logger';
+import { dbLog } from '@/utils/logger';
 
 import DivisionPanel from './DivisionPanel';
 import EditModeContainer from './editing/EditModeContainer';
@@ -48,65 +48,11 @@ const useSeasonData = (seasonId: string, enabled: boolean) => {
     queryKey: ['season-data', seasonId],
     queryFn: async () => {
       dbLog(`Season ${seasonId}: Starting season data query...`);
-
-      try {
-        const { data, error } = await supabase
-          .from('team_season_stats')
-          .select(
-            `
-            team_id,
-            season_id,
-            match_wins,
-            match_losses,
-            game_wins,
-            game_losses,
-            sos,
-            power_score,
-            champion,
-            runner_up,
-            division_name,
-            playoff_rank,
-            teams:team_id (
-              name,
-              logo_url,
-              image_url
-            )
-          `
-          )
-          .eq('season_id', seasonId)
-          .order('division_name', { ascending: true })
-          .order('playoff_rank', { ascending: true, nullsFirst: false });
-
-        if (error) {
-          errorLog(`Season ${seasonId}: Database error:`, error);
-          throw error;
-        }
-
-        // Transform the data structure
-        const transformedData = (data || []).map((item: any) => ({
-          team_id: item.team_id,
-          season_id: item.season_id,
-          match_wins: item.match_wins,
-          match_losses: item.match_losses,
-          game_wins: item.game_wins,
-          game_losses: item.game_losses,
-          sos: item.sos,
-          power_score: item.power_score,
-          champion: item.champion,
-          runner_up: item.runner_up,
-          division_name: item.division_name,
-          playoff_rank: item.playoff_rank,
-          team_name: item.teams?.name || 'Unknown Team',
-          team_logo_url: item.teams?.logo_url,
-          team_image_url: item.teams?.image_url,
-        })) as SeasonData[];
-
-        dbLog(`Season ${seasonId}: Transformed ${transformedData.length} team records`);
-        return transformedData;
-      } catch (err) {
-        errorLog(`Season ${seasonId}: Exception in query:`, err);
-        throw err;
-      }
+      const transformedData = (await SeasonService.fetchSeasonStatsForAccordion(
+        seasonId
+      )) as SeasonData[];
+      dbLog(`Season ${seasonId}: Transformed ${transformedData.length} team records`);
+      return transformedData;
     },
     enabled,
     staleTime: 0, // Always refetch - important for admin edits
