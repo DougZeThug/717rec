@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
+import { MessageReactionsService } from '@/services/messages/MessageReactionsService';
 import { MessageReaction, ReactionCount } from '@/types/reactions';
 import { errorLog } from '@/utils/logger';
 
@@ -43,17 +44,8 @@ export const useMessageReactions = (messageId: string) => {
     const fetchReactions = async () => {
       try {
         setIsLoading(true);
-
-        const { data, error } = await supabase
-          .from('message_reactions')
-          .select('id, message_id, user_id, emoji, created_at')
-          .eq('message_id', messageId);
-
-        if (error) {
-          throw error;
-        }
-
-        setReactions(data || []);
+        const data = await MessageReactionsService.fetchReactions(messageId);
+        setReactions(data);
       } catch (err) {
         errorLog('Error fetching reactions:', err);
       } finally {
@@ -127,15 +119,7 @@ export const useMessageReactions = (messageId: string) => {
         return removeReaction(existingReaction.id);
       }
 
-      const { error } = await supabase.from('message_reactions').insert({
-        message_id: messageId,
-        user_id: user.id,
-        emoji,
-      });
-
-      if (error) {
-        throw error;
-      }
+      await MessageReactionsService.addReaction(messageId, user.id, emoji);
     } catch (err) {
       errorLog('Error adding reaction:', err);
       toast({
@@ -151,15 +135,7 @@ export const useMessageReactions = (messageId: string) => {
     if (!user) return;
 
     try {
-      const { error } = await supabase
-        .from('message_reactions')
-        .delete()
-        .eq('id', reactionId)
-        .eq('user_id', user.id); // RLS ensures this is the user's reaction
-
-      if (error) {
-        throw error;
-      }
+      await MessageReactionsService.removeReaction(reactionId, user.id);
     } catch (err) {
       errorLog('Error removing reaction:', err);
       toast({

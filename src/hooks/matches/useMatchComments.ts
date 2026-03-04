@@ -3,17 +3,10 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
+import { MatchComment, MatchCommentsService } from '@/services/matches/MatchCommentsService';
 import { errorLog, warnLog } from '@/utils/logger';
 
-export interface MatchComment {
-  id: string;
-  match_id: string;
-  user_id: string;
-  username: string;
-  team_name: string | null;
-  content: string;
-  created_at: string;
-}
+export type { MatchComment };
 
 export const useMatchComments = (matchId: string) => {
   const [comments, setComments] = useState<MatchComment[]>([]);
@@ -26,18 +19,8 @@ export const useMatchComments = (matchId: string) => {
     const fetchComments = async () => {
       try {
         setIsLoading(true);
-
-        const { data, error } = await supabase
-          .from('match_comments')
-          .select('id, match_id, user_id, username, team_name, content, created_at')
-          .eq('match_id', matchId)
-          .order('created_at', { ascending: true });
-
-        if (error) {
-          throw error;
-        }
-
-        setComments(data || []);
+        const data = await MatchCommentsService.fetchComments(matchId);
+        setComments(data);
       } catch (err) {
         errorLog('Error fetching match comments:', err);
         setError('Failed to load comments');
@@ -122,21 +105,12 @@ export const useMatchComments = (matchId: string) => {
 
       const teamName = membership?.team?.name || null;
 
-      const { data, error } = await supabase
-        .from('match_comments')
-        .insert({
-          match_id: matchId,
-          user_id: user.id,
-          username,
-          team_name: teamName,
-          content: content.trim(),
-        })
-        .select('id, match_id, user_id, username, team_name, content, created_at')
-        .single();
-
-      if (error) {
-        throw error;
-      }
+      const data = await MatchCommentsService.addComment(matchId, {
+        user_id: user.id,
+        username,
+        team_name: teamName,
+        content: content.trim(),
+      });
 
       return data;
     } catch (err) {
@@ -155,16 +129,7 @@ export const useMatchComments = (matchId: string) => {
     if (!user) return false;
 
     try {
-      const { error } = await supabase
-        .from('match_comments')
-        .delete()
-        .eq('id', commentId)
-        .eq('user_id', user.id); // RLS ensures this is the user's comment
-
-      if (error) {
-        throw error;
-      }
-
+      await MatchCommentsService.deleteComment(commentId, user.id);
       setComments((curr) => curr.filter((c) => c.id !== commentId));
       return true;
     } catch (err) {

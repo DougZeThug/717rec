@@ -3,15 +3,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
+import { MatchReaction, MatchReactionsService } from '@/services/matches/MatchReactionsService';
 import { errorLog } from '@/utils/logger';
 
-export interface MatchReaction {
-  id: string;
-  match_id: string;
-  user_id: string;
-  emoji: string;
-  created_at: string;
-}
+export type { MatchReaction };
 
 export interface ReactionCount {
   emoji: string;
@@ -57,17 +52,8 @@ export const useMatchReactions = (matchId: string) => {
     const fetchReactions = async () => {
       try {
         setIsLoading(true);
-
-        const { data, error } = await supabase
-          .from('match_reactions')
-          .select('id, match_id, user_id, emoji, created_at')
-          .eq('match_id', matchId);
-
-        if (error) {
-          throw error;
-        }
-
-        setReactions(data || []);
+        const data = await MatchReactionsService.fetchReactions(matchId);
+        setReactions(data);
       } catch (err) {
         errorLog('Error fetching match reactions:', err);
       } finally {
@@ -138,26 +124,10 @@ export const useMatchReactions = (matchId: string) => {
 
       if (existingReaction) {
         // If the reaction exists, remove it (toggle behavior)
-        const { error } = await supabase
-          .from('match_reactions')
-          .delete()
-          .eq('id', existingReaction.id)
-          .eq('user_id', user.id); // RLS ensures this is the user's reaction
-
-        if (error) {
-          throw error;
-        }
+        await MatchReactionsService.deleteReaction(existingReaction.id, user.id);
       } else {
         // Add the new reaction
-        const { error } = await supabase.from('match_reactions').insert({
-          match_id: matchId,
-          user_id: user.id,
-          emoji,
-        });
-
-        if (error) {
-          throw error;
-        }
+        await MatchReactionsService.insertReaction(matchId, user.id, emoji);
       }
     } catch (err) {
       errorLog('Error toggling reaction:', err);
