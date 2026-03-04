@@ -1,25 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
-import { HeroCard, HeroCardFormData } from '@/types/heroCard';
+import { HeroCardService } from '@/services/HeroCardService';
+import { HeroCard } from '@/types/heroCard';
 
 // Hook for fetching visible hero cards (homepage)
 export const useHeroCards = () => {
   return useQuery({
     queryKey: ['hero-cards', 'visible'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('hero_cards')
-        .select(
-          'id, slug, title, subtitle, body, cta_label, cta_url, background_color, text_color, accent_color, image_url, icon_name, is_visible, sort_order, target_type, target_id, card_type, metadata, created_at, updated_at'
-        )
-        .eq('is_visible', true)
-        .order('sort_order', { ascending: true });
-
-      if (error) throw error;
-      return data as HeroCard[];
-    },
+    queryFn: HeroCardService.fetchVisibleHeroCards,
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 };
@@ -28,17 +17,7 @@ export const useHeroCards = () => {
 export const useAllHeroCards = () => {
   return useQuery({
     queryKey: ['hero-cards', 'all'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('hero_cards')
-        .select(
-          'id, slug, title, subtitle, body, cta_label, cta_url, background_color, text_color, accent_color, image_url, icon_name, is_visible, sort_order, target_type, target_id, card_type, metadata, created_at, updated_at'
-        )
-        .order('sort_order', { ascending: true });
-
-      if (error) throw error;
-      return data as HeroCard[];
-    },
+    queryFn: HeroCardService.fetchAllHeroCards,
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 };
@@ -47,19 +26,7 @@ export const useAllHeroCards = () => {
 export const useHeroCard = (id: string | null) => {
   return useQuery({
     queryKey: ['hero-cards', id],
-    queryFn: async () => {
-      if (!id) return null;
-      const { data, error } = await supabase
-        .from('hero_cards')
-        .select(
-          'id, slug, title, subtitle, body, cta_label, cta_url, background_color, text_color, accent_color, image_url, icon_name, is_visible, sort_order, target_type, target_id, card_type, metadata, created_at, updated_at'
-        )
-        .eq('id', id)
-        .single();
-
-      if (error) throw error;
-      return data as HeroCard;
-    },
+    queryFn: () => HeroCardService.fetchHeroCardById(id),
     enabled: !!id,
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
@@ -71,16 +38,8 @@ export const useHeroCardMutations = () => {
   const { toast } = useToast();
 
   const createMutation = useMutation({
-    mutationFn: async (formData: Omit<HeroCard, 'id' | 'created_at' | 'updated_at'>) => {
-      const { data, error } = await supabase
-        .from('hero_cards')
-        .insert([formData])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: (formData: Omit<HeroCard, 'id' | 'created_at' | 'updated_at'>) =>
+      HeroCardService.createHeroCard(formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hero-cards'] });
       toast({
@@ -98,17 +57,7 @@ export const useHeroCardMutations = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, ...formData }: Partial<HeroCard> & { id: string }) => {
-      const { data, error } = await supabase
-        .from('hero_cards')
-        .update({ ...formData, updated_at: new Date().toISOString() })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: (data: Partial<HeroCard> & { id: string }) => HeroCardService.updateHeroCard(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hero-cards'] });
       toast({
@@ -126,11 +75,7 @@ export const useHeroCardMutations = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from('hero_cards').delete().eq('id', id);
-
-      if (error) throw error;
-    },
+    mutationFn: (id: string) => HeroCardService.deleteHeroCard(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hero-cards'] });
       toast({
@@ -148,14 +93,8 @@ export const useHeroCardMutations = () => {
   });
 
   const toggleVisibilityMutation = useMutation({
-    mutationFn: async ({ id, is_visible }: { id: string; is_visible: boolean }) => {
-      const { error } = await supabase
-        .from('hero_cards')
-        .update({ is_visible, updated_at: new Date().toISOString() })
-        .eq('id', id);
-
-      if (error) throw error;
-    },
+    mutationFn: (data: { id: string; is_visible: boolean }) =>
+      HeroCardService.toggleHeroCardVisibility(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hero-cards'] });
       toast({
