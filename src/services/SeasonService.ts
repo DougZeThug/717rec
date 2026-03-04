@@ -1,4 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
+import { BusinessLogicError } from '@/types/errors';
+import { handleDatabaseError } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 // ─── Types (re-exported so hooks can import from here) ───────────────────────
@@ -39,8 +41,7 @@ export const SeasonService = {
       .order('created_at', { ascending: false });
 
     if (error) {
-      errorLog('Error fetching seasons:', error);
-      throw error;
+      handleDatabaseError(error, 'Failed to fetch seasons');
     }
 
     return data;
@@ -57,15 +58,14 @@ export const SeasonService = {
       .eq('is_active', true);
 
     if (error) {
-      errorLog('Error fetching active season:', error);
-      throw error;
+      handleDatabaseError(error, 'Failed to fetch active season');
     }
 
     // Validate we have at most one active season
     if (activeSeasons && activeSeasons.length > 1) {
       const errorMsg = `Data integrity violation: ${activeSeasons.length} active seasons found. Only one season can be active at a time.`;
       errorLog(errorMsg, { seasonIds: activeSeasons.map((s) => s.id) });
-      throw new Error(errorMsg);
+      throw new BusinessLogicError(errorMsg);
     }
 
     // Return the single active season or null if none exists
@@ -85,8 +85,7 @@ export const SeasonService = {
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      errorLog('Error fetching confirmation season:', error);
-      throw error;
+      handleDatabaseError(error, 'Failed to fetch confirmation season');
     }
 
     return data;
@@ -102,8 +101,7 @@ export const SeasonService = {
       .maybeSingle();
 
     if (error) {
-      errorLog('Error fetching participation:', error);
-      throw error;
+      handleDatabaseError(error, 'Failed to fetch team participation');
     }
 
     return data as SeasonParticipation | null;
@@ -117,8 +115,7 @@ export const SeasonService = {
       .eq('season_id', seasonId);
 
     if (error) {
-      errorLog('Error fetching participations:', error);
-      throw error;
+      handleDatabaseError(error, 'Failed to fetch season participations');
     }
 
     return data as SeasonParticipation[];
@@ -158,7 +155,7 @@ export const SeasonService = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) handleDatabaseError(error, 'Failed to submit participation');
     return data;
   },
 
@@ -169,7 +166,7 @@ export const SeasonService = {
       .select('season_id')
       .order('season_id');
 
-    if (error) throw error;
+    if (error) handleDatabaseError(error, 'Failed to fetch season stat IDs');
 
     // Process the data to get unique season_ids
     const seasonIds = data.map((item) => item.season_id);
@@ -198,7 +195,7 @@ export const SeasonService = {
       .eq('season_id', seasonId)
       .order('power_score', { ascending: false });
 
-    if (error) throw error;
+    if (error) handleDatabaseError(error, 'Failed to fetch stats by season');
 
     return data.map((stat) => ({
       ...stat,
@@ -214,8 +211,7 @@ export const SeasonService = {
       .order('start_date', { ascending: false });
 
     if (error) {
-      errorLog('Error fetching seasons:', error);
-      throw error;
+      handleDatabaseError(error, 'Failed to fetch historical seasons');
     }
 
     return data || [];
@@ -251,8 +247,7 @@ export const SeasonService = {
       .order('playoff_rank', { ascending: true, nullsFirst: false });
 
     if (error) {
-      errorLog(`Season ${seasonId}: Database error:`, error);
-      throw error;
+      handleDatabaseError(error, 'Failed to fetch season stats');
     }
 
     // Transform the data structure
@@ -285,7 +280,7 @@ export const SeasonService = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) handleDatabaseError(error, 'Failed to create season');
     return season;
   },
 
@@ -297,7 +292,7 @@ export const SeasonService = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) handleDatabaseError(error, 'Failed to update season');
     return season;
   },
 
@@ -307,7 +302,7 @@ export const SeasonService = {
       season_id: seasonId,
     });
 
-    if (error) throw error;
+    if (error) handleDatabaseError(error, 'Failed to activate season');
     return season;
   },
 
@@ -319,7 +314,7 @@ export const SeasonService = {
       p_third_place_team_id: null,
     });
 
-    if (error) throw error;
+    if (error) handleDatabaseError(error, 'Failed to archive season');
     return season;
   },
 };
