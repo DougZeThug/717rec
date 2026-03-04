@@ -1,28 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
+import { BlindDrawService } from '@/services/BlindDrawService';
 import { errorLog } from '@/utils/logger';
 
-export interface BlindDrawSettings {
-  id: string;
-  signup_confirmation_message: string;
-  created_at: string;
-  updated_at: string;
-}
+export type { BlindDrawSettings } from '@/services/BlindDrawService';
 
 export const useBlindDrawSettings = () => {
   return useQuery({
     queryKey: ['blind-draw-settings'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('blind_draw_settings')
-        .select('id, signup_confirmation_message, created_at, updated_at')
-        .limit(1)
-        .single();
-      if (error) throw error;
-      return data as BlindDrawSettings;
-    },
+    queryFn: BlindDrawService.fetchBlindDrawSettings,
     staleTime: 1000 * 60 * 5,
   });
 };
@@ -32,13 +19,7 @@ export const useUpdateBlindDrawSettings = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, message }: { id: string; message: string }) => {
-      const { error } = await supabase
-        .from('blind_draw_settings')
-        .update({ signup_confirmation_message: message })
-        .eq('id', id);
-      if (error) throw error;
-    },
+    mutationFn: BlindDrawService.updateBlindDrawSettings,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blind-draw-settings'] });
       toast({ title: 'Saved', description: 'Confirmation message updated' });
