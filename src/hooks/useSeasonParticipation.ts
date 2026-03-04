@@ -1,44 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
-import { errorLog } from '@/utils/logger';
+import {
+  SeasonParticipation,
+  SeasonService,
+  ParticipationStatus,
+} from '@/services/SeasonService';
 
-import { useActiveSeason } from './useSeasons';
-
-export type ParticipationStatus = 'PLAYING' | 'NOT_PLAYING';
-
-export interface SeasonParticipation {
-  id: string;
-  season_id: string;
-  team_id: string;
-  status: ParticipationStatus;
-  submitted_by: string | null;
-  submitted_by_name: string | null;
-  created_at: string;
-  updated_at: string;
-}
+export type { ParticipationStatus, SeasonParticipation };
 
 // Get the confirmation season (active season with confirmation_open = true)
 export const useConfirmationSeason = () => {
   return useQuery({
     queryKey: ['seasons', 'confirmation'],
-    queryFn: async () => {
-      // First try to find an active season with confirmation open
-      const { data, error } = await supabase
-        .from('seasons')
-        .select('id, name, is_active, is_archived, start_date, end_date, created_at, champion_team_id, runner_up_team_id, confirmation_open')
-        .eq('is_active', true)
-        .eq('confirmation_open', true)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        errorLog('Error fetching confirmation season:', error);
-        throw error;
-      }
-
-      return data;
-    },
+    queryFn: SeasonService.fetchConfirmationSeason,
   });
 };
 
@@ -48,20 +23,7 @@ export const useTeamParticipation = (seasonId: string | undefined, teamId: strin
     queryKey: ['season-participation', seasonId, teamId],
     queryFn: async () => {
       if (!seasonId || !teamId) return null;
-
-      const { data, error } = await supabase
-        .from('season_team_participation')
-        .select('id, season_id, team_id, status, submitted_by, submitted_by_name, created_at, updated_at')
-        .eq('season_id', seasonId)
-        .eq('team_id', teamId)
-        .maybeSingle();
-
-      if (error) {
-        errorLog('Error fetching participation:', error);
-        throw error;
-      }
-
-      return data as SeasonParticipation | null;
+      return SeasonService.fetchTeamParticipation(seasonId, teamId);
     },
     enabled: !!seasonId && !!teamId,
   });
@@ -73,18 +35,7 @@ export const useSeasonParticipations = (seasonId: string | undefined) => {
     queryKey: ['season-participations', seasonId],
     queryFn: async () => {
       if (!seasonId) return [];
-
-      const { data, error } = await supabase
-        .from('season_team_participation')
-        .select('id, season_id, team_id, status, submitted_by, submitted_by_name, created_at, updated_at')
-        .eq('season_id', seasonId);
-
-      if (error) {
-        errorLog('Error fetching participations:', error);
-        throw error;
-      }
-
-      return data as SeasonParticipation[];
+      return SeasonService.fetchSeasonParticipations(seasonId);
     },
     enabled: !!seasonId,
   });
@@ -96,42 +47,7 @@ export const useSubmitParticipation = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({
-      seasonId,
-      teamId,
-      status,
-      submittedByName,
-    }: {
-      seasonId: string;
-      teamId: string;
-      status: ParticipationStatus;
-      submittedByName?: string;
-    }) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      const { data, error } = await supabase
-        .from('season_team_participation')
-        .upsert(
-          {
-            season_id: seasonId,
-            team_id: teamId,
-            status,
-            submitted_by: user?.id ?? null,
-            submitted_by_name: submittedByName ?? null,
-            updated_at: new Date().toISOString(),
-          },
-          {
-            onConflict: 'season_id,team_id',
-          }
-        )
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: SeasonService.submitParticipation,
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: ['season-participation', variables.seasonId, variables.teamId],
@@ -151,3 +67,4 @@ export const useSubmitParticipation = () => {
     },
   });
 };
+

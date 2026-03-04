@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { toast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
+import { SeasonService } from '@/services/SeasonService';
 import { errorLog } from '@/utils/logger';
 
 export interface SeasonStat {
@@ -25,17 +25,7 @@ export function useSeasonStats() {
   const fetchSeasons = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('team_season_stats')
-        .select('season_id')
-        .order('season_id');
-
-      if (error) throw error;
-
-      // Process the data to get unique season_ids
-      const seasonIds = data.map((item) => item.season_id);
-      const uniqueSeasons = [...new Set(seasonIds)];
-
+      const uniqueSeasons = await SeasonService.fetchSeasonStatIds();
       setSeasons(uniqueSeasons);
       return uniqueSeasons;
     } catch (error) {
@@ -54,34 +44,9 @@ export function useSeasonStats() {
   const fetchStatsBySeason = async (seasonId: string) => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('team_season_stats')
-        .select(
-          `
-          season_id,
-          team_id,
-          match_wins,
-          match_losses,
-          game_wins,
-          game_losses,
-          power_score,
-          sos,
-          recorded_at,
-          teams:team_id (name)
-        `
-        )
-        .eq('season_id', seasonId)
-        .order('power_score', { ascending: false });
-
-      if (error) throw error;
-
-      const statsWithTeamNames = data.map((stat) => ({
-        ...stat,
-        team_name: stat.teams?.name,
-      }));
-
-      setSeasonStats(statsWithTeamNames);
-      return statsWithTeamNames;
+      const statsWithTeamNames = await SeasonService.fetchStatsBySeason(seasonId);
+      setSeasonStats(statsWithTeamNames as SeasonStat[]);
+      return statsWithTeamNames as SeasonStat[];
     } catch (error) {
       errorLog('Error fetching season stats:', error);
       toast({

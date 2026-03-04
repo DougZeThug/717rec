@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import WinterSection from '@/components/winter/WinterSection';
 import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
+import { SeasonService } from '@/services/SeasonService';
 import { dbLog, errorLog } from '@/utils/logger';
 
 import SeasonAccordion from './SeasonAccordion';
@@ -49,24 +49,10 @@ const HistoryPageContent: React.FC = () => {
     try {
       dbLog('Fetching historical seasons...');
 
-      // Fetch all seasons
-      const { data: seasonsData, error: seasonsError } = await supabase
-        .from('seasons')
-        .select('id, name, start_date, end_date, is_active')
-        .order('start_date', { ascending: false });
-
-      if (seasonsError) {
-        errorLog('Error fetching seasons:', seasonsError);
-        toast({
-          title: 'Error',
-          description: 'Failed to fetch seasons data',
-          variant: 'destructive',
-        });
-        return;
-      }
+      const seasonsData = await SeasonService.fetchHistoricalSeasons();
 
       dbLog('Seasons fetched:', seasonsData);
-      setSeasons(seasonsData || []);
+      setSeasons(seasonsData);
     } catch (error) {
       errorLog('Unexpected error fetching historical data:', error);
       toast({
