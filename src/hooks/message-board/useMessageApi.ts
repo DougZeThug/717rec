@@ -3,7 +3,7 @@ import { useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/useToast';
 import { useTeamMembership } from '@/hooks/useTeamMembership';
-import { supabase } from '@/integrations/supabase/client';
+import { MessageService } from '@/services/messages/MessageService';
 import { Message, MessageCategory } from '@/types/reactions';
 
 import { MessageQueryOptions } from './types';
@@ -16,14 +16,6 @@ export const useMessageApi = () => {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchMessages = useCallback(async (options: MessageQueryOptions = {}) => {
-    const {
-      limit = 10,
-      olderThan = null,
-      category = null,
-      teamId = null,
-      searchQuery = null,
-    } = options;
-
     // Cancel any in-flight request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -33,45 +25,7 @@ export const useMessageApi = () => {
     abortControllerRef.current = new AbortController();
 
     try {
-      // Create a query builder without method chaining initially
-      let query = supabase
-        .from('messages')
-        .select('id, content, created_at, username, team_name, user_id, team_id, category, updated_at, is_edited')
-        .abortSignal(abortControllerRef.current.signal);
-
-      // Apply sorting
-      query = query.order('created_at', { ascending: false });
-
-      // Apply limit
-      query = query.limit(limit);
-
-      // Apply filters conditionally
-      if (olderThan) {
-        query = query.lt('created_at', olderThan);
-      }
-
-      if (category) {
-        query = query.eq('category', category);
-      } else {
-        query = query.neq('category', 'admin_notification');
-      }
-
-      if (teamId) {
-        query = query.eq('team_id', teamId);
-      }
-
-      if (searchQuery) {
-        query = query.ilike('content', `%${searchQuery}%`);
-      }
-
-      // Execute the query
-      const { data, error } = await query;
-
-      if (error) {
-        throw new Error(`Failed to fetch messages: ${error.message}`);
-      }
-
-      return data as Message[];
+      return await MessageService.fetchMessages(options, abortControllerRef.current.signal);
     } catch (err: unknown) {
       // Ignore abort errors - these are intentional cancellations
       if (err instanceof Error && (err.name === 'AbortError' || err.message?.includes('aborted'))) {
@@ -100,15 +54,15 @@ export const useMessageApi = () => {
       team_name: membership?.team?.name || null,
     };
 
-    const { error } = await supabase.from('messages').insert(newMessage);
-
-    if (error) {
+    try {
+      await MessageService.createMessage(newMessage);
+    } catch {
       toast({
         title: 'Error posting message',
         description: 'Your message could not be posted. Please try again.',
         variant: 'destructive',
       });
-      throw new Error(`Failed to create message: ${error.message}`);
+      throw new Error('Failed to create message');
     }
   };
 
@@ -132,19 +86,15 @@ export const useMessageApi = () => {
       throw new Error('Message content cannot be empty');
     }
 
-    const { error } = await supabase
-      .from('messages')
-      .update({ content })
-      .eq('id', messageId)
-      .eq('user_id', user.id);
-
-    if (error) {
+    try {
+      await MessageService.updateMessage(messageId, user.id, content);
+    } catch {
       toast({
         title: 'Error updating message',
         description: 'Your message could not be updated. Please try again.',
         variant: 'destructive',
       });
-      throw new Error(`Failed to update message: ${error.message}`);
+      throw new Error('Failed to update message');
     }
 
     toast({
@@ -165,19 +115,15 @@ export const useMessageApi = () => {
       throw new Error('User not authenticated');
     }
 
-    const { error } = await supabase
-      .from('messages')
-      .delete()
-      .eq('id', messageId)
-      .eq('user_id', user.id);
-
-    if (error) {
+    try {
+      await MessageService.deleteMessage(messageId, user.id);
+    } catch {
       toast({
         title: 'Error deleting message',
         description: 'Your message could not be deleted. Please try again.',
         variant: 'destructive',
       });
-      throw new Error(`Failed to delete message: ${error.message}`);
+      throw new Error('Failed to delete message');
     }
 
     toast({

@@ -1,12 +1,6 @@
 import { Message, MessageCategory } from '@/types/reactions';
 
-export interface MessageQueryOptions {
-  limit?: number;
-  olderThan?: string | null;
-  category?: MessageCategory | null;
-  teamId?: string | null;
-  searchQuery?: string | null;
-}
+export type { MessageQueryOptions } from '@/services/messages/MessageService';
 
 export interface UseMessageBoardResult {
   messages: Message[];
