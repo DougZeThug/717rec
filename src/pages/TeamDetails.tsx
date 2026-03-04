@@ -37,8 +37,9 @@ const TeamDetails = () => {
   const { pastMatches, isLoadingMatches } = useTeamMatches(teamId);
   const { rankings } = useTeamRankings();
 
-  const teamRanking = rankings?.find((r) => r.teamId === teamId);
-  const teamRank = teamRanking ? rankings.findIndex((r) => r.teamId === teamId) + 1 : undefined;
+  const teamRankIndex = rankings?.findIndex((r) => r.teamId === teamId) ?? -1;
+  const teamRank = teamRankIndex >= 0 ? teamRankIndex + 1 : undefined;
+  const teamRanking = teamRankIndex >= 0 ? rankings![teamRankIndex] : undefined;
   const totalTeams = rankings?.length;
 
   // Custom breadcrumbs with team name (must be before early returns to maintain hook order)
@@ -124,7 +125,7 @@ const TeamDetails = () => {
             variant="ghost"
             size="sm"
             className="min-h-11 px-3"
-            onClick={() => navigate(-1)}
+            onClick={handleBack}
             aria-label="Go back to previous page"
           >
             <ArrowLeft size={16} className="mr-1" aria-hidden="true" />
@@ -141,7 +142,7 @@ const TeamDetails = () => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate(-1)}
+          onClick={handleBack}
           className="hidden md:inline-flex items-center gap-1 text-muted-foreground hover:text-foreground mb-4"
         >
           <ArrowLeft className="h-4 w-4" />
