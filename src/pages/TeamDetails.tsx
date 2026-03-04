@@ -108,15 +108,6 @@ const TeamDetails = () => {
   const sweepStats = calculateSweepRate(teamId || '', pastMatches);
   const clutchRecord = calculateClutchRecord(teamId || '', pastMatches);
 
-  // Custom breadcrumbs with team name
-  const breadcrumbs = useMemo(
-    () => [
-      { label: 'Home', href: '/' },
-      { label: 'Teams', href: '/teams' },
-      { label: team.name },
-    ],
-    [team.name]
-  );
 
   return (
     <>
