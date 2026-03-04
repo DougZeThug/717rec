@@ -41,6 +41,16 @@ const TeamDetails = () => {
   const teamRank = teamRanking ? rankings.findIndex((r) => r.teamId === teamId) + 1 : undefined;
   const totalTeams = rankings?.length;
 
+  // Custom breadcrumbs with team name (must be before early returns to maintain hook order)
+  const breadcrumbs = useMemo(
+    () => [
+      { label: 'Home', href: '/' },
+      { label: 'Teams', href: '/teams' },
+      { label: team?.name || 'Loading...' },
+    ],
+    [team?.name]
+  );
+
   teamLog(
     'TeamDetails rendering with team data:',
     team
@@ -98,15 +108,6 @@ const TeamDetails = () => {
   const sweepStats = calculateSweepRate(teamId || '', pastMatches);
   const clutchRecord = calculateClutchRecord(teamId || '', pastMatches);
 
-  // Custom breadcrumbs with team name
-  const breadcrumbs = useMemo(
-    () => [
-      { label: 'Home', href: '/' },
-      { label: 'Teams', href: '/teams' },
-      { label: team.name },
-    ],
-    [team.name]
-  );
 
   return (
     <>

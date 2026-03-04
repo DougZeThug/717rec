@@ -1,17 +1,35 @@
 
 
-## Fix: React Error #310 on Team Details Page
+## Add Sentry Metrics to the App
 
-### Root Cause
-In `src/pages/TeamDetails.tsx`, the `useMemo` for breadcrumbs (line ~101) is placed **after** the early returns for loading/not-found states. When the page first renders in a loading state, React sees 7 hooks. Once data loads, it sees 8 hooks (the extra `useMemo`). React requires the same number of hooks on every render — this mismatch causes error #310.
+Sentry metrics are automatically enabled with `Sentry.init()` — no config changes needed. The work is deciding **where** to emit metrics that provide actionable insight.
 
-### Fix
-Move the `useMemo` for breadcrumbs **above** the early return statements, alongside the other hooks. It can safely reference `team?.name` with a fallback since it will re-compute when `team` becomes available.
+### What to Add
 
-**`src/pages/TeamDetails.tsx`**:
-- Move `const breadcrumbs = useMemo(...)` to right after the other hooks (after the `teamLog` call, before the `handleBack` function)
-- Change the dependency from `team.name` to `team?.name` with a fallback like `'Loading...'`
-- Remove the original `useMemo` from its current location below the early returns
+**`src/utils/sentry.ts`** — Export a thin metrics helper:
 
-One file, ~3 lines moved.
+```typescript
+export const metrics = {
+  count: (name: string, value?: number, tags?: Record<string, string>) => 
+    Sentry.metrics.count(name, value ?? 1, { tags }),
+  gauge: (name: string, value: number, tags?: Record<string, string>) => 
+    Sentry.metrics.gauge(name, value, { tags }),
+  distribution: (name: string, value: number, tags?: Record<string, string>) => 
+    Sentry.metrics.distribution(name, value, { tags }),
+};
+```
+
+**Instrument key user flows** (lightweight, ~1 line each):
+
+| Metric | Type | Location | Purpose |
+|---|---|---|---|
+| `page_view` | count | `AppContent` (existing `useEffect`) | Track page views with route tag |
+| `query_error` | count | `QueryClient.onError` callback | Count failed API queries |
+| `page_load_time` | distribution | `AppContent` via `performance.now()` | Measure route transition speed |
+
+### Files Changed
+- `src/utils/sentry.ts` — add metrics export (~10 lines)
+- `src/App.tsx` — add 3 metric calls in existing hooks/config
+
+No new dependencies. Metrics only fire in production (guarded by existing `import.meta.env.PROD` checks in the Sentry client).
 
