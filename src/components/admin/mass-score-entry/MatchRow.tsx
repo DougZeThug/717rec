@@ -33,6 +33,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
   onGameWinsChange,
   onMarkCompleted,
   onClearError,
+  onDelete,
 }) => {
   // Use match state for optimistic updates, fallback to props
   const isSubmitting = match.isSubmitting || propIsSubmitting;
