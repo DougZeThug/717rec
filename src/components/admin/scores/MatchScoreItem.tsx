@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { DestructiveIconButton } from '@/components/ui/destructive-icon-button';
 import { Input } from '@/components/ui/input';
 import { validateGameScore } from '@/hooks/matches/utils/matchValidationUtils';
 import { Match, Team } from '@/types';
