@@ -27,6 +27,7 @@ const MatchScoresList = ({
   onToggleItem,
   onScoreChange,
   onSubmitScore,
+  onDeleteMatch,
 }: MatchScoresListProps) => {
   if (matches.length === 0) {
     return <div className="p-4 bg-slate-50 rounded-md">All matches have scores submitted.</div>;
