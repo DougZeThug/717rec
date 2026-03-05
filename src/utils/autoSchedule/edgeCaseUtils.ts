@@ -75,8 +75,8 @@ export function validateTeamCounts(timeBlockTeams: TimeBlockTeamsMap): {
     const teamCount = teams?.length || 0;
     totalTeams += teamCount;
 
-    // For back-to-back pairs, minimum is 4 teams (2 matches)
-    if (teamCount > 0 && teamCount < 4) {
+    // Minimum is 2 teams to form at least one match
+    if (teamCount < 2) {
       insufficientBlocks.push(pairName);
     }
 

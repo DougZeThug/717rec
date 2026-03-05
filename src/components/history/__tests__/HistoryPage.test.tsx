@@ -55,7 +55,7 @@ describe('HistoryPage', () => {
     );
 
     // Check that the loading state appears initially
-    expect(screen.getByText('Loading season history...')).toBeInTheDocument();
+    expect(screen.getByText('Loading historical data...')).toBeInTheDocument();
   });
 
   it('displays champion badge when team is champion', () => {
