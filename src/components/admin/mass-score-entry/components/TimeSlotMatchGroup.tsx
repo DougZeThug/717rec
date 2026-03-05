@@ -20,6 +20,7 @@ interface TimeSlotMatchGroupProps {
   errorMessages?: Record<string, string>;
   onClearError?: (matchId: string) => void;
   defaultOpen?: boolean;
+  onDeleteMatch?: (matchId: string) => void;
 }
 
 const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
