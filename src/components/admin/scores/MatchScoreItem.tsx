@@ -30,6 +30,7 @@ const MatchScoreItem = ({
   onToggle,
   onScoreChange,
   onSubmitScore,
+  onDelete,
 }: MatchScoreItemProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [team1GameWins, setTeam1GameWins] = React.useState(
