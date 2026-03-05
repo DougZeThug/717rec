@@ -1,8 +1,14 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ClipboardCheck } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
 
+import DeleteMatchDialog from '@/components/schedule/DeleteMatchDialog';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { reverseTeamStats } from '@/hooks/matches/updates/utils/statReversalUtils';
+import { useToast } from '@/hooks/useToast';
+import { deleteMatch, upsertTeamSeasonStats } from '@/services/matches/MatchWriteService';
+import { errorLog } from '@/utils/logger';
 
 import AdminSectionWrapper from './AdminSectionWrapper';
 import ErrorAlert from './mass-score-entry/components/ErrorAlert';
