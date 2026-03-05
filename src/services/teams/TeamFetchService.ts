@@ -254,26 +254,7 @@ export const fetchTeamDetails = async (teamId: string): Promise<Team> => {
     game_win_percentage: data.game_win_percentage,
   });
 
-  return {
-    id: data.team_id,
-    name: data.name,
-    logoUrl: data.image_url || data.logo_url,
-    imageUrl: data.image_url || data.logo_url,
-    wins: data.wins || 0,
-    losses: data.losses || 0,
-    game_wins: data.game_wins || 0,
-    game_losses: data.game_losses || 0,
-    division: data.division_id,
-    divisionName: data.divisionname || null,
-    // Use the database-calculated values with the weighted algorithm
-    sos: typeof data.sos === 'number' ? data.sos : 0.5,
-    power_score: typeof data.power_score === 'number' ? data.power_score : 0,
-    win_percentage: data.win_percentage || 0,
-    game_win_percentage: data.game_win_percentage || 0,
-    players: Array.isArray(data.players) ? data.players : [],
-    created_at: data.created_at || new Date().toISOString(),
-    close_match_losses: data.close_match_losses,
-  } as Team;
+  return transformTeamRow(data as TeamRowData);
 };
 
 // ─── fetchTeamAnalysis / upsertTeamAnalysis ───────────────────────────────────

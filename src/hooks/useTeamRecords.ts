@@ -70,7 +70,6 @@ export const useTeamRecords = () => {
       const statsSuccess = await updateTeamStatsRecord(
         winnerId,
         loserId,
-        teams,
         winnerGameWins,
         loserGameWins
       );
