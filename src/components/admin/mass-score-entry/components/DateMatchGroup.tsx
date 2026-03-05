@@ -35,6 +35,7 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
   failedMatches,
   errorMessages,
   onClearError,
+  onDeleteMatch,
 }) => {
   const [isOpen, setIsOpen] = useState(defaultExpanded);
   const formattedDate = format(date, 'EEEE, MMMM d, yyyy');
