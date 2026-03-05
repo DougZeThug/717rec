@@ -4,12 +4,12 @@ import { useState } from 'react';
 import { applyMatchResult } from '@/hooks/team-stats/utils/teamRecordUtils';
 import { useToast } from '@/hooks/useToast';
 import {
+  fetchMatchForTie,
   fetchPendingMatches,
   fetchTeamsMap,
 } from '@/services/matches/MatchReadService';
 import {
   approveMatch,
-  fetchMatchForTie,
   reverseTeamStats,
   setMatchAsTie,
   upsertTeamSeasonStats,

@@ -1,8 +1,9 @@
-import { AlertCircle, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
+import { AlertCircle, ChevronDown, ChevronRight, Loader2, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { DestructiveIconButton } from '@/components/ui/destructive-icon-button';
 import { Input } from '@/components/ui/input';
 import { validateGameScore } from '@/hooks/matches/utils/matchValidationUtils';
 import { Match, Team } from '@/types';
@@ -17,6 +18,7 @@ interface MatchScoreItemProps {
   onToggle: () => void;
   onScoreChange: (team: 'team1Score' | 'team2Score', value: string) => void;
   onSubmitScore: (team1GameWins: number, team2GameWins: number) => Promise<boolean>;
+  onDelete?: (matchId: string) => void;
 }
 
 const MatchScoreItem = ({
@@ -28,6 +30,7 @@ const MatchScoreItem = ({
   onToggle,
   onScoreChange,
   onSubmitScore,
+  onDelete,
 }: MatchScoreItemProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [team1GameWins, setTeam1GameWins] = React.useState(
@@ -120,8 +123,19 @@ const MatchScoreItem = ({
             <span>{teams[match.team2Id]?.name || 'Team 2'}</span>
           </div>
         </div>
-        <div className="text-sm text-muted-foreground">
-          {new Date(match.date || '').toLocaleDateString()}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">
+            {new Date(match.date || '').toLocaleDateString()}
+          </span>
+          {onDelete && (
+            <div onClick={(e) => e.stopPropagation()}>
+              <DestructiveIconButton
+                onClick={() => onDelete(match.id)}
+                title="Delete match"
+                icon={<Trash2 className="h-4 w-4 text-destructive" />}
+              />
+            </div>
+          )}
         </div>
       </CollapsibleTrigger>
 

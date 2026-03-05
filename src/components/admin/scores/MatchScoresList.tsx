@@ -16,6 +16,7 @@ interface MatchScoresListProps {
     team1GameWins: number,
     team2GameWins: number
   ) => Promise<boolean>;
+  onDeleteMatch?: (matchId: string) => void;
 }
 
 const MatchScoresList = ({
@@ -26,6 +27,7 @@ const MatchScoresList = ({
   onToggleItem,
   onScoreChange,
   onSubmitScore,
+  onDeleteMatch,
 }: MatchScoresListProps) => {
   if (matches.length === 0) {
     return <div className="p-4 bg-slate-50 rounded-md">All matches have scores submitted.</div>;
@@ -46,6 +48,7 @@ const MatchScoresList = ({
           onSubmitScore={(team1GameWins, team2GameWins) => {
             return onSubmitScore(match.id, team1GameWins, team2GameWins);
           }}
+          onDelete={onDeleteMatch}
         />
       ))}
     </div>
