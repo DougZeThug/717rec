@@ -123,8 +123,20 @@ const MatchScoreItem = ({
             <span>{teams[match.team2Id]?.name || 'Team 2'}</span>
           </div>
         </div>
-        <div className="text-sm text-muted-foreground">
-          {new Date(match.date || '').toLocaleDateString()}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">
+            {new Date(match.date || '').toLocaleDateString()}
+          </span>
+          {onDelete && (
+            <DestructiveIconButton
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(match.id);
+              }}
+              title="Delete match"
+              icon={<Trash2 className="h-4 w-4 text-destructive" />}
+            />
+          )}
         </div>
       </CollapsibleTrigger>
 
