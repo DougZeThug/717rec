@@ -18,6 +18,11 @@ import { useScoreEntryData } from './mass-score-entry/hooks/useScoreEntryData';
 import MatchesTable from './mass-score-entry/MatchesTable';
 
 const MassScoreEntryTool: React.FC = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [deleteMatchId, setDeleteMatchId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const {
     matches,
     loading,
@@ -35,6 +40,38 @@ const MassScoreEntryTool: React.FC = () => {
     setBracketFilter,
     clearFilters,
   } = useScoreEntryData();
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteMatchId) return;
+    setIsDeleting(true);
+    try {
+      const matchToDelete = matches.find((m) => m.id === deleteMatchId);
+
+      if (matchToDelete?.iscompleted && matchToDelete.winner_id && matchToDelete.loser_id) {
+        const winnerGameWins = matchToDelete.winner_id === matchToDelete.team1Id
+          ? matchToDelete.team1_game_wins || 0
+          : matchToDelete.team2_game_wins || 0;
+        const loserGameWins = matchToDelete.winner_id === matchToDelete.team1Id
+          ? matchToDelete.team2_game_wins || 0
+          : matchToDelete.team1_game_wins || 0;
+
+        await reverseTeamStats(matchToDelete.winner_id, matchToDelete.loser_id, winnerGameWins, loserGameWins);
+      }
+
+      await deleteMatch(deleteMatchId);
+      await upsertTeamSeasonStats();
+
+      toast({ title: 'Match deleted', description: 'The match has been removed successfully.' });
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
+      queryClient.invalidateQueries({ queryKey: ['mass-score-entry'] });
+    } catch (error) {
+      errorLog('Failed to delete match:', error);
+      toast({ title: 'Error', description: 'Failed to delete match. Please try again.', variant: 'destructive' });
+    } finally {
+      setIsDeleting(false);
+      setDeleteMatchId(null);
+    }
+  };
 
   // Count edited matches that are valid
   const validEditedMatchesCount = matches.filter((m) => m.isEdited && m.isValid).length;
