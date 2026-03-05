@@ -16,6 +16,7 @@ interface MatchScoresListProps {
     team1GameWins: number,
     team2GameWins: number
   ) => Promise<boolean>;
+  onDeleteMatch?: (matchId: string) => void;
 }
 
 const MatchScoresList = ({
