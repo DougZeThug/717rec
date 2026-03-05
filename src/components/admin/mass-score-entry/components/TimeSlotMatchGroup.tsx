@@ -34,6 +34,7 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
   errorMessages = {},
   onClearError,
   defaultOpen = false,
+  onDeleteMatch,
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
