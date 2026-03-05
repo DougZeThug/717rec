@@ -369,18 +369,18 @@ export const submitTeamRequest = async (request: {
   reason?: string;
   submitted_by_name?: string;
 }) => {
-  // Get current season
-  const { data: season } = await supabase
-    .from('seasons')
-    .select('id')
-    .eq('is_active', true)
-    .single();
+  // Get current user and season in parallel
+  const [{ data: { user } }, { data: season }] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from('seasons').select('id').eq('is_active', true).single(),
+  ]);
 
   const { data, error } = await supabase
     .from('team_requests')
     .insert({
       ...request,
       season_id: season?.id,
+      submitted_by: user?.id ?? null,
       status: 'PENDING',
     })
     .select()
