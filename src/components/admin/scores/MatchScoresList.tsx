@@ -48,6 +48,7 @@ const MatchScoresList = ({
           onSubmitScore={(team1GameWins, team2GameWins) => {
             return onSubmitScore(match.id, team1GameWins, team2GameWins);
           }}
+          onDelete={onDeleteMatch}
         />
       ))}
     </div>
