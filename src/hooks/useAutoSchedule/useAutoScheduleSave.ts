@@ -3,7 +3,10 @@ import { useState } from 'react';
 
 import { createDateWithTime } from '@/components/schedule/form-utils';
 import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  fetchActiveSeasonIdOptional,
+  saveAutoScheduleMatches,
+} from '@/services/matches/MatchWriteService';
 import { AutoScheduleMatch } from '@/types/autoSchedule';
 import { errorLog, scheduleLog } from '@/utils/logger';
 
@@ -37,14 +40,7 @@ export function useAutoScheduleSave() {
 
       // Fallback: fetch active season if not provided (backwards compatibility)
       if (!activeSeasonId) {
-        const { data: activeSeason, error: seasonError } = await supabase
-          .from('seasons')
-          .select('id')
-          .eq('is_active', true)
-          .maybeSingle();
-
-        if (seasonError) throw seasonError;
-        activeSeasonId = activeSeason?.id;
+        activeSeasonId = await fetchActiveSeasonIdOptional();
       }
 
       // Validate matches based on mode
@@ -170,9 +166,7 @@ export function useAutoScheduleSave() {
       scheduleLog('Saving auto-generated matches to Supabase:', matchesToInsert);
 
       // Insert matches
-      const { data, error } = await supabase.from('matches').insert(matchesToInsert).select();
-
-      if (error) throw error;
+      const data = await saveAutoScheduleMatches(matchesToInsert);
 
       scheduleLog('Successfully saved matches:', data);
 

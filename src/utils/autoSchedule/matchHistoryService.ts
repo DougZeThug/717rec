@@ -1,4 +1,8 @@
-import { supabase } from '@/integrations/supabase/client';
+import {
+  countTeamMatchesInSeason,
+  fetchActiveSeasonIdStrict,
+  fetchMatchPairsInSeason,
+} from '@/services/matches/MatchReadService';
 import { dbLog, errorLog, scheduleLog } from '@/utils/logger';
 
 /**
@@ -13,34 +17,19 @@ export async function haveTeamsPlayedBefore(team1Id: string, team2Id: string): P
     dbLog(`Checking match history between teams: ${team1Id} and ${team2Id}`);
 
     // Get active season
-    const { data: seasonData, error: seasonError } = await supabase
-      .from('seasons')
-      .select('id')
-      .eq('is_active', true)
-      .single();
-
-    if (seasonError || !seasonData) {
+    let seasonId: string;
+    try {
+      seasonId = await fetchActiveSeasonIdStrict();
+    } catch (seasonError) {
       errorLog('Error fetching active season:', seasonError);
       return false; // If no active season, can't determine history
     }
 
     // Check if these two teams have played each other THIS SEASON
     // Either team1_id=A AND team2_id=B OR team1_id=B AND team2_id=A
-    const { count, error } = await supabase
-      .from('matches')
-      .select('id', { count: 'exact', head: true })
-      .or(
-        `and(team1_id.eq.${team1Id},team2_id.eq.${team2Id}),and(team1_id.eq.${team2Id},team2_id.eq.${team1Id})`
-      )
-      .eq('iscompleted', true)
-      .eq('season_id', seasonData.id);
+    const count = await countTeamMatchesInSeason(team1Id, team2Id, seasonId);
 
-    if (error) {
-      errorLog('Error checking match history:', error);
-      return false;
-    }
-
-    const hasPlayed = count !== null && count > 0;
+    const hasPlayed = count > 0;
     dbLog(
       `Teams ${team1Id} vs ${team2Id}: ${hasPlayed ? 'HAVE' : 'HAVE NOT'} played in current season (${count} matches)`
     );
@@ -65,38 +54,22 @@ export async function fetchSeasonHistoryForTeams(
     scheduleLog(`Fetching season history for ${teamIds.length} teams`);
 
     // Get active season
-    const { data: seasonData, error: seasonError } = await supabase
-      .from('seasons')
-      .select('id')
-      .eq('is_active', true)
-      .single();
-
-    if (seasonError || !seasonData) {
+    let seasonId: string;
+    try {
+      seasonId = await fetchActiveSeasonIdStrict();
+    } catch (seasonError) {
       errorLog('Error fetching active season:', seasonError);
       return [];
     }
 
     // Fetch all completed matches where both teams are in our list
-    const { data: matches, error } = await supabase
-      .from('matches')
-      .select('team1_id, team2_id')
-      .eq('iscompleted', true)
-      .eq('season_id', seasonData.id)
-      .in('team1_id', teamIds)
-      .in('team2_id', teamIds);
-
-    if (error) {
-      errorLog('Error fetching season history:', error);
-      return [];
-    }
+    const matches = await fetchMatchPairsInSeason(teamIds, seasonId);
 
     const pairs: Array<[string, string]> = [];
 
-    if (matches) {
-      for (const match of matches) {
-        if (match.team1_id && match.team2_id) {
-          pairs.push([match.team1_id, match.team2_id]);
-        }
+    for (const match of matches) {
+      if (match.team1_id && match.team2_id) {
+        pairs.push([match.team1_id, match.team2_id]);
       }
     }
 

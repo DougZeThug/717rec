@@ -266,6 +266,91 @@ export const fetchTeamsMap = async () => {
   return data || [];
 };
 
+// ---------------------------------------------------------------------------
+// Functions added for Batch 11 refactor — moved from utils/autoSchedule
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetch active season ID using .single() — used by matchHistoryService util.
+ * Throws on database error or when no active season found (PGRST116).
+ * Callers should catch and handle as appropriate.
+ */
+export const fetchActiveSeasonIdStrict = async (): Promise<string> => {
+  const { data, error } = await supabase
+    .from('seasons')
+    .select('id')
+    .eq('is_active', true)
+    .single();
+
+  if (error) throw error;
+  return data.id;
+};
+
+/**
+ * Count completed matches between two teams in a specific season
+ * Exact query copied from matchHistoryService.ts
+ * @throws raw Supabase error on failure
+ */
+export const countTeamMatchesInSeason = async (
+  team1Id: string,
+  team2Id: string,
+  seasonId: string
+): Promise<number> => {
+  const { count, error } = await supabase
+    .from('matches')
+    .select('id', { count: 'exact', head: true })
+    .or(
+      `and(team1_id.eq.${team1Id},team2_id.eq.${team2Id}),and(team1_id.eq.${team2Id},team2_id.eq.${team1Id})`
+    )
+    .eq('iscompleted', true)
+    .eq('season_id', seasonId);
+
+  if (error) throw error;
+  return count ?? 0;
+};
+
+/**
+ * Fetch completed match team-ID pairs within a season for a given set of team IDs
+ * Exact query copied from matchHistoryService.ts
+ * @throws raw Supabase error on failure
+ */
+export const fetchMatchPairsInSeason = async (
+  teamIds: string[],
+  seasonId: string
+): Promise<Array<{ team1_id: string | null; team2_id: string | null }>> => {
+  const { data, error } = await supabase
+    .from('matches')
+    .select('team1_id, team2_id')
+    .eq('iscompleted', true)
+    .eq('season_id', seasonId)
+    .in('team1_id', teamIds)
+    .in('team2_id', teamIds);
+
+  if (error) throw error;
+  return data || [];
+};
+
+/**
+ * Check if two teams have ever played each other (any season)
+ * Exact query copied from compatibilityUtils.ts checkTeamsPlayedHistory
+ * @throws raw Supabase error on failure
+ */
+export const checkTeamsEverPlayed = async (
+  team1Id: string,
+  team2Id: string
+): Promise<boolean> => {
+  const { data, error } = await supabase
+    .from('matches')
+    .select('id')
+    .or(
+      `and(team1_id.eq.${team1Id},team2_id.eq.${team2Id}),and(team1_id.eq.${team2Id},team2_id.eq.${team1Id})`
+    )
+    .limit(1);
+
+  if (error) throw error;
+  return data !== null && data.length > 0;
+};
+
 /**
  * Fetch matches for admin with evening-aware date range filtering
  * @throws raw Supabase error on failure
