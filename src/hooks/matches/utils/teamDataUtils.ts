@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { fetchTeamsByIds } from '@/services/matches/MatchReadService';
 import { Team } from '@/types';
 import { errorLog, teamLog } from '@/utils/logger';
 
@@ -11,17 +11,7 @@ export const fetchTeamsForMatch = async (teamIds: string[]): Promise<Team[]> => 
       return [];
     }
 
-    const { data, error } = await supabase
-      .from('v_team_details')
-      .select(
-        'team_id, name, image_url, logo_url, players, wins, losses, game_wins, game_losses, created_at, division_id, divisionname, sos, power_score, win_percentage, game_win_percentage'
-      )
-      .in('team_id', teamIds);
-
-    if (error) {
-      errorLog('Error fetching team data:', error);
-      throw error;
-    }
+    const data = await fetchTeamsByIds(teamIds);
 
     if (!data || data.length === 0) {
       errorLog('No teams found for ids:', teamIds);

@@ -1,6 +1,7 @@
-import { supabase } from '@/integrations/supabase/client';
 import { BadgeProcessingService } from '@/services/BadgeProcessingService';
 import { FailedBadgeOperationsService } from '@/services/FailedBadgeOperationsService';
+import { fetchMatchTeamIds } from '@/services/matches/MatchReadService';
+import { updateMatch } from '@/services/matches/MatchWriteService';
 import { badgeLog, errorLog, matchLog, warnLog } from '@/utils/logger';
 
 export interface UpdateMatchScoreParams {
@@ -34,15 +35,7 @@ export const updateMatchScore = async ({
   });
 
   // First get the match to extract team IDs
-  const { data: matchData, error: matchError } = await supabase
-    .from('matches')
-    .select('team1_id, team2_id')
-    .eq('id', matchId)
-    .single();
-
-  if (matchError || !matchData) {
-    throw new Error(`Failed to fetch match data: ${matchError?.message}`);
-  }
+  const matchData = await fetchMatchTeamIds(matchId);
 
   const { team1_id, team2_id } = matchData;
 
@@ -60,25 +53,15 @@ export const updateMatchScore = async ({
   });
 
   // Update the match with scores and completion status
-  const { data, error } = await supabase
-    .from('matches')
-    .update({
-      team1_score: team1Score,
-      team2_score: team2Score,
-      team1_game_wins: team1GameWins,
-      team2_game_wins: team2GameWins,
-      winner_id: winnerId,
-      loser_id: loserId,
-      iscompleted: true,
-    })
-    .eq('id', matchId)
-    .select()
-    .single();
-
-  if (error) {
-    errorLog('Failed to update match:', error);
-    throw error;
-  }
+  const data = await updateMatch(matchId, {
+    team1_score: team1Score,
+    team2_score: team2Score,
+    team1_game_wins: team1GameWins,
+    team2_game_wins: team2GameWins,
+    winner_id: winnerId,
+    loser_id: loserId,
+    iscompleted: true,
+  });
 
   matchLog('Match updated successfully:', data);
 

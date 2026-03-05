@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { supabase } from '@/integrations/supabase/client';
+import { fetchTeamMatchesData } from '@/services/matches/MatchReadService';
 import { Match } from '@/types';
 
 export const useTeamMatches = (teamId: string | undefined) => {
@@ -9,45 +9,13 @@ export const useTeamMatches = (teamId: string | undefined) => {
     queryFn: async () => {
       if (!teamId) return { upcomingMatches: [], pastMatches: [] };
 
-      // Get active season first to filter matches
-      const { data: activeSeason } = await supabase
-        .from('seasons')
-        .select('id')
-        .eq('is_active', true)
-        .single();
+      const data = await fetchTeamMatchesData(teamId);
 
-      if (!activeSeason) {
+      if (!data) {
         return { upcomingMatches: [], pastMatches: [] };
       }
 
-      const { data, error } = await supabase
-        .from('matches')
-        .select(
-          `
-          *,
-          team1:v_team_details!team1_id(
-            team_id,
-            name,
-            image_url,
-            logo_url,
-            divisionname
-          ),
-          team2:v_team_details!team2_id(
-            team_id,
-            name,
-            image_url,
-            logo_url,
-            divisionname
-          )
-        `
-        )
-        .eq('season_id', activeSeason.id)
-        .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
-        .order('date');
-
-      if (error) throw error;
-
-      const matchData = data || [];
+      const matchData = data;
 
       // Map database rows to Match interface with camelCase properties
       const mappedMatches = matchData.map((row) => ({

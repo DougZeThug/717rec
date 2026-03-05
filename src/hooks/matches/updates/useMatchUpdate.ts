@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useTeamRecords } from '@/hooks/useTeamRecords';
 import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
+import { updateMatch } from '@/services/matches/MatchWriteService';
 import { Match, Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 
@@ -72,15 +72,8 @@ export const useMatchUpdate = ({
         updatePayload.team2_game_wins = matchData.team2_game_wins;
       }
 
-      // Update the match in Supabase
-      const { data, error } = await supabase
-        .from('matches')
-        .update(updatePayload)
-        .eq('id', editingMatch.id)
-        .select()
-        .single();
-
-      if (error) throw error;
+      // Update the match
+      const data = await updateMatch(editingMatch.id, updatePayload);
 
       // Transform the returned match to our app's format
       const updatedMatch: Match = {

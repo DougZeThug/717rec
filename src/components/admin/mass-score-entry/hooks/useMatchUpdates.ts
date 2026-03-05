@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useToast } from '@/hooks/useToast';
 import { useTeamRecords } from '@/hooks/useTeamRecords';
-import { supabase } from '@/integrations/supabase/client';
+import { updateMatchArray, upsertTeamSeasonStats } from '@/services/matches/MatchWriteService';
 import { dbLog, errorLog, scoreLog, warnLog } from '@/utils/logger';
 
 import { MatchWithTeams } from '../types';
@@ -68,16 +68,7 @@ export const useMatchUpdates = () => {
         warnLog('Submitting match with 0-0 game wins. This may be incorrect.');
       }
 
-      const { data, error } = await supabase
-        .from('matches')
-        .update(updatePayload)
-        .eq('id', match.id)
-        .select();
-
-      if (error) {
-        errorLog(`Error updating match ${match.id}:`, error);
-        throw error;
-      }
+      const data = await updateMatchArray(match.id, updatePayload);
 
       // Check if no rows were updated
       if (!data || data.length === 0) {
@@ -112,11 +103,7 @@ export const useMatchUpdates = () => {
       }
 
       // Refresh team_season_stats to keep historical data in sync
-      const { error: seasonStatsError } = await supabase.rpc('upsert_team_season_stats');
-      if (seasonStatsError) {
-        warnLog('Failed to refresh season stats:', seasonStatsError);
-        // Non-fatal - the view-based stats are still correct
-      }
+      await upsertTeamSeasonStats();
 
       // Invalidate queries to ensure fresh data throughout the app
       const queriesToInvalidate = [

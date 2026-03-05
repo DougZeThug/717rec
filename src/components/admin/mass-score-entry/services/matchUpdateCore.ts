@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { updateMatchArray } from '@/services/matches/MatchWriteService';
 import { errorLog, matchLog } from '@/utils/logger';
 
 import { MatchWithTeams } from '../types';
@@ -51,9 +51,8 @@ export const updateMatchInDatabase = async (match: MatchWithTeams): Promise<bool
       loserId,
     });
 
-    const { error } = await supabase
-      .from('matches')
-      .update({
+    try {
+      await updateMatchArray(match.id, {
         team1_score: match.team1Score,
         team2_score: match.team2Score,
         team1_game_wins: match.team1_game_wins,
@@ -61,10 +60,8 @@ export const updateMatchInDatabase = async (match: MatchWithTeams): Promise<bool
         iscompleted: match.iscompleted,
         winner_id: winnerId,
         loser_id: loserId,
-      })
-      .eq('id', match.id);
-
-    if (error) {
+      });
+    } catch (error) {
       errorLog(`Error updating match ${match.id}:`, error);
       return false;
     }

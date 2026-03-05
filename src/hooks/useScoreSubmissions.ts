@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  fetchScoreSubmissions as fetchScoreSubmissionsData,
+} from '@/services/matches/MatchReadService';
+import { updateScoreSubmissionStatus } from '@/services/matches/MatchWriteService';
 import { errorLog } from '@/utils/logger';
 
 export interface ScoreSubmission {
@@ -28,15 +31,8 @@ export function useScoreSubmissions() {
   const fetchScoreSubmissions = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('score_submissions')
-        .select('id, match_id, submitter_name, submitter_team, message, status, created_at, reviewed_by, reviewed_at')
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      setSubmissions(data || []);
+      const data = await fetchScoreSubmissionsData();
+      setSubmissions(data as ScoreSubmission[]);
     } catch (error) {
       errorLog('Error fetching score submissions:', error);
       toast({
@@ -54,16 +50,7 @@ export function useScoreSubmissions() {
     status: 'approved' | 'rejected'
   ) => {
     try {
-      const { error } = await supabase
-        .from('score_submissions')
-        .update({
-          status,
-          reviewed_by: (await supabase.auth.getUser()).data.user?.id,
-          reviewed_at: new Date().toISOString(),
-        })
-        .eq('id', submissionId);
-
-      if (error) throw error;
+      await updateScoreSubmissionStatus(submissionId, status);
 
       setSubmissions((prev) => prev.filter((sub) => sub.id !== submissionId));
 

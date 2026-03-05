@@ -643,14 +643,23 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
             stage_id: 1,
           });
         }
-        // Downstream query - returns array of matches with this participant
-        if (table === 'match' && typeof filter === 'object' && filter.stage_id) {
+        // All rounds in stage - checkDownstreamPopulation uses this to build roundNumberById map
+        if (table === 'round' && typeof filter === 'object' && filter.stage_id) {
           return Promise.resolve([
-            { id: 2, opponent1: { id: 1 }, stage_id: 1 },
+            { id: 1, number: 1, stage_id: 1 },
+            { id: 2, number: 2, stage_id: 1 },
           ]);
         }
+        // All matches in stage - match 2 is in a later round (round_id: 2) with winner propagated
+        if (table === 'match' && typeof filter === 'object' && filter.stage_id) {
+          return Promise.resolve([
+            { id: matchId, opponent1: { id: 1, result: 'win' }, stage_id: 1, round_id: 1 },
+            { id: 2, opponent1: { id: 1 }, stage_id: 1, round_id: 2 },
+          ]);
+        }
+        // Current round lookup - must include number so comparison works
         if (table === 'round' && filter === 1) {
-          return Promise.resolve({ id: 1, group_id: 2 });
+          return Promise.resolve({ id: 1, group_id: 2, number: 1 });
         }
         if (table === 'group' && filter === 2) {
           return Promise.resolve({ id: 2, number: 2 });

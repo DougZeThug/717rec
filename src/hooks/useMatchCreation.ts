@@ -3,9 +3,9 @@ import { useState } from 'react';
 
 import { createDateWithTime } from '@/components/schedule/form-utils';
 import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
+import { createMatch } from '@/services/matches/MatchWriteService';
 import { Match, Team } from '@/types';
-import { errorLog, warnLog } from '@/utils/logger';
+import { errorLog } from '@/utils/logger';
 import { normalizeTimeFormat } from '@/utils/timeUtils';
 
 export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]) => void) => {
@@ -23,39 +23,20 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
         dateWithTime = createDateWithTime(new Date(matchData.date), matchData.timeSlot);
       }
 
-      // Get active season
-      const { data: activeSeason, error: seasonError } = await supabase
-        .from('seasons')
-        .select('id')
-        .eq('is_active', true)
-        .maybeSingle();
-
-      if (seasonError) {
-        warnLog('Error fetching active season:', seasonError);
-      }
-
-      // Create the match in Supabase
-      const { data, error } = await supabase
-        .from('matches')
-        .insert({
-          team1_id: matchData.team1Id,
-          team2_id: matchData.team2Id,
-          date: dateWithTime.toISOString(),
-          location: matchData.location || '',
-          iscompleted: matchData.iscompleted,
-          team1_score: matchData.team1Score,
-          team2_score: matchData.team2Score,
-          winner_id: matchData.winnerId,
-          loser_id: matchData.loserId,
-          team1_game_wins: matchData.team1_game_wins || 0,
-          team2_game_wins: matchData.team2_game_wins || 0,
-          round_number: 0,
-          season_id: activeSeason?.id || null,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
+      // Create the match via service (active season is fetched internally)
+      const data = await createMatch({
+        team1Id: matchData.team1Id,
+        team2Id: matchData.team2Id,
+        date: dateWithTime.toISOString(),
+        location: matchData.location || '',
+        iscompleted: matchData.iscompleted,
+        team1Score: matchData.team1Score,
+        team2Score: matchData.team2Score,
+        winnerId: matchData.winnerId,
+        loserId: matchData.loserId,
+        team1_game_wins: matchData.team1_game_wins || 0,
+        team2_game_wins: matchData.team2_game_wins || 0,
+      });
 
       // Transform the returned match to our app's format
       const newMatch: Match = {

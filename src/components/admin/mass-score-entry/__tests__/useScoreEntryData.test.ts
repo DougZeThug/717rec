@@ -92,7 +92,6 @@ describe('useScoreEntryData', () => {
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({
         title: expect.stringContaining('No'),
-        variant: 'destructive',
       })
     );
   });

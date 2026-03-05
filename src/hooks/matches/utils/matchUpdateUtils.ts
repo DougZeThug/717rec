@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { updateMatchArray } from '@/services/matches/MatchWriteService';
 import { errorLog, matchLog, warnLog } from '@/utils/logger';
 
 import { MatchResultData } from '../types/matchSubmissionTypes';
@@ -57,23 +57,14 @@ export const updateMatchInDatabase = async (
     team2_game_wins: parsedTeam2GameWins, // Actual game wins
   };
 
-  // Debug log to confirm payload just before Supabase update
+  // Debug log to confirm payload just before update
   matchLog('Final updateData to Supabase:', {
     ...updateData,
     team1_game_wins_type: typeof updateData.team1_game_wins,
     team2_game_wins_type: typeof updateData.team2_game_wins,
   });
 
-  const { data: matchData, error: matchError } = await supabase
-    .from('matches')
-    .update(updateData)
-    .eq('id', matchId)
-    .select();
-
-  if (matchError) {
-    errorLog(`Error updating match ${matchId}:`, matchError);
-    throw matchError;
-  }
+  const matchData = await updateMatchArray(matchId, updateData);
 
   // Check if no rows were updated
   if (!matchData || matchData.length === 0) {
