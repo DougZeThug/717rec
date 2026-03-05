@@ -160,6 +160,13 @@ const MassScoreEntryTool: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      <DeleteMatchDialog
+        isOpen={!!deleteMatchId}
+        onClose={() => setDeleteMatchId(null)}
+        onConfirm={handleDeleteConfirm}
+        isDeleting={isDeleting}
+      />
     </AdminSectionWrapper>
   );
 };
