@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SeasonalIcon } from '@/components/ui/seasonal-icon';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchFinalStandings } from '@/services/brackets/BracketReadService';
 import type { TeamStanding } from '@/types/schedule';
 import { log } from '@/utils/logger';
 
@@ -30,31 +30,7 @@ export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) 
 
   const { data: standings, isLoading } = useQuery({
     queryKey: ['final-standings', bracketId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('playoff_team_records')
-        .select(
-          `
-          placement,
-          wins,
-          losses,
-          game_wins,
-          game_losses,
-          teams:team_id (
-            id,
-            name,
-            logo_url,
-            image_url
-          )
-        `
-        )
-        .eq('bracket_id', bracketId)
-        .not('placement', 'is', null)
-        .order('placement', { ascending: true });
-
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => fetchFinalStandings(bracketId),
     enabled: show && !!bracketId,
   });
 

@@ -3,7 +3,16 @@ import { useCallback, useMemo } from 'react';
 
 import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
 import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  fetchBmMatchData,
+  fetchParticipantsByIds,
+  fetchPlayoffMatchTeams,
+} from '@/services/brackets/BracketReadService';
+import {
+  deletePlayoffGames,
+  insertPlayoffGames,
+  updatePlayoffMatchScores,
+} from '@/services/brackets/BracketWriteService';
 import { bracketManagerService } from '@/services/brackets/manager';
 import { scoreLog } from '@/utils/logger';
 import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
@@ -37,23 +46,18 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
 
         // For brackets-manager, fetch from the 'match' table (not playoff_matches)
         const numericMatchId = parseInt(matchId);
-        const { data: bmMatchData, error: bmMatchError } = await supabase
-          .from('match')
-          .select('opponent1_id, opponent2_id, stage_id')
-          .eq('id', numericMatchId)
-          .single();
+        const bmMatchData = await fetchBmMatchData(numericMatchId);
 
-        if (bmMatchError || !bmMatchData) {
-          scoreLog('Failed to fetch brackets-manager match data', { matchId, error: bmMatchError });
+        if (!bmMatchData) {
+          scoreLog('Failed to fetch brackets-manager match data', { matchId });
           throw new Error('Failed to fetch match data from brackets-manager table');
         }
 
         // Get participant data to map opponent IDs to team IDs
-        const opponentIds = [bmMatchData.opponent1_id, bmMatchData.opponent2_id].filter(Boolean);
-        const { data: participants } = await supabase
-          .from('participant')
-          .select('id, name, tournament_id')
-          .in('id', opponentIds);
+        const opponentIds = [bmMatchData.opponent1_id, bmMatchData.opponent2_id].filter(
+          (id): id is number => id !== null && id !== undefined
+        );
+        const participants = await fetchParticipantsByIds(opponentIds);
 
         // Map opponent IDs to team names for logging (actual team lookup not needed for brackets-manager update)
         const opponent1Name =
@@ -132,34 +136,27 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
         // ✅ LEGACY: Direct Supabase update (no auto-progression)
         scoreLog('Using legacy direct update (no auto-progression)');
 
-        const { data: matchData, error: fetchError } = await supabase
-          .from('playoff_matches')
-          .select('team1_id, team2_id')
-          .eq('id', matchId)
-          .single();
+        const matchData = await fetchPlayoffMatchTeams(matchId);
 
-        if (fetchError || !matchData) {
+        if (!matchData) {
           throw new Error('Failed to fetch match data');
         }
 
         const winnerId = team1GameWins > team2GameWins ? matchData.team1_id : matchData.team2_id;
         const loserId = team1GameWins > team2GameWins ? matchData.team2_id : matchData.team1_id;
 
-        await supabase
-          .from('playoff_matches')
-          .update({
-            team1_score: team1Score,
-            team2_score: team2Score,
-            winner_id: winnerId,
-            loser_id: loserId,
-            status: 'completed',
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', matchId);
+        await updatePlayoffMatchScores(matchId, {
+          team1_score: team1Score,
+          team2_score: team2Score,
+          winner_id: winnerId!,
+          loser_id: loserId!,
+          status: 'completed',
+          updated_at: new Date().toISOString(),
+        });
 
         // Save games
         if (games && games.length > 0) {
-          await supabase.from('playoff_games').delete().eq('match_id', matchId);
+          await deletePlayoffGames(matchId);
 
           const gameInserts = games.map((game, index) => {
             const gameWinnerId =
@@ -174,7 +171,7 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
             };
           });
 
-          await supabase.from('playoff_games').insert(gameInserts);
+          await insertPlayoffGames(gameInserts);
         }
 
         // Invalidate all match-related queries to ensure fresh data

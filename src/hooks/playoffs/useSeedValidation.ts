@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { supabase } from '@/integrations/supabase/client';
+import { validateSeeds } from '@/services/brackets/BracketReadService';
 
 export interface SeedValidationResult {
   team_id: string;
@@ -14,13 +14,7 @@ export const useSeedValidation = (divisionId?: string) => {
     queryKey: ['seed-validation', divisionId],
     queryFn: async (): Promise<SeedValidationResult[]> => {
       if (!divisionId) return [];
-
-      const { data, error } = await supabase.rpc('validate_division_seeds', {
-        p_division_id: divisionId,
-      });
-
-      if (error) throw error;
-      return data || [];
+      return validateSeeds(divisionId) as Promise<SeedValidationResult[]>;
     },
     enabled: !!divisionId,
     staleTime: 30000, // Cache for 30 seconds

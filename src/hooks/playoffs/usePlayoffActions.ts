@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
 import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
+import { deleteBracket, updatePlayoffMatchResult, upsertPlayoffGame } from '@/services/brackets/BracketWriteService';
 import { getUIErrorMessage, logError } from '@/utils/errorHandler';
 import type { PlayoffGame } from '@/utils/playoffs/playoffTypes';
 
@@ -13,13 +13,13 @@ export const usePlayoffActions = () => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Handle bracket deletion
-  const deleteBracket = async (bracketId: string, bracketName: string) => {
+  const deleteBracketAction = async (bracketId: string, bracketName: string) => {
     if (isDeleting) return;
 
     setIsDeleting(true);
 
     try {
-      await supabase.from('brackets').delete().eq('id', bracketId);
+      await deleteBracket(bracketId);
 
       toast({
         title: 'Bracket Deleted',
@@ -58,23 +58,18 @@ export const usePlayoffActions = () => {
   ) => {
     try {
       // Update in playoff_matches table
-      const { error: matchError } = await supabase
-        .from('playoff_matches')
-        .update({
-          winner_id: winnerId,
-          team1_score: team1Score,
-          team2_score: team2Score,
-          status: 'completed',
-        })
-        .eq('id', matchId);
-
-      if (matchError) throw matchError;
+      await updatePlayoffMatchResult(matchId, {
+        winner_id: winnerId,
+        team1_score: team1Score,
+        team2_score: team2Score,
+        status: 'completed',
+      });
 
       // Update games if provided
       if (games && games.length > 0) {
         for (const game of games) {
           if (game.id) {
-            await supabase.from('playoff_games').upsert({
+            await upsertPlayoffGame({
               id: game.id,
               match_id: matchId,
               game_number: game.gameNumber || 1,
@@ -109,7 +104,7 @@ export const usePlayoffActions = () => {
   };
 
   return {
-    deleteBracket,
+    deleteBracket: deleteBracketAction,
     updateMatchResult,
     isDeleting,
   };

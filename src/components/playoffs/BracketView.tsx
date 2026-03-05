@@ -8,7 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { useBracketData } from '@/hooks/brackets/useBracketData';
 import { useBracketsManagerRealtime } from '@/hooks/brackets/useBracketsManagerRealtime';
 import { useBracketCompletion } from '@/hooks/useBracketCompletion';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchBracketInfo } from '@/services/brackets/BracketReadService';
 import type { BracketViewData, hasMatches, hasTeams } from '@/types/playoff';
 import { bracketLog, debugLog, errorLog, log } from '@/utils/logger';
 import type { PlayoffBracket, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
@@ -69,16 +69,7 @@ const BracketView: React.FC<BracketViewProps> = ({
     queryKey: ['bracket-info', bracketId],
     queryFn: async () => {
       bracketLog('Fetching bracket info for JSONB check:', bracketId);
-      const { data, error } = await supabase
-        .from('brackets')
-        .select('id, title, format, state, uses_brackets_manager, bracket_data, participants')
-        .eq('id', bracketId)
-        .single();
-
-      if (error) {
-        errorLog('Error fetching bracket info:', error);
-        throw error;
-      }
+      const data = await fetchBracketInfo(bracketId);
 
       bracketLog('Bracket info fetched:', {
         id: data.id,
