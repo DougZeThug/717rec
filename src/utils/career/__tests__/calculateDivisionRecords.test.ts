@@ -15,7 +15,7 @@ describe('categorizeDivision', () => {
   it('categorizes competitive divisions', () => {
     expect(categorizeDivision('Competitive')).toBe('competitive');
     expect(categorizeDivision('competitive division')).toBe('competitive');
-    expect(categorizeDivision('Hidden')).toBe('competitive');
+    expect(categorizeDivision('Hidden')).toBeNull();
   });
 
   it('categorizes intermediate divisions', () => {

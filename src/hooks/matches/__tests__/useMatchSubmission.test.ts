@@ -32,6 +32,13 @@ vi.mock('../utils/queryCacheUtils', () => ({
   invalidateMatchRelatedQueries: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock('../validation/useScoreValidation', () => ({
+  useScoreValidation: () => ({
+    validateScore: vi.fn().mockReturnValue({ isValid: true }),
+    validateMatch: vi.fn().mockReturnValue(true),
+  }),
+}));
+
 vi.mock('@/utils/logger', () => ({
   matchLog: vi.fn(),
   warnLog: vi.fn(),

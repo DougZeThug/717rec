@@ -2,13 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { updateMatchScore, UpdateMatchScoreParams } from '../utils/matchDatabaseUtils';
 
-// Mock supabase client
-const mockSupabase = {
-  from: vi.fn(),
-};
+// Mock service layer (replaces direct supabase mocking)
+vi.mock('@/services/matches/MatchReadService', () => ({
+  fetchMatchTeamIds: vi.fn(),
+}));
 
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: mockSupabase,
+vi.mock('@/services/matches/MatchWriteService', () => ({
+  updateMatch: vi.fn(),
 }));
 
 // Mock BadgeProcessingService
@@ -18,6 +18,17 @@ vi.mock('@/services/BadgeProcessingService', () => ({
     processKingslayerBadge: vi.fn().mockResolvedValue({ success: true }),
     processClutchPerformerBadge: vi.fn().mockResolvedValue({ success: true }),
     processConsistentPerformerBadge: vi.fn().mockResolvedValue({ success: true }),
+    processIceColdBadge: vi.fn().mockResolvedValue({ success: true }),
+    processBroomCrewBadge: vi.fn().mockResolvedValue({ success: true }),
+    processGatekeeperBadge: vi.fn().mockResolvedValue({ success: true }),
+    processChaosAgentBadge: vi.fn().mockResolvedValue({ success: true }),
+    processBullyBadge: vi.fn().mockResolvedValue({ success: true }),
+  },
+}));
+
+vi.mock('@/services/FailedBadgeOperationsService', () => ({
+  FailedBadgeOperationsService: {
+    queueFailedOperation: vi.fn(),
   },
 }));
 
@@ -29,40 +40,17 @@ vi.mock('@/utils/logger', () => ({
 }));
 
 import { BadgeProcessingService } from '@/services/BadgeProcessingService';
+import { fetchMatchTeamIds } from '@/services/matches/MatchReadService';
+import { updateMatch } from '@/services/matches/MatchWriteService';
 
 describe('updateMatchScore', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  const createMockChain = (
-    matchData: any,
-    updateData: any,
-    matchError: any = null,
-    updateError: any = null
-  ) => {
-    // First call - get match data
-    const selectSingle = vi.fn().mockResolvedValueOnce({ data: matchData, error: matchError });
-    const selectEq = vi.fn(() => ({ single: selectSingle }));
-    const selectFn = vi.fn(() => ({ eq: selectEq }));
-
-    // Second call - update match
-    const updateSingle = vi.fn().mockResolvedValueOnce({ data: updateData, error: updateError });
-    const updateSelectFn = vi.fn(() => ({ single: updateSingle }));
-    const updateEq = vi.fn(() => ({ select: updateSelectFn }));
-    const updateFn = vi.fn(() => ({ eq: updateEq }));
-
-    mockSupabase.from.mockImplementation(() => ({
-      select: selectFn,
-      update: updateFn,
-    }));
-  };
-
   it('successfully updates match score when team1 wins', async () => {
-    createMockChain(
-      { team1_id: 'team-1', team2_id: 'team-2' },
-      { id: 'match-1', team1_score: 2, team2_score: 1 }
-    );
+    vi.mocked(fetchMatchTeamIds).mockResolvedValue({ team1_id: 'team-1', team2_id: 'team-2' });
+    vi.mocked(updateMatch).mockResolvedValue({ id: 'match-1', team1_score: 2, team2_score: 1 });
 
     const params: UpdateMatchScoreParams = {
       matchId: 'match-1',
@@ -81,10 +69,8 @@ describe('updateMatchScore', () => {
   });
 
   it('correctly determines team2 as winner', async () => {
-    createMockChain(
-      { team1_id: 'team-1', team2_id: 'team-2' },
-      { id: 'match-1', team1_score: 1, team2_score: 3 }
-    );
+    vi.mocked(fetchMatchTeamIds).mockResolvedValue({ team1_id: 'team-1', team2_id: 'team-2' });
+    vi.mocked(updateMatch).mockResolvedValue({ id: 'match-1', team1_score: 1, team2_score: 3 });
 
     const params: UpdateMatchScoreParams = {
       matchId: 'match-1',
@@ -100,7 +86,9 @@ describe('updateMatchScore', () => {
   });
 
   it('throws error when match not found', async () => {
-    createMockChain(null, null, { message: 'Match not found' });
+    vi.mocked(fetchMatchTeamIds).mockRejectedValue(
+      new Error('Failed to fetch match data: Match not found')
+    );
 
     const params: UpdateMatchScoreParams = {
       matchId: 'non-existent',
@@ -114,9 +102,8 @@ describe('updateMatchScore', () => {
   });
 
   it('throws error when update fails', async () => {
-    createMockChain({ team1_id: 'team-1', team2_id: 'team-2' }, null, null, {
-      message: 'Update failed',
-    });
+    vi.mocked(fetchMatchTeamIds).mockResolvedValue({ team1_id: 'team-1', team2_id: 'team-2' });
+    vi.mocked(updateMatch).mockRejectedValue(new Error('Update failed'));
 
     const params: UpdateMatchScoreParams = {
       matchId: 'match-1',
@@ -130,10 +117,8 @@ describe('updateMatchScore', () => {
   });
 
   it('processes badges after successful update', async () => {
-    createMockChain(
-      { team1_id: 'team-1', team2_id: 'team-2' },
-      { id: 'match-1', team1_score: 2, team2_score: 1 }
-    );
+    vi.mocked(fetchMatchTeamIds).mockResolvedValue({ team1_id: 'team-1', team2_id: 'team-2' });
+    vi.mocked(updateMatch).mockResolvedValue({ id: 'match-1', team1_score: 2, team2_score: 1 });
 
     const params: UpdateMatchScoreParams = {
       matchId: 'match-1',
@@ -156,10 +141,8 @@ describe('updateMatchScore', () => {
       new Error('Badge error')
     );
 
-    createMockChain(
-      { team1_id: 'team-1', team2_id: 'team-2' },
-      { id: 'match-1', team1_score: 2, team2_score: 1 }
-    );
+    vi.mocked(fetchMatchTeamIds).mockResolvedValue({ team1_id: 'team-1', team2_id: 'team-2' });
+    vi.mocked(updateMatch).mockResolvedValue({ id: 'match-1', team1_score: 2, team2_score: 1 });
 
     const params: UpdateMatchScoreParams = {
       matchId: 'match-1',
