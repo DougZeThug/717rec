@@ -2,7 +2,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  fetchPendingRequestsCount,
+  fetchTeamRequests,
+  fetchAllRequests,
+  submitTeamRequest,
+  updateTeamRequestStatus,
+} from '@/services/teams/TeamFetchService';
 import type {
   TeamRequest,
   TeamRequestStatus,
@@ -15,15 +21,7 @@ import { errorLog } from '@/utils/logger';
 export const usePendingRequestsCount = () => {
   return useQuery({
     queryKey: ['team-requests', 'pending-count'],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from('team_requests')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'PENDING');
-
-      if (error) throw error;
-      return count || 0;
-    },
+    queryFn: fetchPendingRequestsCount,
     refetchInterval: 30000, // Refresh every 30 seconds
     staleTime: 1000 * 60 * 2, // Cache for 2 minutes
   });
@@ -33,20 +31,9 @@ export const usePendingRequestsCount = () => {
 export const useTeamRequests = (teamId: string | undefined) => {
   return useQuery({
     queryKey: ['team-requests', 'team', teamId],
-    queryFn: async () => {
-      if (!teamId) return [];
-
-      const { data, error } = await supabase
-        .from('team_requests')
-        .select(
-          'id, team_id, season_id, request_type, status, match_date, current_timeslot, requested_timeslot, reason, admin_notes, submitted_by, submitted_by_name, processed_by, processed_at, created_at, updated_at'
-        )
-        .eq('team_id', teamId)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (error) throw error;
-      return data as TeamRequest[];
+    queryFn: () => {
+      if (!teamId) return Promise.resolve([] as TeamRequest[]);
+      return fetchTeamRequests(teamId);
     },
     enabled: !!teamId,
     staleTime: 1000 * 60 * 2, // Cache for 2 minutes
@@ -57,25 +44,7 @@ export const useTeamRequests = (teamId: string | undefined) => {
 export const useAllRequests = (statusFilter?: TeamRequestStatus) => {
   return useQuery({
     queryKey: ['team-requests', 'all', statusFilter],
-    queryFn: async () => {
-      let query = supabase
-        .from('team_requests')
-        .select(
-          `
-          *,
-          teams:team_id (name)
-        `
-        )
-        .order('created_at', { ascending: false });
-
-      if (statusFilter) {
-        query = query.eq('status', statusFilter);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as TeamRequestWithTeam[];
-    },
+    queryFn: () => fetchAllRequests(statusFilter),
     staleTime: 1000 * 60 * 2, // Cache for 2 minutes
   });
 };
@@ -95,25 +64,7 @@ export const useSubmitRequest = () => {
       reason?: string;
       submitted_by_name?: string;
     }) => {
-      // Get current season
-      const { data: season } = await supabase
-        .from('seasons')
-        .select('id')
-        .eq('is_active', true)
-        .single();
-
-      const { data, error } = await supabase
-        .from('team_requests')
-        .insert({
-          ...request,
-          season_id: season?.id,
-          status: 'PENDING',
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      return submitTeamRequest(request);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team-requests'] });
@@ -149,20 +100,12 @@ export const useUpdateRequestStatus = () => {
       status: TeamRequestStatus;
       admin_notes?: string;
     }) => {
-      const { data, error } = await supabase
-        .from('team_requests')
-        .update({
-          status,
-          admin_notes,
-          processed_by: user?.id,
-          processed_at: new Date().toISOString(),
-        })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      return updateTeamRequestStatus({
+        id,
+        status,
+        admin_notes,
+        processed_by: user?.id,
+      });
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['team-requests'] });

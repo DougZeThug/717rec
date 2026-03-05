@@ -5,6 +5,26 @@ import { handleDatabaseError, ensureFound } from '@/utils/errorHandler';
 import { NotFoundError } from '@/types/errors';
 
 /**
+ * Update only a team's name and image_url (used by team members with edit access).
+ * @throws {Error} When database operation fails
+ */
+export const updateTeamNameAndImage = async (
+  teamId: string,
+  name: string,
+  imageUrl: string | null
+): Promise<void> => {
+  const { error } = await supabase
+    .from('teams')
+    .update({
+      name: name,
+      image_url: imageUrl,
+    })
+    .eq('id', teamId);
+
+  if (error) throw error;
+};
+
+/**
  * Update an existing team
  * @throws {DatabaseError} When database operations fail
  * @throws {NotFoundError} When team or division is not found

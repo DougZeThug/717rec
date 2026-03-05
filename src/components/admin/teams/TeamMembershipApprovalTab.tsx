@@ -17,42 +17,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  fetchPendingMembershipsForAdmin,
+  updateMembershipApproval,
+  type TeamMembershipForAdmin,
+} from '@/services/teams/TeamFetchService';
 import { errorLog } from '@/utils/logger';
 
-interface UserProfile {
-  id: string;
-  username: string | null;
-  full_name: string | null;
-  avatar_url: string | null;
-}
-
-interface TeamInfo {
-  id: string;
-  name: string;
-  logo_url: string | null;
-  image_url: string | null;
-}
-
-interface PendingMembershipRaw {
-  id: string;
-  user_id: string;
-  team_id: string;
-  joined_at: string;
-  is_approved: boolean;
-  user: UserProfile | UserProfile[] | null;
-  team: TeamInfo | TeamInfo[] | null;
-}
-
-interface PendingMembership {
-  id: string;
-  user_id: string;
-  team_id: string;
-  joined_at: string;
-  is_approved: boolean;
-  user: UserProfile;
-  team: TeamInfo;
-}
+// Use the service type alias locally for clarity
+type PendingMembership = TeamMembershipForAdmin;
 
 const TeamMembershipApprovalTab: React.FC = () => {
   const [pendingMemberships, setPendingMemberships] = useState<PendingMembership[]>([]);
@@ -61,71 +34,14 @@ const TeamMembershipApprovalTab: React.FC = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchPendingMemberships();
+    fetchPendingMembershipsLocal();
   }, []);
 
-  const fetchPendingMemberships = async () => {
+  const fetchPendingMembershipsLocal = async () => {
     try {
       setIsLoading(true);
-      
-      // First, get all pending memberships
-      const { data: memberships, error: membershipsError } = await supabase
-        .from('team_memberships')
-        .select('id, user_id, team_id, joined_at, is_approved')
-        .eq('is_approved', false)
-        .order('joined_at', { ascending: false });
-
-      if (membershipsError) throw membershipsError;
-      if (!memberships || memberships.length === 0) {
-        setPendingMemberships([]);
-        return;
-      }
-
-      // Get unique user IDs and team IDs
-      const userIds = [...new Set(memberships.map(m => m.user_id))];
-      const teamIds = [...new Set(memberships.map(m => m.team_id))];
-
-      // Fetch profiles and teams in parallel
-      const [profilesResult, teamsResult] = await Promise.all([
-        supabase
-          .from('profiles')
-          .select('id, username, full_name, avatar_url')
-          .in('id', userIds),
-        supabase
-          .from('teams')
-          .select('id, name, logo_url, image_url')
-          .in('id', teamIds)
-      ]);
-
-      if (profilesResult.error) throw profilesResult.error;
-      if (teamsResult.error) throw teamsResult.error;
-
-      // Create lookup maps
-      const profilesMap = new Map(
-        (profilesResult.data || []).map(p => [p.id, p])
-      );
-      const teamsMap = new Map(
-        (teamsResult.data || []).map(t => [t.id, t])
-      );
-
-      // Combine the data
-      const normalized: PendingMembership[] = memberships
-        .map((membership) => {
-          const user = profilesMap.get(membership.user_id);
-          const team = teamsMap.get(membership.team_id);
-          
-          // Skip if user or team data is missing
-          if (!user || !team) return null;
-          
-          return {
-            ...membership,
-            user,
-            team,
-          };
-        })
-        .filter((item): item is PendingMembership => item !== null);
-      
-      setPendingMemberships(normalized);
+      const data = await fetchPendingMembershipsForAdmin();
+      setPendingMemberships(data);
     } catch (error) {
       errorLog('Error fetching pending memberships:', error);
       toast({
@@ -142,21 +58,7 @@ const TeamMembershipApprovalTab: React.FC = () => {
     try {
       setProcessingId(membershipId);
 
-      const updateData: any = {
-        is_approved: approved,
-      };
-
-      if (approved) {
-        updateData.approved_at = new Date().toISOString();
-        updateData.approved_by = (await supabase.auth.getUser()).data.user?.id;
-      }
-
-      const { error } = await supabase
-        .from('team_memberships')
-        .update(updateData)
-        .eq('id', membershipId);
-
-      if (error) throw error;
+      await updateMembershipApproval(membershipId, approved);
 
       // Remove from pending list
       setPendingMemberships((prev) => prev.filter((m) => m.id !== membershipId));
