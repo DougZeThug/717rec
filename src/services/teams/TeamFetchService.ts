@@ -653,6 +653,37 @@ export const fetchPendingMembershipsForAdmin = async (): Promise<TeamMembershipF
     .filter((item): item is TeamMembershipForAdmin => item !== null);
 };
 
+// ─── fetchTeamForStats ────────────────────────────────────────────────────────
+
+/**
+ * Fetch basic team data used for stats calculations.
+ * Returns null if team not found or database error occurs.
+ * Exact query preserved from src/utils/teamStatsUtils/fetchTeamData.ts.
+ */
+export const fetchTeamForStats = async (teamId: string) => {
+  const { data: team, error } = await supabase
+    .from('teams')
+    .select(
+      `
+      id,
+      name,
+      wins,
+      losses,
+      game_wins,
+      game_losses,
+      divisions (name)
+    `
+    )
+    .eq('id', teamId)
+    .maybeSingle();
+
+  if (error || !team) {
+    return null;
+  }
+
+  return team;
+};
+
 // ─── updateMembershipApproval ─────────────────────────────────────────────────
 
 export const updateMembershipApproval = async (

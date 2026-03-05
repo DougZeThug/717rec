@@ -3,7 +3,12 @@ import { useCallback } from 'react';
 import { NavigateFunction } from 'react-router';
 
 import { toast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  signInWithEmail,
+  signInWithOAuth,
+  signOutUser,
+  signUpWithEmail,
+} from '@/services/auth/AuthService';
 import { AuthResponse } from '@/types/auth';
 import { loginWithGoogleNative as nativeGoogleLogin } from '@/utils/nativeAuth';
 
@@ -23,9 +28,7 @@ export const useAuthMethods = (
     async (email: string, password: string): Promise<AuthResponse> => {
       try {
         clearAuthError();
-        const { error, data } = await supabase.auth.signInWithPassword({ email, password });
-
-        if (error) throw error;
+        const data = await signInWithEmail(email, password);
 
         ensureThemeConsistency();
 
@@ -59,9 +62,7 @@ export const useAuthMethods = (
     async (email: string, password: string): Promise<AuthResponse> => {
       try {
         clearAuthError();
-        const { error, data } = await supabase.auth.signUp({ email, password });
-
-        if (error) throw error;
+        const data = await signUpWithEmail(email, password);
 
         ensureThemeConsistency();
 
@@ -105,9 +106,7 @@ export const useAuthMethods = (
   const signOut = useCallback(async () => {
     try {
       clearAuthError();
-      const { error } = await supabase.auth.signOut();
-
-      if (error) throw error;
+      await signOutUser();
 
       navigate('/');
       toast({
@@ -128,14 +127,7 @@ export const useAuthMethods = (
   const signInWithGoogle = useCallback(async () => {
     try {
       clearAuthError();
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/setup-profile`,
-        },
-      });
-
-      if (error) throw error;
+      await signInWithOAuth(`${window.location.origin}/setup-profile`);
     } catch (error) {
       if (error instanceof Error) {
         handleAuthError(error, 'Google login');
