@@ -1,43 +1,91 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook } from '@testing-library/react';
+import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useToast } from '@/hooks/useToast';
 import { PairingResult } from '@/types/autoSchedule';
-import * as compatibilityUtils from '@/utils/autoSchedule/compatibilityUtils';
-import { mockDate, mockTeams, mockTimeBlockTeams } from '@/utils/test/autoSchedule/mockData';
+import { fetchSeasonHistoryForTeams } from '@/utils/autoSchedule/matchHistoryService';
+import { mockDate, mockPairings, mockTimeBlockTeams } from '@/utils/test/autoSchedule/mockData';
 
 import { usePairingGenerator } from '../scheduling/usePairingGenerator';
 
-// Mock dependencies
-vi.mock('@/utils/autoSchedule/compatibilityUtils');
+// Mock useTeamsMap (uses react-query internally)
+vi.mock('../teams', () => ({
+  useTeamsMap: () => ({
+    teams: {},
+    isLoading: false,
+    error: null,
+    refetch: vi.fn(),
+  }),
+}));
+
+// Mock match history service
+vi.mock('@/utils/autoSchedule/matchHistoryService', () => ({
+  fetchSeasonHistoryForTeams: vi.fn().mockResolvedValue([]),
+}));
+
+// Mock the pairing schedulers - must use vi.hoisted so the variable is defined when vi.mock factory runs
+const mockScheduleStandardPairings = vi.hoisted(() => vi.fn());
+vi.mock('../scheduling/utils/standardPairing', () => ({
+  scheduleStandardPairings: (...args: any[]) => mockScheduleStandardPairings(...args),
+}));
+
+vi.mock('../scheduling/utils/dualBlockScheduler', () => ({
+  scheduleDualBlockPairings: vi.fn().mockResolvedValue({
+    pairings: {},
+    unmatchedTeamIds: [],
+    diagnostics: { relaxationApplied: 0, repairAttempted: false, constraintsRelaxed: [] },
+  }),
+}));
+
 vi.mock('@/hooks/useToast', () => ({
   useToast: vi.fn(),
 }));
 
-// Create properly typed mocks
-const mockCompatibilityUtils = vi.mocked(compatibilityUtils);
+vi.mock('@/utils/logger', () => ({
+  errorLog: vi.fn(),
+  scheduleLog: vi.fn(),
+}));
+
+vi.mock('@/utils/dateNormalization', () => ({
+  normalizeDate: vi.fn((d: Date) => d.toISOString()),
+}));
+
 const mockUseToast = vi.mocked(useToast);
+
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const Wrapper = ({ children }: { children: React.ReactNode }) =>
+    React.createElement(QueryClientProvider, { client: queryClient }, children);
+  return Wrapper;
+};
 
 describe('usePairingGenerator', () => {
   beforeEach(() => {
     vi.resetAllMocks();
 
-    // Create a simple mock that satisfies the toast interface
     const mockToast = {
       toast: vi.fn(),
       dismiss: vi.fn(),
       toasts: [],
     } as unknown as ReturnType<typeof useToast>;
-
     mockUseToast.mockReturnValue(mockToast);
 
-    // Mock utility functions
-    mockCompatibilityUtils.calculateTeamCompatibility.mockReturnValue(8.5);
-    mockCompatibilityUtils.haveTeamsPlayed.mockResolvedValue(false);
+    // Re-setup mocks cleared by vi.resetAllMocks()
+    vi.mocked(fetchSeasonHistoryForTeams).mockResolvedValue([]);
+
+    // Default: return mock pairings
+    mockScheduleStandardPairings.mockResolvedValue({
+      pairings: mockPairings,
+      unmatchedTeamIds: [],
+    });
   });
 
   it('should initialize with empty state', () => {
-    const { result } = renderHook(() => usePairingGenerator());
+    const { result } = renderHook(() => usePairingGenerator(), { wrapper: createWrapper() });
 
     expect(result.current.isGenerating).toBe(false);
     expect(result.current.generatedPairings).toEqual({});
@@ -45,7 +93,7 @@ describe('usePairingGenerator', () => {
   });
 
   it('should generate pairings for valid time blocks', async () => {
-    const { result } = renderHook(() => usePairingGenerator());
+    const { result } = renderHook(() => usePairingGenerator(), { wrapper: createWrapper() });
 
     let pairings: PairingResult | null = null;
     await act(async () => {
@@ -80,20 +128,29 @@ describe('usePairingGenerator', () => {
   });
 
   it('should handle odd number of teams in a block', async () => {
-    // Mock data with odd number in a block
+    const oddPairings = {
+      '6:30': [mockPairings['6:30'][0]], // 1 pair from 3 teams
+      '7:30': [mockPairings['7:30'][0]], // 1 pair
+      '8:30': [],
+    };
+    mockScheduleStandardPairings.mockResolvedValueOnce({
+      pairings: oddPairings,
+      unmatchedTeamIds: ['team3'],
+    });
+
     const oddBlocksData = {
       ...mockTimeBlockTeams,
-      '6:30': [mockTeams[0], mockTeams[1], mockTeams[2]], // 3 teams (odd)
+      '6:30': [...mockTimeBlockTeams['6:30'], mockTimeBlockTeams['7:30'][0]], // 3 teams (odd)
     };
 
-    const { result } = renderHook(() => usePairingGenerator());
+    const { result } = renderHook(() => usePairingGenerator(), { wrapper: createWrapper() });
 
     let pairings: PairingResult | null = null;
     await act(async () => {
       pairings = await result.current.generateMatchPairings(mockDate, oddBlocksData);
     });
 
-    // Should still generate some pairings, but not all teams can be paired
+    // Should still generate some pairings
     expect(pairings).not.toBeNull();
     if (pairings) {
       expect(pairings.pairings['6:30'].length).toBe(1); // Can only pair 2 of the 3 teams
@@ -102,12 +159,9 @@ describe('usePairingGenerator', () => {
   });
 
   it('should handle errors during pairing generation', async () => {
-    // Mock error in compatibility function
-    mockCompatibilityUtils.calculateTeamCompatibility.mockImplementation(() => {
-      throw new Error('Calculation error');
-    });
+    mockScheduleStandardPairings.mockRejectedValueOnce(new Error('Calculation error'));
 
-    const { result } = renderHook(() => usePairingGenerator());
+    const { result } = renderHook(() => usePairingGenerator(), { wrapper: createWrapper() });
     const mockToast = mockUseToast().toast;
 
     let pairings: PairingResult | null = null;

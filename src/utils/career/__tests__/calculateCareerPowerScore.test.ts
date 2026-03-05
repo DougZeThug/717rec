@@ -10,15 +10,19 @@ vi.mock('@/integrations/supabase/client', () => ({
         eq: vi.fn(() => ({
           not: vi.fn(() => ({
             data: [
-              { power_score: 0.7, match_wins: 5, match_losses: 3 },
-              { power_score: 0.65, match_wins: 4, match_losses: 4 },
+              { power_score: 0.95, match_wins: 10, match_losses: 1 },
+              { power_score: 0.92, match_wins: 10, match_losses: 1 },
             ],
             error: null,
           })),
-          single: vi.fn(() => ({
-            data: { power_score: 75, wins: 3, losses: 2 },
+          single: vi.fn().mockResolvedValue({
+            data: { power_score: 95, wins: 10, losses: 1 },
             error: null,
-          })),
+          }),
+          maybeSingle: vi.fn().mockResolvedValue({
+            data: { power_score: 95, wins: 10, losses: 1 },
+            error: null,
+          }),
         })),
       })),
     })),

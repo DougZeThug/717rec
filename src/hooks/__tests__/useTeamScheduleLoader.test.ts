@@ -1,7 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useToast } from '@/hooks/useToast';
 import { TimeBlockTeamsMap } from '@/types/autoSchedule';
 import * as teamLoaderUtils from '@/utils/autoSchedule/teamLoaderUtils';
 import { mockDate, mockTeams } from '@/utils/test/autoSchedule/mockData';
@@ -10,32 +9,29 @@ import { useTeamScheduleLoader } from '../useTeamScheduleLoader';
 
 // Mock dependencies
 vi.mock('@/utils/autoSchedule/teamLoaderUtils');
-vi.mock('@/hooks/useToast', () => ({
-  useToast: vi.fn(),
+
+// Mock logger (used by hook)
+vi.mock('@/utils/logger', () => ({
+  errorLog: vi.fn(),
+  scheduleLog: vi.fn(),
+}));
+
+vi.mock('@/utils/dateNormalization', () => ({
+  normalizeDate: vi.fn((d: Date) => d.toISOString()),
 }));
 
 // Create properly typed mocks
 const mockTeamLoaderUtils = vi.mocked(teamLoaderUtils);
-const mockUseToast = vi.mocked(useToast);
 
 describe('useTeamScheduleLoader', () => {
   beforeEach(() => {
     vi.resetAllMocks();
 
-    // Create a simple mock that satisfies the toast interface
-    const mockToast = {
-      toast: vi.fn(),
-      dismiss: vi.fn(),
-      toasts: [],
-    } as unknown as ReturnType<typeof useToast>;
-
-    mockUseToast.mockReturnValue(mockToast);
-
-    // Mock getTeamsByTimeBlock
-    mockTeamLoaderUtils.getTeamsByTimeBlock.mockImplementation((date, timeBlock) => {
-      if (timeBlock === '6:30') return Promise.resolve([mockTeams[0], mockTeams[1]]);
-      if (timeBlock === '7:30') return Promise.resolve([mockTeams[2], mockTeams[3]]);
-      return Promise.resolve([]);
+    // Default: mock getAllBackToBackTeams to return standard time blocks
+    mockTeamLoaderUtils.getAllBackToBackTeams.mockResolvedValue({
+      '6:30': [mockTeams[0], mockTeams[1]],
+      '7:30': [mockTeams[2], mockTeams[3]],
+      '8:30': [],
     });
   });
 
@@ -57,7 +53,7 @@ describe('useTeamScheduleLoader', () => {
     });
 
     expect(result.current.isLoading).toBe(false);
-    expect(mockTeamLoaderUtils.getTeamsByTimeBlock).toHaveBeenCalledTimes(3); // For 3 time blocks
+    expect(mockTeamLoaderUtils.getAllBackToBackTeams).toHaveBeenCalledTimes(1);
 
     // Should have teams loaded for each time block
     expect(teamsData).toHaveProperty('6:30');
@@ -71,21 +67,13 @@ describe('useTeamScheduleLoader', () => {
 
   it('should handle errors when loading teams', async () => {
     // Mock error response
-    mockTeamLoaderUtils.getTeamsByTimeBlock.mockRejectedValueOnce(new Error('API error'));
+    mockTeamLoaderUtils.getAllBackToBackTeams.mockRejectedValueOnce(new Error('API error'));
 
     const { result } = renderHook(() => useTeamScheduleLoader());
-    const mockToast = mockUseToast().toast;
 
     let teamsData: TimeBlockTeamsMap | null = null;
     await act(async () => {
       teamsData = await result.current.loadTeamsForDate(mockDate);
-    });
-
-    // Should show error toast
-    expect(mockToast).toHaveBeenCalledWith({
-      title: 'Error',
-      description: 'Failed to load teams. Please try again.',
-      variant: 'destructive',
     });
 
     // Should return empty object on error
@@ -100,12 +88,10 @@ describe('useTeamScheduleLoader', () => {
 
     // Load teams that include blocks with even and odd numbers
     await act(async () => {
-      // Mock implementation for this test
-      mockTeamLoaderUtils.getTeamsByTimeBlock.mockImplementation((date, timeBlock) => {
-        if (timeBlock === '6:30') return Promise.resolve([mockTeams[0], mockTeams[1]]); // Even (2)
-        if (timeBlock === '7:30') return Promise.resolve([mockTeams[2], mockTeams[3]]); // Even (2)
-        if (timeBlock === '8:30') return Promise.resolve([mockTeams[0]]); // Odd (1)
-        return Promise.resolve([]);
+      mockTeamLoaderUtils.getAllBackToBackTeams.mockResolvedValueOnce({
+        '6:30': [mockTeams[0], mockTeams[1]], // Even (2)
+        '7:30': [mockTeams[2], mockTeams[3]], // Even (2)
+        '8:30': [mockTeams[0]], // Odd (1)
       });
 
       await result.current.loadTeamsForDate(mockDate);
