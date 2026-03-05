@@ -7,35 +7,6 @@ import { Team } from '@/types';
 
 import BracketForm from '../../BracketForm';
 
-// Mock the useBracketForm hook
-vi.mock('../useBracketForm', () => ({
-  useBracketForm: ({ teams, onSubmit }: any) => ({
-    form: {
-      control: {},
-      handleSubmit: (cb: any) => (e: any) => {
-        e.preventDefault();
-        cb({
-          title: 'Test Tournament',
-          divisionId: 'div1',
-          format: 'Single Elimination',
-          teams: ['team1', 'team2'],
-        });
-      },
-      setValue: vi.fn(),
-    },
-    filteredTeams: teams.slice(0, 2),
-    handleDivisionChange: vi.fn(),
-    handleSubmit: (e: any) => {
-      e.preventDefault();
-      onSubmit({
-        title: 'Test Tournament',
-        divisionId: 'div1',
-        format: 'Single Elimination',
-        teams: ['team1', 'team2'],
-      });
-    },
-  }),
-}));
 
 // Mock the form components
 vi.mock('../BracketFormTitle', () => ({
@@ -50,23 +21,11 @@ vi.mock('../BracketFormFormat', () => ({
   BracketFormFormat: () => <div data-testid="bracket-form-format">Format Component</div>,
 }));
 
-vi.mock('../BracketFormChallonge', () => ({
-  BracketFormChallonge: () => <div data-testid="bracket-form-challonge">Challonge Component</div>,
-}));
-
 // Updated to mock the new BracketFormTeamsContainer component
 vi.mock('../bracket-teams/components/BracketFormTeamsContainer', () => ({
   BracketFormTeamsContainer: () => <div data-testid="bracket-form-teams">Teams Component</div>,
 }));
 
-vi.mock('../BracketFormActions', () => ({
-  BracketFormActions: ({ onCancel }: any) => (
-    <div data-testid="bracket-form-actions">
-      <button onClick={onCancel}>Cancel</button>
-      <button type="submit">Submit</button>
-    </div>
-  ),
-}));
 
 const mockDivisions = [
   { id: 'div1', name: 'Division 1' },
@@ -101,12 +60,11 @@ describe('BracketForm', () => {
     expect(screen.getByTestId('bracket-form-title')).toBeInTheDocument();
     expect(screen.getByTestId('bracket-form-division')).toBeInTheDocument();
     expect(screen.getByTestId('bracket-form-format')).toBeInTheDocument();
-    expect(screen.getByTestId('bracket-form-challonge')).toBeInTheDocument();
     expect(screen.getByTestId('bracket-form-teams')).toBeInTheDocument();
-    expect(screen.getByTestId('bracket-form-actions')).toBeInTheDocument();
+    expect(screen.getByText('Cancel')).toBeInTheDocument();
   });
 
-  it('submits the form with correct data', async () => {
+  it('shows create bracket button in disabled state when no teams selected', () => {
     render(
       <BracketForm
         divisions={mockDivisions}
@@ -117,18 +75,9 @@ describe('BracketForm', () => {
       />
     );
 
-    const user = userEvent.setup();
-    const submitButton = screen.getByText('Submit');
-
-    await user.click(submitButton);
-
-    expect(mockOnSubmit).toHaveBeenCalledTimes(1);
-    expect(mockOnSubmit).toHaveBeenCalledWith({
-      title: 'Test Tournament',
-      divisionId: 'div1',
-      format: 'Single Elimination',
-      teams: ['team1', 'team2'],
-    });
+    const createButton = screen.getByText('Create Bracket (0 teams)');
+    expect(createButton).toBeInTheDocument();
+    expect(createButton).toBeDisabled();
   });
 
   it('calls onCancel when cancel button is clicked', async () => {

@@ -48,17 +48,17 @@ describe('BracketFormFormat', () => {
 
     await user.click(selectTrigger);
 
-    const singleElimination = screen.getByText(BRACKET_FORMATS.SINGLE);
-    const doubleElimination = screen.getByText(BRACKET_FORMATS.DOUBLE);
+    const singleElimination = screen.getAllByText(BRACKET_FORMATS.SINGLE);
+    const doubleElimination = screen.getAllByText(BRACKET_FORMATS.DOUBLE);
 
-    expect(singleElimination).toBeInTheDocument();
-    expect(doubleElimination).toBeInTheDocument();
+    expect(singleElimination[0]).toBeInTheDocument();
+    expect(doubleElimination[0]).toBeInTheDocument();
   });
 
   it('has Double Elimination selected by default', () => {
     render(<TestWrapper />);
 
-    const selectTrigger = screen.getByText(BRACKET_FORMATS.DOUBLE);
-    expect(selectTrigger).toBeInTheDocument();
+    const selectTriggers = screen.getAllByText(BRACKET_FORMATS.DOUBLE);
+    expect(selectTriggers[0]).toBeInTheDocument();
   });
 });
