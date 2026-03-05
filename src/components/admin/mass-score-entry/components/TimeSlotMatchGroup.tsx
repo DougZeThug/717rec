@@ -115,6 +115,7 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
                     onMarkCompleted(globalIndex, checked);
                   }}
                   onClearError={onClearError}
+                  onDelete={onDeleteMatch}
                 />
               </div>
             );

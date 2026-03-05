@@ -84,6 +84,7 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
                 failedMatches={failedMatches}
                 errorMessages={errorMessages}
                 onClearError={onClearError}
+                onDeleteMatch={onDeleteMatch}
                 defaultOpen={matches.length <= 5}
               />
             ))

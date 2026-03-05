@@ -99,6 +99,7 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
           failedMatches={failedMatches}
           errorMessages={errorMessages}
           onClearError={onClearError}
+          onDeleteMatch={onDeleteMatch}
         />
       ))}
     </div>
