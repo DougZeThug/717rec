@@ -19,6 +19,7 @@ interface MatchesTableProps {
   failedMatches?: string[];
   errorMessages?: Record<string, string>;
   onClearError?: (matchId: string) => void;
+  onDeleteMatch?: (matchId: string) => void;
 }
 
 const MatchesTable: React.FC<MatchesTableProps> = ({
