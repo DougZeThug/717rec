@@ -47,15 +47,15 @@ const MassScoreEntryTool: React.FC = () => {
     try {
       const matchToDelete = matches.find((m) => m.id === deleteMatchId);
 
-      if (matchToDelete?.iscompleted && matchToDelete.winner_id && matchToDelete.loser_id) {
-        const winnerGameWins = matchToDelete.winner_id === matchToDelete.team1Id
+      if (matchToDelete?.iscompleted && matchToDelete.winnerId && matchToDelete.loserId) {
+        const winnerGameWins = matchToDelete.winnerId === matchToDelete.team1Id
           ? matchToDelete.team1_game_wins || 0
           : matchToDelete.team2_game_wins || 0;
-        const loserGameWins = matchToDelete.winner_id === matchToDelete.team1Id
+        const loserGameWins = matchToDelete.winnerId === matchToDelete.team1Id
           ? matchToDelete.team2_game_wins || 0
           : matchToDelete.team1_game_wins || 0;
 
-        await reverseTeamStats(matchToDelete.winner_id, matchToDelete.loser_id, winnerGameWins, loserGameWins);
+        await reverseTeamStats(matchToDelete.winnerId, matchToDelete.loserId, winnerGameWins, loserGameWins);
       }
 
       await deleteMatch(deleteMatchId);
