@@ -50,7 +50,7 @@ describe('updateMatchScore', () => {
 
   it('successfully updates match score when team1 wins', async () => {
     vi.mocked(fetchMatchTeamIds).mockResolvedValue({ team1_id: 'team-1', team2_id: 'team-2' });
-    vi.mocked(updateMatch).mockResolvedValue({ id: 'match-1', team1_score: 2, team2_score: 1 });
+    vi.mocked(updateMatch).mockResolvedValue({ id: 'match-1', team1_score: 2, team2_score: 1 } as any);
 
     const params: UpdateMatchScoreParams = {
       matchId: 'match-1',
