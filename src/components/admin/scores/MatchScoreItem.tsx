@@ -17,6 +17,7 @@ interface MatchScoreItemProps {
   onToggle: () => void;
   onScoreChange: (team: 'team1Score' | 'team2Score', value: string) => void;
   onSubmitScore: (team1GameWins: number, team2GameWins: number) => Promise<boolean>;
+  onDelete?: (matchId: string) => void;
 }
 
 const MatchScoreItem = ({
