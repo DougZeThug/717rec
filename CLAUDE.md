@@ -112,9 +112,10 @@ src/
 ├── integrations/        # External integrations (Supabase client)
 ├── lib/                 # Third-party library configs
 ├── pages/               # Route components (lazy-loaded)
-├── services/            # Business logic & data access layer
+├── services/            # Business logic & data access layer (ALL Supabase calls go here)
 │   ├── brackets/        # Bracket CRUD & management
-│   ├── matches/         # Match read/write services
+│   ├── matches/         # Match read/write/comments/reactions services
+│   ├── messages/        # Message board + reactions services
 │   ├── profile/         # Profile service
 │   ├── selectors/       # Selector service
 │   ├── support/         # Contact/support service
@@ -240,18 +241,31 @@ src/
 
 Business logic lives in `src/services/`, sitting between hooks and Supabase. Services throw standardized errors (see Error Handling below).
 
-**Key Services**:
+**Architecture rule**: All Supabase calls must go through a service. Hooks and components must **never** import or call the Supabase client directly (exception: Supabase Storage in `src/utils/imageUpload.ts` and realtime `.channel()` subscriptions which stay in hooks).
+
+**All Services**:
+- `SeasonService` - Season CRUD + participation + stats queries
+- `DivisionService` - Division fetch by season
+- `HeroCardService` - Hero card CRUD + champions card queries
+- `BlindDrawService` - Blind draw settings + signup management
 - `TeamService` / `teams/` - Team CRUD (create, update, delete, fetch, calculations)
+- `TeamFetchService` - Team detail, analysis, requests, membership, badges
+- `TeamStatsService` - Team stats aggregation, records, season breakdown, career, head-to-head
 - `HeadToHeadService` - Match history between teams
-- `RankingsCalculationService` - Rankings & standings computation
+- `RankingsCalculationService` - Rankings & standings computation + power score trends
 - `RankingSnapshotService` - Power score snapshot management
 - `BadgeProcessingService` - Team achievement badge processing
-- `TeamStatsService` - Team statistics aggregation
-- `brackets/` - Bracket management (read, write, seeding, standings, validation, Supabase SQL storage)
-- `matches/` - Match read/write operations
-- `profile/` - User profile service
+- `ProfileService` - User profile queries + auth-related profile lookups
+- `brackets/` - Bracket management (read, write, seeding, standings, validation, Supabase SQL storage) — all using standardized error handling
+- `matches/MatchReadService` - Match queries (pending, uncompleted, timeslots, score submissions, team matches)
+- `matches/MatchWriteService` - Match mutations (create, update, delete, RPC calls)
+- `matches/MatchCommentsService` - Match comment CRUD
+- `matches/MatchReactionsService` - Match reaction toggle + fetch
+- `messages/MessageService` - Message board CRUD with filters + pagination
+- `messages/MessageReactionsService` - Message reaction add/remove/fetch
+- `profile/` - Profile service
 - `support/` - Contact form submission (via edge function)
-- `timeslots/` - Timeslot assignment & bye week management
+- `timeslots/TimeslotService` - Timeslot assignment, bye week management, date-based fetch, auto-schedule save
 
 ---
 
@@ -334,6 +348,42 @@ Business logic lives in `src/services/`, sitting between hooks and Supabase. Ser
 - Custom hooks in `src/hooks/` wrap TanStack Query for feature-specific data
 - Services in `src/services/` handle business logic and Supabase calls
 - Supabase client in `src/integrations/supabase/client.ts`
+
+**SOC Rules** (enforced — do not break these):
+1. Hooks and components must **never** import `supabase` from the integration client
+2. All database queries and mutations live exclusively in `src/services/`
+3. Realtime `.channel()` subscriptions are the **only** exception — they stay in hooks
+4. `src/utils/imageUpload.ts` is the **only** util allowed to call Supabase Storage directly
+5. When adding a new service function, always use `handleDatabaseError()` and `ensureFound()` from `@/utils/errorHandler`
+
+**Service Template**:
+```typescript
+import { supabase } from '@/integrations/supabase/client';
+import { handleDatabaseError, ensureFound } from '@/utils/errorHandler';
+
+export const ExampleService = {
+  fetchItems: async (seasonId: string) => {
+    const { data, error } = await supabase
+      .from('items')
+      .select('*')
+      .eq('season_id', seasonId);
+
+    if (error) handleDatabaseError(error, 'Failed to fetch items');
+    return data ?? [];
+  },
+
+  fetchItemById: async (id: string) => {
+    const { data, error } = await supabase
+      .from('items')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) handleDatabaseError(error, 'Failed to fetch item');
+    return ensureFound(data, 'Item', id);
+  },
+};
+```
 
 ### Routing
 - Lazy-loaded route components for performance
@@ -423,9 +473,6 @@ const team = await fetchTeam(teamId);
 if (!team) { /* This should never happen - throws NotFoundError */ }
 ```
 
-#### Known Inconsistency
-Bracket services (`src/services/brackets/`) currently throw raw Supabase errors or generic `Error` objects instead of using `handleDatabaseError()` and typed `ServiceError` classes. New bracket service code should follow the standard pattern above.
-
 ---
 
 ## 🚨 Common Gotchas
@@ -439,8 +486,8 @@ Bracket services (`src/services/brackets/`) currently throw raw Supabase errors 
 7. **TypeScript strict mode**: Disabled in `tsconfig.app.json` (allows flexible typing)
 8. **Legacy peer deps**: `.npmrc` has `legacy-peer-deps=true` to avoid peer dependency conflicts
 9. **Edge functions**: Verify JWT requirements in `supabase/config.toml`, and keep function entries synchronized with `supabase/functions/`
-10. **Bracket services**: Don't follow the standard error handling pattern yet (see Known Inconsistency note above)
+10. **No direct Supabase in hooks/components**: Always go through a service — see SOC Rules in Key Code Patterns above
 
 ---
 
-*Last updated: 2026-03-03*
+*Last updated: 2026-03-05*
