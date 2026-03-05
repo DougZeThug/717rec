@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { supabase } from '@/integrations/supabase/client';
-import { errorLog } from '@/utils/logger';
+import { fetchTeamPowerScores } from '@/services/RankingSnapshotService';
 
 // Define interface for the team power score data
 export interface TeamPowerScoreData {
@@ -18,27 +17,7 @@ interface PowerScoreResult {
 export const useTeamPowerScores = () => {
   const { data, isLoading, error } = useQuery<PowerScoreResult, Error>({
     queryKey: ['team-power-scores'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('v_team_details')
-        .select('team_id, name, power_score');
-
-      if (error) {
-        errorLog('Error fetching team power scores:', error);
-        throw error;
-      }
-
-      // Create mappings for power scores and team names
-      const scoreMap: Record<string, number> = {};
-      const nameMap: Record<string, string> = {};
-
-      data?.forEach((team: TeamPowerScoreData) => {
-        scoreMap[team.team_id] = team.power_score;
-        nameMap[team.team_id] = team.name;
-      });
-
-      return { powerScores: scoreMap, teamNames: nameMap };
-    },
+    queryFn: fetchTeamPowerScores,
     staleTime: 1000 * 60 * 5, // 5 minutes - power scores don't change frequently
   });
 
