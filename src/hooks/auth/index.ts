@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router';
 
 import { useThemeConsistency } from '@/hooks/useThemeConsistency';
 import { toast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
+import { getAuthSession, onAuthStateChange } from '@/services/auth/AuthService';
 import { authLog, errorLog } from '@/utils/logger';
 
 import { useAuthMethods } from './useAuthMethods';
@@ -68,7 +68,7 @@ export const useAuth = () => {
     // Set up auth state listener
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, currentSession) => {
+    } = onAuthStateChange((event, currentSession) => {
       authLog('Auth state changed:', event);
 
       // Update the current user ID to track which profile fetch is valid
@@ -161,7 +161,7 @@ export const useAuth = () => {
         const {
           data: { session: currentSession },
           error: sessionError,
-        } = await supabase.auth.getSession();
+        } = await getAuthSession();
 
         // Skip if cleaned up or user changed during getSession
         if (isCancelled) {

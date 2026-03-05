@@ -1,27 +1,13 @@
-import { supabase } from '@/integrations/supabase/client';
+import { fetchTeamForStats } from '@/services/teams/TeamFetchService';
 import { errorLog, teamLog } from '@/utils/logger';
 
 export const fetchTeamData = async (teamId: string) => {
   teamLog('Fetching team data for ID:', teamId);
 
-  const { data: team, error } = await supabase
-    .from('teams')
-    .select(
-      `
-      id, 
-      name, 
-      wins, 
-      losses, 
-      game_wins, 
-      game_losses,
-      divisions (name)
-    `
-    )
-    .eq('id', teamId)
-    .maybeSingle();
+  const team = await fetchTeamForStats(teamId);
 
-  if (error || !team) {
-    errorLog('ERROR FETCHING TEAM:', error || 'No team found with ID: ' + teamId);
+  if (!team) {
+    errorLog('ERROR FETCHING TEAM:', 'No team found with ID: ' + teamId);
     return null;
   }
 
