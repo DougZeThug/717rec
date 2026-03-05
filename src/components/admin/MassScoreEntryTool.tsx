@@ -146,6 +146,7 @@ const MassScoreEntryTool: React.FC = () => {
               onGameWinsChange={handleGameWinsChange}
               onMarkCompleted={handleMarkCompleted}
               onClearError={clearErrors}
+              onDeleteMatch={(matchId) => setDeleteMatchId(matchId)}
             />
           </div>
 
