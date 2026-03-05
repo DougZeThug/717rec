@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 
 import DeleteMatchDialog from '@/components/schedule/DeleteMatchDialog';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { invalidateAllDataQueries } from '@/hooks/matches/updates/utils/queryInvalidation';
 import { reverseTeamStats } from '@/hooks/matches/updates/utils/statReversalUtils';
 import { useToast } from '@/hooks/useToast';
 import { deleteMatch, upsertTeamSeasonStats } from '@/services/matches/MatchWriteService';
