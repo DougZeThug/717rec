@@ -606,7 +606,7 @@ export async function fetchTeamCareerPowerScore(teamId: string): Promise<SeasonP
 
       return {
         seasonName: season.name,
-        powerScore: stat.power_score ? stat.power_score * 100 : null,
+        powerScore: stat.power_score !== null ? stat.power_score * 100 : null,
         playoffRank: stat.playoff_rank,
         divisionName: stat.division_name,
         isChampion: stat.champion || false,
