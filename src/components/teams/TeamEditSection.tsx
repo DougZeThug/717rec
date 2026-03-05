@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/useToast';
 import { useTeamMembership } from '@/hooks/useTeamMembership';
-import { supabase } from '@/integrations/supabase/client';
+import { updateTeamNameAndImage } from '@/services/teams/TeamUpdateService';
 import { errorLog } from '@/utils/logger';
 
 const TeamEditSection: React.FC = () => {
@@ -43,15 +43,11 @@ const TeamEditSection: React.FC = () => {
     try {
       setIsLoading(true);
 
-      const { error } = await supabase
-        .from('teams')
-        .update({
-          name: formData.name.trim(),
-          image_url: formData.image_url.trim() || null,
-        })
-        .eq('id', membership.team.id);
-
-      if (error) throw error;
+      await updateTeamNameAndImage(
+        membership.team.id,
+        formData.name.trim(),
+        formData.image_url.trim() || null
+      );
 
       toast({
         title: 'Team Updated',

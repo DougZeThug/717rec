@@ -2,20 +2,17 @@ import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  fetchTeamMembership,
+  fetchAvailableTeams,
+  joinTeamMembership,
+  leaveTeamMembership,
+  type TeamMembershipRecord,
+} from '@/services/teams/TeamFetchService';
 import { Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 
-interface TeamMembershipData {
-  id: string;
-  user_id: string;
-  team_id: string;
-  joined_at: string;
-  is_approved: boolean;
-  approved_by?: string;
-  approved_at?: string;
-  team?: Team;
-}
+interface TeamMembershipData extends TeamMembershipRecord {}
 
 export function useTeamMembership() {
   const { user } = useAuth();
@@ -39,45 +36,8 @@ export function useTeamMembership() {
     try {
       setIsFetching(true);
       setError(null);
-      const { data, error: fetchError } = await supabase
-        .from('team_memberships')
-        .select(
-          `
-          id,
-          user_id,
-          team_id,
-          joined_at,
-          is_approved,
-          approved_by,
-          approved_at,
-          team:teams(id, name, logo_url, image_url, division_id, wins, losses, game_wins, game_losses)
-        `
-        )
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (fetchError) throw fetchError;
-
-      if (data) {
-        // Transform the data to match the Team interface
-        const transformedData: TeamMembershipData = {
-          ...data,
-          team: data.team
-            ? {
-                ...data.team,
-                logoUrl: data.team.image_url || data.team.logo_url,
-                imageUrl: data.team.image_url || data.team.logo_url,
-                power_score: 0, // Default values for required properties
-                sos: 0,
-                win_percentage: 0,
-                game_win_percentage: 0,
-              }
-            : undefined,
-        };
-        setMembership(transformedData);
-      } else {
-        setMembership(null);
-      }
+      const data = await fetchTeamMembership(user.id);
+      setMembership(data);
     } catch (err) {
       errorLog('Error fetching team membership:', err);
       setError('Failed to load team membership');
@@ -88,29 +48,8 @@ export function useTeamMembership() {
 
   const fetchTeams = async () => {
     try {
-      const { data, error } = await supabase
-        .from('teams')
-        .select('id, name, logo_url, image_url, division_id, wins, losses')
-        .order('name');
-
-      if (error) throw error;
-
-      // Transform data to match the Team interface
-      const transformedTeams: Team[] = (data || []).map((team) => ({
-        id: team.id,
-        name: team.name,
-        logoUrl: team.image_url || team.logo_url,
-        imageUrl: team.image_url || team.logo_url,
-        division: team.division_id,
-        wins: team.wins,
-        losses: team.losses,
-        power_score: 0, // Default values for required properties
-        sos: 0,
-        win_percentage: 0,
-        game_win_percentage: 0,
-      }));
-
-      setAvailableTeams(transformedTeams);
+      const teams = await fetchAvailableTeams();
+      setAvailableTeams(teams);
     } catch (error) {
       errorLog('Error fetching teams:', error);
     }
@@ -129,34 +68,14 @@ export function useTeamMembership() {
     try {
       setIsLoading(true);
 
-      // If already in a team, update the membership (but reset approval status)
+      await joinTeamMembership(user.id, teamId, !!membership);
+
       if (membership) {
-        const { error } = await supabase
-          .from('team_memberships')
-          .update({
-            team_id: teamId,
-            is_approved: false,
-            approved_by: null,
-            approved_at: null,
-          })
-          .eq('user_id', user.id);
-
-        if (error) throw error;
-
         toast({
           title: 'Team Request Submitted',
           description: 'Your request to change teams has been submitted for admin approval',
         });
       } else {
-        // Otherwise create a new membership (starts as unapproved)
-        const { error } = await supabase.from('team_memberships').insert({
-          user_id: user.id,
-          team_id: teamId,
-          is_approved: false,
-        });
-
-        if (error) throw error;
-
         toast({
           title: 'Team Request Submitted',
           description: 'Your request to join the team has been submitted for admin approval',
@@ -183,9 +102,7 @@ export function useTeamMembership() {
 
     try {
       setIsLoading(true);
-      const { error } = await supabase.from('team_memberships').delete().eq('user_id', user.id);
-
-      if (error) throw error;
+      await leaveTeamMembership(user.id);
 
       setMembership(null);
       toast({

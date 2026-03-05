@@ -28,8 +28,7 @@ import { useTeamsQuery } from '@/hooks/teams';
 import { useToast } from '@/hooks/useToast';
 import { useDivisions } from '@/hooks/useDivisions';
 import { useTeams } from '@/hooks/useTeams';
-import { supabase } from '@/integrations/supabase/client';
-import { updateTeamApi } from '@/services/TeamService';
+import { fetchPendingMembershipCount, updateTeamApi } from '@/services/TeamService';
 import { Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 
@@ -52,17 +51,9 @@ const TeamManagementTab = () => {
   const [pendingMembershipCount, setPendingMembershipCount] = useState(0);
 
   useEffect(() => {
-    const fetchPendingCount = async () => {
-      const { count, error } = await supabase
-        .from('team_memberships')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_approved', false);
-      
-      if (!error && count !== null) {
-        setPendingMembershipCount(count);
-      }
-    };
-    fetchPendingCount();
+    fetchPendingMembershipCount().then((count) => {
+      setPendingMembershipCount(count);
+    });
   }, []);
 
   const handleTeamSubmit = async (teamData: Omit<Team, 'id' | 'created_at'>) => {
