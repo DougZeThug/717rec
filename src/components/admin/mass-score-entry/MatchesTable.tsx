@@ -32,6 +32,7 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
   failedMatches = [],
   errorMessages = {},
   onClearError,
+  onDeleteMatch,
 }) => {
   // Add index reference to each match for stable references
   const indexedMatches = useMemo(() => {
