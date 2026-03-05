@@ -63,7 +63,7 @@ const MassScoreEntryTool: React.FC = () => {
       await upsertTeamSeasonStats();
 
       toast({ title: 'Match deleted', description: 'The match has been removed successfully.' });
-      queryClient.invalidateQueries({ queryKey: ['matches'] });
+      invalidateAllDataQueries(queryClient);
       queryClient.invalidateQueries({ queryKey: ['mass-score-entry'] });
     } catch (error) {
       errorLog('Failed to delete match:', error);
