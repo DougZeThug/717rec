@@ -204,6 +204,38 @@ export const upsertTeamSeasonStats = async (): Promise<void> => {
   }
 };
 
+// ---------------------------------------------------------------------------
+// Functions added for Batch 11 refactor — moved from useAutoScheduleSave
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetch the active season ID, returning undefined if no active season exists.
+ * Does NOT throw if no active season found — only throws on database error.
+ * Exact query (maybeSingle) copied from useAutoScheduleSave.ts
+ * @throws raw Supabase error on database failure
+ */
+export const fetchActiveSeasonIdOptional = async (): Promise<string | undefined> => {
+  const { data, error } = await supabase
+    .from('seasons')
+    .select('id')
+    .eq('is_active', true)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data?.id;
+};
+
+/**
+ * Insert auto-scheduled matches (includes metadata field) and return inserted rows.
+ * Exact insert copied from useAutoScheduleSave.ts
+ * @throws raw Supabase error on failure
+ */
+export const saveAutoScheduleMatches = async (matches: object[]) => {
+  const { data, error } = await supabase.from('matches').insert(matches).select();
+  if (error) throw error;
+  return data;
+};
+
 /**
  * Create a score submission
  * @throws raw Supabase error on failure

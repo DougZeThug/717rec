@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingState } from '@/components/ui/loading-state';
-import { supabase } from '@/integrations/supabase/client';
+import { TimeslotService } from '@/services/timeslots/TimeslotService';
 import { TeamTimeslot } from '@/types';
 import { errorLog } from '@/utils/logger';
 
@@ -35,17 +35,7 @@ const WeekTimeslotDisplay: React.FC<WeekTimeslotDisplayProps> = ({
         const startDate = format(weekStart, 'yyyy-MM-dd');
         const endDate = format(weekEnd, 'yyyy-MM-dd');
 
-        const { data, error } = await supabase
-          .from('team_timeslots')
-          .select('id, match_date, timeslot, team_id, created_at, is_back_to_back, is_double_header, pair_slot, match_sequence')
-          .eq('team_id', teamId)
-          .gte('match_date', startDate)
-          .lte('match_date', endDate)
-          .order('match_date', { ascending: true });
-
-        if (error) {
-          throw error;
-        }
+        const data = await TimeslotService.fetchWeekTimeslotsByTeam(teamId, startDate, endDate);
 
         setTimeslots(data || []);
       } catch (error) {

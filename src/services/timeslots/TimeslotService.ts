@@ -440,6 +440,204 @@ export class TimeslotService {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Functions added for Batch 11 refactor — moved from hooks/components/utils
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Fetch timeslots for a formatted date string (used by useTimeslotsByDate hook)
+   * Exact query copied from useTimeslotsByDate.ts
+   */
+  static async fetchTimeslotsByDate(formattedDate: string) {
+    const { data, error } = await supabase
+      .from('team_timeslots')
+      .select(
+        `
+        id,
+        match_date,
+        timeslot,
+        team_id,
+        created_at,
+        is_back_to_back,
+        is_double_header,
+        pair_slot,
+        match_sequence,
+        teams:team_id (
+          id,
+          name,
+          logo_url,
+          image_url
+        )
+      `
+      )
+      .eq('match_date', formattedDate);
+
+    if (error) {
+      errorLog('Error fetching timeslots:', error);
+      throw error;
+    }
+
+    return data ?? [];
+  }
+
+  /**
+   * Fetch timeslots for a formatted date (used by useTimeslotOperations hook)
+   * Exact query copied from useTimeslotOperations.ts — note: no image_url in teams select
+   */
+  static async fetchTimeslotsForDate(formattedDate: string) {
+    const { data, error } = await supabase
+      .from('team_timeslots')
+      .select(
+        `
+        id,
+        match_date,
+        timeslot,
+        team_id,
+        created_at,
+        is_back_to_back,
+        is_double_header,
+        pair_slot,
+        match_sequence,
+        teams:team_id (
+          id,
+          name,
+          logo_url
+        )
+      `
+      )
+      .eq('match_date', formattedDate);
+
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  /**
+   * Insert a single timeslot (used by useTimeslotOperations.addTimeslot)
+   * Exact insert copied from useTimeslotOperations.ts
+   */
+  static async insertTimeslot(match_date: string, team_id: string, timeslot: string) {
+    const { data, error } = await supabase
+      .from('team_timeslots')
+      .insert({ match_date, team_id, timeslot })
+      .select('*, teams:team_id(id, name, logo_url)')
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  /**
+   * Delete a single timeslot by id (used by useTimeslotOperations.deleteTimeslot)
+   * Simple delete — does NOT handle back-to-back pair deletion
+   */
+  static async deleteTimeslotSimple(id: string) {
+    const { error } = await supabase.from('team_timeslots').delete().eq('id', id);
+    if (error) throw error;
+  }
+
+  /**
+   * Batch insert timeslots (used by useTimeslotOperations.batchAssignTimeslots)
+   * Exact insert copied from useTimeslotOperations.ts
+   */
+  static async batchInsertTimeslots(
+    insertData: Array<{ match_date: string; team_id: string; timeslot: string }>
+  ) {
+    const { data, error } = await supabase
+      .from('team_timeslots')
+      .insert(insertData)
+      .select('*, teams:team_id(id, name, logo_url)');
+
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  /**
+   * Fetch timeslots for a team within a date range (used by WeekTimeslotDisplay)
+   * Exact query copied from WeekTimeslotDisplay.tsx
+   */
+  static async fetchWeekTimeslotsByTeam(teamId: string, startDate: string, endDate: string) {
+    const { data, error } = await supabase
+      .from('team_timeslots')
+      .select(
+        'id, match_date, timeslot, team_id, created_at, is_back_to_back, is_double_header, pair_slot, match_sequence'
+      )
+      .eq('team_id', teamId)
+      .gte('match_date', startDate)
+      .lte('match_date', endDate)
+      .order('match_date', { ascending: true });
+
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  /**
+   * Fetch timeslots for a back-to-back pair (used by teamLoaderUtils.getTeamsByBackToBackPair)
+   * Exact query copied from teamLoaderUtils.ts
+   */
+  static async fetchTimeslotsForPair(
+    formattedDate: string,
+    primarySlot: string,
+    secondarySlot: string
+  ) {
+    const { data, error } = await supabase
+      .from('team_timeslots')
+      .select(
+        `
+      id,
+      team_id,
+      timeslot,
+      match_date,
+      is_back_to_back,
+      pair_slot,
+      match_sequence,
+      teams:team_id (
+        id,
+        name,
+        logo_url,
+        image_url,
+        players,
+        wins,
+        losses,
+        game_wins,
+        game_losses,
+        division_id,
+        divisions:division_id (
+          name,
+          display_division
+        )
+      )
+    `
+      )
+      .eq('match_date', formattedDate)
+      .in('timeslot', [primarySlot, secondarySlot])
+      .eq('is_back_to_back', true);
+
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  /**
+   * Fetch timeslot assignments for validation (used by teamLoaderUtils.validateTeamBackToBackAssignment)
+   * Exact query copied from teamLoaderUtils.ts
+   */
+  static async fetchTimeslotValidation(
+    formattedDate: string,
+    teamId: string,
+    primarySlot: string,
+    secondarySlot: string
+  ) {
+    const { data, error } = await supabase
+      .from('team_timeslots')
+      .select('timeslot, match_sequence')
+      .eq('match_date', formattedDate)
+      .eq('team_id', teamId)
+      .eq('is_back_to_back', true)
+      .in('timeslot', [primarySlot, secondarySlot]);
+
+    if (error || !data) return null;
+    return data;
+  }
+
   /**
    * Batch assign double headers to multiple teams
    * Each team gets 4 timeslot entries: 2 for each back-to-back pair

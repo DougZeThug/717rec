@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { checkTeamsEverPlayed } from '@/services/matches/MatchReadService';
 import { getDisplayDivision } from '@/styles/design-system/divisions';
 import { Team } from '@/types';
 import { debugLog, errorLog } from '@/utils/logger';
@@ -89,25 +89,11 @@ export async function haveTeamsPlayed(team1Id: string, team2Id: string): Promise
 }
 
 /**
- * Actual database query to check if teams have played before
+ * Database query to check if teams have played before — delegates to MatchReadService
  */
 async function checkTeamsPlayedHistory(team1Id: string, team2Id: string): Promise<boolean> {
   try {
-    // Build a query to find matches between these teams
-    const { data, error } = await supabase
-      .from('matches')
-      .select('id')
-      .or(
-        `and(team1_id.eq.${team1Id},team2_id.eq.${team2Id}),and(team1_id.eq.${team2Id},team2_id.eq.${team1Id})`
-      )
-      .limit(1);
-
-    if (error) {
-      errorLog('Error checking if teams have played:', error);
-      throw error;
-    }
-
-    return data && data.length > 0;
+    return await checkTeamsEverPlayed(team1Id, team2Id);
   } catch (error) {
     errorLog('Error in checkTeamsPlayedHistory:', error);
     // Return false as a fallback to avoid blocking match generation

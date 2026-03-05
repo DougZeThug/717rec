@@ -1,8 +1,7 @@
 import { format } from 'date-fns';
-import { useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
+import { TimeslotService } from '@/services/timeslots/TimeslotService';
 import { TeamTimeslot } from '@/types';
 import { errorLog, scheduleLog } from '@/utils/logger';
 
@@ -19,32 +18,7 @@ export const useTimeslotOperations = () => {
       // Format date as YYYY-MM-DD for database queries
       const formattedDate = format(date, 'yyyy-MM-dd');
 
-      // Use explicit foreign key join for the teams relation
-      const { data, error } = await supabase
-        .from('team_timeslots')
-        .select(
-          `
-          id,
-          match_date,
-          timeslot,
-          team_id,
-          created_at,
-          is_back_to_back,
-          is_double_header,
-          pair_slot,
-          match_sequence,
-          teams:team_id (
-            id, 
-            name, 
-            logo_url
-          )
-        `
-        )
-        .eq('match_date', formattedDate);
-
-      if (error) {
-        throw error;
-      }
+      const data = await TimeslotService.fetchTimeslotsForDate(formattedDate);
 
       // Map the data to match the TeamTimeslot type
       const formattedData: TeamTimeslot[] =
@@ -73,20 +47,11 @@ export const useTimeslotOperations = () => {
     try {
       scheduleLog('Adding timeslot:', { date: format(date, 'yyyy-MM-dd'), teamId, timeslot });
 
-      const { data, error } = await supabase
-        .from('team_timeslots')
-        .insert({
-          match_date: format(date, 'yyyy-MM-dd'),
-          team_id: teamId,
-          timeslot,
-        })
-        .select('*, teams:team_id(id, name, logo_url)')
-        .single();
-
-      if (error) {
-        errorLog('Error adding timeslot:', error);
-        throw error;
-      }
+      const data = await TimeslotService.insertTimeslot(
+        format(date, 'yyyy-MM-dd'),
+        teamId,
+        timeslot
+      );
 
       // Format the returned data to match TeamTimeslot type
       const formattedData: TeamTimeslot = {
@@ -117,12 +82,7 @@ export const useTimeslotOperations = () => {
   // Delete a timeslot assignment
   const deleteTimeslot = async (id: string) => {
     try {
-      const { error } = await supabase.from('team_timeslots').delete().eq('id', id);
-
-      if (error) {
-        errorLog('Error deleting timeslot:', error);
-        throw error;
-      }
+      await TimeslotService.deleteTimeslotSimple(id);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       errorLog('Error deleting timeslot:', error);
@@ -152,15 +112,7 @@ export const useTimeslotOperations = () => {
       }));
 
       // Use a single batch insert instead of multiple calls
-      const { data, error } = await supabase
-        .from('team_timeslots')
-        .insert(insertData)
-        .select('*, teams:team_id(id, name, logo_url)');
-
-      if (error) {
-        errorLog('Batch insert error:', error);
-        throw error;
-      }
+      const data = await TimeslotService.batchInsertTimeslots(insertData);
 
       scheduleLog('Batch assignment successful, count:', data?.length);
 

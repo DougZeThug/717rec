@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { TimeslotService } from '@/services/timeslots/TimeslotService';
 import { Team } from '@/types';
 import { PairedTimeBlockTeamsMap } from '@/types/autoSchedule';
 import { errorLog, scheduleLog, warnLog } from '@/utils/logger';
@@ -31,38 +31,17 @@ export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Pr
 
   try {
     // Query for teams in both timeslots of the pair
-    const { data: timeslots, error } = await supabase
-      .from('team_timeslots')
-      .select(
-        `
-      id,
-      team_id,
-      timeslot,
-      match_date,
-      is_back_to_back,
-      pair_slot,
-      match_sequence,
-      teams:team_id (
-        id,
-        name,
-        logo_url, 
-        image_url,
-        players,
-        wins,
-        losses,
-        game_wins,
-        game_losses,
-        division_id,
-        divisions:division_id (
-          name,
-          display_division
-        )
-      )
-    `
-      )
-      .eq('match_date', formattedDate)
-      .in('timeslot', [pairConfig.primary, pairConfig.secondary])
-      .eq('is_back_to_back', true);
+    let timeslots: Awaited<ReturnType<typeof TimeslotService.fetchTimeslotsForPair>>;
+    try {
+      timeslots = await TimeslotService.fetchTimeslotsForPair(
+        formattedDate,
+        pairConfig.primary,
+        pairConfig.secondary
+      );
+    } catch (fetchError) {
+      errorLog(`Error fetching teams for ${pairName} pair on ${formattedDate}:`, fetchError);
+      return [];
+    }
 
     // Defensive validation: Check for unexpected timeslots
     if (timeslots && timeslots.length > 0) {
@@ -76,11 +55,6 @@ export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Pr
           unexpectedSlots.map((s) => `${s.team_id} -> ${s.timeslot}`)
         );
       }
-    }
-
-    if (error) {
-      errorLog(`Error fetching teams for ${pairName} pair on ${formattedDate}:`, error);
-      return [];
     }
 
     if (!timeslots || timeslots.length === 0) {
@@ -230,15 +204,14 @@ export const validateTeamBackToBackAssignment = async (
   const formattedDate = normalizeScheduleDate(date, 'validateTeamBackToBackAssignment');
 
   try {
-    const { data, error } = await supabase
-      .from('team_timeslots')
-      .select('timeslot, match_sequence')
-      .eq('match_date', formattedDate)
-      .eq('team_id', teamId)
-      .eq('is_back_to_back', true)
-      .in('timeslot', [pairConfig.primary, pairConfig.secondary]);
+    const data = await TimeslotService.fetchTimeslotValidation(
+      formattedDate,
+      teamId,
+      pairConfig.primary,
+      pairConfig.secondary
+    );
 
-    if (error || !data) return false;
+    if (!data) return false;
 
     // Check that team has both sequence 1 and sequence 2
     const sequences = data.map((slot) => slot.match_sequence);
