@@ -1,6 +1,7 @@
-import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2, Trash2 } from 'lucide-react';
 import React, { useCallback } from 'react';
 
+import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { scoreLog } from '@/utils/logger';
 
@@ -19,6 +20,7 @@ interface MatchRowProps {
   onGameWinsChange: (team1GameWins: number, team2GameWins: number) => void;
   onMarkCompleted: (checked: boolean) => void;
   onClearError?: (matchId: string) => void;
+  onDelete?: (matchId: string) => void;
 }
 
 const MatchRow: React.FC<MatchRowProps> = ({
@@ -31,6 +33,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
   onGameWinsChange,
   onMarkCompleted,
   onClearError,
+  onDelete,
 }) => {
   // Use match state for optimistic updates, fallback to props
   const isSubmitting = match.isSubmitting || propIsSubmitting;
@@ -104,10 +107,27 @@ const MatchRow: React.FC<MatchRowProps> = ({
         )}
 
         {/* Team Names Display */}
-        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4">
-          <TeamDisplay team={match.team1} align="left" className="flex-1" />
-          <span className="text-muted-foreground text-xs text-center sm:hidden py-0.5">vs</span>
-          <TeamDisplay team={match.team2} align="left" className="flex-1 sm:flex-row-reverse sm:[&>span]:text-right" />
+        <div className="flex items-start gap-2">
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 flex-1">
+            <TeamDisplay team={match.team1} align="left" className="flex-1" />
+            <span className="text-muted-foreground text-xs text-center sm:hidden py-0.5">vs</span>
+            <TeamDisplay team={match.team2} align="left" className="flex-1 sm:flex-row-reverse sm:[&>span]:text-right" />
+          </div>
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
+              onClick={() => {
+                // Extract real match ID (strip the -index-N suffix)
+                const realId = match.id.split('-index-')[0];
+                onDelete(realId);
+              }}
+              disabled={isSubmitting}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
 
         {/* Score Section */}

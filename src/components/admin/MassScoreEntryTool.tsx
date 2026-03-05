@@ -1,8 +1,14 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ClipboardCheck } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
 
+import DeleteMatchDialog from '@/components/schedule/DeleteMatchDialog';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { reverseTeamStats } from '@/hooks/matches/updates/utils/statReversalUtils';
+import { useToast } from '@/hooks/useToast';
+import { deleteMatch, upsertTeamSeasonStats } from '@/services/matches/MatchWriteService';
+import { errorLog } from '@/utils/logger';
 
 import AdminSectionWrapper from './AdminSectionWrapper';
 import ErrorAlert from './mass-score-entry/components/ErrorAlert';
@@ -12,6 +18,11 @@ import { useScoreEntryData } from './mass-score-entry/hooks/useScoreEntryData';
 import MatchesTable from './mass-score-entry/MatchesTable';
 
 const MassScoreEntryTool: React.FC = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [deleteMatchId, setDeleteMatchId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const {
     matches,
     loading,
@@ -29,6 +40,38 @@ const MassScoreEntryTool: React.FC = () => {
     setBracketFilter,
     clearFilters,
   } = useScoreEntryData();
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteMatchId) return;
+    setIsDeleting(true);
+    try {
+      const matchToDelete = matches.find((m) => m.id === deleteMatchId);
+
+      if (matchToDelete?.iscompleted && matchToDelete.winnerId && matchToDelete.loserId) {
+        const winnerGameWins = matchToDelete.winnerId === matchToDelete.team1Id
+          ? matchToDelete.team1_game_wins || 0
+          : matchToDelete.team2_game_wins || 0;
+        const loserGameWins = matchToDelete.winnerId === matchToDelete.team1Id
+          ? matchToDelete.team2_game_wins || 0
+          : matchToDelete.team1_game_wins || 0;
+
+        await reverseTeamStats(matchToDelete.winnerId, matchToDelete.loserId, winnerGameWins, loserGameWins);
+      }
+
+      await deleteMatch(deleteMatchId);
+      await upsertTeamSeasonStats();
+
+      toast({ title: 'Match deleted', description: 'The match has been removed successfully.' });
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
+      queryClient.invalidateQueries({ queryKey: ['mass-score-entry'] });
+    } catch (error) {
+      errorLog('Failed to delete match:', error);
+      toast({ title: 'Error', description: 'Failed to delete match. Please try again.', variant: 'destructive' });
+    } finally {
+      setIsDeleting(false);
+      setDeleteMatchId(null);
+    }
+  };
 
   // Count edited matches that are valid
   const validEditedMatchesCount = matches.filter((m) => m.isEdited && m.isValid).length;
@@ -103,6 +146,7 @@ const MassScoreEntryTool: React.FC = () => {
               onGameWinsChange={handleGameWinsChange}
               onMarkCompleted={handleMarkCompleted}
               onClearError={clearErrors}
+              onDeleteMatch={(matchId) => setDeleteMatchId(matchId)}
             />
           </div>
 
@@ -116,6 +160,13 @@ const MassScoreEntryTool: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      <DeleteMatchDialog
+        isOpen={!!deleteMatchId}
+        onClose={() => setDeleteMatchId(null)}
+        onConfirm={handleDeleteConfirm}
+        isDeleting={isDeleting}
+      />
     </AdminSectionWrapper>
   );
 };

@@ -168,7 +168,7 @@ export const useBatchMatchForm = (teams: Team[]) => {
 
       // Reset form
       setMatchPairs([{ id: '1', team1Id: null, team2Id: null, timeslot: null }]);
-      setSelectedDate(null);
+      setSelectedDate(getNextThursday());
 
       return true;
     } catch (error) {

@@ -20,6 +20,7 @@ interface TimeSlotMatchGroupProps {
   errorMessages?: Record<string, string>;
   onClearError?: (matchId: string) => void;
   defaultOpen?: boolean;
+  onDeleteMatch?: (matchId: string) => void;
 }
 
 const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
@@ -33,6 +34,7 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
   errorMessages = {},
   onClearError,
   defaultOpen = false,
+  onDeleteMatch,
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
@@ -113,6 +115,7 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
                     onMarkCompleted(globalIndex, checked);
                   }}
                   onClearError={onClearError}
+                  onDelete={onDeleteMatch}
                 />
               </div>
             );

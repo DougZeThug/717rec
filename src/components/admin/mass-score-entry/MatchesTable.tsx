@@ -19,6 +19,7 @@ interface MatchesTableProps {
   failedMatches?: string[];
   errorMessages?: Record<string, string>;
   onClearError?: (matchId: string) => void;
+  onDeleteMatch?: (matchId: string) => void;
 }
 
 const MatchesTable: React.FC<MatchesTableProps> = ({
@@ -31,6 +32,7 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
   failedMatches = [],
   errorMessages = {},
   onClearError,
+  onDeleteMatch,
 }) => {
   // Add index reference to each match for stable references
   const indexedMatches = useMemo(() => {
@@ -97,6 +99,7 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
           failedMatches={failedMatches}
           errorMessages={errorMessages}
           onClearError={onClearError}
+          onDeleteMatch={onDeleteMatch}
         />
       ))}
     </div>
