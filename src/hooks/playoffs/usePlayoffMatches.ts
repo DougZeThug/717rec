@@ -1,11 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { supabase } from '@/integrations/supabase/client';
+import { fetchPlayoffMatches } from '@/services/brackets/BracketReadService';
 import { errorLog, playoffLog } from '@/utils/logger';
-import {
-  PlayoffMatchWithTeams,
-  transformDatabasePlayoffMatchesWithTeams,
-} from '@/utils/matchTransformers';
+import { PlayoffMatchWithTeams } from '@/utils/matchTransformers';
 
 export const usePlayoffMatches = (bracketId: string | null) => {
   return useQuery({
@@ -18,37 +15,14 @@ export const usePlayoffMatches = (bracketId: string | null) => {
         return [];
       }
 
-      // Use the new foreign key constraints for proper team data fetching
-      const { data, error } = await supabase
-        .from('playoff_matches')
-        .select(
-          `
-          *,
-          team1:teams!fk_playoff_matches_team1(id, name, logo_url, image_url),
-          team2:teams!fk_playoff_matches_team2(id, name, logo_url, image_url),
-          playoff_games(*)
-        `
-        )
-        .eq('bracket_id', bracketId)
-        .order('round')
-        .order('position');
-
-      if (error) {
+      try {
+        const matches = await fetchPlayoffMatches(bracketId);
+        playoffLog('Returning', matches.length, 'matches with team data');
+        return matches;
+      } catch (error) {
         errorLog('usePlayoffMatches: Database error:', error);
         throw error;
       }
-
-      playoffLog('Found', data?.length || 0, 'matches');
-
-      if (!data || data.length === 0) {
-        return [];
-      }
-
-      // Transform with centralized transformer
-      const transformedMatches = transformDatabasePlayoffMatchesWithTeams(data);
-
-      playoffLog('Returning', transformedMatches.length, 'matches with team data');
-      return transformedMatches;
     },
     enabled: !!bracketId,
     staleTime: 0, // Always fresh - instant updates

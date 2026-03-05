@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useRef, useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
+import { batchUpdateTeamSeeds, updateTeamSeed } from '@/services/brackets/BracketWriteService';
 
 import { TeamSeedUpdate } from './useTeamSeedMutation';
 
@@ -140,15 +140,7 @@ export const useOptimisticTeamMutations = () => {
       }, 10000); // 10 second timeout
 
       // Perform actual database update
-      const { data, error } = await supabase
-        .from('teams')
-        .update({ seed })
-        .eq('id', teamId)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      return updateTeamSeed(teamId, seed);
     },
     onSuccess: (data, variables) => {
       // Clear timeout and pending update
@@ -213,11 +205,7 @@ export const useOptimisticTeamMutations = () => {
         seed: seed === null ? 'null' : seed.toString(),
       }));
 
-      const { data, error } = await supabase.rpc('batch_update_team_seeds', {
-        p_updates: batchData,
-      });
-
-      if (error) throw error;
+      const data = await batchUpdateTeamSeeds(batchData);
       return data as unknown as BatchUpdateResult;
     },
     onSuccess: (result, variables) => {

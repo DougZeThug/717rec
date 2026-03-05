@@ -1,7 +1,10 @@
 import { useCallback, useRef, useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  fetchBmMatchWithStage,
+  fetchPlayoffMatchWithBracket,
+} from '@/services/brackets/BracketReadService';
 import { errorLog, playoffLog } from '@/utils/logger';
 import type { PlayoffBracket, PlayoffMatch, PlayoffMatchType } from '@/utils/playoffs/playoffTypes';
 
@@ -92,14 +95,10 @@ export const usePlayoffEditMatch = () => {
 
         if (isInteger) {
           // Fetch from brackets-manager match table
-          const { data: matchData, error } = await supabase
-            .from('match')
-            .select('*, stage:stage_id(*)')
-            .eq('id', parseInt(matchId))
-            .single();
+          const matchData = await fetchBmMatchWithStage(parseInt(matchId));
 
-          if (error || !matchData) {
-            errorLog('Error fetching brackets-manager match:', error);
+          if (!matchData) {
+            errorLog('Error fetching brackets-manager match: no data', { matchId });
             toast({
               title: 'Error',
               description: 'Failed to load match data. Please try again.',
@@ -173,20 +172,11 @@ export const usePlayoffEditMatch = () => {
           setIsQuickEdit(quickEdit);
         } else {
           // Fetch from playoff_matches table (UUID)
-          const { data: matchData, error } = await supabase
-            .from('playoff_matches')
-            .select(
-              `
-            *,
-            bracket:brackets!playoff_matches_bracket_id_fkey(id, uses_brackets_manager),
-            playoff_games(*)
-          `
-            )
-            .eq('id', matchId)
-            .single();
-
-          if (error) {
-            errorLog('Error fetching playoff match:', error);
+          let matchData: any;
+          try {
+            matchData = await fetchPlayoffMatchWithBracket(matchId);
+          } catch (fetchError) {
+            errorLog('Error fetching playoff match:', fetchError);
             toast({
               title: 'Error',
               description: 'Failed to load match data. Please try again.',

@@ -8,7 +8,7 @@ import ChampionDisplay from '@/components/playoffs/ChampionDisplay';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchBracketParticipants } from '@/services/brackets/BracketReadService';
 import { cn } from '@/lib/utils';
 import { blueAmber } from '@/styles/design-system';
 import { PlayoffBracket, Team } from '@/utils/playoffs/playoffTypes';
@@ -42,16 +42,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
   // Fetch current participants for seeding updates
   const { data: participants } = useQuery({
     queryKey: ['bracket-participants', bracketId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('participant')
-        .select('id, name, position')
-        .eq('tournament_id', bracketId)
-        .order('position', { ascending: true });
-
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => fetchBracketParticipants(bracketId),
     enabled: !!bracketId,
   });
 

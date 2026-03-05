@@ -6,6 +6,7 @@ import { useTeamsArray } from '@/hooks/teams';
 import { useDivisions } from '@/hooks/useDivisions';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
+import { fetchBracketsOverview } from '@/services/brackets/BracketReadService';
 import { bracketLog, errorLog } from '@/utils/logger';
 import type { PlayoffBracket, PlayoffMatch } from '@/utils/playoffs/playoffTypes';
 import { groupTeamsByDivision } from '@/utils/teamGrouping';
@@ -73,30 +74,7 @@ export const usePlayoffData = (isAdmin: boolean = false, seasonId?: string | nul
         data: { user },
       } = await supabase.auth.getUser();
 
-      let query = supabase
-        .from('brackets')
-        .select(
-          `
-          *,
-          divisions(*)
-        `
-        )
-        .order('created_at', { ascending: false });
-
-      // Filter by season if a specific season is selected
-      if (seasonId) {
-        query = query.eq('season_id', seasonId);
-      }
-
-      const { data, error } = (await query) as unknown as {
-        data: BracketRowWithRels[] | null;
-        error: any;
-      };
-
-      if (error) {
-        errorLog('Brackets query failed:', error.message);
-        throw error;
-      }
+      const data = (await fetchBracketsOverview(seasonId)) as unknown as BracketRowWithRels[];
 
       // Transform to domain objects
       let brackets: PlayoffBracket[] = (data ?? []).map((br) => ({
