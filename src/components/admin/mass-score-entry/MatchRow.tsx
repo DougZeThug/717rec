@@ -1,6 +1,7 @@
-import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2, Trash2 } from 'lucide-react';
 import React, { useCallback } from 'react';
 
+import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { scoreLog } from '@/utils/logger';
 
@@ -19,6 +20,7 @@ interface MatchRowProps {
   onGameWinsChange: (team1GameWins: number, team2GameWins: number) => void;
   onMarkCompleted: (checked: boolean) => void;
   onClearError?: (matchId: string) => void;
+  onDelete?: (matchId: string) => void;
 }
 
 const MatchRow: React.FC<MatchRowProps> = ({
