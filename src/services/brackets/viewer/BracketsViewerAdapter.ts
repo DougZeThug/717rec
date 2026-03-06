@@ -246,8 +246,8 @@ export class BracketsViewerAdapter {
         groups: groups as BracketGroupRow[],
         rounds: rounds as BracketRoundRow[],
         matches: matchesWithSources,
-        matchGames: transformedMatchGames,
-        participants: transformedParticipants as ViewerParticipant[],
+        matchGames: transformedMatchGames as unknown as ViewerMatchGame[],
+        participants: transformedParticipants as unknown as ViewerParticipant[],
       },
       getPlayoffMatchId: (viewerMatchId: number) => {
         const result = reverseMatchIdMap.get(viewerMatchId);
@@ -310,7 +310,7 @@ export class BracketsViewerAdapter {
 
     // Normalize all match IDs to strings for consistent comparisons
     for (const m of matches) {
-      if (typeof m.id !== 'string') m.id = String(m.id);
+      if (typeof m.id !== 'string') (m as any).id = String(m.id);
     }
 
     // Build comprehensive indexes for O(1) lookups
@@ -539,11 +539,11 @@ export class BracketsViewerAdapter {
     for (const m of matches) {
       const s1 = m.opponent1?.source_node_id;
       const s2 = m.opponent2?.source_node_id;
-      if (s1 && !ids.has(String(s1))) {
+      if (s1 && !ids.has(String(s1) as any)) {
         warnLog('Dangling source_node_id (o1)', m.id, '→', s1);
         dangling++;
       }
-      if (s2 && !ids.has(String(s2))) {
+      if (s2 && !ids.has(String(s2) as any)) {
         warnLog('Dangling source_node_id (o2)', m.id, '→', s2);
         dangling++;
       }
@@ -606,7 +606,7 @@ export class BracketsViewerAdapter {
         groups: groups,
         rounds: rounds,
         matches: matchesWithSources,
-        matchGames: (bracketData.match_game || []) as ViewerMatchGame[],
+        matchGames: (bracketData.match_game || []) as unknown as ViewerMatchGame[],
         participants: (bracketData.participant || []) as ViewerParticipant[],
       },
       getPlayoffMatchId: (viewerMatchId: number) => reverseMatchIdMap.get(viewerMatchId),

@@ -1,4 +1,4 @@
-import { PlayoffMatch } from '@/types';
+import { PlayoffMatch, PlayoffMatchType } from '@/types';
 
 import { BracketMatchesByType } from '../types';
 
@@ -70,7 +70,7 @@ export function convertToAppMatch(match: BracketsManagerMatch, bracketId: string
     id: match.id,
     round: match.round,
     position: match.position,
-    matchType: match.group.toLowerCase(),
+    matchType: match.group.toLowerCase() as PlayoffMatchType,
     team1Id: match.opponent1?.id || null,
     team2Id: match.opponent2?.id || null,
     team1Seed: match.opponent1?.position || null,
