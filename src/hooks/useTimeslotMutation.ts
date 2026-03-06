@@ -31,23 +31,21 @@ export const useTimeslotMutation = () => {
 
     setIsSubmitting(true);
     try {
-      const result = await TimeslotService.addTimeslot(date, teamId, timeslot);
-
-      if (!result.success) {
-        toast({
-          title: 'Error',
-          description: result.error || 'Failed to assign timeslot',
-          variant: 'destructive',
-        });
-        return null;
-      }
+      const data = await TimeslotService.addTimeslot(date, teamId, timeslot);
 
       // Invalidate timeslot queries to refresh UI
       const formattedDate = format(date, 'yyyy-MM-dd');
       queryClient.invalidateQueries({ queryKey: ['timeslots', formattedDate] });
       queryClient.invalidateQueries({ queryKey: ['match-timeslots', formattedDate] });
 
-      return result.data as TeamTimeslot;
+      return data[0] ?? null;
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to assign timeslot',
+        variant: 'destructive',
+      });
+      return null;
     } finally {
       setIsSubmitting(false);
     }
@@ -57,22 +55,20 @@ export const useTimeslotMutation = () => {
   const deleteTimeslot = async (id: string): Promise<boolean> => {
     setIsSubmitting(true);
     try {
-      const result = await TimeslotService.deleteTimeslot(id);
-
-      if (!result.success) {
-        toast({
-          title: 'Error',
-          description: result.error || 'Failed to remove timeslot',
-          variant: 'destructive',
-        });
-        return false;
-      }
+      await TimeslotService.deleteTimeslot(id);
 
       // Invalidate all timeslot queries to refresh UI
       queryClient.invalidateQueries({ queryKey: ['timeslots'] });
       queryClient.invalidateQueries({ queryKey: ['match-timeslots'] });
 
       return true;
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to remove timeslot',
+        variant: 'destructive',
+      });
+      return false;
     } finally {
       setIsSubmitting(false);
     }
@@ -97,23 +93,21 @@ export const useTimeslotMutation = () => {
 
     setIsSubmitting(true);
     try {
-      const result = await TimeslotService.batchAssignTimeslots(date, teamIds, timeslot);
-
-      if (!result.success) {
-        toast({
-          title: 'Error',
-          description: result.error || 'Failed to batch assign timeslots',
-          variant: 'destructive',
-        });
-        return null;
-      }
+      const data = await TimeslotService.batchAssignTimeslots(date, teamIds, timeslot);
 
       // Invalidate timeslot queries to refresh UI
       const formattedDate = format(date, 'yyyy-MM-dd');
       queryClient.invalidateQueries({ queryKey: ['timeslots', formattedDate] });
       queryClient.invalidateQueries({ queryKey: ['match-timeslots', formattedDate] });
 
-      return result.data as TeamTimeslot[];
+      return data;
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to batch assign timeslots',
+        variant: 'destructive',
+      });
+      return null;
     } finally {
       setIsSubmitting(false);
     }
@@ -156,23 +150,22 @@ export const useTimeslotMutation = () => {
 
     setIsSubmitting(true);
     try {
-      const result = await TimeslotService.batchAssignDoubleHeaders(date, teamIds, slot1, slot2);
-
-      if (!result.success) {
-        toast({
-          title: 'Error',
-          description: result.error || 'Failed to batch assign double header timeslots',
-          variant: 'destructive',
-        });
-        return null;
-      }
+      const data = await TimeslotService.batchAssignDoubleHeaders(date, teamIds, slot1, slot2);
 
       // Invalidate timeslot queries to refresh UI
       const formattedDate = format(date, 'yyyy-MM-dd');
       queryClient.invalidateQueries({ queryKey: ['timeslots', formattedDate] });
       queryClient.invalidateQueries({ queryKey: ['match-timeslots', formattedDate] });
 
-      return result.data as TeamTimeslot[];
+      return data;
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description:
+          err instanceof Error ? err.message : 'Failed to batch assign double header timeslots',
+        variant: 'destructive',
+      });
+      return null;
     } finally {
       setIsSubmitting(false);
     }

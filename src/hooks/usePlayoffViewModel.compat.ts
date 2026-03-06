@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { usePlayoffViewModel } from '@/hooks/playoffs/usePlayoffViewModel';
 import { useTeamsArray } from '@/hooks/teams';
 import { useDivisions } from '@/hooks/useDivisions';
-import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { fetchBracketsOverview } from '@/services/brackets/BracketReadService';
 import { bracketLog, errorLog } from '@/utils/logger';
@@ -68,11 +67,6 @@ export const usePlayoffData = (isAdmin: boolean = false, seasonId?: string | nul
     queryKey: ['playoffs-brackets-overview', { isAdmin, seasonId }],
     queryFn: async () => {
       bracketLog('Fetching brackets overview for season:', seasonId);
-
-      // Check authentication state
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
 
       const data = (await fetchBracketsOverview(seasonId)) as unknown as BracketRowWithRels[];
 
