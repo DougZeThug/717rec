@@ -128,25 +128,6 @@ export interface Division {
   created_at?: string;
 }
 
-// Types for team timeslots - Updated with complete definition
-export interface TeamTimeslot {
-  id: string;
-  match_date: string;
-  timeslot: string;
-  team_id: string;
-  created_at: string;
-  is_back_to_back: boolean;
-  is_double_header: boolean;
-  pair_slot: string | null;
-  match_sequence: number | null;
-  teams?: {
-    id: string;
-    name: string;
-    logo_url?: string | null;
-    image_url?: string | null;
-    divisionName: string | null;
-  };
-}
 
 export * from './admin';
 export type {
@@ -181,10 +162,11 @@ export * from './reactions';
 // Hero card types
 export * from './heroCard';
 
-// Extended timeslot types (TeamTimeslot is defined inline above)
+// Timeslot types
 export type {
   BackToBackAssignmentOptions,
   BackToBackTimeslotGroup,
+  TeamTimeslot,
   TimeslotFilterOptions,
   TimeslotGroup,
   TimeslotOperationResult,

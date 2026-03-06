@@ -44,12 +44,12 @@ function extractTeamDetails(team: any): Match['team1Details'] {
  */
 function extractPlayoffTeam(
   team: any
-): { id: string; name: string; logo_url: string | null } | undefined {
+): { id: string; name: string; logoUrl: string | null } | undefined {
   if (!team) return undefined;
   return {
     id: team.id,
     name: team.name,
-    logo_url: team.image_url || team.logo_url || null,
+    logoUrl: team.image_url || team.logo_url || null,
   };
 }
 
@@ -200,8 +200,8 @@ export function transformRealtimePlayoffMatch(payload: any): PlayoffMatch {
  * PlayoffMatch with embedded team data (for hooks that need team names/logos)
  */
 export interface PlayoffMatchWithTeams extends PlayoffMatch {
-  team1?: { id: string; name: string; logo_url: string | null };
-  team2?: { id: string; name: string; logo_url: string | null };
+  team1?: { id: string; name: string; logoUrl: string | null };
+  team2?: { id: string; name: string; logoUrl: string | null };
 }
 
 /**
