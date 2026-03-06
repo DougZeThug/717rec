@@ -1,6 +1,8 @@
 import { InMemoryDatabase } from 'brackets-memory-db';
 
 import { supabase } from '@/integrations/supabase/client';
+import { NotFoundError } from '@/types/errors';
+import { handleDatabaseError } from '@/utils/errorHandler';
 import { bracketLog, debugLog, errorLog, warnLog } from '@/utils/logger';
 import {
   PlayoffBracket,
@@ -38,9 +40,9 @@ export class BracketsViewerAdapter {
       .select('id, name, type, tournament_id')
       .eq('tournament_id', bracketId);
 
-    if (stageError) throw stageError;
+    if (stageError) handleDatabaseError(stageError, 'Failed to fetch stage for bracket');
     if (!stages || stages.length === 0) {
-      throw new Error(`No stage found for bracket: ${bracketId}`);
+      throw new NotFoundError('Stage', bracketId);
     }
 
     const stageId = stages[0].id;
@@ -65,11 +67,11 @@ export class BracketsViewerAdapter {
         supabase.from('round').select('id, group_id, number'),
       ]);
 
-    if (matchesResult.error) throw matchesResult.error;
-    if (matchGamesResult.error) throw matchGamesResult.error;
-    if (participantsResult.error) throw participantsResult.error;
-    if (groupsResult.error) throw groupsResult.error;
-    if (roundsResult.error) throw roundsResult.error;
+    if (matchesResult.error) handleDatabaseError(matchesResult.error, 'Failed to fetch bracket matches');
+    if (matchGamesResult.error) handleDatabaseError(matchGamesResult.error, 'Failed to fetch bracket match games');
+    if (participantsResult.error) handleDatabaseError(participantsResult.error, 'Failed to fetch bracket participants');
+    if (groupsResult.error) handleDatabaseError(groupsResult.error, 'Failed to fetch bracket groups');
+    if (roundsResult.error) handleDatabaseError(roundsResult.error, 'Failed to fetch bracket rounds');
 
     const matches = matchesResult.data || [];
     const participants = participantsResult.data || [];
