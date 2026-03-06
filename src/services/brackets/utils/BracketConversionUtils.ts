@@ -1,13 +1,43 @@
 import { PlayoffMatch } from '@/types';
 
+import { BracketMatchesByType } from '../types';
+
+/**
+ * Raw match shape from brackets-manager library
+ */
+interface BracketsManagerMatch {
+  id: string;
+  round: number;
+  position: number;
+  group: 'WINNER' | 'LOSER' | 'FINAL';
+  opponent1: {
+    id: string | null;
+    position?: number | null;
+    score?: number | null;
+    result?: string | null;
+  } | null;
+  opponent2: {
+    id: string | null;
+    position?: number | null;
+    score?: number | null;
+    result?: string | null;
+  } | null;
+  child_match_id?: string | null;
+  child_match_id_loser?: string | null;
+  best_of?: number;
+}
+
 /**
  * Map data from brackets-manager format to our app format
  */
-export function mapBracketsToAppFormat(bracketId: string, matches: any[]): any {
+export function mapBracketsToAppFormat(
+  bracketId: string,
+  matches: BracketsManagerMatch[]
+): BracketMatchesByType {
   // Group matches by type and round
-  const winnerMatches: any[][] = [];
-  const loserMatches: any[][] = [];
-  const finalsMatches: any[] = [];
+  const winnerMatches: PlayoffMatch[][] = [];
+  const loserMatches: PlayoffMatch[][] = [];
+  const finalsMatches: PlayoffMatch[] = [];
 
   matches.forEach((match) => {
     if (match.group === 'WINNER') {
@@ -35,7 +65,7 @@ export function mapBracketsToAppFormat(bracketId: string, matches: any[]): any {
 /**
  * Convert a brackets-manager match to our app format
  */
-export function convertToAppMatch(match: any, bracketId: string): PlayoffMatch {
+export function convertToAppMatch(match: BracketsManagerMatch, bracketId: string): PlayoffMatch {
   return {
     id: match.id,
     round: match.round,
