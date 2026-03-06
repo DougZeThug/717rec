@@ -26,8 +26,7 @@ globalThis.matchMedia =
     } as MediaQueryList;
   };
 
-// Mock pointer capture methods for Radix UI compatibility with jsdom
-// Must be on Element.prototype so all element types (including custom elements) get it
+// Mock DOM methods missing in jsdom for Radix UI compatibility
 for (const proto of [Element.prototype, HTMLElement.prototype]) {
   if (!proto.hasPointerCapture) {
     proto.hasPointerCapture = () => false;
@@ -37,6 +36,9 @@ for (const proto of [Element.prototype, HTMLElement.prototype]) {
   }
   if (!proto.releasePointerCapture) {
     proto.releasePointerCapture = () => {};
+  }
+  if (!proto.scrollIntoView) {
+    proto.scrollIntoView = () => {};
   }
 }
 
