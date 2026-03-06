@@ -310,7 +310,7 @@ export class BracketsViewerAdapter {
 
     // Normalize all match IDs to strings for consistent comparisons
     for (const m of matches) {
-      if (typeof m.id !== 'string') m.id = String(m.id);
+      if (typeof m.id !== 'string') (m as any).id = String(m.id);
     }
 
     // Build comprehensive indexes for O(1) lookups
