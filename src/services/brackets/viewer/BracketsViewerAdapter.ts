@@ -539,11 +539,11 @@ export class BracketsViewerAdapter {
     for (const m of matches) {
       const s1 = m.opponent1?.source_node_id;
       const s2 = m.opponent2?.source_node_id;
-      if (s1 && !ids.has(String(s1))) {
+      if (s1 && !ids.has(String(s1) as any)) {
         warnLog('Dangling source_node_id (o1)', m.id, '→', s1);
         dangling++;
       }
-      if (s2 && !ids.has(String(s2))) {
+      if (s2 && !ids.has(String(s2) as any)) {
         warnLog('Dangling source_node_id (o2)', m.id, '→', s2);
         dangling++;
       }
