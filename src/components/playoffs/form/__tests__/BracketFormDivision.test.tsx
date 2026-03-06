@@ -61,7 +61,7 @@ describe('BracketFormDivision', () => {
     const division1 = screen.getAllByText('Division 1');
     const division2 = screen.getAllByText('Division 2');
 
-    expect(division1).toBeInTheDocument();
-    expect(division2).toBeInTheDocument();
+    expect(division1[0]).toBeInTheDocument();
+    expect(division2[0]).toBeInTheDocument();
   });
 });
