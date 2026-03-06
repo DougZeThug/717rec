@@ -66,6 +66,7 @@ export const createMockRanking = (overrides: Partial<Ranking> = {}): Ranking => 
   sos: 0.6,
   divisionName: 'Test Division',
   closeMatchLosses: 1,
+  headToHead: {},
   ...overrides,
 });
 

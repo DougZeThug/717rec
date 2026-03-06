@@ -1,5 +1,5 @@
-// Re-export Team from main types to avoid duplication
-export type { Team } from '@/types';
+// Re-export shared types from main types to avoid duplication
+export type { Ranking, Team } from '@/types';
 
 // Team selection callback types
 export interface TeamSelectionCallback {
@@ -92,23 +92,6 @@ export interface ProcessedTeam {
   win_percentage: number;
   game_win_percentage: number;
   close_match_losses: number;
-}
-
-export interface Ranking {
-  teamId: string;
-  teamName: string;
-  logoUrl?: string | null;
-  imageUrl?: string | null;
-  powerScore: number;
-  wins: number;
-  losses: number;
-  winPercentage: number;
-  gamesWon: number;
-  gamesLost: number;
-  gameWinPercentage: number;
-  sos: number;
-  divisionName?: string | null;
-  closeMatchLosses?: number;
 }
 
 // Division mapping types

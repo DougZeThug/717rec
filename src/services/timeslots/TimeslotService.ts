@@ -1,7 +1,8 @@
 import { format } from 'date-fns';
 
 import { supabase } from '@/integrations/supabase/client';
-import { TeamTimeslot, TimeslotOperationResult } from '@/types/timeslots';
+import { TeamTimeslot } from '@/types/timeslots';
+import { handleDatabaseError } from '@/utils/errorHandler';
 import {
   getBackToBackPair,
   getBackToBackPairName,
@@ -16,55 +17,34 @@ export class TimeslotService {
   /**
    * Fetch timeslots for a specific date
    */
-  static async fetchByDate(date: Date): Promise<TimeslotOperationResult> {
-    try {
-      const formattedDate = format(date, 'yyyy-MM-dd');
+  static async fetchByDate(date: Date): Promise<TeamTimeslot[]> {
+    const formattedDate = format(date, 'yyyy-MM-dd');
 
-      const { data, error } = await supabase
-        .from('team_timeslots')
-        .select(
-          `
-          id,
-          match_date,
-          timeslot,
-          team_id,
-          created_at,
-          is_back_to_back,
-          is_double_header,
-          pair_slot,
-          match_sequence,
-          teams:team_id (
-            id,
-            name,
-            logo_url,
-            image_url
-          )
+    const { data, error } = await supabase
+      .from('team_timeslots')
+      .select(
         `
+        id,
+        match_date,
+        timeslot,
+        team_id,
+        created_at,
+        is_back_to_back,
+        is_double_header,
+        pair_slot,
+        match_sequence,
+        teams:team_id (
+          id,
+          name,
+          logo_url,
+          image_url
         )
-        .eq('match_date', formattedDate);
+      `
+      )
+      .eq('match_date', formattedDate);
 
-      if (error) {
-        errorLog('Error fetching timeslots:', error);
-        return {
-          success: false,
-          error: `Failed to fetch timeslots: ${error.message}`,
-        };
-      }
-
-      const formattedData = TimeslotTransformer.formatTimeslotResponse(data);
-
-      return {
-        success: true,
-        data: formattedData,
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      errorLog('Unexpected error fetching timeslots:', error);
-      return {
-        success: false,
-        error: `Unexpected error: ${message}`,
-      };
-    }
+    if (error) handleDatabaseError(error, 'Failed to fetch timeslots');
+    return TimeslotTransformer.formatTimeslotResponse(data ?? []);
   }
 
   /**
@@ -75,20 +55,115 @@ export class TimeslotService {
     date: Date,
     teamId: string,
     pairName: string
-  ): Promise<TimeslotOperationResult> {
-    try {
-      const pairConfig = getPairConfig(pairName);
-      if (!pairConfig) {
-        return {
-          success: false,
-          error: `Invalid pair name: ${pairName}`,
-        };
-      }
+  ): Promise<TeamTimeslot[]> {
+    const pairConfig = getPairConfig(pairName);
+    if (!pairConfig) throw new Error(`Invalid pair name: ${pairName}`);
 
-      const formattedDate = format(date, 'yyyy-MM-dd');
+    const formattedDate = format(date, 'yyyy-MM-dd');
 
-      // Create both timeslot entries for the back-to-back pair
-      const timeslotData = [
+    const timeslotData = [
+      {
+        match_date: formattedDate,
+        team_id: teamId,
+        timeslot: pairConfig.primary,
+        is_back_to_back: true,
+        pair_slot: pairConfig.secondary,
+        match_sequence: 1,
+      },
+      {
+        match_date: formattedDate,
+        team_id: teamId,
+        timeslot: pairConfig.secondary,
+        is_back_to_back: true,
+        pair_slot: pairConfig.primary,
+        match_sequence: 2,
+      },
+    ];
+
+    scheduleLog(
+      `Adding back-to-back timeslots for team ${teamId} in ${pairName} pair:`,
+      timeslotData
+    );
+
+    const { data, error } = await supabase
+      .from('team_timeslots')
+      .insert(timeslotData)
+      .select('*, teams:team_id(id, name, logo_url, image_url)');
+
+    if (error) handleDatabaseError(error, 'Failed to add back-to-back timeslots');
+    return TimeslotTransformer.formatTimeslotResponse(data ?? []);
+  }
+
+  /**
+   * Legacy method - redirects to back-to-back assignment
+   * @deprecated Use addBackToBackTimeslot instead
+   */
+  static async addTimeslot(
+    date: Date,
+    teamId: string,
+    timeslot: string
+  ): Promise<TeamTimeslot[]> {
+    warnLog('addTimeslot is deprecated. Converting to back-to-back assignment.');
+
+    const pairName = getBackToBackPairName(timeslot);
+    if (!pairName) throw new Error(`Cannot determine back-to-back pair for timeslot: ${timeslot}`);
+
+    return this.addBackToBackTimeslot(date, teamId, pairName);
+  }
+
+  /**
+   * Delete a timeslot assignment (removes both slots in back-to-back pair)
+   */
+  static async deleteTimeslot(id: string): Promise<void> {
+    const { data: timeslot, error: fetchError } = await supabase
+      .from('team_timeslots')
+      .select('team_id, match_date, is_back_to_back, pair_slot')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) handleDatabaseError(fetchError, 'Failed to fetch timeslot');
+
+    if (timeslot!.is_back_to_back) {
+      const { error } = await supabase
+        .from('team_timeslots')
+        .delete()
+        .eq('team_id', timeslot!.team_id)
+        .eq('match_date', timeslot!.match_date)
+        .eq('is_back_to_back', true);
+
+      if (error) handleDatabaseError(error, 'Failed to delete back-to-back timeslots');
+    } else {
+      const { error } = await supabase.from('team_timeslots').delete().eq('id', id);
+      if (error) handleDatabaseError(error, 'Failed to delete timeslot');
+    }
+  }
+
+  /**
+   * Batch assign multiple teams to the same back-to-back pair
+   */
+  static async batchAssignBackToBackTimeslots(
+    date: Date,
+    teamIds: string[],
+    pairName: string
+  ): Promise<TeamTimeslot[]> {
+    const pairConfig = getPairConfig(pairName);
+    if (!pairConfig) throw new Error(`Invalid pair name: ${pairName}`);
+
+    const formattedDate = format(date, 'yyyy-MM-dd');
+
+    interface TimeslotInsert {
+      match_date: string;
+      team_id: string;
+      timeslot: string;
+      is_back_to_back: boolean;
+      pair_slot: string;
+      match_sequence: number;
+    }
+
+    const allTimeslotData: TimeslotInsert[] = [];
+
+    teamIds.forEach((teamId) => {
+      allTimeslotData.push(
         {
           match_date: formattedDate,
           team_id: teamId,
@@ -104,205 +179,21 @@ export class TimeslotService {
           is_back_to_back: true,
           pair_slot: pairConfig.primary,
           match_sequence: 2,
-        },
-      ];
-
-      scheduleLog(
-        `Adding back-to-back timeslots for team ${teamId} in ${pairName} pair:`,
-        timeslotData
-      );
-
-      const { data, error } = await supabase
-        .from('team_timeslots')
-        .insert(timeslotData)
-        .select('*, teams:team_id(id, name, logo_url, image_url)');
-
-      if (error) {
-        errorLog('Error adding back-to-back timeslots:', error);
-        return {
-          success: false,
-          error: `Failed to add back-to-back timeslots: ${error.message}`,
-        };
-      }
-
-      const formattedData = TimeslotTransformer.formatTimeslotResponse(data);
-
-      return {
-        success: true,
-        data: formattedData,
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      errorLog('Error adding back-to-back timeslot:', error);
-      return {
-        success: false,
-        error: `Failed to assign back-to-back timeslot: ${message}`,
-      };
-    }
-  }
-
-  /**
-   * Legacy method - redirects to back-to-back assignment
-   * @deprecated Use addBackToBackTimeslot instead
-   */
-  static async addTimeslot(
-    date: Date,
-    teamId: string,
-    timeslot: string
-  ): Promise<TimeslotOperationResult> {
-    warnLog('addTimeslot is deprecated. Converting to back-to-back assignment.');
-
-    const pairName = getBackToBackPairName(timeslot);
-    if (!pairName) {
-      return {
-        success: false,
-        error: `Cannot determine back-to-back pair for timeslot: ${timeslot}`,
-      };
-    }
-
-    return this.addBackToBackTimeslot(date, teamId, pairName);
-  }
-
-  /**
-   * Delete a timeslot assignment (removes both slots in back-to-back pair)
-   */
-  static async deleteTimeslot(id: string): Promise<TimeslotOperationResult> {
-    try {
-      // First, get the timeslot to find its pair
-      const { data: timeslot, error: fetchError } = await supabase
-        .from('team_timeslots')
-        .select('team_id, match_date, is_back_to_back, pair_slot')
-        .eq('id', id)
-        .single();
-
-      if (fetchError) {
-        return {
-          success: false,
-          error: `Failed to fetch timeslot: ${fetchError.message}`,
-        };
-      }
-
-      if (timeslot.is_back_to_back) {
-        // Delete both timeslots in the back-to-back pair
-        const { error } = await supabase
-          .from('team_timeslots')
-          .delete()
-          .eq('team_id', timeslot.team_id)
-          .eq('match_date', timeslot.match_date)
-          .eq('is_back_to_back', true);
-
-        if (error) {
-          return {
-            success: false,
-            error: `Failed to delete back-to-back timeslots: ${error.message}`,
-          };
         }
-      } else {
-        // Legacy single timeslot deletion
-        const { error } = await supabase.from('team_timeslots').delete().eq('id', id);
-
-        if (error) {
-          return {
-            success: false,
-            error: `Failed to delete timeslot: ${error.message}`,
-          };
-        }
-      }
-
-      return { success: true };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      errorLog('Error deleting timeslot:', error);
-      return {
-        success: false,
-        error: `Failed to remove timeslot: ${message}`,
-      };
-    }
-  }
-
-  /**
-   * Batch assign multiple teams to the same back-to-back pair
-   */
-  static async batchAssignBackToBackTimeslots(
-    date: Date,
-    teamIds: string[],
-    pairName: string
-  ): Promise<TimeslotOperationResult> {
-    try {
-      const pairConfig = getPairConfig(pairName);
-      if (!pairConfig) {
-        return {
-          success: false,
-          error: `Invalid pair name: ${pairName}`,
-        };
-      }
-
-      const formattedDate = format(date, 'yyyy-MM-dd');
-
-      // Create timeslot entries for all teams (2 entries per team)
-      interface TimeslotInsert {
-        match_date: string;
-        team_id: string;
-        timeslot: string;
-        is_back_to_back: boolean;
-        pair_slot: string;
-        match_sequence: number;
-      }
-
-      const allTimeslotData: TimeslotInsert[] = [];
-
-      teamIds.forEach((teamId) => {
-        allTimeslotData.push(
-          {
-            match_date: formattedDate,
-            team_id: teamId,
-            timeslot: pairConfig.primary,
-            is_back_to_back: true,
-            pair_slot: pairConfig.secondary,
-            match_sequence: 1,
-          },
-          {
-            match_date: formattedDate,
-            team_id: teamId,
-            timeslot: pairConfig.secondary,
-            is_back_to_back: true,
-            pair_slot: pairConfig.primary,
-            match_sequence: 2,
-          }
-        );
-      });
-
-      scheduleLog(
-        `Batch assigning back-to-back timeslots for ${teamIds.length} teams in ${pairName} pair`
       );
+    });
 
-      const { data, error } = await supabase
-        .from('team_timeslots')
-        .insert(allTimeslotData)
-        .select('*, teams:team_id(id, name, logo_url, image_url)');
+    scheduleLog(
+      `Batch assigning back-to-back timeslots for ${teamIds.length} teams in ${pairName} pair`
+    );
 
-      if (error) {
-        errorLog('Batch insert error:', error);
-        return {
-          success: false,
-          error: `Failed to batch assign back-to-back timeslots: ${error.message}`,
-        };
-      }
+    const { data, error } = await supabase
+      .from('team_timeslots')
+      .insert(allTimeslotData)
+      .select('*, teams:team_id(id, name, logo_url, image_url)');
 
-      const formattedData = TimeslotTransformer.formatTimeslotResponse(data);
-
-      return {
-        success: true,
-        data: formattedData,
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      errorLog('Error in batch back-to-back assignment:', error);
-      return {
-        success: false,
-        error: `Failed to batch assign back-to-back timeslots: ${message}`,
-      };
-    }
+    if (error) handleDatabaseError(error, 'Failed to batch assign back-to-back timeslots');
+    return TimeslotTransformer.formatTimeslotResponse(data ?? []);
   }
 
   /**
@@ -313,16 +204,11 @@ export class TimeslotService {
     date: Date,
     teamIds: string[],
     timeslot: string
-  ): Promise<TimeslotOperationResult> {
+  ): Promise<TeamTimeslot[]> {
     warnLog('batchAssignTimeslots is deprecated. Converting to back-to-back batch assignment.');
 
     const pairName = getBackToBackPairName(timeslot);
-    if (!pairName) {
-      return {
-        success: false,
-        error: `Cannot determine back-to-back pair for timeslot: ${timeslot}`,
-      };
-    }
+    if (!pairName) throw new Error(`Cannot determine back-to-back pair for timeslot: ${timeslot}`);
 
     return this.batchAssignBackToBackTimeslots(date, teamIds, pairName);
   }
@@ -339,105 +225,74 @@ export class TimeslotService {
     teamId: string,
     slot1: string,
     slot2: string
-  ): Promise<TimeslotOperationResult> {
-    try {
-      const formattedDate = format(date, 'yyyy-MM-dd');
+  ): Promise<TeamTimeslot[]> {
+    const formattedDate = format(date, 'yyyy-MM-dd');
 
-      // Get the back-to-back pair configurations for each selected slot
-      const pair1Name = getBackToBackPairName(slot1);
-      const pair2Name = getBackToBackPairName(slot2);
+    const pair1Name = getBackToBackPairName(slot1);
+    const pair2Name = getBackToBackPairName(slot2);
 
-      if (!pair1Name || !pair2Name) {
-        return {
-          success: false,
-          error: `Invalid timeslots for double header: ${slot1} or ${slot2}`,
-        };
-      }
-
-      const pair1Config = getPairConfig(pair1Name);
-      const pair2Config = getPairConfig(pair2Name);
-
-      if (!pair1Config || !pair2Config) {
-        return {
-          success: false,
-          error: `Could not find pair config for: ${pair1Name} or ${pair2Name}`,
-        };
-      }
-
-      // Create 4 records: 2 for each back-to-back pair, all marked as double header
-      const timeslotData = [
-        // First back-to-back pair
-        {
-          match_date: formattedDate,
-          team_id: teamId,
-          timeslot: pair1Config.primary,
-          is_back_to_back: true,
-          is_double_header: true,
-          pair_slot: pair1Config.secondary,
-          match_sequence: 1,
-        },
-        {
-          match_date: formattedDate,
-          team_id: teamId,
-          timeslot: pair1Config.secondary,
-          is_back_to_back: true,
-          is_double_header: true,
-          pair_slot: pair1Config.primary,
-          match_sequence: 2,
-        },
-        // Second back-to-back pair
-        {
-          match_date: formattedDate,
-          team_id: teamId,
-          timeslot: pair2Config.primary,
-          is_back_to_back: true,
-          is_double_header: true,
-          pair_slot: pair2Config.secondary,
-          match_sequence: 1,
-        },
-        {
-          match_date: formattedDate,
-          team_id: teamId,
-          timeslot: pair2Config.secondary,
-          is_back_to_back: true,
-          is_double_header: true,
-          pair_slot: pair2Config.primary,
-          match_sequence: 2,
-        },
-      ];
-
-      scheduleLog(
-        `Adding double header timeslots for team ${teamId}: ${pair1Name} (${pair1Config.primary}/${pair1Config.secondary}) and ${pair2Name} (${pair2Config.primary}/${pair2Config.secondary})`,
-        timeslotData
-      );
-
-      const { data, error } = await supabase
-        .from('team_timeslots')
-        .insert(timeslotData)
-        .select('*, teams:team_id(id, name, logo_url, image_url)');
-
-      if (error) {
-        errorLog('Error adding double header timeslots:', error);
-        return {
-          success: false,
-          error: `Failed to add double header timeslots: ${error.message}`,
-        };
-      }
-
-      const formattedData = TimeslotTransformer.formatTimeslotResponse(data);
-
-      return {
-        success: true,
-        data: formattedData,
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      errorLog('Error adding double header timeslot:', error);
-      return {
-        success: false,
-        error: `Failed to assign double header timeslot: ${message}`,
-      };
+    if (!pair1Name || !pair2Name) {
+      throw new Error(`Invalid timeslots for double header: ${slot1} or ${slot2}`);
     }
+
+    const pair1Config = getPairConfig(pair1Name);
+    const pair2Config = getPairConfig(pair2Name);
+
+    if (!pair1Config || !pair2Config) {
+      throw new Error(`Could not find pair config for: ${pair1Name} or ${pair2Name}`);
+    }
+
+    const timeslotData = [
+      {
+        match_date: formattedDate,
+        team_id: teamId,
+        timeslot: pair1Config.primary,
+        is_back_to_back: true,
+        is_double_header: true,
+        pair_slot: pair1Config.secondary,
+        match_sequence: 1,
+      },
+      {
+        match_date: formattedDate,
+        team_id: teamId,
+        timeslot: pair1Config.secondary,
+        is_back_to_back: true,
+        is_double_header: true,
+        pair_slot: pair1Config.primary,
+        match_sequence: 2,
+      },
+      {
+        match_date: formattedDate,
+        team_id: teamId,
+        timeslot: pair2Config.primary,
+        is_back_to_back: true,
+        is_double_header: true,
+        pair_slot: pair2Config.secondary,
+        match_sequence: 1,
+      },
+      {
+        match_date: formattedDate,
+        team_id: teamId,
+        timeslot: pair2Config.secondary,
+        is_back_to_back: true,
+        is_double_header: true,
+        pair_slot: pair2Config.primary,
+        match_sequence: 2,
+      },
+    ];
+
+    scheduleLog(
+      `Adding double header timeslots for team ${teamId}: ${pair1Name} (${pair1Config.primary}/${pair1Config.secondary}) and ${pair2Name} (${pair2Config.primary}/${pair2Config.secondary})`,
+      timeslotData
+    );
+
+    const { data, error } = await supabase
+      .from('team_timeslots')
+      .insert(timeslotData)
+      .select('*, teams:team_id(id, name, logo_url, image_url)');
+
+    if (error) handleDatabaseError(error, 'Failed to add double header timeslots');
+    return TimeslotTransformer.formatTimeslotResponse(data ?? []);
   }
 
   // ---------------------------------------------------------------------------
@@ -647,117 +502,86 @@ export class TimeslotService {
     teamIds: string[],
     slot1: string,
     slot2: string
-  ): Promise<TimeslotOperationResult> {
-    try {
-      const formattedDate = format(date, 'yyyy-MM-dd');
+  ): Promise<TeamTimeslot[]> {
+    const formattedDate = format(date, 'yyyy-MM-dd');
 
-      // Get the back-to-back pair configurations for each selected slot
-      const pair1Name = getBackToBackPairName(slot1);
-      const pair2Name = getBackToBackPairName(slot2);
+    const pair1Name = getBackToBackPairName(slot1);
+    const pair2Name = getBackToBackPairName(slot2);
 
-      if (!pair1Name || !pair2Name) {
-        return {
-          success: false,
-          error: `Invalid timeslots for double header: ${slot1} or ${slot2}`,
-        };
-      }
-
-      const pair1Config = getPairConfig(pair1Name);
-      const pair2Config = getPairConfig(pair2Name);
-
-      if (!pair1Config || !pair2Config) {
-        return {
-          success: false,
-          error: `Could not find pair config for: ${pair1Name} or ${pair2Name}`,
-        };
-      }
-
-      interface TimeslotInsert {
-        match_date: string;
-        team_id: string;
-        timeslot: string;
-        is_back_to_back: boolean;
-        is_double_header: boolean;
-        pair_slot: string;
-        match_sequence: number;
-      }
-
-      const allTimeslotData: TimeslotInsert[] = [];
-
-      // Create 4 records per team: 2 for each back-to-back pair
-      teamIds.forEach((teamId) => {
-        allTimeslotData.push(
-          // First back-to-back pair
-          {
-            match_date: formattedDate,
-            team_id: teamId,
-            timeslot: pair1Config.primary,
-            is_back_to_back: true,
-            is_double_header: true,
-            pair_slot: pair1Config.secondary,
-            match_sequence: 1,
-          },
-          {
-            match_date: formattedDate,
-            team_id: teamId,
-            timeslot: pair1Config.secondary,
-            is_back_to_back: true,
-            is_double_header: true,
-            pair_slot: pair1Config.primary,
-            match_sequence: 2,
-          },
-          // Second back-to-back pair
-          {
-            match_date: formattedDate,
-            team_id: teamId,
-            timeslot: pair2Config.primary,
-            is_back_to_back: true,
-            is_double_header: true,
-            pair_slot: pair2Config.secondary,
-            match_sequence: 1,
-          },
-          {
-            match_date: formattedDate,
-            team_id: teamId,
-            timeslot: pair2Config.secondary,
-            is_back_to_back: true,
-            is_double_header: true,
-            pair_slot: pair2Config.primary,
-            match_sequence: 2,
-          }
-        );
-      });
-
-      scheduleLog(
-        `Batch assigning double header timeslots for ${teamIds.length} teams: ${pair1Name} and ${pair2Name}`
-      );
-
-      const { data, error } = await supabase
-        .from('team_timeslots')
-        .insert(allTimeslotData)
-        .select('*, teams:team_id(id, name, logo_url, image_url)');
-
-      if (error) {
-        errorLog('Batch double header insert error:', error);
-        return {
-          success: false,
-          error: `Failed to batch assign double header timeslots: ${error.message}`,
-        };
-      }
-
-      const formattedData = TimeslotTransformer.formatTimeslotResponse(data);
-
-      return {
-        success: true,
-        data: formattedData,
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      errorLog('Error in batch double header assignment:', error);
-      return {
-        success: false,
-        error: `Failed to batch assign double header timeslots: ${message}`,
-      };
+    if (!pair1Name || !pair2Name) {
+      throw new Error(`Invalid timeslots for double header: ${slot1} or ${slot2}`);
     }
+
+    const pair1Config = getPairConfig(pair1Name);
+    const pair2Config = getPairConfig(pair2Name);
+
+    if (!pair1Config || !pair2Config) {
+      throw new Error(`Could not find pair config for: ${pair1Name} or ${pair2Name}`);
+    }
+
+    interface TimeslotInsert {
+      match_date: string;
+      team_id: string;
+      timeslot: string;
+      is_back_to_back: boolean;
+      is_double_header: boolean;
+      pair_slot: string;
+      match_sequence: number;
+    }
+
+    const allTimeslotData: TimeslotInsert[] = [];
+
+    teamIds.forEach((teamId) => {
+      allTimeslotData.push(
+        {
+          match_date: formattedDate,
+          team_id: teamId,
+          timeslot: pair1Config.primary,
+          is_back_to_back: true,
+          is_double_header: true,
+          pair_slot: pair1Config.secondary,
+          match_sequence: 1,
+        },
+        {
+          match_date: formattedDate,
+          team_id: teamId,
+          timeslot: pair1Config.secondary,
+          is_back_to_back: true,
+          is_double_header: true,
+          pair_slot: pair1Config.primary,
+          match_sequence: 2,
+        },
+        {
+          match_date: formattedDate,
+          team_id: teamId,
+          timeslot: pair2Config.primary,
+          is_back_to_back: true,
+          is_double_header: true,
+          pair_slot: pair2Config.secondary,
+          match_sequence: 1,
+        },
+        {
+          match_date: formattedDate,
+          team_id: teamId,
+          timeslot: pair2Config.secondary,
+          is_back_to_back: true,
+          is_double_header: true,
+          pair_slot: pair2Config.primary,
+          match_sequence: 2,
+        }
+      );
+    });
+
+    scheduleLog(
+      `Batch assigning double header timeslots for ${teamIds.length} teams: ${pair1Name} and ${pair2Name}`
+    );
+
+    const { data, error } = await supabase
+      .from('team_timeslots')
+      .insert(allTimeslotData)
+      .select('*, teams:team_id(id, name, logo_url, image_url)');
+
+    if (error) handleDatabaseError(error, 'Failed to batch assign double header timeslots');
+    return TimeslotTransformer.formatTimeslotResponse(data ?? []);
   }
 }

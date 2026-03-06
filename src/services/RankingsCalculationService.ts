@@ -46,6 +46,6 @@ export const calculateRankings = async (
     return finalRankings;
   } catch (error) {
     errorLog('Error calculating rankings:', error);
-    return [];
+    throw error;
   }
 };
