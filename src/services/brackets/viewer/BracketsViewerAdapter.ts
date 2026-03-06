@@ -10,6 +10,8 @@ import {
 } from '@/utils/playoffs/playoffTypes';
 
 import {
+  BracketGroupRow,
+  BracketRoundRow,
   ViewerData,
   ViewerDataWithMapping,
   ViewerMatch,
@@ -151,11 +153,11 @@ export class BracketsViewerAdapter {
     // first-round seeding display. Setting position on later-round opponents triggers
     // brackets-viewer's completeWithBlankMatches() Toornament detection, which
     // reorders/hides LB R1 matches after bye advancement.
-    const wbGroup = groups.find((g: any) => g.number === 1);
+    const wbGroup = groups.find((g: BracketGroupRow) => g.number === 1);
     const wbR1RoundIds = new Set(
       rounds
-        .filter((r: any) => r.group_id === wbGroup?.id && r.number === 1)
-        .map((r: any) => r.id)
+        .filter((r: BracketRoundRow) => r.group_id === wbGroup?.id && r.number === 1)
+        .map((r: BracketRoundRow) => r.id)
     );
 
     // Transform matches to viewer format (always create opponent objects for connectors)
@@ -238,12 +240,12 @@ export class BracketsViewerAdapter {
 
     return {
       data: {
-        stages: stages as any,
-        groups: groups as any,
-        rounds: rounds as any,
-        matches: matchesWithSources as any,
-        matchGames: transformedMatchGames as any,
-        participants: transformedParticipants as any,
+        stages: stages as unknown as ViewerStage[],
+        groups: groups as BracketGroupRow[],
+        rounds: rounds as BracketRoundRow[],
+        matches: matchesWithSources,
+        matchGames: transformedMatchGames,
+        participants: transformedParticipants as ViewerParticipant[],
       },
       getPlayoffMatchId: (viewerMatchId: number) => {
         const result = reverseMatchIdMap.get(viewerMatchId);
@@ -265,7 +267,7 @@ export class BracketsViewerAdapter {
     score?: number | null,
     result?: string | null,
     position?: number
-  ): any {
+  ): NonNullable<ViewerMatch['opponent1']> {
     return {
       id: id ?? null,
       score: score ?? undefined,
@@ -280,7 +282,7 @@ export class BracketsViewerAdapter {
   /**
    * Ensure opponent object exists for in-place mutation
    */
-  private static ensureOpponentObject(match: any, key: 'opponent1' | 'opponent2') {
+  private static ensureOpponentObject(match: ViewerMatch, key: 'opponent1' | 'opponent2') {
     if (!match[key]) {
       match[key] = { id: null };
     }
@@ -292,7 +294,11 @@ export class BracketsViewerAdapter {
    * This determines which previous match each opponent came from
    * Handles Winners→Winners, Losers→Losers, and Winners→Losers drop-ins
    */
-  private static calculateSourceNodeIds(matches: any[], groups: any[], rounds: any[]): any[] {
+  private static calculateSourceNodeIds(
+    matches: ViewerMatch[],
+    groups: BracketGroupRow[],
+    rounds: BracketRoundRow[]
+  ): ViewerMatch[] {
     // AUDIT LOG: Track object references at start
     debugLog('AUDIT: calculateSourceNodeIds START', {
       matchCount: matches.length,
@@ -311,7 +317,7 @@ export class BracketsViewerAdapter {
     const groupsById = new Map(groups.map((g) => [g.id, g]));
 
     // Index matches by group+round for fast lookup: "groupId:roundNumber" -> matches[]
-    const matchesByGroupRound = new Map<string, any[]>();
+    const matchesByGroupRound = new Map<string, ViewerMatch[]>();
     for (const m of matches) {
       const r = roundsById.get(m.round_id);
       if (!r) continue;
@@ -326,7 +332,7 @@ export class BracketsViewerAdapter {
     }
 
     // Helper: Add Winners→Winners progression sources
-    const addWinnersProgressionSources = (match: any) => {
+    const addWinnersProgressionSources = (match: ViewerMatch) => {
       const currentRound = roundsById.get(match.round_id);
       if (!currentRound || currentRound.number === 1) return; // First round has no sources
 
@@ -352,7 +358,7 @@ export class BracketsViewerAdapter {
     };
 
     // Helper: Add Losers→Losers progression sources
-    const addLosersProgressionSources = (match: any) => {
+    const addLosersProgressionSources = (match: ViewerMatch) => {
       const currentRound = roundsById.get(match.round_id);
       if (!currentRound || currentRound.number === 1) return; // First LB round gets drop-ins only
 
@@ -383,7 +389,7 @@ export class BracketsViewerAdapter {
     };
 
     // Helper: Add Winners→Losers drop-in connectors
-    const addWinnersToLosersDropIns = (match: any) => {
+    const addWinnersToLosersDropIns = (match: ViewerMatch) => {
       const lbRound = roundsById.get(match.round_id);
       if (!lbRound) return;
 
@@ -444,7 +450,7 @@ export class BracketsViewerAdapter {
     };
 
     // Helper: Add Grand Final sources (WB Final winner + LB Final winner)
-    const addGrandFinalSources = (match: any) => {
+    const addGrandFinalSources = (match: ViewerMatch) => {
       const currentRound = roundsById.get(match.round_id);
       if (!currentRound) return;
 
@@ -520,8 +526,8 @@ export class BracketsViewerAdapter {
     // Apply Symbol identity tags to track object references downstream
     const TAG = Symbol('opponent_identity_tag');
     for (const m of matches) {
-      if (m.opponent1) (m.opponent1 as any)[TAG] = `o1:${m.id}`;
-      if (m.opponent2) (m.opponent2 as any)[TAG] = `o2:${m.id}`;
+      if (m.opponent1) (m.opponent1 as Record<symbol, unknown>)[TAG] = `o1:${m.id}`;
+      if (m.opponent2) (m.opponent2 as Record<symbol, unknown>)[TAG] = `o2:${m.id}`;
     }
     bracketLog('IDENTITY TAGS APPLIED to', matches.length, 'matches');
 
@@ -578,9 +584,9 @@ export class BracketsViewerAdapter {
     const matchIdMap = new Map<string, number>();
     const reverseMatchIdMap = new Map<number, string>();
 
-    const matches = (bracketData.match || []) as any;
-    const groups = (bracketData.group || []) as any;
-    const rounds = (bracketData.round || []) as any;
+    const matches = (bracketData.match || []) as unknown as ViewerMatch[];
+    const groups = (bracketData.group || []) as BracketGroupRow[];
+    const rounds = (bracketData.round || []) as BracketRoundRow[];
 
     // Calculate source_node_id for connectors (CRITICAL FIX)
     const matchesWithSources = this.calculateSourceNodeIds(matches, groups, rounds);
@@ -594,12 +600,12 @@ export class BracketsViewerAdapter {
 
     return {
       data: {
-        stages: (bracketData.stage || []) as any,
+        stages: (bracketData.stage || []) as unknown as ViewerStage[],
         groups: groups,
         rounds: rounds,
         matches: matchesWithSources,
-        matchGames: (bracketData.match_game || []) as any,
-        participants: (bracketData.participant || []) as any,
+        matchGames: (bracketData.match_game || []) as ViewerMatchGame[],
+        participants: (bracketData.participant || []) as ViewerParticipant[],
       },
       getPlayoffMatchId: (viewerMatchId: number) => reverseMatchIdMap.get(viewerMatchId),
     };
@@ -683,8 +689,8 @@ export class BracketsViewerAdapter {
     return {
       data: {
         stages: [stage],
-        groups: groups as any,
-        rounds: rounds as any,
+        groups: groups as BracketGroupRow[],
+        rounds: rounds as BracketRoundRow[],
         matches: matchesWithSources,
         matchGames,
         participants,
@@ -702,8 +708,8 @@ export class BracketsViewerAdapter {
     // Extract grandFinalType from bracket metadata
     let grandFinalType: 'simple' | 'double' | undefined = 'simple';
     if (isDoubleElim && bracket.participants && typeof bracket.participants === 'object') {
-      const metadata = bracket.participants as any;
-      grandFinalType = metadata.grandFinalType || 'simple';
+      const metadata = bracket.participants as unknown as { grandFinalType?: string };
+      grandFinalType = (metadata.grandFinalType as 'simple' | 'double' | undefined) || 'simple';
     }
 
     return {

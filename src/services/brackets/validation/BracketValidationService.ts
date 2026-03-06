@@ -21,10 +21,10 @@ const isValidBracketFormData = (data: unknown): data is BracketFormData => {
     'divisionId' in data &&
     'format' in data &&
     'teams' in data &&
-    typeof (data as any).title === 'string' &&
-    typeof (data as any).divisionId === 'string' &&
-    typeof (data as any).format === 'string' &&
-    Array.isArray((data as any).teams)
+    typeof (data as Record<string, unknown>).title === 'string' &&
+    typeof (data as Record<string, unknown>).divisionId === 'string' &&
+    typeof (data as Record<string, unknown>).format === 'string' &&
+    Array.isArray((data as Record<string, unknown>).teams)
   );
 };
 

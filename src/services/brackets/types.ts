@@ -1,11 +1,13 @@
+import { PlayoffMatch } from '@/types';
+
 /**
  * Match organized by type and round for easier rendering
  */
 export interface BracketMatchesByType {
-  winners: any[][];
-  losers: any[][];
-  finals: any[];
-  playIn?: any[][];
+  winners: PlayoffMatch[][];
+  losers: PlayoffMatch[][];
+  finals: PlayoffMatch[];
+  playIn?: PlayoffMatch[][];
 }
 
 /**

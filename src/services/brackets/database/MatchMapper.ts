@@ -1,10 +1,67 @@
 import { PlayoffMatch, PlayoffMatchType } from '@/utils/playoffs/playoffTypes';
 
 /**
+ * Shape of a playoff match row as returned from the database
+ */
+interface DatabasePlayoffMatch {
+  id: string;
+  round?: number;
+  round_number?: number;
+  position: number;
+  team1_id?: string | null;
+  team2_id?: string | null;
+  winner_id?: string | null;
+  loser_id?: string | null;
+  team1_score?: number | null;
+  team2_score?: number | null;
+  team1_game_wins?: number | null;
+  team2_game_wins?: number | null;
+  match_type?: string;
+  best_of?: number;
+  team1_seed?: number | null;
+  team2_seed?: number | null;
+  metadata?: { team1_seed?: number | null; team2_seed?: number | null };
+  next_win_match_id?: string | null;
+  next_match_id?: string | null;
+  next_lose_match_id?: string | null;
+  next_loser_match_id?: string | null;
+  bracket_id: string;
+  status?: string;
+  iscompleted?: boolean;
+}
+
+/**
+ * Shape of a playoff match object ready for database insertion
+ */
+interface DatabasePlayoffMatchInsert {
+  id: string;
+  round: number;
+  round_number: number;
+  position: number;
+  team1_id: string | null | undefined;
+  team2_id: string | null | undefined;
+  winner_id: string | null | undefined;
+  loser_id: string | null | undefined;
+  team1_score: number | null | undefined;
+  team2_score: number | null | undefined;
+  team1_game_wins: number | null | undefined;
+  team2_game_wins: number | null | undefined;
+  match_type: string;
+  best_of: number | undefined;
+  metadata: { team1_seed: number | null | undefined; team2_seed: number | null | undefined };
+  next_win_match_id: string | null | undefined;
+  next_lose_match_id: string | null | undefined;
+  next_match_id: string | null | undefined;
+  next_loser_match_id: string | null | undefined;
+  bracket_id: string;
+  status: string | undefined;
+}
+
+/**
  * Maps database match records to the PlayoffMatch type used in the application
  */
-export function toRuntime(dbMatch: any): PlayoffMatch {
-  if (!dbMatch) return null as any;
+export function toRuntime(dbMatch: DatabasePlayoffMatch | null): PlayoffMatch {
+  if (!dbMatch) return null as unknown as PlayoffMatch;
 
   return {
     id: dbMatch.id,
@@ -32,7 +89,7 @@ export function toRuntime(dbMatch: any): PlayoffMatch {
 /**
  * Maps a PlayoffMatch back to the database format
  */
-export function toDatabase(match: PlayoffMatch): any {
+export function toDatabase(match: PlayoffMatch): DatabasePlayoffMatchInsert {
   return {
     id: match.id,
     round: match.round,
