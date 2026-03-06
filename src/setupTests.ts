@@ -26,6 +26,17 @@ globalThis.matchMedia =
     } as MediaQueryList;
   };
 
+// Mock pointer capture methods for Radix UI compatibility with jsdom
+if (!HTMLElement.prototype.hasPointerCapture) {
+  HTMLElement.prototype.hasPointerCapture = () => false;
+}
+if (!HTMLElement.prototype.setPointerCapture) {
+  HTMLElement.prototype.setPointerCapture = () => {};
+}
+if (!HTMLElement.prototype.releasePointerCapture) {
+  HTMLElement.prototype.releasePointerCapture = () => {};
+}
+
 // Mock IntersectionObserver for better test compatibility with complete interface
 globalThis.IntersectionObserver =
   globalThis.IntersectionObserver ||
