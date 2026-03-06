@@ -246,8 +246,8 @@ export class BracketsViewerAdapter {
         groups: groups as BracketGroupRow[],
         rounds: rounds as BracketRoundRow[],
         matches: matchesWithSources,
-        matchGames: transformedMatchGames,
-        participants: transformedParticipants as ViewerParticipant[],
+        matchGames: transformedMatchGames as unknown as ViewerMatchGame[],
+        participants: transformedParticipants as unknown as ViewerParticipant[],
       },
       getPlayoffMatchId: (viewerMatchId: number) => {
         const result = reverseMatchIdMap.get(viewerMatchId);
