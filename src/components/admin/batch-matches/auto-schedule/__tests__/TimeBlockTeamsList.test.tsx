@@ -10,7 +10,7 @@ describe('TimeBlockTeamsList', () => {
   it('should render a message when no teams are available', () => {
     render(<TimeBlockTeamsList teams={[]} />);
 
-    expect(screen.getByText('No teams assigned to this block')).toBeInTheDocument();
+    expect(screen.getByText('No Teams in This Block')).toBeInTheDocument();
   });
 
   it('should render teams when they are provided', () => {

@@ -5,27 +5,41 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BracketFormTeamsContainer } from '../bracket-teams/components/BracketFormTeamsContainer';
 
-// Mock the hooks
-vi.mock('../bracket-teams/hooks', () => ({
-  useBracketFormData: vi.fn(),
-  useTeamSelectionState: vi.fn(),
-  useBracketFormValidation: vi.fn(),
+// Mock individual hook files (component imports from individual files, not barrel)
+const mockUseBracketFormData = vi.hoisted(() => vi.fn());
+const mockUseTeamSelectionState = vi.hoisted(() => vi.fn());
+const mockUseBracketFormValidation = vi.hoisted(() => vi.fn());
+
+vi.mock('../bracket-teams/hooks/useBracketFormData', () => ({
+  useBracketFormData: mockUseBracketFormData,
 }));
 
-vi.mock('@/hooks/playoffs', () => ({
-  useFilteredTeams: vi.fn(),
-  useTeamSeeding: vi.fn(),
+vi.mock('../bracket-teams/hooks/useTeamSelectionState', () => ({
+  useTeamSelectionState: mockUseTeamSelectionState,
 }));
 
-// Mock the child components
-vi.mock('../bracket-teams/components', () => ({
+vi.mock('../bracket-teams/hooks/useBracketFormValidation', () => ({
+  useBracketFormValidation: mockUseBracketFormValidation,
+}));
+
+// Mock individual child component files
+vi.mock('../bracket-teams/components/TeamSelectionError', () => ({
   TeamSelectionError: ({ message }: any) => (
     <div data-testid="team-selection-error">
       <span>{message}</span>
     </div>
   ),
+}));
+
+vi.mock('../bracket-teams/components/TeamSelectionLoading', () => ({
   TeamSelectionLoading: () => <div data-testid="team-selection-loading">Loading teams...</div>,
+}));
+
+vi.mock('../bracket-teams/components/TeamSelectionEmpty', () => ({
   TeamSelectionEmpty: () => <div data-testid="team-selection-empty">No teams available</div>,
+}));
+
+vi.mock('../bracket-teams/components/TeamSelectionForm', () => ({
   TeamSelectionForm: ({ teams, formState }: any) => (
     <div data-testid="team-selection-form">
       <span>Teams: {teams ? teams.length : 0}</span>
@@ -33,17 +47,6 @@ vi.mock('../bracket-teams/components', () => ({
       <button onClick={() => formState?.handleTeamToggle?.('team-1')}>Toggle Team</button>
     </div>
   ),
-}));
-
-// Mock imports
-const mockUseBracketFormData = vi.hoisted(() => vi.fn());
-const mockUseTeamSelectionState = vi.hoisted(() => vi.fn());
-const mockUseBracketFormValidation = vi.hoisted(() => vi.fn());
-
-vi.mock('../bracket-teams/hooks', () => ({
-  useBracketFormData: mockUseBracketFormData,
-  useTeamSelectionState: mockUseTeamSelectionState,
-  useBracketFormValidation: mockUseBracketFormValidation,
 }));
 
 describe('BracketFormTeamsContainer', () => {
@@ -233,7 +236,11 @@ describe('BracketFormTeamsContainer', () => {
       render(<BracketFormTeamsContainer {...defaultProps} teams={teamsProp} />);
 
       // Should still call useBracketFormData (not conditionally)
-      expect(mockUseBracketFormData).toHaveBeenCalledWith(defaultProps.divisions, teamsProp);
+      expect(mockUseBracketFormData).toHaveBeenCalledWith(
+        defaultProps.divisions,
+        teamsProp,
+        defaultProps.divisionId
+      );
     });
   });
 });
