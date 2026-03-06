@@ -58,8 +58,8 @@ describe('BracketFormDivision', () => {
 
     await user.click(selectTrigger);
 
-    const division1 = screen.getByText('Division 1');
-    const division2 = screen.getByText('Division 2');
+    const division1 = screen.getAllByText('Division 1');
+    const division2 = screen.getAllByText('Division 2');
 
     expect(division1).toBeInTheDocument();
     expect(division2).toBeInTheDocument();
