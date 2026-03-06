@@ -15,7 +15,7 @@ export const TeamSelectionEmpty: React.FC = () => {
     <EmptyState
       icon={Users}
       title="No Teams Available"
-      description="No teams exist in this division. Add teams first, or try selecting a different division."
+      description="No teams are currently available for bracket creation. Please add teams to a division first."
       actions={[
         {
           label: 'Manage Teams',

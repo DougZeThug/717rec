@@ -28,16 +28,23 @@ export const useBracketFormData = (
     error: seedValidationError,
   } = useSeedValidation(divisionId);
 
-  // Determine which teams to use
+  // Determine which teams to use.
+  // An explicitly provided array (even empty) bypasses the fetch - it's a valid "no teams" state.
   const shouldUseProvidedTeams =
-    providedTeams && Array.isArray(providedTeams) && providedTeams.length > 0;
+    providedTeams !== undefined && providedTeams !== null && Array.isArray(providedTeams);
   const teamsToProcess = shouldUseProvidedTeams ? providedTeams : fetchedTeams || [];
   const isLoadingTeams = shouldUseProvidedTeams ? false : isLoading;
+
+  // Determine error state. Only an error when fetching (not when teams explicitly provided).
+  const hasError =
+    !shouldUseProvidedTeams && !isLoadingTeams && (!teamsToProcess || teamsToProcess.length === 0);
 
   // Check if we have all required data before proceeding
   const isDataReady =
     !isLoadingTeams &&
-    teamsToProcess &&
+    !hasError &&
+    teamsToProcess !== null &&
+    teamsToProcess !== undefined &&
     Array.isArray(teamsToProcess) &&
     divisions &&
     Array.isArray(divisions);
@@ -146,8 +153,6 @@ export const useBracketFormData = (
     [seedValidation, seedValidationLoading, seedValidationError]
   );
 
-  // Determine error state
-  const hasError = !isLoadingTeams && (!teamsToProcess || teamsToProcess.length === 0);
   const errorMessage =
     processingError || (hasError ? 'Failed to load teams. Please refresh and try again.' : null);
 

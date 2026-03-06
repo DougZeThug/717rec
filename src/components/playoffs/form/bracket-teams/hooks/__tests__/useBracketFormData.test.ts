@@ -3,22 +3,30 @@ import { renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { Division, Team } from '@/types';
+import { Division } from '@/types';
 
 import { useBracketFormData } from '../useBracketFormData';
 
-// Mock the teams hook
-vi.mock('@/hooks/useTeams', () => ({
-  useTeams: vi.fn(),
+// Mock the correct hooks that useBracketFormData actually uses
+vi.mock('@/hooks/playoffs/usePlayoffTeams', () => ({
+  usePlayoffTeams: vi.fn(),
 }));
 
-import { useTeams } from '@/hooks/useTeams';
+vi.mock('@/hooks/playoffs/useSeedValidation', () => ({
+  useSeedValidation: vi.fn(),
+}));
 
-// Create properly typed mock
-const mockUseTeams = vi.mocked(useTeams);
+import { usePlayoffTeams } from '@/hooks/playoffs/usePlayoffTeams';
+import { useSeedValidation } from '@/hooks/playoffs/useSeedValidation';
 
-// Use type alias for mock to avoid strict type checking on mock functions
-type MockTeamsHookReturn = ReturnType<typeof useTeams>;
+const mockUsePlayoffTeams = vi.mocked(usePlayoffTeams);
+const mockUseSeedValidation = vi.mocked(useSeedValidation);
+
+const defaultSeedValidationReturn = {
+  data: [],
+  isLoading: false,
+  error: null,
+} as any;
 
 describe('useBracketFormData', () => {
   let queryClient: QueryClient;
@@ -28,7 +36,7 @@ describe('useBracketFormData', () => {
     { id: 'div2', name: 'Division B' },
   ];
 
-  const mockTeams: Team[] = [
+  const mockTeams = [
     { id: 'team1', name: 'Team 1', division_id: 'div1' },
     { id: 'team2', name: 'Team 2', division_id: 'div1' },
     { id: 'team3', name: 'Team 3', division_id: 'div2' },
@@ -42,21 +50,14 @@ describe('useBracketFormData', () => {
       },
     });
     vi.clearAllMocks();
+    mockUseSeedValidation.mockReturnValue(defaultSeedValidationReturn);
   });
 
   const wrapper = ({ children }: { children: React.ReactNode }) =>
     React.createElement(QueryClientProvider, { client: queryClient }, children);
 
   it('should return provided teams when teamsProp is given', async () => {
-    const mockReturn: MockTeamsHookReturn = {
-      teams: [],
-      isLoading: false,
-      fetchTeams: vi.fn(),
-      createTeam: vi.fn(),
-      updateTeam: vi.fn(),
-      deleteTeam: vi.fn(),
-    };
-    mockUseTeams.mockReturnValue(mockReturn);
+    mockUsePlayoffTeams.mockReturnValue({ data: [], isLoading: false } as any);
 
     const { result } = renderHook(() => useBracketFormData(mockDivisions, mockTeams), { wrapper });
 
@@ -87,33 +88,16 @@ describe('useBracketFormData', () => {
   });
 
   it('should fetch teams when teamsProp is not provided', async () => {
-    const mockReturn: MockTeamsHookReturn = {
-      teams: mockTeams,
-      isLoading: false,
-      fetchTeams: vi.fn(),
-      createTeam: vi.fn(),
-      updateTeam: vi.fn(),
-      deleteTeam: vi.fn(),
-    };
-    mockUseTeams.mockReturnValue(mockReturn);
+    mockUsePlayoffTeams.mockReturnValue({ data: mockTeams, isLoading: false } as any);
 
     const { result } = renderHook(() => useBracketFormData(mockDivisions, undefined), { wrapper });
 
     await waitFor(() => {
       expect(result.current.teams).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({
-            id: 'team1',
-            name: 'Team 1',
-          }),
-          expect.objectContaining({
-            id: 'team2',
-            name: 'Team 2',
-          }),
-          expect.objectContaining({
-            id: 'team3',
-            name: 'Team 3',
-          }),
+          expect.objectContaining({ id: 'team1', name: 'Team 1' }),
+          expect.objectContaining({ id: 'team2', name: 'Team 2' }),
+          expect.objectContaining({ id: 'team3', name: 'Team 3' }),
         ])
       );
       expect(result.current.isLoading).toBe(false);
@@ -123,15 +107,7 @@ describe('useBracketFormData', () => {
   });
 
   it('should handle loading state', async () => {
-    const mockReturn: MockTeamsHookReturn = {
-      teams: [],
-      isLoading: true,
-      fetchTeams: vi.fn(),
-      createTeam: vi.fn(),
-      updateTeam: vi.fn(),
-      deleteTeam: vi.fn(),
-    };
-    mockUseTeams.mockReturnValue(mockReturn);
+    mockUsePlayoffTeams.mockReturnValue({ data: undefined, isLoading: true } as any);
 
     const { result } = renderHook(() => useBracketFormData(mockDivisions, undefined), { wrapper });
 
@@ -140,15 +116,7 @@ describe('useBracketFormData', () => {
   });
 
   it('should handle error state when no teams are fetched', async () => {
-    const mockReturn: MockTeamsHookReturn = {
-      teams: [],
-      isLoading: false,
-      fetchTeams: vi.fn(),
-      createTeam: vi.fn(),
-      updateTeam: vi.fn(),
-      deleteTeam: vi.fn(),
-    };
-    mockUseTeams.mockReturnValue(mockReturn);
+    mockUsePlayoffTeams.mockReturnValue({ data: [], isLoading: false } as any);
 
     const { result } = renderHook(() => useBracketFormData(mockDivisions, undefined), { wrapper });
 
@@ -162,15 +130,7 @@ describe('useBracketFormData', () => {
   });
 
   it('should return empty teams array when no teams are available but maintain ready state', async () => {
-    const mockReturn: MockTeamsHookReturn = {
-      teams: [],
-      isLoading: false,
-      fetchTeams: vi.fn(),
-      createTeam: vi.fn(),
-      updateTeam: vi.fn(),
-      deleteTeam: vi.fn(),
-    };
-    mockUseTeams.mockReturnValue(mockReturn);
+    mockUsePlayoffTeams.mockReturnValue({ data: [], isLoading: false } as any);
 
     const { result } = renderHook(
       () => useBracketFormData(mockDivisions, []), // Provide empty array as teams prop
@@ -185,7 +145,8 @@ describe('useBracketFormData', () => {
   });
 
   it('should handle invalid team data gracefully', async () => {
-    // Define a proper interface for test data
+    mockUsePlayoffTeams.mockReturnValue({ data: [], isLoading: false } as any);
+
     interface TestTeamData {
       id?: string;
       name?: string;
@@ -207,16 +168,10 @@ describe('useBracketFormData', () => {
       // Should filter out invalid teams and process valid ones
       expect(result.current.teams).toHaveLength(2);
       expect(result.current.teams[0]).toEqual(
-        expect.objectContaining({
-          id: 'team1',
-          name: 'Team 1',
-        })
+        expect.objectContaining({ id: 'team1', name: 'Team 1' })
       );
       expect(result.current.teams[1]).toEqual(
-        expect.objectContaining({
-          id: 'team3',
-          name: 'Team 3',
-        })
+        expect.objectContaining({ id: 'team3', name: 'Team 3' })
       );
       expect(result.current.isDataReady).toBe(true);
     });

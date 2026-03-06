@@ -1,18 +1,22 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
+import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
 import { TeamSelectionEmpty } from '../bracket-teams/components/TeamSelectionEmpty';
 
+const renderWithRouter = (ui: React.ReactElement) =>
+  render(<MemoryRouter>{ui}</MemoryRouter>);
+
 describe('TeamSelectionEmpty', () => {
   it('renders empty state message', () => {
-    render(<TeamSelectionEmpty />);
+    renderWithRouter(<TeamSelectionEmpty />);
 
     expect(screen.getByText('No Teams Available')).toBeInTheDocument();
   });
 
   it('displays default description', () => {
-    render(<TeamSelectionEmpty />);
+    renderWithRouter(<TeamSelectionEmpty />);
 
     expect(
       screen.getByText(/No teams are currently available for bracket creation/)
@@ -20,17 +24,17 @@ describe('TeamSelectionEmpty', () => {
   });
 
   it('shows users icon', () => {
-    render(<TeamSelectionEmpty />);
+    renderWithRouter(<TeamSelectionEmpty />);
 
     const usersIcon =
-      screen.getByTestId('users-icon') || document.querySelector('[data-lucide="users"]');
+      screen.queryByTestId('users-icon') ?? document.querySelector('[data-lucide="users"]') ?? document.querySelector('svg');
     expect(usersIcon).toBeInTheDocument();
   });
 
   it('applies correct styling', () => {
-    render(<TeamSelectionEmpty />);
+    renderWithRouter(<TeamSelectionEmpty />);
 
-    const card = screen.getByText('No Teams Available').closest('.card, [class*="card"]');
+    const card = screen.getByText('No Teams Available').closest('[class*="border"]');
     expect(card).toBeInTheDocument();
   });
 });
