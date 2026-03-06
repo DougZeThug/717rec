@@ -27,14 +27,17 @@ globalThis.matchMedia =
   };
 
 // Mock pointer capture methods for Radix UI compatibility with jsdom
-if (!HTMLElement.prototype.hasPointerCapture) {
-  HTMLElement.prototype.hasPointerCapture = () => false;
-}
-if (!HTMLElement.prototype.setPointerCapture) {
-  HTMLElement.prototype.setPointerCapture = () => {};
-}
-if (!HTMLElement.prototype.releasePointerCapture) {
-  HTMLElement.prototype.releasePointerCapture = () => {};
+// Must be on Element.prototype so all element types (including custom elements) get it
+for (const proto of [Element.prototype, HTMLElement.prototype]) {
+  if (!proto.hasPointerCapture) {
+    proto.hasPointerCapture = () => false;
+  }
+  if (!proto.setPointerCapture) {
+    proto.setPointerCapture = () => {};
+  }
+  if (!proto.releasePointerCapture) {
+    proto.releasePointerCapture = () => {};
+  }
 }
 
 // Mock IntersectionObserver for better test compatibility with complete interface
