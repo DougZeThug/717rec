@@ -606,7 +606,7 @@ export class BracketsViewerAdapter {
         groups: groups,
         rounds: rounds,
         matches: matchesWithSources,
-        matchGames: (bracketData.match_game || []) as ViewerMatchGame[],
+        matchGames: (bracketData.match_game || []) as unknown as ViewerMatchGame[],
         participants: (bracketData.participant || []) as ViewerParticipant[],
       },
       getPlayoffMatchId: (viewerMatchId: number) => reverseMatchIdMap.get(viewerMatchId),

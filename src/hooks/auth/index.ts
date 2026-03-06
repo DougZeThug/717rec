@@ -68,7 +68,7 @@ export const useAuth = () => {
     // Set up auth state listener
     const {
       data: { subscription },
-    } = onAuthStateChange((event, currentSession) => {
+    } = onAuthStateChange(async (event, currentSession) => {
       authLog('Auth state changed:', event);
 
       // Update the current user ID to track which profile fetch is valid

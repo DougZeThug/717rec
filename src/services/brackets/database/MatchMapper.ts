@@ -82,7 +82,7 @@ export function toRuntime(dbMatch: DatabasePlayoffMatch | null): PlayoffMatch {
     nextWinMatchId: dbMatch.next_win_match_id || dbMatch.next_match_id || null,
     nextLoseMatchId: dbMatch.next_lose_match_id || dbMatch.next_loser_match_id || null,
     bracket_id: dbMatch.bracket_id,
-    status: dbMatch.status || (dbMatch.iscompleted ? 'completed' : 'pending'),
+    status: (dbMatch.status || (dbMatch.iscompleted ? 'completed' : 'pending')) as PlayoffMatch['status'],
   };
 }
 
