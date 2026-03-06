@@ -26,6 +26,22 @@ globalThis.matchMedia =
     } as MediaQueryList;
   };
 
+// Mock DOM methods missing in jsdom for Radix UI compatibility
+for (const proto of [Element.prototype, HTMLElement.prototype]) {
+  if (!proto.hasPointerCapture) {
+    proto.hasPointerCapture = () => false;
+  }
+  if (!proto.setPointerCapture) {
+    proto.setPointerCapture = () => {};
+  }
+  if (!proto.releasePointerCapture) {
+    proto.releasePointerCapture = () => {};
+  }
+  if (!proto.scrollIntoView) {
+    proto.scrollIntoView = () => {};
+  }
+}
+
 // Mock IntersectionObserver for better test compatibility with complete interface
 globalThis.IntersectionObserver =
   globalThis.IntersectionObserver ||
