@@ -166,21 +166,19 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
       await expect(service.createBracket(options)).resolves.toBeUndefined();
     });
 
-    it('should throw error with proper message when participant insertion fails', async () => {
+    it('should throw error with proper message when stage creation fails', async () => {
       const options = {
         bracketId: 'test-bracket-error',
         format: 'single_elimination' as const,
         teams: [{ id: 'team1', name: 'Team 1', seed: 1 }],
       };
 
-      // Use chainable mock pattern with error
-      mockSupabaseFrom.insert = createInsertMock(null as any, {
-        message: 'Database connection failed',
-        code: '500',
-      });
+      // Mock create.stage to throw
+      const mockManager = (service as any).creationService.manager;
+      mockManager.create.stage.mockRejectedValueOnce(new Error('Database connection failed'));
 
       await expect(service.createBracket(options)).rejects.toThrow(
-        'Failed to insert participants:'
+        'Bracket creation failed:'
       );
     });
   });
