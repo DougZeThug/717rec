@@ -52,7 +52,7 @@ export const updateMatchInDatabase = async (match: MatchWithTeams): Promise<bool
     });
 
     try {
-      await updateMatchArray(match.id, {
+      const data = await updateMatchArray(match.id, {
         team1_score: match.team1Score,
         team2_score: match.team2Score,
         team1_game_wins: match.team1_game_wins,
@@ -61,6 +61,11 @@ export const updateMatchInDatabase = async (match: MatchWithTeams): Promise<bool
         winner_id: winnerId,
         loser_id: loserId,
       });
+
+      if (!data || data.length === 0) {
+        errorLog(`Supabase update returned 0 rows affected for match ${match.id}. Match not saved.`);
+        return false;
+      }
     } catch (error) {
       errorLog(`Error updating match ${match.id}:`, error);
       return false;
