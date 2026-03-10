@@ -3838,6 +3838,33 @@ export type Database = {
           },
         ]
       }
+      theme_settings: {
+        Row: {
+          id: string
+          is_enabled: boolean
+          label: string
+          sort_order: number
+          theme_key: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          is_enabled?: boolean
+          label: string
+          sort_order?: number
+          theme_key: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          is_enabled?: boolean
+          label?: string
+          sort_order?: number
+          theme_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       v_head_to_head: {

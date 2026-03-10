@@ -10,6 +10,7 @@ import {
   Inbox,
   LayoutGrid,
   ListChecks,
+  Palette,
   Search,
   Shuffle,
   Sparkles,
@@ -31,6 +32,7 @@ import RequestsTab from '@/components/admin/requests/RequestsTab';
 import MassScoresTab from '@/components/admin/scores/MassScoresTab';
 import SeasonManagementTab from '@/components/admin/seasons/SeasonManagementTab';
 import TeamManagementTab from '@/components/admin/teams/TeamManagementTab';
+import ThemeManagementTab from '@/components/admin/theme/ThemeManagementTab';
 import TimeslotsTab from '@/components/admin/timeslots/TimeslotsTab';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -76,6 +78,7 @@ const adminMenuItems: AdminMenuItem[] = [
   { id: 'teams', label: 'Teams', icon: Users, Component: TeamManagementTab },
   { id: 'pending-matches', label: 'Pending', icon: Clock, Component: PendingMatchesSection },
   { id: 'hero-cards', label: 'Hero', icon: LayoutGrid, Component: HeroCardsTab },
+  { id: 'themes', label: 'Themes', icon: Palette, Component: ThemeManagementTab },
   { id: 'blind-draw', label: 'Blind Draw', icon: Shuffle, Component: BlindDrawSignupsTab },
   { id: 'help', label: 'Help', icon: HelpCircle, Component: GettingStartedTab },
 ];

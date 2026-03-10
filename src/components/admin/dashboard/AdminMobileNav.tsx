@@ -7,6 +7,7 @@ import {
   Inbox,
   LayoutGrid,
   ListChecks,
+  Palette,
   Search,
   Shuffle,
   Sparkles,
@@ -49,6 +50,7 @@ const adminMenuItems: AdminMenuItem[] = [
   { id: 'teams', label: 'Teams', icon: Users },
   { id: 'pending-matches', label: 'Pending', icon: Clock },
   { id: 'hero-cards', label: 'Hero Cards', icon: LayoutGrid },
+  { id: 'themes', label: 'Themes', icon: Palette },
   { id: 'blind-draw', label: 'Blind Draw', icon: Shuffle },
   { id: 'help', label: 'Help', icon: HelpCircle },
 ];
@@ -76,7 +78,7 @@ const tabGroups: TabGroup[] = [
     id: 'settings',
     label: 'Settings & Content',
     icon: LayoutGrid,
-    tabs: ['seasons', 'hero-cards', 'blind-draw', 'help'],
+    tabs: ['seasons', 'hero-cards', 'themes', 'blind-draw', 'help'],
   },
 ];
 
