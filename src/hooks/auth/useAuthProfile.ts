@@ -20,7 +20,7 @@ export const useAuthProfile = (user: User | null, navigate: NavigateFunction) =>
   // Check if user needs profile setup (missing username)
   const checkProfileSetup = useCallback(
     (profileData: UserProfile | null) => {
-      if (profileData && !profileData.username) {
+      if (!profileData || !profileData.username) {
         navigate('/setup-profile');
       }
     },
