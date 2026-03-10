@@ -5,7 +5,8 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
-import { cacheLog, errorLog } from '@/utils/logger';
+import { handleDatabaseError } from '@/utils/errorHandler';
+import { cacheLog } from '@/utils/logger';
 
 type DivisionWeightsMap = Map<string, number>;
 
@@ -17,6 +18,7 @@ const DEFAULT_DIVISION_WEIGHT = 0.85;
 /**
  * Fetch division weights from database (with in-memory caching)
  * Safe to call multiple times - returns cached data after first fetch
+ * Throws DatabaseError on failure so callers can handle it properly
  */
 export const fetchDivisionWeights = async (): Promise<DivisionWeightsMap> => {
   // Return cached data if available
@@ -34,25 +36,34 @@ export const fetchDivisionWeights = async (): Promise<DivisionWeightsMap> => {
   // Start new fetch
   cacheLog('Fetching division weights from database');
   cachePromise = (async () => {
-    const { data, error } = await supabase
-      .from('divisions')
-      .select('id, name, division_weight')
-      .order('name');
+    try {
+      const { data, error } = await supabase
+        .from('divisions')
+        .select('id, name, division_weight')
+        .order('name');
 
-    if (error) {
-      errorLog('Error fetching division weights:', error);
-      cachePromise = null; // Clear promise so next call will retry
-      return new Map();
+      if (error) handleDatabaseError(error, 'Failed to fetch division weights');
+
+      const weights = new Map<string, number>();
+      data?.forEach((div) => {
+        weights.set(div.id, div.division_weight ?? DEFAULT_DIVISION_WEIGHT);
+      });
+
+      // Only cache non-empty results to avoid poisoning the cache
+      if (weights.size > 0) {
+        cacheLog(`Division weights cached: ${weights.size} divisions`);
+        cachedWeights = weights;
+      } else {
+        cacheLog('Division weights: no divisions found, not caching');
+        cachePromise = null;
+      }
+
+      return weights;
+    } catch (err) {
+      // Clear promise so next call will retry
+      cachePromise = null;
+      throw err;
     }
-
-    const weights = new Map<string, number>();
-    data?.forEach((div) => {
-      weights.set(div.id, div.division_weight || DEFAULT_DIVISION_WEIGHT);
-    });
-
-    cacheLog(`Division weights cached: ${weights.size} divisions`);
-    cachedWeights = weights;
-    return weights;
   })();
 
   return cachePromise;
