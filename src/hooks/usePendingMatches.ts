@@ -3,7 +3,10 @@ import { useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
 import { fetchPendingMatches, fetchTeamsMap } from '@/services/matches/MatchReadService';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  approveMatchResult,
+  markMatchAsTie,
+} from '@/services/matches/MatchWriteService';
 import { Match, Team } from '@/types';
 import { transformDatabaseMatches } from '@/utils/matchTransformers';
 import { errorLog } from '@/utils/logger';
@@ -94,14 +97,7 @@ export function usePendingMatches() {
       const loserGameWins =
         winnerTeamIndex === 1 ? match.team2_game_wins || 0 : match.team1_game_wins || 0;
 
-      const { error } = await supabase.rpc('approve_match_result', {
-        p_match_id: match.id,
-        p_winner_id: winnerId,
-        p_loser_id: loserId,
-        p_winner_game_wins: winnerGameWins,
-        p_loser_game_wins: loserGameWins,
-      });
-      if (error) throw error;
+      await approveMatchResult(match.id, winnerId, loserId, winnerGameWins, loserGameWins);
     },
     onSuccess: () => {
       toast({
@@ -124,8 +120,7 @@ export function usePendingMatches() {
   // Mutation for marking as tie — atomic & idempotent via RPC
   const tieMutation = useMutation({
     mutationFn: async (matchId: string) => {
-      const { error } = await supabase.rpc('mark_match_as_tie', { p_match_id: matchId });
-      if (error) throw error;
+      await markMatchAsTie(matchId);
     },
     onSuccess: () => {
       toast({

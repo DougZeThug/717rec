@@ -3,16 +3,17 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { supabase } from '@/integrations/supabase/client';
-
 import { usePendingMatches } from '../usePendingMatches';
 
 // Mock dependencies
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
-    from: vi.fn(),
-    rpc: vi.fn(),
-  },
+vi.mock('@/services/matches/MatchReadService', () => ({
+  fetchPendingMatches: vi.fn().mockResolvedValue([]),
+  fetchTeamsMap: vi.fn().mockResolvedValue([]),
+}));
+
+vi.mock('@/services/matches/MatchWriteService', () => ({
+  approveMatchResult: vi.fn().mockResolvedValue(true),
+  markMatchAsTie: vi.fn().mockResolvedValue(true),
 }));
 
 vi.mock('@/hooks/useToast', () => ({
@@ -20,6 +21,8 @@ vi.mock('@/hooks/useToast', () => ({
     toast: vi.fn(),
   }),
 }));
+
+import { approveMatchResult, markMatchAsTie } from '@/services/matches/MatchWriteService';
 
 // Create a wrapper for React Query
 const createWrapper = () => {
@@ -48,33 +51,11 @@ describe('usePendingMatches', () => {
 
   beforeEach(() => {
     vi.resetAllMocks();
-
-    // Default mock for fetching matches and teams
-    (supabase.from as any).mockImplementation((table: string) => {
-      if (table === 'matches') {
-        return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              is: vi.fn().mockReturnValue({
-                order: vi.fn().mockResolvedValue({ data: [], error: null }),
-              }),
-            }),
-          }),
-        };
-      }
-      if (table === 'v_team_details') {
-        return {
-          select: vi.fn().mockResolvedValue({ data: [], error: null }),
-        };
-      }
-      return { select: vi.fn().mockResolvedValue({ data: [], error: null }) };
-    });
-
-    // Default RPC mock
-    (supabase.rpc as any).mockResolvedValue({ data: true, error: null });
+    (approveMatchResult as any).mockResolvedValue(true);
+    (markMatchAsTie as any).mockResolvedValue(true);
   });
 
-  it('should call approve_match_result RPC with correct parameters for team 1 winner', async () => {
+  it('should call approveMatchResult with correct parameters for team 1 winner', async () => {
     const { result } = renderHook(() => usePendingMatches(), {
       wrapper: createWrapper(),
     });
@@ -85,16 +66,16 @@ describe('usePendingMatches', () => {
       await result.current.handleApproveResult(mockMatch as any, 1);
     });
 
-    expect(supabase.rpc).toHaveBeenCalledWith('approve_match_result', {
-      p_match_id: 'match-1',
-      p_winner_id: 'team-1',
-      p_loser_id: 'team-2',
-      p_winner_game_wins: 2,
-      p_loser_game_wins: 1,
-    });
+    expect(approveMatchResult).toHaveBeenCalledWith(
+      'match-1',
+      'team-1', // winnerId
+      'team-2', // loserId
+      2, // winner's game wins
+      1 // loser's game wins
+    );
   });
 
-  it('should call approve_match_result RPC with swapped params for team 2 winner', async () => {
+  it('should pass correct game wins when team 2 wins', async () => {
     const { result } = renderHook(() => usePendingMatches(), {
       wrapper: createWrapper(),
     });
@@ -105,20 +86,17 @@ describe('usePendingMatches', () => {
       await result.current.handleApproveResult(mockMatch as any, 2);
     });
 
-    expect(supabase.rpc).toHaveBeenCalledWith('approve_match_result', {
-      p_match_id: 'match-1',
-      p_winner_id: 'team-2',
-      p_loser_id: 'team-1',
-      p_winner_game_wins: 1,
-      p_loser_game_wins: 2,
-    });
+    expect(approveMatchResult).toHaveBeenCalledWith(
+      'match-1',
+      'team-2', // winnerId (team 2 won)
+      'team-1', // loserId
+      1, // winner's game wins (team2GameWins)
+      2 // loser's game wins (team1GameWins)
+    );
   });
 
-  it('should handle approve_match_result RPC failure gracefully', async () => {
-    (supabase.rpc as any).mockResolvedValue({
-      data: null,
-      error: { message: 'RPC failed' },
-    });
+  it('should handle approveMatchResult failure gracefully', async () => {
+    (approveMatchResult as any).mockRejectedValue(new Error('RPC failed'));
 
     const { result } = renderHook(() => usePendingMatches(), {
       wrapper: createWrapper(),
@@ -134,10 +112,10 @@ describe('usePendingMatches', () => {
       }
     });
 
-    expect(supabase.rpc).toHaveBeenCalledWith('approve_match_result', expect.any(Object));
+    expect(approveMatchResult).toHaveBeenCalled();
   });
 
-  it('should call mark_match_as_tie RPC', async () => {
+  it('should call markMatchAsTie with match id', async () => {
     const { result } = renderHook(() => usePendingMatches(), {
       wrapper: createWrapper(),
     });
@@ -148,8 +126,6 @@ describe('usePendingMatches', () => {
       await result.current.handleMarkAsTie('match-1');
     });
 
-    expect(supabase.rpc).toHaveBeenCalledWith('mark_match_as_tie', {
-      p_match_id: 'match-1',
-    });
+    expect(markMatchAsTie).toHaveBeenCalledWith('match-1');
   });
 });
