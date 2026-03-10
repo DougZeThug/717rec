@@ -1,4 +1,5 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { DatabaseError, NotFoundError } from '@/types/errors';
 
 // ─── Supabase mock ────────────────────────────────────────────────────────────
@@ -23,11 +24,11 @@ vi.mock('@/utils/logger', () => ({
 
 // Import after mocks
 import {
-  fetchActiveSeason,
   batchCreateMatches,
-  updateMatchScore,
+  fetchActiveSeason,
   MatchCreateData,
   MatchUpdateData,
+  updateMatchScore,
 } from '../MatchWriteService';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

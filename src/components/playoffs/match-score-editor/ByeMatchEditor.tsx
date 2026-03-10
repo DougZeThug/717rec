@@ -45,9 +45,7 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
 
       <div className="space-y-4 sm:space-y-6 py-2 sm:py-4">
         <div className="text-center py-2 sm:py-4">
-          <p className="text-lg sm:text-xl font-semibold px-2">
-            {byeWinner.name} wins by walkover
-          </p>
+          <p className="text-lg sm:text-xl font-semibold px-2">{byeWinner.name} wins by walkover</p>
           <p className="text-xs sm:text-sm text-muted-foreground mt-2">Opponent: BYE</p>
         </div>
 

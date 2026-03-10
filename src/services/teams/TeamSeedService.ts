@@ -10,10 +10,7 @@ import { handleDatabaseError } from '@/utils/errorHandler';
  * Update a single team's seed value
  * @throws {DatabaseError} When database operations fail
  */
-export const updateTeamSeed = async (
-  teamId: string,
-  seed: number | null
-): Promise<any> => {
+export const updateTeamSeed = async (teamId: string, seed: number | null): Promise<any> => {
   const { data, error } = await supabase
     .from('teams')
     .update({ seed })

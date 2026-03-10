@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const teamIds = teams.map(t => t.team_id);
+    const teamIds = teams.map((t) => t.team_id);
 
     // 4. Check which teams already have snapshots for this week
     const { data: existingSnapshots } = await supabase
@@ -112,12 +112,14 @@ Deno.serve(async (req) => {
       .eq('week_number', weekNumber)
       .in('team_id', teamIds);
 
-    const teamsWithSnapshots = new Set(existingSnapshots?.map(s => s.team_id) || []);
-    const teamsNeedingSnapshots = teams.filter(t => !teamsWithSnapshots.has(t.team_id));
+    const teamsWithSnapshots = new Set(existingSnapshots?.map((s) => s.team_id) || []);
+    const teamsNeedingSnapshots = teams.filter((t) => !teamsWithSnapshots.has(t.team_id));
 
     // If all teams already have snapshots, skip
     if (teamsNeedingSnapshots.length === 0) {
-      console.log(`[capture-power-snapshots] Snapshots already exist for all ${teamIds.length} teams in week ${weekNumber}`);
+      console.log(
+        `[capture-power-snapshots] Snapshots already exist for all ${teamIds.length} teams in week ${weekNumber}`
+      );
       return new Response(
         JSON.stringify({
           success: true,
@@ -128,7 +130,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`[capture-power-snapshots] ${teamsWithSnapshots.size} teams already have snapshots, creating for ${teamsNeedingSnapshots.length} remaining teams`);
+    console.log(
+      `[capture-power-snapshots] ${teamsWithSnapshots.size} teams already have snapshots, creating for ${teamsNeedingSnapshots.length} remaining teams`
+    );
 
     // 5. Prepare snapshot records only for teams that don't have one
     const snapshotDate = new Date().toISOString().split('T')[0];

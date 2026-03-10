@@ -79,7 +79,11 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
   );
 
   // Render the bracket visualization
-  const { isInitialized, error: renderError, getPlayoffMatchIdRef } = useBracketsViewerRenderer({
+  const {
+    isInitialized,
+    error: renderError,
+    getPlayoffMatchIdRef,
+  } = useBracketsViewerRenderer({
     bracket,
     containerRef,
     containerId: CONTAINER_ID,

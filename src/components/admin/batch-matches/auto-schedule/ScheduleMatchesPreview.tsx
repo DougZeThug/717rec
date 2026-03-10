@@ -83,10 +83,7 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
             {totalMatches} Matches
           </Badge>
           {diagnostics && diagnostics.relaxationApplied > 0 && (
-            <Badge
-              variant="outline"
-              className="text-xs bg-blue-50 text-blue-700 border-blue-200"
-            >
+            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
               Adjusted
             </Badge>
           )}

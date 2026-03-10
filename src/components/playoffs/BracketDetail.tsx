@@ -8,8 +8,8 @@ import ChampionDisplay from '@/components/playoffs/ChampionDisplay';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
-import { fetchBracketParticipants } from '@/services/brackets/BracketReadService';
 import { cn } from '@/lib/utils';
+import { fetchBracketParticipants } from '@/services/brackets/BracketReadService';
 import { blueAmber } from '@/styles/design-system';
 import { PlayoffBracket, Team } from '@/utils/playoffs/playoffTypes';
 

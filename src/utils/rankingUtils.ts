@@ -76,7 +76,10 @@ export const updateRankChanges = (rankings: Ranking[]): Ranking[] => {
   });
 };
 
-export const saveRankingsToStorage = async (rankings: Ranking[], seasonId?: string): Promise<void> => {
+export const saveRankingsToStorage = async (
+  rankings: Ranking[],
+  seasonId?: string
+): Promise<void> => {
   // Import database service dynamically to avoid circular dependencies
   const { saveRankingsToDatabase } = await import('@/services/RankingSnapshotService');
 
@@ -105,14 +108,15 @@ export const saveRankingsToStorage = async (rankings: Ranking[], seasonId?: stri
   }
 };
 
-export const loadRankingsFromStorage = async (seasonId?: string): Promise<{
+export const loadRankingsFromStorage = async (
+  seasonId?: string
+): Promise<{
   rankings: Record<string, number>;
   lastUpdated: string | null;
 }> => {
   // Import database service dynamically to avoid circular dependencies
-  const { loadRankingsFromDatabase, migrateLocalStorageToDatabase } = await import(
-    '@/services/RankingSnapshotService'
-  );
+  const { loadRankingsFromDatabase, migrateLocalStorageToDatabase } =
+    await import('@/services/RankingSnapshotService');
 
   try {
     // Try to load from database first for the specified season (or active season)

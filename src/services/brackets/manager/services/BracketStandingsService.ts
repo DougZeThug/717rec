@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { bracketLog, errorLog, failureLog, successLog, warnLog } from '@/utils/logger';
 
 import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
-import type { StorageStage, StorageParticipant } from '../types/BracketServiceTypes';
+import type { StorageParticipant, StorageStage } from '../types/BracketServiceTypes';
 
 /**
  * Service for calculating and managing bracket standings

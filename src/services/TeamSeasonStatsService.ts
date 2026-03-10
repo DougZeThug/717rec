@@ -1,13 +1,13 @@
+import {
+  calculateBestWorstDivisionTiers,
+  calculatePowerScoreTrend,
+} from '@/hooks/teams/seasonBreakdown/calculateSeasonStats';
+import { processSeasonMatches } from '@/hooks/teams/seasonBreakdown/processSeasonMatches';
+import { DivisionRelation, SeasonRelation } from '@/hooks/teams/seasonBreakdown/types';
 import { supabase } from '@/integrations/supabase/client';
 import { TeamAdvancedStats } from '@/types/teamAdvancedStats';
-import { DivisionRelation, SeasonRelation } from '@/hooks/teams/seasonBreakdown/types';
-import { processSeasonMatches } from '@/hooks/teams/seasonBreakdown/processSeasonMatches';
-import {
-  calculatePowerScoreTrend,
-  calculateBestWorstDivisionTiers,
-} from '@/hooks/teams/seasonBreakdown/calculateSeasonStats';
-import { dbLog, errorLog } from '@/utils/logger';
 import { SeasonBreakdown } from '@/types/teamAdvancedStats';
+import { dbLog, errorLog } from '@/utils/logger';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

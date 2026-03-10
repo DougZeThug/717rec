@@ -1,9 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import type {
-  TeamRequest,
-  TeamRequestStatus,
-  TeamRequestWithTeam,
-} from '@/types/teamRequest';
+import type { TeamRequest, TeamRequestStatus, TeamRequestWithTeam } from '@/types/teamRequest';
 
 // ─── fetchPendingRequestsCount ────────────────────────────────────────────────
 
@@ -69,7 +65,12 @@ export const submitTeamRequest = async (request: {
   submitted_by_name?: string;
 }) => {
   // Get current user and season in parallel
-  const [{ data: { user } }, { data: season }] = await Promise.all([
+  const [
+    {
+      data: { user },
+    },
+    { data: season },
+  ] = await Promise.all([
     supabase.auth.getUser(),
     supabase.from('seasons').select('id').eq('is_active', true).single(),
   ]);

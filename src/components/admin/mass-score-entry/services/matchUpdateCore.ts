@@ -63,7 +63,9 @@ export const updateMatchInDatabase = async (match: MatchWithTeams): Promise<bool
       });
 
       if (!data || data.length === 0) {
-        errorLog(`Supabase update returned 0 rows affected for match ${match.id}. Match not saved.`);
+        errorLog(
+          `Supabase update returned 0 rows affected for match ${match.id}. Match not saved.`
+        );
         return false;
       }
     } catch (error) {

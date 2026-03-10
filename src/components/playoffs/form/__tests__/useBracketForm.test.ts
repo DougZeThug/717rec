@@ -164,9 +164,7 @@ describe('useBracketForm', () => {
   });
 
   it('should initialize correctly with form state', () => {
-    const { result } = renderHook(() =>
-      useBracketForm({ onSubmit: mockOnSubmit })
-    );
+    const { result } = renderHook(() => useBracketForm({ onSubmit: mockOnSubmit }));
 
     expect(result.current.form).toBe(mockFormState.form);
     expect(result.current.isFormValid).toBe(false);
@@ -219,25 +217,19 @@ describe('useBracketForm', () => {
 
     mockUseBracketFormState.mockReturnValue(validFormState);
 
-    const { result } = renderHook(() =>
-      useBracketForm({ onSubmit: mockOnSubmit })
-    );
+    const { result } = renderHook(() => useBracketForm({ onSubmit: mockOnSubmit }));
 
     expect(result.current.isFormValid).toBe(true);
   });
 
   it('should handle form submission correctly', () => {
-    const { result } = renderHook(() =>
-      useBracketForm({ onSubmit: mockOnSubmit })
-    );
+    const { result } = renderHook(() => useBracketForm({ onSubmit: mockOnSubmit }));
 
     expect(result.current.handleSubmit).toBe(mockFormState.handleSubmit);
   });
 
   it('should re-validate when form values change', () => {
-    const { rerender } = renderHook(() =>
-      useBracketForm({ onSubmit: mockOnSubmit })
-    );
+    const { rerender } = renderHook(() => useBracketForm({ onSubmit: mockOnSubmit }));
 
     // Change watched values by updating the mock implementation
     const updatedValues: BracketFormValues = {

@@ -5,9 +5,9 @@ import { useLocation, useNavigate, useParams } from 'react-router';
 import TeamBadgeCollection from '@/components/badges/TeamBadgeCollection';
 import AnimatedBreadcrumbs from '@/components/navigation/AnimatedBreadcrumbs';
 import HeadToHeadRecords from '@/components/stats/HeadToHeadRecords';
-import RivalryHighlights from '@/components/teams/RivalryHighlights';
 import MatchList from '@/components/teams/MatchList';
 import PlayerList from '@/components/teams/PlayerList';
+import RivalryHighlights from '@/components/teams/RivalryHighlights';
 import StatBreakdown from '@/components/teams/StatBreakdown';
 import TeamAdvancedStatsSection from '@/components/teams/TeamAdvancedStatsSection';
 import TeamAnalysis from '@/components/teams/TeamAnalysis';
@@ -108,7 +108,6 @@ const TeamDetails = () => {
   const gamePct = team.game_win_percentage ? team.game_win_percentage * 100 : 0;
   const sweepStats = calculateSweepRate(teamId || '', pastMatches);
   const clutchRecord = calculateClutchRecord(teamId || '', pastMatches);
-
 
   return (
     <>

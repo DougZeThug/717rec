@@ -28,11 +28,19 @@ export const DesignAppearanceSection: React.FC<FormSectionProps> = ({ formData, 
   const handleFileUpload = useCallback(
     async (file: File) => {
       if (!file.type.startsWith('image/')) {
-        toast({ title: 'Invalid file', description: 'Please select an image file.', variant: 'destructive' });
+        toast({
+          title: 'Invalid file',
+          description: 'Please select an image file.',
+          variant: 'destructive',
+        });
         return;
       }
       if (file.size > 10 * 1024 * 1024) {
-        toast({ title: 'File too large', description: 'Max file size is 10MB.', variant: 'destructive' });
+        toast({
+          title: 'File too large',
+          description: 'Max file size is 10MB.',
+          variant: 'destructive',
+        });
         return;
       }
 
@@ -43,7 +51,11 @@ export const DesignAppearanceSection: React.FC<FormSectionProps> = ({ formData, 
         onChange('image_url', publicUrl);
         toast({ title: 'Uploaded!', description: 'Flyer image uploaded successfully.' });
       } catch (err: any) {
-        toast({ title: 'Upload failed', description: err?.message || 'Something went wrong.', variant: 'destructive' });
+        toast({
+          title: 'Upload failed',
+          description: err?.message || 'Something went wrong.',
+          variant: 'destructive',
+        });
       } finally {
         setIsUploading(false);
       }

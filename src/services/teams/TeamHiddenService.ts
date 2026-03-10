@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
-import { handleDatabaseError, ensureFound } from '@/utils/errorHandler';
-import { NotFoundError, BusinessLogicError } from '@/types/errors';
+import { BusinessLogicError, NotFoundError } from '@/types/errors';
+import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 
 /**
  * Service for managing teams in the hidden division
@@ -109,7 +109,10 @@ export const hideTeam = async (teamId: string): Promise<HideTeamResult> => {
  * @throws {DatabaseError} When database operations fail
  * @throws {NotFoundError} When team or target division is not found
  */
-export const unhideTeam = async (teamId: string, targetDivisionId: string): Promise<UnhideTeamResult> => {
+export const unhideTeam = async (
+  teamId: string,
+  targetDivisionId: string
+): Promise<UnhideTeamResult> => {
   try {
     // Get the team's current info
     const { data: team, error: teamError } = await supabase

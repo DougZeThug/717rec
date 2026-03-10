@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { bracketLog, errorLog, failureLog, successLog } from '@/utils/logger';
+
 import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
 
 /**
@@ -75,10 +76,7 @@ export class BracketAdminService {
               updatePayload.opponent2_id = null;
             }
 
-            await supabase
-              .from('match')
-              .update(updatePayload)
-              .eq('id', downstreamMatch.id);
+            await supabase.from('match').update(updatePayload).eq('id', downstreamMatch.id);
           }
 
           bracketLog('Cleared downstream matches (selective)', {
@@ -304,17 +302,14 @@ export class BracketAdminService {
     const allMatches = await this.storage.select('match', { stage_id: currentMatch.stage_id });
 
     // Only consider matches in strictly later rounds that contain the winner
-    const populated = allMatches.filter(
-      (m: any) => {
-        if (m.id === matchId) return false;
-        const hasParticipant =
-          m.opponent1?.id === winnerParticipantId ||
-          m.opponent2?.id === winnerParticipantId;
-        if (!hasParticipant) return false;
-        const mRoundNumber = roundNumberById.get(m.round_id);
-        return mRoundNumber !== undefined && mRoundNumber > currentRound.number;
-      }
-    );
+    const populated = allMatches.filter((m: any) => {
+      if (m.id === matchId) return false;
+      const hasParticipant =
+        m.opponent1?.id === winnerParticipantId || m.opponent2?.id === winnerParticipantId;
+      if (!hasParticipant) return false;
+      const mRoundNumber = roundNumberById.get(m.round_id);
+      return mRoundNumber !== undefined && mRoundNumber > currentRound.number;
+    });
 
     return {
       hasDownstream: populated.length > 0,

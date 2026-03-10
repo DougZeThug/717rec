@@ -44,37 +44,34 @@ const RankingsTable: React.FC<RankingsTableProps> = ({
 
   // Memoize division rank calculations with optimized O(n log n) algorithm
   // Instead of filtering and sorting for each team, we group by division once
-  const rankingsWithDivisionRanks = useMemo(
-    () => {
-      // Group rankings by division in a single pass O(n)
-      const divisionMap = new Map<string, Ranking[]>();
-      for (const ranking of sortedRankings) {
-        if (ranking.divisionName) {
-          const divisionRankings = divisionMap.get(ranking.divisionName) || [];
-          divisionRankings.push(ranking);
-          divisionMap.set(ranking.divisionName, divisionRankings);
-        }
+  const rankingsWithDivisionRanks = useMemo(() => {
+    // Group rankings by division in a single pass O(n)
+    const divisionMap = new Map<string, Ranking[]>();
+    for (const ranking of sortedRankings) {
+      if (ranking.divisionName) {
+        const divisionRankings = divisionMap.get(ranking.divisionName) || [];
+        divisionRankings.push(ranking);
+        divisionMap.set(ranking.divisionName, divisionRankings);
       }
+    }
 
-      // Sort each division once O(k * (n/k) log(n/k)) = O(n log n)
-      const divisionRanks = new Map<string, Map<string, number>>();
-      for (const [divisionName, divisionRankings] of divisionMap.entries()) {
-        const sorted = sortRankings(divisionRankings, sortOptions.field, sortOptions.direction);
-        const rankMap = new Map<string, number>();
-        sorted.forEach((r, index) => rankMap.set(r.teamId, index + 1));
-        divisionRanks.set(divisionName, rankMap);
-      }
+    // Sort each division once O(k * (n/k) log(n/k)) = O(n log n)
+    const divisionRanks = new Map<string, Map<string, number>>();
+    for (const [divisionName, divisionRankings] of divisionMap.entries()) {
+      const sorted = sortRankings(divisionRankings, sortOptions.field, sortOptions.direction);
+      const rankMap = new Map<string, number>();
+      sorted.forEach((r, index) => rankMap.set(r.teamId, index + 1));
+      divisionRanks.set(divisionName, rankMap);
+    }
 
-      // Map over rankings and look up pre-computed rank O(n)
-      return sortedRankings.map((ranking) => ({
-        ...ranking,
-        divisionRank: ranking.divisionName
-          ? divisionRanks.get(ranking.divisionName)?.get(ranking.teamId)
-          : undefined,
-      }));
-    },
-    [sortedRankings, sortOptions.field, sortOptions.direction]
-  );
+    // Map over rankings and look up pre-computed rank O(n)
+    return sortedRankings.map((ranking) => ({
+      ...ranking,
+      divisionRank: ranking.divisionName
+        ? divisionRanks.get(ranking.divisionName)?.get(ranking.teamId)
+        : undefined,
+    }));
+  }, [sortedRankings, sortOptions.field, sortOptions.direction]);
 
   const handleSortChange = (field: string) => {
     const newDirection: SortDirection =

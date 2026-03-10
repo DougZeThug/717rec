@@ -243,7 +243,12 @@ interface RawSeasonStatsRow {
 /** Per-team data extracted from bulk queries, plus power score prefetch data */
 export interface BulkTeamCareerData extends CareerData {
   /** Season stats with power_score included (for calculateCareerPowerScore) */
-  seasonPowerScores: { power_score: number | null; match_wins: number | null; match_losses: number | null; season_id: string | null }[];
+  seasonPowerScores: {
+    power_score: number | null;
+    match_wins: number | null;
+    match_losses: number | null;
+    season_id: string | null;
+  }[];
 }
 
 /**
@@ -251,18 +256,24 @@ export interface BulkTeamCareerData extends CareerData {
  */
 function groupMatchesByTeam<T extends { team1_id: string | null; team2_id: string | null }>(
   matches: T[],
-  teamIds: Set<string>,
+  teamIds: Set<string>
 ): Map<string, T[]> {
   const map = new Map<string, T[]>();
   for (const match of matches) {
     if (match.team1_id && teamIds.has(match.team1_id)) {
       let list = map.get(match.team1_id);
-      if (!list) { list = []; map.set(match.team1_id, list); }
+      if (!list) {
+        list = [];
+        map.set(match.team1_id, list);
+      }
       list.push(match);
     }
     if (match.team2_id && teamIds.has(match.team2_id) && match.team2_id !== match.team1_id) {
       let list = map.get(match.team2_id);
-      if (!list) { list = []; map.set(match.team2_id, list); }
+      if (!list) {
+        list = [];
+        map.set(match.team2_id, list);
+      }
       list.push(match);
     }
   }
@@ -274,7 +285,7 @@ function groupMatchesByTeam<T extends { team1_id: string | null; team2_id: strin
  * instead of ~10 queries per team. Returns a Map from teamId → BulkTeamCareerData.
  */
 export const fetchAllTeamsCareerData = async (
-  teamIds: string[],
+  teamIds: string[]
 ): Promise<Map<string, BulkTeamCareerData>> => {
   const teamIdSet = new Set(teamIds);
 
@@ -291,10 +302,8 @@ export const fetchAllTeamsCareerData = async (
     // All teams with division weights
     supabase.from('teams').select('id, divisions(division_weight)'),
     // All team_season_stats (includes power_score for power score calculation)
-    supabase
-      .from('team_season_stats')
-      .select(
-        `
+    supabase.from('team_season_stats').select(
+      `
         team_id,
         match_wins,
         match_losses,
@@ -308,8 +317,8 @@ export const fetchAllTeamsCareerData = async (
         season_id,
         power_score,
         seasons!inner(name)
-      `,
-      ),
+      `
+    ),
     // All completed matches with team division info
     supabase
       .from('matches')
@@ -324,7 +333,7 @@ export const fetchAllTeamsCareerData = async (
         season_id,
         team1:teams!matches_team1_id_fkey(id, divisions(name)),
         team2:teams!matches_team2_id_fkey(id, divisions(name))
-      `,
+      `
       )
       .eq('iscompleted', true),
     // All completed archived matches
@@ -339,7 +348,7 @@ export const fetchAllTeamsCareerData = async (
         team1_id,
         team2_id,
         season_id
-      `,
+      `
       )
       .eq('iscompleted', true),
     // All team details archive (already unfiltered in single-team version)
@@ -356,7 +365,7 @@ export const fetchAllTeamsCareerData = async (
         team1_id,
         team2_id,
         bracket_id
-      `,
+      `
       )
       .not('winner_id', 'is', null),
     // Active season (just one row)
@@ -412,7 +421,10 @@ export const fetchAllTeamsCareerData = async (
     for (const row of allSeasonStatsResult.data as unknown as RawSeasonStatsRow[]) {
       if (!row.team_id || !teamIdSet.has(row.team_id)) continue;
       let list = seasonStatsByTeam.get(row.team_id);
-      if (!list) { list = []; seasonStatsByTeam.set(row.team_id, list); }
+      if (!list) {
+        list = [];
+        seasonStatsByTeam.set(row.team_id, list);
+      }
       list.push(row);
     }
   }
@@ -420,15 +432,15 @@ export const fetchAllTeamsCareerData = async (
   // Matches grouped by team
   const currentMatchesByTeam = groupMatchesByTeam(
     (allMatchesResult.data as unknown as MatchData[]) || [],
-    teamIdSet,
+    teamIdSet
   );
   const archivedMatchesByTeam = groupMatchesByTeam(
     (allArchivedMatchesResult.data as ArchivedMatchData[]) || [],
-    teamIdSet,
+    teamIdSet
   );
   const playoffMatchesByTeam = groupMatchesByTeam(
     (allPlayoffMatchesResult.data as PlayoffMatchData[]) || [],
-    teamIdSet,
+    teamIdSet
   );
 
   // 4. Build bracket lookup maps from ALL playoff matches (computed once)

@@ -26,15 +26,9 @@ export const useTeamsPreferences = (options?: UseTeamsPreferencesOptions) => {
     defaultDisplayMode
   );
 
-  const [viewMode, setViewMode] = usePersistedState<ViewMode>(
-    'teamsViewMode',
-    defaultViewMode
-  );
+  const [viewMode, setViewMode] = usePersistedState<ViewMode>('teamsViewMode', defaultViewMode);
 
-  const [sortMode, setSortMode] = usePersistedState<SortMode>(
-    'teamsSortMode',
-    defaultSortMode
-  );
+  const [sortMode, setSortMode] = usePersistedState<SortMode>('teamsSortMode', defaultSortMode);
 
   return {
     displayMode,

@@ -1,7 +1,8 @@
 import { supabase } from '@/integrations/supabase/client';
 import { bracketLog, errorLog, successLog } from '@/utils/logger';
+
 import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
-import type { StorageMatch, StorageGroup, StorageRound } from '../types/BracketServiceTypes';
+import type { StorageGroup, StorageMatch, StorageRound } from '../types/BracketServiceTypes';
 
 /**
  * Service for normalizing and fixing bracket structure issues in double-elimination tournaments.
@@ -150,10 +151,14 @@ export class BracketNormalizationService {
               lbWinnerId: winnerId,
             });
 
-            await this.storage.update('match', { id: gfMatch.id }, {
-              opponent2: { id: winnerId, position: undefined },
-              status: gfMatch.status,
-            });
+            await this.storage.update(
+              'match',
+              { id: gfMatch.id },
+              {
+                opponent2: { id: winnerId, position: undefined },
+                status: gfMatch.status,
+              }
+            );
 
             successLog('Grand Final normalized', `Populated opponent2 with LB winner ${winnerId}`);
           }
@@ -272,11 +277,15 @@ export class BracketNormalizationService {
         // If only opponent2 is filled, shift to opponent1
         if (!opponent1Id && opponent2Id) {
           bracketLog(`[NORMALIZE] Shifting opponent2 to opponent1 in LB R1 Match ${match.id}`);
-          await this.storage.update('match', { id: match.id }, {
-            opponent1: { id: opponent2Id, score: null, result: null },
-            opponent2: { id: null, score: null, result: null },
-            status: match.status,
-          });
+          await this.storage.update(
+            'match',
+            { id: match.id },
+            {
+              opponent1: { id: opponent2Id, score: null, result: null },
+              opponent2: { id: null, score: null, result: null },
+              status: match.status,
+            }
+          );
         }
       }
 

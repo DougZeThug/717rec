@@ -1,10 +1,10 @@
 import { supabase } from '@/integrations/supabase/client';
 import { badgeLog, errorLog, warnLog } from '@/utils/logger';
 
-export type BadgeOperationType = 
-  | 'match_badges' 
-  | 'kingslayer' 
-  | 'clutch_performer' 
+export type BadgeOperationType =
+  | 'match_badges'
+  | 'kingslayer'
+  | 'clutch_performer'
   | 'consistent_performer'
   | 'ice_cold_winner'
   | 'ice_cold_loser'
@@ -116,7 +116,6 @@ export class FailedBadgeOperationsService {
   static hasPendingRetries(): boolean {
     return this.getFailedOperationCount() > 0;
   }
-
 
   /**
    * Retry all failed operations

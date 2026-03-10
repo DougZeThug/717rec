@@ -56,8 +56,10 @@ const MatchRow: React.FC<MatchRowProps> = ({
   const isTeam1 = match.team1Id === myTeam.id;
   const myTeamWins = isTeam1 ? match.team1_game_wins : match.team2_game_wins;
   const opponentWins = isTeam1 ? match.team2_game_wins : match.team1_game_wins;
-  const didWin = isPrevious && myTeamWins !== null && opponentWins !== null && myTeamWins > opponentWins;
-  const didLose = isPrevious && myTeamWins !== null && opponentWins !== null && myTeamWins < opponentWins;
+  const didWin =
+    isPrevious && myTeamWins !== null && opponentWins !== null && myTeamWins > opponentWins;
+  const didLose =
+    isPrevious && myTeamWins !== null && opponentWins !== null && myTeamWins < opponentWins;
 
   return (
     <Link to="/schedule" className="group block">
@@ -82,7 +84,14 @@ const MatchRow: React.FC<MatchRowProps> = ({
           </div>
           {formattedTime && (
             <>
-              <span className={cn('text-xs', shouldApplyWinter ? 'text-cyan-300/30' : 'text-muted-foreground/50')}>•</span>
+              <span
+                className={cn(
+                  'text-xs',
+                  shouldApplyWinter ? 'text-cyan-300/30' : 'text-muted-foreground/50'
+                )}
+              >
+                •
+              </span>
               <div className="flex items-center gap-1">
                 <Clock
                   className={cn(
@@ -191,7 +200,10 @@ const MatchRow: React.FC<MatchRowProps> = ({
               )}
               {/* Win/Loss Badge */}
               {isPrevious && didWin && (
-                <Badge variant="default" className="text-[10px] px-1.5 py-0 h-5 bg-green-600 hover:bg-green-600">
+                <Badge
+                  variant="default"
+                  className="text-[10px] px-1.5 py-0 h-5 bg-green-600 hover:bg-green-600"
+                >
                   Win
                 </Badge>
               )}

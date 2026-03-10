@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
-import { useToast } from '@/hooks/useToast';
 import { usePairingGenerator } from '@/hooks/scheduling/usePairingGenerator';
 import { useTeamScheduleLoader } from '@/hooks/useTeamScheduleLoader';
+import { useToast } from '@/hooks/useToast';
 import { DualBlockConfig, PreviewResult } from '@/types/autoSchedule';
 import { createTimeBlockPairs } from '@/utils/autoSchedule/dualBlockUtils';
 import { normalizeDate } from '@/utils/dateNormalization';

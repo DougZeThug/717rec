@@ -99,7 +99,7 @@ export interface PredictionResult {
  */
 const WEIGHT_CURRENT_SEASON = 0.25;
 const WEIGHT_CAREER = 0.65;
-const WEIGHT_H2H = 0.10;
+const WEIGHT_H2H = 0.1;
 
 /**
  * Minimum head-to-head matches required for H2H factor to apply.
@@ -113,7 +113,7 @@ const MIN_H2H_MATCHES = 2;
  * - SOS: 15% of 25% = 3.75% total
  * - Division: 15% of 25% = 3.75% total
  */
-const WEIGHT_POWER_SCORE = 0.70;
+const WEIGHT_POWER_SCORE = 0.7;
 const WEIGHT_SOS = 0.15;
 const WEIGHT_DIVISION = 0.15;
 
@@ -123,21 +123,21 @@ const WEIGHT_DIVISION = 0.15;
  * - Career SOS: 15% of 65% = 9.75% total
  * - Career Win %: 15% of 65% = 9.75% total
  */
-const WEIGHT_CAREER_POWER = 0.70;
+const WEIGHT_CAREER_POWER = 0.7;
 const WEIGHT_CAREER_SOS = 0.15;
 const WEIGHT_CAREER_WINPCT = 0.15;
 
 /**
  * Default values when stats are missing
  */
-const DEFAULT_POWER_SCORE = 50;  // Middle of 0-100 range
-const DEFAULT_SOS = 0.85;        // League-wide average SOS
+const DEFAULT_POWER_SCORE = 50; // Middle of 0-100 range
+const DEFAULT_SOS = 0.85; // League-wide average SOS
 const DEFAULT_DIVISION_WEIGHT = 0.85; // Reasonable default tier
 
 // Career defaults
 const DEFAULT_CAREER_POWER = 50;
 const DEFAULT_CAREER_SOS = 0.85;
-const DEFAULT_CAREER_WINPCT = 0.50;
+const DEFAULT_CAREER_WINPCT = 0.5;
 
 /**
  * Logistic function scaling parameter (k)
@@ -154,7 +154,7 @@ const LOGISTIC_K = 5;
 /**
  * Upset threshold: if winner had <= this probability, it's an upset
  */
-export const UPSET_THRESHOLD = 0.30;
+export const UPSET_THRESHOLD = 0.3;
 
 // ============= Helper Functions =============
 
@@ -239,7 +239,10 @@ function calculateCareerRating(
  * - 4-2: Moderate advantage (rating ~0.60)
  * - 3-3: Neutral (rating = 0.50)
  */
-function calculateH2HRating(wins: number, losses: number): { rating: number; dominanceFactor: number } {
+function calculateH2HRating(
+  wins: number,
+  losses: number
+): { rating: number; dominanceFactor: number } {
   const total = wins + losses;
 
   if (total < MIN_H2H_MATCHES) {
@@ -254,7 +257,7 @@ function calculateH2HRating(wins: number, losses: number): { rating: number; dom
 
   // Scale the rating: 0.5 is neutral, deviations scaled by dominance
   // More dominant records get amplified effect
-  const scaledRating = 0.5 + (winRate - 0.5) * (1 + dominanceFactor) / 2;
+  const scaledRating = 0.5 + ((winRate - 0.5) * (1 + dominanceFactor)) / 2;
 
   return {
     rating: Math.max(0, Math.min(1, scaledRating)),
@@ -274,8 +277,8 @@ function getEffectiveWeights(hasH2H: boolean): {
   if (hasH2H) {
     return {
       seasonWeight: WEIGHT_CURRENT_SEASON, // 0.25
-      careerWeight: WEIGHT_CAREER,          // 0.65
-      h2hWeight: WEIGHT_H2H,                // 0.10
+      careerWeight: WEIGHT_CAREER, // 0.65
+      h2hWeight: WEIGHT_H2H, // 0.10
     };
   }
 
@@ -286,8 +289,8 @@ function getEffectiveWeights(hasH2H: boolean): {
   const seasonRatio = WEIGHT_CURRENT_SEASON / totalNonH2H;
 
   return {
-    seasonWeight: WEIGHT_CURRENT_SEASON + WEIGHT_H2H * seasonRatio,  // ~0.278
-    careerWeight: WEIGHT_CAREER + WEIGHT_H2H * careerRatio,          // ~0.722
+    seasonWeight: WEIGHT_CURRENT_SEASON + WEIGHT_H2H * seasonRatio, // ~0.278
+    careerWeight: WEIGHT_CAREER + WEIGHT_H2H * careerRatio, // ~0.722
     h2hWeight: 0,
   };
 }
@@ -342,7 +345,7 @@ function getExpectedText(probA: number, teamAName: string, teamBName: string): s
   const favoredProb = probA > 0.5 ? probA : 1 - probA;
 
   // 70%+ = strongly favored
-  if (favoredProb >= 0.70) {
+  if (favoredProb >= 0.7) {
     return `${favored} strongly favored`;
   }
 
@@ -380,10 +383,10 @@ export function predictMatch(
 
   // Look up division weights
   const divisionWeightA = teamAStats.division_id
-    ? divisionWeights.get(teamAStats.division_id) ?? DEFAULT_DIVISION_WEIGHT
+    ? (divisionWeights.get(teamAStats.division_id) ?? DEFAULT_DIVISION_WEIGHT)
     : DEFAULT_DIVISION_WEIGHT;
   const divisionWeightB = teamBStats.division_id
-    ? divisionWeights.get(teamBStats.division_id) ?? DEFAULT_DIVISION_WEIGHT
+    ? (divisionWeights.get(teamBStats.division_id) ?? DEFAULT_DIVISION_WEIGHT)
     : DEFAULT_DIVISION_WEIGHT;
 
   // Normalize/scale current season inputs
@@ -413,14 +416,22 @@ export function predictMatch(
   const scaledCareerSosB = scaleSOS(careerSosB);
 
   // === Calculate Ratings ===
-  
+
   // Current season ratings
   const seasonRatingA = calculateSeasonRating(normalizedPowerScoreA, scaledSosA, scaledDivWeightA);
   const seasonRatingB = calculateSeasonRating(normalizedPowerScoreB, scaledSosB, scaledDivWeightB);
 
   // Career ratings
-  const careerRatingA = calculateCareerRating(normalizedCareerPowerA, scaledCareerSosA, careerWinPctA);
-  const careerRatingB = calculateCareerRating(normalizedCareerPowerB, scaledCareerSosB, careerWinPctB);
+  const careerRatingA = calculateCareerRating(
+    normalizedCareerPowerA,
+    scaledCareerSosA,
+    careerWinPctA
+  );
+  const careerRatingB = calculateCareerRating(
+    normalizedCareerPowerB,
+    scaledCareerSosB,
+    careerWinPctB
+  );
 
   // === Head-to-Head ===
   const h2hWinsA = h2hData?.team1Wins ?? 0;
@@ -438,8 +449,20 @@ export function predictMatch(
   const weights = getEffectiveWeights(hasH2HData);
 
   // Composite ratings (65% career + 25% season + 10% H2H)
-  const teamRatingA = calculateCompositeRating(seasonRatingA, careerRatingA, h2hRatingA, hasCareerDataA, weights);
-  const teamRatingB = calculateCompositeRating(seasonRatingB, careerRatingB, h2hRatingB, hasCareerDataB, weights);
+  const teamRatingA = calculateCompositeRating(
+    seasonRatingA,
+    careerRatingA,
+    h2hRatingA,
+    hasCareerDataA,
+    weights
+  );
+  const teamRatingB = calculateCompositeRating(
+    seasonRatingB,
+    careerRatingB,
+    h2hRatingB,
+    hasCareerDataB,
+    weights
+  );
 
   // Rating difference (positive = Team A stronger)
   const ratingDiff = teamRatingA - teamRatingB;
@@ -517,17 +540,20 @@ export function formatProbability(prob: number): string {
  */
 export function formatBreakdown(breakdown: PredictionBreakdown): string {
   const {
-    powerScoreA, powerScoreB,
-    careerPowerA, careerPowerB,
-    careerWinPctA, careerWinPctB,
-    h2hWinsA, h2hWinsB,
-    hasCareerDataA, hasCareerDataB,
+    powerScoreA,
+    powerScoreB,
+    careerPowerA,
+    careerPowerB,
+    careerWinPctA,
+    careerWinPctB,
+    h2hWinsA,
+    h2hWinsB,
+    hasCareerDataA,
+    hasCareerDataB,
     hasH2HData,
   } = breakdown;
 
-  const parts = [
-    `Season: ${Math.round(powerScoreA)} vs ${Math.round(powerScoreB)}`,
-  ];
+  const parts = [`Season: ${Math.round(powerScoreA)} vs ${Math.round(powerScoreB)}`];
 
   // Only show career stats if at least one team has career data
   if (hasCareerDataA || hasCareerDataB) {

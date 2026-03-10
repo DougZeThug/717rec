@@ -4,9 +4,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/useToast';
 import {
   fetchTeamAnalysis,
-  upsertTeamAnalysis,
   type TeamAnalysis,
   type TeamAnalysisInput,
+  upsertTeamAnalysis,
 } from '@/services/teams/TeamFetchService';
 import { errorLog } from '@/utils/logger';
 

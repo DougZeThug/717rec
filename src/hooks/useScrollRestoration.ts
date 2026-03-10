@@ -15,7 +15,7 @@ const IS_RESTORING_RESET_DELAY_MS = 100;
  * Hook to save and restore scroll position for a route.
  * Call this in components where you want to preserve scroll position
  * when navigating back from a child route.
- * 
+ *
  * Uses exponential backoff for robust scroll restoration after DOM renders.
  */
 export const useScrollRestoration = (routeKey?: string) => {

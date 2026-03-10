@@ -32,9 +32,9 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/useToast';
 import {
+  type ContactFormData,
   contactSchema,
   submitContactRequest,
-  type ContactFormData,
 } from '@/services/support/ContactService';
 import { trackContactForm } from '@/utils/analytics';
 

@@ -22,8 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/hooks/useToast';
 import { useDivisions } from '@/hooks/useDivisions';
+import { useToast } from '@/hooks/useToast';
 import { Team } from '@/types';
 import { uploadTeamImage } from '@/utils/imageUpload';
 import { errorLog } from '@/utils/logger';

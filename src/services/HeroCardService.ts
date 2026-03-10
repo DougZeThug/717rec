@@ -51,11 +51,7 @@ export const HeroCardService = {
   },
 
   createHeroCard: async (formData: Omit<HeroCard, 'id' | 'created_at' | 'updated_at'>) => {
-    const { data, error } = await supabase
-      .from('hero_cards')
-      .insert([formData])
-      .select()
-      .single();
+    const { data, error } = await supabase.from('hero_cards').insert([formData]).select().single();
 
     if (error) handleDatabaseError(error, 'Failed to create hero card');
     return data;

@@ -1,11 +1,7 @@
 import { Keyboard } from 'lucide-react';
 import React from 'react';
 
-import {
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
+import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Card, CardContent } from '@/components/ui/card';
 
 export function AccessibilitySection() {
@@ -19,8 +15,8 @@ export function AccessibilitySection() {
       </AccordionTrigger>
       <AccordionContent className="space-y-4">
         <p className="text-muted-foreground">
-          717REC is designed to be accessible to all users, including those using screen readers
-          or keyboard-only navigation.
+          717REC is designed to be accessible to all users, including those using screen readers or
+          keyboard-only navigation.
         </p>
 
         <Card>

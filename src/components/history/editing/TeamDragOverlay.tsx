@@ -53,7 +53,7 @@ export const TeamDragOverlay: React.FC<TeamDragOverlayProps> = ({ team, rank }) 
 
       {/* Team Info */}
       <div className="flex items-center gap-2 flex-1 min-w-0">
-        {(team.team_image_url || team.team_logo_url) ? (
+        {team.team_image_url || team.team_logo_url ? (
           <div className="w-7 h-7 rounded-full overflow-hidden bg-muted flex-shrink-0">
             <img
               src={team.team_image_url || team.team_logo_url || ''}

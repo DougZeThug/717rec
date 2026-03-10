@@ -2,8 +2,8 @@ import React, { ReactNode } from 'react';
 
 import { WinterSnowfall } from '@/components/effects/WinterSnowfall';
 import { useIsMobile } from '@/hooks/useMobile';
-import { useThemeConsistency } from '@/hooks/useThemeConsistency';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
+import { useThemeConsistency } from '@/hooks/useThemeConsistency';
 import { cn } from '@/lib/utils';
 import { animations, gradients } from '@/styles/design-system';
 

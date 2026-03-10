@@ -51,8 +51,10 @@ const MyNextMatchCard: React.FC<MyNextMatchCardProps> = ({
   const isTeam1 = match.team1Id === myTeam.id;
   const myTeamWins = isTeam1 ? match.team1_game_wins : match.team2_game_wins;
   const opponentWins = isTeam1 ? match.team2_game_wins : match.team1_game_wins;
-  const didWin = isPrevious && myTeamWins !== null && opponentWins !== null && myTeamWins > opponentWins;
-  const didLose = isPrevious && myTeamWins !== null && opponentWins !== null && myTeamWins < opponentWins;
+  const didWin =
+    isPrevious && myTeamWins !== null && opponentWins !== null && myTeamWins > opponentWins;
+  const didLose =
+    isPrevious && myTeamWins !== null && opponentWins !== null && myTeamWins < opponentWins;
 
   // Default header text based on isPrevious
   const displayHeaderText = headerText || (isPrevious ? 'Your Last Match' : 'Your Next Match');

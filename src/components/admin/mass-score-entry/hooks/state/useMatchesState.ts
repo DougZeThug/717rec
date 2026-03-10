@@ -12,7 +12,9 @@ export const useMatchesState = () => {
   const [submitting, setSubmitting] = useState<boolean>(false);
 
   // Wrapper that also captures the original state snapshot
-  const setMatchesWithSnapshot = (matchesOrUpdater: MatchWithTeams[] | ((prev: MatchWithTeams[]) => MatchWithTeams[])) => {
+  const setMatchesWithSnapshot = (
+    matchesOrUpdater: MatchWithTeams[] | ((prev: MatchWithTeams[]) => MatchWithTeams[])
+  ) => {
     if (typeof matchesOrUpdater === 'function') {
       setMatches(matchesOrUpdater);
     } else {
@@ -31,9 +33,8 @@ export const useMatchesState = () => {
     setMatches((prev) => {
       const match = prev[index];
       const newMatches = [...prev];
-      const updatedScore = team === 'team1'
-        ? { team1Score: scoreValue }
-        : { team2Score: scoreValue };
+      const updatedScore =
+        team === 'team1' ? { team1Score: scoreValue } : { team2Score: scoreValue };
       const merged = { ...match, ...updatedScore };
       newMatches[index] = {
         ...merged,

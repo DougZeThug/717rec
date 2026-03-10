@@ -1,4 +1,5 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { DatabaseError } from '@/types/errors';
 
 // ─── Supabase mock ────────────────────────────────────────────────────────────
@@ -51,8 +52,7 @@ describe('checkUsernameAvailability', () => {
     mockFrom.mockReturnValue({
       select: () => ({
         eq: () => ({
-          maybeSingle: () =>
-            Promise.resolve({ data: { username: 'taken_name' }, error: null }),
+          maybeSingle: () => Promise.resolve({ data: { username: 'taken_name' }, error: null }),
         }),
       }),
     });
@@ -162,9 +162,7 @@ describe('updateProfile', () => {
         }),
     });
 
-    await expect(
-      updateProfile('user-1', { username: 'newname' })
-    ).rejects.toThrow(DatabaseError);
+    await expect(updateProfile('user-1', { username: 'newname' })).rejects.toThrow(DatabaseError);
   });
 
   it('updates the profiles table', async () => {
@@ -177,9 +175,7 @@ describe('updateProfile', () => {
   });
 
   it('sets full_name to null when fullName is not provided', async () => {
-    const mockUpsert = vi.fn().mockReturnValue(
-      Promise.resolve({ error: null }),
-    );
+    const mockUpsert = vi.fn().mockReturnValue(Promise.resolve({ error: null }));
     mockFrom.mockReturnValue({ upsert: mockUpsert });
 
     await updateProfile('user-1', { username: 'testuser' });
@@ -189,9 +185,7 @@ describe('updateProfile', () => {
   });
 
   it('sets full_name when fullName is provided', async () => {
-    const mockUpsert = vi.fn().mockReturnValue(
-      Promise.resolve({ error: null }),
-    );
+    const mockUpsert = vi.fn().mockReturnValue(Promise.resolve({ error: null }));
     mockFrom.mockReturnValue({ upsert: mockUpsert });
 
     await updateProfile('user-1', { username: 'testuser', fullName: 'Jane Doe' });

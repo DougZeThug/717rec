@@ -1,5 +1,6 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { PostgrestError } from '@supabase/supabase-js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import {
   AuthorizationError,
   DatabaseError,
@@ -142,9 +143,7 @@ describe('withErrorHandling', () => {
 
   it('wraps unknown Errors in ServiceError', async () => {
     const unknownErr = new Error('unexpected');
-    const thrown = await withErrorHandling(() => Promise.reject(unknownErr), 'ops').catch(
-      (e) => e
-    );
+    const thrown = await withErrorHandling(() => Promise.reject(unknownErr), 'ops').catch((e) => e);
     expect(thrown).toBeInstanceOf(ServiceError);
     expect(thrown.message).toContain('unexpected');
   });

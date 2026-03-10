@@ -88,8 +88,16 @@ const STORAGE_KEY = 'adminActiveTab';
 // Memoized animation props to prevent recreating objects on every render
 const sidebarAnimateProps = { expanded: { width: 240 }, collapsed: { width: 60 } };
 const sidebarTransition = { type: 'spring' as const, stiffness: 300, damping: 30 };
-const searchAnimateProps = { initial: { opacity: 0, height: 0 }, animate: { opacity: 1, height: 'auto' }, exit: { opacity: 0, height: 0 } };
-const labelAnimateProps = { initial: { opacity: 0, width: 0 }, animate: { opacity: 1, width: 'auto' }, exit: { opacity: 0, width: 0 } };
+const searchAnimateProps = {
+  initial: { opacity: 0, height: 0 },
+  animate: { opacity: 1, height: 'auto' },
+  exit: { opacity: 0, height: 0 },
+};
+const labelAnimateProps = {
+  initial: { opacity: 0, width: 0 },
+  animate: { opacity: 1, width: 'auto' },
+  exit: { opacity: 0, width: 0 },
+};
 
 const AdminSidebar: React.FC = () => {
   const isMobile = useIsMobile();
@@ -107,9 +115,8 @@ const AdminSidebar: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredItems = useMemo(
-    () => adminMenuItems.filter((item) =>
-      item.label.toLowerCase().includes(searchQuery.toLowerCase())
-    ),
+    () =>
+      adminMenuItems.filter((item) => item.label.toLowerCase().includes(searchQuery.toLowerCase())),
     [searchQuery]
   );
 
@@ -181,10 +188,7 @@ const AdminSidebar: React.FC = () => {
         {/* Search */}
         <AnimatePresence>
           {!isCollapsed && (
-            <motion.div
-              {...searchAnimateProps}
-              className="p-3 border-b border-border"
-            >
+            <motion.div {...searchAnimateProps} className="p-3 border-b border-border">
               <div className="relative">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -218,10 +222,7 @@ const AdminSidebar: React.FC = () => {
                 <AnimatePresence>
                   {!isCollapsed && (
                     <>
-                      <motion.span
-                        {...labelAnimateProps}
-                        className="truncate flex-1 text-left"
-                      >
+                      <motion.span {...labelAnimateProps} className="truncate flex-1 text-left">
                         {item.label}
                       </motion.span>
                       {item.id === 'requests' &&
@@ -244,9 +245,7 @@ const AdminSidebar: React.FC = () => {
       </motion.aside>
 
       {/* Content area - render only active tab to improve performance */}
-      <div className="flex-1 min-w-0">
-        {ActiveComponent && <ActiveComponent />}
-      </div>
+      <div className="flex-1 min-w-0">{ActiveComponent && <ActiveComponent />}</div>
     </div>
   );
 };

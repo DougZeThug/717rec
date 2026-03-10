@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import { Sheet, SheetContent } from '@/components/ui/sheet';
+
 import { SIDEBAR_WIDTH_MOBILE } from './sidebar-context';
 
 interface SidebarMobileProps {

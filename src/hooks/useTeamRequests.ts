@@ -3,9 +3,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import {
+  fetchAllRequests,
   fetchPendingRequestsCount,
   fetchTeamRequests,
-  fetchAllRequests,
   submitTeamRequest,
   updateTeamRequestStatus,
 } from '@/services/teams/TeamFetchService';

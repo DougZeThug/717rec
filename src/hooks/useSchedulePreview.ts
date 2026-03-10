@@ -3,4 +3,4 @@
  * Import from './scheduling' instead for better maintainability.
  * This re-export maintains backward compatibility with existing imports.
  */
-export { useSchedulePreview, type AutoScheduleStep } from './scheduling';
+export { type AutoScheduleStep, useSchedulePreview } from './scheduling';

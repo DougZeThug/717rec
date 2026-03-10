@@ -113,12 +113,7 @@ const ConfidenceBadge: React.FC<{ level: ConfidenceLevel }> = ({ level }) => {
   };
 
   return (
-    <span
-      className={cn(
-        'text-[10px] font-medium px-1.5 py-0.5 rounded',
-        colorClasses[level]
-      )}
-    >
+    <span className={cn('text-[10px] font-medium px-1.5 py-0.5 rounded', colorClasses[level])}>
       {level}
     </span>
   );

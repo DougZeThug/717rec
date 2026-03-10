@@ -53,7 +53,17 @@ export const BACK_TO_BACK_PAIRS = {
 } as const;
 
 // Valid time slot type
-export type TimeSlot = '5:00 PM' | '5:30 PM' | '6:00 PM' | '6:30 PM' | '7:00 PM' | '7:30 PM' | '8:00 PM' | '8:30 PM' | '9:00 PM' | '9:30 PM';
+export type TimeSlot =
+  | '5:00 PM'
+  | '5:30 PM'
+  | '6:00 PM'
+  | '6:30 PM'
+  | '7:00 PM'
+  | '7:30 PM'
+  | '8:00 PM'
+  | '8:30 PM'
+  | '9:00 PM'
+  | '9:30 PM';
 
 // Individual time slots for reference
 export const TIME_SLOTS: Record<TimeSlot, TimeSlot> = {
@@ -111,7 +121,7 @@ export const TIME_BLOCKS = {
 
 // Lookup maps for efficient time slot operations
 const BACK_TO_BACK_MAP = new Map<string, string>(
-  Object.values(BACK_TO_BACK_PAIRS).map(pair => [pair.primary, pair.secondary])
+  Object.values(BACK_TO_BACK_PAIRS).map((pair) => [pair.primary, pair.secondary])
 );
 
 const TIME_TO_PAIR_NAME_MAP = new Map<string, string>(

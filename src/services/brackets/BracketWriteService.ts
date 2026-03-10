@@ -139,9 +139,7 @@ export const updateTeamSeed = async (
  * Batch update team seeds via RPC
  * Used by useOptimisticTeamMutations hook
  */
-export const batchUpdateTeamSeeds = async (
-  updates: Array<{ team_id: string; seed: string }>
-) => {
+export const batchUpdateTeamSeeds = async (updates: Array<{ team_id: string; seed: string }>) => {
   const { data, error } = await supabase.rpc('batch_update_team_seeds', {
     p_updates: updates,
   });

@@ -48,20 +48,38 @@
 
 ---
 
-## Stage 2: Mechanical Cleanup (Auto-fixable)
+## Stage 2: Mechanical Cleanup (Auto-fixable) ✅ DONE
 
 **Goal**: Fix all auto-fixable lint issues in one dedicated commit. No behavior changes.
 
 ### Tasks
 
-1. **Run `npm run lint:fix`** to auto-fix formatting, import sorting, and trivial issues
-2. **Review the diff** — confirm no behavioral changes (only whitespace, import order, trailing commas, quotes, etc.)
-3. **Commit as a single "mechanical cleanup" commit** — keeps the git history clean and makes it easy to revert if needed
-4. **Re-run `npm run lint`** and record the new error/warning count — this is the "real" backlog of issues that need manual fixes
+1. **Run `npm run lint:fix`** to auto-fix formatting, import sorting, and trivial issues ✅
+2. **Review the diff** — confirm no behavioral changes (only whitespace, import order, trailing commas, quotes, etc.) ✅
+3. **Commit as a single "mechanical cleanup" commit** — keeps the git history clean and makes it easy to revert if needed ✅
+4. **Re-run `npm run lint`** and record the new error/warning count — this is the "real" backlog of issues that need manual fixes ✅
+
+### Results
+
+- **Before**: 1,640 problems (1,250 errors, 390 warnings) — 851 auto-fixable
+- **After**: 789 problems (399 errors, 390 warnings)
+- **Fixed**: 851 issues auto-fixed across 216 files (import order, line length, quotes, arrow fn parens, trailing commas)
+
+### Remaining Lint Backlog (all require manual fixes)
+
+| Rule | Count | Category |
+|------|-------|----------|
+| `@typescript-eslint/no-unused-vars` | 337 | Dead code |
+| `@typescript-eslint/no-explicit-any` | 276 | Type safety |
+| `react-hooks/exhaustive-deps` | 32 | Bug risk |
+| `react-hooks/rules-of-hooks` | 19 | Bug risk |
+| `react-refresh/only-export-components` | 18 | HMR/tooling |
+| `@typescript-eslint/no-empty-object-type` | 3 | Type safety |
+| `@typescript-eslint/no-require-imports` | 1 | Module style |
 
 ### Definition of Done
-- All auto-fixable issues are resolved
-- Remaining lint issues are counted and categorized (unused vars, hook rules, type issues, etc.)
+- All auto-fixable issues are resolved ✅
+- Remaining lint issues are counted and categorized ✅
 
 ---
 

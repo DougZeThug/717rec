@@ -158,7 +158,6 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
           </div>
         </div>
 
-
         <div className="flex flex-col">
           <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">
             Career Power Score

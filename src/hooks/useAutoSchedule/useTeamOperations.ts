@@ -16,20 +16,20 @@ import { loadAutoScheduleState, saveAutoScheduleState } from './storage';
 export const useTeamOperations = () => {
   // Load persisted state on mount
   const persistedState = useRef(loadAutoScheduleState());
-  
+
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Initialize from persisted state if available
-  const [timeBlockTeams, setTimeBlockTeams] = useState<TimeBlockTeamsMap>(() => 
-    persistedState.current?.timeBlockTeams || {}
+  const [timeBlockTeams, setTimeBlockTeams] = useState<TimeBlockTeamsMap>(
+    () => persistedState.current?.timeBlockTeams || {}
   );
-  const [originalTimeBlockTeams, setOriginalTimeBlockTeams] = useState<TimeBlockTeamsMap>(() => 
-    persistedState.current?.originalTimeBlockTeams || {}
+  const [originalTimeBlockTeams, setOriginalTimeBlockTeams] = useState<TimeBlockTeamsMap>(
+    () => persistedState.current?.originalTimeBlockTeams || {}
   );
   const [pairedTimeBlockTeams, setPairedTimeBlockTeams] = useState<PairedTimeBlockTeamsMap>({});
   // Maps team ID to array of block names (supports double headers in multiple blocks)
-  const [teamBlockMap, setTeamBlockMap] = useState<Record<string, string[]>>(() => 
-    persistedState.current?.teamBlockMap || {}
+  const [teamBlockMap, setTeamBlockMap] = useState<Record<string, string[]>>(
+    () => persistedState.current?.teamBlockMap || {}
   );
 
   // Persist team data when it changes

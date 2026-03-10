@@ -49,14 +49,21 @@ const MassScoreEntryTool: React.FC = () => {
       const matchToDelete = matches.find((m) => m.id === deleteMatchId);
 
       if (matchToDelete?.iscompleted && matchToDelete.winnerId && matchToDelete.loserId) {
-        const winnerGameWins = matchToDelete.winnerId === matchToDelete.team1Id
-          ? matchToDelete.team1_game_wins || 0
-          : matchToDelete.team2_game_wins || 0;
-        const loserGameWins = matchToDelete.winnerId === matchToDelete.team1Id
-          ? matchToDelete.team2_game_wins || 0
-          : matchToDelete.team1_game_wins || 0;
+        const winnerGameWins =
+          matchToDelete.winnerId === matchToDelete.team1Id
+            ? matchToDelete.team1_game_wins || 0
+            : matchToDelete.team2_game_wins || 0;
+        const loserGameWins =
+          matchToDelete.winnerId === matchToDelete.team1Id
+            ? matchToDelete.team2_game_wins || 0
+            : matchToDelete.team1_game_wins || 0;
 
-        await reverseTeamStats(matchToDelete.winnerId, matchToDelete.loserId, winnerGameWins, loserGameWins);
+        await reverseTeamStats(
+          matchToDelete.winnerId,
+          matchToDelete.loserId,
+          winnerGameWins,
+          loserGameWins
+        );
       }
 
       await deleteMatch(deleteMatchId);
@@ -67,7 +74,11 @@ const MassScoreEntryTool: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['mass-score-entry'] });
     } catch (error) {
       errorLog('Failed to delete match:', error);
-      toast({ title: 'Error', description: 'Failed to delete match. Please try again.', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: 'Failed to delete match. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setIsDeleting(false);
       setDeleteMatchId(null);

@@ -6,10 +6,10 @@ import { bracketLog, errorLog, failureLog, successLog } from '@/utils/logger';
 import { matchUpdateQueue } from '../MatchUpdateQueue';
 import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
 import type {
+  MatchUpdatePayload,
   StorageMatch,
   StorageStage,
   UpdateMatchOptions,
-  MatchUpdatePayload,
 } from '../types/BracketServiceTypes';
 import type { BracketNormalizationService } from './BracketNormalizationService';
 
@@ -117,7 +117,8 @@ export class BracketUpdateService {
           await this.manager.update.match(updatePayload);
           bracketLog(`manager.update.match() COMPLETED for Match ${matchId}`);
         } catch (propagationError) {
-          const errorMessage = propagationError instanceof Error ? propagationError.message : String(propagationError);
+          const errorMessage =
+            propagationError instanceof Error ? propagationError.message : String(propagationError);
           if (errorMessage.includes('Match not found')) {
             bracketLog(`⚠️ Non-fatal propagation error for Match ${matchId}: ${errorMessage}`);
             bracketLog(`Match data was saved successfully. Continuing to normalization steps...`);

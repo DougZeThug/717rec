@@ -79,7 +79,12 @@ export const TargetingDisplaySection: React.FC<FormSectionProps> = ({ formData, 
                 id="check_in_time"
                 type="datetime-local"
                 value={toDatetimeLocal(metadata.check_in_time as string)}
-                onChange={(e) => updateMetadataField('check_in_time', e.target.value ? fromDatetimeLocal(e.target.value) : '')}
+                onChange={(e) =>
+                  updateMetadataField(
+                    'check_in_time',
+                    e.target.value ? fromDatetimeLocal(e.target.value) : ''
+                  )
+                }
               />
               <p className="text-xs text-muted-foreground mt-1">When check-in opens</p>
             </div>
@@ -90,9 +95,16 @@ export const TargetingDisplaySection: React.FC<FormSectionProps> = ({ formData, 
                 id="start_time"
                 type="datetime-local"
                 value={toDatetimeLocal(metadata.start_time as string)}
-                onChange={(e) => updateMetadataField('start_time', e.target.value ? fromDatetimeLocal(e.target.value) : '')}
+                onChange={(e) =>
+                  updateMetadataField(
+                    'start_time',
+                    e.target.value ? fromDatetimeLocal(e.target.value) : ''
+                  )
+                }
               />
-              <p className="text-xs text-muted-foreground mt-1">Event start time (also determines signup date)</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Event start time (also determines signup date)
+              </p>
             </div>
 
             <div>

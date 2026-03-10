@@ -1,9 +1,9 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Ranking } from '@/types';
-import { SeasonPowerScoreData } from '@/types/teamCareerPowerScore';
-import { PowerScoreTrend, TrendDirection } from '@/types/powerScoreTrends';
 import { WeeklyPowerScoreTrend } from '@/types/powerScoreSnapshot';
-import { handleDatabaseError, ensureFound } from '@/utils/errorHandler';
+import { PowerScoreTrend, TrendDirection } from '@/types/powerScoreTrends';
+import { SeasonPowerScoreData } from '@/types/teamCareerPowerScore';
+import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 import { warnLog } from '@/utils/logger';
 
 /**
@@ -38,14 +38,17 @@ async function getCurrentSeasonId(): Promise<string> {
  * @throws {DatabaseError} When database operations fail
  * @throws {NotFoundError} When no active season exists
  */
-export async function saveRankingsToDatabase(rankings: Ranking[], seasonId?: string): Promise<boolean> {
+export async function saveRankingsToDatabase(
+  rankings: Ranking[],
+  seasonId?: string
+): Promise<boolean> {
   if (rankings.length === 0) {
     return true;
   }
 
   try {
     // Use provided seasonId, or fall back to the current active season
-    const resolvedSeasonId = seasonId ?? await getCurrentSeasonId();
+    const resolvedSeasonId = seasonId ?? (await getCurrentSeasonId());
 
     // Prepare ranking snapshots for upsert
     const snapshots = rankings.map((ranking, index) => ({
@@ -81,7 +84,7 @@ export async function saveRankingsToDatabase(rankings: Ranking[], seasonId?: str
  */
 export async function loadRankingsFromDatabase(seasonId?: string): Promise<Record<string, number>> {
   // Use provided seasonId, or fall back to the current active season
-  const resolvedSeasonId = seasonId ?? await getCurrentSeasonId();
+  const resolvedSeasonId = seasonId ?? (await getCurrentSeasonId());
 
   // Fetch all ranking snapshots for this season
   const { data, error } = await supabase
@@ -196,9 +199,7 @@ export async function fetchPowerScoreTrends(
   }
 
   // Create a map of previous scores for quick lookup
-  const previousScoresMap = new Map(
-    previousData.map((team) => [team.team_id, team.power_score])
-  );
+  const previousScoresMap = new Map(previousData.map((team) => [team.team_id, team.power_score]));
 
   // Get visible divisions (exclude hidden ones)
   const { data: visibleDivisions } = await supabase
@@ -270,10 +271,7 @@ export async function fetchWeeklyPowerScoreTrends(
       .select('week_number')
       .eq('season_id', activeSeason.id)
       .order('week_number', { ascending: false }),
-    supabase
-      .from('divisions')
-      .select('id')
-      .neq('display_division', 'Hidden'),
+    supabase.from('divisions').select('id').neq('display_division', 'Hidden'),
   ]);
 
   const weekNumbers = weekNumbersResult.data;
@@ -391,8 +389,7 @@ export async function fetchAllTeamsCareerPowerScores() {
   if (seasonsError) handleDatabaseError(seasonsError, 'Failed to fetch seasons');
 
   // Fetch all team_season_stats with team info
-  const { data: allStats, error: statsError } = await supabase.from('team_season_stats')
-    .select(`
+  const { data: allStats, error: statsError } = await supabase.from('team_season_stats').select(`
       team_id,
       season_id,
       power_score,
@@ -593,7 +590,8 @@ export async function fetchTeamCareerPowerScore(teamId: string): Promise<SeasonP
     .in('id', seasonIds)
     .order('start_date', { ascending: true });
 
-  if (seasonsError) handleDatabaseError(seasonsError, 'Failed to fetch seasons for career power score');
+  if (seasonsError)
+    handleDatabaseError(seasonsError, 'Failed to fetch seasons for career power score');
 
   // Create a map of season data
   const seasonMap = new Map(seasons?.map((s) => [s.id, s]) || []);
@@ -612,9 +610,7 @@ export async function fetchTeamCareerPowerScore(teamId: string): Promise<SeasonP
         isChampion: stat.champion || false,
         isRunnerUp: stat.runner_up || false,
         isTop3:
-          stat.champion ||
-          stat.runner_up ||
-          (stat.playoff_rank !== null && stat.playoff_rank <= 3),
+          stat.champion || stat.runner_up || (stat.playoff_rank !== null && stat.playoff_rank <= 3),
       };
     })
     .filter((item): item is SeasonPowerScoreData => item !== null)

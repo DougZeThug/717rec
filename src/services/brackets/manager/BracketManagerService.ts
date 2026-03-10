@@ -1,20 +1,24 @@
 import { BracketsManager } from 'brackets-manager';
 
+import { BracketAdminService } from './services/BracketAdminService';
+import { BracketCreationService } from './services/BracketCreationService';
+import { BracketNormalizationService } from './services/BracketNormalizationService';
+import { BracketSeedingService } from './services/BracketSeedingService';
+import { BracketStandingsService } from './services/BracketStandingsService';
+import { BracketUpdateService } from './services/BracketUpdateService';
 import { SupabaseSqlStorage } from './SupabaseSqlStorage';
 import type {
   CreateBracketOptions,
   UpdateMatchOptions,
   UpdateSeedingOptions,
 } from './types/BracketServiceTypes';
-import { BracketNormalizationService } from './services/BracketNormalizationService';
-import { BracketAdminService } from './services/BracketAdminService';
-import { BracketStandingsService } from './services/BracketStandingsService';
-import { BracketSeedingService } from './services/BracketSeedingService';
-import { BracketCreationService } from './services/BracketCreationService';
-import { BracketUpdateService } from './services/BracketUpdateService';
 
 // Re-export public types for consumers
-export type { CreateBracketOptions, UpdateMatchOptions, UpdateSeedingOptions } from './types/BracketServiceTypes';
+export type {
+  CreateBracketOptions,
+  UpdateMatchOptions,
+  UpdateSeedingOptions,
+} from './types/BracketServiceTypes';
 
 /**
  * Facade for bracket management operations
@@ -62,7 +66,11 @@ export class BracketManagerService {
     this.standingsService = new BracketStandingsService(this.storage, this.manager);
     this.seedingService = new BracketSeedingService(this.storage, this.manager);
     this.creationService = new BracketCreationService(this.storage, this.manager);
-    this.updateService = new BracketUpdateService(this.storage, this.manager, this.normalizationService);
+    this.updateService = new BracketUpdateService(
+      this.storage,
+      this.manager,
+      this.normalizationService
+    );
   }
 
   /**
@@ -253,7 +261,6 @@ export class BracketManagerService {
     return this.adminService.checkByeEligibility(matchId);
   }
 
-
   /**
    * Admin-only: Toggle BYE match status between Waiting, Ready, and Completed
    *
@@ -298,11 +305,7 @@ export class BracketManagerService {
    * const result = await bracketManagerService.adminToggleByeReady(42, false, true);
    * console.log(result.message); // "Match 42 reopened to Ready (downstream cleared)"
    */
-  async adminToggleByeReady(
-    matchId: number,
-    makeReady: boolean,
-    clearDownstream: boolean = false
-  ) {
+  async adminToggleByeReady(matchId: number, makeReady: boolean, clearDownstream: boolean = false) {
     return this.adminService.adminToggleByeReady(matchId, makeReady, clearDownstream);
   }
 }

@@ -22,17 +22,14 @@ const TeamDisplay: React.FC<TeamDisplayProps> = ({ team, align = 'left', classNa
 
   return (
     <div className={containerClassName}>
-      <TeamLogo
-        imageUrl={team.logoUrl}
-        teamName={team.name || 'TBD'}
-        size="sm"
-        rounded
-      />
-      <span className={cn(
-        'font-medium text-sm leading-tight',
-        align === 'right' && 'text-right',
-        align === 'center' && 'text-center'
-      )}>
+      <TeamLogo imageUrl={team.logoUrl} teamName={team.name || 'TBD'} size="sm" rounded />
+      <span
+        className={cn(
+          'font-medium text-sm leading-tight',
+          align === 'right' && 'text-right',
+          align === 'center' && 'text-center'
+        )}
+      >
         {team.name || 'TBD'}
       </span>
     </div>

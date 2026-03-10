@@ -1,8 +1,8 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Team } from '@/types';
-import { teamLog } from '@/utils/logger';
-import { handleDatabaseError, ensureFound } from '@/utils/errorHandler';
 import { NotFoundError } from '@/types/errors';
+import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
+import { teamLog } from '@/utils/logger';
 
 /**
  * Update only a team's name and image_url (used by team members with edit access).

@@ -2,8 +2,8 @@ import { format } from 'date-fns';
 
 import { supabase } from '@/integrations/supabase/client';
 import { TeamTimeslot } from '@/types/timeslots';
-import { handleDatabaseError } from '@/utils/errorHandler';
 import { getBackToBackPairName, getPairConfig } from '@/utils/autoSchedule/constants';
+import { handleDatabaseError } from '@/utils/errorHandler';
 import { scheduleLog, warnLog } from '@/utils/logger';
 
 import { TimeslotTransformer } from './TimeslotTransformer';
@@ -60,11 +60,7 @@ export class BackToBackTimeslotService {
    * Legacy method — redirects to back-to-back assignment.
    * @deprecated Use addBackToBackTimeslot instead
    */
-  static async addTimeslot(
-    date: Date,
-    teamId: string,
-    timeslot: string
-  ): Promise<TeamTimeslot[]> {
+  static async addTimeslot(date: Date, teamId: string, timeslot: string): Promise<TeamTimeslot[]> {
     warnLog('addTimeslot is deprecated. Converting to back-to-back assignment.');
 
     const pairName = getBackToBackPairName(timeslot);

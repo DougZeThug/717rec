@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useToast } from '@/hooks/useToast';
 import { usePairingGenerator } from '@/hooks/scheduling/usePairingGenerator';
+import { useToast } from '@/hooks/useToast';
 import {
   AlgorithmConfig,
   AutoScheduleMatch,
@@ -31,15 +31,15 @@ export const usePairingOperations = (
 ) => {
   // Load persisted state on mount
   const persistedState = useRef(loadAutoScheduleState());
-  
-  const [generatedPairings, setGeneratedPairings] = useState<TeamPairingMap>(() => 
-    persistedState.current?.generatedPairings || {}
+
+  const [generatedPairings, setGeneratedPairings] = useState<TeamPairingMap>(
+    () => persistedState.current?.generatedPairings || {}
   );
-  const [unmatchedTeamIds, setUnmatchedTeamIds] = useState<string[]>(() => 
-    persistedState.current?.unmatchedTeamIds || []
+  const [unmatchedTeamIds, setUnmatchedTeamIds] = useState<string[]>(
+    () => persistedState.current?.unmatchedTeamIds || []
   );
   const [qualityMetrics, setQualityMetrics] = useState<MatchQualityMetrics | null>(null);
-  
+
   const {
     isGenerating,
     generateMatchPairings,

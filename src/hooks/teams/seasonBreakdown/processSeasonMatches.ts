@@ -1,4 +1,4 @@
-import { createEmptyDivisionRecord, categorizeDivision } from './calculateSeasonStats';
+import { categorizeDivision, createEmptyDivisionRecord } from './calculateSeasonStats';
 
 interface MatchProcessingResult {
   sweeps: number;

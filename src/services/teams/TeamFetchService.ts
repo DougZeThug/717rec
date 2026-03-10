@@ -13,40 +13,35 @@
  *   - TeamBadgeService.ts     — achievement badges
  */
 
+export { fetchTeamAnalysis, upsertTeamAnalysis } from './TeamAnalysisService';
+export { fetchAllTeamBadges, fetchSeasonBadges, fetchTeamBadges } from './TeamBadgeService';
 export type {
   TeamAnalysis,
   TeamAnalysisInput,
-  TeamsQueryOptions,
-  TeamMembershipRecord,
-  UserProfile,
   TeamMembershipForAdmin,
+  TeamMembershipRecord,
+  TeamsQueryOptions,
+  UserProfile,
 } from './teamFetch.types';
-
 export {
-  fetchTeamsFromApi,
-  fetchTeamsWithOptions,
-  fetchTeamDetails,
-  fetchAvailableTeams,
-  fetchTeamForStats,
-} from './TeamQueryService';
-
-export { fetchTeamAnalysis, upsertTeamAnalysis } from './TeamAnalysisService';
-
-export {
-  fetchPendingRequestsCount,
-  fetchTeamRequests,
-  fetchAllRequests,
-  submitTeamRequest,
-  updateTeamRequestStatus,
-} from './TeamRequestService';
-
-export {
+  fetchPendingMembershipCount,
+  fetchPendingMembershipsForAdmin,
   fetchTeamMembership,
   joinTeamMembership,
   leaveTeamMembership,
-  fetchPendingMembershipCount,
-  fetchPendingMembershipsForAdmin,
   updateMembershipApproval,
 } from './TeamMembershipService';
-
-export { fetchTeamBadges, fetchAllTeamBadges, fetchSeasonBadges } from './TeamBadgeService';
+export {
+  fetchAvailableTeams,
+  fetchTeamDetails,
+  fetchTeamForStats,
+  fetchTeamsFromApi,
+  fetchTeamsWithOptions,
+} from './TeamQueryService';
+export {
+  fetchAllRequests,
+  fetchPendingRequestsCount,
+  fetchTeamRequests,
+  submitTeamRequest,
+  updateTeamRequestStatus,
+} from './TeamRequestService';

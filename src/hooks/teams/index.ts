@@ -5,5 +5,4 @@ export {
   useTeamsMap,
   useTeamsQuery,
 } from './useTeamsQuery';
-
 export { transformTeamRow } from '@/utils/teamTransformer';

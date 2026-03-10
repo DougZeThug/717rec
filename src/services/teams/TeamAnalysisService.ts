@@ -11,7 +11,9 @@ import { TeamAnalysis, TeamAnalysisInput } from './teamFetch.types';
 export const fetchTeamAnalysis = async (teamId: string): Promise<TeamAnalysis | null> => {
   const { data, error } = await supabase
     .from('team_analysis')
-    .select('id, team_id, overall, strengths, weaknesses, trends, rivalry_insights, created_at, updated_at')
+    .select(
+      'id, team_id, overall, strengths, weaknesses, trends, rivalry_insights, created_at, updated_at'
+    )
     .eq('team_id', teamId)
     .maybeSingle();
 

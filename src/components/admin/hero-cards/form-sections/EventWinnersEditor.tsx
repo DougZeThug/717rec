@@ -38,9 +38,7 @@ export const EventWinnersEditor: React.FC<FormSectionProps> = ({ formData, onCha
   };
 
   const addWeek = () => {
-    const nextWeek = pastWinners.length > 0
-      ? Math.max(...pastWinners.map((w) => w.week)) + 1
-      : 1;
+    const nextWeek = pastWinners.length > 0 ? Math.max(...pastWinners.map((w) => w.week)) + 1 : 1;
     updateWinners([...pastWinners, { week: nextWeek, winners: [{ place: 1, names: '' }] }]);
   };
 
@@ -89,10 +87,7 @@ export const EventWinnersEditor: React.FC<FormSectionProps> = ({ formData, onCha
 
       <div className="space-y-4">
         {pastWinners.map((weekData, weekIndex) => (
-          <div
-            key={weekIndex}
-            className="border rounded-md p-3 space-y-2 bg-muted/30"
-          >
+          <div key={weekIndex} className="border rounded-md p-3 space-y-2 bg-muted/30">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Label className="text-xs">Week</Label>
@@ -150,13 +145,7 @@ export const EventWinnersEditor: React.FC<FormSectionProps> = ({ formData, onCha
           </div>
         ))}
 
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={addWeek}
-          className="w-full"
-        >
+        <Button type="button" variant="outline" size="sm" onClick={addWeek} className="w-full">
           <Plus className="h-4 w-4 mr-1" /> Add Week
         </Button>
       </div>

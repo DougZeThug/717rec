@@ -5,6 +5,7 @@ import * as React from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+
 import { useSidebar } from './sidebar-context';
 
 export const sidebarMenuButtonVariants = cva(

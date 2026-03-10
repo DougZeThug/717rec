@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
-import { fetchDivisionWeights } from '@/utils/rankingUtils/divisionWeightsCache';
 import type { HeadToHeadStats, PredictionResult, TeamStats } from '@/utils/predictions';
 import { isUpset, predictMatch } from '@/utils/predictions';
+import { fetchDivisionWeights } from '@/utils/rankingUtils/divisionWeightsCache';
 
 import { useCareerRankings } from './useCareerRankings';
 import { useMatchHeadToHead } from './useMatchHeadToHead';
@@ -67,8 +67,8 @@ export function useMatchPrediction({
     }
 
     // Look up career stats for both teams
-    const team1Career = careerRankings?.find(r => r.teamId === team1Details.team_id);
-    const team2Career = careerRankings?.find(r => r.teamId === team2Details.team_id);
+    const team1Career = careerRankings?.find((r) => r.teamId === team1Details.team_id);
+    const team2Career = careerRankings?.find((r) => r.teamId === team2Details.team_id);
 
     const team1Stats: TeamStats = {
       // Current season stats
@@ -114,8 +114,7 @@ export function useMatchPrediction({
     let isUpsetResult = false;
     if (isCompleted && winnerId) {
       // Get the winner's probability
-      const winnerProb =
-        winnerId === team1Details.team_id ? prediction.probA : prediction.probB;
+      const winnerProb = winnerId === team1Details.team_id ? prediction.probA : prediction.probB;
       isUpsetResult = isUpset(winnerProb);
     }
 

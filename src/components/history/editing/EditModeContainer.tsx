@@ -21,8 +21,8 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { toast } from '@/hooks/useToast';
 import { sortHistoryDivisions } from '@/utils/historyDivisionUtils';
 
-import { EditableTeam, useHistoryEditing } from '../hooks/useHistoryEditing';
 import { useUpdateSeasonStats } from '../../../hooks/history/useUpdateSeasonStats';
+import { EditableTeam, useHistoryEditing } from '../hooks/useHistoryEditing';
 import AddDivisionButton from './AddDivisionButton';
 import EditableDivisionPanel from './EditableDivisionPanel';
 import EditModeToolbar from './EditModeToolbar';
@@ -229,11 +229,7 @@ export const EditModeContainer: React.FC<EditModeContainerProps> = ({
         const activeTeamData = teams.find((t) => t.team_id === active.id);
         const overTeam = teams.find((t) => t.team_id === over.id);
 
-        if (
-          activeTeamData &&
-          overTeam &&
-          activeTeamData.division_name === overTeam.division_name
-        ) {
+        if (activeTeamData && overTeam && activeTeamData.division_name === overTeam.division_name) {
           const divisionTeams = getTeamsByDivision(activeTeamData.division_name);
           const oldIndex = divisionTeams.findIndex((t) => t.team_id === active.id);
           const newIndex = divisionTeams.findIndex((t) => t.team_id === over.id);

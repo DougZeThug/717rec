@@ -117,9 +117,12 @@ export const initSentry = () => {
   // This defers ~40KB of JS until well after TTI window
   if (import.meta.env.PROD) {
     if ('requestIdleCallback' in window) {
-      requestIdleCallback(() => {
-        addLazyIntegrations();
-      }, { timeout: 15000 });
+      requestIdleCallback(
+        () => {
+          addLazyIntegrations();
+        },
+        { timeout: 15000 }
+      );
     } else {
       // Fallback for browsers without requestIdleCallback
       setTimeout(() => {
@@ -170,7 +173,11 @@ export const captureError = (error: Error, context?: Record<string, unknown>) =>
  * Capture a message and send to Sentry
  * Wrapped in try/catch to handle CORS failures gracefully
  */
-export const captureMessage = (message: string, level: Sentry.SeverityLevel = 'info', extra?: Record<string, unknown>) => {
+export const captureMessage = (
+  message: string,
+  level: Sentry.SeverityLevel = 'info',
+  extra?: Record<string, unknown>
+) => {
   // Always log to console for debugging
   console.log(`[${level}]:`, message);
 

@@ -199,7 +199,9 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
                               {teamTimeslot.teams.name}
                             </Link>
                           ) : (
-                            <span className="text-gray-500 dark:text-gray-400 truncate">Unknown Team</span>
+                            <span className="text-gray-500 dark:text-gray-400 truncate">
+                              Unknown Team
+                            </span>
                           )}
                         </div>
                       </div>

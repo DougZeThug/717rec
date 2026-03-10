@@ -61,11 +61,15 @@ export const supabase = {
       insertedRows[tableName].push(...rows);
 
       // Return chainable object to support .insert().select() pattern
-      const result = { data: rows.map((row: any, idx: number) => ({ ...row, id: idx + 1 })), error: null };
+      const result = {
+        data: rows.map((row: any, idx: number) => ({ ...row, id: idx + 1 })),
+        error: null,
+      };
       return {
         select: (_columns?: string) => Promise.resolve(result),
         // Allow direct await for backwards compatibility
-        then: (resolve: (value: MockSupabaseResponse) => unknown) => Promise.resolve(result).then(resolve),
+        then: (resolve: (value: MockSupabaseResponse) => unknown) =>
+          Promise.resolve(result).then(resolve),
         catch: (reject: (reason: unknown) => unknown) => Promise.resolve(result).catch(reject),
       };
     },

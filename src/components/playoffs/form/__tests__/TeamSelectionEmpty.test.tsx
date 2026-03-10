@@ -5,8 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import { TeamSelectionEmpty } from '../bracket-teams/components/TeamSelectionEmpty';
 
-const renderWithRouter = (ui: React.ReactElement) =>
-  render(<MemoryRouter>{ui}</MemoryRouter>);
+const renderWithRouter = (ui: React.ReactElement) => render(<MemoryRouter>{ui}</MemoryRouter>);
 
 describe('TeamSelectionEmpty', () => {
   it('renders empty state message', () => {
@@ -27,7 +26,9 @@ describe('TeamSelectionEmpty', () => {
     renderWithRouter(<TeamSelectionEmpty />);
 
     const usersIcon =
-      screen.queryByTestId('users-icon') ?? document.querySelector('[data-lucide="users"]') ?? document.querySelector('svg');
+      screen.queryByTestId('users-icon') ??
+      document.querySelector('[data-lucide="users"]') ??
+      document.querySelector('svg');
     expect(usersIcon).toBeInTheDocument();
   });
 

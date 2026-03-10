@@ -243,7 +243,9 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
                           return (
                             <div
                               className="flex items-center space-x-3 cursor-pointer hover:bg-muted/30 rounded-md p-1 -m-1 transition-colors"
-                              onClick={() => handleTeamClick(record.opponent_id, record.opponent_name)}
+                              onClick={() =>
+                                handleTeamClick(record.opponent_id, record.opponent_name)
+                              }
                             >
                               {record.opponent_image_url ? (
                                 <img

@@ -115,13 +115,12 @@ export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
               'bg-background transition-all duration-150',
               'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary',
               'hover:border-primary/50',
-              hasConflict && 'border-destructive bg-destructive/10 focus:ring-destructive/50 focus:border-destructive'
+              hasConflict &&
+                'border-destructive bg-destructive/10 focus:ring-destructive/50 focus:border-destructive'
             )}
             aria-label={`Seed for ${name}`}
           />
-          {hasConflict && (
-            <span className="text-xs text-destructive font-medium">Duplicate</span>
-          )}
+          {hasConflict && <span className="text-xs text-destructive font-medium">Duplicate</span>}
         </div>
       )}
     </motion.div>

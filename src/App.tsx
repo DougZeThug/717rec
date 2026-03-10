@@ -12,12 +12,13 @@ import { initAnalytics, trackPageView } from '@/utils/analytics';
 import { routeLog } from '@/utils/logger';
 import { preloadCoreRoutes } from '@/utils/routePrefetch';
 import { metrics } from '@/utils/sentry';
+
 import ProtectedAdminRoute from './components/auth/ProtectedAdminRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { RouteErrorBoundary } from './components/RouteErrorBoundary';
 import Footer from './components/layout/Footer';
 import Navbar from './components/layout/Navbar';
 import AppNavigation from './components/navigation/AppNavigation';
+import { RouteErrorBoundary } from './components/RouteErrorBoundary';
 import PageTransition from './components/transitions/PageTransition';
 
 // Initialize Analytics on app load (Sentry already initialized in main.tsx)
@@ -89,13 +90,62 @@ const AppContent = () => {
               }
             >
               <Routes location={location}>
-                <Route path="/" element={<RouteErrorBoundary routeName="Home"><Index /></RouteErrorBoundary>} />
-                <Route path="/teams" element={<RouteErrorBoundary routeName="Teams"><TeamsPage /></RouteErrorBoundary>} />
-                <Route path="/teams/:teamId" element={<RouteErrorBoundary routeName="Team Details"><TeamDetails /></RouteErrorBoundary>} />
-                <Route path="/schedule" element={<RouteErrorBoundary routeName="Schedule"><Schedule /></RouteErrorBoundary>} />
-                <Route path="/stats" element={<RouteErrorBoundary routeName="Stats"><Stats /></RouteErrorBoundary>} />
-                <Route path="/playoffs" element={<RouteErrorBoundary routeName="Playoffs"><Playoffs /></RouteErrorBoundary>} />
-                <Route path="/history" element={<RouteErrorBoundary routeName="History"><History /></RouteErrorBoundary>} />
+                <Route
+                  path="/"
+                  element={
+                    <RouteErrorBoundary routeName="Home">
+                      <Index />
+                    </RouteErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/teams"
+                  element={
+                    <RouteErrorBoundary routeName="Teams">
+                      <TeamsPage />
+                    </RouteErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/teams/:teamId"
+                  element={
+                    <RouteErrorBoundary routeName="Team Details">
+                      <TeamDetails />
+                    </RouteErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/schedule"
+                  element={
+                    <RouteErrorBoundary routeName="Schedule">
+                      <Schedule />
+                    </RouteErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/stats"
+                  element={
+                    <RouteErrorBoundary routeName="Stats">
+                      <Stats />
+                    </RouteErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/playoffs"
+                  element={
+                    <RouteErrorBoundary routeName="Playoffs">
+                      <Playoffs />
+                    </RouteErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/history"
+                  element={
+                    <RouteErrorBoundary routeName="History">
+                      <History />
+                    </RouteErrorBoundary>
+                  }
+                />
                 <Route
                   path="/timeslots"
                   element={
@@ -116,13 +166,62 @@ const AppContent = () => {
                     </ProtectedAdminRoute>
                   }
                 />
-                <Route path="/auth" element={<RouteErrorBoundary routeName="Sign In"><Auth /></RouteErrorBoundary>} />
-                <Route path="/setup-profile" element={<RouteErrorBoundary routeName="Profile Setup"><ProfileSetup /></RouteErrorBoundary>} />
-                <Route path="/message-board" element={<RouteErrorBoundary routeName="Message Board"><MessageBoard /></RouteErrorBoundary>} />
-                <Route path="/my-team" element={<RouteErrorBoundary routeName="My Team"><MyTeam /></RouteErrorBoundary>} />
-                <Route path="/help" element={<RouteErrorBoundary routeName="Help"><Help /></RouteErrorBoundary>} />
-                <Route path="/contact" element={<RouteErrorBoundary routeName="Contact"><Contact /></RouteErrorBoundary>} />
-                <Route path="/compare" element={<RouteErrorBoundary routeName="Compare"><Compare /></RouteErrorBoundary>} />
+                <Route
+                  path="/auth"
+                  element={
+                    <RouteErrorBoundary routeName="Sign In">
+                      <Auth />
+                    </RouteErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/setup-profile"
+                  element={
+                    <RouteErrorBoundary routeName="Profile Setup">
+                      <ProfileSetup />
+                    </RouteErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/message-board"
+                  element={
+                    <RouteErrorBoundary routeName="Message Board">
+                      <MessageBoard />
+                    </RouteErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/my-team"
+                  element={
+                    <RouteErrorBoundary routeName="My Team">
+                      <MyTeam />
+                    </RouteErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/help"
+                  element={
+                    <RouteErrorBoundary routeName="Help">
+                      <Help />
+                    </RouteErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/contact"
+                  element={
+                    <RouteErrorBoundary routeName="Contact">
+                      <Contact />
+                    </RouteErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/compare"
+                  element={
+                    <RouteErrorBoundary routeName="Compare">
+                      <Compare />
+                    </RouteErrorBoundary>
+                  }
+                />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>

@@ -90,7 +90,10 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className }) => {
 
         {membership && membership.team ? (
           <DropdownMenuItem asChild onSelect={handleMenuItemClick}>
-            <Link to={`/teams/${toTeamSlug(membership.team.name)}`} className="cursor-pointer flex items-center">
+            <Link
+              to={`/teams/${toTeamSlug(membership.team.name)}`}
+              className="cursor-pointer flex items-center"
+            >
               <User className="w-4 h-4 mr-2" />
               My Team
             </Link>

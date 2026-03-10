@@ -74,7 +74,9 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
 
   // Process bracket data to separate winners, losers and finals matches
   const bracketMatchesByType: PlayoffViewModel['bracketMatchesByType'] =
-    safeMatches.length > 0 ? (groupBracketMatchesByType(safeMatches) as PlayoffViewModel['bracketMatchesByType']) : null;
+    safeMatches.length > 0
+      ? (groupBracketMatchesByType(safeMatches) as PlayoffViewModel['bracketMatchesByType'])
+      : null;
 
   // Simplified refetch function - no aggressive cache operations
   const refetch = async () => {

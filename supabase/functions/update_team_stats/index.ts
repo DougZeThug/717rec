@@ -130,13 +130,10 @@ Deno.serve(async (req) => {
     }
 
     if (winnerId === loserId) {
-      return new Response(
-        JSON.stringify({ error: 'Winner and loser cannot be the same team' }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
+      return new Response(JSON.stringify({ error: 'Winner and loser cannot be the same team' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Parse game wins for each team

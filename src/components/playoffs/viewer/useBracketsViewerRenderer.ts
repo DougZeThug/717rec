@@ -181,8 +181,10 @@ export const useBracketsViewerRenderer = ({
         const tagsMissing = viewerData.matches.filter((match) => {
           const need1 = !!match.opponent1;
           const need2 = !!match.opponent2;
-          const bad1 = match.opponent1 && Object.getOwnPropertySymbols(match.opponent1).length === 0;
-          const bad2 = match.opponent2 && Object.getOwnPropertySymbols(match.opponent2).length === 0;
+          const bad1 =
+            match.opponent1 && Object.getOwnPropertySymbols(match.opponent1).length === 0;
+          const bad2 =
+            match.opponent2 && Object.getOwnPropertySymbols(match.opponent2).length === 0;
           return (need1 && bad1) || (need2 && bad2);
         }).length;
 

@@ -1,11 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useToast } from '@/hooks/useToast';
-import {
-  SeasonParticipation,
-  SeasonService,
-  ParticipationStatus,
-} from '@/services/SeasonService';
+import { ParticipationStatus, SeasonParticipation, SeasonService } from '@/services/SeasonService';
 
 export type { ParticipationStatus, SeasonParticipation };
 
@@ -67,4 +63,3 @@ export const useSubmitParticipation = () => {
     },
   });
 };
-

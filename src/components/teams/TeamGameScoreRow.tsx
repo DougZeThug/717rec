@@ -75,7 +75,10 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({
               <AvatarFallback>{homeName.charAt(0)}</AvatarFallback>
             </Avatar>
           </TransitionLink>
-          <TransitionLink to={`/teams/${toTeamSlug(homeName)}`} className="truncate hover:underline">
+          <TransitionLink
+            to={`/teams/${toTeamSlug(homeName)}`}
+            className="truncate hover:underline"
+          >
             <span
               className={cn(
                 'truncate',
@@ -100,7 +103,10 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({
         </div>
         {/* Away - Right side */}
         <div className="flex items-center min-w-0 gap-x-2 flex-1 justify-end">
-          <TransitionLink to={`/teams/${toTeamSlug(awayName)}`} className="truncate hover:underline">
+          <TransitionLink
+            to={`/teams/${toTeamSlug(awayName)}`}
+            className="truncate hover:underline"
+          >
             <span
               className={cn(
                 'truncate text-right',

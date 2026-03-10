@@ -76,11 +76,7 @@ export const useMatchComments = (matchId: string) => {
     try {
       // Fetch profile and team membership in parallel to avoid sequential queries
       const [profileResult, membershipResult] = await Promise.all([
-        supabase
-          .from('profiles')
-          .select('username')
-          .eq('id', user.id)
-          .single(),
+        supabase.from('profiles').select('username').eq('id', user.id).single(),
         supabase
           .from('team_memberships')
           .select('team:teams(name)')

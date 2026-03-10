@@ -31,7 +31,8 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
   const { data: settings } = useBlindDrawSettings();
   const { toast } = useToast();
 
-  const confirmationMessage = settings?.signup_confirmation_message || "You're signed up! See you there!";
+  const confirmationMessage =
+    settings?.signup_confirmation_message || "You're signed up! See you there!";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

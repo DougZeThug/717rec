@@ -13,7 +13,7 @@ export interface Team {
   logoUrl?: string;
   players?: string[];
   seed?: number;
-  
+
   power_score?: number;
   sos?: number;
   win_percentage?: number;
@@ -127,7 +127,6 @@ export interface Division {
   display_division?: string;
   created_at?: string;
 }
-
 
 export * from './admin';
 export type {
