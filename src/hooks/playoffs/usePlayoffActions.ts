@@ -50,6 +50,7 @@ export const usePlayoffActions = () => {
   const updateMatchResult = async (
     matchId: string,
     winnerId: string,
+    loserId: string,
     team1Score: number,
     team2Score: number,
     team1GameWins?: number,
@@ -60,6 +61,7 @@ export const usePlayoffActions = () => {
       // Update in playoff_matches table
       await updatePlayoffMatchResult(matchId, {
         winner_id: winnerId,
+        loser_id: loserId,
         team1_score: team1Score,
         team2_score: team2Score,
         status: 'completed',
@@ -91,7 +93,7 @@ export const usePlayoffActions = () => {
       });
     } catch (error) {
       const errorMessage = getUIErrorMessage(error, 'Failed to update match');
-      logError(error, 'updateMatchResult', { matchId, winnerId, team1Score, team2Score });
+      logError(error, 'updateMatchResult', { matchId, winnerId, loserId, team1Score, team2Score });
 
       toast({
         title: 'Error',
