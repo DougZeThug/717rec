@@ -8,6 +8,7 @@ import {
   saveAutoScheduleMatches,
 } from '@/services/matches/MatchWriteService';
 import { AutoScheduleMatch } from '@/types/autoSchedule';
+import { validateMatchSchedule } from '@/utils/autoSchedule/validation';
 import { errorLog, scheduleLog } from '@/utils/logger';
 
 import { clearAutoScheduleState } from './storage';
