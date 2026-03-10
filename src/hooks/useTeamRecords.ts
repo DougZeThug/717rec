@@ -5,10 +5,9 @@ import { updateTeamStatsRecord } from '@/services/TeamStatsService';
 import { Team } from '@/types';
 import { debugLog, errorLog, teamLog } from '@/utils/logger';
 
-import { useTeamWinLossUpdate } from './team-stats/useTeamWinLossUpdate';
+import { invalidateMatchRelatedQueries } from './matches/utils/queryCacheUtils';
 
 export const useTeamRecords = () => {
-  const { updateTeamRecords: updateWinLoss } = useTeamWinLossUpdate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -48,25 +47,8 @@ export const useTeamRecords = () => {
     }
 
     try {
-      // With our new approach, we only need to invalidate queries
-      // since the stats are calculated dynamically from the matches table
-      teamLog('Step 1: Invalidating queries to refresh team stats');
-      const success = await updateWinLoss();
+      teamLog('Step 1: Updating detailed team statistics in the database');
 
-      if (!success) {
-        errorLog('CRITICAL ERROR: Failed to update team records');
-        toast({
-          title: 'Error',
-          description: 'Failed to update team records. Please try again.',
-          variant: 'destructive',
-        });
-        return false;
-      }
-
-      teamLog('Step 1 SUCCESSFUL: Team stats refreshed');
-      teamLog('Step 2: Updating detailed team statistics');
-
-      // Then update the detailed team stats - pass all required parameters
       const statsSuccess = await updateTeamStatsRecord(
         winnerId,
         loserId,
@@ -75,35 +57,21 @@ export const useTeamRecords = () => {
       );
 
       if (!statsSuccess) {
-        errorLog('WARNING: Failed to update detailed team stats (power scores, etc.)');
+        errorLog('CRITICAL ERROR: Failed to update team stats record');
         toast({
-          title: 'Warning',
-          description: 'Team win/loss records updated, but detailed stats failed to update.',
+          title: 'Error',
+          description: 'Failed to update team records. Please try again.',
           variant: 'destructive',
         });
-      } else {
-        teamLog('Step 2 SUCCESSFUL: Team detailed statistics updated');
+        return false;
       }
 
-      teamLog('Step 3: Invalidating all relevant queries to ensure data freshness');
+      teamLog('Step 1 SUCCESSFUL: Team detailed statistics updated');
+      teamLog('Step 2: Invalidating all relevant queries to ensure data freshness');
 
-      // Force invalidate all relevant queries to ensure data freshness across the app
-      const queriesToInvalidate = [
-        'rankings',
-        'teams',
-        'matches',
-        'teamStats',
-        'team',
-        'team-matches',
-        'seasonStats',
-        'historicalSeasons',
-        'careerPowerScores',
-      ];
+      await invalidateMatchRelatedQueries(queryClient);
 
-      for (const queryKey of queriesToInvalidate) {
-        await queryClient.invalidateQueries({ queryKey: [queryKey] });
-        debugLog(`Query cache invalidated for ${queryKey}`);
-      }
+      teamLog('Step 2 SUCCESSFUL: Query cache invalidated');
 
       toast({
         title: 'Success',
