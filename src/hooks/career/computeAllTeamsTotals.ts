@@ -119,6 +119,7 @@ async function computeTotalsFromBulkData(
     careerPlayoffLosses: playoffStats.career_playoff_losses,
     competitivePlayoffWins: playoffStats.competitive_playoff_wins,
     teamDivisionWeight,
+    currentSeasonId,
     prefetchedSeasonStats: seasonPowerScores,
     prefetchedCurrentTeamData: currentTeamPowerData,
   });
