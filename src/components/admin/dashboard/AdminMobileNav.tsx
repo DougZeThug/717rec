@@ -78,7 +78,7 @@ const tabGroups: TabGroup[] = [
     id: 'settings',
     label: 'Settings & Content',
     icon: LayoutGrid,
-    tabs: ['seasons', 'hero-cards', 'blind-draw', 'help'],
+    tabs: ['seasons', 'hero-cards', 'themes', 'blind-draw', 'help'],
   },
 ];
 
