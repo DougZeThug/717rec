@@ -140,9 +140,7 @@ describe('updateProfile', () => {
 
   it('resolves without error on success', async () => {
     mockFrom.mockReturnValue({
-      update: () => ({
-        eq: () => Promise.resolve({ error: null }),
-      }),
+      upsert: () => Promise.resolve({ error: null }),
     });
 
     await expect(
