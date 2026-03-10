@@ -19,7 +19,7 @@ import './index.css';
 createRoot(document.getElementById('root')!).render(
   <ThemeProvider
     attribute="class"
-    defaultTheme="light"
+    defaultTheme="system"
     themes={['light', 'dark', 'system', 'winter-frozen']}
     enableSystem={true}
     disableTransitionOnChange={false}
