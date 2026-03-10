@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useEnabledThemeKeys } from '@/hooks/useThemeSettings';
 import { SnowflakeSparkle } from '@/icons';
 import { cn } from '@/lib/utils';
 
@@ -18,7 +19,7 @@ interface ThemeToggleProps {
   size?: 'default' | 'sm' | 'lg' | 'icon';
 }
 
-const themeOptions = [
+const allThemeOptions = [
   { value: 'light', label: 'Light', icon: Sun },
   { value: 'dark', label: 'Dark', icon: Moon },
   { value: 'system', label: 'System', icon: Monitor },
@@ -32,14 +33,26 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
 }) => {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const { enabledKeys, isLoading } = useEnabledThemeKeys();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  // Auto-switch if current theme is disabled
+  useEffect(() => {
+    if (!isLoading && enabledKeys.length > 0 && theme && !enabledKeys.includes(theme)) {
+      setTheme(enabledKeys[0]);
+    }
+  }, [enabledKeys, isLoading, theme, setTheme]);
+
   if (!mounted) {
     return null;
   }
+
+  const themeOptions = enabledKeys.length > 0
+    ? allThemeOptions.filter((opt) => enabledKeys.includes(opt.value))
+    : allThemeOptions.filter((opt) => opt.value !== 'winter-frozen'); // fallback
 
   const getCurrentIcon = () => {
     if (theme === 'winter-frozen') {
@@ -53,7 +66,6 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
 
   const getButtonClasses = () => {
     if (theme === 'winter-frozen') {
-      // Premium ice-glass button for winter theme
       return [
         'theme-toggle-winter',
         'bg-[hsla(222,35%,15%,0.9)]',
@@ -63,7 +75,6 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
         'hover:border-[hsla(199,70%,65%,0.6)]',
       ].join(' ');
     }
-    // Use semantic tokens for light/dark
     return 'text-foreground hover:bg-muted border-border';
   };
 

@@ -10,6 +10,7 @@ import {
   Inbox,
   LayoutGrid,
   ListChecks,
+  Palette,
   Search,
   Shuffle,
   Sparkles,
