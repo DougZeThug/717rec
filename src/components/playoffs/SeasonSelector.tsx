@@ -14,10 +14,7 @@ interface SeasonSelectorProps {
   onSeasonChange: (seasonId: string) => void;
 }
 
-const SeasonSelector: React.FC<SeasonSelectorProps> = ({
-  selectedSeasonId,
-  onSeasonChange,
-}) => {
+const SeasonSelector: React.FC<SeasonSelectorProps> = ({ selectedSeasonId, onSeasonChange }) => {
   const { data: seasons, isLoading } = useSeasons();
 
   if (isLoading || !seasons || seasons.length <= 1) {
@@ -26,13 +23,8 @@ const SeasonSelector: React.FC<SeasonSelectorProps> = ({
 
   return (
     <div className="flex items-center gap-3">
-      <label className="text-sm font-medium text-muted-foreground whitespace-nowrap">
-        Season:
-      </label>
-      <Select
-        value={selectedSeasonId ?? undefined}
-        onValueChange={onSeasonChange}
-      >
+      <label className="text-sm font-medium text-muted-foreground whitespace-nowrap">Season:</label>
+      <Select value={selectedSeasonId ?? undefined} onValueChange={onSeasonChange}>
         <SelectTrigger className="w-[220px] bg-card border-border">
           <SelectValue placeholder="Select season" />
         </SelectTrigger>

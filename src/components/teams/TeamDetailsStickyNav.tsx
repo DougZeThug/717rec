@@ -13,12 +13,32 @@ interface Section {
 }
 
 const sections: Section[] = [
-  { id: 'stats', label: 'Stats', icon: BarChart3, ariaLabel: 'Navigate to team statistics section' },
-  { id: 'analysis', label: 'Analysis', icon: TrendingUp, ariaLabel: 'Navigate to team analysis section' },
+  {
+    id: 'stats',
+    label: 'Stats',
+    icon: BarChart3,
+    ariaLabel: 'Navigate to team statistics section',
+  },
+  {
+    id: 'analysis',
+    label: 'Analysis',
+    icon: TrendingUp,
+    ariaLabel: 'Navigate to team analysis section',
+  },
   { id: 'h2h', label: 'H2H', icon: Swords, ariaLabel: 'Navigate to head-to-head records section' },
   { id: 'matches', label: 'Matches', icon: Clock, ariaLabel: 'Navigate to match history section' },
-  { id: 'career', label: 'Career', icon: TrendingUp, ariaLabel: 'Navigate to career statistics section' },
-  { id: 'achievements', label: 'Awards', icon: Trophy, ariaLabel: 'Navigate to team achievements section' },
+  {
+    id: 'career',
+    label: 'Career',
+    icon: TrendingUp,
+    ariaLabel: 'Navigate to career statistics section',
+  },
+  {
+    id: 'achievements',
+    label: 'Awards',
+    icon: Trophy,
+    ariaLabel: 'Navigate to team achievements section',
+  },
 ];
 
 interface TeamDetailsStickyNavProps {

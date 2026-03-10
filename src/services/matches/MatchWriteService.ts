@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
-import { handleDatabaseError, ensureFound } from '@/utils/errorHandler';
+import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 import { warnLog } from '@/utils/logger';
 
 /**
@@ -231,7 +231,9 @@ export const fetchActiveSeasonIdOptional = async (): Promise<string | undefined>
  * Exact insert copied from useAutoScheduleSave.ts
  * @throws raw Supabase error on failure
  */
-export const saveAutoScheduleMatches = async (matches: Database['public']['Tables']['matches']['Insert'][]) => {
+export const saveAutoScheduleMatches = async (
+  matches: Database['public']['Tables']['matches']['Insert'][]
+) => {
   const { data, error } = await supabase.from('matches').insert(matches).select();
   if (error) throw error;
   return data;
@@ -283,11 +285,7 @@ export const updateScoreSubmissionStatus = async (
  * Set winner and loser on a match (approve result)
  * @throws raw Supabase error on failure
  */
-export const approveMatch = async (
-  matchId: string,
-  winnerId: string,
-  loserId: string
-) => {
+export const approveMatch = async (matchId: string, winnerId: string, loserId: string) => {
   const { error } = await supabase
     .from('matches')
     .update({

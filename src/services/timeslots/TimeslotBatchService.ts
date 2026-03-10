@@ -2,8 +2,8 @@ import { format } from 'date-fns';
 
 import { supabase } from '@/integrations/supabase/client';
 import { TeamTimeslot } from '@/types/timeslots';
-import { handleDatabaseError } from '@/utils/errorHandler';
 import { getBackToBackPairName, getPairConfig } from '@/utils/autoSchedule/constants';
+import { handleDatabaseError } from '@/utils/errorHandler';
 import { scheduleLog, warnLog } from '@/utils/logger';
 
 import { TimeslotTransformer } from './TimeslotTransformer';

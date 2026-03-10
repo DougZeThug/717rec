@@ -1,12 +1,12 @@
+import { useQueryClient } from '@tanstack/react-query';
 import React, { useState } from 'react';
 
 import MatchScoresList from '@/components/admin/scores/MatchScoresList';
 import DeleteMatchDialog from '@/components/schedule/DeleteMatchDialog';
+import { reverseTeamStats } from '@/hooks/matches/updates/utils/statReversalUtils';
 import { useToast } from '@/hooks/useToast';
 import { useUncompletedMatches } from '@/hooks/useUncompletedMatches';
 import { deleteMatch, upsertTeamSeasonStats } from '@/services/matches/MatchWriteService';
-import { reverseTeamStats } from '@/hooks/matches/updates/utils/statReversalUtils';
-import { useQueryClient } from '@tanstack/react-query';
 import { errorLog } from '@/utils/logger';
 
 const EditScoresSection = () => {
@@ -48,7 +48,7 @@ const EditScoresSection = () => {
           matchToDelete.winnerId,
           matchToDelete.loserId,
           winnerGameWins,
-          loserGameWins,
+          loserGameWins
         );
       }
 

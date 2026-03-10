@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import type { TeamStats } from '../predictMatch';
 import {
   formatBreakdown,
   formatProbability,
@@ -7,7 +8,6 @@ import {
   predictMatch,
   UPSET_THRESHOLD,
 } from '../predictMatch';
-import type { TeamStats } from '../predictMatch';
 
 // Helper to create team stats
 const createTeamStats = (
@@ -29,9 +29,9 @@ const createTeamStats = (
 // Mock division weights map
 const createDivisionWeights = (): Map<string, number> => {
   const weights = new Map<string, number>();
-  weights.set('div-high', 1.2);    // High-tier division
-  weights.set('div-mid', 1.0);     // Mid-tier division
-  weights.set('div-low', 0.8);     // Low-tier division
+  weights.set('div-high', 1.2); // High-tier division
+  weights.set('div-mid', 1.0); // Mid-tier division
+  weights.set('div-low', 0.8); // Low-tier division
   return weights;
 };
 
@@ -67,8 +67,8 @@ describe('predictMatch', () => {
   describe('Career stats influence', () => {
     it('should favor the team with stronger career stats when season stats are equal', () => {
       // Same season stats, but Team A has better career
-      const teamA = createTeamStats(50, 0.85, 'div-mid', 70, 0.90, 0.65);
-      const teamB = createTeamStats(50, 0.85, 'div-mid', 45, 0.80, 0.45);
+      const teamA = createTeamStats(50, 0.85, 'div-mid', 70, 0.9, 0.65);
+      const teamB = createTeamStats(50, 0.85, 'div-mid', 45, 0.8, 0.45);
       const weights = createDivisionWeights();
 
       const result = predictMatch(teamA, teamB, weights, 'Team A', 'Team B');
@@ -81,8 +81,8 @@ describe('predictMatch', () => {
     it('career stats should outweigh current season stats (65-35 split)', () => {
       // Team A: better season, worse career
       // Team B: worse season, better career
-      const teamA = createTeamStats(65, 0.90, 'div-mid', 40, 0.75, 0.40);
-      const teamB = createTeamStats(55, 0.85, 'div-mid', 75, 0.95, 0.70);
+      const teamA = createTeamStats(65, 0.9, 'div-mid', 40, 0.75, 0.4);
+      const teamB = createTeamStats(55, 0.85, 'div-mid', 75, 0.95, 0.7);
       const weights = createDivisionWeights();
 
       const result = predictMatch(teamA, teamB, weights, 'Team A', 'Team B');
@@ -122,7 +122,7 @@ describe('predictMatch', () => {
   describe('large rating gaps produce lopsided probabilities', () => {
     it('should produce high probability for dominant team', () => {
       const teamA = createTeamStats(85, 1.0, 'div-high', 80, 0.95, 0.75);
-      const teamB = createTeamStats(35, 0.7, 'div-low', 40, 0.70, 0.35);
+      const teamB = createTeamStats(35, 0.7, 'div-low', 40, 0.7, 0.35);
       const weights = createDivisionWeights();
 
       const result = predictMatch(teamA, teamB, weights, 'Team A', 'Team B');
@@ -161,7 +161,7 @@ describe('predictMatch', () => {
 
     it('should return Medium confidence for moderate favorites (56-65%)', () => {
       const teamA = createTeamStats(60, 0.85, 'div-mid', 60, 0.85, 0.55);
-      const teamB = createTeamStats(50, 0.85, 'div-mid', 50, 0.85, 0.50);
+      const teamB = createTeamStats(50, 0.85, 'div-mid', 50, 0.85, 0.5);
       const weights = createDivisionWeights();
 
       const result = predictMatch(teamA, teamB, weights);
@@ -170,8 +170,8 @@ describe('predictMatch', () => {
     });
 
     it('should return High confidence for strong favorites (65%+)', () => {
-      const teamA = createTeamStats(75, 0.95, 'div-high', 80, 1.0, 0.70);
-      const teamB = createTeamStats(45, 0.75, 'div-low', 40, 0.70, 0.35);
+      const teamA = createTeamStats(75, 0.95, 'div-high', 80, 1.0, 0.7);
+      const teamB = createTeamStats(45, 0.75, 'div-low', 40, 0.7, 0.35);
       const weights = createDivisionWeights();
 
       const result = predictMatch(teamA, teamB, weights);
@@ -192,8 +192,8 @@ describe('predictMatch', () => {
     });
 
     it('should show "[Team] favored" for moderate favorites', () => {
-      const teamA = createTeamStats(60, 0.85, 'div-mid', 65, 0.90, 0.60);
-      const teamB = createTeamStats(50, 0.85, 'div-mid', 50, 0.85, 0.50);
+      const teamA = createTeamStats(60, 0.85, 'div-mid', 65, 0.9, 0.6);
+      const teamB = createTeamStats(50, 0.85, 'div-mid', 50, 0.85, 0.5);
       const weights = createDivisionWeights();
 
       const result = predictMatch(teamA, teamB, weights, 'Alpha', 'Beta');
@@ -203,7 +203,7 @@ describe('predictMatch', () => {
 
     it('should show "[Team] strongly favored" for dominant favorites (70%+)', () => {
       const teamA = createTeamStats(80, 1.0, 'div-high', 85, 1.0, 0.75);
-      const teamB = createTeamStats(40, 0.7, 'div-low', 40, 0.70, 0.35);
+      const teamB = createTeamStats(40, 0.7, 'div-low', 40, 0.7, 0.35);
       const weights = createDivisionWeights();
 
       const result = predictMatch(teamA, teamB, weights, 'Alpha', 'Beta');
@@ -212,7 +212,7 @@ describe('predictMatch', () => {
     });
 
     it('should favor Team B when B has better stats', () => {
-      const teamA = createTeamStats(40, 0.7, 'div-low', 35, 0.70, 0.35);
+      const teamA = createTeamStats(40, 0.7, 'div-low', 35, 0.7, 0.35);
       const teamB = createTeamStats(75, 1.0, 'div-high', 80, 1.0, 0.75);
       const weights = createDivisionWeights();
 
@@ -237,7 +237,7 @@ describe('predictMatch', () => {
       expect(result.breakdown.sosB).toBe(0.8);
       expect(result.breakdown.divisionWeightA).toBe(1.2);
       expect(result.breakdown.divisionWeightB).toBe(1.0);
-      
+
       // Career
       expect(result.breakdown.careerPowerA).toBe(70);
       expect(result.breakdown.careerPowerB).toBe(60);
@@ -245,12 +245,12 @@ describe('predictMatch', () => {
       expect(result.breakdown.careerSosB).toBe(0.85);
       expect(result.breakdown.careerWinPctA).toBe(0.65);
       expect(result.breakdown.careerWinPctB).toBe(0.55);
-      
+
       // Ratings
       expect(result.breakdown.teamRatingA).toBeGreaterThan(0);
       expect(result.breakdown.teamRatingB).toBeGreaterThan(0);
       expect(typeof result.breakdown.ratingDiff).toBe('number');
-      
+
       // Flags
       expect(result.breakdown.hasCareerDataA).toBe(true);
       expect(result.breakdown.hasCareerDataB).toBe(true);
@@ -270,13 +270,13 @@ describe('predictMatch', () => {
       expect(result.breakdown.sosB).toBe(0.85);
       expect(result.breakdown.divisionWeightA).toBe(0.85);
       expect(result.breakdown.divisionWeightB).toBe(0.85);
-      
+
       // Career defaults
       expect(result.breakdown.careerPowerA).toBe(50);
       expect(result.breakdown.careerPowerB).toBe(50);
       expect(result.breakdown.careerWinPctA).toBe(0.5);
       expect(result.breakdown.careerWinPctB).toBe(0.5);
-      
+
       // No career data flags
       expect(result.breakdown.hasCareerDataA).toBe(false);
       expect(result.breakdown.hasCareerDataB).toBe(false);
@@ -286,14 +286,14 @@ describe('predictMatch', () => {
 
 describe('isUpset', () => {
   it('should return true when winner probability <= threshold', () => {
-    expect(isUpset(0.20)).toBe(true);
+    expect(isUpset(0.2)).toBe(true);
     expect(isUpset(0.25)).toBe(true);
     expect(isUpset(UPSET_THRESHOLD)).toBe(true);
   });
 
   it('should return false when winner probability > threshold', () => {
     expect(isUpset(0.35)).toBe(false);
-    expect(isUpset(0.50)).toBe(false);
+    expect(isUpset(0.5)).toBe(false);
     expect(isUpset(0.75)).toBe(false);
   });
 

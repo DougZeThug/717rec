@@ -1,8 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
-import { useMatchSubmission } from '@/hooks/matches/useMatchSubmission';
 import { reverseTeamStats } from '@/hooks/matches/updates/utils/statReversalUtils';
+import { useMatchSubmission } from '@/hooks/matches/useMatchSubmission';
 import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
 import { useToast } from '@/hooks/useToast';
 import { errorLog, filterLog, scoreLog } from '@/utils/logger';
@@ -19,7 +19,16 @@ export const useScoreEntryData = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { matches, setMatches, originalMatches, setOriginalMatches, loading, setLoading, submitting, setSubmitting } = useMatchesState();
+  const {
+    matches,
+    setMatches,
+    originalMatches,
+    setOriginalMatches,
+    loading,
+    setLoading,
+    submitting,
+    setSubmitting,
+  } = useMatchesState();
 
   const { handleSubmitScore } = useMatchSubmission();
 
@@ -190,9 +199,7 @@ export const useScoreEntryData = () => {
         // Matches where the reversal ran but the score write failed.
         // Their DB stats are already decremented; a retry must NOT reverse again.
         const reversalAppliedButFailed = new Set(
-          submissionOutcomes
-            .filter((r) => !r.succeeded && r.reversalApplied)
-            .map((r) => r.matchId)
+          submissionOutcomes.filter((r) => !r.succeeded && r.reversalApplied).map((r) => r.matchId)
         );
 
         // Update originalMatches snapshot selectively:

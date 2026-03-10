@@ -160,7 +160,7 @@ export class SupabaseSqlStorage implements CrudInterface {
 
         if (error) throw error;
         if (!data) return null;
-        
+
         // For match table, transform from DB format; cast to DataTypes[T] since TypeScript can't infer the conditional
         return (
           table === 'match' ? this.transformMatchFromDb(data as DbMatch) : data

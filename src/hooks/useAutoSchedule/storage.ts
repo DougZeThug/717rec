@@ -14,25 +14,25 @@ const STORAGE_KEY = 'autoScheduleState';
 export interface PersistedAutoScheduleState {
   // Date (stored as ISO string)
   selectedDate: string | null;
-  
+
   // Tab and mode state
   activeTab: string;
   isEditMode: boolean;
-  
+
   // Algorithm settings
   avoidRematches: boolean;
   prioritizeQuality: boolean;
   dualMatchMode: boolean;
-  
+
   // Generated data
   generatedMatches: AutoScheduleMatch[];
   editableMatches: AutoScheduleMatch[];
   matchQualityMetrics: MatchQualityMetrics | null;
-  
+
   // Pairing data
   generatedPairings: TeamPairingMap;
   unmatchedTeamIds: string[];
-  
+
   // Team data
   timeBlockTeams: TimeBlockTeamsMap;
   originalTimeBlockTeams: TimeBlockTeamsMap;
@@ -66,7 +66,7 @@ export function loadAutoScheduleState(): PersistedAutoScheduleState | null {
   try {
     const stored = sessionStorage.getItem(STORAGE_KEY);
     if (!stored) return null;
-    
+
     const parsed = JSON.parse(stored) as PersistedAutoScheduleState;
     scheduleLog('Loaded auto-schedule state from sessionStorage');
     return parsed;
@@ -107,7 +107,7 @@ export function clearAutoScheduleState(): void {
  * (Date objects become strings when JSON.stringify'd anyway, this makes it explicit)
  */
 export function serializeMatches(matches: AutoScheduleMatch[]): AutoScheduleMatch[] {
-  return matches.map(match => ({
+  return matches.map((match) => ({
     ...match,
     date: match.date instanceof Date ? match.date : new Date(match.date),
   }));
@@ -117,7 +117,7 @@ export function serializeMatches(matches: AutoScheduleMatch[]): AutoScheduleMatc
  * Convert ISO string dates back to Date objects when loading
  */
 export function deserializeMatches(matches: AutoScheduleMatch[]): AutoScheduleMatch[] {
-  return matches.map(match => ({
+  return matches.map((match) => ({
     ...match,
     date: new Date(match.date),
   }));

@@ -6,10 +6,7 @@ import { useEffect, useState } from 'react';
  * @param defaultValue - default value if no stored value exists
  * @returns tuple of [value, setValue] like useState
  */
-export function usePersistedState<T>(
-  key: string,
-  defaultValue: T
-): [T, (value: T) => void] {
+export function usePersistedState<T>(key: string, defaultValue: T): [T, (value: T) => void] {
   // Initialize state from localStorage or use default
   const [value, setValue] = useState<T>(() => {
     const savedValue = localStorage.getItem(key);

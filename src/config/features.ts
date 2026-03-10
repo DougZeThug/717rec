@@ -40,22 +40,13 @@ export type FeatureFlag = keyof typeof FEATURE_FLAGS;
 
 export const FEATURE_GROUPS = {
   /** UI/Display features */
-  DISPLAY: [
-    'SHOW_POWER_SCORES',
-    'SHOW_HISTORICAL_BRACKETS',
-    'SHOW_BADGE_SYSTEM',
-  ] as const,
+  DISPLAY: ['SHOW_POWER_SCORES', 'SHOW_HISTORICAL_BRACKETS', 'SHOW_BADGE_SYSTEM'] as const,
 
   /** Seasonal/Theme features */
-  SEASONAL: [
-    'ENABLE_WINTER_THEME',
-    'ENABLE_SNOWFALL',
-  ] as const,
+  SEASONAL: ['ENABLE_WINTER_THEME', 'ENABLE_SNOWFALL'] as const,
 
   /** Functionality features */
-  FUNCTIONALITY: [
-    'ENABLE_BLIND_DRAW',
-  ] as const,
+  FUNCTIONALITY: ['ENABLE_BLIND_DRAW'] as const,
 } as const;
 
 // ==================== Feature Dependencies ====================
@@ -69,7 +60,10 @@ export const FEATURE_DEPENDENCIES: Partial<Record<FeatureFlag, FeatureFlag[]>> =
 // ==================== Feature Metadata ====================
 // Additional information about features for admin panels or debugging
 
-export const FEATURE_METADATA: Record<FeatureFlag, { description: string; impact: 'low' | 'medium' | 'high' }> = {
+export const FEATURE_METADATA: Record<
+  FeatureFlag,
+  { description: string; impact: 'low' | 'medium' | 'high' }
+> = {
   SHOW_POWER_SCORES: {
     description: 'Display Elo-based power scores throughout the application',
     impact: 'medium',

@@ -2,7 +2,6 @@ import { ChevronDown } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router';
-import { toTeamSlug } from '@/utils/teamSlug';
 import type { TooltipProps } from 'recharts';
 import {
   CartesianGrid,
@@ -18,12 +17,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useIsMobile } from '@/hooks/useMobile';
 import { TeamCareerData, useAllTeamsCareerPowerScores } from '@/hooks/useAllTeamsCareerPowerScores';
+import { useIsMobile } from '@/hooks/useMobile';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { gradients } from '@/styles/design-system';
 import { getTeamColor } from '@/utils/colors/teamColors';
+import { toTeamSlug } from '@/utils/teamSlug';
 
 const transformDataForChart = (teamsData?: TeamCareerData[]) => {
   if (!teamsData) return [];

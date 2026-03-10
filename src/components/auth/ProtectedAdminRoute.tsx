@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/useToast';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
+import { toast } from '@/hooks/useToast';
 import { authLog } from '@/utils/logger';
 
 interface ProtectedAdminRouteProps {

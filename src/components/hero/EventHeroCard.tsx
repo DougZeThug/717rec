@@ -206,10 +206,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
                 />
               )}
 
-              <PastWinnersDisplay
-                pastWinners={pastWinners}
-                shouldApplyWinter={shouldApplyWinter}
-              />
+              <PastWinnersDisplay pastWinners={pastWinners} shouldApplyWinter={shouldApplyWinter} />
 
               {card.body && (
                 <p

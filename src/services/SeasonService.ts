@@ -95,7 +95,9 @@ export const SeasonService = {
   fetchTeamParticipation: async (seasonId: string, teamId: string) => {
     const { data, error } = await supabase
       .from('season_team_participation')
-      .select('id, season_id, team_id, status, submitted_by, submitted_by_name, created_at, updated_at')
+      .select(
+        'id, season_id, team_id, status, submitted_by, submitted_by_name, created_at, updated_at'
+      )
       .eq('season_id', seasonId)
       .eq('team_id', teamId)
       .maybeSingle();
@@ -111,7 +113,9 @@ export const SeasonService = {
   fetchSeasonParticipations: async (seasonId: string) => {
     const { data, error } = await supabase
       .from('season_team_participation')
-      .select('id, season_id, team_id, status, submitted_by, submitted_by_name, created_at, updated_at')
+      .select(
+        'id, season_id, team_id, status, submitted_by, submitted_by_name, created_at, updated_at'
+      )
       .eq('season_id', seasonId);
 
     if (error) {
@@ -274,11 +278,7 @@ export const SeasonService = {
 
   // From useSeasonMutations.ts
   createSeason: async (data: CreateSeasonData) => {
-    const { data: season, error } = await supabase
-      .from('seasons')
-      .insert([data])
-      .select()
-      .single();
+    const { data: season, error } = await supabase.from('seasons').insert([data]).select().single();
 
     if (error) handleDatabaseError(error, 'Failed to create season');
     return season;

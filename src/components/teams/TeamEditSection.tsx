@@ -8,8 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/useToast';
 import { useTeamMembership } from '@/hooks/useTeamMembership';
+import { useToast } from '@/hooks/useToast';
 import { updateTeamNameAndImage } from '@/services/teams/TeamUpdateService';
 import { errorLog } from '@/utils/logger';
 

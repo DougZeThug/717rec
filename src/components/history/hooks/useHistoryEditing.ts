@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { getHistoryDivisionOrder, getHistoryDivisionDisplayName } from '@/utils/historyDivisionUtils';
+
+import {
+  getHistoryDivisionDisplayName,
+  getHistoryDivisionOrder,
+} from '@/utils/historyDivisionUtils';
 
 export interface EditableTeam {
   team_id: string;
@@ -42,23 +46,29 @@ interface UseHistoryEditingReturn {
 const INTERMEDIATE_2_RANK_OFFSET = 8;
 
 // Helper to get display division name for editing (splits Intermediate into Int 1/2)
-const getEditDisplayDivision = (divisionName: string | null, playoffRank: number | null): string => {
+const getEditDisplayDivision = (
+  divisionName: string | null,
+  playoffRank: number | null
+): string => {
   if (!divisionName) return 'Uncategorized';
   return getHistoryDivisionDisplayName(divisionName);
 };
 
 // Helper to get the display rank for editing (adjusts Int 2 ranks to 1-based within division)
-const getEditDisplayRank = (divisionName: string | null, playoffRank: number | null): number | null => {
+const getEditDisplayRank = (
+  divisionName: string | null,
+  playoffRank: number | null
+): number | null => {
   if (!divisionName || playoffRank === null) return playoffRank;
-  
+
   const normalized = divisionName.toLowerCase().trim();
-  
-  // If this is an Intermediate team that will display as "Intermediate 2", 
+
+  // If this is an Intermediate team that will display as "Intermediate 2",
   // adjust rank for within-division ordering (e.g., rank 9 → 1, rank 10 → 2)
   if (normalized === 'intermediate' && playoffRank > INTERMEDIATE_2_RANK_OFFSET) {
     return playoffRank - INTERMEDIATE_2_RANK_OFFSET;
   }
-  
+
   return playoffRank;
 };
 
@@ -283,19 +293,20 @@ export const useHistoryEditing = ({
         const original = originalTeams.find((t) => t.team_id === team.team_id);
         if (!original) return true;
         return (
-          team.division_name !== original.division_name || team.playoff_rank !== original.playoff_rank
+          team.division_name !== original.division_name ||
+          team.playoff_rank !== original.playoff_rank
         );
       })
       .map((team) => {
         let adjustedRank = team.playoff_rank;
-        
+
         // Offset rank for Intermediate 2 teams so they persist correctly
         // e.g., rank 1 in Int 2 → saved as rank 9
         const normalized = team.division_name.toLowerCase().trim();
         if (normalized === 'intermediate 2' && adjustedRank !== null) {
           adjustedRank = adjustedRank + INTERMEDIATE_2_RANK_OFFSET;
         }
-        
+
         return {
           ...team,
           playoff_rank: adjustedRank,

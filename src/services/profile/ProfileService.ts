@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 import { supabase } from '@/integrations/supabase/client';
 import { DatabaseError } from '@/types/errors';
-import { handleDatabaseError } from '@/utils/errorHandler';
 import { UserProfile } from '@/types/user';
+import { handleDatabaseError } from '@/utils/errorHandler';
 
 export const profileSchema = z.object({
   username: z
@@ -72,13 +72,11 @@ export const fetchAuthProfile = async (userId: string): Promise<UserProfile | nu
 };
 
 export const updateProfile = async (userId: string, data: ProfileFormData): Promise<void> => {
-  const { error } = await supabase
-    .from('profiles')
-    .upsert({
-      id: userId,
-      username: data.username,
-      full_name: data.fullName || null,
-    });
+  const { error } = await supabase.from('profiles').upsert({
+    id: userId,
+    username: data.username,
+    full_name: data.fullName || null,
+  });
 
   if (error) {
     handleDatabaseError(error, 'Failed to update profile');

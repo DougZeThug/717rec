@@ -5,8 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { TeamSelectionError } from '../bracket-teams/components/TeamSelectionError';
 
-const renderWithRouter = (ui: React.ReactElement) =>
-  render(<MemoryRouter>{ui}</MemoryRouter>);
+const renderWithRouter = (ui: React.ReactElement) => render(<MemoryRouter>{ui}</MemoryRouter>);
 
 describe('TeamSelectionError', () => {
   it('renders default error message', () => {

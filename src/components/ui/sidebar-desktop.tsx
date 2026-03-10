@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+
 import { useSidebar } from './sidebar-context';
 
 interface SidebarDesktopProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -17,7 +18,18 @@ interface SidebarDesktopProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const SidebarDesktop = React.forwardRef<HTMLDivElement, SidebarDesktopProps>(
-  ({ side = 'left', variant = 'sidebar', collapsible = 'offcanvas', state, className, children, ...props }, ref) => {
+  (
+    {
+      side = 'left',
+      variant = 'sidebar',
+      collapsible = 'offcanvas',
+      state,
+      className,
+      children,
+      ...props
+    },
+    ref
+  ) => {
     return (
       <div
         ref={ref}

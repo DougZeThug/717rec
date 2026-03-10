@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Team } from '@/types';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { errorLog, teamLog } from '@/utils/logger';
-import { transformTeamRow, TeamRowData } from '@/utils/teamTransformer';
+import { TeamRowData, transformTeamRow } from '@/utils/teamTransformer';
 
 import { TeamsQueryOptions } from './teamFetch.types';
 

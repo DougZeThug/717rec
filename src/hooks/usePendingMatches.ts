@@ -3,13 +3,10 @@ import { useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
 import { fetchPendingMatches, fetchTeamsMap } from '@/services/matches/MatchReadService';
-import {
-  approveMatchResult,
-  markMatchAsTie,
-} from '@/services/matches/MatchWriteService';
+import { approveMatchResult, markMatchAsTie } from '@/services/matches/MatchWriteService';
 import { Match, Team } from '@/types';
-import { transformDatabaseMatches } from '@/utils/matchTransformers';
 import { errorLog } from '@/utils/logger';
+import { transformDatabaseMatches } from '@/utils/matchTransformers';
 
 export function usePendingMatches() {
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});

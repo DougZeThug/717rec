@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
-import { useActiveSeason } from '@/hooks/useSeasons';
 import { useTeamsMap } from '@/hooks/teams';
+import { useActiveSeason } from '@/hooks/useSeasons';
 import { useToast } from '@/hooks/useToast';
 
 import { useAutoScheduleSave } from './useAutoScheduleSave';

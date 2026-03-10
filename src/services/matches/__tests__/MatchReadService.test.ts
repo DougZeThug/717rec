@@ -1,4 +1,5 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { DatabaseError } from '@/types/errors';
 
 // ─── Supabase mock ────────────────────────────────────────────────────────────
@@ -65,8 +66,7 @@ const makeQueryChain = (result: { data: unknown; error: unknown | null }) => {
     },
     then: ((onFulfilled?: any, onRejected?: any) =>
       Promise.resolve(result).then(onFulfilled, onRejected)) as PromiseLike<unknown>['then'],
-    catch: (onRejected?: any) =>
-      Promise.resolve(result).catch(onRejected),
+    catch: (onRejected?: any) => Promise.resolve(result).catch(onRejected),
   };
   return chain;
 };

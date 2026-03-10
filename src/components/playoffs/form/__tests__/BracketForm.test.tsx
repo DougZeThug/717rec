@@ -7,7 +7,6 @@ import { Team } from '@/types';
 
 import BracketForm from '../../BracketForm';
 
-
 // Mock the form components
 vi.mock('../BracketFormTitle', () => ({
   BracketFormTitle: () => <div data-testid="bracket-form-title">Title Component</div>,
@@ -25,7 +24,6 @@ vi.mock('../BracketFormFormat', () => ({
 vi.mock('../bracket-teams/components/BracketFormTeamsContainer', () => ({
   BracketFormTeamsContainer: () => <div data-testid="bracket-form-teams">Teams Component</div>,
 }));
-
 
 const mockDivisions = [
   { id: 'div1', name: 'Division 1' },

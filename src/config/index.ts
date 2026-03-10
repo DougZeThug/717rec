@@ -25,47 +25,33 @@ export * from './ui';
 // ==================== Convenience re-exports ====================
 // Group commonly used configs for easier imports
 
+import { ADMIN_CONFIG, ADMIN_FEATURES, ADMIN_PERMISSIONS, ADMIN_VALIDATION } from './admin';
 import {
-  QUERY_STALE_TIMES,
-  QUERY_GC_TIMES,
-  REFETCH_INTERVALS,
-  CACHE_STRATEGIES,
-  DEFAULT_QUERY_CONFIG,
-} from './cache';
-
-import {
+  API_LIMITS,
   API_RETRY,
   API_TIMEOUTS,
-  API_LIMITS,
   API_TIMINGS,
-  POLLING_INTERVALS,
   DATA_FRESHNESS,
+  POLLING_INTERVALS,
 } from './api';
-
 import {
-  FEATURE_FLAGS,
-  FEATURE_GROUPS,
-  FEATURE_DEPENDENCIES,
-  FEATURE_METADATA,
-} from './features';
-
+  CACHE_STRATEGIES,
+  DEFAULT_QUERY_CONFIG,
+  QUERY_GC_TIMES,
+  QUERY_STALE_TIMES,
+  REFETCH_INTERVALS,
+} from './cache';
+import { FEATURE_DEPENDENCIES, FEATURE_FLAGS, FEATURE_GROUPS, FEATURE_METADATA } from './features';
 import {
-  BREAKPOINTS,
-  BRACKET_CONFIG,
-  TOAST_CONFIG,
-  DISPLAY_LIMITS,
-  CONTENT_LIMITS,
   ANIMATION_DURATIONS,
+  BRACKET_CONFIG,
+  BREAKPOINTS,
+  CONTENT_LIMITS,
+  DISPLAY_LIMITS,
   PREDICTION_CONFIG,
   TEAM_CONFIG,
+  TOAST_CONFIG,
 } from './ui';
-
-import {
-  ADMIN_CONFIG,
-  ADMIN_PERMISSIONS,
-  ADMIN_VALIDATION,
-  ADMIN_FEATURES,
-} from './admin';
 
 /**
  * Commonly used cache configurations grouped for convenience

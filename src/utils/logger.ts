@@ -7,8 +7,8 @@
  *  - Automatic production log suppression
  */
 
+import { isDev, type LogLevel, shouldLog } from '@/utils/logger-types';
 import { captureError, captureMessage } from '@/utils/sentry';
-import { isDev, shouldLog, type LogLevel } from '@/utils/logger-types';
 
 // Base logging functions
 export const log = (...args: unknown[]) => {
@@ -47,14 +47,13 @@ export const errorLog = (...args: unknown[]) => {
           message: messageArg,
           additionalArgs: args.filter((a) => a !== resolvedError && a !== messageArg),
         });
-    } else if (messageArg) {
+      } else if (messageArg) {
         const additionalArgs = args.filter((a) => a !== messageArg);
 
         // Check if any argument contains a network error message (e.g., PostgREST error from fetch failure)
         // Filter out image load errors and network errors from Sentry
         const isImageError =
-          messageArg.includes('Image load error') ||
-          messageArg.includes('Failed to load image');
+          messageArg.includes('Image load error') || messageArg.includes('Failed to load image');
 
         const isNetworkError = additionalArgs.some((arg) => {
           if (arg && typeof arg === 'object') {
@@ -71,7 +70,11 @@ export const errorLog = (...args: unknown[]) => {
         });
 
         if (!isNetworkError && !isImageError) {
-          captureMessage(String(messageArg), 'error', additionalArgs.length > 0 ? { additionalArgs } : undefined);
+          captureMessage(
+            String(messageArg),
+            'error',
+            additionalArgs.length > 0 ? { additionalArgs } : undefined
+          );
         }
       }
     } catch {

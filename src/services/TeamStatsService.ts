@@ -5,7 +5,7 @@ import { errorLog, scoreLog } from '@/utils/logger';
 export type { HeadToHeadData } from '@/services/TeamCareerStatsService';
 export { fetchBatchHeadToHead } from '@/services/TeamCareerStatsService';
 export type { TeamUpdate } from '@/services/TeamSeasonStatsService';
-export { fetchSeasonBreakdown, batchUpdateSeasonStats } from '@/services/TeamSeasonStatsService';
+export { batchUpdateSeasonStats, fetchSeasonBreakdown } from '@/services/TeamSeasonStatsService';
 
 // ─── applyMatchResult ─────────────────────────────────────────────────────────
 

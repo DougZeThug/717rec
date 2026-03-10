@@ -13,7 +13,12 @@ interface RegularMatchEditorProps {
   opponent2Score: number;
   setOpponent1Score: (score: number) => void;
   setOpponent2Score: (score: number) => void;
-  games: Array<{ id: number; number: number; opponent1_score: number | null; opponent2_score: number | null }>;
+  games: Array<{
+    id: number;
+    number: number;
+    opponent1_score: number | null;
+    opponent2_score: number | null;
+  }>;
   isSaving: boolean;
   onSave: () => void;
   onClose: () => void;

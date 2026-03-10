@@ -302,9 +302,7 @@ export function calculateSourceNodeIds(
     matches: matches.length,
     sourcedSlots,
     percentage:
-      matches.length * 2 > 0
-        ? Math.round((sourcedSlots / (matches.length * 2)) * 100) + '%'
-        : '0%',
+      matches.length * 2 > 0 ? Math.round((sourcedSlots / (matches.length * 2)) * 100) + '%' : '0%',
   });
 
   if (dangling > 0) {

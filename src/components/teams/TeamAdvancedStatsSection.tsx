@@ -1,7 +1,6 @@
 import {
   Award,
   BarChart3,
-  
   ChevronDown,
   ChevronRight,
   Minus,
@@ -211,7 +210,9 @@ const DivisionRecordCard = ({
         <div className="text-xs text-muted-foreground">{labels[tier]}</div>
         <div className="font-mono text-sm font-medium">
           {record.wins}-{record.losses}
-          <span className={cn('ml-2 text-xs', getWinPercentageColor(winPct / 100))}>({winPct.toFixed(0)}%)</span>
+          <span className={cn('ml-2 text-xs', getWinPercentageColor(winPct / 100))}>
+            ({winPct.toFixed(0)}%)
+          </span>
         </div>
         <div className="text-xs text-muted-foreground">
           Games: {record.gameWins}-{record.gameLosses}

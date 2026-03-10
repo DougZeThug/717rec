@@ -13,10 +13,10 @@ import {
 import { useIsMobile } from '@/hooks/useMobile';
 import { cn } from '@/lib/utils';
 import { gradients } from '@/styles/design-system';
-import { toTeamSlug } from '@/utils/teamSlug';
 import { getRowInteractionStyles } from '@/styles/interactionUtils';
 import { Ranking } from '@/types';
 import { formatPowerScore, getPowerScoreColor, getSosColor } from '@/utils/colors';
+import { toTeamSlug } from '@/utils/teamSlug';
 
 interface CompactStandingsProps {
   rankings: Ranking[];

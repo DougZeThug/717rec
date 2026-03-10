@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/useToast';
 import {
-  fetchTeamMembership,
   fetchAvailableTeams,
+  fetchTeamMembership,
   joinTeamMembership,
   leaveTeamMembership,
   type TeamMembershipRecord,

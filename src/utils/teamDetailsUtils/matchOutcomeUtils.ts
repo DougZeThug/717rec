@@ -11,7 +11,10 @@ export interface ClutchRecord {
  * Calculates clutch record: W-L in matches that went to a decisive game 3.
  * A game-3 match = completed match where team1_game_wins + team2_game_wins === 3.
  */
-export const calculateClutchRecord = (teamId: string, matches: Match[] | undefined): ClutchRecord => {
+export const calculateClutchRecord = (
+  teamId: string,
+  matches: Match[] | undefined
+): ClutchRecord => {
   if (!matches || matches.length === 0) {
     return { clutchWins: 0, clutchLosses: 0, game3Matches: 0, clutchWinPct: 0 };
   }

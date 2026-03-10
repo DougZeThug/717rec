@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -50,13 +50,7 @@ vi.mock('@/components/layout/PageLayout', () => ({
 }));
 
 vi.mock('@/components/auth/AuthContainer', () => ({
-  default: ({
-    children,
-    footer,
-  }: {
-    children: React.ReactNode;
-    footer: React.ReactNode;
-  }) => (
+  default: ({ children, footer }: { children: React.ReactNode; footer: React.ReactNode }) => (
     <div data-testid="auth-container">
       {children}
       {footer}
@@ -69,13 +63,7 @@ vi.mock('@/components/auth/SocialAuthButtons', () => ({
 }));
 
 vi.mock('@/components/auth/AuthForm', () => ({
-  default: ({
-    type,
-    onSubmit,
-  }: {
-    type: string;
-    onSubmit: (e: React.FormEvent) => void;
-  }) => (
+  default: ({ type, onSubmit }: { type: string; onSubmit: (e: React.FormEvent) => void }) => (
     <form data-testid={`auth-form-${type}`} onSubmit={onSubmit}>
       <button type="submit">Submit {type}</button>
     </form>
@@ -84,6 +72,7 @@ vi.mock('@/components/auth/AuthForm', () => ({
 
 // Import after mocks
 import React from 'react';
+
 import Auth from '../Auth';
 
 // ─── Default mock values ──────────────────────────────────────────────────────

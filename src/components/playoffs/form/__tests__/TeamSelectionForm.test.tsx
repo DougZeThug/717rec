@@ -7,8 +7,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { TeamSelectionForm } from '../bracket-teams/components/TeamSelectionForm';
 import { BracketFormStateResult, ProcessedTeam } from '../bracket-teams/types';
 
-const renderWithRouter = (ui: React.ReactElement) =>
-  render(<MemoryRouter>{ui}</MemoryRouter>);
+const renderWithRouter = (ui: React.ReactElement) => render(<MemoryRouter>{ui}</MemoryRouter>);
 
 // Helper function to create mock team
 const createMockTeam = (overrides: Partial<ProcessedTeam> = {}): ProcessedTeam => ({
@@ -76,7 +75,7 @@ describe('TeamSelectionForm', () => {
   };
 
   it('renders form header with team count', () => {
-    renderWithRouter(<TeamSelectionForm{...defaultProps} />);
+    renderWithRouter(<TeamSelectionForm {...defaultProps} />);
 
     // "Select Teams" appears in both the tab trigger and the card header
     expect(screen.getAllByText('Select Teams').length).toBeGreaterThan(0);
@@ -84,26 +83,26 @@ describe('TeamSelectionForm', () => {
   });
 
   it('displays progress bar', () => {
-    renderWithRouter(<TeamSelectionForm{...defaultProps} />);
+    renderWithRouter(<TeamSelectionForm {...defaultProps} />);
 
     const progressBar = document.querySelector('[role="progressbar"], [class*="progress"]');
     expect(progressBar).toBeInTheDocument();
   });
 
   it('shows status message', () => {
-    renderWithRouter(<TeamSelectionForm{...defaultProps} />);
+    renderWithRouter(<TeamSelectionForm {...defaultProps} />);
 
     expect(screen.getByText('Select at least 1 more team')).toBeInTheDocument();
   });
 
   it('renders available teams section', () => {
-    renderWithRouter(<TeamSelectionForm{...defaultProps} />);
+    renderWithRouter(<TeamSelectionForm {...defaultProps} />);
 
     expect(screen.getByText('Available Teams (1)')).toBeInTheDocument();
   });
 
   it('displays team button with correct info', () => {
-    renderWithRouter(<TeamSelectionForm{...defaultProps} />);
+    renderWithRouter(<TeamSelectionForm {...defaultProps} />);
 
     expect(screen.getByText('Team Alpha')).toBeInTheDocument();
     expect(screen.getByText('#1')).toBeInTheDocument();
@@ -114,7 +113,7 @@ describe('TeamSelectionForm', () => {
     const mockToggle = vi.fn();
     const formState = createMockFormState({ handleTeamToggle: mockToggle });
 
-    renderWithRouter(<TeamSelectionForm{...defaultProps} formState={formState} />);
+    renderWithRouter(<TeamSelectionForm {...defaultProps} formState={formState} />);
 
     const teamButton = screen.getByText('Team Alpha').closest('button');
     if (teamButton) {
@@ -124,13 +123,13 @@ describe('TeamSelectionForm', () => {
   });
 
   it('shows clear all button when has selection', () => {
-    renderWithRouter(<TeamSelectionForm{...defaultProps} />);
+    renderWithRouter(<TeamSelectionForm {...defaultProps} />);
 
     expect(screen.getByText('Clear all')).toBeInTheDocument();
   });
 
   it('shows warning message when present', () => {
-    renderWithRouter(<TeamSelectionForm{...defaultProps} />);
+    renderWithRouter(<TeamSelectionForm {...defaultProps} />);
 
     expect(screen.getByText('Need at least 2 teams')).toBeInTheDocument();
   });

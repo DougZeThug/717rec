@@ -198,9 +198,7 @@ const ParticipationHeroCard: React.FC = () => {
               disabled={!selectedStatus || submitMutation.isPending}
               className="w-full bg-white/20 hover:bg-white/30 text-inherit border border-white/20"
             >
-              {submitMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : null}
+              {submitMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Submit
             </Button>
           </motion.div>

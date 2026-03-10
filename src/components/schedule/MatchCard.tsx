@@ -248,11 +248,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
           {/* Model Prediction for upcoming matches */}
           {!isCompleted && prediction && (
-            <MatchPrediction
-              prediction={prediction}
-              team1Name={team1Name}
-              team2Name={team2Name}
-            />
+            <MatchPrediction prediction={prediction} team1Name={team1Name} team2Name={team2Name} />
           )}
 
           {/* Action buttons - Admin can manage all matches, non-admins only incomplete matches */}
@@ -282,9 +278,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
                         : 'bg-gray-100 hover:bg-red-100 dark:bg-gray-800 dark:hover:bg-red-900/30',
                       'hover:shadow-sm active:scale-95'
                     )}
-                    aria-label={
-                      isCompleted ? 'Permanently delete completed match' : 'Delete match'
-                    }
+                    aria-label={isCompleted ? 'Permanently delete completed match' : 'Delete match'}
                     title={
                       isCompleted ? 'Permanently delete completed match' : 'Delete incomplete match'
                     }

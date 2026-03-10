@@ -5,8 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import { TeamSelectionLoading } from '../bracket-teams/components/TeamSelectionLoading';
 
-const renderWithRouter = (ui: React.ReactElement) =>
-  render(<MemoryRouter>{ui}</MemoryRouter>);
+const renderWithRouter = (ui: React.ReactElement) => render(<MemoryRouter>{ui}</MemoryRouter>);
 
 describe('TeamSelectionLoading', () => {
   it('renders loading skeleton structure', () => {

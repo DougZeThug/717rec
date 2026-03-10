@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
+
 import { useSidebar } from './sidebar-context';
 import { SidebarDesktop } from './sidebar-desktop';
 import { SidebarMobile } from './sidebar-mobile';
@@ -17,7 +18,6 @@ export {
   SidebarProvider,
   useSidebar,
 } from './sidebar-context';
-
 export {
   SidebarContent,
   SidebarDesktop,
@@ -33,21 +33,19 @@ export {
   SidebarSeparator,
   SidebarTrigger,
 } from './sidebar-desktop';
-
-export { SidebarMobile } from './sidebar-mobile';
-
 export {
   SidebarMenu,
   SidebarMenuAction,
   SidebarMenuBadge,
   SidebarMenuButton,
+  sidebarMenuButtonVariants,
   SidebarMenuItem,
   SidebarMenuSkeleton,
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  sidebarMenuButtonVariants,
 } from './sidebar-menu';
+export { SidebarMobile } from './sidebar-mobile';
 
 // ---------------------------------------------------------------------------
 // Sidebar — routes between the mobile drawer and the desktop panel.

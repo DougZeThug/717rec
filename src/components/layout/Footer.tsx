@@ -1,8 +1,8 @@
 import { Mail } from 'lucide-react';
 import React from 'react';
 
-import { useThemeConsistency } from '@/hooks/useThemeConsistency';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
+import { useThemeConsistency } from '@/hooks/useThemeConsistency';
 import { cn } from '@/lib/utils';
 
 const Footer = () => {
@@ -20,10 +20,7 @@ const Footer = () => {
       )}
       style={{ minHeight: '142px', height: '142px', contain: 'strict' }}
     >
-      <div
-        className="max-w-7xl mx-auto px-4"
-        style={{ minHeight: '110px' }}
-      >
+      <div className="max-w-7xl mx-auto px-4" style={{ minHeight: '110px' }}>
         <div
           className="flex flex-col md:flex-row items-center justify-between gap-4"
           style={{ minHeight: '56px' }}
@@ -46,10 +43,7 @@ const Footer = () => {
           </div>
 
           {/* Contact Section - explicit min-height */}
-          <div
-            className="text-center md:text-left w-full md:w-auto"
-            style={{ minHeight: '24px' }}
-          >
+          <div className="text-center md:text-left w-full md:w-auto" style={{ minHeight: '24px' }}>
             <p
               className={cn(
                 'text-sm flex items-center justify-center md:justify-start gap-2 font-inter transition-colors duration-300',

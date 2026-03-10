@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 
 import {
-  fetchTeamBadges,
   fetchAllTeamBadges,
   fetchSeasonBadges,
+  fetchTeamBadges,
 } from '@/services/teams/TeamFetchService';
 import { TeamBadgeEvent } from '@/types/badges';
 

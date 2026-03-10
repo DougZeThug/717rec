@@ -336,10 +336,7 @@ export const fetchMatchPairsInSeason = async (
  * Exact query copied from compatibilityUtils.ts checkTeamsPlayedHistory
  * @throws raw Supabase error on failure
  */
-export const checkTeamsEverPlayed = async (
-  team1Id: string,
-  team2Id: string
-): Promise<boolean> => {
+export const checkTeamsEverPlayed = async (team1Id: string, team2Id: string): Promise<boolean> => {
   const { data, error } = await supabase
     .from('matches')
     .select('id')

@@ -49,7 +49,9 @@ export const fetchBracketsForSelector = async (): Promise<BracketOption[]> => {
  * Fetch a single bracket's basic data by ID
  * Used by usePlayoffBracketData hook
  */
-export const fetchPlayoffBracketData = async (bracketId: string): Promise<PlayoffBracket | null> => {
+export const fetchPlayoffBracketData = async (
+  bracketId: string
+): Promise<PlayoffBracket | null> => {
   const { data, error } = await supabase
     .from('brackets')
     .select(

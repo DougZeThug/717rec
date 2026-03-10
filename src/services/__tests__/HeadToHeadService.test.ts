@@ -1,4 +1,5 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { DatabaseError } from '@/types/errors';
 
 // ─── Supabase mock ────────────────────────────────────────────────────────────
@@ -230,9 +231,9 @@ describe('HeadToHeadService.getOpponentHistory', () => {
       },
     });
 
-    await expect(
-      HeadToHeadService.getOpponentHistory('team-1', 'opponent-1')
-    ).rejects.toThrow(DatabaseError);
+    await expect(HeadToHeadService.getOpponentHistory('team-1', 'opponent-1')).rejects.toThrow(
+      DatabaseError
+    );
   });
 
   it('passes correct arguments to the match history RPC', async () => {
@@ -243,8 +244,7 @@ describe('HeadToHeadService.getOpponentHistory', () => {
 
     mockFrom.mockReturnValueOnce({
       select: () => ({
-        in: () =>
-          Promise.resolve({ data: [makeTeam('opp-2', 'Lightning')], error: null }),
+        in: () => Promise.resolve({ data: [makeTeam('opp-2', 'Lightning')], error: null }),
       }),
     });
 
@@ -266,8 +266,7 @@ describe('HeadToHeadService.getOpponentHistory', () => {
 
     mockFrom.mockReturnValueOnce({
       select: () => ({
-        in: () =>
-          Promise.resolve({ data: [makeTeam('opponent-1', 'Storm')], error: null }),
+        in: () => Promise.resolve({ data: [makeTeam('opponent-1', 'Storm')], error: null }),
       }),
     });
 

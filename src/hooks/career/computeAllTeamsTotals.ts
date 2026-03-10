@@ -1,3 +1,4 @@
+import { Team } from '@/types';
 import {
   calculateCareerClutchRate,
   calculateCareerMatchStats,
@@ -9,7 +10,6 @@ import {
 } from '@/utils/career';
 import { calculatePlayoffConsistency } from '@/utils/career/calculatePlayoffNarratives';
 import { PlayoffFinish, TeamTotals } from '@/utils/career/types';
-import { Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 
 import { BulkTeamCareerData, fetchAllTeamsCareerData } from './useCareerData';
@@ -22,7 +22,11 @@ import { BulkTeamCareerData, fetchAllTeamsCareerData } from './useCareerData';
 async function computeTotalsFromBulkData(
   teamId: string,
   data: BulkTeamCareerData,
-  currentTeamPowerData: { power_score: number | null; wins: number | null; losses: number | null } | null,
+  currentTeamPowerData: {
+    power_score: number | null;
+    wins: number | null;
+    losses: number | null;
+  } | null
 ): Promise<TeamTotals> {
   const {
     seasonStats,
@@ -148,16 +152,17 @@ async function computeTotalsFromBulkData(
  * @param teams - Array of Team objects (from useTeamsQuery, includes power_score/wins/losses)
  * @returns Map from teamId → TeamTotals
  */
-export const computeAllTeamsTotals = async (
-  teams: Team[],
-): Promise<Map<string, TeamTotals>> => {
+export const computeAllTeamsTotals = async (teams: Team[]): Promise<Map<string, TeamTotals>> => {
   const teamIds = teams.map((t) => t.id);
 
   // Single bulk fetch: ~9 queries total regardless of team count
   const bulkData = await fetchAllTeamsCareerData(teamIds);
 
   // Build power score lookup from the teams array (already fetched from v_team_details)
-  const teamPowerDataMap = new Map<string, { power_score: number | null; wins: number | null; losses: number | null }>();
+  const teamPowerDataMap = new Map<
+    string,
+    { power_score: number | null; wins: number | null; losses: number | null }
+  >();
   for (const team of teams) {
     teamPowerDataMap.set(team.id, {
       power_score: team.power_score ?? null,
@@ -176,7 +181,7 @@ export const computeAllTeamsTotals = async (
       const totals = await computeTotalsFromBulkData(
         teamId,
         data,
-        teamPowerDataMap.get(teamId) || null,
+        teamPowerDataMap.get(teamId) || null
       );
       results.set(teamId, totals);
     } catch (error) {

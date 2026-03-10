@@ -3,12 +3,7 @@ import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 interface EditableDivisionHeaderProps {
@@ -83,7 +78,6 @@ export const EditableDivisionHeader: React.FC<EditableDivisionHeaderProps> = ({
               }}
               onKeyDown={handleKeyDown}
               className={cn('h-9', error && 'border-destructive')}
-              
               placeholder="Division name"
             />
             {error && <p className="text-destructive text-xs mt-1">{error}</p>}
@@ -106,12 +100,7 @@ export const EditableDivisionHeader: React.FC<EditableDivisionHeaderProps> = ({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={handleStartEdit}
-                  >
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleStartEdit}>
                     <Pencil className="h-4 w-4 text-muted-foreground" />
                   </Button>
                 </TooltipTrigger>

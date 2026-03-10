@@ -18,8 +18,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/useToast';
 import {
   checkUsernameAvailability,
-  profileSchema,
   type ProfileFormData,
+  profileSchema,
   updateProfile,
 } from '@/services/profile/ProfileService';
 

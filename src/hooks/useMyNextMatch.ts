@@ -149,7 +149,15 @@ export const useMyNextMatch = (): MyNextMatchResult => {
       hasTeamMembership: true,
       isPreviousMatches: false,
     };
-  }, [user, membership, membershipLoading, matchesLoading, upcomingMatches, completedMatches, myTeamId]);
+  }, [
+    user,
+    membership,
+    membershipLoading,
+    matchesLoading,
+    upcomingMatches,
+    completedMatches,
+    myTeamId,
+  ]);
 
   return {
     ...result,

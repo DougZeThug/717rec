@@ -78,9 +78,7 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
         });
 
         // Create lookup map for O(1) power score access (avoid O(n²) find() in sort)
-        const powerScoreMap = new Map(
-          teamsToUse.map(t => [t.id, t.power_score])
-        );
+        const powerScoreMap = new Map(teamsToUse.map((t) => [t.id, t.power_score]));
 
         // Sort by power score with NULL handling - teams with NULL scores go to the end
         const sortedRankings = calculatedRankings.sort((a, b) => {
@@ -124,7 +122,16 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
     };
 
     updateRankings();
-  }, [teams, latestTeams, latestMatches, matches, previousRankings, lastUpdated, teamsLoading, rankings.length]);
+  }, [
+    teams,
+    latestTeams,
+    latestMatches,
+    matches,
+    previousRankings,
+    lastUpdated,
+    teamsLoading,
+    rankings.length,
+  ]);
 
   return {
     rankings,

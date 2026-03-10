@@ -19,8 +19,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/useToast';
 import {
   fetchPendingMembershipsForAdmin,
-  updateMembershipApproval,
   type TeamMembershipForAdmin,
+  updateMembershipApproval,
 } from '@/services/teams/TeamFetchService';
 import { errorLog } from '@/utils/logger';
 

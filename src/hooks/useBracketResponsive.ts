@@ -102,11 +102,11 @@ function getDeviceType(): { isTablet: boolean; isDesktop: boolean; isLandscape: 
   if (typeof window === 'undefined' || !window.matchMedia) {
     return { isTablet: false, isDesktop: false, isLandscape: false };
   }
-  
+
   const isTablet = window.matchMedia('(min-width: 768px) and (max-width: 1023px)').matches;
   const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
   const isLandscape = window.matchMedia('(orientation: landscape)').matches;
-  
+
   return { isTablet, isDesktop, isLandscape };
 }
 

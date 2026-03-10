@@ -9,8 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthForm } from '@/hooks/useAuthForm';
 import { useNativePlatform } from '@/hooks/useNativePlatform';
-import { authLog } from '@/utils/logger';
 import { sanitizeReturnTo } from '@/utils/auth/sanitizeReturnTo';
+import { authLog } from '@/utils/logger';
 
 interface LocationState {
   returnTo?: string;

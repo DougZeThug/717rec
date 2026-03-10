@@ -50,9 +50,10 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
     return null;
   }
 
-  const themeOptions = enabledKeys.length > 0
-    ? allThemeOptions.filter((opt) => enabledKeys.includes(opt.value))
-    : allThemeOptions.filter((opt) => opt.value !== 'winter-frozen'); // fallback
+  const themeOptions =
+    enabledKeys.length > 0
+      ? allThemeOptions.filter((opt) => enabledKeys.includes(opt.value))
+      : allThemeOptions.filter((opt) => opt.value !== 'winter-frozen'); // fallback
 
   const getCurrentIcon = () => {
     if (theme === 'winter-frozen') {

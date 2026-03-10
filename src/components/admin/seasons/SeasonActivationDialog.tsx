@@ -12,9 +12,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { toast } from '@/hooks/useToast';
 import { useSeasonMutations } from '@/hooks/useSeasonMutations';
 import { useSeasons } from '@/hooks/useSeasons';
+import { toast } from '@/hooks/useToast';
 
 interface SeasonActivationDialogProps {
   isOpen: boolean;

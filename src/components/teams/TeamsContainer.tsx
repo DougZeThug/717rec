@@ -7,10 +7,9 @@ import { TeamList } from '@/components/teams/TeamList';
 import { TeamsByDivision } from '@/components/teams/TeamsByDivision';
 import { useDivisions } from '@/hooks/useDivisions';
 import { useTeamManagement } from '@/hooks/useTeamManagement';
+import { DisplayMode, SortMode } from '@/hooks/useTeamsPreferences';
 import { Team } from '@/types';
 import { groupTeamsByDisplayDivision } from '@/utils/teamGrouping';
-
-import { DisplayMode, SortMode } from '@/hooks/useTeamsPreferences';
 
 interface TeamsContainerProps {
   displayMode: DisplayMode;

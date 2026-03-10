@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query';
 import { Trophy } from 'lucide-react';
 import React, { useEffect } from 'react';
 
@@ -11,7 +12,6 @@ import {
 } from '@/components/ui/select';
 import { useDivisions } from '@/hooks/useDivisions';
 import { HeroCardService } from '@/services/HeroCardService';
-import { useQuery } from '@tanstack/react-query';
 
 import { SectionHeader } from './SectionHeader';
 import { FormSectionProps } from './types';

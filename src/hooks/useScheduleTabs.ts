@@ -30,7 +30,7 @@ export const useScheduleTabs = ({
   groupedTimeslots,
 }: UseScheduleTabsOptions): UseScheduleTabsResult => {
   const [activeTab, setActiveTab] = useState<string>(
-    () => sessionStorage.getItem(SCHEDULE_TAB_KEY) || 'timeslots',
+    () => sessionStorage.getItem(SCHEDULE_TAB_KEY) || 'timeslots'
   );
   const hasInitializedTab = useRef(false);
 

@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
-import {
-  fetchScoreSubmissions as fetchScoreSubmissionsData,
-} from '@/services/matches/MatchReadService';
+import { fetchScoreSubmissions as fetchScoreSubmissionsData } from '@/services/matches/MatchReadService';
 import { updateScoreSubmissionStatus } from '@/services/matches/MatchWriteService';
 import { errorLog } from '@/utils/logger';
 
@@ -45,10 +43,7 @@ export function useScoreSubmissions() {
     }
   };
 
-  const handleSubmissionAction = async (
-    submissionId: string,
-    status: 'approved' | 'rejected'
-  ) => {
+  const handleSubmissionAction = async (submissionId: string, status: 'approved' | 'rejected') => {
     try {
       await updateScoreSubmissionStatus(submissionId, status);
 

@@ -27,7 +27,13 @@ export const BlindDrawService = {
     return data as BlindDrawSettings;
   },
 
-  updateBlindDrawSettings: async ({ id, message }: { id: string; message: string }): Promise<void> => {
+  updateBlindDrawSettings: async ({
+    id,
+    message,
+  }: {
+    id: string;
+    message: string;
+  }): Promise<void> => {
     const { error } = await supabase
       .from('blind_draw_settings')
       .update({ signup_confirmation_message: message })

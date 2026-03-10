@@ -330,9 +330,7 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
 
       getStorageMock().select.mockResolvedValue([]);
 
-      await expect(service.updateSeeding(options)).rejects.toThrow(
-        'No stage found for bracket:'
-      );
+      await expect(service.updateSeeding(options)).rejects.toThrow('No stage found for bracket:');
     });
 
     it('should throw specific error for changes affecting existing results', async () => {

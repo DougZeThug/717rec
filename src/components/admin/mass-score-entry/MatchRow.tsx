@@ -111,7 +111,11 @@ const MatchRow: React.FC<MatchRowProps> = ({
           <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 flex-1">
             <TeamDisplay team={match.team1} align="left" className="flex-1" />
             <span className="text-muted-foreground text-xs text-center sm:hidden py-0.5">vs</span>
-            <TeamDisplay team={match.team2} align="left" className="flex-1 sm:flex-row-reverse sm:[&>span]:text-right" />
+            <TeamDisplay
+              team={match.team2}
+              align="left"
+              className="flex-1 sm:flex-row-reverse sm:[&>span]:text-right"
+            />
           </div>
           {onDelete && (
             <Button

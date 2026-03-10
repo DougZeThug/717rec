@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 
-import { useToast } from '@/hooks/useToast';
 import { useTeams } from '@/hooks/useTeams';
+import { useToast } from '@/hooks/useToast';
 import { Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 

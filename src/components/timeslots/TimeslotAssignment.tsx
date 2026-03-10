@@ -270,17 +270,15 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
         {isDoubleHeader ? (
           // Double header mode - multiple selection
           <div className="flex flex-wrap justify-start gap-2">
-            {TIME_SLOTS
-              .filter((time) => time !== 'BYE')
-              .map((time) => {
-                const isSelected = selectedTimeslots.includes(time);
-                return (
-                  <Button
-                    key={time}
-                    type="button"
-                    variant="outline"
-                    onClick={() => handleTimeslotToggle(time)}
-                    className={`
+            {TIME_SLOTS.filter((time) => time !== 'BYE').map((time) => {
+              const isSelected = selectedTimeslots.includes(time);
+              return (
+                <Button
+                  key={time}
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleTimeslotToggle(time)}
+                  className={`
                       px-4 py-2 transition-colors
                       ${
                         isSelected
@@ -288,11 +286,11 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
                           : 'border-cornhole-navy text-cornhole-navy hover:bg-cornhole-navy/10'
                       }
                     `}
-                  >
-                    {time}
-                  </Button>
-                );
-              })}
+                >
+                  {time}
+                </Button>
+              );
+            })}
           </div>
         ) : (
           // Single timeslot mode

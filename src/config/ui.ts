@@ -139,13 +139,13 @@ export const SIDEBAR_CONFIG = {
 
 export const PREDICTION_CONFIG = {
   /** Threshold for considering a matchup an "upset" (30% underdog wins) */
-  UPSET_THRESHOLD: 0.30,
+  UPSET_THRESHOLD: 0.3,
 
   /** Threshold for "balanced" match based on power score difference */
   BALANCED_THRESHOLD: 2.0,
 
   /** Weight given to power score in predictions (70%) */
-  WEIGHT_POWER_SCORE: 0.70,
+  WEIGHT_POWER_SCORE: 0.7,
 
   /** Weight given to strength of schedule (15%) */
   WEIGHT_SOS: 0.15,

@@ -44,24 +44,24 @@ const Navbar: React.FC = React.memo(() => {
           isWinterTheme && 'navbar-winter'
         )}
       >
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center py-2 md:py-1">
-          <div className="flex items-center">
-            <NavBrand />
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-center py-2 md:py-1">
+            <div className="flex items-center">
+              <NavBrand />
+            </div>
+
+            <div className="hidden md:flex items-center space-x-1">
+              <NavLinks />
+
+              {/* Add desktop nav actions with proper spacing */}
+              <NavActions className="ml-4" />
+            </div>
+
+            {/* Mobile menu with hamburger */}
+            <MobileMenu navItems={navItems} />
           </div>
-
-          <div className="hidden md:flex items-center space-x-1">
-            <NavLinks />
-
-            {/* Add desktop nav actions with proper spacing */}
-            <NavActions className="ml-4" />
-          </div>
-
-          {/* Mobile menu with hamburger */}
-          <MobileMenu navItems={navItems} />
         </div>
-      </div>
-    </nav>
+      </nav>
     </>
   );
 });

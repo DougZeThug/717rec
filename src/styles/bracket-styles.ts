@@ -8,7 +8,7 @@ let stylesLoaded = false;
 
 export const loadBracketStyles = async (): Promise<void> => {
   if (stylesLoaded) return;
-  
+
   try {
     // Dynamically import bracket-related stylesheets
     // Order matters: base library CSS first, then custom overrides

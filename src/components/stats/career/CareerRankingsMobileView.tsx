@@ -8,11 +8,11 @@ import { PercentileBadge } from '@/components/ui/PercentileBadge';
 import { useLeaguePercentiles } from '@/hooks/useLeaguePercentiles';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
-import { toTeamSlug } from '@/utils/teamSlug';
 import { CareerRanking } from '@/types/career';
 import { getPowerScoreColor, getSosColor } from '@/utils/colors';
 import { getChampionshipColor, getRunnerUpColor } from '@/utils/colors/championshipColors';
 import { getWinPercentageColor } from '@/utils/colors/winPercentageColors';
+import { toTeamSlug } from '@/utils/teamSlug';
 
 import { CareerSortOptions } from './CareerRankingsTable';
 

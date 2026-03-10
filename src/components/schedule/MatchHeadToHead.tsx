@@ -119,9 +119,7 @@ export const MatchHeadToHead: React.FC<MatchHeadToHeadProps> = ({
     <div className="text-xs text-muted-foreground text-center mt-1 flex items-center justify-center gap-1.5">
       <span>{getDisplayText()}</span>
       {rivalryTag && (
-        <span className={cn('font-semibold', rivalryTag.className)}>
-          {rivalryTag.label}
-        </span>
+        <span className={cn('font-semibold', rivalryTag.className)}>{rivalryTag.label}</span>
       )}
     </div>
   );

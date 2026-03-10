@@ -47,7 +47,7 @@ export function useAutoScheduleSave() {
       // Validate matches using central validation utility
       const validation = await validateMatchSchedule(matches);
       if (!validation.isValid) {
-        const errorMessages = validation.errors.map(e => e.message).join('; ');
+        const errorMessages = validation.errors.map((e) => e.message).join('; ');
         throw new Error(`Schedule validation failed: ${errorMessages}`);
       }
 

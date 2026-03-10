@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Team } from '@/types';
-import { teamLog } from '@/utils/logger';
 import { handleDatabaseError } from '@/utils/errorHandler';
+import { teamLog } from '@/utils/logger';
 
 /**
  * Create a new team

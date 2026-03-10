@@ -4,7 +4,15 @@
  */
 
 import { PostgrestError } from '@supabase/supabase-js';
-import { AuthorizationError, DatabaseError, NotFoundError, ServiceError, ValidationError } from '@/types/errors';
+
+import {
+  AuthorizationError,
+  DatabaseError,
+  NotFoundError,
+  ServiceError,
+  ValidationError,
+} from '@/types/errors';
+
 import { errorLog } from './logger';
 
 /**
@@ -159,10 +167,7 @@ export function handleHookError(error: unknown, context: string): HookErrorResul
   } else if (error instanceof NotFoundError) {
     category = 'not_found';
     userMessage = message;
-  } else if (
-    message.toLowerCase().includes('network') ||
-    message.toLowerCase().includes('fetch')
-  ) {
+  } else if (message.toLowerCase().includes('network') || message.toLowerCase().includes('fetch')) {
     category = 'network';
     userMessage = 'Network error. Please check your connection and try again.';
   }

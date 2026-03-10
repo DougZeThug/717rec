@@ -138,7 +138,8 @@ export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
   king_slayer: {
     type: 'king_slayer',
     name: 'King Slayer',
-    description: 'Defeated a higher-ranked team from a tougher division (25+ career power score gap)',
+    description:
+      'Defeated a higher-ranked team from a tougher division (25+ career power score gap)',
     icon: Swords,
     gradient: 'from-red-500 to-red-700',
     bgColor: 'bg-red-100',
@@ -244,7 +245,7 @@ export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
   chaos_agent: {
     type: 'chaos_agent',
     name: 'Chaos Agent',
-    description: 'Nobody knows what they\'ll do next - alternating W/L all season',
+    description: "Nobody knows what they'll do next - alternating W/L all season",
     icon: Shuffle,
     gradient: 'from-purple-400 to-pink-500',
     bgColor: 'bg-purple-100',

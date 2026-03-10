@@ -1,8 +1,4 @@
-import {
-  AlgorithmConfig,
-  TeamPairingMap,
-  TimeBlockTeamsMap,
-} from '@/types/autoSchedule';
+import { AlgorithmConfig, TeamPairingMap, TimeBlockTeamsMap } from '@/types/autoSchedule';
 import { generatePairingsWithBlossom } from '@/utils/autoSchedule/blossomPairingAlgorithm';
 import { calculateDivisionOnlyCompatibility } from '@/utils/autoSchedule/compatibilityUtils';
 import { haveTeamsPlayedBefore } from '@/utils/autoSchedule/matchHistoryService';

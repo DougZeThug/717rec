@@ -34,9 +34,7 @@ export const classifyRivalries = (records: HeadToHeadRecord[]): RivalryResults =
     return { mostPlayed: [], closestRivalries: [], dominantMatchups: [], nemeses: [] };
   }
 
-  const mostPlayed = [...records]
-    .sort((a, b) => b.matches_played - a.matches_played)
-    .slice(0, 3);
+  const mostPlayed = [...records].sort((a, b) => b.matches_played - a.matches_played).slice(0, 3);
 
   const closestRivalries = records
     .filter((r) => r.matches_played >= MIN_MATCHES && Math.abs(r.wins - r.losses) <= 1)

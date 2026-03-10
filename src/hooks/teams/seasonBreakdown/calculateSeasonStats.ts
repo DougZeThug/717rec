@@ -42,7 +42,9 @@ export const calculatePowerScoreTrend = (
   return powerScoreTrend;
 };
 
-export const calculateBestWorstDivisionTiers = (seasons: SeasonBreakdown[]): {
+export const calculateBestWorstDivisionTiers = (
+  seasons: SeasonBreakdown[]
+): {
   bestDivisionTier: 'competitive' | 'intermediate' | 'recreational' | null;
   worstDivisionTier: 'competitive' | 'intermediate' | 'recreational' | null;
 } => {

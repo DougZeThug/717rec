@@ -60,6 +60,7 @@ vi.mock('framer-motion', () => ({
 
 // Import after mocks
 import React from 'react';
+
 import AdminDashboard from '../AdminDashboard';
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
@@ -208,8 +209,6 @@ describe('AdminDashboard page', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Request Access' }));
 
     expect(requestAdminAccess).toHaveBeenCalled();
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Access requested' })
-    );
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Access requested' }));
   });
 });

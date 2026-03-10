@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
-import { teamLog, warnLog } from '@/utils/logger';
 import { handleDatabaseError } from '@/utils/errorHandler';
+import { teamLog, warnLog } from '@/utils/logger';
 
 /**
  * Delete a team and clean up associated storage files
