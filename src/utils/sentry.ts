@@ -54,8 +54,8 @@ export const initSentry = () => {
     // Sample rate for performance monitoring (0 = disabled, 1 = 100%)
     tracesSampleRate: 0.1,
 
-    // Scope distributed tracing to our own API domain (avoids CORS issues)
-    tracePropagationTargets: ['localhost', /^https:\/\/wcitdamvochthvxvtxyb\.supabase\.co/],
+    // Scope distributed tracing to localhost only (excludes Supabase to avoid CORS issues)
+    tracePropagationTargets: ['localhost'],
 
     // Session Replay sample rates (used when replay is added)
     replaysSessionSampleRate: 0.1, // 10% of sessions
