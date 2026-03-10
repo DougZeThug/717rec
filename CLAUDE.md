@@ -475,6 +475,48 @@ if (!team) { /* This should never happen - throws NotFoundError */ }
 
 ---
 
+## 📏 Codebase Rules (Learned Patterns)
+
+> These are patterns specific to this codebase that come up repeatedly. Follow them to avoid re-discovering the same issues.
+
+### Radix UI Test Mocking
+When testing components that use Radix UI primitives (Dialog, Popover, Select, DropdownMenu, etc.), you **must** mock pointer capture methods in your test setup. Radix calls `setPointerCapture` / `releasePointerCapture` / `hasPointerCapture` which jsdom doesn't support. Add this to test files or `src/setupTests.ts`:
+```typescript
+beforeAll(() => {
+  HTMLElement.prototype.setPointerCapture = vi.fn();
+  HTMLElement.prototype.releasePointerCapture = vi.fn();
+  HTMLElement.prototype.hasPointerCapture = vi.fn().mockReturnValue(false);
+});
+```
+Also mock `scrollIntoView` if your Radix component triggers it:
+```typescript
+HTMLElement.prototype.scrollIntoView = vi.fn();
+```
+
+### Service Splitting Threshold
+Split a service file into focused sub-services when it exceeds **~400 lines**. Follow the existing pattern (e.g., `matches/MatchReadService`, `matches/MatchWriteService`). Group related functions into a subfolder with separate files by responsibility (read, write, mutations, queries).
+
+### Explicit Column Selects
+**Never use `select('*')`** in Supabase queries — always list columns explicitly. This prevents over-fetching, avoids breaking changes when columns are added/removed, and keeps responses lean. Example:
+```typescript
+// ❌ BAD
+.select('*')
+
+// ✅ GOOD
+.select('id, name, season_id, division_id, created_at')
+```
+Update the Service Template examples above accordingly — they show `select('*')` for brevity, but real code should always list columns.
+
+### Planning Doc Lifecycle
+When working on multi-step tasks: **(1)** create a plan file (e.g., `plan.md`) to outline the approach, **(2)** execute the plan step by step, **(3)** delete the plan file when done. Do not leave plan files in the repo after the work is complete.
+
+### Test File Locations
+- **Unit tests** for a specific component or hook go in a `__tests__/` folder next to the source file: `src/components/teams/__tests__/TeamCard.test.tsx`
+- **Integration tests** that span multiple features or test broader flows go in the root `tests/` directory: `tests/scheduling.test.ts`
+- When in doubt: if the test imports from only one module, it's a unit test (`__tests__/`). If it touches multiple modules or services together, it's an integration test (`tests/`).
+
+---
+
 ## 🚨 Common Gotchas
 
 1. **Admin permissions**: Check `useAdminAccess()` hook for role verification
@@ -490,4 +532,4 @@ if (!team) { /* This should never happen - throws NotFoundError */ }
 
 ---
 
-*Last updated: 2026-03-05*
+*Last updated: 2026-03-10*
