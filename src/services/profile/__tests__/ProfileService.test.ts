@@ -169,9 +169,7 @@ describe('updateProfile', () => {
 
   it('updates the profiles table', async () => {
     mockFrom.mockReturnValue({
-      update: () => ({
-        eq: () => Promise.resolve({ error: null }),
-      }),
+      upsert: () => Promise.resolve({ error: null }),
     });
 
     await updateProfile('user-1', { username: 'testuser' });
