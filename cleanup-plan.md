@@ -7,11 +7,17 @@
 
 ## Current State (Baseline)
 
-- **Lint**: `npm run lint` reports a large backlog of errors and warnings — lint is not functioning as an effective quality gate.
-- **Build**: `npm run build` succeeds but reports oversized chunk warnings (admin, charts/vendor bundles).
+<!-- Captured 2026-03-10 after Stage 1 scripts were added -->
+
+- **Lint**: 1,640 problems — **1,250 errors, 390 warnings** (851 auto-fixable with `--fix`)
+- **Build**: Succeeds. Oversized chunks (raw / gzip):
+  - `AdminDashboard` — **1,246 kB / 352 kB** (critical)
+  - `vendor-charts` — 361 kB / 107 kB
+  - `index` (main bundle) — 358 kB / 114 kB
+  - `vendor-sentry` — 260 kB / 86 kB
+- **Tests**: **1 failed, 450 passed** (451 tests across 57 test files)
 - **TypeScript**: Strict mode is off (`strict: false`, `noImplicitAny: false`, `strictNullChecks: false`) — increases defect risk at this codebase size.
 - **Conventions**: Documented folder conventions exist (`src/docs/FOLDER_CONVENTIONS.md`) but some legacy paths remain (e.g., `hooks/useAutoSchedule`, camelCase util folders).
-- **Tests**: Test infrastructure exists but no dedicated `test` or `typecheck` scripts in `package.json` for daily workflow.
 
 ---
 
