@@ -243,7 +243,7 @@ interface RawSeasonStatsRow {
 /** Per-team data extracted from bulk queries, plus power score prefetch data */
 export interface BulkTeamCareerData extends CareerData {
   /** Season stats with power_score included (for calculateCareerPowerScore) */
-  seasonPowerScores: { power_score: number | null; match_wins: number | null; match_losses: number | null }[];
+  seasonPowerScores: { power_score: number | null; match_wins: number | null; match_losses: number | null; season_id: string | null }[];
 }
 
 /**
@@ -472,6 +472,7 @@ export const fetchAllTeamsCareerData = async (
         power_score: s.power_score,
         match_wins: s.match_wins,
         match_losses: s.match_losses,
+        season_id: s.season_id,
       }));
 
     result.set(teamId, {

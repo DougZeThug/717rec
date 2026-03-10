@@ -4,6 +4,7 @@ interface SeasonPowerScoreData {
   power_score: number | null;
   match_wins: number | null;
   match_losses: number | null;
+  season_id?: string | null;
 }
 
 interface CurrentTeamPowerData {
@@ -20,6 +21,9 @@ interface CareerPowerScoreInput {
   careerPlayoffLosses: number;
   competitivePlayoffWins: number;
   teamDivisionWeight: number;
+  // Current season ID — used to exclude current season from team_season_stats
+  // so it isn't double-counted with v_team_details data
+  currentSeasonId?: string | null;
   // Optional pre-fetched data to avoid redundant DB queries (used by batch mode)
   prefetchedSeasonStats?: SeasonPowerScoreData[] | null;
   prefetchedCurrentTeamData?: CurrentTeamPowerData | null;
@@ -59,11 +63,13 @@ export const calculateCareerPowerScore = async ({
   careerPlayoffLosses,
   competitivePlayoffWins,
   teamDivisionWeight,
+  currentSeasonId,
   prefetchedSeasonStats,
   prefetchedCurrentTeamData,
 }: CareerPowerScoreInput): Promise<number> => {
   let seasonStats: SeasonPowerScoreData[] | null;
   let currentTeamData: CurrentTeamPowerData | null;
+  let resolvedCurrentSeasonId = currentSeasonId;
 
   if (prefetchedSeasonStats !== undefined && prefetchedCurrentTeamData !== undefined) {
     // Use pre-fetched data (batch mode) — no DB queries needed
@@ -71,10 +77,11 @@ export const calculateCareerPowerScore = async ({
     currentTeamData = prefetchedCurrentTeamData;
   } else {
     // Fetch from DB (single-team mode — backward compatible)
-    const [seasonStatsResult, currentTeamDataResult] = await Promise.all([
+    // Also fetch the current season ID so we can exclude it from team_season_stats
+    const [seasonStatsResult, currentTeamDataResult, currentSeasonResult] = await Promise.all([
       supabase
         .from('team_season_stats')
-        .select('power_score, match_wins, match_losses')
+        .select('power_score, match_wins, match_losses, season_id')
         .eq('team_id', teamId)
         .not('power_score', 'is', null),
       supabase
@@ -82,19 +89,32 @@ export const calculateCareerPowerScore = async ({
         .select('power_score, wins, losses')
         .eq('team_id', teamId)
         .maybeSingle(),
+      // Only fetch current season if not already provided
+      !resolvedCurrentSeasonId
+        ? supabase.from('seasons').select('id').eq('is_active', true).maybeSingle()
+        : Promise.resolve({ data: null }),
     ]);
 
     seasonStats = seasonStatsResult.data;
     currentTeamData = currentTeamDataResult.data;
+    if (!resolvedCurrentSeasonId && currentSeasonResult.data) {
+      resolvedCurrentSeasonId = currentSeasonResult.data.id;
+    }
   }
+
+  // Exclude the current season from team_season_stats to avoid double-counting
+  // with v_team_details (which also represents the current season)
+  const historicalStats = resolvedCurrentSeasonId
+    ? seasonStats?.filter((s) => s.season_id !== resolvedCurrentSeasonId)
+    : seasonStats;
 
   // Calculate weighted average of season power scores (no division penalties)
   let totalWeightedScore = 0;
   let totalMatches = 0;
 
   // Add historical season data (power scores are already on 0-1 scale, multiply by 100)
-  if (seasonStats && seasonStats.length > 0) {
-    for (const season of seasonStats) {
+  if (historicalStats && historicalStats.length > 0) {
+    for (const season of historicalStats) {
       const seasonMatches = (season.match_wins || 0) + (season.match_losses || 0);
       if (seasonMatches > 0 && season.power_score !== null) {
         totalWeightedScore += season.power_score * 100 * seasonMatches;
