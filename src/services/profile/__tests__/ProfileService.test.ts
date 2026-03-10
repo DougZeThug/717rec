@@ -150,18 +150,16 @@ describe('updateProfile', () => {
 
   it('throws DatabaseError on Supabase error', async () => {
     mockFrom.mockReturnValue({
-      update: () => ({
-        eq: () =>
-          Promise.resolve({
-            error: {
-              message: 'update failed',
-              code: '23503',
-              details: null,
-              hint: null,
-              name: 'PostgrestError',
-            },
-          }),
-      }),
+      upsert: () =>
+        Promise.resolve({
+          error: {
+            message: 'update failed',
+            code: '23503',
+            details: null,
+            hint: null,
+            name: 'PostgrestError',
+          },
+        }),
     });
 
     await expect(
