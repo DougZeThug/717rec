@@ -28,13 +28,18 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
       const teamsToUse = teams || latestTeams;
       const matchesToUse = matches || latestMatches;
 
-      // Wait for teams data to be loaded
-      if (!teamsToUse || teamsToUse.length === 0 || teamsLoading) {
+      // Wait for teams data to be loaded.
+      // Only gate on teamsLoading when no teams prop was provided by the caller,
+      // so consumers that pass their own teams don't block on the global query.
+      if (!teamsToUse || teamsToUse.length === 0 || (!teams && teamsLoading)) {
         debugLog('Teams not loaded yet or empty:', {
           teamsCount: teamsToUse?.length,
           teamsLoading,
         });
-        setRankings([]);
+        // Guard the state update: calling setRankings([]) when rankings is already []
+        // creates a new array reference that triggers another render, causing an
+        // infinite loop while latestTeams is also a new [] reference each render.
+        if (rankings.length > 0) setRankings([]);
         return;
       }
 
@@ -119,7 +124,7 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
     };
 
     updateRankings();
-  }, [teams, latestTeams, latestMatches, matches, previousRankings, lastUpdated, teamsLoading]);
+  }, [teams, latestTeams, latestMatches, matches, previousRankings, lastUpdated, teamsLoading, rankings.length]);
 
   return {
     rankings,
