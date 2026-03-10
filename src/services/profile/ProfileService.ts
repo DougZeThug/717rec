@@ -74,11 +74,11 @@ export const fetchAuthProfile = async (userId: string): Promise<UserProfile | nu
 export const updateProfile = async (userId: string, data: ProfileFormData): Promise<void> => {
   const { error } = await supabase
     .from('profiles')
-    .update({
+    .upsert({
+      id: userId,
       username: data.username,
       full_name: data.fullName || null,
-    })
-    .eq('id', userId);
+    });
 
   if (error) {
     handleDatabaseError(error, 'Failed to update profile');

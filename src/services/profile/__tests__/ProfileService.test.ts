@@ -140,9 +140,7 @@ describe('updateProfile', () => {
 
   it('resolves without error on success', async () => {
     mockFrom.mockReturnValue({
-      update: () => ({
-        eq: () => Promise.resolve({ error: null }),
-      }),
+      upsert: () => Promise.resolve({ error: null }),
     });
 
     await expect(
@@ -152,18 +150,16 @@ describe('updateProfile', () => {
 
   it('throws DatabaseError on Supabase error', async () => {
     mockFrom.mockReturnValue({
-      update: () => ({
-        eq: () =>
-          Promise.resolve({
-            error: {
-              message: 'update failed',
-              code: '23503',
-              details: null,
-              hint: null,
-              name: 'PostgrestError',
-            },
-          }),
-      }),
+      upsert: () =>
+        Promise.resolve({
+          error: {
+            message: 'update failed',
+            code: '23503',
+            details: null,
+            hint: null,
+            name: 'PostgrestError',
+          },
+        }),
     });
 
     await expect(
@@ -173,9 +169,7 @@ describe('updateProfile', () => {
 
   it('updates the profiles table', async () => {
     mockFrom.mockReturnValue({
-      update: () => ({
-        eq: () => Promise.resolve({ error: null }),
-      }),
+      upsert: () => Promise.resolve({ error: null }),
     });
 
     await updateProfile('user-1', { username: 'testuser' });
@@ -183,24 +177,25 @@ describe('updateProfile', () => {
   });
 
   it('sets full_name to null when fullName is not provided', async () => {
-    const mockUpdate = vi.fn().mockReturnValue({
-      eq: () => Promise.resolve({ error: null }),
-    });
-    mockFrom.mockReturnValue({ update: mockUpdate });
+    const mockUpsert = vi.fn().mockReturnValue(
+      Promise.resolve({ error: null }),
+    );
+    mockFrom.mockReturnValue({ upsert: mockUpsert });
 
     await updateProfile('user-1', { username: 'testuser' });
-    const updateArg = mockUpdate.mock.calls[0][0];
-    expect(updateArg.full_name).toBeNull();
+    const upsertArg = mockUpsert.mock.calls[0][0];
+    expect(upsertArg.full_name).toBeNull();
+    expect(upsertArg.id).toBe('user-1');
   });
 
   it('sets full_name when fullName is provided', async () => {
-    const mockUpdate = vi.fn().mockReturnValue({
-      eq: () => Promise.resolve({ error: null }),
-    });
-    mockFrom.mockReturnValue({ update: mockUpdate });
+    const mockUpsert = vi.fn().mockReturnValue(
+      Promise.resolve({ error: null }),
+    );
+    mockFrom.mockReturnValue({ upsert: mockUpsert });
 
     await updateProfile('user-1', { username: 'testuser', fullName: 'Jane Doe' });
-    const updateArg = mockUpdate.mock.calls[0][0];
-    expect(updateArg.full_name).toBe('Jane Doe');
+    const upsertArg = mockUpsert.mock.calls[0][0];
+    expect(upsertArg.full_name).toBe('Jane Doe');
   });
 });
