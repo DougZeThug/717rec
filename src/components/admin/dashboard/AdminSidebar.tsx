@@ -32,6 +32,7 @@ import RequestsTab from '@/components/admin/requests/RequestsTab';
 import MassScoresTab from '@/components/admin/scores/MassScoresTab';
 import SeasonManagementTab from '@/components/admin/seasons/SeasonManagementTab';
 import TeamManagementTab from '@/components/admin/teams/TeamManagementTab';
+import ThemeManagementTab from '@/components/admin/theme/ThemeManagementTab';
 import TimeslotsTab from '@/components/admin/timeslots/TimeslotsTab';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
