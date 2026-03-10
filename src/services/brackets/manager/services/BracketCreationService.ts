@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { bracketLog, errorLog, failureLog, successLog } from '@/utils/logger';
 
 import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
-import type { CreateBracketOptions, ErrorLike } from '../types/BracketServiceTypes';
+import type { CreateBracketOptions, ErrorLike, StorageParticipant } from '../types/BracketServiceTypes';
 import { isErrorLike, serializeError } from '../utils/BracketErrorUtils';
 
 /**
@@ -31,7 +31,6 @@ export class BracketCreationService {
 
     try {
       // Step 1: Calculate required bracket size (next power of 2 for brackets-manager)
-      // brackets-manager requires bracket size >= team count for BYEs to work
       let bracketSize = 2;
       while (bracketSize < teams.length) {
         bracketSize *= 2;
@@ -59,8 +58,6 @@ export class BracketCreationService {
       // brackets-manager will apply seedOrdering: 'inner_outer' to create proper matchups
       bracketLog('📝 Step 3/5: Creating seeding array in seed order...');
 
-      // Pass teams in seed order [seed1, seed2, ..., null, null]
-      // brackets-manager's seedOrdering handles the bracket positioning
       const seeding: (string | null)[] = teamsBySeed
         .map((t) => t.name)
         .concat(Array(byesNeeded).fill(null));
@@ -72,57 +69,9 @@ export class BracketCreationService {
         order: seeding.map((name, idx) => `Seed ${idx + 1}: ${name || 'BYE'}`),
       });
 
-      // Step 4: Prepare participant inserts (including BYEs)
-      bracketLog('📝 Step 4/5: Preparing participant inserts...');
-      const participantInserts = seeding.map((name, index) => {
-        const team = name ? teamsBySeed.find((t) => t.name === name) : null;
-        return {
-          tournament_id: bracketId,
-          name: name, // null for BYEs
-          position: index + 1, // Use bracket position (1-based), not team seed
-          team_id: team?.id ?? null, // Store team UUID for standings mapping
-        };
-      });
-      bracketLog('✅ Participant inserts prepared:', {
-        count: participantInserts.length,
-        teams: participantInserts.filter((p) => p.name !== null).length,
-        byes: participantInserts.filter((p) => p.name === null).length,
-      });
-
-      // Step 5: Insert participants into database
-      bracketLog('📝 Step 5/5: Inserting participants into database...');
-      const { data: insertedParticipants, error: participantsError } = await supabase
-        .from('participant' as any)
-        .insert(participantInserts)
-        .select('id, name, position, tournament_id, team_id');
-
-      if (participantsError) {
-        const errLike = participantsError as ErrorLike;
-        errorLog('Participant insertion failed - FULL ERROR:', {
-          error: participantsError,
-          errorType: participantsError?.constructor?.name,
-          code: participantsError.code,
-          message: participantsError.message,
-          details: participantsError.details,
-          hint: participantsError.hint,
-          statusCode: errLike.statusCode,
-          inserts: participantInserts,
-          serialized: serializeError(participantsError),
-        });
-        throw new Error(`Failed to insert participants: ${serializeError(participantsError)}`);
-      }
-
-      bracketLog('✅ Participants inserted successfully:', {
-        insertedCount: insertedParticipants?.length || 0,
-        participants: insertedParticipants,
-      });
-
-      // Load participants into cache before bracket operations
-      bracketLog('📝 Loading participants into cache...');
-      await (this.storage as SupabaseSqlStorage).loadParticipantsForTournament(bracketId);
-
-      // Step 6: Create bracket stage with brackets-manager
-      bracketLog('📝 Step 6/5: Creating bracket stage with brackets-manager...');
+      // Step 4: Create bracket stage with brackets-manager
+      // Let the library create participant rows — we sync team_id afterward
+      bracketLog('📝 Step 4/5: Creating bracket stage with brackets-manager...');
 
       const stageConfig = {
         name: bracketId,
@@ -130,9 +79,6 @@ export class BracketCreationService {
         type: format,
         seeding,
         settings: {
-          // Fixed seedOrdering for double elimination:
-          // [WB R1, LB minor R1 (reverse), LB major R1 (natural), LB minor R2 (reverse)]
-          // Alternates between 'reverse' (losers intake) and 'natural' (LB progression)
           seedOrdering: ['inner_outer', 'natural', 'reverse_half_shift', 'reverse'] as any,
           grandFinal: (format === 'double_elimination'
             ? options.grandFinalType || 'simple'
@@ -146,7 +92,48 @@ export class BracketCreationService {
 
       bracketLog('✅ Stage created successfully in SQL tables');
 
-      // Note: brackets-manager handles child_count and BYE propagation automatically
+      // Step 5: Post-creation sync — link participants to teams
+      // brackets-manager created participants with names but no team_id/position.
+      // Mirror the pattern from BracketSeedingService to synchronize these fields.
+      bracketLog('📝 Step 5/5: Syncing team_id and position onto participants...');
+
+      const participants = await this.storage.select('participant', {
+        tournament_id: bracketId,
+      });
+
+      if (participants) {
+        const participantArray = (
+          Array.isArray(participants) ? participants : [participants]
+        ) as StorageParticipant[];
+
+        for (const participant of participantArray) {
+          if (participant.name === null) {
+            await supabase
+              .from('participant')
+              .update({ position: null, team_id: null })
+              .eq('id', participant.id);
+          } else {
+            const team = teamsBySeed.find((t) => t.name === participant.name);
+            if (team) {
+              const slotPosition = teamsBySeed.indexOf(team) + 1;
+              await supabase
+                .from('participant')
+                .update({ position: slotPosition, team_id: team.id })
+                .eq('id', participant.id);
+            }
+          }
+        }
+
+        bracketLog('✅ Participant sync complete:', {
+          total: participantArray.length,
+          linked: participantArray.filter((p) => p.name !== null).length,
+          byes: participantArray.filter((p) => p.name === null).length,
+        });
+      }
+
+      // Refresh cache with updated data
+      this.storage.clearParticipantCache();
+      await this.storage.loadParticipantsForTournament(bracketId);
 
       successLog('Bracket created successfully', bracketId);
     } catch (error) {
