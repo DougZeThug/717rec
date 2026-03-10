@@ -1,18 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
-import { applyMatchResult } from '@/hooks/team-stats/utils/teamRecordUtils';
 import { useToast } from '@/hooks/useToast';
+import { fetchPendingMatches, fetchTeamsMap } from '@/services/matches/MatchReadService';
 import {
-  fetchMatchForTie,
-  fetchPendingMatches,
-  fetchTeamsMap,
-} from '@/services/matches/MatchReadService';
-import {
-  approveMatch,
-  reverseTeamStats,
-  setMatchAsTie,
-  upsertTeamSeasonStats,
+  approveMatchResult,
+  markMatchAsTie,
 } from '@/services/matches/MatchWriteService';
 import { Match, Team } from '@/types';
 import { transformDatabaseMatches } from '@/utils/matchTransformers';
@@ -47,7 +40,7 @@ export function usePendingMatches() {
 
       return transformDatabaseMatches(data, { normalizeDate: false });
     },
-    staleTime: 0, // Always fresh - instant updates
+    staleTime: 0,
   });
 
   // Fetch teams
@@ -91,10 +84,10 @@ export function usePendingMatches() {
 
       return teamsMap;
     },
-    staleTime: 0, // Always fresh - instant updates
+    staleTime: 0,
   });
 
-  // Mutation for approving match results
+  // Mutation for approving match results — atomic & idempotent via RPC
   const approveMutation = useMutation({
     mutationFn: async ({ match, winnerTeamIndex }: { match: Match; winnerTeamIndex: 1 | 2 }) => {
       const winnerId = winnerTeamIndex === 1 ? match.team1Id : match.team2Id;
@@ -104,18 +97,13 @@ export function usePendingMatches() {
       const loserGameWins =
         winnerTeamIndex === 1 ? match.team2_game_wins || 0 : match.team1_game_wins || 0;
 
-      // Update match with winner/loser
-      await approveMatch(match.id, winnerId, loserId);
-
-      // Use atomic RPC to update team stats (prevents race conditions)
-      await applyMatchResult(winnerId, loserId, winnerGameWins, loserGameWins);
+      await approveMatchResult(match.id, winnerId, loserId, winnerGameWins, loserGameWins);
     },
     onSuccess: () => {
       toast({
         title: 'Result Approved',
         description: 'Match result has been successfully approved.',
       });
-      // Invalidate all match-related queries
       queryClient.invalidateQueries({ queryKey: ['matches'] });
       queryClient.invalidateQueries({ queryKey: ['teams'] });
     },
@@ -129,36 +117,10 @@ export function usePendingMatches() {
     },
   });
 
-  // Mutation for marking as tie
+  // Mutation for marking as tie — atomic & idempotent via RPC
   const tieMutation = useMutation({
     mutationFn: async (matchId: string) => {
-      // Fetch the current match to see if it has a winner/loser
-      const currentMatch = await fetchMatchForTie(matchId);
-
-      // If match currently has a winner, reverse the stats first
-      if (currentMatch.winner_id && currentMatch.loser_id) {
-        const winnerGameWins =
-          currentMatch.winner_id === currentMatch.team1_id
-            ? currentMatch.team1_game_wins || 0
-            : currentMatch.team2_game_wins || 0;
-        const loserGameWins =
-          currentMatch.loser_id === currentMatch.team1_id
-            ? currentMatch.team1_game_wins || 0
-            : currentMatch.team2_game_wins || 0;
-
-        await reverseTeamStats(
-          currentMatch.winner_id,
-          currentMatch.loser_id,
-          winnerGameWins,
-          loserGameWins
-        );
-
-        // Refresh season stats for historical accuracy
-        await upsertTeamSeasonStats();
-      }
-
-      // Now update the match to mark as tie
-      await setMatchAsTie(matchId);
+      await markMatchAsTie(matchId);
     },
     onSuccess: () => {
       toast({

@@ -314,3 +314,39 @@ export const setMatchAsTie = async (matchId: string) => {
 
   if (error) throw error;
 };
+
+/**
+ * Atomically approve a match result and update team stats in a single transaction.
+ * Idempotent: if already approved, returns false without double-counting.
+ */
+export const approveMatchResult = async (
+  matchId: string,
+  winnerId: string,
+  loserId: string,
+  winnerGameWins: number,
+  loserGameWins: number
+): Promise<boolean> => {
+  const { data, error } = await supabase.rpc('approve_match_result', {
+    p_match_id: matchId,
+    p_winner_id: winnerId,
+    p_loser_id: loserId,
+    p_winner_game_wins: winnerGameWins,
+    p_loser_game_wins: loserGameWins,
+  });
+
+  if (error) handleDatabaseError(error, 'Failed to approve match result');
+  return data ?? false;
+};
+
+/**
+ * Atomically mark a match as a tie, reversing any previously applied stats.
+ * Idempotent: if already a tie, returns false without double-subtracting.
+ */
+export const markMatchAsTie = async (matchId: string): Promise<boolean> => {
+  const { data, error } = await supabase.rpc('mark_match_as_tie', {
+    p_match_id: matchId,
+  });
+
+  if (error) handleDatabaseError(error, 'Failed to mark match as tie');
+  return data ?? false;
+};

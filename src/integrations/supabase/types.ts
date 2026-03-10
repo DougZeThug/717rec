@@ -4174,6 +4174,16 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      approve_match_result: {
+        Args: {
+          p_loser_game_wins?: number
+          p_loser_id: string
+          p_match_id: string
+          p_winner_game_wins?: number
+          p_winner_id: string
+        }
+        Returns: boolean
+      }
       archive_season: {
         Args: {
           p_champion_team_id?: string
@@ -4354,6 +4364,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      mark_match_as_tie: { Args: { p_match_id: string }; Returns: boolean }
       process_match_badges: {
         Args: { p_team1_id: string; p_team2_id: string }
         Returns: Json

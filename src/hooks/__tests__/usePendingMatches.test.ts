@@ -3,21 +3,17 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { applyMatchResult } from '@/hooks/team-stats/utils/teamRecordUtils';
-import { supabase } from '@/integrations/supabase/client';
-
 import { usePendingMatches } from '../usePendingMatches';
 
 // Mock dependencies
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
-    from: vi.fn(),
-    rpc: vi.fn(),
-  },
+vi.mock('@/services/matches/MatchReadService', () => ({
+  fetchPendingMatches: vi.fn().mockResolvedValue([]),
+  fetchTeamsMap: vi.fn().mockResolvedValue([]),
 }));
 
-vi.mock('@/hooks/team-stats/utils/teamRecordUtils', () => ({
-  applyMatchResult: vi.fn(),
+vi.mock('@/services/matches/MatchWriteService', () => ({
+  approveMatchResult: vi.fn().mockResolvedValue(true),
+  markMatchAsTie: vi.fn().mockResolvedValue(true),
 }));
 
 vi.mock('@/hooks/useToast', () => ({
@@ -25,6 +21,8 @@ vi.mock('@/hooks/useToast', () => ({
     toast: vi.fn(),
   }),
 }));
+
+import { approveMatchResult, markMatchAsTie } from '@/services/matches/MatchWriteService';
 
 // Create a wrapper for React Query
 const createWrapper = () => {
@@ -53,73 +51,23 @@ describe('usePendingMatches', () => {
 
   beforeEach(() => {
     vi.resetAllMocks();
-
-    // Default mock for fetching matches
-    (supabase.from as any).mockImplementation((table: string) => {
-      if (table === 'matches') {
-        return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              is: vi.fn().mockReturnValue({
-                order: vi.fn().mockResolvedValue({ data: [], error: null }),
-              }),
-            }),
-            update: vi.fn(),
-          }),
-          update: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ data: null, error: null }),
-          }),
-        };
-      }
-      if (table === 'v_team_details') {
-        return {
-          select: vi.fn().mockResolvedValue({ data: [], error: null }),
-        };
-      }
-      return { select: vi.fn().mockResolvedValue({ data: [], error: null }) };
-    });
+    (approveMatchResult as any).mockResolvedValue(true);
+    (markMatchAsTie as any).mockResolvedValue(true);
   });
 
-  it('should use atomic applyMatchResult for team stats update', async () => {
-    // Setup mock to allow update
-    (supabase.from as any).mockImplementation((table: string) => {
-      if (table === 'matches') {
-        return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              is: vi.fn().mockReturnValue({
-                order: vi.fn().mockResolvedValue({ data: [], error: null }),
-              }),
-            }),
-          }),
-          update: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ data: null, error: null }),
-          }),
-        };
-      }
-      if (table === 'v_team_details') {
-        return {
-          select: vi.fn().mockResolvedValue({ data: [], error: null }),
-        };
-      }
-      return { select: vi.fn().mockResolvedValue({ data: [], error: null }) };
-    });
-
-    (applyMatchResult as any).mockResolvedValue(true);
-
+  it('should call approveMatchResult with correct parameters for team 1 winner', async () => {
     const { result } = renderHook(() => usePendingMatches(), {
       wrapper: createWrapper(),
     });
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    // Call handleApproveResult with team 1 as winner
     await act(async () => {
       await result.current.handleApproveResult(mockMatch as any, 1);
     });
 
-    // Verify applyMatchResult was called with correct parameters
-    expect(applyMatchResult).toHaveBeenCalledWith(
+    expect(approveMatchResult).toHaveBeenCalledWith(
+      'match-1',
       'team-1', // winnerId
       'team-2', // loserId
       2, // winner's game wins
@@ -127,32 +75,28 @@ describe('usePendingMatches', () => {
     );
   });
 
-  it('should handle applyMatchResult failure gracefully', async () => {
-    (supabase.from as any).mockImplementation((table: string) => {
-      if (table === 'matches') {
-        return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              is: vi.fn().mockReturnValue({
-                order: vi.fn().mockResolvedValue({ data: [], error: null }),
-              }),
-            }),
-          }),
-          update: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ data: null, error: null }),
-          }),
-        };
-      }
-      if (table === 'v_team_details') {
-        return {
-          select: vi.fn().mockResolvedValue({ data: [], error: null }),
-        };
-      }
-      return { select: vi.fn().mockResolvedValue({ data: [], error: null }) };
+  it('should pass correct game wins when team 2 wins', async () => {
+    const { result } = renderHook(() => usePendingMatches(), {
+      wrapper: createWrapper(),
     });
 
-    // Simulate RPC failure
-    (applyMatchResult as any).mockRejectedValue(new Error('RPC failed'));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await act(async () => {
+      await result.current.handleApproveResult(mockMatch as any, 2);
+    });
+
+    expect(approveMatchResult).toHaveBeenCalledWith(
+      'match-1',
+      'team-2', // winnerId (team 2 won)
+      'team-1', // loserId
+      1, // winner's game wins (team2GameWins)
+      2 // loser's game wins (team1GameWins)
+    );
+  });
+
+  it('should handle approveMatchResult failure gracefully', async () => {
+    (approveMatchResult as any).mockRejectedValue(new Error('RPC failed'));
 
     const { result } = renderHook(() => usePendingMatches(), {
       wrapper: createWrapper(),
@@ -160,7 +104,6 @@ describe('usePendingMatches', () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    // Call handleApproveResult - should not throw due to mutation error handling
     await act(async () => {
       try {
         await result.current.handleApproveResult(mockMatch as any, 1);
@@ -169,54 +112,20 @@ describe('usePendingMatches', () => {
       }
     });
 
-    // The hook should handle the error gracefully (toast is shown)
-    // applyMatchResult was still called
-    expect(applyMatchResult).toHaveBeenCalled();
+    expect(approveMatchResult).toHaveBeenCalled();
   });
 
-  it('should pass correct game wins when team 2 wins', async () => {
-    (supabase.from as any).mockImplementation((table: string) => {
-      if (table === 'matches') {
-        return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              is: vi.fn().mockReturnValue({
-                order: vi.fn().mockResolvedValue({ data: [], error: null }),
-              }),
-            }),
-          }),
-          update: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ data: null, error: null }),
-          }),
-        };
-      }
-      if (table === 'v_team_details') {
-        return {
-          select: vi.fn().mockResolvedValue({ data: [], error: null }),
-        };
-      }
-      return { select: vi.fn().mockResolvedValue({ data: [], error: null }) };
-    });
-
-    (applyMatchResult as any).mockResolvedValue(true);
-
+  it('should call markMatchAsTie with match id', async () => {
     const { result } = renderHook(() => usePendingMatches(), {
       wrapper: createWrapper(),
     });
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    // Call handleApproveResult with team 2 as winner
     await act(async () => {
-      await result.current.handleApproveResult(mockMatch as any, 2);
+      await result.current.handleMarkAsTie('match-1');
     });
 
-    // Verify applyMatchResult was called with swapped parameters
-    expect(applyMatchResult).toHaveBeenCalledWith(
-      'team-2', // winnerId (team 2 won)
-      'team-1', // loserId
-      1, // winner's game wins (team2GameWins)
-      2 // loser's game wins (team1GameWins)
-    );
+    expect(markMatchAsTie).toHaveBeenCalledWith('match-1');
   });
 });
