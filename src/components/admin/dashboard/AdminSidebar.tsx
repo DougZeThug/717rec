@@ -78,6 +78,7 @@ const adminMenuItems: AdminMenuItem[] = [
   { id: 'teams', label: 'Teams', icon: Users, Component: TeamManagementTab },
   { id: 'pending-matches', label: 'Pending', icon: Clock, Component: PendingMatchesSection },
   { id: 'hero-cards', label: 'Hero', icon: LayoutGrid, Component: HeroCardsTab },
+  { id: 'themes', label: 'Themes', icon: Palette, Component: ThemeManagementTab },
   { id: 'blind-draw', label: 'Blind Draw', icon: Shuffle, Component: BlindDrawSignupsTab },
   { id: 'help', label: 'Help', icon: HelpCircle, Component: GettingStartedTab },
 ];
