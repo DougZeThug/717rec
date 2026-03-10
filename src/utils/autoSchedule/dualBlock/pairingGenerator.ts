@@ -82,13 +82,23 @@ export const generateDualBlockPairings = async (
       primaryOpponents[pairing.team2.id] = pairing.team1.id;
     });
 
+    // Build a playedPairsSet that includes primary block opponents so the Blossom
+    // algorithm's existing rematch avoidance handles same-session opponent avoidance.
+    // This replaces the old -1000 penalty hack which produced negative weights that
+    // the Blossom library ignored.
+    const secondaryPlayedPairsSet = new Set<string>();
+    primaryPairings.forEach((pairing) => {
+      const pairingKey = [pairing.team1.id, pairing.team2.id].sort().join('-');
+      secondaryPlayedPairsSet.add(pairingKey);
+    });
+
     // Create constraints for secondary block to ensure teams have different opponents
     const secondaryConstraints = {
-      avoidRematches: config.avoidRematches,
+      avoidRematches: true, // Always avoid rematches against primary block opponents
       haveTeamsPlayedFn: haveTeamsPlayedBefore,
       getCompatibilityScoreFn: (team1: Team, team2: Team) => {
         // Base compatibility score with division weighting
-        let score = calculateConfigurableCompatibility(team1, team2, {
+        return calculateConfigurableCompatibility(team1, team2, {
           ...config.weights,
           tierPenalty: {
             sameTier: 0,
@@ -96,14 +106,8 @@ export const generateDualBlockPairings = async (
             twoTierDiff: 8,
           },
         });
-
-        // Penalize heavily if teams are already opponents in the primary block
-        if (primaryOpponents[team1.id] === team2.id || primaryOpponents[team2.id] === team1.id) {
-          score -= 1000; // Large penalty to avoid same opponents
-        }
-
-        return score;
       },
+      playedPairsSet: secondaryPlayedPairsSet,
     };
 
     // Generate secondary block pairings with constraints

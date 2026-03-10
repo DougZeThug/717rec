@@ -26,6 +26,7 @@ type Edge = {
   team1: Team;
   team2: Team;
   weight: number;
+  rawScore: number; // Original 0-10 compatibility score (before penalties)
   hasPlayedBefore: boolean;
   pairingKey: string;
 };
@@ -237,11 +238,11 @@ function buildWeightedGraphWithRelaxation(
         continue;
       }
 
-      const weight = config.getCompatibilityScoreFn(team1, team2);
+      const rawScore = config.getCompatibilityScoreFn(team1, team2);
       const pairingKey = [team1.id, team2.id].sort().join('-');
 
       // Apply penalty for relaxed constraints (lower priority than normal matches)
-      let adjustedWeight = weight;
+      let adjustedWeight = rawScore;
       if (hasPlayedBefore && effectiveRelaxation >= 1) {
         adjustedWeight -= 50; // Penalty for rematches
       }
@@ -253,6 +254,7 @@ function buildWeightedGraphWithRelaxation(
         team1,
         team2,
         weight: adjustedWeight,
+        rawScore,
         hasPlayedBefore: hasPlayedBefore || false,
         pairingKey,
       });
@@ -352,7 +354,7 @@ function repairUnmatchedTeams(
         additionalPairings.push({
           team1: edge.team1,
           team2: edge.team2,
-          compatibilityScore: edge.weight,
+          compatibilityScore: edge.rawScore,
           hasPlayedBefore: edge.hasPlayedBefore,
         });
 
@@ -550,7 +552,8 @@ function buildWeightedGraph(teams: Team[], config: TeamPairingConfig): Edge[] {
       }
 
       // Calculate compatibility score (no bonus needed - score is already appropriate)
-      let weight = config.getCompatibilityScoreFn(team1, team2);
+      const rawScore = config.getCompatibilityScoreFn(team1, team2);
+      let weight = rawScore;
 
       // Check if teams have played before (using pre-fetched Set for O(1) lookup)
       const hasPlayedBefore = config.avoidRematches
@@ -570,6 +573,7 @@ function buildWeightedGraph(teams: Team[], config: TeamPairingConfig): Edge[] {
         team1,
         team2,
         weight,
+        rawScore,
         hasPlayedBefore,
         pairingKey,
       });
@@ -668,11 +672,16 @@ function runBlossomMatching(teams: Team[], edges: Edge[], round: number): TeamPa
   });
 
   // Build edge list in format expected by edmonds-blossom: [[node1, node2, weight], ...]
-  // edmonds-blossom finds maximum weight matching, so pass positive weights directly
+  // edmonds-blossom ignores negative-weight edges (it maximizes total weight, so negative
+  // edges are worse than leaving nodes unmatched). Apply a positive offset to all weights
+  // so penalized edges remain usable but still less preferred than non-penalized ones.
+  const minWeight = Math.min(...edges.map((e) => e.weight));
+  const offset = minWeight < 1 ? Math.abs(minWeight) + 1 : 0;
+
   const edgeList: number[][] = edges.map((edge) => {
     const index1 = teamIndexMap.get(edge.team1.id)!;
     const index2 = teamIndexMap.get(edge.team2.id)!;
-    return [index1, index2, edge.weight];
+    return [index1, index2, edge.weight + offset];
   });
 
   try {
@@ -700,12 +709,12 @@ function runBlossomMatching(teams: Team[], edges: Edge[], round: number): TeamPa
         pairings.push({
           team1,
           team2,
-          compatibilityScore: edge.weight,
+          compatibilityScore: edge.rawScore,
           hasPlayedBefore: edge.hasPlayedBefore,
         });
 
         debugLog(
-          `Round ${round}: ${team1.name} vs ${team2.name} (score: ${edge.weight.toFixed(1)})`
+          `Round ${round}: ${team1.name} vs ${team2.name} (score: ${edge.rawScore.toFixed(1)})`
         );
       }
     }
@@ -946,7 +955,7 @@ async function findGuaranteedSolution(
         finalPairings.push({
           team1: edge.team1,
           team2: edge.team2,
-          compatibilityScore: edge.weight,
+          compatibilityScore: edge.rawScore,
           hasPlayedBefore: edge.hasPlayedBefore,
         });
 
@@ -1016,11 +1025,11 @@ function buildEdgesWithRelaxationLevel(
         continue;
       }
 
-      const weight = config.getCompatibilityScoreFn(team1, team2);
+      const rawScore = config.getCompatibilityScoreFn(team1, team2);
       const pairingKey = [team1.id, team2.id].sort().join('-');
 
       // Apply penalty for relaxed constraints
-      let adjustedWeight = weight;
+      let adjustedWeight = rawScore;
       if (hasPlayedBefore) {
         adjustedWeight -= 50;
       }
@@ -1032,6 +1041,7 @@ function buildEdgesWithRelaxationLevel(
         team1,
         team2,
         weight: adjustedWeight,
+        rawScore,
         hasPlayedBefore: hasPlayedBefore || false,
         pairingKey,
       });
@@ -1057,7 +1067,7 @@ function buildRelaxedGraph(teams: Team[], config: TeamPairingConfig): Edge[] {
         continue;
       }
 
-      const weight = config.getCompatibilityScoreFn(team1, team2);
+      const rawScore = config.getCompatibilityScoreFn(team1, team2);
       const hasPlayedBefore = config.avoidRematches
         ? haveTeamsPlayedBeforeSync(team1.id, team2.id, config)
         : false;
@@ -1067,7 +1077,8 @@ function buildRelaxedGraph(teams: Team[], config: TeamPairingConfig): Edge[] {
       edges.push({
         team1,
         team2,
-        weight,
+        weight: rawScore,
+        rawScore,
         hasPlayedBefore,
         pairingKey,
       });
