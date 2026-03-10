@@ -19,7 +19,7 @@ export const useScoreEntryData = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { matches, setMatches, originalMatches, loading, setLoading, submitting, setSubmitting } = useMatchesState();
+  const { matches, setMatches, originalMatches, setOriginalMatches, loading, setLoading, submitting, setSubmitting } = useMatchesState();
 
   const { handleSubmitScore } = useMatchSubmission();
 
@@ -88,61 +88,68 @@ export const useScoreEntryData = () => {
       )
     );
 
+    // Track per-match outcome so the finally block can do a smart merge.
+    // Each inner lambda catches its own errors, so Promise.all never rejects.
+    type SubmissionOutcome = { matchId: string; succeeded: boolean; reversalApplied: boolean };
+    let submissionOutcomes: SubmissionOutcome[] = [];
+
     try {
-      // Per-match reversal + submission (paired to prevent double-decrement)
-      const results = await Promise.allSettled(
-        validMatches.map(async (match) => {
-          const original = originalMatches.get(match.id);
+      // Per-match reversal + submission (paired to prevent double-decrement).
+      // Each lambda returns an outcome object instead of throwing, so we always
+      // know whether the reversal ran before a submission failure.
+      submissionOutcomes = await Promise.all(
+        validMatches.map(async (match): Promise<SubmissionOutcome> => {
+          let reversalApplied = false;
+          try {
+            const original = originalMatches.get(match.id);
 
-          // Reverse old stats for this specific match before submitting new scores
-          if (original?.iscompleted && original.winnerId && original.loserId) {
-            const oldWinnerGameWins =
-              original.winnerId === original.team1Id
-                ? original.team1_game_wins || 0
-                : original.team2_game_wins || 0;
-            const oldLoserGameWins =
-              original.loserId === original.team1Id
-                ? original.team1_game_wins || 0
-                : original.team2_game_wins || 0;
+            // Reverse old stats for this specific match before submitting new scores
+            if (original?.iscompleted && original.winnerId && original.loserId) {
+              const oldWinnerGameWins =
+                original.winnerId === original.team1Id
+                  ? original.team1_game_wins || 0
+                  : original.team2_game_wins || 0;
+              const oldLoserGameWins =
+                original.loserId === original.team1Id
+                  ? original.team1_game_wins || 0
+                  : original.team2_game_wins || 0;
 
-            scoreLog(`Reversing old stats for match ${match.id}`, {
-              oldWinner: original.winnerId,
-              oldLoser: original.loserId,
-              oldWinnerGameWins,
-              oldLoserGameWins,
+              scoreLog(`Reversing old stats for match ${match.id}`, {
+                oldWinner: original.winnerId,
+                oldLoser: original.loserId,
+                oldWinnerGameWins,
+                oldLoserGameWins,
+              });
+
+              await reverseTeamStats(
+                original.winnerId,
+                original.loserId,
+                oldWinnerGameWins,
+                oldLoserGameWins
+              );
+              reversalApplied = true;
+            }
+
+            // Immediately submit new scores for this match
+            const success = await handleSubmitScore({
+              matchId: match.id,
+              team1Score: match.team1Score ?? 0,
+              team2Score: match.team2Score ?? 0,
+              team1GameWins: match.team1_game_wins ?? 0,
+              team2GameWins: match.team2_game_wins ?? 0,
             });
 
-            await reverseTeamStats(
-              original.winnerId,
-              original.loserId,
-              oldWinnerGameWins,
-              oldLoserGameWins
-            );
+            return { matchId: match.id, succeeded: !!success, reversalApplied };
+          } catch (err) {
+            errorLog(`Error submitting match ${match.id}:`, err);
+            return { matchId: match.id, succeeded: false, reversalApplied };
           }
-
-          // Immediately submit new scores for this match
-          return handleSubmitScore({
-            matchId: match.id,
-            team1Score: match.team1Score ?? 0,
-            team2Score: match.team2Score ?? 0,
-            team1GameWins: match.team1_game_wins ?? 0,
-            team2GameWins: match.team2_game_wins ?? 0,
-          });
         })
       );
 
       // Determine which submissions succeeded/failed
-      const failedIds: string[] = [];
-      const succeededIds: string[] = [];
-
-      results.forEach((result, index) => {
-        const matchId = validMatches[index].id;
-        if (result.status === 'rejected' || (result.status === 'fulfilled' && !result.value)) {
-          failedIds.push(matchId);
-        } else {
-          succeededIds.push(matchId);
-        }
-      });
+      const failedIds = submissionOutcomes.filter((r) => !r.succeeded).map((r) => r.matchId);
+      const succeededIds = submissionOutcomes.filter((r) => r.succeeded).map((r) => r.matchId);
 
       // Update UI state based on results
       setMatches((prev) =>
@@ -169,29 +176,57 @@ export const useScoreEntryData = () => {
           variant: 'destructive',
         });
       }
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      errorLog('Error submitting matches:', error);
-
-      // Rollback UI on catastrophic error
-      setMatches((prev) =>
-        prev.map((m) =>
-          validMatchIds.includes(m.id)
-            ? { ...m, isSubmitting: false, isEdited: true, submitError: true }
-            : m
-        )
-      );
-
-      toast({
-        title: 'Error',
-        description: `Failed to submit matches: ${errorMessage}`,
-        variant: 'destructive',
-      });
     } finally {
-      // ALWAYS refetch to reset originalMatches snapshot (prevents double-decrement on retry)
+      // Invalidate cache so React Query re-fetches fresh data in the background.
       await invalidateMatchRelatedQueries(queryClient);
       const fetchedMatches = await fetchMatches(filters);
-      setMatches(fetchedMatches);
+
+      // Only merge if the fetch returned data — an empty array most likely signals
+      // a network error (fetchMatches returns [] on failure), and we must not blank
+      // the entire list in that case.
+      if (fetchedMatches.length > 0) {
+        const fetchedById = new Map(fetchedMatches.map((m) => [m.id, m]));
+
+        // Matches where the reversal ran but the score write failed.
+        // Their DB stats are already decremented; a retry must NOT reverse again.
+        const reversalAppliedButFailed = new Set(
+          submissionOutcomes
+            .filter((r) => !r.succeeded && r.reversalApplied)
+            .map((r) => r.matchId)
+        );
+
+        // Update originalMatches snapshot selectively:
+        //   • Succeeded → use fresh server state (correct baseline for future edits).
+        //   • Reversal-applied-but-failed → use fresh server state but clear the
+        //     winner/loser fields so the next retry skips re-reversal.
+        //   • All other matches → use fresh server state as-is.
+        setOriginalMatches((prev) => {
+          const updated = new Map(prev);
+          fetchedMatches.forEach((m) => {
+            if (reversalAppliedButFailed.has(m.id)) {
+              updated.set(m.id, { ...m, winnerId: null, loserId: null, iscompleted: false });
+            } else {
+              updated.set(m.id, { ...m });
+            }
+          });
+          return updated;
+        });
+
+        // Merge fresh server data with local UI state:
+        //   • Succeeded matches → replace with server data (scores are now official).
+        //   • Failed matches → keep local edits and error flags so the admin can retry.
+        setMatches((prev) =>
+          prev.map((m) => {
+            const outcome = submissionOutcomes.find((r) => r.matchId === m.id);
+            if (outcome?.succeeded) {
+              return fetchedById.get(m.id) ?? m;
+            }
+            // Preserve local edit state for failed/unsubmitted matches
+            return m;
+          })
+        );
+      }
+
       setSubmitting(false);
     }
   };

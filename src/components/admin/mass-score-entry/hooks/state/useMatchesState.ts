@@ -60,6 +60,7 @@ export const useMatchesState = () => {
     matches,
     setMatches: setMatchesWithSnapshot,
     originalMatches,
+    setOriginalMatches,
     loading,
     setLoading,
     submitting,
