@@ -50,6 +50,7 @@ const adminMenuItems: AdminMenuItem[] = [
   { id: 'teams', label: 'Teams', icon: Users },
   { id: 'pending-matches', label: 'Pending', icon: Clock },
   { id: 'hero-cards', label: 'Hero Cards', icon: LayoutGrid },
+  { id: 'themes', label: 'Themes', icon: Palette },
   { id: 'blind-draw', label: 'Blind Draw', icon: Shuffle },
   { id: 'help', label: 'Help', icon: HelpCircle },
 ];
