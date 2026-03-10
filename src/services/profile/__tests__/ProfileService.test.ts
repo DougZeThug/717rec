@@ -189,13 +189,13 @@ describe('updateProfile', () => {
   });
 
   it('sets full_name when fullName is provided', async () => {
-    const mockUpdate = vi.fn().mockReturnValue({
-      eq: () => Promise.resolve({ error: null }),
-    });
-    mockFrom.mockReturnValue({ update: mockUpdate });
+    const mockUpsert = vi.fn().mockReturnValue(
+      Promise.resolve({ error: null }),
+    );
+    mockFrom.mockReturnValue({ upsert: mockUpsert });
 
     await updateProfile('user-1', { username: 'testuser', fullName: 'Jane Doe' });
-    const updateArg = mockUpdate.mock.calls[0][0];
-    expect(updateArg.full_name).toBe('Jane Doe');
+    const upsertArg = mockUpsert.mock.calls[0][0];
+    expect(upsertArg.full_name).toBe('Jane Doe');
   });
 });
