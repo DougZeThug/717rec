@@ -27,6 +27,7 @@ export const updatePlayoffMatchResult = async (
   matchId: string,
   data: {
     winner_id: string;
+    loser_id: string;
     team1_score: number;
     team2_score: number;
     status: string;

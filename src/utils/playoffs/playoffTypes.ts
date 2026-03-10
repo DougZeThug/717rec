@@ -145,6 +145,7 @@ export interface PlayoffViewModel {
   updateMatchResult: (
     matchId: string,
     winnerId: string,
+    loserId: string,
     team1Score: number,
     team2Score: number,
     team1GameWins?: number,
