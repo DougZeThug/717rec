@@ -215,7 +215,7 @@ export function usePlayoffPageData(): PlayoffPageData {
         errorLog('Error deleting bracket:', error);
         const errorMessage = getUIErrorMessage(error, 'Failed to delete bracket');
         logError(error, 'deleteBracket');
-        throw new Error(errorMessage);
+        throw new Error(errorMessage, { cause: error });
       }
     },
     [queryClient, selectedBracketId, setSelectedBracketId]

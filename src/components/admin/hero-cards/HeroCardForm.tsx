@@ -82,7 +82,7 @@ const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
     try {
       metadata = JSON.parse(formData.metadata);
     } catch {
-      metadata = {};
+      // keep default empty object
     }
 
     const payload = {
@@ -118,7 +118,7 @@ const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
   try {
     previewMetadata = JSON.parse(formData.metadata);
   } catch {
-    previewMetadata = {};
+    // keep default empty object
   }
 
   const previewCard: HeroCard = {

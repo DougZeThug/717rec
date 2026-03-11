@@ -83,7 +83,7 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
       playoffLog('Refetch completed successfully');
     } catch (err) {
       logError(err, 'usePlayoffViewModel refetch');
-      throw new Error(getUIErrorMessage(err, 'Failed to refresh data'));
+      throw new Error(getUIErrorMessage(err, 'Failed to refresh data'), { cause: err });
     }
   };
 

@@ -212,9 +212,10 @@ export const useTeamOperations = () => {
               removedTeam = teamsCopy.shift();
               break;
             case 'random':
-            default:
+            default: {
               const randomIndex = Math.floor(Math.random() * teamsCopy.length);
               removedTeam = teamsCopy.splice(randomIndex, 1)[0];
+            }
           }
 
           if (removedTeam) {

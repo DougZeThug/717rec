@@ -87,7 +87,7 @@ const isValidCompressedImage = async (file: File): Promise<boolean> => {
  * @returns URL to the uploaded image
  */
 export const uploadTeamImage = async (file: File, teamId?: string) => {
-  let fileToUpload = file;
+  let fileToUpload: File;
   const maxSizeMB = 0.15; // 150KB max size for quality at larger dimensions
   const maxWidthOrHeight = 300; // Max dimensions 300x300px for crisp display on high-DPI screens
 

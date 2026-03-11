@@ -104,8 +104,10 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
         eq: vi.fn().mockReturnValue({
           eq: vi.fn().mockResolvedValue({ data: {}, error: null }),
           single: vi.fn().mockResolvedValue({ data: {}, error: null }),
-          then: (resolve: Function) => Promise.resolve({ data: {}, error: null }).then(resolve),
-          catch: (reject: Function) => Promise.resolve({ data: {}, error: null }).catch(reject),
+          then: (resolve: (...args: unknown[]) => unknown) =>
+            Promise.resolve({ data: {}, error: null }).then(resolve),
+          catch: (reject: (...args: unknown[]) => unknown) =>
+            Promise.resolve({ data: {}, error: null }).catch(reject),
         }),
       }),
       delete: vi.fn().mockReturnThis(),

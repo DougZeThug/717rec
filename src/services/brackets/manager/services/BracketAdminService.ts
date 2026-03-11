@@ -156,7 +156,8 @@ export class BracketAdminService {
     } catch (error) {
       failureLog('Admin BYE toggle failed', error);
       throw new Error(
-        `Failed to toggle BYE match status: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to toggle BYE match status: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        { cause: error }
       );
     }
   }
