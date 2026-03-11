@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { CalendarIcon, ChevronRight, RefreshCw } from 'lucide-react';
-import React, { useState } from 'react';
+import React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';

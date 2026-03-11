@@ -12,13 +12,13 @@ interface UseAuthFormProps {
   returnTo: string;
 }
 
-export const useAuthForm = ({ returnTo }: UseAuthFormProps) => {
+export const useAuthForm = ({ _returnTo }: UseAuthFormProps) => {
   const {
     signIn,
     signUp,
     signInWithGoogle,
     signInWithGoogleNative,
-    isLoading,
+    _isLoading,
     authError,
     clearAuthError,
   } = useAuth();

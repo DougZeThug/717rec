@@ -1,8 +1,8 @@
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 
 import { supabase } from '@/integrations/supabase/client';
-import { Match, Team } from '@/types';
-import { errorLog, scheduleLog } from '@/utils/logger';
+import { Team } from '@/types';
+import { errorLog } from '@/utils/logger';
 
 /**
  * Structure to represent a team pairing with compatibility score

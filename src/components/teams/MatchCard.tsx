@@ -11,12 +11,12 @@ interface MatchCardProps {
   isPastMatch?: boolean;
 }
 
-const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = false }) => {
-  const formatDate = (dateStr: string | null) => {
+const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, _isPastMatch = false }) => {
+  const _formatDate = (dateStr: string | null) => {
     if (!dateStr) return 'No date';
     try {
       return new Date(dateStr).toLocaleDateString();
-    } catch (e) {
+    } catch (_e) {
       return 'Invalid date';
     }
   };

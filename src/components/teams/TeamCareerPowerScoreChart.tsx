@@ -46,7 +46,7 @@ const CustomDot = (props: DotProps & { payload?: SeasonPowerScoreData }) => {
 };
 
 const CustomLabel = (props: any) => {
-  const { x, y, value, payload } = props;
+  const { x, y, payload } = props;
 
   if (!payload || payload.playoffRank === null) {
     return null;
@@ -75,9 +75,6 @@ const CustomLabel = (props: any) => {
 };
 
 const CustomTooltip = ({ active, payload }: any) => {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-
   if (!active || !payload || !payload[0]) return null;
 
   const data: SeasonPowerScoreData = payload[0].payload;
@@ -111,9 +108,9 @@ const CustomTooltip = ({ active, payload }: any) => {
 
 const TeamCareerPowerScoreChart = ({ teamId }: TeamCareerPowerScoreChartProps) => {
   const { data: seasonData, isLoading } = useTeamCareerPowerScore(teamId);
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const isMobile = useIsMobile();
-  const isDark = theme === 'dark';
+  const isDark = resolvedTheme === 'dark';
 
   if (isLoading) {
     return (

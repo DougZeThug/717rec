@@ -1,5 +1,3 @@
-import { useQueryClient } from '@tanstack/react-query';
-
 import { BracketMatchesByType } from '@/services/brackets/types';
 import { convertErrorToString, getUIErrorMessage, logError } from '@/utils/errorHandler';
 import { playoffLog, warnLog } from '@/utils/logger';
@@ -52,9 +50,6 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
       },
     };
   }
-
-  // Get QueryClient using the proper hook
-  const queryClient = useQueryClient();
 
   // Use the focused hooks
   const bracketQuery = usePlayoffBracketData(bracketId);

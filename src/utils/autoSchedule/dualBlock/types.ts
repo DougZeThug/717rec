@@ -1,5 +1,3 @@
-import { TeamPairing } from '@/types/autoSchedule';
-
 /**
  * Metrics for dual block pairings
  */

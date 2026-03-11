@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { TEAMS_QUERY_KEY, useTeamsQuery } from '@/hooks/teams';
+import { TEAMS_QUERY_KEY } from '@/hooks/teams';
 import { fetchPlayoffTeams } from '@/services/brackets/BracketReadService';
 import type { Team } from '@/utils/playoffs/playoffTypes';
 
@@ -10,7 +10,6 @@ import type { Team } from '@/utils/playoffs/playoffTypes';
  */
 export const usePlayoffTeams = () => {
   // Base teams query for cache sharing
-  const baseQuery = useTeamsQuery();
 
   return useQuery({
     queryKey: [TEAMS_QUERY_KEY, 'with-seeds'],

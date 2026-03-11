@@ -1,5 +1,5 @@
 import { useTheme } from 'next-themes';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router';
 
 import {
@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/table';
 import { useIsMobile } from '@/hooks/useMobile';
 import { cn } from '@/lib/utils';
-import { gradients } from '@/styles/design-system';
 import { getRowInteractionStyles } from '@/styles/interactionUtils';
 import { Ranking } from '@/types';
 import { formatPowerScore, getPowerScoreColor, getSosColor } from '@/utils/colors';

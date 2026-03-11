@@ -23,7 +23,7 @@ export const useAdminAccess = () => {
   }, [authInitialized, user?.id, user?.email, profile, isAdminAccessGranted]);
 
   // DEPRECATED: This function is no longer needed and always returns false
-  const checkAdminAccess = (inputCode: string) => {
+  const checkAdminAccess = (_inputCode: string) => {
     warnLog(
       'checkAdminAccess is deprecated and insecure. Admin status is now checked server-side.'
     );

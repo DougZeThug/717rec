@@ -7,7 +7,7 @@ import { determineWinnerLoser, updateMatchInDatabase } from './matchUpdateCore';
 
 export const useMatchUpdateService = () => {
   const { updateTeamStats } = useTeamRecordUpdate();
-  const { toast } = useToast();
+  const { _toast } = useToast();
 
   const updateMatch = async (match: MatchWithTeams): Promise<boolean> => {
     try {

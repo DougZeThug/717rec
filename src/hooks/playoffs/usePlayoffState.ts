@@ -1,7 +1,5 @@
 import { useState } from 'react';
 
-import { PlayoffMatch } from '@/types';
-
 export const usePlayoffState = () => {
   const [selectedBracketId, setSelectedBracketId] = useState<string | null>(null);
   const [teamDialogOpen, setTeamDialogOpen] = useState(false);

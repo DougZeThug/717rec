@@ -2,7 +2,6 @@ import { Bolt, Scale, Star, Trophy } from 'lucide-react';
 import React from 'react';
 
 import { SummaryCard } from '@/components/ui/summary-card';
-import { useIsMobile } from '@/hooks/useMobile';
 import { cn } from '@/lib/utils';
 import { listStyles } from '@/styles/design-system/lists';
 import { Ranking } from '@/types';
@@ -14,8 +13,6 @@ interface StatsSummaryCardsProps {
 }
 
 const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
-  const isMobile = useIsMobile();
-
   const getHighestWinPercentage = () => {
     if (!rankings || rankings.length === 0) return { percentage: 0, teamName: 'No teams' };
     const highest = rankings.reduce(
@@ -28,7 +25,7 @@ const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
     };
   };
 
-  const getMostWins = () => {
+  const _getMostWins = () => {
     if (!rankings || rankings.length === 0) return { wins: 0, teamName: 'No teams' };
     const mostWinsTeam = rankings.reduce(
       (maxTeam, team) => ((team.wins || 0) > (maxTeam.wins || 0) ? team : maxTeam),

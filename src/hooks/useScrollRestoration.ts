@@ -33,7 +33,7 @@ export const useScrollRestoration = (routeKey?: string) => {
         const positions = JSON.parse(sessionStorage.getItem(SCROLL_POSITIONS_KEY) || '{}');
         positions[key] = window.scrollY;
         sessionStorage.setItem(SCROLL_POSITIONS_KEY, JSON.stringify(positions));
-      } catch (e) {
+      } catch (_e) {
         // Ignore storage errors
       }
     };
@@ -98,7 +98,7 @@ export const useScrollRestoration = (routeKey?: string) => {
         // Start restoration on next frame to allow initial render
         requestAnimationFrame(restoreScroll);
       }
-    } catch (e) {
+    } catch (_e) {
       // Ignore storage errors
     }
 
@@ -118,7 +118,7 @@ export const useScrollRestoration = (routeKey?: string) => {
       const positions = JSON.parse(sessionStorage.getItem(SCROLL_POSITIONS_KEY) || '{}');
       delete positions[key];
       sessionStorage.setItem(SCROLL_POSITIONS_KEY, JSON.stringify(positions));
-    } catch (e) {
+    } catch (_e) {
       // Ignore storage errors
     }
   };

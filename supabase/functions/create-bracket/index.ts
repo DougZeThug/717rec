@@ -513,8 +513,6 @@ serve(async (req) => {
     );
 
     // Validate team seeding is consecutive starting from 1
-    const expectedSeeds = Array.from({ length: payload.teams.length }, (_, i) => i + 1);
-    const actualSeeds = payload.teams.map((t) => t.seed).sort((a, b) => (a || 0) - (b || 0));
 
     // Transform teams to Challonge participants - maintain exact seeding order
     const participants = payload.teams.map((team, index) => ({
@@ -710,8 +708,7 @@ serve(async (req) => {
             }
           }
         } else if (payload.format === 'doubleElim') {
-          const { winnersMatchIds, losersMatchIds, grandFinalsR1Id, grandFinalsR2Id } =
-            bracketResult;
+          const { winnersMatchIds, losersMatchIds, grandFinalsR1Id } = bracketResult;
           const rounds = BracketGenerator.calculateRounds(
             BracketGenerator.calculateBracketSize(payload.teams.length)
           );

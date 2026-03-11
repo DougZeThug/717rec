@@ -1,5 +1,4 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -40,7 +39,7 @@ describe('BracketFormTeamsContainer - Comprehensive Tests', () => {
     ],
   });
 
-  const createEdgeCaseProps = () => ({
+  const _createEdgeCaseProps = () => ({
     divisionId: null,
     maxTeams: 0,
     onChange: vi.fn(),

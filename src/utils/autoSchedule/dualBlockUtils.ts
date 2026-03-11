@@ -5,11 +5,7 @@ import {
   TeamPair,
   TimeBlockTeamsMap,
 } from '@/types/autoSchedule';
-import {
-  DualBlockPairingState,
-  DualBlockValidationResult,
-  NotificationCallback,
-} from '@/types/dualBlock';
+import { DualBlockValidationResult, NotificationCallback } from '@/types/dualBlock';
 
 /**
  * Default block names if not specified in config

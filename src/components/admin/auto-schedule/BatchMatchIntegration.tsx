@@ -14,7 +14,7 @@ interface BatchMatchIntegrationProps {
 
 const BatchMatchIntegration = ({
   generatedPairings,
-  selectedDate,
+  _selectedDate,
   onExport,
   matchCount,
 }: BatchMatchIntegrationProps) => {

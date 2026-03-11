@@ -12,7 +12,6 @@ import { useTeamsQuery } from '@/hooks/teams';
 import { useTimeslots } from '@/hooks/useTimeslots';
 import { useToast } from '@/hooks/useToast';
 import { ByeWeekService } from '@/services/timeslots/ByeWeekService';
-import { Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 
 const TimeslotsTab = () => {

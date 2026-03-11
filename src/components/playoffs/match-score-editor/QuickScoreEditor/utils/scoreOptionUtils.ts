@@ -1,8 +1,8 @@
 import { ScoreOption } from '../types';
 
 export const generateScoreOptions = (
-  team1Id: string | undefined,
-  team2Id: string | undefined
+  _team1Id: string | undefined,
+  _team2Id: string | undefined
 ): ScoreOption[] => {
   // For a best of 3 match, we have 4 possible outcomes: 2-0, 2-1, 1-2, 0-2
   return [

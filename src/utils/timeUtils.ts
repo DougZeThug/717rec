@@ -1,7 +1,7 @@
 import { Match } from '@/types';
 import { errorLog, timezoneLog } from '@/utils/logger';
 
-import { extractTimeSlotFromUTC, formatTimeToUTC } from './timezone';
+import { extractTimeSlotFromUTC } from './timezone';
 
 /**
  * Groups an array of matches by time slot.

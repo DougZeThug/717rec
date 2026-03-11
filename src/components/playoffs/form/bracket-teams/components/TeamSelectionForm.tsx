@@ -1,4 +1,4 @@
-import { AlertCircle, Save, Settings, Trophy, Users, X, Zap } from 'lucide-react';
+import { AlertCircle, Save, Settings, Users, X, Zap } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';

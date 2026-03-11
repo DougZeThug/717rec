@@ -53,7 +53,7 @@ export function formatOrdinal(n: number): string {
 /**
  * Get display text for percentile (e.g., "Top 5%", "85th")
  */
-export function formatPercentileText(percentile: number, rank?: number, total?: number): string {
+export function formatPercentileText(percentile: number, _rank?: number, _total?: number): string {
   if (percentile >= 90) {
     return `Top ${100 - percentile}%`;
   }

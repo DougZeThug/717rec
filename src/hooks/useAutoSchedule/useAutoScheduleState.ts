@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { AutoScheduleMatch, MatchQualityMetrics } from '@/types/autoSchedule';
+import { AutoScheduleMatch } from '@/types/autoSchedule';
 import { scheduleLog } from '@/utils/logger';
 
 import { deserializeMatches, loadAutoScheduleState, saveAutoScheduleState } from './storage';

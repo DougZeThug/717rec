@@ -1,7 +1,5 @@
 import React from 'react';
 
-import { cn } from '@/lib/utils';
-
 interface MatchCardHeaderProps {
   bestOf: number;
   seriesScore: string;

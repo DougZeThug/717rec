@@ -1,4 +1,4 @@
-import { HeadToHeadEntry, HeadToHeadMap, Match, Team } from '@/types';
+import { HeadToHeadMap, Match, Team } from '@/types';
 
 /**
  * Calculate head-to-head records for a team against all other teams

@@ -10,22 +10,6 @@ import { SeasonService } from '@/services/SeasonService';
 import { dbLog, errorLog } from '@/utils/logger';
 
 import SeasonAccordion from './SeasonAccordion';
-interface SeasonData {
-  team_id: string;
-  season_id: string;
-  match_wins: number;
-  match_losses: number;
-  game_wins: number;
-  game_losses: number;
-  sos: number | null;
-  power_score: number | null;
-  champion: boolean;
-  runner_up: boolean;
-  division_name: string | null;
-  team_name: string;
-  team_logo_url: string | null;
-  team_image_url: string | null;
-}
 
 interface Season {
   id: string;

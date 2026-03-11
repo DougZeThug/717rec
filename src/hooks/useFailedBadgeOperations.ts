@@ -52,7 +52,7 @@ export function useFailedBadgeOperations() {
           variant: 'destructive',
         });
       }
-    } catch (e) {
+    } catch (_e) {
       toast({
         title: 'Retry Error',
         description: 'An error occurred while retrying operations.',

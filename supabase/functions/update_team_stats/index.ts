@@ -149,15 +149,12 @@ Deno.serve(async (req) => {
     );
 
     // Update both teams in a single transaction
-    const { data: updateResult, error: updateError } = await supabaseClient.rpc(
-      'update_team_stats',
-      {
-        p_winner_id: winnerId,
-        p_loser_id: loserId,
-        p_winner_game_wins: winnerGameWins,
-        p_loser_game_wins: loserGameWins,
-      }
-    );
+    const { error: updateError } = await supabaseClient.rpc('update_team_stats', {
+      p_winner_id: winnerId,
+      p_loser_id: loserId,
+      p_winner_game_wins: winnerGameWins,
+      p_loser_game_wins: loserGameWins,
+    });
 
     if (updateError) {
       errorLog('Error updating team stats:', updateError);

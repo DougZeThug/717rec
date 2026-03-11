@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-  const { isDark } = useThemeConsistency();
+  const { _isDark } = useThemeConsistency();
   const { isWinterTheme } = useSeasonalTheme();
 
   return (

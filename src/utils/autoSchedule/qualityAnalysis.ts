@@ -14,7 +14,6 @@
  * @module utils/autoSchedule/qualityAnalysis
  */
 
-import { Team } from '@/types';
 import { MatchQualityMetrics, TeamPair, TeamPairingMap } from '@/types/autoSchedule';
 import { scheduleLog } from '@/utils/logger';
 

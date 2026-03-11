@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -45,7 +45,6 @@ vi.mock('@/utils/logger', () => ({
   errorLog: vi.fn(),
 }));
 
-import { useTeamRecordUpdate } from '../useTeamRecordUpdate';
 import { updateMatchScore } from '../utils/matchDatabaseUtils';
 import { invalidateMatchRelatedQueries } from '../utils/queryCacheUtils';
 

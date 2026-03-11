@@ -1,5 +1,5 @@
 import { BRACKET_FORMATS, BRACKET_STATES, BracketFormat, BracketState } from '@/constants/brackets';
-import { PlayoffBracket, PlayoffMatch, Team } from '@/types';
+import { PlayoffMatch } from '@/types';
 
 /**
  * Determines the champion of a bracket if it exists

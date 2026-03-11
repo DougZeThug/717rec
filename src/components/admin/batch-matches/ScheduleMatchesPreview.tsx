@@ -1,11 +1,11 @@
-import { AlertTriangle, CheckCircle, Clock, Info, Users } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Clock, Info } from 'lucide-react';
 import React from 'react';
 
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import TeamLogo from '@/components/ui/team/TeamLogo';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Match, Team } from '@/types';
+import { Team } from '@/types';
 import { TIME_BLOCKS } from '@/utils/autoScheduleUtils';
 
 interface TeamPairing {
@@ -25,8 +25,8 @@ interface ScheduleMatchesPreviewProps {
 const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
   pairings,
   date,
-  isGenerating,
-  onApplyPairings,
+  _isGenerating,
+  _onApplyPairings,
 }) => {
   // Check if we have any pairings
   const hasPairings = Object.values(pairings).some((blockPairings) => blockPairings?.length > 0);

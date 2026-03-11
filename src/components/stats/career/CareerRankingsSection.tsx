@@ -19,7 +19,7 @@ import CareerRankingsTable from './CareerRankingsTable';
 
 const CareerRankingsSection: React.FC = () => {
   const isMobile = useIsMobile();
-  const { resolvedTheme, theme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const { isWinterTheme } = useSeasonalThemeBase();
   const isLight = !isWinterTheme && resolvedTheme === 'light';
   const {

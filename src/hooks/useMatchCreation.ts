@@ -6,14 +6,13 @@ import { useToast } from '@/hooks/useToast';
 import { createMatch } from '@/services/matches/MatchWriteService';
 import { Match, Team } from '@/types';
 import { errorLog } from '@/utils/logger';
-import { normalizeTimeFormat } from '@/utils/timeUtils';
 
 export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]) => void) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const handleCreateMatch = async (matchData: Omit<Match, 'id'>, teams: Team[]) => {
+  const handleCreateMatch = async (matchData: Omit<Match, 'id'>, _teams: Team[]) => {
     try {
       // Ensure we have a valid date with proper time
       let dateWithTime = new Date(matchData.date);

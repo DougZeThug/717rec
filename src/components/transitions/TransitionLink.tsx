@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, LinkProps, useNavigate } from 'react-router';
+import { Link, LinkProps } from 'react-router';
 
 import { cn } from '@/lib/utils';
 import { interactive } from '@/styles/design-system';
@@ -18,7 +18,7 @@ export const TransitionLink: React.FC<TransitionLinkProps> = ({
   className,
   onClick,
   variant = 'default',
-  noFeedback = false,
+  _noFeedback = false,
   ...rest
 }) => {
   const getLinkStyle = () => {

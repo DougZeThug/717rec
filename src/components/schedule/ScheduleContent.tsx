@@ -29,7 +29,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
   activeTab,
   setActiveTab,
   filteredMatches,
-  teams,
+  _teams,
   selectedDate,
   groupedTimeslots,
   timeslotsLoading,

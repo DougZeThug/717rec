@@ -11,7 +11,7 @@ import { ToggleButtonGroup, ToggleOption } from '@/components/ui/ToggleButtonGro
 import WinterSection from '@/components/winter/WinterSection';
 import { useIsMobile } from '@/hooks/useMobile';
 import useScrollRestoration from '@/hooks/useScrollRestoration';
-import { DisplayMode, SortMode, useTeamsPreferences, ViewMode } from '@/hooks/useTeamsPreferences';
+import { DisplayMode, useTeamsPreferences, ViewMode } from '@/hooks/useTeamsPreferences';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
 

@@ -1,21 +1,10 @@
 import { Team } from '@/types';
-import {
-  DualBlockConfig,
-  PairingResult,
-  TeamPairing,
-  TeamPairingMap,
-  TimeBlockTeamsMap,
-} from '@/types/autoSchedule';
+import { DualBlockConfig, PairingResult, TeamPairingMap } from '@/types/autoSchedule';
 import { NotificationCallback } from '@/types/dualBlock';
 import { errorLog, scheduleLog, warnLog } from '@/utils/logger';
 
 import { generatePairingsWithBlossom } from '../blossomPairingAlgorithm';
 import { calculateConfigurableCompatibility } from '../compatibilityUtils';
-import {
-  createCrossBlockCompatibilityAdjuster,
-  handleOddTeamCount,
-  validateDualBlockTeams,
-} from '../dualBlockUtils';
 import { haveTeamsPlayedBefore } from '../matchHistoryService';
 import { findTeamsWithSameOpponent } from './opponentUtils';
 

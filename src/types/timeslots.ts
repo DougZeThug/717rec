@@ -1,5 +1,3 @@
-import { Team } from './index';
-
 export interface TeamTimeslot {
   id: string;
   match_date: string;

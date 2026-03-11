@@ -144,17 +144,6 @@ export const getBackToBackPairName = (timeSlot: string): string | null => {
 export const getMatchSequence = (timeSlot: string): number | null => {
   // Determine sequence based on whether the timeslot is in the earlier or later position
   // Primary slots are always sequence 1, secondary slots are always sequence 2
-  const secondarySlots = [
-    '5:30 PM',
-    '6:00 PM',
-    '6:30 PM',
-    '7:00 PM',
-    '7:30 PM',
-    '8:00 PM',
-    '8:30 PM',
-    '9:00 PM',
-    '9:30 PM',
-  ];
 
   switch (timeSlot) {
     case '5:00 PM':

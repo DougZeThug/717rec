@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { GameData, ValidationResult } from '../types';
+import { GameData } from '../types';
 import { calculateTotalScore, validateMatchScores } from '../utils/scoreUtils';
 
 export const useMatchScoreValidation = (

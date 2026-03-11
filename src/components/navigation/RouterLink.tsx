@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, LinkProps, useNavigate } from 'react-router';
+import { Link, LinkProps } from 'react-router';
 
 import { cn } from '@/lib/utils';
 

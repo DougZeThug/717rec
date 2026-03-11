@@ -2,7 +2,6 @@ import { ChevronDown } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router';
-import type { TooltipProps } from 'recharts';
 import {
   CartesianGrid,
   Line,

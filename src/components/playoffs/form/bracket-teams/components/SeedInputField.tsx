@@ -15,7 +15,7 @@ interface SeedInputFieldProps {
 
 export const SeedInputField: React.FC<SeedInputFieldProps> = ({
   teamId,
-  teamName,
+  _teamName,
   seed,
   isManualMode,
   hasConflict,

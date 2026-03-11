@@ -52,7 +52,7 @@ export const calculateDualBlockMetrics = (
   const totalTeams = Object.keys(teamMatchCounts).length;
   const blockBalanceScore = totalTeams > 0 ? (teamsWithBothMatches / totalTeams) * 100 : 0;
 
-  Object.entries(teamMatchCounts).forEach(([teamId, tc]) => {
+  Object.entries(teamMatchCounts).forEach(([_teamId, tc]) => {
     if (tc.matchCount === 2) {
       // Check for duplicate opponents
       const uniqueOpponents = new Set(tc.opponents);

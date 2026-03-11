@@ -1,4 +1,4 @@
-import { PlayoffBracket, PlayoffMatch } from '@/types';
+import { PlayoffBracket } from '@/types';
 
 import { BracketMatchesByType } from './types';
 

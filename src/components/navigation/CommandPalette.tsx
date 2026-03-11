@@ -5,7 +5,6 @@ import {
   Home,
   MessageSquare,
   Search,
-  Settings,
   Trophy,
   User,
   Users,

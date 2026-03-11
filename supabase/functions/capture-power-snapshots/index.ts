@@ -151,9 +151,7 @@ Deno.serve(async (req) => {
     }));
 
     // 6. Batch insert into power_score_snapshots
-    const { error: insertError, count } = await supabase
-      .from('power_score_snapshots')
-      .insert(snapshots);
+    const { error: insertError } = await supabase.from('power_score_snapshots').insert(snapshots);
 
     if (insertError) {
       console.error('[capture-power-snapshots] Error inserting snapshots:', insertError);

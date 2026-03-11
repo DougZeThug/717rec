@@ -6,7 +6,7 @@ import { useTeamsArray } from '@/hooks/teams';
 import { useDivisions } from '@/hooks/useDivisions';
 import type { Database } from '@/integrations/supabase/types';
 import { fetchBracketsOverview } from '@/services/brackets/BracketReadService';
-import { bracketLog, errorLog } from '@/utils/logger';
+import { bracketLog } from '@/utils/logger';
 import type { PlayoffBracket, PlayoffMatch } from '@/utils/playoffs/playoffTypes';
 import { groupTeamsByDivision } from '@/utils/teamGrouping';
 
@@ -20,7 +20,7 @@ interface BracketRowWithRels extends BracketRow {
 }
 
 // Row-to-Domain mapper
-const mapMatchRow = (row: PlayoffMatchRow): PlayoffMatch => ({
+const _mapMatchRow = (row: PlayoffMatchRow): PlayoffMatch => ({
   id: row.id,
   round: row.round ?? 0,
   position: row.position ?? 0,

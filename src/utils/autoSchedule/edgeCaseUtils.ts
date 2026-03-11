@@ -1,4 +1,3 @@
-import { Team } from '@/types';
 import { TimeBlockTeamsMap } from '@/types/autoSchedule';
 
 import { BACK_TO_BACK_PAIRS } from './constants';

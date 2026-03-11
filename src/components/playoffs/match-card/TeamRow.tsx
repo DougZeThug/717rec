@@ -15,7 +15,7 @@ interface TeamRowProps {
 
 const TeamRow: React.FC<TeamRowProps> = ({
   team,
-  teamId,
+  _teamId,
   teamSeed,
   score,
   isWinner,

@@ -1,5 +1,5 @@
 import { ArrowLeft, Trophy } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 
 import TeamBadgeCollection from '@/components/badges/TeamBadgeCollection';

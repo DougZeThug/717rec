@@ -1,5 +1,3 @@
-import { format } from 'date-fns';
-
 export class TimeslotValidator {
   /**
    * Validate timeslot data before submission

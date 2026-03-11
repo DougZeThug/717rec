@@ -4,11 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { bracketLog, errorLog, failureLog, successLog } from '@/utils/logger';
 
 import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
-import type {
-  CreateBracketOptions,
-  ErrorLike,
-  StorageParticipant,
-} from '../types/BracketServiceTypes';
+import type { CreateBracketOptions, StorageParticipant } from '../types/BracketServiceTypes';
 import { isErrorLike, serializeError } from '../utils/BracketErrorUtils';
 
 /**

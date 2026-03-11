@@ -25,7 +25,7 @@ export const sanitizeReturnTo = (pathname: string | undefined): string => {
     if (url.pathname.includes(':')) return '/';
 
     return pathname;
-  } catch (e) {
+  } catch (_e) {
     return '/';
   }
 };

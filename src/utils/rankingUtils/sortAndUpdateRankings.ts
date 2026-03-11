@@ -6,7 +6,7 @@ import { sortRankings, updateRankChanges } from '@/utils/rankingUtils';
  */
 export const sortAndUpdateRankings = (
   rankings: Ranking[],
-  previousRankings: Record<string, number>
+  _previousRankings: Record<string, number>
 ): Ranking[] => {
   // Sort by power score (descending)
   const sortedRankings = sortRankings(rankings, 'powerScore', 'desc');

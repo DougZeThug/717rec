@@ -10,8 +10,6 @@ import {
 } from '@/services/matches/MatchWriteService';
 import { Team } from '@/types';
 import { errorLog, matchLog, timezoneLog } from '@/utils/logger';
-import { normalizeTimeFormat } from '@/utils/timeUtils';
-import { formatTimeToUTC } from '@/utils/timezone/converters';
 
 import { MatchPair } from './MatchPairsList';
 
@@ -25,7 +23,7 @@ function getNextThursday(): Date {
   return thursday;
 }
 
-export const useBatchMatchForm = (teams: Team[]) => {
+export const useBatchMatchForm = (_teams: Team[]) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(getNextThursday());
   const [matchPairs, setMatchPairs] = useState<MatchPair[]>([
     { id: '1', team1Id: null, team2Id: null, timeslot: null },

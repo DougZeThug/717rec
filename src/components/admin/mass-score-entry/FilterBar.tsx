@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
-import { CalendarIcon, Filter, Info, X } from 'lucide-react';
+import { CalendarIcon, Info, X } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';

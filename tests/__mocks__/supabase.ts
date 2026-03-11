@@ -38,8 +38,8 @@ interface MockSupabaseTable {
 // Mock Supabase client
 export const supabase = {
   from: (tableName: string): MockSupabaseTable => ({
-    select: (query?: string) => ({
-      eq: (column: string, value: unknown) => ({
+    select: (_query?: string) => ({
+      eq: (_column: string, _value: unknown) => ({
         single: () => Promise.resolve({ data: null, error: null }),
         then: (callback: (result: MockSupabaseResponse) => unknown) =>
           Promise.resolve({ data: [], error: null }).then(callback),
@@ -74,8 +74,8 @@ export const supabase = {
       };
     },
     update: (data: unknown) => ({
-      eq: (column: string, value: unknown) => Promise.resolve({ data, error: null }),
-      match: (criteria: Record<string, unknown>) => Promise.resolve({ data, error: null }),
+      eq: (_column: string, _value: unknown) => Promise.resolve({ data, error: null }),
+      match: (_criteria: Record<string, unknown>) => Promise.resolve({ data, error: null }),
     }),
   }),
 };

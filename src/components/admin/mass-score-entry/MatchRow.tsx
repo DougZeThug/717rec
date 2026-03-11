@@ -1,4 +1,4 @@
-import { AlertCircle, CheckCircle2, Loader2, Trash2 } from 'lucide-react';
+import { AlertCircle, Loader2, Trash2 } from 'lucide-react';
 import React, { useCallback } from 'react';
 
 import { Button } from '@/components/ui/button';

@@ -43,7 +43,7 @@ export async function applyMatchResult(
 
   try {
     // Use the RPC function for atomic updates to both teams
-    const { data, error } = await supabase.rpc('update_team_stats', {
+    const { error } = await supabase.rpc('update_team_stats', {
       p_winner_id: winnerId,
       p_loser_id: loserId,
       p_winner_game_wins: winnerGameWinsNum,

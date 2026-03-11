@@ -18,10 +18,10 @@ interface ExportTabProps {
 }
 
 const ExportTab: React.FC<ExportTabProps> = ({
-  selectedDate,
+  _selectedDate,
   generatedMatches,
   matchQualityMetrics,
-  onApplySchedule,
+  _onApplySchedule,
   onSaveSchedule,
   isSaving = false,
   hasUnsavedEdits = false,

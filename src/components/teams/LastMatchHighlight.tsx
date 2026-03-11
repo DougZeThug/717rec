@@ -34,7 +34,6 @@ export const LastMatchHighlight: React.FC<LastMatchHighlightProps> = ({
   const isTeam1 = lastMatch.team1Id === teamId;
 
   // Get opponent info
-  const opponentId = isTeam1 ? lastMatch.team2Id : lastMatch.team1Id;
   const opponentDetails = isTeam1 ? lastMatch.team2Details : lastMatch.team1Details;
   const opponentName = opponentDetails?.name || 'Unknown';
 

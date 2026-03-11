@@ -21,7 +21,7 @@ interface AutoScheduleSectionProps {
 
 export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
   selectedDate,
-  matchPairs,
+  _matchPairs,
   setMatchPairs,
 }) => {
   const {

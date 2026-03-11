@@ -9,7 +9,7 @@ import { Form } from '@/components/ui/form';
 import { BRACKET_FORMATS } from '@/constants/brackets';
 
 import { BracketFormFormat } from '../BracketFormFormat';
-import { bracketFormSchema, BracketFormValues } from '../BracketFormSchema';
+import { bracketFormSchema } from '../BracketFormSchema';
 
 const TestWrapper = () => {
   const form = useForm({

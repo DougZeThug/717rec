@@ -1,4 +1,3 @@
-import { useTheme } from 'next-themes';
 import React from 'react';
 import {
   Bar,
@@ -24,8 +23,6 @@ interface PowerScoreChartProps {
 }
 
 const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === 'dark';
   const colors = useChartColors();
   const isMobile = useIsMobile();
 

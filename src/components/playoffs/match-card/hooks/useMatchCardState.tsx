@@ -24,8 +24,6 @@
 // The changes in the adapter will ensure that placeholder IDs are not sent to the database,
 // but the UI will still work correctly with null team IDs.
 
-import { useMemo } from 'react';
-
 import { PlayoffMatch, Team } from '@/types';
 
 interface UseMatchCardStateProps {

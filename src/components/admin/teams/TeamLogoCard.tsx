@@ -2,7 +2,6 @@ import { Check, Loader2, Upload } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 
 import { TeamLogo } from '@/components/shared/TeamLogo';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/useToast';
@@ -15,7 +14,6 @@ import {
   getStatusColor,
   getStatusIcon,
   getStatusLabel,
-  LogoStatus,
 } from '@/utils/logoStatusUtils';
 
 interface TeamLogoCardProps {

@@ -15,7 +15,7 @@ interface TeamDayTimeslotProps {
 
 const TeamDayTimeslot: React.FC<TeamDayTimeslotProps> = ({
   teamId,
-  date,
+  _date,
   timeslots,
   isLoading = false,
 }) => {

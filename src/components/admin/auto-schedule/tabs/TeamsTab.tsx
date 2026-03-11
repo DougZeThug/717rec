@@ -7,7 +7,6 @@ import SchedulePreview from '@/components/admin/batch-matches/auto-schedule/Sche
 import { WarningDisplay } from '@/components/admin/batch-matches/auto-schedule/WarningDisplay';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Team } from '@/types';
 import { TimeBlockTeamsMap } from '@/types/autoSchedule';
 import { validateTeamCounts } from '@/utils/autoSchedule/edgeCaseUtils';
 

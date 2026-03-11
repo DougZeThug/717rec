@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { ProcessedTeam, SeedValidationState } from '../types';
-import { handleDragDropReorder } from '../utils/dragAndDrop';
 
 export interface SeedManagementState {
   mode: 'automatic' | 'manual';

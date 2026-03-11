@@ -26,7 +26,7 @@ interface TeamTotalsProps {
 
 const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
   const { totals, isLoading } = useTeamTotals(teamId);
-  const { getTeamPercentiles, isLoading: percentilesLoading } = useLeaguePercentiles();
+  const { getTeamPercentiles } = useLeaguePercentiles();
 
   const percentiles = getTeamPercentiles(teamId);
 

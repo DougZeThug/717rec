@@ -1,4 +1,4 @@
-import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
+import { TrendingDown, TrendingUp } from 'lucide-react';
 import React from 'react';
 
 import { Match } from '@/types';
@@ -39,7 +39,7 @@ const TeamTrend: React.FC<TeamTrendProps> = ({ recentMatches, teamId, limit = 5 
   }
 
   // Generate the trend display
-  const trend = sortedMatches
+  const _trend = sortedMatches
     .map((match) => {
       const isWin = match.winnerId === teamId;
       return isWin ? 'W' : 'L';

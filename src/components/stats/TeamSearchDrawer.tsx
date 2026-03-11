@@ -62,7 +62,7 @@ const TeamSearchDrawer: React.FC<TeamSearchDrawerProps> = ({
             </p>
           ) : (
             <div className="space-y-1">
-              {filteredTeams.map((ranking, index) => {
+              {filteredTeams.map((ranking, _index) => {
                 const globalRank = rankings.findIndex((r) => r.teamId === ranking.teamId) + 1;
 
                 return (

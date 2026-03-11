@@ -1,8 +1,8 @@
-import { motion, useSpring, useTransform } from 'framer-motion';
+import { motion, useSpring } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
 
 import { cn } from '@/lib/utils';
-import { formatPowerScore, getPowerScoreColor } from '@/utils/colors/powerScoreColors';
+import { getPowerScoreColor } from '@/utils/colors/powerScoreColors';
 
 interface PowerScoreGaugeProps {
   score: number; // 0-100 scale from v_team_details view

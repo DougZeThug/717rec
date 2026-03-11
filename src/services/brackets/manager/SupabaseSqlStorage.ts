@@ -61,7 +61,7 @@ interface ParticipantCacheEntry {
 /**
  * Helper: Extract specific fields from object for logging
  */
-function pick<T extends Record<string, unknown>>(
+function _pick<T extends Record<string, unknown>>(
   obj: T | null | undefined,
   keys: string[]
 ): Record<string, unknown> {

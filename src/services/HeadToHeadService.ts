@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { HeadToHeadRecord, HeadToHeadResponse, OpponentHistory } from '@/types/headToHead';
 import { handleDatabaseError } from '@/utils/errorHandler';
-import { errorLog, matchLog } from '@/utils/logger';
+import { matchLog } from '@/utils/logger';
 import { withTiming } from '@/utils/performance';
 
 export class HeadToHeadService {

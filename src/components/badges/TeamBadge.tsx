@@ -23,7 +23,7 @@ interface TeamBadgeProps {
 export const TeamBadge: React.FC<TeamBadgeProps> = ({
   badge,
   size = 'md',
-  showDescription = false,
+  _showDescription = false,
   className,
 }) => {
   const config = getBadgeConfig(badge.badge_type, badge);

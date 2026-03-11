@@ -4,7 +4,6 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { animations } from '@/styles/design-system';
 
 interface SearchBarProps {
   searchInput: string;

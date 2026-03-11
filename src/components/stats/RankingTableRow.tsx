@@ -30,7 +30,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
   isExpanded = false,
   onToggleExpand,
   showDivision = false,
-  rowIndex,
+  _rowIndex,
 }) => {
   const { isWinterTheme } = useSeasonalTheme();
   const globalRank = index + 1;

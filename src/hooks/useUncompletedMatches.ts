@@ -20,7 +20,7 @@ export function useUncompletedMatches() {
   const {
     data: matches = [],
     isLoading,
-    refetch,
+    _refetch,
   } = useQuery<Match[]>({
     queryKey: ['matches', 'uncompleted'],
     queryFn: async () => {

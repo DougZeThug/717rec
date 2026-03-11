@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
-import { gradients } from '@/styles/design-system';
 import { Ranking } from '@/types';
 import { debugLog } from '@/utils/logger';
 

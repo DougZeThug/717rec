@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { reverseTeamStats } from '@/hooks/matches/updates/utils/statReversalUtils';
 import { useMatchSubmission } from '@/hooks/matches/useMatchSubmission';
@@ -7,7 +7,6 @@ import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheU
 import { useToast } from '@/hooks/useToast';
 import { errorLog, filterLog, scoreLog } from '@/utils/logger';
 
-import { MatchWithTeams } from '../types';
 import { useErrorHandling } from './error/useErrorHandling';
 import { useMatchesFetching } from './fetching/useMatchesFetching';
 import { useFiltersState } from './state/useFiltersState';
@@ -47,8 +46,10 @@ export const useScoreEntryData = () => {
 
   useMatchEventListeners({ updateFiltersForMatchDate });
 
-  const { handleScoreChange, handleGameWinsChange, handleMarkCompleted, validationErrors } =
-    useMatchScores(matches, setMatches);
+  const { handleScoreChange, handleGameWinsChange, handleMarkCompleted } = useMatchScores(
+    matches,
+    setMatches
+  );
 
   useEffect(() => {
     const loadData = async () => {

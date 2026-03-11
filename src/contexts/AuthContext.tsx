@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 
 import { useAuth as useAuthHook } from '@/hooks/useAuth';
 import { AuthContextType } from '@/types/auth';
@@ -60,7 +60,6 @@ export const useAuth = () => {
 export const useRequireAuth = () => {
   const { user, isLoading, authInitialized } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
   React.useEffect(() => {
     if (authInitialized && !isLoading && !user) {

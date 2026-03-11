@@ -2,7 +2,6 @@ import { Clock } from 'lucide-react';
 import React from 'react';
 
 import { Badge } from '@/components/ui/badge';
-import { useIsMobile } from '@/hooks/useMobile';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 
 interface TimeBlockHeaderProps {
@@ -16,7 +15,6 @@ export const TimeBlockHeader: React.FC<TimeBlockHeaderProps> = ({
   teamCount,
   timeslots = [],
 }) => {
-  const isMobile = useIsMobile();
   const { isWinterTheme } = useSeasonalThemeBase();
 
   return (

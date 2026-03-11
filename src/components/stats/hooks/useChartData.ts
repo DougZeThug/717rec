@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 
 import { Ranking } from '@/types';
-import { ChartDataItem, PowerScoreDataItem } from '@/types/chart';
 
 export const useChartData = (rankings: Ranking[], chartLimit: number) => {
   // Process data for win-loss chart - sort by win percentage

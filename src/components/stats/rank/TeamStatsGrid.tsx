@@ -24,10 +24,10 @@ interface TeamStatsGridProps {
 export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
   wins,
   losses,
-  gamesWon,
-  gamesLost,
+  _gamesWon,
+  _gamesLost,
   sos,
-  streak,
+  _streak,
   powerScore,
   rankChange,
   compactView = false,
