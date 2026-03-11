@@ -38,8 +38,8 @@ export function useAutoSchedule() {
     setEditableMatches,
     isEditMode,
     setIsEditMode,
-    teamBlockMap,
-    setTeamBlockMap,
+    _teamBlockMap,
+    _setTeamBlockMap,
   } = useAutoScheduleState();
 
   // Get editable matches operations
@@ -84,7 +84,7 @@ export function useAutoSchedule() {
     originalTimeBlockTeams,
     teamBlockMap: loadedTeamBlockMap,
     setTimeBlockTeams, // Expose this function for manual team assignment
-    handleLoadTeams,
+    handleLoadTeams: _handleLoadTeams,
     getTeamCountStatus,
   } = useTeamOperations();
 
@@ -107,7 +107,6 @@ export function useAutoSchedule() {
   const loadTeams = async () => {
     setIsProcessing(true);
     try {
-      const result = await handleLoadTeams(selectedDate);
       // The team block map is now set by useTeamOperations
     } finally {
       setIsProcessing(false);

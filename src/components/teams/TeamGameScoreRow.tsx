@@ -23,7 +23,7 @@ interface TeamDetails {
 
 export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({
   match,
-  teamId,
+  _teamId,
   highlightWinnerLoser,
 }) => {
   // Identify teams

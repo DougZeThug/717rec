@@ -3,7 +3,6 @@ import { Grid2x2, List } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
-import { gradients } from '@/styles/design-system';
 
 interface ViewToggleProps {
   view: 'division' | 'all';

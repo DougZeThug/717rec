@@ -1,4 +1,3 @@
-import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 
 import { useBracketsQuery } from '@/hooks/brackets/useBracketsQuery';

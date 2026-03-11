@@ -77,7 +77,7 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
         }
 
         // For brackets-manager, we use opponent IDs directly (not team UUIDs)
-        const winnerOpponentId =
+        const _winnerOpponentId =
           team1GameWins > team2GameWins ? bmMatchData.opponent1_id : bmMatchData.opponent2_id;
 
         scoreLog(`Calling bracketManagerService.updateMatch for Match ${matchId}`, {

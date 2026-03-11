@@ -1,5 +1,4 @@
 import { Team } from '@/types';
-import { PairingResult } from '@/types/autoSchedule';
 
 /**
  * Notification callback for errors and warnings

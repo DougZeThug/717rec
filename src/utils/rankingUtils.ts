@@ -1,4 +1,4 @@
-import { Match, Ranking, Team } from '@/types';
+import { Ranking } from '@/types';
 import { errorLog, warnLog } from '@/utils/logger';
 
 // Ranking utilities - now handles NULL power scores for teams with no matches

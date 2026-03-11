@@ -9,7 +9,7 @@ import { dbLog, errorLog, scoreLog, warnLog } from '@/utils/logger';
 import { MatchWithTeams } from '../types';
 
 export const useMatchUpdates = () => {
-  const { toast } = useToast();
+  const { _toast } = useToast();
   const { updateTeamRecords } = useTeamRecords();
   const queryClient = useQueryClient();
 

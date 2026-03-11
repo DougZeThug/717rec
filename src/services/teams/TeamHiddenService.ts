@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { BusinessLogicError, NotFoundError } from '@/types/errors';
-import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
+import { handleDatabaseError } from '@/utils/errorHandler';
 
 /**
  * Service for managing teams in the hidden division

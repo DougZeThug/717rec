@@ -3,7 +3,6 @@ import {
   Brush,
   Flame,
   Gavel,
-  LucideIcon,
   Medal,
   Shield,
   Shuffle,
@@ -14,7 +13,6 @@ import {
   ThermometerSnowflake,
   TrendingUp,
   Trophy,
-  Zap,
 } from 'lucide-react';
 
 import type { WinterGlyphName } from '@/icons';

@@ -2,7 +2,6 @@ import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import React from 'react';
 
-import { Label } from '@/components/ui/label';
 import { scoreLog } from '@/utils/logger';
 
 import MatchStatusIndicator from './MatchStatusIndicator';
@@ -23,7 +22,7 @@ const MatchStatusSection: React.FC<MatchStatusSectionProps> = ({
   disabled,
 }) => {
   // Handle click on the status indicator
-  const handleStatusClick = () => {
+  const _handleStatusClick = () => {
     if (!disabled) {
       scoreLog(
         `MatchStatusSection: Label clicked, toggling from ${isCompleted} to ${!isCompleted}`

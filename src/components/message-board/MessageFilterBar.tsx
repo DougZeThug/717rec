@@ -1,12 +1,10 @@
-import { RefreshCw } from 'lucide-react';
 import React, { useState } from 'react';
 
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { FilterOptions } from '@/hooks/message-board/types';
 import { useTeams } from '@/hooks/useTeams';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
-import { MessageCategory } from '@/types/reactions';
 
 import ActiveFilters from './filter/ActiveFilters';
 import FilterSection from './filter/FilterSection';

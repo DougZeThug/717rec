@@ -13,9 +13,9 @@ interface MobileMenuProps {
   navItems: Array<{ label: string; href: string }>;
 }
 
-const MobileMenu: React.FC<MobileMenuProps> = React.memo(({ navItems }) => {
+const MobileMenu: React.FC<MobileMenuProps> = React.memo(({ _navItems }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { isAdminAccessGranted } = useAdminAccess();
+  const { _isAdminAccessGranted } = useAdminAccess();
   const location = useLocation();
 
   // Close menu on route change

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Archive, Calendar, Edit, Trophy } from 'lucide-react';
+import { Archive, Calendar, Edit } from 'lucide-react';
 import React from 'react';
 
 import { Badge } from '@/components/ui/badge';

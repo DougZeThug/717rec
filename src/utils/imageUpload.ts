@@ -116,7 +116,7 @@ export const uploadTeamImage = async (file: File, teamId?: string) => {
       });
       fileToUpload = fallbackFile;
     }
-  } catch (error) {
+  } catch (_error) {
     // Continue with the original file if compression fails
     fileToUpload = file;
   }
@@ -130,7 +130,7 @@ export const uploadTeamImage = async (file: File, teamId?: string) => {
 
   try {
     // Upload the file to Supabase storage
-    const { data, error } = await supabase.storage.from('teams').upload(filePath, fileToUpload);
+    const { error } = await supabase.storage.from('teams').upload(filePath, fileToUpload);
 
     if (error) {
       errorLog('Error uploading image:', error);

@@ -40,7 +40,7 @@ export const getTimeBlocksStatistics = (timeBlockTeams: TimeBlockTeamsMap) => {
   let totalTeams = 0;
   let oddBlocks = 0;
 
-  Object.entries(timeBlockTeams).forEach(([block, teams]) => {
+  Object.entries(timeBlockTeams).forEach(([_block, teams]) => {
     totalTeams += teams.length;
     if (teams.length % 2 !== 0) oddBlocks++;
   });

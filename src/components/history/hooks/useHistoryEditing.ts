@@ -48,7 +48,7 @@ const INTERMEDIATE_2_RANK_OFFSET = 8;
 // Helper to get display division name for editing (splits Intermediate into Int 1/2)
 const getEditDisplayDivision = (
   divisionName: string | null,
-  playoffRank: number | null
+  _playoffRank: number | null
 ): string => {
   if (!divisionName) return 'Uncategorized';
   return getHistoryDivisionDisplayName(divisionName);

@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { cn } from '@/lib/utils';
-import { animations, gradients } from '@/styles/design-system';
+import { animations } from '@/styles/design-system';
 
 import MatchComments from './comments/MatchComments';
 import MatchReactions from './reactions/MatchReactions';

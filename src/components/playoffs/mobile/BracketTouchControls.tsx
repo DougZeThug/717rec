@@ -1,5 +1,5 @@
 import { Move, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { useBracketResponsive } from '@/hooks/useBracketResponsive';

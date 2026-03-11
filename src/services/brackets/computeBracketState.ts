@@ -1,5 +1,5 @@
 import { BRACKET_FORMATS, BRACKET_STATES } from '@/constants/brackets';
-import { BracketState, PlayoffBracket, PlayoffMatch } from '@/utils/playoffs/playoffTypes';
+import { BracketState, PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
 /**
  * Computes the current state of a bracket based on its matches
@@ -21,7 +21,6 @@ export function computeBracketState(bracket: PlayoffBracket): BracketState {
   }
 
   // Check if all matches are completed
-  const allMatchesComplete = activeMatches.every((match) => !!match.winnerId);
 
   // For a completed bracket, the finals must be played and have a winner
   const finalsMatches = bracket.matches.filter((match) => match.matchType === 'finals');

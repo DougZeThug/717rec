@@ -21,7 +21,7 @@ interface TeamsDivisionSectionProps {
 
 export const TeamsDivisionSection: React.FC<TeamsDivisionSectionProps> = ({
   divisionName,
-  divisionId,
+  _divisionId,
   teams,
   isExpanded,
   onToggleExpand,

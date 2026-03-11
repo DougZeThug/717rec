@@ -39,7 +39,7 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
       games: { team1Score: number; team2Score: number }[],
       team1GameWins: number,
       team2GameWins: number,
-      refetchBrackets: () => Promise<any>
+      _refetchBrackets: () => Promise<any>
     ) => {
       await handlers.handleSaveMatchScore(
         matchId,

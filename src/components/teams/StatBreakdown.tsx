@@ -21,7 +21,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { PowerScoreDisplay } from '@/components/ui/PowerScoreDisplay';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import { gradients } from '@/styles/design-system';
 import { getSosColor, getSweepRateColor } from '@/utils/colors';
 
 interface StatBreakdownProps {

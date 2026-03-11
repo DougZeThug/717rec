@@ -7,7 +7,7 @@
  *  - Automatic production log suppression
  */
 
-import { isDev, type LogLevel, shouldLog } from '@/utils/logger-types';
+import { isDev, shouldLog } from '@/utils/logger-types';
 import { captureError, captureMessage } from '@/utils/sentry';
 
 // Base logging functions

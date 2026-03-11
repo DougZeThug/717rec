@@ -1,9 +1,8 @@
 import { TimeslotService } from '@/services/timeslots/TimeslotService';
 import { Team } from '@/types';
-import { PairedTimeBlockTeamsMap } from '@/types/autoSchedule';
 import { errorLog, scheduleLog, warnLog } from '@/utils/logger';
 
-import { BACK_TO_BACK_PAIRS, getBackToBackPairName, getPairConfig } from './constants';
+import { BACK_TO_BACK_PAIRS, getPairConfig } from './constants';
 import { createSafeScheduleDate, normalizeScheduleDate, validateScheduleDate } from './dateUtils';
 
 /**

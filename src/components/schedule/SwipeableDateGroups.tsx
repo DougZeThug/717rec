@@ -1,4 +1,4 @@
-import { format, isSameDay, isToday } from 'date-fns';
+import { isSameDay, isToday } from 'date-fns';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { useEffect } from 'react';

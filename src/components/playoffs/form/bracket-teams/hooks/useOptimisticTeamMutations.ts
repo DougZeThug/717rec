@@ -180,7 +180,7 @@ export const useOptimisticTeamMutations = () => {
   const optimisticBatchUpdate = useMutation({
     mutationFn: async (updates: TeamSeedUpdate[]) => {
       // Create and apply all optimistic updates
-      const optimisticUpdates = updates.map(({ teamId, seed }) => {
+      const _optimisticUpdates = updates.map(({ teamId, seed }) => {
         const update = createOptimisticUpdate(teamId, seed);
         applyOptimisticUpdate(update);
         return update;
@@ -208,7 +208,7 @@ export const useOptimisticTeamMutations = () => {
       const data = await batchUpdateTeamSeeds(batchData);
       return data as unknown as BatchUpdateResult;
     },
-    onSuccess: (result, variables) => {
+    onSuccess: (result, _variables) => {
       // Clear timeout
       if (rollbackTimeoutRef.current) {
         clearTimeout(rollbackTimeoutRef.current);

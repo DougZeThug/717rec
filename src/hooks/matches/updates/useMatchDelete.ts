@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/useToast';
 import { deleteMatch, upsertTeamSeasonStats } from '@/services/matches/MatchWriteService';
 import { Match, Team } from '@/types';
-import { errorLog, warnLog } from '@/utils/logger';
+import { errorLog } from '@/utils/logger';
 
 import { invalidateAllDataQueries } from './utils/queryInvalidation';
 import { reverseTeamStats } from './utils/statReversalUtils';
@@ -26,7 +26,7 @@ export const useMatchDelete = ({
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const handleDeleteMatch = async (teams: Team[]) => {
+  const handleDeleteMatch = async (_teams: Team[]) => {
     if (!deleteMatchId) return false;
 
     try {

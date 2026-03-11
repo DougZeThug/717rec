@@ -1,6 +1,6 @@
 import { screen } from '@testing-library/dom';
 import { render } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { mockTeams } from '@/utils/test/autoSchedule/mockData';
 

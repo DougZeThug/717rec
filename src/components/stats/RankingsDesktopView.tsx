@@ -1,7 +1,6 @@
 import { useTheme } from 'next-themes';
 import React from 'react';
 
-import { useIsMobile } from '@/hooks/useMobile';
 import { Ranking } from '@/types';
 
 import DivisionRankingsSection from './desktop/DivisionRankingsSection';

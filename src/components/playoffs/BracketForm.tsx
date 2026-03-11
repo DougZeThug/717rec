@@ -31,7 +31,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
   divisions,
   teams,
   isSubmitting = false,
-  teamsValid = false,
+  _teamsValid = false,
   onTeamsValidityChange,
   onSubmit,
   onCancel,
@@ -53,7 +53,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
     mode: 'onBlur',
   });
 
-  const { watch, setValue, handleSubmit, formState, trigger } = form;
+  const { watch, setValue, trigger } = form;
   const watchedDivisionId = watch('divisionId');
   const watchedTitle = watch('title');
 
@@ -79,7 +79,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
   );
 
   // Handle division change - preserve team selection for cross-division playoffs
-  const handleDivisionChange = React.useCallback((divisionId: string) => {
+  const handleDivisionChange = React.useCallback((_divisionId: string) => {
     // Don't clear teams - allow cross-division team selection for playoffs
     // Division is for bracket organization only, not team filtering
   }, []);

@@ -19,7 +19,7 @@ interface TeamCardProps {
 }
 
 const TeamCard: React.FC<TeamCardProps> = ({ team, delay = 0, isWinter = false }) => {
-  const { theme } = useTheme();
+  const { _theme } = useTheme();
   const delayClass = delay ? `animation-delay-${delay * 100}` : '';
 
   return (

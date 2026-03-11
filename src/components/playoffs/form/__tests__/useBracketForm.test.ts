@@ -55,7 +55,7 @@ describe('useBracketForm', () => {
     const mockWatch = vi.fn() as unknown as UseFormWatch<BracketFormValues>;
 
     // Setup watch implementation with proper overloads
-    (mockWatch as any).mockImplementation((nameOrCallback?: any, defaultValue?: any) => {
+    (mockWatch as any).mockImplementation((nameOrCallback?: any, _defaultValue?: any) => {
       // Handle callback pattern: watch((values, { name, type }) => ...)
       if (typeof nameOrCallback === 'function') {
         // Return unsubscribe function for callback-based watching

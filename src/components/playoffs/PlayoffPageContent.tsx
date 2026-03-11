@@ -2,7 +2,6 @@ import { AlertCircle, Loader2, RefreshCw, Trophy } from 'lucide-react';
 import React, { useCallback, useMemo } from 'react';
 
 import DivisionBracketsCard from '@/components/playoffs/DivisionBracketsCard';
-import { ChallongeFallback } from '@/components/playoffs/embeds/ChallongeFallback';
 import EmptyBracketState from '@/components/playoffs/EmptyBracketState';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -26,20 +25,19 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
   allBracketsData,
   isLoading,
   onCreateBracket,
-  onDeleteBracket,
+  _onDeleteBracket,
   onRefreshData,
   isAdmin = false,
 }) => {
   // Enhanced refresh state management
   const [isRefreshing, setIsRefreshing] = React.useState(false);
-  const [lastRefreshTime, setLastRefreshTime] = React.useState<Date | null>(null);
+  const [_lastRefreshTime, setLastRefreshTime] = React.useState<Date | null>(null);
 
   // Enhanced refresh handler with optimistic updates
   const handleRefreshClick = useCallback(async () => {
     if (!onRefreshData || isRefreshing) return;
 
     setIsRefreshing(true);
-    const startTime = new Date();
 
     try {
       await onRefreshData();

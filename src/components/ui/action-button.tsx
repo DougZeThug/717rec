@@ -69,7 +69,7 @@ export const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProp
         try {
           await onAction();
           setState('success');
-        } catch (error) {
+        } catch (_error) {
           setState('error');
           // Reset to idle after showing error briefly
           setTimeout(() => setState('idle'), 1500);

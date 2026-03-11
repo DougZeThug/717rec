@@ -10,7 +10,6 @@ import { SeasonalIcon } from '@/components/ui/seasonal-icon';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { SnowflakeSparkle } from '@/icons';
 import { cn } from '@/lib/utils';
-import { typeScale } from '@/styles/design-system';
 import { Match } from '@/types';
 
 interface TeamInfo {
@@ -44,7 +43,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
   isPrevious,
   shouldApplyWinter,
 }) => {
-  const { match, opponent, weekNumber } = matchInfo;
+  const { match, opponent } = matchInfo;
 
   // Format date and time
   const matchDate = match.date ? parseISO(match.date) : null;

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Match } from '@/types';
 
 import DateTimeSelection from './DateTimeSelection';
 import { createDateWithTime, determineMatchOutcome, getTimeSlotFromDate } from './form-utils';

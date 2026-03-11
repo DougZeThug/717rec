@@ -1,9 +1,7 @@
 import { Calendar, CheckCircle } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import React from 'react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { cn } from '@/lib/utils';
 
 import DateMatchGroupSkeleton from './DateMatchGroupSkeleton';
 
@@ -12,9 +10,6 @@ interface ScheduleContentSkeletonProps {
 }
 
 const ScheduleContentSkeleton: React.FC<ScheduleContentSkeletonProps> = ({ activeTab }) => {
-  const { resolvedTheme } = useTheme();
-  const isLight = resolvedTheme === 'light';
-
   return (
     <Tabs value={activeTab} className="mb-6">
       <TabsList className="w-full md:min-w-[340px] font-inter bg-gray-200 dark:bg-gray-700">

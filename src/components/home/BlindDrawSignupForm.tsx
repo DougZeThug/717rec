@@ -62,7 +62,7 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
         title: 'Success',
         description: confirmationMessage,
       });
-    } catch (error) {
+    } catch (_error) {
       // Error handled by mutation
     }
   };

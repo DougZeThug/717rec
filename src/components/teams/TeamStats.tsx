@@ -25,7 +25,7 @@ const TeamStats: React.FC<TeamStatsProps> = ({
   winPercentage,
   gameWinPercentage,
   sos,
-  closeMatchLosses,
+  _closeMatchLosses,
   powerScore,
 }) => {
   const powerScoreColor = powerScore !== undefined ? getPowerScoreColor(powerScore) : '';

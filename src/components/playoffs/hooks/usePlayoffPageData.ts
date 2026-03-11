@@ -50,7 +50,7 @@ export function usePlayoffPageData(): PlayoffPageData {
   const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
-  const { profile, user } = useAuth();
+  const { profile } = useAuth();
   const isAdmin = profile?.is_admin || false;
 
   // Season selection - defaults to active season
@@ -107,7 +107,7 @@ export function usePlayoffPageData(): PlayoffPageData {
   const {
     data: selectedBracket,
     isLoading: selectedBracketLoading,
-    error: selectedBracketError,
+    error: _selectedBracketError,
     refetch: refetchSelectedBracket,
   } = useBracketData(selectedBracketId);
 

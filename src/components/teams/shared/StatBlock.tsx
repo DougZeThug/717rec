@@ -24,7 +24,7 @@ export const StatBlock: React.FC<StatBlockProps> = ({
   highlight = false,
   variant = 'default',
 }) => {
-  const { isWinterTheme, isDark } = useSeasonalThemeBase();
+  const { isWinterTheme } = useSeasonalThemeBase();
 
   // Get gradient based on variant
   const getGradient = () => {

@@ -33,7 +33,7 @@ export const PercentileBadge: React.FC<PercentileBadgeProps> = ({
   rank,
   total,
   size = 'xs',
-  showLabel = true,
+  _showLabel = true,
   className,
   statName,
 }) => {

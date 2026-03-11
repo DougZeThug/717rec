@@ -1,5 +1,5 @@
-import { Clock, Edit3, Move, Trash2 } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import { Clock, Move, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
 
 import {
   AlertDialog,
@@ -14,14 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Team } from '@/types';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { TimeBlockTeamsMap } from '@/types/autoSchedule';
 import { validateTeamCounts } from '@/utils/autoSchedule/edgeCaseUtils';
 

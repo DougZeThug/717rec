@@ -1,4 +1,3 @@
-import { useTheme } from 'next-themes';
 import React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -14,9 +13,6 @@ interface RoundHeaderProps {
 }
 
 const RoundHeader: React.FC<RoundHeaderProps> = ({ round, type, roundIndex, matchCount }) => {
-  const { resolvedTheme } = useTheme();
-  const isLight = resolvedTheme === 'light';
-
   const getTypeColor = () => {
     switch (type) {
       case 'winners':

@@ -47,7 +47,7 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
   selectedDate,
   timeBlockTeams,
   generatedPairings,
-  unmatchedTeamIds,
+  _unmatchedTeamIds,
   isGenerating,
   matchQualityMetrics,
   dualMatchMode,

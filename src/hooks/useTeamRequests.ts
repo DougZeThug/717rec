@@ -9,12 +9,7 @@ import {
   submitTeamRequest,
   updateTeamRequestStatus,
 } from '@/services/teams/TeamFetchService';
-import type {
-  TeamRequest,
-  TeamRequestStatus,
-  TeamRequestType,
-  TeamRequestWithTeam,
-} from '@/types/teamRequest';
+import type { TeamRequest, TeamRequestStatus, TeamRequestType } from '@/types/teamRequest';
 import { errorLog } from '@/utils/logger';
 
 // Fetch pending requests count for admin badge

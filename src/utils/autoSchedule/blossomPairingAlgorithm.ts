@@ -479,7 +479,7 @@ export async function generatePairingsWithBlossom(
         // STEP 5: Final validation with enhanced feedback
         try {
           validatePairings(teams, allPairings, targetMatchesPerTeam);
-        } catch (validationError) {
+        } catch (_validationError) {
           // If validation fails, try one more repair pass with full relaxation
           warnLog('Validation failed, attempting final repair with full relaxation...');
 
@@ -629,7 +629,7 @@ function isBothRecreational(team1: Team, team2: Team): boolean {
 /**
  * Check if teams are from same tier
  */
-function isSameTier(team1: Team, team2: Team): boolean {
+function _isSameTier(team1: Team, team2: Team): boolean {
   const tier1 = getTierFromDivision(team1.divisionName);
   const tier2 = getTierFromDivision(team2.divisionName);
 
@@ -916,7 +916,7 @@ async function findGuaranteedSolution(
       });
 
     // Try to match each team
-    for (const { team, matchesNeeded } of teamPriority) {
+    for (const { team, _matchesNeeded } of teamPriority) {
       if ((teamMatchCounts.get(team.id) || 0) >= targetMatchesPerTeam) continue;
 
       // Find available partners for this team
@@ -1054,7 +1054,7 @@ function buildEdgesWithRelaxationLevel(
 /**
  * Build graph with very relaxed constraints for fallback
  */
-function buildRelaxedGraph(teams: Team[], config: TeamPairingConfig): Edge[] {
+function _buildRelaxedGraph(teams: Team[], config: TeamPairingConfig): Edge[] {
   const edges: Edge[] = [];
 
   for (let i = 0; i < teams.length - 1; i++) {

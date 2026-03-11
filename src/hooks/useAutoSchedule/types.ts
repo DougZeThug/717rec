@@ -1,4 +1,4 @@
-import { MatchQualityMetrics, TeamPairingMap, TimeBlockTeamsMap } from '@/types/autoSchedule';
+import { MatchQualityMetrics } from '@/types/autoSchedule';
 
 export interface UseAutoScheduleState {
   // Date and tab state

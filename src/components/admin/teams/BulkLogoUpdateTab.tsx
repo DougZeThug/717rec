@@ -12,7 +12,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useTeamsQuery } from '@/hooks/teams';
-import { Team } from '@/types';
 import { getLogoStatus, LogoStatus } from '@/utils/logoStatusUtils';
 
 import TeamLogoCard from './TeamLogoCard';

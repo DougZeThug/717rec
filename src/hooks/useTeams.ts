@@ -1,5 +1,3 @@
-import { Team } from '@/types';
-
 import { useTeamsArray } from './teams';
 import { useTeamMutations } from './useTeamMutations';
 

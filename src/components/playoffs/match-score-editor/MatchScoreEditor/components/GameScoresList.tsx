@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
 import { Team } from '@/types';
 

@@ -8,7 +8,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { Form } from '@/components/ui/form';
 
 import { BracketFormDivision } from '../BracketFormDivision';
-import { bracketFormSchema, BracketFormValues } from '../BracketFormSchema';
+import { bracketFormSchema } from '../BracketFormSchema';
 
 const mockDivisions = [
   { id: 'div1', name: 'Division 1' },

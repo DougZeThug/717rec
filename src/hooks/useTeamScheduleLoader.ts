@@ -1,8 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import { DualBlockConfig, PairedTimeBlockTeamsMap, TimeBlockTeamsMap } from '@/types/autoSchedule';
-import { TIME_BLOCKS } from '@/utils/autoSchedule/constants';
-import { getAllBackToBackTeams, getTeamsByTimeBlock } from '@/utils/autoSchedule/teamLoaderUtils';
+import { getAllBackToBackTeams } from '@/utils/autoSchedule/teamLoaderUtils';
 import { normalizeDate } from '@/utils/dateNormalization';
 import { errorLog, scheduleLog } from '@/utils/logger';
 

@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Team } from '@/types';
 import { DualBlockConfig, PairedTimeBlockTeamsMap, TimeBlockTeamsMap } from '@/types/autoSchedule';
-import { BACK_TO_BACK_PAIRS } from '@/utils/autoSchedule/constants';
 import { normalizeScheduleDate, validateScheduleDate } from '@/utils/autoSchedule/dateUtils';
 import { validateBackToBackPairAssignments } from '@/utils/autoSchedule/edgeCaseUtils';
 import {

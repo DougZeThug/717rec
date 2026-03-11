@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Form } from '@/components/ui/form';
 
-import { bracketFormSchema, BracketFormValues } from '../BracketFormSchema';
+import { bracketFormSchema } from '../BracketFormSchema';
 import { BracketFormTitle } from '../BracketFormTitle';
 
 const TestWrapper = () => {

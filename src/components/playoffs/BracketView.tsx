@@ -9,9 +9,9 @@ import { useBracketData } from '@/hooks/brackets/useBracketData';
 import { useBracketsManagerRealtime } from '@/hooks/brackets/useBracketsManagerRealtime';
 import { useBracketCompletion } from '@/hooks/useBracketCompletion';
 import { fetchBracketInfo } from '@/services/brackets/BracketReadService';
-import type { BracketViewData, hasMatches, hasTeams } from '@/types/playoff';
+import type { BracketViewData } from '@/types/playoff';
 import { bracketLog, debugLog, errorLog, log } from '@/utils/logger';
-import type { PlayoffBracket, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
+import type { PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 
 import BracketErrorBoundary from './BracketErrorBoundary';
 import { FinalStandings } from './FinalStandings';

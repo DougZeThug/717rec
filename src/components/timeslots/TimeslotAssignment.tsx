@@ -42,7 +42,7 @@ interface TimeslotAssignmentProps {
 }
 
 const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
-  selectedDate,
+  _selectedDate,
   teams,
   existingTimeslots,
   onAssign,
@@ -52,7 +52,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
   const [teamId, setTeamId] = useState<string>('');
   const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
   const [selectedTimeslot, setSelectedTimeslot] = useState<string>('');
-  const [batchMode, setBatchMode] = useState<boolean>(true); // Default to true for batch mode
+  const [batchMode, _setBatchMode] = useState<boolean>(true); // Default to true for batch mode
   const [isDoubleHeader, setIsDoubleHeader] = useState<boolean>(false);
   const [selectedTimeslots, setSelectedTimeslots] = useState<string[]>([]);
 

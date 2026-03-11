@@ -1,10 +1,9 @@
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import React, { useMemo } from 'react';
+import React from 'react';
 
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
-import { gradients } from '@/styles/design-system';
 import { Ranking } from '@/types';
 import { debugLog } from '@/utils/logger';
 

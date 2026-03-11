@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { supabase } from '@/integrations/supabase/client';
-import { Match } from '@/types';
 import { errorLog, scheduleLog } from '@/utils/logger';
 import { transformDatabaseMatches } from '@/utils/matchTransformers';
 

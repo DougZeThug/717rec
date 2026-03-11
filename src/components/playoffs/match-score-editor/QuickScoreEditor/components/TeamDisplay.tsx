@@ -1,7 +1,5 @@
 import React from 'react';
 
-import { cn } from '@/lib/utils';
-import { animations } from '@/styles/design-system';
 import { Team } from '@/types';
 
 interface TeamDisplayProps {
@@ -13,7 +11,7 @@ interface TeamDisplayProps {
 const TeamDisplay: React.FC<TeamDisplayProps> = ({
   team,
   fallbackLabel,
-  animationDelay = '0.2s',
+  _animationDelay = '0.2s',
 }) => {
   return (
     <div className="flex justify-center">

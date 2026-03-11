@@ -177,9 +177,7 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
       const mockManager = (service as any).creationService.manager;
       mockManager.create.stage.mockRejectedValueOnce(new Error('Database connection failed'));
 
-      await expect(service.createBracket(options)).rejects.toThrow(
-        'Bracket creation failed:'
-      );
+      await expect(service.createBracket(options)).rejects.toThrow('Bracket creation failed:');
     });
   });
 
@@ -300,7 +298,7 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
       };
 
       // Configure storage mock for seeding
-      getStorageMock().select.mockImplementation((table: string, filter: any) => {
+      getStorageMock().select.mockImplementation((table: string, _filter: any) => {
         if (table === 'stage') {
           return Promise.resolve([{ id: 1, tournament_id: 'test-bracket' }]);
         }
@@ -341,7 +339,7 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
       const testService = new BracketManagerService();
 
       // Now configure the storage mock for THIS service instance
-      getStorageMock().select.mockImplementation((table: string, filter: any) => {
+      getStorageMock().select.mockImplementation((table: string, _filter: any) => {
         if (table === 'stage') {
           return Promise.resolve([{ id: 1, tournament_id: 'test-bracket' }]);
         }
@@ -367,7 +365,7 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
       const bracketId = 'test-bracket';
 
       // Configure storage mock for standings
-      getStorageMock().select.mockImplementation((table: string, filter: any) => {
+      getStorageMock().select.mockImplementation((table: string, _filter: any) => {
         if (table === 'stage') {
           return Promise.resolve([{ id: 1, tournament_id: bracketId }]);
         }
@@ -414,7 +412,7 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
     it('should throw error when upsert fails', async () => {
       const bracketId = 'test-bracket';
 
-      getStorageMock().select.mockImplementation((table: string, filter: any) => {
+      getStorageMock().select.mockImplementation((table: string, _filter: any) => {
         if (table === 'stage') {
           return Promise.resolve([{ id: 1 }]);
         }
@@ -689,7 +687,7 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
       const stageId = 1;
 
       // Configure storage mock for normalization
-      getStorageMock().select.mockImplementation((table: string, filter: any) => {
+      getStorageMock().select.mockImplementation((table: string, _filter: any) => {
         if (table === 'group') {
           return Promise.resolve([
             { id: 1, number: 1 }, // WB
@@ -730,7 +728,7 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
     it('should shift opponent2 to opponent1 if opponent1 is empty', async () => {
       const stageId = 1;
 
-      getStorageMock().select.mockImplementation((table: string, filter: any) => {
+      getStorageMock().select.mockImplementation((table: string, _filter: any) => {
         if (table === 'group') {
           return Promise.resolve([{ id: 2, number: 2 }]); // LB only
         }

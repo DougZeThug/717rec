@@ -3,7 +3,6 @@ import React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { FilterOptions } from '@/hooks/message-board/types';
-import { cn } from '@/lib/utils';
 
 interface ActiveFiltersProps {
   filterOptions: FilterOptions;

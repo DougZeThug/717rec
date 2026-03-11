@@ -265,7 +265,7 @@ export class BracketsViewerAdapter {
    */
   static transformFromJsonb(
     bracketData: InMemoryDatabase['data'],
-    bracketId: string
+    _bracketId: string
   ): ViewerDataWithMapping {
     // Reset team map
     this.teamIdMap.clear();

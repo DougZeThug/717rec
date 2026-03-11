@@ -1,8 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { useEffect, useState } from 'react';
-
-import { TeamTimeslot } from '@/types/timeslots';
 
 import { useTimeslotMutation } from './useTimeslotMutation';
 import { useTimeslotQuery } from './useTimeslotQuery';

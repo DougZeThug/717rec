@@ -8,7 +8,7 @@ import {
   unhideTeam,
   UnhideTeamResult,
 } from '@/services/teams/TeamHiddenService';
-import { errorLog, teamLog } from '@/utils/logger';
+import { errorLog } from '@/utils/logger';
 
 export function useHiddenTeams() {
   const [isLoading, setIsLoading] = useState(false);

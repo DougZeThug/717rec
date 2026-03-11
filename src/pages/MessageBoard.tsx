@@ -40,7 +40,7 @@ const MessageBoard: React.FC = () => {
         title: 'Messages refreshed',
         description: 'Latest messages have been loaded',
       });
-    } catch (err) {
+    } catch (_err) {
       toast({
         title: 'Refresh failed',
         description: 'Could not refresh messages. Please try again.',

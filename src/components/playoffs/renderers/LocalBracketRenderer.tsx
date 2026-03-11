@@ -14,7 +14,7 @@ export const LocalBracketRenderer: React.FC<LocalBracketRendererProps> = ({
   bracket,
   teams,
   onEditMatch,
-  ...props
+  ..._props
 }) => {
   if (!bracket) {
     return (

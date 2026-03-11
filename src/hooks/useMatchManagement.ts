@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { Match, Team } from '@/types';
+import { Match } from '@/types';
 
 import { useMatchCreation } from './useMatchCreation';
 import { useMatchUpdates } from './useMatchUpdates';

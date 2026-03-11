@@ -41,7 +41,7 @@ const MatchRow: React.FC<MatchRowProps> = ({ pair, teams, onUpdate, onRemove }) 
       const suffix = hour >= 12 ? 'PM' : 'AM';
       const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
       return `${hour12}:${minutes} ${suffix}`;
-    } catch (e) {
+    } catch (_e) {
       return time; // Return original if parsing fails
     }
   };

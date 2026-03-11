@@ -1,4 +1,4 @@
-import { Archive, Trophy } from 'lucide-react';
+import { Archive } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';

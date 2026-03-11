@@ -1,4 +1,4 @@
-import { HeadToHeadEntry, HeadToHeadMap, Match, Team } from '@/types';
+import { HeadToHeadMap, Match, Team } from '@/types';
 
 export const calculateHeadToHead = (
   teamId: string,
