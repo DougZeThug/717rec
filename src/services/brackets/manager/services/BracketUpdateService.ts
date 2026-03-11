@@ -175,7 +175,8 @@ export class BracketUpdateService {
         failureLog('Failed to update match', error);
         errorLog(`FULL ERROR DETAILS for Match ${matchId}:`, error);
         throw new Error(
-          `Match update failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+          `Match update failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          { cause: error }
         );
       }
     });

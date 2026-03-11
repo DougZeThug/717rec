@@ -411,13 +411,12 @@ export async function generatePairingsWithBlossom(
         const feasibilityResult = analyzeGraphFeasibility(teams, config, 0);
 
         let edges: Edge[];
-        let atRiskTeamIds = new Set<string>();
         let relaxationLevel: RelaxationLevel = 0;
 
         if (!feasibilityResult.isFeasible) {
           // Some teams don't have enough valid edges - apply targeted relaxation
           relaxationLevel = feasibilityResult.recommendedRelaxation;
-          atRiskTeamIds = new Set(feasibilityResult.atRiskTeams.map((t) => t.teamId));
+          const atRiskTeamIds = new Set(feasibilityResult.atRiskTeams.map((t) => t.teamId));
 
           scheduleLog(
             `Applying relaxation level ${relaxationLevel} for ${atRiskTeamIds.size} at-risk teams`

@@ -38,7 +38,7 @@ export const HeadToHeadSection: React.FC<HeadToHeadSectionProps> = ({
   const totalMatches = team1Wins + team2Wins;
   const team1Pct = totalMatches > 0 ? (team1Wins / totalMatches) * 100 : 50;
 
-  let seriesLeader = '';
+  let seriesLeader: string;
   if (team1Wins > team2Wins) {
     seriesLeader = `${team1Name} leads ${team1Wins}-${team2Wins}`;
   } else if (team2Wins > team1Wins) {

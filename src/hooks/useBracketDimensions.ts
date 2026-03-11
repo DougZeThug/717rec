@@ -30,9 +30,9 @@ export const useBracketDimensions = (
     const SPACING = 40;
 
     // Estimate bracket structure based on match count and format
-    let estimatedWidth = 0;
-    let estimatedHeight = 0;
-    let rounds = 0;
+    let estimatedWidth: number;
+    let estimatedHeight: number;
+    let rounds: number;
 
     if (format === 'double') {
       // Double elimination has winners and losers bracket

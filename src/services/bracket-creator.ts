@@ -184,6 +184,6 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
           ? JSON.stringify(error)
           : 'Unknown error';
 
-    throw new Error(`Bracket creation failed: ${errorMessage}`);
+    throw new Error(`Bracket creation failed: ${errorMessage}`, { cause: error });
   }
 }

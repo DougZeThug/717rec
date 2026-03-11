@@ -71,7 +71,8 @@ export function validateUuidArray(values: unknown[], fieldName: string): string[
       validUuids.push(value as string);
     } catch (error) {
       throw new Error(
-        `${fieldName}[${index}]: ${error instanceof Error ? error.message : String(error)}`
+        `${fieldName}[${index}]: ${error instanceof Error ? error.message : String(error)}`,
+        { cause: error }
       );
     }
   });

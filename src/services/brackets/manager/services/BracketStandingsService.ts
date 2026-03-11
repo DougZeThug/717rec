@@ -94,7 +94,8 @@ export class BracketStandingsService {
     } catch (error) {
       failureLog('Failed to calculate final standings', error);
       throw new Error(
-        `Final standings calculation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Final standings calculation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        { cause: error }
       );
     }
   }

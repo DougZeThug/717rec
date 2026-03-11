@@ -73,8 +73,8 @@ export function handleOddTeamCount(
   config: DualBlockConfig,
   notify?: NotificationCallback
 ): { adjustedTeams: Team[]; unmatchedTeamId: string } {
-  let unmatchedTeamId = '';
-  let removedTeam: Team | null = null;
+  let unmatchedTeamId: string;
+  let removedTeam: Team | null | undefined;
   const adjustedTeams = [...teams];
 
   // Select team to remove based on strategy
@@ -92,10 +92,11 @@ export function handleOddTeamCount(
       break;
 
     case 'random':
-    default:
+    default: {
       // Remove random team
       const randomIndex = Math.floor(Math.random() * adjustedTeams.length);
       removedTeam = adjustedTeams.splice(randomIndex, 1)[0];
+    }
   }
 
   if (removedTeam) {

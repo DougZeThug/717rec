@@ -12,7 +12,7 @@ import {
 import { Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 
-interface TeamMembershipData extends TeamMembershipRecord {}
+type TeamMembershipData = TeamMembershipRecord;
 
 export function useTeamMembership() {
   const { user } = useAuth();

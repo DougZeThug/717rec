@@ -117,11 +117,12 @@ export class BracketSeedingService {
       if (errorMsg.includes('impact') || errorMsg.includes('result')) {
         throw new Error(
           'Cannot update seeding: Changes would affect existing match results. ' +
-            "You can only reorder teams that haven't started matches yet."
+            "You can only reorder teams that haven't started matches yet.",
+          { cause: error }
         );
       }
 
-      throw new Error(`Seeding update failed: ${errorMsg}`);
+      throw new Error(`Seeding update failed: ${errorMsg}`, { cause: error });
     }
   }
 }

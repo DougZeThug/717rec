@@ -44,7 +44,7 @@ export const usePlayoffActions = () => {
         variant: 'destructive',
       });
 
-      throw new Error(errorMessage);
+      throw new Error(errorMessage, { cause: error });
     } finally {
       setIsDeleting(false);
     }
@@ -105,7 +105,7 @@ export const usePlayoffActions = () => {
         variant: 'destructive',
       });
 
-      throw new Error(errorMessage);
+      throw new Error(errorMessage, { cause: error });
     }
   };
 

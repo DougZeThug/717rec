@@ -164,7 +164,7 @@ export class BracketCreationService {
 
       failureLog('Failed to create bracket', serializeError(error));
 
-      throw new Error(`Bracket creation failed: ${serializeError(error)}`);
+      throw new Error(`Bracket creation failed: ${serializeError(error)}`, { cause: error });
     }
   }
 }
