@@ -1074,8 +1074,8 @@ export function generateScheduleGreedyWithTracking(
     while (allMatches.length < expectedMatches && relaxationLevel < 3) {
       relaxationLevel = (relaxationLevel + 1) as RelaxationLevel;
       diagnostics.relaxationApplied = relaxationLevel;
-      if (relaxationLevel === 1) diagnostics.constraintsRelaxed.push('season_rematches');
-      if (relaxationLevel === 2) diagnostics.constraintsRelaxed.push('tier_constraints');
+      if (relaxationLevel === 1) diagnostics.constraintsRelaxed.push('tier_constraints');
+      if (relaxationLevel === 2) diagnostics.constraintsRelaxed.push('season_rematches');
 
       scheduleLog(
         `Only ${allMatches.length}/${expectedMatches} matches created. ` +

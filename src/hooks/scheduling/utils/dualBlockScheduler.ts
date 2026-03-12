@@ -182,7 +182,7 @@ export const scheduleDualBlockPairings = async (
         team1,
         team2,
         compatibilityScore: match.tierA === match.tierB ? 10.0 : 5.0,
-        hasPlayedBefore: false,
+        hasPlayedBefore: historySet.has(pairKey(match.teamAId, match.teamBId)),
       };
 
       // Use the actual timeslot from the match (not the pair name)
