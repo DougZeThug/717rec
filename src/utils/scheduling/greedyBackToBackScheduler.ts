@@ -136,8 +136,8 @@ function tierDistance(teamA: Team, teamB: Team): number {
  * Check if two teams can play against each other
  * @param relaxationLevel - Level of constraint relaxation (0-3)
  *   0: All constraints enforced
- *   1: Allow season rematches
- *   2: Allow tier gap > maxTierGap
+ *   1: Allow cross-tier matches (tier gap > maxTierGap)
+ *   2: Allow season rematches
  *   3: Full relaxation (only session rematches blocked)
  */
 function canPlay(
@@ -153,11 +153,11 @@ function canPlay(
   // NEVER relax session rematches - teams can't play twice in same session
   if (tonightPairs.has(key)) return false;
 
-  // Check season rematches (relaxed at level 1+)
-  if (relaxationLevel < 1 && playedSet.has(key)) return false;
+  // Check tier gap (relaxed at level 1+) — cosmetic preference, relax first
+  if (relaxationLevel < 1 && tierDistance(teamA, teamB) > maxTierGap) return false;
 
-  // Check tier gap (relaxed at level 2+)
-  if (relaxationLevel < 2 && tierDistance(teamA, teamB) > maxTierGap) return false;
+  // Check season rematches (relaxed at level 2+) — user explicitly asked to avoid, relax last
+  if (relaxationLevel < 2 && playedSet.has(key)) return false;
 
   return true;
 }
@@ -194,33 +194,13 @@ function analyzeGreedyFeasibility(
     return { isFeasible: true, recommendedLevel: 0, atRiskTeams: [] };
   }
 
-  // Check if relaxing season rematches would help
-  let wouldHelpWithRematch = false;
-  for (const teamId of atRiskTeams) {
-    const team = teams.find((t) => t.id === teamId)!;
-    let validWithRematch = 0;
-    for (const other of teams) {
-      if (other.id !== team.id && canPlay(team, other, playedSet, tonightPairs, maxTierGap, 1)) {
-        validWithRematch++;
-      }
-    }
-    if (validWithRematch >= targetMatchesPerTeam) {
-      wouldHelpWithRematch = true;
-      break;
-    }
-  }
-
-  if (wouldHelpWithRematch) {
-    return { isFeasible: false, recommendedLevel: 1, atRiskTeams };
-  }
-
-  // Check if relaxing tier constraints would help
+  // Check if relaxing tier constraints would help (level 1 — relax first)
   let wouldHelpWithTier = false;
   for (const teamId of atRiskTeams) {
     const team = teams.find((t) => t.id === teamId)!;
     let validWithTier = 0;
     for (const other of teams) {
-      if (other.id !== team.id && canPlay(team, other, playedSet, tonightPairs, maxTierGap, 2)) {
+      if (other.id !== team.id && canPlay(team, other, playedSet, tonightPairs, maxTierGap, 1)) {
         validWithTier++;
       }
     }
@@ -231,6 +211,26 @@ function analyzeGreedyFeasibility(
   }
 
   if (wouldHelpWithTier) {
+    return { isFeasible: false, recommendedLevel: 1, atRiskTeams };
+  }
+
+  // Check if relaxing season rematches would help (level 2 — relax last)
+  let wouldHelpWithRematch = false;
+  for (const teamId of atRiskTeams) {
+    const team = teams.find((t) => t.id === teamId)!;
+    let validWithRematch = 0;
+    for (const other of teams) {
+      if (other.id !== team.id && canPlay(team, other, playedSet, tonightPairs, maxTierGap, 2)) {
+        validWithRematch++;
+      }
+    }
+    if (validWithRematch >= targetMatchesPerTeam) {
+      wouldHelpWithRematch = true;
+      break;
+    }
+  }
+
+  if (wouldHelpWithRematch) {
     return { isFeasible: false, recommendedLevel: 2, atRiskTeams };
   }
 
@@ -321,8 +321,13 @@ function findBestOpponent(
 
     if (distA !== distB) return distA - distB;
 
-    // When relaxation allows rematches, still prefer non-rematches
+    // When relaxation allows cross-tier, prefer same/adjacent tier
     if (relaxationLevel >= 1) {
+      if (distA !== distB) return distA - distB;
+    }
+
+    // When relaxation allows rematches, still prefer non-rematches
+    if (relaxationLevel >= 2) {
       const aIsRematch = playedSet.has(pairKey(team.id, a.id));
       const bIsRematch = playedSet.has(pairKey(team.id, b.id));
       if (aIsRematch !== bIsRematch) return aIsRematch ? 1 : -1;
@@ -969,8 +974,8 @@ export function generateScheduleGreedyWithTracking(
   if (!feasibility.isFeasible) {
     const relaxationNames: Record<RelaxationLevel, string> = {
       0: 'none',
-      1: 'allow season rematches',
-      2: 'allow cross-tier matches',
+      1: 'allow cross-tier matches',
+      2: 'allow season rematches',
       3: 'full relaxation',
     };
     scheduleLog(
@@ -986,8 +991,8 @@ export function generateScheduleGreedyWithTracking(
     repairAttempted: false,
   };
 
-  if (relaxationLevel >= 1) diagnostics.constraintsRelaxed.push('season_rematches');
-  if (relaxationLevel >= 2) diagnostics.constraintsRelaxed.push('tier_constraints');
+  if (relaxationLevel >= 1) diagnostics.constraintsRelaxed.push('tier_constraints');
+  if (relaxationLevel >= 2) diagnostics.constraintsRelaxed.push('season_rematches');
 
   // Initialize tonightPairs with forbidden pairs (from other blocks)
   const tonightPairs = new Set<string>(forbiddenPairs || []);
@@ -1069,8 +1074,8 @@ export function generateScheduleGreedyWithTracking(
     while (allMatches.length < expectedMatches && relaxationLevel < 3) {
       relaxationLevel = (relaxationLevel + 1) as RelaxationLevel;
       diagnostics.relaxationApplied = relaxationLevel;
-      if (relaxationLevel === 1) diagnostics.constraintsRelaxed.push('season_rematches');
-      if (relaxationLevel === 2) diagnostics.constraintsRelaxed.push('tier_constraints');
+      if (relaxationLevel === 1) diagnostics.constraintsRelaxed.push('tier_constraints');
+      if (relaxationLevel === 2) diagnostics.constraintsRelaxed.push('season_rematches');
 
       scheduleLog(
         `Only ${allMatches.length}/${expectedMatches} matches created. ` +

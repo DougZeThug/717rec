@@ -7,7 +7,7 @@ import {
 } from '@/types/autoSchedule';
 import { getBackToBackPair, getPairConfig } from '@/utils/autoSchedule/constants';
 import { errorLog, scheduleLog, warnLog } from '@/utils/logger';
-import { generateScheduleGreedyWithTracking } from '@/utils/scheduling/greedyBackToBackScheduler';
+import { generateScheduleGreedyWithTracking, pairKey } from '@/utils/scheduling/greedyBackToBackScheduler';
 
 /**
  * Schedules team pairings using the greedy back-to-back algorithm for dual match mode.
@@ -62,6 +62,9 @@ export const scheduleDualBlockPairings = async (
   scheduleLog(
     `Processing ${pairsWithTeams.length} back-to-back pairs: ${pairsWithTeams.join(', ')}`
   );
+
+  // Build history lookup for hasPlayedBefore flag
+  const historySet = new Set(historyPairs.map(([a, b]) => pairKey(a, b)));
 
   // 🔒 Cross-block opponent tracking for double header teams
   // This Set tracks all pairs created across ALL blocks in this session
@@ -179,7 +182,7 @@ export const scheduleDualBlockPairings = async (
         team1,
         team2,
         compatibilityScore: match.tierA === match.tierB ? 10.0 : 5.0,
-        hasPlayedBefore: false,
+        hasPlayedBefore: historySet.has(pairKey(match.teamAId, match.teamBId)),
       };
 
       // Use the actual timeslot from the match (not the pair name)
