@@ -974,8 +974,8 @@ export function generateScheduleGreedyWithTracking(
   if (!feasibility.isFeasible) {
     const relaxationNames: Record<RelaxationLevel, string> = {
       0: 'none',
-      1: 'allow season rematches',
-      2: 'allow cross-tier matches',
+      1: 'allow cross-tier matches',
+      2: 'allow season rematches',
       3: 'full relaxation',
     };
     scheduleLog(
