@@ -24,7 +24,7 @@ const PlayoffMatchCard: React.FC<PlayoffMatchCardProps> = ({
   match,
   teams,
   onEditMatch,
-  _hasNextMatch,
+  hasNextMatch: _hasNextMatch,
   isUpdated = false,
 }) => {
   const { cardClasses } = useMatchCardStyles(
