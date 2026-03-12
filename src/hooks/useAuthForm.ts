@@ -12,7 +12,7 @@ interface UseAuthFormProps {
   returnTo: string;
 }
 
-export const useAuthForm = ({ _returnTo }: UseAuthFormProps) => {
+export const useAuthForm = ({ returnTo: _returnTo }: UseAuthFormProps) => {
   const {
     signIn,
     signUp,
