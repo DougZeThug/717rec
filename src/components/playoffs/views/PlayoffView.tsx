@@ -14,8 +14,8 @@ interface PlayoffViewProps {
 }
 
 const PlayoffView: React.FC<PlayoffViewProps> = ({
-  _bracketDialogOpen,
-  _setBracketDialogOpen,
+  bracketDialogOpen: _bracketDialogOpen,
+  setBracketDialogOpen: _setBracketDialogOpen,
   onCreateBracket,
   onDeleteBracket,
   data,

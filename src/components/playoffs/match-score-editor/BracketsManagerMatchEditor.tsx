@@ -17,7 +17,7 @@ interface BracketsManagerMatchEditorProps {
 
 const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorProps> = ({
   matchId,
-  _bracketId,
+  bracketId: _bracketId,
   isOpen,
   onClose,
   onSaved,

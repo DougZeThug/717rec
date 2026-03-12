@@ -71,7 +71,7 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     isLoading: fetchLoading,
     isError: fetchError,
     errorMessage,
-    _isDataReady,
+    isDataReady: _isDataReady,
     seedValidation,
   } = useBracketFormData(validDivisions, validTeamsProp, validDivisionId);
 

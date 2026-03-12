@@ -19,8 +19,8 @@ interface AdminViewProps {
 const PLAYOFF_VIEW_TAB_KEY = 'playoffViewActiveTab';
 
 const AdminView: React.FC<AdminViewProps> = ({
-  _bracketDialogOpen,
-  _setBracketDialogOpen,
+  bracketDialogOpen: _bracketDialogOpen,
+  setBracketDialogOpen: _setBracketDialogOpen,
   onCreateBracket,
   onDeleteBracket,
   data,

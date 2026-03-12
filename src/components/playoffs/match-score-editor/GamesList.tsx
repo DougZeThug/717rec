@@ -10,7 +10,7 @@ interface GamesListProps {
   team2Id: string | null;
 }
 
-const GamesList: React.FC<GamesListProps> = ({ games, _team1Id, _team2Id }) => {
+const GamesList: React.FC<GamesListProps> = ({ games, team1Id: _team1Id, team2Id: _team2Id }) => {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
 
