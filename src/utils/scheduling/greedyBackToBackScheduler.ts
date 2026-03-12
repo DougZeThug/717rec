@@ -194,33 +194,13 @@ function analyzeGreedyFeasibility(
     return { isFeasible: true, recommendedLevel: 0, atRiskTeams: [] };
   }
 
-  // Check if relaxing season rematches would help
-  let wouldHelpWithRematch = false;
-  for (const teamId of atRiskTeams) {
-    const team = teams.find((t) => t.id === teamId)!;
-    let validWithRematch = 0;
-    for (const other of teams) {
-      if (other.id !== team.id && canPlay(team, other, playedSet, tonightPairs, maxTierGap, 1)) {
-        validWithRematch++;
-      }
-    }
-    if (validWithRematch >= targetMatchesPerTeam) {
-      wouldHelpWithRematch = true;
-      break;
-    }
-  }
-
-  if (wouldHelpWithRematch) {
-    return { isFeasible: false, recommendedLevel: 1, atRiskTeams };
-  }
-
-  // Check if relaxing tier constraints would help
+  // Check if relaxing tier constraints would help (level 1 — relax first)
   let wouldHelpWithTier = false;
   for (const teamId of atRiskTeams) {
     const team = teams.find((t) => t.id === teamId)!;
     let validWithTier = 0;
     for (const other of teams) {
-      if (other.id !== team.id && canPlay(team, other, playedSet, tonightPairs, maxTierGap, 2)) {
+      if (other.id !== team.id && canPlay(team, other, playedSet, tonightPairs, maxTierGap, 1)) {
         validWithTier++;
       }
     }
@@ -231,6 +211,26 @@ function analyzeGreedyFeasibility(
   }
 
   if (wouldHelpWithTier) {
+    return { isFeasible: false, recommendedLevel: 1, atRiskTeams };
+  }
+
+  // Check if relaxing season rematches would help (level 2 — relax last)
+  let wouldHelpWithRematch = false;
+  for (const teamId of atRiskTeams) {
+    const team = teams.find((t) => t.id === teamId)!;
+    let validWithRematch = 0;
+    for (const other of teams) {
+      if (other.id !== team.id && canPlay(team, other, playedSet, tonightPairs, maxTierGap, 2)) {
+        validWithRematch++;
+      }
+    }
+    if (validWithRematch >= targetMatchesPerTeam) {
+      wouldHelpWithRematch = true;
+      break;
+    }
+  }
+
+  if (wouldHelpWithRematch) {
     return { isFeasible: false, recommendedLevel: 2, atRiskTeams };
   }
 
