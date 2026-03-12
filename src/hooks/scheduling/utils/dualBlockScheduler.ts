@@ -7,7 +7,7 @@ import {
 } from '@/types/autoSchedule';
 import { getBackToBackPair, getPairConfig } from '@/utils/autoSchedule/constants';
 import { errorLog, scheduleLog, warnLog } from '@/utils/logger';
-import { generateScheduleGreedyWithTracking } from '@/utils/scheduling/greedyBackToBackScheduler';
+import { generateScheduleGreedyWithTracking, pairKey } from '@/utils/scheduling/greedyBackToBackScheduler';
 
 /**
  * Schedules team pairings using the greedy back-to-back algorithm for dual match mode.
