@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/useToast';
 
 export const useScoreValidation = () => {
-  const { _toast } = useToast();
+  const { toast: _toast } = useToast();
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const validateScores = (team1Score: number, team2Score: number): boolean => {

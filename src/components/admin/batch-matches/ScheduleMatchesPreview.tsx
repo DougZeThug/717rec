@@ -25,8 +25,8 @@ interface ScheduleMatchesPreviewProps {
 const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
   pairings,
   date,
-  _isGenerating,
-  _onApplyPairings,
+  isGenerating: _isGenerating,
+  onApplyPairings: _onApplyPairings,
 }) => {
   // Check if we have any pairings
   const hasPairings = Object.values(pairings).some((blockPairings) => blockPairings?.length > 0);

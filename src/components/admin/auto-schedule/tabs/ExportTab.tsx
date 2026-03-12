@@ -21,7 +21,7 @@ const ExportTab: React.FC<ExportTabProps> = ({
   selectedDate: _selectedDate,
   generatedMatches,
   matchQualityMetrics,
-  _onApplySchedule,
+  onApplySchedule: _onApplySchedule,
   onSaveSchedule,
   isSaving = false,
   hasUnsavedEdits = false,
