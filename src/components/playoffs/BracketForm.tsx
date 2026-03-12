@@ -31,7 +31,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
   divisions,
   teams,
   isSubmitting = false,
-  _teamsValid = false,
+  teamsValid: _teamsValid = false,
   onTeamsValidityChange,
   onSubmit,
   onCancel,

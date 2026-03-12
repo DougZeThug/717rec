@@ -25,10 +25,10 @@ const MatchScoreItem = ({
   match,
   teams,
   isOpen,
-  _team1Score,
-  _team2Score,
+  team1Score: _team1Score,
+  team2Score: _team2Score,
   onToggle,
-  _onScoreChange,
+  onScoreChange: _onScoreChange,
   onSubmitScore,
   onDelete,
 }: MatchScoreItemProps) => {
