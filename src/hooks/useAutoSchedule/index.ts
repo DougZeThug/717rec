@@ -107,7 +107,7 @@ export function useAutoSchedule() {
   const loadTeams = async () => {
     setIsProcessing(true);
     try {
-      // The team block map is now set by useTeamOperations
+      await handleLoadTeams(selectedDate, dualMatchMode);
     } finally {
       setIsProcessing(false);
     }
