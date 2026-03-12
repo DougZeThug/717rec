@@ -11,7 +11,7 @@ interface TeamDisplayProps {
 const TeamDisplay: React.FC<TeamDisplayProps> = ({
   team,
   fallbackLabel,
-  _animationDelay = '0.2s',
+  animationDelay: _animationDelay = '0.2s',
 }) => {
   return (
     <div className="flex justify-center">

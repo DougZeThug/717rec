@@ -50,7 +50,7 @@ export const useTeamSeedMutation = () => {
 
   // Bulk seed updates
   const bulkUpdateSeeds = useMutation({
-    mutationFn: async ({ updates, _divisionId }: BulkSeedUpdateParams) => {
+    mutationFn: async ({ updates, divisionId: _divisionId }: BulkSeedUpdateParams) => {
       return await bulkUpdateTeamSeeds(updates);
     },
     onSuccess: () => {

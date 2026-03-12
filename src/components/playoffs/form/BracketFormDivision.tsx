@@ -96,7 +96,7 @@ export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({
       <FormField
         control={form.control}
         name="divisionId"
-        render={({ _field }) => (
+        render={({ field: _field }) => (
           <FormItem>
             <FormLabel>Division</FormLabel>
             <FormControl>

@@ -11,7 +11,7 @@ interface MatchCardProps {
   isPastMatch?: boolean;
 }
 
-const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, _isPastMatch = false }) => {
+const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch: _isPastMatch = false }) => {
   const _formatDate = (dateStr: string | null) => {
     if (!dateStr) return 'No date';
     try {

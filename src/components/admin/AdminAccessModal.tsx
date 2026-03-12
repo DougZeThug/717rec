@@ -20,7 +20,7 @@ interface AdminAccessModalProps {
 
 export const AdminAccessModal: React.FC<AdminAccessModalProps> = ({
   isOpen,
-  _onAccessGranted,
+  // onAccessGranted is available but unused
   onRequestAccess,
 }) => {
   const { user } = useAuth();

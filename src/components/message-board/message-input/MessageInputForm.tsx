@@ -26,7 +26,7 @@ const MessageInputForm: React.FC<MessageInputFormProps> = ({ onSend }) => {
   const [category, setCategory] = useState<MessageCategory>('General');
   const [isSending, setIsSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { _user } = useAuth();
+  const { user: _user } = useAuth();
   const { isAdminAccessGranted } = useAdminAccess();
 
   const handleSubmit = async (e: React.FormEvent) => {

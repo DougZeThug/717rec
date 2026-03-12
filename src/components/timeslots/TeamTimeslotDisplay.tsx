@@ -12,7 +12,7 @@ interface TeamTimeslotDisplayProps {
 const TeamTimeslotDisplay: React.FC<TeamTimeslotDisplayProps> = ({
   teamId,
   teamName,
-  _date = new Date(),
+  date: _date = new Date(),
   enableBatchAssignment = false,
 }) => {
   return (

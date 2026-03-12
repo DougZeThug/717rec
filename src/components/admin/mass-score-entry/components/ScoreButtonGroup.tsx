@@ -31,7 +31,7 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
   disabled = false,
   onComplete,
   matchId = 'unknown',
-  _isCompleted = false,
+  isCompleted: _isCompleted = false,
   matchDate,
 }) => {
   const [selectedOption, setSelectedOption] = useState<{

@@ -38,8 +38,8 @@ export function useAutoSchedule() {
     setEditableMatches,
     isEditMode,
     setIsEditMode,
-    _teamBlockMap,
-    _setTeamBlockMap,
+    teamBlockMap: _teamBlockMap,
+    setTeamBlockMap: _setTeamBlockMap,
   } = useAutoScheduleState();
 
   // Get editable matches operations

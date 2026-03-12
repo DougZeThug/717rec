@@ -10,7 +10,7 @@ import { animations } from '@/styles/design-system';
 
 const MessageBoardFAB: React.FC = () => {
   const { navigateWithTransition } = useNavigation();
-  const { _resolvedTheme } = useTheme();
+  const { resolvedTheme: _resolvedTheme } = useTheme();
 
   const handleClick = () => {
     navigateWithTransition('/message-board');

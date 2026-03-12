@@ -18,7 +18,7 @@ export const usePlayoffDialogs = () => {
   const [deletingBracket, setDeletingBracket] = useState<{ id: string; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const { _toast } = useToast();
+  const { toast: _toast } = useToast();
 
   // Handle opening match editor
   const openMatchEditor = (match: PlayoffMatch, quickEdit: boolean = false) => {

@@ -33,7 +33,7 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
   rankings,
   allRankings,
   expandedTeam,
-  _toggleExpand,
+  toggleExpand: _toggleExpand,
   sortOptions,
   onSortChange,
   showUnified,

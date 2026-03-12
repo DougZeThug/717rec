@@ -19,7 +19,7 @@ interface UserMenuProps {
   className?: string;
 }
 
-const UserMenu: React.FC<UserMenuProps> = React.memo(({ _className }) => {
+const UserMenu: React.FC<UserMenuProps> = React.memo(({ className: _className }) => {
   const { user, profile, signOut } = useAuth();
   const { membership } = useTeamMembership();
   const { isAdminAccessGranted } = useAdminAccess();

@@ -77,7 +77,7 @@ const Schedule = () => {
   });
 
   const {
-    _matches,
+    matches: _matches,
     editingMatch,
     isFormOpen,
     deleteMatchId,

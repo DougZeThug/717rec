@@ -15,9 +15,9 @@ interface FilterToggleButtonProps {
 const FilterToggleButton: React.FC<FilterToggleButtonProps> = ({
   filterOptions,
   onClick,
-  _isActive,
+  isActive: _isActive,
 }) => {
-  const { _resolvedTheme } = useTheme();
+  const { resolvedTheme: _resolvedTheme } = useTheme();
   // Check if any filters are active
   const hasActiveFilters =
     filterOptions.category !== null ||

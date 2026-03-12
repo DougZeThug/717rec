@@ -20,7 +20,7 @@ interface ScheduleMatchesPreviewProps {
 const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
   pairings,
   date,
-  _isGenerating,
+  isGenerating: _isGenerating,
   dualMatchMode,
   diagnostics,
 }) => {

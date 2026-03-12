@@ -25,7 +25,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
   allBracketsData,
   isLoading,
   onCreateBracket,
-  _onDeleteBracket,
+  onDeleteBracket: _onDeleteBracket,
   onRefreshData,
   isAdmin = false,
 }) => {

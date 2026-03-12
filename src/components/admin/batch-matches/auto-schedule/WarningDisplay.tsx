@@ -16,7 +16,7 @@ export const WarningDisplay: React.FC<WarningDisplayProps> = ({
   unmatchedTeams = 0,
   insufficientBlocks = [],
   unmatchedTeamDetails = [],
-  _onSuggestionClick,
+  onSuggestionClick: _onSuggestionClick,
 }) => {
   if (oddBlocks === 0 && unmatchedTeams === 0 && insufficientBlocks.length === 0) {
     return null;

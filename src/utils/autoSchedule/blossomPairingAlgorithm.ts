@@ -915,7 +915,7 @@ async function findGuaranteedSolution(
       });
 
     // Try to match each team
-    for (const { team, _matchesNeeded } of teamPriority) {
+    for (const { team, matchesNeeded: _matchesNeeded } of teamPriority) {
       if ((teamMatchCounts.get(team.id) || 0) >= targetMatchesPerTeam) continue;
 
       // Find available partners for this team
