@@ -136,8 +136,8 @@ function tierDistance(teamA: Team, teamB: Team): number {
  * Check if two teams can play against each other
  * @param relaxationLevel - Level of constraint relaxation (0-3)
  *   0: All constraints enforced
- *   1: Allow season rematches
- *   2: Allow tier gap > maxTierGap
+ *   1: Allow cross-tier matches (tier gap > maxTierGap)
+ *   2: Allow season rematches
  *   3: Full relaxation (only session rematches blocked)
  */
 function canPlay(
