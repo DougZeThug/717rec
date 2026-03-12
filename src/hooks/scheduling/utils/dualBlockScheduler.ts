@@ -63,6 +63,9 @@ export const scheduleDualBlockPairings = async (
     `Processing ${pairsWithTeams.length} back-to-back pairs: ${pairsWithTeams.join(', ')}`
   );
 
+  // Build history lookup for hasPlayedBefore flag
+  const historySet = new Set(historyPairs.map(([a, b]) => pairKey(a, b)));
+
   // 🔒 Cross-block opponent tracking for double header teams
   // This Set tracks all pairs created across ALL blocks in this session
   // Prevents double header teams from playing the same opponent in multiple blocks
