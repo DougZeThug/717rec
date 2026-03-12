@@ -84,7 +84,7 @@ export function useAutoSchedule() {
     originalTimeBlockTeams,
     teamBlockMap: loadedTeamBlockMap,
     setTimeBlockTeams, // Expose this function for manual team assignment
-    handleLoadTeams: _handleLoadTeams,
+    handleLoadTeams,
     getTeamCountStatus,
   } = useTeamOperations();
 
