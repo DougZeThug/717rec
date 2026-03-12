@@ -991,8 +991,8 @@ export function generateScheduleGreedyWithTracking(
     repairAttempted: false,
   };
 
-  if (relaxationLevel >= 1) diagnostics.constraintsRelaxed.push('season_rematches');
-  if (relaxationLevel >= 2) diagnostics.constraintsRelaxed.push('tier_constraints');
+  if (relaxationLevel >= 1) diagnostics.constraintsRelaxed.push('tier_constraints');
+  if (relaxationLevel >= 2) diagnostics.constraintsRelaxed.push('season_rematches');
 
   // Initialize tonightPairs with forbidden pairs (from other blocks)
   const tonightPairs = new Set<string>(forbiddenPairs || []);
