@@ -167,7 +167,7 @@ const ErrorState = ({ error }: { error: Error }) => (
   </div>
 );
 
-const TeamAnalysisComponent: React.FC<TeamAnalysisProps> = ({ teamId, _teamName }) => {
+const TeamAnalysisComponent: React.FC<TeamAnalysisProps> = ({ teamId, teamName: _teamName }) => {
   const { analysis, isLoading, error, saveAnalysis, isSaving } = useTeamAnalysis(teamId);
   const { isAdminAccessGranted } = useAdminAccess();
   const [isEditing, setIsEditing] = useState(false);
