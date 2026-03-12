@@ -6,7 +6,7 @@ interface ValidationResult {
 }
 
 export const useScoreValidation = () => {
-  const { _toast } = useToast();
+  const { toast: _toast } = useToast();
 
   const validateScore = (team1Score: number, team2Score: number): ValidationResult => {
     // Ensure scores are valid numbers

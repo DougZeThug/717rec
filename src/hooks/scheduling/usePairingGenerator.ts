@@ -25,7 +25,7 @@ export const usePairingGenerator = () => {
   const [unmatchedTeamIds, setUnmatchedTeamIds] = useState<string[]>([]);
   // Maps team ID to array of block names (supports double headers in multiple blocks)
   const [teamBlockMap, setTeamBlockMap] = useState<Record<string, string[]>>({});
-  const { _teams } = useTeamsMap();
+  const { teams: _teams } = useTeamsMap();
   const { toast } = useToast();
 
   /**

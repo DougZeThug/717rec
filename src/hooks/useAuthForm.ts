@@ -18,7 +18,7 @@ export const useAuthForm = ({ returnTo: _returnTo }: UseAuthFormProps) => {
     signUp,
     signInWithGoogle,
     signInWithGoogleNative,
-    _isLoading,
+    isLoading: _isLoading,
     authError,
     clearAuthError,
   } = useAuth();
