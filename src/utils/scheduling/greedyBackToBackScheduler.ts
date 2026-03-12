@@ -321,8 +321,13 @@ function findBestOpponent(
 
     if (distA !== distB) return distA - distB;
 
-    // When relaxation allows rematches, still prefer non-rematches
+    // When relaxation allows cross-tier, prefer same/adjacent tier
     if (relaxationLevel >= 1) {
+      if (distA !== distB) return distA - distB;
+    }
+
+    // When relaxation allows rematches, still prefer non-rematches
+    if (relaxationLevel >= 2) {
       const aIsRematch = playedSet.has(pairKey(team.id, a.id));
       const bIsRematch = playedSet.has(pairKey(team.id, b.id));
       if (aIsRematch !== bIsRematch) return aIsRematch ? 1 : -1;
