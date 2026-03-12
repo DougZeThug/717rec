@@ -153,11 +153,11 @@ function canPlay(
   // NEVER relax session rematches - teams can't play twice in same session
   if (tonightPairs.has(key)) return false;
 
-  // Check season rematches (relaxed at level 1+)
-  if (relaxationLevel < 1 && playedSet.has(key)) return false;
+  // Check tier gap (relaxed at level 1+) — cosmetic preference, relax first
+  if (relaxationLevel < 1 && tierDistance(teamA, teamB) > maxTierGap) return false;
 
-  // Check tier gap (relaxed at level 2+)
-  if (relaxationLevel < 2 && tierDistance(teamA, teamB) > maxTierGap) return false;
+  // Check season rematches (relaxed at level 2+) — user explicitly asked to avoid, relax last
+  if (relaxationLevel < 2 && playedSet.has(key)) return false;
 
   return true;
 }
