@@ -18,7 +18,7 @@ export const TransitionLink: React.FC<TransitionLinkProps> = ({
   className,
   onClick,
   variant = 'default',
-  _noFeedback = false,
+  noFeedback: _noFeedback = false,
   ...rest
 }) => {
   const getLinkStyle = () => {

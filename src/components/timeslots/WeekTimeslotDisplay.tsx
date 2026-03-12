@@ -16,8 +16,8 @@ interface WeekTimeslotDisplayProps {
 
 const WeekTimeslotDisplay: React.FC<WeekTimeslotDisplayProps> = ({
   teamId,
-  _teamName,
-  _enableBatchAssignment = false,
+  teamName: _teamName,
+  enableBatchAssignment: _enableBatchAssignment = false,
 }) => {
   const [timeslots, setTimeslots] = useState<TeamTimeslot[]>([]);
   const [isLoading, setIsLoading] = useState(true);

@@ -42,7 +42,7 @@ interface TimeslotAssignmentProps {
 }
 
 const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
-  _selectedDate,
+  selectedDate: _selectedDate,
   teams,
   existingTimeslots,
   onAssign,
