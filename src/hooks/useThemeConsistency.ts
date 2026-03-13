@@ -19,7 +19,7 @@ export const useThemeConsistency = () => {
       log(`Applying stored theme preference: ${storedTheme}`);
       setTheme(storedTheme);
     } else {
-      const defaultTheme = 'system';
+      const defaultTheme = 'dark';
       log(`Applying default theme: ${defaultTheme}`);
       setTheme(defaultTheme);
     }
