@@ -19,9 +19,9 @@ import './index.css';
 createRoot(document.getElementById('root')!).render(
   <ThemeProvider
     attribute="class"
-    defaultTheme="system"
-    themes={['light', 'dark', 'system', 'winter-frozen']}
-    enableSystem={true}
+    defaultTheme="dark"
+    themes={['light', 'dark', 'winter-frozen']}
+    enableSystem={false}
     disableTransitionOnChange={false}
   >
     <App />

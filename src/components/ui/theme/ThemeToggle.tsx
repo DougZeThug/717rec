@@ -1,14 +1,8 @@
-import { Monitor, Moon, Sun } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { useEnabledThemeKeys } from '@/hooks/useThemeSettings';
 import { SnowflakeSparkle } from '@/icons';
 import { cn } from '@/lib/utils';
@@ -19,12 +13,7 @@ interface ThemeToggleProps {
   size?: 'default' | 'sm' | 'lg' | 'icon';
 }
 
-const allThemeOptions = [
-  { value: 'light', label: 'Light', icon: Sun },
-  { value: 'dark', label: 'Dark', icon: Moon },
-  { value: 'system', label: 'System', icon: Monitor },
-  { value: 'winter-frozen', label: 'Winter', icon: SnowflakeSparkle },
-] as const;
+const themeOrder = ['light', 'dark', 'winter-frozen'] as const;
 
 export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   className,
@@ -39,27 +28,35 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
     setMounted(true);
   }, []);
 
+  // Filter to only enabled themes, excluding 'system'
+  const enabledThemes = enabledKeys.length > 0
+    ? themeOrder.filter((t) => enabledKeys.includes(t))
+    : ['light', 'dark'];
+
   // Auto-switch if current theme is disabled
   useEffect(() => {
-    if (!isLoading && enabledKeys.length > 0 && theme && !enabledKeys.includes(theme)) {
-      setTheme(enabledKeys[0]);
+    if (!isLoading && enabledThemes.length > 0 && theme && !enabledThemes.includes(theme)) {
+      setTheme('dark');
     }
-  }, [enabledKeys, isLoading, theme, setTheme]);
+  }, [enabledThemes, isLoading, theme, setTheme]);
+
+  const cycleTheme = useCallback(() => {
+    const currentIndex = enabledThemes.indexOf(theme ?? 'dark');
+    const nextIndex = (currentIndex + 1) % enabledThemes.length;
+    const next = enabledThemes[nextIndex];
+    setTheme(next);
+    localStorage.setItem('theme', next);
+  }, [enabledThemes, theme, setTheme]);
 
   if (!mounted) {
     return null;
   }
 
-  const themeOptions =
-    enabledKeys.length > 0
-      ? allThemeOptions.filter((opt) => enabledKeys.includes(opt.value))
-      : allThemeOptions.filter((opt) => opt.value !== 'winter-frozen'); // fallback
-
   const getCurrentIcon = () => {
     if (theme === 'winter-frozen') {
-      return <SnowflakeSparkle size={20} className="text-cyan-400" />;
+      return <SnowflakeSparkle size={20} className="text-cyan-400 drop-shadow-[0_0_4px_hsla(199,90%,70%,0.6)]" />;
     }
-    if (resolvedTheme === 'dark') {
+    if (resolvedTheme === 'dark' || theme === 'dark') {
       return <Moon className="h-5 w-5" />;
     }
     return <Sun className="h-5 w-5" />;
@@ -79,49 +76,17 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
     return 'text-foreground hover:bg-muted border-border';
   };
 
-  const getIconClasses = () => {
-    if (theme === 'winter-frozen') {
-      return 'h-5 w-5 text-cyan-400 drop-shadow-[0_0_4px_hsla(199,90%,70%,0.6)]';
-    }
-    return 'h-5 w-5';
-  };
-
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant={variant}
-          size={size}
-          className={cn('rounded-full transition-all duration-300', getButtonClasses(), className)}
-          aria-label="Select theme"
-          title="Select theme"
-        >
-          {theme === 'winter-frozen' ? (
-            <SnowflakeSparkle size={20} className={getIconClasses()} />
-          ) : (
-            getCurrentIcon()
-          )}
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-[140px]">
-        {themeOptions.map(({ value, label, icon: Icon }) => (
-          <DropdownMenuItem
-            key={value}
-            onClick={() => {
-              setTheme(value);
-              localStorage.setItem('theme', value);
-            }}
-            className={cn('flex items-center gap-2 cursor-pointer', theme === value && 'bg-accent')}
-          >
-            <Icon className={cn('h-4 w-4', value === 'winter-frozen' && 'text-cyan-500')} />
-            <span>{label}</span>
-            {value === 'winter-frozen' && (
-              <span className="ml-auto text-[10px] text-cyan-500 font-medium">❄️</span>
-            )}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Button
+      variant={variant}
+      size={size}
+      className={cn('rounded-full transition-all duration-300', getButtonClasses(), className)}
+      aria-label="Toggle theme"
+      title="Toggle theme"
+      onClick={cycleTheme}
+    >
+      {getCurrentIcon()}
+    </Button>
   );
 };
 
