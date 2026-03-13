@@ -111,7 +111,10 @@ const CareerRankingsSection: React.FC = () => {
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div className="flex items-center gap-2">
+                        <div
+                          className="flex items-center gap-2"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <label
                             htmlFor="show-hidden-toggle"
                             className="text-sm font-medium cursor-pointer flex items-center gap-1"

@@ -86,7 +86,11 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings, myTeamId }) => {
                 )}
               </div>
               <div className="flex items-center gap-2 ml-auto">
-                {isOpen && <ViewToggle view={view} onViewChange={setView} />}
+                {isOpen && (
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <ViewToggle view={view} onViewChange={setView} />
+                  </div>
+                )}
                 <ChevronDown
                   className={cn(
                     'h-5 w-5 transition-transform',
