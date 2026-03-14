@@ -125,9 +125,9 @@
     contain-intrinsic-size: auto 400px;
   }
 
-  /* Prevent layout shifts from animations */
+  /* Prevent layout shifts from animations — no contain:paint (Safari bug) */
   .animate-fade-in {
-    contain: layout style;
+    contain: layout;
   }
 
   /* Reserve space for dynamic content sections */

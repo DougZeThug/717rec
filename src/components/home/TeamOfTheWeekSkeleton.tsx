@@ -8,7 +8,7 @@ const TeamOfTheWeekSkeleton: React.FC = () => {
   return (
     <Card
       className="relative overflow-hidden border-amber-500/20 bg-gradient-to-br from-amber-500/5 via-background to-orange-500/5"
-      style={{ minHeight: '140px', contain: 'layout style paint' }}
+      style={{ minHeight: '140px', contain: 'layout style' }}
     >
       <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-transparent to-orange-500/10 opacity-50" />
 

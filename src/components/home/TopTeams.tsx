@@ -35,7 +35,7 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
   );
 
   // Reserve minimum height to prevent layout shift during loading
-  const sectionStyle = { minHeight: '280px', contain: 'layout style paint' as const };
+  const sectionStyle = { minHeight: '280px', contain: 'layout style' as const };
 
   if (topTenTeams.length === 0) {
     return (

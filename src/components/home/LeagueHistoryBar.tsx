@@ -16,7 +16,7 @@ const LeagueHistoryBar: React.FC = () => {
         'rounded-xl shadow-md hover:shadow-lg',
         'overflow-hidden'
       )}
-      style={{ minHeight: '56px', contain: 'layout style paint' }}
+      style={{ minHeight: '56px', contain: 'layout style' }}
     >
       <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
 
