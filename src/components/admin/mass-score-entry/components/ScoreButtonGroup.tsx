@@ -23,6 +23,8 @@ interface ScoreButtonGroupProps {
   matchId?: string;
   isCompleted?: boolean;
   matchDate?: string;
+  team1Name?: string;
+  team2Name?: string;
 }
 
 const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({

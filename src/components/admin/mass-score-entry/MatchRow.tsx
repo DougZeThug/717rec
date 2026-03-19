@@ -106,16 +106,12 @@ const MatchRow: React.FC<MatchRowProps> = ({
           </div>
         )}
 
-        {/* Team Names Display */}
+        {/* Team Names Display - Stacked vertical layout */}
         <div className="flex items-start gap-2">
-          <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 flex-1">
-            <TeamDisplay team={match.team1} align="left" className="flex-1" />
-            <span className="text-muted-foreground text-xs text-center sm:hidden py-0.5">vs</span>
-            <TeamDisplay
-              team={match.team2}
-              align="left"
-              className="flex-1 sm:flex-row-reverse sm:[&>span]:text-right"
-            />
+          <div className="flex flex-col gap-1 flex-1">
+            <TeamDisplay team={match.team1} align="left" />
+            <span className="text-muted-foreground text-xs text-center py-0.5">vs</span>
+            <TeamDisplay team={match.team2} align="right" />
           </div>
           {onDelete && (
             <Button
@@ -123,7 +119,6 @@ const MatchRow: React.FC<MatchRowProps> = ({
               size="icon"
               className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
               onClick={() => {
-                // Extract real match ID (strip the -index-N suffix)
                 const realId = match.id.split('-index-')[0];
                 onDelete(realId);
               }}
