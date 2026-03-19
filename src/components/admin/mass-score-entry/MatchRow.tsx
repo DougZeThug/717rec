@@ -107,26 +107,28 @@ const MatchRow: React.FC<MatchRowProps> = ({
         )}
 
         {/* Team Names Display - Stacked vertical layout */}
-        <div className="flex items-start gap-2">
-          <div className="flex flex-col gap-1 flex-1">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center justify-between">
             <TeamDisplay team={match.team1} align="left" />
-            <span className="text-muted-foreground text-xs text-center py-0.5">vs</span>
+            {onDelete && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
+                onClick={() => {
+                  const realId = match.id.split('-index-')[0];
+                  onDelete(realId);
+                }}
+                disabled={isSubmitting}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          <span className="text-muted-foreground text-xs text-center py-0.5">vs</span>
+          <div className="flex justify-end">
             <TeamDisplay team={match.team2} align="right" />
           </div>
-          {onDelete && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
-              onClick={() => {
-                const realId = match.id.split('-index-')[0];
-                onDelete(realId);
-              }}
-              disabled={isSubmitting}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          )}
         </div>
 
         {/* Score Section */}
