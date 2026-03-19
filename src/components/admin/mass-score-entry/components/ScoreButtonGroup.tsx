@@ -105,7 +105,7 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
         <span className="truncate max-w-[40%]">← {abbreviate(team1Name)}</span>
         <span className="truncate max-w-[40%] text-right">{abbreviate(team2Name)} →</span>
       </div>
-      <div className="flex gap-1.5 sm:gap-3 flex-wrap justify-center w-full">
+      <div className="grid grid-cols-4 gap-1.5 sm:gap-3 w-full">
         {SCORE_OPTIONS.map((option) => (
           <ScoreButton
             key={`${matchId}-${option.label}`}

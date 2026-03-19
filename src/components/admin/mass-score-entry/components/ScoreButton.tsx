@@ -73,7 +73,7 @@ const ScoreButton = ({
       disabled={disabled}
       whileTap={{ scale: 0.95 }}
       className={cn(
-        'rounded-md min-w-[3.5rem] min-h-[44px] h-auto py-2.5 px-3 border transition-colors duration-200 text-sm font-medium',
+        'rounded-md w-full min-h-[44px] h-auto py-2.5 px-1 border transition-colors duration-200 text-sm font-medium',
         selected
           ? 'bg-primary text-primary-foreground border-primary'
           : isCompleted

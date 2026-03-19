@@ -83,7 +83,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
 
   return (
     <div
-      className={`p-4 rounded-lg bg-background border transition-colors ${
+      className={`px-3 py-4 rounded-lg bg-background border transition-colors ${
         isSubmitting
           ? 'border-primary/50 bg-primary/5'
           : hasError
