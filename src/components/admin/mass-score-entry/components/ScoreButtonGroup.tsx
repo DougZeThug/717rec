@@ -35,6 +35,8 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
   matchId = 'unknown',
   isCompleted: _isCompleted = false,
   matchDate,
+  team1Name = 'Team 1',
+  team2Name = 'Team 2',
 }) => {
   const [selectedOption, setSelectedOption] = useState<{
     team1Score: number;
