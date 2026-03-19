@@ -1,18 +1,12 @@
 
 
-## Widen Score Buttons to Fit All 4 in One Row on Mobile
+## Push Team 2 to the Right Side
 
 ### Problem
-The score buttons wrap to a second row on mobile because the card has `p-4` padding and the buttons use `min-w-[3.5rem]` with `flex-wrap`. On a 360px viewport, 4 buttons + gaps + padding don't fit in one line.
+Team 2 (bottom row) has `flex-row-reverse` which puts the logo on the right of the name, but the entire row still sits on the left side of the card. It should be pushed to the right so the logo aligns roughly under the trash icon.
 
-### Changes
+### Change
 
-**File 1: `src/components/admin/mass-score-entry/MatchRow.tsx`**
-- Reduce horizontal padding from `p-4` to `px-3 py-4` to reclaim ~8px of horizontal space on each side
-
-**File 2: `src/components/admin/mass-score-entry/components/ScoreButtonGroup.tsx`**
-- Change the button container from `flex gap-1.5 sm:gap-3 flex-wrap` to `grid grid-cols-4 gap-1.5 sm:gap-3` so all 4 buttons always sit in one row and expand equally to fill the width
-
-**File 3: `src/components/admin/mass-score-entry/components/ScoreButton.tsx`**
-- Change `min-w-[3.5rem]` to `w-full` so buttons fill their grid cell instead of having a fixed minimum width
+**File: `src/components/admin/mass-score-entry/components/TeamDisplay.tsx`**
+- Add `justify-end` when `align === 'right'` so the content is pushed to the far right of the container
 
