@@ -96,8 +96,15 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
     }
   };
 
+  // Abbreviate team name to first ~10 chars
+  const abbreviate = (name: string) => (name.length > 12 ? name.slice(0, 10) + '…' : name);
+
   return (
-    <div className="space-y-2">
+    <div className="space-y-1">
+      <div className="flex justify-between items-center px-1 text-[10px] font-medium text-muted-foreground">
+        <span className="truncate max-w-[40%]">← {abbreviate(team1Name)}</span>
+        <span className="truncate max-w-[40%] text-right">{abbreviate(team2Name)} →</span>
+      </div>
       <div className="flex gap-1.5 sm:gap-3 flex-wrap justify-center w-full">
         {SCORE_OPTIONS.map((option) => (
           <ScoreButton
@@ -110,9 +117,6 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
             matchDate={matchDate}
           />
         ))}
-      </div>
-      <div className="text-xs text-center text-muted-foreground">
-        (First number represents Team 1's game wins)
       </div>
     </div>
   );
