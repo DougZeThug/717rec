@@ -15,7 +15,7 @@ interface TeamDisplayProps {
 const TeamDisplay: React.FC<TeamDisplayProps> = ({ team, align = 'left', className }) => {
   const containerClassName = cn(
     'flex items-center gap-2 min-w-0',
-    align === 'right' && 'flex-row-reverse',
+    align === 'right' && 'flex-row-reverse justify-end',
     align === 'center' && 'justify-center',
     className
   );
