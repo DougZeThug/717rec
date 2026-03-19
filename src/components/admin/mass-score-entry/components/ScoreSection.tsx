@@ -86,6 +86,8 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
         matchId={match.id}
         isCompleted={match.iscompleted}
         matchDate={match.date?.toString()}
+        team1Name={match.team1?.name}
+        team2Name={match.team2?.name}
       />
     </div>
   );
