@@ -67,7 +67,7 @@ export function useTeamReportCard(teamId: string | undefined) {
     // Clutch — based on game-3 win percentage
     const clutchPct = teamClutchRecord.clutchWinPct;
     // If no game-3 matches, give average grade
-    const clutchPercentile = teamClutchRecord.game3Matches > 0 ? Math.round(clutchPct * 100) : 50;
+    const clutchPercentile = teamClutchRecord.game3Matches > 0 ? Math.round(clutchPct) : 50;
     const clutch: GradeCategory = {
       label: 'Clutch',
       grade: calculateGrade(clutchPercentile),
