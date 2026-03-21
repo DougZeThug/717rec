@@ -172,7 +172,7 @@ const UpsetRow: React.FC<UpsetRowProps> = ({ upset, winter }) => (
       to={`/teams/${toTeamSlug(upset.loserName)}`}
       className="flex items-center gap-1.5 group min-w-0"
     >
-      <TeamLogo imageUrl={upset.loserLogoUrl} teamName={upset.loserName} size="xs" rounded />
+      <TeamLogo imageUrl={upset.loserLogoUrl} teamName={upset.loserName} size="xs" />
       <span
         className={cn(
           typeScale.body,
