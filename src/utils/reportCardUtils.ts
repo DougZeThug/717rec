@@ -18,7 +18,7 @@ export interface TeamGrades {
   clutch: GradeCategory;
   schedule: GradeCategory;
   consistency: GradeCategory;
-  improvement: GradeCategory;
+  games: GradeCategory;
   gpa: number;
 }
 
