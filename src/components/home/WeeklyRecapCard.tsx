@@ -154,7 +154,7 @@ const UpsetRow: React.FC<UpsetRowProps> = ({ upset, winter }) => (
       to={`/teams/${toTeamSlug(upset.winnerName)}`}
       className="flex items-center gap-1.5 group min-w-0"
     >
-      <TeamLogo imageUrl={upset.winnerLogoUrl} teamName={upset.winnerName} size="xs" rounded />
+      <TeamLogo imageUrl={upset.winnerLogoUrl} teamName={upset.winnerName} size="xs" />
       <span
         className={cn(
           typeScale.body,
@@ -172,7 +172,7 @@ const UpsetRow: React.FC<UpsetRowProps> = ({ upset, winter }) => (
       to={`/teams/${toTeamSlug(upset.loserName)}`}
       className="flex items-center gap-1.5 group min-w-0"
     >
-      <TeamLogo imageUrl={upset.loserLogoUrl} teamName={upset.loserName} size="xs" rounded />
+      <TeamLogo imageUrl={upset.loserLogoUrl} teamName={upset.loserName} size="xs" />
       <span
         className={cn(
           typeScale.body,
@@ -203,7 +203,7 @@ interface StreakRowProps {
 
 const StreakRow: React.FC<StreakRowProps> = ({ team, winter }) => (
   <Link to={`/teams/${toTeamSlug(team.teamName)}`} className="flex items-center gap-2 group">
-    <TeamLogo imageUrl={team.logoUrl} teamName={team.teamName} size="xs" rounded />
+    <TeamLogo imageUrl={team.logoUrl} teamName={team.teamName} size="xs" />
     <div className="flex-1 min-w-0">
       <span
         className={cn(
@@ -236,7 +236,7 @@ const MoverRow: React.FC<MoverRowProps> = ({ trend, direction, winter }) => {
 
   return (
     <Link to={`/teams/${toTeamSlug(trend.teamName)}`} className="flex items-center gap-2 group">
-      <TeamLogo imageUrl={trend.logoUrl} teamName={trend.teamName} size="xs" rounded />
+      <TeamLogo imageUrl={trend.logoUrl} teamName={trend.teamName} size="xs" />
       <div className="flex-1 min-w-0">
         <span
           className={cn(
