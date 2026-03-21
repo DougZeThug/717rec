@@ -44,7 +44,7 @@ const NavLinks: React.FC<NavLinksProps> = React.memo(({ isMobile = false, onLink
       { href: '/stats', label: 'Standings', icon: BarChart3 },
       { href: '/playoffs', label: 'Playoffs', icon: Trophy },
       { href: '/history', label: 'History', icon: Clock },
-      { href: '/insights', label: 'Insights', icon: Lightbulb },
+      
       { href: '/message-board', label: 'Messages', icon: MessageSquare },
       { href: '/help', label: 'Help', icon: HelpCircle },
       { href: '/contact', label: 'Contact', icon: Mail },
