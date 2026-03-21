@@ -180,10 +180,10 @@ const TeamDetails = () => {
           </div>
         </section>
 
-        {/* Team Analysis */}
+        {/* Team Analysis - Hidden for now, may be used later
         <section id="analysis" className="scroll-mt-20" aria-labelledby="analysis-heading">
           {teamId && <TeamAnalysis teamId={teamId} teamName={team.name} />}
-        </section>
+        </section> */}
 
         {/* Report Card */}
         <section id="report-card" className="scroll-mt-20" aria-labelledby="report-card-heading">
