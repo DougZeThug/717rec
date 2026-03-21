@@ -180,7 +180,7 @@ const TeamReportCard: React.FC<TeamReportCardProps> = ({ teamId }) => {
             <GradeCard category={grades.clutch} />
             <GradeCard category={grades.schedule} />
             <GradeCard category={grades.consistency} />
-            <GradeCard category={grades.improvement} />
+            <GradeCard category={grades.games} />
           </div>
         </div>
       )}
