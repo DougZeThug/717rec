@@ -6,11 +6,16 @@ import { warnLog } from '@/utils/logger';
 import { computeAllTeamsTotals } from './career/computeAllTeamsTotals';
 import { useTeamsQuery } from './teams';
 
-export function useCareerRankings() {
-  const { data: teams, isLoading: isLoadingTeams, error: teamsError } = useTeamsQuery();
+interface CareerRankingsOptions {
+  includeHidden?: boolean;
+}
+
+export function useCareerRankings(options?: CareerRankingsOptions) {
+  const includeHidden = options?.includeHidden ?? false;
+  const { data: teams, isLoading: isLoadingTeams, error: teamsError } = useTeamsQuery({ includeHidden });
 
   return useQuery({
-    queryKey: ['careerRankings', teams?.map((t) => t.id)],
+    queryKey: ['careerRankings', teams?.map((t) => t.id), includeHidden],
     queryFn: async (): Promise<CareerRanking[]> => {
       if (!teams) return [];
 
