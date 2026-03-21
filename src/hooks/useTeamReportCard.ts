@@ -100,7 +100,7 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
         schedule,
         consistency,
         games,
-        gpa: calculateGPA(allGrades),
+        gpa: calculateGPA(weightedGrades),
       };
     }
 
