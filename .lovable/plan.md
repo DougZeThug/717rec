@@ -1,42 +1,37 @@
 
 
-## Toggleable Report Card: Season vs Career
+## Weighted GPA Calculation for Report Card
 
-### Overview
-Add a toggle to the report card that lets users switch between current season grades (default) and career grades. The toggle will sit between the section header and the GPA display.
+### Problem
+Currently `calculateGPA` treats all 6 grades equally. Power Score (Overall) should carry more weight since it's the most important indicator of team strength.
+
+### Proposed Weights
+| Category | Weight | Rationale |
+|----------|--------|-----------|
+| Overall (Power Score) | 3x | Primary composite metric |
+| Consistency (Win %) | 2x | Core performance indicator |
+| Games (Game Win %) | 1.5x | Supporting metric |
+| Offense (Sweep Rate) | 1x | Situational |
+| Clutch (Game 3) | 1x | Situational |
+| Schedule (SOS) | 1x | Context metric |
 
 ### Changes
 
-**File 1: `src/hooks/useTeamReportCard.ts`**
-- Add a `mode` parameter: `'season' | 'career'`
-- When `mode === 'season'`: keep current logic (useTeamRankings + useTeamMatches)
-- When `mode === 'career'`: use `useCareerRankings` instead
-  - Overall: percentile of `careerPowerScore` across all career rankings
-  - Offense: percentile of `career_sweep_rate` — requires pulling from `computeAllTeamsTotals` or adding sweep/clutch fields to `CareerRanking`
-  - Clutch: use `career_clutch_win_pct` directly (already 0-100)
-  - Schedule: percentile of `careerSos`
-  - Consistency: percentile of `careerWinPercentage`
-  - Trend: keep using weekly power score trends (applies to both modes)
-- Both hooks are always called (React rules), but only the relevant data is used in the `useMemo`
+**File: `src/utils/reportCardUtils.ts`**
+- Update `calculateGPA` to accept an array of `{ grade, weight }` objects instead of plain grades
+- Compute weighted average: `sum(gpa * weight) / sum(weights)`
 
-**File 2: `src/types/career.ts`**
-- Add to `CareerRanking`:
-  - `careerSweepRate: number`
-  - `careerClutchWinPct: number`
-  - `careerClutchGame3s: number`
-
-**File 3: `src/hooks/useCareerRankings.ts`**
-- Pass the three new fields from `totals` when building each ranking entry:
-  - `careerSweepRate: totals.career_sweep_rate`
-  - `careerClutchWinPct: totals.career_clutch_win_pct`
-  - `careerClutchGame3s: totals.career_clutch_game3s`
-
-**File 4: `src/hooks/useCareerRankingsWithHidden.ts`**
-- Same additions as File 3 for consistency
-
-**File 5: `src/components/teams/TeamReportCard.tsx`**
-- Add local state: `const [mode, setMode] = useState<'season' | 'career'>('season')`
-- Pass `mode` to `useTeamReportCard(teamId, mode)`
-- Add a small toggle (using existing `Tabs` or `ToggleGroup` component) between the section title area and the GPA display, with "Season" and "Career" options
-- Update grade descriptions to reflect the active mode (e.g., "Career power score ranking" vs "Combined power score ranking")
+**File: `src/hooks/useTeamReportCard.ts`** (both season and career blocks)
+- Replace the `allGrades` array with weighted entries:
+```typescript
+const weightedGrades = [
+  { grade: overall.grade, weight: 3 },
+  { grade: consistency.grade, weight: 2 },
+  { grade: games.grade, weight: 1.5 },
+  { grade: offense.grade, weight: 1 },
+  { grade: clutch.grade, weight: 1 },
+  { grade: schedule.grade, weight: 1 },
+];
+```
+- Pass to updated `calculateGPA(weightedGrades)`
 
