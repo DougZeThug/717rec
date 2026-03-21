@@ -15,7 +15,7 @@ export function useCareerRankings(options?: CareerRankingsOptions) {
   const { data: teams, isLoading: isLoadingTeams, error: teamsError } = useTeamsQuery({ includeHidden });
 
   return useQuery({
-    queryKey: ['careerRankings', teams?.map((t) => t.id)],
+    queryKey: ['careerRankings', teams?.map((t) => t.id), includeHidden],
     queryFn: async (): Promise<CareerRanking[]> => {
       if (!teams) return [];
 

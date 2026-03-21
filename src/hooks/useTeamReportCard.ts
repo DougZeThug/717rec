@@ -18,7 +18,7 @@ export type ReportCardMode = 'season' | 'career';
 export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMode = 'season') {
   const { rankings, isLoading: isLoadingRankings } = useTeamRankings();
   const { pastMatches, isLoadingMatches } = useTeamMatches(teamId);
-  const { data: careerRankingsData, isLoading: isLoadingCareer } = useCareerRankings();
+  const { data: careerRankingsData, isLoading: isLoadingCareer } = useCareerRankings({ includeHidden: true });
 
   const grades = useMemo((): TeamGrades | null => {
     if (!teamId) return null;
