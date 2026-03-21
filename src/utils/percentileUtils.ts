@@ -23,15 +23,13 @@ export function calculatePercentile(
     return { value, percentile: 0, rank: 0, total: 0 };
   }
 
-  // Sort values in the appropriate direction
-  const sorted = [...allValues].sort((a, b) => (higherIsBetter ? b - a : a - b));
+  // Count how many values are strictly better than this one
+  const above = allValues.filter((v) => (higherIsBetter ? v > value : v < value)).length;
+  const rank = above + 1;
 
-  // Find rank (1-indexed)
-  const rank = sorted.findIndex((v) => v === value) + 1;
-
-  // Calculate percentile: how many teams are below this one
-  const teamsBelow = total - rank;
-  const percentile = Math.round((teamsBelow / (total - 1)) * 100) || 0;
+  // Count how many values are strictly worse
+  const below = allValues.filter((v) => (higherIsBetter ? v < value : v > value)).length;
+  const percentile = total > 1 ? Math.round((below / (total - 1)) * 100) : 100;
 
   return {
     value,
