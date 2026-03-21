@@ -3,12 +3,10 @@ import { useMemo } from 'react';
 import { useCareerRankings } from '@/hooks/useCareerRankings';
 import { useTeamMatches } from '@/hooks/useTeamMatches';
 import { useTeamRankings } from '@/hooks/useTeamRankings';
-import { useWeeklyPowerScoreTrends } from '@/hooks/useWeeklyPowerScoreTrends';
 import { calculatePercentile } from '@/utils/percentileUtils';
 import {
   calculateGPA,
   calculateGrade,
-  calculateImprovementPercentile,
   GradeCategory,
   TeamGrades,
 } from '@/utils/reportCardUtils';
@@ -21,28 +19,9 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
   const { rankings, isLoading: isLoadingRankings } = useTeamRankings();
   const { pastMatches, isLoadingMatches } = useTeamMatches(teamId);
   const { data: careerRankingsData, isLoading: isLoadingCareer } = useCareerRankings();
-  const { data: risersData, isLoading: isLoadingRisers } = useWeeklyPowerScoreTrends('up', 20);
-  const { data: fallersData, isLoading: isLoadingFallers } = useWeeklyPowerScoreTrends('down', 20);
 
   const grades = useMemo((): TeamGrades | null => {
     if (!teamId) return null;
-
-    // Trend grade (shared between modes)
-    const risers = (risersData?.trends || []).map((t) => ({
-      teamId: t.teamId,
-      change: t.delta,
-    }));
-    const fallers = (fallersData?.trends || []).map((t) => ({
-      teamId: t.teamId,
-      change: t.delta,
-    }));
-    const improvementPercentile = calculateImprovementPercentile(teamId, risers, fallers);
-    const improvement: GradeCategory = {
-      label: 'Trend',
-      grade: calculateGrade(improvementPercentile),
-      percentile: improvementPercentile,
-      description: 'Recent power score movement',
-    };
 
     if (mode === 'career') {
       const careerRankings = careerRankingsData || [];
@@ -55,8 +34,8 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
       const allWinPcts = careerRankings.map((r) => r.careerWinPercentage);
       const allSos = careerRankings.map((r) => r.careerSos);
       const allSweepRates = careerRankings.map((r) => r.careerSweepRate);
+      const allGameWinPcts = careerRankings.map((r) => r.careerGameWinPercentage);
 
-      // Overall
       const overallPercentile = calculatePercentile(teamCareer.careerPowerScore, allPowerScores, true);
       const overall: GradeCategory = {
         label: 'Overall',
@@ -65,7 +44,6 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
         description: 'Career power score ranking',
       };
 
-      // Offense — career sweep rate
       const offensePercentile = calculatePercentile(teamCareer.careerSweepRate, allSweepRates, true);
       const offense: GradeCategory = {
         label: 'Offense',
@@ -74,7 +52,6 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
         description: 'Career sweep rate',
       };
 
-      // Clutch — career clutch win pct (already 0-100)
       const clutchPercentile = teamCareer.careerClutchGame3s > 0 ? Math.round(teamCareer.careerClutchWinPct) : 50;
       const clutch: GradeCategory = {
         label: 'Clutch',
@@ -83,7 +60,6 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
         description: 'Career game 3 win rate',
       };
 
-      // Schedule — career SOS
       const schedulePercentile = calculatePercentile(teamCareer.careerSos, allSos, true);
       const schedule: GradeCategory = {
         label: 'Schedule',
@@ -92,7 +68,6 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
         description: 'Career strength of schedule',
       };
 
-      // Consistency — career win %
       const consistencyPercentile = calculatePercentile(teamCareer.careerWinPercentage, allWinPcts, true);
       const consistency: GradeCategory = {
         label: 'Consistency',
@@ -101,13 +76,21 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
         description: 'Career win rate',
       };
 
+      const gamesPercentile = calculatePercentile(teamCareer.careerGameWinPercentage, allGameWinPcts, true);
+      const games: GradeCategory = {
+        label: 'Games',
+        grade: calculateGrade(gamesPercentile.percentile),
+        percentile: gamesPercentile.percentile,
+        description: 'Career game win rate',
+      };
+
       const allGrades = [
         overall.grade,
         offense.grade,
         clutch.grade,
         schedule.grade,
         consistency.grade,
-        improvement.grade,
+        games.grade,
       ];
 
       return {
@@ -116,12 +99,12 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
         clutch,
         schedule,
         consistency,
-        improvement,
+        games,
         gpa: calculateGPA(allGrades),
       };
     }
 
-    // Season mode (existing logic)
+    // Season mode
     if (!rankings || rankings.length === 0) return null;
 
     const teamRanking = rankings.find((r) => r.teamId === teamId);
@@ -130,6 +113,7 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
     const allPowerScores = rankings.map((r) => r.powerScore);
     const allWinPcts = rankings.map((r) => r.winPercentage);
     const allSos = rankings.map((r) => r.sos);
+    const allGameWinPcts = rankings.map((r) => r.gameWinPercentage);
 
     const allSweepRates = rankings.map((r) => {
       if (r.teamId === teamId) {
@@ -184,13 +168,21 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
       description: 'Win rate reliability',
     };
 
+    const gamesPercentile = calculatePercentile(teamRanking.gameWinPercentage, allGameWinPcts, true);
+    const games: GradeCategory = {
+      label: 'Games',
+      grade: calculateGrade(gamesPercentile.percentile),
+      percentile: gamesPercentile.percentile,
+      description: 'Individual game win rate',
+    };
+
     const allGrades = [
       overall.grade,
       offense.grade,
       clutch.grade,
       schedule.grade,
       consistency.grade,
-      improvement.grade,
+      games.grade,
     ];
 
     return {
@@ -199,16 +191,16 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
       clutch,
       schedule,
       consistency,
-      improvement,
+      games,
       gpa: calculateGPA(allGrades),
     };
-  }, [teamId, rankings, pastMatches, careerRankingsData, risersData, fallersData, mode]);
+  }, [teamId, rankings, pastMatches, careerRankingsData, mode]);
 
   return {
     grades,
     isLoading:
       mode === 'season'
-        ? isLoadingRankings || isLoadingMatches || isLoadingRisers || isLoadingFallers
-        : isLoadingCareer || isLoadingRisers || isLoadingFallers,
+        ? isLoadingRankings || isLoadingMatches
+        : isLoadingCareer,
   };
 }

@@ -18,7 +18,7 @@ export interface TeamGrades {
   clutch: GradeCategory;
   schedule: GradeCategory;
   consistency: GradeCategory;
-  improvement: GradeCategory;
+  games: GradeCategory;
   gpa: number;
 }
 
@@ -102,33 +102,3 @@ export function calculateGPA(grades: LetterGrade[]): number {
   return Math.round((total / grades.length) * 100) / 100;
 }
 
-/**
- * Calculate improvement percentile based on power score trend data.
- * Teams moving up get higher percentiles, teams moving down get lower.
- */
-export function calculateImprovementPercentile(
-  teamId: string,
-  risers: Array<{ teamId: string; change: number }>,
-  fallers: Array<{ teamId: string; change: number }>
-): number {
-  // Check if team is in risers
-  const riserEntry = risers.find((r) => r.teamId === teamId);
-  if (riserEntry) {
-    // Top riser gets ~95, scale down from there
-    const riserIndex = risers.indexOf(riserEntry);
-    const riserPercentile = Math.max(55, 95 - riserIndex * 8);
-    return riserPercentile;
-  }
-
-  // Check if team is in fallers
-  const fallerEntry = fallers.find((f) => f.teamId === teamId);
-  if (fallerEntry) {
-    // Worst faller gets ~5, scale up from there
-    const fallerIndex = fallers.indexOf(fallerEntry);
-    const fallerPercentile = Math.min(45, 5 + fallerIndex * 8);
-    return fallerPercentile;
-  }
-
-  // Team is neither rising nor falling significantly — average
-  return 50;
-}
