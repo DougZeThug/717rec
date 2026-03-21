@@ -236,7 +236,7 @@ const MoverRow: React.FC<MoverRowProps> = ({ trend, direction, winter }) => {
 
   return (
     <Link to={`/teams/${toTeamSlug(trend.teamName)}`} className="flex items-center gap-2 group">
-      <TeamLogo imageUrl={trend.logoUrl} teamName={trend.teamName} size="xs" rounded />
+      <TeamLogo imageUrl={trend.logoUrl} teamName={trend.teamName} size="xs" />
       <div className="flex-1 min-w-0">
         <span
           className={cn(
