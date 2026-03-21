@@ -64,6 +64,11 @@ export function useCareerRankings() {
           championships: totals.championships,
           runnerUps: totals.runner_ups,
 
+          // Career sweep/clutch stats
+          careerSweepRate: totals.career_sweep_rate,
+          careerClutchWinPct: totals.career_clutch_win_pct,
+          careerClutchGame3s: totals.career_clutch_game3s,
+
           // Career power score and meta stats
           careerPowerScore: totals.career_power_score,
           careerSos: totals.career_sos,

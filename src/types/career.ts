@@ -26,6 +26,11 @@ export interface CareerRanking {
   championships: number;
   runnerUps: number;
 
+  // Career sweep/clutch stats
+  careerSweepRate: number;
+  careerClutchWinPct: number;
+  careerClutchGame3s: number;
+
   // Career power score and meta stats
   careerPowerScore: number;
   careerSos: number;
