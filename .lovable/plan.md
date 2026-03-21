@@ -1,37 +1,30 @@
 
 
-## Weighted GPA Calculation for Report Card
+## Fix Percentile Calculation Bug
 
 ### Problem
-Currently `calculateGPA` treats all 6 grades equally. Power Score (Overall) should carry more weight since it's the most important indicator of team strength.
+The `calculatePercentile` function in `percentileUtils.ts` uses `findIndex` with strict equality (`===`) to locate a team's value in a sorted array. This is fragile with floating-point numbers and can produce incorrect ranks. For a team ranked 6th out of 46, the expected percentile is ~89, but the current logic returns 77 — indicating the value is being found at the wrong position in the sorted array.
 
-### Proposed Weights
-| Category | Weight | Rationale |
-|----------|--------|-----------|
-| Overall (Power Score) | 3x | Primary composite metric |
-| Consistency (Win %) | 2x | Core performance indicator |
-| Games (Game Win %) | 1.5x | Supporting metric |
-| Offense (Sweep Rate) | 1x | Situational |
-| Clutch (Game 3) | 1x | Situational |
-| Schedule (SOS) | 1x | Context metric |
+### Root Cause
+`findIndex(v => v === value)` on sorted floating-point arrays is unreliable. Sort order can vary for very close values, and if multiple values are close but not identical, the position found may not match the team's true rank.
 
-### Changes
+### Fix
 
-**File: `src/utils/reportCardUtils.ts`**
-- Update `calculateGPA` to accept an array of `{ grade, weight }` objects instead of plain grades
-- Compute weighted average: `sum(gpa * weight) / sum(weights)`
+**File: `src/utils/percentileUtils.ts`** — `calculatePercentile` function
 
-**File: `src/hooks/useTeamReportCard.ts`** (both season and career blocks)
-- Replace the `allGrades` array with weighted entries:
+Replace the `findIndex`-based rank calculation with a direct count approach:
+
 ```typescript
-const weightedGrades = [
-  { grade: overall.grade, weight: 3 },
-  { grade: consistency.grade, weight: 2 },
-  { grade: games.grade, weight: 1.5 },
-  { grade: offense.grade, weight: 1 },
-  { grade: clutch.grade, weight: 1 },
-  { grade: schedule.grade, weight: 1 },
-];
+// Count how many values are strictly better than this one
+const above = allValues.filter(v => higherIsBetter ? v > value : v < value).length;
+const rank = above + 1;
+
+// Count how many values are strictly worse
+const below = allValues.filter(v => higherIsBetter ? v < value : v > value).length;
+const percentile = total > 1 ? Math.round((below / (total - 1)) * 100) : 100;
 ```
-- Pass to updated `calculateGPA(weightedGrades)`
+
+This correctly handles ties (tied teams get the same percentile) and eliminates floating-point comparison issues with sorted array indexing.
+
+For rank 6 of 46: `below = 40`, percentile = round(40/45 × 100) = **89** — matching the user's expectation.
 
