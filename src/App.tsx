@@ -42,6 +42,7 @@ const MyTeam = lazy(() => import('./pages/MyTeam'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Compare = lazy(() => import('./pages/Compare'));
+const Insights = lazy(() => import('./pages/Insights'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -219,6 +220,14 @@ const AppContent = () => {
                   element={
                     <RouteErrorBoundary routeName="Compare">
                       <Compare />
+                    </RouteErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/insights"
+                  element={
+                    <RouteErrorBoundary routeName="Insights">
+                      <Insights />
                     </RouteErrorBoundary>
                   }
                 />

@@ -14,6 +14,7 @@ import TeamAnalysis from '@/components/teams/TeamAnalysis';
 import TeamCareerPowerScoreChart from '@/components/teams/TeamCareerPowerScoreChart';
 import TeamDetailsStickyNav from '@/components/teams/TeamDetailsStickyNav';
 import TeamHeader from '@/components/teams/TeamHeader';
+import TeamReportCard from '@/components/teams/TeamReportCard';
 import TeamTotals from '@/components/teams/TeamTotals';
 import { Button } from '@/components/ui/button';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
@@ -182,6 +183,11 @@ const TeamDetails = () => {
         {/* Team Analysis */}
         <section id="analysis" className="scroll-mt-20" aria-labelledby="analysis-heading">
           {teamId && <TeamAnalysis teamId={teamId} teamName={team.name} />}
+        </section>
+
+        {/* Report Card */}
+        <section id="report-card" className="scroll-mt-20" aria-labelledby="report-card-heading">
+          {teamId && <TeamReportCard teamId={teamId} />}
         </section>
 
         {/* 3. Rivalry Highlights & Head-to-Head Records */}
