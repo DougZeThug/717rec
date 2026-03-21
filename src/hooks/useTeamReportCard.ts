@@ -176,13 +176,13 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
       description: 'Individual game win rate',
     };
 
-    const allGrades = [
-      overall.grade,
-      offense.grade,
-      clutch.grade,
-      schedule.grade,
-      consistency.grade,
-      games.grade,
+    const weightedGrades = [
+      { grade: overall.grade, weight: 3 },
+      { grade: consistency.grade, weight: 2 },
+      { grade: games.grade, weight: 1.5 },
+      { grade: offense.grade, weight: 1 },
+      { grade: clutch.grade, weight: 1 },
+      { grade: schedule.grade, weight: 1 },
     ];
 
     return {
