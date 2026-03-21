@@ -1,5 +1,5 @@
 import { GraduationCap } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -11,7 +11,8 @@ import {
 
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useTeamReportCard } from '@/hooks/useTeamReportCard';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { ReportCardMode, useTeamReportCard } from '@/hooks/useTeamReportCard';
 import { cn } from '@/lib/utils';
 import { useChartColors } from '@/utils/charts/chartStyleUtils';
 import {
@@ -108,8 +109,33 @@ const ReportCardRadar: React.FC<{
   );
 };
 
+const ModeToggle: React.FC<{
+  mode: ReportCardMode;
+  onModeChange: (mode: ReportCardMode) => void;
+}> = ({ mode, onModeChange }) => {
+  return (
+    <ToggleGroup
+      type="single"
+      value={mode}
+      onValueChange={(value) => {
+        if (value) onModeChange(value as ReportCardMode);
+      }}
+      className="justify-start"
+      size="sm"
+    >
+      <ToggleGroupItem value="season" className="text-xs px-3">
+        Season
+      </ToggleGroupItem>
+      <ToggleGroupItem value="career" className="text-xs px-3">
+        Career
+      </ToggleGroupItem>
+    </ToggleGroup>
+  );
+};
+
 const TeamReportCard: React.FC<TeamReportCardProps> = ({ teamId }) => {
-  const { grades, isLoading } = useTeamReportCard(teamId);
+  const [mode, setMode] = useState<ReportCardMode>('season');
+  const { grades, isLoading } = useTeamReportCard(teamId, mode);
 
   return (
     <CollapsibleSection
@@ -138,6 +164,9 @@ const TeamReportCard: React.FC<TeamReportCardProps> = ({ teamId }) => {
     >
       {grades && (
         <div className="space-y-4">
+          {/* Mode Toggle */}
+          <ModeToggle mode={mode} onModeChange={setMode} />
+
           {/* GPA at top */}
           <GPADisplay gpa={grades.gpa} />
 
