@@ -4,7 +4,7 @@ import {
   Clock,
   HelpCircle,
   Home,
-  Lightbulb,
+  
   Mail,
   MessageSquare,
   Trophy,
