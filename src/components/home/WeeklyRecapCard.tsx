@@ -203,7 +203,7 @@ interface StreakRowProps {
 
 const StreakRow: React.FC<StreakRowProps> = ({ team, winter }) => (
   <Link to={`/teams/${toTeamSlug(team.teamName)}`} className="flex items-center gap-2 group">
-    <TeamLogo imageUrl={team.logoUrl} teamName={team.teamName} size="xs" rounded />
+    <TeamLogo imageUrl={team.logoUrl} teamName={team.teamName} size="xs" />
     <div className="flex-1 min-w-0">
       <span
         className={cn(
