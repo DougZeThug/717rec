@@ -9,7 +9,7 @@ export interface TeamLogoProps {
   imageUrl: string | null | undefined;
   teamName: string;
   teamId?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   rounded?: boolean;
   clickable?: boolean;
   className?: string;
