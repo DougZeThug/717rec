@@ -8,6 +8,8 @@ import MyNextMatchSkeleton from '@/components/home/MyNextMatchSkeleton';
 import PendingScoresCard from '@/components/home/PendingScoresCard';
 import TeamOfTheWeekCard from '@/components/home/TeamOfTheWeekCard';
 import TeamOfTheWeekSkeleton from '@/components/home/TeamOfTheWeekSkeleton';
+import WeeklyRecapCard from '@/components/home/WeeklyRecapCard';
+import WeeklyRecapSkeleton from '@/components/home/WeeklyRecapSkeleton';
 import PageLayout from '@/components/layout/PageLayout';
 import PageTransition from '@/components/transitions/PageTransition';
 import { useHeroCards } from '@/hooks/useHeroCards';
@@ -17,6 +19,7 @@ import { usePendingScoresMatches } from '@/hooks/usePendingScoresMatches';
 import { useConfirmationSeason } from '@/hooks/useSeasonParticipation';
 import { useTeams } from '@/hooks/useTeams';
 import { useWeeklyPowerScoreTrends } from '@/hooks/useWeeklyPowerScoreTrends';
+import { useWeeklyRecap } from '@/hooks/useWeeklyRecap';
 
 // Lazy load components that use framer-motion to defer vendor-motion chunk and improve TTI
 const HeroCard = lazy(() => import('@/components/hero/HeroCard'));
@@ -28,7 +31,9 @@ const Index: React.FC = () => {
   const { teams, isLoading: teamsLoading } = useTeams();
   const { matches: pendingMatches, isLoading: pendingScoresLoading } = usePendingScoresMatches();
   const { data: heroCards, isLoading: heroCardsLoading } = useHeroCards();
-  const { data: trendData, isLoading: trendLoading } = useWeeklyPowerScoreTrends('up', 1);
+  const { data: trendData, isLoading: trendLoading } = useWeeklyPowerScoreTrends('up', 3);
+  const { data: fallerData } = useWeeklyPowerScoreTrends('down', 1);
+  const { data: recapData, isLoading: recapLoading } = useWeeklyRecap();
   const { data: confirmationSeason } = useConfirmationSeason();
   const myNextMatch = useMyNextMatch();
   const isMobile = useIsMobile();
@@ -109,6 +114,19 @@ const Index: React.FC = () => {
         ) : hasTeamOfWeek && trendData?.latestWeek ? (
           <PageTransition animation="fadeInSlideUp" delay="medium">
             <TeamOfTheWeekCard trend={topGainer} weekNumber={trendData.latestWeek} />
+          </PageTransition>
+        ) : null}
+
+        {/* Weekly Recap — upsets, streaks, movers */}
+        {recapLoading ? (
+          <WeeklyRecapSkeleton />
+        ) : recapData?.hasData ? (
+          <PageTransition animation="fadeInSlideUp" delay="medium">
+            <WeeklyRecapCard
+              data={recapData}
+              risers={trendData?.trends?.slice(1) ?? []}
+              faller={fallerData?.trends?.[0]}
+            />
           </PageTransition>
         ) : null}
 
