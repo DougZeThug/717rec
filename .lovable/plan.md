@@ -1,28 +1,42 @@
 
 
-## Fix Report Card: Clutch Percentile Bug + Radar Chart Distortion
+## Toggleable Report Card: Season vs Career
 
-### Root Cause
+### Overview
+Add a toggle to the report card that lets users switch between current season grades (default) and career grades. The toggle will sit between the section header and the GPA display.
 
-Both issues stem from a single bug: **double multiplication of clutch win percentage**.
+### Changes
 
-1. `calculateClutchRecord()` in `matchOutcomeUtils.ts` already returns `clutchWinPct` as a 0–100 value (line 51: `clutchWins / game3Matches * 100`)
-2. `useTeamReportCard.ts` line 70 multiplies it by 100 again: `Math.round(clutchPct * 100)` → yielding **10,000** for a 100% clutch rate
+**File 1: `src/hooks/useTeamReportCard.ts`**
+- Add a `mode` parameter: `'season' | 'career'`
+- When `mode === 'season'`: keep current logic (useTeamRankings + useTeamMatches)
+- When `mode === 'career'`: use `useCareerRankings` instead
+  - Overall: percentile of `careerPowerScore` across all career rankings
+  - Offense: percentile of `career_sweep_rate` — requires pulling from `computeAllTeamsTotals` or adding sweep/clutch fields to `CareerRanking`
+  - Clutch: use `career_clutch_win_pct` directly (already 0-100)
+  - Schedule: percentile of `careerSos`
+  - Consistency: percentile of `careerWinPercentage`
+  - Trend: keep using weekly power score trends (applies to both modes)
+- Both hooks are always called (React rules), but only the relevant data is used in the `useMemo`
 
-This 10,000 value breaks the radar chart because the domain is `[0, 100]`. The clutch axis extends massively beyond the chart boundary, collapsing the visual representation of all other stats into a tiny sliver — making it look like "only one stat is shown."
+**File 2: `src/types/career.ts`**
+- Add to `CareerRanking`:
+  - `careerSweepRate: number`
+  - `careerClutchWinPct: number`
+  - `careerClutchGame3s: number`
 
-### Fix
+**File 3: `src/hooks/useCareerRankings.ts`**
+- Pass the three new fields from `totals` when building each ranking entry:
+  - `careerSweepRate: totals.career_sweep_rate`
+  - `careerClutchWinPct: totals.career_clutch_win_pct`
+  - `careerClutchGame3s: totals.career_clutch_game3s`
 
-**File: `src/hooks/useTeamReportCard.ts`** (line 70)
+**File 4: `src/hooks/useCareerRankingsWithHidden.ts`**
+- Same additions as File 3 for consistency
 
-Change:
-```typescript
-const clutchPercentile = teamClutchRecord.game3Matches > 0 ? Math.round(clutchPct * 100) : 50;
-```
-To:
-```typescript
-const clutchPercentile = teamClutchRecord.game3Matches > 0 ? Math.round(clutchPct) : 50;
-```
-
-Remove the `* 100` since `clutchWinPct` is already on a 0–100 scale. This single-line fix resolves both the incorrect "10000th" percentile display and the broken radar chart visualization.
+**File 5: `src/components/teams/TeamReportCard.tsx`**
+- Add local state: `const [mode, setMode] = useState<'season' | 'career'>('season')`
+- Pass `mode` to `useTeamReportCard(teamId, mode)`
+- Add a small toggle (using existing `Tabs` or `ToggleGroup` component) between the section title area and the GPA display, with "Season" and "Career" options
+- Update grade descriptions to reflect the active mode (e.g., "Career power score ranking" vs "Combined power score ranking")
 
