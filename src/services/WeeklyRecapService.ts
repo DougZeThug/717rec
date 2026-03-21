@@ -35,8 +35,8 @@ export interface WeeklyRecapData {
   hasData: boolean;
 }
 
-/** Minimum power-score gap (0–100 scale) for a result to count as an upset */
-const UPSET_POWER_SCORE_THRESHOLD = 5;
+/** Minimum career power-score gap (0–100 scale) for a result to count as an upset */
+const UPSET_POWER_SCORE_THRESHOLD = 15;
 
 /** Minimum consecutive wins to appear in Hot Streaks section */
 const MIN_STREAK_COUNT = 3;
@@ -121,30 +121,59 @@ async function _fetchUpsets(seasonId: string, weekNumber: number): Promise<Weekl
   // Collect all team IDs involved
   const teamIds = [...new Set(matches.flatMap((m) => [m.team1_id, m.team2_id]))];
 
-  // Get power scores and info for those teams
-  const { data: teamDetails, error: teamError } = await supabase
-    .from('v_team_details')
-    .select('team_id, name, logo_url, image_url, power_score')
-    .in('team_id', teamIds);
+  // Fetch team info (name/logo) and career stats in parallel
+  const [teamDetailsResult, careerStatsResult] = await Promise.all([
+    supabase
+      .from('v_team_details')
+      .select('team_id, name, logo_url, image_url')
+      .in('team_id', teamIds),
+    supabase
+      .from('team_season_stats')
+      .select('team_id, power_score')
+      .in('team_id', teamIds)
+      .not('power_score', 'is', null),
+  ]);
 
-  if (teamError) {
-    handleDatabaseError(teamError, 'Failed to fetch team details for upset detection');
+  if (teamDetailsResult.error) {
+    handleDatabaseError(teamDetailsResult.error, 'Failed to fetch team details for upset detection');
+  }
+  if (careerStatsResult.error) {
+    handleDatabaseError(careerStatsResult.error, 'Failed to fetch career stats for upset detection');
   }
 
-  if (!teamDetails) return [];
+  if (!teamDetailsResult.data || !careerStatsResult.data) return [];
 
-  const teamMap = new Map(teamDetails.map((t) => [t.team_id, t]));
+  // Build career power score map: average all seasons per team (0-1 → 0-100)
+  const careerScoreAccum = new Map<string, { sum: number; count: number }>();
+  for (const row of careerStatsResult.data) {
+    const entry = careerScoreAccum.get(row.team_id) ?? { sum: 0, count: 0 };
+    entry.sum += row.power_score ?? 0;
+    entry.count += 1;
+    careerScoreAccum.set(row.team_id, entry);
+  }
+  const careerScoreMap = new Map(
+    [...careerScoreAccum.entries()].map(([teamId, { sum, count }]) => [
+      teamId,
+      (sum / count) * 100,
+    ])
+  );
+
+  const teamInfoMap = new Map(teamDetailsResult.data.map((t) => [t.team_id, t]));
 
   const upsets: WeeklyUpset[] = [];
 
   for (const match of matches) {
-    const winner = teamMap.get(match.winner_id);
-    const loser = teamMap.get(match.loser_id);
+    const winnerInfo = teamInfoMap.get(match.winner_id);
+    const loserInfo = teamInfoMap.get(match.loser_id);
 
-    if (!winner || !loser) continue;
+    if (!winnerInfo || !loserInfo) continue;
 
-    const winnerScore = (winner.power_score ?? 0) * 100;
-    const loserScore = (loser.power_score ?? 0) * 100;
+    const winnerScore = careerScoreMap.get(match.winner_id) ?? 0;
+    const loserScore = careerScoreMap.get(match.loser_id) ?? 0;
+
+    // Skip if either team has no career history to compare
+    if (winnerScore === 0 || loserScore === 0) continue;
+
     const gap = loserScore - winnerScore;
 
     if (gap < UPSET_POWER_SCORE_THRESHOLD) continue;
@@ -158,12 +187,12 @@ async function _fetchUpsets(seasonId: string, weekNumber: number): Promise<Weekl
 
     upsets.push({
       winnerId: match.winner_id,
-      winnerName: winner.name,
-      winnerLogoUrl: winner.image_url ?? winner.logo_url ?? undefined,
+      winnerName: winnerInfo.name,
+      winnerLogoUrl: winnerInfo.image_url ?? winnerInfo.logo_url ?? undefined,
       winnerPowerScore: winnerScore,
       loserId: match.loser_id,
-      loserName: loser.name,
-      loserLogoUrl: loser.image_url ?? loser.logo_url ?? undefined,
+      loserName: loserInfo.name,
+      loserLogoUrl: loserInfo.image_url ?? loserInfo.logo_url ?? undefined,
       loserPowerScore: loserScore,
       powerScoreGap: gap,
       matchResult,
