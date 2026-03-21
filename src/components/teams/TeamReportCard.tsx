@@ -73,7 +73,7 @@ const ReportCardRadar: React.FC<{
     clutch: GradeCategory;
     schedule: GradeCategory;
     consistency: GradeCategory;
-    improvement: GradeCategory;
+    games: GradeCategory;
   };
 }> = ({ grades }) => {
   const colors = useChartColors();
@@ -85,7 +85,7 @@ const ReportCardRadar: React.FC<{
     { category: 'Clutch', value: grades.clutch.percentile },
     { category: 'Schedule', value: grades.schedule.percentile },
     { category: 'Consistency', value: grades.consistency.percentile },
-    { category: 'Trend', value: grades.improvement.percentile },
+    { category: 'Games', value: grades.games.percentile },
   ];
 
   return (
