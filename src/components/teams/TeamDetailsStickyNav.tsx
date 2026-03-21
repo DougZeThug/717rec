@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { BarChart3, Clock, Swords, TrendingUp, Trophy } from 'lucide-react';
+import { BarChart3, Clock, GraduationCap, Swords, TrendingUp, Trophy } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -24,6 +24,12 @@ const sections: Section[] = [
     label: 'Analysis',
     icon: TrendingUp,
     ariaLabel: 'Navigate to team analysis section',
+  },
+  {
+    id: 'report-card',
+    label: 'Grades',
+    icon: GraduationCap,
+    ariaLabel: 'Navigate to report card section',
   },
   { id: 'h2h', label: 'H2H', icon: Swords, ariaLabel: 'Navigate to head-to-head records section' },
   { id: 'matches', label: 'Matches', icon: Clock, ariaLabel: 'Navigate to match history section' },
