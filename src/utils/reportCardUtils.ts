@@ -94,11 +94,13 @@ export function getGradeChartColor(grade: LetterGrade): string {
 }
 
 /**
- * Calculate GPA from an array of grades
+ * Calculate weighted GPA from an array of grades with weights
  */
-export function calculateGPA(grades: LetterGrade[]): number {
+export function calculateGPA(grades: { grade: LetterGrade; weight: number }[]): number {
   if (grades.length === 0) return 0;
-  const total = grades.reduce((sum, grade) => sum + GRADE_GPA[grade], 0);
-  return Math.round((total / grades.length) * 100) / 100;
+  const totalWeight = grades.reduce((sum, g) => sum + g.weight, 0);
+  if (totalWeight === 0) return 0;
+  const weightedTotal = grades.reduce((sum, g) => sum + GRADE_GPA[g.grade] * g.weight, 0);
+  return Math.round((weightedTotal / totalWeight) * 100) / 100;
 }
 
