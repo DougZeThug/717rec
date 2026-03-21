@@ -1,35 +1,71 @@
 
-## Fix plan: Career percentile cohort mismatch on Report Card
 
-### What’s happening
-The report card career percentile is currently being calculated against the **non-hidden cohort** returned by `useCareerRankings()` (currently 23 teams), while you’re comparing it to all-time rank against **all 46 teams**.  
-That’s why a team ranked 6th can show ~77th percentile (`17/22 ≈ 77%`) instead of high-80s.
+## Fix: Cold Streak Badge Not Clearing After a Win
 
-### Implementation plan
+### Root Cause
+The `calculate_team_streak` SQL function filters matches with `AND m.date IS NOT NULL`. When a match is completed via score submission, the `date` field is often not set. This means the winning match is invisible to the streak calculator.
 
-1. **Make `useCareerRankings` configurable for hidden-team inclusion**
-   - File: `src/hooks/useCareerRankings.ts`
-   - Add optional param: `{ includeHidden?: boolean }` (default `false` to avoid breaking existing consumers).
-   - Pass through to `useTeamsQuery({ includeHidden })`.
-   - Include `includeHidden` in the React Query key to keep caches isolated.
+The flow after a match completes:
+1. `award_streak_badges` deactivates all existing streak badges
+2. `calculate_team_streak` recalculates the current streak — but skips the new win because `date IS NULL`
+3. The old losing streak is still detected from dated matches
+4. Cold streak badge is re-awarded immediately after being deactivated
 
-2. **Use all-time cohort for career report card percentiles**
-   - File: `src/hooks/useTeamReportCard.ts`
-   - In career mode, switch to `useCareerRankings({ includeHidden: true })` for percentile arrays (`allPowerScores`, etc.).
-   - Keep season mode unchanged.
+### Fix
 
-3. **Harden percentile inputs**
-   - File: `src/hooks/useTeamReportCard.ts`
-   - Before percentile calculations, filter out non-finite values to prevent denominator distortion if any computed metric is invalid.
+**File: `supabase/migrations/` — new migration**
 
-4. **Regression check**
-   - Verify Pepperoni Cheesers career report card “Overall” percentile aligns with all-time ranking (6/46 should land in the high-80s, ~89 with current percentile formula).
-   - Verify season-mode report cards are unchanged.
-   - Verify no query-cache cross-contamination between hidden/non-hidden career datasets.
+Update `calculate_team_streak` to fall back to `created_at` when `date` is null:
 
-### Technical details
-- Root issue is **cohort mismatch**, not percentile math.
-- Current percentile utility is fine after the earlier fix.
-- This change keeps behavior explicit:
-  - `includeHidden: false` for standard visible-only contexts.
-  - `includeHidden: true` where “all-time league” percentiles are expected (report card career mode).
+```sql
+CREATE OR REPLACE FUNCTION calculate_team_streak(p_team_id uuid)
+RETURNS TABLE(streak_type text, streak_count integer)
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  recent_matches RECORD;
+  current_streak_type text := null;
+  current_streak_count integer := 0;
+  match_result text;
+BEGIN
+  FOR recent_matches IN 
+    SELECT 
+      m.id,
+      m.winner_id,
+      COALESCE(m.date, m.created_at) as effective_date
+    FROM matches m
+    WHERE m.iscompleted = true 
+      AND (m.team1_id = p_team_id OR m.team2_id = p_team_id)
+    ORDER BY COALESCE(m.date, m.created_at) DESC
+    LIMIT 20
+  LOOP
+    IF recent_matches.winner_id = p_team_id THEN
+      match_result := 'win';
+    ELSE
+      match_result := 'loss';
+    END IF;
+    
+    IF current_streak_type IS NULL THEN
+      current_streak_type := match_result;
+      current_streak_count := 1;
+    ELSIF current_streak_type = match_result THEN
+      current_streak_count := current_streak_count + 1;
+    ELSE
+      EXIT;
+    END IF;
+  END LOOP;
+  
+  RETURN QUERY SELECT current_streak_type, current_streak_count;
+END;
+$$;
+```
+
+Key change: Replace `AND m.date IS NOT NULL` / `ORDER BY m.date DESC` with `COALESCE(m.date, m.created_at)`. This ensures matches without an explicit date are still included in streak calculations using their creation timestamp.
+
+### Impact
+- Single SQL migration, no frontend code changes
+- Fixes the cold streak badge persisting after a win
+- Also fixes hot streak badges that might not appear for the same reason
+- All other badge logic remains unchanged
+
