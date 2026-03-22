@@ -60,16 +60,19 @@ export const WeeklyRecapService = {
 
       const seasonId = activeSeason.id;
 
-      // 2. Get the latest week number from power_score_snapshots
-      const { data: latestWeekRow } = await supabase
-        .from('power_score_snapshots')
-        .select('week_number')
+      // 2. Get the latest week number from completed regular-season matches
+      const { data: latestMatchRow } = await supabase
+        .from('matches')
+        .select('round_number')
         .eq('season_id', seasonId)
-        .order('week_number', { ascending: false })
+        .eq('iscompleted', true)
+        .is('bracket_id', null)
+        .not('winner_id', 'is', null)
+        .order('round_number', { ascending: false })
         .limit(1)
         .single();
 
-      const weekNumber = latestWeekRow?.week_number ?? null;
+      const weekNumber = latestMatchRow?.round_number ?? null;
 
       // 3. Fetch upsets and match history in parallel
       const [upsetsResult, matchHistoryResult] = await Promise.all([
