@@ -47,10 +47,10 @@ const MIN_STREAK_COUNT = 3;
 export const WeeklyRecapService = {
   fetchWeeklyRecap: async (): Promise<WeeklyRecapData> => {
     try {
-      // 1. Get active season
+      // 1. Get active season with start_date
       const { data: activeSeason } = await supabase
         .from('seasons')
-        .select('id')
+        .select('id, start_date')
         .eq('is_active', true)
         .single();
 
@@ -59,26 +59,41 @@ export const WeeklyRecapService = {
       }
 
       const seasonId = activeSeason.id;
+      const seasonStart = new Date(activeSeason.start_date);
 
-      // 2. Get the latest week number from completed regular-season matches
+      // 2. Find the most recent match date from completed regular-season matches
       const { data: latestMatchRow } = await supabase
         .from('matches')
-        .select('round_number')
+        .select('date')
         .eq('season_id', seasonId)
         .eq('iscompleted', true)
         .is('bracket_id', null)
         .not('winner_id', 'is', null)
-        .order('round_number', { ascending: false })
+        .not('date', 'is', null)
+        .order('date', { ascending: false })
         .limit(1)
         .single();
 
-      const weekNumber = latestMatchRow?.round_number ?? null;
+      if (!latestMatchRow?.date) {
+        // No completed matches with dates — still fetch hot streaks
+        const hotStreaks = await _fetchHotStreaks(seasonId);
+        return { weekNumber: null, upsets: [], hotStreaks, hasData: hotStreaks.length > 0 };
+      }
 
-      // 3. Fetch upsets and match history in parallel
+      // 3. Calculate week number from season start_date (same logic as useSeasonWeek)
+      const latestMatchDate = new Date(latestMatchRow.date);
+      const diffMs = latestMatchDate.getTime() - seasonStart.getTime();
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      const weekNumber = Math.max(1, Math.floor(diffDays / 7) + 1);
+
+      // 4. Compute the date window for this week
+      const weekStartMs = seasonStart.getTime() + (weekNumber - 1) * 7 * 24 * 60 * 60 * 1000;
+      const weekStart = new Date(weekStartMs);
+      const weekEnd = new Date(weekStartMs + 7 * 24 * 60 * 60 * 1000);
+
+      // 5. Fetch upsets and hot streaks in parallel
       const [upsetsResult, matchHistoryResult] = await Promise.all([
-        weekNumber !== null
-          ? _fetchUpsets(seasonId, weekNumber)
-          : Promise.resolve<WeeklyUpset[]>([]),
+        _fetchUpsets(seasonId, weekStart, weekEnd, weekNumber),
         _fetchHotStreaks(seasonId),
       ]);
 
@@ -101,18 +116,24 @@ export const WeeklyRecapService = {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-async function _fetchUpsets(seasonId: string, weekNumber: number): Promise<WeeklyUpset[]> {
-  // Get completed regular-season matches for the current week
+async function _fetchUpsets(
+  seasonId: string,
+  weekStart: Date,
+  weekEnd: Date,
+  weekNumber: number,
+): Promise<WeeklyUpset[]> {
+  // Get completed regular-season matches within the week's date window
   const { data: matches, error: matchError } = await supabase
     .from('matches')
     .select(
-      'id, team1_id, team2_id, winner_id, loser_id, team1_score, team2_score, round_number'
+      'id, team1_id, team2_id, winner_id, loser_id, team1_score, team2_score'
     )
     .eq('season_id', seasonId)
-    .eq('round_number', weekNumber)
     .eq('iscompleted', true)
     .is('bracket_id', null)
-    .not('winner_id', 'is', null);
+    .not('winner_id', 'is', null)
+    .gte('date', weekStart.toISOString())
+    .lt('date', weekEnd.toISOString());
 
   if (matchError) {
     handleDatabaseError(matchError, 'Failed to fetch matches for upset detection');
