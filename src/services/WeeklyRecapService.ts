@@ -35,8 +35,7 @@ export interface WeeklyRecapData {
   hasData: boolean;
 }
 
-/** Minimum career power-score gap (0–100 scale) for a result to count as an upset */
-const UPSET_POWER_SCORE_THRESHOLD = 10;
+/** Number of upsets to return */
 
 /** Minimum consecutive wins to appear in Hot Streaks section */
 const MIN_STREAK_COUNT = 3;
@@ -61,16 +60,19 @@ export const WeeklyRecapService = {
 
       const seasonId = activeSeason.id;
 
-      // 2. Get the latest week number from power_score_snapshots
-      const { data: latestWeekRow } = await supabase
-        .from('power_score_snapshots')
-        .select('week_number')
+      // 2. Get the latest week number from completed regular-season matches
+      const { data: latestMatchRow } = await supabase
+        .from('matches')
+        .select('round_number')
         .eq('season_id', seasonId)
-        .order('week_number', { ascending: false })
+        .eq('iscompleted', true)
+        .is('bracket_id', null)
+        .not('winner_id', 'is', null)
+        .order('round_number', { ascending: false })
         .limit(1)
         .single();
 
-      const weekNumber = latestWeekRow?.week_number ?? null;
+      const weekNumber = latestMatchRow?.round_number ?? null;
 
       // 3. Fetch upsets and match history in parallel
       const [upsetsResult, matchHistoryResult] = await Promise.all([
@@ -176,7 +178,8 @@ async function _fetchUpsets(seasonId: string, weekNumber: number): Promise<Weekl
 
     const gap = loserScore - winnerScore;
 
-    if (gap < UPSET_POWER_SCORE_THRESHOLD) continue;
+    // Only count as upset if winner had lower career power score
+    if (gap <= 0) continue;
 
     // Build score string like "21–15"
     const isWinnerTeam1 = match.winner_id === match.team1_id;
