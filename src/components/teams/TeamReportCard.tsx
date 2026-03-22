@@ -22,6 +22,8 @@ import {
   GradeCategory,
 } from '@/utils/reportCardUtils';
 
+import ReportCardLeaderboard from './ReportCardLeaderboard';
+
 interface TeamReportCardProps {
   teamId: string;
 }
@@ -167,8 +169,13 @@ const TeamReportCard: React.FC<TeamReportCardProps> = ({ teamId }) => {
           {/* Mode Toggle */}
           <ModeToggle mode={mode} onModeChange={setMode} />
 
-          {/* GPA at top */}
-          <GPADisplay gpa={grades.gpa} />
+           {/* GPA + Leaderboard */}
+           <div className="flex items-center gap-2">
+             <div className="flex-1">
+               <GPADisplay gpa={grades.gpa} />
+             </div>
+             <ReportCardLeaderboard teamId={teamId} initialMode={mode} />
+           </div>
 
           {/* Radar Chart */}
           <ReportCardRadar grades={grades} />
