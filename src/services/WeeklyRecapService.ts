@@ -35,8 +35,7 @@ export interface WeeklyRecapData {
   hasData: boolean;
 }
 
-/** Minimum career power-score gap (0–100 scale) for a result to count as an upset */
-const UPSET_POWER_SCORE_THRESHOLD = 10;
+/** Number of upsets to return */
 
 /** Minimum consecutive wins to appear in Hot Streaks section */
 const MIN_STREAK_COUNT = 3;
