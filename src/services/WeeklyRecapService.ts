@@ -116,18 +116,24 @@ export const WeeklyRecapService = {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-async function _fetchUpsets(seasonId: string, weekNumber: number): Promise<WeeklyUpset[]> {
-  // Get completed regular-season matches for the current week
+async function _fetchUpsets(
+  seasonId: string,
+  weekStart: Date,
+  weekEnd: Date,
+  weekNumber: number,
+): Promise<WeeklyUpset[]> {
+  // Get completed regular-season matches within the week's date window
   const { data: matches, error: matchError } = await supabase
     .from('matches')
     .select(
-      'id, team1_id, team2_id, winner_id, loser_id, team1_score, team2_score, round_number'
+      'id, team1_id, team2_id, winner_id, loser_id, team1_score, team2_score'
     )
     .eq('season_id', seasonId)
-    .eq('round_number', weekNumber)
     .eq('iscompleted', true)
     .is('bracket_id', null)
-    .not('winner_id', 'is', null);
+    .not('winner_id', 'is', null)
+    .gte('date', weekStart.toISOString())
+    .lt('date', weekEnd.toISOString());
 
   if (matchError) {
     handleDatabaseError(matchError, 'Failed to fetch matches for upset detection');
