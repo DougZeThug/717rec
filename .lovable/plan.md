@@ -1,25 +1,27 @@
 
 
-## Fix: Weekly Recap showing only Hot Streaks
+## Fix: Upsets not appearing in Weekly Recap
 
-### Problem
-Two issues prevent Upsets and Movers from appearing:
+### Root Cause
+Two issues:
 
-**Movers (bug):** Double-slicing removes too many items.
-- `Index.tsx` passes `risers={trendData?.trends?.slice(1)}` (removes index 0, used for Team of the Week)
-- `WeeklyRecapCard.tsx` then does `risers.slice(1)` again in the render, dropping another item
-- With 3 trends fetched, after double-slice only 1 item remains — but `hasMovers` requires `risers.length > 1`
-- Result: Movers section never appears
+1. **Week number sourced from empty table**: The code gets `weekNumber` from `power_score_snapshots`, which is currently empty. When `weekNumber` is `null`, `_fetchUpsets` is skipped entirely — upsets are never fetched.
 
-**Upsets (threshold too strict):** The 15-point career power score gap threshold may be filtering out all results for most weeks. Lowering to 10 would surface more upsets.
+2. **Threshold filter**: Even if upsets were fetched, the `UPSET_POWER_SCORE_THRESHOLD` filters out matches. The user wants the top 3 biggest upsets by gap with no minimum threshold.
 
 ### Changes
 
-1. **`src/components/home/WeeklyRecapCard.tsx`**
-   - Remove the extra `.slice(1)` in the Movers render — just use `risers.map(...)` since slicing already happened in `Index.tsx`
-   - Change `hasMovers` condition from `risers.length > 1` to `risers.length > 0`
+**File: `src/services/WeeklyRecapService.ts`**
 
-2. **`src/services/WeeklyRecapService.ts`**
-   - Lower `UPSET_POWER_SCORE_THRESHOLD` from `15` to `10` to surface more upsets
-   - Increase max upsets returned from 2 to 3
+1. Get the latest week number from `matches` table (latest `round_number` of completed regular-season matches) instead of `power_score_snapshots`:
+```sql
+-- Instead of querying power_score_snapshots:
+matches.select('round_number')
+  .eq('season_id', seasonId)
+  .eq('iscompleted', true)
+  .is('bracket_id', null)
+  .order('round_number', { ascending: false })
+  .limit(1)
+```
 
+2. Remove `UPSET_POWER_SCORE_THRESHOLD` constant and the `gap < threshold` check. Instead, include every completed match where the winner had a lower career power score
