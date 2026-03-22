@@ -178,7 +178,8 @@ async function _fetchUpsets(seasonId: string, weekNumber: number): Promise<Weekl
 
     const gap = loserScore - winnerScore;
 
-    if (gap < UPSET_POWER_SCORE_THRESHOLD) continue;
+    // Only count as upset if winner had lower career power score
+    if (gap <= 0) continue;
 
     // Build score string like "21–15"
     const isWinnerTeam1 = match.winner_id === match.team1_id;
