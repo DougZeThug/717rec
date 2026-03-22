@@ -36,7 +36,7 @@ export interface WeeklyRecapData {
 }
 
 /** Minimum career power-score gap (0–100 scale) for a result to count as an upset */
-const UPSET_POWER_SCORE_THRESHOLD = 15;
+const UPSET_POWER_SCORE_THRESHOLD = 10;
 
 /** Minimum consecutive wins to appear in Hot Streaks section */
 const MIN_STREAK_COUNT = 3;
@@ -201,7 +201,7 @@ async function _fetchUpsets(seasonId: string, weekNumber: number): Promise<Weekl
   }
 
   // Sort by biggest gap first, return top 2
-  return upsets.sort((a, b) => b.powerScoreGap - a.powerScoreGap).slice(0, 2);
+  return upsets.sort((a, b) => b.powerScoreGap - a.powerScoreGap).slice(0, 3);
 }
 
 async function _fetchHotStreaks(seasonId: string): Promise<TeamStreakInfo[]> {
