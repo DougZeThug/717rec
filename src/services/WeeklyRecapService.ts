@@ -204,10 +204,10 @@ async function _fetchUpsets(
 
     // Build score string like "21–15"
     const isWinnerTeam1 = match.winner_id === match.team1_id;
-    const winnerRaw = isWinnerTeam1 ? match.team1_score : match.team2_score;
-    const loserRaw = isWinnerTeam1 ? match.team2_score : match.team1_score;
+    const winnerGameWins = isWinnerTeam1 ? match.team1_game_wins : match.team2_game_wins;
+    const loserGameWins = isWinnerTeam1 ? match.team2_game_wins : match.team1_game_wins;
     const matchResult =
-      winnerRaw != null && loserRaw != null ? `${winnerRaw}–${loserRaw}` : '';
+      winnerGameWins != null && loserGameWins != null ? `${winnerGameWins}–${loserGameWins}` : '';
 
     upsets.push({
       winnerId: match.winner_id,

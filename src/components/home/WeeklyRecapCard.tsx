@@ -149,42 +149,46 @@ interface UpsetRowProps {
 }
 
 const UpsetRow: React.FC<UpsetRowProps> = ({ upset, winter }) => (
-  <div className="flex items-center gap-2 flex-wrap">
-    <Link
-      to={`/teams/${toTeamSlug(upset.winnerName)}`}
-      className="flex items-center gap-1.5 group min-w-0"
-    >
-      <TeamLogo imageUrl={upset.winnerLogoUrl} teamName={upset.winnerName} size="xs" />
-      <span
-        className={cn(
-          typeScale.body,
-          'font-medium truncate transition-colors',
-          winter ? 'text-cyan-50 group-hover:text-cyan-300' : 'group-hover:text-violet-600 dark:group-hover:text-violet-400'
-        )}
+  <div className="flex flex-col gap-1">
+    {/* Teams row */}
+    <div className="flex items-center gap-1.5">
+      <Link
+        to={`/teams/${toTeamSlug(upset.winnerName)}`}
+        className="flex items-center gap-1.5 group min-w-0"
       >
-        {upset.winnerName}
-      </span>
-    </Link>
+        <TeamLogo imageUrl={upset.winnerLogoUrl} teamName={upset.winnerName} size="xs" />
+        <span
+          className={cn(
+            typeScale.body,
+            'font-medium truncate transition-colors',
+            winter ? 'text-cyan-50 group-hover:text-cyan-300' : 'group-hover:text-violet-600 dark:group-hover:text-violet-400'
+          )}
+        >
+          {upset.winnerName}
+        </span>
+      </Link>
 
-    <span className="text-muted-foreground/60 text-xs shrink-0">def.</span>
+      <span className="text-muted-foreground/60 text-xs shrink-0">def.</span>
 
-    <Link
-      to={`/teams/${toTeamSlug(upset.loserName)}`}
-      className="flex items-center gap-1.5 group min-w-0"
-    >
-      <TeamLogo imageUrl={upset.loserLogoUrl} teamName={upset.loserName} size="xs" />
-      <span
-        className={cn(
-          typeScale.body,
-          'truncate transition-colors',
-          winter ? 'text-cyan-100/70 group-hover:text-cyan-300' : 'text-muted-foreground group-hover:text-violet-600 dark:group-hover:text-violet-400'
-        )}
+      <Link
+        to={`/teams/${toTeamSlug(upset.loserName)}`}
+        className="flex items-center gap-1.5 group min-w-0"
       >
-        {upset.loserName}
-      </span>
-    </Link>
+        <TeamLogo imageUrl={upset.loserLogoUrl} teamName={upset.loserName} size="xs" />
+        <span
+          className={cn(
+            typeScale.body,
+            'truncate transition-colors',
+            winter ? 'text-cyan-100/70 group-hover:text-cyan-300' : 'text-muted-foreground group-hover:text-violet-600 dark:group-hover:text-violet-400'
+          )}
+        >
+          {upset.loserName}
+        </span>
+      </Link>
+    </div>
 
-    <div className="flex items-center gap-1.5 ml-auto shrink-0">
+    {/* Score + badge row */}
+    <div className="flex items-center gap-1.5 pl-6">
       {upset.matchResult && (
         <span className="text-xs tabular-nums text-muted-foreground">{upset.matchResult}</span>
       )}
