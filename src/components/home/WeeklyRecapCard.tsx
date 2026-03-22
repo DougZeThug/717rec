@@ -25,7 +25,7 @@ const WeeklyRecapCard: React.FC<WeeklyRecapCardProps> = ({ data, risers, faller 
 
   const hasUpsets = data.upsets.length > 0;
   const hasStreaks = data.hotStreaks.length > 0;
-  const hasMovers = risers.length > 1 || !!faller;
+  const hasMovers = risers.length > 0 || !!faller;
 
   if (!hasUpsets && !hasStreaks && !hasMovers) return null;
 
