@@ -22,6 +22,8 @@ import {
   GradeCategory,
 } from '@/utils/reportCardUtils';
 
+import ReportCardLeaderboard from './ReportCardLeaderboard';
+
 interface TeamReportCardProps {
   teamId: string;
 }
