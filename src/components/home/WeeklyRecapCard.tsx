@@ -126,7 +126,7 @@ const WeeklyRecapCard: React.FC<WeeklyRecapCardProps> = ({ data, risers, faller 
                 Movers
               </span>
             </div>
-            {risers.slice(1).map((trend) => (
+            {risers.map((trend) => (
               <MoverRow key={trend.teamId} trend={trend} direction="up" winter={shouldApplyWinter} />
             ))}
             {faller && faller.delta < 0 && (

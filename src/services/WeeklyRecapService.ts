@@ -201,7 +201,7 @@ async function _fetchUpsets(seasonId: string, weekNumber: number): Promise<Weekl
   }
 
   // Sort by biggest gap first, return top 2
-  return upsets.sort((a, b) => b.powerScoreGap - a.powerScoreGap).slice(0, 2);
+  return upsets.sort((a, b) => b.powerScoreGap - a.powerScoreGap).slice(0, 3);
 }
 
 async function _fetchHotStreaks(seasonId: string): Promise<TeamStreakInfo[]> {
