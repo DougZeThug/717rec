@@ -1,27 +1,47 @@
 
 
-## Fix: Upsets not appearing in Weekly Recap
+## Fix: Weekly Recap showing wrong week and pulling all-season upsets
 
 ### Root Cause
-Two issues:
 
-1. **Week number sourced from empty table**: The code gets `weekNumber` from `power_score_snapshots`, which is currently empty. When `weekNumber` is `null`, `_fetchUpsets` is skipped entirely — upsets are never fetched.
+All regular-season matches have `round_number = 0`. The current code uses `round_number` to determine the "current week" and filter matches — so it gets week 0 and pulls ALL completed matches across the entire season as upsets.
 
-2. **Threshold filter**: Even if upsets were fetched, the `UPSET_POWER_SCORE_THRESHOLD` filters out matches. The user wants the top 3 biggest upsets by gap with no minimum threshold.
+### How weeks actually work
+
+Matches are played on specific dates in weekly clusters (e.g. Mar 5-6, Mar 12-13, Mar 19-20). The correct "week" is derived from the season's `start_date` (2026-03-05), matching the logic in `useSeasonWeek.ts`.
 
 ### Changes
 
 **File: `src/services/WeeklyRecapService.ts`**
 
-1. Get the latest week number from `matches` table (latest `round_number` of completed regular-season matches) instead of `power_score_snapshots`:
-```sql
--- Instead of querying power_score_snapshots:
-matches.select('round_number')
-  .eq('season_id', seasonId)
-  .eq('iscompleted', true)
-  .is('bracket_id', null)
-  .order('round_number', { ascending: false })
-  .limit(1)
+Replace the week detection and upset filtering logic:
+
+1. **Determine "latest match week" by date, not round_number:**
+   - Find the most recent `date` from completed regular-season matches
+   - Calculate the week number from the season's `start_date` using the same formula as `useSeasonWeek`: `Math.floor(daysDiff / 7) + 1`
+
+2. **Filter upsets to only that week's matches:**
+   - Compute the start-of-week date (season start + (weekNumber-1) * 7 days)
+   - Compute end-of-week date (start + 7 days)
+   - Filter `_fetchUpsets` by date range instead of `round_number`
+
+3. **Pass date range to `_fetchUpsets` instead of round_number:**
+   - Change signature from `(seasonId, weekNumber)` to `(seasonId, weekStart, weekEnd)`
+   - Replace `.eq('round_number', weekNumber)` with `.gte('date', weekStart).lt('date', weekEnd)`
+
+### Concrete logic
+
+```text
+seasonStart = season.start_date  (2026-03-05)
+latestMatchDate = max(date) from completed matches
+weekNumber = floor((latestMatchDate - seasonStart) / 7 days) + 1
+weekStart = seasonStart + (weekNumber - 1) * 7 days
+weekEnd   = weekStart + 7 days
+
+_fetchUpsets filters: .gte('date', weekStart).lt('date', weekEnd)
 ```
 
-2. Remove `UPSET_POWER_SCORE_THRESHOLD` constant and the `gap < threshold` check. Instead, include every completed match where the winner had a lower career power score
+For week 3: weekStart = Mar 19, weekEnd = Mar 26 — captures exactly the Mar 19-20 matches.
+
+No changes needed to `WeeklyRecapCard.tsx` or any other file.
+
