@@ -126,7 +126,7 @@ async function _fetchUpsets(
   const { data: matches, error: matchError } = await supabase
     .from('matches')
     .select(
-      'id, team1_id, team2_id, winner_id, loser_id, team1_score, team2_score'
+      'id, team1_id, team2_id, winner_id, loser_id, team1_score, team2_score, team1_game_wins, team2_game_wins'
     )
     .eq('season_id', seasonId)
     .eq('iscompleted', true)
