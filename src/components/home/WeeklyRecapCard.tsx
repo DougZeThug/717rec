@@ -294,7 +294,7 @@ const MobileStreakRow: React.FC<StreakRowProps> = ({ team, winter }) => (
       {team.teamName}
     </span>
     <span className="shrink-0 text-[10px] font-bold tabular-nums bg-orange-500/20 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 rounded">
-      W{team.streak}
+      {team.streak}
     </span>
   </Link>
 );
