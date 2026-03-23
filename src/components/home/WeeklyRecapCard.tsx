@@ -79,18 +79,18 @@ const WeeklyRecapCard: React.FC<WeeklyRecapCardProps> = ({ data, risers, faller 
 
         {/* Mobile: Two-column layout for Upsets + Streaks */}
         {(hasUpsets || hasStreaks) && (
-          <div className="grid grid-cols-2 gap-3 md:hidden">
+          <div className="grid grid-cols-2 gap-2.5 md:hidden">
             {/* Upsets column */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-1.5 mb-1">
-                <Zap size={13} className="text-yellow-500 fill-yellow-500/50" />
+            <div className="rounded-lg border border-border/40 p-2.5 space-y-2">
+              <div className="flex items-center gap-1.5">
+                <Zap size={12} className="text-yellow-500 fill-yellow-500/50" />
                 <span className={cn(typeScale.caption, 'font-semibold uppercase tracking-wider text-muted-foreground')}>
-                  Upsets
+                  Top Upsets
                 </span>
               </div>
               {hasUpsets ? (
                 data.upsets.map((upset) => (
-                  <UpsetRow key={upset.winnerId + upset.loserId} upset={upset} winter={shouldApplyWinter} />
+                  <MobileUpsetRow key={upset.winnerId + upset.loserId} upset={upset} winter={shouldApplyWinter} />
                 ))
               ) : (
                 <span className={cn(typeScale.caption, 'text-muted-foreground/60 italic')}>None this week</span>
@@ -98,16 +98,16 @@ const WeeklyRecapCard: React.FC<WeeklyRecapCardProps> = ({ data, risers, faller 
             </div>
 
             {/* Streaks column */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-1.5 mb-1">
-                <Flame size={13} className="text-orange-500" />
+            <div className="rounded-lg border border-border/40 p-2.5 space-y-2">
+              <div className="flex items-center gap-1.5">
+                <Flame size={12} className="text-orange-500" />
                 <span className={cn(typeScale.caption, 'font-semibold uppercase tracking-wider text-muted-foreground')}>
-                  Hot Streaks
+                  Winning Streaks
                 </span>
               </div>
               {hasStreaks ? (
                 data.hotStreaks.map((team) => (
-                  <StreakRow key={team.teamId} team={team} winter={shouldApplyWinter} />
+                  <MobileStreakRow key={team.teamId} team={team} winter={shouldApplyWinter} />
                 ))
               ) : (
                 <span className={cn(typeScale.caption, 'text-muted-foreground/60 italic')}>None this week</span>
