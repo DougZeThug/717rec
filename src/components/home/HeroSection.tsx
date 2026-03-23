@@ -84,26 +84,26 @@ const HeroSection = () => {
         <NavButton
           to="/stats"
           icon={<Trophy size={18} />}
-          label="League Standings"
-          className="bg-emerald-600 hover:bg-emerald-700"
+          label="Standings"
+          className="bg-cornhole-navy hover:bg-cornhole-navy/80"
         />
         <NavButton
           to="/schedule"
           icon={<Calendar size={18} />}
           label="Full Schedule"
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-blue-700 hover:bg-blue-800"
         />
         <NavButton
           to="/history"
           icon={<History size={18} />}
           label="History"
-          className="bg-violet-600 hover:bg-violet-700"
+          className="bg-slate-600 hover:bg-slate-700"
         />
         <NavButton
           to="/teams"
           icon={<Users size={18} />}
           label="My Teams"
-          className="bg-amber-600 hover:bg-amber-700"
+          className="bg-cornhole-navy/80 hover:bg-cornhole-navy"
         />
       </div>
 
