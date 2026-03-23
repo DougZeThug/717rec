@@ -1,41 +1,19 @@
 
 
-## Clean up Weekly Recap mobile layout to match reference
+## Update Nav Button Colors & Label
 
-### What changes
+### Changes — `src/components/home/HeroSection.tsx`
 
-**File: `src/components/home/WeeklyRecapCard.tsx`**
+1. **Rename** "League Standings" → "Standings"
+2. **Recolor buttons** to use the app's navy/blue theme palette instead of rainbow colors:
+   - **Standings**: `bg-cornhole-navy hover:bg-cornhole-navy/80` (navy — matches hero)
+   - **Full Schedule**: `bg-blue-700 hover:bg-blue-800` (blue — matches primary)
+   - **History**: `bg-slate-600 hover:bg-slate-700` (muted slate — subtle secondary)
+   - **My Teams**: `bg-cornhole-navy/80 hover:bg-cornhole-navy` (lighter navy variant)
 
-**1. Add visible borders around each column (mobile)**
-- Wrap each column in a `rounded-lg border border-border/40` container with padding
+This keeps the buttons cohesive with the app's navy/blue brand rather than using unrelated green/violet/amber.
 
-**2. Redesign `UpsetRow` for mobile clarity**
-- Stack winner and loser on separate lines (logo + full name each)
-- Move the score + upset badge to the right side, vertically centered against both rows
-- Score displayed in a purple rounded badge (e.g. `2-1` large, `+18.4 Upset` smaller below)
-- Remove `truncate` on team names so full names show
-
-**3. Redesign `StreakRow` for mobile**
-- Remove division subtitle to save space
-- Streak badge styled as a solid orange/amber rounded square with bold text (e.g. `W4`)
-- Full team name without truncation
-
-**4. Section headers**
-- "Top Upsets" with lightning icon, "Winning Streaks" with flame icon (matching screenshot text)
-
-### Layout structure (mobile)
-```text
-┌─ Top Upsets ──────────┐  ┌─ Winning Streaks ─────┐
-│ 🏆 Came from Dicks    │  │ 🐝 Bumbleweed    [W4] │
-│ 🐕 Offdogs      [2-1] │  │ 🎯 Smooth Sliders[W4] │
-│              [+18 Ups] │  │ 🍕 Cuzzo's Clinic[W4] │
-│                        │  │                       │
-│ 🏆 The Undi...         │  │                       │
-│ 🐕 Happy Valley  [2-1]│  │                       │
-│              [+7 Ups]  │  │                       │
-└────────────────────────┘  └───────────────────────┘
-```
-
-### Files
-- `src/components/home/WeeklyRecapCard.tsx` — restyle mobile columns + UpsetRow + StreakRow
+### Technical Details
+- Single file edit: `src/components/home/HeroSection.tsx` lines 84-107
+- Only the `className` prop and `label` prop change; no structural changes
 
