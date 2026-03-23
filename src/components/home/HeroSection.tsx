@@ -84,7 +84,7 @@ const HeroSection = () => {
         <NavButton
           to="/stats"
           icon={<Trophy size={18} />}
-          label="League Stats"
+          label="League Standings"
           className="bg-emerald-600 hover:bg-emerald-700"
         />
         <NavButton
