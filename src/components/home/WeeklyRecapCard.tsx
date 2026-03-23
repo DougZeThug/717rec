@@ -239,6 +239,65 @@ const UpsetRow: React.FC<UpsetRowProps> = ({ upset, winter }) => (
   </div>
 );
 
+const MobileUpsetRow: React.FC<UpsetRowProps> = ({ upset, winter }) => (
+  <div className="flex items-center justify-between gap-1.5">
+    <div className="flex flex-col gap-1 min-w-0">
+      <Link
+        to={`/teams/${toTeamSlug(upset.winnerName)}`}
+        className="flex items-center gap-1.5 group min-w-0"
+      >
+        <TeamLogo imageUrl={upset.winnerLogoUrl} teamName={upset.winnerName} size="xs" />
+        <span
+          className={cn(
+            'text-xs font-medium transition-colors leading-tight',
+            winter ? 'text-cyan-50 group-hover:text-cyan-300' : 'group-hover:text-violet-600 dark:group-hover:text-violet-400'
+          )}
+        >
+          {upset.winnerName}
+        </span>
+      </Link>
+      <Link
+        to={`/teams/${toTeamSlug(upset.loserName)}`}
+        className="flex items-center gap-1.5 group min-w-0"
+      >
+        <TeamLogo imageUrl={upset.loserLogoUrl} teamName={upset.loserName} size="xs" />
+        <span
+          className={cn(
+            'text-xs transition-colors leading-tight',
+            winter ? 'text-cyan-100/70 group-hover:text-cyan-300' : 'text-muted-foreground group-hover:text-violet-600 dark:group-hover:text-violet-400'
+          )}
+        >
+          {upset.loserName}
+        </span>
+      </Link>
+    </div>
+    <div className="flex flex-col items-end shrink-0 gap-0.5">
+      {upset.matchResult && (
+        <span className="text-xs font-bold tabular-nums">{upset.matchResult}</span>
+      )}
+      <span className="text-[9px] font-semibold text-yellow-600 dark:text-yellow-400 bg-yellow-500/15 px-1.5 py-0.5 rounded whitespace-nowrap">
+        +{upset.powerScoreGap.toFixed(1)} Upset
+      </span>
+    </div>
+  </div>
+);
+
+const MobileStreakRow: React.FC<StreakRowProps> = ({ team, winter }) => (
+  <Link to={`/teams/${toTeamSlug(team.teamName)}`} className="flex items-center gap-1.5 group">
+    <TeamLogo imageUrl={team.logoUrl} teamName={team.teamName} size="xs" />
+    <span
+      className={cn(
+        'text-xs font-medium transition-colors flex-1 min-w-0 leading-tight',
+        winter ? 'text-cyan-50 group-hover:text-cyan-300' : 'group-hover:text-violet-600 dark:group-hover:text-violet-400'
+      )}
+    >
+      {team.teamName}
+    </span>
+    <span className="shrink-0 text-[10px] font-bold tabular-nums bg-orange-500/20 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 rounded">
+      W{team.streak}
+    </span>
+  </Link>
+
 interface StreakRowProps {
   team: TeamStreakInfo;
   winter: boolean;
