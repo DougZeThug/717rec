@@ -297,6 +297,7 @@ const MobileStreakRow: React.FC<StreakRowProps> = ({ team, winter }) => (
       W{team.streak}
     </span>
   </Link>
+);
 
 interface StreakRowProps {
   team: TeamStreakInfo;
