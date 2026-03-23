@@ -79,10 +79,12 @@ const Index: React.FC = () => {
           ))
         )}
 
-        {/* League History - rendered immediately for LCP optimization */}
-        <PageTransition animation="fadeInSlideUp" immediate>
-          <LeagueHistoryBar />
-        </PageTransition>
+        {/* League History - rendered immediately for LCP optimization (hidden on mobile, in nav grid) */}
+        <div className="hidden md:block">
+          <PageTransition animation="fadeInSlideUp" immediate>
+            <LeagueHistoryBar />
+          </PageTransition>
+        </div>
 
         {/* My Next Match(es) - shown for authenticated users with a team */}
         {myNextMatch.isLoading ? (
