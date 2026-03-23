@@ -79,18 +79,18 @@ const WeeklyRecapCard: React.FC<WeeklyRecapCardProps> = ({ data, risers, faller 
 
         {/* Mobile: Two-column layout for Upsets + Streaks */}
         {(hasUpsets || hasStreaks) && (
-          <div className="grid grid-cols-2 gap-3 md:hidden">
+          <div className="grid grid-cols-2 gap-2.5 md:hidden">
             {/* Upsets column */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-1.5 mb-1">
-                <Zap size={13} className="text-yellow-500 fill-yellow-500/50" />
+            <div className="rounded-lg border border-border/40 p-2.5 space-y-2">
+              <div className="flex items-center gap-1.5">
+                <Zap size={12} className="text-yellow-500 fill-yellow-500/50" />
                 <span className={cn(typeScale.caption, 'font-semibold uppercase tracking-wider text-muted-foreground')}>
-                  Upsets
+                  Top Upsets
                 </span>
               </div>
               {hasUpsets ? (
                 data.upsets.map((upset) => (
-                  <UpsetRow key={upset.winnerId + upset.loserId} upset={upset} winter={shouldApplyWinter} />
+                  <MobileUpsetRow key={upset.winnerId + upset.loserId} upset={upset} winter={shouldApplyWinter} />
                 ))
               ) : (
                 <span className={cn(typeScale.caption, 'text-muted-foreground/60 italic')}>None this week</span>
@@ -98,16 +98,16 @@ const WeeklyRecapCard: React.FC<WeeklyRecapCardProps> = ({ data, risers, faller 
             </div>
 
             {/* Streaks column */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-1.5 mb-1">
-                <Flame size={13} className="text-orange-500" />
+            <div className="rounded-lg border border-border/40 p-2.5 space-y-2">
+              <div className="flex items-center gap-1.5">
+                <Flame size={12} className="text-orange-500" />
                 <span className={cn(typeScale.caption, 'font-semibold uppercase tracking-wider text-muted-foreground')}>
-                  Hot Streaks
+                  Winning Streaks
                 </span>
               </div>
               {hasStreaks ? (
                 data.hotStreaks.map((team) => (
-                  <StreakRow key={team.teamId} team={team} winter={shouldApplyWinter} />
+                  <MobileStreakRow key={team.teamId} team={team} winter={shouldApplyWinter} />
                 ))
               ) : (
                 <span className={cn(typeScale.caption, 'text-muted-foreground/60 italic')}>None this week</span>
@@ -237,6 +237,66 @@ const UpsetRow: React.FC<UpsetRowProps> = ({ upset, winter }) => (
       </Badge>
     </div>
   </div>
+);
+
+const MobileUpsetRow: React.FC<UpsetRowProps> = ({ upset, winter }) => (
+  <div className="flex items-center justify-between gap-1.5">
+    <div className="flex flex-col gap-1 min-w-0">
+      <Link
+        to={`/teams/${toTeamSlug(upset.winnerName)}`}
+        className="flex items-center gap-1.5 group min-w-0"
+      >
+        <TeamLogo imageUrl={upset.winnerLogoUrl} teamName={upset.winnerName} size="xs" />
+        <span
+          className={cn(
+            'text-xs font-medium transition-colors leading-tight',
+            winter ? 'text-cyan-50 group-hover:text-cyan-300' : 'group-hover:text-violet-600 dark:group-hover:text-violet-400'
+          )}
+        >
+          {upset.winnerName}
+        </span>
+      </Link>
+      <Link
+        to={`/teams/${toTeamSlug(upset.loserName)}`}
+        className="flex items-center gap-1.5 group min-w-0"
+      >
+        <TeamLogo imageUrl={upset.loserLogoUrl} teamName={upset.loserName} size="xs" />
+        <span
+          className={cn(
+            'text-xs transition-colors leading-tight',
+            winter ? 'text-cyan-100/70 group-hover:text-cyan-300' : 'text-muted-foreground group-hover:text-violet-600 dark:group-hover:text-violet-400'
+          )}
+        >
+          {upset.loserName}
+        </span>
+      </Link>
+    </div>
+    <div className="flex flex-col items-end shrink-0 gap-0.5">
+      {upset.matchResult && (
+        <span className="text-xs font-bold tabular-nums">{upset.matchResult}</span>
+      )}
+      <span className="text-[9px] font-semibold text-yellow-600 dark:text-yellow-400 bg-yellow-500/15 px-1.5 py-0.5 rounded whitespace-nowrap">
+        +{upset.powerScoreGap.toFixed(1)} Upset
+      </span>
+    </div>
+  </div>
+);
+
+const MobileStreakRow: React.FC<StreakRowProps> = ({ team, winter }) => (
+  <Link to={`/teams/${toTeamSlug(team.teamName)}`} className="flex items-center gap-1.5 group">
+    <TeamLogo imageUrl={team.logoUrl} teamName={team.teamName} size="xs" />
+    <span
+      className={cn(
+        'text-xs font-medium transition-colors flex-1 min-w-0 leading-tight',
+        winter ? 'text-cyan-50 group-hover:text-cyan-300' : 'group-hover:text-violet-600 dark:group-hover:text-violet-400'
+      )}
+    >
+      {team.teamName}
+    </span>
+    <span className="shrink-0 text-[10px] font-bold tabular-nums bg-orange-500/20 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 rounded">
+      W{team.streak}
+    </span>
+  </Link>
 );
 
 interface StreakRowProps {
