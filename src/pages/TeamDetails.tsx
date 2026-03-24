@@ -1,4 +1,4 @@
-import { ArrowLeft, BarChart3, Trophy } from 'lucide-react';
+import { ArrowLeft, BarChart3, GraduationCap, Swords, TrendingUp, Trophy } from 'lucide-react';
 import { useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 
