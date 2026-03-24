@@ -36,6 +36,7 @@ const RivalryHighlights: React.FC<RivalryHighlightsProps> = ({ teamId }) => {
       iconColor="text-rose-500"
       defaultOpen={false}
       headingId="rivalries-heading"
+      summaryValue={topRival ? `vs. ${topRival.opponent_name}` : undefined}
     >
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {topRival && (
