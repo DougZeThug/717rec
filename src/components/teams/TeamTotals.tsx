@@ -115,14 +115,7 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
       totals.division_records.intermediate.wins + totals.division_records.intermediate.losses > 0 ||
       totals.division_records.recreational.wins + totals.division_records.recreational.losses > 0);
 
-  return (
-    <CollapsibleSection
-      title="Career Statistics"
-      icon={BarChart}
-      iconColor="text-purple-500"
-      defaultOpen={false}
-      headingId="career-heading"
-    >
+  const mainContent = (
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 md:gap-6">
         <div className="flex flex-col">
           <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">
