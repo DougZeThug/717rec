@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { Ranking } from '@/types';
 import { debugLog } from '@/utils/logger';
 
+import LeagueLeaderboardCarousel from './LeagueLeaderboardCarousel';
 import RankingCard from './RankingCard';
 import { SortOptions } from './RankingsTable';
 import TeamSearchDrawer from './TeamSearchDrawer';
