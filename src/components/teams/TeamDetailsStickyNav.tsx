@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { BarChart3, Clock, GraduationCap, Swords, TrendingUp, Trophy } from 'lucide-react';
+import { BarChart3, Clock, Swords, TrendingUp } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
