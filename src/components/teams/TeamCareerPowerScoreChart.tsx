@@ -20,6 +20,7 @@ import { getDivisionHexColor } from '@/utils/colors/divisionHexColors';
 
 interface TeamCareerPowerScoreChartProps {
   teamId: string;
+  standalone?: boolean;
 }
 
 const CustomDot = (props: DotProps & { payload?: SeasonPowerScoreData }) => {
