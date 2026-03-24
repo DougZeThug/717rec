@@ -86,7 +86,7 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings, myTeamId }) => {
                 )}
               </div>
               <div className="flex items-center gap-2 ml-auto">
-                {isOpen && (
+                {isOpen && !isMobile && (
                   <div onClick={(e) => e.stopPropagation()}>
                     <ViewToggle view={view} onViewChange={setView} />
                   </div>
@@ -116,6 +116,8 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings, myTeamId }) => {
               rankings={sortedRankings}
               showUnified={view === 'all'}
               myTeamId={myTeamId}
+              view={view}
+              onViewChange={setView}
             />
           </CardContent>
         </CollapsibleContent>

@@ -3,8 +3,7 @@ import { ArrowDown, ArrowUp, Bolt, Scale, Search, User } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { Ranking } from '@/types';
@@ -14,6 +13,7 @@ import LeagueLeaderboardCarousel from './LeagueLeaderboardCarousel';
 import RankingCard from './RankingCard';
 import { SortOptions } from './RankingsTable';
 import TeamSearchDrawer from './TeamSearchDrawer';
+import ViewToggle from './ViewToggle';
 
 interface RankingsMobileViewProps {
   rankings: Ranking[];
@@ -23,6 +23,8 @@ interface RankingsMobileViewProps {
   onSortChange: (field: string) => void;
   showUnified?: boolean;
   myTeamId?: string | null;
+  view?: 'division' | 'all';
+  onViewChange?: (view: 'division' | 'all') => void;
 }
 
 const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
@@ -33,6 +35,8 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
   onSortChange,
   showUnified = false,
   myTeamId,
+  view = 'division',
+  onViewChange,
 }) => {
   const { isWinterTheme } = useSeasonalTheme();
   const [detailedView, setDetailedView] = useState(() => {
@@ -43,7 +47,6 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
   const [highlightedTeamId, setHighlightedTeamId] = useState<string | null>(null);
   const teamRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
-  // Enhanced logging to debug ranking data
   useEffect(() => {
     debugLog(
       'Mobile rankings data with trends:',
@@ -55,7 +58,6 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
       }))
     );
 
-    // Log any teams with actual rank changes
     const teamsWithChanges = rankings.filter(
       (r) => r.rankChange !== 0 && r.rankChange !== undefined
     );
@@ -75,7 +77,6 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
       setHighlightedTeamId(teamId);
-      // Clear highlight after animation
       setTimeout(() => setHighlightedTeamId(null), 2000);
     }
   }, []);
@@ -91,7 +92,6 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
   const handleTeamSelect = useCallback(
     (teamId: string) => {
       setSearchOpen(false);
-      // Small delay to let drawer close animation start
       setTimeout(() => scrollToTeam(teamId), 150);
     },
     [scrollToTeam]
@@ -120,19 +120,19 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
     { id: 'wins', label: 'Wins' },
   ];
 
-  const toggleViewMode = (checked: boolean) => {
-    setDetailedView(checked);
-    localStorage.setItem('rankingsDetailedView', String(checked));
+  const toggleViewMode = (value: string) => {
+    if (!value) return;
+    const isDetailed = value === 'detailed';
+    setDetailedView(isDetailed);
+    localStorage.setItem('rankingsDetailedView', String(isDetailed));
   };
 
-  // Group by display divisions using divisionName which now contains display_division
   const rankingsByDivision = useMemo(
     () =>
       showUnified
         ? { 'All Teams': rankings }
         : rankings.reduce(
             (acc, ranking) => {
-              // Use divisionName which now contains the display_division value
               const displayDivision = ranking.divisionName || 'Unassigned';
               if (!acc[displayDivision]) {
                 acc[displayDivision] = [];
@@ -148,8 +148,46 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
   return (
     <div className="font-inter">
       <LeagueLeaderboardCarousel rankings={rankings} />
-      <div className="mb-2 space-y-1">
-        <div className="flex flex-col gap-1">
+
+      {/* Controls row: ViewToggle + Compact/Detailed toggle */}
+      <div className="mb-2 flex items-center justify-between gap-2">
+        {onViewChange && (
+          <ViewToggle view={view} onViewChange={onViewChange} />
+        )}
+        <ToggleGroup
+          type="single"
+          value={detailedView ? 'detailed' : 'compact'}
+          onValueChange={toggleViewMode}
+          className="border border-border rounded-lg p-0.5"
+        >
+          <ToggleGroupItem
+            value="compact"
+            className={cn(
+              'text-xs px-2.5 py-1 rounded-md transition-all',
+              !detailedView
+                ? 'bg-cornhole-navy text-white shadow-sm'
+                : 'text-muted-foreground hover:bg-accent'
+            )}
+          >
+            Compact
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="detailed"
+            className={cn(
+              'text-xs px-2.5 py-1 rounded-md transition-all',
+              detailedView
+                ? 'bg-cornhole-navy text-white shadow-sm'
+                : 'text-muted-foreground hover:bg-accent'
+            )}
+          >
+            Detailed
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+
+      {/* Sort pills - only visible in detailed view */}
+      {detailedView && (
+        <div className="mb-2">
           <div className="overflow-x-auto pb-1.5 touch-pan-x -mx-1 px-1">
             <div className="flex space-x-2">
               {sortableFields.map((field) => (
@@ -180,21 +218,9 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
               ))}
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Switch id="detailed-view" checked={detailedView} onCheckedChange={toggleViewMode} />
-            <Label
-              htmlFor="detailed-view"
-              className={cn(
-                'text-sm',
-                isWinterTheme ? 'text-[hsl(var(--muted-foreground))]' : 'text-muted-foreground'
-              )}
-              onClick={() => toggleViewMode(!detailedView)}
-            >
-              {detailedView ? 'Detailed View' : 'Compact View'}
-            </Label>
-          </div>
         </div>
-      </div>
+      )}
+
       <div className="space-y-2">
         {Object.entries(rankingsByDivision).map(([displayDivision, divisionRankings]) => (
           <div key={displayDivision} className="space-y-1">

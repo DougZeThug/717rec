@@ -11,6 +11,8 @@ interface RankingsTableProps {
   rankings: Ranking[];
   showUnified?: boolean;
   myTeamId?: string | null;
+  view?: 'division' | 'all';
+  onViewChange?: (view: 'division' | 'all') => void;
 }
 
 export type SortDirection = 'asc' | 'desc';
@@ -23,6 +25,8 @@ const RankingsTable: React.FC<RankingsTableProps> = ({
   rankings,
   showUnified = false,
   myTeamId,
+  view,
+  onViewChange,
 }) => {
   const isMobile = useIsMobile();
   const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
@@ -99,6 +103,8 @@ const RankingsTable: React.FC<RankingsTableProps> = ({
         onSortChange={handleSortChange}
         showUnified={showUnified}
         myTeamId={myTeamId}
+        view={view}
+        onViewChange={onViewChange}
       />
     );
   }
