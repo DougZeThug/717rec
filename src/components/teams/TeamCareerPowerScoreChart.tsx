@@ -129,13 +129,8 @@ const TeamCareerPowerScoreChart = ({ teamId, standalone = false }: TeamCareerPow
 
   const chartHeight = isMobile ? 250 : 300;
 
-  return (
-    <CollapsibleSection
-      title="Career Power Score Trend"
-      icon={TrendingUp}
-      iconColor="text-amber-500"
-      defaultOpen={false}
-    >
+  const chartContent = (
+    <>
       <ResponsiveContainer width="100%" height={chartHeight}>
         <LineChart
           data={seasonData}
