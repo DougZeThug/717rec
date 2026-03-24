@@ -123,17 +123,17 @@ const RankingCard: React.FC<RankingCardProps> = ({
             </div>
           </Link>
 
-          {/* Power score */}
-          <div className="flex flex-col items-end flex-shrink-0 mr-1">
+          {/* Badges */}
+          <div className="flex-shrink-0">
+            <TeamBadgeCollection teamId={ranking.teamId} size="sm" maxDisplay={1} />
+          </div>
+
+          {/* Power score - always right-aligned */}
+          <div className="flex flex-col items-end flex-shrink-0 w-16">
             <span className="text-[10px] text-muted-foreground leading-tight">Power</span>
             <span className={cn('text-base font-bold tabular-nums leading-tight', getPowerScoreColor(ranking.powerScore))}>
               {formatPowerScore(ranking.powerScore)}
             </span>
-          </div>
-
-          {/* Badges */}
-          <div className="flex-shrink-0">
-            <TeamBadgeCollection teamId={ranking.teamId} size="sm" maxDisplay={1} />
           </div>
         </div>
 
