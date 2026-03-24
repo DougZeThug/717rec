@@ -16,7 +16,7 @@ interface TeamHeaderProps {
 
 const TeamHeader = ({ team, winPercentage: _winPercentage, pastMatches = [] }: TeamHeaderProps) => {
   return (
-    <div className="flex flex-col items-center mb-1 md:mb-4">
+    <div className="flex flex-col items-center mb-0 md:mb-4">
       <div className="mb-1 md:mb-4">
         <TeamLogo
           imageUrl={team?.imageUrl || team?.logoUrl}

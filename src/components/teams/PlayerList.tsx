@@ -11,7 +11,7 @@ interface PlayerListProps {
 
 const PlayerList = ({ players }: PlayerListProps) => {
   return (
-    <CollapsibleSection title="Players" icon={Users} iconColor="text-blue-500" defaultOpen={true}>
+    <CollapsibleSection title="Roster" icon={Users} iconColor="text-blue-500" defaultOpen={true}>
       {!players?.length ? (
         <div className="text-center py-6">
           <Users className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
