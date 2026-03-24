@@ -327,6 +327,7 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
           </div>
         </div>
       )}
+    </>
   );
 
   if (standalone) return mainContent;
