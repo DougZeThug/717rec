@@ -147,6 +147,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
 
   return (
     <div className="font-inter">
+      <LeagueLeaderboardCarousel rankings={rankings} />
       <div className="mb-2 space-y-1">
         <div className="flex flex-col gap-1">
           <div className="overflow-x-auto pb-1.5 touch-pan-x -mx-1 px-1">
