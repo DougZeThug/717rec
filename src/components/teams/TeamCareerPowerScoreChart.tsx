@@ -107,7 +107,7 @@ const CustomTooltip = ({ active, payload }: any) => {
   );
 };
 
-const TeamCareerPowerScoreChart = ({ teamId }: TeamCareerPowerScoreChartProps) => {
+const TeamCareerPowerScoreChart = ({ teamId, standalone = false }: TeamCareerPowerScoreChartProps) => {
   const { data: seasonData, isLoading } = useTeamCareerPowerScore(teamId);
   const { resolvedTheme } = useTheme();
   const isMobile = useIsMobile();
