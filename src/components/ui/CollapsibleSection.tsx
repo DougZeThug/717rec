@@ -22,6 +22,8 @@ interface CollapsibleSectionProps {
   errorContent?: ReactNode;
   /** Optional ID for the heading element for accessibility */
   headingId?: string;
+  /** Optional summary value shown to the left of the chevron when collapsed */
+  summaryValue?: ReactNode;
 }
 
 export const CollapsibleSection = ({
