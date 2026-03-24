@@ -22,6 +22,7 @@ import { getPowerScoreColor, getSosColor, getSweepRateColor } from '@/utils/colo
 
 interface TeamTotalsProps {
   teamId: string;
+  standalone?: boolean;
 }
 
 const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
