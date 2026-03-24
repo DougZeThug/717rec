@@ -326,6 +326,19 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
           </div>
         </div>
       )}
+  );
+
+  if (standalone) return mainContent;
+
+  return (
+    <CollapsibleSection
+      title="Career Statistics"
+      icon={BarChart}
+      iconColor="text-purple-500"
+      defaultOpen={false}
+      headingId="career-heading"
+    >
+      {mainContent}
     </CollapsibleSection>
   );
 };
