@@ -1,5 +1,5 @@
 import { Loader2, Plus, Save, X } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,20 +21,14 @@ export const TeamAnalysisEditForm: React.FC<TeamAnalysisEditFormProps> = ({
   isSaving,
 }) => {
   const [overall, setOverall] = useState(analysis?.overall || '');
-  const [strengths, setStrengths] = useState<string[]>(analysis?.strengths || ['']);
-  const [weaknesses, setWeaknesses] = useState<string[]>(analysis?.weaknesses || ['']);
+  const [strengths, setStrengths] = useState<string[]>(
+    analysis?.strengths?.length ? analysis.strengths : ['']
+  );
+  const [weaknesses, setWeaknesses] = useState<string[]>(
+    analysis?.weaknesses?.length ? analysis.weaknesses : ['']
+  );
   const [trends, setTrends] = useState(analysis?.trends || '');
   const [rivalryInsights, setRivalryInsights] = useState(analysis?.rivalry_insights || '');
-
-  useEffect(() => {
-    if (analysis) {
-      setOverall(analysis.overall || '');
-      setStrengths(analysis.strengths?.length ? analysis.strengths : ['']);
-      setWeaknesses(analysis.weaknesses?.length ? analysis.weaknesses : ['']);
-      setTrends(analysis.trends || '');
-      setRivalryInsights(analysis.rivalry_insights || '');
-    }
-  }, [analysis]);
 
   const handleAddStrength = () => setStrengths([...strengths, '']);
   const handleAddWeakness = () => setWeaknesses([...weaknesses, '']);

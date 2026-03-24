@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import { scoreLog } from '@/utils/logger';
 
@@ -38,26 +38,14 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
   team1Name = 'Team 1',
   team2Name = 'Team 2',
 }) => {
-  const [selectedOption, setSelectedOption] = useState<{
-    team1Score: number;
-    team2Score: number;
-    team1GameWins: number;
-    team2GameWins: number;
-  } | null>(null);
-
-  // Initialize selection from props
-  useEffect(() => {
-    if (value && value.team1Score !== null && value.team2Score !== null) {
-      setSelectedOption({
+  const selectedOption = (value && value.team1Score !== null && value.team2Score !== null)
+    ? {
         team1Score: Number(value.team1Score),
         team2Score: Number(value.team2Score),
         team1GameWins: Number(value.team1GameWins || 0),
         team2GameWins: Number(value.team2GameWins || 0),
-      });
-    } else {
-      setSelectedOption(null);
-    }
-  }, [value?.team1Score, value?.team2Score, value?.team1GameWins, value?.team2GameWins]);
+      }
+    : null;
 
   // Strict numeric comparison for selection state
   const isSelected = (option: (typeof SCORE_OPTIONS)[number]) => {
@@ -86,7 +74,6 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
       gameWins: `${option.team1GameWins}-${option.team2GameWins}`,
     });
 
-    setSelectedOption(newSelection);
     onChange(newSelection);
 
     // Auto-complete when a score is selected

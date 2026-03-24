@@ -54,21 +54,9 @@ export const useMutationStateManager = (config: MutationStateManagerConfig = {})
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(false);
   const [autoSaveTimeout, setAutoSaveTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  // Track pending changes from optimistic mutations
-  useEffect(() => {
-    const hasOptimisticChanges = optimisticMutations.state.pendingUpdates.size > 0;
-    const hasPendingChanges = mutationState.pendingChanges.size > 0;
-
-    setMutationState((prev) => ({
-      ...prev,
-      hasUnsavedChanges: hasOptimisticChanges || hasPendingChanges,
-      isSaving: optimisticMutations.isLoading,
-    }));
-  }, [
-    optimisticMutations.state.pendingUpdates,
-    optimisticMutations.isLoading,
-    mutationState.pendingChanges.size,
-  ]);
+  // Derive hasUnsavedChanges and isSaving from existing state
+  const hasUnsavedChanges = optimisticMutations.state.pendingUpdates.size > 0 || mutationState.pendingChanges.size > 0;
+  const isSaving = optimisticMutations.isLoading;
 
   // Auto-save functionality
   const scheduleAutoSave = useCallback(() => {
@@ -301,6 +289,8 @@ export const useMutationStateManager = (config: MutationStateManagerConfig = {})
   return {
     state: {
       ...mutationState,
+      hasUnsavedChanges,
+      isSaving,
       autoSaveEnabled,
       optimisticState: optimisticMutations.state,
     },

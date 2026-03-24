@@ -22,15 +22,9 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
   viewMode,
   sortMode,
 }) => {
-  const [expandedDivision, setExpandedDivision] = React.useState<string | null>(null);
-
-  // Auto-expand first division on mount
-  React.useEffect(() => {
-    const firstDivision = Object.keys(teamsByDivision).find((d) => teamsByDivision[d].length > 0);
-    if (firstDivision && expandedDivision === null) {
-      setExpandedDivision(firstDivision);
-    }
-  }, [teamsByDivision]);
+  const [expandedDivision, setExpandedDivision] = React.useState<string | null>(
+    () => Object.keys(teamsByDivision).find((d) => teamsByDivision[d].length > 0) || null
+  );
 
   const toggleDivision = (displayDivision: string) => {
     setExpandedDivision((prevExpanded) =>

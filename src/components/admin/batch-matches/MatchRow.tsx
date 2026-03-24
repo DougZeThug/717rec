@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Clock, Users, X } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -46,25 +46,9 @@ const MatchRow: React.FC<MatchRowProps> = ({ pair, teams, onUpdate, onRemove }) 
     }
   };
 
-  const [team1Name, setTeam1Name] = useState<string>('Select Team 1');
-  const [team2Name, setTeam2Name] = useState<string>('Select Team 2');
-  const [timeslotFormatted, setTimeslotFormatted] = useState<string>('');
-
-  useEffect(() => {
-    if (pair.team1Id) {
-      const team = teams.find((t) => t.id === pair.team1Id);
-      if (team) setTeam1Name(team.name);
-    }
-
-    if (pair.team2Id) {
-      const team = teams.find((t) => t.id === pair.team2Id);
-      if (team) setTeam2Name(team.name);
-    }
-
-    if (pair.timeslot) {
-      setTimeslotFormatted(formatTimeForDisplay(pair.timeslot));
-    }
-  }, [pair.team1Id, pair.team2Id, pair.timeslot, teams]);
+  const team1Name = (pair.team1Id && teams.find((t) => t.id === pair.team1Id)?.name) || 'Select Team 1';
+  const team2Name = (pair.team2Id && teams.find((t) => t.id === pair.team2Id)?.name) || 'Select Team 2';
+  const timeslotFormatted = pair.timeslot ? formatTimeForDisplay(pair.timeslot) : '';
 
   const showPreview = pair.team1Id && pair.team2Id && pair.timeslot;
 

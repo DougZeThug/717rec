@@ -30,7 +30,7 @@ const HeroCardsTab: React.FC = () => {
   };
 
   if (isCreating || editingCard) {
-    return <HeroCardForm card={editingCard} onClose={handleClose} />;
+    return <HeroCardForm key={editingCard?.id ?? 'new'} card={editingCard} onClose={handleClose} />;
   }
 
   return (

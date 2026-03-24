@@ -62,19 +62,17 @@ export function usePlayoffPageData(): PlayoffPageData {
     if (activeSeason && !selectedSeasonId) {
       setSelectedSeasonId(activeSeason.id);
     }
-  }, [activeSeason, selectedSeasonId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSeason]);
 
+  // Sync bracket selection from URL params
+  const bracketParam = searchParams.get('bracket') || null;
   useEffect(() => {
-    const bracketParam = searchParams.get('bracket');
-
-    if (bracketParam && bracketParam !== selectedBracketId) {
-      bracketLog('Setting bracket ID from URL:', bracketParam);
+    if (bracketParam !== selectedBracketId) {
       setSelectedBracketIdState(bracketParam);
-    } else if (!bracketParam && selectedBracketId) {
-      bracketLog('Clearing bracket ID');
-      setSelectedBracketIdState(null);
     }
-  }, [searchParams, selectedBracketId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bracketParam]);
 
   const setSelectedBracketId = useCallback(
     (id: string | null) => {

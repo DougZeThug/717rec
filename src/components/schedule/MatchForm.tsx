@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 
@@ -13,7 +13,9 @@ const MatchForm: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCancel 
   const [team1Id, setTeam1Id] = useState(match?.team1Id || '');
   const [team2Id, setTeam2Id] = useState(match?.team2Id || '');
   const [selectedDate, setSelectedDate] = useState(match ? new Date(match.date) : new Date());
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(
+    match ? getTimeSlotFromDate(new Date(match.date)) : null
+  );
   const [isCompleted, setIsCompleted] = useState(match?.iscompleted || false);
   const [team1Score, setTeam1Score] = useState<number | undefined>(match?.team1Score);
   const [team2Score, setTeam2Score] = useState<number | undefined>(match?.team2Score);
@@ -29,17 +31,6 @@ const MatchForm: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCancel 
     '9:30 PM',
     '10:00 PM',
   ];
-
-  useEffect(() => {
-    // If editing an existing match, set the appropriate time slot
-    if (match) {
-      const matchDate = new Date(match.date);
-      const timeSlot = getTimeSlotFromDate(matchDate);
-      if (timeSlot) {
-        setSelectedTimeSlot(timeSlot);
-      }
-    }
-  }, [match]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
