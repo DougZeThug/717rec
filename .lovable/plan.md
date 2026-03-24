@@ -1,51 +1,31 @@
 
 
-## Redesign Standings Page Mobile Compact View
-
-### What changes
-
-Redesign the mobile compact view on the standings page to match the reference image layout, while keeping existing colors, logos, categories, and the division/all toggle.
+## Improve Standings Mobile: Leaderboard, Toggles, and Sort Pills
 
 ### Changes
 
-**1. Redesign compact `RankingCard` layout (`src/components/stats/RankingCard.tsx`)**
+**1. Redesign `LeagueLeaderboardCarousel.tsx`**
+- Side-by-side layout: "League Leaderboard" title + count on the left, 3 team cards scrolling horizontally on the right
+- Rank-based colored borders (gold/silver/bronze)
 
-Current compact card is a vertical stack (rank+badges row, then logo+name row, then record+score row). Redesign to a single horizontal row matching the reference:
+**2. Move ViewToggle below carousel, hide header toggle on mobile (`RankingsMobileView.tsx` + `FullRankings.tsx`)**
+- `FullRankings`: conditionally hide ViewToggle on mobile, pass `view`/`onViewChange` through props to `RankingsTable` → `RankingsMobileView`
+- `RankingsMobileView`: render a compact ViewToggle between carousel and sort pills
 
-```text
-┌──────────────────────────────────────────────────┐
-│ 1   🔥  [logo] Hole Burners    Power Score       │
-│ ▲6       3-1                      83.1       🔥  │
-└──────────────────────────────────────────────────┘
-```
+**3. Replace compact/detailed Switch with a highlighted ToggleGroup (`RankingsMobileView.tsx`)**
+- Two-button segmented control ("Compact" / "Detailed") with active state clearly colored (e.g. `bg-cornhole-navy text-white`)
 
-- **Left column** (fixed width): Rank number (bold), rank change indicator below it
-- **Center**: Team logo + name (no truncate) + record below name
-- **Right column**: "Power Score" label (small muted text) + large colored power score value
-- **Far right**: Badges/streak icon (keep `TeamBadgeCollection`)
-- Remove the separate rows; make it one `flex items-center` row
-- Keep expanded state (tap to expand) with the same details
+**4. Hide sort pills in compact view (`RankingsMobileView.tsx`)**
+- Wrap the sort pills container in a conditional: only render when `detailedView` is true
+- In compact view, power score is always shown so sorting by it is the implicit default
 
-**2. Add League Leaderboard carousel (`src/components/stats/LeagueLeaderboardCarousel.tsx`)**
+**5. Prop threading**
+- `FullRankings` → `RankingsTable` → `RankingsMobileView`: add `view` and `onViewChange` props
+- `RankingsTable` passes them through
 
-New component shown above the sort pills on mobile:
-- Card with "League Leaderboard" title + team count
-- Horizontally scrollable row of the top 3 teams (by power score)
-- Each item: rank badge (top-left corner), team logo, "Power Score" label, large score value
-- Left/right chevron arrows for scroll indication
-- Dot indicators below
-
-**3. Update `RankingsMobileView` (`src/components/stats/RankingsMobileView.tsx`)**
-- Import and render `LeagueLeaderboardCarousel` above the sort pills
-- Pass top 3 rankings to it
-
-**4. Update `FullRankings` header (`src/components/stats/FullRankings.tsx`)**
-- On mobile, simplify the card header: show season + week info alongside the title
-- Keep the division/all ViewToggle and collapsible behavior
-
-### Files to create/edit
-- **Create**: `src/components/stats/LeagueLeaderboardCarousel.tsx`
-- **Edit**: `src/components/stats/RankingCard.tsx` — redesign compact view layout
-- **Edit**: `src/components/stats/RankingsMobileView.tsx` — add leaderboard carousel
-- **Edit**: `src/components/stats/FullRankings.tsx` — minor header adjustment for mobile
+### Files
+- **Edit**: `src/components/stats/LeagueLeaderboardCarousel.tsx`
+- **Edit**: `src/components/stats/RankingsMobileView.tsx`
+- **Edit**: `src/components/stats/RankingsTable.tsx` (pass through view props)
+- **Edit**: `src/components/stats/FullRankings.tsx` (hide mobile ViewToggle, pass props)
 
