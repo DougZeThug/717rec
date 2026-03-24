@@ -79,55 +79,68 @@ const RankingCard: React.FC<RankingCardProps> = ({
   if (compactView) {
     return (
       <EntityCard
-        className={cn('ranking-card p-3 cursor-pointer')}
+        className={cn('ranking-card p-2.5 cursor-pointer')}
         onClick={handleToggleExpand}
         withGradient={false}
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-bold whitespace-nowrap text-foreground">
-              {formatRankDisplay()}
+        <div className="flex items-center gap-2">
+          {/* Rank column */}
+          <div className="flex flex-col items-center w-7 flex-shrink-0">
+            <span className="text-sm font-bold tabular-nums text-foreground">
+              {showDivision ? globalRank : (divisionRank || globalRank)}
             </span>
-            {showRankChange && <RankTrendIndicator rankChange={ranking.rankChange} />}
-          </div>
-          <TeamBadgeCollection teamId={ranking.teamId} size="sm" maxDisplay={2} />
-        </div>
-
-        <Link
-          to={`/teams/${toTeamSlug(ranking.teamName)}`}
-          state={{ from: '/stats', scrollPosition: window.scrollY }}
-          aria-label={`View ${ranking.teamName} team details`}
-          className="flex items-center gap-2 mt-2 group"
-        >
-          <TeamLogo
-            imageUrl={ranking.imageUrl || ranking.logoUrl}
-            teamName={ranking.teamName}
-            size="sm"
-            className="flex-shrink-0"
-          />
-          <div className="min-w-0 flex-1">
-            <h3 className="text-sm font-semibold transition-colors truncate text-foreground group-hover:text-primary">
-              {ranking.teamName}
-            </h3>
-            {showDivision && ranking.divisionName && (
-              <p className="text-xs text-muted-foreground">{ranking.divisionName}</p>
+            {showRankChange && (
+              <div className="scale-90">
+                <RankTrendIndicator rankChange={ranking.rankChange} />
+              </div>
             )}
           </div>
-        </Link>
 
-        <div className="flex justify-between mt-2 text-xs">
-          <span className="tabular-nums text-muted-foreground">
-            {ranking.wins}-{ranking.losses}
-          </span>
-          <span className={cn('font-medium tabular-nums', getPowerScoreColor(ranking.powerScore))}>
-            {formatPowerScore(ranking.powerScore)}
-          </span>
+          {/* Team logo + name + record */}
+          <Link
+            to={`/teams/${toTeamSlug(ranking.teamName)}`}
+            state={{ from: '/stats', scrollPosition: window.scrollY }}
+            aria-label={`View ${ranking.teamName} team details`}
+            className="flex items-center gap-2 flex-1 min-w-0 group"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <TeamLogo
+              imageUrl={ranking.imageUrl || ranking.logoUrl}
+              teamName={ranking.teamName}
+              size="sm"
+              className="flex-shrink-0"
+            />
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm font-semibold leading-tight text-foreground group-hover:text-primary transition-colors">
+                {ranking.teamName}
+              </h3>
+              <p className="text-xs text-muted-foreground tabular-nums">
+                {ranking.wins}-{ranking.losses}
+                {showDivision && ranking.divisionName && (
+                  <span className="ml-1.5">· {ranking.divisionName}</span>
+                )}
+              </p>
+            </div>
+          </Link>
+
+          {/* Power score */}
+          <div className="flex flex-col items-end flex-shrink-0 mr-1">
+            <span className="text-[10px] text-muted-foreground leading-tight">Power</span>
+            <span className={cn('text-base font-bold tabular-nums leading-tight', getPowerScoreColor(ranking.powerScore))}>
+              {formatPowerScore(ranking.powerScore)}
+            </span>
+          </div>
+
+          {/* Badges */}
+          <div className="flex-shrink-0">
+            <TeamBadgeCollection teamId={ranking.teamId} size="sm" maxDisplay={1} />
+          </div>
         </div>
 
         {isExpanded && (
           <div
             className={cn(
-              'mt-3 pt-3 border-t',
+              'mt-2.5 pt-2.5 border-t',
               isWinterTheme ? 'border-frost-border/30' : 'border-border'
             )}
           >
