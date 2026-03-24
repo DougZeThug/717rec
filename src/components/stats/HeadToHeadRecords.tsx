@@ -34,7 +34,7 @@ interface HeadToHeadRecordsProps {
 type SortField = 'opponent_name' | 'win_pct' | 'matches_played' | 'wins' | 'game_wins';
 type SortDirection = 'asc' | 'desc';
 
-const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName = 'Team' }) => {
+const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName = 'Team', standalone = false }) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { data: records, isLoading, error } = useHeadToHead(teamId);
