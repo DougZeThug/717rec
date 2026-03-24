@@ -41,6 +41,7 @@ export const CollapsibleSection = ({
   error = false,
   errorContent,
   headingId,
+  summaryValue,
 }: CollapsibleSectionProps) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [, startTransition] = useTransition();
