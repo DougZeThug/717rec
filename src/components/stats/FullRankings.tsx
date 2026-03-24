@@ -116,6 +116,8 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings, myTeamId }) => {
               rankings={sortedRankings}
               showUnified={view === 'all'}
               myTeamId={myTeamId}
+              view={view}
+              onViewChange={setView}
             />
           </CardContent>
         </CollapsibleContent>

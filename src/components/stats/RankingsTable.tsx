@@ -11,6 +11,8 @@ interface RankingsTableProps {
   rankings: Ranking[];
   showUnified?: boolean;
   myTeamId?: string | null;
+  view?: 'division' | 'all';
+  onViewChange?: (view: 'division' | 'all') => void;
 }
 
 export type SortDirection = 'asc' | 'desc';
