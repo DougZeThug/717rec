@@ -26,6 +26,7 @@ import ReportCardLeaderboard from './ReportCardLeaderboard';
 
 interface TeamReportCardProps {
   teamId: string;
+  standalone?: boolean;
 }
 
 const GradeCard: React.FC<{ category: GradeCategory }> = ({ category }) => {
