@@ -22,15 +22,30 @@ import { getPowerScoreColor, getSosColor, getSweepRateColor } from '@/utils/colo
 
 interface TeamTotalsProps {
   teamId: string;
+  standalone?: boolean;
 }
 
-const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
+const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) => {
   const { totals, isLoading } = useTeamTotals(teamId);
   const { getTeamPercentiles } = useLeaguePercentiles();
 
   const percentiles = getTeamPercentiles(teamId);
 
   if (isLoading) {
+    if (standalone) {
+      return (
+        <div className="animate-pulse">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="space-y-2">
+                <div className="h-4 bg-muted rounded w-20"></div>
+                <div className="h-6 bg-muted rounded w-16"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
     return (
       <CollapsibleSection
         title="Career Statistics"
@@ -53,6 +68,18 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
   }
 
   if (!totals) {
+    const emptyContent = (
+      <div className="text-center py-8">
+        <BarChart className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+        <p className="text-sm font-medium text-muted-foreground">
+          No career statistics available
+        </p>
+        <p className="text-xs text-muted-foreground/70 mt-1">
+          Stats will appear after playing matches
+        </p>
+      </div>
+    );
+    if (standalone) return emptyContent;
     return (
       <CollapsibleSection
         title="Career Statistics"
@@ -60,15 +87,7 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
         iconColor="text-purple-500"
         defaultOpen={false}
       >
-        <div className="text-center py-8">
-          <BarChart className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
-          <p className="text-sm font-medium text-muted-foreground">
-            No career statistics available
-          </p>
-          <p className="text-xs text-muted-foreground/70 mt-1">
-            Stats will appear after playing matches
-          </p>
-        </div>
+        {emptyContent}
       </CollapsibleSection>
     );
   }
@@ -96,14 +115,8 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
       totals.division_records.intermediate.wins + totals.division_records.intermediate.losses > 0 ||
       totals.division_records.recreational.wins + totals.division_records.recreational.losses > 0);
 
-  return (
-    <CollapsibleSection
-      title="Career Statistics"
-      icon={BarChart}
-      iconColor="text-purple-500"
-      defaultOpen={false}
-      headingId="career-heading"
-    >
+  const mainContent = (
+    <>
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 md:gap-6">
         <div className="flex flex-col">
           <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">
@@ -314,6 +327,20 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
           </div>
         </div>
       )}
+    </>
+  );
+
+  if (standalone) return mainContent;
+
+  return (
+    <CollapsibleSection
+      title="Career Statistics"
+      icon={BarChart}
+      iconColor="text-purple-500"
+      defaultOpen={false}
+      headingId="career-heading"
+    >
+      {mainContent}
     </CollapsibleSection>
   );
 };

@@ -28,12 +28,13 @@ import { OpponentHistoryModal } from './OpponentHistoryModal';
 interface HeadToHeadRecordsProps {
   teamId: string;
   teamName?: string;
+  standalone?: boolean;
 }
 
 type SortField = 'opponent_name' | 'win_pct' | 'matches_played' | 'wins' | 'game_wins';
 type SortDirection = 'asc' | 'desc';
 
-const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName = 'Team' }) => {
+const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName = 'Team', standalone = false }) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { data: records, isLoading, error } = useHeadToHead(teamId);
@@ -333,6 +334,23 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
       </>
     );
   };
+
+  if (standalone) {
+    return (
+      <>
+        {renderContent()}
+        {selectedOpponent && (
+          <OpponentHistoryModal
+            isOpen={!!selectedOpponent}
+            onClose={() => setSelectedOpponent(null)}
+            teamId={teamId}
+            opponentId={selectedOpponent.id}
+            opponentName={selectedOpponent.name}
+          />
+        )}
+      </>
+    );
+  }
 
   return (
     <>

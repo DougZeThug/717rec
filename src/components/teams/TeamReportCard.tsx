@@ -26,6 +26,7 @@ import ReportCardLeaderboard from './ReportCardLeaderboard';
 
 interface TeamReportCardProps {
   teamId: string;
+  standalone?: boolean;
 }
 
 const GradeCard: React.FC<{ category: GradeCategory }> = ({ category }) => {
@@ -135,9 +136,60 @@ const ModeToggle: React.FC<{
   );
 };
 
-const TeamReportCard: React.FC<TeamReportCardProps> = ({ teamId }) => {
+const TeamReportCardContent: React.FC<{ teamId: string }> = ({ teamId }) => {
   const [mode, setMode] = useState<ReportCardMode>('season');
   const { grades, isLoading } = useTeamReportCard(teamId, mode);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        <Skeleton className="h-[260px] w-full rounded-lg" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-16 rounded-lg" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!grades) {
+    return (
+      <p className="text-sm text-muted-foreground text-center py-4">
+        Not enough data to generate a report card yet. Play some matches first!
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <ModeToggle mode={mode} onModeChange={setMode} />
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
+          <GPADisplay gpa={grades.gpa} />
+        </div>
+        <ReportCardLeaderboard teamId={teamId} initialMode={mode} />
+      </div>
+      <ReportCardRadar grades={grades} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <GradeCard category={grades.overall} />
+        <GradeCard category={grades.offense} />
+        <GradeCard category={grades.clutch} />
+        <GradeCard category={grades.schedule} />
+        <GradeCard category={grades.consistency} />
+        <GradeCard category={grades.games} />
+      </div>
+    </div>
+  );
+};
+
+const TeamReportCard: React.FC<TeamReportCardProps> = ({ teamId, standalone = false }) => {
+  const [mode, setMode] = useState<ReportCardMode>('season');
+  const { grades } = useTeamReportCard(teamId, mode);
+
+  if (standalone) {
+    return <TeamReportCardContent teamId={teamId} />;
+  }
 
   return (
     <CollapsibleSection
@@ -147,51 +199,8 @@ const TeamReportCard: React.FC<TeamReportCardProps> = ({ teamId }) => {
       defaultOpen={false}
       headingId="report-card-heading"
       summaryValue={grades?.overall.grade}
-      isLoading={isLoading}
-      loadingContent={
-        <div className="space-y-3">
-          <Skeleton className="h-[260px] w-full rounded-lg" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-16 rounded-lg" />
-            ))}
-          </div>
-        </div>
-      }
-      isEmpty={!grades}
-      emptyContent={
-        <p className="text-sm text-muted-foreground text-center py-4">
-          Not enough data to generate a report card yet. Play some matches first!
-        </p>
-      }
     >
-      {grades && (
-        <div className="space-y-4">
-          {/* Mode Toggle */}
-          <ModeToggle mode={mode} onModeChange={setMode} />
-
-           {/* GPA + Leaderboard */}
-           <div className="flex items-center gap-2">
-             <div className="flex-1">
-               <GPADisplay gpa={grades.gpa} />
-             </div>
-             <ReportCardLeaderboard teamId={teamId} initialMode={mode} />
-           </div>
-
-          {/* Radar Chart */}
-          <ReportCardRadar grades={grades} />
-
-          {/* Grade Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <GradeCard category={grades.overall} />
-            <GradeCard category={grades.offense} />
-            <GradeCard category={grades.clutch} />
-            <GradeCard category={grades.schedule} />
-            <GradeCard category={grades.consistency} />
-            <GradeCard category={grades.games} />
-          </div>
-        </div>
-      )}
+      <TeamReportCardContent teamId={teamId} />
     </CollapsibleSection>
   );
 };

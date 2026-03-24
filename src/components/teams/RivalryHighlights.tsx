@@ -11,9 +11,10 @@ import { toTeamSlug } from '@/utils/teamSlug';
 
 interface RivalryHighlightsProps {
   teamId: string;
+  standalone?: boolean;
 }
 
-const RivalryHighlights: React.FC<RivalryHighlightsProps> = ({ teamId }) => {
+const RivalryHighlights: React.FC<RivalryHighlightsProps> = ({ teamId, standalone = false }) => {
   const { data: records, isLoading } = useHeadToHead(teamId);
   const navigate = useNavigate();
 
@@ -29,6 +30,66 @@ const RivalryHighlights: React.FC<RivalryHighlightsProps> = ({ teamId }) => {
   const hasContent = topRival || topDominated || topNemesis;
   if (isLoading || !hasContent) return null;
 
+  const content = (
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {topRival && (
+        <RivalryCard
+          label="Top Rival"
+          sublabel={`${topRival.wins}-${topRival.losses} all-time`}
+          opponentName={topRival.opponent_name}
+          opponentImageUrl={topRival.opponent_image_url}
+          opponentId={topRival.opponent_id}
+          icon={<Swords size={14} className="text-amber-500" />}
+          borderColor="border-amber-500/30"
+          bgColor="bg-amber-500/5"
+          onClick={() => navigate(`/teams/${toTeamSlug(topRival.opponent_name)}`)}
+        />
+      )}
+      {topDominated && (
+        <RivalryCard
+          label={topDominated.win_pct >= 83 ? 'Dominated' : 'Favorite'}
+          sublabel={`${topDominated.wins}-${topDominated.losses} all-time`}
+          opponentName={topDominated.opponent_name}
+          opponentImageUrl={topDominated.opponent_image_url}
+          opponentId={topDominated.opponent_id}
+          icon={
+            <Crown
+              size={14}
+              className={topDominated.win_pct >= 83 ? 'text-emerald-500' : 'text-teal-500'}
+            />
+          }
+          borderColor={
+            topDominated.win_pct >= 83 ? 'border-emerald-500/30' : 'border-teal-500/30'
+          }
+          bgColor={topDominated.win_pct >= 83 ? 'bg-emerald-500/5' : 'bg-teal-500/5'}
+          onClick={() => navigate(`/teams/${toTeamSlug(topDominated.opponent_name)}`)}
+        />
+      )}
+      {topNemesis && (
+        <RivalryCard
+          label={topNemesis.win_pct <= 18 ? 'Nemesis' : 'Tough Matchup'}
+          sublabel={`${topNemesis.wins}-${topNemesis.losses} all-time`}
+          opponentName={topNemesis.opponent_name}
+          opponentImageUrl={topNemesis.opponent_image_url}
+          opponentId={topNemesis.opponent_id}
+          icon={
+            <ShieldAlert
+              size={14}
+              className={topNemesis.win_pct <= 18 ? 'text-red-500' : 'text-orange-500'}
+            />
+          }
+          borderColor={topNemesis.win_pct <= 18 ? 'border-red-500/30' : 'border-orange-500/30'}
+          bgColor={topNemesis.win_pct <= 18 ? 'bg-red-500/5' : 'bg-orange-500/5'}
+          onClick={() => navigate(`/teams/${toTeamSlug(topNemesis.opponent_name)}`)}
+        />
+      )}
+    </div>
+  );
+
+  if (standalone) {
+    return content;
+  }
+
   return (
     <CollapsibleSection
       title="Rivalry Highlights"
@@ -38,59 +99,7 @@ const RivalryHighlights: React.FC<RivalryHighlightsProps> = ({ teamId }) => {
       headingId="rivalries-heading"
       summaryValue={topRival ? `vs. ${topRival.opponent_name}` : undefined}
     >
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {topRival && (
-          <RivalryCard
-            label="Top Rival"
-            sublabel={`${topRival.wins}-${topRival.losses} all-time`}
-            opponentName={topRival.opponent_name}
-            opponentImageUrl={topRival.opponent_image_url}
-            opponentId={topRival.opponent_id}
-            icon={<Swords size={14} className="text-amber-500" />}
-            borderColor="border-amber-500/30"
-            bgColor="bg-amber-500/5"
-            onClick={() => navigate(`/teams/${toTeamSlug(topRival.opponent_name)}`)}
-          />
-        )}
-        {topDominated && (
-          <RivalryCard
-            label={topDominated.win_pct >= 83 ? 'Dominated' : 'Favorite'}
-            sublabel={`${topDominated.wins}-${topDominated.losses} all-time`}
-            opponentName={topDominated.opponent_name}
-            opponentImageUrl={topDominated.opponent_image_url}
-            opponentId={topDominated.opponent_id}
-            icon={
-              <Crown
-                size={14}
-                className={topDominated.win_pct >= 83 ? 'text-emerald-500' : 'text-teal-500'}
-              />
-            }
-            borderColor={
-              topDominated.win_pct >= 83 ? 'border-emerald-500/30' : 'border-teal-500/30'
-            }
-            bgColor={topDominated.win_pct >= 83 ? 'bg-emerald-500/5' : 'bg-teal-500/5'}
-            onClick={() => navigate(`/teams/${toTeamSlug(topDominated.opponent_name)}`)}
-          />
-        )}
-        {topNemesis && (
-          <RivalryCard
-            label={topNemesis.win_pct <= 18 ? 'Nemesis' : 'Tough Matchup'}
-            sublabel={`${topNemesis.wins}-${topNemesis.losses} all-time`}
-            opponentName={topNemesis.opponent_name}
-            opponentImageUrl={topNemesis.opponent_image_url}
-            opponentId={topNemesis.opponent_id}
-            icon={
-              <ShieldAlert
-                size={14}
-                className={topNemesis.win_pct <= 18 ? 'text-red-500' : 'text-orange-500'}
-              />
-            }
-            borderColor={topNemesis.win_pct <= 18 ? 'border-red-500/30' : 'border-orange-500/30'}
-            bgColor={topNemesis.win_pct <= 18 ? 'bg-red-500/5' : 'bg-orange-500/5'}
-            onClick={() => navigate(`/teams/${toTeamSlug(topNemesis.opponent_name)}`)}
-          />
-        )}
-      </div>
+      {content}
     </CollapsibleSection>
   );
 };

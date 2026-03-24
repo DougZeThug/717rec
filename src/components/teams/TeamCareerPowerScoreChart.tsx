@@ -20,6 +20,7 @@ import { getDivisionHexColor } from '@/utils/colors/divisionHexColors';
 
 interface TeamCareerPowerScoreChartProps {
   teamId: string;
+  standalone?: boolean;
 }
 
 const CustomDot = (props: DotProps & { payload?: SeasonPowerScoreData }) => {
@@ -106,7 +107,7 @@ const CustomTooltip = ({ active, payload }: any) => {
   );
 };
 
-const TeamCareerPowerScoreChart = ({ teamId }: TeamCareerPowerScoreChartProps) => {
+const TeamCareerPowerScoreChart = ({ teamId, standalone = false }: TeamCareerPowerScoreChartProps) => {
   const { data: seasonData, isLoading } = useTeamCareerPowerScore(teamId);
   const { resolvedTheme } = useTheme();
   const isMobile = useIsMobile();
@@ -128,13 +129,8 @@ const TeamCareerPowerScoreChart = ({ teamId }: TeamCareerPowerScoreChartProps) =
 
   const chartHeight = isMobile ? 250 : 300;
 
-  return (
-    <CollapsibleSection
-      title="Career Power Score Trend"
-      icon={TrendingUp}
-      iconColor="text-amber-500"
-      defaultOpen={false}
-    >
+  const chartContent = (
+    <>
       <ResponsiveContainer width="100%" height={chartHeight}>
         <LineChart
           data={seasonData}
@@ -201,6 +197,19 @@ const TeamCareerPowerScoreChart = ({ teamId }: TeamCareerPowerScoreChartProps) =
           <span>Recreational</span>
         </div>
       </div>
+    </>
+  );
+
+  if (standalone) return chartContent;
+
+  return (
+    <CollapsibleSection
+      title="Career Power Score Trend"
+      icon={TrendingUp}
+      iconColor="text-amber-500"
+      defaultOpen={false}
+    >
+      {chartContent}
     </CollapsibleSection>
   );
 };

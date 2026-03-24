@@ -1,4 +1,4 @@
-import { ArrowLeft, BarChart3, Trophy } from 'lucide-react';
+import { ArrowLeft, BarChart3, GraduationCap, Swords, TrendingUp, Trophy } from 'lucide-react';
 import { useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 
@@ -159,10 +159,10 @@ const TeamDetails = () => {
         {/* 2. Roster - default open */}
         <PlayerList players={team.players || []} />
 
-        {/* 3. Team Stats & Advanced - combined, default closed */}
+        {/* 3. Stats & Report Card - combined, default closed */}
         <section id="stats" className="scroll-mt-20" aria-labelledby="stats-heading">
           <CollapsibleSection
-            title="Team Stats & Advanced"
+            title="Stats & Report Card"
             icon={BarChart3}
             iconColor="text-blue-500"
             defaultOpen={false}
@@ -188,27 +188,42 @@ const TeamDetails = () => {
               clutchWinPct={clutchRecord.clutchWinPct}
               clutchGame3s={clutchRecord.game3Matches}
             />
-            {/* Advanced Stats within the same section */}
             {teamId && (
               <div className="mt-4">
                 <TeamAdvancedStatsSection teamId={teamId} />
               </div>
             )}
+            {teamId && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground mb-3">
+                  <GraduationCap size={16} className="text-violet-500" />
+                  Report Card
+                </h3>
+                <TeamReportCard teamId={teamId} standalone />
+              </div>
+            )}
           </CollapsibleSection>
         </section>
 
-        {/* 4. Report Card - default closed */}
-        <section id="report-card" className="scroll-mt-20" aria-labelledby="report-card-heading">
-          {teamId && <TeamReportCard teamId={teamId} />}
+        {/* 4. Matchups & Rivalries - combined, default closed */}
+        <section id="h2h" className="scroll-mt-20" aria-labelledby="h2h-heading">
+          <CollapsibleSection
+            title="Matchups & Rivalries"
+            icon={Swords}
+            iconColor="text-rose-500"
+            defaultOpen={false}
+            headingId="h2h-heading"
+          >
+            {teamId && <RivalryHighlights teamId={teamId} standalone />}
+            {teamId && (
+              <div className="mt-4">
+                <HeadToHeadRecords teamId={teamId} teamName={team.name} standalone />
+              </div>
+            )}
+          </CollapsibleSection>
         </section>
 
-        {/* 5. Rivalry Highlights & Head-to-Head Records - default closed */}
-        <section id="h2h" className="scroll-mt-20 space-y-3" aria-labelledby="h2h-heading">
-          {teamId && <RivalryHighlights teamId={teamId} />}
-          {teamId && <HeadToHeadRecords teamId={teamId} teamName={team.name} />}
-        </section>
-
-        {/* 6. Match History - default closed */}
+        {/* 5. Match History - default closed */}
         <section id="matches" className="scroll-mt-20" aria-labelledby="matches-heading">
           <MatchList
             title="Match History"
@@ -223,34 +238,38 @@ const TeamDetails = () => {
           />
         </section>
 
-        {/* 7. Career Stats - default closed */}
+        {/* 6. Career & Achievements - combined, default closed */}
         <section id="career" className="scroll-mt-20" aria-labelledby="career-heading">
-          {teamId && <TeamTotals teamId={teamId} />}
-
-          {/* Career Power Score Trend */}
-          {teamId && <TeamCareerPowerScoreChart teamId={teamId} />}
-        </section>
-
-        {/* 8. Team Achievements - default closed */}
-        <section id="achievements" className="scroll-mt-20" aria-labelledby="achievements-heading">
-          {teamId && (
-            <CollapsibleSection
-              title="Team Achievements"
-              icon={Trophy}
-              iconColor="text-amber-500"
-              defaultOpen={false}
-              headingId="achievements-heading"
-            >
-              <TeamBadgeCollection
-                teamId={teamId}
-                size="lg"
-                maxDisplay={12}
-                orientation="horizontal"
-                className="gap-3"
-                showEmptyState
-              />
-            </CollapsibleSection>
-          )}
+          <CollapsibleSection
+            title="Career & Achievements"
+            icon={TrendingUp}
+            iconColor="text-purple-500"
+            defaultOpen={false}
+            headingId="career-heading"
+          >
+            {teamId && <TeamTotals teamId={teamId} standalone />}
+            {teamId && (
+              <div className="mt-4">
+                <TeamCareerPowerScoreChart teamId={teamId} standalone />
+              </div>
+            )}
+            {teamId && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground mb-3">
+                  <Trophy size={16} className="text-amber-500" />
+                  Achievements
+                </h3>
+                <TeamBadgeCollection
+                  teamId={teamId}
+                  size="lg"
+                  maxDisplay={12}
+                  orientation="horizontal"
+                  className="gap-3"
+                  showEmptyState
+                />
+              </div>
+            )}
+          </CollapsibleSection>
         </section>
       </div>
     </>
