@@ -28,6 +28,7 @@ import { OpponentHistoryModal } from './OpponentHistoryModal';
 interface HeadToHeadRecordsProps {
   teamId: string;
   teamName?: string;
+  standalone?: boolean;
 }
 
 type SortField = 'opponent_name' | 'win_pct' | 'matches_played' | 'wins' | 'game_wins';
