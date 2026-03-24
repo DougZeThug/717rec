@@ -14,16 +14,16 @@ interface Section {
 
 const sections: Section[] = [
   {
+    id: 'performance',
+    label: 'Overview',
+    icon: BarChart3,
+    ariaLabel: 'Navigate to team performance section',
+  },
+  {
     id: 'stats',
     label: 'Stats',
     icon: BarChart3,
     ariaLabel: 'Navigate to team statistics section',
-  },
-  {
-    id: 'analysis',
-    label: 'Analysis',
-    icon: TrendingUp,
-    ariaLabel: 'Navigate to team analysis section',
   },
   {
     id: 'report-card',

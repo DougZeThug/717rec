@@ -22,6 +22,8 @@ interface CollapsibleSectionProps {
   errorContent?: ReactNode;
   /** Optional ID for the heading element for accessibility */
   headingId?: string;
+  /** Optional summary value shown to the left of the chevron when collapsed */
+  summaryValue?: ReactNode;
 }
 
 export const CollapsibleSection = ({
@@ -39,6 +41,7 @@ export const CollapsibleSection = ({
   error = false,
   errorContent,
   headingId,
+  summaryValue,
 }: CollapsibleSectionProps) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [, startTransition] = useTransition();
@@ -66,12 +69,17 @@ export const CollapsibleSection = ({
               <SnowflakeSparkle size={12} className="text-cyan-400/60 ml-0.5" />
             )}
           </div>
-          <ChevronDown
-            className={cn(
-              'h-5 w-5 text-muted-foreground transition-transform duration-200',
-              isOpen && 'rotate-180'
+          <div className="flex items-center gap-2">
+            {summaryValue && !isOpen && (
+              <span className="text-sm font-medium text-muted-foreground">{summaryValue}</span>
             )}
-          />
+            <ChevronDown
+              className={cn(
+                'h-5 w-5 text-muted-foreground transition-transform duration-200',
+                isOpen && 'rotate-180'
+              )}
+            />
+          </div>
         </CollapsibleTrigger>
         <CollapsibleContent>
           <div className={cn('p-3 md:p-4 pt-0 border-t', contentClassName)}>

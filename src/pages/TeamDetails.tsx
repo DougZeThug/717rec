@@ -1,4 +1,4 @@
-import { ArrowLeft, Trophy } from 'lucide-react';
+import { ArrowLeft, BarChart3, Trophy } from 'lucide-react';
 import { useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 
@@ -10,10 +10,10 @@ import PlayerList from '@/components/teams/PlayerList';
 import RivalryHighlights from '@/components/teams/RivalryHighlights';
 import StatBreakdown from '@/components/teams/StatBreakdown';
 import TeamAdvancedStatsSection from '@/components/teams/TeamAdvancedStatsSection';
-import TeamAnalysis from '@/components/teams/TeamAnalysis';
 import TeamCareerPowerScoreChart from '@/components/teams/TeamCareerPowerScoreChart';
 import TeamDetailsStickyNav from '@/components/teams/TeamDetailsStickyNav';
 import TeamHeader from '@/components/teams/TeamHeader';
+import TeamPerformanceCards from '@/components/teams/TeamPerformanceCards';
 import TeamReportCard from '@/components/teams/TeamReportCard';
 import TeamTotals from '@/components/teams/TeamTotals';
 import { Button } from '@/components/ui/button';
@@ -43,7 +43,6 @@ const TeamDetails = () => {
   const teamRanking = teamRankIndex >= 0 ? rankings![teamRankIndex] : undefined;
   const totalTeams = rankings?.length;
 
-  // Custom breadcrumbs with team name (must be before early returns to maintain hook order)
   const breadcrumbs = useMemo(
     () => [
       { label: 'Home', href: '/' },
@@ -66,11 +65,9 @@ const TeamDetails = () => {
       : 'Loading team...'
   );
 
-  // Handle back navigation with scroll restoration
   const handleBack = () => {
     if (locationState?.from) {
       navigate(locationState.from);
-      // Restore scroll position after navigation
       if (locationState.scrollPosition !== undefined) {
         setTimeout(() => {
           window.scrollTo({
@@ -113,14 +110,14 @@ const TeamDetails = () => {
   return (
     <>
       <TeamDetailsStickyNav />
-      <div className="container mx-auto px-4 py-4 md:py-8 space-y-4">
+      <div className="container mx-auto px-4 py-4 md:py-8 space-y-3 md:space-y-4">
         {/* Breadcrumbs - full version on desktop */}
         <div className="hidden md:block">
           <AnimatedBreadcrumbs items={breadcrumbs} className="mb-4" />
         </div>
 
         {/* Mobile breadcrumb - compact version with back button */}
-        <div className="flex items-center gap-2 md:hidden mb-2">
+        <div className="flex items-center gap-2 md:hidden mb-1">
           <Button
             variant="ghost"
             size="sm"
@@ -149,54 +146,74 @@ const TeamDetails = () => {
           Back
         </Button>
 
-        {/* Hero Section - Tighter on mobile */}
+        {/* Hero Section */}
         <TeamHeader team={team} winPercentage={winPct.toFixed(1)} pastMatches={pastMatches} />
 
-        {/* 1. Team Stats */}
-        <section id="stats" className="scroll-mt-20" aria-labelledby="stats-heading">
-          <StatBreakdown
-            wins={team.wins}
-            losses={team.losses}
-            winPercentage={winPct.toFixed(1)}
-            gamesWon={team.game_wins || 0}
-            gamesLost={team.game_losses || 0}
-            gameWinPercentage={gamePct.toFixed(1)}
-            strengthOfSchedule={team.sos?.toFixed(3) || '0.000'}
-            closeMatchLosses={team.close_match_losses || 0}
+        {/* 1. Performance Cards (always visible) */}
+        <section id="performance" className="scroll-mt-20">
+          <TeamPerformanceCards
             powerScore={team.power_score || 0}
             rank={teamRank}
             totalTeams={totalTeams}
             rankChange={teamRanking?.rankChange}
-            sweeps={sweepStats.sweeps}
-            sweepRate={sweepStats.sweepRate}
-            clutchWins={clutchRecord.clutchWins}
-            clutchWinPct={clutchRecord.clutchWinPct}
-            clutchGame3s={clutchRecord.game3Matches}
+            wins={team.wins}
+            losses={team.losses}
           />
-
-          {/* 2. Players */}
-          <div className="mt-4">
-            <PlayerList players={team.players || []} />
-          </div>
         </section>
 
-        {/* Team Analysis - Hidden for now, may be used later
-        <section id="analysis" className="scroll-mt-20" aria-labelledby="analysis-heading">
-          {teamId && <TeamAnalysis teamId={teamId} teamName={team.name} />}
-        </section> */}
+        {/* 2. Roster - default open */}
+        <PlayerList players={team.players || []} />
 
-        {/* Report Card */}
+        {/* 3. Team Stats & Advanced - combined, default closed */}
+        <section id="stats" className="scroll-mt-20" aria-labelledby="stats-heading">
+          <CollapsibleSection
+            title="Team Stats & Advanced"
+            icon={BarChart3}
+            iconColor="text-blue-500"
+            defaultOpen={false}
+            headingId="stats-heading"
+            summaryValue={`${team.wins}-${team.losses}`}
+          >
+            <StatBreakdown
+              wins={team.wins}
+              losses={team.losses}
+              winPercentage={winPct.toFixed(1)}
+              gamesWon={team.game_wins || 0}
+              gamesLost={team.game_losses || 0}
+              gameWinPercentage={gamePct.toFixed(1)}
+              strengthOfSchedule={team.sos?.toFixed(3) || '0.000'}
+              closeMatchLosses={team.close_match_losses || 0}
+              powerScore={team.power_score || 0}
+              rank={teamRank}
+              totalTeams={totalTeams}
+              rankChange={teamRanking?.rankChange}
+              sweeps={sweepStats.sweeps}
+              sweepRate={sweepStats.sweepRate}
+              clutchWins={clutchRecord.clutchWins}
+              clutchWinPct={clutchRecord.clutchWinPct}
+              clutchGame3s={clutchRecord.game3Matches}
+            />
+            {/* Advanced Stats within the same section */}
+            {teamId && (
+              <div className="mt-4">
+                <TeamAdvancedStatsSection teamId={teamId} />
+              </div>
+            )}
+          </CollapsibleSection>
+        </section>
+
+        {/* 4. Report Card - default closed */}
         <section id="report-card" className="scroll-mt-20" aria-labelledby="report-card-heading">
           {teamId && <TeamReportCard teamId={teamId} />}
         </section>
 
-        {/* 3. Rivalry Highlights & Head-to-Head Records */}
-        <section id="h2h" className="scroll-mt-20 space-y-4" aria-labelledby="h2h-heading">
+        {/* 5. Rivalry Highlights & Head-to-Head Records - default closed */}
+        <section id="h2h" className="scroll-mt-20 space-y-3" aria-labelledby="h2h-heading">
           {teamId && <RivalryHighlights teamId={teamId} />}
           {teamId && <HeadToHeadRecords teamId={teamId} teamName={team.name} />}
         </section>
 
-        {/* 4. Match History */}
+        {/* 6. Match History - default closed */}
         <section id="matches" className="scroll-mt-20" aria-labelledby="matches-heading">
           <MatchList
             title="Match History"
@@ -211,18 +228,15 @@ const TeamDetails = () => {
           />
         </section>
 
-        {/* 5. Career Stats */}
+        {/* 7. Career Stats - default closed */}
         <section id="career" className="scroll-mt-20" aria-labelledby="career-heading">
           {teamId && <TeamTotals teamId={teamId} />}
-
-          {/* 6. Advanced Stats - Season-by-Season Breakdown */}
-          {teamId && <TeamAdvancedStatsSection teamId={teamId} />}
 
           {/* Career Power Score Trend */}
           {teamId && <TeamCareerPowerScoreChart teamId={teamId} />}
         </section>
 
-        {/* 7. Team Achievements */}
+        {/* 8. Team Achievements - default closed */}
         <section id="achievements" className="scroll-mt-20" aria-labelledby="achievements-heading">
           {teamId && (
             <CollapsibleSection
