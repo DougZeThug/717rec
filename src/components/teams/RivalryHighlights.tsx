@@ -14,7 +14,7 @@ interface RivalryHighlightsProps {
   standalone?: boolean;
 }
 
-const RivalryHighlights: React.FC<RivalryHighlightsProps> = ({ teamId }) => {
+const RivalryHighlights: React.FC<RivalryHighlightsProps> = ({ teamId, standalone = false }) => {
   const { data: records, isLoading } = useHeadToHead(teamId);
   const navigate = useNavigate();
 
