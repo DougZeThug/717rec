@@ -110,14 +110,14 @@ const TeamDetails = () => {
   return (
     <>
       <TeamDetailsStickyNav />
-      <div className="container mx-auto px-4 py-4 md:py-8 space-y-3 md:space-y-4">
+      <div className="container mx-auto px-4 py-2 md:py-8 space-y-2 md:space-y-4">
         {/* Breadcrumbs - full version on desktop */}
         <div className="hidden md:block">
           <AnimatedBreadcrumbs items={breadcrumbs} className="mb-4" />
         </div>
 
-        {/* Mobile breadcrumb - compact version with back button */}
-        <div className="flex items-center gap-2 md:hidden mb-1">
+        {/* Mobile back button only */}
+        <div className="flex items-center md:hidden">
           <Button
             variant="ghost"
             size="sm"
@@ -128,11 +128,6 @@ const TeamDetails = () => {
             <ArrowLeft size={16} className="mr-1" aria-hidden="true" />
             Back
           </Button>
-          <div className="flex items-center text-xs text-muted-foreground">
-            <span>Teams</span>
-            <span className="mx-1">/</span>
-            <span className="text-foreground font-medium">{team.name}</span>
-          </div>
         </div>
 
         {/* Desktop back button */}
