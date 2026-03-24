@@ -32,6 +32,20 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
   const percentiles = getTeamPercentiles(teamId);
 
   if (isLoading) {
+    if (standalone) {
+      return (
+        <div className="animate-pulse">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="space-y-2">
+                <div className="h-4 bg-muted rounded w-20"></div>
+                <div className="h-6 bg-muted rounded w-16"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
     return (
       <CollapsibleSection
         title="Career Statistics"
