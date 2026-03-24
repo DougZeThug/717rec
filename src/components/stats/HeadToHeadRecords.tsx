@@ -335,6 +335,23 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
     );
   };
 
+  if (standalone) {
+    return (
+      <>
+        {renderContent()}
+        {selectedOpponent && (
+          <OpponentHistoryModal
+            isOpen={!!selectedOpponent}
+            onClose={() => setSelectedOpponent(null)}
+            teamId={teamId}
+            opponentId={selectedOpponent.id}
+            opponentName={selectedOpponent.name}
+          />
+        )}
+      </>
+    );
+  }
+
   return (
     <>
       <CollapsibleSection

@@ -91,7 +91,23 @@ const RivalryHighlights: React.FC<RivalryHighlightsProps> = ({ teamId, standalon
             onClick={() => navigate(`/teams/${toTeamSlug(topNemesis.opponent_name)}`)}
           />
         )}
-      </div>
+    </div>
+  );
+
+  if (standalone) {
+    return content;
+  }
+
+  return (
+    <CollapsibleSection
+      title="Rivalry Highlights"
+      icon={Swords}
+      iconColor="text-rose-500"
+      defaultOpen={false}
+      headingId="rivalries-heading"
+      summaryValue={topRival ? `vs. ${topRival.opponent_name}` : undefined}
+    >
+      {content}
     </CollapsibleSection>
   );
 };
