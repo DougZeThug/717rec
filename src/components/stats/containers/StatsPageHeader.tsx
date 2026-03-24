@@ -2,6 +2,8 @@ import { Lightbulb } from 'lucide-react';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
+import { useIsMobile } from '@/hooks/useMobile';
+
 import PageHeader from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import SeasonBadge from '@/components/ui/season-badge';
