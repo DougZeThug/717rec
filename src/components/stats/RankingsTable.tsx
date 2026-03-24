@@ -103,6 +103,8 @@ const RankingsTable: React.FC<RankingsTableProps> = ({
         onSortChange={handleSortChange}
         showUnified={showUnified}
         myTeamId={myTeamId}
+        view={view}
+        onViewChange={onViewChange}
       />
     );
   }
