@@ -11,6 +11,7 @@ import { toTeamSlug } from '@/utils/teamSlug';
 
 interface RivalryHighlightsProps {
   teamId: string;
+  standalone?: boolean;
 }
 
 const RivalryHighlights: React.FC<RivalryHighlightsProps> = ({ teamId }) => {
