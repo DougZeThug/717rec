@@ -1,5 +1,5 @@
 import { ArrowLeft } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { useHeroCardMutations } from '@/hooks/useHeroCards';
@@ -44,32 +44,30 @@ const defaultFormData: HeroCardFormData = {
 
 const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
   const { createCard, updateCard, isCreating, isUpdating } = useHeroCardMutations();
-  const [formData, setFormData] = useState<HeroCardFormData>(defaultFormData);
+  const [formData, setFormData] = useState<HeroCardFormData>(
+    card
+      ? {
+          slug: card.slug,
+          title: card.title,
+          subtitle: card.subtitle || '',
+          body: card.body || '',
+          cta_label: card.cta_label || '',
+          cta_url: card.cta_url || '',
+          background_color: card.background_color,
+          text_color: card.text_color,
+          accent_color: card.accent_color || '',
+          image_url: card.image_url || '',
+          icon_name: card.icon_name || '',
+          is_visible: card.is_visible,
+          sort_order: card.sort_order,
+          target_type: card.target_type,
+          target_id: card.target_id || '',
+          card_type: card.card_type,
+          metadata: JSON.stringify(card.metadata, null, 2),
+        }
+      : defaultFormData
+  );
   const [advancedOpen, setAdvancedOpen] = useState(false);
-
-  useEffect(() => {
-    if (card) {
-      setFormData({
-        slug: card.slug,
-        title: card.title,
-        subtitle: card.subtitle || '',
-        body: card.body || '',
-        cta_label: card.cta_label || '',
-        cta_url: card.cta_url || '',
-        background_color: card.background_color,
-        text_color: card.text_color,
-        accent_color: card.accent_color || '',
-        image_url: card.image_url || '',
-        icon_name: card.icon_name || '',
-        is_visible: card.is_visible,
-        sort_order: card.sort_order,
-        target_type: card.target_type,
-        target_id: card.target_id || '',
-        card_type: card.card_type,
-        metadata: JSON.stringify(card.metadata, null, 2),
-      });
-    }
-  }, [card]);
 
   const handleChange = (field: keyof HeroCardFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));

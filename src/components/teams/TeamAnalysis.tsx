@@ -206,6 +206,7 @@ const TeamAnalysisComponent: React.FC<TeamAnalysisProps> = ({ teamId, teamName: 
           <ErrorState error={error as Error} />
         ) : isEditing ? (
           <TeamAnalysisEditForm
+            key={analysis?.id ?? 'new'}
             analysis={analysis}
             onSave={handleSave}
             onCancel={() => setIsEditing(false)}
