@@ -25,6 +25,8 @@ const RankingsTable: React.FC<RankingsTableProps> = ({
   rankings,
   showUnified = false,
   myTeamId,
+  view,
+  onViewChange,
 }) => {
   const isMobile = useIsMobile();
   const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
