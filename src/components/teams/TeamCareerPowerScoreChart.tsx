@@ -197,6 +197,19 @@ const TeamCareerPowerScoreChart = ({ teamId, standalone = false }: TeamCareerPow
           <span>Recreational</span>
         </div>
       </div>
+    </>
+  );
+
+  if (standalone) return chartContent;
+
+  return (
+    <CollapsibleSection
+      title="Career Power Score Trend"
+      icon={TrendingUp}
+      iconColor="text-amber-500"
+      defaultOpen={false}
+    >
+      {chartContent}
     </CollapsibleSection>
   );
 };
