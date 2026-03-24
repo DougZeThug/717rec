@@ -67,7 +67,7 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings, myTeamId }) => {
                   )}
                   style={{ letterSpacing: '0.5px' }}
                 >
-                  Current Standings
+                  {isMobile ? 'Standings' : 'Current Standings'}
                 </CardTitle>
                 {!isMobile && (
                   <CardDescription
