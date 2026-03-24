@@ -25,7 +25,7 @@ interface TeamTotalsProps {
   standalone?: boolean;
 }
 
-const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
+const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) => {
   const { totals, isLoading } = useTeamTotals(teamId);
   const { getTeamPercentiles } = useLeaguePercentiles();
 
