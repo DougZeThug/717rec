@@ -146,6 +146,7 @@ const TeamReportCard: React.FC<TeamReportCardProps> = ({ teamId }) => {
       iconColor="text-violet-500"
       defaultOpen={false}
       headingId="report-card-heading"
+      summaryValue={grades?.overall.grade}
       isLoading={isLoading}
       loadingContent={
         <div className="space-y-3">
