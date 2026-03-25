@@ -84,7 +84,7 @@ export async function validateMatchSchedule(
   });
 
   // Check for rematches (teams that have already played each other)
-  await checkForRematches(matches, errors);
+  await checkForRematches(matches, warnings);
 
   return {
     isValid: errors.length === 0,
@@ -98,7 +98,7 @@ export async function validateMatchSchedule(
  */
 async function checkForRematches(
   matches: AutoScheduleMatch[],
-  errors: ValidationError[]
+  warnings: ValidationWarning[]
 ): Promise<void> {
   const rematchChecks = matches.map(async (match) => {
     if (!match.team1Id || !match.team2Id) return;
@@ -107,11 +107,10 @@ async function checkForRematches(
       const hasPlayed = await haveTeamsPlayedBefore(match.team1Id, match.team2Id);
 
       if (hasPlayed) {
-        errors.push({
+        warnings.push({
           matchId: match.id,
           type: 'rematch',
           message: 'These teams have already played each other this season',
-          severity: 'error',
         });
       }
     } catch (error) {
