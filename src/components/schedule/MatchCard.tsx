@@ -234,7 +234,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
             {/* Countdown for upcoming */}
             {!isCompleted && match.date && (
-              <div className="mt-2">
+              <div className="mt-1.5">
                 <MatchCountdown matchDate={match.date} />
               </div>
             )}
