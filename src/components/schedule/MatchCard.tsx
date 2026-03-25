@@ -179,11 +179,11 @@ const MatchCard: React.FC<MatchCardProps> = ({
                   )}
                 >
                   <span className={getScoreStyle(team1IsWinner)}>
-                    {match.team1Score || 0}
+                    {isCompleted ? (match.team1_game_wins || 0) : (match.team1Score || 0)}
                   </span>
                   <span className="text-lg font-bold text-muted-foreground/60">–</span>
                   <span className={getScoreStyle(team2IsWinner)}>
-                    {match.team2Score || 0}
+                    {isCompleted ? (match.team2_game_wins || 0) : (match.team2Score || 0)}
                   </span>
                 </div>
               </div>
