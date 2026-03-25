@@ -7,6 +7,7 @@ import TeamBadgeCollection from '@/components/badges/TeamBadgeCollection';
 import { TeamLogo } from '@/components/shared/TeamLogo';
 import { Button } from '@/components/ui/button';
 import { EntityCard } from '@/components/ui/entity-card';
+import { PowerScoreGauge } from '@/components/ui/power-score-gauge';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { Ranking } from '@/types';
