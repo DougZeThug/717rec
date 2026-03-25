@@ -221,7 +221,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
             </div>
 
             {/* H2H Record */}
-            <div className="mt-2">
+            <div className="mt-1.5">
               <MatchHeadToHead
                 team1Id={match.team1Id}
                 team2Id={match.team2Id}
