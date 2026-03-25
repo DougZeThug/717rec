@@ -1,34 +1,51 @@
 
+Goal: fix the “Failed to fetch” cascade so transient Supabase/network interruptions don’t flood errors or break Schedule/Stats UX.
 
-## Fix: Rematches Blocking Auto-Schedule Save
+What I found in your logs/code:
+- `team_timeslots` is polled every 30s for long sessions.
+- When connectivity drops, multiple queries fail together (`timeslots`, H2H, career bulk stats), causing noisy cascading errors.
+- H2H calls are still over-fetched in match cards (batch + per-card prediction path), which increases request pressure.
 
-### Problem
-The auto-schedule save validation treats rematches as hard **errors**, which blocks saving the entire schedule. In a league with limited teams per timeslot, rematches are often unavoidable -- especially later in a season. The user already has an `avoidRematches` toggle, meaning rematches are expected when that setting is off (or when no alternative exists).
+Implementation plan
 
-The error from logs: `"Schedule validation failed: These teams have already played each other this season"`
+1) Harden timeslot queries against transient network failures
+- Update `src/hooks/useMatchTimeslots.ts` and `src/hooks/useTimeslotQuery.ts` to:
+  - pause polling when offline/hidden (refetch interval callback),
+  - keep last good data during retry/failure,
+  - avoid aggressive refetch churn during temporary outages.
+- Update `src/services/matches/MatchReadService.ts` (`fetchMatchTimeslots`) to preserve original error context instead of throwing only `Failed to load timeslots`.
 
-### Root Cause
-In `src/utils/autoSchedule/validation.ts`, `checkForRematches()` pushes rematch findings into the `errors` array with `severity: 'error'`. Since `isValid` requires zero errors, any rematch blocks the save entirely.
+2) Remove redundant H2H request fan-out
+- Extend `src/hooks/useBatchHeadToHead.ts` with an `enabled` option.
+- In `src/components/schedule/TimeSlotMatchGroup.tsx`, only run batch H2H when that timeslot group is expanded.
+- Update `src/hooks/useMatchPrediction.ts` to accept optional prefetched H2H input.
+- Pass prefetched H2H from `src/components/schedule/MatchCard.tsx` so prediction doesn’t trigger separate per-card H2H fetches.
 
-### Fix
-Downgrade rematches from errors to **warnings**. They should inform the admin but not block saving.
+3) Improve graceful degradation behavior
+- In Schedule hooks/components, if network fails:
+  - continue rendering last successful data,
+  - show a non-blocking “connection issue, retrying” state instead of hard-failing section content.
+- Keep existing UX for true data/permission errors (do not mask real backend issues).
 
-**File: `src/utils/autoSchedule/validation.ts`**
+4) Reduce error noise without hiding real problems
+- In H2H/career fetch paths (`HeadToHeadService`, career bulk fetch path), classify transport/network failures separately from database logic errors.
+- Keep logs actionable, but avoid repeated identical “database error” cascades for pure fetch disconnects.
 
-1. Move rematch findings from `errors` to `warnings` array
-2. Change `checkForRematches` to push into `warnings` instead of `errors`
-3. Update the function signature accordingly
+5) Verify end-to-end scenarios
+- Confirm behavior on Schedule tabs with:
+  - normal online flow,
+  - brief offline period then reconnect,
+  - expanded/collapsed timeslot groups.
+- Confirm request volume drops (fewer duplicate H2H calls) and no regression to matchup/prediction rendering.
 
-The change is small -- in `checkForRematches`, push to `warnings` instead of `errors`:
+Technical details (files to touch)
+- `src/services/matches/MatchReadService.ts`
+- `src/hooks/useMatchTimeslots.ts`
+- `src/hooks/useTimeslotQuery.ts`
+- `src/hooks/useBatchHeadToHead.ts`
+- `src/components/schedule/TimeSlotMatchGroup.tsx`
+- `src/hooks/useMatchPrediction.ts`
+- `src/components/schedule/MatchCard.tsx`
+- (small error-classification updates in `HeadToHeadService` / career service as needed)
 
-```typescript
-// Before: errors.push({ matchId, type: 'rematch', message: '...', severity: 'error' });
-// After:  warnings.push({ matchId, type: 'rematch', message: '...' });
-```
-
-**File: `src/hooks/useAutoSchedule/useAutoScheduleSave.ts`**
-
-4. After validation passes, show a toast warning if there are rematch warnings so the admin is still informed before the save completes.
-
-No database changes needed.
-
+No database migration required for this fix.
