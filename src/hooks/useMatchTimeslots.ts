@@ -81,12 +81,12 @@ export const useMatchTimeslots = (date: Date | null) => {
       };
     },
     enabled: !!date,
-    staleTime: 30_000, // 30s — data is fresh for the polling interval
+    staleTime: 60_000, // 60s — data is fresh for the polling interval
     refetchInterval: () => {
       // Pause polling when the tab is hidden or the device is offline
       if (typeof document !== 'undefined' && document.hidden) return false;
       if (typeof navigator !== 'undefined' && !navigator.onLine) return false;
-      return 30_000;
+      return 60_000;
     },
     // Keep previous data while refetching so the UI never goes blank
     placeholderData: (prev) => prev,
