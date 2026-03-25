@@ -177,7 +177,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
               <div className="flex flex-col items-center">
                 <div
                   className={cn(
-                    'flex items-center gap-2 px-5 py-2 rounded-full',
+                    'flex items-center gap-2 px-4 py-1.5 rounded-full',
                     'bg-muted/80 dark:bg-muted/40',
                     'shadow-sm'
                   )}
