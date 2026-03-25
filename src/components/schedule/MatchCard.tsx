@@ -121,7 +121,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
         >
           {/* Status badge - centered top */}
           {(isCompleted || hasSpecialStatus) && (
-            <div className="flex items-center justify-center gap-2 pt-2">
+            <div className="flex items-center justify-center gap-2 pt-1.5">
               {isCompleted && (
                 <span className="px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-primary/10 text-primary rounded-full">
                   Final
