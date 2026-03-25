@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 
 import { fetchMatchTimeslots } from '@/services/matches/MatchReadService';
 import { TeamTimeslot } from '@/types';
-import { errorLog, scheduleLog } from '@/utils/logger';
+import { scheduleLog } from '@/utils/logger';
 
 // Filter function to show only primary timeslots for each team
 const filterToPrimaryTimeslots = (data: TeamTimeslot[]): TeamTimeslot[] => {
@@ -27,13 +27,7 @@ export const useMatchTimeslots = (date: Date | null) => {
       const formattedDate = format(date, 'yyyy-MM-dd');
       scheduleLog('Fetching timeslots for date:', formattedDate);
 
-      let rawData;
-      try {
-        rawData = await fetchMatchTimeslots(formattedDate);
-      } catch (error) {
-        errorLog('Error fetching timeslots:', error);
-        throw error;
-      }
+      const rawData = await fetchMatchTimeslots(formattedDate);
 
       scheduleLog('Timeslots raw data:', rawData);
 
@@ -87,8 +81,17 @@ export const useMatchTimeslots = (date: Date | null) => {
       };
     },
     enabled: !!date,
-    staleTime: 0, // Always fresh - instant updates
-    refetchInterval: 30000, // Auto-refetch every 30 seconds
+    staleTime: 30_000, // 30s — data is fresh for the polling interval
+    refetchInterval: () => {
+      // Pause polling when the tab is hidden or the device is offline
+      if (typeof document !== 'undefined' && document.hidden) return false;
+      if (typeof navigator !== 'undefined' && !navigator.onLine) return false;
+      return 30_000;
+    },
+    // Keep previous data while refetching so the UI never goes blank
+    placeholderData: (prev) => prev,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10_000),
   });
 
   return {

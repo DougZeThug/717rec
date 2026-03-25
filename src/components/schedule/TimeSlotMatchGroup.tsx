@@ -36,8 +36,8 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
     [matches]
   );
 
-  // Batch fetch H2H data for all matches in this time slot
-  const { getHeadToHead, isLoading: isH2HLoading } = useBatchHeadToHead(teamPairs);
+  // Only fetch H2H data when this time-slot group is expanded
+  const { getHeadToHead, isLoading: isH2HLoading } = useBatchHeadToHead(teamPairs, isOpen);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-2 overflow-hidden">
