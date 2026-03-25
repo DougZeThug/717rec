@@ -226,9 +226,9 @@ const RankingCard: React.FC<RankingCardProps> = ({
         {/* 2x2 stat grid */}
         <div className="grid grid-cols-2 gap-1.5 flex-1 min-w-0">
           <div className="rounded-md bg-muted/50 px-2 py-1.5">
-            <p className="text-[10px] text-muted-foreground leading-tight">Record</p>
+            <p className="text-[10px] text-muted-foreground leading-tight">Games</p>
             <p className="text-sm font-bold tabular-nums text-foreground leading-tight">
-              {ranking.wins}-{ranking.losses}
+              {ranking.gamesWon}-{ranking.gamesLost}
             </p>
           </div>
           <div className="rounded-md bg-muted/50 px-2 py-1.5">
