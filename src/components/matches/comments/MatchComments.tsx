@@ -37,8 +37,8 @@ const MatchComments: React.FC<MatchCommentsProps> = ({ matchId }) => {
   const commentCount = comments.length;
 
   return (
-    <div className={cn('mt-3 pt-2', animations.fadeIn)}>
-      <Collapsible open={isOpen} onOpenChange={setIsOpen} className="space-y-2">
+    <div className={cn(animations.fadeIn)}>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen} className="space-y-1.5">
         <div className="flex items-center justify-between">
           <CollapsibleTrigger asChild>
             <Button
