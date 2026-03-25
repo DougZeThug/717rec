@@ -80,7 +80,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const getScoreStyle = useCallback(
     (isWinner: boolean) =>
       cn(
-        'text-3xl font-black tracking-wide tabular-nums transition-all duration-500',
+        'text-2xl font-black tracking-wide tabular-nums transition-all duration-500',
         scoreAnimation && 'animate-scale-in',
         isWinner
           ? 'text-emerald-600 dark:text-emerald-400'
