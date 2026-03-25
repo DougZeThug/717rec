@@ -47,7 +47,7 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-4 overflow-hidden font-inter">
       <CollapsibleTrigger
         className={cn(
-          'flex w-full items-center justify-between p-4 text-left font-semibold text-sm rounded-t transition-all',
+          'flex w-full items-center justify-between p-3 text-left font-semibold text-sm rounded-lg transition-all',
           isLight
             ? 'bg-gray-50 text-gray-700 shadow-sm border-b border-gray-200'
             : 'bg-gray-800 text-white border-gray-700',

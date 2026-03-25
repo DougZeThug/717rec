@@ -188,15 +188,15 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
           </TabsList>
         </div>
 
-        <TabsContent value="timeslots" className="mt-6">
+        <TabsContent value="timeslots" className="mt-3">
           <TimeslotGrouping groupedTimeslots={groupedTimeslots} isLoading={timeslotsLoading} />
         </TabsContent>
 
-        <TabsContent value="upcoming" className="mt-6">
+        <TabsContent value="upcoming" className="mt-3">
           {renderMatchGroups(true)}
         </TabsContent>
 
-        <TabsContent value="completed" className="mt-6">
+        <TabsContent value="completed" className="mt-3">
           {renderMatchGroups(true)}
         </TabsContent>
       </Tabs>

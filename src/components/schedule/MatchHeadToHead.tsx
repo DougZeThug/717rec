@@ -10,20 +10,10 @@ interface MatchHeadToHeadProps {
   team2Id: string | null;
   team1Name: string;
   team2Name: string;
-  /** Pre-fetched H2H data from batch query - if provided, skips individual query */
   prefetchedData?: HeadToHeadData | null;
-  /** Whether the parent is still loading batch data */
   isBatchLoading?: boolean;
 }
 
-/**
- * Displays head-to-head record between two teams
- * Shows as a small text line under the match card
- *
- * Supports two modes:
- * 1. Prefetched data from useBatchHeadToHead (preferred for lists)
- * 2. Individual fetch via useMatchHeadToHead (fallback)
- */
 export const MatchHeadToHead: React.FC<MatchHeadToHeadProps> = ({
   team1Id,
   team2Id,
@@ -32,14 +22,12 @@ export const MatchHeadToHead: React.FC<MatchHeadToHeadProps> = ({
   prefetchedData,
   isBatchLoading = false,
 }) => {
-  // Only use individual hook if no prefetched data provided
   const shouldFetchIndividually = prefetchedData === undefined && !isBatchLoading;
   const { data: individualData, isLoading: individualLoading } = useMatchHeadToHead(
     shouldFetchIndividually ? team1Id : null,
     shouldFetchIndividually ? team2Id : null
   );
 
-  // Use prefetched data if available, otherwise fall back to individual query
   const data = prefetchedData !== undefined ? prefetchedData : individualData;
   const isLoading = isBatchLoading || (shouldFetchIndividually && individualLoading);
 
@@ -51,75 +39,69 @@ export const MatchHeadToHead: React.FC<MatchHeadToHeadProps> = ({
     return null;
   }
 
-  // Check if this is first meeting
   const isFirstMeeting = 'isFirstMeeting' in data ? data.isFirstMeeting : data.totalMatches === 0;
-
   const { team1Wins, team2Wins, totalMatches } = data;
 
-  // Determine rivalry context for notable matchups
   const getRivalryTag = (): { label: string; className: string } | null => {
     if (isFirstMeeting || totalMatches < 3) return null;
 
     const team1WinPct = (team1Wins / totalMatches) * 100;
     const team2WinPct = (team2Wins / totalMatches) * 100;
 
-    // Nemesis: either team has <= 18% win rate
     if (team1WinPct <= 18 || team2WinPct <= 18) {
-      return { label: 'Nemesis', className: 'text-red-600 dark:text-red-400' };
+      return { label: 'Nemesis', className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' };
     }
-
-    // Tough Matchup: either team has 18-30% win rate
     if (team1WinPct <= 30 || team2WinPct <= 30) {
-      return { label: 'Tough Matchup', className: 'text-orange-600 dark:text-orange-400' };
+      return { label: 'Tough Matchup', className: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' };
     }
-
-    // Closest rivalry: near-.500 with 3+ matches
     if (Math.abs(team1Wins - team2Wins) <= 1) {
-      return { label: 'Rivalry', className: 'text-amber-600 dark:text-amber-400' };
+      return { label: 'Rivalry', className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' };
     }
-
-    // Dominated: either team has >= 83% win rate
     if (team1WinPct >= 83 || team2WinPct >= 83) {
-      return { label: 'Dominated', className: 'text-emerald-600 dark:text-emerald-400' };
+      return { label: 'Dominated', className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' };
     }
-
-    // Favorite: either team has 70-82% win rate
     if (team1WinPct >= 70 || team2WinPct >= 70) {
-      return { label: 'Favorite', className: 'text-teal-600 dark:text-teal-400' };
+      return { label: 'Favorite', className: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400' };
     }
-
     return null;
   };
 
-  // Format the display text
-  const getDisplayText = (): string => {
+  const getDisplayContent = () => {
     if (isFirstMeeting) {
-      return 'H2H: First meeting';
+      return { prefix: 'H2H:', text: 'First meeting', highlightTeam: null };
     }
 
     if (team1Wins === team2Wins) {
-      return `H2H: Series tied ${team1Wins}–${team2Wins}`;
+      return { prefix: 'H2H:', text: `Series tied ${team1Wins}–${team2Wins}`, highlightTeam: null };
     }
 
-    // Determine which team is leading
     const leadingTeam = team1Wins > team2Wins ? team1Name : team2Name;
     const leadingWins = Math.max(team1Wins, team2Wins);
     const trailingWins = Math.min(team1Wins, team2Wins);
-
-    // Truncate team name if too long (for mobile)
     const truncatedName =
-      leadingTeam.length > 20 ? leadingTeam.substring(0, 17) + '...' : leadingTeam;
+      leadingTeam.length > 18 ? leadingTeam.substring(0, 15) + '…' : leadingTeam;
 
-    return `H2H: ${truncatedName} leads ${leadingWins}–${trailingWins}`;
+    return {
+      prefix: 'H2H:',
+      text: `leads ${leadingWins}–${trailingWins}`,
+      highlightTeam: truncatedName,
+    };
   };
 
   const rivalryTag = getRivalryTag();
+  const content = getDisplayContent();
 
   return (
-    <div className="text-xs text-muted-foreground text-center mt-1 flex items-center justify-center gap-1.5">
-      <span>{getDisplayText()}</span>
+    <div className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1.5 flex-wrap">
+      <span className="font-medium">{content.prefix}</span>
+      {content.highlightTeam && (
+        <span className="font-bold text-foreground">{content.highlightTeam}</span>
+      )}
+      <span>{content.text}</span>
       {rivalryTag && (
-        <span className={cn('font-semibold', rivalryTag.className)}>{rivalryTag.label}</span>
+        <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded-full', rivalryTag.className)}>
+          {rivalryTag.label}
+        </span>
       )}
     </div>
   );
