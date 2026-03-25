@@ -80,7 +80,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const getScoreStyle = useCallback(
     (isWinner: boolean) =>
       cn(
-        'text-3xl font-black tracking-wide tabular-nums transition-all duration-500',
+        'text-2xl font-black tracking-wide tabular-nums transition-all duration-500',
         scoreAnimation && 'animate-scale-in',
         isWinner
           ? 'text-emerald-600 dark:text-emerald-400'
@@ -121,7 +121,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
         >
           {/* Status badge - centered top */}
           {(isCompleted || hasSpecialStatus) && (
-            <div className="flex items-center justify-center gap-2 pt-2">
+            <div className="flex items-center justify-center gap-2 pt-1.5">
               {isCompleted && (
                 <span className="px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-primary/10 text-primary rounded-full">
                   Final
@@ -143,9 +143,9 @@ const MatchCard: React.FC<MatchCardProps> = ({
             </div>
           )}
 
-          <div className="px-4 py-3">
+          <div className="px-3 py-2">
             {/* Centered layout: Logo - Score - Logo */}
-            <div className="flex items-center justify-center gap-3">
+            <div className="flex items-center justify-center gap-2">
               {/* Team 1 */}
               <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
                 <TransitionLink
@@ -156,7 +156,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
                     imageUrl={team1Logo}
                     teamName={team1Name}
                     teamId={match.team1Id}
-                    size="lg"
+                    size="md"
                   />
                 </TransitionLink>
                 <TransitionLink
@@ -177,7 +177,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
               <div className="flex flex-col items-center">
                 <div
                   className={cn(
-                    'flex items-center gap-2 px-5 py-2 rounded-full',
+                    'flex items-center gap-2 px-4 py-1.5 rounded-full',
                     'bg-muted/80 dark:bg-muted/40',
                     'shadow-sm'
                   )}
@@ -202,7 +202,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
                     imageUrl={team2Logo}
                     teamName={team2Name}
                     teamId={match.team2Id}
-                    size="lg"
+                    size="md"
                   />
                 </TransitionLink>
                 <TransitionLink
@@ -221,7 +221,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
             </div>
 
             {/* H2H Record */}
-            <div className="mt-2">
+            <div className="mt-1.5">
               <MatchHeadToHead
                 team1Id={match.team1Id}
                 team2Id={match.team2Id}
@@ -234,14 +234,14 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
             {/* Countdown for upcoming */}
             {!isCompleted && match.date && (
-              <div className="mt-2">
+              <div className="mt-1.5">
                 <MatchCountdown matchDate={match.date} />
               </div>
             )}
 
             {/* Prediction bar for upcoming */}
             {!isCompleted && prediction && (
-              <div className="mt-2">
+              <div className="mt-1.5">
                 <MatchPrediction
                   prediction={prediction}
                   team1Name={team1Name}

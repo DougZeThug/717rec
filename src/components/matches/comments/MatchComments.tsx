@@ -55,23 +55,16 @@ const MatchComments: React.FC<MatchCommentsProps> = ({ matchId }) => {
         </div>
 
         <CollapsibleContent className="space-y-2">
-          {comments.length > 0 ? (
+          {comments.length > 0 && (
             <div className="space-y-1 divide-y divide-border/30">
               {comments.map((comment) => (
                 <MatchCommentItem key={comment.id} comment={comment} onDelete={deleteComment} />
               ))}
             </div>
-          ) : (
-            <div className="text-sm text-muted-foreground italic py-2">
-              No comments yet. Be the first to comment!
-            </div>
           )}
+          <MatchCommentForm onSubmit={handleAddComment} />
         </CollapsibleContent>
       </Collapsible>
-
-      <div className="mt-3">
-        <MatchCommentForm onSubmit={handleAddComment} />
-      </div>
     </div>
   );
 };
