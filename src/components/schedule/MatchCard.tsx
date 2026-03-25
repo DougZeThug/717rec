@@ -241,7 +241,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
             {/* Prediction bar for upcoming */}
             {!isCompleted && prediction && (
-              <div className="mt-2">
+              <div className="mt-1.5">
                 <MatchPrediction
                   prediction={prediction}
                   team1Name={team1Name}

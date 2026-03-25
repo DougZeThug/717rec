@@ -21,7 +21,7 @@ export const MatchPrediction: React.FC<MatchPredictionProps> = ({
   const { probA, probB, expectedText, confidence, breakdown } = prediction;
 
   const team1Pct = Math.round(probA * 100);
-  const team2Pct = Math.round(probB * 100);
+  const team2Pct = 100 - team1Pct;
   const isCoinFlip = Math.abs(probA - 0.5) < 0.03;
 
   return (
