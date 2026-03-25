@@ -77,11 +77,11 @@ const WeeklyRecapCard: React.FC<WeeklyRecapCardProps> = ({ data, risers, faller 
           )}
         </div>
 
-        {/* Mobile: Two-column layout for Upsets + Streaks */}
+        {/* Mobile: Stacked vertical layout for Upsets + Streaks */}
         {(hasUpsets || hasStreaks) && (
-          <div className="grid grid-cols-2 gap-2 md:hidden">
-            {/* Upsets column */}
-            <div className="rounded-lg border border-border/40 p-2 space-y-2">
+          <div className="flex flex-col gap-2 md:hidden">
+            {/* Upsets */}
+            <div className="rounded-lg border border-border/40 p-2.5 space-y-2">
               <div className="flex items-center gap-1.5">
                 <Zap size={12} className="text-yellow-500 fill-yellow-500/50" />
                 <span className={cn(typeScale.caption, 'font-semibold uppercase tracking-wider text-muted-foreground')}>
@@ -97,8 +97,8 @@ const WeeklyRecapCard: React.FC<WeeklyRecapCardProps> = ({ data, risers, faller 
               )}
             </div>
 
-            {/* Streaks column */}
-            <div className="rounded-lg border border-border/40 p-2 space-y-2">
+            {/* Streaks */}
+            <div className="rounded-lg border border-border/40 p-2.5 space-y-2">
               <div className="flex items-center gap-1.5">
                 <Flame size={12} className="text-orange-500" />
                 <span className={cn(typeScale.caption, 'font-semibold uppercase tracking-wider text-muted-foreground')}>
