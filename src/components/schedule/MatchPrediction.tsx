@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, TrendingUp } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -11,15 +11,6 @@ interface MatchPredictionProps {
   team2Name: string;
 }
 
-/**
- * Displays match prediction for upcoming matches
- *
- * Shows:
- * - Win probability for each team (e.g., "Team A 72% · Team B 28%")
- * - Expected outcome text (e.g., "Team A favored")
- * - Confidence level badge (Low/Medium/High)
- * - Expandable "Why" breakdown showing inputs
- */
 export const MatchPrediction: React.FC<MatchPredictionProps> = ({
   prediction,
   team1Name,
@@ -29,71 +20,69 @@ export const MatchPrediction: React.FC<MatchPredictionProps> = ({
 
   const { probA, probB, expectedText, confidence, breakdown } = prediction;
 
-  // Determine which team is favored for styling
-  const team1Favored = probA > probB;
+  const team1Pct = Math.round(probA * 100);
+  const team2Pct = Math.round(probB * 100);
   const isCoinFlip = Math.abs(probA - 0.5) < 0.03;
 
   return (
-    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-      {/* Main prediction line */}
+    <div className="mt-2 pt-2 border-t border-border/30">
+      {/* Probability bar */}
+      <div className="flex items-center gap-1.5 mb-1">
+        <span
+          className={cn(
+            'text-[10px] font-bold tabular-nums w-8 text-right',
+            !isCoinFlip && probA > probB
+              ? 'text-blue-600 dark:text-blue-400'
+              : 'text-muted-foreground'
+          )}
+        >
+          {team1Pct}%
+        </span>
+        <div className="flex-1 h-2 rounded-full overflow-hidden bg-muted/50 flex">
+          <div
+            className="h-full bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 transition-all duration-500 rounded-l-full"
+            style={{ width: `${team1Pct}%` }}
+          />
+          <div
+            className="h-full bg-gradient-to-r from-orange-500 to-orange-600 dark:from-orange-400 dark:to-orange-500 transition-all duration-500 rounded-r-full"
+            style={{ width: `${team2Pct}%` }}
+          />
+        </div>
+        <span
+          className={cn(
+            'text-[10px] font-bold tabular-nums w-8',
+            !isCoinFlip && probB > probA
+              ? 'text-orange-600 dark:text-orange-400'
+              : 'text-muted-foreground'
+          )}
+        >
+          {team2Pct}%
+        </span>
+      </div>
+
+      {/* Favored text + confidence + expand */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className={cn(
-          'w-full flex flex-col items-center gap-1.5',
-          'hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-md py-1.5 px-2 -mx-2',
-          'transition-colors duration-200'
-        )}
+        className="w-full flex items-center justify-center gap-1.5 py-0.5 hover:bg-muted/30 rounded transition-colors"
         aria-expanded={isExpanded}
         aria-label="Toggle prediction details"
       >
-        {/* Label and probabilities */}
-        <div className="flex items-center justify-center gap-1.5 text-xs">
-          <TrendingUp className="h-3 w-3 text-indigo-500 dark:text-indigo-400 flex-shrink-0" />
-          <span className="text-muted-foreground font-medium">Model:</span>
-          <span
-            className={cn(
-              'font-semibold tabular-nums',
-              !isCoinFlip && team1Favored
-                ? 'text-indigo-600 dark:text-indigo-400'
-                : 'text-gray-600 dark:text-gray-400'
-            )}
-          >
-            {team1Name.length > 12 ? team1Name.substring(0, 10) + '…' : team1Name}{' '}
-            {formatProbability(probA)}
-          </span>
-          <span className="text-muted-foreground">·</span>
-          <span
-            className={cn(
-              'font-semibold tabular-nums',
-              !isCoinFlip && !team1Favored
-                ? 'text-indigo-600 dark:text-indigo-400'
-                : 'text-gray-600 dark:text-gray-400'
-            )}
-          >
-            {team2Name.length > 12 ? team2Name.substring(0, 10) + '…' : team2Name}{' '}
-            {formatProbability(probB)}
-          </span>
-        </div>
-
-        {/* Expected outcome + confidence */}
-        <div className="flex items-center justify-center gap-2">
-          <span className="text-xs text-muted-foreground">{expectedText}</span>
-          <ConfidenceBadge level={confidence} />
-          {isExpanded ? (
-            <ChevronUp className="h-3 w-3 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="h-3 w-3 text-muted-foreground" />
-          )}
-        </div>
+        <span className="text-[10px] text-muted-foreground">{expectedText}</span>
+        <ConfidenceBadge level={confidence} />
+        {isExpanded ? (
+          <ChevronUp className="h-2.5 w-2.5 text-muted-foreground" />
+        ) : (
+          <ChevronDown className="h-2.5 w-2.5 text-muted-foreground" />
+        )}
       </button>
 
-      {/* Expandable "Why" breakdown */}
+      {/* Expandable breakdown */}
       {isExpanded && (
-        <div className="mt-2 px-2 py-1.5 bg-gray-50 dark:bg-gray-800/50 rounded-md">
+        <div className="mt-1.5 px-2 py-1.5 bg-muted/30 rounded-lg">
           <p className="text-[10px] text-muted-foreground text-center leading-relaxed">
             {formatBreakdown(breakdown)}
           </p>
-          <p className="text-[10px] text-muted-foreground/70 text-center mt-1 italic">
+          <p className="text-[10px] text-muted-foreground/60 text-center mt-1 italic">
             Heuristic model: 65% Career + 25% Season + 10% Head-to-Head
           </p>
         </div>
@@ -102,18 +91,15 @@ export const MatchPrediction: React.FC<MatchPredictionProps> = ({
   );
 };
 
-/**
- * Confidence level badge component
- */
 const ConfidenceBadge: React.FC<{ level: ConfidenceLevel }> = ({ level }) => {
   const colorClasses = {
-    Low: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+    Low: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
     Medium: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    High: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    High: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
   };
 
   return (
-    <span className={cn('text-[10px] font-medium px-1.5 py-0.5 rounded', colorClasses[level])}>
+    <span className={cn('text-[9px] font-semibold px-1.5 py-0.5 rounded-full', colorClasses[level])}>
       {level}
     </span>
   );

@@ -17,16 +17,12 @@ const DateStrip: React.FC<DateStripProps> = ({ selectedDate, onDateSelect, match
   const dates = React.useMemo(() => {
     const result: Date[] = [];
     const today = new Date();
-
     for (let i = -3; i <= 10; i++) {
       result.push(addDays(today, i));
     }
-
     return result;
   }, []);
 
-  // Auto-scroll to selected date on mount
-  // Use double requestAnimationFrame to prevent forced reflow
   useEffect(() => {
     if (selectedRef.current) {
       const element = selectedRef.current;
@@ -49,7 +45,7 @@ const DateStrip: React.FC<DateStripProps> = ({ selectedDate, onDateSelect, match
 
   return (
     <ScrollArea className="w-full whitespace-nowrap">
-      <div className="flex gap-1.5 py-2 px-1">
+      <div className="flex gap-1 py-1 px-0.5">
         {dates.map((date, index) => {
           const isSelected = isSameDay(date, selectedDate);
           const isTodayDate = isToday(date);
@@ -61,16 +57,17 @@ const DateStrip: React.FC<DateStripProps> = ({ selectedDate, onDateSelect, match
               ref={isSelected ? selectedRef : null}
               onClick={() => onDateSelect(date)}
               className={cn(
-                'flex flex-col items-center px-3 py-2 rounded-lg min-w-[52px] transition-all',
+                'flex flex-col items-center px-3 py-1.5 rounded-xl min-w-[50px] transition-all duration-200',
                 'hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/50',
-                isSelected && 'bg-primary text-primary-foreground shadow-md',
-                isTodayDate && !isSelected && 'ring-1 ring-primary',
+                isSelected &&
+                  'bg-primary text-primary-foreground shadow-lg shadow-primary/30 scale-105',
+                isTodayDate && !isSelected && 'ring-1 ring-primary/60',
                 !isSelected && 'bg-card'
               )}
             >
               <span
                 className={cn(
-                  'text-xs font-medium uppercase',
+                  'text-[10px] font-semibold uppercase tracking-wider',
                   isSelected ? 'text-primary-foreground' : 'text-muted-foreground'
                 )}
               >
@@ -78,8 +75,8 @@ const DateStrip: React.FC<DateStripProps> = ({ selectedDate, onDateSelect, match
               </span>
               <span
                 className={cn(
-                  'text-lg font-bold',
-                  isSelected ? 'text-primary-foreground' : 'text-foreground'
+                  'font-black tabular-nums',
+                  isSelected ? 'text-xl text-primary-foreground' : 'text-lg text-foreground'
                 )}
               >
                 {format(date, 'd')}
@@ -87,7 +84,7 @@ const DateStrip: React.FC<DateStripProps> = ({ selectedDate, onDateSelect, match
               {hasMatches && (
                 <div
                   className={cn(
-                    'w-1.5 h-1.5 rounded-full mt-1',
+                    'w-1.5 h-1.5 rounded-full mt-0.5',
                     isSelected ? 'bg-primary-foreground' : 'bg-orange-500'
                   )}
                 />
@@ -96,7 +93,7 @@ const DateStrip: React.FC<DateStripProps> = ({ selectedDate, onDateSelect, match
           );
         })}
       </div>
-      <ScrollBar orientation="horizontal" className="h-2" />
+      <ScrollBar orientation="horizontal" className="h-1.5" />
     </ScrollArea>
   );
 };

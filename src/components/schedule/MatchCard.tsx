@@ -4,13 +4,12 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { MatchInteractions } from '@/components/matches';
 import { TransitionLink } from '@/components/transitions/TransitionLink';
-import { Card, CardContent } from '@/components/ui/card';
 import { TeamLogo } from '@/components/ui/team';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import type { HeadToHeadData } from '@/hooks/useBatchHeadToHead';
 import { useMatchPrediction } from '@/hooks/useMatchPrediction';
 import { cn } from '@/lib/utils';
-import { animations, elevation, gradients } from '@/styles/design-system';
+import { animations } from '@/styles/design-system';
 import { Match } from '@/types';
 import { toTeamSlug } from '@/utils/teamSlug';
 
@@ -25,9 +24,7 @@ interface MatchCardProps {
   onEdit?: (match: Match) => void;
   onDelete?: (matchId: string) => void;
   showInteractions?: boolean;
-  /** Pre-fetched H2H data from batch query */
   prefetchedH2H?: HeadToHeadData | null;
-  /** Whether batch H2H data is still loading */
   isBatchH2HLoading?: boolean;
 }
 
@@ -45,13 +42,11 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const isLight = resolvedTheme === 'light';
   const [scoreAnimation, setScoreAnimation] = useState(false);
 
-  // Team details are embedded in match data from the query
   const team1Name = match.team1Details?.name || 'Unknown Team';
   const team2Name = match.team2Details?.name || 'Unknown Team';
   const team1Logo = match.team1Details?.image_url || '';
   const team2Logo = match.team2Details?.image_url || '';
 
-  // Get match prediction (for upcoming) and upset detection (for completed)
   const { prediction, isUpsetResult } = useMatchPrediction({
     team1Details: match.team1Details,
     team2Details: match.team2Details,
@@ -70,12 +65,10 @@ const MatchCard: React.FC<MatchCardProps> = ({
     match.team2Score !== undefined &&
     match.team2Score > match.team1Score;
 
-  // Determine if match has a special status
   const isPostponed = match.status === 'postponed';
   const isCanceled = match.status === 'canceled';
   const hasSpecialStatus = isPostponed || isCanceled;
 
-  // Set animation when scores change
   useEffect(() => {
     if (match.team1Score !== undefined || match.team2Score !== undefined) {
       setScoreAnimation(true);
@@ -87,220 +80,217 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const getScoreStyle = useCallback(
     (isWinner: boolean) =>
       cn(
-        'text-2xl font-black tracking-wide tabular-nums transition-all duration-500',
+        'text-3xl font-black tracking-wide tabular-nums transition-all duration-500',
         scoreAnimation && 'animate-scale-in',
         isWinner
-          ? isLight
-            ? 'text-green-600'
-            : 'text-green-500'
-          : isLight
-            ? 'text-gray-600'
-            : 'text-gray-400'
+          ? 'text-emerald-600 dark:text-emerald-400'
+          : 'text-muted-foreground'
       ),
-    [scoreAnimation, isLight]
+    [scoreAnimation]
   );
 
-  const getTeamStyle = useCallback(
+  const getTeamNameStyle = useCallback(
     (isWinner: boolean) =>
       cn(
-        'truncate',
+        'text-xs font-medium truncate max-w-[120px] text-center',
         isWinner
-          ? isLight
-            ? 'text-green-600 font-medium'
-            : 'text-green-500 font-medium'
-          : isLight
-            ? 'text-gray-600'
-            : 'text-gray-400'
+          ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+          : 'text-foreground'
       ),
-    [isLight]
+    []
   );
 
-  // Determine whether to show interactions (only for completed matches)
   const shouldShowInteractions = showInteractions && isCompleted;
 
   return (
-    <Card
-      className={cn(
-        'group relative overflow-hidden transition-all duration-300',
-        isLight ? gradients.card.subtle : 'from-gray-800/50 to-gray-900/50 border-gray-700',
-        elevation.card.default,
-        animations.scaleIn
-      )}
-    >
-      {/* Status indicators */}
-      {isCompleted && (
-        <div className="absolute -top-3 left-4 z-10 flex items-center gap-2 transform -translate-y-1/2">
-          <div
-            className={cn(
-              'px-3 py-1 text-[10px] font-bold tracking-wider uppercase',
-              'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-md shadow-sm'
-            )}
-          >
-            Final
-          </div>
-          {isUpsetResult && <UpsetTag />}
-        </div>
-      )}
-
-      {hasSpecialStatus && (
+    <div className={cn('relative', animations.scaleIn)}>
+      {/* Gradient border wrapper */}
+      <div
+        className={cn(
+          'rounded-xl p-[1.5px]',
+          isCompleted
+            ? 'bg-gradient-to-br from-emerald-500/40 via-transparent to-emerald-500/20'
+            : 'bg-gradient-to-br from-primary/30 via-transparent to-accent/20'
+        )}
+      >
         <div
           className={cn(
-            'absolute -top-3 right-4 z-10 px-3 py-1 text-[10px] font-bold tracking-wider uppercase',
-            isPostponed
-              ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white'
-              : 'bg-gradient-to-r from-red-600 to-red-700 text-white',
-            'rounded-md transform -translate-y-1/2 shadow-sm'
+            'rounded-xl overflow-hidden',
+            isLight ? 'bg-card' : 'bg-card'
           )}
         >
-          {isPostponed ? 'Postponed' : 'Canceled'}
-        </div>
-      )}
+          {/* Status badge - centered top */}
+          {(isCompleted || hasSpecialStatus) && (
+            <div className="flex items-center justify-center gap-2 pt-2">
+              {isCompleted && (
+                <span className="px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-primary/10 text-primary rounded-full">
+                  Final
+                </span>
+              )}
+              {isUpsetResult && <UpsetTag />}
+              {hasSpecialStatus && (
+                <span
+                  className={cn(
+                    'px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase rounded-full',
+                    isPostponed
+                      ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
+                      : 'bg-destructive/10 text-destructive'
+                  )}
+                >
+                  {isPostponed ? 'Postponed' : 'Canceled'}
+                </span>
+              )}
+            </div>
+          )}
 
-      <CardContent className="p-6 pt-8">
-        <div className="flex flex-col space-y-4">
-          <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4">
-            {/* Team 1 Logo */}
-            <TransitionLink
-              to={`/teams/${toTeamSlug(team1Name)}`}
-              className="hover:opacity-80 transition-opacity"
-            >
-              <TeamLogo
-                imageUrl={team1Logo}
-                teamName={team1Name}
-                teamId={match.team1Id}
-                size="md"
-              />
-            </TransitionLink>
+          <div className="px-4 py-3">
+            {/* Centered layout: Logo - Score - Logo */}
+            <div className="flex items-center justify-center gap-3">
+              {/* Team 1 */}
+              <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+                <TransitionLink
+                  to={`/teams/${toTeamSlug(team1Name)}`}
+                  className="hover:opacity-80 transition-opacity"
+                >
+                  <TeamLogo
+                    imageUrl={team1Logo}
+                    teamName={team1Name}
+                    teamId={match.team1Id}
+                    size="lg"
+                  />
+                </TransitionLink>
+                <TransitionLink
+                  to={`/teams/${toTeamSlug(team1Name)}`}
+                  className="flex flex-col items-center gap-0.5 min-w-0"
+                >
+                  {team1IsWinner && <Check className="h-3 w-3 text-emerald-500" />}
+                  <span className={getTeamNameStyle(team1IsWinner)}>
+                    {team1Name}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground tabular-nums">
+                    ({match.team1_game_wins || 0})
+                  </span>
+                </TransitionLink>
+              </div>
 
-            {/* Score */}
-            <div className="flex items-center justify-center">
-              <div
-                className={cn(
-                  'flex items-center gap-3 px-4 py-2 rounded-full',
-                  'bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800/50 dark:to-gray-900/50',
-                  'transition-all duration-300 shadow-sm'
-                )}
-              >
-                <span className={getScoreStyle(team1IsWinner)}>{match.team1Score || 0}</span>
-                <span className="text-xl font-bold text-gray-400">-</span>
-                <span className={getScoreStyle(team2IsWinner)}>{match.team2Score || 0}</span>
+              {/* Score pill */}
+              <div className="flex flex-col items-center">
+                <div
+                  className={cn(
+                    'flex items-center gap-2 px-5 py-2 rounded-full',
+                    'bg-muted/80 dark:bg-muted/40',
+                    'shadow-sm'
+                  )}
+                >
+                  <span className={getScoreStyle(team1IsWinner)}>
+                    {match.team1Score || 0}
+                  </span>
+                  <span className="text-lg font-bold text-muted-foreground/60">–</span>
+                  <span className={getScoreStyle(team2IsWinner)}>
+                    {match.team2Score || 0}
+                  </span>
+                </div>
+              </div>
+
+              {/* Team 2 */}
+              <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+                <TransitionLink
+                  to={`/teams/${toTeamSlug(team2Name)}`}
+                  className="hover:opacity-80 transition-opacity"
+                >
+                  <TeamLogo
+                    imageUrl={team2Logo}
+                    teamName={team2Name}
+                    teamId={match.team2Id}
+                    size="lg"
+                  />
+                </TransitionLink>
+                <TransitionLink
+                  to={`/teams/${toTeamSlug(team2Name)}`}
+                  className="flex flex-col items-center gap-0.5 min-w-0"
+                >
+                  {team2IsWinner && <Check className="h-3 w-3 text-emerald-500" />}
+                  <span className={getTeamNameStyle(team2IsWinner)}>
+                    {team2Name}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground tabular-nums">
+                    ({match.team2_game_wins || 0})
+                  </span>
+                </TransitionLink>
               </div>
             </div>
 
-            {/* Team 2 Logo */}
-            <TransitionLink
-              to={`/teams/${toTeamSlug(team2Name)}`}
-              className="hover:opacity-80 transition-opacity"
-            >
-              <TeamLogo
-                imageUrl={team2Logo}
-                teamName={team2Name}
-                teamId={match.team2Id}
-                size="md"
+            {/* H2H Record */}
+            <div className="mt-2">
+              <MatchHeadToHead
+                team1Id={match.team1Id}
+                team2Id={match.team2Id}
+                team1Name={team1Name}
+                team2Name={team2Name}
+                prefetchedData={prefetchedH2H}
+                isBatchLoading={isBatchH2HLoading}
               />
-            </TransitionLink>
-          </div>
+            </div>
 
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-            {/* Team 1 Name */}
-            <TransitionLink
-              to={`/teams/${toTeamSlug(team1Name)}`}
-              className={cn(
-                'flex items-center gap-2 justify-center min-w-0 transition-transform duration-200 hover:translate-x-1',
-                team1IsWinner && 'font-semibold'
-              )}
-            >
-              {team1IsWinner && <Check className="h-4 w-4 text-green-500 flex-shrink-0" />}
-              <span className={cn(getTeamStyle(team1IsWinner), 'font-sans text-sm truncate')}>
-                ({match.team1_game_wins || 0}) {team1Name}
-              </span>
-            </TransitionLink>
-
-            <div className="w-4"></div>
-
-            {/* Team 2 Name */}
-            <TransitionLink
-              to={`/teams/${toTeamSlug(team2Name)}`}
-              className={cn(
-                'flex items-center gap-2 justify-center min-w-0 transition-transform duration-200 hover:-translate-x-1',
-                team2IsWinner && 'font-semibold'
-              )}
-            >
-              {team2IsWinner && <Check className="h-4 w-4 text-green-500 flex-shrink-0" />}
-              <span className={cn(getTeamStyle(team2IsWinner), 'font-sans text-sm truncate')}>
-                ({match.team2_game_wins || 0}) {team2Name}
-              </span>
-            </TransitionLink>
-          </div>
-
-          {/* Head-to-Head Record - uses prefetched data when available */}
-          <MatchHeadToHead
-            team1Id={match.team1Id}
-            team2Id={match.team2Id}
-            team1Name={team1Name}
-            team2Name={team2Name}
-            prefetchedData={prefetchedH2H}
-            isBatchLoading={isBatchH2HLoading}
-          />
-
-          {/* Countdown for upcoming matches - isolated to prevent parent re-renders */}
-          {!isCompleted && match.date && <MatchCountdown matchDate={match.date} />}
-
-          {/* Model Prediction for upcoming matches */}
-          {!isCompleted && prediction && (
-            <MatchPrediction prediction={prediction} team1Name={team1Name} team2Name={team2Name} />
-          )}
-
-          {/* Action buttons - Admin can manage all matches, non-admins only incomplete matches */}
-          {((onEdit && !isCompleted) || (onDelete && (!isCompleted || isAdminAccessGranted))) &&
-            isAdminAccessGranted && (
-              <div className="flex justify-end gap-2 pt-2">
-                {onEdit && !isCompleted && (
-                  <button
-                    onClick={() => onEdit(match)}
-                    className={cn(
-                      'p-1.5 rounded-full transition-all duration-200',
-                      'bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700',
-                      'hover:shadow-sm active:scale-95'
-                    )}
-                    aria-label="Edit match"
-                  >
-                    <Pencil className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                  </button>
-                )}
-                {onDelete && (
-                  <button
-                    onClick={() => onDelete(match.id)}
-                    className={cn(
-                      'p-1.5 rounded-full transition-all duration-200',
-                      isCompleted
-                        ? 'bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-800'
-                        : 'bg-gray-100 hover:bg-red-100 dark:bg-gray-800 dark:hover:bg-red-900/30',
-                      'hover:shadow-sm active:scale-95'
-                    )}
-                    aria-label={isCompleted ? 'Permanently delete completed match' : 'Delete match'}
-                    title={
-                      isCompleted ? 'Permanently delete completed match' : 'Delete incomplete match'
-                    }
-                  >
-                    <Trash2
-                      className={cn(
-                        'h-4 w-4 transition-colors',
-                        isCompleted
-                          ? 'text-red-600 dark:text-red-400'
-                          : 'text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400'
-                      )}
-                    />
-                  </button>
-                )}
+            {/* Countdown for upcoming */}
+            {!isCompleted && match.date && (
+              <div className="mt-2">
+                <MatchCountdown matchDate={match.date} />
               </div>
             )}
 
-          {/* Match Interactions Section - Only for completed matches */}
-          {shouldShowInteractions && <MatchInteractions matchId={match.id} />}
+            {/* Prediction bar for upcoming */}
+            {!isCompleted && prediction && (
+              <div className="mt-2">
+                <MatchPrediction
+                  prediction={prediction}
+                  team1Name={team1Name}
+                  team2Name={team2Name}
+                />
+              </div>
+            )}
+
+            {/* Admin actions */}
+            {((onEdit && !isCompleted) || (onDelete && (!isCompleted || isAdminAccessGranted))) &&
+              isAdminAccessGranted && (
+                <div className="flex justify-end gap-2 pt-2">
+                  {onEdit && !isCompleted && (
+                    <button
+                      onClick={() => onEdit(match)}
+                      className="p-1.5 rounded-full transition-all duration-200 bg-muted hover:bg-muted/80 active:scale-95"
+                      aria-label="Edit match"
+                    >
+                      <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                    </button>
+                  )}
+                  {onDelete && (
+                    <button
+                      onClick={() => onDelete(match.id)}
+                      className={cn(
+                        'p-1.5 rounded-full transition-all duration-200 active:scale-95',
+                        isCompleted
+                          ? 'bg-destructive/10 hover:bg-destructive/20'
+                          : 'bg-muted hover:bg-destructive/10'
+                      )}
+                      aria-label={isCompleted ? 'Permanently delete completed match' : 'Delete match'}
+                    >
+                      <Trash2
+                        className={cn(
+                          'h-3.5 w-3.5',
+                          isCompleted ? 'text-destructive' : 'text-muted-foreground'
+                        )}
+                      />
+                    </button>
+                  )}
+                </div>
+              )}
+
+            {/* Interactions */}
+            {shouldShowInteractions && <MatchInteractions matchId={match.id} className="mt-2" />}
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

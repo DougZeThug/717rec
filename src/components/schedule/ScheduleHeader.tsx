@@ -31,43 +31,8 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
   };
 
   return (
-    <header className="mt-2 mb-2 font-inter">
-      <div className="flex flex-col gap-3">
-        {/* Top row: Title and Search */}
-        <div className="flex items-center justify-between gap-4">
-          <h1
-            className="font-bebas text-2xl sm:text-3xl font-semibold uppercase tracking-wide text-cornhole-navy dark:text-white"
-            style={{ letterSpacing: '0.07em' }}
-          >
-            Schedule
-          </h1>
-          <div className="flex items-center gap-2">
-            <ScheduleSearch value={searchTerm} onChange={setSearchTerm} />
-            {/* Calendar popover for jumping to any date */}
-            {onDateSelect && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="icon" className="shrink-0 h-10 w-10">
-                    <Calendar className="h-4 w-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-auto p-0 shadow-md border border-border bg-popover"
-                  align="end"
-                >
-                  <CalendarComponent
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={handleDateSelect}
-                    initialFocus
-                    className="p-3 pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            )}
-          </div>
-        </div>
-
+    <header className="mt-1 mb-1 font-inter">
+      <div className="flex flex-col gap-2">
         {/* Date Strip - swipeable horizontal date picker */}
         {onDateSelect && (
           <DateStrip
@@ -76,6 +41,34 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
             matchDates={matchDates}
           />
         )}
+
+        {/* Search + Calendar row */}
+        <div className="flex items-center gap-2">
+          <div className="flex-1">
+            <ScheduleSearch value={searchTerm} onChange={setSearchTerm} />
+          </div>
+          {onDateSelect && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="icon" className="shrink-0 h-9 w-9">
+                  <Calendar className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-auto p-0 shadow-md border border-border bg-popover"
+                align="end"
+              >
+                <CalendarComponent
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={handleDateSelect}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          )}
+        </div>
       </div>
     </header>
   );
