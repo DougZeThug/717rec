@@ -163,12 +163,8 @@ const MatchCard: React.FC<MatchCardProps> = ({
                   to={`/teams/${toTeamSlug(team1Name)}`}
                   className="flex flex-col items-center gap-0.5 min-w-0"
                 >
-                  {team1IsWinner && <Check className="h-3 w-3 text-emerald-500" />}
                   <span className={getTeamNameStyle(team1IsWinner)}>
                     {team1Name}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground tabular-nums">
-                    ({match.team1_game_wins || 0})
                   </span>
                 </TransitionLink>
               </div>
