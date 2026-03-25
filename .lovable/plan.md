@@ -1,25 +1,36 @@
 
 
-## Fix Admin Team Management for Mobile
+## Fix Badge 409 Conflict Error
 
-The current "Manage Teams" table has 5 columns (Name, Record, Division, Players, Actions) with fixed-width selects, causing horizontal overflow on 360px screens. The fix replaces the table with a stacked card layout on mobile.
+### Root Cause
+The `award_streak_badges` database function has a bug:
+1. It sets existing streak badges to `is_active = false` (but the row remains)
+2. Then it does a plain `INSERT` into `team_badge_events`
+3. The unique constraint `(team_id, badge_type, season_id)` rejects the insert because the deactivated row still occupies that slot
 
-### Changes — `src/components/admin/teams/TeamManagementTab.tsx`
+Other badge functions (kingslayer, clutch_performer, consistent_performer) correctly use `ON CONFLICT ... DO UPDATE`, but `award_streak_badges` does not.
 
-**1. Filters row (lines 206-230)** — Stack search and division filter vertically on mobile:
-- Change `flex gap-4 items-center` to `flex flex-col sm:flex-row gap-2 sm:gap-4`
-- Remove fixed `w-48` on division SelectTrigger, use `w-full sm:w-48`
+### Fix
+**Database migration** -- Update `award_streak_badges` to use `ON CONFLICT (team_id, badge_type, season_id) DO UPDATE` for both hot_streak and cold_streak inserts, matching the pattern used by all other badge functions.
 
-**2. Teams list (lines 232-301)** — Replace the table with a responsive approach:
-- **Mobile (below `sm`)**: Render a stacked card list instead of the table. Each card shows:
-  - Row 1: **Team name** (bold) + Edit button (right-aligned)
-  - Row 2: Record badge + Player count
-  - Row 3: Division select (full width)
-- **Desktop (`sm`+)**: Keep the existing table as-is, wrapped in `hidden sm:block`
-- Use `sm:hidden` on the card list and `hidden sm:block` on the table container
+The two INSERT statements in the function will change from:
+```sql
+INSERT INTO team_badge_events (team_id, badge_type, metadata, season_id)
+VALUES (p_team_id, 'hot_streak', ..., season_id);
+```
+To:
+```sql
+INSERT INTO team_badge_events (team_id, badge_type, metadata, season_id)
+VALUES (p_team_id, 'hot_streak', ..., season_id)
+ON CONFLICT (team_id, badge_type, season_id)
+DO UPDATE SET is_active = true, awarded_at = now(),
+  metadata = jsonb_build_object('streak_count', streak_info.streak_count);
+```
 
-**3. Stats cards (line 147)** — Already responsive with `grid-cols-1 md:grid-cols-3`, no change needed.
+Same change for the `cold_streak` insert.
 
 ### Files
-- **Edit**: `src/components/admin/teams/TeamManagementTab.tsx`
+- **Migration**: One SQL migration to replace the `award_streak_badges` function
+
+No frontend code changes needed -- the client-side error handling already gracefully catches and logs badge failures.
 
