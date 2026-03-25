@@ -22,11 +22,11 @@ export const useTimeslotQuery = (date: Date | null) => {
       };
     },
     enabled: !!date,
-    staleTime: 30_000,
+    staleTime: 60_000,
     refetchInterval: () => {
       if (typeof document !== 'undefined' && document.hidden) return false;
       if (typeof navigator !== 'undefined' && !navigator.onLine) return false;
-      return 30_000;
+      return 60_000;
     },
     placeholderData: (prev) => prev,
     retry: 2,
