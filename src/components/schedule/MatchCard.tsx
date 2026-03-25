@@ -202,7 +202,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
                     imageUrl={team2Logo}
                     teamName={team2Name}
                     teamId={match.team2Id}
-                    size="lg"
+                    size="md"
                   />
                 </TransitionLink>
                 <TransitionLink
