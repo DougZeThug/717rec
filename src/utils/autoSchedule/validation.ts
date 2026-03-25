@@ -84,7 +84,7 @@ export async function validateMatchSchedule(
   });
 
   // Check for rematches (teams that have already played each other)
-  await checkForRematches(matches, errors);
+  await checkForRematches(matches, warnings);
 
   return {
     isValid: errors.length === 0,
