@@ -1,4 +1,4 @@
-import { Check, Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React, { useCallback, useEffect, useState } from 'react';
 
@@ -56,14 +56,14 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
   const team1IsWinner =
     isCompleted &&
-    match.team1Score !== undefined &&
-    match.team2Score !== undefined &&
-    match.team1Score > match.team2Score;
+    match.team1_game_wins !== undefined &&
+    match.team2_game_wins !== undefined &&
+    (match.team1_game_wins || 0) > (match.team2_game_wins || 0);
   const team2IsWinner =
     isCompleted &&
-    match.team1Score !== undefined &&
-    match.team2Score !== undefined &&
-    match.team2Score > match.team1Score;
+    match.team1_game_wins !== undefined &&
+    match.team2_game_wins !== undefined &&
+    (match.team2_game_wins || 0) > (match.team1_game_wins || 0);
 
   const isPostponed = match.status === 'postponed';
   const isCanceled = match.status === 'canceled';
@@ -163,12 +163,8 @@ const MatchCard: React.FC<MatchCardProps> = ({
                   to={`/teams/${toTeamSlug(team1Name)}`}
                   className="flex flex-col items-center gap-0.5 min-w-0"
                 >
-                  {team1IsWinner && <Check className="h-3 w-3 text-emerald-500" />}
                   <span className={getTeamNameStyle(team1IsWinner)}>
                     {team1Name}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground tabular-nums">
-                    ({match.team1_game_wins || 0})
                   </span>
                 </TransitionLink>
               </div>
@@ -183,11 +179,11 @@ const MatchCard: React.FC<MatchCardProps> = ({
                   )}
                 >
                   <span className={getScoreStyle(team1IsWinner)}>
-                    {match.team1Score || 0}
+                    {isCompleted ? (match.team1_game_wins || 0) : (match.team1Score || 0)}
                   </span>
                   <span className="text-lg font-bold text-muted-foreground/60">–</span>
                   <span className={getScoreStyle(team2IsWinner)}>
-                    {match.team2Score || 0}
+                    {isCompleted ? (match.team2_game_wins || 0) : (match.team2Score || 0)}
                   </span>
                 </div>
               </div>
@@ -209,12 +205,8 @@ const MatchCard: React.FC<MatchCardProps> = ({
                   to={`/teams/${toTeamSlug(team2Name)}`}
                   className="flex flex-col items-center gap-0.5 min-w-0"
                 >
-                  {team2IsWinner && <Check className="h-3 w-3 text-emerald-500" />}
                   <span className={getTeamNameStyle(team2IsWinner)}>
                     {team2Name}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground tabular-nums">
-                    ({match.team2_game_wins || 0})
                   </span>
                 </TransitionLink>
               </div>
