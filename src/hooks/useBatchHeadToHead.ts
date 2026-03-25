@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
-import { fetchBatchHeadToHead, type HeadToHeadData } from '@/services/TeamStatsService';
+import { fetchBatchHeadToHead, type HeadToHeadData } from '@/services/TeamCareerStatsService';
 
 // Re-export the type for any consumers that import from here
 export type { HeadToHeadData };
@@ -22,8 +22,15 @@ interface BatchHeadToHeadResult {
 /**
  * Hook to batch fetch head-to-head data for multiple team pairs
  * Eliminates N+1 queries by fetching all H2H data in a single RPC call
+ *
+ * @param teamPairs - Array of team pairs to fetch H2H data for
+ * @param enabled - Whether the query should run (default: true). Set to false
+ *                  for collapsed UI sections to avoid unnecessary fetches.
  */
-export const useBatchHeadToHead = (teamPairs: TeamPair[]): BatchHeadToHeadResult => {
+export const useBatchHeadToHead = (
+  teamPairs: TeamPair[],
+  enabled = true
+): BatchHeadToHeadResult => {
   // Filter and dedupe valid team pairs
   const validPairs = useMemo(() => {
     const seen = new Set<string>();
@@ -55,7 +62,7 @@ export const useBatchHeadToHead = (teamPairs: TeamPair[]): BatchHeadToHeadResult
 
       return fetchBatchHeadToHead(pairsJson);
     },
-    enabled: validPairs.length > 0,
+    enabled: enabled && validPairs.length > 0,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
@@ -89,6 +96,6 @@ export const useBatchHeadToHead = (teamPairs: TeamPair[]): BatchHeadToHeadResult
 
   return {
     getHeadToHead,
-    isLoading: validPairs.length > 0 && isLoading,
+    isLoading: enabled && validPairs.length > 0 && isLoading,
   };
 };

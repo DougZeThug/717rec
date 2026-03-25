@@ -52,6 +52,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
     team2Details: match.team2Details,
     isCompleted,
     winnerId: match.winnerId,
+    prefetchedH2H,
   });
 
   const team1IsWinner =

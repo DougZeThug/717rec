@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
+import type { HeadToHeadData } from '@/hooks/useBatchHeadToHead';
 import type { HeadToHeadStats, PredictionResult, TeamStats } from '@/utils/predictions';
 import { isUpset, predictMatch } from '@/utils/predictions';
 import { fetchDivisionWeights } from '@/utils/rankingUtils/divisionWeightsCache';
@@ -21,6 +22,8 @@ interface UseMatchPredictionParams {
   team2Details: TeamDetails | null | undefined;
   isCompleted: boolean;
   winnerId?: string;
+  /** Pre-fetched H2H data from batch hook — when provided, skips the per-card H2H query */
+  prefetchedH2H?: HeadToHeadData | null;
 }
 
 interface UseMatchPredictionResult {
@@ -36,12 +39,16 @@ interface UseMatchPredictionResult {
  * For completed matches: also determines if result was an upset
  *
  * Uses: 65% Career Performance + 25% Current Season + 10% Head-to-Head
+ *
+ * When `prefetchedH2H` is supplied, the hook skips its own per-card
+ * `useMatchHeadToHead` query, eliminating redundant network requests.
  */
 export function useMatchPrediction({
   team1Details,
   team2Details,
   isCompleted,
   winnerId,
+  prefetchedH2H,
 }: UseMatchPredictionParams): UseMatchPredictionResult {
   // Fetch division weights (cached after first fetch)
   const { data: divisionWeights, isLoading: loadingDivisions } = useQuery({
@@ -53,11 +60,15 @@ export function useMatchPrediction({
   // Fetch career rankings (cached, used for career stats)
   const { data: careerRankings, isLoading: loadingCareer } = useCareerRankings();
 
-  // Fetch head-to-head data between the two teams
-  const { data: h2hData, isLoading: loadingH2H } = useMatchHeadToHead(
-    team1Details?.team_id,
-    team2Details?.team_id
+  // Only fire per-card H2H query when no prefetched data was provided
+  const hasPrefetchedH2H = prefetchedH2H !== undefined;
+  const { data: fetchedH2HData, isLoading: loadingH2H } = useMatchHeadToHead(
+    hasPrefetchedH2H ? undefined : team1Details?.team_id,
+    hasPrefetchedH2H ? undefined : team2Details?.team_id
   );
+
+  // Resolve H2H data: prefer prefetched, fall back to per-card fetch
+  const h2hData = hasPrefetchedH2H ? prefetchedH2H : fetchedH2HData;
 
   // Compute prediction using memoization to avoid recalculation
   const result = useMemo(() => {
@@ -123,6 +134,6 @@ export function useMatchPrediction({
 
   return {
     ...result,
-    isLoading: loadingDivisions || loadingCareer || loadingH2H,
+    isLoading: loadingDivisions || loadingCareer || (!hasPrefetchedH2H && loadingH2H),
   };
 }

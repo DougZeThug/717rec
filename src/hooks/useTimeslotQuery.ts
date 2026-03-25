@@ -22,8 +22,15 @@ export const useTimeslotQuery = (date: Date | null) => {
       };
     },
     enabled: !!date,
-    staleTime: 0, // Always fresh - instant updates
-    refetchInterval: 30000, // Auto-refetch every 30 seconds
+    staleTime: 30_000,
+    refetchInterval: () => {
+      if (typeof document !== 'undefined' && document.hidden) return false;
+      if (typeof navigator !== 'undefined' && !navigator.onLine) return false;
+      return 30_000;
+    },
+    placeholderData: (prev) => prev,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10_000),
   });
 
   return {

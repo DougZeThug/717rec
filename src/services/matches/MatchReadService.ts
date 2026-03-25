@@ -129,7 +129,7 @@ export const fetchMatchTimeslots = async (formattedDate: string) => {
     .eq('match_date', formattedDate);
 
   if (error) {
-    throw new Error('Failed to load timeslots');
+    throw new Error(`Failed to load timeslots: ${error.message}`);
   }
 
   return data ?? [];
