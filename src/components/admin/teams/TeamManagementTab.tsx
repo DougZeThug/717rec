@@ -304,9 +304,9 @@ const TeamManagementTab = () => {
                       >
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            {(team.logo_url || team.image_url) ? (
+                            {(team.logoUrl || team.imageUrl) ? (
                               <img
-                                src={team.logo_url || team.image_url}
+                                src={team.logoUrl || team.imageUrl}
                                 alt={team.name}
                                 className="h-6 w-6 rounded-full object-cover shrink-0"
                               />
