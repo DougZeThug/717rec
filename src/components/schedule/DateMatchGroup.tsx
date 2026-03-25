@@ -69,7 +69,7 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
         />
       </CollapsibleTrigger>
       <CollapsibleContent id={`content-${formattedDate}`}>
-        <div className="p-4 space-y-3">
+        <div className="p-3 space-y-3">
           {sortedTimeSlots.length > 0 ? (
             sortedTimeSlots.map((timeSlot, index) => (
               <TimeSlotMatchGroup
