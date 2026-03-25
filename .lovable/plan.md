@@ -1,45 +1,26 @@
 
 
-## Consolidate Team Details Sections
+## Add Record to Team Row + Game Record to Grid
 
-Currently there are 10 sections visible on the page. Several are closely related and can be grouped to reduce the list from 10 to 6:
+### Changes — `src/components/stats/RankingCard.tsx`
 
-### Proposed groupings
+**1. Team row (lines 194-212)**: Add the match record (`W-L`) as a bold element on the right side of the team row, across from the logo+name:
 
-| Current sections | Merged into |
-|---|---|
-| Rivalry Highlights + Head-to-Head Records | **Matchups & Rivalries** (single collapsible, rivalry highlights on top, H2H table below) |
-| Career Statistics + Career Power Score Trend | **Career** (single collapsible, totals on top, chart below) |
-| Team Stats & Advanced + Report Card | **Stats & Report Card** (single collapsible with tabs or stacked: stats first, report card below) |
+```text
+[logo] Team Name          2-4
+       Division Name
+```
 
-### Result: 6 sections instead of 10
+- Change the Link wrapper to include `justify-between`
+- Add a large bold record display on the right: `text-base font-bold`
 
-1. **Performance Cards** (always visible)
-2. **Roster** (default open)
-3. **Stats & Report Card** — combines current stats/advanced + report card. Summary shows record + grade (e.g. "2-4 · C")
-4. **Matchups & Rivalries** — combines rivalry highlights + H2H records. Summary shows top rival
-5. **Match History** — unchanged
-6. **Career & Achievements** — combines career stats + power score trend + achievements. Summary could show total career matches or badge count
+**2. Stat grid (lines 222-247)**: Remove "Record" from the grid (it's now in the team row) and replace with "Games" showing `gamesWon-gamesLost`. Keep the 2x2 layout:
 
-### Changes
+| Win % | SOS |
+| Games | Game % |
 
-**`src/pages/TeamDetails.tsx`**
-- Merge sections 3+4 (Stats & Report Card) into one `CollapsibleSection`
-- Merge sections 5+6 (Rivalry + H2H) into one `CollapsibleSection` titled "Matchups & Rivalries"
-- Merge sections 7+8+9 (Career Stats + Career Power Score Trend + Achievements) into one `CollapsibleSection` titled "Career & Achievements"
-- Remove individual `CollapsibleSection` wrappers from `TeamReportCard` and `RivalryHighlights` — render their content directly inside the parent collapsible
-- Update sticky nav section IDs accordingly
+Where "Games" shows `{ranking.gamesWon}-{ranking.gamesLost}` (individual game record).
 
-**`src/components/teams/TeamDetailsStickyNav.tsx`**
-- Update nav items to match the 6 sections
-
-**`src/components/teams/TeamReportCard.tsx`**
-- Export inner content separately (or add a `renderContent` mode) so it can be embedded without its own collapsible wrapper
-
-**`src/components/teams/RivalryHighlights.tsx`**
-- Same: export content without collapsible wrapper for embedding
-
-### Technical details
-- `TeamReportCard` and `RivalryHighlights` currently wrap themselves in `CollapsibleSection`. Add a `standalone={false}` prop (or similar) to render just the content without the wrapper, so the parent page controls the collapsible
-- Combined summary values: `summaryValue={`${team.wins}-${team.losses} · ${grade}`}` for Stats & Report Card
+### Files
+- **Edit**: `src/components/stats/RankingCard.tsx` (lines 194-247)
 
