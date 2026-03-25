@@ -237,7 +237,20 @@ const TeamManagementTab = () => {
                     className="border border-border rounded-lg p-3 space-y-2 bg-card"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-sm truncate mr-2">{team.name}</span>
+                      <div className="flex items-center gap-2 min-w-0">
+                        {(team.logoUrl || team.imageUrl) ? (
+                          <img
+                            src={team.logoUrl || team.imageUrl}
+                            alt={team.name}
+                            className="h-6 w-6 rounded-full object-cover shrink-0"
+                          />
+                        ) : (
+                          <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center shrink-0">
+                            <Users className="h-3 w-3 text-muted-foreground" />
+                          </div>
+                        )}
+                        <span className="font-medium text-sm truncate">{team.name}</span>
+                      </div>
                       <motion.div whileTap={{ scale: 0.9 }}>
                         <Button
                           variant="outline"
@@ -247,13 +260,6 @@ const TeamManagementTab = () => {
                           <Edit className="h-3 w-3" />
                         </Button>
                       </motion.div>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                      <span>
-                        {team.wins}-{team.losses} ({team.game_wins}-{team.game_losses})
-                      </span>
-                      <span>·</span>
-                      <span>{team.players?.length || 0} players</span>
                     </div>
                     <Select
                       value={team.division_id || 'unassigned'}
@@ -285,10 +291,8 @@ const TeamManagementTab = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Team Name</TableHead>
-                      <TableHead>Record</TableHead>
+                      <TableHead>Team</TableHead>
                       <TableHead>Division</TableHead>
-                      <TableHead>Players</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -298,11 +302,21 @@ const TeamManagementTab = () => {
                         key={team.id}
                         className="transition-colors duration-150 hover:bg-muted/50 active:bg-muted"
                       >
-                        <TableCell className="font-medium">{team.name}</TableCell>
                         <TableCell>
-                          <span className="text-sm">
-                            {team.wins}-{team.losses} ({team.game_wins}-{team.game_losses})
-                          </span>
+                          <div className="flex items-center gap-2">
+                            {(team.logoUrl || team.imageUrl) ? (
+                              <img
+                                src={team.logoUrl || team.imageUrl}
+                                alt={team.name}
+                                className="h-6 w-6 rounded-full object-cover shrink-0"
+                              />
+                            ) : (
+                              <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center shrink-0">
+                                <Users className="h-3 w-3 text-muted-foreground" />
+                              </div>
+                            )}
+                            <span className="font-medium">{team.name}</span>
+                          </div>
                         </TableCell>
                         <TableCell>
                           <Select
@@ -326,11 +340,6 @@ const TeamManagementTab = () => {
                               ))}
                             </SelectContent>
                           </Select>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm text-muted-foreground">
-                            {team.players?.length || 0} players
-                          </span>
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
