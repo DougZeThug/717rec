@@ -51,6 +51,18 @@ export function useAutoScheduleSave() {
         throw new Error(`Schedule validation failed: ${errorMessages}`);
       }
 
+      // Show rematch warnings (non-blocking)
+      if (validation.warnings.length > 0) {
+        const rematchCount = validation.warnings.filter((w) => w.type === 'rematch').length;
+        if (rematchCount > 0) {
+          toast({
+            title: 'Rematch Warning',
+            description: `${rematchCount} match${rematchCount !== 1 ? 'es' : ''} involve teams that have already played this season.`,
+            variant: 'default',
+          });
+        }
+      }
+
       // Build per-timeslot court counters
       const timeslotCourtCounters = new Map<string, number>();
       const matchesToInsert = matches.map((match) => {
