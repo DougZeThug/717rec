@@ -191,25 +191,30 @@ const RankingCard: React.FC<RankingCardProps> = ({
       </div>
 
       {/* Team row: logo + name + division */}
-      <Link
-        to={`/teams/${toTeamSlug(ranking.teamName)}`}
-        state={{ from: '/stats', scrollPosition: window.scrollY }}
-        aria-label={`View ${ranking.teamName} team details`}
-        className="flex items-center gap-2 mb-2 group"
-      >
-        <TeamLogo
-          imageUrl={ranking.imageUrl || ranking.logoUrl}
-          teamName={ranking.teamName}
-          size="sm"
-          className="flex-shrink-0"
-        />
-        <div className="min-w-0">
-          <h3 className="font-semibold text-sm transition-colors truncate text-foreground group-hover:text-primary">
-            {ranking.teamName}
-          </h3>
-          <p className="text-xs text-muted-foreground">{ranking.divisionName}</p>
-        </div>
-      </Link>
+      <div className="flex items-center justify-between mb-2">
+        <Link
+          to={`/teams/${toTeamSlug(ranking.teamName)}`}
+          state={{ from: '/stats', scrollPosition: window.scrollY }}
+          aria-label={`View ${ranking.teamName} team details`}
+          className="flex items-center gap-2 min-w-0 group"
+        >
+          <TeamLogo
+            imageUrl={ranking.imageUrl || ranking.logoUrl}
+            teamName={ranking.teamName}
+            size="sm"
+            className="flex-shrink-0"
+          />
+          <div className="min-w-0">
+            <h3 className="font-semibold text-sm transition-colors truncate text-foreground group-hover:text-primary">
+              {ranking.teamName}
+            </h3>
+            <p className="text-xs text-muted-foreground">{ranking.divisionName}</p>
+          </div>
+        </Link>
+        <span className="text-base font-bold tabular-nums text-foreground flex-shrink-0">
+          {ranking.wins}-{ranking.losses}
+        </span>
+      </div>
 
       {/* Stats section: Power gauge left, 2x2 grid right */}
       <div className="flex items-center gap-3">
