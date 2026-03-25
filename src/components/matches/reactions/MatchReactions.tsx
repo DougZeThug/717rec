@@ -37,7 +37,7 @@ const MatchReactions: React.FC<MatchReactionsProps> = ({ matchId }) => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-1 mt-2 h-6">
+      <div className="flex items-center gap-1 h-6">
         <div className="w-6 h-6 bg-muted/20 rounded-full animate-pulse"></div>
       </div>
     );
@@ -45,7 +45,7 @@ const MatchReactions: React.FC<MatchReactionsProps> = ({ matchId }) => {
 
   return (
     <div
-      className={cn('flex flex-wrap items-center gap-1.5 mt-2', animations.fadeIn)}
+      className={cn('flex flex-wrap items-center justify-end gap-1', animations.fadeIn)}
       role="group"
       aria-label="Match reactions"
     >

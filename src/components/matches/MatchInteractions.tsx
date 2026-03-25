@@ -13,9 +13,11 @@ interface MatchInteractionsProps {
 
 const MatchInteractions: React.FC<MatchInteractionsProps> = ({ matchId, className }) => {
   return (
-    <div className={cn('border-t border-border/40 mt-2 pt-2', className, animations.fadeIn)}>
-      <MatchReactions matchId={matchId} />
-      <MatchComments matchId={matchId} />
+    <div className={cn('border-t border-border/40 mt-1.5 pt-1.5', className, animations.fadeIn)}>
+      <div className="flex items-start justify-between gap-2">
+        <MatchComments matchId={matchId} />
+        <MatchReactions matchId={matchId} />
+      </div>
     </div>
   );
 };
