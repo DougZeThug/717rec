@@ -176,8 +176,9 @@ const RankingCard: React.FC<RankingCardProps> = ({
   }
 
   return (
-    <EntityCard className="ranking-card p-4" withGradient={false}>
-      <div className="flex items-center justify-between mb-3">
+    <EntityCard className="ranking-card p-3" withGradient={false}>
+      {/* Top row: Rank + trend left, badges right */}
+      <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
           <span className="text-lg font-bold whitespace-nowrap text-foreground">
             {formatRankDisplay()}
@@ -187,62 +188,60 @@ const RankingCard: React.FC<RankingCardProps> = ({
         <TeamBadgeCollection teamId={ranking.teamId} size="sm" maxDisplay={3} />
       </div>
 
+      {/* Team row: logo + name + division */}
       <Link
         to={`/teams/${toTeamSlug(ranking.teamName)}`}
         state={{ from: '/stats', scrollPosition: window.scrollY }}
         aria-label={`View ${ranking.teamName} team details`}
-        className="flex items-center gap-3 mb-4 group"
+        className="flex items-center gap-2 mb-2 group"
       >
         <TeamLogo
           imageUrl={ranking.imageUrl || ranking.logoUrl}
           teamName={ranking.teamName}
-          size="md"
+          size="sm"
           className="flex-shrink-0"
         />
         <div className="min-w-0">
-          <h3 className="font-semibold transition-colors truncate text-foreground group-hover:text-primary">
+          <h3 className="font-semibold text-sm transition-colors truncate text-foreground group-hover:text-primary">
             {ranking.teamName}
           </h3>
-          <p className="text-sm text-muted-foreground">{ranking.divisionName}</p>
+          <p className="text-xs text-muted-foreground">{ranking.divisionName}</p>
         </div>
       </Link>
 
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <p className="font-medium text-muted-foreground">Record</p>
-          <p className="font-bold tabular-nums text-foreground">
-            {ranking.wins}-{ranking.losses}
-          </p>
+      {/* Stats section: Power gauge left, 2x2 grid right */}
+      <div className="flex items-center gap-3">
+        {/* Power Score Gauge */}
+        <div className="flex-shrink-0">
+          <PowerScoreGauge score={ranking.powerScore} size="md" showLabel />
         </div>
-        <div>
-          <p className="font-medium text-muted-foreground">Win %</p>
-          <p className={cn('font-bold tabular-nums', winPercentageColorClass)}>
-            {hasGames ? `${winPercentage.toFixed(1)}%` : '—'}
-          </p>
-        </div>
-        <div>
-          <p className="font-medium text-muted-foreground">Games</p>
-          <p className="font-bold tabular-nums text-foreground">
-            {ranking.gamesWon || 0}-{ranking.gamesLost || 0}
-          </p>
-        </div>
-        <div>
-          <p className="font-medium text-muted-foreground">Game %</p>
-          <p className={cn('font-bold tabular-nums', gameWinPercentageColorClass)}>
-            {gameWinPercentage.toFixed(1)}%
-          </p>
-        </div>
-        <div>
-          <p className="font-medium text-muted-foreground">Power</p>
-          <p className={cn('font-bold tabular-nums', getPowerScoreColor(ranking.powerScore))}>
-            {formatPowerScore(ranking.powerScore)}
-          </p>
-        </div>
-        <div>
-          <p className="font-medium text-muted-foreground">SOS</p>
-          <p className={cn('font-bold tabular-nums', getSosColor(ranking.sos || 0))}>
-            {(ranking.sos || 0).toFixed(3)}
-          </p>
+
+        {/* 2x2 stat grid */}
+        <div className="grid grid-cols-2 gap-1.5 flex-1 min-w-0">
+          <div className="rounded-md bg-muted/50 px-2 py-1.5">
+            <p className="text-[10px] text-muted-foreground leading-tight">Record</p>
+            <p className="text-sm font-bold tabular-nums text-foreground leading-tight">
+              {ranking.wins}-{ranking.losses}
+            </p>
+          </div>
+          <div className="rounded-md bg-muted/50 px-2 py-1.5">
+            <p className="text-[10px] text-muted-foreground leading-tight">Win %</p>
+            <p className={cn('text-sm font-bold tabular-nums leading-tight', winPercentageColorClass)}>
+              {hasGames ? `${winPercentage.toFixed(1)}%` : '—'}
+            </p>
+          </div>
+          <div className="rounded-md bg-muted/50 px-2 py-1.5">
+            <p className="text-[10px] text-muted-foreground leading-tight">SOS</p>
+            <p className={cn('text-sm font-bold tabular-nums leading-tight', getSosColor(ranking.sos || 0))}>
+              {(ranking.sos || 0).toFixed(3)}
+            </p>
+          </div>
+          <div className="rounded-md bg-muted/50 px-2 py-1.5">
+            <p className="text-[10px] text-muted-foreground leading-tight">Game %</p>
+            <p className={cn('text-sm font-bold tabular-nums leading-tight', gameWinPercentageColorClass)}>
+              {gameWinPercentage.toFixed(1)}%
+            </p>
+          </div>
         </div>
       </div>
     </EntityCard>
