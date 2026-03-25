@@ -203,7 +203,7 @@ const TeamManagementTab = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Filters */}
-              <div className="flex gap-4 items-center">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
@@ -214,7 +214,7 @@ const TeamManagementTab = () => {
                   />
                 </div>
                 <Select value={selectedDivision} onValueChange={setSelectedDivision}>
-                  <SelectTrigger className="w-48">
+                  <SelectTrigger className="w-full sm:w-48">
                     <SelectValue placeholder="Filter by division" />
                   </SelectTrigger>
                   <SelectContent>
@@ -229,8 +229,59 @@ const TeamManagementTab = () => {
                 </Select>
               </div>
 
-              {/* Teams Table */}
-              <div className="border rounded-lg">
+              {/* Mobile Card List */}
+              <div className="space-y-3 sm:hidden">
+                {filteredTeams.map((team) => (
+                  <div
+                    key={team.id}
+                    className="border border-border rounded-lg p-3 space-y-2 bg-card"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-sm truncate mr-2">{team.name}</span>
+                      <motion.div whileTap={{ scale: 0.9 }}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditingTeam(team)}
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                      </motion.div>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                      <span>
+                        {team.wins}-{team.losses} ({team.game_wins}-{team.game_losses})
+                      </span>
+                      <span>·</span>
+                      <span>{team.players?.length || 0} players</span>
+                    </div>
+                    <Select
+                      value={team.division_id || 'unassigned'}
+                      onValueChange={(value) =>
+                        handleDivisionChange(team.id, value === 'unassigned' ? null : value)
+                      }
+                      disabled={isUpdating === team.id}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="unassigned">
+                          <Badge variant="secondary">Unassigned</Badge>
+                        </SelectItem>
+                        {divisions.map((division) => (
+                          <SelectItem key={division.id} value={division.id}>
+                            {division.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table */}
+              <div className="border rounded-lg hidden sm:block">
                 <Table>
                   <TableHeader>
                     <TableRow>
