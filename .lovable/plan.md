@@ -1,23 +1,25 @@
 
 
-## Show Game Scores, Remove Checkmarks and Sub-Scores
+## Fix Admin Team Management for Mobile
 
-### What changes
-On the Schedule page MatchCard, for completed matches:
-1. Display **game wins** (e.g. 2-0, 2-1) in the score pill instead of overall match score (team1Score/team2Score)
-2. Remove the small `(game_wins)` text below each team name (lines 170-172, 216-218)
-3. Remove the green `<Check>` icon next to winner names (lines 166, 212)
-4. Remove the `Check` import from lucide-react (line 1)
+The current "Manage Teams" table has 5 columns (Name, Record, Division, Players, Actions) with fixed-width selects, causing horizontal overflow on 360px screens. The fix replaces the table with a stacked card layout on mobile.
 
-### File: `src/components/schedule/MatchCard.tsx`
+### Changes — `src/components/admin/teams/TeamManagementTab.tsx`
 
-**Score pill** (lines 185-191): For completed matches, show `match.team1_game_wins` / `match.team2_game_wins` instead of `match.team1Score` / `match.team2Score`. For upcoming matches, keep showing `0 – 0`.
+**1. Filters row (lines 206-230)** — Stack search and division filter vertically on mobile:
+- Change `flex gap-4 items-center` to `flex flex-col sm:flex-row gap-2 sm:gap-4`
+- Remove fixed `w-48` on division SelectTrigger, use `w-full sm:w-48`
 
-**Winner detection**: Update `team1IsWinner`/`team2IsWinner` (lines 57-66) to use `team1_game_wins > team2_game_wins` since we're now displaying game wins as the primary score.
+**2. Teams list (lines 232-301)** — Replace the table with a responsive approach:
+- **Mobile (below `sm`)**: Render a stacked card list instead of the table. Each card shows:
+  - Row 1: **Team name** (bold) + Edit button (right-aligned)
+  - Row 2: Record badge + Player count
+  - Row 3: Division select (full width)
+- **Desktop (`sm`+)**: Keep the existing table as-is, wrapped in `hidden sm:block`
+- Use `sm:hidden` on the card list and `hidden sm:block` on the table container
 
-**Remove** the `<Check>` icons on lines 166 and 212.
+**3. Stats cards (line 147)** — Already responsive with `grid-cols-1 md:grid-cols-3`, no change needed.
 
-**Remove** the `(game_wins)` spans on lines 170-172 and 216-218.
-
-**Remove** `Check` from the lucide-react import.
+### Files
+- **Edit**: `src/components/admin/teams/TeamManagementTab.tsx`
 
