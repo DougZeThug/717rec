@@ -56,14 +56,14 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
   const team1IsWinner =
     isCompleted &&
-    match.team1Score !== undefined &&
-    match.team2Score !== undefined &&
-    match.team1Score > match.team2Score;
+    match.team1_game_wins !== undefined &&
+    match.team2_game_wins !== undefined &&
+    (match.team1_game_wins || 0) > (match.team2_game_wins || 0);
   const team2IsWinner =
     isCompleted &&
-    match.team1Score !== undefined &&
-    match.team2Score !== undefined &&
-    match.team2Score > match.team1Score;
+    match.team1_game_wins !== undefined &&
+    match.team2_game_wins !== undefined &&
+    (match.team2_game_wins || 0) > (match.team1_game_wins || 0);
 
   const isPostponed = match.status === 'postponed';
   const isCanceled = match.status === 'canceled';
