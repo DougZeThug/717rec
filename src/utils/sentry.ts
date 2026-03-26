@@ -63,40 +63,41 @@ export const initSentry = () => {
 
     // Filter out known non-critical errors
     beforeSend(event, hint) {
-      // Filter network errors from message events (sent via captureMessage)
-      const eventMessage = event.message || '';
-      if (
-        eventMessage.includes('Failed to fetch') ||
-        eventMessage.includes('Load failed') ||
-        eventMessage.includes('NetworkError')
-      ) {
-        return null;
-      }
-
-      // Filter network errors from exception values (covers cases where hint may not have originalException)
-      const exceptionValue = event.exception?.values?.[0]?.value || '';
-      if (
-        exceptionValue.includes('Failed to fetch') ||
-        exceptionValue.includes('Load failed') ||
-        exceptionValue.includes('NetworkError')
-      ) {
-        return null;
-      }
-
       const error = hint.originalException;
 
-      // Ignore network errors that are expected
+      // ── Browser-level noise filters (non-network) ──
       if (error instanceof Error) {
-        const message = error.message.toLowerCase();
+        const msg = error.message.toLowerCase();
+        if (msg.includes('resizeobserver loop') || msg.includes('loading chunk')) {
+          return null;
+        }
+      }
 
-        // Ignore common non-actionable errors
+      // ── Network error filter — only suppress actual browser TypeError fetch failures ──
+      // Browser throws `TypeError: Failed to fetch` / `TypeError: Load failed` / `TypeError: NetworkError`
+      // for genuine network issues. Application errors like "Failed to fetch match data" must NOT be dropped.
+      const isNetworkTypeError = error instanceof TypeError;
+
+      if (isNetworkTypeError) {
+        const msg = error.message.toLowerCase();
         if (
-          message.includes('resizeobserver loop') ||
-          message.includes('loading chunk') ||
-          message.includes('failed to fetch') ||
-          message.includes('load failed') ||
-          message.includes('networkerror') ||
-          message.includes('network request failed')
+          msg.includes('failed to fetch') ||
+          msg.includes('load failed') ||
+          msg.includes('networkerror') ||
+          msg.includes('network request failed')
+        ) {
+          return null;
+        }
+      }
+
+      // For captureMessage events (no originalException), only filter if it looks like a bare network error
+      if (!error && event.message) {
+        const m = event.message;
+        if (
+          m === 'Failed to fetch' ||
+          m === 'Load failed' ||
+          m === 'NetworkError' ||
+          m === 'Network request failed'
         ) {
           return null;
         }
