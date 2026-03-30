@@ -289,12 +289,12 @@ export const useHistoryEditing = ({
   // Remove an empty division
   const removeDivision = useCallback(
     (name: string): boolean => {
-      const teamsInDivision = teams.filter((t) => t.division_name === name);
+      const teamsInDivision = teams.filter((t) => divisionsMatch(t.division_name, name));
       if (teamsInDivision.length > 0) {
         return false; // Can't remove division with teams
       }
 
-      setCustomDivisions((prev) => prev.filter((d) => d !== name));
+      setCustomDivisions((prev) => prev.filter((d) => !divisionsMatch(d, name)));
       return true;
     },
     [teams]
