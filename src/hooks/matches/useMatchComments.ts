@@ -53,6 +53,18 @@ export const useMatchComments = (matchId: string) => {
           setComments((curr) => [...curr, newComment]);
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'match_comments',
+          filter: `match_id=eq.${matchId}`,
+        },
+        (payload) => {
+          setComments((curr) => curr.filter((c) => c.id !== payload.old.id));
+        }
+      )
       .subscribe();
 
     return () => {
