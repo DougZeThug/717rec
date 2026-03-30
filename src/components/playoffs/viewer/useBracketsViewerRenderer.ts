@@ -75,6 +75,10 @@ export const useBracketsViewerRenderer = ({
   const lastFingerprintRef = useRef<string | null>(null);
 
   useEffect(() => {
+    lastFingerprintRef.current = null;
+  }, [refreshCounter]);
+
+  useEffect(() => {
     if (!isScriptReady || !containerRef.current || !bracket?.id) {
       return;
     }
