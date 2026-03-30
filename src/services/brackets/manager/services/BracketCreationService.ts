@@ -108,19 +108,21 @@ export class BracketCreationService {
         ) as StorageParticipant[];
 
         for (const participant of participantArray) {
-          if (participant.name === null) {
-            await supabase
+      if (participant.name === null) {
+            const { error: byeError } = await supabase
               .from('participant')
               .update({ position: null, team_id: null })
               .eq('id', participant.id);
+            if (byeError) handleDatabaseError(byeError, 'Failed to sync BYE participant');
           } else {
             const team = teamsBySeed.find((t) => t.name === participant.name);
             if (team) {
               const slotPosition = teamsBySeed.indexOf(team) + 1;
-              await supabase
+              const { error: teamError } = await supabase
                 .from('participant')
                 .update({ position: slotPosition, team_id: team.id })
                 .eq('id', participant.id);
+              if (teamError) handleDatabaseError(teamError, 'Failed to sync participant to team');
             }
           }
         }
