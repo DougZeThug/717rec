@@ -190,9 +190,9 @@ export const useHistoryEditing = ({
 
       // Recalculate consecutive ranks for the source division
       const sourceRankMap = new Map<string, number>();
-      if (fromDivision && fromDivision !== toDivision) {
+      if (fromDivision && !divisionsMatch(fromDivision, toDivision)) {
         const sourceDivisionTeams = updated
-          .filter((t) => t.division_name === fromDivision)
+          .filter((t) => divisionsMatch(t.division_name, fromDivision))
           .sort((a, b) => {
             if (a.playoff_rank !== null && b.playoff_rank !== null) {
               return a.playoff_rank - b.playoff_rank;
