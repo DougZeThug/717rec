@@ -189,7 +189,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
           </span>
           {showRankChange && <RankTrendIndicator rankChange={ranking.rankChange} />}
         </div>
-        <TeamBadgeCollection teamId={ranking.teamId} size="sm" maxDisplay={3} />
+        <TeamBadgeCollection teamId={ranking.teamId} size="sm" maxDisplay={3} prefetchedBadges={prefetchedBadges} />
       </div>
 
       {/* Team row: logo + name + division */}
