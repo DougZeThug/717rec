@@ -36,6 +36,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
   divisions,
   teams,
   onBracketCreated,
+  seasonId,
 }) => {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [dialogError, setDialogError] = React.useState<string | null>(null);
