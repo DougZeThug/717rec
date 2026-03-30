@@ -1,51 +1,35 @@
 
-Goal: fix the black/empty bracket area by aligning our renderer behavior with brackets-viewer docs.
 
-What I found
-1) Your test bracket is saved correctly and has real bracket-manager data:
-- bracket exists with `season_id`
-- stage exists (`double_elimination`)
-- groups/rounds/matches exist (31 matches)
+## Fix: Prevent Self-Escalation via profiles UPDATE Policy
 
-2) The current renderer has custom “block rendering” guards that are not part of brackets-viewer docs:
-- In `useBracketsViewerRenderer.ts`, it computes `sourcePct` and aborts render when `< 0.6`.
-- New/bye-heavy double elimination brackets naturally have many unresolved slots, so this threshold can fail even when data is valid.
-- That produces the “empty black” panel.
+### Problem
+The current `Users can update own profile` policy only checks `auth.uid() = id` — it doesn't restrict which columns can be changed. A user could set `is_admin = true` on their own row and gain full admin access.
 
-3) brackets-viewer documentation expects rendering with:
-- `stages`, `matches`, `matchGames`, `participants` (plus optional `groups/rounds`)
-- Missing connector source metadata should affect connector lines, not prevent the whole bracket UI from rendering.
+### Fix
 
-Implementation plan (small, safe diff)
-1) Update `src/components/playoffs/viewer/useBracketsViewerRenderer.ts`
-- Remove the hard stop:
-  - delete/replace `if (sourcePct < 0.6) return;`
-- Keep the metric, but only log a warning for diagnostics.
-- Continue calling `window.bracketsViewer.render(...)` whenever `matches.length > 0` and `stages.length > 0`.
+**One migration** — replace the UPDATE policy with a WITH CHECK that ensures `is_admin` stays unchanged:
 
-2) Make identity-tag validation non-blocking (same file)
-- Current code sets fatal error and returns when symbol tags are missing.
-- Change this to warn-only so valid brackets still render.
-- This avoids false negatives from internal object-shape differences.
+```sql
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 
-3) Keep existing error handling for real failures
-- Preserve script-load and render try/catch behavior.
-- Preserve “no matches/stages” guard as the only render blocker.
+CREATE POLICY "Users can update own profile"
+ON public.profiles
+FOR UPDATE
+TO authenticated
+USING (id = auth.uid())
+WITH CHECK (
+  id = auth.uid()
+  AND is_admin = (SELECT p.is_admin FROM public.profiles p WHERE p.id = auth.uid())
+);
+```
 
-Why this is the right fix
-- It matches brackets-viewer intended usage from docs.
-- It fixes empty-screen behavior without touching DB schema/services.
-- It keeps diagnostics, but stops non-standard prechecks from blocking valid brackets.
+This allows users to update `username`, `full_name`, `avatar_url` freely, but any attempt to change `is_admin` will be rejected because the WITH CHECK compares the new value against the current value.
 
-Files to change
-- `src/components/playoffs/viewer/useBracketsViewerRenderer.ts` (only file)
+### Why not a trigger?
+A trigger would work but adds complexity. The WITH CHECK approach is simpler and enforced at the policy level — no extra function needed.
 
-Verification checklist (end-to-end)
-1) Open your test bracket (the one in the screenshot): bracket cards should appear instead of a blank area.
-2) Refresh the page: bracket should still render.
-3) Create a new bracket with BYEs: first round and structure should render immediately.
-4) Open a completed bracket: ensure connectors and match click still work.
+### Note on recursion
+The subquery `SELECT p.is_admin FROM profiles p WHERE p.id = auth.uid()` references the same table. Since this is in a WITH CHECK (not USING), and the USING clause already restricts to the user's own row, Postgres evaluates this without recursion issues. However, if the linter flags it, we can wrap it in a `SECURITY DEFINER` function instead.
 
-Technical note
-- This is a display-layer fix only.
-- No migration, no service contract change, no brackets-manager storage change.
+**One migration file, no code changes.**
+
