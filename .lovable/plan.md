@@ -1,40 +1,64 @@
 
 
-## Fix: BYE Match Winners Not Propagating to Next LB Round
+## Fix: BYE Propagation Overwrites Existing Opponents in LB
 
-### Problem
-When a BYE match (e.g., LB R2) is scored, `manager.update.match()` crashes with "Position is undefined." We catch this as non-fatal, but **propagation never happens** — the winner stays stuck and never advances to LB R3. The existing normalizations only cover LB R1 duplicates and Grand Final population, so intermediate LB rounds are missed entirely.
+### What's Happening (Plain Language)
+
+When Birds of Prey advances via walkover in LB R1, the code calculates where to place them in LB R2. It uses simple math (`Math.ceil(1/2) = 1`, slot = opponent1) which puts them in LB R2 Match 1's opponent1 slot — **but 3 Amigos was already sitting there** (they dropped from WB). So 3 Amigos gets silently overwritten and vanishes.
+
+The same bug caused Bag Babies to duplicate over Cuzzo's Clinic later — the `propagateCompletedMatches` normalization uses the same faulty logic and overwrites occupied slots.
 
 ### Root Cause
-The library rejects updates on BYE-completed matches (`status: Locked/Waiting`). Our code unlocks them via direct SQL, but this desynchronizes the library's internal state. When `manager.update.match()` runs, the library's propagation logic crashes because participant positions are undefined in the modified match.
 
-### Fix: Skip the Library for BYE Matches, Propagate Manually
+Two problems in both the BYE path and `propagateCompletedMatches`:
 
-**File: `src/services/brackets/manager/services/BracketUpdateService.ts`**
+1. **Wrong match number for 1:1 LB rounds**: In double elimination, LB alternates between "minor" rounds (survivors play each other, halving the count) and "major" rounds (WB losers drop in, same match count). LB R1 → LB R2 is 1:1 (4 matches → 4 matches), so match 1 should map to match 1 directly — not `Math.ceil(1/2) = 1` (which happens to be correct for match 1 but wrong for match 2: `ceil(2/2) = 1` instead of 2).
 
-When the match is a BYE match, bypass `manager.update.match()` entirely and handle everything via direct SQL:
+2. **No occupied-slot check**: The code blindly writes to the calculated slot without checking if a different participant is already there. It should never overwrite an existing opponent.
 
-1. **Mark the BYE match as completed** — set the present opponent's score/result to `win`, status to `4` (Completed), directly in the database.
-2. **Find the next match** — query the next round in the same group, calculate the target match number (`Math.ceil(currentMatch.number / 2)`) and slot (odd match → opponent1, even → opponent2).
-3. **Place the winner** — update the next match's opponent slot with the winner's participant ID and set status to `2` (Ready) if it's currently Locked/Waiting.
-4. **Skip `manager.update.match()`** — the `continue`-to-normalization flow runs as before, but the library call is bypassed for BYE matches.
+### Fix
 
-**File: `src/services/brackets/manager/services/BracketNormalizationService.ts`**
+**File: `src/services/brackets/manager/services/BracketUpdateService.ts`** — BYE path (lines 95-143)
 
-Add a new `propagateCompletedMatches(stageId)` method as a safety net:
+Replace the static `Math.ceil(n/2)` + odd/even slot logic with:
+1. Count matches in current round vs next round to determine mapping (1:1 or 2:1)
+2. If 1:1: `nextMatchNumber = currentMatch.number`, find the empty slot
+3. If 2:1: `nextMatchNumber = Math.ceil(n/2)`, standard slot logic
+4. **Critical guard**: before writing, check if the target slot already has a different participant. If so, use the other slot. If both occupied, skip (don't overwrite).
 
-1. Find all matches in the LB (group 2) that are status `4` (Completed) with a winner.
-2. For each, verify the winner appears in the next round's corresponding match.
-3. If missing, place the winner in the correct slot.
+**File: `src/services/brackets/manager/services/BracketNormalizationService.ts`** — `propagateCompletedMatches` (lines 340-376)
 
-Call this from `BracketUpdateService` alongside the existing normalizations.
+Same fix:
+1. Count matches in current vs next round for correct mapping
+2. Add occupied-slot guard: if calculated slot has a different participant, try the other slot. If both full, skip.
+
+### Technical Detail
+
+```text
+LB Round Structure (16-team double elim):
+  LB R1: 4 matches  ──1:1──▶  LB R2: 4 matches (WB R2 losers drop in)
+  LB R2: 4 matches  ──2:1──▶  LB R3: 2 matches (internal LB)
+  LB R3: 2 matches  ──1:1──▶  LB R4: 2 matches (WB R3 losers drop in)
+  LB R4: 2 matches  ──2:1──▶  LB R5: 1 match   (internal LB)
+  ...
+
+Mapping logic:
+  if nextRoundMatchCount == currentRoundMatchCount:
+    nextMatchNumber = match.number  (1:1)
+  else:
+    nextMatchNumber = ceil(match.number / 2)  (2:1)
+
+Slot logic:
+  // Find whichever slot is empty in the target match
+  // NEVER overwrite an existing participant
+```
 
 ### Changes Summary
 
 | File | Change |
 |------|--------|
-| `BracketUpdateService.ts` | BYE match path: direct SQL update + manual propagation, skip `manager.update.match()` |
-| `BracketNormalizationService.ts` | Add `propagateCompletedMatches()` defensive normalization |
+| `BracketUpdateService.ts` | BYE path: smart match-number calc + never-overwrite guard (~15 lines changed) |
+| `BracketNormalizationService.ts` | `propagateCompletedMatches`: same smart calc + guard (~15 lines changed) |
 
-Two files, ~60 lines added.
+Two files, ~30 lines changed. No new files, no migrations.
 
