@@ -262,55 +262,60 @@ export class BracketAdminService {
   }
 
   /**
-   * Check if downstream matches have been populated with this match's winner
+   * Collect all downstream matches by following the advancement chain.
+   * Starts from the given match's winner and recursively collects matches
+   * where any cleared participant (or subsequent winners) advanced to.
    */
-  private async checkDownstreamPopulation(matchId: number): Promise<{
-    hasDownstream: boolean;
-    downstreamMatches: any[];
-    winnerParticipantId: number | string | null;
-  }> {
+  private async collectDownstreamChain(matchId: number): Promise<any[]> {
     const currentMatch = await this.storage.select('match', matchId);
-    if (!currentMatch) {
-      return { hasDownstream: false, downstreamMatches: [], winnerParticipantId: null };
-    }
+    if (!currentMatch) return [];
 
-    const winnerParticipantId = currentMatch.opponent1?.id || currentMatch.opponent2?.id;
-    if (!winnerParticipantId) {
-      return { hasDownstream: false, downstreamMatches: [], winnerParticipantId: null };
-    }
-
-    // Get current round to determine round number for directionality
     const currentRound = await this.storage.select('round', currentMatch.round_id);
-    if (!currentRound) {
-      return { hasDownstream: false, downstreamMatches: [], winnerParticipantId };
-    }
+    if (!currentRound) return [];
 
-    // Fetch all rounds for this stage to build a round-number lookup
+    // Build round-number lookup
     const allRounds = await this.storage.select('round', { stage_id: currentMatch.stage_id });
     const roundNumberById = new Map<number | string, number>();
     if (Array.isArray(allRounds)) {
-      for (const r of allRounds) {
-        roundNumberById.set(r.id, r.number);
+      for (const r of allRounds) roundNumberById.set(r.id, r.number);
+    }
+
+    // Get all matches in the same stage, sorted by round number ascending
+    const allMatches = (
+      await this.storage.select('match', { stage_id: currentMatch.stage_id })
+    ).filter((m: any) => {
+      if (m.id === matchId) return false;
+      const rn = roundNumberById.get(m.round_id);
+      return rn !== undefined && rn > currentRound.number;
+    });
+
+    allMatches.sort((a: any, b: any) => {
+      const ra = roundNumberById.get(a.round_id) ?? 0;
+      const rb = roundNumberById.get(b.round_id) ?? 0;
+      return ra - rb;
+    });
+
+    // Seed the set of participant IDs to track with the original winner
+    const trackedIds = new Set<number | string>();
+    const winnerId = currentMatch.opponent1?.id || currentMatch.opponent2?.id;
+    if (winnerId) trackedIds.add(winnerId);
+    if (trackedIds.size === 0) return [];
+
+    const result: any[] = [];
+
+    for (const m of allMatches) {
+      const o1 = m.opponent1?.id;
+      const o2 = m.opponent2?.id;
+      const hasTracked = (o1 && trackedIds.has(o1)) || (o2 && trackedIds.has(o2));
+
+      if (hasTracked) {
+        result.push(m);
+        // If this match has a winner, track them too (chain follows)
+        if (o1 && !trackedIds.has(o1)) trackedIds.add(o1);
+        if (o2 && !trackedIds.has(o2)) trackedIds.add(o2);
       }
     }
 
-    // Get all matches in the same stage
-    const allMatches = await this.storage.select('match', { stage_id: currentMatch.stage_id });
-
-    // Only consider matches in strictly later rounds that contain the winner
-    const populated = allMatches.filter((m: any) => {
-      if (m.id === matchId) return false;
-      const hasParticipant =
-        m.opponent1?.id === winnerParticipantId || m.opponent2?.id === winnerParticipantId;
-      if (!hasParticipant) return false;
-      const mRoundNumber = roundNumberById.get(m.round_id);
-      return mRoundNumber !== undefined && mRoundNumber > currentRound.number;
-    });
-
-    return {
-      hasDownstream: populated.length > 0,
-      downstreamMatches: populated,
-      winnerParticipantId,
-    };
+    return result;
   }
 }
