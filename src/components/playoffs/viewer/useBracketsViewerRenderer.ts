@@ -188,9 +188,7 @@ export const useBracketsViewerRenderer = ({
         }).length;
 
         if (tagsMissing > 0) {
-          errorLog('Identity tags missing - object identity was lost', { tagsMissing });
-          setError('Bracket data integrity failed: identity tags missing');
-          return;
+          warnLog('Identity tags missing - proceeding anyway', { tagsMissing });
         }
 
         if (cancelled) return;
