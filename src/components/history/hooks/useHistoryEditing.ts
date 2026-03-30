@@ -269,11 +269,11 @@ export const useHistoryEditing = ({
 
   // Rename a division (updates all teams in that division)
   const renameDivision = useCallback((oldName: string, newName: string) => {
-    if (oldName === newName) return;
+    if (divisionsMatch(oldName, newName)) return;
 
     setTeams((prev) =>
       prev.map((t) => {
-        if (t.division_name === oldName) {
+        if (divisionsMatch(t.division_name, oldName)) {
           return { ...t, division_name: newName };
         }
         return t;
