@@ -45,6 +45,10 @@ interface UseHistoryEditingReturn {
 // Rank offset for Intermediate 2 teams - teams with rank > this are in Int 2
 const INTERMEDIATE_2_RANK_OFFSET = 8;
 
+// Case-insensitive division name comparison
+const divisionsMatch = (a: string, b: string) =>
+  a.toLowerCase() === b.toLowerCase();
+
 // Helper to get display division name for editing (splits Intermediate into Int 1/2)
 const getEditDisplayDivision = (
   divisionName: string | null,
