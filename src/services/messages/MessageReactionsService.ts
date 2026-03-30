@@ -14,11 +14,14 @@ export const MessageReactionsService = {
   },
 
   addReaction: async (messageId: string, userId: string, emoji: string): Promise<void> => {
-    const { error } = await supabase.from('message_reactions').insert({
-      message_id: messageId,
-      user_id: userId,
-      emoji,
-    });
+    const { error } = await supabase.from('message_reactions').upsert(
+      {
+        message_id: messageId,
+        user_id: userId,
+        emoji,
+      },
+      { onConflict: 'user_id,message_id,emoji' }
+    );
 
     if (error) handleDatabaseError(error, 'Failed to add reaction');
   },

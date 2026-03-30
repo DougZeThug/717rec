@@ -21,11 +21,14 @@ export const MatchReactionsService = {
   },
 
   insertReaction: async (matchId: string, userId: string, emoji: string): Promise<void> => {
-    const { error } = await supabase.from('match_reactions').insert({
-      match_id: matchId,
-      user_id: userId,
-      emoji,
-    });
+    const { error } = await supabase.from('match_reactions').upsert(
+      {
+        match_id: matchId,
+        user_id: userId,
+        emoji,
+      },
+      { onConflict: 'user_id,match_id,emoji' }
+    );
 
     if (error) handleDatabaseError(error, 'Failed to add reaction');
   },

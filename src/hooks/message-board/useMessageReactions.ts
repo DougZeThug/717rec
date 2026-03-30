@@ -74,7 +74,10 @@ export const useMessageReactions = (messageId: string) => {
         },
         (payload) => {
           const newReaction = payload.new as MessageReaction;
-          setReactions((curr) => [...curr, newReaction]);
+          setReactions((curr) => {
+            if (curr.some((r) => r.id === newReaction.id)) return curr;
+            return [...curr, newReaction];
+          });
         }
       )
       .on(
