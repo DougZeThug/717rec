@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { errorLog } from '@/utils/logger';
+import { handleDatabaseError } from '@/utils/errorHandler';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
