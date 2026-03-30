@@ -78,8 +78,18 @@ export function useBracketsManagerRealtime(
 
     bracketLog('Setting up realtime subscription for match table', { bracketId, stageId });
 
+    const channelName = `bracket-matches-${bracketId}-${stageId}`;
+
+    // Remove any existing channel with this base name to prevent
+    // "cannot add postgres_changes callbacks after subscribe()" errors
+    supabase.getChannels().forEach((ch) => {
+      if (ch.topic.includes(`bracket-matches-${bracketId}`)) {
+        supabase.removeChannel(ch);
+      }
+    });
+
     const channel = supabase
-      .channel(`bracket-matches-${bracketId}-${stageId}`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
