@@ -1,0 +1,1 @@
+UPDATE brackets SET season_id = '9cd55eb8-672c-4a43-a9df-3552a7759cca' WHERE id IN ('e8c29d2e-f043-42d2-93e9-714e1bdb7a25', '79cc3551-9d20-42d1-8881-f234c3f83097') AND season_id IS NULL;
