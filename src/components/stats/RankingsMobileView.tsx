@@ -4,9 +4,11 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useAllTeamBadges } from '@/hooks/useTeamBadges';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { Ranking } from '@/types';
+import { TeamBadgeEvent } from '@/types/badges';
 import { debugLog } from '@/utils/logger';
 
 import LeagueLeaderboardCarousel from './LeagueLeaderboardCarousel';
