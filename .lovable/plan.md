@@ -1,39 +1,43 @@
 
 
-## Fix: Case-Insensitive Division Name Validation
+## Fix: Make `upsertTeamSeasonStats` Throw on Failure
 
 ### Problem
-Division duplicate checks use case-sensitive comparison (`Array.includes()` / `===`), allowing "Competitive" and "competitive" to coexist as separate divisions.
+`upsertTeamSeasonStats` swallows RPC errors with `warnLog`, so callers (match delete, match edit) report success even when season stats weren't refreshed. This leaves `team_season_stats` permanently out of sync with the `teams` table.
 
-### Changes
+### Fix
 
-**3 files, ~6 lines each:**
+**File: `src/services/matches/MatchWriteService.ts`**
 
-**1. `src/components/history/editing/AddDivisionButton.tsx`** (line ~39)
-Replace `existingDivisions.includes(trimmedName)` with:
+Change `upsertTeamSeasonStats` to throw on error instead of swallowing:
+
 ```typescript
-existingDivisions.some(d => d.toLowerCase() === trimmedName.toLowerCase())
+export const upsertTeamSeasonStats = async (): Promise<void> => {
+  const { error } = await supabase.rpc('upsert_team_season_stats');
+  if (error) {
+    handleDatabaseError(error, 'Failed to refresh season stats');
+  }
+};
 ```
 
-**2. `src/components/history/editing/EditableDivisionHeader.tsx`** (line ~50)
-Replace `existingDivisions.includes(trimmedValue)` with:
+- Replace `warnLog` with `handleDatabaseError` (which throws and logs to Sentry)
+- Remove the unused `warnLog` import if no other usage remains
+- Add `handleDatabaseError` import from `@/utils/errorHandler` if not already present
+
+### Why this is safe
+- `useMatchDelete` already wraps the entire operation in try/catch and shows an error toast on failure
+- `useMatchUpdate` similarly has try/catch around its stats operations
+- `applyMatchResult` in `TeamStatsService.ts` already treats season stats refresh failure as non-fatal with its own separate call — that instance should also be updated to throw for consistency
+
+### Bonus: same pattern in `TeamStatsService.ts`
+`applyMatchResult` (line ~63) has the same swallowed error:
 ```typescript
-existingDivisions.some(d => d.toLowerCase() === trimmedValue.toLowerCase())
+if (seasonStatsError) {
+  errorLog('Failed to refresh season stats:', seasonStatsError);
+  // Non-fatal - continue
+}
 ```
+Replace with a throw so callers detect the failure. The caller `updateTeamStatsRecord` already has try/catch.
 
-**3. `src/components/history/hooks/useHistoryEditing.ts`**
-- `addDivision` (line 261): replace `prev.includes(name)` with `prev.some(d => d.toLowerCase() === name.toLowerCase())`
-- `renameDivision` (line 268): replace `oldName === newName` with case-insensitive check
-- `getTeamsByDivision` (line 135): replace `t.division_name === divisionName` with case-insensitive compare
-- `removeDivision` (line 288): replace `t.division_name === name` with case-insensitive compare
-- `reorderTeamInDivision` (line 225 & 247): replace `t.division_name === divisionName` with case-insensitive compare
-- `moveTeam` (lines 163, 191, 206, 210): replace `=== toDivision` / `=== fromDivision` with case-insensitive compare
-
-To keep it DRY, add a small helper at the top of the file:
-```typescript
-const divisionsMatch = (a: string, b: string) =>
-  a.toLowerCase() === b.toLowerCase();
-```
-
-Then use `divisionsMatch(t.division_name, divisionName)` everywhere instead of `===`.
+**Two files, ~4 lines each.**
 
