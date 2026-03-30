@@ -262,7 +262,7 @@ export const useHistoryEditing = ({
   // Add a new empty division
   const addDivision = useCallback((name: string) => {
     setCustomDivisions((prev) => {
-      if (prev.includes(name)) return prev;
+      if (prev.some(d => d.toLowerCase() === name.toLowerCase())) return prev;
       return [...prev, name];
     });
   }, []);
