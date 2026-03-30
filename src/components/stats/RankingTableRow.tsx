@@ -145,6 +145,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
                 size="sm"
                 maxDisplay={4}
                 className="mt-1"
+                prefetchedBadges={prefetchedBadges}
               />
             </div>
           </Link>
