@@ -149,7 +149,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
       await createMessage(content, category);
     } catch (err) {
       errorLog('Error posting message:', err);
-      // Error is already handled in the API function
+      throw err; // Re-throw so caller can preserve input text
     }
   };
 
