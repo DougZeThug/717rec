@@ -8,6 +8,7 @@ import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
 import type {
   MatchUpdatePayload,
   StorageMatch,
+  StorageRound,
   StorageStage,
   UpdateMatchOptions,
 } from '../types/BracketServiceTypes';
