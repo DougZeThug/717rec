@@ -196,12 +196,13 @@ export const reverseTeamStats = async (
 };
 
 /**
- * Refresh team season stats (non-fatal — swallows errors with warning)
+ * Refresh team season stats
+ * @throws {DatabaseError} When the RPC call fails
  */
 export const upsertTeamSeasonStats = async (): Promise<void> => {
-  const { error: seasonStatsError } = await supabase.rpc('upsert_team_season_stats');
-  if (seasonStatsError) {
-    warnLog('Failed to refresh season stats:', seasonStatsError);
+  const { error } = await supabase.rpc('upsert_team_season_stats');
+  if (error) {
+    handleDatabaseError(error, 'Failed to refresh season stats');
   }
 };
 

@@ -61,7 +61,7 @@ export async function applyMatchResult(
     const { error: seasonStatsError } = await supabase.rpc('upsert_team_season_stats');
     if (seasonStatsError) {
       errorLog('Failed to refresh season stats:', seasonStatsError);
-      // Non-fatal - continue
+      throw seasonStatsError;
     }
 
     return true;
