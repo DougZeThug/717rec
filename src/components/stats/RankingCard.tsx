@@ -35,6 +35,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
   onToggleExpand,
   compactView = false,
   showDivision = false,
+  prefetchedBadges,
 }) => {
   const { isWinterTheme } = useSeasonalTheme();
   const globalRank = index + 1;
