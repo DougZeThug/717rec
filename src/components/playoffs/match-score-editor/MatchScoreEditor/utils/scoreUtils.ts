@@ -27,7 +27,19 @@ export const validateMatchScores = (games: GameData[], bestOf: number): Validati
     };
   }
 
-  // Allow incomplete scores
+  // Reject tied games with non-zero scores (e.g., 5-5)
+  const hasTiedGameWithScore = games.some(
+    (g) => g.team1Score > 0 && g.team1Score === g.team2Score
+  );
+
+  if (hasTiedGameWithScore) {
+    return {
+      isValid: false,
+      errorMessage: 'Each game must have a winner. Tied scores are not allowed in playoff matches.',
+    };
+  }
+
+  // Allow incomplete scores (no games played yet)
   if (team1Wins === 0 && team2Wins === 0) {
     return { isValid: true, errorMessage: null };
   }
