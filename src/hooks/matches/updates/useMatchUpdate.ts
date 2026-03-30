@@ -109,11 +109,6 @@ export const useMatchUpdate = ({
 
       setEditingMatch(undefined);
 
-      toast({
-        title: 'Match Updated',
-        description: `Match details have been successfully updated.`,
-      });
-
       const loserChanged = editingMatch.loserId !== matchData.loserId;
 
       // Case 1: Match was completed and is now marked incomplete — reverse old stats
@@ -167,15 +162,29 @@ export const useMatchUpdate = ({
               ? updatedMatch.team1_game_wins || 0
               : updatedMatch.team2_game_wins || 0;
 
-          await updateTeamRecords(
+          const statsSuccess = await updateTeamRecords(
             updatedMatch.winnerId,
             updatedMatch.loserId,
             teams,
             winnerGameWins,
             loserGameWins
           );
+
+          if (!statsSuccess) {
+            toast({
+              title: 'Partial Failure',
+              description: 'Match was updated but team records failed to save. Please retry or contact an admin.',
+              variant: 'destructive',
+            });
+            return false;
+          }
         }
       }
+
+      toast({
+        title: 'Match Updated',
+        description: 'Match details have been successfully updated.',
+      });
 
       // Invalidate relevant queries to refresh data across the app
       invalidateAllDataQueries(queryClient);
