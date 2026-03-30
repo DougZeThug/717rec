@@ -16,6 +16,7 @@ interface TeamCardProps {
   team: Team;
   delay?: number;
   isWinter?: boolean;
+  prefetchedBadges?: import('@/types/badges').TeamBadgeEvent[];
 }
 
 const TeamCard: React.FC<TeamCardProps> = ({ team, delay = 0, isWinter = false }) => {
