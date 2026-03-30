@@ -1,43 +1,35 @@
 
 
-## Fix: Make `upsertTeamSeasonStats` Throw on Failure
+## Fix: Handle Errors in Bracket Participant Sync
 
 ### Problem
-`upsertTeamSeasonStats` swallows RPC errors with `warnLog`, so callers (match delete, match edit) report success even when season stats weren't refreshed. This leaves `team_season_stats` permanently out of sync with the `teams` table.
+The participant sync loop in `BracketCreationService.ts` discards Supabase `update()` errors. If an update fails (RLS, FK, timeout), `team_id` stays null, and downstream standings generation silently excludes those teams.
 
 ### Fix
 
-**File: `src/services/matches/MatchWriteService.ts`**
+**File: `src/services/brackets/manager/services/BracketCreationService.ts`**
 
-Change `upsertTeamSeasonStats` to throw on error instead of swallowing:
+Add `{ error }` destructuring to both `supabase.update()` calls and use `handleDatabaseError()` to throw on failure:
 
 ```typescript
-export const upsertTeamSeasonStats = async (): Promise<void> => {
-  const { error } = await supabase.rpc('upsert_team_season_stats');
-  if (error) {
-    handleDatabaseError(error, 'Failed to refresh season stats');
-  }
-};
+import { handleDatabaseError } from '@/utils/errorHandler';
+
+// BYE participant
+const { error } = await supabase
+  .from('participant')
+  .update({ position: null, team_id: null })
+  .eq('id', participant.id);
+if (error) handleDatabaseError(error, 'Failed to sync BYE participant');
+
+// Team participant
+const { error } = await supabase
+  .from('participant')
+  .update({ position: slotPosition, team_id: team.id })
+  .eq('id', participant.id);
+if (error) handleDatabaseError(error, 'Failed to sync participant to team');
 ```
 
-- Replace `warnLog` with `handleDatabaseError` (which throws and logs to Sentry)
-- Remove the unused `warnLog` import if no other usage remains
-- Add `handleDatabaseError` import from `@/utils/errorHandler` if not already present
+The outer `catch` block already handles errors from the creation process, so thrown errors will be caught, logged, and surfaced to the user.
 
-### Why this is safe
-- `useMatchDelete` already wraps the entire operation in try/catch and shows an error toast on failure
-- `useMatchUpdate` similarly has try/catch around its stats operations
-- `applyMatchResult` in `TeamStatsService.ts` already treats season stats refresh failure as non-fatal with its own separate call — that instance should also be updated to throw for consistency
-
-### Bonus: same pattern in `TeamStatsService.ts`
-`applyMatchResult` (line ~63) has the same swallowed error:
-```typescript
-if (seasonStatsError) {
-  errorLog('Failed to refresh season stats:', seasonStatsError);
-  // Non-fatal - continue
-}
-```
-Replace with a throw so callers detect the failure. The caller `updateTeamStatsRecord` already has try/catch.
-
-**Two files, ~4 lines each.**
+One file, ~4 lines added.
 
