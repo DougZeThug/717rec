@@ -129,7 +129,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
 
           {/* Badges */}
           <div className="flex-shrink-0">
-            <TeamBadgeCollection teamId={ranking.teamId} size="sm" maxDisplay={1} />
+            <TeamBadgeCollection teamId={ranking.teamId} size="sm" maxDisplay={1} prefetchedBadges={prefetchedBadges} />
           </div>
 
           {/* Power score - always right-aligned */}
