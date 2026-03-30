@@ -74,13 +74,21 @@ export class BracketCreationService {
       // Let the library create participant rows — we sync team_id afterward
       bracketLog('📝 Step 4/5: Creating bracket stage with brackets-manager...');
 
+      // Dynamic LB seed orderings based on bracket size (per brackets-manager docs)
+      const lbOrderings: Record<number, string[]> = {
+        4:  ['natural', 'reverse'],
+        8:  ['natural', 'reverse', 'natural'],
+        16: ['natural', 'reverse_half_shift', 'reverse', 'natural'],
+      };
+      const seedOrdering = ['inner_outer', ...(lbOrderings[bracketSize] || lbOrderings[16])];
+
       const stageConfig = {
         name: bracketId,
         tournamentId: bracketId,
         type: format,
         seeding,
         settings: {
-          seedOrdering: ['inner_outer', 'natural', 'reverse_half_shift', 'reverse'] as any,
+          seedOrdering: seedOrdering as any,
           grandFinal: (format === 'double_elimination'
             ? options.grandFinalType || 'simple'
             : 'none') as 'simple' | 'double' | 'none',
