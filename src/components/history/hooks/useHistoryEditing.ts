@@ -282,7 +282,7 @@ export const useHistoryEditing = ({
 
     // Also update custom divisions if applicable
     setCustomDivisions((prev) =>
-      prev.map((d) => (d === oldName ? newName : d)).filter((d, i, arr) => arr.indexOf(d) === i)
+      prev.map((d) => (divisionsMatch(d, oldName) ? newName : d)).filter((d, i, arr) => arr.indexOf(d) === i)
     );
   }, []);
 
