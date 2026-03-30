@@ -6,10 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { SectionHeader } from '@/components/ui/CollapsibleSection';
 import { EmptyState } from '@/components/ui/empty-state';
+import { useAllTeamBadges } from '@/hooks/useTeamBadges';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
 import { Team } from '@/types';
+import { TeamBadgeEvent } from '@/types/badges';
 
 import TeamCard from './TeamCard';
 import TeamCardCompact from './TeamCardCompact';
