@@ -55,34 +55,29 @@ export class BracketAdminService {
           }
         }
 
-        // If clearDownstream is requested, selectively nullify downstream matches
+        // If clearDownstream is requested, cascade-clear all downstream matches
         if (clearDownstream) {
-          const downstream = await this.checkDownstreamPopulation(matchId);
-          const wpId = downstream.winnerParticipantId;
+          const downstream = await this.collectDownstreamChain(matchId);
 
-          for (const downstreamMatch of downstream.downstreamMatches) {
-            const updatePayload: Record<string, any> = {
-              status: 1, // Reset to Waiting
-              opponent1_result: null,
-              opponent2_result: null,
-              opponent1_score: null,
-              opponent2_score: null,
-            };
-
-            // Only null the slot that was fed by the reopened match
-            if (wpId && downstreamMatch.opponent1?.id === wpId) {
-              updatePayload.opponent1_id = null;
-            } else if (wpId && downstreamMatch.opponent2?.id === wpId) {
-              updatePayload.opponent2_id = null;
-            }
-
-            await supabase.from('match').update(updatePayload).eq('id', downstreamMatch.id);
+          for (const downstreamMatch of downstream) {
+            await supabase
+              .from('match')
+              .update({
+                status: 1,
+                opponent1_id: null,
+                opponent2_id: null,
+                opponent1_result: null,
+                opponent2_result: null,
+                opponent1_score: null,
+                opponent2_score: null,
+              })
+              .eq('id', downstreamMatch.id);
           }
 
-          bracketLog('Cleared downstream matches (selective)', {
+          bracketLog('Cleared downstream matches (full cascade)', {
             matchId,
-            clearedCount: downstream.downstreamMatches.length,
-            clearedIds: downstream.downstreamMatches.map((m: any) => m.id),
+            clearedCount: downstream.length,
+            clearedIds: downstream.map((m: any) => m.id),
           });
         }
 
