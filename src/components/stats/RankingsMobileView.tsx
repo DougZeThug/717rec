@@ -41,6 +41,18 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
   onViewChange,
 }) => {
   const { isWinterTheme } = useSeasonalTheme();
+  const { data: allBadges } = useAllTeamBadges();
+
+  const badgesByTeam = useMemo(() => {
+    if (!allBadges) return new Map<string, TeamBadgeEvent[]>();
+    const map = new Map<string, TeamBadgeEvent[]>();
+    for (const badge of allBadges) {
+      const existing = map.get(badge.team_id) || [];
+      existing.push(badge);
+      map.set(badge.team_id, existing);
+    }
+    return map;
+  }, [allBadges]);
   const [detailedView, setDetailedView] = useState(() => {
     const savedView = localStorage.getItem('rankingsDetailedView');
     return savedView ? savedView === 'true' : false;
