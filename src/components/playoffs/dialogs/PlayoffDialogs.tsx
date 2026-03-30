@@ -28,6 +28,7 @@ interface PlayoffDialogsProps {
   divisions: Division[];
   teams: Team[];
   onBracketCreated: () => void;
+  seasonId?: string | null;
 
   // Match score editor - Updated to include refetchBrackets parameter
   editingMatch: PlayoffMatch | null;
