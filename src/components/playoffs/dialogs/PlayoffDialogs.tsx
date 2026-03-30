@@ -28,6 +28,7 @@ interface PlayoffDialogsProps {
   divisions: Division[];
   teams: Team[];
   onBracketCreated: () => void;
+  seasonId?: string | null;
 
   // Match score editor - Updated to include refetchBrackets parameter
   editingMatch: PlayoffMatch | null;
@@ -65,6 +66,7 @@ const PlayoffDialogs: React.FC<PlayoffDialogsProps> = ({
   divisions,
   teams,
   onBracketCreated,
+  seasonId,
 
   // Match score editor props
   editingMatch,
@@ -97,6 +99,7 @@ const PlayoffDialogs: React.FC<PlayoffDialogsProps> = ({
         divisions={divisions || []}
         teams={teams || []}
         onBracketCreated={onBracketCreated}
+        seasonId={seasonId}
       />
 
       {/* Match Score Editor Dialog */}

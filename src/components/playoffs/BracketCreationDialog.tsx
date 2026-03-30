@@ -27,6 +27,7 @@ interface BracketCreationDialogProps {
   divisions: { id: string; name: string }[] | undefined;
   teams: Team[] | undefined;
   onBracketCreated?: (bracket: BracketRecord) => void;
+  seasonId?: string | null;
 }
 
 const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
@@ -35,6 +36,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
   divisions,
   teams,
   onBracketCreated,
+  seasonId,
 }) => {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [dialogError, setDialogError] = React.useState<string | null>(null);
@@ -141,6 +143,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         })),
         divisionId: data.divisionId,
         grandFinalType: data.grandFinalType || 'simple',
+        seasonId,
       });
 
       bracketLog('Bracket created successfully:', bracket);

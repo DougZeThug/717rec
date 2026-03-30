@@ -100,6 +100,7 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
         divisions={data.divisions}
         teams={data.teams}
         onBracketCreated={data.handleBracketCreated}
+        seasonId={data.selectedSeasonId}
         // Match editor props
         editingMatch={handlers.editingMatch}
         isQuickEdit={handlers.isQuickEdit}
