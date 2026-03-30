@@ -21,6 +21,7 @@ interface RankingTableRowProps {
   onToggleExpand?: () => void;
   showDivision?: boolean;
   rowIndex?: number;
+  prefetchedBadges?: import('@/types/badges').TeamBadgeEvent[];
 }
 
 const RankingTableRow: React.FC<RankingTableRowProps> = ({
