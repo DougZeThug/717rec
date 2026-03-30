@@ -298,4 +298,87 @@ export class BracketNormalizationService {
       // Don't throw - normalization is defensive, not critical
     }
   }
+
+  /**
+   * Defensive normalization: ensures winners of completed LB matches
+   * have been placed in their next-round match slot.
+   *
+   * This catches cases where `manager.update.match()` crashed (e.g., "Position is undefined")
+   * or where the BYE direct-SQL path missed a propagation.
+   */
+  async propagateCompletedMatches(stageId: number): Promise<void> {
+    try {
+      bracketLog('🔍 propagateCompletedMatches — scanning LB for stuck winners...', { stageId });
+
+      const groups = await this.storage.select('group', { stage_id: stageId });
+      const groupsArray = (Array.isArray(groups) ? groups : [groups]) as StorageGroup[];
+      const lbGroup = groupsArray.find((g) => g.number === 2);
+
+      if (!lbGroup) return;
+
+      const rounds = await this.storage.select('round', { group_id: lbGroup.id });
+      const roundsArray = (Array.isArray(rounds) ? rounds : [rounds]) as StorageRound[];
+      const sortedRounds = [...roundsArray].sort((a, b) => a.number - b.number);
+
+      // Check every round except the last (no next round to propagate to)
+      for (let i = 0; i < sortedRounds.length - 1; i++) {
+        const round = sortedRounds[i];
+        const nextRound = sortedRounds[i + 1];
+
+        const matches = await this.storage.select('match', { round_id: round.id });
+        const matchesArray = (Array.isArray(matches) ? matches : [matches]) as StorageMatch[];
+
+        for (const match of matchesArray) {
+          if (match.status !== 4) continue; // Only completed matches
+
+          const winnerId =
+            match.opponent1?.result === 'win'
+              ? match.opponent1?.id
+              : match.opponent2?.result === 'win'
+                ? match.opponent2?.id
+                : null;
+
+          if (!winnerId) continue;
+
+          // Find the target match in the next round
+          const nextMatchNumber = Math.ceil(match.number / 2);
+          const slot = match.number % 2 === 1 ? 'opponent1' : 'opponent2';
+
+          const { data: nextMatches } = await supabase
+            .from('match')
+            .select('id, opponent1_id, opponent2_id, status')
+            .eq('round_id', nextRound.id)
+            .eq('number', nextMatchNumber);
+
+          if (!nextMatches || nextMatches.length === 0) continue;
+
+          const nextMatch = nextMatches[0];
+          const currentSlotValue = slot === 'opponent1' ? nextMatch.opponent1_id : nextMatch.opponent2_id;
+
+          if (currentSlotValue === winnerId) continue; // Already placed
+
+          bracketLog(`🔧 [PROPAGATE] Winner ${winnerId} missing from Round ${nextRound.number} Match ${nextMatchNumber} ${slot} — placing now`);
+
+          const updateFields: Record<string, unknown> = {};
+          if (slot === 'opponent1') {
+            updateFields.opponent1_id = winnerId;
+          } else {
+            updateFields.opponent2_id = winnerId;
+          }
+
+          // Unlock if needed
+          const otherSlotFilled = slot === 'opponent1' ? !!nextMatch.opponent2_id : !!nextMatch.opponent1_id;
+          if (nextMatch.status <= 1 && otherSlotFilled) {
+            updateFields.status = 2; // Ready
+          }
+
+          await supabase.from('match').update(updateFields).eq('id', nextMatch.id);
+          bracketLog(`✅ [PROPAGATE] Winner ${winnerId} placed in match ${nextMatch.id}`);
+        }
+      }
+    } catch (error) {
+      errorLog('Error in propagateCompletedMatches:', error);
+      // Defensive — don't throw
+    }
+  }
 }

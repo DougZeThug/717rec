@@ -8,6 +8,7 @@ import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
 import type {
   MatchUpdatePayload,
   StorageMatch,
+  StorageRound,
   StorageStage,
   UpdateMatchOptions,
 } from '../types/BracketServiceTypes';
@@ -50,29 +51,7 @@ export class BracketUpdateService {
         });
 
         // ⭐ Check if this is a BYE match (one opponent is null)
-        const isByeMatch = !currentMatch.opponent1 || !currentMatch.opponent2;
-
-        // ⭐ If it's a BYE match and locked/waiting, unlock it for manual advancement
-        // Status: 0 = Locked, 1 = Waiting, 2 = Ready, 3 = Running, 4 = Completed, 5 = Archived
-        if (isByeMatch && (currentMatch.status === 0 || currentMatch.status === 1)) {
-          bracketLog(
-            `Unlocking BYE match ${matchId} for manual advancement (status: ${currentMatch.status} -> 2)`
-          );
-
-          // Directly update the match status in the database to Ready (2)
-          await supabase
-            .from('match')
-            .update({ status: 2 }) // 2 = Ready
-            .eq('id', matchId);
-
-          // ⭐ Update the local object to match the database
-          currentMatch.status = 2;
-
-          bracketLog(`BYE match ${matchId} unlocked successfully - continuing to apply scores`);
-
-          // ⭐ FIX: Don't return early - continue to apply scores in the same transaction
-          // This allows BYE matches to be unlocked and scored in a single operation
-        }
+        const isByeMatch = !currentMatch.opponent1?.id || !currentMatch.opponent2?.id;
 
         // ⭐ Load participants into cache before update
         const matchData = currentMatch as StorageMatch;
@@ -83,48 +62,127 @@ export class BracketUpdateService {
           );
         }
 
-        bracketLog(`CALLING manager.update.match() with:`, {
-          id: matchId,
-          opponent1: scores.opponent1,
-          opponent2: scores.opponent2,
-        });
+        if (isByeMatch) {
+          // =============================================
+          // BYE MATCH PATH: bypass brackets-manager entirely
+          // The library crashes with "Position is undefined" on BYE matches.
+          // We handle scoring + propagation via direct SQL instead.
+          // =============================================
+          bracketLog(`🔀 BYE match detected (Match ${matchId}) — using direct SQL path`);
 
-        // Build update payload - only include opponents that exist
-        const updatePayload: MatchUpdatePayload = { id: matchId };
+          // Determine which opponent is present (the winner)
+          const winnerId = currentMatch.opponent1?.id ?? currentMatch.opponent2?.id;
+          if (!winnerId) {
+            bracketLog(`⚠️ BYE match ${matchId} has no participants — skipping`);
+            return;
+          }
 
-        if (scores.opponent1) {
-          updatePayload.opponent1 = {
-            score: scores.opponent1.score,
-            result: scores.opponent1.result,
-          };
-        }
+          // Mark the BYE match as completed via direct SQL
+          const winnerIsOpp1 = !!currentMatch.opponent1?.id;
+          await supabase
+            .from('match')
+            .update({
+              status: 4, // Completed
+              opponent1_score: winnerIsOpp1 ? (scores.opponent1?.score ?? 0) : null,
+              opponent1_result: winnerIsOpp1 ? 'win' : null,
+              opponent2_score: !winnerIsOpp1 ? (scores.opponent2?.score ?? 0) : null,
+              opponent2_result: !winnerIsOpp1 ? 'win' : null,
+            })
+            .eq('id', matchId);
 
-        if (scores.opponent2) {
-          updatePayload.opponent2 = {
-            score: scores.opponent2.score,
-            result: scores.opponent2.result,
-          };
-        }
+          bracketLog(`✅ BYE match ${matchId} marked completed. Winner: ${winnerId}`);
 
-        bracketLog(`Final update payload:`, updatePayload);
+          // Find the next match and place the winner
+          const rounds = await this.storage.select('round', { group_id: currentMatch.group_id });
+          const roundsArray = (Array.isArray(rounds) ? rounds : [rounds]) as StorageRound[];
+          const currentRound = roundsArray.find((r) => r.id === currentMatch.round_id);
 
-        // Update match using brackets-manager (automatically saves to SQL and handles propagation)
-        // Wrapped in try-catch to handle known brackets-manager library bug where propagation
-        // fails with "Match not found" in 8-team double elimination LB Final rounds.
-        // The actual match data is already saved by this point (PATCH succeeds), so we treat
-        // propagation errors as non-fatal and let normalization steps fix the bracket state.
-        try {
-          await this.manager.update.match(updatePayload);
-          bracketLog(`manager.update.match() COMPLETED for Match ${matchId}`);
-        } catch (propagationError) {
-          const errorMessage =
-            propagationError instanceof Error ? propagationError.message : String(propagationError);
-          if (errorMessage.includes('Match not found') || errorMessage.includes('Position is undefined')) {
-            bracketLog(`⚠️ Non-fatal propagation error for Match ${matchId}: ${errorMessage}`);
-            bracketLog(`Match data was saved successfully. Continuing to normalization steps...`);
-          } else {
-            // Re-throw non-propagation errors
-            throw propagationError;
+          if (currentRound) {
+            const nextRound = roundsArray.find((r) => r.number === currentRound.number + 1);
+            if (nextRound) {
+              const nextMatchNumber = Math.ceil(currentMatch.number / 2);
+              const slot = currentMatch.number % 2 === 1 ? 'opponent1' : 'opponent2';
+
+              bracketLog(`📍 Propagating winner ${winnerId} → Round ${nextRound.number}, Match ${nextMatchNumber}, slot ${slot}`);
+
+              const updateFields: Record<string, unknown> = {};
+              if (slot === 'opponent1') {
+                updateFields.opponent1_id = winnerId;
+              } else {
+                updateFields.opponent2_id = winnerId;
+              }
+
+              // Also unlock the next match if it's locked/waiting
+              const { data: nextMatches } = await supabase
+                .from('match')
+                .select('id, status, opponent1_id, opponent2_id')
+                .eq('round_id', nextRound.id)
+                .eq('number', nextMatchNumber);
+
+              if (nextMatches && nextMatches.length > 0) {
+                const nextMatch = nextMatches[0];
+                // If the next match will have both opponents after this update, set Ready
+                const otherSlotFilled = slot === 'opponent1'
+                  ? !!nextMatch.opponent2_id
+                  : !!nextMatch.opponent1_id;
+
+                if (nextMatch.status <= 1) {
+                  updateFields.status = otherSlotFilled ? 2 : nextMatch.status;
+                }
+
+                await supabase
+                  .from('match')
+                  .update(updateFields)
+                  .eq('id', nextMatch.id);
+
+                bracketLog(`✅ Winner placed in next match ${nextMatch.id}`);
+              }
+            } else {
+              bracketLog(`No next round found after round ${currentRound.number} — may be final match`);
+            }
+          }
+
+          // Skip to normalization (don't call manager.update.match)
+        } else {
+          // =============================================
+          // NORMAL MATCH PATH: use brackets-manager library
+          // =============================================
+          bracketLog(`CALLING manager.update.match() with:`, {
+            id: matchId,
+            opponent1: scores.opponent1,
+            opponent2: scores.opponent2,
+          });
+
+          const updatePayload: MatchUpdatePayload = { id: matchId };
+
+          if (scores.opponent1) {
+            updatePayload.opponent1 = {
+              score: scores.opponent1.score,
+              result: scores.opponent1.result,
+            };
+          }
+
+          if (scores.opponent2) {
+            updatePayload.opponent2 = {
+              score: scores.opponent2.score,
+              result: scores.opponent2.result,
+            };
+          }
+
+          bracketLog(`Final update payload:`, updatePayload);
+
+          try {
+            await this.manager.update.match(updatePayload);
+            bracketLog(`manager.update.match() COMPLETED for Match ${matchId}`);
+          } catch (propagationError) {
+            const errorMessage =
+              propagationError instanceof Error ? propagationError.message : String(propagationError);
+            if (errorMessage.includes('Match not found') || errorMessage.includes('Position is undefined')) {
+              bracketLog(`⚠️ Non-fatal propagation error for Match ${matchId}: ${errorMessage}`);
+              bracketLog(`Match data was saved successfully. Continuing to normalization steps...`);
+            } else {
+              throw propagationError;
+            }
           }
         }
 
@@ -143,6 +201,9 @@ export class BracketUpdateService {
 
         // ⭐ Normalize Grand Final population after every update (defensive)
         await this.normalizationService.normalizeGrandFinalPopulation(stageId);
+
+        // ⭐ Propagate any completed matches whose winners didn't advance (safety net)
+        await this.normalizationService.propagateCompletedMatches(stageId);
 
         // ⭐ Fetch and log next matches to see propagation results
         const updatedMatch = await this.storage.select('match', matchId);
