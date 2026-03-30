@@ -4,9 +4,11 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useAllTeamBadges } from '@/hooks/useTeamBadges';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { Ranking } from '@/types';
+import { TeamBadgeEvent } from '@/types/badges';
 import { debugLog } from '@/utils/logger';
 
 import LeagueLeaderboardCarousel from './LeagueLeaderboardCarousel';
@@ -39,6 +41,18 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
   onViewChange,
 }) => {
   const { isWinterTheme } = useSeasonalTheme();
+  const { data: allBadges } = useAllTeamBadges();
+
+  const badgesByTeam = useMemo(() => {
+    if (!allBadges) return new Map<string, TeamBadgeEvent[]>();
+    const map = new Map<string, TeamBadgeEvent[]>();
+    for (const badge of allBadges) {
+      const existing = map.get(badge.team_id) || [];
+      existing.push(badge);
+      map.set(badge.team_id, existing);
+    }
+    return map;
+  }, [allBadges]);
   const [detailedView, setDetailedView] = useState(() => {
     const savedView = localStorage.getItem('rankingsDetailedView');
     return savedView ? savedView === 'true' : false;
@@ -273,6 +287,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                         onToggleExpand={toggleExpand}
                         compactView={!detailedView}
                         showDivision={showUnified}
+                        prefetchedBadges={badgesByTeam.get(ranking.teamId) || []}
                       />
                     </motion.div>
                   );

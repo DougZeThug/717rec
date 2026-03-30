@@ -21,6 +21,7 @@ interface RankingTableRowProps {
   onToggleExpand?: () => void;
   showDivision?: boolean;
   rowIndex?: number;
+  prefetchedBadges?: import('@/types/badges').TeamBadgeEvent[];
 }
 
 const RankingTableRow: React.FC<RankingTableRowProps> = ({
@@ -31,6 +32,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
   onToggleExpand,
   showDivision = false,
   rowIndex: _rowIndex,
+  prefetchedBadges,
 }) => {
   const { isWinterTheme } = useSeasonalTheme();
   const globalRank = index + 1;
@@ -143,6 +145,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
                 size="sm"
                 maxDisplay={4}
                 className="mt-1"
+                prefetchedBadges={prefetchedBadges}
               />
             </div>
           </Link>

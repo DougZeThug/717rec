@@ -6,10 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { SectionHeader } from '@/components/ui/CollapsibleSection';
 import { EmptyState } from '@/components/ui/empty-state';
+import { useAllTeamBadges } from '@/hooks/useTeamBadges';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
 import { Team } from '@/types';
+import { TeamBadgeEvent } from '@/types/badges';
 
 import TeamCard from './TeamCard';
 import TeamCardCompact from './TeamCardCompact';
@@ -20,8 +22,20 @@ interface TopTeamsProps {
 
 const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
   const { shouldApplyWinter } = useSeasonalTheme();
+  const { data: allBadges } = useAllTeamBadges();
   // Memoize to prevent creating new array reference on every render
   const topTenTeams = useMemo(() => teams.slice(0, 10), [teams]);
+
+  const badgesByTeam = useMemo(() => {
+    if (!allBadges) return new Map<string, TeamBadgeEvent[]>();
+    const map = new Map<string, TeamBadgeEvent[]>();
+    for (const badge of allBadges) {
+      const existing = map.get(badge.team_id) || [];
+      existing.push(badge);
+      map.set(badge.team_id, existing);
+    }
+    return map;
+  }, [allBadges]);
 
   const sectionClasses = cn(
     'py-6 md:py-8 px-4 md:px-6 rounded-xl shadow-sm mb-4 mt-4',
@@ -112,7 +126,7 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
       {/* Desktop: Grid Layout (show top 4) */}
       <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {topTenTeams.slice(0, 4).map((team, index) => (
-          <TeamCard key={team.id} team={team} delay={index * 0.1} isWinter={shouldApplyWinter} />
+          <TeamCard key={team.id} team={team} delay={index * 0.1} isWinter={shouldApplyWinter} prefetchedBadges={badgesByTeam.get(team.id) || []} />
         ))}
       </div>
     </section>

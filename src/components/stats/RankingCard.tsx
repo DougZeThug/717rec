@@ -24,6 +24,7 @@ interface RankingCardProps {
   onToggleExpand?: (teamId: string) => void;
   compactView?: boolean;
   showDivision?: boolean;
+  prefetchedBadges?: import('@/types/badges').TeamBadgeEvent[];
 }
 
 const RankingCard: React.FC<RankingCardProps> = ({
@@ -34,6 +35,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
   onToggleExpand,
   compactView = false,
   showDivision = false,
+  prefetchedBadges,
 }) => {
   const { isWinterTheme } = useSeasonalTheme();
   const globalRank = index + 1;
@@ -127,7 +129,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
 
           {/* Badges */}
           <div className="flex-shrink-0">
-            <TeamBadgeCollection teamId={ranking.teamId} size="sm" maxDisplay={1} />
+            <TeamBadgeCollection teamId={ranking.teamId} size="sm" maxDisplay={1} prefetchedBadges={prefetchedBadges} />
           </div>
 
           {/* Power score - always right-aligned */}
@@ -187,7 +189,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
           </span>
           {showRankChange && <RankTrendIndicator rankChange={ranking.rankChange} />}
         </div>
-        <TeamBadgeCollection teamId={ranking.teamId} size="sm" maxDisplay={3} />
+        <TeamBadgeCollection teamId={ranking.teamId} size="sm" maxDisplay={3} prefetchedBadges={prefetchedBadges} />
       </div>
 
       {/* Team row: logo + name + division */}
