@@ -1,36 +1,28 @@
 
 
-## Fix: Realtime Subscription Error Crashing Bracket View
+## Fix: Stage Query Missing `settings` and `number` Columns
 
 ### Problem
-The error `cannot add postgres_changes callbacks after subscribe()` occurs because React re-renders cause the `useEffect` to fire again before the previous channel is fully cleaned up. Supabase sees a channel with the same name (`bracket-matches-{bracketId}-{stageId}`) that's already subscribed and throws.
-
-This crashes the `BracketView` component via the error boundary, showing a blank/error screen.
+The `transformFromSql` method in `BracketsViewerAdapter.ts` fetches stages with:
+```sql
+SELECT id, name, type, tournament_id FROM stage
+```
+But brackets-viewer expects every stage object to have `settings` (with properties like `skipFirstRound`, `size`, `grandFinal`) and `number`. Since `settings` is missing, the library crashes with `r.settings is undefined`.
 
 ### Fix
 
-**File: `src/hooks/brackets/useBracketsManagerRealtime.ts`** (~3 lines changed)
+**File: `src/services/brackets/viewer/BracketsViewerAdapter.ts`** (line 38)
 
-1. Before creating a new channel, proactively remove any existing channel with the same name
-2. Add a unique suffix (using `Date.now()`) to prevent name collisions during rapid re-renders
-
+Change the stage select from:
 ```typescript
-// Line ~81: Add cleanup of any stale channel before creating new one
-const channelName = `bracket-matches-${bracketId}-${stageId}`;
-
-// Remove any existing channel with this base name to prevent conflicts
-supabase.getChannels().forEach((ch) => {
-  if (ch.topic.includes(`bracket-matches-${bracketId}`)) {
-    supabase.removeChannel(ch);
-  }
-});
-
-const channel = supabase
-  .channel(channelName)
-  .on(...)
+.select('id, name, type, tournament_id')
+```
+to:
+```typescript
+.select('id, name, type, tournament_id, number, settings')
 ```
 
-This ensures no stale subscriptions linger when the effect re-runs, which is the root cause of the error.
+This ensures the stage object passed to brackets-viewer includes the `settings` and `number` fields it requires.
 
-**One file, ~5 lines added.**
+**One file, one line changed.**
 
