@@ -14,7 +14,7 @@ export interface BracketCreationOptions {
 }
 
 export async function createBracket(options: BracketCreationOptions): Promise<BracketRecord> {
-  const { name, format, divisionId, teams, onProgress, grandFinalType } = options;
+  const { name, format, divisionId, teams, onProgress, grandFinalType, seasonId } = options;
 
   bracketLog('Starting bracket creation:', { name, format, teamCount: teams.length });
 
