@@ -1,51 +1,40 @@
 
-Goal: fix the “Failed to fetch” cascade so transient Supabase/network interruptions don’t flood errors or break Schedule/Stats UX.
 
-What I found in your logs/code:
-- `team_timeslots` is polled every 30s for long sessions.
-- When connectivity drops, multiple queries fail together (`timeslots`, H2H, career bulk stats), causing noisy cascading errors.
-- H2H calls are still over-fetched in match cards (batch + per-card prediction path), which increases request pressure.
+## Dependency Bump: 22 Production Packages
 
-Implementation plan
+### Risk Assessment
 
-1) Harden timeslot queries against transient network failures
-- Update `src/hooks/useMatchTimeslots.ts` and `src/hooks/useTimeslotQuery.ts` to:
-  - pause polling when offline/hidden (refetch interval callback),
-  - keep last good data during retry/failure,
-  - avoid aggressive refetch churn during temporary outages.
-- Update `src/services/matches/MatchReadService.ts` (`fetchMatchTimeslots`) to preserve original error context instead of throwing only `Failed to load timeslots`.
+| Package | From → To | Risk | Notes |
+|---------|-----------|------|-------|
+| `react-helmet-async` | 2.0.5 → **3.0.0** | **Medium** | Major version. Likely adds React 19 peer dep. Your project uses React 18 + `legacy-peer-deps=true`, so install will work. The `Helmet`/`HelmetProvider` API used in App.tsx, Help, Contact, Compare is unchanged. |
+| `brackets-manager` | 1.8.2 → 1.9.1 | **Low** | Minor bump. Bracket logic is central to playoffs — worth a quick smoke test. |
+| `@supabase/supabase-js` | 2.97.0 → 2.99.3 | **Low** | Patch-level within v2. No API changes expected. |
+| `@tanstack/react-query` | 5.90.21 → 5.95.0 | **Low** | Minor within v5. Query hooks unchanged. |
+| `@sentry/react` | 10.43.0 → 10.45.0 | **Low** | Patch within v10. |
+| All others | — | **Minimal** | Patch/minor bumps to Capacitor, framer-motion, lucide-react, nanoid, react-hook-form. |
 
-2) Remove redundant H2H request fan-out
-- Extend `src/hooks/useBatchHeadToHead.ts` with an `enabled` option.
-- In `src/components/schedule/TimeSlotMatchGroup.tsx`, only run batch H2H when that timeslot group is expanded.
-- Update `src/hooks/useMatchPrediction.ts` to accept optional prefetched H2H input.
-- Pass prefetched H2H from `src/components/schedule/MatchCard.tsx` so prediction doesn’t trigger separate per-card H2H fetches.
+### Plan
 
-3) Improve graceful degradation behavior
-- In Schedule hooks/components, if network fails:
-  - continue rendering last successful data,
-  - show a non-blocking “connection issue, retrying” state instead of hard-failing section content.
-- Keep existing UX for true data/permission errors (do not mask real backend issues).
+**1. Update `package.json`** — Bump all 11 listed packages (the PR mentions 22 but the user's message lists 11 visible ones; the caret ranges already cover most).
 
-4) Reduce error noise without hiding real problems
-- In H2H/career fetch paths (`HeadToHeadService`, career bulk fetch path), classify transport/network failures separately from database logic errors.
-- Keep logs actionable, but avoid repeated identical “database error” cascades for pure fetch disconnects.
+Specific version pins to update:
+- `@capacitor/core`: `^8.2.0`
+- `@capgo/capacitor-social-login`: `^8.3.9`
+- `@sentry/react`: `^10.45.0`
+- `@supabase/supabase-js`: `^2.99.3`
+- `@tanstack/react-query`: `^5.95.0`
+- `brackets-manager`: `^1.9.1`
+- `framer-motion`: `^12.38.0`
+- `lucide-react`: `^0.577.0`
+- `nanoid`: `^5.1.7`
+- `react-helmet-async`: `^3.0.0`
+- `react-hook-form`: `^7.72.0`
 
-5) Verify end-to-end scenarios
-- Confirm behavior on Schedule tabs with:
-  - normal online flow,
-  - brief offline period then reconnect,
-  - expanded/collapsed timeslot groups.
-- Confirm request volume drops (fewer duplicate H2H calls) and no regression to matchup/prediction rendering.
+**2. Verify build** — Run `tsc --noEmit` and `vite build` to catch any type or bundling issues from the major `react-helmet-async` bump.
 
-Technical details (files to touch)
-- `src/services/matches/MatchReadService.ts`
-- `src/hooks/useMatchTimeslots.ts`
-- `src/hooks/useTimeslotQuery.ts`
-- `src/hooks/useBatchHeadToHead.ts`
-- `src/components/schedule/TimeSlotMatchGroup.tsx`
-- `src/hooks/useMatchPrediction.ts`
-- `src/components/schedule/MatchCard.tsx`
-- (small error-classification updates in `HeadToHeadService` / career service as needed)
+**3. No code changes expected** — The APIs used (`Helmet`, `HelmetProvider`, bracket manager's `BracketsManager` class) have not changed across these versions.
 
-No database migration required for this fix.
+### Technical Detail
+
+The only major version bump is `react-helmet-async` 2 → 3. Based on the library's GitHub, v3 primarily updates peer dependencies to support React 19. Since this project stays on React 18 and `.npmrc` has `legacy-peer-deps=true`, the install will succeed without conflicts. The exported `Helmet` and `HelmetProvider` components are API-stable.
+
