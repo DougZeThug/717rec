@@ -10,6 +10,7 @@ export interface BracketCreationOptions {
   teams: { id: string; name: string; seed?: number }[];
   onProgress?: (step: string) => void;
   grandFinalType?: 'simple' | 'double';
+  seasonId?: string | null;
 }
 
 export async function createBracket(options: BracketCreationOptions): Promise<BracketRecord> {
