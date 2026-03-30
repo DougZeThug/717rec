@@ -202,6 +202,9 @@ export class BracketUpdateService {
         // ⭐ Normalize Grand Final population after every update (defensive)
         await this.normalizationService.normalizeGrandFinalPopulation(stageId);
 
+        // ⭐ Propagate any completed matches whose winners didn't advance (safety net)
+        await this.normalizationService.propagateCompletedMatches(stageId);
+
         // ⭐ Fetch and log next matches to see propagation results
         const updatedMatch = await this.storage.select('match', matchId);
         bracketLog(`UPDATED MATCH STATE - Match ${matchId}:`, {
