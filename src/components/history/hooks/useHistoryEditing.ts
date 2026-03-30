@@ -226,7 +226,7 @@ export const useHistoryEditing = ({
       setTeams((prev) => {
         // Get current division teams in order
         const divisionTeams = prev
-          .filter((t) => t.division_name === divisionName)
+          .filter((t) => divisionsMatch(t.division_name, divisionName))
           .sort((a, b) => {
             if (a.playoff_rank !== null && b.playoff_rank !== null) {
               return a.playoff_rank - b.playoff_rank;
