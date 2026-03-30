@@ -1,28 +1,59 @@
 
 
-## Fix: Stage Query Missing `settings` and `number` Columns
+## Security Fixes: 3 Findings
 
-### Problem
-The `transformFromSql` method in `BracketsViewerAdapter.ts` fetches stages with:
+### 1. Function Search Path Mutable — `award_streak_badges`
+
+**Problem:** The only function missing `search_path` is `award_streak_badges`. It was last recreated without `SET search_path`.
+
+**Fix:** `CREATE OR REPLACE` with `SET search_path TO 'pg_catalog', 'public'` added.
+
+### 2. Anonymous Upload on `teams` Storage Bucket
+
+**Problem:** The `Allow anyone to upload team images` INSERT policy uses `TO public` (includes `anon`), letting unauthenticated users upload arbitrary files.
+
+**Fix:** Drop the policy and recreate it restricted to `authenticated` only. No code changes needed — `uploadTeamImage` already requires a logged-in user.
+
+### 3. Self-Approve via INSERT on `team_memberships`
+
+**Problem:** Both INSERT policies only check `user_id = auth.uid()` but don't enforce `is_approved = false`. A user could insert a row with `is_approved = true` and immediately gain team write access.
+
+**Fix:** Replace both INSERT policies with a WITH CHECK that enforces `is_approved = false AND approved_by IS NULL AND approved_at IS NULL`.
+
+---
+
+### Migration (one file, all three fixes)
+
 ```sql
-SELECT id, name, type, tournament_id FROM stage
+-- 1. Fix award_streak_badges search_path
+CREATE OR REPLACE FUNCTION public.award_streak_badges(p_team_id uuid)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'pg_catalog', 'public'
+AS $$
+  -- (same function body, unchanged)
+$$;
+
+-- 2. Restrict teams bucket upload to authenticated users
+DROP POLICY IF EXISTS "Allow anyone to upload team images" ON storage.objects;
+CREATE POLICY "Authenticated upload team images"
+  ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'teams');
+
+-- 3. Tighten team_memberships INSERT policies
+DROP POLICY IF EXISTS "Users can create their membership" ON public.team_memberships;
+DROP POLICY IF EXISTS "Users create own membership" ON public.team_memberships;
+
+CREATE POLICY "Users can create their membership"
+  ON public.team_memberships FOR INSERT TO authenticated
+  WITH CHECK (
+    user_id = auth.uid()
+    AND is_approved = false
+    AND approved_by IS NULL
+    AND approved_at IS NULL
+  );
 ```
-But brackets-viewer expects every stage object to have `settings` (with properties like `skipFirstRound`, `size`, `grandFinal`) and `number`. Since `settings` is missing, the library crashes with `r.settings is undefined`.
 
-### Fix
-
-**File: `src/services/brackets/viewer/BracketsViewerAdapter.ts`** (line 38)
-
-Change the stage select from:
-```typescript
-.select('id, name, type, tournament_id')
-```
-to:
-```typescript
-.select('id, name, type, tournament_id, number, settings')
-```
-
-This ensures the stage object passed to brackets-viewer includes the `settings` and `number` fields it requires.
-
-**One file, one line changed.**
+**One migration file, no code changes.**
 
