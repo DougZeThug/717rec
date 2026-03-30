@@ -1,35 +1,36 @@
 
 
-## Fix: Prevent Self-Escalation via profiles UPDATE Policy
+## Fix: Realtime Subscription Error Crashing Bracket View
 
 ### Problem
-The current `Users can update own profile` policy only checks `auth.uid() = id` — it doesn't restrict which columns can be changed. A user could set `is_admin = true` on their own row and gain full admin access.
+The error `cannot add postgres_changes callbacks after subscribe()` occurs because React re-renders cause the `useEffect` to fire again before the previous channel is fully cleaned up. Supabase sees a channel with the same name (`bracket-matches-{bracketId}-{stageId}`) that's already subscribed and throws.
+
+This crashes the `BracketView` component via the error boundary, showing a blank/error screen.
 
 ### Fix
 
-**One migration** — replace the UPDATE policy with a WITH CHECK that ensures `is_admin` stays unchanged:
+**File: `src/hooks/brackets/useBracketsManagerRealtime.ts`** (~3 lines changed)
 
-```sql
-DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+1. Before creating a new channel, proactively remove any existing channel with the same name
+2. Add a unique suffix (using `Date.now()`) to prevent name collisions during rapid re-renders
 
-CREATE POLICY "Users can update own profile"
-ON public.profiles
-FOR UPDATE
-TO authenticated
-USING (id = auth.uid())
-WITH CHECK (
-  id = auth.uid()
-  AND is_admin = (SELECT p.is_admin FROM public.profiles p WHERE p.id = auth.uid())
-);
+```typescript
+// Line ~81: Add cleanup of any stale channel before creating new one
+const channelName = `bracket-matches-${bracketId}-${stageId}`;
+
+// Remove any existing channel with this base name to prevent conflicts
+supabase.getChannels().forEach((ch) => {
+  if (ch.topic.includes(`bracket-matches-${bracketId}`)) {
+    supabase.removeChannel(ch);
+  }
+});
+
+const channel = supabase
+  .channel(channelName)
+  .on(...)
 ```
 
-This allows users to update `username`, `full_name`, `avatar_url` freely, but any attempt to change `is_admin` will be rejected because the WITH CHECK compares the new value against the current value.
+This ensures no stale subscriptions linger when the effect re-runs, which is the root cause of the error.
 
-### Why not a trigger?
-A trigger would work but adds complexity. The WITH CHECK approach is simpler and enforced at the policy level — no extra function needed.
-
-### Note on recursion
-The subquery `SELECT p.is_admin FROM profiles p WHERE p.id = auth.uid()` references the same table. Since this is in a WITH CHECK (not USING), and the USING clause already restricts to the user's own row, Postgres evaluates this without recursion issues. However, if the linter flags it, we can wrap it in a `SECURITY DEFINER` function instead.
-
-**One migration file, no code changes.**
+**One file, ~5 lines added.**
 
