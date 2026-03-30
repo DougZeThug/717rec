@@ -1,34 +1,51 @@
 
+Goal: fix the black/empty bracket area by aligning our renderer behavior with brackets-viewer docs.
 
-## Fix: Brackets Not Showing After Creation
+What I found
+1) Your test bracket is saved correctly and has real bracket-manager data:
+- bracket exists with `season_id`
+- stage exists (`double_elimination`)
+- groups/rounds/matches exist (31 matches)
 
-### Problem
-When you create a bracket, it's saved to the `brackets` table **without a `season_id`**. But the Playoffs page filters brackets by the active season (`WHERE season_id = <active_season_id>`). Since the new bracket has `season_id = null`, it's excluded from the query results — making it invisible both immediately and after page refresh.
+2) The current renderer has custom “block rendering” guards that are not part of brackets-viewer docs:
+- In `useBracketsViewerRenderer.ts`, it computes `sourcePct` and aborts render when `< 0.6`.
+- New/bye-heavy double elimination brackets naturally have many unresolved slots, so this threshold can fail even when data is valid.
+- That produces the “empty black” panel.
 
-The bracket **is** being saved to the database; it's just invisible because of the missing season filter.
+3) brackets-viewer documentation expects rendering with:
+- `stages`, `matches`, `matchGames`, `participants` (plus optional `groups/rounds`)
+- Missing connector source metadata should affect connector lines, not prevent the whole bracket UI from rendering.
 
-### Fix
+Implementation plan (small, safe diff)
+1) Update `src/components/playoffs/viewer/useBracketsViewerRenderer.ts`
+- Remove the hard stop:
+  - delete/replace `if (sourcePct < 0.6) return;`
+- Keep the metric, but only log a warning for diagnostics.
+- Continue calling `window.bracketsViewer.render(...)` whenever `matches.length > 0` and `stages.length > 0`.
 
-**File: `src/services/bracket-creator.ts`** (~2 lines changed)
+2) Make identity-tag validation non-blocking (same file)
+- Current code sets fatal error and returns when symbol tags are missing.
+- Change this to warn-only so valid brackets still render.
+- This avoids false negatives from internal object-shape differences.
 
-1. Accept `seasonId` in the creation options (it's already available from the calling component's page data)
-2. Include `season_id` in the `brackets` table insert
+3) Keep existing error handling for real failures
+- Preserve script-load and render try/catch behavior.
+- Preserve “no matches/stages” guard as the only render blocker.
 
-**File: `src/components/playoffs/BracketCreationDialog.tsx`** (~1 line changed)
+Why this is the right fix
+- It matches brackets-viewer intended usage from docs.
+- It fixes empty-screen behavior without touching DB schema/services.
+- It keeps diagnostics, but stops non-standard prechecks from blocking valid brackets.
 
-Pass the active season ID through to `createBracket()`. The dialog receives `data` which includes `selectedSeasonId` — but currently it's not wired through. We need to:
-- Add `seasonId` prop to the dialog (passed from `PlayoffPageLayout` → `PlayoffDialogs` → `BracketCreationDialog`)
-- Pass it into the `createBracketMutation.mutateAsync()` call
+Files to change
+- `src/components/playoffs/viewer/useBracketsViewerRenderer.ts` (only file)
 
-**File: `src/components/playoffs/dialogs/PlayoffDialogs.tsx`** (~1 line changed)
+Verification checklist (end-to-end)
+1) Open your test bracket (the one in the screenshot): bracket cards should appear instead of a blank area.
+2) Refresh the page: bracket should still render.
+3) Create a new bracket with BYEs: first round and structure should render immediately.
+4) Open a completed bracket: ensure connectors and match click still work.
 
-Thread `seasonId` prop through to `BracketCreationDialog`.
-
-**File: `src/components/playoffs/layout/PlayoffPageLayout.tsx`** (~1 line changed)
-
-Pass `data.selectedSeasonId` to `PlayoffDialogs`.
-
-### Summary
-
-4 files, ~6 lines total. The bracket insert adds `season_id: seasonId` so it matches the active season filter and appears in the bracket list immediately after creation.
-
+Technical note
+- This is a display-layer fix only.
+- No migration, no service contract change, no brackets-manager storage change.
