@@ -22,8 +22,20 @@ interface TopTeamsProps {
 
 const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
   const { shouldApplyWinter } = useSeasonalTheme();
+  const { data: allBadges } = useAllTeamBadges();
   // Memoize to prevent creating new array reference on every render
   const topTenTeams = useMemo(() => teams.slice(0, 10), [teams]);
+
+  const badgesByTeam = useMemo(() => {
+    if (!allBadges) return new Map<string, TeamBadgeEvent[]>();
+    const map = new Map<string, TeamBadgeEvent[]>();
+    for (const badge of allBadges) {
+      const existing = map.get(badge.team_id) || [];
+      existing.push(badge);
+      map.set(badge.team_id, existing);
+    }
+    return map;
+  }, [allBadges]);
 
   const sectionClasses = cn(
     'py-6 md:py-8 px-4 md:px-6 rounded-xl shadow-sm mb-4 mt-4',
