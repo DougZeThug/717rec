@@ -148,6 +148,9 @@ export const useHistoryEditing = ({
   // Move a team to a different division at a specific position
   const moveTeam = useCallback((teamId: string, toDivision: string, newIndex: number) => {
     setTeams((prev) => {
+      // Capture source division before updating
+      const fromDivision = prev.find((t) => t.team_id === teamId)?.division_name;
+
       const updated = prev.map((t) => {
         if (t.team_id === teamId) {
           return { ...t, division_name: toDivision };
@@ -181,9 +184,31 @@ export const useHistoryEditing = ({
         teamIdToRank.set(t.team_id, idx + 1);
       });
 
+      // Recalculate consecutive ranks for the source division
+      const sourceRankMap = new Map<string, number>();
+      if (fromDivision && fromDivision !== toDivision) {
+        const sourceDivisionTeams = updated
+          .filter((t) => t.division_name === fromDivision)
+          .sort((a, b) => {
+            if (a.playoff_rank !== null && b.playoff_rank !== null) {
+              return a.playoff_rank - b.playoff_rank;
+            }
+            if (a.playoff_rank !== null) return -1;
+            if (b.playoff_rank !== null) return 1;
+            return b.match_wins - a.match_wins;
+          });
+        sourceDivisionTeams.forEach((t, idx) => {
+          sourceRankMap.set(t.team_id, idx + 1);
+        });
+      }
+
       return updated.map((t) => {
         if (t.division_name === toDivision) {
           const newRank = teamIdToRank.get(t.team_id);
+          return { ...t, playoff_rank: newRank ?? t.playoff_rank };
+        }
+        if (fromDivision && fromDivision !== toDivision && t.division_name === fromDivision) {
+          const newRank = sourceRankMap.get(t.team_id);
           return { ...t, playoff_rank: newRank ?? t.playoff_rank };
         }
         return t;
