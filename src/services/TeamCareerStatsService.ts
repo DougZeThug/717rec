@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { errorLog } from '@/utils/logger';
+import { handleDatabaseError } from '@/utils/errorHandler';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -26,17 +26,7 @@ export const fetchBatchHeadToHead = async (
   });
 
   if (error) {
-    // Classify: transport/network failure vs actual DB error
-    const isNetworkError =
-      error.message?.toLowerCase().includes('fetch') ||
-      error.message?.toLowerCase().includes('network') ||
-      error.code === 'PGRST000';
-    if (isNetworkError) {
-      errorLog('Batch H2H network error (transient):', error.message);
-    } else {
-      errorLog('Batch H2H error:', error);
-    }
-    return new Map<string, HeadToHeadData>();
+    handleDatabaseError(error, 'Failed to fetch batch head-to-head data');
   }
 
   // Create a map with keys that work for both orderings of team IDs
