@@ -46,9 +46,9 @@ const BracketForm: React.FC<BracketFormProps> = ({
     defaultValues: {
       title: '',
       divisionId: '',
-      format: 'Single Elimination' as const,
+      format: 'Double Elimination' as const,
       teams: [] as string[],
-      grandFinalType: 'simple' as const,
+      grandFinalType: 'double' as const,
     },
     mode: 'onBlur',
   });
