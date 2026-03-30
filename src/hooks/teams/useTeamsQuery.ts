@@ -13,11 +13,12 @@ export const TEAMS_QUERY_KEY = 'teams' as const;
 /**
  * Build query key for teams based on options
  */
-function buildQueryKey(options?: TeamsQueryOptions): (string | TeamsQueryOptions)[] {
-  if (!options?.divisionId && !options?.includeHidden) {
+function buildQueryKey(options?: TeamsQueryOptions): (string | object)[] {
+  const { enabled: _enabled, ...dataOptions } = options || {};
+  if (!dataOptions.divisionId && !dataOptions.includeHidden) {
     return [TEAMS_QUERY_KEY];
   }
-  return [TEAMS_QUERY_KEY, options];
+  return [TEAMS_QUERY_KEY, dataOptions];
 }
 
 /**
