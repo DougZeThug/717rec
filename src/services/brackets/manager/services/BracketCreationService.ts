@@ -1,6 +1,7 @@
 import { BracketsManager } from 'brackets-manager';
 
 import { supabase } from '@/integrations/supabase/client';
+import { handleDatabaseError } from '@/utils/errorHandler';
 import { bracketLog, errorLog, failureLog, successLog } from '@/utils/logger';
 
 import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
