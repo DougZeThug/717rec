@@ -24,6 +24,7 @@ interface RankingCardProps {
   onToggleExpand?: (teamId: string) => void;
   compactView?: boolean;
   showDivision?: boolean;
+  prefetchedBadges?: import('@/types/badges').TeamBadgeEvent[];
 }
 
 const RankingCard: React.FC<RankingCardProps> = ({
