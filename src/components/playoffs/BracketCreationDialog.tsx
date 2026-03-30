@@ -143,6 +143,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         })),
         divisionId: data.divisionId,
         grandFinalType: data.grandFinalType || 'simple',
+        seasonId,
       });
 
       bracketLog('Bracket created successfully:', bracket);

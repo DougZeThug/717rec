@@ -108,6 +108,7 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
         format: format === 'singleElim' ? 'Single Elimination' : 'Double Elimination',
         state: 'pending',
         uses_brackets_manager: true,
+        season_id: seasonId || null,
         participants: {
           grandFinalType: grandFinalType || 'simple',
         },
