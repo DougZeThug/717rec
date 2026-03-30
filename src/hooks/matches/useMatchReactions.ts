@@ -82,7 +82,10 @@ export const useMatchReactions = (matchId: string) => {
         },
         (payload) => {
           const newReaction = payload.new as MatchReaction;
-          setReactions((curr) => [...curr, newReaction]);
+          setReactions((curr) => {
+            if (curr.some((r) => r.id === newReaction.id)) return curr;
+            return [...curr, newReaction];
+          });
         }
       )
       .on(
