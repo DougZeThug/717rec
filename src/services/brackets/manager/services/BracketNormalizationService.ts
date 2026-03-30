@@ -297,6 +297,7 @@ export class BracketNormalizationService {
       errorLog('Error normalizing LB R1:', error);
       // Don't throw - normalization is defensive, not critical
     }
+  }
 
   /**
    * Defensive normalization: ensures winners of completed LB matches
