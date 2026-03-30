@@ -328,6 +328,11 @@ export class BracketNormalizationService {
         const matches = await this.storage.select('match', { round_id: round.id });
         const matchesArray = (Array.isArray(matches) ? matches : [matches]) as StorageMatch[];
 
+        // Count matches in current vs next round for correct mapping
+        const nextRoundMatches = await this.storage.select('match', { round_id: nextRound.id });
+        const nextRoundMatchCount = (Array.isArray(nextRoundMatches) ? nextRoundMatches : [nextRoundMatches]).length;
+        const isOneToOne = nextRoundMatchCount === matchesArray.length;
+
         for (const match of matchesArray) {
           if (match.status !== 4) continue; // Only completed matches
 
@@ -340,9 +345,10 @@ export class BracketNormalizationService {
 
           if (!winnerId) continue;
 
-          // Find the target match in the next round
-          const nextMatchNumber = Math.ceil(match.number / 2);
-          const slot = match.number % 2 === 1 ? 'opponent1' : 'opponent2';
+          // Use correct mapping based on round sizes
+          const nextMatchNumber = isOneToOne
+            ? match.number
+            : Math.ceil(match.number / 2);
 
           const { data: nextMatches } = await supabase
             .from('match')
@@ -353,21 +359,34 @@ export class BracketNormalizationService {
           if (!nextMatches || nextMatches.length === 0) continue;
 
           const nextMatch = nextMatches[0];
-          const currentSlotValue = slot === 'opponent1' ? nextMatch.opponent1_id : nextMatch.opponent2_id;
 
-          if (currentSlotValue === winnerId) continue; // Already placed
+          // Already placed — skip
+          if (nextMatch.opponent1_id === winnerId || nextMatch.opponent2_id === winnerId) continue;
 
-          bracketLog(`🔧 [PROPAGATE] Winner ${winnerId} missing from Round ${nextRound.number} Match ${nextMatchNumber} ${slot} — placing now`);
+          // Find an empty slot — NEVER overwrite an existing participant
+          let targetSlot: 'opponent1' | 'opponent2' | null = null;
+          if (!nextMatch.opponent1_id) {
+            targetSlot = 'opponent1';
+          } else if (!nextMatch.opponent2_id) {
+            targetSlot = 'opponent2';
+          }
+
+          if (!targetSlot) {
+            bracketLog(`⚠️ [PROPAGATE] Both slots occupied in match ${nextMatch.id} — skipping winner ${winnerId}`);
+            continue;
+          }
+
+          bracketLog(`🔧 [PROPAGATE] Winner ${winnerId} → Round ${nextRound.number} Match ${nextMatchNumber} ${targetSlot}`);
 
           const updateFields: Record<string, unknown> = {};
-          if (slot === 'opponent1') {
+          if (targetSlot === 'opponent1') {
             updateFields.opponent1_id = winnerId;
           } else {
             updateFields.opponent2_id = winnerId;
           }
 
           // Unlock if needed
-          const otherSlotFilled = slot === 'opponent1' ? !!nextMatch.opponent2_id : !!nextMatch.opponent1_id;
+          const otherSlotFilled = targetSlot === 'opponent1' ? !!nextMatch.opponent2_id : !!nextMatch.opponent1_id;
           if (nextMatch.status <= 1 && otherSlotFilled) {
             updateFields.status = 2; // Ready
           }

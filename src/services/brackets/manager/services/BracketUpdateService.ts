@@ -100,19 +100,20 @@ export class BracketUpdateService {
           if (currentRound) {
             const nextRound = roundsArray.find((r) => r.number === currentRound.number + 1);
             if (nextRound) {
-              const nextMatchNumber = Math.ceil(currentMatch.number / 2);
-              const slot = currentMatch.number % 2 === 1 ? 'opponent1' : 'opponent2';
+              // Count matches in current vs next round to determine mapping ratio
+              const currentRoundMatches = await this.storage.select('match', { round_id: currentRound.id });
+              const currentRoundMatchCount = (Array.isArray(currentRoundMatches) ? currentRoundMatches : [currentRoundMatches]).length;
+              const nextRoundMatches = await this.storage.select('match', { round_id: nextRound.id });
+              const nextRoundMatchCount = (Array.isArray(nextRoundMatches) ? nextRoundMatches : [nextRoundMatches]).length;
 
-              bracketLog(`📍 Propagating winner ${winnerId} → Round ${nextRound.number}, Match ${nextMatchNumber}, slot ${slot}`);
+              // 1:1 mapping (same count) vs 2:1 mapping (halving)
+              const isOneToOne = nextRoundMatchCount === currentRoundMatchCount;
+              const nextMatchNumber = isOneToOne
+                ? currentMatch.number
+                : Math.ceil(currentMatch.number / 2);
 
-              const updateFields: Record<string, unknown> = {};
-              if (slot === 'opponent1') {
-                updateFields.opponent1_id = winnerId;
-              } else {
-                updateFields.opponent2_id = winnerId;
-              }
+              bracketLog(`📍 Propagating winner ${winnerId} → Round ${nextRound.number}, Match ${nextMatchNumber} (${isOneToOne ? '1:1' : '2:1'} mapping)`);
 
-              // Also unlock the next match if it's locked/waiting
               const { data: nextMatches } = await supabase
                 .from('match')
                 .select('id, status, opponent1_id, opponent2_id')
@@ -121,21 +122,45 @@ export class BracketUpdateService {
 
               if (nextMatches && nextMatches.length > 0) {
                 const nextMatch = nextMatches[0];
-                // If the next match will have both opponents after this update, set Ready
-                const otherSlotFilled = slot === 'opponent1'
-                  ? !!nextMatch.opponent2_id
-                  : !!nextMatch.opponent1_id;
 
-                if (nextMatch.status <= 1) {
-                  updateFields.status = otherSlotFilled ? 2 : nextMatch.status;
+                // Already placed — skip
+                if (nextMatch.opponent1_id === winnerId || nextMatch.opponent2_id === winnerId) {
+                  bracketLog(`✅ Winner ${winnerId} already in next match ${nextMatch.id} — skipping`);
+                } else {
+                  // Find an empty slot — NEVER overwrite an existing participant
+                  let targetSlot: 'opponent1' | 'opponent2' | null = null;
+                  if (!nextMatch.opponent1_id) {
+                    targetSlot = 'opponent1';
+                  } else if (!nextMatch.opponent2_id) {
+                    targetSlot = 'opponent2';
+                  }
+
+                  if (!targetSlot) {
+                    bracketLog(`⚠️ Both slots occupied in next match ${nextMatch.id} — skipping to prevent overwrite`);
+                  } else {
+                    const updateFields: Record<string, unknown> = {};
+                    if (targetSlot === 'opponent1') {
+                      updateFields.opponent1_id = winnerId;
+                    } else {
+                      updateFields.opponent2_id = winnerId;
+                    }
+
+                    const otherSlotFilled = targetSlot === 'opponent1'
+                      ? !!nextMatch.opponent2_id
+                      : !!nextMatch.opponent1_id;
+
+                    if (nextMatch.status <= 1) {
+                      updateFields.status = otherSlotFilled ? 2 : nextMatch.status;
+                    }
+
+                    await supabase
+                      .from('match')
+                      .update(updateFields)
+                      .eq('id', nextMatch.id);
+
+                    bracketLog(`✅ Winner ${winnerId} placed in ${targetSlot} of match ${nextMatch.id}`);
+                  }
                 }
-
-                await supabase
-                  .from('match')
-                  .update(updateFields)
-                  .eq('id', nextMatch.id);
-
-                bracketLog(`✅ Winner placed in next match ${nextMatch.id}`);
               }
             } else {
               bracketLog(`No next round found after round ${currentRound.number} — may be final match`);
