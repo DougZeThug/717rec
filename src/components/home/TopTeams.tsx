@@ -126,7 +126,7 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
       {/* Desktop: Grid Layout (show top 4) */}
       <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {topTenTeams.slice(0, 4).map((team, index) => (
-          <TeamCard key={team.id} team={team} delay={index * 0.1} isWinter={shouldApplyWinter} />
+          <TeamCard key={team.id} team={team} delay={index * 0.1} isWinter={shouldApplyWinter} prefetchedBadges={badgesByTeam.get(team.id) || []} />
         ))}
       </div>
     </section>
