@@ -45,6 +45,10 @@ interface UseHistoryEditingReturn {
 // Rank offset for Intermediate 2 teams - teams with rank > this are in Int 2
 const INTERMEDIATE_2_RANK_OFFSET = 8;
 
+// Case-insensitive division name comparison
+const divisionsMatch = (a: string, b: string) =>
+  a.toLowerCase() === b.toLowerCase();
+
 // Helper to get display division name for editing (splits Intermediate into Int 1/2)
 const getEditDisplayDivision = (
   divisionName: string | null,
@@ -132,7 +136,7 @@ export const useHistoryEditing = ({
   const getTeamsByDivision = useCallback(
     (divisionName: string): EditableTeam[] => {
       return teams
-        .filter((t) => t.division_name === divisionName)
+        .filter((t) => divisionsMatch(t.division_name, divisionName))
         .sort((a, b) => {
           if (a.playoff_rank !== null && b.playoff_rank !== null) {
             return a.playoff_rank - b.playoff_rank;
@@ -160,7 +164,7 @@ export const useHistoryEditing = ({
 
       // Recalculate playoff_rank for the target division
       const divisionTeams = updated
-        .filter((t) => t.division_name === toDivision)
+        .filter((t) => divisionsMatch(t.division_name, toDivision))
         .sort((a, b) => {
           if (a.team_id === teamId) return 0; // Will be repositioned
           if (a.playoff_rank !== null && b.playoff_rank !== null) {
@@ -186,9 +190,9 @@ export const useHistoryEditing = ({
 
       // Recalculate consecutive ranks for the source division
       const sourceRankMap = new Map<string, number>();
-      if (fromDivision && fromDivision !== toDivision) {
+      if (fromDivision && !divisionsMatch(fromDivision, toDivision)) {
         const sourceDivisionTeams = updated
-          .filter((t) => t.division_name === fromDivision)
+          .filter((t) => divisionsMatch(t.division_name, fromDivision))
           .sort((a, b) => {
             if (a.playoff_rank !== null && b.playoff_rank !== null) {
               return a.playoff_rank - b.playoff_rank;
@@ -203,11 +207,11 @@ export const useHistoryEditing = ({
       }
 
       return updated.map((t) => {
-        if (t.division_name === toDivision) {
+        if (divisionsMatch(t.division_name, toDivision)) {
           const newRank = teamIdToRank.get(t.team_id);
           return { ...t, playoff_rank: newRank ?? t.playoff_rank };
         }
-        if (fromDivision && fromDivision !== toDivision && t.division_name === fromDivision) {
+        if (fromDivision && !divisionsMatch(fromDivision, toDivision) && divisionsMatch(t.division_name, fromDivision)) {
           const newRank = sourceRankMap.get(t.team_id);
           return { ...t, playoff_rank: newRank ?? t.playoff_rank };
         }
@@ -222,7 +226,7 @@ export const useHistoryEditing = ({
       setTeams((prev) => {
         // Get current division teams in order
         const divisionTeams = prev
-          .filter((t) => t.division_name === divisionName)
+          .filter((t) => divisionsMatch(t.division_name, divisionName))
           .sort((a, b) => {
             if (a.playoff_rank !== null && b.playoff_rank !== null) {
               return a.playoff_rank - b.playoff_rank;
@@ -244,7 +248,7 @@ export const useHistoryEditing = ({
 
         // Update all teams in this division with new ranks
         return prev.map((t) => {
-          if (t.division_name === divisionName) {
+          if (divisionsMatch(t.division_name, divisionName)) {
             const newRank = teamIdToRank.get(t.team_id);
             return { ...t, playoff_rank: newRank ?? t.playoff_rank };
           }
@@ -258,18 +262,18 @@ export const useHistoryEditing = ({
   // Add a new empty division
   const addDivision = useCallback((name: string) => {
     setCustomDivisions((prev) => {
-      if (prev.includes(name)) return prev;
+      if (prev.some(d => d.toLowerCase() === name.toLowerCase())) return prev;
       return [...prev, name];
     });
   }, []);
 
   // Rename a division (updates all teams in that division)
   const renameDivision = useCallback((oldName: string, newName: string) => {
-    if (oldName === newName) return;
+    if (divisionsMatch(oldName, newName)) return;
 
     setTeams((prev) =>
       prev.map((t) => {
-        if (t.division_name === oldName) {
+        if (divisionsMatch(t.division_name, oldName)) {
           return { ...t, division_name: newName };
         }
         return t;
@@ -278,19 +282,19 @@ export const useHistoryEditing = ({
 
     // Also update custom divisions if applicable
     setCustomDivisions((prev) =>
-      prev.map((d) => (d === oldName ? newName : d)).filter((d, i, arr) => arr.indexOf(d) === i)
+      prev.map((d) => (divisionsMatch(d, oldName) ? newName : d)).filter((d, i, arr) => arr.indexOf(d) === i)
     );
   }, []);
 
   // Remove an empty division
   const removeDivision = useCallback(
     (name: string): boolean => {
-      const teamsInDivision = teams.filter((t) => t.division_name === name);
+      const teamsInDivision = teams.filter((t) => divisionsMatch(t.division_name, name));
       if (teamsInDivision.length > 0) {
         return false; // Can't remove division with teams
       }
 
-      setCustomDivisions((prev) => prev.filter((d) => d !== name));
+      setCustomDivisions((prev) => prev.filter((d) => !divisionsMatch(d, name)));
       return true;
     },
     [teams]
