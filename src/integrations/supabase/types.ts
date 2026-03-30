@@ -4328,6 +4328,19 @@ export type Database = {
           team_id: string
         }[]
       }
+      get_season_team_power_scores: {
+        Args: { p_season_id: string }
+        Returns: {
+          division_id: string
+          game_losses: number
+          game_wins: number
+          losses: number
+          power_score: number
+          sos: number
+          team_id: string
+          wins: number
+        }[]
+      }
       get_season_week_number: {
         Args: { p_date?: string; p_season_id: string }
         Returns: number
