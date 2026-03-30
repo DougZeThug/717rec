@@ -21,9 +21,9 @@ export const useBracketFormState = ({ onSubmit }: UseBracketFormStateProps) => {
     defaultValues: {
       title: '',
       divisionId: '',
-      format: BRACKET_FORMATS.SINGLE as 'Single Elimination',
+      format: BRACKET_FORMATS.DOUBLE as 'Double Elimination',
       teams: [] as string[],
-      grandFinalType: 'simple' as const,
+      grandFinalType: 'double' as const,
     },
     mode: 'onSubmit',
   });
