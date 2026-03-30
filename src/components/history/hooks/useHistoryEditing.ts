@@ -164,7 +164,7 @@ export const useHistoryEditing = ({
 
       // Recalculate playoff_rank for the target division
       const divisionTeams = updated
-        .filter((t) => t.division_name === toDivision)
+        .filter((t) => divisionsMatch(t.division_name, toDivision))
         .sort((a, b) => {
           if (a.team_id === teamId) return 0; // Will be repositioned
           if (a.playoff_rank !== null && b.playoff_rank !== null) {
