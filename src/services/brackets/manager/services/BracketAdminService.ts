@@ -45,9 +45,9 @@ export class BracketAdminService {
       if (isCompletedMatch && !makeReady) {
         // Check downstream population
         if (!clearDownstream) {
-          const downstream = await this.checkDownstreamPopulation(matchId);
+          const downstream = await this.collectDownstreamChain(matchId);
 
-          if (downstream.hasDownstream) {
+          if (downstream.length > 0) {
             throw new Error(
               'Cannot reopen completed match: downstream matches have been populated. ' +
                 'Use "Reopen + Clear Downstream" option to cascade clear downstream matches.'
