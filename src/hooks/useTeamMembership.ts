@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/useToast';
@@ -12,48 +12,32 @@ import {
 import { Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 
-type TeamMembershipData = TeamMembershipRecord;
+import { useState } from 'react';
 
 export function useTeamMembership() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(true);
-  const [membership, setMembership] = useState<TeamMembershipData | null>(null);
-  const [availableTeams, setAvailableTeams] = useState<Team[]>([]);
-  const [error, setError] = useState<string | null>(null);
 
-  // Fetch current team membership if user is logged in
-  useEffect(() => {
-    if (user) {
-      fetchMembership();
-      fetchTeams();
-    }
-  }, [user]);
+  const {
+    data: membership = null,
+    isLoading: isFetching,
+    error: membershipError,
+  } = useQuery({
+    queryKey: ['team-membership', user?.id],
+    queryFn: () => fetchTeamMembership(user!.id),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  });
 
-  const fetchMembership = async () => {
-    if (!user) return;
+  const { data: availableTeams = [] as Team[] } = useQuery({
+    queryKey: ['available-teams'],
+    queryFn: fetchAvailableTeams,
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  });
 
-    try {
-      setIsFetching(true);
-      setError(null);
-      const data = await fetchTeamMembership(user.id);
-      setMembership(data);
-    } catch (err) {
-      errorLog('Error fetching team membership:', err);
-      setError('Failed to load team membership');
-    } finally {
-      setIsFetching(false);
-    }
-  };
-
-  const fetchTeams = async () => {
-    try {
-      const teams = await fetchAvailableTeams();
-      setAvailableTeams(teams);
-    } catch (error) {
-      errorLog('Error fetching teams:', error);
-    }
-  };
+  const error = membershipError ? 'Failed to load team membership' : null;
 
   const joinTeam = async (teamId: string) => {
     if (!user) {
@@ -82,8 +66,8 @@ export function useTeamMembership() {
         });
       }
 
-      // Refresh membership data
-      await fetchMembership();
+      // Invalidate to refetch membership data
+      await queryClient.invalidateQueries({ queryKey: ['team-membership', user.id] });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Please try again later';
       errorLog('Error joining team:', error);
@@ -104,7 +88,8 @@ export function useTeamMembership() {
       setIsLoading(true);
       await leaveTeamMembership(user.id);
 
-      setMembership(null);
+      // Invalidate to clear membership data
+      await queryClient.invalidateQueries({ queryKey: ['team-membership', user.id] });
       toast({
         title: 'Left Team',
         description: "You've successfully left the team",
@@ -122,6 +107,12 @@ export function useTeamMembership() {
     }
   };
 
+  const refreshMembership = () => {
+    if (user) {
+      queryClient.invalidateQueries({ queryKey: ['team-membership', user.id] });
+    }
+  };
+
   return {
     membership,
     availableTeams,
@@ -130,6 +121,6 @@ export function useTeamMembership() {
     error,
     joinTeam,
     leaveTeam,
-    refreshMembership: fetchMembership,
+    refreshMembership,
   };
 }

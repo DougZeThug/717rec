@@ -4,6 +4,7 @@ import React from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTeamBadges } from '@/hooks/useTeamBadges';
 import { cn } from '@/lib/utils';
+import { TeamBadgeEvent } from '@/types/badges';
 import { getBadgeConfig } from '@/utils/badgeConfig';
 import { errorLog } from '@/utils/logger';
 
@@ -16,6 +17,7 @@ interface TeamBadgeCollectionProps {
   orientation?: 'horizontal' | 'vertical';
   className?: string;
   showEmptyState?: boolean;
+  prefetchedBadges?: TeamBadgeEvent[];
 }
 
 const TeamBadgeCollection: React.FC<TeamBadgeCollectionProps> = ({
@@ -25,10 +27,16 @@ const TeamBadgeCollection: React.FC<TeamBadgeCollectionProps> = ({
   orientation = 'horizontal',
   className,
   showEmptyState = false,
+  prefetchedBadges,
 }) => {
-  const { data: badges, isLoading, error } = useTeamBadges(teamId);
+  // Skip the per-team query when prefetched data is provided
+  const { data: fetchedBadges, isLoading, error } = useTeamBadges(
+    prefetchedBadges !== undefined ? '' : teamId
+  );
 
-  if (isLoading) {
+  const badges = prefetchedBadges ?? fetchedBadges;
+
+  if (!prefetchedBadges && isLoading) {
     return (
       <div
         className={cn(
@@ -50,7 +58,7 @@ const TeamBadgeCollection: React.FC<TeamBadgeCollectionProps> = ({
     );
   }
 
-  if (error) {
+  if (!prefetchedBadges && error) {
     errorLog('Error loading badges:', error);
     return null;
   }
