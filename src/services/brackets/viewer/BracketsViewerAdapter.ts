@@ -35,7 +35,7 @@ export class BracketsViewerAdapter {
     // First get stage to find stage_id
     const { data: stages, error: stageError } = await supabase
       .from('stage')
-      .select('id, name, type, tournament_id')
+      .select('id, name, type, tournament_id, number, settings')
       .eq('tournament_id', bracketId);
 
     if (stageError) handleDatabaseError(stageError, 'Failed to fetch stage for bracket');
