@@ -287,6 +287,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                         onToggleExpand={toggleExpand}
                         compactView={!detailedView}
                         showDivision={showUnified}
+                        prefetchedBadges={badgesByTeam.get(ranking.teamId) || []}
                       />
                     </motion.div>
                   );
