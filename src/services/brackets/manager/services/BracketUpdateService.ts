@@ -119,7 +119,7 @@ export class BracketUpdateService {
         } catch (propagationError) {
           const errorMessage =
             propagationError instanceof Error ? propagationError.message : String(propagationError);
-          if (errorMessage.includes('Match not found')) {
+          if (errorMessage.includes('Match not found') || errorMessage.includes('Position is undefined')) {
             bracketLog(`⚠️ Non-fatal propagation error for Match ${matchId}: ${errorMessage}`);
             bracketLog(`Match data was saved successfully. Continuing to normalization steps...`);
           } else {
