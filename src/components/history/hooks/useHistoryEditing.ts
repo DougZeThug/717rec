@@ -207,11 +207,11 @@ export const useHistoryEditing = ({
       }
 
       return updated.map((t) => {
-        if (t.division_name === toDivision) {
+        if (divisionsMatch(t.division_name, toDivision)) {
           const newRank = teamIdToRank.get(t.team_id);
           return { ...t, playoff_rank: newRank ?? t.playoff_rank };
         }
-        if (fromDivision && fromDivision !== toDivision && t.division_name === fromDivision) {
+        if (fromDivision && !divisionsMatch(fromDivision, toDivision) && divisionsMatch(t.division_name, fromDivision)) {
           const newRank = sourceRankMap.get(t.team_id);
           return { ...t, playoff_rank: newRank ?? t.playoff_rank };
         }
