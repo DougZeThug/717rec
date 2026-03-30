@@ -1,24 +1,28 @@
 
 
-## Fix: Team Membership Self-Approval Privilege Escalation
+## Fix: H2H Service Swallows Errors Instead of Throwing
 
 ### Problem
-Users can self-approve their own team membership via direct API calls, then edit team details. The `team_memberships` UPDATE RLS policy allows `user_id = auth.uid()` with no column restrictions, so a user can set `is_approved = true` on their own row.
+`fetchBatchHeadToHead()` returns an empty Map on error instead of throwing. TanStack Query never retries, and the UI shows misleading "First meeting" text on transient failures.
 
 ### Fix
-Add a database trigger (matching the existing `prevent_admin_privilege_escalation` pattern on `profiles`) that blocks non-admin self-approval.
+Replace the error-swallowing `return new Map()` with `handleDatabaseError()`, matching the project's service pattern.
 
-### Migration SQL
+### File: `src/services/TeamCareerStatsService.ts`
 
-Creates a `validate_membership_approval` trigger function that fires before UPDATE on `team_memberships`. When `is_approved` transitions from false/null to true, it enforces:
-1. `approved_by` must be set
-2. `approved_by` must reference an admin in `profiles`
-3. `approved_by` cannot equal the membership's `user_id` (no self-approval)
+Remove the entire error classification block (network vs DB distinction, both `errorLog` calls, and the `return new Map()`) and replace with:
 
-Uses `SECURITY DEFINER` with explicit `search_path` to safely query `profiles`.
+```typescript
+if (error) {
+  handleDatabaseError(error, 'Failed to fetch batch head-to-head data');
+}
+```
 
-### Files
-- **One SQL migration** -- trigger + function only, no frontend changes needed
+Add import for `handleDatabaseError` from `@/utils/errorHandler`. Remove the now-unused `errorLog` import if no other usage remains in the file.
 
-The client-side code already sends approval through `updateMembershipApproval` (admin-only UI), so legitimate workflows are unaffected.
+### Why this is safe
+- `useBatchHeadToHead` already uses `useQuery`, which will catch the thrown error, enter error state, and retry transient failures automatically
+- The hook's `getHeadToHead` helper returns `null` when `data` is undefined (query still loading/errored), so components already handle the no-data case gracefully via `MatchHeadToHead`'s `if (!data) return null` check
+
+One file, ~10 lines changed.
 
