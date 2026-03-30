@@ -127,12 +127,11 @@ export const useBracketsViewerRenderer = ({
         const sourcePct = totalSlots ? sourcedCount / totalSlots : 0;
 
         if (sourcePct < 0.6) {
-          warnLog('Skipping render: insufficient sources', {
+          bracketLog('Low source coverage (normal for new/bye-heavy brackets)', {
             matches: m.length,
             sourced: sourcedCount,
             pct: Math.round(sourcePct * 100) + '%',
           });
-          return;
         }
 
         // Prevent duplicate re-renders on identical data
@@ -189,9 +188,7 @@ export const useBracketsViewerRenderer = ({
         }).length;
 
         if (tagsMissing > 0) {
-          errorLog('Identity tags missing - object identity was lost', { tagsMissing });
-          setError('Bracket data integrity failed: identity tags missing');
-          return;
+          warnLog('Identity tags missing - proceeding anyway', { tagsMissing });
         }
 
         if (cancelled) return;
