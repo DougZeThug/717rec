@@ -248,7 +248,7 @@ export const useHistoryEditing = ({
 
         // Update all teams in this division with new ranks
         return prev.map((t) => {
-          if (t.division_name === divisionName) {
+          if (divisionsMatch(t.division_name, divisionName)) {
             const newRank = teamIdToRank.get(t.team_id);
             return { ...t, playoff_rank: newRank ?? t.playoff_rank };
           }
