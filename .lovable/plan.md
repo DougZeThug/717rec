@@ -1,42 +1,47 @@
 
 
-## Fix: Recalculate Source Division Ranks After Cross-Division Move
+## Fix: Season-Scoped Power Score Snapshots
 
 ### Problem
-`moveTeam` recalculates `playoff_rank` for the **target** division but leaves the **source** division untouched, creating rank gaps (e.g., 1, 3, 4) that persist to the database and display in view mode.
+The `capture-power-snapshots` edge function reads from `v_team_details`, which aggregates **all** completed matches regardless of season. Snapshots are then labeled with the active season's ID, making them unreliable if matches from prior seasons exist in the `matches` table.
 
-### Fix
+### Approach
+Create a new database function `get_season_team_power_scores(p_season_id uuid)` that mirrors the `v_team_details` power score formula but filters matches by `m.season_id = p_season_id`. Then update the edge function to call this RPC instead of querying the view.
 
-**File: `src/components/history/hooks/useHistoryEditing.ts`** — lines 148–192
+### Changes
 
-In the `moveTeam` callback, after recalculating target division ranks, also recalculate consecutive ranks for the source division:
+**1. New SQL migration — `get_season_team_power_scores` function**
 
-1. Capture the source division name before updating `division_name`
-2. After building the target division rank map, build a second rank map for the source division (same sort logic, assign consecutive 1-based ranks)
-3. In the final `.map()`, apply rank updates to both target **and** source division teams
+A `SECURITY DEFINER` function that accepts a season UUID and returns one row per team with: `team_id`, `power_score`, `sos`, `wins`, `losses`, `game_wins`, `game_losses`, `division_id`.
 
+The query is structurally identical to the `v_team_details` view (same 40/45/15 weighted formula), but every `LEFT JOIN matches m` clause adds `AND m.season_id = p_season_id` so only that season's completed matches contribute.
+
+**2. Edge function update — `capture-power-snapshots/index.ts`**
+
+Replace:
 ```typescript
-// After target division rank map is built, add:
-const sourceDivisionTeams = updated
-  .filter((t) => t.division_name === fromDivision && t.team_id !== teamId)
-  .sort(/* same rank sort */);
-
-const sourceRankMap = new Map<string, number>();
-sourceDivisionTeams.forEach((t, idx) => {
-  sourceRankMap.set(t.team_id, idx + 1);
-});
-
-// In the return map, also update source division teams
-return updated.map((t) => {
-  if (t.division_name === toDivision) {
-    return { ...t, playoff_rank: teamIdToRank.get(t.team_id) ?? t.playoff_rank };
-  }
-  if (t.division_name === fromDivision) {
-    return { ...t, playoff_rank: sourceRankMap.get(t.team_id) ?? t.playoff_rank };
-  }
-  return t;
-});
+const { data: teams } = await supabase
+  .from('v_team_details')
+  .select('team_id, power_score, sos, wins, losses, game_wins, game_losses, division_id')
+  .not('power_score', 'is', null);
 ```
 
-One file, ~15 lines changed. No database or other file changes needed.
+With:
+```typescript
+const { data: teams } = await supabase
+  .rpc('get_season_team_power_scores', { p_season_id: activeSeason.id });
+```
+
+The RPC already filters out teams with NULL power scores (no matches that season), so the `.not()` filter is no longer needed.
+
+No other files change — the snapshot insert logic and all downstream consumers (`RankingSnapshotService`, `PowerScoreTrendsCard`, etc.) remain the same since they already filter by `season_id`.
+
+### Technical detail
+
+The function uses `RETURNS TABLE(...)` so the Supabase client returns it as an array of objects, matching the current shape. The formula inside replicates:
+- 40% weighted match win %
+- 45% SOS (avg opponent division weight)
+- 15% weighted game win %
+
+All filtered to `m.season_id = p_season_id AND m.iscompleted = true`.
 
