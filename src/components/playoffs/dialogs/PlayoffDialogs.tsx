@@ -66,6 +66,7 @@ const PlayoffDialogs: React.FC<PlayoffDialogsProps> = ({
   divisions,
   teams,
   onBracketCreated,
+  seasonId,
 
   // Match score editor props
   editingMatch,
