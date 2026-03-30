@@ -1,35 +1,27 @@
 
 
-## Fix: Bracket Not Updating After Score Submission
+## Fix: "Position is undefined" Error on First BYE Advance Attempt
 
 ### Problem
-After submitting a score, `onSaved` increments `refreshCounter`, which re-triggers the render effect. But the fingerprint function (line 9-16) only checks match count, source count, and match IDs — it ignores scores and results. So the re-render is skipped as "identical," and you see "Loading bracket..." until you refresh the page.
+When you advance a BYE match, `brackets-manager`'s internal `getMatchesBeforeFirstRoundLB` function crashes with "Position is undefined" because some participants have no `position` value set. The library throws this during its propagation step.
+
+The match data is already saved successfully by this point (the PATCH succeeds), but the propagation error is re-thrown and kills the whole operation. On the second click it works because the match is already updated.
 
 ### Fix
 
-**File: `src/components/playoffs/viewer/useBracketsViewerRenderer.ts`**
+**File: `src/services/brackets/manager/services/BracketUpdateService.ts`** (line 122)
 
-Two changes:
+Expand the non-fatal error check to also catch "Position is undefined":
 
-1. **Include scores/results in the fingerprint** so score changes are detected:
+```
+Before:
+if (errorMessage.includes('Match not found')) {
 
-```typescript
-const fingerprint = (matches: any[]): string => {
-  const ids = matches.map((x) => x.id).join(',');
-  const scores = matches
-    .map((x) => `${x.opponent1?.score ?? '-'}:${x.opponent1?.result ?? ''}|${x.opponent2?.score ?? '-'}:${x.opponent2?.result ?? ''}`)
-    .join(',');
-  return `${matches.length}:${ids}:${scores}`;
-};
+After:
+if (errorMessage.includes('Match not found') || errorMessage.includes('Position is undefined')) {
 ```
 
-2. **Reset the fingerprint when `refreshCounter` changes** so a forced refresh always works. Add a separate `useEffect` that clears the ref:
+This treats the position error the same way as "Match not found" — a known library bug where the match data was already saved, and normalization steps will fix the bracket state afterward.
 
-```typescript
-useEffect(() => {
-  lastFingerprintRef.current = null;
-}, [refreshCounter]);
-```
-
-**One file, ~6 lines changed.**
+**One file, one line changed.**
 
