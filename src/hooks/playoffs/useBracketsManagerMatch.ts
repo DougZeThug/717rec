@@ -62,20 +62,22 @@ export const useBracketsManagerMatch = (matchId: number | null) => {
       let opponent2Data = null;
 
       if (matchData.opponent1_id) {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('participant')
           .select('id, name')
           .eq('id', matchData.opponent1_id)
           .single();
+        if (error && error.code !== 'PGRST116') throw error;
         opponent1Data = data;
       }
 
       if (matchData.opponent2_id) {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('participant')
           .select('id, name')
           .eq('id', matchData.opponent2_id)
           .single();
+        if (error && error.code !== 'PGRST116') throw error;
         opponent2Data = data;
       }
 
