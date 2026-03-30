@@ -8,11 +8,10 @@ import { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 /** Fingerprint function to detect identical match data and skip redundant renders. */
 const fingerprint = (matches: any[]): string => {
   const ids = matches.map((x) => x.id).join(',');
-  const sourced = matches.reduce(
-    (n, x) => n + (x?.opponent1?.source_node_id ? 1 : 0) + (x?.opponent2?.source_node_id ? 1 : 0),
-    0
-  );
-  return `${matches.length}:${sourced}:${ids}`;
+  const scores = matches
+    .map((x) => `${x.opponent1?.score ?? '-'}:${x.opponent1?.result ?? ''}|${x.opponent2?.score ?? '-'}:${x.opponent2?.result ?? ''}`)
+    .join(',');
+  return `${matches.length}:${ids}:${scores}`;
 };
 
 /** Custom round name formatter for brackets-viewer. */
@@ -74,6 +73,10 @@ export const useBracketsViewerRenderer = ({
   const [error, setError] = useState<string | null>(null);
   const getPlayoffMatchIdRef = useRef<((id: number) => string | undefined) | null>(null);
   const lastFingerprintRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    lastFingerprintRef.current = null;
+  }, [refreshCounter]);
 
   useEffect(() => {
     if (!isScriptReady || !containerRef.current || !bracket?.id) {
