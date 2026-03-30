@@ -35,6 +35,19 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
   isLight,
 }) => {
   const { isWinterTheme } = useSeasonalTheme();
+  const { data: allBadges } = useAllTeamBadges();
+
+  // Create a lookup map for badges by team_id
+  const badgesByTeam = useMemo(() => {
+    if (!allBadges) return new Map();
+    const map = new Map<string, typeof allBadges>();
+    for (const badge of allBadges) {
+      const existing = map.get(badge.team_id) || [];
+      existing.push(badge);
+      map.set(badge.team_id, existing);
+    }
+    return map;
+  }, [allBadges]);
 
   const getSortIndicator = (field: string) => {
     if (sortOptions.field !== field) return null;
