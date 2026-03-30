@@ -263,6 +263,7 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
                   onToggleExpand={() => toggleExpand(ranking.teamId)}
                   showDivision={showUnified}
                   rowIndex={index}
+                  prefetchedBadges={badgesByTeam.get(ranking.teamId) || []}
                 />
               );
             })}
