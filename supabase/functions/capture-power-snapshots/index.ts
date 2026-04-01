@@ -5,6 +5,17 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+interface TeamPowerScore {
+  team_id: string;
+  power_score: number;
+  sos: number;
+  wins: number;
+  losses: number;
+  game_wins: number;
+  game_losses: number;
+  division_id: string | null;
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
