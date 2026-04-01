@@ -253,7 +253,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
       )}
 
       {/* Double Header Toggle */}
-      <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+      <div className="flex items-center justify-between rounded-lg border p-2.5 shadow-sm">
         <div className="space-y-0.5">
           <Label htmlFor="double-header-toggle" className="text-sm font-medium">
             Double Header
