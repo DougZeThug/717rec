@@ -9,11 +9,11 @@ export const getDivisionGradientClass = (division: string): string => {
   const divisionNameLower = division.toLowerCase();
 
   if (divisionNameLower.includes('competitive')) {
-    return 'bg-gradient-to-br from-white via-amber-50/30 to-amber-100/20 dark:from-gray-800 dark:via-amber-950/10 dark:to-gray-900';
+    return 'bg-gradient-to-br from-white via-red-50/30 to-red-100/20 dark:from-gray-800 dark:via-red-950/10 dark:to-gray-900';
   }
 
   if (divisionNameLower.includes('intermediate')) {
-    return 'bg-gradient-to-br from-white via-blue-50/30 to-blue-100/20 dark:from-gray-800 dark:via-blue-950/10 dark:to-gray-900';
+    return 'bg-gradient-to-br from-white via-amber-50/30 to-amber-100/20 dark:from-gray-800 dark:via-amber-950/10 dark:to-gray-900';
   }
 
   if (divisionNameLower.includes('recreational')) {
@@ -30,15 +30,15 @@ export const getDivisionHeaderClass = (division: string): string => {
 
   if (divisionNameLower.includes('competitive')) {
     return cn(
-      'bg-gradient-to-br from-amber-100/70 to-amber-50/20 dark:from-amber-900/20 dark:to-gray-800/50',
-      'border-b-2 border-amber-200 dark:border-amber-800/30'
+      'bg-gradient-to-br from-red-100/70 to-red-50/20 dark:from-red-900/20 dark:to-gray-800/50',
+      'border-b-2 border-red-200 dark:border-red-800/30'
     );
   }
 
   if (divisionNameLower.includes('intermediate')) {
     return cn(
-      'bg-gradient-to-br from-blue-100/70 to-blue-50/20 dark:from-blue-900/20 dark:to-gray-800/50',
-      'border-b-2 border-blue-200 dark:border-blue-800/30'
+      'bg-gradient-to-br from-amber-100/70 to-amber-50/20 dark:from-amber-900/20 dark:to-gray-800/50',
+      'border-b-2 border-amber-200 dark:border-amber-800/30'
     );
   }
 
@@ -61,11 +61,11 @@ export const getDivisionTextClass = (division: string): string => {
   const divisionNameLower = division.toLowerCase();
 
   if (divisionNameLower.includes('competitive')) {
-    return 'text-amber-700 dark:text-amber-400';
+    return 'text-red-700 dark:text-red-400';
   }
 
   if (divisionNameLower.includes('intermediate')) {
-    return 'text-blue-700 dark:text-blue-400';
+    return 'text-amber-700 dark:text-amber-400';
   }
 
   if (divisionNameLower.includes('recreational')) {
@@ -84,7 +84,7 @@ export const getDivisionBadgeColor = (division: string): string => {
   }
 
   if (divisionNameLower.includes('intermediate')) {
-    return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+    return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
   }
 
   if (divisionNameLower.includes('recreational')) {
