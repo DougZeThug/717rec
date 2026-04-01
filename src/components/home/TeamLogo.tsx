@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { FALLBACK_TEAM_IMAGE } from '@/constants/images';
 import { imageErrorLog } from '@/utils/logger';
 
 interface TeamLogoProps {
