@@ -62,7 +62,7 @@ export const ChampionsEditor: React.FC<FormSectionProps> = ({ formData, onChange
   if (formData.card_type !== 'champions') return null;
 
   const metadata = parseMetadata(formData.metadata);
-  const champions: Record<string, string> = metadata.champions || {};
+  const champions = (metadata.champions as Record<string, string>) || {};
 
   const updateChampion = (divisionName: string, teamId: string) => {
     const updated = { ...champions };
