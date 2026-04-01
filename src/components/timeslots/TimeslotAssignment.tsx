@@ -318,7 +318,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
                 key={time}
                 value={time}
                 className={`
-                  px-4 py-2 transition-colors
+                  px-3 py-1.5 transition-colors
                   ${
                     time === 'BYE'
                       ? selectedTimeslot === time
