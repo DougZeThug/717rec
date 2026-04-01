@@ -1,11 +1,10 @@
-import { PlusCircle } from 'lucide-react';
 import React from 'react';
 
 import PlayoffDialogs from '@/components/playoffs/dialogs/PlayoffDialogs';
 import RealtimeIndicator from '@/components/playoffs/indicators/RealtimeIndicator';
 import PlayoffHeader from '@/components/playoffs/PlayoffHeader';
 import SeasonSelector from '@/components/playoffs/SeasonSelector';
-import { Button } from '@/components/ui/button';
+
 import { useBracketsManagerRealtime } from '@/hooks/brackets/useBracketsManagerRealtime';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
@@ -65,7 +64,7 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
       )}
     >
       <div className="max-w-7xl mx-auto">
-        <PlayoffHeader onCreateBracket={view.handleCreateBracket} />
+        <PlayoffHeader />
 
         {/* Season selector - desktop only (mobile moves to bottom bar) */}
         <div className="hidden md:block mb-4">
@@ -90,24 +89,10 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
 
       {/* Mobile bottom bar */}
       <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-card/95 backdrop-blur-sm border-t border-border px-3 py-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))]">
-        <div className="flex items-center gap-2">
-          <div className="flex-1 min-w-0">
-            <SeasonSelector
-              selectedSeasonId={data.selectedSeasonId}
-              onSeasonChange={data.setSelectedSeasonId}
-            />
-          </div>
-          {view.handleCreateBracket && (
-            <Button
-              size="sm"
-              className="shrink-0 gap-1.5"
-              onClick={view.handleCreateBracket}
-            >
-              <PlusCircle className="h-4 w-4" />
-              New
-            </Button>
-          )}
-        </div>
+        <SeasonSelector
+          selectedSeasonId={data.selectedSeasonId}
+          onSeasonChange={data.setSelectedSeasonId}
+        />
       </div>
 
       {/* All dialogs */}
