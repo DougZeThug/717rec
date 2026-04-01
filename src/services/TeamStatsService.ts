@@ -60,6 +60,9 @@ export async function applyMatchResult(
     if (seasonStatsError) handleDatabaseError(seasonStatsError, 'Failed to refresh season stats');
 
     return true;
+  } catch (err) {
+    errorLog('Failed to apply match result:', err);
+    throw err;
   }
 }
 

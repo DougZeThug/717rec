@@ -5,6 +5,17 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+interface TeamPowerScore {
+  team_id: string;
+  power_score: number;
+  sos: number;
+  wins: number;
+  losses: number;
+  game_wins: number;
+  game_losses: number;
+  division_id: string | null;
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -76,8 +87,10 @@ Deno.serve(async (req) => {
     console.log(`[capture-power-snapshots] Current week number: ${weekNumber}`);
 
     // 3. Fetch season-scoped power scores via RPC (filters matches by season)
-    const { data: teams, error: teamsError } = await supabase
+    const { data: teamsData, error: teamsError } = await supabase
       .rpc('get_season_team_power_scores', { p_season_id: activeSeason.id });
+
+    const teams = teamsData as TeamPowerScore[] | null;
 
     if (teamsError) {
       console.error('[capture-power-snapshots] Error fetching team data:', teamsError);
