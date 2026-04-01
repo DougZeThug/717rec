@@ -133,10 +133,51 @@ export default function Timeslots() {
   };
 
   return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-6">Weekly Timeslot Assignments</h1>
+    <div className="container mx-auto py-4 px-3 md:py-8 md:px-4">
+      <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Weekly Timeslot Assignments</h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Mobile: stacked vertical layout without card wrappers */}
+      <div className="block md:hidden space-y-4">
+        <div>
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Select Date</h2>
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={handleDateSelect}
+            className="rounded-md border"
+          />
+          <p className="text-sm font-medium text-center mt-2">{format(selectedDate, 'EEEE, MMMM d, yyyy')}</p>
+        </div>
+
+        <div>
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Assign Timeslot</h2>
+          {isLoadingTeams ? (
+            <LoadingState variant="section" message="Loading teams..." />
+          ) : (
+            <TimeslotAssignment
+              selectedDate={selectedDate}
+              teams={teams || []}
+              existingTimeslots={timeslots}
+              onAssign={handleAssign}
+              onBatchAssign={handleBatchAssign}
+            />
+          )}
+        </div>
+
+        <div>
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+            Timeslots for {format(selectedDate, 'MMMM d, yyyy')}
+          </h2>
+          {isLoading ? (
+            <LoadingState variant="section" message="Loading timeslots..." />
+          ) : (
+            <TimeslotList timeslots={timeslots} teams={teams || []} onDelete={handleDelete} />
+          )}
+        </div>
+      </div>
+
+      {/* Desktop: original grid layout with cards */}
+      <div className="hidden md:grid grid-cols-1 lg:grid-cols-3 gap-8">
         <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle>Select Date</CardTitle>
