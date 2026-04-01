@@ -94,7 +94,7 @@ export const leaveTeamMembership = async (userId: string): Promise<void> => {
 export const fetchPendingMembershipCount = async (): Promise<number> => {
   const { count, error } = await supabase
     .from('team_memberships')
-    .select('*', { count: 'exact', head: true })
+    .select('id', { count: 'exact', head: true })
     .eq('is_approved', false);
 
   if (!error && count !== null) {

@@ -181,7 +181,9 @@ export const getHiddenTeams = async () => {
 
   const { data, error } = await supabase
     .from('teams')
-    .select('*')
+    .select(
+      'id, name, division_id, logo_url, image_url, wins, losses, game_wins, game_losses, seed, challonge_participant_id, players, spotify_url, created_at'
+    )
     .eq('division_id', hiddenDivisionId)
     .order('name');
 

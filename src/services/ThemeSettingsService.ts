@@ -12,7 +12,10 @@ export interface ThemeSetting {
 
 export const ThemeSettingsService = {
   fetchAll: async (): Promise<ThemeSetting[]> => {
-    const { data, error } = await supabase.from('theme_settings').select('*').order('sort_order');
+    const { data, error } = await supabase
+      .from('theme_settings')
+      .select('id, theme_key, label, is_enabled, sort_order, updated_at')
+      .order('sort_order');
 
     if (error) handleDatabaseError(error, 'Failed to fetch theme settings');
     return (data as ThemeSetting[]) ?? [];
