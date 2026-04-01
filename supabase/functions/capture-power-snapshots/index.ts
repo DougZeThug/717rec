@@ -87,8 +87,10 @@ Deno.serve(async (req) => {
     console.log(`[capture-power-snapshots] Current week number: ${weekNumber}`);
 
     // 3. Fetch season-scoped power scores via RPC (filters matches by season)
-    const { data: teams, error: teamsError } = await supabase
+    const { data: teamsData, error: teamsError } = await supabase
       .rpc('get_season_team_power_scores', { p_season_id: activeSeason.id });
+
+    const teams = teamsData as TeamPowerScore[] | null;
 
     if (teamsError) {
       console.error('[capture-power-snapshots] Error fetching team data:', teamsError);
