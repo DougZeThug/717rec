@@ -567,3 +567,52 @@ export const fetchMatchesForAdmin = async (filters: { date?: Date; bracketId?: s
   if (error) throw error;
   return data || [];
 };
+
+/**
+ * Fetch schedule matches for the active season with v_team_details join.
+ * Used by useScheduleData hook.
+ * @throws {DatabaseError} When database operations fail
+ */
+export const fetchScheduleMatches = async () => {
+  // First get the active season
+  const { data: activeSeason } = await supabase
+    .from('seasons')
+    .select('id')
+    .eq('is_active', true)
+    .single();
+
+  if (!activeSeason) return [];
+
+  const { data, error } = await supabase
+    .from('matches')
+    .select(
+      `
+      *,
+      team1:v_team_details!team1_id(
+        team_id,
+        name,
+        image_url,
+        logo_url,
+        divisionname,
+        division_id,
+        power_score,
+        sos
+      ),
+      team2:v_team_details!team2_id(
+        team_id,
+        name,
+        image_url,
+        logo_url,
+        divisionname,
+        division_id,
+        power_score,
+        sos
+      )
+    `
+    )
+    .eq('season_id', activeSeason.id)
+    .order('date');
+
+  if (error) handleDatabaseError(error, 'Failed to fetch schedule matches');
+  return data ?? [];
+};
