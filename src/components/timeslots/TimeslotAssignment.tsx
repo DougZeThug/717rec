@@ -311,7 +311,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
             type="single"
             value={selectedTimeslot}
             onValueChange={setSelectedTimeslot}
-            className="flex flex-wrap justify-start gap-2"
+            className="flex flex-wrap justify-start gap-1.5"
           >
             {TIME_SLOTS.map((time) => (
               <ToggleGroupItem
