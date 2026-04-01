@@ -271,8 +271,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
 
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <label className="block text-sm font-medium">Select Timeslot</label>
-          <label className="hidden">
+          <label className="block text-sm font-medium">
             {isDoubleHeader ? 'Select Two Timeslots' : 'Select Timeslot'}
           </label>
           {isDoubleHeader && (
