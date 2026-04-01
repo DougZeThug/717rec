@@ -4,8 +4,7 @@
  * Provides ~97% reduction in database queries during ranking calculations.
  */
 
-import { supabase } from '@/integrations/supabase/client';
-import { handleDatabaseError } from '@/utils/errorHandler';
+import { DivisionService } from '@/services/DivisionService';
 import { cacheLog } from '@/utils/logger';
 
 type DivisionWeightsMap = Map<string, number>;
@@ -37,15 +36,10 @@ export const fetchDivisionWeights = async (): Promise<DivisionWeightsMap> => {
   cacheLog('Fetching division weights from database');
   cachePromise = (async () => {
     try {
-      const { data, error } = await supabase
-        .from('divisions')
-        .select('id, name, division_weight')
-        .order('name');
-
-      if (error) handleDatabaseError(error, 'Failed to fetch division weights');
+      const data = await DivisionService.fetchDivisionWeightsMap();
 
       const weights = new Map<string, number>();
-      data?.forEach((div) => {
+      data.forEach((div) => {
         weights.set(div.id, div.division_weight ?? DEFAULT_DIVISION_WEIGHT);
       });
 

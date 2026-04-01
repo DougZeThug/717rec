@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { supabase } from '@/integrations/supabase/client';
+import { fetchScheduleMatches } from '@/services/matches/MatchReadService';
 import { errorLog, scheduleLog } from '@/utils/logger';
 import { transformDatabaseMatches } from '@/utils/matchTransformers';
 
@@ -10,58 +10,15 @@ export const useScheduleData = () => {
     queryFn: async () => {
       scheduleLog('Fetching matches data');
 
-      // First get the active season to filter matches
-      const { data: activeSeason } = await supabase
-        .from('seasons')
-        .select('id')
-        .eq('is_active', true)
-        .single();
+      const data = await fetchScheduleMatches();
 
-      if (!activeSeason) {
-        scheduleLog('No active season found');
+      if (!data.length) {
+        scheduleLog('No matches found for active season');
         return [];
       }
 
-      // Join with v_team_details to get team information using LEFT JOIN instead of INNER JOIN
-      // Also fix column name to use divisionname (lowercase) instead of divisionName
-      // Filter by active season to avoid loading historical data
-      const { data, error } = await supabase
-        .from('matches')
-        .select(
-          `
-          *,
-          team1:v_team_details!team1_id(
-            team_id,
-            name,
-            image_url,
-            logo_url,
-            divisionname,
-            division_id,
-            power_score,
-            sos
-          ),
-          team2:v_team_details!team2_id(
-            team_id,
-            name,
-            image_url,
-            logo_url,
-            divisionname,
-            division_id,
-            power_score,
-            sos
-          )
-        `
-        )
-        .eq('season_id', activeSeason.id)
-        .order('date');
-
-      if (error) {
-        errorLog('Error fetching matches:', error);
-        throw error;
-      }
-
       scheduleLog(
-        `Fetched ${data.length} matches (${data.filter((m) => m.iscompleted).length} completed)`
+        `Fetched ${data.length} matches (${data.filter((m: any) => m.iscompleted).length} completed)`
       );
 
       // Use centralized transformer with team details

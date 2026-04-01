@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { supabase } from '@/integrations/supabase/client';
+import { fetchBracketsManagerMatchData } from '@/services/brackets/BracketReadService';
 
 export interface BracketsManagerMatchData {
   id: number;
@@ -36,50 +36,10 @@ export const useBracketsManagerMatch = (matchId: number | null) => {
     queryFn: async () => {
       if (!matchId) return null;
 
-      // Fetch match data
-      const { data: matchData, error: matchError } = await supabase
-        .from('match')
-        .select(
-          'id, stage_id, group_id, round_id, number, status, opponent1_id, opponent1_score, opponent1_result, opponent2_id, opponent2_score, opponent2_result'
-        )
-        .eq('id', matchId)
-        .single();
+      const data = await fetchBracketsManagerMatchData(matchId);
+      if (!data) return null;
 
-      if (matchError) throw matchError;
-      if (!matchData) return null;
-
-      // Fetch games for this match
-      const { data: gamesData, error: gamesError } = await supabase
-        .from('match_game')
-        .select('id, number, match_id, status, opponent1_score, opponent2_score')
-        .eq('match_id', matchId)
-        .order('number', { ascending: true });
-
-      if (gamesError) throw gamesError;
-
-      // Fetch participant names
-      let opponent1Data = null;
-      let opponent2Data = null;
-
-      if (matchData.opponent1_id) {
-        const { data, error } = await supabase
-          .from('participant')
-          .select('id, name')
-          .eq('id', matchData.opponent1_id)
-          .single();
-        if (error && error.code !== 'PGRST116') throw error;
-        opponent1Data = data;
-      }
-
-      if (matchData.opponent2_id) {
-        const { data, error } = await supabase
-          .from('participant')
-          .select('id, name')
-          .eq('id', matchData.opponent2_id)
-          .single();
-        if (error && error.code !== 'PGRST116') throw error;
-        opponent2Data = data;
-      }
+      const { matchData, gamesData, opponent1Data, opponent2Data } = data;
 
       const result: BracketsManagerMatchData = {
         id: matchData.id,
@@ -104,7 +64,7 @@ export const useBracketsManagerMatch = (matchId: number | null) => {
               result: matchData.opponent2_result,
             }
           : null,
-        games: gamesData || [],
+        games: gamesData,
       };
 
       return result;

@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 
-import { supabase } from '@/integrations/supabase/client';
+import { TimeslotQueryService } from '@/services/timeslots/TimeslotQueryService';
 import { Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 
@@ -37,35 +37,10 @@ export async function getTeamsByTimeBlock(date: Date, timeBlock: string): Promis
   // Format date for database query
   const formattedDate = format(date, 'yyyy-MM-dd');
 
-  // Block entries for a selected date based on start time
-  const { data: timeslotData, error } = await supabase
-    .from('team_timeslots')
-    .select(
-      `
-      team_id,
-      teams:team_id (
-        id,
-        name,
-        logo_url,
-        image_url,
-        division_id,
-        divisionName:divisions(name),
-        wins,
-        losses,
-        game_wins,
-        game_losses,
-        sos,
-        power_score
-      )
-    `
-    )
-    .eq('match_date', formattedDate)
-    .eq('timeslot', TIME_BLOCKS[timeBlock].main);
-
-  if (error) {
-    errorLog('Error fetching teams by time block:', error);
-    throw error;
-  }
+  const timeslotData = await TimeslotQueryService.fetchTeamsByTimeslot(
+    formattedDate,
+    TIME_BLOCKS[timeBlock].main
+  );
 
   // Extract team data and format it according to our Team type
   const teams: Team[] =
