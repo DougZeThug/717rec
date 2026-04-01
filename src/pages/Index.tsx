@@ -123,7 +123,7 @@ const Index: React.FC = () => {
         {recapLoading ? (
           <WeeklyRecapSkeleton />
         ) : recapData?.hasData ? (
-          <PageTransition animation="fadeInSlideUp" delay="medium">
+          <PageTransition animation="fadeIn" delay="medium">
             <WeeklyRecapCard
               data={recapData}
               risers={trendData?.trends?.slice(1) ?? []}
