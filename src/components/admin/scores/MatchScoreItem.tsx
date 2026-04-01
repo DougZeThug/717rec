@@ -98,8 +98,7 @@ const MatchScoreItem = ({
                   className="w-full h-full object-contain"
                   onError={(e) => {
                     imageErrorLog(teams[match.team1Id].name, teams[match.team1Id].imageUrl);
-                    (e.target as HTMLImageElement).src =
-                      'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
+                    (e.target as HTMLImageElement).src = FALLBACK_TEAM_IMAGE;
                   }}
                 />
               )}
