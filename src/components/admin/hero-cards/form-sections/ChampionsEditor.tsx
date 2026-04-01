@@ -12,17 +12,10 @@ import {
 } from '@/components/ui/select';
 import { useDivisions } from '@/hooks/useDivisions';
 import { HeroCardService } from '@/services/HeroCardService';
+import { parseMetadata } from '@/utils/parseMetadata';
 
 import { SectionHeader } from './SectionHeader';
 import { FormSectionProps } from './types';
-
-const parseMetadata = (metadataStr: string): Record<string, any> => {
-  try {
-    return JSON.parse(metadataStr);
-  } catch {
-    return {};
-  }
-};
 
 export const ChampionsEditor: React.FC<FormSectionProps> = ({ formData, onChange }) => {
   const { divisions } = useDivisions();
@@ -56,10 +49,10 @@ export const ChampionsEditor: React.FC<FormSectionProps> = ({ formData, onChange
   useEffect(() => {
     if (formData.card_type !== 'champions' || visibleDivisions.length === 0) return;
     const validNames = new Set(visibleDivisions.map((d) => d.display_division));
-    const currentChampions = parseMetadata(formData.metadata).champions || {};
+    const currentChampions = (parseMetadata(formData.metadata).champions as Record<string, string>) || {};
     const staleKeys = Object.keys(currentChampions).filter((k) => !validNames.has(k));
     if (staleKeys.length > 0) {
-      const cleaned = { ...currentChampions };
+      const cleaned: Record<string, string> = { ...currentChampions };
       staleKeys.forEach((k) => delete cleaned[k]);
       const newMeta = { ...parseMetadata(formData.metadata), champions: cleaned };
       onChange('metadata', JSON.stringify(newMeta, null, 2));
@@ -69,7 +62,7 @@ export const ChampionsEditor: React.FC<FormSectionProps> = ({ formData, onChange
   if (formData.card_type !== 'champions') return null;
 
   const metadata = parseMetadata(formData.metadata);
-  const champions: Record<string, string> = metadata.champions || {};
+  const champions = (metadata.champions as Record<string, string>) || {};
 
   const updateChampion = (divisionName: string, teamId: string) => {
     const updated = { ...champions };

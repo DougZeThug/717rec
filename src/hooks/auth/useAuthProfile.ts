@@ -4,6 +4,7 @@ import { NavigateFunction } from 'react-router';
 
 import { fetchAuthProfile } from '@/services/profile/ProfileService';
 import { UserProfile } from '@/types/user';
+import { errorLog } from '@/utils/logger';
 
 /**
  * Hook for managing user profile state and operations
@@ -30,8 +31,12 @@ export const useAuthProfile = (user: User | null, navigate: NavigateFunction) =>
   // Refresh current user's profile
   const refreshProfile = useCallback(async () => {
     if (!user) return;
-    const profileData = await fetchProfile(user.id);
-    setProfile(profileData);
+    try {
+      const profileData = await fetchProfile(user.id);
+      setProfile(profileData);
+    } catch (error) {
+      errorLog('Failed to refresh profile:', error);
+    }
   }, [user, fetchProfile]);
 
   return {

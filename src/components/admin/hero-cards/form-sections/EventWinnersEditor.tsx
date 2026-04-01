@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+import { parseMetadata } from '@/utils/parseMetadata';
+
 import { SectionHeader } from './SectionHeader';
 import { FormSectionProps } from './types';
 
@@ -18,13 +20,6 @@ interface WeekWinners {
   winners: Winner[];
 }
 
-const parseMetadata = (metadataStr: string): Record<string, any> => {
-  try {
-    return JSON.parse(metadataStr);
-  } catch {
-    return {};
-  }
-};
 
 export const EventWinnersEditor: React.FC<FormSectionProps> = ({ formData, onChange }) => {
   if (formData.card_type !== 'event') return null;

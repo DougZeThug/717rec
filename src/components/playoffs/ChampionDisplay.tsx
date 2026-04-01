@@ -3,6 +3,7 @@ import { useTheme } from 'next-themes';
 import React from 'react';
 
 import { SeasonalIcon } from '@/components/ui/seasonal-icon';
+import { FALLBACK_TEAM_IMAGE } from '@/constants/images';
 import { cn } from '@/lib/utils';
 import { blueAmber } from '@/styles/design-system';
 import { ICON_SIZES, ICON_STROKE } from '@/styles/icon-system';
@@ -72,8 +73,7 @@ const ChampionDisplay: React.FC<ChampionDisplayProps> = ({ championId, teams }) 
                 alt={champion.name}
                 className="w-full h-full object-contain"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src =
-                    'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
+                  (e.target as HTMLImageElement).src = FALLBACK_TEAM_IMAGE;
                 }}
               />
             )}

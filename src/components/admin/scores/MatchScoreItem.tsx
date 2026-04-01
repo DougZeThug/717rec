@@ -6,6 +6,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { DestructiveIconButton } from '@/components/ui/destructive-icon-button';
 import { Input } from '@/components/ui/input';
 import { validateGameScore } from '@/hooks/matches/utils/matchValidationUtils';
+import { FALLBACK_TEAM_IMAGE } from '@/constants/images';
 import { Match, Team } from '@/types';
 import { imageErrorLog } from '@/utils/logger';
 
@@ -97,8 +98,7 @@ const MatchScoreItem = ({
                   className="w-full h-full object-contain"
                   onError={(e) => {
                     imageErrorLog(teams[match.team1Id].name, teams[match.team1Id].imageUrl);
-                    (e.target as HTMLImageElement).src =
-                      'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
+                    (e.target as HTMLImageElement).src = FALLBACK_TEAM_IMAGE;
                   }}
                 />
               )}
@@ -114,8 +114,7 @@ const MatchScoreItem = ({
                   className="w-full h-full object-contain"
                   onError={(e) => {
                     imageErrorLog(teams[match.team2Id].name, teams[match.team2Id].imageUrl);
-                    (e.target as HTMLImageElement).src =
-                      'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
+                    (e.target as HTMLImageElement).src = FALLBACK_TEAM_IMAGE;
                   }}
                 />
               )}

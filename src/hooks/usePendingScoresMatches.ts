@@ -100,8 +100,9 @@ export function usePendingScoresMatches() {
     try {
       await submitMutation.mutateAsync({ matchId, submission });
       return true;
-    } catch {
-      return false;
+    } catch (error) {
+      // Error toast already shown by mutation's onError callback
+      throw error;
     }
   };
 

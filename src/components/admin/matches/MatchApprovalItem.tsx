@@ -2,6 +2,7 @@ import { CheckCircle, ChevronDown, ChevronRight } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
+import { FALLBACK_TEAM_IMAGE } from '@/constants/images';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Match, Team } from '@/types';
 
@@ -49,8 +50,7 @@ const MatchApprovalItem = ({
                   alt=""
                   className="w-full h-full object-contain"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src =
-                      'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
+                    (e.target as HTMLImageElement).src = FALLBACK_TEAM_IMAGE;
                   }}
                 />
               )}
@@ -63,8 +63,7 @@ const MatchApprovalItem = ({
                   alt=""
                   className="w-full h-full object-contain"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src =
-                      'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
+                    (e.target as HTMLImageElement).src = FALLBACK_TEAM_IMAGE;
                   }}
                 />
               )}

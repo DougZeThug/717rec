@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router';
 
 import { getCardInteractionStyles } from '@/styles/interactionUtils';
+import { FALLBACK_TEAM_IMAGE } from '@/constants/images';
 import { Match, Team } from '@/types';
 import { imageErrorLog } from '@/utils/logger';
 
@@ -34,8 +35,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, team1, team2, formatDate, 
           className="w-10 h-10 object-contain rounded-none"
           onError={(e) => {
             imageErrorLog(alt, src);
-            (e.target as HTMLImageElement).src =
-              'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
+            (e.target as HTMLImageElement).src = FALLBACK_TEAM_IMAGE;
           }}
         />
       ) : (
