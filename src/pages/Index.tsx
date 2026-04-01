@@ -71,7 +71,7 @@ const Index: React.FC = () => {
           <HeroCardSkeleton />
         ) : (
           heroCards?.map((card, index) => (
-            <PageTransition key={card.id} animation="fadeInSlideUp" delay={getDelay(index)}>
+            <PageTransition key={card.id} animation="fadeIn" delay={getDelay(index)}>
               <Suspense fallback={<HeroCardSkeleton />}>
                 <HeroCard card={card} />
               </Suspense>
@@ -81,7 +81,7 @@ const Index: React.FC = () => {
 
         {/* League History - rendered immediately for LCP optimization (hidden on mobile, in nav grid) */}
         <div className="hidden md:block">
-          <PageTransition animation="fadeInSlideUp" immediate>
+          <PageTransition animation="fadeIn" immediate>
             <LeagueHistoryBar />
           </PageTransition>
         </div>
@@ -92,7 +92,7 @@ const Index: React.FC = () => {
         ) : myNextMatch.hasTeamMembership &&
           myNextMatch.matches.length > 0 &&
           myNextMatch.myTeam ? (
-          <PageTransition animation="fadeInSlideUp" delay="short">
+          <PageTransition animation="fadeIn" delay="short">
             <MyMatchesSection
               matches={myNextMatch.matches}
               myTeam={myNextMatch.myTeam}
@@ -103,7 +103,7 @@ const Index: React.FC = () => {
 
         {/* Season Participation Card - shown when confirmation is open */}
         {showParticipationCard && (
-          <PageTransition animation="fadeInSlideUp" delay="short">
+          <PageTransition animation="fadeIn" delay="short">
             <Suspense fallback={<HeroCardSkeleton />}>
               <ParticipationHeroCard />
             </Suspense>
@@ -114,7 +114,7 @@ const Index: React.FC = () => {
         {trendLoading ? (
           <TeamOfTheWeekSkeleton />
         ) : hasTeamOfWeek && trendData?.latestWeek ? (
-          <PageTransition animation="fadeInSlideUp" delay="medium">
+          <PageTransition animation="fadeIn" delay="medium">
             <TeamOfTheWeekCard trend={topGainer} weekNumber={trendData.latestWeek} />
           </PageTransition>
         ) : null}
@@ -123,7 +123,7 @@ const Index: React.FC = () => {
         {recapLoading ? (
           <WeeklyRecapSkeleton />
         ) : recapData?.hasData ? (
-          <PageTransition animation="fadeInSlideUp" delay="medium">
+          <PageTransition animation="fadeIn" delay="medium">
             <WeeklyRecapCard
               data={recapData}
               risers={trendData?.trends?.slice(1) ?? []}
@@ -133,16 +133,16 @@ const Index: React.FC = () => {
         ) : null}
 
         {hasPendingScores && (
-          <PageTransition animation="fadeInSlideUp" delay="long">
+          <PageTransition animation="fadeIn" delay="long">
             <PendingScoresCard />
           </PageTransition>
         )}
 
         {teamsLoading ? (
-          <div className="h-48 animate-pulse bg-muted/30 rounded-lg" />
+          <div className="animate-pulse bg-muted/30 rounded-lg" style={{ minHeight: '280px' }} />
         ) : (
-          <PageTransition animation="fadeInSlideUp" delay="long">
-            <Suspense fallback={<div className="h-64 animate-pulse bg-muted/30 rounded-lg" />}>
+          <PageTransition animation="fadeIn" delay="long">
+            <Suspense fallback={<div className="animate-pulse bg-muted/30 rounded-lg" style={{ minHeight: '280px' }} />}>
               <TopTeams teams={topTeams} />
             </Suspense>
           </PageTransition>
