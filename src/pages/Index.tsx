@@ -114,7 +114,7 @@ const Index: React.FC = () => {
         {trendLoading ? (
           <TeamOfTheWeekSkeleton />
         ) : hasTeamOfWeek && trendData?.latestWeek ? (
-          <PageTransition animation="fadeInSlideUp" delay="medium">
+          <PageTransition animation="fadeIn" delay="medium">
             <TeamOfTheWeekCard trend={topGainer} weekNumber={trendData.latestWeek} />
           </PageTransition>
         ) : null}
