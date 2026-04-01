@@ -37,6 +37,7 @@ const WeeklyRecapCard: React.FC<WeeklyRecapCardProps> = ({ data, risers, faller 
           ? 'winter-card-full'
           : 'border-violet-500/20 bg-gradient-to-br from-violet-500/5 via-background to-indigo-500/5'
       )}
+      style={{ minHeight: '160px', contain: 'layout style' }}
     >
       {/* Subtle glow */}
       <div
