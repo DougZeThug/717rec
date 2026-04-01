@@ -1,84 +1,75 @@
 
 
-## Fix: Deduplicate Constants, Utility, and Error Handling (2B, 2C, 2D)
+## Redesign: Mobile-Friendly Playoff Page + New Division Colors
 
-### 2B. Extract fallback image URL to a shared constant
+### What Changes
 
-**New file: `src/constants/images.ts`**
-```typescript
-export const FALLBACK_TEAM_IMAGE = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
+**In plain language:** The playoff page on mobile will look like the screenshot — dark division cards with colored borders, status info, and prominent action buttons. Division colors change globally: Competitive = red, Intermediate = yellow/amber, Recreational = green.
+
+### 1. Update Division CSS Variables (`src/styles/theme.css`)
+
+Change the `--competitive` color from amber/gold to red across both light and dark themes:
+
+```
+Light:
+  --competitive: 0 84% 50%;      /* was 35 92% 43% (amber) → now red */
+  --intermediate: 45 93% 47%;    /* was 214 82% 60% (blue) → now amber/yellow */
+  --recreational: 142 71% 45%;   /* was 160 84% 39% (teal) → now green */
+
+Dark:
+  --competitive: 0 84% 60%;      /* red */
+  --intermediate: 45 93% 55%;    /* amber/yellow */
+  --recreational: 142 71% 50%;   /* green */
 ```
 
-**Update 5 files** to import and use the constant instead of the hardcoded URL:
-- `src/components/admin/scores/MatchScoreItem.tsx` (2 occurrences)
-- `src/components/admin/matches/MatchApprovalItem.tsx` (2 occurrences)
-- `src/components/home/MatchCard.tsx` (1 occurrence)
-- `src/components/home/TeamLogo.tsx` (1 occurrence)
-- `src/components/playoffs/ChampionDisplay.tsx` (1 occurrence)
+This automatically updates every component that uses `hsl(var(--competitive))` etc. — standings, badges, gradients, all of it.
 
-Each `onError` handler changes from the inline URL string to `FALLBACK_TEAM_IMAGE`.
+### 2. Update Hex Color Fallbacks (`src/utils/colors/divisionHexColors.ts`)
 
-### 2C. Extract `parseMetadata` to a shared utility
+Update `getDivisionHexColor` to match the new colors:
+- Competitive: red hex values (`#ef4444` / `#dc2626`)
+- Intermediate: amber/yellow hex values (`#f59e0b` / `#d97706`)
+- Recreational: green hex values (`#22c55e` / `#16a34a`)
 
-**New file: `src/utils/parseMetadata.ts`**
-```typescript
-export const parseMetadata = (metadataStr: string): Record<string, unknown> => {
-  try { return JSON.parse(metadataStr); }
-  catch { return {}; }
-};
-```
+### 3. Update Legacy Division Color Utils (`src/utils/colors/divisionColors.ts`)
 
-**Update 3 files** — remove the local `parseMetadata` function and import from the shared utility:
-- `src/components/admin/hero-cards/form-sections/ChampionsEditor.tsx`
-- `src/components/admin/hero-cards/form-sections/EventWinnersEditor.tsx`
-- `src/components/admin/hero-cards/form-sections/TargetingDisplaySection.tsx`
+Update all four functions (`getDivisionGradientClass`, `getDivisionHeaderClass`, `getDivisionTextClass`, `getDivisionBadgeColor`) to use:
+- Competitive → red classes (was amber)
+- Intermediate → amber/yellow classes (was blue)
+- Recreational → emerald/green classes (unchanged)
 
-### 2D. Fix error swallowing in hooks
+### 4. Redesign `DivisionBracketsCard.tsx` for Mobile
 
-**`src/hooks/usePendingScoresMatches.ts`** (lines 99-106)
+Replace the current plain Card with a dark-themed, mobile-optimized card inspired by the screenshot:
 
-The `submitScore` wrapper catches errors and returns `false`, but `mutateAsync` already triggers the `onError` callback which shows a toast. The wrapper is redundant — simplify to just re-throw so callers can handle it, or remove the try/catch since TanStack Query's `onError` already handles the toast:
+- **Division-colored left border** (4px) + subtle gradient background
+- **Division icon + name** as header with colored text
+- **Status line** showing bracket state (e.g., "In Progress - Round 2", "Quarterfinals", "Bracket not started")
+- **Action buttons row**: "View Live Bracket" (filled, division-colored) + "Manage" (outline) for admin, or "Create Bracket" for empty divisions
+- **Rounded corners**, compact padding for mobile
+- Keep all existing text and functionality — just restyle
 
-```typescript
-const submitScore = async (matchId: string, submission: ScoreSubmission): Promise<boolean> => {
-  try {
-    await submitMutation.mutateAsync({ matchId, submission });
-    return true;
-  } catch (error) {
-    // Error toast already shown by mutation's onError callback
-    // Re-throw so callers know it failed
-    throw error;
-  }
-};
-```
+### 5. Update `BracketList.tsx` Layout for Mobile
 
-**`src/hooks/auth/useAuthProfile.ts`** (lines 31-34)
+- Change from `grid md:grid-cols-2` to a single-column stacked layout on mobile (`space-y-4`)
+- Remove the "Playoff Brackets" heading on mobile (the page header already says "Playoffs")
+- Move "Create Bracket" button into a bottom bar alongside season selector on mobile
 
-`refreshProfile` silently swallows errors. Add error logging so failures are visible:
+### 6. Update `PlayoffPageLayout.tsx` Mobile Layout
 
-```typescript
-const refreshProfile = useCallback(async () => {
-  if (!user) return;
-  try {
-    const profileData = await fetchProfile(user.id);
-    setProfile(profileData);
-  } catch (error) {
-    errorLog('Failed to refresh profile:', error);
-  }
-}, [user, fetchProfile]);
-```
+- On mobile: move season selector and "+ New Bracket" button into a sticky bottom bar (like the screenshot shows)
+- Tighten padding: `py-4 px-3` on mobile instead of `py-8 px-4`
 
-This logs the error instead of silently failing. We don't throw here because `refreshProfile` is called in fire-and-forget contexts (profile setup callback), so a toast or log is more appropriate than crashing.
+### Files Changed
 
-### Summary
+| File | Change |
+|------|--------|
+| `src/styles/theme.css` | Update 6 CSS variables (competitive→red, intermediate→yellow, recreational→green) |
+| `src/utils/colors/divisionHexColors.ts` | Update hex values to match new colors |
+| `src/utils/colors/divisionColors.ts` | Update Tailwind classes (amber→red for competitive, blue→amber for intermediate) |
+| `src/components/playoffs/DivisionBracketsCard.tsx` | Redesign with dark gradient cards, colored borders, status text, styled buttons |
+| `src/components/playoffs/BracketList.tsx` | Single-column mobile layout, remove duplicate heading on mobile |
+| `src/components/playoffs/layout/PlayoffPageLayout.tsx` | Bottom bar with season selector + new bracket button on mobile, tighter padding |
 
-| Action | Files |
-|--------|-------|
-| New `src/constants/images.ts` | 1 new file |
-| New `src/utils/parseMetadata.ts` | 1 new file |
-| Update fallback URL imports | 5 files |
-| Update parseMetadata imports | 3 files |
-| Fix error swallowing | 2 files |
-
-Twelve files total, no behavior changes except errors are now logged/re-thrown instead of swallowed.
+Six files. No new files. All existing text and functionality preserved.
 
