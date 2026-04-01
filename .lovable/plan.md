@@ -1,45 +1,66 @@
 
 
-## Fix Build Errors
+## Refactor: Move Direct Supabase Imports to Service Layer
 
-Two issues breaking the build:
+### What & Why
+Your project rule says all Supabase calls go through `src/services/`. Eight files currently import the Supabase client directly for queries/mutations (not realtime). This refactor extracts each DB call into the appropriate service file, then updates the caller to use the service instead.
 
-### 1. Missing `catch` block in `TeamStatsService.ts` (line 45-64)
+### Changes by File
 
-The `try` block has no `catch` or `finally`. The `catch` was likely lost in a previous edit. Fix: add a `catch` block that re-throws.
+#### 1. `src/utils/rankingUtils/divisionWeightsCache.ts`
+- Move the `supabase.from('divisions').select(...)` query into `DivisionService.ts` as `fetchDivisionWeightsMap()`
+- Update `divisionWeightsCache.ts` to import and call `DivisionService.fetchDivisionWeightsMap()` instead of using supabase directly
+- Remove the supabase import
 
-**File: `src/services/TeamStatsService.ts`** (line 63-64)
+#### 2. `src/utils/career/calculateCareerPowerScore.ts`
+- Create `src/services/career/CareerQueryService.ts` with three functions:
+  - `fetchTeamSeasonPowerScores(teamId)` — queries `team_season_stats`
+  - `fetchCurrentTeamPower(teamId)` — queries `v_team_details`
+  - `fetchActiveSeasonId()` — queries `seasons`
+- Update `calculateCareerPowerScore.ts` to call these services in the non-prefetched path
+- Remove the supabase import
 
-Replace the closing `}` of `try` and `}` of the function with:
-```typescript
-  } catch (err) {
-    errorLog('Failed to apply match result:', err);
-    throw err;
-  }
-}
-```
+#### 3. `src/utils/nativeAuth.ts`
+- Add `signInWithIdToken(provider, token)` to `src/services/auth/AuthService.ts`
+- Update `nativeAuth.ts` to call `signInWithIdToken('google', idToken)` instead of `supabase.auth.signInWithIdToken()`
+- Remove the supabase import
 
-### 2. Implicit `any` types in `capture-power-snapshots/index.ts`
+#### 4. `src/utils/teamStatsUtils/updateTeamRecord.ts`
+- Move the `supabase.from('teams').update(...)` call into `src/services/teams/TeamUpdateService.ts` as `updateTeamWinLossRecord()`
+- Update `updateTeamRecord.ts` to call the service function
+- Remove the supabase import
 
-The edge function RPC call returns untyped data. Add an interface and type the `teams` variable.
+#### 5. `src/utils/autoScheduleUtils.ts`
+- Add `fetchTeamsByTimeslot(date, timeslot)` to `src/services/timeslots/TimeslotQueryService.ts`
+- Update `getTeamsByTimeBlock()` to call the service
+- Remove the supabase import
 
-**File: `supabase/functions/capture-power-snapshots/index.ts`**
+#### 6. `src/hooks/useScheduleData.ts`
+- Add `fetchScheduleMatches()` to `MatchReadService.ts` — fetches active season + matches with v_team_details join
+- Update hook to call the service function
+- Remove the supabase import
 
-Add an interface before `Deno.serve`:
-```typescript
-interface TeamPowerScore {
-  team_id: string;
-  power_score: number;
-  sos: number;
-  wins: number;
-  losses: number;
-  game_wins: number;
-  game_losses: number;
-  division_id: string | null;
-}
-```
+#### 7. `src/hooks/playoffs/useBracketsManagerMatch.ts`
+- Add `fetchBracketsManagerMatch(matchId)` to `src/services/brackets/BracketReadService.ts` — fetches match, match_game, and participant data
+- Update hook to call the service function
+- Remove the supabase import
 
-Then cast the RPC result: `const teams = teamsData as TeamPowerScore[] | null;` (renaming `data: teams` to `data: teamsData`).
+#### 8. `src/hooks/matches/utils/queryCacheUtils.ts`
+- Replace the dynamic `import('@/integrations/supabase/client')` with `import { getAuthSession } from '@/services/auth/AuthService'`
+- This is an auth session check, which AuthService already exposes
 
-**Two files, minimal changes.**
+### Summary
+
+| File | Action |
+|------|--------|
+| `DivisionService.ts` | Add `fetchDivisionWeightsMap()` |
+| `CareerQueryService.ts` (new) | 3 query functions for career power score |
+| `AuthService.ts` | Add `signInWithIdToken()` |
+| `TeamUpdateService.ts` | Add `updateTeamWinLossRecord()` |
+| `TimeslotQueryService.ts` | Add `fetchTeamsByTimeslot()` |
+| `MatchReadService.ts` | Add `fetchScheduleMatches()` |
+| `BracketReadService.ts` | Add `fetchBracketsManagerMatch()` |
+| 8 caller files | Replace supabase import with service import |
+
+One new file, seven existing service files updated, eight caller files updated. No behavior changes — pure refactor.
 
