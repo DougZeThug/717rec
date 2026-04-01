@@ -92,7 +92,7 @@ const Index: React.FC = () => {
         ) : myNextMatch.hasTeamMembership &&
           myNextMatch.matches.length > 0 &&
           myNextMatch.myTeam ? (
-          <PageTransition animation="fadeInSlideUp" delay="short">
+          <PageTransition animation="fadeIn" delay="short">
             <MyMatchesSection
               matches={myNextMatch.matches}
               myTeam={myNextMatch.myTeam}
