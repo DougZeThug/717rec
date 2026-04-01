@@ -2,6 +2,7 @@ import { CheckCircle, ChevronDown, ChevronRight } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
+import { FALLBACK_TEAM_IMAGE } from '@/constants/images';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Match, Team } from '@/types';
 
