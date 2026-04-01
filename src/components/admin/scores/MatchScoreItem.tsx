@@ -6,6 +6,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { DestructiveIconButton } from '@/components/ui/destructive-icon-button';
 import { Input } from '@/components/ui/input';
 import { validateGameScore } from '@/hooks/matches/utils/matchValidationUtils';
+import { FALLBACK_TEAM_IMAGE } from '@/constants/images';
 import { Match, Team } from '@/types';
 import { imageErrorLog } from '@/utils/logger';
 
