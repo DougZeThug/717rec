@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { errorLog } from '@/utils/logger';
+import { handleDatabaseError } from '@/utils/errorHandler';
 
 import { TeamAnalysis, TeamAnalysisInput } from './teamFetch.types';
 
@@ -17,10 +17,7 @@ export const fetchTeamAnalysis = async (teamId: string): Promise<TeamAnalysis | 
     .eq('team_id', teamId)
     .maybeSingle();
 
-  if (error) {
-    errorLog('Error fetching team analysis:', error);
-    throw error;
-  }
+  if (error) handleDatabaseError(error, 'Failed to fetch team analysis');
 
   return data as TeamAnalysis | null;
 };
@@ -52,6 +49,6 @@ export const upsertTeamAnalysis = async (
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to upsert team analysis');
   return data;
 };

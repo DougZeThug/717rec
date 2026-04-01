@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { errorLog } from '@/utils/logger';
+import { handleDatabaseError } from '@/utils/errorHandler';
 
 /**
  * Service for bracket deletion operations
@@ -9,22 +9,17 @@ export class BracketDeleteService {
    * Delete a bracket and its matches
    */
   static async deleteBracket(bracketId: string): Promise<void> {
-    try {
-      // Delete the matches first (due to foreign key constraint)
-      const { error: matchesError } = await supabase
-        .from('matches')
-        .delete()
-        .eq('bracket_id', bracketId);
+    // Delete the matches first (due to foreign key constraint)
+    const { error: matchesError } = await supabase
+      .from('matches')
+      .delete()
+      .eq('bracket_id', bracketId);
 
-      if (matchesError) throw matchesError;
+    if (matchesError) handleDatabaseError(matchesError, 'Failed to delete bracket matches');
 
-      // Then delete the bracket
-      const { error: bracketError } = await supabase.from('brackets').delete().eq('id', bracketId);
+    // Then delete the bracket
+    const { error: bracketError } = await supabase.from('brackets').delete().eq('id', bracketId);
 
-      if (bracketError) throw bracketError;
-    } catch (error) {
-      errorLog('Error deleting bracket:', error);
-      throw error;
-    }
+    if (bracketError) handleDatabaseError(bracketError, 'Failed to delete bracket');
   }
 }

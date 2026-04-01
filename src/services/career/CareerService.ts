@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ArchivedMatchData, MatchData, PlayoffMatchData, SeasonStats } from '@/utils/career/types';
+import { handleDatabaseError } from '@/utils/errorHandler';
 import { errorLog, warnLog } from '@/utils/logger';
 
 interface TeamData {
@@ -119,8 +120,7 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
 
   // Handle critical error
   if (seasonStatsResult.error) {
-    errorLog('Error fetching team season stats:', seasonStatsResult.error);
-    return null;
+    handleDatabaseError(seasonStatsResult.error, 'Failed to fetch team season stats');
   }
 
   // Log non-critical errors
@@ -374,8 +374,7 @@ export const fetchAllTeamsCareerData = async (
 
   // Handle critical error
   if (allSeasonStatsResult.error) {
-    errorLog('Error fetching bulk team season stats:', allSeasonStatsResult.error);
-    return new Map();
+    handleDatabaseError(allSeasonStatsResult.error, 'Failed to fetch bulk team season stats');
   }
 
   // Log non-critical errors

@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Json } from '@/integrations/supabase/types';
 import { BadgeType, TeamBadgeEvent } from '@/types/badges';
-import { errorLog } from '@/utils/logger';
+import { handleDatabaseError } from '@/utils/errorHandler';
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 
@@ -39,10 +39,7 @@ export const fetchTeamBadges = async (teamId: string): Promise<TeamBadgeEvent[]>
     .eq('is_active', true)
     .order('awarded_at', { ascending: false });
 
-  if (error) {
-    errorLog('Error fetching team badges:', error);
-    throw error;
-  }
+  if (error) handleDatabaseError(error, 'Failed to fetch team badges');
 
   return (data || []).map((badge) => transformBadge(badge as RawBadgeData));
 };
@@ -56,10 +53,7 @@ export const fetchAllTeamBadges = async (): Promise<TeamBadgeEvent[]> => {
     .eq('is_active', true)
     .order('awarded_at', { ascending: false });
 
-  if (error) {
-    errorLog('Error fetching all team badges:', error);
-    throw error;
-  }
+  if (error) handleDatabaseError(error, 'Failed to fetch all team badges');
 
   return (data || []).map((badge) => transformBadge(badge as RawBadgeData));
 };
@@ -74,10 +68,7 @@ export const fetchSeasonBadges = async (seasonId: string): Promise<TeamBadgeEven
     .eq('is_active', true)
     .order('awarded_at', { ascending: false });
 
-  if (error) {
-    errorLog('Error fetching season badges:', error);
-    throw error;
-  }
+  if (error) handleDatabaseError(error, 'Failed to fetch season badges');
 
   return (data || []).map((badge) => transformBadge(badge as RawBadgeData));
 };
