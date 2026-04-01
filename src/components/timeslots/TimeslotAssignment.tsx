@@ -144,7 +144,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-3">
       {/* Hide the mode toggle buttons - they are commented out but kept for later cleanup */}
       {/*
       <div className="flex items-center gap-2 mb-4">
@@ -198,7 +198,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
           </Select>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <div className="flex justify-between items-center">
             <label className="block text-sm font-medium">Team Selection Grid</label>
             <Button type="button" variant="outline" size="sm" onClick={handleSelectAll}>
@@ -253,7 +253,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
       )}
 
       {/* Double Header Toggle */}
-      <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+      <div className="flex items-center justify-between rounded-lg border p-2.5 shadow-sm">
         <div className="space-y-0.5">
           <Label htmlFor="double-header-toggle" className="text-sm font-medium">
             Double Header
@@ -269,7 +269,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
         />
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <div className="flex items-center gap-2">
           <label className="block text-sm font-medium">
             {isDoubleHeader ? 'Select Two Timeslots' : 'Select Timeslot'}
@@ -282,7 +282,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
         </div>
         {isDoubleHeader ? (
           // Double header mode - multiple selection
-          <div className="flex flex-wrap justify-start gap-2">
+          <div className="flex flex-wrap justify-start gap-1.5">
             {TIME_SLOTS.filter((time) => time !== 'BYE').map((time) => {
               const isSelected = selectedTimeslots.includes(time);
               return (
@@ -292,7 +292,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
                   variant="outline"
                   onClick={() => handleTimeslotToggle(time)}
                   className={`
-                      px-4 py-2 transition-colors
+                      px-3 py-1.5 transition-colors
                       ${
                         isSelected
                           ? 'bg-gradient-to-br from-amber-500 to-orange-500 text-white border-transparent hover:from-amber-400 hover:to-orange-400'
@@ -311,14 +311,14 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
             type="single"
             value={selectedTimeslot}
             onValueChange={setSelectedTimeslot}
-            className="flex flex-wrap justify-start gap-2"
+            className="flex flex-wrap justify-start gap-1.5"
           >
             {TIME_SLOTS.map((time) => (
               <ToggleGroupItem
                 key={time}
                 value={time}
                 className={`
-                  px-4 py-2 transition-colors
+                  px-3 py-1.5 transition-colors
                   ${
                     time === 'BYE'
                       ? selectedTimeslot === time
