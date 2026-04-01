@@ -90,24 +90,10 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
 
       {/* Mobile bottom bar */}
       <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-card/95 backdrop-blur-sm border-t border-border px-3 py-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))]">
-        <div className="flex items-center gap-2">
-          <div className="flex-1 min-w-0">
-            <SeasonSelector
-              selectedSeasonId={data.selectedSeasonId}
-              onSeasonChange={data.setSelectedSeasonId}
-            />
-          </div>
-          {view.handleCreateBracket && (
-            <Button
-              size="sm"
-              className="shrink-0 gap-1.5"
-              onClick={view.handleCreateBracket}
-            >
-              <PlusCircle className="h-4 w-4" />
-              New
-            </Button>
-          )}
-        </div>
+        <SeasonSelector
+          selectedSeasonId={data.selectedSeasonId}
+          onSeasonChange={data.setSelectedSeasonId}
+        />
       </div>
 
       {/* All dialogs */}
