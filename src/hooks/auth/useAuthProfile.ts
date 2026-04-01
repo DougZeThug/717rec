@@ -4,6 +4,7 @@ import { NavigateFunction } from 'react-router';
 
 import { fetchAuthProfile } from '@/services/profile/ProfileService';
 import { UserProfile } from '@/types/user';
+import { errorLog } from '@/utils/logger';
 
 /**
  * Hook for managing user profile state and operations
