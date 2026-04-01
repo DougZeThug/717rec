@@ -1,7 +1,13 @@
 import React from 'react';
 
-import { Checkbox } from '@/components/ui/checkbox';
 import { DestructiveIconButton } from '@/components/ui/destructive-icon-button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import TeamLogo from '@/components/ui/team/TeamLogo';
 import { Team } from '@/types';
 
@@ -19,20 +25,6 @@ interface MatchPairsListProps {
   onRemove: (id: string) => void;
 }
 
-const timeSlotOptions = [
-  '5:00 PM',
-  '5:30 PM',
-  '6:00 PM',
-  '6:30 PM',
-  '7:00 PM',
-  '7:30 PM',
-  '8:00 PM',
-  '8:30 PM',
-  '9:00 PM',
-  '9:30 PM',
-  '10:00 PM',
-];
-
 const MatchPairsList: React.FC<MatchPairsListProps> = ({ pairs, teams, onUpdate, onRemove }) => {
   if (pairs.length === 0) {
     return (
@@ -43,146 +35,150 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({ pairs, teams, onUpdate,
     );
   }
 
-  // Collect all selected team IDs across all pairs
-  const allSelectedTeamIds = new Set<string>();
-  pairs.forEach((pair) => {
-    if (pair.team1Id) allSelectedTeamIds.add(pair.team1Id);
-    if (pair.team2Id) allSelectedTeamIds.add(pair.team2Id);
-  });
+  const getTeamById = (id: string | null) => {
+    if (!id) return null;
+    return teams.find((t) => t.id === id) || null;
+  };
+
+  const timeSlotOptions = [
+    '5:00 PM',
+    '5:30 PM',
+    '6:00 PM',
+    '6:30 PM',
+    '7:00 PM',
+    '7:30 PM',
+    '8:00 PM',
+    '8:30 PM',
+    '9:00 PM',
+    '9:30 PM',
+    '10:00 PM',
+  ];
 
   return (
-    <div className="space-y-2">
-      {pairs.map((pair, index) => {
-        // Teams available for team1: exclude team2 of this pair and teams used in OTHER pairs
-        const otherPairTeamIds = new Set<string>();
-        pairs.forEach((p) => {
-          if (p.id === pair.id) return;
-          if (p.team1Id) otherPairTeamIds.add(p.team1Id);
-          if (p.team2Id) otherPairTeamIds.add(p.team2Id);
-        });
+    <div className="space-y-3">
+      {pairs.map((pair) => (
+        <div key={pair.id} className="p-3 border rounded-lg bg-card shadow-sm">
+          <div className="flex flex-col md:flex-row gap-3">
+            {/* Team 1 Selection */}
+            <div className="flex-1">
+              <label className="text-xs text-muted-foreground mb-1 block">Team 1</label>
+              <Select
+                value={pair.team1Id || ''}
+                onValueChange={(value) => onUpdate(pair.id, { team1Id: value })}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select team">
+                    {pair.team1Id && (
+                      <div className="flex items-center gap-2">
+                        <TeamLogo
+                          imageUrl={getTeamById(pair.team1Id)?.imageUrl || ''}
+                          teamName={getTeamById(pair.team1Id)?.name || ''}
+                          className="h-4 w-4"
+                        />
+                        <span>{getTeamById(pair.team1Id)?.name}</span>
+                      </div>
+                    )}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <div className="max-h-[300px] overflow-auto">
+                    {teams
+                      .filter((team) => team.id !== pair.team2Id)
+                      .map((team) => (
+                        <SelectItem key={team.id} value={team.id}>
+                          <div className="flex items-center gap-2">
+                            <TeamLogo
+                              imageUrl={team.imageUrl || ''}
+                              teamName={team.name}
+                              className="h-4 w-4"
+                            />
+                            <span>{team.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                  </div>
+                </SelectContent>
+              </Select>
+            </div>
 
-        return (
-          <div key={pair.id} className="p-3 border rounded-lg bg-card shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
-                Match {index + 1}
-              </span>
+            {/* VS Symbol */}
+            <div className="flex items-center justify-center">
+              <span className="text-sm font-medium text-muted-foreground">VS</span>
+            </div>
+
+            {/* Team 2 Selection */}
+            <div className="flex-1">
+              <label className="text-xs text-muted-foreground mb-1 block">Team 2</label>
+              <Select
+                value={pair.team2Id || ''}
+                onValueChange={(value) => onUpdate(pair.id, { team2Id: value })}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select team">
+                    {pair.team2Id && (
+                      <div className="flex items-center gap-2">
+                        <TeamLogo
+                          imageUrl={getTeamById(pair.team2Id)?.imageUrl || ''}
+                          teamName={getTeamById(pair.team2Id)?.name || ''}
+                          className="h-4 w-4"
+                        />
+                        <span>{getTeamById(pair.team2Id)?.name}</span>
+                      </div>
+                    )}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <div className="max-h-[300px] overflow-auto">
+                    {teams
+                      .filter((team) => team.id !== pair.team1Id)
+                      .map((team) => (
+                        <SelectItem key={team.id} value={team.id}>
+                          <div className="flex items-center gap-2">
+                            <TeamLogo
+                              imageUrl={team.imageUrl || ''}
+                              teamName={team.name}
+                              className="h-4 w-4"
+                            />
+                            <span>{team.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                  </div>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Timeslot Selection */}
+            <div className="md:w-[150px]">
+              <label className="text-xs text-muted-foreground mb-1 block">Timeslot</label>
+              <Select
+                value={pair.timeslot || ''}
+                onValueChange={(value) => onUpdate(pair.id, { timeslot: value })}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select time" />
+                </SelectTrigger>
+                <SelectContent>
+                  {timeSlotOptions.map((time) => (
+                    <SelectItem key={time} value={time}>
+                      {time}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Delete Button */}
+            <div className="flex items-end justify-end pb-0.5 mt-auto">
               <DestructiveIconButton
                 onClick={() => onRemove(pair.id)}
                 title="Remove match pair"
                 size="sm"
               />
             </div>
-
-            <div className="flex flex-col gap-2">
-              {/* Team 1 Selection */}
-              <p className="text-xs font-medium text-muted-foreground">Select Team 1</p>
-              <div className="max-h-[180px] overflow-y-auto border rounded-md p-1.5">
-                <div className="grid grid-cols-2 gap-1.5">
-                  {teams
-                    .filter((t) => t.id !== pair.team2Id)
-                    .map((team) => {
-                      const isSelected = pair.team1Id === team.id;
-                      const isUsedElsewhere = otherPairTeamIds.has(team.id);
-                      return (
-                        <button
-                          key={team.id}
-                          type="button"
-                          disabled={isUsedElsewhere}
-                          onClick={() =>
-                            onUpdate(pair.id, { team1Id: isSelected ? null : team.id })
-                          }
-                          className={`flex items-center gap-1.5 p-1.5 border rounded text-left transition-colors
-                            ${isSelected ? 'border-primary bg-primary/10' : 'border-border'}
-                            ${isUsedElsewhere ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:bg-accent/50'}
-                          `}
-                        >
-                          <TeamLogo
-                            imageUrl={team.imageUrl || ''}
-                            teamName={team.name}
-                            className="h-7 w-7 min-w-7 min-h-7 shrink-0"
-                          />
-                          <span className="text-xs truncate flex-1">{team.name}</span>
-                          <Checkbox
-                            checked={isSelected}
-                            className="pointer-events-none shrink-0"
-                            tabIndex={-1}
-                          />
-                        </button>
-                      );
-                    })}
-                </div>
-              </div>
-
-              {/* VS Divider */}
-              <div className="text-center">
-                <span className="text-xs font-bold text-muted-foreground">VS</span>
-              </div>
-
-              {/* Team 2 Selection */}
-              <p className="text-xs font-medium text-muted-foreground">Select Team 2</p>
-              <div className="max-h-[180px] overflow-y-auto border rounded-md p-1.5">
-                <div className="grid grid-cols-2 gap-1.5">
-                  {teams
-                    .filter((t) => t.id !== pair.team1Id)
-                    .map((team) => {
-                      const isSelected = pair.team2Id === team.id;
-                      const isUsedElsewhere = otherPairTeamIds.has(team.id);
-                      return (
-                        <button
-                          key={team.id}
-                          type="button"
-                          disabled={isUsedElsewhere}
-                          onClick={() =>
-                            onUpdate(pair.id, { team2Id: isSelected ? null : team.id })
-                          }
-                          className={`flex items-center gap-1.5 p-1.5 border rounded text-left transition-colors
-                            ${isSelected ? 'border-primary bg-primary/10' : 'border-border'}
-                            ${isUsedElsewhere ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:bg-accent/50'}
-                          `}
-                        >
-                          <TeamLogo
-                            imageUrl={team.imageUrl || ''}
-                            teamName={team.name}
-                            className="h-7 w-7 min-w-7 min-h-7 shrink-0"
-                          />
-                          <span className="text-xs truncate flex-1">{team.name}</span>
-                          <Checkbox
-                            checked={isSelected}
-                            className="pointer-events-none shrink-0"
-                            tabIndex={-1}
-                          />
-                        </button>
-                      );
-                    })}
-                </div>
-              </div>
-
-              {/* Timeslot Chips */}
-              <p className="text-xs font-medium text-muted-foreground">Select Timeslot</p>
-              <div className="flex flex-wrap gap-1.5">
-                {timeSlotOptions.map((time) => {
-                  const isSelected = pair.timeslot === time;
-                  return (
-                    <button
-                      key={time}
-                      type="button"
-                      onClick={() =>
-                        onUpdate(pair.id, { timeslot: isSelected ? null : time })
-                      }
-                      className={`px-2.5 py-1 text-xs rounded-full border transition-colors
-                        ${isSelected ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-foreground hover:bg-accent/50'}
-                      `}
-                    >
-                      {time}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
           </div>
-        );
-      })}
+        </div>
+      ))}
     </div>
   );
 };

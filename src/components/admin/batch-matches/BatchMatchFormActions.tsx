@@ -19,32 +19,53 @@ const BatchMatchFormActions = ({
   isAutoAssigning = false,
 }: BatchMatchFormActionsProps) => {
   return (
-    <div className="flex w-full gap-3 pt-2">
+    <div className="flex flex-col gap-4 w-full pt-2">
       <Button
-        onClick={onAddMatch}
+        onClick={onAutoAssign}
         variant="outline"
-        className="flex-1 transition-all duration-200 hover:bg-opacity-90 shadow-sm active:scale-[0.98]"
+        className="w-full transition-all duration-200 hover:bg-opacity-90 shadow-sm active:scale-[0.98]"
+        disabled={isAutoAssigning}
       >
-        <Plus className="mr-2 h-4 w-4" />
-        Add Match
-      </Button>
-      <Button
-        onClick={onSubmit}
-        disabled={isSubmitting}
-        className="flex-1 transition-all duration-200 hover:bg-opacity-90 shadow-sm active:scale-[0.98]"
-      >
-        {isSubmitting ? (
+        {isAutoAssigning ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Creating...
+            Assigning...
           </>
         ) : (
           <>
-            <CalendarCheck className="mr-2 h-4 w-4" />
-            Create Matches
+            <Clock className="mr-2 h-4 w-4" />
+            Auto Assign Timeslots
           </>
         )}
       </Button>
+
+      <div className="flex flex-col sm:flex-row w-full gap-3">
+        <Button
+          onClick={onAddMatch}
+          variant="outline"
+          className="w-full transition-all duration-200 hover:bg-opacity-90 shadow-sm active:scale-[0.98]"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Add Another Match
+        </Button>
+        <Button
+          onClick={onSubmit}
+          disabled={isSubmitting}
+          className="w-full transition-all duration-200 hover:bg-opacity-90 shadow-sm active:scale-[0.98]"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating...
+            </>
+          ) : (
+            <>
+              <CalendarCheck className="mr-2 h-4 w-4" />
+              Create Matches
+            </>
+          )}
+        </Button>
+      </div>
     </div>
   );
 };
