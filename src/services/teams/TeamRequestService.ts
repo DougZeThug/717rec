@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { handleDatabaseError } from '@/utils/errorHandler';
 import type { TeamRequest, TeamRequestStatus, TeamRequestWithTeam } from '@/types/teamRequest';
 
 // ─── fetchPendingRequestsCount ────────────────────────────────────────────────
@@ -9,7 +10,7 @@ export const fetchPendingRequestsCount = async (): Promise<number> => {
     .select('id', { count: 'exact', head: true })
     .eq('status', 'PENDING');
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to fetch pending requests count');
   return count || 0;
 };
 
@@ -25,7 +26,7 @@ export const fetchTeamRequests = async (teamId: string): Promise<TeamRequest[]> 
     .order('created_at', { ascending: false })
     .limit(10);
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to fetch team requests');
   return data as TeamRequest[];
 };
 
@@ -49,7 +50,7 @@ export const fetchAllRequests = async (
   }
 
   const { data, error } = await query;
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to fetch all requests');
   return data as TeamRequestWithTeam[];
 };
 
@@ -86,7 +87,7 @@ export const submitTeamRequest = async (request: {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to submit team request');
   return data;
 };
 
@@ -115,6 +116,6 @@ export const updateTeamRequestStatus = async ({
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to update team request status');
   return data;
 };

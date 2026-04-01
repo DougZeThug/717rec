@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
-import { dbLog, errorLog } from '@/utils/logger';
+import { handleDatabaseError } from '@/utils/errorHandler';
+import { dbLog } from '@/utils/logger';
 
 interface UpdateTeamRecordParams {
   teamId: string;
@@ -49,9 +50,9 @@ export const updateTeamRecord = async ({
     .eq('id', teamId)
     .select();
 
-  if (error || !data?.length) {
-    errorLog(`CRITICAL ERROR updating ${isWinner ? 'winner' : 'loser'} record:`, error);
-    return false;
+  if (error) handleDatabaseError(error, `Failed to update ${isWinner ? 'winner' : 'loser'} team record`);
+  if (!data?.length) {
+    throw new Error(`No rows updated for team ${teamId} — check RLS policies or if record exists`);
   }
 
   return true;

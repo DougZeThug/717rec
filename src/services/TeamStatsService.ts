@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { handleDatabaseError } from '@/utils/errorHandler';
 import { errorLog, scoreLog } from '@/utils/logger';
 
 // Re-export from split services so existing imports keep working
@@ -50,24 +51,15 @@ export async function applyMatchResult(
       p_loser_game_wins: loserGameWinsNum,
     });
 
-    if (error) {
-      errorLog('update_team_stats RPC failed:', error);
-      throw error;
-    }
+    if (error) handleDatabaseError(error, 'Failed to update team stats via RPC');
 
     scoreLog('Team stats updated successfully');
 
     // Also refresh team_season_stats for historical accuracy
     const { error: seasonStatsError } = await supabase.rpc('upsert_team_season_stats');
-    if (seasonStatsError) {
-      errorLog('Failed to refresh season stats:', seasonStatsError);
-      throw seasonStatsError;
-    }
+    if (seasonStatsError) handleDatabaseError(seasonStatsError, 'Failed to refresh season stats');
 
     return true;
-  } catch (error) {
-    errorLog('Failed to update team stats:', error);
-    throw error;
   }
 }
 
@@ -79,26 +71,9 @@ export const updateTeamStatsRecord = async (
   winnerGameWins: number = 0,
   loserGameWins: number = 0
 ) => {
-  try {
-    // Ensure game wins are integers
-    const parsedWinnerGameWins = parseInt(String(winnerGameWins)) || 0;
-    const parsedLoserGameWins = parseInt(String(loserGameWins)) || 0;
+  // Ensure game wins are integers
+  const parsedWinnerGameWins = parseInt(String(winnerGameWins)) || 0;
+  const parsedLoserGameWins = parseInt(String(loserGameWins)) || 0;
 
-    const success = await applyMatchResult(
-      winnerId,
-      loserId,
-      parsedWinnerGameWins,
-      parsedLoserGameWins
-    );
-
-    if (!success) {
-      errorLog('Failed to update team statistics');
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    errorLog('Error updating team statistics:', error);
-    return false;
-  }
+  return applyMatchResult(winnerId, loserId, parsedWinnerGameWins, parsedLoserGameWins);
 };

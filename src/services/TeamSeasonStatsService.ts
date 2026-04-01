@@ -7,6 +7,7 @@ import { DivisionRelation, SeasonRelation } from '@/hooks/teams/seasonBreakdown/
 import { supabase } from '@/integrations/supabase/client';
 import { TeamAdvancedStats } from '@/types/teamAdvancedStats';
 import { SeasonBreakdown } from '@/types/teamAdvancedStats';
+import { handleDatabaseError } from '@/utils/errorHandler';
 import { dbLog, errorLog } from '@/utils/logger';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -112,8 +113,7 @@ export const fetchSeasonBreakdown = async (teamId: string): Promise<TeamAdvanced
 
   // Handle errors from critical query
   if (seasonStatsResult.error) {
-    errorLog('Error fetching team season stats:', seasonStatsResult.error);
-    return null;
+    handleDatabaseError(seasonStatsResult.error, 'Failed to fetch team season stats');
   }
 
   // Extract data from results
@@ -333,9 +333,7 @@ export const batchUpdateSeasonStats = async (updates: TeamUpdate[]): Promise<voi
         .select('team_id');
 
       if (statsError) {
-        throw new Error(
-          `Failed to update team_season_stats for ${update.team_id}: ${statsError.message}`
-        );
+        handleDatabaseError(statsError, `Failed to update team_season_stats for ${update.team_id}`);
       }
 
       if (!statsData || statsData.length === 0) {
@@ -360,14 +358,7 @@ export const batchUpdateSeasonStats = async (updates: TeamUpdate[]): Promise<voi
         .select('team_id');
 
       if (archiveError) {
-        errorLog(`Failed to update team_details_archive:`, {
-          team_id: update.team_id,
-          season_id: update.season_id,
-          error: archiveError.message,
-        });
-        throw new Error(
-          `Failed to update team_details_archive for ${update.team_id}: ${archiveError.message}`
-        );
+        handleDatabaseError(archiveError, `Failed to update team_details_archive for ${update.team_id}`);
       }
 
       if (!archiveData || archiveData.length === 0) {

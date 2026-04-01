@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { handleDatabaseError } from '@/utils/errorHandler';
 import { badgeLog, errorLog, warnLog } from '@/utils/logger';
 
 export type BadgeOperationType =
@@ -189,7 +190,7 @@ export class FailedBadgeOperationsService {
           p_team1_id: params.team1Id,
           p_team2_id: params.team2Id,
         });
-        if (error) throw error;
+        if (error) handleDatabaseError(error, 'Failed to retry match_badges operation');
         return;
       }
 
@@ -198,7 +199,7 @@ export class FailedBadgeOperationsService {
           p_winner_id: params.winnerId,
           p_loser_id: params.loserId,
         });
-        if (error) throw error;
+        if (error) handleDatabaseError(error, 'Failed to retry kingslayer operation');
         return;
       }
 
@@ -206,7 +207,7 @@ export class FailedBadgeOperationsService {
         const { error } = await supabase.rpc('award_clutch_performer_badge', {
           p_team_id: params.winnerId,
         });
-        if (error) throw error;
+        if (error) handleDatabaseError(error, 'Failed to retry clutch_performer operation');
         return;
       }
 
@@ -214,7 +215,7 @@ export class FailedBadgeOperationsService {
         const { error } = await supabase.rpc('award_consistent_performer_badge', {
           p_team_id: params.winnerId,
         });
-        if (error) throw error;
+        if (error) handleDatabaseError(error, 'Failed to retry consistent_performer operation');
         return;
       }
 
@@ -223,7 +224,7 @@ export class FailedBadgeOperationsService {
         const { error } = await supabase.rpc('award_ice_cold_badge', {
           p_team_id: params.teamId,
         });
-        if (error) throw error;
+        if (error) handleDatabaseError(error, `Failed to retry ${type} operation`);
         return;
       }
 
@@ -232,7 +233,7 @@ export class FailedBadgeOperationsService {
         const { error } = await supabase.rpc('award_broom_crew_badge', {
           p_team_id: params.teamId,
         });
-        if (error) throw error;
+        if (error) handleDatabaseError(error, `Failed to retry ${type} operation`);
         return;
       }
 
@@ -241,7 +242,7 @@ export class FailedBadgeOperationsService {
         const { error } = await supabase.rpc('award_gatekeeper_badge', {
           p_team_id: params.teamId,
         });
-        if (error) throw error;
+        if (error) handleDatabaseError(error, `Failed to retry ${type} operation`);
         return;
       }
 
@@ -250,7 +251,7 @@ export class FailedBadgeOperationsService {
         const { error } = await supabase.rpc('award_chaos_agent_badge', {
           p_team_id: params.teamId,
         });
-        if (error) throw error;
+        if (error) handleDatabaseError(error, `Failed to retry ${type} operation`);
         return;
       }
 
@@ -259,7 +260,7 @@ export class FailedBadgeOperationsService {
         const { error } = await supabase.rpc('award_bully_badge', {
           p_team_id: params.teamId,
         });
-        if (error) throw error;
+        if (error) handleDatabaseError(error, `Failed to retry ${type} operation`);
         return;
       }
 

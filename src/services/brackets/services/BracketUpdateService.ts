@@ -1,6 +1,6 @@
 import { BracketFormat } from '@/constants/brackets';
 import { supabase } from '@/integrations/supabase/client';
-import { errorLog } from '@/utils/logger';
+import { handleDatabaseError } from '@/utils/errorHandler';
 
 /**
  * Service for bracket update operations
@@ -17,20 +17,15 @@ export class BracketUpdateService {
       divisionId?: string;
     }
   ): Promise<void> {
-    try {
-      const { error } = await supabase
-        .from('brackets')
-        .update({
-          title: updates.name,
-          format: updates.format,
-          division_id: updates.divisionId,
-        })
-        .eq('id', bracketId);
+    const { error } = await supabase
+      .from('brackets')
+      .update({
+        title: updates.name,
+        format: updates.format,
+        division_id: updates.divisionId,
+      })
+      .eq('id', bracketId);
 
-      if (error) throw error;
-    } catch (error) {
-      errorLog('Error updating bracket:', error);
-      throw error;
-    }
+    if (error) handleDatabaseError(error, 'Failed to update bracket');
   }
 }

@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { handleDatabaseError } from '@/utils/errorHandler';
 
 import { TeamMembershipForAdmin, TeamMembershipRecord } from './teamFetch.types';
 
@@ -26,7 +27,7 @@ export const fetchTeamMembership = async (userId: string): Promise<TeamMembershi
     .eq('user_id', userId)
     .maybeSingle();
 
-  if (fetchError) throw fetchError;
+  if (fetchError) handleDatabaseError(fetchError, 'Failed to fetch team membership');
 
   if (!data) return null;
 
@@ -69,7 +70,7 @@ export const joinTeamMembership = async (
       })
       .eq('user_id', userId);
 
-    if (error) throw error;
+    if (error) handleDatabaseError(error, 'Failed to update team membership');
   } else {
     const { error } = await supabase.from('team_memberships').insert({
       user_id: userId,
@@ -77,7 +78,7 @@ export const joinTeamMembership = async (
       is_approved: false,
     });
 
-    if (error) throw error;
+    if (error) handleDatabaseError(error, 'Failed to insert team membership');
   }
 };
 
@@ -86,7 +87,7 @@ export const joinTeamMembership = async (
 export const leaveTeamMembership = async (userId: string): Promise<void> => {
   const { error } = await supabase.from('team_memberships').delete().eq('user_id', userId);
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to leave team membership');
 };
 
 // ─── fetchPendingMembershipCount ──────────────────────────────────────────────
@@ -97,10 +98,8 @@ export const fetchPendingMembershipCount = async (): Promise<number> => {
     .select('id', { count: 'exact', head: true })
     .eq('is_approved', false);
 
-  if (!error && count !== null) {
-    return count;
-  }
-  return 0;
+  if (error) handleDatabaseError(error, 'Failed to fetch pending membership count');
+  return count ?? 0;
 };
 
 // ─── fetchPendingMembershipsForAdmin ──────────────────────────────────────────
@@ -117,7 +116,7 @@ export const fetchPendingMembershipsForAdmin = async (): Promise<TeamMembershipF
     .eq('is_approved', false)
     .order('joined_at', { ascending: false });
 
-  if (membershipsError) throw membershipsError;
+  if (membershipsError) handleDatabaseError(membershipsError, 'Failed to fetch pending memberships');
   if (!memberships || memberships.length === 0) {
     return [];
   }
@@ -132,8 +131,8 @@ export const fetchPendingMembershipsForAdmin = async (): Promise<TeamMembershipF
     supabase.from('teams').select('id, name, logo_url, image_url').in('id', teamIds),
   ]);
 
-  if (profilesResult.error) throw profilesResult.error;
-  if (teamsResult.error) throw teamsResult.error;
+  if (profilesResult.error) handleDatabaseError(profilesResult.error, 'Failed to fetch member profiles');
+  if (teamsResult.error) handleDatabaseError(teamsResult.error, 'Failed to fetch member teams');
 
   // Create lookup maps
   const profilesMap = new Map((profilesResult.data || []).map((p) => [p.id, p]));
@@ -177,5 +176,5 @@ export const updateMembershipApproval = async (
     .update(updateData)
     .eq('id', membershipId);
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to update membership approval');
 };
