@@ -71,7 +71,7 @@ const Index: React.FC = () => {
           <HeroCardSkeleton />
         ) : (
           heroCards?.map((card, index) => (
-            <PageTransition key={card.id} animation="fadeInSlideUp" delay={getDelay(index)}>
+            <PageTransition key={card.id} animation="fadeIn" delay={getDelay(index)}>
               <Suspense fallback={<HeroCardSkeleton />}>
                 <HeroCard card={card} />
               </Suspense>
