@@ -59,7 +59,7 @@ const BatchMatchFormContainer = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-full overflow-hidden">
+    <div className="space-y-4 max-w-full overflow-hidden">
       <DateSelectionSection selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
 
       <MatchPairsSection

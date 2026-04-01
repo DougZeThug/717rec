@@ -38,7 +38,7 @@ export const MatchPairsSection: React.FC<MatchPairsSectionProps> = ({
         </div>
       </div>
 
-      <p className="text-sm text-muted-foreground mb-3">
+      <p className="text-sm text-muted-foreground mb-2">
         Create team vs team pairings and assign timeslots
       </p>
       <motion.div
