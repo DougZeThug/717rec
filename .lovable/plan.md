@@ -1,19 +1,45 @@
 
 
-## Change Default Bracket Settings to Double Elimination + Double Grand Final
+## Fix Build Errors
 
-### What changes
-Update the default form values in two files so new brackets default to "Double Elimination" format with "double" (bracket reset) grand final.
+Two issues breaking the build:
 
-### Files
+### 1. Missing `catch` block in `TeamStatsService.ts` (line 45-64)
 
-**1. `src/components/playoffs/BracketForm.tsx`** (line 50)
-- Change `format` default from `'Single Elimination'` to `'Double Elimination'`
-- Change `grandFinalType` default from `'simple'` to `'double'`
+The `try` block has no `catch` or `finally`. The `catch` was likely lost in a previous edit. Fix: add a `catch` block that re-throws.
 
-**2. `src/components/playoffs/form/hooks/useBracketFormState.ts`** (lines 24, 26)
-- Change `format` default from `BRACKET_FORMATS.SINGLE` to `BRACKET_FORMATS.DOUBLE`
-- Change `grandFinalType` default from `'simple'` to `'double'`
+**File: `src/services/TeamStatsService.ts`** (line 63-64)
 
-Four default value changes across two files. No logic changes.
+Replace the closing `}` of `try` and `}` of the function with:
+```typescript
+  } catch (err) {
+    errorLog('Failed to apply match result:', err);
+    throw err;
+  }
+}
+```
+
+### 2. Implicit `any` types in `capture-power-snapshots/index.ts`
+
+The edge function RPC call returns untyped data. Add an interface and type the `teams` variable.
+
+**File: `supabase/functions/capture-power-snapshots/index.ts`**
+
+Add an interface before `Deno.serve`:
+```typescript
+interface TeamPowerScore {
+  team_id: string;
+  power_score: number;
+  sos: number;
+  wins: number;
+  losses: number;
+  game_wins: number;
+  game_losses: number;
+  division_id: string | null;
+}
+```
+
+Then cast the RPC result: `const teams = teamsData as TeamPowerScore[] | null;` (renaming `data: teams` to `data: teamsData`).
+
+**Two files, minimal changes.**
 
