@@ -44,9 +44,9 @@
   --sidebar-ring: 240 4.9% 83.9%;
 
   /* Division-specific colors */
-  --competitive: 35 92% 43%;
-  --intermediate: 214 82% 60%;
-  --recreational: 160 84% 39%;
+  --competitive: 0 84% 50%;
+  --intermediate: 45 93% 47%;
+  --recreational: 142 71% 45%;
 }
 
 .dark {
