@@ -45,7 +45,7 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
           'bg-gradient-to-br from-blue-50/50 via-gray-50 to-orange-50/30',
           'dark:from-gray-900 dark:via-gray-900/90 dark:to-gray-900/80'
         ),
-    animations.fadeIn
+    '' // Animation handled by parent PageTransition to avoid double animation CLS
   );
 
   // Reserve minimum height to prevent layout shift during loading
