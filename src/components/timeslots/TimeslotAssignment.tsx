@@ -352,10 +352,10 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
         }
       >
         {isDoubleHeader
-          ? `Assign Double Header to ${selectedTeamIds.length} Team(s)`
+          ? `Confirm Double Header (${selectedTeamIds.length} Team${selectedTeamIds.length !== 1 ? 's' : ''})`
           : batchMode
-            ? `Assign Timeslot to ${selectedTeamIds.length} Team(s)`
-            : 'Assign Timeslot'}
+            ? `Confirm Assignment (${selectedTeamIds.length} Team${selectedTeamIds.length !== 1 ? 's' : ''})`
+            : 'Confirm Assignment'}
       </Button>
     </form>
   );
