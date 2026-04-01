@@ -199,8 +199,8 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
         </div>
       ) : (
         <div className="space-y-2">
-          <div className="flex justify-between items-center mb-2">
-            <label className="block text-sm font-medium">Select Teams</label>
+          <div className="flex justify-between items-center">
+            <label className="block text-sm font-medium">Team Selection Grid</label>
             <Button type="button" variant="outline" size="sm" onClick={handleSelectAll}>
               {selectedTeamIds.length === availableTeams.length ? 'Deselect All' : 'Select All'}
             </Button>
@@ -208,32 +208,44 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
 
           <ScrollArea className="h-[200px] border rounded-md p-2">
             {availableTeams.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-gray-500">
+              <div className="flex items-center justify-center h-full text-muted-foreground">
                 All teams have been assigned for this date
               </div>
             ) : (
-              <div className="space-y-2">
-                {availableTeams.map((team) => (
-                  <div key={team.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`team-${team.id}`}
-                      checked={selectedTeamIds.includes(team.id)}
-                      onCheckedChange={() => handleToggleTeam(team.id)}
-                    />
-                    <label
-                      htmlFor={`team-${team.id}`}
-                      className="text-sm font-medium leading-none cursor-pointer"
+              <div className="grid grid-cols-2 gap-2">
+                {availableTeams.map((team) => {
+                  const isSelected = selectedTeamIds.includes(team.id);
+                  return (
+                    <button
+                      key={team.id}
+                      type="button"
+                      onClick={() => handleToggleTeam(team.id)}
+                      className={`flex items-center gap-2 p-2 rounded-lg border transition-colors text-left ${
+                        isSelected
+                          ? 'border-primary bg-primary/10'
+                          : 'border-border hover:bg-muted'
+                      }`}
                     >
-                      {team.name}
-                    </label>
-                  </div>
-                ))}
+                      <TeamLogo
+                        imageUrl={team.imageUrl || team.logoUrl}
+                        teamName={team.name}
+                        size="sm"
+                      />
+                      <span className="text-xs font-medium truncate flex-1">{team.name}</span>
+                      <Checkbox
+                        checked={isSelected}
+                        tabIndex={-1}
+                        className="pointer-events-none"
+                      />
+                    </button>
+                  );
+                })}
               </div>
             )}
           </ScrollArea>
 
           {selectedTeamIds.length > 0 && (
-            <div className="text-sm text-blue-600">
+            <div className="text-sm text-primary">
               {selectedTeamIds.length} team{selectedTeamIds.length !== 1 ? 's' : ''} selected
             </div>
           )}
