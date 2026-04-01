@@ -3,6 +3,7 @@ import { useTheme } from 'next-themes';
 import React from 'react';
 
 import { SeasonalIcon } from '@/components/ui/seasonal-icon';
+import { FALLBACK_TEAM_IMAGE } from '@/constants/images';
 import { cn } from '@/lib/utils';
 import { blueAmber } from '@/styles/design-system';
 import { ICON_SIZES, ICON_STROKE } from '@/styles/icon-system';
