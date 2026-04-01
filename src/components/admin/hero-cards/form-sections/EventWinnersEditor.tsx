@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+import { parseMetadata } from '@/utils/parseMetadata';
+
 import { SectionHeader } from './SectionHeader';
 import { FormSectionProps } from './types';
 
