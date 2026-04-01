@@ -1,4 +1,3 @@
-import { PlusCircle } from 'lucide-react';
 import React from 'react';
 
 import PlayoffDialogs from '@/components/playoffs/dialogs/PlayoffDialogs';
