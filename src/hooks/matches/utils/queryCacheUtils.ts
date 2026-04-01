@@ -43,10 +43,10 @@ export const invalidateMatchRelatedQueries = async (queryClient: QueryClient) =>
 
   // After invalidation, save ranking snapshot (authenticated users only)
   try {
-    const { supabase } = await import('@/integrations/supabase/client');
+    const { getAuthSession } = await import('@/services/auth/AuthService');
     const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await getAuthSession();
     if (session) {
       // Small delay to let React Query refetch rankings with fresh data
       setTimeout(async () => {

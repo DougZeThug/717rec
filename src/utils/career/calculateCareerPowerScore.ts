@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { CareerQueryService } from '@/services/career/CareerQueryService';
 
 interface SeasonPowerScoreData {
   power_score: number | null;
@@ -77,28 +77,18 @@ export const calculateCareerPowerScore = async ({
     currentTeamData = prefetchedCurrentTeamData;
   } else {
     // Fetch from DB (single-team mode — backward compatible)
-    // Also fetch the current season ID so we can exclude it from team_season_stats
-    const [seasonStatsResult, currentTeamDataResult, currentSeasonResult] = await Promise.all([
-      supabase
-        .from('team_season_stats')
-        .select('power_score, match_wins, match_losses, season_id')
-        .eq('team_id', teamId)
-        .not('power_score', 'is', null),
-      supabase
-        .from('v_team_details')
-        .select('power_score, wins, losses')
-        .eq('team_id', teamId)
-        .maybeSingle(),
-      // Only fetch current season if not already provided
+    const [seasonStatsResult, currentTeamDataResult, fetchedSeasonId] = await Promise.all([
+      CareerQueryService.fetchTeamSeasonPowerScores(teamId),
+      CareerQueryService.fetchCurrentTeamPower(teamId),
       !resolvedCurrentSeasonId
-        ? supabase.from('seasons').select('id').eq('is_active', true).maybeSingle()
-        : Promise.resolve({ data: null }),
+        ? CareerQueryService.fetchActiveSeasonId()
+        : Promise.resolve(null),
     ]);
 
-    seasonStats = seasonStatsResult.data;
-    currentTeamData = currentTeamDataResult.data;
-    if (!resolvedCurrentSeasonId && currentSeasonResult.data) {
-      resolvedCurrentSeasonId = currentSeasonResult.data.id;
+    seasonStats = seasonStatsResult;
+    currentTeamData = currentTeamDataResult;
+    if (!resolvedCurrentSeasonId && fetchedSeasonId) {
+      resolvedCurrentSeasonId = fetchedSeasonId;
     }
   }
 

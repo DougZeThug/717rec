@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { updateTeamWinLossRecord } from '@/services/teams/TeamUpdateService';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { dbLog } from '@/utils/logger';
 
@@ -39,21 +39,12 @@ export const updateTeamRecord = async ({
     game_losses: gameLosses,
   });
 
-  const { error, data } = await supabase
-    .from('teams')
-    .update({
-      wins: newWins,
-      losses: newLosses,
-      game_wins: newGameWins,
-      game_losses: newGameLosses,
-    })
-    .eq('id', teamId)
-    .select();
-
-  if (error) handleDatabaseError(error, `Failed to update ${isWinner ? 'winner' : 'loser'} team record`);
-  if (!data?.length) {
-    throw new Error(`No rows updated for team ${teamId} — check RLS policies or if record exists`);
-  }
+  await updateTeamWinLossRecord(teamId, {
+    wins: newWins,
+    losses: newLosses,
+    game_wins: newGameWins,
+    game_losses: newGameLosses,
+  });
 
   return true;
 };

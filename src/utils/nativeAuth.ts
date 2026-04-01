@@ -1,7 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 import { SocialLogin } from '@capgo/capacitor-social-login';
 
-import { supabase } from '@/integrations/supabase/client';
+import { signInWithIdToken } from '@/services/auth/AuthService';
 import { authLog, errorLog } from '@/utils/logger';
 
 export const isNativePlatform = (): boolean => {
@@ -46,16 +46,8 @@ export const loginWithGoogleNative = async () => {
       throw new Error('Failed to retrieve ID token from Google login response');
     }
 
-    // Use the ID token to sign in with Supabase
-    const { data, error } = await supabase.auth.signInWithIdToken({
-      provider: 'google',
-      token: idToken,
-    });
-
-    if (error) {
-      errorLog('Error signing in with Google Native:', error);
-      return { success: false, error };
-    }
+    // Use the ID token to sign in with Supabase via AuthService
+    const data = await signInWithIdToken('google', idToken);
 
     return { success: true, user: data.user };
   } catch (err: any) {

@@ -39,3 +39,12 @@ export const onAuthStateChange = (
 ) => {
   return supabase.auth.onAuthStateChange(callback);
 };
+
+export const signInWithIdToken = async (provider: 'google', token: string) => {
+  const { data, error } = await supabase.auth.signInWithIdToken({
+    provider,
+    token,
+  });
+  if (error) throw error;
+  return data;
+};
