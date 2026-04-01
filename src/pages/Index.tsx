@@ -133,7 +133,7 @@ const Index: React.FC = () => {
         ) : null}
 
         {hasPendingScores && (
-          <PageTransition animation="fadeInSlideUp" delay="long">
+          <PageTransition animation="fadeIn" delay="long">
             <PendingScoresCard />
           </PageTransition>
         )}
