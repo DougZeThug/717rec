@@ -5,17 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 
+import { parseMetadata } from '@/utils/parseMetadata';
+
 import { TargetEntitySelector, TargetTypeSelector } from '../TargetSelector';
 import { SectionHeader } from './SectionHeader';
 import { FormSectionProps } from './types';
-
-const parseMetadata = (metadataStr: string): Record<string, any> => {
-  try {
-    return JSON.parse(metadataStr);
-  } catch {
-    return {};
-  }
-};
 
 export const TargetingDisplaySection: React.FC<FormSectionProps> = ({ formData, onChange }) => {
   const isEvent = formData.card_type === 'event';

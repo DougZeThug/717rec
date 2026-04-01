@@ -20,13 +20,6 @@ interface WeekWinners {
   winners: Winner[];
 }
 
-const parseMetadata = (metadataStr: string): Record<string, any> => {
-  try {
-    return JSON.parse(metadataStr);
-  } catch {
-    return {};
-  }
-};
 
 export const EventWinnersEditor: React.FC<FormSectionProps> = ({ formData, onChange }) => {
   if (formData.card_type !== 'event') return null;

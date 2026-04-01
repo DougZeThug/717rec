@@ -12,17 +12,10 @@ import {
 } from '@/components/ui/select';
 import { useDivisions } from '@/hooks/useDivisions';
 import { HeroCardService } from '@/services/HeroCardService';
+import { parseMetadata } from '@/utils/parseMetadata';
 
 import { SectionHeader } from './SectionHeader';
 import { FormSectionProps } from './types';
-
-const parseMetadata = (metadataStr: string): Record<string, any> => {
-  try {
-    return JSON.parse(metadataStr);
-  } catch {
-    return {};
-  }
-};
 
 export const ChampionsEditor: React.FC<FormSectionProps> = ({ formData, onChange }) => {
   const { divisions } = useDivisions();

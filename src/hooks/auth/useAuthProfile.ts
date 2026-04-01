@@ -31,8 +31,12 @@ export const useAuthProfile = (user: User | null, navigate: NavigateFunction) =>
   // Refresh current user's profile
   const refreshProfile = useCallback(async () => {
     if (!user) return;
-    const profileData = await fetchProfile(user.id);
-    setProfile(profileData);
+    try {
+      const profileData = await fetchProfile(user.id);
+      setProfile(profileData);
+    } catch (error) {
+      errorLog('Failed to refresh profile:', error);
+    }
   }, [user, fetchProfile]);
 
   return {

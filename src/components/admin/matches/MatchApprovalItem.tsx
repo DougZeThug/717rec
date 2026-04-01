@@ -63,8 +63,7 @@ const MatchApprovalItem = ({
                   alt=""
                   className="w-full h-full object-contain"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src =
-                      'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
+                    (e.target as HTMLImageElement).src = FALLBACK_TEAM_IMAGE;
                   }}
                 />
               )}
