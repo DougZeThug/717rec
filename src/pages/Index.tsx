@@ -103,7 +103,7 @@ const Index: React.FC = () => {
 
         {/* Season Participation Card - shown when confirmation is open */}
         {showParticipationCard && (
-          <PageTransition animation="fadeInSlideUp" delay="short">
+          <PageTransition animation="fadeIn" delay="short">
             <Suspense fallback={<HeroCardSkeleton />}>
               <ParticipationHeroCard />
             </Suspense>
