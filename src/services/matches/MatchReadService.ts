@@ -616,3 +616,20 @@ export const fetchScheduleMatches = async () => {
   if (error) handleDatabaseError(error, 'Failed to fetch schedule matches');
   return data ?? [];
 };
+
+/**
+ * Check if two teams have ever played each other.
+ * Used by autoScheduleUtils.
+ */
+export const haveTeamsPlayedBefore = async (team1Id: string, team2Id: string): Promise<boolean> => {
+  const { data, error } = await supabase
+    .from('matches')
+    .select('id')
+    .or(
+      `and(team1_id.eq.${team1Id},team2_id.eq.${team2Id}),and(team1_id.eq.${team2Id},team2_id.eq.${team1Id})`
+    )
+    .limit(1);
+
+  if (error) handleDatabaseError(error, 'Failed to check if teams have played');
+  return (data?.length ?? 0) > 0;
+};

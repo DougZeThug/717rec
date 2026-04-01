@@ -72,21 +72,8 @@ export async function getTeamsByTimeBlock(date: Date, timeBlock: string): Promis
  */
 export async function haveTeamsPlayed(team1Id: string, team2Id: string): Promise<boolean> {
   try {
-    // Build a query to find matches between these teams
-    const { data, error } = await supabase
-      .from('matches')
-      .select('id')
-      .or(
-        `and(team1_id.eq.${team1Id},team2_id.eq.${team2Id}),and(team1_id.eq.${team2Id},team2_id.eq.${team1Id})`
-      )
-      .limit(1);
-
-    if (error) {
-      errorLog('Error checking if teams have played:', error);
-      throw error;
-    }
-
-    return data && data.length > 0;
+    const { haveTeamsPlayedBefore } = await import('@/services/matches/MatchReadService');
+    return await haveTeamsPlayedBefore(team1Id, team2Id);
   } catch (error) {
     errorLog('Error in haveTeamsPlayed:', error);
     // Return false as a fallback to avoid blocking match generation
