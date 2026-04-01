@@ -13,19 +13,19 @@ export const getDivisionHexColor = (
 
   const lowerDiv = divisionName.toLowerCase();
 
-  // Competitive Division - Amber/Gold
+  // Competitive Division - Red
   if (lowerDiv.includes('competitive')) {
-    return isDark ? '#fbbf24' : '#d97706';
+    return isDark ? '#ef4444' : '#dc2626';
   }
 
-  // Intermediate Division - Blue
+  // Intermediate Division - Amber/Yellow
   if (lowerDiv.includes('intermediate')) {
-    return isDark ? '#60a5fa' : '#2563eb';
+    return isDark ? '#f59e0b' : '#d97706';
   }
 
-  // Recreational Division - Emerald/Green
+  // Recreational Division - Green
   if (lowerDiv.includes('recreational')) {
-    return isDark ? '#34d399' : '#059669';
+    return isDark ? '#22c55e' : '#16a34a';
   }
 
   // Default fallback
