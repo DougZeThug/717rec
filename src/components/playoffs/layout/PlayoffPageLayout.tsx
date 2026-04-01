@@ -4,7 +4,7 @@ import PlayoffDialogs from '@/components/playoffs/dialogs/PlayoffDialogs';
 import RealtimeIndicator from '@/components/playoffs/indicators/RealtimeIndicator';
 import PlayoffHeader from '@/components/playoffs/PlayoffHeader';
 import SeasonSelector from '@/components/playoffs/SeasonSelector';
-import { Button } from '@/components/ui/button';
+
 import { useBracketsManagerRealtime } from '@/hooks/brackets/useBracketsManagerRealtime';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
