@@ -81,7 +81,7 @@ const Index: React.FC = () => {
 
         {/* League History - rendered immediately for LCP optimization (hidden on mobile, in nav grid) */}
         <div className="hidden md:block">
-          <PageTransition animation="fadeInSlideUp" immediate>
+          <PageTransition animation="fadeIn" immediate>
             <LeagueHistoryBar />
           </PageTransition>
         </div>
