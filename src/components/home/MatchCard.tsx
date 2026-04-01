@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router';
 
 import { getCardInteractionStyles } from '@/styles/interactionUtils';
+import { FALLBACK_TEAM_IMAGE } from '@/constants/images';
 import { Match, Team } from '@/types';
 import { imageErrorLog } from '@/utils/logger';
 
