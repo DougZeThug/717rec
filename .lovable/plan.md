@@ -1,66 +1,84 @@
 
 
-## Refactor: Move Direct Supabase Imports to Service Layer
+## Fix: Deduplicate Constants, Utility, and Error Handling (2B, 2C, 2D)
 
-### What & Why
-Your project rule says all Supabase calls go through `src/services/`. Eight files currently import the Supabase client directly for queries/mutations (not realtime). This refactor extracts each DB call into the appropriate service file, then updates the caller to use the service instead.
+### 2B. Extract fallback image URL to a shared constant
 
-### Changes by File
+**New file: `src/constants/images.ts`**
+```typescript
+export const FALLBACK_TEAM_IMAGE = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
+```
 
-#### 1. `src/utils/rankingUtils/divisionWeightsCache.ts`
-- Move the `supabase.from('divisions').select(...)` query into `DivisionService.ts` as `fetchDivisionWeightsMap()`
-- Update `divisionWeightsCache.ts` to import and call `DivisionService.fetchDivisionWeightsMap()` instead of using supabase directly
-- Remove the supabase import
+**Update 5 files** to import and use the constant instead of the hardcoded URL:
+- `src/components/admin/scores/MatchScoreItem.tsx` (2 occurrences)
+- `src/components/admin/matches/MatchApprovalItem.tsx` (2 occurrences)
+- `src/components/home/MatchCard.tsx` (1 occurrence)
+- `src/components/home/TeamLogo.tsx` (1 occurrence)
+- `src/components/playoffs/ChampionDisplay.tsx` (1 occurrence)
 
-#### 2. `src/utils/career/calculateCareerPowerScore.ts`
-- Create `src/services/career/CareerQueryService.ts` with three functions:
-  - `fetchTeamSeasonPowerScores(teamId)` — queries `team_season_stats`
-  - `fetchCurrentTeamPower(teamId)` — queries `v_team_details`
-  - `fetchActiveSeasonId()` — queries `seasons`
-- Update `calculateCareerPowerScore.ts` to call these services in the non-prefetched path
-- Remove the supabase import
+Each `onError` handler changes from the inline URL string to `FALLBACK_TEAM_IMAGE`.
 
-#### 3. `src/utils/nativeAuth.ts`
-- Add `signInWithIdToken(provider, token)` to `src/services/auth/AuthService.ts`
-- Update `nativeAuth.ts` to call `signInWithIdToken('google', idToken)` instead of `supabase.auth.signInWithIdToken()`
-- Remove the supabase import
+### 2C. Extract `parseMetadata` to a shared utility
 
-#### 4. `src/utils/teamStatsUtils/updateTeamRecord.ts`
-- Move the `supabase.from('teams').update(...)` call into `src/services/teams/TeamUpdateService.ts` as `updateTeamWinLossRecord()`
-- Update `updateTeamRecord.ts` to call the service function
-- Remove the supabase import
+**New file: `src/utils/parseMetadata.ts`**
+```typescript
+export const parseMetadata = (metadataStr: string): Record<string, unknown> => {
+  try { return JSON.parse(metadataStr); }
+  catch { return {}; }
+};
+```
 
-#### 5. `src/utils/autoScheduleUtils.ts`
-- Add `fetchTeamsByTimeslot(date, timeslot)` to `src/services/timeslots/TimeslotQueryService.ts`
-- Update `getTeamsByTimeBlock()` to call the service
-- Remove the supabase import
+**Update 3 files** — remove the local `parseMetadata` function and import from the shared utility:
+- `src/components/admin/hero-cards/form-sections/ChampionsEditor.tsx`
+- `src/components/admin/hero-cards/form-sections/EventWinnersEditor.tsx`
+- `src/components/admin/hero-cards/form-sections/TargetingDisplaySection.tsx`
 
-#### 6. `src/hooks/useScheduleData.ts`
-- Add `fetchScheduleMatches()` to `MatchReadService.ts` — fetches active season + matches with v_team_details join
-- Update hook to call the service function
-- Remove the supabase import
+### 2D. Fix error swallowing in hooks
 
-#### 7. `src/hooks/playoffs/useBracketsManagerMatch.ts`
-- Add `fetchBracketsManagerMatch(matchId)` to `src/services/brackets/BracketReadService.ts` — fetches match, match_game, and participant data
-- Update hook to call the service function
-- Remove the supabase import
+**`src/hooks/usePendingScoresMatches.ts`** (lines 99-106)
 
-#### 8. `src/hooks/matches/utils/queryCacheUtils.ts`
-- Replace the dynamic `import('@/integrations/supabase/client')` with `import { getAuthSession } from '@/services/auth/AuthService'`
-- This is an auth session check, which AuthService already exposes
+The `submitScore` wrapper catches errors and returns `false`, but `mutateAsync` already triggers the `onError` callback which shows a toast. The wrapper is redundant — simplify to just re-throw so callers can handle it, or remove the try/catch since TanStack Query's `onError` already handles the toast:
+
+```typescript
+const submitScore = async (matchId: string, submission: ScoreSubmission): Promise<boolean> => {
+  try {
+    await submitMutation.mutateAsync({ matchId, submission });
+    return true;
+  } catch (error) {
+    // Error toast already shown by mutation's onError callback
+    // Re-throw so callers know it failed
+    throw error;
+  }
+};
+```
+
+**`src/hooks/auth/useAuthProfile.ts`** (lines 31-34)
+
+`refreshProfile` silently swallows errors. Add error logging so failures are visible:
+
+```typescript
+const refreshProfile = useCallback(async () => {
+  if (!user) return;
+  try {
+    const profileData = await fetchProfile(user.id);
+    setProfile(profileData);
+  } catch (error) {
+    errorLog('Failed to refresh profile:', error);
+  }
+}, [user, fetchProfile]);
+```
+
+This logs the error instead of silently failing. We don't throw here because `refreshProfile` is called in fire-and-forget contexts (profile setup callback), so a toast or log is more appropriate than crashing.
 
 ### Summary
 
-| File | Action |
-|------|--------|
-| `DivisionService.ts` | Add `fetchDivisionWeightsMap()` |
-| `CareerQueryService.ts` (new) | 3 query functions for career power score |
-| `AuthService.ts` | Add `signInWithIdToken()` |
-| `TeamUpdateService.ts` | Add `updateTeamWinLossRecord()` |
-| `TimeslotQueryService.ts` | Add `fetchTeamsByTimeslot()` |
-| `MatchReadService.ts` | Add `fetchScheduleMatches()` |
-| `BracketReadService.ts` | Add `fetchBracketsManagerMatch()` |
-| 8 caller files | Replace supabase import with service import |
+| Action | Files |
+|--------|-------|
+| New `src/constants/images.ts` | 1 new file |
+| New `src/utils/parseMetadata.ts` | 1 new file |
+| Update fallback URL imports | 5 files |
+| Update parseMetadata imports | 3 files |
+| Fix error swallowing | 2 files |
 
-One new file, seven existing service files updated, eight caller files updated. No behavior changes — pure refactor.
+Twelve files total, no behavior changes except errors are now logged/re-thrown instead of swallowed.
 
