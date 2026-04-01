@@ -282,7 +282,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
         </div>
         {isDoubleHeader ? (
           // Double header mode - multiple selection
-          <div className="flex flex-wrap justify-start gap-2">
+          <div className="flex flex-wrap justify-start gap-1.5">
             {TIME_SLOTS.filter((time) => time !== 'BYE').map((time) => {
               const isSelected = selectedTimeslots.includes(time);
               return (
