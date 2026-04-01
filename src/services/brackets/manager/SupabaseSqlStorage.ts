@@ -146,12 +146,22 @@ export class SupabaseSqlStorage implements CrudInterface {
   /**
    * Internal select method that bypasses cache loading
    */
+  private static readonly BRACKET_TABLE_COLUMNS: Record<string, string> = {
+    participant: 'id, name, position, team_id, tournament_id',
+    match:
+      'id, number, stage_id, group_id, round_id, child_count, status, opponent1_id, opponent1_score, opponent1_result, opponent2_id, opponent2_score, opponent2_result',
+    stage: 'id, name, number, settings, tournament_id, type',
+    group: 'id, name, number, stage_id',
+    round: 'id, group_id, name, number, stage_id',
+  };
+
   private async internalSelect<T extends keyof DataTypes>(
     table: T,
     filter?: Partial<DataTypes[T]> | Id
   ): Promise<DataTypes[T][] | DataTypes[T] | null> {
     const client = this.getClient();
-    let query = client.from(table).select('*');
+    const columns = SupabaseSqlStorage.BRACKET_TABLE_COLUMNS[table as string] ?? 'id';
+    let query = client.from(table).select(columns);
 
     if (filter !== undefined) {
       if (typeof filter === 'number' || typeof filter === 'string') {
