@@ -144,7 +144,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-3">
       {/* Hide the mode toggle buttons - they are commented out but kept for later cleanup */}
       {/*
       <div className="flex items-center gap-2 mb-4">
