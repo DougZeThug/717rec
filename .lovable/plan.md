@@ -1,18 +1,12 @@
 
 
-## Tighten Timeslot Assignment Spacing
+## Fix: package-lock.json Out of Sync
 
-Comparing the reference screenshot to the current implementation, the timeslot chips and overall vertical spacing are too generous. The reference shows compact, tightly packed time chips in a 4-column grid-like layout with minimal gaps.
+### Problem
+Your deployment platform runs `npm ci` which requires `package-lock.json` to exactly match `package.json`. The lock file has older versions for ~50 packages (e.g. `@capacitor/core` 8.1.0 vs 8.3.0, `@sentry/react` 10.43.0 vs 10.47.0). This happened because `bun install` updated `package.json` versions but didn't update the npm lock file.
 
-### Changes
+### Fix
+Run `npm install --legacy-peer-deps` to regenerate `package-lock.json` so it matches the current `package.json`. This is the only change needed — no code files are modified.
 
-**File: `src/components/timeslots/TimeslotAssignment.tsx`**
-
-1. **Timeslot chips** (lines 310-336 and 285-307): Reduce padding from `px-4 py-2` to `px-3 py-1.5` and gap from `gap-2` to `gap-1.5` for both single and double-header modes
-2. **Form spacing** (line 147): Reduce `space-y-4` to `space-y-3`
-3. **Double Header section** (line 256): Reduce padding from `p-3` to `p-2.5`
-4. **"Select Timeslot" label spacing** (line 272): Reduce `space-y-2` to `space-y-1.5`
-5. **Team grid section** (line 201): Reduce `space-y-2` to `space-y-1.5`
-
-One file, padding/gap tweaks only. No style or color changes.
+**File changed:** `package-lock.json` (regenerated)
 
