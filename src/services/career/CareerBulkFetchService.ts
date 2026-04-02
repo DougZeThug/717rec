@@ -101,7 +101,7 @@ export const fetchAllTeamsCareerData = async (
         power_score,
         seasons!inner(name)
       `
-    ),
+    ).in('team_id', teamIds),
     // All completed matches with team division info
     supabase
       .from('matches')
