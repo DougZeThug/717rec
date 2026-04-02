@@ -1,4 +1,4 @@
-import { Calendar, History, Loader2 } from 'lucide-react';
+import { AlertTriangle, Calendar, History, Loader2 } from 'lucide-react';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
@@ -11,7 +11,7 @@ import SeasonAccordion from './SeasonAccordion';
 
 const HistoryPageContent: React.FC = () => {
   const navigate = useNavigate();
-  const { data: seasons = [], isLoading } = useHistoricalSeasons();
+  const { data: seasons = [], isLoading, isError, error } = useHistoricalSeasons();
 
   if (isLoading) {
     return (
@@ -20,6 +20,22 @@ const HistoryPageContent: React.FC = () => {
           <div className="flex items-center gap-2">
             <Loader2 className="h-6 w-6 animate-spin" />
             <span>Loading historical data...</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <div className="text-center py-8">
+            <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2">Failed to load season history</h3>
+            <p className="text-muted-foreground">
+              {error instanceof Error ? error.message : 'An unexpected error occurred. Please try again later.'}
+            </p>
           </div>
         </CardContent>
       </Card>
