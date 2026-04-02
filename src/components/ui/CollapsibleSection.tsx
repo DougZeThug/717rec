@@ -44,13 +44,10 @@ export const CollapsibleSection = ({
   summaryValue,
 }: CollapsibleSectionProps) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
-  const [, startTransition] = useTransition();
   const { shouldApplyWinterBase } = useSeasonalTheme();
 
   const handleOpenChange = (open: boolean) => {
-    startTransition(() => {
-      setIsOpen(open);
-    });
+    setIsOpen(open);
   };
 
   return (
