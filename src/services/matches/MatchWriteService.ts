@@ -284,7 +284,7 @@ export const updateScoreSubmissionStatus = async (
 
 /**
  * Set winner and loser on a match (approve result)
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const approveMatch = async (matchId: string, winnerId: string, loserId: string) => {
   const { error } = await supabase
@@ -295,7 +295,7 @@ export const approveMatch = async (matchId: string, winnerId: string, loserId: s
     })
     .eq('id', matchId);
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to approve match');
 };
 
 /**
