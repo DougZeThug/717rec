@@ -30,7 +30,6 @@ const RankingsTable: React.FC<RankingsTableProps> = ({
 }) => {
   const isMobile = useIsMobile();
   const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
-  const [_isPending, startTransition] = useTransition();
   const [sortOptions, setSortOptions] = useState<SortOptions>({
     field: 'powerScore',
     direction: 'desc',
