@@ -341,9 +341,61 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
             </CollapsibleTrigger>
 
             <CollapsibleContent>
+              {/* Mobile: 2-column card grid for bye week */}
               <div
                 className={cn(
-                  'p-4',
+                  'p-2 md:hidden',
+                  isWinterTheme ? 'bg-orange-900/20' : 'bg-orange-50 dark:bg-orange-900/10'
+                )}
+              >
+                <div className="grid grid-cols-2 gap-2">
+                  {teams.map((teamTimeslot) => (
+                    <Link
+                      key={teamTimeslot.id}
+                      to={`/teams/${toTeamSlug(teamTimeslot.teams?.name || '')}`}
+                      className={cn(
+                        'flex flex-col items-center gap-1.5 p-3 rounded-lg border',
+                        isWinterTheme
+                          ? 'border-orange-500/30 bg-orange-900/20 hover:bg-orange-900/30'
+                          : 'border-orange-200 dark:border-orange-700 bg-card hover:bg-orange-100/50 dark:hover:bg-orange-800/20',
+                        'transition-colors duration-150 touch-manipulation'
+                      )}
+                    >
+                      <TeamLogo
+                        imageUrl={teamTimeslot.teams?.image_url || teamTimeslot.teams?.logo_url}
+                        teamName={teamTimeslot.teams?.name || 'Unknown Team'}
+                        size="sm"
+                      />
+                      <span
+                        className={cn(
+                          'font-bold text-xs uppercase text-center leading-tight line-clamp-2',
+                          isWinterTheme
+                            ? 'text-orange-300'
+                            : 'text-orange-800 dark:text-orange-200'
+                        )}
+                      >
+                        {teamTimeslot.teams?.name || 'Unknown'}
+                      </span>
+                      {teamTimeslot.teams?.divisionName && (
+                        <Badge
+                          className={cn(
+                            'text-[10px] font-medium px-2 py-0',
+                            getDivisionStyles(teamTimeslot.teams.divisionName, 'bg'),
+                            getDivisionStyles(teamTimeslot.teams.divisionName, 'text')
+                          )}
+                        >
+                          {teamTimeslot.teams.divisionName}
+                        </Badge>
+                      )}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              {/* Desktop: existing bye week list */}
+              <div
+                className={cn(
+                  'hidden md:block p-4',
                   isWinterTheme ? 'bg-orange-900/20' : 'bg-orange-50 dark:bg-orange-900/10'
                 )}
               >
@@ -360,12 +412,10 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
                       key={teamTimeslot.id}
                       className={cn(
                         'flex items-center justify-between p-3',
-                        // Alternating row shading
                         teamIndex % 2 === 1 &&
                           (isWinterTheme
                             ? 'bg-orange-900/20'
                             : 'bg-orange-100/50 dark:bg-orange-800/10'),
-                        // Hover state
                         isWinterTheme
                           ? 'hover:bg-orange-900/30'
                           : 'hover:bg-orange-100 dark:hover:bg-orange-800/20',
