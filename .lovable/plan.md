@@ -1,27 +1,39 @@
 
 
-## Add Server-Side Filters to Bulk Career Fetch
+## Quality Improvements to CareerBulkFetchService
 
-### Assessment
+Three targeted improvements, all in one file.
 
-This issue is **technically valid but low-impact in practice**. The function is only ever called from `computeAllTeamsTotals`, which always passes ALL team IDs from `useTeamsQuery`. So the unfiltered queries already return exactly the data needed.
+### Change 1: Early return for empty teamIds
 
-That said, adding `.in('team_id', teamIds)` filters on the tables that support it is cheap defensive coding — it protects against future misuse and marginally reduces payload if the function is ever called with a subset.
+**File:** `src/services/career/CareerBulkFetchService.ts`
 
-### What changes
+Add an early return at the top of `fetchAllTeamsCareerData` before any queries fire:
 
-**File: `src/services/career/CareerBulkFetchService.ts`**
+```ts
+if (teamIds.length === 0) {
+  return new Map();
+}
+```
 
-Add `.in()` filters to the 3 queries that have a direct `team_id` column:
+This avoids 7+ unnecessary Supabase calls with empty `.in()` filters (which Supabase handles but wastefully).
 
-1. **`team_season_stats`** query — add `.in('team_id', teamIds)`
-2. **`team_details_archive`** query — add `.in('team_id', teamIds)`
-3. **`teams`** (division weights) query — add `.in('id', teamIds)`
+### Change 2: Cache bracketDivisionWeights across calls
 
-**Not filtered** (intentionally):
-- `matches` / `matches_archive` / `playoff_matches` — these have `team1_id` and `team2_id`, requiring `.or()` string interpolation which is fragile and adds complexity. Since we need matches for all teams anyway, the current approach of fetching all completed matches and grouping in memory is fine.
+The bracket division weights and season mappings are fetched per-call but rarely change. Use a simple module-level cache with a TTL matching the existing `QUERY_STALE_TIMES.STANDARD` (5 minutes).
 
-### Scope
+Add a small cache object at the module level that stores `{ bracketDivisionWeights, bracketSeasonMap, timestamp }`. On subsequent calls within the TTL, skip the brackets query and reuse cached values. This saves one query per call after the first.
 
-One file, 3 lines added. No behavioral change for current callers.
+### Change 3: No change for groupMatchesByTeam
+
+The current `groupMatchesByTeam` function is 15 lines, handles the dual-key grouping cleanly, and is only used in this one file. Adding a generic utility abstraction would add complexity without benefit at this scale. Skipping this recommendation.
+
+### Summary
+
+| # | What | File |
+|---|------|------|
+| 1 | Early return on empty input | `CareerBulkFetchService.ts` |
+| 2 | Module-level cache for bracket weights | `CareerBulkFetchService.ts` |
+
+One file changed. No behavioral differences for existing callers.
 
