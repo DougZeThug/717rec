@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { handleDatabaseError } from '@/utils/errorHandler';
+import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 
 /**
  * Service layer for core match query operations
@@ -48,7 +48,7 @@ export const fetchMatchesWithTeams = async (filters?: MatchFilters) => {
 
 /**
  * Fetch pending matches (completed but no winner = ties)
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const fetchPendingMatches = async () => {
   const { data, error } = await supabase
@@ -60,13 +60,13 @@ export const fetchPendingMatches = async () => {
     .is('winner_id', null)
     .order('date');
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to fetch pending matches');
   return data || [];
 };
 
 /**
  * Fetch uncompleted matches
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const fetchUncompletedMatches = async () => {
   const { data, error } = await supabase
@@ -77,13 +77,13 @@ export const fetchUncompletedMatches = async () => {
     .eq('iscompleted', false)
     .order('date');
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to fetch uncompleted matches');
   return data || [];
 };
 
 /**
  * Fetch pending score matches from v_pending_matches view
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const fetchPendingScoresMatches = async () => {
   const { data, error } = await supabase
@@ -93,13 +93,13 @@ export const fetchPendingScoresMatches = async () => {
     )
     .limit(10);
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to fetch pending score matches');
   return data || [];
 };
 
 /**
  * Fetch match timeslots for a given formatted date (yyyy-MM-dd)
- * @throws Error with user-friendly message on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const fetchMatchTimeslots = async (formattedDate: string) => {
   const { data, error } = await supabase
@@ -126,7 +126,7 @@ export const fetchMatchTimeslots = async (formattedDate: string) => {
     .eq('match_date', formattedDate);
 
   if (error) {
-    throw new Error(`Failed to load timeslots: ${error.message}`);
+    handleDatabaseError(error, 'Failed to load timeslots');
   }
 
   return data ?? [];
@@ -134,7 +134,7 @@ export const fetchMatchTimeslots = async (formattedDate: string) => {
 
 /**
  * Fetch pending score submissions
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const fetchScoreSubmissions = async () => {
   const { data, error } = await supabase
@@ -145,14 +145,14 @@ export const fetchScoreSubmissions = async () => {
     .eq('status', 'pending')
     .order('created_at', { ascending: false });
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to fetch score submissions');
   return data || [];
 };
 
 /**
  * Fetch match details needed for tie cancellation
- * @throws raw Supabase error on failure
- * @throws Error if match not found
+ * @throws {DatabaseError} When database operations fail
+ * @throws {NotFoundError} When match not found
  */
 export const fetchMatchForTie = async (matchId: string) => {
   const { data: currentMatch, error: fetchError } = await supabase
@@ -161,14 +161,14 @@ export const fetchMatchForTie = async (matchId: string) => {
     .eq('id', matchId)
     .single();
 
-  if (fetchError) throw fetchError;
-  if (!currentMatch) throw new Error('Match not found');
-  return currentMatch;
+  if (fetchError) handleDatabaseError(fetchError, 'Failed to fetch match for tie');
+  return ensureFound(currentMatch, 'Match', matchId);
 };
 
 /**
  * Fetch team IDs for a specific match
- * @throws Error if match not found or query fails
+ * @throws {DatabaseError} When database operations fail
+ * @throws {NotFoundError} When match not found
  */
 export const fetchMatchTeamIds = async (matchId: string) => {
   const { data: matchData, error: matchError } = await supabase
@@ -177,9 +177,6 @@ export const fetchMatchTeamIds = async (matchId: string) => {
     .eq('id', matchId)
     .single();
 
-  if (matchError || !matchData) {
-    throw new Error(`Failed to fetch match data: ${matchError?.message}`);
-  }
-
-  return matchData;
+  if (matchError) handleDatabaseError(matchError, 'Failed to fetch match team IDs');
+  return ensureFound(matchData, 'Match', matchId);
 };

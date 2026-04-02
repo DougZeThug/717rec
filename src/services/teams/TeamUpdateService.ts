@@ -48,7 +48,7 @@ export const updateTeamNameAndImage = async (
     })
     .eq('id', teamId);
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to update team name and image');
 };
 
 /**

@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { handleDatabaseError } from '@/utils/errorHandler';
-import { errorLog, warnLog } from '@/utils/logger';
+import { warnLog } from '@/utils/logger';
 
 /**
  * Service layer for match history and opponent analysis operations
@@ -14,6 +14,7 @@ import { errorLog, warnLog } from '@/utils/logger';
  * Fetch active season ID using .single() — used by matchHistoryService util.
  * Throws on database error or when no active season found (PGRST116).
  * Callers should catch and handle as appropriate.
+ * @throws {DatabaseError} When database operations fail
  */
 export const fetchActiveSeasonIdStrict = async (): Promise<string> => {
   const { data, error } = await supabase
@@ -22,14 +23,13 @@ export const fetchActiveSeasonIdStrict = async (): Promise<string> => {
     .eq('is_active', true)
     .single();
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to fetch active season');
   return data.id;
 };
 
 /**
  * Count completed matches between two teams in a specific season
- * Exact query copied from matchHistoryService.ts
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const countTeamMatchesInSeason = async (
   team1Id: string,
@@ -45,14 +45,13 @@ export const countTeamMatchesInSeason = async (
     .eq('iscompleted', true)
     .eq('season_id', seasonId);
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to count team matches in season');
   return count ?? 0;
 };
 
 /**
  * Fetch completed match team-ID pairs within a season for a given set of team IDs
- * Exact query copied from matchHistoryService.ts
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const fetchMatchPairsInSeason = async (
   teamIds: string[],
@@ -66,14 +65,13 @@ export const fetchMatchPairsInSeason = async (
     .in('team1_id', teamIds)
     .in('team2_id', teamIds);
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to fetch match pairs in season');
   return data || [];
 };
 
 /**
  * Check if two teams have ever played each other (any season)
- * Exact query copied from compatibilityUtils.ts checkTeamsPlayedHistory
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const checkTeamsEverPlayed = async (team1Id: string, team2Id: string): Promise<boolean> => {
   const { data, error } = await supabase
@@ -84,7 +82,7 @@ export const checkTeamsEverPlayed = async (team1Id: string, team2Id: string): Pr
     )
     .limit(1);
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to check if teams have ever played');
   return data !== null && data.length > 0;
 };
 
@@ -137,7 +135,7 @@ export interface SeasonOpponentData {
 /**
  * Fetch season opponent history for the active season.
  * Returns null if no active season found.
- * @throws raw Supabase error on matches/teams query failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const fetchSeasonOpponentHistory = async (): Promise<SeasonOpponentData | null> => {
   // 1. Get active season
@@ -169,8 +167,7 @@ export const fetchSeasonOpponentHistory = async (): Promise<SeasonOpponentData |
     .is('bracket_id', null); // Regular season only - no bracket/playoff matches
 
   if (matchesError) {
-    errorLog('Error fetching matches:', matchesError);
-    throw matchesError;
+    handleDatabaseError(matchesError, 'Failed to fetch season matches for opponent history');
   }
 
   // 3. Get all teams with divisions
@@ -185,8 +182,7 @@ export const fetchSeasonOpponentHistory = async (): Promise<SeasonOpponentData |
     `);
 
   if (teamsError) {
-    errorLog('Error fetching teams:', teamsError);
-    throw teamsError;
+    handleDatabaseError(teamsError, 'Failed to fetch teams for opponent history');
   }
 
   // Build team lookup map

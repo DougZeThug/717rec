@@ -129,22 +129,22 @@ export const createMatch = async (insertInput: MatchInsertInput) => {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to create match');
   return data;
 };
 
 /**
  * Delete a match by ID
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const deleteMatch = async (matchId: string) => {
   const { error } = await supabase.from('matches').delete().eq('id', matchId);
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to delete match');
 };
 
 /**
  * Update a match and return the updated single record
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const updateMatch = async (matchId: string, updatePayload: object) => {
   const { data, error } = await supabase
@@ -154,13 +154,13 @@ export const updateMatch = async (matchId: string, updatePayload: object) => {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to update match');
   return data;
 };
 
 /**
  * Update a match and return all updated records as an array
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const updateMatchArray = async (matchId: string, updatePayload: object) => {
   const { data, error } = await supabase
@@ -169,7 +169,7 @@ export const updateMatchArray = async (matchId: string, updatePayload: object) =
     .eq('id', matchId)
     .select();
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to update match');
   return data;
 };
 
@@ -191,7 +191,7 @@ export const reverseTeamStats = async (
   });
 
   if (reverseError) {
-    throw new Error(`Failed to reverse team stats: ${reverseError.message}`);
+    handleDatabaseError(reverseError, 'Failed to reverse team stats');
   }
 };
 
@@ -214,7 +214,7 @@ export const upsertTeamSeasonStats = async (): Promise<void> => {
  * Fetch the active season ID, returning undefined if no active season exists.
  * Does NOT throw if no active season found — only throws on database error.
  * Exact query (maybeSingle) copied from useAutoScheduleSave.ts
- * @throws raw Supabase error on database failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const fetchActiveSeasonIdOptional = async (): Promise<string | undefined> => {
   const { data, error } = await supabase
@@ -223,20 +223,20 @@ export const fetchActiveSeasonIdOptional = async (): Promise<string | undefined>
     .eq('is_active', true)
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to fetch active season');
   return data?.id;
 };
 
 /**
  * Insert auto-scheduled matches (includes metadata field) and return inserted rows.
  * Exact insert copied from useAutoScheduleSave.ts
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const saveAutoScheduleMatches = async (
   matches: Database['public']['Tables']['matches']['Insert'][]
 ) => {
   const { data, error } = await supabase.from('matches').insert(matches).select();
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to save auto-schedule matches');
   return data;
 };
 
@@ -253,14 +253,14 @@ export interface ScoreSubmissionInsertData {
 
 export const createScoreSubmission = async (data: ScoreSubmissionInsertData) => {
   const { error } = await supabase.from('score_submissions').insert(data);
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to create score submission');
   return true;
 };
 
 /**
  * Update score submission status (approve or reject).
  * Fetches current user ID internally.
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const updateScoreSubmissionStatus = async (
   submissionId: string,
@@ -279,12 +279,12 @@ export const updateScoreSubmissionStatus = async (
     })
     .eq('id', submissionId);
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to update score submission status');
 };
 
 /**
  * Set winner and loser on a match (approve result)
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const approveMatch = async (matchId: string, winnerId: string, loserId: string) => {
   const { error } = await supabase
@@ -295,12 +295,12 @@ export const approveMatch = async (matchId: string, winnerId: string, loserId: s
     })
     .eq('id', matchId);
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to approve match');
 };
 
 /**
  * Clear winner/loser on a match (mark as tie)
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const setMatchAsTie = async (matchId: string) => {
   const { error } = await supabase
@@ -311,7 +311,7 @@ export const setMatchAsTie = async (matchId: string) => {
     })
     .eq('id', matchId);
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to set match as tie');
 };
 
 /**

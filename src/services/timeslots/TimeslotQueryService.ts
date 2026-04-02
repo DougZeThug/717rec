@@ -3,7 +3,6 @@ import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { TeamTimeslot } from '@/types/timeslots';
 import { handleDatabaseError } from '@/utils/errorHandler';
-import { errorLog } from '@/utils/logger';
 
 import { TimeslotTransformer } from './TimeslotTransformer';
 
@@ -68,10 +67,7 @@ export class TimeslotQueryService {
       )
       .eq('match_date', formattedDate);
 
-    if (error) {
-      errorLog('Error fetching timeslots:', error);
-      throw error;
-    }
+    if (error) handleDatabaseError(error, 'Failed to fetch timeslots by date');
 
     return data ?? [];
   }
@@ -103,7 +99,7 @@ export class TimeslotQueryService {
       )
       .eq('match_date', formattedDate);
 
-    if (error) throw error;
+    if (error) handleDatabaseError(error, 'Failed to fetch timeslots for date');
     return data ?? [];
   }
 
@@ -121,7 +117,7 @@ export class TimeslotQueryService {
       .lte('match_date', endDate)
       .order('match_date', { ascending: true });
 
-    if (error) throw error;
+    if (error) handleDatabaseError(error, 'Failed to fetch week timeslots by team');
     return data ?? [];
   }
 
@@ -166,7 +162,7 @@ export class TimeslotQueryService {
       .in('timeslot', [primarySlot, secondarySlot])
       .eq('is_back_to_back', true);
 
-    if (error) throw error;
+    if (error) handleDatabaseError(error, 'Failed to fetch timeslots for pair');
     return data ?? [];
   }
 

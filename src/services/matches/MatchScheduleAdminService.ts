@@ -32,7 +32,7 @@ export const fetchMatchesForAdmin = async (filters: { date?: Date; bracketId?: s
   }
 
   const { data, error } = await query;
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to fetch matches for admin');
   return data || [];
 };
 

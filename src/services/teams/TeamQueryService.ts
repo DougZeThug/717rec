@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Team } from '@/types';
 import { handleDatabaseError } from '@/utils/errorHandler';
-import { errorLog, teamLog } from '@/utils/logger';
+import { teamLog } from '@/utils/logger';
 import { TeamRowData, transformTeamRow } from '@/utils/teamTransformer';
 
 import { TeamsQueryOptions } from './teamFetch.types';
@@ -89,8 +89,7 @@ export const fetchTeamsWithOptions = async (options?: TeamsQueryOptions): Promis
   const { data, error } = await query;
 
   if (error) {
-    errorLog('Error fetching teams:', error);
-    throw error;
+    handleDatabaseError(error, 'Failed to fetch teams with options');
   }
 
   // Deduplicate by team_id (view may return duplicates for players)
@@ -148,7 +147,7 @@ export const fetchTeamDetails = async (teamId: string): Promise<Team> => {
     .eq('team_id', teamId)
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to fetch team details');
   if (!data) throw new Error('Team not found');
 
   // Enhanced logging to verify values from v_team_details with the new weighted power score
@@ -172,7 +171,7 @@ export const fetchAvailableTeams = async (): Promise<Team[]> => {
     .select('id, name, logo_url, image_url, division_id, wins, losses')
     .order('name');
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to fetch available teams');
 
   // Transform data to match the Team interface
   return (data || []).map((team) => ({
