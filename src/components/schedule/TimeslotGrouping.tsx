@@ -155,17 +155,72 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
             </CollapsibleTrigger>
 
             <CollapsibleContent>
-              <div className="p-4">
+              {/* Mobile: 2-column card grid */}
+              <div className="p-2 md:hidden">
+                <div className="grid grid-cols-2 gap-2">
+                  {teams.map((teamTimeslot) => (
+                    <Link
+                      key={teamTimeslot.id}
+                      to={`/teams/${toTeamSlug(teamTimeslot.teams?.name || '')}`}
+                      className={cn(
+                        'flex flex-col items-center gap-1.5 p-3 rounded-lg border',
+                        'border-gray-200 dark:border-gray-700',
+                        isWinterTheme
+                          ? 'bg-white/5 hover:bg-white/10'
+                          : 'bg-card hover:bg-accent/50',
+                        'transition-colors duration-150 touch-manipulation'
+                      )}
+                    >
+                      <TeamLogo
+                        imageUrl={teamTimeslot.teams?.image_url || teamTimeslot.teams?.logo_url}
+                        teamName={teamTimeslot.teams?.name || 'Unknown Team'}
+                        size="sm"
+                      />
+                      <span
+                        className={cn(
+                          'font-bold text-xs uppercase text-center leading-tight line-clamp-2',
+                          isWinterTheme
+                            ? 'text-[hsl(210,40%,96%)]'
+                            : 'text-cornhole-navy dark:text-white'
+                        )}
+                      >
+                        {teamTimeslot.teams?.name || 'Unknown'}
+                      </span>
+                      {teamTimeslot.teams?.divisionName && (
+                        <Badge
+                          className={cn(
+                            'text-[10px] font-medium px-2 py-0',
+                            getDivisionStyles(teamTimeslot.teams.divisionName, 'bg'),
+                            getDivisionStyles(teamTimeslot.teams.divisionName, 'text')
+                          )}
+                        >
+                          {teamTimeslot.teams.divisionName}
+                        </Badge>
+                      )}
+                      {teamTimeslot.is_double_header &&
+                        doubleHeaderInfo.has(teamTimeslot.team_id) && (
+                          <Badge
+                            variant="doubleHeader"
+                            className="text-[10px] leading-tight px-1.5 py-0.5 mt-0.5"
+                          >
+                            Double Header
+                          </Badge>
+                        )}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              {/* Desktop: existing list layout */}
+              <div className="hidden md:block p-4">
                 <div className="divide-y divide-gray-100 dark:divide-gray-700/50">
                   {teams.map((teamTimeslot, teamIndex) => (
                     <div
                       key={teamTimeslot.id}
                       className={cn(
                         'flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between',
-                        // Alternating row shading
                         teamIndex % 2 === 1 &&
                           (isWinterTheme ? 'bg-white/5' : 'bg-gray-50 dark:bg-white/5'),
-                        // Hover state
                         isWinterTheme
                           ? 'hover:bg-white/10'
                           : 'hover:bg-gray-100 dark:hover:bg-gray-800',
