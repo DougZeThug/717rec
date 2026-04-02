@@ -135,7 +135,7 @@ export const fetchAllTeamsCareerData = async (
       )
       .eq('iscompleted', true),
     // All team details archive (already unfiltered in single-team version)
-    supabase.from('team_details_archive').select('team_id, season_id, divisionname'),
+    supabase.from('team_details_archive').select('team_id, season_id, divisionname').in('team_id', teamIds),
     // All completed playoff matches
     supabase
       .from('playoff_matches')
