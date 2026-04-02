@@ -1,5 +1,5 @@
 import { CheckCircle, Clock, Loader2, Users, XCircle } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import { TeamLogo } from '@/components/shared/TeamLogo';
 import {
@@ -16,52 +16,17 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { usePendingMemberships } from '@/hooks/usePendingMemberships';
 import { useToast } from '@/hooks/useToast';
-import {
-  fetchPendingMembershipsForAdmin,
-  type TeamMembershipForAdmin,
-  updateMembershipApproval,
-} from '@/services/teams/TeamFetchService';
 import { errorLog } from '@/utils/logger';
 
-// Use the service type alias locally for clarity
-type PendingMembership = TeamMembershipForAdmin;
-
 const TeamMembershipApprovalTab: React.FC = () => {
-  const [pendingMemberships, setPendingMemberships] = useState<PendingMembership[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [processingId, setProcessingId] = useState<string | null>(null);
   const { toast } = useToast();
-
-  useEffect(() => {
-    fetchPendingMembershipsLocal();
-  }, []);
-
-  const fetchPendingMembershipsLocal = async () => {
-    try {
-      setIsLoading(true);
-      const data = await fetchPendingMembershipsForAdmin();
-      setPendingMemberships(data);
-    } catch (error) {
-      errorLog('Error fetching pending memberships:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load pending team memberships',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { pendingMemberships, isLoading, approveMembership, processingId } = usePendingMemberships();
 
   const handleApproval = async (membershipId: string, approved: boolean) => {
     try {
-      setProcessingId(membershipId);
-
-      await updateMembershipApproval(membershipId, approved);
-
-      // Remove from pending list
-      setPendingMemberships((prev) => prev.filter((m) => m.id !== membershipId));
+      await approveMembership(membershipId, approved);
 
       toast({
         title: approved ? 'Membership Approved' : 'Membership Rejected',
@@ -76,8 +41,6 @@ const TeamMembershipApprovalTab: React.FC = () => {
         description: 'Failed to update membership status',
         variant: 'destructive',
       });
-    } finally {
-      setProcessingId(null);
     }
   };
 

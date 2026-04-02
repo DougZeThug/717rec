@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Edit, Image, Plus, Search, Settings, UserCheck, Users } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import TeamForm from '@/components/teams/TeamForm';
 import { Badge } from '@/components/ui/badge';
@@ -26,9 +26,10 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTeamsQuery } from '@/hooks/teams';
 import { useDivisions } from '@/hooks/useDivisions';
+import { usePendingMembershipCount } from '@/hooks/usePendingMembershipCount';
 import { useTeams } from '@/hooks/useTeams';
 import { useToast } from '@/hooks/useToast';
-import { fetchPendingMembershipCount, updateTeamApi } from '@/services/TeamService';
+import { useUpdateTeam } from '@/hooks/useUpdateTeam';
 import { Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 
@@ -44,17 +45,12 @@ const TeamManagementTab = () => {
     refetch: refetchTeams,
   } = useTeamsQuery({ includeHidden: true });
   const { divisions, isLoading: isLoadingDivisions } = useDivisions();
+  const { data: pendingMembershipCount = 0 } = usePendingMembershipCount();
+  const { updateTeam } = useUpdateTeam();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDivision, setSelectedDivision] = useState('all');
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
-  const [pendingMembershipCount, setPendingMembershipCount] = useState(0);
-
-  useEffect(() => {
-    fetchPendingMembershipCount().then((count) => {
-      setPendingMembershipCount(count);
-    });
-  }, []);
 
   const handleTeamSubmit = async (teamData: Omit<Team, 'id' | 'created_at'>) => {
     try {
@@ -72,7 +68,7 @@ const TeamManagementTab = () => {
   const handleEditTeam = async (teamData: Omit<Team, 'id' | 'created_at'>) => {
     if (!editingTeam) return;
     try {
-      await updateTeamApi(editingTeam.id, teamData);
+      await updateTeam(editingTeam.id, teamData);
       toast({
         title: 'Team Updated',
         description: `${teamData.name} has been successfully updated.`,
@@ -95,7 +91,7 @@ const TeamManagementTab = () => {
       const team = teams?.find((t) => t.id === teamId);
       if (!team) return;
 
-      await updateTeamApi(teamId, {
+      await updateTeam(teamId, {
         ...team,
         division_id: newDivisionId,
       });

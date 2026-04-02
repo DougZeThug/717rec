@@ -11,7 +11,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useTeamsQuery } from '@/hooks/teams';
 import { useTimeslots } from '@/hooks/useTimeslots';
 import { useToast } from '@/hooks/useToast';
-import { ByeWeekService } from '@/services/timeslots/ByeWeekService';
 import { errorLog } from '@/utils/logger';
 
 const TimeslotsTab = () => {
@@ -27,13 +26,16 @@ const TimeslotsTab = () => {
     deleteTimeslot,
     batchAssignTimeslots,
     batchAssignDoubleHeaders,
+    assignByeWeek,
+    batchAssignByeWeeks,
+    removeByeWeek,
   } = useTimeslots(selectedDate);
 
   const handleTimeslotAssign = async (teamId: string, timeslot: string) => {
     try {
       if (timeslot === 'BYE') {
         // Handle bye week assignment separately
-        await ByeWeekService.assignByeWeek(selectedDate, teamId);
+        await assignByeWeek(selectedDate, teamId);
         toast({
           title: 'Bye Week Assigned',
           description: 'Team bye week has been successfully assigned.',
@@ -60,7 +62,7 @@ const TimeslotsTab = () => {
     try {
       if (timeslot === 'BYE') {
         // Handle bye week batch assignment separately
-        await ByeWeekService.batchAssignByeWeeks(selectedDate, teamIds);
+        await batchAssignByeWeeks(selectedDate, teamIds);
         toast({
           title: 'Bye Weeks Assigned',
           description: `${teamIds.length} team bye weeks have been set for ${format(selectedDate, 'MMMM d, yyyy')}`,
@@ -107,7 +109,7 @@ const TimeslotsTab = () => {
 
       if (timeslotToDelete?.timeslot === 'BYE') {
         // Handle bye week deletion separately
-        await ByeWeekService.removeByeWeek(id);
+        await removeByeWeek(id);
         toast({
           title: 'Bye Week Removed',
           description: 'Bye week assignment has been removed.',

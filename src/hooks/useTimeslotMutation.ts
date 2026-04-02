@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
+import { ByeWeekService } from '@/services/timeslots/ByeWeekService';
 import { TimeslotService } from '@/services/timeslots/TimeslotService';
 import { TimeslotValidator } from '@/services/timeslots/TimeslotValidator';
 import { TeamTimeslot } from '@/types/timeslots';
@@ -171,11 +172,73 @@ export const useTimeslotMutation = () => {
     }
   };
 
+  const assignByeWeek = async (date: Date, teamId: string): Promise<TeamTimeslot | null> => {
+    setIsSubmitting(true);
+    try {
+      const data = await ByeWeekService.assignByeWeek(date, teamId);
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      queryClient.invalidateQueries({ queryKey: ['timeslots', formattedDate] });
+      queryClient.invalidateQueries({ queryKey: ['match-timeslots', formattedDate] });
+      return data;
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to assign bye week',
+        variant: 'destructive',
+      });
+      return null;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const batchAssignByeWeeks = async (date: Date, teamIds: string[]): Promise<TeamTimeslot[] | null> => {
+    setIsSubmitting(true);
+    try {
+      const data = await ByeWeekService.batchAssignByeWeeks(date, teamIds);
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      queryClient.invalidateQueries({ queryKey: ['timeslots', formattedDate] });
+      queryClient.invalidateQueries({ queryKey: ['match-timeslots', formattedDate] });
+      return data;
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to batch assign bye weeks',
+        variant: 'destructive',
+      });
+      return null;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const removeByeWeek = async (timeslotId: string): Promise<boolean> => {
+    setIsSubmitting(true);
+    try {
+      await ByeWeekService.removeByeWeek(timeslotId);
+      queryClient.invalidateQueries({ queryKey: ['timeslots'] });
+      queryClient.invalidateQueries({ queryKey: ['match-timeslots'] });
+      return true;
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to remove bye week',
+        variant: 'destructive',
+      });
+      return false;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return {
     isSubmitting,
     addTimeslot,
     deleteTimeslot,
     batchAssignTimeslots,
     batchAssignDoubleHeaders,
+    assignByeWeek,
+    batchAssignByeWeeks,
+    removeByeWeek,
   };
 };

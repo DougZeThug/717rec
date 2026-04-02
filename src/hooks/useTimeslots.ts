@@ -13,6 +13,9 @@ export const useTimeslots = (date: Date) => {
     deleteTimeslot,
     batchAssignTimeslots,
     batchAssignDoubleHeaders,
+    assignByeWeek,
+    batchAssignByeWeeks,
+    removeByeWeek,
   } = useTimeslotMutation();
 
   // Function to refresh timeslots data (useful after bye week operations)
@@ -31,6 +34,9 @@ export const useTimeslots = (date: Date) => {
     deleteTimeslot,
     batchAssignTimeslots,
     batchAssignDoubleHeaders,
+    assignByeWeek,
+    batchAssignByeWeeks,
+    removeByeWeek,
     refreshTimeslots,
   };
 };
