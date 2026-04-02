@@ -260,7 +260,7 @@ export const createScoreSubmission = async (data: ScoreSubmissionInsertData) => 
 /**
  * Update score submission status (approve or reject).
  * Fetches current user ID internally.
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const updateScoreSubmissionStatus = async (
   submissionId: string,
@@ -279,7 +279,7 @@ export const updateScoreSubmissionStatus = async (
     })
     .eq('id', submissionId);
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to update score submission status');
 };
 
 /**
