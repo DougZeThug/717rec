@@ -100,7 +100,7 @@ export class TimeslotQueryService {
       )
       .eq('match_date', formattedDate);
 
-    if (error) throw error;
+    if (error) handleDatabaseError(error, 'Failed to fetch timeslots for date');
     return data ?? [];
   }
 
@@ -118,7 +118,7 @@ export class TimeslotQueryService {
       .lte('match_date', endDate)
       .order('match_date', { ascending: true });
 
-    if (error) throw error;
+    if (error) handleDatabaseError(error, 'Failed to fetch week timeslots by team');
     return data ?? [];
   }
 
