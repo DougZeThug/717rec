@@ -147,7 +147,7 @@ export const fetchTeamDetails = async (teamId: string): Promise<Team> => {
     .eq('team_id', teamId)
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to fetch team details');
   if (!data) throw new Error('Team not found');
 
   // Enhanced logging to verify values from v_team_details with the new weighted power score
