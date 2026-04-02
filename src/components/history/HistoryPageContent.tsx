@@ -11,7 +11,7 @@ import SeasonAccordion from './SeasonAccordion';
 
 const HistoryPageContent: React.FC = () => {
   const navigate = useNavigate();
-  const { data: seasons = [], isLoading } = useHistoricalSeasons();
+  const { data: seasons = [], isLoading, isError, error } = useHistoricalSeasons();
 
   if (isLoading) {
     return (
