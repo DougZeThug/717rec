@@ -1,57 +1,63 @@
 
 
-## iPhone/Safari Audit: Pain Points Found
+## Standardize Error Handling & Add Return Types in Service Layer
 
-I audited the codebase for patterns known to cause problems on iPhone Safari. Here's what I found:
+### What's Wrong
 
-### Issue 1: `useTransition` in RankingsTable (same bug as CollapsibleSection)
+Two quality issues across service files:
 
-**File:** `src/components/stats/RankingsTable.tsx` (line 89)
+1. **Inconsistent error handling**: Some functions use `handleDatabaseError(error, context)` (which wraps errors in a typed `DatabaseError`), while others do bare `throw error` (which throws raw Supabase `PostgrestError` objects). This makes error categorization unpredictable for callers.
 
-The same `startTransition` pattern we just fixed in `CollapsibleSection` is used here for sort option changes. On iOS Safari, tapping a sort header could silently fail to update the sort order.
+2. **Missing return types**: Exported functions in `MatchQueryService.ts` rely on type inference instead of explicit return types, reducing IDE intellisense quality.
 
-**Fix:** Remove `useTransition`, call `setSortOptions` directly. Sorting a memoized array is fast -- no benefit from deferred rendering.
+### Changes
 
----
+**File 1: `src/services/matches/MatchQueryService.ts`**
+- Replace all `throw error` with `handleDatabaseError(error, '...')` (6 locations: `fetchPendingMatches`, `fetchUncompletedMatches`, `fetchPendingScoresMatches`, `fetchScoreSubmissions`, `fetchMatchForTie`, `fetchMatchTeamIds`)
+- Replace `throw new Error(...)` in `fetchMatchTimeslots` with `handleDatabaseError`
+- Replace manual not-found check in `fetchMatchForTie` / `fetchMatchTeamIds` with `ensureFound()`
+- Add explicit return type annotations to all 8 exported functions
 
-### Issue 2: `100vh` usage causes content hidden behind Safari's bottom bar
+**File 2: `src/services/matches/MatchWriteService.ts`**
+- Replace all `throw error` with `handleDatabaseError(error, '...')` (~12 locations)
+- Already imports `handleDatabaseError` — just needs consistent usage
 
-**Files:** `MessageFeed.tsx`, `MessageFeedSkeleton.tsx`, `AuthContainer.tsx`, `ProfileSetup.tsx`
+**File 3: `src/services/matches/MatchHistoryService.ts`**
+- Replace 4 `throw error` calls with `handleDatabaseError`
 
-These use `calc(100vh - Xpx)` for height calculations. On iOS Safari, `100vh` includes the area behind the URL bar, so content gets cut off at the bottom. The fix is to use `100dvh` (dynamic viewport height) which accounts for Safari's collapsing address bar.
+**File 4: `src/services/matches/MatchTeamLookupService.ts`**
+- Replace 3 `throw error` calls with `handleDatabaseError`
 
-**Fix:** Replace `100vh` with `100dvh` in these height calculations.
+**File 5: `src/services/matches/MatchScheduleAdminService.ts`**
+- Replace 1 `throw error` call with `handleDatabaseError`
 
----
+**File 6: `src/services/timeslots/TimeslotQueryService.ts`**
+- Replace 4 `throw error` calls with `handleDatabaseError` (in `fetchTimeslotsByDate`, `fetchTimeslotsForDate`, `fetchWeekTimeslotsByTeam`, `fetchTimeslotsForPair`)
 
-### Issue 3: Radix ScrollArea in sticky nav may swallow touch events on iOS
+**File 7: `src/services/timeslots/TimeslotBatchService.ts`**
+- Replace 3 `throw error` calls with `handleDatabaseError`
 
-**File:** `src/components/teams/TeamDetailsStickyNav.tsx`
+**File 8: `src/services/teams/TeamQueryService.ts`**
+- Replace 2 `throw error` calls with `handleDatabaseError`, 1 manual not-found with `ensureFound()`
 
-The sticky nav uses Radix `ScrollArea` for horizontal scrolling. Radix ScrollArea uses custom scrollbar rendering that can interfere with iOS touch scrolling on narrow containers. Since this is a simple horizontal scroll with a few items, native `overflow-x-auto` with `-webkit-overflow-scrolling: touch` is more reliable on iOS.
+**File 9: `src/services/teams/TeamUpdateService.ts`**
+- Replace 1 `throw error` with `handleDatabaseError`
 
-**Fix:** Replace `<ScrollArea>` with a native `<div className="overflow-x-auto">` wrapper.
+No behavioral changes. All functions already throw on error — this just wraps them in typed `DatabaseError` for consistent logging and caller handling.
 
----
+### Files Changed
 
-### Issue 4: `contain: layout style` on home page cards may suppress touch on iOS
+| File | Change |
+|------|--------|
+| `MatchQueryService.ts` | Standardize errors + add return types |
+| `MatchWriteService.ts` | Standardize 12 error throws |
+| `MatchHistoryService.ts` | Standardize 4 error throws |
+| `MatchTeamLookupService.ts` | Standardize 3 error throws |
+| `MatchScheduleAdminService.ts` | Standardize 1 error throw |
+| `TimeslotQueryService.ts` | Standardize 4 error throws |
+| `TimeslotBatchService.ts` | Standardize 3 error throws |
+| `TeamQueryService.ts` | Standardize 3 error throws |
+| `TeamUpdateService.ts` | Standardize 1 error throw |
 
-**Files:** `WeeklyRecapCard.tsx`, `TeamOfTheWeekCard.tsx`, `LeagueHistoryBar.tsx`, `Footer.tsx`, `TopTeams.tsx`, skeletons
-
-Multiple components use `style={{ contain: 'layout style' }}`. Per the existing memory note about Safari containment bugs, `contain: layout` can suppress pointer events on dynamic content in some WebKit versions. These are interactive cards (clickable links).
-
-**Fix:** Remove `contain: layout style` from interactive/clickable elements. Keep it only on static layout containers like Footer and skeletons where there are no touch targets inside.
-
----
-
-### Summary of Changes
-
-| # | Issue | File(s) | Effort |
-|---|-------|---------|--------|
-| 1 | `useTransition` sort | `RankingsTable.tsx` | Low |
-| 2 | `100vh` → `100dvh` | `MessageFeed.tsx`, `MessageFeedSkeleton.tsx`, `AuthContainer.tsx`, `ProfileSetup.tsx` | Low |
-| 3 | ScrollArea in sticky nav | `TeamDetailsStickyNav.tsx` | Low |
-| 4 | `contain: layout style` on interactive cards | `WeeklyRecapCard.tsx`, `TeamOfTheWeekCard.tsx`, `LeagueHistoryBar.tsx`, `TopTeams.tsx` | Low |
-
-All low-effort, targeted fixes. No visual or behavioral changes on desktop. No new files needed.
+Auth service (`AuthService.ts`) excluded — auth errors are `AuthError`, not `PostgrestError`, so `handleDatabaseError` doesn't apply there.
 
