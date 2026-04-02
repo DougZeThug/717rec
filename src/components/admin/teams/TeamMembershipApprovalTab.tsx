@@ -1,4 +1,4 @@
-import { CheckCircle, Clock, Loader2, Users, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Clock, Loader2, Users, XCircle } from 'lucide-react';
 import React from 'react';
 
 import { TeamLogo } from '@/components/shared/TeamLogo';
