@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useTransition } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { useIsMobile } from '@/hooks/useMobile';
 import { Ranking } from '@/types';
