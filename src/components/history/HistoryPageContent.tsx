@@ -1,55 +1,19 @@
 import { Calendar, History, Loader2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import WinterSection from '@/components/winter/WinterSection';
-import { useToast } from '@/hooks/useToast';
-import { SeasonService } from '@/services/SeasonService';
-import { dbLog, errorLog } from '@/utils/logger';
+import { useHistoricalSeasons } from '@/hooks/useSeasons';
 
 import SeasonAccordion from './SeasonAccordion';
 
-interface Season {
-  id: string;
-  name: string;
-  start_date: string;
-  end_date: string | null;
-  is_active: boolean;
-}
-
 const HistoryPageContent: React.FC = () => {
-  const [seasons, setSeasons] = useState<Season[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
   const navigate = useNavigate();
+  const { data: seasons = [], isLoading } = useHistoricalSeasons();
 
-  useEffect(() => {
-    fetchHistoricalData();
-  }, []);
-
-  const fetchHistoricalData = async () => {
-    try {
-      dbLog('Fetching historical seasons...');
-
-      const seasonsData = await SeasonService.fetchHistoricalSeasons();
-
-      dbLog('Seasons fetched:', seasonsData);
-      setSeasons(seasonsData);
-    } catch (error) {
-      errorLog('Unexpected error fetching historical data:', error);
-      toast({
-        title: 'Error',
-        description: 'An unexpected error occurred',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center h-64">

@@ -1,12 +1,10 @@
 import { endOfWeek, format, startOfWeek } from 'date-fns';
 import { Clock } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingState } from '@/components/ui/loading-state';
-import { TimeslotService } from '@/services/timeslots/TimeslotService';
-import { TeamTimeslot } from '@/types';
-import { errorLog } from '@/utils/logger';
+import { useWeekTimeslotsByTeam } from '@/hooks/useWeekTimeslotsByTeam';
 
 interface WeekTimeslotDisplayProps {
   teamId: string;
@@ -19,34 +17,14 @@ const WeekTimeslotDisplay: React.FC<WeekTimeslotDisplayProps> = ({
   teamName: _teamName,
   enableBatchAssignment: _enableBatchAssignment = false,
 }) => {
-  const [timeslots, setTimeslots] = useState<TeamTimeslot[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
   // Get current week's date range
   const today = new Date();
   const weekStart = startOfWeek(today, { weekStartsOn: 0 });
   const weekEnd = endOfWeek(today, { weekStartsOn: 0 });
+  const startDate = format(weekStart, 'yyyy-MM-dd');
+  const endDate = format(weekEnd, 'yyyy-MM-dd');
 
-  useEffect(() => {
-    const fetchWeekTimeslots = async () => {
-      setIsLoading(true);
-
-      try {
-        const startDate = format(weekStart, 'yyyy-MM-dd');
-        const endDate = format(weekEnd, 'yyyy-MM-dd');
-
-        const data = await TimeslotService.fetchWeekTimeslotsByTeam(teamId, startDate, endDate);
-
-        setTimeslots(data || []);
-      } catch (error) {
-        errorLog('Error fetching week timeslots:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchWeekTimeslots();
-  }, [teamId]);
+  const { data: timeslots = [], isLoading } = useWeekTimeslotsByTeam(teamId, startDate, endDate);
 
   if (isLoading) {
     return (

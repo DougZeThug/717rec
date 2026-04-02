@@ -5,7 +5,7 @@ import { TeamLogo } from '@/components/shared/TeamLogo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/useToast';
-import { updateTeamApi } from '@/services/TeamService';
+import { useUpdateTeam } from '@/hooks/useUpdateTeam';
 import { Team } from '@/types';
 import { uploadTeamImage } from '@/utils/imageUpload';
 import { errorLog } from '@/utils/logger';
@@ -26,6 +26,7 @@ const TeamLogoCard: React.FC<TeamLogoCardProps> = ({ team, onUpdate }) => {
   const [justUpdated, setJustUpdated] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { updateTeam } = useUpdateTeam();
 
   const status = getLogoStatus(team.imageUrl);
 
@@ -36,7 +37,7 @@ const TeamLogoCard: React.FC<TeamLogoCardProps> = ({ team, onUpdate }) => {
     setIsUploading(true);
     try {
       const imageUrl = await uploadTeamImage(file, team.id);
-      await updateTeamApi(team.id, { ...team, imageUrl: imageUrl });
+      await updateTeam(team.id, { ...team, imageUrl: imageUrl });
 
       toast({
         title: 'Logo Updated',

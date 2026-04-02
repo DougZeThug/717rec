@@ -17,3 +17,11 @@ export const useActiveSeason = () => {
     staleTime: 1000 * 60 * 10, // Cache for 10 minutes
   });
 };
+
+export const useHistoricalSeasons = () => {
+  return useQuery({
+    queryKey: ['seasons', 'historical'],
+    queryFn: SeasonService.fetchHistoricalSeasons,
+    staleTime: 1000 * 60 * 10, // Cache for 10 minutes
+  });
+};
