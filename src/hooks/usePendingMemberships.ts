@@ -25,6 +25,8 @@ export const usePendingMemberships = () => {
   return {
     pendingMemberships: query.data ?? [],
     isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
     approveMembership: (membershipId: string, approved: boolean) =>
       approveMutation.mutateAsync({ membershipId, approved }),
     processingId: approveMutation.isPending ? approveMutation.variables?.membershipId : null,
