@@ -83,7 +83,7 @@ export const fetchAllTeamsCareerData = async (
     activeSeasonResult,
   ] = await Promise.all([
     // All teams with division weights
-    supabase.from('teams').select('id, divisions(division_weight)'),
+    supabase.from('teams').select('id, divisions(division_weight)').in('id', teamIds),
     // All team_season_stats (includes power_score for power score calculation)
     supabase.from('team_season_stats').select(
       `
