@@ -1,3 +1,4 @@
+import { QUERY_STALE_TIMES } from '@/config/cache';
 import { supabase } from '@/integrations/supabase/client';
 import { ArchivedMatchData, MatchData, PlayoffMatchData, SeasonStats } from '@/utils/career/types';
 import { handleDatabaseError } from '@/utils/errorHandler';
@@ -5,6 +6,14 @@ import { warnLog } from '@/utils/logger';
 import { CareerData, TeamDetailsArchive } from './CareerTypes';
 
 // ── Bulk fetching for all teams (fixes N+1 query pattern) ──────────────
+
+// ── Module-level cache for bracket division weights & season map ────────
+let bracketCache: {
+  bracketDivisionWeights: Record<string, number>;
+  bracketSeasonMap: Record<string, string>;
+  timestamp: number;
+} | null = null;
+const BRACKET_CACHE_TTL = QUERY_STALE_TIMES.STANDARD; // 5 minutes
 
 /** Raw season stats row with team_id for grouping */
 interface RawSeasonStatsRow {
@@ -70,6 +79,10 @@ function groupMatchesByTeam<T extends { team1_id: string | null; team2_id: strin
 export const fetchAllTeamsCareerData = async (
   teamIds: string[]
 ): Promise<Map<string, BulkTeamCareerData>> => {
+  if (teamIds.length === 0) {
+    return new Map();
+  }
+
   const teamIdSet = new Set(teamIds);
 
   // 1. Fetch all data in parallel (~7-9 queries total regardless of team count)
@@ -225,31 +238,41 @@ export const fetchAllTeamsCareerData = async (
     teamIdSet
   );
 
-  // 4. Build bracket lookup maps from ALL playoff matches (computed once)
+  // 4. Build bracket lookup maps from ALL playoff matches (use cache if fresh)
   const allPlayoffMatches = (allPlayoffMatchesResult.data as PlayoffMatchData[]) || [];
-  const allBracketIds = [
-    ...new Set(allPlayoffMatches.map((m) => m.bracket_id).filter(Boolean)),
-  ] as string[];
+  let bracketDivisionWeights: Record<string, number>;
+  let bracketSeasonMap: Record<string, string>;
 
-  const bracketDivisionWeights: Record<string, number> = {};
-  const bracketSeasonMap: Record<string, string> = {};
+  const now = Date.now();
+  if (bracketCache && now - bracketCache.timestamp < BRACKET_CACHE_TTL) {
+    bracketDivisionWeights = bracketCache.bracketDivisionWeights;
+    bracketSeasonMap = bracketCache.bracketSeasonMap;
+  } else {
+    bracketDivisionWeights = {};
+    bracketSeasonMap = {};
 
-  if (allBracketIds.length > 0) {
-    // Single query for both division weights and season_id
-    const { data: bracketData } = await supabase
-      .from('brackets')
-      .select('id, season_id, divisions(division_weight)')
-      .in('id', allBracketIds);
+    const allBracketIds = [
+      ...new Set(allPlayoffMatches.map((m) => m.bracket_id).filter(Boolean)),
+    ] as string[];
 
-    if (bracketData) {
-      for (const bracket of bracketData) {
-        const divisions = bracket.divisions as { division_weight: number } | null;
-        bracketDivisionWeights[bracket.id] = divisions?.division_weight || 0.85;
-        if (bracket.season_id) {
-          bracketSeasonMap[bracket.id] = bracket.season_id;
+    if (allBracketIds.length > 0) {
+      const { data: bracketData } = await supabase
+        .from('brackets')
+        .select('id, season_id, divisions(division_weight)')
+        .in('id', allBracketIds);
+
+      if (bracketData) {
+        for (const bracket of bracketData) {
+          const divisions = bracket.divisions as { division_weight: number } | null;
+          bracketDivisionWeights[bracket.id] = divisions?.division_weight ?? 0.85;
+          if (bracket.season_id) {
+            bracketSeasonMap[bracket.id] = bracket.season_id;
+          }
         }
       }
     }
+
+    bracketCache = { bracketDivisionWeights, bracketSeasonMap, timestamp: now };
   }
 
   // 5. Assemble per-team CareerData
