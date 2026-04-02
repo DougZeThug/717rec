@@ -230,13 +230,13 @@ export const fetchActiveSeasonIdOptional = async (): Promise<string | undefined>
 /**
  * Insert auto-scheduled matches (includes metadata field) and return inserted rows.
  * Exact insert copied from useAutoScheduleSave.ts
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const saveAutoScheduleMatches = async (
   matches: Database['public']['Tables']['matches']['Insert'][]
 ) => {
   const { data, error } = await supabase.from('matches').insert(matches).select();
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to save auto-schedule matches');
   return data;
 };
 
