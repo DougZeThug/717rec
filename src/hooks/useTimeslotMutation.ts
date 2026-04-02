@@ -206,7 +206,7 @@ export const useTimeslotMutation = () => {
         description: err instanceof Error ? err.message : 'Failed to batch assign bye weeks',
         variant: 'destructive',
       });
-      return null;
+      throw err;
     } finally {
       setIsSubmitting(false);
     }
