@@ -83,7 +83,7 @@ export const fetchAllTeamsCareerData = async (
     activeSeasonResult,
   ] = await Promise.all([
     // All teams with division weights
-    supabase.from('teams').select('id, divisions(division_weight)'),
+    supabase.from('teams').select('id, divisions(division_weight)').in('id', teamIds),
     // All team_season_stats (includes power_score for power score calculation)
     supabase.from('team_season_stats').select(
       `
@@ -101,7 +101,7 @@ export const fetchAllTeamsCareerData = async (
         power_score,
         seasons!inner(name)
       `
-    ),
+    ).in('team_id', teamIds),
     // All completed matches with team division info
     supabase
       .from('matches')
@@ -135,7 +135,7 @@ export const fetchAllTeamsCareerData = async (
       )
       .eq('iscompleted', true),
     // All team details archive (already unfiltered in single-team version)
-    supabase.from('team_details_archive').select('team_id, season_id, divisionname'),
+    supabase.from('team_details_archive').select('team_id, season_id, divisionname').in('team_id', teamIds),
     // All completed playoff matches
     supabase
       .from('playoff_matches')
