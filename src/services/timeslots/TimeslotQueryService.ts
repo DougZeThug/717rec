@@ -3,7 +3,6 @@ import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { TeamTimeslot } from '@/types/timeslots';
 import { handleDatabaseError } from '@/utils/errorHandler';
-import { errorLog } from '@/utils/logger';
 
 import { TimeslotTransformer } from './TimeslotTransformer';
 
