@@ -89,8 +89,7 @@ export const fetchTeamsWithOptions = async (options?: TeamsQueryOptions): Promis
   const { data, error } = await query;
 
   if (error) {
-    errorLog('Error fetching teams:', error);
-    throw error;
+    handleDatabaseError(error, 'Failed to fetch teams with options');
   }
 
   // Deduplicate by team_id (view may return duplicates for players)
