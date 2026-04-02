@@ -79,6 +79,10 @@ function groupMatchesByTeam<T extends { team1_id: string | null; team2_id: strin
 export const fetchAllTeamsCareerData = async (
   teamIds: string[]
 ): Promise<Map<string, BulkTeamCareerData>> => {
+  if (teamIds.length === 0) {
+    return new Map();
+  }
+
   const teamIdSet = new Set(teamIds);
 
   // 1. Fetch all data in parallel (~7-9 queries total regardless of team count)
