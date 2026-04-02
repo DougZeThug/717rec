@@ -214,7 +214,7 @@ export const upsertTeamSeasonStats = async (): Promise<void> => {
  * Fetch the active season ID, returning undefined if no active season exists.
  * Does NOT throw if no active season found — only throws on database error.
  * Exact query (maybeSingle) copied from useAutoScheduleSave.ts
- * @throws raw Supabase error on database failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const fetchActiveSeasonIdOptional = async (): Promise<string | undefined> => {
   const { data, error } = await supabase
@@ -223,7 +223,7 @@ export const fetchActiveSeasonIdOptional = async (): Promise<string | undefined>
     .eq('is_active', true)
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to fetch active season');
   return data?.id;
 };
 
