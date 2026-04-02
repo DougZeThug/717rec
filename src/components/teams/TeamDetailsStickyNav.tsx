@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { BarChart3, Clock, Swords, TrendingUp } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+
 import { cn } from '@/lib/utils';
 
 interface Section {
@@ -122,7 +122,7 @@ export const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ clas
       role="navigation"
       aria-label="Team details section navigation"
     >
-      <ScrollArea className="w-full">
+      <div className="w-full overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
         <nav className="flex items-center gap-1 px-4 py-2 min-w-max">
           {sections.map(({ id, label, icon: Icon, ariaLabel }) => {
             const isActive = activeSection === id;
@@ -147,8 +147,7 @@ export const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ clas
             );
           })}
         </nav>
-        <ScrollBar orientation="horizontal" className="h-1.5" />
-      </ScrollArea>
+      </div>
     </motion.div>
   );
 };

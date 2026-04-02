@@ -60,7 +60,7 @@ const ProfileSetup = () => {
     return (
       <PageLayout compact={true}>
         <PageTransition>
-          <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
+          <div className="flex justify-center items-center min-h-[calc(100dvh-200px)]">
             <ProfileLoadingState />
           </div>
         </PageTransition>
@@ -76,7 +76,7 @@ const ProfileSetup = () => {
   return (
     <PageLayout compact={true}>
       <PageTransition>
-        <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
+        <div className="flex justify-center items-center min-h-[calc(100dvh-200px)]">
           <Card className="w-full max-w-md">
             <CardHeader>
               <CardTitle className="text-2xl">Set Up Your Profile</CardTitle>

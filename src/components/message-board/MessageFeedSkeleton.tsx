@@ -15,7 +15,7 @@ const MessageFeedSkeleton: React.FC<MessageFeedSkeletonProps> = ({ count = 5 }) 
   return (
     <Card className={cn('mb-4 border shadow', gradients.card.subtle)}>
       <CardContent className="p-0">
-        <ScrollArea className={cn('h-[calc(100vh-250px)]', 'lg:h-[calc(100vh-280px)]')}>
+        <ScrollArea className={cn('h-[calc(100dvh-250px)]', 'lg:h-[calc(100dvh-280px)]')}>
           <div className="space-y-2 p-3">
             {Array.from({ length: count }).map((_, index) => (
               <MessageItemSkeleton
