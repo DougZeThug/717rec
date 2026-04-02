@@ -84,10 +84,7 @@ const RankingsTable: React.FC<RankingsTableProps> = ({
       direction: newDirection,
     };
 
-    // Use startTransition for non-urgent UI update
-    startTransition(() => {
-      setSortOptions(newSortOptions);
-    });
+    setSortOptions(newSortOptions);
 
     localStorage.setItem('rankingsSortOptions', JSON.stringify(newSortOptions));
   };
