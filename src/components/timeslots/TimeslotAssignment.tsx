@@ -215,12 +215,19 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 {availableTeams.map((team) => {
                   const isSelected = selectedTeamIds.includes(team.id);
-                  return (
-                    <button
+                    return (
+                    <div
                       key={team.id}
-                      type="button"
+                      role="button"
+                      tabIndex={0}
                       onClick={() => handleToggleTeam(team.id)}
-                      className={`flex items-center gap-2 p-2 rounded-lg border transition-colors text-left ${
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleToggleTeam(team.id);
+                        }
+                      }}
+                      className={`flex items-center gap-2 p-2 rounded-lg border transition-colors text-left cursor-pointer ${
                         isSelected
                           ? 'border-primary bg-primary/10'
                           : 'border-border hover:bg-muted'
@@ -232,12 +239,14 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
                         size="sm"
                       />
                       <span className="text-xs font-medium truncate flex-1">{team.name}</span>
-                      <Checkbox
-                        checked={isSelected}
-                        tabIndex={-1}
-                        className="pointer-events-none"
-                      />
-                    </button>
+                      <div className={`h-4 w-4 shrink-0 rounded-sm border flex items-center justify-center ${
+                        isSelected
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-primary'
+                      }`}>
+                        {isSelected && <Check className="h-3 w-3" />}
+                      </div>
+                    </div>
                   );
                 })}
               </div>
