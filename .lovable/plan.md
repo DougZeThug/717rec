@@ -1,39 +1,57 @@
 
 
-## Fix: Collapsible Sections Not Opening on iPhone Safari
+## iPhone/Safari Audit: Pain Points Found
 
-### Analysis
+I audited the codebase for patterns known to cause problems on iPhone Safari. Here's what I found:
 
-The `CollapsibleSection` component wraps its `setIsOpen` state update inside React's `startTransition()`:
+### Issue 1: `useTransition` in RankingsTable (same bug as CollapsibleSection)
 
-```tsx
-const handleOpenChange = (open: boolean) => {
-  startTransition(() => {
-    setIsOpen(open);
-  });
-};
-```
+**File:** `src/components/stats/RankingsTable.tsx` (line 89)
 
-`startTransition` marks the update as non-urgent, which tells React it can be deferred. On iOS Safari, this can cause the state update to appear to never fire -- the section never opens because Safari's rendering pipeline deprioritizes or drops the transition update, especially when combined with backdrop-blur effects from the sticky nav and any ongoing animations.
+The same `startTransition` pattern we just fixed in `CollapsibleSection` is used here for sort option changes. On iOS Safari, tapping a sort header could silently fail to update the sort order.
 
-This is a known pain point with `useTransition` on Safari/WebKit where low-priority updates get swallowed during touch interactions.
+**Fix:** Remove `useTransition`, call `setSortOptions` directly. Sorting a memoized array is fast -- no benefit from deferred rendering.
 
-### Fix
+---
 
-**File: `src/components/ui/CollapsibleSection.tsx`**
+### Issue 2: `100vh` usage causes content hidden behind Safari's bottom bar
 
-1. Remove `useTransition` from imports and usage
-2. Change `handleOpenChange` to call `setIsOpen` directly:
+**Files:** `MessageFeed.tsx`, `MessageFeedSkeleton.tsx`, `AuthContainer.tsx`, `ProfileSetup.tsx`
 
-```tsx
-const handleOpenChange = (open: boolean) => {
-  setIsOpen(open);
-};
-```
+These use `calc(100vh - Xpx)` for height calculations. On iOS Safari, `100vh` includes the area behind the URL bar, so content gets cut off at the bottom. The fix is to use `100dvh` (dynamic viewport height) which accounts for Safari's collapsing address bar.
 
-This is safe because opening/closing a section is a fast, lightweight state change -- there's no heavy rendering that would benefit from transition deprioritization. The children are already mounted lazily by Radix's CollapsibleContent.
+**Fix:** Replace `100vh` with `100dvh` in these height calculations.
 
-### Scope
+---
 
-One file, one change. No visual or behavioral differences on other browsers. Sections will reliably respond to taps on iOS Safari.
+### Issue 3: Radix ScrollArea in sticky nav may swallow touch events on iOS
+
+**File:** `src/components/teams/TeamDetailsStickyNav.tsx`
+
+The sticky nav uses Radix `ScrollArea` for horizontal scrolling. Radix ScrollArea uses custom scrollbar rendering that can interfere with iOS touch scrolling on narrow containers. Since this is a simple horizontal scroll with a few items, native `overflow-x-auto` with `-webkit-overflow-scrolling: touch` is more reliable on iOS.
+
+**Fix:** Replace `<ScrollArea>` with a native `<div className="overflow-x-auto">` wrapper.
+
+---
+
+### Issue 4: `contain: layout style` on home page cards may suppress touch on iOS
+
+**Files:** `WeeklyRecapCard.tsx`, `TeamOfTheWeekCard.tsx`, `LeagueHistoryBar.tsx`, `Footer.tsx`, `TopTeams.tsx`, skeletons
+
+Multiple components use `style={{ contain: 'layout style' }}`. Per the existing memory note about Safari containment bugs, `contain: layout` can suppress pointer events on dynamic content in some WebKit versions. These are interactive cards (clickable links).
+
+**Fix:** Remove `contain: layout style` from interactive/clickable elements. Keep it only on static layout containers like Footer and skeletons where there are no touch targets inside.
+
+---
+
+### Summary of Changes
+
+| # | Issue | File(s) | Effort |
+|---|-------|---------|--------|
+| 1 | `useTransition` sort | `RankingsTable.tsx` | Low |
+| 2 | `100vh` → `100dvh` | `MessageFeed.tsx`, `MessageFeedSkeleton.tsx`, `AuthContainer.tsx`, `ProfileSetup.tsx` | Low |
+| 3 | ScrollArea in sticky nav | `TeamDetailsStickyNav.tsx` | Low |
+| 4 | `contain: layout style` on interactive cards | `WeeklyRecapCard.tsx`, `TeamOfTheWeekCard.tsx`, `LeagueHistoryBar.tsx`, `TopTeams.tsx` | Low |
+
+All low-effort, targeted fixes. No visual or behavioral changes on desktop. No new files needed.
 
