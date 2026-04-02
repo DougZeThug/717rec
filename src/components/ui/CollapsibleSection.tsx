@@ -1,5 +1,5 @@
 import { ChevronDown, LucideIcon } from 'lucide-react';
-import React, { ReactNode, useState, useTransition } from 'react';
+import React, { ReactNode, useState } from 'react';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
