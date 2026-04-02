@@ -300,7 +300,7 @@ export const approveMatch = async (matchId: string, winnerId: string, loserId: s
 
 /**
  * Clear winner/loser on a match (mark as tie)
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const setMatchAsTie = async (matchId: string) => {
   const { error } = await supabase
@@ -311,7 +311,7 @@ export const setMatchAsTie = async (matchId: string) => {
     })
     .eq('id', matchId);
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to set match as tie');
 };
 
 /**

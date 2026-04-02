@@ -163,7 +163,7 @@ export class TimeslotQueryService {
       .in('timeslot', [primarySlot, secondarySlot])
       .eq('is_back_to_back', true);
 
-    if (error) throw error;
+    if (error) handleDatabaseError(error, 'Failed to fetch timeslots for pair');
     return data ?? [];
   }
 

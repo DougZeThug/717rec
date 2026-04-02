@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { handleDatabaseError } from '@/utils/errorHandler';
 
 /**
  * Service layer for team data lookup operations
@@ -7,7 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 /**
  * Fetch team matches for a specific team in the active season.
  * Returns null if no active season is found.
- * @throws raw Supabase error on match query failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const fetchTeamMatchesData = async (teamId: string) => {
   // Get active season first to filter matches
@@ -46,14 +47,14 @@ export const fetchTeamMatchesData = async (teamId: string) => {
     .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
     .order('date');
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to fetch team matches');
   return data || [];
 };
 
 /**
  * Fetch teams by their IDs from v_team_details view
  * Returns empty array if no IDs provided
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const fetchTeamsByIds = async (teamIds: string[]) => {
   if (!teamIds.length) return [];
@@ -65,13 +66,13 @@ export const fetchTeamsByIds = async (teamIds: string[]) => {
     )
     .in('team_id', teamIds);
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to fetch teams by IDs');
   return data || [];
 };
 
 /**
  * Fetch all teams from v_team_details view (for team lookup maps)
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const fetchTeamsMap = async () => {
   const { data, error } = await supabase
@@ -80,6 +81,6 @@ export const fetchTeamsMap = async () => {
       'team_id, name, image_url, logo_url, players, wins, losses, game_wins, game_losses, created_at, division_id, divisionname, sos, power_score, win_percentage, game_win_percentage'
     );
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to fetch teams map');
   return data || [];
 };

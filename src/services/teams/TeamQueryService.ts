@@ -171,7 +171,7 @@ export const fetchAvailableTeams = async (): Promise<Team[]> => {
     .select('id, name, logo_url, image_url, division_id, wins, losses')
     .order('name');
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to fetch available teams');
 
   // Transform data to match the Team interface
   return (data || []).map((team) => ({

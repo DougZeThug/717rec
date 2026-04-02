@@ -94,7 +94,7 @@ export class TimeslotBatchService {
       .select('*, teams:team_id(id, name, logo_url)')
       .single();
 
-    if (error) throw error;
+    if (error) handleDatabaseError(error, 'Failed to insert timeslot');
     return data;
   }
 
@@ -104,7 +104,7 @@ export class TimeslotBatchService {
    */
   static async deleteTimeslotSimple(id: string) {
     const { error } = await supabase.from('team_timeslots').delete().eq('id', id);
-    if (error) throw error;
+    if (error) handleDatabaseError(error, 'Failed to delete timeslot');
   }
 
   /**
@@ -118,7 +118,7 @@ export class TimeslotBatchService {
       .insert(insertData)
       .select('*, teams:team_id(id, name, logo_url)');
 
-    if (error) throw error;
+    if (error) handleDatabaseError(error, 'Failed to batch insert timeslots');
     return data ?? [];
   }
 }
