@@ -22,7 +22,7 @@ import { errorLog } from '@/utils/logger';
 
 const TeamMembershipApprovalTab: React.FC = () => {
   const { toast } = useToast();
-  const { pendingMemberships, isLoading, approveMembership, processingId } = usePendingMemberships();
+  const { pendingMemberships, isLoading, isError, error, approveMembership, processingId } = usePendingMemberships();
 
   const handleApproval = async (membershipId: string, approved: boolean) => {
     try {
