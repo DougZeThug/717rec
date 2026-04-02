@@ -225,7 +225,7 @@ export const useTimeslotMutation = () => {
         description: err instanceof Error ? err.message : 'Failed to remove bye week',
         variant: 'destructive',
       });
-      return false;
+      throw err;
     } finally {
       setIsSubmitting(false);
     }
