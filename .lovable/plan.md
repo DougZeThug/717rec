@@ -1,63 +1,27 @@
 
 
-## Standardize Error Handling & Add Return Types in Service Layer
+## Add Server-Side Filters to Bulk Career Fetch
 
-### What's Wrong
+### Assessment
 
-Two quality issues across service files:
+This issue is **technically valid but low-impact in practice**. The function is only ever called from `computeAllTeamsTotals`, which always passes ALL team IDs from `useTeamsQuery`. So the unfiltered queries already return exactly the data needed.
 
-1. **Inconsistent error handling**: Some functions use `handleDatabaseError(error, context)` (which wraps errors in a typed `DatabaseError`), while others do bare `throw error` (which throws raw Supabase `PostgrestError` objects). This makes error categorization unpredictable for callers.
+That said, adding `.in('team_id', teamIds)` filters on the tables that support it is cheap defensive coding — it protects against future misuse and marginally reduces payload if the function is ever called with a subset.
 
-2. **Missing return types**: Exported functions in `MatchQueryService.ts` rely on type inference instead of explicit return types, reducing IDE intellisense quality.
+### What changes
 
-### Changes
+**File: `src/services/career/CareerBulkFetchService.ts`**
 
-**File 1: `src/services/matches/MatchQueryService.ts`**
-- Replace all `throw error` with `handleDatabaseError(error, '...')` (6 locations: `fetchPendingMatches`, `fetchUncompletedMatches`, `fetchPendingScoresMatches`, `fetchScoreSubmissions`, `fetchMatchForTie`, `fetchMatchTeamIds`)
-- Replace `throw new Error(...)` in `fetchMatchTimeslots` with `handleDatabaseError`
-- Replace manual not-found check in `fetchMatchForTie` / `fetchMatchTeamIds` with `ensureFound()`
-- Add explicit return type annotations to all 8 exported functions
+Add `.in()` filters to the 3 queries that have a direct `team_id` column:
 
-**File 2: `src/services/matches/MatchWriteService.ts`**
-- Replace all `throw error` with `handleDatabaseError(error, '...')` (~12 locations)
-- Already imports `handleDatabaseError` — just needs consistent usage
+1. **`team_season_stats`** query — add `.in('team_id', teamIds)`
+2. **`team_details_archive`** query — add `.in('team_id', teamIds)`
+3. **`teams`** (division weights) query — add `.in('id', teamIds)`
 
-**File 3: `src/services/matches/MatchHistoryService.ts`**
-- Replace 4 `throw error` calls with `handleDatabaseError`
+**Not filtered** (intentionally):
+- `matches` / `matches_archive` / `playoff_matches` — these have `team1_id` and `team2_id`, requiring `.or()` string interpolation which is fragile and adds complexity. Since we need matches for all teams anyway, the current approach of fetching all completed matches and grouping in memory is fine.
 
-**File 4: `src/services/matches/MatchTeamLookupService.ts`**
-- Replace 3 `throw error` calls with `handleDatabaseError`
+### Scope
 
-**File 5: `src/services/matches/MatchScheduleAdminService.ts`**
-- Replace 1 `throw error` call with `handleDatabaseError`
-
-**File 6: `src/services/timeslots/TimeslotQueryService.ts`**
-- Replace 4 `throw error` calls with `handleDatabaseError` (in `fetchTimeslotsByDate`, `fetchTimeslotsForDate`, `fetchWeekTimeslotsByTeam`, `fetchTimeslotsForPair`)
-
-**File 7: `src/services/timeslots/TimeslotBatchService.ts`**
-- Replace 3 `throw error` calls with `handleDatabaseError`
-
-**File 8: `src/services/teams/TeamQueryService.ts`**
-- Replace 2 `throw error` calls with `handleDatabaseError`, 1 manual not-found with `ensureFound()`
-
-**File 9: `src/services/teams/TeamUpdateService.ts`**
-- Replace 1 `throw error` with `handleDatabaseError`
-
-No behavioral changes. All functions already throw on error — this just wraps them in typed `DatabaseError` for consistent logging and caller handling.
-
-### Files Changed
-
-| File | Change |
-|------|--------|
-| `MatchQueryService.ts` | Standardize errors + add return types |
-| `MatchWriteService.ts` | Standardize 12 error throws |
-| `MatchHistoryService.ts` | Standardize 4 error throws |
-| `MatchTeamLookupService.ts` | Standardize 3 error throws |
-| `MatchScheduleAdminService.ts` | Standardize 1 error throw |
-| `TimeslotQueryService.ts` | Standardize 4 error throws |
-| `TimeslotBatchService.ts` | Standardize 3 error throws |
-| `TeamQueryService.ts` | Standardize 3 error throws |
-| `TeamUpdateService.ts` | Standardize 1 error throw |
-
-Auth service (`AuthService.ts`) excluded — auth errors are `AuthError`, not `PostgrestError`, so `handleDatabaseError` doesn't apply there.
+One file, 3 lines added. No behavioral change for current callers.
 
