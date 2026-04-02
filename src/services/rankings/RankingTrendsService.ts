@@ -9,7 +9,7 @@ import { warnLog } from '@/utils/logger';
  */
 export async function fetchPowerScoreTrends(
   direction: TrendDirection = 'up',
-  limit: number = 10
+  limit = 10
 ): Promise<PowerScoreTrend[]> {
   // Get current active season
   const { data: activeSeason } = await supabase
