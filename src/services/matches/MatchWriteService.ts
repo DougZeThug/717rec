@@ -253,7 +253,7 @@ export interface ScoreSubmissionInsertData {
 
 export const createScoreSubmission = async (data: ScoreSubmissionInsertData) => {
   const { error } = await supabase.from('score_submissions').insert(data);
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to create score submission');
   return true;
 };
 
