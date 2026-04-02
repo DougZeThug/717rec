@@ -81,7 +81,7 @@ export const saveRankingsToStorage = async (
   seasonId?: string
 ): Promise<void> => {
   // Import database service dynamically to avoid circular dependencies
-  const { saveRankingsToDatabase } = await import('@/services/RankingSnapshotService');
+  const { saveRankingsToDatabase } = await import('@/services/rankings/RankingPersistenceService');
 
   try {
     // Save to database for the specified season (or active season if not provided)
@@ -116,7 +116,7 @@ export const loadRankingsFromStorage = async (
 }> => {
   // Import database service dynamically to avoid circular dependencies
   const { loadRankingsFromDatabase, migrateLocalStorageToDatabase } =
-    await import('@/services/RankingSnapshotService');
+    await import('@/services/rankings/RankingPersistenceService');
 
   try {
     // Try to load from database first for the specified season (or active season)

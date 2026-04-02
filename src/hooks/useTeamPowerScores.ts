@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { fetchTeamPowerScores } from '@/services/RankingSnapshotService';
+import { fetchTeamPowerScores } from '@/services/rankings/RankingCurrentService';
 
 // Define interface for the team power score data
 export interface TeamPowerScoreData {
