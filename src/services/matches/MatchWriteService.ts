@@ -129,22 +129,22 @@ export const createMatch = async (insertInput: MatchInsertInput) => {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to create match');
   return data;
 };
 
 /**
  * Delete a match by ID
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const deleteMatch = async (matchId: string) => {
   const { error } = await supabase.from('matches').delete().eq('id', matchId);
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to delete match');
 };
 
 /**
  * Update a match and return the updated single record
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const updateMatch = async (matchId: string, updatePayload: object) => {
   const { data, error } = await supabase
@@ -154,13 +154,13 @@ export const updateMatch = async (matchId: string, updatePayload: object) => {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to update match');
   return data;
 };
 
 /**
  * Update a match and return all updated records as an array
- * @throws raw Supabase error on failure
+ * @throws {DatabaseError} When database operations fail
  */
 export const updateMatchArray = async (matchId: string, updatePayload: object) => {
   const { data, error } = await supabase
@@ -169,7 +169,7 @@ export const updateMatchArray = async (matchId: string, updatePayload: object) =
     .eq('id', matchId)
     .select();
 
-  if (error) throw error;
+  if (error) handleDatabaseError(error, 'Failed to update match');
   return data;
 };
 
