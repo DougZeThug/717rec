@@ -191,7 +191,7 @@ export const reverseTeamStats = async (
   });
 
   if (reverseError) {
-    throw new Error(`Failed to reverse team stats: ${reverseError.message}`);
+    handleDatabaseError(reverseError, 'Failed to reverse team stats');
   }
 };
 
