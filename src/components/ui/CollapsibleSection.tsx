@@ -1,5 +1,5 @@
 import { ChevronDown, LucideIcon } from 'lucide-react';
-import React, { ReactNode, useState, useTransition } from 'react';
+import React, { ReactNode, useState } from 'react';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
@@ -44,13 +44,10 @@ export const CollapsibleSection = ({
   summaryValue,
 }: CollapsibleSectionProps) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
-  const [, startTransition] = useTransition();
   const { shouldApplyWinterBase } = useSeasonalTheme();
 
   const handleOpenChange = (open: boolean) => {
-    startTransition(() => {
-      setIsOpen(open);
-    });
+    setIsOpen(open);
   };
 
   return (
