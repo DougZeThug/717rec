@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { BarChart3, Clock, Swords, TrendingUp } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+
 import { cn } from '@/lib/utils';
 
 interface Section {
