@@ -68,10 +68,7 @@ export class TimeslotQueryService {
       )
       .eq('match_date', formattedDate);
 
-    if (error) {
-      errorLog('Error fetching timeslots:', error);
-      throw error;
-    }
+    if (error) handleDatabaseError(error, 'Failed to fetch timeslots by date');
 
     return data ?? [];
   }
