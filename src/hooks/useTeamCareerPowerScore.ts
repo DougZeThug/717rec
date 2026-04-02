@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { fetchTeamCareerPowerScore } from '@/services/RankingSnapshotService';
+import { fetchTeamCareerPowerScore } from '@/services/rankings/RankingCareerService';
 
 export const useTeamCareerPowerScore = (teamId: string | undefined) => {
   return useQuery({

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { fetchHistoricalPowerScores } from '@/services/RankingSnapshotService';
+import { fetchHistoricalPowerScores } from '@/services/rankings/RankingCareerService';
 
 type PowerScoreHistory = {
   team_id: string;

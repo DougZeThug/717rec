@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { fetchWeeklyPowerScoreTrends } from '@/services/RankingSnapshotService';
+import { fetchWeeklyPowerScoreTrends } from '@/services/rankings/RankingTrendsService';
 import { TrendDirection } from '@/types/powerScoreTrends';
 
 export const useWeeklyPowerScoreTrends = (direction: TrendDirection = 'up', limit: number = 10) => {

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { fetchAllTeamsCareerPowerScores } from '@/services/RankingSnapshotService';
+import { fetchAllTeamsCareerPowerScores } from '@/services/rankings/RankingCareerService';
 
 export interface TeamCareerData {
   teamId: string;

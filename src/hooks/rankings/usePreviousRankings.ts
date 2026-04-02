@@ -25,7 +25,7 @@ export const usePreviousRankings = (): {
         debugLog('Loading historical and current ranking data');
 
         // Try to load from database first
-        const { loadRankingsFromDatabase } = await import('@/services/RankingSnapshotService');
+        const { loadRankingsFromDatabase } = await import('@/services/rankings/RankingPersistenceService');
         const dbRankings = await loadRankingsFromDatabase();
 
         if (Object.keys(dbRankings).length > 0) {
