@@ -1,3 +1,4 @@
+import { QUERY_STALE_TIMES } from '@/config/cache';
 import { supabase } from '@/integrations/supabase/client';
 import { ArchivedMatchData, MatchData, PlayoffMatchData, SeasonStats } from '@/utils/career/types';
 import { handleDatabaseError } from '@/utils/errorHandler';
@@ -5,6 +6,14 @@ import { warnLog } from '@/utils/logger';
 import { CareerData, TeamDetailsArchive } from './CareerTypes';
 
 // ── Bulk fetching for all teams (fixes N+1 query pattern) ──────────────
+
+// ── Module-level cache for bracket division weights & season map ────────
+let bracketCache: {
+  bracketDivisionWeights: Record<string, number>;
+  bracketSeasonMap: Record<string, string>;
+  timestamp: number;
+} | null = null;
+const BRACKET_CACHE_TTL = QUERY_STALE_TIMES.STANDARD; // 5 minutes
 
 /** Raw season stats row with team_id for grouping */
 interface RawSeasonStatsRow {
