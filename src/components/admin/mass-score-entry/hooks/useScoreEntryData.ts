@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { reverseTeamStats } from '@/hooks/matches/updates/utils/statReversalUtils';
 import { useMatchSubmission } from '@/hooks/matches/useMatchSubmission';
@@ -51,12 +51,17 @@ export const useScoreEntryData = () => {
     setMatches
   );
 
+  // Track whether this is the initial mount (auto-set date only on first load)
+  const isInitialLoad = useRef(true);
+
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       const fetchedMatches = await fetchMatches(filters);
 
-      if (fetchedMatches.length > 0 && !filters.date) {
+      // Only auto-set the date filter on initial mount (not after user clears filters)
+      if (isInitialLoad.current && fetchedMatches.length > 0 && !filters.date) {
+        isInitialLoad.current = false;
         const latestMatch = [...fetchedMatches].sort((a, b) => {
           return new Date(b.date).getTime() - new Date(a.date).getTime();
         })[0];
@@ -64,6 +69,8 @@ export const useScoreEntryData = () => {
           filterLog('Auto-setting filter date to latest match date', latestMatch.date);
           updateFiltersForMatchDate(new Date(latestMatch.date));
         }
+      } else {
+        isInitialLoad.current = false;
       }
 
       setMatches(fetchedMatches);
