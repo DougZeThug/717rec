@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { reverseTeamStats } from '@/hooks/matches/updates/utils/statReversalUtils';
 import { useMatchSubmission } from '@/hooks/matches/useMatchSubmission';
