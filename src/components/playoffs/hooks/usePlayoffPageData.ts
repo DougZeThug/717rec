@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router';
 import { BRACKET_FORMATS, BRACKET_STATES } from '@/constants/brackets';
 import { useBracketData } from '@/hooks/brackets/useBracketData';
 import { usePlayoffTeams } from '@/hooks/playoffs/usePlayoffTeams';
+import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { useDivisions } from '@/hooks/useDivisions';
 import { usePlayoffData } from '@/hooks/usePlayoffViewModel.compat';
 import { useActiveSeason } from '@/hooks/useSeasons';
