@@ -7,6 +7,7 @@ import { DivisionRelation, SeasonRelation } from '@/hooks/teams/seasonBreakdown/
 import { supabase } from '@/integrations/supabase/client';
 import { TeamAdvancedStats } from '@/types/teamAdvancedStats';
 import { SeasonBreakdown } from '@/types/teamAdvancedStats';
+import { NotFoundError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { dbLog, errorLog } from '@/utils/logger';
 
@@ -342,9 +343,7 @@ export const batchUpdateSeasonStats = async (updates: TeamUpdate[]): Promise<voi
           season_id: update.season_id,
           division_name: normalizedDivision,
         });
-        throw new Error(
-          `No rows updated for team ${update.team_id} in team_season_stats - check RLS policies or if record exists`
-        );
+        throw new NotFoundError('TeamSeasonStats', update.team_id);
       }
 
       // Also update team_details_archive to keep historical data in sync

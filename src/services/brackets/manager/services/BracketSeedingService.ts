@@ -1,6 +1,7 @@
 import { BracketsManager } from 'brackets-manager';
 
 import { supabase } from '@/integrations/supabase/client';
+import { BusinessLogicError, NotFoundError } from '@/types/errors';
 import { bracketLog, failureLog, successLog } from '@/utils/logger';
 
 import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
@@ -41,7 +42,7 @@ export class BracketSeedingService {
       });
 
       if (!stages || (Array.isArray(stages) && stages.length === 0)) {
-        throw new Error(`No stage found for bracket: ${bracketId}`);
+        throw new NotFoundError('Stage', bracketId);
       }
 
       const stagesArray = (Array.isArray(stages) ? stages : [stages]) as StorageStage[];
@@ -115,14 +116,14 @@ export class BracketSeedingService {
 
       // Check if error is due to existing match results
       if (errorMsg.includes('impact') || errorMsg.includes('result')) {
-        throw new Error(
+        throw new BusinessLogicError(
           'Cannot update seeding: Changes would affect existing match results. ' +
             "You can only reorder teams that haven't started matches yet.",
-          { cause: error }
+          error
         );
       }
 
-      throw new Error(`Seeding update failed: ${errorMsg}`, { cause: error });
+      throw new BusinessLogicError(`Seeding update failed: ${errorMsg}`, error);
     }
   }
 }

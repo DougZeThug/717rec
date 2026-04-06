@@ -1,3 +1,4 @@
+import { ValidationError } from '@/types/errors';
 import { PlayoffGame } from '@/utils/playoffs/playoffTypes';
 
 export interface ParsedScore {
@@ -20,7 +21,7 @@ export class ScoreParser {
     const scores = scoreText.split('-').map((s) => parseInt(s.trim()));
 
     if (scores.length !== 2 || isNaN(scores[0]) || isNaN(scores[1])) {
-      throw new Error('Invalid score format. Please use format like "2-1"');
+      throw new ValidationError('Invalid score format. Please use format like "2-1"');
     }
 
     const team1Score = scores[0];
@@ -28,12 +29,12 @@ export class ScoreParser {
 
     // Validate the scores
     if (team1Score < 0 || team2Score < 0) {
-      throw new Error('Scores cannot be negative');
+      throw new ValidationError('Scores cannot be negative');
     }
 
     // For a best-of-3 match:
     if (team1Score > 2 && team2Score > 2) {
-      throw new Error('Invalid scores for a best-of-3 match');
+      throw new ValidationError('Invalid scores for a best-of-3 match');
     }
 
     // Create placeholder games based on the score

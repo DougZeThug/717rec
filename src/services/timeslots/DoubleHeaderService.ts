@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { TeamTimeslot } from '@/types/timeslots';
 import { getBackToBackPairName, getPairConfig } from '@/utils/autoSchedule/constants';
+import { BusinessLogicError, ValidationError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { scheduleLog } from '@/utils/logger';
 
@@ -38,14 +39,14 @@ export class DoubleHeaderService {
     const pair2Name = getBackToBackPairName(slot2);
 
     if (!pair1Name || !pair2Name) {
-      throw new Error(`Invalid timeslots for double header: ${slot1} or ${slot2}`);
+      throw new ValidationError(`Invalid timeslots for double header: ${slot1} or ${slot2}`);
     }
 
     const pair1Config = getPairConfig(pair1Name);
     const pair2Config = getPairConfig(pair2Name);
 
     if (!pair1Config || !pair2Config) {
-      throw new Error(`Could not find pair config for: ${pair1Name} or ${pair2Name}`);
+      throw new BusinessLogicError(`Could not find pair config for: ${pair1Name} or ${pair2Name}`);
     }
 
     const timeslotData: TimeslotInsert[] = [
@@ -117,14 +118,14 @@ export class DoubleHeaderService {
     const pair2Name = getBackToBackPairName(slot2);
 
     if (!pair1Name || !pair2Name) {
-      throw new Error(`Invalid timeslots for double header: ${slot1} or ${slot2}`);
+      throw new ValidationError(`Invalid timeslots for double header: ${slot1} or ${slot2}`);
     }
 
     const pair1Config = getPairConfig(pair1Name);
     const pair2Config = getPairConfig(pair2Name);
 
     if (!pair1Config || !pair2Config) {
-      throw new Error(`Could not find pair config for: ${pair1Name} or ${pair2Name}`);
+      throw new BusinessLogicError(`Could not find pair config for: ${pair1Name} or ${pair2Name}`);
     }
 
     const allTimeslotData: TimeslotInsert[] = [];

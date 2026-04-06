@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { TeamTimeslot } from '@/types/timeslots';
 import { getBackToBackPairName, getPairConfig } from '@/utils/autoSchedule/constants';
+import { ValidationError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { scheduleLog, warnLog } from '@/utils/logger';
 
@@ -19,7 +20,7 @@ export class BackToBackTimeslotService {
     pairName: string
   ): Promise<TeamTimeslot[]> {
     const pairConfig = getPairConfig(pairName);
-    if (!pairConfig) throw new Error(`Invalid pair name: ${pairName}`);
+    if (!pairConfig) throw new ValidationError(`Invalid pair name: ${pairName}`);
 
     const formattedDate = format(date, 'yyyy-MM-dd');
 
@@ -64,7 +65,7 @@ export class BackToBackTimeslotService {
     warnLog('addTimeslot is deprecated. Converting to back-to-back assignment.');
 
     const pairName = getBackToBackPairName(timeslot);
-    if (!pairName) throw new Error(`Cannot determine back-to-back pair for timeslot: ${timeslot}`);
+    if (!pairName) throw new ValidationError(`Cannot determine back-to-back pair for timeslot: ${timeslot}`);
 
     return BackToBackTimeslotService.addBackToBackTimeslot(date, teamId, pairName);
   }

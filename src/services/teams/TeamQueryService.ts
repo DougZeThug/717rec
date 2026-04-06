@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Team } from '@/types';
+import { NotFoundError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { teamLog } from '@/utils/logger';
 import { TeamRowData, transformTeamRow } from '@/utils/teamTransformer';
@@ -148,7 +149,7 @@ export const fetchTeamDetails = async (teamId: string): Promise<Team> => {
     .maybeSingle();
 
   if (error) handleDatabaseError(error, 'Failed to fetch team details');
-  if (!data) throw new Error('Team not found');
+  if (!data) throw new NotFoundError('Team');
 
   // Enhanced logging to verify values from v_team_details with the new weighted power score
   teamLog('Team details from v_team_details with weighted Power Score:', {

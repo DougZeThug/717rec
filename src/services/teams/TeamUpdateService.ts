@@ -25,7 +25,7 @@ export const updateTeamWinLossRecord = async (
 
   if (error) handleDatabaseError(error, 'Failed to update team win/loss record');
   if (!data?.length) {
-    throw new Error(`No rows updated for team ${teamId} — check RLS policies or if record exists`);
+    throw new NotFoundError('Team', teamId);
   }
 
   return true;
