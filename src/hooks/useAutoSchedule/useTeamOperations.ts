@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Team } from '@/types';
 import { DualBlockConfig, PairedTimeBlockTeamsMap, TimeBlockTeamsMap } from '@/types/autoSchedule';
@@ -26,10 +26,18 @@ export const useTeamOperations = () => {
     () => persistedState.current?.originalTimeBlockTeams || {}
   );
   const [pairedTimeBlockTeams, setPairedTimeBlockTeams] = useState<PairedTimeBlockTeamsMap>({});
-  // Maps team ID to array of block names (supports double headers in multiple blocks)
-  const [teamBlockMap, setTeamBlockMap] = useState<Record<string, string[]>>(
-    () => persistedState.current?.teamBlockMap || {}
-  );
+  // Derived: Maps team ID to array of block names (supports double headers in multiple blocks)
+  // Using useMemo ensures this stays in sync when teams are manually reassigned between blocks
+  const teamBlockMap = useMemo(() => {
+    const blockMap: Record<string, string[]> = {};
+    Object.entries(timeBlockTeams).forEach(([blockName, teams]) => {
+      teams?.forEach((team) => {
+        if (!blockMap[team.id]) blockMap[team.id] = [];
+        if (!blockMap[team.id].includes(blockName)) blockMap[team.id].push(blockName);
+      });
+    });
+    return blockMap;
+  }, [timeBlockTeams]);
 
   // Persist team data when it changes
   useEffect(() => {
@@ -101,8 +109,7 @@ export const useTeamOperations = () => {
           });
         });
 
-        // Store the team-to-block mapping
-        setTeamBlockMap(blockMap);
+        // teamBlockMap is now derived via useMemo from timeBlockTeams
 
         // Calculate total teams loaded
         const totalTeams = Object.values(backToBackTeams).reduce(
