@@ -166,7 +166,7 @@ export const useTimeslotMutation = () => {
           err instanceof Error ? err.message : 'Failed to batch assign double header timeslots',
         variant: 'destructive',
       });
-      return null;
+      throw err;
     } finally {
       setIsSubmitting(false);
     }
