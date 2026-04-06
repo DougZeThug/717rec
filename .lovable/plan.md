@@ -1,39 +1,20 @@
 
 
-## Quality Improvements to CareerBulkFetchService
+## Fix: "All Brackets" filter sends invalid value to Supabase
 
-Three targeted improvements, all in one file.
+### What's wrong
 
-### Change 1: Early return for empty teamIds
+In `src/components/admin/mass-score-entry/FilterBar.tsx`, the "All Brackets" dropdown option has `value="all"`. When selected, this string `"all"` is passed through as `bracketId` to the query, producing `bracket_id=eq.all` in the Supabase request — which fails with a 400 because `"all"` isn't a valid UUID.
 
-**File:** `src/services/career/CareerBulkFetchService.ts`
+### Fix
 
-Add an early return at the top of `fetchAllTeamsCareerData` before any queries fire:
+**File:** `src/components/admin/mass-score-entry/FilterBar.tsx` (line 63)
 
-```ts
-if (teamIds.length === 0) {
-  return new Map();
-}
+Change the `onValueChange` handler to treat `"all"` as "no filter" by passing `undefined`:
+
+```tsx
+onValueChange={(value) => onBracketChange(value === 'all' ? undefined : value)}
 ```
 
-This avoids 7+ unnecessary Supabase calls with empty `.in()` filters (which Supabase handles but wastefully).
-
-### Change 2: Cache bracketDivisionWeights across calls
-
-The bracket division weights and season mappings are fetched per-call but rarely change. Use a simple module-level cache with a TTL matching the existing `QUERY_STALE_TIMES.STANDARD` (5 minutes).
-
-Add a small cache object at the module level that stores `{ bracketDivisionWeights, bracketSeasonMap, timestamp }`. On subsequent calls within the TTL, skip the brackets query and reuse cached values. This saves one query per call after the first.
-
-### Change 3: No change for groupMatchesByTeam
-
-The current `groupMatchesByTeam` function is 15 lines, handles the dual-key grouping cleanly, and is only used in this one file. Adding a generic utility abstraction would add complexity without benefit at this scale. Skipping this recommendation.
-
-### Summary
-
-| # | What | File |
-|---|------|------|
-| 1 | Early return on empty input | `CareerBulkFetchService.ts` |
-| 2 | Module-level cache for bracket weights | `CareerBulkFetchService.ts` |
-
-One file changed. No behavioral differences for existing callers.
+One line, one file. The "All Brackets" option stays in the dropdown for UX, but selecting it clears the bracket filter instead of sending an invalid value.
 
