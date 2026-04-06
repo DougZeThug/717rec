@@ -5,6 +5,7 @@ import AdminSectionWrapper from '@/components/admin/AdminSectionWrapper';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSeasons } from '@/hooks/useSeasons';
+import { Season } from '@/types/season';
 
 import SeasonActions from './SeasonActions';
 import SeasonForm from './SeasonForm';
@@ -12,7 +13,7 @@ import SeasonsList from './SeasonsList';
 
 const SeasonManagementTab = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingSeason, setEditingSeason] = useState<any>(null);
+  const [editingSeason, setEditingSeason] = useState<Season | null>(null);
   const { data: seasons, isLoading } = useSeasons();
 
   const activeSeason = seasons?.find((season) => season.is_active);
@@ -24,7 +25,7 @@ const SeasonManagementTab = () => {
     setShowCreateForm(true);
   };
 
-  const handleEditSeason = (season: any) => {
+  const handleEditSeason = (season: Season) => {
     setEditingSeason(season);
     setShowCreateForm(true);
   };
