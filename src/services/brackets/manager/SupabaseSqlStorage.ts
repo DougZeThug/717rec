@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { CrudInterface, DataTypes, OmitId } from 'brackets-manager';
 
 import { supabase } from '@/integrations/supabase/client';
+import { handleDatabaseError } from '@/utils/errorHandler';
 import { bracketLog, errorLog } from '@/utils/logger';
 
 type Id = number | string;
@@ -168,7 +169,7 @@ export class SupabaseSqlStorage implements CrudInterface {
         query = query.eq('id', filter);
         const { data, error } = await query.maybeSingle();
 
-        if (error) throw error;
+        if (error) handleDatabaseError(error, 'Failed to select from bracket table');
         if (!data) return null;
 
         // For match table, transform from DB format; cast to DataTypes[T] since TypeScript can't infer the conditional
@@ -183,7 +184,7 @@ export class SupabaseSqlStorage implements CrudInterface {
     }
 
     const { data, error } = await query;
-    if (error) throw error;
+    if (error) handleDatabaseError(error, 'Failed to select from bracket table');
 
     const rawData = (data || []) as DbMatch[];
     const transformedData =

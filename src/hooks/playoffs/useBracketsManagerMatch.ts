@@ -37,8 +37,6 @@ export const useBracketsManagerMatch = (matchId: number | null) => {
       if (!matchId) return null;
 
       const data = await fetchBracketsManagerMatchData(matchId);
-      if (!data) return null;
-
       const { matchData, gamesData, opponent1Data, opponent2Data } = data;
 
       const result: BracketsManagerMatchData = {
