@@ -46,7 +46,7 @@ export const useTimeslotMutation = () => {
         description: err instanceof Error ? err.message : 'Failed to assign timeslot',
         variant: 'destructive',
       });
-      return null;
+      throw err;
     } finally {
       setIsSubmitting(false);
     }
