@@ -1,6 +1,7 @@
 import { BracketsManager } from 'brackets-manager';
 
 import { supabase } from '@/integrations/supabase/client';
+import { BusinessLogicError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { bracketLog, errorLog, failureLog, successLog } from '@/utils/logger';
 
@@ -175,7 +176,7 @@ export class BracketCreationService {
 
       failureLog('Failed to create bracket', serializeError(error));
 
-      throw new Error(`Bracket creation failed: ${serializeError(error)}`, { cause: error });
+      throw new BusinessLogicError(`Bracket creation failed: ${serializeError(error)}`, error);
     }
   }
 }

@@ -1,6 +1,7 @@
 import { BracketsManager } from 'brackets-manager';
 
 import { supabase } from '@/integrations/supabase/client';
+import { BusinessLogicError } from '@/types/errors';
 import { bracketLog, errorLog, failureLog, successLog } from '@/utils/logger';
 
 import { matchUpdateQueue } from '../MatchUpdateQueue';
@@ -260,9 +261,9 @@ export class BracketUpdateService {
       } catch (error) {
         failureLog('Failed to update match', error);
         errorLog(`FULL ERROR DETAILS for Match ${matchId}:`, error);
-        throw new Error(
+        throw new BusinessLogicError(
           `Match update failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          { cause: error }
+          error
         );
       }
     });

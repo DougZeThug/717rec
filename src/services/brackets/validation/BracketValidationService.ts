@@ -1,3 +1,4 @@
+import { ValidationError } from '@/types/errors';
 import { validationLog } from '@/utils/logger';
 import { isValidUUID } from '@/utils/validation';
 
@@ -131,7 +132,7 @@ export class BracketValidationService {
 
     // Type guard check
     if (!isValidBracketFormData(data)) {
-      throw new Error('Invalid form data structure for sanitization');
+      throw new ValidationError('Invalid form data structure for sanitization');
     }
 
     const sanitized = {

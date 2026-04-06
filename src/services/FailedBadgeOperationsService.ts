@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { ValidationError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { badgeLog, errorLog, warnLog } from '@/utils/logger';
 
@@ -265,7 +266,7 @@ export class FailedBadgeOperationsService {
       }
 
       default:
-        throw new Error(`Unknown badge operation type: ${type}`);
+        throw new ValidationError(`Unknown badge operation type: ${type}`);
     }
   }
 }

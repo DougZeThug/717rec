@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { BusinessLogicError } from '@/types/errors';
 import { bracketManagerService } from '@/services/brackets/manager';
 import type { BracketRecord } from '@/types/bracketRecord';
 import { bracketLog, errorLog, failureLog, successLog, warnLog } from '@/utils/logger';
@@ -186,6 +187,6 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
           ? JSON.stringify(error)
           : 'Unknown error';
 
-    throw new Error(`Bracket creation failed: ${errorMessage}`, { cause: error });
+    throw new BusinessLogicError(`Bracket creation failed: ${errorMessage}`, error);
   }
 }

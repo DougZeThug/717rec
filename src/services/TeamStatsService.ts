@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { ValidationError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { errorLog, scoreLog } from '@/utils/logger';
 
@@ -31,7 +32,7 @@ export async function applyMatchResult(
       winnerId,
       loserId,
     });
-    throw new Error(errorMsg);
+    throw new ValidationError(errorMsg);
   }
 
   // Convert parameters to numbers to ensure proper math

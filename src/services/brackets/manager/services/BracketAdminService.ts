@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { BusinessLogicError } from '@/types/errors';
 import { bracketLog, errorLog, failureLog, successLog } from '@/utils/logger';
 
 import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
@@ -48,7 +49,7 @@ export class BracketAdminService {
           const downstream = await this.collectDownstreamChain(matchId);
 
           if (downstream.length > 0) {
-            throw new Error(
+            throw new BusinessLogicError(
               'Cannot reopen completed match: downstream matches have been populated. ' +
                 'Use "Reopen + Clear Downstream" option to cascade clear downstream matches.'
             );
@@ -108,7 +109,7 @@ export class BracketAdminService {
       // Normal toggle between Waiting and Ready
       if (makeReady) {
         if (!check.ok) {
-          throw new Error(
+          throw new BusinessLogicError(
             `Cannot set to Ready: ${check.reason}. ` +
               `Match must be a Losers Bracket BYE match in Locked/Waiting status.`
           );
@@ -127,11 +128,11 @@ export class BracketAdminService {
         };
       } else {
         if (!check.meta) {
-          throw new Error('Cannot revert: Match data unavailable');
+          throw new BusinessLogicError('Cannot revert: Match data unavailable');
         }
 
         if (check.meta.status >= 4) {
-          throw new Error(
+          throw new BusinessLogicError(
             `Cannot revert: Match is ${check.meta.currentStatusName}. ` +
               `Only Ready (2) or Running (3) matches can be reverted.`
           );
@@ -150,9 +151,9 @@ export class BracketAdminService {
       }
     } catch (error) {
       failureLog('Admin BYE toggle failed', error);
-      throw new Error(
+      throw new BusinessLogicError(
         `Failed to toggle BYE match status: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        { cause: error }
+        error
       );
     }
   }
