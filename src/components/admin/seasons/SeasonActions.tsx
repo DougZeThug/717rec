@@ -3,12 +3,13 @@ import React, { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Season } from '@/types/season';
 
 import SeasonActivationDialog from './SeasonActivationDialog';
 import SeasonArchivalDialog from './SeasonArchivalDialog';
 
 interface SeasonActionsProps {
-  season: any;
+  season: Season;
 }
 
 const SeasonActions: React.FC<SeasonActionsProps> = ({ season }) => {

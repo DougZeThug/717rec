@@ -15,11 +15,12 @@ import {
 import { useSeasonMutations } from '@/hooks/useSeasonMutations';
 import { useSeasons } from '@/hooks/useSeasons';
 import { toast } from '@/hooks/useToast';
+import { Season } from '@/types/season';
 
 interface SeasonActivationDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  season: any;
+  season: Season;
 }
 
 const SeasonActivationDialog: React.FC<SeasonActivationDialogProps> = ({

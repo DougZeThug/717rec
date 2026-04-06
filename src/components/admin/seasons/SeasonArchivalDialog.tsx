@@ -14,11 +14,12 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useSeasonMutations } from '@/hooks/useSeasonMutations';
 import { toast } from '@/hooks/useToast';
+import { Season } from '@/types/season';
 
 interface SeasonArchivalDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  season: any;
+  season: Season;
 }
 
 const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({ isOpen, onClose, season }) => {
