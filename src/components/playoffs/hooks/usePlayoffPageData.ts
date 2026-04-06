@@ -49,8 +49,7 @@ export function usePlayoffPageData(): PlayoffPageData {
   const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
-  const { profile } = useAuth();
-  const isAdmin = profile?.is_admin || false;
+  const { isAdminAccessGranted: isAdmin, isLoading: adminLoading } = useAdminAccess();
 
   // Season selection - defaults to active season
   const { data: activeSeason } = useActiveSeason();
