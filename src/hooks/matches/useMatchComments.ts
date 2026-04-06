@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import { MatchComment, MatchCommentsService } from '@/services/matches/MatchCommentsService';
-import { errorLog, warnLog } from '@/utils/logger';
+import { errorLog } from '@/utils/logger';
 
 export type { MatchComment };
 
@@ -86,32 +86,11 @@ export const useMatchComments = (matchId: string) => {
     if (!content.trim()) return null;
 
     try {
-      // Fetch profile and team membership in parallel to avoid sequential queries
-      const [profileResult, membershipResult] = await Promise.all([
-        supabase.from('profiles').select('username').eq('id', user.id).single(),
-        supabase
-          .from('team_memberships')
-          .select('team:teams(name)')
-          .eq('user_id', user.id)
-          .maybeSingle(),
-      ]);
+      const { username: profileUsername, teamName } =
+        await MatchCommentsService.fetchCommentAuthorInfo(user.id);
 
-      if (profileResult.error) {
-        warnLog('Error fetching profile:', profileResult.error);
-      }
-
-      if (membershipResult.error) {
-        warnLog('Error fetching team membership:', membershipResult.error);
-      }
-
-      const profile = profileResult.data;
-      const membership = membershipResult.data;
-
-      // Prepare data for insertion
       const username =
-        profile?.username || user.user_metadata?.name || user.email?.split('@')[0] || 'Anonymous';
-
-      const teamName = membership?.team?.name || null;
+        profileUsername || user.user_metadata?.name || user.email?.split('@')[0] || 'Anonymous';
 
       const data = await MatchCommentsService.addComment(matchId, {
         user_id: user.id,
