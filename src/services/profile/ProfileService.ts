@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
 import { supabase } from '@/integrations/supabase/client';
-import { DatabaseError } from '@/types/errors';
 import { UserProfile } from '@/types/user';
 import { handleDatabaseError } from '@/utils/errorHandler';
 
@@ -41,9 +40,7 @@ export const checkUsernameAvailability = async ({
     .maybeSingle();
 
   if (error) {
-    // Return null (unknown) rather than throwing — a failed availability
-    // check is a best-effort UI hint, not a critical error.
-    return { available: null };
+    handleDatabaseError(error, 'Failed to check username availability');
   }
 
   return { available: !data };
@@ -65,7 +62,7 @@ export const fetchAuthProfile = async (userId: string): Promise<UserProfile | nu
     if (error.code === 'PGRST116') {
       return null;
     }
-    throw new DatabaseError(`Failed to fetch profile: ${error.message}`, { code: error.code });
+    handleDatabaseError(error, 'Failed to fetch profile');
   }
 
   return data as UserProfile;
