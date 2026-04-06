@@ -26,10 +26,18 @@ export const useTeamOperations = () => {
     () => persistedState.current?.originalTimeBlockTeams || {}
   );
   const [pairedTimeBlockTeams, setPairedTimeBlockTeams] = useState<PairedTimeBlockTeamsMap>({});
-  // Maps team ID to array of block names (supports double headers in multiple blocks)
-  const [teamBlockMap, setTeamBlockMap] = useState<Record<string, string[]>>(
-    () => persistedState.current?.teamBlockMap || {}
-  );
+  // Derived: Maps team ID to array of block names (supports double headers in multiple blocks)
+  // Using useMemo ensures this stays in sync when teams are manually reassigned between blocks
+  const teamBlockMap = useMemo(() => {
+    const blockMap: Record<string, string[]> = {};
+    Object.entries(timeBlockTeams).forEach(([blockName, teams]) => {
+      teams?.forEach((team) => {
+        if (!blockMap[team.id]) blockMap[team.id] = [];
+        if (!blockMap[team.id].includes(blockName)) blockMap[team.id].push(blockName);
+      });
+    });
+    return blockMap;
+  }, [timeBlockTeams]);
 
   // Persist team data when it changes
   useEffect(() => {
