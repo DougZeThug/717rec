@@ -60,7 +60,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
 
         <Select
           value={filters.bracketId || undefined}
-          onValueChange={(value) => onBracketChange(value || undefined)}
+          onValueChange={(value) => onBracketChange(value === 'all' ? undefined : value)}
         >
           <SelectTrigger className="w-full min-h-[44px] dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:text-gray-200">
             <SelectValue placeholder="Filter by Bracket" />
