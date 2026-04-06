@@ -78,10 +78,12 @@ export const fetchPlayoffMatches = async (bracketId: string) => {
     .from('playoff_matches')
     .select(
       `
-      *,
+      id, bracket_id, round, position, match_type, best_of, status,
+      team1_id, team2_id, team1_score, team2_score, winner_id, loser_id,
+      team1_seed, team2_seed, next_win_match_id, next_lose_match_id, created_at, updated_at,
       team1:teams!fk_playoff_matches_team1(id, name, logo_url, image_url),
       team2:teams!fk_playoff_matches_team2(id, name, logo_url, image_url),
-      playoff_games(*)
+      playoff_games(id, match_id, game_number, team1_score, team2_score, winner_id)
     `
     )
     .eq('bracket_id', bracketId)
@@ -140,8 +142,8 @@ export const fetchBracketsOverview = async (seasonId?: string | null) => {
     .from('brackets')
     .select(
       `
-      *,
-      divisions(*)
+      id, title, format, state, division_id, season_id, challonge_tournament_id, uses_brackets_manager, created_at,
+      divisions(name, display_division)
     `
     )
     .order('created_at', { ascending: false });
@@ -277,7 +279,7 @@ export const fetchPlayoffTeams = async (): Promise<Team[]> => {
 export const fetchBmMatchWithStage = async (matchId: number) => {
   const { data, error } = await supabase
     .from('match')
-    .select('*, stage:stage_id(*)')
+    .select('id, stage_id, group_id, round_id, number, status, opponent1_id, opponent1_score, opponent1_result, opponent2_id, opponent2_score, opponent2_result, child_count, stage:stage_id(id, name, type, tournament_id, number, settings)')
     .eq('id', matchId)
     .single();
 
@@ -297,9 +299,11 @@ export const fetchPlayoffMatchWithBracket = async (matchId: string) => {
     .from('playoff_matches')
     .select(
       `
-      *,
+      id, bracket_id, round, position, match_type, best_of, status,
+      team1_id, team2_id, team1_score, team2_score, winner_id, loser_id,
+      team1_seed, team2_seed, next_win_match_id, next_lose_match_id,
       bracket:brackets!playoff_matches_bracket_id_fkey(id, uses_brackets_manager),
-      playoff_games(*)
+      playoff_games(id, match_id, game_number, team1_score, team2_score, winner_id)
     `
     )
     .eq('id', matchId)
