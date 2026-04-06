@@ -78,10 +78,12 @@ export const fetchPlayoffMatches = async (bracketId: string) => {
     .from('playoff_matches')
     .select(
       `
-      *,
+      id, bracket_id, round, position, match_type, best_of, status,
+      team1_id, team2_id, team1_score, team2_score, winner_id, loser_id,
+      team1_seed, team2_seed, next_win_match_id, next_lose_match_id, created_at, updated_at,
       team1:teams!fk_playoff_matches_team1(id, name, logo_url, image_url),
       team2:teams!fk_playoff_matches_team2(id, name, logo_url, image_url),
-      playoff_games(*)
+      playoff_games(id, match_id, game_number, team1_score, team2_score, winner_id)
     `
     )
     .eq('bracket_id', bracketId)
