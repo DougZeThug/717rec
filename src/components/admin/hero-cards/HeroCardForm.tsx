@@ -1,6 +1,8 @@
 import { ArrowLeft } from 'lucide-react';
 import React, { useState } from 'react';
 
+import { errorLog } from '@/utils/logger';
+
 import { Button } from '@/components/ui/button';
 import { useHeroCardMutations } from '@/hooks/useHeroCards';
 import { HeroCard, HeroCardFormData, HeroCardTargetType, HeroCardType } from '@/types/heroCard';
@@ -79,8 +81,8 @@ const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
     let metadata = {};
     try {
       metadata = JSON.parse(formData.metadata);
-    } catch {
-      // keep default empty object
+    } catch (e) {
+      errorLog('Failed to parse hero card metadata JSON:', e);
     }
 
     const payload = {

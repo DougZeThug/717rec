@@ -3,6 +3,8 @@ import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { errorLog } from '@/utils/logger';
+
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -108,7 +110,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       });
 
       onProfileUpdated();
-    } catch {
+    } catch (e) {
+      errorLog('Failed to update profile:', e);
       toast({
         title: 'Error updating profile',
         description: 'Please try again.',

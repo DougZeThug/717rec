@@ -2,6 +2,7 @@ import { format, parseISO } from 'date-fns';
 import { useMemo } from 'react';
 
 import { Match } from '@/types';
+import { errorLog } from '@/utils/logger';
 
 /**
  * Hook to extract unique dates that have scheduled matches.
@@ -19,8 +20,8 @@ export const useMatchDates = (matchesData: Match[] | undefined): Set<string> => 
           const date = typeof match.date === 'string' ? parseISO(match.date) : match.date;
           const dateStr = format(date, 'yyyy-MM-dd');
           matchDates.add(dateStr);
-        } catch {
-          // Skip invalid dates
+        } catch (e) {
+          errorLog('Failed to parse match date "%s":', match.date, e);
         }
       }
     });
