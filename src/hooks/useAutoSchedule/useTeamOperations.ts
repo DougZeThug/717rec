@@ -109,8 +109,7 @@ export const useTeamOperations = () => {
           });
         });
 
-        // Store the team-to-block mapping
-        setTeamBlockMap(blockMap);
+        // teamBlockMap is now derived via useMemo from timeBlockTeams
 
         // Calculate total teams loaded
         const totalTeams = Object.values(backToBackTeams).reduce(
