@@ -279,7 +279,7 @@ export const fetchPlayoffTeams = async (): Promise<Team[]> => {
 export const fetchBmMatchWithStage = async (matchId: number) => {
   const { data, error } = await supabase
     .from('match')
-    .select('*, stage:stage_id(*)')
+    .select('id, stage_id, group_id, round_id, number, status, opponent1_id, opponent1_score, opponent1_result, opponent2_id, opponent2_score, opponent2_result, child_count, stage:stage_id(id, name, type, tournament_id, number, settings)')
     .eq('id', matchId)
     .single();
 
