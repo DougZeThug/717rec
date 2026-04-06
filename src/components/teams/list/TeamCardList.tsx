@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Edit, ExternalLink, MoreHorizontal, Trash2, Trophy, X } from 'lucide-react';
 import React from 'react';
-import { Link, useLocation } from 'react-router';
+import { Link } from 'react-router';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { Team } from '@/types';
@@ -28,8 +29,7 @@ interface TeamCardListProps {
 }
 
 export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEdit }) => {
-  const location = useLocation();
-  const isAdminPage = location.pathname.includes('/admin');
+  const { isAdminAccessGranted } = useAdminAccess();
   const { isWinterTheme } = useSeasonalTheme();
   const powerScoreColor = getPowerScoreColor(team.power_score);
   const sosColor = getSosColor(team.sos);
@@ -89,12 +89,12 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-[200px]">
-                {isAdminPage && onEdit && (
+                {isAdminAccessGranted && onEdit && (
                   <DropdownMenuItem onClick={() => onEdit(team)} className="cursor-pointer">
                     <Edit className="mr-2 h-4 w-4" /> Edit
                   </DropdownMenuItem>
                 )}
-                {isAdminPage && onDelete && (
+                {isAdminAccessGranted && onDelete && (
                   <DropdownMenuItem
                     onClick={() => onDelete(team.id)}
                     className="text-destructive focus:text-destructive cursor-pointer"
