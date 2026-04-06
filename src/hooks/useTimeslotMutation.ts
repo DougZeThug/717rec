@@ -46,7 +46,7 @@ export const useTimeslotMutation = () => {
         description: err instanceof Error ? err.message : 'Failed to assign timeslot',
         variant: 'destructive',
       });
-      return null;
+      throw err;
     } finally {
       setIsSubmitting(false);
     }
@@ -69,7 +69,7 @@ export const useTimeslotMutation = () => {
         description: err instanceof Error ? err.message : 'Failed to remove timeslot',
         variant: 'destructive',
       });
-      return false;
+      throw err;
     } finally {
       setIsSubmitting(false);
     }
@@ -108,7 +108,7 @@ export const useTimeslotMutation = () => {
         description: err instanceof Error ? err.message : 'Failed to batch assign timeslots',
         variant: 'destructive',
       });
-      return null;
+      throw err;
     } finally {
       setIsSubmitting(false);
     }
@@ -166,7 +166,7 @@ export const useTimeslotMutation = () => {
           err instanceof Error ? err.message : 'Failed to batch assign double header timeslots',
         variant: 'destructive',
       });
-      return null;
+      throw err;
     } finally {
       setIsSubmitting(false);
     }
