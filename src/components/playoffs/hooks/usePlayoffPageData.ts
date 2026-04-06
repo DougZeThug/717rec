@@ -277,7 +277,7 @@ export function usePlayoffPageData(): PlayoffPageData {
   const finalBracketsError = convertErrorToString(bracketsDataError);
 
   return {
-    profile,
+    profile: null,
     isAdmin,
     selectedBracketId,
     setSelectedBracketId,
