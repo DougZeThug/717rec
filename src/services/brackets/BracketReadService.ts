@@ -142,8 +142,8 @@ export const fetchBracketsOverview = async (seasonId?: string | null) => {
     .from('brackets')
     .select(
       `
-      *,
-      divisions(*)
+      id, title, format, state, division_id, season_id, challonge_tournament_id, uses_brackets_manager, created_at,
+      divisions(name, display_division)
     `
     )
     .order('created_at', { ascending: false });
