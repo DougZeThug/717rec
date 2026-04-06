@@ -614,7 +614,7 @@ serve(async (req) => {
         state: 'pending',
         challonge_tournament_id: parseInt(tournamentId.toString()),
       })
-      .select('*')
+      .select('id, title, division_id, format, state, challonge_tournament_id, created_at')
       .single();
 
     if (insertError || !bracketData) {
