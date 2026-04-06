@@ -3,9 +3,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 
 import { BRACKET_FORMATS, BRACKET_STATES } from '@/constants/brackets';
-import { useAuth } from '@/contexts/AuthContext';
 import { useBracketData } from '@/hooks/brackets/useBracketData';
 import { usePlayoffTeams } from '@/hooks/playoffs/usePlayoffTeams';
+import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { useDivisions } from '@/hooks/useDivisions';
 import { usePlayoffData } from '@/hooks/usePlayoffViewModel.compat';
 import { useActiveSeason } from '@/hooks/useSeasons';
@@ -50,8 +50,7 @@ export function usePlayoffPageData(): PlayoffPageData {
   const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
-  const { profile } = useAuth();
-  const isAdmin = profile?.is_admin || false;
+  const { isAdminAccessGranted: isAdmin, isLoading: adminLoading } = useAdminAccess();
 
   // Season selection - defaults to active season
   const { data: activeSeason } = useActiveSeason();
@@ -152,7 +151,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     return result;
   }, [bracketsByDivision]);
 
-  const isLoading = bracketsLoading || divisionsLoading;
+  const isLoading = bracketsLoading || divisionsLoading || adminLoading;
 
   const allBracketsData = useMemo<PlayoffBracket[]>(() => {
     try {
@@ -278,7 +277,7 @@ export function usePlayoffPageData(): PlayoffPageData {
   const finalBracketsError = convertErrorToString(bracketsDataError);
 
   return {
-    profile,
+    profile: null,
     isAdmin,
     selectedBracketId,
     setSelectedBracketId,
