@@ -151,7 +151,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     return result;
   }, [bracketsByDivision]);
 
-  const isLoading = bracketsLoading || divisionsLoading;
+  const isLoading = bracketsLoading || divisionsLoading || adminLoading;
 
   const allBracketsData = useMemo<PlayoffBracket[]>(() => {
     try {
