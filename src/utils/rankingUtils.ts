@@ -85,11 +85,10 @@ export const saveRankingsToStorage = async (
 
   try {
     // Save to database for the specified season (or active season if not provided)
-    const dbSuccess = await saveRankingsToDatabase(rankings, seasonId);
-
-    // Keep localStorage as fallback for backwards compatibility
-    if (!dbSuccess) {
-      warnLog('Database save failed, falling back to localStorage');
+    try {
+      await saveRankingsToDatabase(rankings, seasonId);
+    } catch (error) {
+      warnLog('Database save failed, falling back to localStorage:', error);
     }
 
     // Also save to localStorage as a backup

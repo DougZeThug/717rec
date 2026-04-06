@@ -172,16 +172,9 @@ export const isTeamHidden = async (teamId: string): Promise<boolean> => {
     .from('teams')
     .select('division_id')
     .eq('id', teamId)
-    .single();
+    .maybeSingle();
 
-  if (error) {
-    // PGRST116 means no rows found, which means team doesn't exist - return false
-    if (error.code === 'PGRST116') {
-      return false;
-    }
-    handleDatabaseError(error, 'Failed to check if team is hidden');
-  }
-
+  if (error) handleDatabaseError(error, 'Failed to check if team is hidden');
   if (!data) return false;
 
   return data.division_id === hiddenDivisionId;

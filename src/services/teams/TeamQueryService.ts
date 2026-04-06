@@ -213,9 +213,6 @@ export const fetchTeamForStats = async (teamId: string) => {
     .eq('id', teamId)
     .maybeSingle();
 
-  if (error || !team) {
-    return null;
-  }
-
+  if (error) handleDatabaseError(error, 'Failed to fetch team for stats');
   return team;
 };

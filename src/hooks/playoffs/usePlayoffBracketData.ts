@@ -18,11 +18,6 @@ export const usePlayoffBracketData = (bracketId: string | null) => {
       bracketLog('usePlayoffBracketData: Fetching bracket data from database...');
       const bracket = await fetchPlayoffBracketData(bracketId);
 
-      if (!bracket) {
-        bracketLog('usePlayoffBracketData: No bracket found with id:', bracketId);
-        return null;
-      }
-
       bracketLog('usePlayoffBracketData: Final bracket result:', bracket);
       return bracket;
     },

@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { handleDatabaseError } from '@/utils/errorHandler';
+import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 import { dbLog } from '@/utils/logger';
 import { transformDatabasePlayoffMatchesWithTeams } from '@/utils/matchTransformers';
 import type { BracketState, PlayoffBracket } from '@/utils/playoffs/playoffTypes';
@@ -51,7 +51,7 @@ export const fetchBracketsForSelector = async (): Promise<BracketOption[]> => {
  */
 export const fetchPlayoffBracketData = async (
   bracketId: string
-): Promise<PlayoffBracket | null> => {
+): Promise<PlayoffBracket> => {
   const { data, error } = await supabase
     .from('brackets')
     .select(
@@ -64,9 +64,7 @@ export const fetchPlayoffBracketData = async (
     handleDatabaseError(error, 'Failed to fetch playoff bracket data');
   }
 
-  if (!data) return null;
-
-  return mapRowToBracket(data);
+  return mapRowToBracket(ensureFound(data, 'PlayoffBracket', bracketId));
 };
 
 /**
@@ -489,7 +487,7 @@ export const fetchBracketsManagerMatchData = async (matchId: number) => {
     .single();
 
   if (matchError) handleDatabaseError(matchError, 'Failed to fetch bracket match');
-  if (!matchData) return null;
+  const safeMatchData = ensureFound(matchData, 'BracketMatch', String(matchId));
 
   // Fetch games for this match
   const { data: gamesData, error: gamesError } = await supabase
@@ -502,18 +500,18 @@ export const fetchBracketsManagerMatchData = async (matchId: number) => {
 
   // Fetch participant names in parallel
   const [opponent1Result, opponent2Result] = await Promise.all([
-    matchData.opponent1_id
+    safeMatchData.opponent1_id
       ? supabase
           .from('participant')
           .select('id, name')
-          .eq('id', matchData.opponent1_id)
+          .eq('id', safeMatchData.opponent1_id)
           .single()
       : Promise.resolve({ data: null, error: null }),
-    matchData.opponent2_id
+    safeMatchData.opponent2_id
       ? supabase
           .from('participant')
           .select('id, name')
-          .eq('id', matchData.opponent2_id)
+          .eq('id', safeMatchData.opponent2_id)
           .single()
       : Promise.resolve({ data: null, error: null }),
   ]);
@@ -527,7 +525,7 @@ export const fetchBracketsManagerMatchData = async (matchId: number) => {
   }
 
   return {
-    matchData,
+    matchData: safeMatchData,
     gamesData: gamesData || [],
     opponent1Data: opponent1Result.data,
     opponent2Data: opponent2Result.data,
