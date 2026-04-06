@@ -91,7 +91,7 @@ export class TimeslotBatchService {
     const { data, error } = await supabase
       .from('team_timeslots')
       .insert({ match_date, team_id, timeslot })
-      .select('*, teams:team_id(id, name, logo_url)')
+      .select('id, match_date, timeslot, team_id, created_at, is_back_to_back, is_double_header, pair_slot, match_sequence, teams:team_id(id, name, logo_url, image_url)')
       .single();
 
     if (error) handleDatabaseError(error, 'Failed to insert timeslot');
