@@ -54,4 +54,30 @@ export const MatchCommentsService = {
 
     if (error) handleDatabaseError(error, 'Failed to delete comment');
   },
+
+  fetchCommentAuthorInfo: async (
+    userId: string
+  ): Promise<{ username: string | null; teamName: string | null }> => {
+    const [profileResult, membershipResult] = await Promise.all([
+      supabase.from('profiles').select('username').eq('id', userId).single(),
+      supabase
+        .from('team_memberships')
+        .select('team:teams(name)')
+        .eq('user_id', userId)
+        .maybeSingle(),
+    ]);
+
+    if (profileResult.error) {
+      handleDatabaseError(profileResult.error, 'Failed to fetch comment author profile');
+    }
+
+    if (membershipResult.error) {
+      handleDatabaseError(membershipResult.error, 'Failed to fetch comment author team membership');
+    }
+
+    return {
+      username: profileResult.data?.username ?? null,
+      teamName: membershipResult.data?.team?.name ?? null,
+    };
+  },
 };
