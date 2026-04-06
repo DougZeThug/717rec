@@ -1,5 +1,7 @@
 import { useCallback, useRef } from 'react';
 
+import { errorLog } from '@/utils/logger';
+
 import { useAuth } from '@/contexts/AuthContext';
 import { useTeamMembership } from '@/hooks/useTeamMembership';
 import { toast } from '@/hooks/useToast';
@@ -56,7 +58,8 @@ export const useMessageApi = () => {
 
     try {
       await MessageService.createMessage(newMessage);
-    } catch {
+    } catch (e) {
+      errorLog('Failed to create message:', e);
       toast({
         title: 'Error posting message',
         description: 'Your message could not be posted. Please try again.',
@@ -88,7 +91,8 @@ export const useMessageApi = () => {
 
     try {
       await MessageService.updateMessage(messageId, user.id, content);
-    } catch {
+    } catch (e) {
+      errorLog('Failed to update message:', e);
       toast({
         title: 'Error updating message',
         description: 'Your message could not be updated. Please try again.',
@@ -117,7 +121,8 @@ export const useMessageApi = () => {
 
     try {
       await MessageService.deleteMessage(messageId, user.id);
-    } catch {
+    } catch (e) {
+      errorLog('Failed to delete message:', e);
       toast({
         title: 'Error deleting message',
         description: 'Your message could not be deleted. Please try again.',

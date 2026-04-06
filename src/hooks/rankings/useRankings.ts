@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useTeamsArray } from '@/hooks/teams';
 import { calculateRankings } from '@/services/RankingsCalculationService';
 import { Ranking } from '@/types';
-import { errorLog } from '@/utils/logger';
+import { errorLog, warnLog } from '@/utils/logger';
 
 import { useRankingsData } from './useRankingsData';
 
@@ -36,17 +36,18 @@ export const useRankings = () => {
             try {
               const savedRankings = localStorage.getItem('previousRankings');
               previousRankings = savedRankings ? JSON.parse(savedRankings) : {};
-            } catch {
-              // localStorage unavailable (e.g., iOS Safari private browsing)
+            } catch (e) {
+              warnLog('localStorage unavailable for rankings fallback:', e);
             }
           }
-        } catch {
+        } catch (e) {
+          errorLog('Failed to load rankings from database, falling back to localStorage:', e);
           // If database load fails, try localStorage as fallback
           try {
             const savedRankings = localStorage.getItem('previousRankings');
             previousRankings = savedRankings ? JSON.parse(savedRankings) : {};
-          } catch {
-            // localStorage unavailable (e.g., iOS Safari private browsing)
+          } catch (e2) {
+            warnLog('localStorage unavailable for rankings fallback:', e2);
           }
         }
 

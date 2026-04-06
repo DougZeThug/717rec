@@ -46,7 +46,8 @@ export class FailedBadgeOperationsService {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       return stored ? JSON.parse(stored) : [];
-    } catch {
+    } catch (e) {
+      errorLog('Failed to read badge operations from storage:', e);
       return [];
     }
   }

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 
+import { errorLog } from '@/utils/logger';
+
 /**
  * Custom hook for managing state that persists to localStorage
  * @param key - localStorage key
@@ -13,7 +15,8 @@ export function usePersistedState<T>(key: string, defaultValue: T): [T, (value: 
     if (savedValue) {
       try {
         return JSON.parse(savedValue) as T;
-      } catch {
+      } catch (e) {
+        errorLog('Failed to parse persisted state for key "%s":', key, e);
         // If parsing fails, treat as string
         return savedValue as T;
       }
