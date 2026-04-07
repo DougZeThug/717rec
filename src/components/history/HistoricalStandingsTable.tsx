@@ -2,6 +2,7 @@ import { Crown, Medal, Trophy } from 'lucide-react';
 import React, { CSSProperties, useCallback } from 'react';
 
 import { TeamLogo } from '@/components/shared/TeamLogo';
+import { EntityCard } from '@/components/ui/entity-card';
 import { InlineEmptyState } from '@/components/ui/inline-empty-state';
 import { VirtualizedList } from '@/components/ui/VirtualizedList';
 import { useIsMobile } from '@/hooks/useMobile';
@@ -39,7 +40,7 @@ const getWinPercentageColor = (percentage: number): string => {
   return 'text-red-600 dark:text-red-500';
 };
 
-// Mobile row component for virtualized list
+// Mobile row component — EntityCard based
 const MobileTeamRow: React.FC<{
   team: SeasonData;
   style: CSSProperties;
@@ -55,114 +56,105 @@ const MobileTeamRow: React.FC<{
       : 0;
 
   return (
-    <div style={style} className="pb-3">
-      <div
+    <div style={style} className="pb-2">
+      <EntityCard
+        isInteractive={false}
+        withGradient={!isWinterTheme}
         className={cn(
-          'rounded-lg p-3 h-full',
-          isWinterTheme
-            ? cn(
-                'bg-white/5 border border-white/10',
-                team.champion && 'ring-2 ring-yellow-400/50 bg-yellow-500/10',
-                team.runner_up && 'ring-2 ring-gray-400/50 bg-white/10'
-              )
-            : cn(
-                'bg-gray-50 dark:bg-slate-700/50',
-                team.champion &&
-                  'ring-2 ring-yellow-400 dark:ring-yellow-500 bg-yellow-50 dark:bg-yellow-900/20',
-                team.runner_up &&
-                  'ring-2 ring-gray-400 dark:ring-gray-500 bg-gray-100 dark:bg-gray-900/20'
-              )
+          'p-3',
+          team.champion && 'border-l-[3px] border-l-yellow-400',
+          team.runner_up && 'border-l-[3px] border-l-gray-400'
         )}
       >
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <span
-              className={cn(
-                'text-sm font-medium w-6',
-                isWinterTheme ? 'text-white/60' : 'text-gray-500 dark:text-gray-400'
-              )}
-            >
-              #{team.playoff_rank || '-'}
-            </span>
-            {team.champion && <Crown className="w-4 h-4 text-yellow-500" />}
-            {team.runner_up && <Medal className="w-4 h-4 text-gray-600 dark:text-gray-300" />}
-            <TeamLogo
-              imageUrl={team.team_image_url || team.team_logo_url}
-              teamName={team.team_name}
-              size="sm"
-              className="flex-shrink-0"
-            />
-            <span
-              className={cn(
-                'font-semibold',
-                isWinterTheme ? 'text-white' : 'text-slate-900 dark:text-white'
-              )}
-            >
-              {team.team_name}
-            </span>
-          </div>
+        {/* Header row: rank + badge + logo + name + record */}
+        <div className="flex items-center gap-2">
+          <span
+            className={cn(
+              'text-xs font-semibold tabular-nums w-5 text-center flex-shrink-0',
+              isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
+            )}
+          >
+            {team.playoff_rank || '-'}
+          </span>
+          {team.champion && <Crown className="w-4 h-4 text-yellow-500 flex-shrink-0" />}
+          {team.runner_up && <Medal className="w-4 h-4 text-gray-500 flex-shrink-0" />}
+          <TeamLogo
+            imageUrl={team.team_image_url || team.team_logo_url}
+            teamName={team.team_name}
+            size="sm"
+            className="flex-shrink-0"
+          />
+          <span
+            className={cn(
+              'font-semibold text-sm truncate',
+              isWinterTheme ? 'text-white' : 'text-foreground'
+            )}
+          >
+            {team.team_name}
+          </span>
+          <span
+            className={cn(
+              'ml-auto font-bold text-sm tabular-nums flex-shrink-0',
+              isWinterTheme ? 'text-white' : 'text-foreground'
+            )}
+          >
+            {team.match_wins}-{team.match_losses}
+          </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <span className={isWinterTheme ? 'text-white/70' : 'text-gray-600 dark:text-gray-300'}>
-              Record:
-            </span>
-            <span
-              className={cn('ml-2 font-medium tabular-nums', getWinPercentageColor(winPercentage))}
-            >
-              {team.match_wins}-{team.match_losses} ({winPercentage.toFixed(1)}%)
-            </span>
-          </div>
-          <div>
-            <span className={isWinterTheme ? 'text-white/70' : 'text-gray-600 dark:text-gray-300'}>
-              Games:
-            </span>
-            <span
-              className={cn(
-                'ml-2 font-medium tabular-nums',
-                getWinPercentageColor(gameWinPercentage)
-              )}
-            >
-              {team.game_wins}-{team.game_losses} ({gameWinPercentage.toFixed(1)}%)
-            </span>
-          </div>
-          {team.power_score !== null && (
-            <div>
-              <span
-                className={isWinterTheme ? 'text-white/70' : 'text-gray-600 dark:text-gray-300'}
-              >
-                Power Score:
-              </span>
-              <span
-                className={cn(
-                  'ml-2 font-medium tabular-nums',
-                  getPowerScoreColor(team.power_score * 100)
-                )}
-              >
-                {(team.power_score * 100).toFixed(1)}
-              </span>
-            </div>
-          )}
-          {team.sos !== null && (
-            <div>
-              <span
-                className={isWinterTheme ? 'text-white/70' : 'text-gray-600 dark:text-gray-300'}
-              >
-                SOS:
-              </span>
-              <span className={cn('ml-2 font-medium tabular-nums', getSosColor(team.sos))}>
-                {team.sos.toFixed(3)}
-              </span>
-            </div>
-          )}
+        {/* Compact 2x2 stat grid */}
+        <div className="grid grid-cols-4 gap-1 mt-2">
+          <StatCell
+            label="Win%"
+            value={`${winPercentage.toFixed(1)}%`}
+            colorClass={getWinPercentageColor(winPercentage)}
+            isWinterTheme={isWinterTheme}
+          />
+          <StatCell
+            label="GW%"
+            value={`${gameWinPercentage.toFixed(1)}%`}
+            colorClass={getWinPercentageColor(gameWinPercentage)}
+            isWinterTheme={isWinterTheme}
+          />
+          <StatCell
+            label="Power"
+            value={team.power_score ? (team.power_score * 100).toFixed(1) : '-'}
+            colorClass={getPowerScoreColor(team.power_score ? team.power_score * 100 : null)}
+            isWinterTheme={isWinterTheme}
+          />
+          <StatCell
+            label="SOS"
+            value={team.sos?.toFixed(3) ?? '-'}
+            colorClass={getSosColor(team.sos)}
+            isWinterTheme={isWinterTheme}
+          />
         </div>
-      </div>
+      </EntityCard>
     </div>
   );
 };
 
-// Desktop table row component for virtualized list
+// Small stat cell for mobile grid
+const StatCell: React.FC<{
+  label: string;
+  value: string;
+  colorClass: string;
+  isWinterTheme: boolean;
+}> = ({ label, value, colorClass, isWinterTheme }) => (
+  <div className="flex flex-col items-center">
+    <span
+      className={cn(
+        'text-[10px] leading-tight',
+        isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
+      )}
+    >
+      {label}
+    </span>
+    <span className={cn('text-xs font-semibold tabular-nums', colorClass)}>{value}</span>
+  </div>
+);
+
+// Desktop table row component
 const DesktopTeamRow: React.FC<{
   team: SeasonData;
   style: CSSProperties;
@@ -181,35 +173,37 @@ const DesktopTeamRow: React.FC<{
     <div
       style={style}
       className={cn(
-        'flex items-center border-b text-sm',
+        'flex items-center text-sm transition-colors duration-150 rounded-md mx-1 my-0.5',
         isWinterTheme
           ? cn(
-              'border-white/5 hover:bg-white/5',
-              team.champion && 'bg-yellow-500/10 hover:bg-yellow-500/15',
-              team.runner_up && 'bg-white/5 hover:bg-white/10'
+              'hover:bg-white/5',
+              team.champion && 'bg-yellow-500/10 hover:bg-yellow-500/15 border-l-[3px] border-l-yellow-400',
+              team.runner_up && 'bg-white/5 hover:bg-white/10 border-l-[3px] border-l-gray-400',
+              !team.champion && !team.runner_up && 'border-l-[3px] border-l-transparent'
             )
           : cn(
-              'border-gray-100 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700/50',
+              'hover:bg-accent/50',
               team.champion &&
-                'bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30',
+                'bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 border-l-[3px] border-l-yellow-400',
               team.runner_up &&
-                'bg-gray-100 dark:bg-gray-900/20 hover:bg-gray-200 dark:hover:bg-gray-900/30'
+                'bg-muted/50 hover:bg-muted border-l-[3px] border-l-gray-400',
+              !team.champion && !team.runner_up && 'border-l-[3px] border-l-transparent'
             )
       )}
     >
       <div
         className={cn(
-          'py-2 px-2 w-14 text-center flex-shrink-0',
-          isWinterTheme ? 'text-white/60' : 'text-gray-600 dark:text-gray-300'
+          'py-2 px-2 w-14 text-center flex-shrink-0 tabular-nums',
+          isWinterTheme ? 'text-white/60' : 'text-muted-foreground'
         )}
       >
-        #{team.playoff_rank || '-'}
+        {team.playoff_rank || '-'}
       </div>
       <div className="py-2 px-2 flex-1 min-w-[120px]">
         <div className="flex items-center gap-2">
           {team.champion && <Crown className="w-4 h-4 text-yellow-500 flex-shrink-0" />}
           {team.runner_up && (
-            <Medal className="w-4 h-4 text-gray-600 dark:text-gray-300 flex-shrink-0" />
+            <Medal className="w-4 h-4 text-gray-500 flex-shrink-0" />
           )}
           <TeamLogo
             imageUrl={team.team_image_url || team.team_logo_url}
@@ -220,7 +214,7 @@ const DesktopTeamRow: React.FC<{
           <span
             className={cn(
               'font-medium truncate',
-              isWinterTheme ? 'text-white' : 'text-slate-900 dark:text-white'
+              isWinterTheme ? 'text-white' : 'text-foreground'
             )}
           >
             {team.team_name}
@@ -229,8 +223,8 @@ const DesktopTeamRow: React.FC<{
       </div>
       <div
         className={cn(
-          'py-2 px-2 text-center font-medium tabular-nums w-16 flex-shrink-0',
-          isWinterTheme ? 'text-white' : 'text-slate-900 dark:text-white'
+          'py-2 px-2 text-center font-semibold tabular-nums w-16 flex-shrink-0',
+          isWinterTheme ? 'text-white' : 'text-foreground'
         )}
       >
         {team.match_wins}-{team.match_losses}
@@ -245,8 +239,8 @@ const DesktopTeamRow: React.FC<{
       </div>
       <div
         className={cn(
-          'py-2 px-2 text-center font-medium tabular-nums w-16 flex-shrink-0',
-          isWinterTheme ? 'text-white' : 'text-slate-900 dark:text-white'
+          'py-2 px-2 text-center tabular-nums w-16 flex-shrink-0',
+          isWinterTheme ? 'text-white/80' : 'text-muted-foreground'
         )}
       >
         {team.game_wins}-{team.game_losses}
@@ -313,8 +307,8 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
       return (
         <VirtualizedList
           items={teams}
-          rowHeight={140}
-          height={Math.min(teams.length * 140, 600)}
+          rowHeight={110}
+          height={Math.min(teams.length * 110, 600)}
           renderRow={renderMobileRow}
           overscanCount={3}
         />
@@ -322,7 +316,7 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
     }
 
     return (
-      <div className="space-y-3">
+      <div className="space-y-2">
         {teams.map((team) => (
           <MobileTeamRow key={team.team_id} team={team} style={{}} isWinterTheme={isWinterTheme} />
         ))}
@@ -334,26 +328,31 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
   const tableHeader = (
     <div
       className={cn(
-        'flex items-center border-b text-sm font-medium',
+        'flex items-center text-xs font-semibold uppercase tracking-wider rounded-t-lg px-1',
         isWinterTheme
-          ? 'border-white/10 text-white/70'
-          : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300'
+          ? 'border-b border-white/10 text-white/50 bg-white/5'
+          : 'border-b border-border text-muted-foreground bg-muted/30'
       )}
     >
-      <div className="py-2 px-2 w-14 text-center flex-shrink-0">Rank</div>
-      <div className="py-2 px-2 flex-1 min-w-[120px]">Team</div>
-      <div className="py-2 px-2 text-center w-16 flex-shrink-0">W-L</div>
-      <div className="py-2 px-2 text-center w-16 flex-shrink-0">Win %</div>
-      <div className="py-2 px-2 text-center w-16 flex-shrink-0">Games</div>
-      <div className="py-2 px-2 text-center w-16 flex-shrink-0">Game %</div>
-      <div className="py-2 px-2 text-center w-14 flex-shrink-0">Power</div>
-      <div className="py-2 px-2 text-center w-16 flex-shrink-0">SOS</div>
+      <div className="py-2.5 px-2 w-14 text-center flex-shrink-0">Rank</div>
+      <div className="py-2.5 px-2 flex-1 min-w-[120px]">Team</div>
+      <div className="py-2.5 px-2 text-center w-16 flex-shrink-0">W-L</div>
+      <div className="py-2.5 px-2 text-center w-16 flex-shrink-0">Win%</div>
+      <div className="py-2.5 px-2 text-center w-16 flex-shrink-0">Games</div>
+      <div className="py-2.5 px-2 text-center w-16 flex-shrink-0">Game%</div>
+      <div className="py-2.5 px-2 text-center w-14 flex-shrink-0">Power</div>
+      <div className="py-2.5 px-2 text-center w-16 flex-shrink-0">SOS</div>
     </div>
   );
 
   if (shouldVirtualize) {
     return (
-      <div className="overflow-x-auto">
+      <div
+        className={cn(
+          'overflow-x-auto rounded-lg border',
+          isWinterTheme ? 'border-white/10' : 'border-border'
+        )}
+      >
         {tableHeader}
         <VirtualizedList
           items={teams}
@@ -367,7 +366,12 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div
+      className={cn(
+        'overflow-x-auto rounded-lg border',
+        isWinterTheme ? 'border-white/10' : 'border-border'
+      )}
+    >
       {tableHeader}
       <div>
         {teams.map((team) => (
