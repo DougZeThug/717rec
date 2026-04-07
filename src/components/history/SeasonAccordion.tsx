@@ -149,7 +149,7 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
       <button
         onClick={handleToggle}
         className={cn(
-          'w-full p-4 md:p-6 text-left transition-all duration-200',
+          'w-full px-3 py-3 md:p-6 text-left transition-all duration-200',
           'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset',
           isWinterTheme
             ? cn('hover:bg-white/5', isExpanded && 'bg-white/5')
@@ -162,11 +162,12 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
         )}
         aria-expanded={isExpanded}
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start gap-3 min-w-0 flex-1">
+            {/* Trophy circle — desktop only */}
             <div
               className={cn(
-                'w-10 h-10 rounded-full flex items-center justify-center',
+                'hidden md:flex w-10 h-10 rounded-full items-center justify-center shrink-0',
                 isWinterTheme
                   ? hasChampions
                     ? 'bg-gradient-to-br from-yellow-500/30 to-amber-500/20'
@@ -183,11 +184,12 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
                 )}
               />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
+            <div className="min-w-0 space-y-0.5 md:space-y-1">
+              {/* Row 1: Season name + date + status badge */}
+              <div className="flex items-center gap-2 flex-wrap">
                 <h3
                   className={cn(
-                    'text-lg md:text-xl font-bebas uppercase tracking-wide',
+                    'text-lg md:text-xl font-bebas uppercase tracking-wide leading-tight',
                     isWinterTheme ? 'text-white' : 'text-slate-900 dark:text-white'
                   )}
                 >
@@ -197,55 +199,61 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
                   <span
                     className={cn(
                       'text-xs font-inter',
-                      isWinterTheme ? 'text-white/60' : 'text-gray-500 dark:text-gray-400'
+                      isWinterTheme ? 'text-white/60' : 'text-muted-foreground'
                     )}
                   >
                     ({dateRange})
                   </span>
                 )}
-              </div>
-              <div
-                className={cn(
-                  'flex items-center gap-3 text-sm flex-wrap',
-                  isWinterTheme ? 'text-white/60' : 'text-gray-500 dark:text-gray-400'
-                )}
-              >
-                {isLoading ? (
-                  <span className="text-gray-400 text-xs animate-pulse">•••</span>
-                ) : (
-                  <>
-                    {champions.length > 0 && (
-                      <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
-                        <Crown className="w-3.5 h-3.5" />
-                        {champions.join(', ')}
-                      </span>
-                    )}
-                    {teamCount > 0 && (
-                      <span className="flex items-center gap-1">
-                        <Users className="w-3.5 h-3.5" />
-                        {teamCount} teams
-                      </span>
-                    )}
-                    {matchCount > 0 && (
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5" />
-                        {matchCount} matches
-                      </span>
-                    )}
-                  </>
-                )}
-                {season.is_active && (
+                {season.is_active ? (
                   <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
                     Active
                   </span>
-                )}
+                ) : hasChampions ? (
+                  <span
+                    className={cn(
+                      'px-2 py-0.5 rounded-full text-xs font-medium',
+                      isWinterTheme
+                        ? 'bg-amber-500/20 text-amber-300'
+                        : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300'
+                    )}
+                  >
+                    🏆 Completed
+                  </span>
+                ) : null}
               </div>
+
+              {/* Row 2: Champion names */}
+              {isLoading ? (
+                <span className="text-muted-foreground text-xs animate-pulse">•••</span>
+              ) : (
+                <>
+                  {champions.length > 0 && (
+                    <p className="text-xs font-medium text-amber-600 dark:text-amber-400 truncate">
+                      👑 {champions.join(', ')}
+                    </p>
+                  )}
+                  {/* Row 3: Team count · Match count */}
+                  {(teamCount > 0 || matchCount > 0) && (
+                    <p
+                      className={cn(
+                        'text-xs',
+                        isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
+                      )}
+                    >
+                      {teamCount > 0 && `${teamCount} teams`}
+                      {teamCount > 0 && matchCount > 0 && ' · '}
+                      {matchCount > 0 && `${matchCount} matches`}
+                    </p>
+                  )}
+                </>
+              )}
             </div>
           </div>
           <ChevronDown
             className={cn(
-              'w-5 h-5 transition-transform duration-200',
-              isWinterTheme ? 'text-white/50' : 'text-gray-400',
+              'w-5 h-5 shrink-0 mt-1 transition-transform duration-200',
+              isWinterTheme ? 'text-white/50' : 'text-muted-foreground',
               isExpanded && 'rotate-180'
             )}
           />
