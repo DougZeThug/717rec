@@ -554,6 +554,13 @@ describe('greedyBackToBackScheduler', () => {
         (m) => pairKey(m.teamAId, m.teamBId) === pairKey('1', '2')
       );
       expect(forbiddenMatch).toBeUndefined();
+
+      // All teams must still be scheduled (4 teams × 2 slots = 4 matches)
+      expect(result.matches).toHaveLength(4);
+      const scheduledTeamIds = new Set(result.matches.flatMap((m) => [m.teamAId, m.teamBId]));
+      for (const t of teams) {
+        expect(scheduledTeamIds.has(t.id)).toBe(true);
+      }
     });
 
     it('should honor forbiddenPairs even under heavy season history', () => {
@@ -585,6 +592,13 @@ describe('greedyBackToBackScheduler', () => {
         (m) => pairKey(m.teamAId, m.teamBId) === pairKey('1', '2')
       );
       expect(forbiddenMatch).toBeUndefined();
+
+      // All teams must still be scheduled (4 teams × 2 slots = 4 matches)
+      expect(result.matches).toHaveLength(4);
+      const scheduledTeamIds = new Set(result.matches.flatMap((m) => [m.teamAId, m.teamBId]));
+      for (const t of teams) {
+        expect(scheduledTeamIds.has(t.id)).toBe(true);
+      }
     });
 
     it('should not reintroduce a season rematch on odd-team byes', () => {
