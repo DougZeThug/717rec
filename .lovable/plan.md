@@ -1,30 +1,23 @@
 
 
-## Add stress test for `rematchRepairPass` O(N^2) performance
+## Fix: "Find My Team" button overlapping Career Statistics chevron
 
-### What we're doing
+### What's wrong
 
-Adding a performance stress test with a large team pool (40+ teams) and dense match history to measure how long the `rematchRepairPass` loop takes. This validates that the O(N^2) swap logic remains fast enough at realistic upper bounds.
+The "Find My Team" floating button (the person icon) in the current standings section uses `position: fixed` with `z-50`, so it stays on screen even when you scroll down to the Career Statistics section. It lands right on top of the expand chevron, and clicking it scrolls you back up to your team in the current standings instead of expanding career stats.
 
-### Changes
+### Fix
 
-**File:** `src/utils/scheduling/__tests__/greedyBackToBackScheduler.test.ts`
+**File:** `src/components/stats/RankingsMobileView.tsx` (line ~302)
 
-Append a new `describe('Performance')` block at the end of the test suite:
+Change the FAB from `fixed` to `sticky` positioning, so it only floats within the current standings section and disappears when you scroll past it. This keeps the "Find My Team" button accessible within current standings but prevents it from covering the career section below.
 
-- **Test: "rematchRepairPass handles 40 teams with dense history under 500ms"**
-  - Create 40 teams across 3 tiers
-  - Generate dense `historyPairs`: every team has played ~60% of other teams (creating ~460 history pairs)
-  - Run `generateScheduleGreedyWithTracking` with this input
-  - Assert `performance.now()` delta is under 500ms
-  - Assert all 40 teams appear in matches (schedule completeness)
-  - Log the timing and `diagnostics.rematchesRepaired` count for visibility
+Alternatively, if sticky doesn't work well within the card layout, we can scope it by:
+- Adding a portal or conditional render that only shows the FAB when the current standings section is in viewport (using an IntersectionObserver)
 
-### Why this matters
-
-The repair pass is O(N^2) per slot — with 20 matches per slot, that's up to 400 pair comparisons × 2 rearrangements each. Dense history forces many iterations of the inner loop. This test catches regressions if someone accidentally makes it O(N^3) or adds expensive operations inside.
+The simplest reliable fix: wrap the FAB render in an IntersectionObserver check — only show it when the current standings container is visible on screen.
 
 ### Scope
 
-One file, one new test. No production code changes.
+One file changed (`RankingsMobileView.tsx`). No data or logic changes — purely a positioning fix.
 
