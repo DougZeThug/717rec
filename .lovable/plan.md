@@ -1,43 +1,52 @@
 
+Goal: make each season look like a compact recap card first, not an always-visible accordion header. On mobile, the collapsed view should match the reference structure: champions/logos on the left, season highlights on the right, and the detailed standings hidden behind a dedicated “Full Season Recap” dropdown/button.
 
-## Tighten History Page Mobile Layout
+Build
+1. Redesign the collapsed season summary in `src/components/history/SeasonAccordion.tsx`
+   - Keep the outer season card, but replace the current text-only header with a 3-part mobile layout:
+     ```text
+     [ Season name / date / status ]
+     [ Champions box ] [ Highlights box ]
+     [ Full Season Recap ▾ ]
+     ```
+   - Left box: show champion teams for that season with logo + name. If multiple champions exist, stack them compactly. If no champion yet, show a simple fallback state.
+   - Right box: show compact season highlights pulled from existing season data, such as:
+     - Most Wins
+     - Highest Power Score
+     - Most Game Wins
+     - optionally teams/matches if space is tighter than expected
+   - Bottom row: a dedicated recap control with chevron that opens/closes the existing standings content.
 
-### Problem
+2. Keep the detailed recap content the same underneath
+   - Do not change the team cards or standings table layout you already approved.
+   - The division panels and season standings stay inside the expandable area.
+   - This keeps the redesign focused on the collapsed season card only.
 
-Comparing the reference screenshot to the current implementation, there's excessive whitespace from multiple sources:
+3. Reduce the “accordion feel”
+   - Make the whole header no longer behave like a big padded accordion trigger.
+   - Move expand/collapse behavior to the dedicated recap row/button so the UI feels closer to the reference image.
+   - Tighten internal spacing so the summary card reads as a denser dashboard-style recap.
 
-1. **DivisionPanel**: `space-y-3 pb-6` with thick border-bottom separators between divisions
-2. **Expanded season content**: `space-y-6` and `gap-6` between division panels
-3. **Division headers**: Oversized padding (`px-4 py-3`) and large chevron button
-4. **Season accordion outer card**: `rounded-2xl` with `p-4 md:p-6` expanded content padding
-5. **HistoryPageContent**: `space-y-4` gap between season accordions
-6. **Page-level**: PageHeader takes vertical space that could be reclaimed on mobile
+Technical details
+- `src/components/history/SeasonAccordion.tsx`
+  - Rebuild the mobile collapsed layout into a two-column summary section.
+  - Use existing `seasonData` to derive champion entries and highlight stats.
+  - Reuse `TeamLogo` for winner logos.
+  - Keep the current Framer Motion expand/collapse section, but trigger it from the recap row/button instead of the whole top block.
 
-### Changes
+- `src/components/history/SeasonMetaBar.tsx`
+  - Either:
+    - add a compact “highlights” variant that can be reused in the collapsed card, or
+    - extract the highlight calculations so both the collapsed summary and expanded bar stay consistent without duplicating logic.
+  - This keeps “season highlights” aligned in both places.
 
-**1. `src/components/history/DivisionPanel.tsx`** — Compact mobile spacing
+Scope
+- Primary file: `src/components/history/SeasonAccordion.tsx`
+- Secondary cleanup/reuse file: `src/components/history/SeasonMetaBar.tsx`
+- No changes to team cards, historical standings rows, or current standings styling.
 
-- Reduce `space-y-3 pb-6` to `space-y-1.5 pb-3 md:space-y-3 md:pb-6`
-- Reduce division header padding from `px-4 py-3` to `px-3 py-2 md:px-4 md:py-3`
-- Reduce header text from `text-lg` to `text-base md:text-lg`
-- Shrink chevron button from `h-8 w-8` to `h-6 w-6 md:h-8 md:w-8`
-- Remove the thick `border-b` separator on mobile, keep on desktop
-
-**2. `src/components/history/SeasonAccordion.tsx`** — Tighter expanded content
-
-- Reduce expanded content padding from `p-4` to `p-3 md:p-4 md:p-6`
-- Reduce division grid gap from `gap-6` to `gap-3 md:gap-6`
-- Reduce `space-y-6` to `space-y-3 md:space-y-6` in the expanded content wrapper
-
-**3. `src/components/history/HistoryPageContent.tsx`** — Tighter accordion gaps
-
-- Reduce `space-y-4` to `space-y-2 md:space-y-4` between season accordions
-
-**4. `src/pages/History.tsx`** — Hide page description on mobile
-
-- Add mobile-only class to hide the PageHeader description text, or reduce the gap between header and content
-
-### Scope
-
-4 files — spacing/padding CSS changes only. No logic or data changes.
-
+Result
+- Mobile seasons will read like recap cards instead of oversized accordions.
+- Champions and logos become the visual anchor on the left.
+- Highlights become immediately scannable on the right.
+- Full standings stay available, but only when the user opens the recap dropdown.
