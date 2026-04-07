@@ -495,7 +495,9 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
                     )}
                   </div>
 
-                  <SeasonMetaBar season={season} seasonData={seasonData || []} />
+                  <div className="hidden md:block">
+                    <SeasonMetaBar season={season} seasonData={seasonData || []} />
+                  </div>
                 </div>
               )}
             </div>
