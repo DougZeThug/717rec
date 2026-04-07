@@ -1,57 +1,47 @@
 
 
-## Redesign History Page Tables to Match Current Standings Style
+## Redesign History Mobile Cards to Match Standings Cards
 
 ### Problem
 
-The history page tables use a plain, dated card design (flat `bg-gray-50` backgrounds, basic grid layouts) that looks noticeably different from the polished current standings cards which use `EntityCard` with proper borders, shadows, and compact layouts.
+The history page mobile cards use a flat 4-column stat grid with bare centered text, while the standings cards use `bg-muted/50` rounded stat cells, a `PowerScoreGauge` ring, and a richer layout. The two look completely different.
 
-### Approach
+### What changes
 
-Rebuild `HistoricalStandingsTable`'s mobile rows to use the same `EntityCard` component and compact layout pattern as `RankingCard`, while preserving all historical data (rank, record, games, power score, SOS, champion/runner-up badges).
+**`src/components/history/HistoricalStandingsTable.tsx`** — Rebuild `MobileTeamRow` to mirror the `RankingCard` detailed view layout:
 
-### Changes
-
-**`src/components/history/HistoricalStandingsTable.tsx`** — Redesign `MobileTeamRow`
-
-Current layout:
+**Current layout:**
 ```text
-┌──────────────────────────────┐
-│ #1 👑 [logo] Team Name       │  ← bg-gray-50, flat
-│ Record: 8-2 (80.0%)          │
-│ Games: 24-6 (80.0%)          │  ← 2x2 grid, "label: value"
-│ Power Score: 85.2  SOS: 0.512│
-└──────────────────────────────┘
+┌────────────────────────────────┐
+│ -  [logo] Team Name       9-1  │
+│  Win%   GW%   Power   SOS     │  ← bare centered text, no backgrounds
+│  90.0%  79.2%  81.9  0.885    │
+└────────────────────────────────┘
 ```
 
-New layout (matching RankingCard compact style):
+**New layout (matching RankingCard):**
 ```text
-┌──────────────────────────────┐
-│ #1 👑 [logo] Team Name  8-2  │  ← EntityCard, single row header
-│  ↕  │         Games: 24-6    │
-│─────┼────────────────────────│  ← expandable or inline stats
-│ Win% 80.0  GW% 80.0         │
-│ Power 85.2  SOS 0.512        │  ← compact 2x2 stat grid
-└──────────────────────────────┘
+┌────────────────────────────────┐
+│ 👑 [logo] Team Name       9-1  │  ← header row (same)
+│                                │
+│ ┌──────┐  ┌─────────┬────────┐│
+│ │ 81.9 │  │Win% │Game%     ││  ← PowerScoreGauge + 2x2 grid
+│ │ PWR  │  │90.0%│79.2%     ││     with bg-muted/50 rounded cells
+│ └──────┘  ├─────────┼────────┤│
+│           │SOS  │GW        ││
+│           │0.885│24-6      ││
+│           └─────────┴────────┘│
+└────────────────────────────────┘
 ```
 
-Key styling changes:
-- Wrap each row in `EntityCard` instead of plain div with `bg-gray-50`
-- Single-line header: rank + champion/runner-up icon + logo + name + record (right-aligned)
-- Compact stat row beneath with small labels and colored values
-- Champion/runner-up get a subtle gold/silver left border accent instead of full ring
-- Remove verbose "Record:" / "Games:" labels, use abbreviated format
-
-**`src/components/history/HistoricalStandingsTable.tsx`** — Redesign `DesktopTeamRow`
-
-- Add subtle hover transition and rounded row styling consistent with standings desktop view
-- Tighten padding and typography to match the polished look
-
-**`src/components/history/DivisionPanel.tsx`** — Minor cleanup
-
-- Remove the `ChampionCard` rendering on desktop (the champion is already highlighted in the table with a gold accent) to reduce visual clutter and match the streamlined standings approach
+Key changes:
+1. Add `PowerScoreGauge` component (same as RankingCard) on the left
+2. Replace flat 4-column grid with 2x2 grid using `rounded-md bg-muted/50 px-2 py-1.5` cells
+3. Use `text-[10px]` labels + `text-sm font-bold` values (matching RankingCard exactly)
+4. Add game record (W-L) as a stat cell, replace GW% with it
+5. Keep champion/runner-up left border accents
 
 ### Scope
 
-2 files modified. No data or logic changes — purely visual redesign of existing components.
+1 file changed: `src/components/history/HistoricalStandingsTable.tsx` — `MobileTeamRow` component only. Desktop view unchanged.
 
