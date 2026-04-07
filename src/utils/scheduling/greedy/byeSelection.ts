@@ -1,13 +1,13 @@
 import { Team } from '@/types';
 import { canPlay } from './constraints';
-import { RelaxationLevel } from './types';
+import { ByeStrategy, RelaxationLevel } from './types';
 
 /**
  * Pick a bye team for odd-team nights
  */
 export function pickBye(
   teams: Team[],
-  strategy: 'last' | 'fewestPartners',
+  strategy: ByeStrategy,
   playedSet: Set<string>,
   maxTierGap: number,
   excludeIds: Set<string> = new Set(),
