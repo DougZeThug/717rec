@@ -28,7 +28,8 @@ export const useRankings = () => {
         // Load previous rankings from database (with localStorage fallback)
         let previousRankings: Record<string, number> = {};
         try {
-          const { loadRankingsFromDatabase } = await import('@/services/rankings/RankingPersistenceService');
+          const { loadRankingsFromDatabase } =
+            await import('@/services/rankings/RankingPersistenceService');
           previousRankings = await loadRankingsFromDatabase();
 
           // If no database rankings found, try localStorage as fallback

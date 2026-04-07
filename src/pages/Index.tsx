@@ -142,7 +142,14 @@ const Index: React.FC = () => {
           <div className="animate-pulse bg-muted/30 rounded-lg" style={{ minHeight: '280px' }} />
         ) : (
           <PageTransition animation="fadeIn" delay="long">
-            <Suspense fallback={<div className="animate-pulse bg-muted/30 rounded-lg" style={{ minHeight: '280px' }} />}>
+            <Suspense
+              fallback={
+                <div
+                  className="animate-pulse bg-muted/30 rounded-lg"
+                  style={{ minHeight: '280px' }}
+                />
+              }
+            >
               <TopTeams teams={topTeams} />
             </Suspense>
           </PageTransition>

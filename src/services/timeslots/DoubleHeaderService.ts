@@ -1,9 +1,9 @@
 import { format } from 'date-fns';
 
 import { supabase } from '@/integrations/supabase/client';
+import { BusinessLogicError, ValidationError } from '@/types/errors';
 import { TeamTimeslot } from '@/types/timeslots';
 import { getBackToBackPairName, getPairConfig } from '@/utils/autoSchedule/constants';
-import { BusinessLogicError, ValidationError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { scheduleLog } from '@/utils/logger';
 
@@ -96,7 +96,9 @@ export class DoubleHeaderService {
     const { data, error } = await supabase
       .from('team_timeslots')
       .insert(timeslotData)
-      .select('id, match_date, timeslot, team_id, created_at, is_back_to_back, is_double_header, pair_slot, match_sequence, teams:team_id(id, name, logo_url, image_url)');
+      .select(
+        'id, match_date, timeslot, team_id, created_at, is_back_to_back, is_double_header, pair_slot, match_sequence, teams:team_id(id, name, logo_url, image_url)'
+      );
 
     if (error) handleDatabaseError(error, 'Failed to add double header timeslots');
     return TimeslotTransformer.formatTimeslotResponse(data ?? []);
@@ -178,7 +180,9 @@ export class DoubleHeaderService {
     const { data, error } = await supabase
       .from('team_timeslots')
       .insert(allTimeslotData)
-      .select('id, match_date, timeslot, team_id, created_at, is_back_to_back, is_double_header, pair_slot, match_sequence, teams:team_id(id, name, logo_url, image_url)');
+      .select(
+        'id, match_date, timeslot, team_id, created_at, is_back_to_back, is_double_header, pair_slot, match_sequence, teams:team_id(id, name, logo_url, image_url)'
+      );
 
     if (error) handleDatabaseError(error, 'Failed to batch assign double header timeslots');
     return TimeslotTransformer.formatTimeslotResponse(data ?? []);

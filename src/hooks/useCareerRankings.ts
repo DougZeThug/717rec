@@ -12,7 +12,11 @@ interface CareerRankingsOptions {
 
 export function useCareerRankings(options?: CareerRankingsOptions) {
   const includeHidden = options?.includeHidden ?? false;
-  const { data: teams, isLoading: isLoadingTeams, error: teamsError } = useTeamsQuery({ includeHidden });
+  const {
+    data: teams,
+    isLoading: isLoadingTeams,
+    error: teamsError,
+  } = useTeamsQuery({ includeHidden });
 
   return useQuery({
     queryKey: ['careerRankings', teams?.map((t) => t.id), includeHidden],

@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ArchivedMatchData, MatchData, PlayoffMatchData, SeasonStats } from '@/utils/career/types';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { warnLog } from '@/utils/logger';
+
 import { CareerData, TeamDetailsArchive } from './CareerTypes';
 
 // ── Bulk fetching for all teams (fixes N+1 query pattern) ──────────────
@@ -98,8 +99,10 @@ export const fetchAllTeamsCareerData = async (
     // All teams with division weights
     supabase.from('teams').select('id, divisions(division_weight)').in('id', teamIds),
     // All team_season_stats (includes power_score for power score calculation)
-    supabase.from('team_season_stats').select(
-      `
+    supabase
+      .from('team_season_stats')
+      .select(
+        `
         team_id,
         match_wins,
         match_losses,
@@ -114,7 +117,8 @@ export const fetchAllTeamsCareerData = async (
         power_score,
         seasons!inner(name)
       `
-    ).in('team_id', teamIds),
+      )
+      .in('team_id', teamIds),
     // All completed matches with team division info
     supabase
       .from('matches')
@@ -148,7 +152,10 @@ export const fetchAllTeamsCareerData = async (
       )
       .eq('iscompleted', true),
     // All team details archive (already unfiltered in single-team version)
-    supabase.from('team_details_archive').select('team_id, season_id, divisionname').in('team_id', teamIds),
+    supabase
+      .from('team_details_archive')
+      .select('team_id, season_id, divisionname')
+      .in('team_id', teamIds),
     // All completed playoff matches
     supabase
       .from('playoff_matches')

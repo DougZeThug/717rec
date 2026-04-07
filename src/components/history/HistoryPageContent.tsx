@@ -34,7 +34,9 @@ const HistoryPageContent: React.FC = () => {
             <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">Failed to load season history</h3>
             <p className="text-muted-foreground">
-              {error instanceof Error ? error.message : 'An unexpected error occurred. Please try again later.'}
+              {error instanceof Error
+                ? error.message
+                : 'An unexpected error occurred. Please try again later.'}
             </p>
           </div>
         </CardContent>

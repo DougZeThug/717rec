@@ -102,10 +102,18 @@ export class BracketUpdateService {
             const nextRound = roundsArray.find((r) => r.number === currentRound.number + 1);
             if (nextRound) {
               // Count matches in current vs next round to determine mapping ratio
-              const currentRoundMatches = await this.storage.select('match', { round_id: currentRound.id });
-              const currentRoundMatchCount = (Array.isArray(currentRoundMatches) ? currentRoundMatches : [currentRoundMatches]).length;
-              const nextRoundMatches = await this.storage.select('match', { round_id: nextRound.id });
-              const nextRoundMatchCount = (Array.isArray(nextRoundMatches) ? nextRoundMatches : [nextRoundMatches]).length;
+              const currentRoundMatches = await this.storage.select('match', {
+                round_id: currentRound.id,
+              });
+              const currentRoundMatchCount = (
+                Array.isArray(currentRoundMatches) ? currentRoundMatches : [currentRoundMatches]
+              ).length;
+              const nextRoundMatches = await this.storage.select('match', {
+                round_id: nextRound.id,
+              });
+              const nextRoundMatchCount = (
+                Array.isArray(nextRoundMatches) ? nextRoundMatches : [nextRoundMatches]
+              ).length;
 
               // 1:1 mapping (same count) vs 2:1 mapping (halving)
               const isOneToOne = nextRoundMatchCount === currentRoundMatchCount;
@@ -113,7 +121,9 @@ export class BracketUpdateService {
                 ? currentMatch.number
                 : Math.ceil(currentMatch.number / 2);
 
-              bracketLog(`📍 Propagating winner ${winnerId} → Round ${nextRound.number}, Match ${nextMatchNumber} (${isOneToOne ? '1:1' : '2:1'} mapping)`);
+              bracketLog(
+                `📍 Propagating winner ${winnerId} → Round ${nextRound.number}, Match ${nextMatchNumber} (${isOneToOne ? '1:1' : '2:1'} mapping)`
+              );
 
               const { data: nextMatches } = await supabase
                 .from('match')
@@ -126,7 +136,9 @@ export class BracketUpdateService {
 
                 // Already placed — skip
                 if (nextMatch.opponent1_id === winnerId || nextMatch.opponent2_id === winnerId) {
-                  bracketLog(`✅ Winner ${winnerId} already in next match ${nextMatch.id} — skipping`);
+                  bracketLog(
+                    `✅ Winner ${winnerId} already in next match ${nextMatch.id} — skipping`
+                  );
                 } else {
                   // Find an empty slot — NEVER overwrite an existing participant
                   let targetSlot: 'opponent1' | 'opponent2' | null = null;
@@ -137,7 +149,9 @@ export class BracketUpdateService {
                   }
 
                   if (!targetSlot) {
-                    bracketLog(`⚠️ Both slots occupied in next match ${nextMatch.id} — skipping to prevent overwrite`);
+                    bracketLog(
+                      `⚠️ Both slots occupied in next match ${nextMatch.id} — skipping to prevent overwrite`
+                    );
                   } else {
                     const updateFields: Record<string, unknown> = {};
                     if (targetSlot === 'opponent1') {
@@ -146,25 +160,27 @@ export class BracketUpdateService {
                       updateFields.opponent2_id = winnerId;
                     }
 
-                    const otherSlotFilled = targetSlot === 'opponent1'
-                      ? !!nextMatch.opponent2_id
-                      : !!nextMatch.opponent1_id;
+                    const otherSlotFilled =
+                      targetSlot === 'opponent1'
+                        ? !!nextMatch.opponent2_id
+                        : !!nextMatch.opponent1_id;
 
                     if (nextMatch.status <= 1) {
                       updateFields.status = otherSlotFilled ? 2 : nextMatch.status;
                     }
 
-                    await supabase
-                      .from('match')
-                      .update(updateFields)
-                      .eq('id', nextMatch.id);
+                    await supabase.from('match').update(updateFields).eq('id', nextMatch.id);
 
-                    bracketLog(`✅ Winner ${winnerId} placed in ${targetSlot} of match ${nextMatch.id}`);
+                    bracketLog(
+                      `✅ Winner ${winnerId} placed in ${targetSlot} of match ${nextMatch.id}`
+                    );
                   }
                 }
               }
             } else {
-              bracketLog(`No next round found after round ${currentRound.number} — may be final match`);
+              bracketLog(
+                `No next round found after round ${currentRound.number} — may be final match`
+              );
             }
           }
 
@@ -202,8 +218,13 @@ export class BracketUpdateService {
             bracketLog(`manager.update.match() COMPLETED for Match ${matchId}`);
           } catch (propagationError) {
             const errorMessage =
-              propagationError instanceof Error ? propagationError.message : String(propagationError);
-            if (errorMessage.includes('Match not found') || errorMessage.includes('Position is undefined')) {
+              propagationError instanceof Error
+                ? propagationError.message
+                : String(propagationError);
+            if (
+              errorMessage.includes('Match not found') ||
+              errorMessage.includes('Position is undefined')
+            ) {
               bracketLog(`⚠️ Non-fatal propagation error for Match ${matchId}: ${errorMessage}`);
               bracketLog(`Match data was saved successfully. Continuing to normalization steps...`);
             } else {

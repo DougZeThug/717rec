@@ -2,8 +2,8 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import React, { useMemo } from 'react';
 
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useAllTeamBadges } from '@/hooks/useTeamBadges';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
+import { useAllTeamBadges } from '@/hooks/useTeamBadges';
 import { cn } from '@/lib/utils';
 import { Ranking } from '@/types';
 import { debugLog } from '@/utils/logger';

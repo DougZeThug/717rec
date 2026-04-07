@@ -2,7 +2,6 @@ import { motion } from 'framer-motion';
 import { BarChart3, Clock, Swords, TrendingUp } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-
 import { cn } from '@/lib/utils';
 
 interface Section {
@@ -25,7 +24,12 @@ const sections: Section[] = [
     icon: BarChart3,
     ariaLabel: 'Navigate to stats and report card section',
   },
-  { id: 'h2h', label: 'Matchups', icon: Swords, ariaLabel: 'Navigate to matchups and rivalries section' },
+  {
+    id: 'h2h',
+    label: 'Matchups',
+    icon: Swords,
+    ariaLabel: 'Navigate to matchups and rivalries section',
+  },
   { id: 'matches', label: 'Matches', icon: Clock, ariaLabel: 'Navigate to match history section' },
   {
     id: 'career',

@@ -9,28 +9,25 @@
  * - MatchScheduleAdminService: schedule & admin views
  */
 
+export type { SeasonOpponentData } from './MatchHistoryService';
+export {
+  checkTeamsEverPlayed,
+  countTeamMatchesInSeason,
+  fetchActiveSeasonIdStrict,
+  fetchMatchPairsInSeason,
+  fetchSeasonOpponentHistory,
+  haveTeamsPlayedBefore,
+} from './MatchHistoryService';
+export type { MatchFilters } from './MatchQueryService';
 export {
   fetchMatchesWithTeams,
-  fetchPendingMatches,
-  fetchUncompletedMatches,
-  fetchPendingScoresMatches,
-  fetchMatchTimeslots,
-  fetchScoreSubmissions,
   fetchMatchForTie,
   fetchMatchTeamIds,
+  fetchMatchTimeslots,
+  fetchPendingMatches,
+  fetchPendingScoresMatches,
+  fetchScoreSubmissions,
+  fetchUncompletedMatches,
 } from './MatchQueryService';
-export type { MatchFilters } from './MatchQueryService';
-
-export { fetchTeamMatchesData, fetchTeamsByIds, fetchTeamsMap } from './MatchTeamLookupService';
-
-export {
-  fetchActiveSeasonIdStrict,
-  countTeamMatchesInSeason,
-  fetchMatchPairsInSeason,
-  checkTeamsEverPlayed,
-  haveTeamsPlayedBefore,
-  fetchSeasonOpponentHistory,
-} from './MatchHistoryService';
-export type { SeasonOpponentData } from './MatchHistoryService';
-
 export { fetchMatchesForAdmin, fetchScheduleMatches } from './MatchScheduleAdminService';
+export { fetchTeamMatchesData, fetchTeamsByIds, fetchTeamsMap } from './MatchTeamLookupService';

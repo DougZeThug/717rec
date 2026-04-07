@@ -1,9 +1,9 @@
 import { format } from 'date-fns';
 
 import { supabase } from '@/integrations/supabase/client';
+import { ValidationError } from '@/types/errors';
 import { TeamTimeslot } from '@/types/timeslots';
 import { getBackToBackPairName, getPairConfig } from '@/utils/autoSchedule/constants';
-import { ValidationError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { scheduleLog, warnLog } from '@/utils/logger';
 
@@ -62,7 +62,9 @@ export class TimeslotBatchService {
     const { data, error } = await supabase
       .from('team_timeslots')
       .insert(allTimeslotData)
-      .select('id, match_date, timeslot, team_id, created_at, is_back_to_back, is_double_header, pair_slot, match_sequence, teams:team_id(id, name, logo_url, image_url)');
+      .select(
+        'id, match_date, timeslot, team_id, created_at, is_back_to_back, is_double_header, pair_slot, match_sequence, teams:team_id(id, name, logo_url, image_url)'
+      );
 
     if (error) handleDatabaseError(error, 'Failed to batch assign back-to-back timeslots');
     return TimeslotTransformer.formatTimeslotResponse(data ?? []);
@@ -80,7 +82,8 @@ export class TimeslotBatchService {
     warnLog('batchAssignTimeslots is deprecated. Converting to back-to-back batch assignment.');
 
     const pairName = getBackToBackPairName(timeslot);
-    if (!pairName) throw new ValidationError(`Cannot determine back-to-back pair for timeslot: ${timeslot}`);
+    if (!pairName)
+      throw new ValidationError(`Cannot determine back-to-back pair for timeslot: ${timeslot}`);
 
     return TimeslotBatchService.batchAssignBackToBackTimeslots(date, teamIds, pairName);
   }
@@ -92,7 +95,9 @@ export class TimeslotBatchService {
     const { data, error } = await supabase
       .from('team_timeslots')
       .insert({ match_date, team_id, timeslot })
-      .select('id, match_date, timeslot, team_id, created_at, is_back_to_back, is_double_header, pair_slot, match_sequence, teams:team_id(id, name, logo_url, image_url)')
+      .select(
+        'id, match_date, timeslot, team_id, created_at, is_back_to_back, is_double_header, pair_slot, match_sequence, teams:team_id(id, name, logo_url, image_url)'
+      )
       .single();
 
     if (error) handleDatabaseError(error, 'Failed to insert timeslot');
@@ -117,7 +122,9 @@ export class TimeslotBatchService {
     const { data, error } = await supabase
       .from('team_timeslots')
       .insert(insertData)
-      .select('id, match_date, timeslot, team_id, created_at, is_back_to_back, is_double_header, pair_slot, match_sequence, teams:team_id(id, name, logo_url, image_url)');
+      .select(
+        'id, match_date, timeslot, team_id, created_at, is_back_to_back, is_double_header, pair_slot, match_sequence, teams:team_id(id, name, logo_url, image_url)'
+      );
 
     if (error) handleDatabaseError(error, 'Failed to batch insert timeslots');
     return data ?? [];

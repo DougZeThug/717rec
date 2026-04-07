@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
-import { handleDatabaseError } from '@/utils/errorHandler';
 import type { TeamRequest, TeamRequestStatus, TeamRequestWithTeam } from '@/types/teamRequest';
+import { handleDatabaseError } from '@/utils/errorHandler';
 
 // ─── fetchPendingRequestsCount ────────────────────────────────────────────────
 

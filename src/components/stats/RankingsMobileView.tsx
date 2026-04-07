@@ -5,8 +5,8 @@ import { useInView } from 'react-intersection-observer';
 
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { useAllTeamBadges } from '@/hooks/useTeamBadges';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
+import { useAllTeamBadges } from '@/hooks/useTeamBadges';
 import { cn } from '@/lib/utils';
 import { Ranking } from '@/types';
 import { TeamBadgeEvent } from '@/types/badges';
@@ -168,9 +168,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
 
       {/* Controls row: ViewToggle + Compact/Detailed toggle */}
       <div className="mb-2 flex items-center justify-between gap-2">
-        {onViewChange && (
-          <ViewToggle view={view} onViewChange={onViewChange} />
-        )}
+        {onViewChange && <ViewToggle view={view} onViewChange={onViewChange} />}
         <ToggleGroup
           type="single"
           value={detailedView ? 'detailed' : 'compact'}

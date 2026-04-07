@@ -133,18 +133,14 @@ describe('constraints', () => {
     ];
 
     it('counts opponents excluding self and excludeId', () => {
-      const count = countValidOpponents(
-        teams[0], teams, '2', new Set(), new Set(), 1, 0
-      );
+      const count = countValidOpponents(teams[0], teams, '2', new Set(), new Set(), 1, 0);
       // team 1 can play team 3 (tier gap 1), cannot play team 4 (tier gap 2)
       // team 2 is excluded
       expect(count).toBe(1);
     });
 
     it('counts all valid opponents when no exclusions conflict', () => {
-      const count = countValidOpponents(
-        teams[0], teams, 'nobody', new Set(), new Set(), 1, 0
-      );
+      const count = countValidOpponents(teams[0], teams, 'nobody', new Set(), new Set(), 1, 0);
       // team 2 (same tier), team 3 (gap 1) = 2. team 4 (gap 2) blocked
       expect(count).toBe(2);
     });

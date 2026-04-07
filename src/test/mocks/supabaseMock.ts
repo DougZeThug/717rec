@@ -17,7 +17,13 @@ import { vi } from 'vitest';
 
 interface MockResult<T = unknown> {
   data: T | null;
-  error: { message: string; code?: string; details?: string | null; hint?: string | null; name?: string } | null;
+  error: {
+    message: string;
+    code?: string;
+    details?: string | null;
+    hint?: string | null;
+    name?: string;
+  } | null;
 }
 
 type ChainMethod =
@@ -109,11 +115,29 @@ export function createSupabaseMock(): SupabaseMock {
   const spies: Record<string, ReturnType<typeof vi.fn>> = {};
 
   const CHAIN_METHODS: ChainMethod[] = [
-    'select', 'insert', 'update', 'delete',
-    'eq', 'neq', 'in', 'gte', 'gt', 'lt', 'lte',
-    'order', 'single', 'maybeSingle', 'match',
-    'limit', 'range', 'is', 'not', 'contains',
-    'or', 'filter', 'textSearch',
+    'select',
+    'insert',
+    'update',
+    'delete',
+    'eq',
+    'neq',
+    'in',
+    'gte',
+    'gt',
+    'lt',
+    'lte',
+    'order',
+    'single',
+    'maybeSingle',
+    'match',
+    'limit',
+    'range',
+    'is',
+    'not',
+    'contains',
+    'or',
+    'filter',
+    'textSearch',
   ];
 
   for (const method of CHAIN_METHODS) {
@@ -122,7 +146,8 @@ export function createSupabaseMock(): SupabaseMock {
 
   /** Build a thenable chain object that resolves to `result`. */
   function makeRuntimeChain(tableName: string): Record<string, unknown> & PromiseLike<MockResult> {
-    const getResult = (): MockResult => pendingResults.get(tableName) ?? { data: null, error: null };
+    const getResult = (): MockResult =>
+      pendingResults.get(tableName) ?? { data: null, error: null };
 
     const chain: Record<string, unknown> = {};
 

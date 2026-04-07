@@ -139,18 +139,24 @@ export default function Timeslots() {
       {/* Mobile: stacked vertical layout without card wrappers */}
       <div className="block md:hidden space-y-4">
         <div>
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Select Date</h2>
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+            Select Date
+          </h2>
           <Calendar
             mode="single"
             selected={selectedDate}
             onSelect={handleDateSelect}
             className="rounded-md border"
           />
-          <p className="text-sm font-medium text-center mt-2">{format(selectedDate, 'EEEE, MMMM d, yyyy')}</p>
+          <p className="text-sm font-medium text-center mt-2">
+            {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+          </p>
         </div>
 
         <div>
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Assign Timeslot</h2>
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+            Assign Timeslot
+          </h2>
           {isLoadingTeams ? (
             <LoadingState variant="section" message="Loading teams..." />
           ) : (

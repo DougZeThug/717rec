@@ -19,7 +19,12 @@ interface TeamCardProps {
   prefetchedBadges?: import('@/types/badges').TeamBadgeEvent[];
 }
 
-const TeamCard: React.FC<TeamCardProps> = ({ team, delay = 0, isWinter = false, prefetchedBadges }) => {
+const TeamCard: React.FC<TeamCardProps> = ({
+  team,
+  delay = 0,
+  isWinter = false,
+  prefetchedBadges,
+}) => {
   const { theme: _theme } = useTheme();
   const delayClass = delay ? `animation-delay-${delay * 100}` : '';
 
@@ -69,7 +74,13 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, delay = 0, isWinter = false, 
           <TeamLogo imageUrl={team.imageUrl} teamName={team.name} />
 
           <div className="absolute top-2 right-2">
-            <TeamBadgeCollection teamId={team.id} size="sm" maxDisplay={3} orientation="vertical" prefetchedBadges={prefetchedBadges} />
+            <TeamBadgeCollection
+              teamId={team.id}
+              size="sm"
+              maxDisplay={3}
+              orientation="vertical"
+              prefetchedBadges={prefetchedBadges}
+            />
           </div>
         </div>
         <div

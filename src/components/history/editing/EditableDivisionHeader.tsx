@@ -47,7 +47,10 @@ export const EditableDivisionHeader: React.FC<EditableDivisionHeaderProps> = ({
       return;
     }
 
-    if (trimmedValue !== divisionName && existingDivisions.some(d => d.toLowerCase() === trimmedValue.toLowerCase())) {
+    if (
+      trimmedValue !== divisionName &&
+      existingDivisions.some((d) => d.toLowerCase() === trimmedValue.toLowerCase())
+    ) {
       setError('A division with this name already exists');
       return;
     }

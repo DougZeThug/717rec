@@ -16,9 +16,7 @@ export interface CareerSortOptions {
   direction: CareerSortDirection;
 }
 
-const CareerRankingsTable: React.FC<CareerRankingsTableProps> = ({
-  rankings,
-}) => {
+const CareerRankingsTable: React.FC<CareerRankingsTableProps> = ({ rankings }) => {
   const isMobile = useIsMobile();
   const [sortOptions, setSortOptions] = useState<CareerSortOptions>({
     field: 'careerPowerScore',

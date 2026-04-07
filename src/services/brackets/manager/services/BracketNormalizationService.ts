@@ -330,7 +330,9 @@ export class BracketNormalizationService {
 
         // Count matches in current vs next round for correct mapping
         const nextRoundMatches = await this.storage.select('match', { round_id: nextRound.id });
-        const nextRoundMatchCount = (Array.isArray(nextRoundMatches) ? nextRoundMatches : [nextRoundMatches]).length;
+        const nextRoundMatchCount = (
+          Array.isArray(nextRoundMatches) ? nextRoundMatches : [nextRoundMatches]
+        ).length;
         const isOneToOne = nextRoundMatchCount === matchesArray.length;
 
         for (const match of matchesArray) {
@@ -346,9 +348,7 @@ export class BracketNormalizationService {
           if (!winnerId) continue;
 
           // Use correct mapping based on round sizes
-          const nextMatchNumber = isOneToOne
-            ? match.number
-            : Math.ceil(match.number / 2);
+          const nextMatchNumber = isOneToOne ? match.number : Math.ceil(match.number / 2);
 
           const { data: nextMatches } = await supabase
             .from('match')
@@ -372,11 +372,15 @@ export class BracketNormalizationService {
           }
 
           if (!targetSlot) {
-            bracketLog(`⚠️ [PROPAGATE] Both slots occupied in match ${nextMatch.id} — skipping winner ${winnerId}`);
+            bracketLog(
+              `⚠️ [PROPAGATE] Both slots occupied in match ${nextMatch.id} — skipping winner ${winnerId}`
+            );
             continue;
           }
 
-          bracketLog(`🔧 [PROPAGATE] Winner ${winnerId} → Round ${nextRound.number} Match ${nextMatchNumber} ${targetSlot}`);
+          bracketLog(
+            `🔧 [PROPAGATE] Winner ${winnerId} → Round ${nextRound.number} Match ${nextMatchNumber} ${targetSlot}`
+          );
 
           const updateFields: Record<string, unknown> = {};
           if (targetSlot === 'opponent1') {
@@ -386,7 +390,8 @@ export class BracketNormalizationService {
           }
 
           // Unlock if needed
-          const otherSlotFilled = targetSlot === 'opponent1' ? !!nextMatch.opponent2_id : !!nextMatch.opponent1_id;
+          const otherSlotFilled =
+            targetSlot === 'opponent1' ? !!nextMatch.opponent2_id : !!nextMatch.opponent1_id;
           if (nextMatch.status <= 1 && otherSlotFilled) {
             updateFields.status = 2; // Ready
           }

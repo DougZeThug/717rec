@@ -83,9 +83,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
       cn(
         'text-2xl font-black tracking-wide tabular-nums transition-all duration-500',
         scoreAnimation && 'animate-scale-in',
-        isWinner
-          ? 'text-emerald-600 dark:text-emerald-400'
-          : 'text-muted-foreground'
+        isWinner ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'
       ),
     [scoreAnimation]
   );
@@ -94,9 +92,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
     (isWinner: boolean) =>
       cn(
         'text-xs font-medium truncate max-w-[120px] text-center',
-        isWinner
-          ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
-          : 'text-foreground'
+        isWinner ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-foreground'
       ),
     []
   );
@@ -114,12 +110,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
             : 'bg-gradient-to-br from-primary/30 via-transparent to-accent/20'
         )}
       >
-        <div
-          className={cn(
-            'rounded-xl overflow-hidden',
-            isLight ? 'bg-card' : 'bg-card'
-          )}
-        >
+        <div className={cn('rounded-xl overflow-hidden', isLight ? 'bg-card' : 'bg-card')}>
           {/* Status badge - centered top */}
           {(isCompleted || hasSpecialStatus) && (
             <div className="flex items-center justify-center gap-2 pt-1.5">
@@ -164,9 +155,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
                   to={`/teams/${toTeamSlug(team1Name)}`}
                   className="flex flex-col items-center gap-0.5 min-w-0"
                 >
-                  <span className={getTeamNameStyle(team1IsWinner)}>
-                    {team1Name}
-                  </span>
+                  <span className={getTeamNameStyle(team1IsWinner)}>{team1Name}</span>
                 </TransitionLink>
               </div>
 
@@ -180,11 +169,11 @@ const MatchCard: React.FC<MatchCardProps> = ({
                   )}
                 >
                   <span className={getScoreStyle(team1IsWinner)}>
-                    {isCompleted ? (match.team1_game_wins || 0) : (match.team1Score || 0)}
+                    {isCompleted ? match.team1_game_wins || 0 : match.team1Score || 0}
                   </span>
                   <span className="text-lg font-bold text-muted-foreground/60">–</span>
                   <span className={getScoreStyle(team2IsWinner)}>
-                    {isCompleted ? (match.team2_game_wins || 0) : (match.team2Score || 0)}
+                    {isCompleted ? match.team2_game_wins || 0 : match.team2Score || 0}
                   </span>
                 </div>
               </div>
@@ -206,9 +195,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
                   to={`/teams/${toTeamSlug(team2Name)}`}
                   className="flex flex-col items-center gap-0.5 min-w-0"
                 >
-                  <span className={getTeamNameStyle(team2IsWinner)}>
-                    {team2Name}
-                  </span>
+                  <span className={getTeamNameStyle(team2IsWinner)}>{team2Name}</span>
                 </TransitionLink>
               </div>
             </div>
@@ -265,7 +252,9 @@ const MatchCard: React.FC<MatchCardProps> = ({
                           ? 'bg-destructive/10 hover:bg-destructive/20'
                           : 'bg-muted hover:bg-destructive/10'
                       )}
-                      aria-label={isCompleted ? 'Permanently delete completed match' : 'Delete match'}
+                      aria-label={
+                        isCompleted ? 'Permanently delete completed match' : 'Delete match'
+                      }
                     >
                       <Trash2
                         className={cn(

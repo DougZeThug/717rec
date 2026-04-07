@@ -173,7 +173,8 @@ export const useMatchUpdate = ({
           if (!statsSuccess) {
             toast({
               title: 'Partial Failure',
-              description: 'Match was updated but team records failed to save. Please retry or contact an admin.',
+              description:
+                'Match was updated but team records failed to save. Please retry or contact an admin.',
               variant: 'destructive',
             });
             return false;

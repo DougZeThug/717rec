@@ -7,8 +7,13 @@ export const useUpdateTeam = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: ({ teamId, teamData }: { teamId: string; teamData: Omit<Team, 'id' | 'created_at'> }) =>
-      updateTeamApi(teamId, teamData),
+    mutationFn: ({
+      teamId,
+      teamData,
+    }: {
+      teamId: string;
+      teamData: Omit<Team, 'id' | 'created_at'>;
+    }) => updateTeamApi(teamId, teamData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
     },

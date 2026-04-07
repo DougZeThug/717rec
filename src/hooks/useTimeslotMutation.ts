@@ -192,7 +192,10 @@ export const useTimeslotMutation = () => {
     }
   };
 
-  const batchAssignByeWeeks = async (date: Date, teamIds: string[]): Promise<TeamTimeslot[] | null> => {
+  const batchAssignByeWeeks = async (
+    date: Date,
+    teamIds: string[]
+  ): Promise<TeamTimeslot[] | null> => {
     setIsSubmitting(true);
     try {
       const data = await ByeWeekService.batchAssignByeWeeks(date, teamIds);

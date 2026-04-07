@@ -103,4 +103,3 @@ export function calculateGPA(grades: { grade: LetterGrade; weight: number }[]): 
   const weightedTotal = grades.reduce((sum, g) => sum + GRADE_GPA[g.grade] * g.weight, 0);
   return Math.round((weightedTotal / totalWeight) * 100) / 100;
 }
-

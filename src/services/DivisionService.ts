@@ -16,7 +16,9 @@ export const DivisionService = {
    * Fetch division weights as a Map<divisionId, weight>.
    * Used by the division weights cache.
    */
-  fetchDivisionWeightsMap: async (): Promise<{ id: string; division_weight: number | null; name: string }[]> => {
+  fetchDivisionWeightsMap: async (): Promise<
+    { id: string; division_weight: number | null; name: string }[]
+  > => {
     const { data, error } = await supabase
       .from('divisions')
       .select('id, name, division_weight')

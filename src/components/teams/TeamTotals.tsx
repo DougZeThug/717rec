@@ -71,9 +71,7 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
     const emptyContent = (
       <div className="text-center py-8">
         <BarChart className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
-        <p className="text-sm font-medium text-muted-foreground">
-          No career statistics available
-        </p>
+        <p className="text-sm font-medium text-muted-foreground">No career statistics available</p>
         <p className="text-xs text-muted-foreground/70 mt-1">
           Stats will appear after playing matches
         </p>

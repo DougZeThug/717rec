@@ -116,7 +116,8 @@ export const fetchPendingMembershipsForAdmin = async (): Promise<TeamMembershipF
     .eq('is_approved', false)
     .order('joined_at', { ascending: false });
 
-  if (membershipsError) handleDatabaseError(membershipsError, 'Failed to fetch pending memberships');
+  if (membershipsError)
+    handleDatabaseError(membershipsError, 'Failed to fetch pending memberships');
   if (!memberships || memberships.length === 0) {
     return [];
   }
@@ -131,7 +132,8 @@ export const fetchPendingMembershipsForAdmin = async (): Promise<TeamMembershipF
     supabase.from('teams').select('id, name, logo_url, image_url').in('id', teamIds),
   ]);
 
-  if (profilesResult.error) handleDatabaseError(profilesResult.error, 'Failed to fetch member profiles');
+  if (profilesResult.error)
+    handleDatabaseError(profilesResult.error, 'Failed to fetch member profiles');
   if (teamsResult.error) handleDatabaseError(teamsResult.error, 'Failed to fetch member teams');
 
   // Create lookup maps

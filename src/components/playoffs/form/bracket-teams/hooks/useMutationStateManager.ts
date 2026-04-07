@@ -55,7 +55,8 @@ export const useMutationStateManager = (config: MutationStateManagerConfig = {})
   const [autoSaveTimeout, setAutoSaveTimeout] = useState<NodeJS.Timeout | null>(null);
 
   // Derive hasUnsavedChanges and isSaving from existing state
-  const hasUnsavedChanges = optimisticMutations.state.pendingUpdates.size > 0 || mutationState.pendingChanges.size > 0;
+  const hasUnsavedChanges =
+    optimisticMutations.state.pendingUpdates.size > 0 || mutationState.pendingChanges.size > 0;
   const isSaving = optimisticMutations.isLoading;
 
   // Auto-save functionality

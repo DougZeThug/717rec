@@ -20,11 +20,7 @@ const CareerRankingsSection: React.FC = () => {
   const { resolvedTheme } = useTheme();
   const { isWinterTheme } = useSeasonalThemeBase();
   const isLight = !isWinterTheme && resolvedTheme === 'light';
-  const {
-    data: careerRankings,
-    isLoading,
-    error,
-  } = useCareerRankingsWithHidden();
+  const { data: careerRankings, isLoading, error } = useCareerRankingsWithHidden();
   const [isOpen, setIsOpen] = React.useState(false);
 
   if (error) {

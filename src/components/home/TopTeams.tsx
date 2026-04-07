@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { SectionHeader } from '@/components/ui/CollapsibleSection';
 import { EmptyState } from '@/components/ui/empty-state';
-import { useAllTeamBadges } from '@/hooks/useTeamBadges';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
+import { useAllTeamBadges } from '@/hooks/useTeamBadges';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
 import { Team } from '@/types';
@@ -126,7 +126,13 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
       {/* Desktop: Grid Layout (show top 4) */}
       <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {topTenTeams.slice(0, 4).map((team, index) => (
-          <TeamCard key={team.id} team={team} delay={index * 0.1} isWinter={shouldApplyWinter} prefetchedBadges={badgesByTeam.get(team.id) || []} />
+          <TeamCard
+            key={team.id}
+            team={team}
+            delay={index * 0.1}
+            isWinter={shouldApplyWinter}
+            prefetchedBadges={badgesByTeam.get(team.id) || []}
+          />
         ))}
       </div>
     </section>

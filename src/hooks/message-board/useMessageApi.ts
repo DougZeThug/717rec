@@ -1,12 +1,11 @@
 import { useCallback, useRef } from 'react';
 
-import { errorLog } from '@/utils/logger';
-
 import { useAuth } from '@/contexts/AuthContext';
 import { useTeamMembership } from '@/hooks/useTeamMembership';
 import { toast } from '@/hooks/useToast';
 import { MessageService } from '@/services/messages/MessageService';
 import { Message, MessageCategory } from '@/types/reactions';
+import { errorLog } from '@/utils/logger';
 
 import { MessageQueryOptions } from './types';
 

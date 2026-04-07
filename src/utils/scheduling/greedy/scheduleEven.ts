@@ -1,9 +1,10 @@
 import { Team } from '@/types';
 import { scheduleLog, warnLog } from '@/utils/logger';
+
+import { pairKey } from './pairKey';
 import { rematchRepairPass } from './rematchRepair';
 import { generateSlotPairings } from './slotPairing';
 import { attemptRepairPass, tryCrossSlotSwap } from './swapRepair';
-import { pairKey } from './pairKey';
 import { GreedySchedulerResult, RelaxationLevel, ScheduledMatch } from './types';
 
 export interface EvenScheduleArgs {
@@ -209,9 +210,7 @@ export function scheduleEven(args: EvenScheduleArgs): {
     const unmatchedInS2 = sortedTeams.filter((t) => !s2TeamIds.has(t.id));
 
     if (unmatchedInS1.length >= 2) {
-      scheduleLog(
-        `Attempting repair pass for ${unmatchedInS1.length} unmatched teams in ${slot1}`
-      );
+      scheduleLog(`Attempting repair pass for ${unmatchedInS1.length} unmatched teams in ${slot1}`);
       const repairS1 = attemptRepairPass(
         unmatchedInS1,
         sortedTeams,
@@ -227,9 +226,7 @@ export function scheduleEven(args: EvenScheduleArgs): {
     }
 
     if (unmatchedInS2.length >= 2) {
-      scheduleLog(
-        `Attempting repair pass for ${unmatchedInS2.length} unmatched teams in ${slot2}`
-      );
+      scheduleLog(`Attempting repair pass for ${unmatchedInS2.length} unmatched teams in ${slot2}`);
       const repairS2 = attemptRepairPass(
         unmatchedInS2,
         sortedTeams,

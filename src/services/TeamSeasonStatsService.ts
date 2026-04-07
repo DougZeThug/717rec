@@ -5,9 +5,9 @@ import {
 import { processSeasonMatches } from '@/hooks/teams/seasonBreakdown/processSeasonMatches';
 import { DivisionRelation, SeasonRelation } from '@/hooks/teams/seasonBreakdown/types';
 import { supabase } from '@/integrations/supabase/client';
+import { NotFoundError } from '@/types/errors';
 import { TeamAdvancedStats } from '@/types/teamAdvancedStats';
 import { SeasonBreakdown } from '@/types/teamAdvancedStats';
-import { NotFoundError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { dbLog, errorLog } from '@/utils/logger';
 
@@ -357,7 +357,10 @@ export const batchUpdateSeasonStats = async (updates: TeamUpdate[]): Promise<voi
         .select('team_id');
 
       if (archiveError) {
-        handleDatabaseError(archiveError, `Failed to update team_details_archive for ${update.team_id}`);
+        handleDatabaseError(
+          archiveError,
+          `Failed to update team_details_archive for ${update.team_id}`
+        );
       }
 
       if (!archiveData || archiveData.length === 0) {

@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { TeamLogo } from '@/components/ui/team/TeamLogo';
 import {
   Select,
   SelectContent,
@@ -14,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { TeamLogo } from '@/components/ui/team/TeamLogo';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Team } from '@/types';
 import { TeamTimeslot } from '@/types';
@@ -215,7 +215,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 {availableTeams.map((team) => {
                   const isSelected = selectedTeamIds.includes(team.id);
-                    return (
+                  return (
                     <div
                       key={team.id}
                       role="button"
@@ -228,9 +228,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
                         }
                       }}
                       className={`flex items-center gap-2 p-2 rounded-lg border transition-colors text-left cursor-pointer ${
-                        isSelected
-                          ? 'border-primary bg-primary/10'
-                          : 'border-border hover:bg-muted'
+                        isSelected ? 'border-primary bg-primary/10' : 'border-border hover:bg-muted'
                       }`}
                     >
                       <TeamLogo
@@ -239,11 +237,13 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
                         size="sm"
                       />
                       <span className="text-xs font-medium truncate flex-1">{team.name}</span>
-                      <div className={`h-4 w-4 shrink-0 rounded-sm border flex items-center justify-center ${
-                        isSelected
-                          ? 'border-primary bg-primary text-primary-foreground'
-                          : 'border-primary'
-                      }`}>
+                      <div
+                        className={`h-4 w-4 shrink-0 rounded-sm border flex items-center justify-center ${
+                          isSelected
+                            ? 'border-primary bg-primary text-primary-foreground'
+                            : 'border-primary'
+                        }`}
+                      >
                         {isSelected && <Check className="h-3 w-3" />}
                       </div>
                     </div>

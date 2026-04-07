@@ -47,8 +47,7 @@ export class BadgeProcessingService {
   ): Promise<any> {
     // Check if this was a 2-1 victory
     const isClutchWin =
-      (team1GameWins === 2 && team2GameWins === 1) ||
-      (team1GameWins === 1 && team2GameWins === 2);
+      (team1GameWins === 2 && team2GameWins === 1) || (team1GameWins === 1 && team2GameWins === 2);
 
     if (!isClutchWin) {
       badgeLog('Not a 2-1 match, skipping clutch performer');

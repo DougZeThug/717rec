@@ -1,5 +1,6 @@
 import { Team } from '@/types';
 import { scheduleLog, warnLog } from '@/utils/logger';
+
 import { canPlay, getTier } from './constraints';
 import { findBestOpponent } from './opponentSelection';
 import { pairKey } from './pairKey';
@@ -13,7 +14,7 @@ import { RelaxationLevel, ScheduledMatch } from './types';
  * find an existing match M=(A,B) where we can swap to (U1,A)+(U2,B)
  * or (U1,B)+(U2,A), resolving the stranding without creating new conflicts.
  */
-// eslint-disable-next-line complexity -- swap logic is inherently branchy; splitting reduces clarity
+
 function trySwapToFixUnmatched(
   matches: ScheduledMatch[],
   unmatchedTeams: Team[],
@@ -39,7 +40,9 @@ function trySwapToFixUnmatched(
       if (!stillUnmatched.has(unmatchedList[j].id)) continue;
       const u1 = unmatchedList[i];
       const u2 = unmatchedList[j];
-      if (canPlay(u1, u2, playedSet, tonightPairs, maxTierGap, relaxationLevel, rematchAllowedFor)) {
+      if (
+        canPlay(u1, u2, playedSet, tonightPairs, maxTierGap, relaxationLevel, rematchAllowedFor)
+      ) {
         const match: ScheduledMatch = {
           slot: slotName,
           teamAId: u1.id,
@@ -83,8 +86,24 @@ function trySwapToFixUnmatched(
 
         // Option 1: (U1, A) + (U2, B)
         if (
-          canPlay(u1, teamA, playedSet, tonightPairs, maxTierGap, relaxationLevel, rematchAllowedFor) &&
-          canPlay(u2, teamB, playedSet, tonightPairs, maxTierGap, relaxationLevel, rematchAllowedFor)
+          canPlay(
+            u1,
+            teamA,
+            playedSet,
+            tonightPairs,
+            maxTierGap,
+            relaxationLevel,
+            rematchAllowedFor
+          ) &&
+          canPlay(
+            u2,
+            teamB,
+            playedSet,
+            tonightPairs,
+            maxTierGap,
+            relaxationLevel,
+            rematchAllowedFor
+          )
         ) {
           // Remove the old match's tonight pair
           const oldKey = pairKey(teamA.id, teamB.id);
@@ -139,8 +158,24 @@ function trySwapToFixUnmatched(
 
         // Option 2: (U1, B) + (U2, A)
         if (
-          canPlay(u1, teamB, playedSet, tonightPairs, maxTierGap, relaxationLevel, rematchAllowedFor) &&
-          canPlay(u2, teamA, playedSet, tonightPairs, maxTierGap, relaxationLevel, rematchAllowedFor)
+          canPlay(
+            u1,
+            teamB,
+            playedSet,
+            tonightPairs,
+            maxTierGap,
+            relaxationLevel,
+            rematchAllowedFor
+          ) &&
+          canPlay(
+            u2,
+            teamA,
+            playedSet,
+            tonightPairs,
+            maxTierGap,
+            relaxationLevel,
+            rematchAllowedFor
+          )
         ) {
           const oldKey = pairKey(teamA.id, teamB.id);
           tonightPairs.delete(oldKey);

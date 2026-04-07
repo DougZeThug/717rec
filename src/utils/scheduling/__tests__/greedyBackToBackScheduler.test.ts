@@ -554,9 +554,7 @@ describe('greedyBackToBackScheduler', () => {
         slots: ['8:30', '9:00'],
       });
 
-      const rematches = result.matches.filter((m) =>
-        historySet.has(pairKey(m.teamAId, m.teamBId))
-      );
+      const rematches = result.matches.filter((m) => historySet.has(pairKey(m.teamAId, m.teamBId)));
       expect(rematches).toHaveLength(0);
       expect(result.matches).toHaveLength(6);
     });
@@ -656,9 +654,7 @@ describe('greedyBackToBackScheduler', () => {
         thirdSlot: '9:30',
       });
 
-      const rematches = result.matches.filter((m) =>
-        historySet.has(pairKey(m.teamAId, m.teamBId))
-      );
+      const rematches = result.matches.filter((m) => historySet.has(pairKey(m.teamAId, m.teamBId)));
       expect(rematches).toHaveLength(0);
       // Every team should still get 2 matches
       const counts = new Map<string, number>();

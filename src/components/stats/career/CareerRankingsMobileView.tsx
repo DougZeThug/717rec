@@ -152,9 +152,20 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
       <div className="space-y-1.5">
         {rankings.map((ranking, index) =>
           detailedView ? (
-            <CareerDetailedCard key={ranking.teamId} ranking={ranking} rank={index + 1} formatPercentage={formatPercentage} gameWinPercentageColorClass={gameWinPercentageColorClass} />
+            <CareerDetailedCard
+              key={ranking.teamId}
+              ranking={ranking}
+              rank={index + 1}
+              formatPercentage={formatPercentage}
+              gameWinPercentageColorClass={gameWinPercentageColorClass}
+            />
           ) : (
-            <CareerCompactCard key={ranking.teamId} ranking={ranking} rank={index + 1} formatPercentage={formatPercentage} />
+            <CareerCompactCard
+              key={ranking.teamId}
+              ranking={ranking}
+              rank={index + 1}
+              formatPercentage={formatPercentage}
+            />
           )
         )}
       </div>
@@ -194,7 +205,9 @@ const CareerCompactCard: React.FC<{
               {ranking.teamName}
             </h3>
             <p className="text-xs text-muted-foreground tabular-nums">
-              <span className="font-bold">{ranking.careerMatchWins}-{ranking.careerMatchLosses}</span>
+              <span className="font-bold">
+                {ranking.careerMatchWins}-{ranking.careerMatchLosses}
+              </span>
               <span className={cn('ml-1', getWinPercentageColor(ranking.careerWinPercentage))}>
                 ({formatPercentage(ranking.careerWinPercentage)})
               </span>
@@ -217,7 +230,12 @@ const CareerCompactCard: React.FC<{
         {/* Power score - right-aligned */}
         <div className="flex flex-col items-end flex-shrink-0 w-16">
           <span className="text-[10px] text-muted-foreground leading-tight">Power</span>
-          <span className={cn('text-base font-bold tabular-nums leading-tight', getPowerScoreColor(ranking.careerPowerScore))}>
+          <span
+            className={cn(
+              'text-base font-bold tabular-nums leading-tight',
+              getPowerScoreColor(ranking.careerPowerScore)
+            )}
+          >
             {formatPowerScore(ranking.careerPowerScore)}
           </span>
         </div>
@@ -238,9 +256,7 @@ const CareerDetailedCard: React.FC<{
       {/* Top row: Rank + championship trophies */}
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
-          <span className="text-lg font-bold whitespace-nowrap text-foreground">
-            #{rank}
-          </span>
+          <span className="text-lg font-bold whitespace-nowrap text-foreground">#{rank}</span>
         </div>
         {ranking.championships > 0 && (
           <div className="flex items-center gap-1 text-sm">
@@ -248,17 +264,13 @@ const CareerDetailedCard: React.FC<{
               <span key={i}>🏆</span>
             ))}
             {ranking.runnerUps > 0 && (
-              <span className="text-muted-foreground ml-1 text-xs">
-                🥈×{ranking.runnerUps}
-              </span>
+              <span className="text-muted-foreground ml-1 text-xs">🥈×{ranking.runnerUps}</span>
             )}
           </div>
         )}
         {ranking.championships === 0 && ranking.runnerUps > 0 && (
           <div className="text-sm">
-            <span className="text-muted-foreground text-xs">
-              🥈×{ranking.runnerUps}
-            </span>
+            <span className="text-muted-foreground text-xs">🥈×{ranking.runnerUps}</span>
           </div>
         )}
       </div>
@@ -298,13 +310,23 @@ const CareerDetailedCard: React.FC<{
         <div className="grid grid-cols-2 gap-1.5 flex-1 min-w-0">
           <div className="rounded-md bg-muted/50 px-2 py-1.5">
             <p className="text-[10px] text-muted-foreground leading-tight">Win %</p>
-            <p className={cn('text-sm font-bold tabular-nums leading-tight', getWinPercentageColor(ranking.careerWinPercentage))}>
+            <p
+              className={cn(
+                'text-sm font-bold tabular-nums leading-tight',
+                getWinPercentageColor(ranking.careerWinPercentage)
+              )}
+            >
               {formatPercentage(ranking.careerWinPercentage)}
             </p>
           </div>
           <div className="rounded-md bg-muted/50 px-2 py-1.5">
             <p className="text-[10px] text-muted-foreground leading-tight">SOS</p>
-            <p className={cn('text-sm font-bold tabular-nums leading-tight', getSosColor(ranking.careerSos))}>
+            <p
+              className={cn(
+                'text-sm font-bold tabular-nums leading-tight',
+                getSosColor(ranking.careerSos)
+              )}
+            >
               {ranking.careerSos.toFixed(3)}
             </p>
           </div>
@@ -316,7 +338,12 @@ const CareerDetailedCard: React.FC<{
           </div>
           <div className="rounded-md bg-muted/50 px-2 py-1.5">
             <p className="text-[10px] text-muted-foreground leading-tight">Game %</p>
-            <p className={cn('text-sm font-bold tabular-nums leading-tight', gameWinPercentageColorClass(ranking.careerGameWinPercentage))}>
+            <p
+              className={cn(
+                'text-sm font-bold tabular-nums leading-tight',
+                gameWinPercentageColorClass(ranking.careerGameWinPercentage)
+              )}
+            >
               {formatPercentage(ranking.careerGameWinPercentage)}
             </p>
           </div>

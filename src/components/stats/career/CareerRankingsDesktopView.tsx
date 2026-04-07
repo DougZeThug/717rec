@@ -108,10 +108,7 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
         </TableHeader>
         <TableBody>
           {rankings.map((ranking, index) => (
-            <TableRow
-              key={ranking.teamId}
-              className="hover:bg-muted/50"
-            >
+            <TableRow key={ranking.teamId} className="hover:bg-muted/50">
               <TableCell className="text-center font-medium">{index + 1}</TableCell>
               <TableCell>
                 <Link

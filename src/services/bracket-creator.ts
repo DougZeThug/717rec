@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
-import { BusinessLogicError } from '@/types/errors';
 import { bracketManagerService } from '@/services/brackets/manager';
 import type { BracketRecord } from '@/types/bracketRecord';
+import { BusinessLogicError } from '@/types/errors';
 import { bracketLog, errorLog, failureLog, successLog, warnLog } from '@/utils/logger';
 
 export interface BracketCreationOptions {

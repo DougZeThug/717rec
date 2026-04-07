@@ -18,9 +18,9 @@ describe('calculateSOS', () => {
 
   it('returns 0.5 when the team has no matches', () => {
     const weights = new Map([['div-2', 0.9]]);
-    expect(
-      calculateSOS(team('t1', 'div-1'), [team('t1'), team('t2', 'div-2')], [], weights)
-    ).toBe(0.5);
+    expect(calculateSOS(team('t1', 'div-1'), [team('t1'), team('t2', 'div-2')], [], weights)).toBe(
+      0.5
+    );
   });
 
   it('calculates average division weight across opponents', () => {

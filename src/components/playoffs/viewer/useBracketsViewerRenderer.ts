@@ -9,7 +9,10 @@ import { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 const fingerprint = (matches: any[]): string => {
   const ids = matches.map((x) => x.id).join(',');
   const scores = matches
-    .map((x) => `${x.opponent1?.score ?? '-'}:${x.opponent1?.result ?? ''}|${x.opponent2?.score ?? '-'}:${x.opponent2?.result ?? ''}`)
+    .map(
+      (x) =>
+        `${x.opponent1?.score ?? '-'}:${x.opponent1?.result ?? ''}|${x.opponent2?.score ?? '-'}:${x.opponent2?.result ?? ''}`
+    )
     .join(',');
   return `${matches.length}:${ids}:${scores}`;
 };

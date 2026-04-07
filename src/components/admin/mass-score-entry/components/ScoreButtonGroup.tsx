@@ -38,14 +38,15 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
   team1Name = 'Team 1',
   team2Name = 'Team 2',
 }) => {
-  const selectedOption = (value && value.team1Score !== null && value.team2Score !== null)
-    ? {
-        team1Score: Number(value.team1Score),
-        team2Score: Number(value.team2Score),
-        team1GameWins: Number(value.team1GameWins || 0),
-        team2GameWins: Number(value.team2GameWins || 0),
-      }
-    : null;
+  const selectedOption =
+    value && value.team1Score !== null && value.team2Score !== null
+      ? {
+          team1Score: Number(value.team1Score),
+          team2Score: Number(value.team2Score),
+          team1GameWins: Number(value.team1GameWins || 0),
+          team2GameWins: Number(value.team2GameWins || 0),
+        }
+      : null;
 
   // Strict numeric comparison for selection state
   const isSelected = (option: (typeof SCORE_OPTIONS)[number]) => {
