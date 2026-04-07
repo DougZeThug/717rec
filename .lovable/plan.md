@@ -1,47 +1,43 @@
 
 
-## Tighten History Page Collapsed Accordion on Mobile
+## Tighten History Page Mobile Layout
 
-### What's changing
+### Problem
 
-The collapsed season accordion headers currently have a large trophy icon circle (40x40), generous padding, and spread-out metadata. The reference screenshot shows a much tighter layout: season name + date inline, team/match count below, status badge right-aligned — all compact.
+Comparing the reference screenshot to the current implementation, there's excessive whitespace from multiple sources:
+
+1. **DivisionPanel**: `space-y-3 pb-6` with thick border-bottom separators between divisions
+2. **Expanded season content**: `space-y-6` and `gap-6` between division panels
+3. **Division headers**: Oversized padding (`px-4 py-3`) and large chevron button
+4. **Season accordion outer card**: `rounded-2xl` with `p-4 md:p-6` expanded content padding
+5. **HistoryPageContent**: `space-y-4` gap between season accordions
+6. **Page-level**: PageHeader takes vertical space that could be reclaimed on mobile
 
 ### Changes
 
-**`src/components/history/SeasonAccordion.tsx`** — Collapsed header redesign (mobile only)
+**1. `src/components/history/DivisionPanel.tsx`** — Compact mobile spacing
 
-**Current layout (lines 149-253):**
-```text
-┌─────────────────────────────────────────┐
-│ [40px trophy circle]  WINTER 1 2026     │  ← large icon, generous p-4
-│                       (Jan - Feb 2026)  │
-│                       👑 Cuzzo's Clinic  │
-│                       👥 19 teams  📅 193│
-│                                      ∨  │
-└─────────────────────────────────────────┘
-```
+- Reduce `space-y-3 pb-6` to `space-y-1.5 pb-3 md:space-y-3 md:pb-6`
+- Reduce division header padding from `px-4 py-3` to `px-3 py-2 md:px-4 md:py-3`
+- Reduce header text from `text-lg` to `text-base md:text-lg`
+- Shrink chevron button from `h-8 w-8` to `h-6 w-6 md:h-8 md:w-8`
+- Remove the thick `border-b` separator on mobile, keep on desktop
 
-**New layout:**
-```text
-┌─────────────────────────────────────────┐
-│ WINTER 1 2026 (Jan - Feb 2026)  🏆 Done │  ← no circle icon, tighter
-│ 👑 Cuzzo's Clinic                       │
-│ 19 teams · 193 matches              ∨  │
-└─────────────────────────────────────────┘
-```
+**2. `src/components/history/SeasonAccordion.tsx`** — Tighter expanded content
 
-Key changes:
-1. **Remove the 40px trophy circle** on mobile — it takes too much horizontal space. Keep it on desktop via `hidden md:flex`.
-2. **Reduce padding** from `p-4` to `px-3 py-3 md:p-6` on the button.
-3. **Inline the status badge** (Active / Completed with trophy icon) on the right side of the first row, next to the season name and date.
-4. **Move champion names** to their own compact line directly under the title (no icons, just `👑 Name`).
-5. **Combine team count + match count** into a single line: `19 teams · 193 matches`.
-6. **Reduce gap** between metadata items from `gap-3` to `gap-1.5` on mobile.
-7. **Smaller chevron** area — keep it right-aligned but tighter.
+- Reduce expanded content padding from `p-4` to `p-3 md:p-4 md:p-6`
+- Reduce division grid gap from `gap-6` to `gap-3 md:gap-6`
+- Reduce `space-y-6` to `space-y-3 md:space-y-6` in the expanded content wrapper
 
-For non-active completed seasons, show a small `🏆 Completed` badge (or `Active Season` for active) — matching the reference screenshot's right-aligned status indicators.
+**3. `src/components/history/HistoryPageContent.tsx`** — Tighter accordion gaps
+
+- Reduce `space-y-4` to `space-y-2 md:space-y-4` between season accordions
+
+**4. `src/pages/History.tsx`** — Hide page description on mobile
+
+- Add mobile-only class to hide the PageHeader description text, or reduce the gap between header and content
 
 ### Scope
 
-1 file: `src/components/history/SeasonAccordion.tsx` — collapsed header layout only. No data, logic, or expanded content changes. Team cards inside remain untouched.
+4 files — spacing/padding CSS changes only. No logic or data changes.
 
