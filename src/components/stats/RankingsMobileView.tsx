@@ -163,7 +163,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
   const { ref: sectionRef, inView: isSectionVisible } = useInView({ threshold: 0.05 });
 
   return (
-    <div className="font-inter" ref={sectionRef}>
+    <div className="font-inter">
       <LeagueLeaderboardCarousel rankings={rankings} />
 
       {/* Controls row: ViewToggle + Compact/Detailed toggle */}
@@ -236,7 +236,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
         </div>
       )}
 
-      <div className="space-y-2">
+      <div className="space-y-2" ref={sectionRef}>
         {Object.entries(rankingsByDivision).map(([displayDivision, divisionRankings]) => (
           <div key={displayDivision} className="space-y-1">
             {!showUnified && (
