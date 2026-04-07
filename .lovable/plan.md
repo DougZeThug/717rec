@@ -1,60 +1,28 @@
 
 
-## Redesign Career Statistics Table to Match Current Standings Design
+## Fix: Rename single-letter variables in greedyBackToBackScheduler.ts
 
-### What's changing
+### What's wrong
 
-The career statistics section currently uses a plain card/table design that looks inconsistent with the polished standings cards above it. We'll rebuild it to mirror the standings design — using `EntityCard`, `TeamLogo`, `PowerScoreGauge`, and the same compact/detailed layout patterns.
+The repair loop in the greedy scheduler uses `A`, `B`, `C`, `D` as variable names for teams. These are flagged as anti-pattern (JS-C1002: variable name too small).
 
-We'll also:
-- Remove the "show hidden teams" toggle — career stats will always include all teams (per your request that all teams across all seasons should be visible)
-- Show championship trophies (🏆) inline in compact view instead of badges
-- Only show sort pills when in detailed view (matching standings behavior)
+### Fix
 
-### Technical details
+**File:** `src/utils/scheduling/greedyBackToBackScheduler.ts` (lines 913-931)
 
-**File 1: `src/components/stats/career/CareerRankingsSection.tsx`**
-- Remove the `useCareerRankingsWithHidden` hook — replace with `useCareerRankings` (which already fetches all teams)
-- Remove the hidden teams toggle (Switch, Eye/EyeOff icons, tooltip)
-- Remove `showHidden` prop from `CareerRankingsTable`
-- Keep the collapsible card wrapper, export button, and loading/error states
+| Line | Current | Change to |
+|------|---------|-----------|
+| 913 | `const A = teamMap.get(m1.teamAId)` | `const teamA = teamMap.get(m1.teamAId)` |
+| 914 | `const B = teamMap.get(m1.teamBId)` | `const teamB = teamMap.get(m1.teamBId)` |
+| 915 | `if (!A \|\| !B) continue` | `if (!teamA \|\| !teamB) continue` |
+| 923 | `const C = teamMap.get(m2.teamAId)` | `const teamC = teamMap.get(m2.teamAId)` |
+| 924 | `const D = teamMap.get(m2.teamBId)` | `const teamD = teamMap.get(m2.teamBId)` |
+| 925 | `if (!C \|\| !D) continue` | `if (!teamC \|\| !teamD) continue` |
+| 928-931 | References to `A, B, C, D` in rearrangements array | Update to `teamA, teamB, teamC, teamD` |
 
-**File 2: `src/components/stats/career/CareerRankingsTable.tsx`**
-- Remove `showHidden` prop
-- Pass it through to views without the prop
-
-**File 3: `src/components/stats/career/CareerRankingsMobileView.tsx`** (major rewrite)
-- Replace the current card-based layout with the standings pattern:
-  - Use `ToggleGroup` for Compact/Detailed toggle (matching standings style)
-  - Sort pills only visible in detailed view
-  - **Compact view**: Use `EntityCard` with the same layout as `RankingCard` compact:
-    - Left: rank number
-    - Logo + team name + record (W-L) + win% inline
-    - Championship trophies (🏆×N) instead of badge collection
-    - Right-aligned: Power Score with label
-  - **Detailed view**: Use `EntityCard` with the standings detailed pattern:
-    - Top row: rank + championship trophies
-    - Team row: logo + name + record
-    - Bottom: `PowerScoreGauge` on left, 2x2 stat grid on right (Win %, SOS, Game Record, Game %)
-- Remove `showHidden` prop and hidden team badge
-- Remove `PercentileBadge` usage (keep it clean like standings)
-
-**File 4: `src/components/stats/career/CareerRankingsDesktopView.tsx`**
-- Remove `showHidden` prop and hidden team badge/styling
-- Keep the sortable table (desktop has enough room for it)
-- Minor cleanup: remove hidden-team-specific conditional classes
-
-**File 5: `src/hooks/useCareerRankingsWithHidden.ts`**
-- Simplify: always fetch with `includeHidden: true`
-- Remove `showHidden` state, `toggleShowHidden`, localStorage persistence, and `hiddenTeamCount`
-- Or alternatively, just update `CareerRankingsSection` to use `useCareerRankings` directly with hidden teams included
-
-### What stays the same
-- Career data calculation logic (no changes)
-- Desktop table structure (just removing hidden toggle)
-- CSV export functionality
-- Collapsible section behavior
+All downstream references to these variables in the same block also get renamed.
 
 ### Scope
-5 files changed. Mobile view is the biggest change (full visual redesign). No data/logic changes — purely presentational.
+
+One file, rename-only. No logic changes.
 
