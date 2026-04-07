@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
 
 import { CareerRanking } from '@/types/career';
 import { warnLog } from '@/utils/logger';
@@ -7,36 +6,16 @@ import { warnLog } from '@/utils/logger';
 import { computeAllTeamsTotals } from './career/computeAllTeamsTotals';
 import { useTeamsQuery } from './teams';
 
-const STORAGE_KEY = 'career-stats-show-hidden';
-
 export function useCareerRankingsWithHidden() {
-  // Get initial state from localStorage
-  const [showHidden, setShowHidden] = useState(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : false;
-  });
-
-  // Persist state to localStorage
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(showHidden));
-  }, [showHidden]);
-
-  // Always fetch all teams to count hidden teams
-  const { data: allTeams } = useTeamsQuery({ includeHidden: true });
-
-  // Fetch teams based on toggle state
+  // Always fetch all teams (including hidden) for career stats
   const {
     data: teams,
     isLoading: isLoadingTeams,
     error: teamsError,
-  } = useTeamsQuery({ includeHidden: showHidden });
-
-  const toggleShowHidden = () => {
-    setShowHidden(!showHidden);
-  };
+  } = useTeamsQuery({ includeHidden: true });
 
   const careerQuery = useQuery({
-    queryKey: ['careerRankings', teams?.map((t) => t.id), showHidden],
+    queryKey: ['careerRankings', teams?.map((t) => t.id)],
     queryFn: async (): Promise<CareerRanking[]> => {
       if (!teams) return [];
 
@@ -70,7 +49,7 @@ export function useCareerRankingsWithHidden() {
           teamName: team.name,
           logoUrl: team.logoUrl,
           imageUrl: team.imageUrl,
-          divisionName: team.divisionName, // Include division info
+          divisionName: team.divisionName,
 
           // Career match stats
           careerMatchWins: totals.career_match_wins,
@@ -110,15 +89,7 @@ export function useCareerRankingsWithHidden() {
     staleTime: 1000 * 60 * 10, // 10 minutes - career data is extremely static
   });
 
-  // Count hidden teams from all teams (not filtered teams)
-  const hiddenTeamCount = allTeams
-    ? allTeams.filter((team) => team.divisionName === 'Hidden').length
-    : 0;
-
   return {
     ...careerQuery,
-    showHidden,
-    toggleShowHidden,
-    hiddenTeamCount,
   };
 }
