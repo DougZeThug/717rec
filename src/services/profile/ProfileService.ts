@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { UserProfile } from '@/types/user';
 import { handleDatabaseError } from '@/utils/errorHandler';
+import { errorLog } from '@/utils/logger';
 
 export const profileSchema = z.object({
   username: z
