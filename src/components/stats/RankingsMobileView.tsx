@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowDown, ArrowUp, Bolt, Scale, Search, User } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useInView } from 'react-intersection-observer';
 
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -159,8 +160,10 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
     [rankings, showUnified]
   );
 
+  const { ref: sectionRef, inView: isSectionVisible } = useInView({ threshold: 0.05 });
+
   return (
-    <div className="font-inter">
+    <div className="font-inter" ref={sectionRef}>
       <LeagueLeaderboardCarousel rankings={rankings} />
 
       {/* Controls row: ViewToggle + Compact/Detailed toggle */}
@@ -298,21 +301,23 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
         ))}
       </div>
 
-      {/* Find My Team FAB */}
-      <Button
-        variant="default"
-        size="sm"
-        className={cn(
-          'fixed bottom-24 right-4 z-50 rounded-full shadow-lg',
-          isWinterTheme
-            ? 'bg-frost-primary hover:bg-frost-primary/90 text-white'
-            : 'bg-primary hover:bg-primary/90'
-        )}
-        onClick={handleFindMyTeam}
-        aria-label={myTeamId ? 'Scroll to my team' : 'Search for a team'}
-      >
-        {myTeamId ? <User className="h-4 w-4" /> : <Search className="h-4 w-4" />}
-      </Button>
+      {/* Find My Team FAB — only visible when standings section is in viewport */}
+      {isSectionVisible && (
+        <Button
+          variant="default"
+          size="sm"
+          className={cn(
+            'fixed bottom-24 right-4 z-50 rounded-full shadow-lg',
+            isWinterTheme
+              ? 'bg-frost-primary hover:bg-frost-primary/90 text-white'
+              : 'bg-primary hover:bg-primary/90'
+          )}
+          onClick={handleFindMyTeam}
+          aria-label={myTeamId ? 'Scroll to my team' : 'Search for a team'}
+        >
+          {myTeamId ? <User className="h-4 w-4" /> : <Search className="h-4 w-4" />}
+        </Button>
+      )}
 
       {/* Team Search Drawer */}
       <TeamSearchDrawer
