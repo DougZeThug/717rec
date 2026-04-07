@@ -64,13 +64,13 @@ const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) =>
   return (
     <div
       className={cn(
-        'space-y-3 pb-6 last:border-b-0',
-        isWinterTheme ? 'border-b border-white/10' : 'border-b'
+        'space-y-1.5 pb-3 last:border-b-0 md:space-y-3 md:pb-6',
+        isWinterTheme ? 'md:border-b md:border-white/10' : 'md:border-b'
       )}
     >
       <div
         className={cn(
-          'flex justify-between items-center cursor-pointer rounded-lg px-4 py-3 transition-colors',
+          'flex justify-between items-center cursor-pointer rounded-lg px-3 py-2 md:px-4 md:py-3 transition-colors',
           isWinterTheme
             ? 'bg-white/5 hover:bg-white/10 border border-white/10'
             : 'bg-gray-50/50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800/70'
@@ -80,7 +80,7 @@ const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) =>
         <div className="flex items-center gap-3">
           <h4
             className={cn(
-              'text-lg font-semibold',
+              'text-base md:text-lg font-semibold',
               isWinterTheme ? 'text-white' : 'text-slate-900 dark:text-white'
             )}
           >
@@ -98,7 +98,7 @@ const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) =>
         <Button
           variant="ghost"
           size="sm"
-          className="p-1 h-8 w-8 transition-transform duration-300"
+          className="p-1 h-6 w-6 md:h-8 md:w-8 transition-transform duration-300"
           style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
         >
           <ChevronDown size={20} />

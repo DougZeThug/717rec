@@ -24,7 +24,7 @@ const History: React.FC = () => {
         </div>
         <PageHeader
           title="Season History"
-          description="Explore past seasons, champions, and standings"
+          description={isMobile ? undefined : 'Explore past seasons, champions, and standings'}
         />
       </PageTransition>
 

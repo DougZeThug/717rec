@@ -271,7 +271,7 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
           >
             <div
               className={cn(
-                'p-4 md:p-6 pt-0 border-t',
+                'p-3 md:p-4 lg:p-6 pt-0 border-t',
                 isWinterTheme ? 'border-white/10' : 'border-gray-200 dark:border-slate-600'
               )}
             >
@@ -320,7 +320,7 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
                   isSaving={isSaving}
                 />
               ) : (
-                <div className="space-y-6">
+              <div className="space-y-3 md:space-y-6">
                   {isAdminAccessGranted && (
                     <div className="flex justify-end">
                       <Button
@@ -335,7 +335,7 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-6">
                     {sortHistoryDivisions(Object.entries(divisionData)).map(
                       ([divisionName, teams]) => (
                         <DivisionPanel
