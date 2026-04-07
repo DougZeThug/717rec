@@ -1,4 +1,4 @@
-import { Loader2, LucideChrome, Smartphone } from 'lucide-react';
+import { Globe, Loader2, Smartphone } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
