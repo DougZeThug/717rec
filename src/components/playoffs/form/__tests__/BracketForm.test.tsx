@@ -30,11 +30,13 @@ vi.mock('../BracketFormGrandFinal', () => ({
 }));
 
 // Polyfill ResizeObserver for jsdom (used by Radix UI internals)
-globalThis.ResizeObserver = globalThis.ResizeObserver || class {
-  observe() {}
-  disconnect() {}
-  unobserve() {}
-};
+globalThis.ResizeObserver =
+  globalThis.ResizeObserver ||
+  class {
+    observe() {}
+    disconnect() {}
+    unobserve() {}
+  };
 
 const mockDivisions = [
   { id: 'div1', name: 'Division 1' },

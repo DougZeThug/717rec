@@ -3,8 +3,6 @@ import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { errorLog } from '@/utils/logger';
-
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -24,6 +22,7 @@ import {
   profileSchema,
   updateProfile,
 } from '@/services/profile/ProfileService';
+import { errorLog } from '@/utils/logger';
 
 interface ProfileFormProps {
   initialUsername: string;

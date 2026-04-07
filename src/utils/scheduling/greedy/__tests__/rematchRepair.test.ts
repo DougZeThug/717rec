@@ -7,8 +7,7 @@ import { rematchRepairPass } from '../rematchRepair';
 import { ScheduledMatch } from '../types';
 
 function makeTeam(id: string, tier: number): Team {
-  const divisionName =
-    tier === 1 ? 'Competitive' : tier === 2 ? 'Intermediate' : 'Recreational';
+  const divisionName = tier === 1 ? 'Competitive' : tier === 2 ? 'Intermediate' : 'Recreational';
   return {
     id,
     name: `Team ${id}`,
@@ -67,13 +66,19 @@ describe('rematchRepairPass', () => {
       makeMatch(slotName, teamC, teamD),
     ];
 
-    const repaired = rematchRepairPass(matches, slotName, allTeams, playedSet, tonightPairs, newPairs, 1);
+    const repaired = rematchRepairPass(
+      matches,
+      slotName,
+      allTeams,
+      playedSet,
+      tonightPairs,
+      newPairs,
+      1
+    );
 
     expect(repaired).toBe(1);
     // The A-B rematch should no longer exist
-    const hasRematch = matches.some(
-      (m) => pairKey(m.teamAId, m.teamBId) === pairKey('a', 'b')
-    );
+    const hasRematch = matches.some((m) => pairKey(m.teamAId, m.teamBId) === pairKey('a', 'b'));
     expect(hasRematch).toBe(false);
   });
 
@@ -86,7 +91,15 @@ describe('rematchRepairPass', () => {
       makeMatch(slotName, teamC, teamD),
     ];
 
-    const repaired = rematchRepairPass(matches, slotName, allTeams, playedSet, tonightPairs, newPairs, 1);
+    const repaired = rematchRepairPass(
+      matches,
+      slotName,
+      allTeams,
+      playedSet,
+      tonightPairs,
+      newPairs,
+      1
+    );
     expect(repaired).toBe(0);
   });
 
@@ -108,7 +121,15 @@ describe('rematchRepairPass', () => {
       makeMatch(slotName, teamC, teamD),
     ];
 
-    const repaired = rematchRepairPass(matches, slotName, allTeams, playedSet, tonightPairs, newPairs, 1);
+    const repaired = rematchRepairPass(
+      matches,
+      slotName,
+      allTeams,
+      playedSet,
+      tonightPairs,
+      newPairs,
+      1
+    );
     expect(repaired).toBe(0);
   });
 
@@ -127,7 +148,15 @@ describe('rematchRepairPass', () => {
       makeMatch(slotName, teamC, teamD3),
     ];
 
-    const repaired = rematchRepairPass(matches, slotName, teamsWithGap, playedSet, tonightPairs, newPairs, 1);
+    const repaired = rematchRepairPass(
+      matches,
+      slotName,
+      teamsWithGap,
+      playedSet,
+      tonightPairs,
+      newPairs,
+      1
+    );
     expect(repaired).toBe(0);
   });
 

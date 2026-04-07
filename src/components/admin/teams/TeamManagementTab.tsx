@@ -234,7 +234,7 @@ const TeamManagementTab = () => {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 min-w-0">
-                        {(team.logoUrl || team.imageUrl) ? (
+                        {team.logoUrl || team.imageUrl ? (
                           <img
                             src={team.logoUrl || team.imageUrl}
                             alt={team.name}
@@ -248,11 +248,7 @@ const TeamManagementTab = () => {
                         <span className="font-medium text-sm truncate">{team.name}</span>
                       </div>
                       <motion.div whileTap={{ scale: 0.9 }}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setEditingTeam(team)}
-                        >
+                        <Button variant="outline" size="sm" onClick={() => setEditingTeam(team)}>
                           <Edit className="h-3 w-3" />
                         </Button>
                       </motion.div>
@@ -300,7 +296,7 @@ const TeamManagementTab = () => {
                       >
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            {(team.logoUrl || team.imageUrl) ? (
+                            {team.logoUrl || team.imageUrl ? (
                               <img
                                 src={team.logoUrl || team.imageUrl}
                                 alt={team.name}

@@ -5,6 +5,7 @@ vi.mock('@/services/DivisionService', () => ({
 }));
 
 import { DivisionService } from '@/services/DivisionService';
+
 import {
   clearDivisionWeightsCache,
   fetchDivisionWeights,

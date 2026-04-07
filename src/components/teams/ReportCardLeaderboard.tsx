@@ -54,7 +54,12 @@ const LeaderboardRow: React.FC<{
       <span className={cn('text-sm font-bold font-mono shrink-0', getGpaColor(entry.gpa))}>
         {entry.gpa.toFixed(2)}
       </span>
-      <span className={cn('text-sm font-bold font-mono w-7 text-right shrink-0', getGradeColor(entry.overallGrade))}>
+      <span
+        className={cn(
+          'text-sm font-bold font-mono w-7 text-right shrink-0',
+          getGradeColor(entry.overallGrade)
+        )}
+      >
         {entry.overallGrade}
       </span>
     </div>
@@ -75,20 +80,24 @@ const ReportCardLeaderboard: React.FC<ReportCardLeaderboardProps> = ({ teamId, i
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            GPA Leaderboard
-          </DialogTitle>
+          <DialogTitle className="flex items-center gap-2">GPA Leaderboard</DialogTitle>
         </DialogHeader>
 
         <ToggleGroup
           type="single"
           value={mode}
-          onValueChange={(v) => { if (v) setMode(v as ReportCardMode); }}
+          onValueChange={(v) => {
+            if (v) setMode(v as ReportCardMode);
+          }}
           className="justify-start"
           size="sm"
         >
-          <ToggleGroupItem value="season" className="text-xs px-3">Season</ToggleGroupItem>
-          <ToggleGroupItem value="career" className="text-xs px-3">Career</ToggleGroupItem>
+          <ToggleGroupItem value="season" className="text-xs px-3">
+            Season
+          </ToggleGroupItem>
+          <ToggleGroupItem value="career" className="text-xs px-3">
+            Career
+          </ToggleGroupItem>
         </ToggleGroup>
 
         <ScrollArea className="h-[400px]">
@@ -99,9 +108,7 @@ const ReportCardLeaderboard: React.FC<ReportCardLeaderboardProps> = ({ teamId, i
               ))}
             </div>
           ) : leaderboard.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              No data available yet.
-            </p>
+            <p className="text-sm text-muted-foreground text-center py-8">No data available yet.</p>
           ) : (
             <div className="space-y-1 p-1">
               {leaderboard.map((entry, idx) => (

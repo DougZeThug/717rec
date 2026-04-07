@@ -46,8 +46,7 @@ interface UseHistoryEditingReturn {
 const INTERMEDIATE_2_RANK_OFFSET = 8;
 
 // Case-insensitive division name comparison
-const divisionsMatch = (a: string, b: string) =>
-  a.toLowerCase() === b.toLowerCase();
+const divisionsMatch = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 
 // Helper to get display division name for editing (splits Intermediate into Int 1/2)
 const getEditDisplayDivision = (
@@ -211,7 +210,11 @@ export const useHistoryEditing = ({
           const newRank = teamIdToRank.get(t.team_id);
           return { ...t, playoff_rank: newRank ?? t.playoff_rank };
         }
-        if (fromDivision && !divisionsMatch(fromDivision, toDivision) && divisionsMatch(t.division_name, fromDivision)) {
+        if (
+          fromDivision &&
+          !divisionsMatch(fromDivision, toDivision) &&
+          divisionsMatch(t.division_name, fromDivision)
+        ) {
           const newRank = sourceRankMap.get(t.team_id);
           return { ...t, playoff_rank: newRank ?? t.playoff_rank };
         }
@@ -262,7 +265,7 @@ export const useHistoryEditing = ({
   // Add a new empty division
   const addDivision = useCallback((name: string) => {
     setCustomDivisions((prev) => {
-      if (prev.some(d => d.toLowerCase() === name.toLowerCase())) return prev;
+      if (prev.some((d) => d.toLowerCase() === name.toLowerCase())) return prev;
       return [...prev, name];
     });
   }, []);
@@ -282,7 +285,9 @@ export const useHistoryEditing = ({
 
     // Also update custom divisions if applicable
     setCustomDivisions((prev) =>
-      prev.map((d) => (divisionsMatch(d, oldName) ? newName : d)).filter((d, i, arr) => arr.indexOf(d) === i)
+      prev
+        .map((d) => (divisionsMatch(d, oldName) ? newName : d))
+        .filter((d, i, arr) => arr.indexOf(d) === i)
     );
   }, []);
 

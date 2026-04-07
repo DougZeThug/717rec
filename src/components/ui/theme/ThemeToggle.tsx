@@ -29,9 +29,8 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   }, []);
 
   // Filter to only enabled themes, excluding 'system'
-  const enabledThemes = enabledKeys.length > 0
-    ? themeOrder.filter((t) => enabledKeys.includes(t))
-    : ['light', 'dark'];
+  const enabledThemes =
+    enabledKeys.length > 0 ? themeOrder.filter((t) => enabledKeys.includes(t)) : ['light', 'dark'];
 
   // Auto-switch if current theme is disabled
   useEffect(() => {
@@ -54,7 +53,12 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
 
   const getCurrentIcon = () => {
     if (theme === 'winter-frozen') {
-      return <SnowflakeSparkle size={20} className="text-cyan-400 drop-shadow-[0_0_4px_hsla(199,90%,70%,0.6)]" />;
+      return (
+        <SnowflakeSparkle
+          size={20}
+          className="text-cyan-400 drop-shadow-[0_0_4px_hsla(199,90%,70%,0.6)]"
+        />
+      );
     }
     if (resolvedTheme === 'dark' || theme === 'dark') {
       return <Moon className="h-5 w-5" />;

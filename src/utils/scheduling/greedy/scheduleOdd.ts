@@ -1,5 +1,6 @@
 import { Team } from '@/types';
 import { scheduleLog, warnLog } from '@/utils/logger';
+
 import { pickBye } from './byeSelection';
 import { canPlay, getTier } from './constraints';
 import { pairKey } from './pairKey';
@@ -49,14 +50,7 @@ export function scheduleOdd(args: OddScheduleArgs): ScheduledMatch[] {
   );
 
   // Select Bye1 for S1
-  const bye1 = pickBye(
-    sortedTeams,
-    byeStrategy,
-    playedSet,
-    maxTierGap,
-    new Set(),
-    relaxationLevel
-  );
+  const bye1 = pickBye(sortedTeams, byeStrategy, playedSet, maxTierGap, new Set(), relaxationLevel);
   scheduleLog(`Selected Bye1: ${bye1.name} (sits out ${slot1})`);
 
   // Generate S1 pairings (excluding Bye1)

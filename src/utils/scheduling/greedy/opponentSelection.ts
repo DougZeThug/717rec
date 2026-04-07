@@ -1,4 +1,5 @@
 import { Team } from '@/types';
+
 import { canPlay, countValidOpponents, tierDistance } from './constraints';
 import { pairKey } from './pairKey';
 import { RelaxationLevel } from './types';
@@ -24,7 +25,15 @@ export function findBestOpponent(
   const validCandidates = candidates.filter(
     (candidate) =>
       candidate.id !== team.id &&
-      canPlay(team, candidate, playedSet, tonightPairs, maxTierGap, relaxationLevel, rematchAllowedFor)
+      canPlay(
+        team,
+        candidate,
+        playedSet,
+        tonightPairs,
+        maxTierGap,
+        relaxationLevel,
+        rematchAllowedFor
+      )
   );
 
   if (validCandidates.length === 0) return null;

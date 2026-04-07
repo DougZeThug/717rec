@@ -4,12 +4,7 @@ import { useCareerRankings } from '@/hooks/useCareerRankings';
 import { useTeamMatches } from '@/hooks/useTeamMatches';
 import { useTeamRankings } from '@/hooks/useTeamRankings';
 import { calculatePercentile } from '@/utils/percentileUtils';
-import {
-  calculateGPA,
-  calculateGrade,
-  GradeCategory,
-  TeamGrades,
-} from '@/utils/reportCardUtils';
+import { calculateGPA, calculateGrade, GradeCategory, TeamGrades } from '@/utils/reportCardUtils';
 import { calculateClutchRecord } from '@/utils/teamDetailsUtils/matchOutcomeUtils';
 import { calculateSweepRate } from '@/utils/teamDetailsUtils/sweepRateUtils';
 
@@ -18,7 +13,9 @@ export type ReportCardMode = 'season' | 'career';
 export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMode = 'season') {
   const { rankings, isLoading: isLoadingRankings } = useTeamRankings();
   const { pastMatches, isLoadingMatches } = useTeamMatches(teamId);
-  const { data: careerRankingsData, isLoading: isLoadingCareer } = useCareerRankings({ includeHidden: true });
+  const { data: careerRankingsData, isLoading: isLoadingCareer } = useCareerRankings({
+    includeHidden: true,
+  });
 
   const grades = useMemo((): TeamGrades | null => {
     if (!teamId) return null;
@@ -36,7 +33,11 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
       const allSweepRates = careerRankings.map((r) => r.careerSweepRate);
       const allGameWinPcts = careerRankings.map((r) => r.careerGameWinPercentage);
 
-      const overallPercentile = calculatePercentile(teamCareer.careerPowerScore, allPowerScores, true);
+      const overallPercentile = calculatePercentile(
+        teamCareer.careerPowerScore,
+        allPowerScores,
+        true
+      );
       const overall: GradeCategory = {
         label: 'Overall',
         grade: calculateGrade(overallPercentile.percentile),
@@ -44,7 +45,11 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
         description: 'Career power score ranking',
       };
 
-      const offensePercentile = calculatePercentile(teamCareer.careerSweepRate, allSweepRates, true);
+      const offensePercentile = calculatePercentile(
+        teamCareer.careerSweepRate,
+        allSweepRates,
+        true
+      );
       const offense: GradeCategory = {
         label: 'Offense',
         grade: calculateGrade(offensePercentile.percentile),
@@ -52,7 +57,8 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
         description: 'Career sweep rate',
       };
 
-      const clutchPercentile = teamCareer.careerClutchGame3s > 0 ? Math.round(teamCareer.careerClutchWinPct) : 50;
+      const clutchPercentile =
+        teamCareer.careerClutchGame3s > 0 ? Math.round(teamCareer.careerClutchWinPct) : 50;
       const clutch: GradeCategory = {
         label: 'Clutch',
         grade: calculateGrade(clutchPercentile),
@@ -68,7 +74,11 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
         description: 'Career strength of schedule',
       };
 
-      const consistencyPercentile = calculatePercentile(teamCareer.careerWinPercentage, allWinPcts, true);
+      const consistencyPercentile = calculatePercentile(
+        teamCareer.careerWinPercentage,
+        allWinPcts,
+        true
+      );
       const consistency: GradeCategory = {
         label: 'Consistency',
         grade: calculateGrade(consistencyPercentile.percentile),
@@ -76,7 +86,11 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
         description: 'Career win rate',
       };
 
-      const gamesPercentile = calculatePercentile(teamCareer.careerGameWinPercentage, allGameWinPcts, true);
+      const gamesPercentile = calculatePercentile(
+        teamCareer.careerGameWinPercentage,
+        allGameWinPcts,
+        true
+      );
       const games: GradeCategory = {
         label: 'Games',
         grade: calculateGrade(gamesPercentile.percentile),
@@ -168,7 +182,11 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
       description: 'Win rate reliability',
     };
 
-    const gamesPercentile = calculatePercentile(teamRanking.gameWinPercentage, allGameWinPcts, true);
+    const gamesPercentile = calculatePercentile(
+      teamRanking.gameWinPercentage,
+      allGameWinPcts,
+      true
+    );
     const games: GradeCategory = {
       label: 'Games',
       grade: calculateGrade(gamesPercentile.percentile),
@@ -198,9 +216,6 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
 
   return {
     grades,
-    isLoading:
-      mode === 'season'
-        ? isLoadingRankings || isLoadingMatches
-        : isLoadingCareer,
+    isLoading: mode === 'season' ? isLoadingRankings || isLoadingMatches : isLoadingCareer,
   };
 }

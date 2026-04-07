@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
-import { calculateStreak } from '@/utils/rankingUtils/calculateStreak';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { warnLog } from '@/utils/logger';
+import { calculateStreak } from '@/utils/rankingUtils/calculateStreak';
 
 export interface WeeklyUpset {
   winnerId: string;
@@ -120,7 +120,7 @@ async function _fetchUpsets(
   seasonId: string,
   weekStart: Date,
   weekEnd: Date,
-  weekNumber: number,
+  weekNumber: number
 ): Promise<WeeklyUpset[]> {
   // Get completed regular-season matches within the week's date window
   const { data: matches, error: matchError } = await supabase
@@ -158,10 +158,16 @@ async function _fetchUpsets(
   ]);
 
   if (teamDetailsResult.error) {
-    handleDatabaseError(teamDetailsResult.error, 'Failed to fetch team details for upset detection');
+    handleDatabaseError(
+      teamDetailsResult.error,
+      'Failed to fetch team details for upset detection'
+    );
   }
   if (careerStatsResult.error) {
-    handleDatabaseError(careerStatsResult.error, 'Failed to fetch career stats for upset detection');
+    handleDatabaseError(
+      careerStatsResult.error,
+      'Failed to fetch career stats for upset detection'
+    );
   }
 
   if (!teamDetailsResult.data || !careerStatsResult.data) return [];
@@ -175,10 +181,7 @@ async function _fetchUpsets(
     careerScoreAccum.set(row.team_id, entry);
   }
   const careerScoreMap = new Map(
-    [...careerScoreAccum.entries()].map(([teamId, { sum, count }]) => [
-      teamId,
-      (sum / count) * 100,
-    ])
+    [...careerScoreAccum.entries()].map(([teamId, { sum, count }]) => [teamId, (sum / count) * 100])
   );
 
   const teamInfoMap = new Map(teamDetailsResult.data.map((t) => [t.team_id, t]));
@@ -257,9 +260,7 @@ async function _fetchHotStreaks(seasonId: string): Promise<TeamStreakInfo[]> {
   }));
 
   // Find unique team IDs
-  const teamIds = [
-    ...new Set(allMatches.flatMap((m) => [m.team1_id, m.team2_id])),
-  ];
+  const teamIds = [...new Set(allMatches.flatMap((m) => [m.team1_id, m.team2_id]))];
 
   // Get team details for all participating teams
   const { data: teamDetails, error: teamError } = await supabase
@@ -289,7 +290,10 @@ async function _fetchHotStreaks(seasonId: string): Promise<TeamStreakInfo[]> {
     const team = teamMap.get(teamId);
     if (!team || !visibleDivisionIds.has(team.division_id)) continue;
 
-    const streak = calculateStreak(teamId, matchesForStreak as Parameters<typeof calculateStreak>[1]);
+    const streak = calculateStreak(
+      teamId,
+      matchesForStreak as Parameters<typeof calculateStreak>[1]
+    );
     if (!streak) continue;
 
     // Only show win streaks (W prefix) meeting minimum threshold

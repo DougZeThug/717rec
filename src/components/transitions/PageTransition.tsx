@@ -46,9 +46,11 @@ export const PageTransition: React.FC<PageTransitionProps> = ({
   return (
     <div
       className={cn('relative', finalAnimationClass, delayClass[delay])}
-      style={{
-        // No CSS containment — Safari has bugs with contain:paint that suppress pointer events
-      }}
+      style={
+        {
+          // No CSS containment — Safari has bugs with contain:paint that suppress pointer events
+        }
+      }
     >
       {children}
     </div>

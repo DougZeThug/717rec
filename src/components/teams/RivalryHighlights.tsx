@@ -58,9 +58,7 @@ const RivalryHighlights: React.FC<RivalryHighlightsProps> = ({ teamId, standalon
               className={topDominated.win_pct >= 83 ? 'text-emerald-500' : 'text-teal-500'}
             />
           }
-          borderColor={
-            topDominated.win_pct >= 83 ? 'border-emerald-500/30' : 'border-teal-500/30'
-          }
+          borderColor={topDominated.win_pct >= 83 ? 'border-emerald-500/30' : 'border-teal-500/30'}
           bgColor={topDominated.win_pct >= 83 ? 'bg-emerald-500/5' : 'bg-teal-500/5'}
           onClick={() => navigate(`/teams/${toTeamSlug(topDominated.opponent_name)}`)}
         />

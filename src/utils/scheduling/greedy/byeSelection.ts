@@ -1,4 +1,5 @@
 import { Team } from '@/types';
+
 import { canPlay } from './constraints';
 import { ByeStrategy, RelaxationLevel } from './types';
 

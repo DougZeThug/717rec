@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ArchivedMatchData, MatchData, PlayoffMatchData, SeasonStats } from '@/utils/career/types';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { warnLog } from '@/utils/logger';
+
 import { CareerData, TeamData, TeamDetailsArchive } from './CareerTypes';
 
 /**

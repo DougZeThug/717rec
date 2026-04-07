@@ -4,7 +4,6 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-
 import { parseMetadata } from '@/utils/parseMetadata';
 
 import { SectionHeader } from './SectionHeader';
@@ -19,7 +18,6 @@ interface WeekWinners {
   week: number;
   winners: Winner[];
 }
-
 
 export const EventWinnersEditor: React.FC<FormSectionProps> = ({ formData, onChange }) => {
   if (formData.card_type !== 'event') return null;

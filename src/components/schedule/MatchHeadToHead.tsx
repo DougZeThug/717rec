@@ -49,19 +49,34 @@ export const MatchHeadToHead: React.FC<MatchHeadToHeadProps> = ({
     const team2WinPct = (team2Wins / totalMatches) * 100;
 
     if (team1WinPct <= 18 || team2WinPct <= 18) {
-      return { label: 'Nemesis', className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' };
+      return {
+        label: 'Nemesis',
+        className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+      };
     }
     if (team1WinPct <= 30 || team2WinPct <= 30) {
-      return { label: 'Tough Matchup', className: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' };
+      return {
+        label: 'Tough Matchup',
+        className: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+      };
     }
     if (Math.abs(team1Wins - team2Wins) <= 1) {
-      return { label: 'Rivalry', className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' };
+      return {
+        label: 'Rivalry',
+        className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+      };
     }
     if (team1WinPct >= 83 || team2WinPct >= 83) {
-      return { label: 'Dominated', className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' };
+      return {
+        label: 'Dominated',
+        className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+      };
     }
     if (team1WinPct >= 70 || team2WinPct >= 70) {
-      return { label: 'Favorite', className: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400' };
+      return {
+        label: 'Favorite',
+        className: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
+      };
     }
     return null;
   };
@@ -99,7 +114,9 @@ export const MatchHeadToHead: React.FC<MatchHeadToHeadProps> = ({
       )}
       <span>{content.text}</span>
       {rivalryTag && (
-        <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded-full', rivalryTag.className)}>
+        <span
+          className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded-full', rivalryTag.className)}
+        >
           {rivalryTag.label}
         </span>
       )}

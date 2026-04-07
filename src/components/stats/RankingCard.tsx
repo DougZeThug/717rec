@@ -1,5 +1,4 @@
 import { Scale } from 'lucide-react';
-
 import React, { useMemo } from 'react';
 import { Link } from 'react-router';
 
@@ -91,7 +90,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
           {/* Rank column */}
           <div className="flex flex-col items-center w-7 flex-shrink-0">
             <span className="text-sm font-bold tabular-nums text-foreground">
-              {showDivision ? globalRank : (divisionRank || globalRank)}
+              {showDivision ? globalRank : divisionRank || globalRank}
             </span>
             {showRankChange && (
               <div className="scale-90">
@@ -129,13 +128,23 @@ const RankingCard: React.FC<RankingCardProps> = ({
 
           {/* Badges */}
           <div className="flex-shrink-0">
-            <TeamBadgeCollection teamId={ranking.teamId} size="sm" maxDisplay={1} prefetchedBadges={prefetchedBadges} />
+            <TeamBadgeCollection
+              teamId={ranking.teamId}
+              size="sm"
+              maxDisplay={1}
+              prefetchedBadges={prefetchedBadges}
+            />
           </div>
 
           {/* Power score - always right-aligned */}
           <div className="flex flex-col items-end flex-shrink-0 w-16">
             <span className="text-[10px] text-muted-foreground leading-tight">Power</span>
-            <span className={cn('text-base font-bold tabular-nums leading-tight', getPowerScoreColor(ranking.powerScore))}>
+            <span
+              className={cn(
+                'text-base font-bold tabular-nums leading-tight',
+                getPowerScoreColor(ranking.powerScore)
+              )}
+            >
               {formatPowerScore(ranking.powerScore)}
             </span>
           </div>
@@ -189,7 +198,12 @@ const RankingCard: React.FC<RankingCardProps> = ({
           </span>
           {showRankChange && <RankTrendIndicator rankChange={ranking.rankChange} />}
         </div>
-        <TeamBadgeCollection teamId={ranking.teamId} size="sm" maxDisplay={3} prefetchedBadges={prefetchedBadges} />
+        <TeamBadgeCollection
+          teamId={ranking.teamId}
+          size="sm"
+          maxDisplay={3}
+          prefetchedBadges={prefetchedBadges}
+        />
       </div>
 
       {/* Team row: logo + name + division */}
@@ -235,19 +249,34 @@ const RankingCard: React.FC<RankingCardProps> = ({
           </div>
           <div className="rounded-md bg-muted/50 px-2 py-1.5">
             <p className="text-[10px] text-muted-foreground leading-tight">Win %</p>
-            <p className={cn('text-sm font-bold tabular-nums leading-tight', winPercentageColorClass)}>
+            <p
+              className={cn(
+                'text-sm font-bold tabular-nums leading-tight',
+                winPercentageColorClass
+              )}
+            >
               {hasGames ? `${winPercentage.toFixed(1)}%` : '—'}
             </p>
           </div>
           <div className="rounded-md bg-muted/50 px-2 py-1.5">
             <p className="text-[10px] text-muted-foreground leading-tight">SOS</p>
-            <p className={cn('text-sm font-bold tabular-nums leading-tight', getSosColor(ranking.sos || 0))}>
+            <p
+              className={cn(
+                'text-sm font-bold tabular-nums leading-tight',
+                getSosColor(ranking.sos || 0)
+              )}
+            >
               {(ranking.sos || 0).toFixed(3)}
             </p>
           </div>
           <div className="rounded-md bg-muted/50 px-2 py-1.5">
             <p className="text-[10px] text-muted-foreground leading-tight">Game %</p>
-            <p className={cn('text-sm font-bold tabular-nums leading-tight', gameWinPercentageColorClass)}>
+            <p
+              className={cn(
+                'text-sm font-bold tabular-nums leading-tight',
+                gameWinPercentageColorClass
+              )}
+            >
               {gameWinPercentage.toFixed(1)}%
             </p>
           </div>

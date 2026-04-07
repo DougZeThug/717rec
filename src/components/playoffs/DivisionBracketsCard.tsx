@@ -3,8 +3,8 @@ import React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { PlayoffBracket } from '@/types';
 import { cn } from '@/lib/utils';
+import { PlayoffBracket } from '@/types';
 import { bracketLog } from '@/utils/logger';
 
 interface DivisionBracketsCardProps {

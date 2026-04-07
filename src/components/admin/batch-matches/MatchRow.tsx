@@ -46,8 +46,10 @@ const MatchRow: React.FC<MatchRowProps> = ({ pair, teams, onUpdate, onRemove }) 
     }
   };
 
-  const team1Name = (pair.team1Id && teams.find((t) => t.id === pair.team1Id)?.name) || 'Select Team 1';
-  const team2Name = (pair.team2Id && teams.find((t) => t.id === pair.team2Id)?.name) || 'Select Team 2';
+  const team1Name =
+    (pair.team1Id && teams.find((t) => t.id === pair.team1Id)?.name) || 'Select Team 1';
+  const team2Name =
+    (pair.team2Id && teams.find((t) => t.id === pair.team2Id)?.name) || 'Select Team 2';
   const timeslotFormatted = pair.timeslot ? formatTimeForDisplay(pair.timeslot) : '';
 
   const showPreview = pair.team1Id && pair.team2Id && pair.timeslot;

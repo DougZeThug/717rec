@@ -80,9 +80,7 @@ export const calculateCareerPowerScore = async ({
     const [seasonStatsResult, currentTeamDataResult, fetchedSeasonId] = await Promise.all([
       CareerQueryService.fetchTeamSeasonPowerScores(teamId),
       CareerQueryService.fetchCurrentTeamPower(teamId),
-      !resolvedCurrentSeasonId
-        ? CareerQueryService.fetchActiveSeasonId()
-        : Promise.resolve(null),
+      !resolvedCurrentSeasonId ? CareerQueryService.fetchActiveSeasonId() : Promise.resolve(null),
     ]);
 
     seasonStats = seasonStatsResult;

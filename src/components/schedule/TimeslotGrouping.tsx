@@ -369,9 +369,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
                       <span
                         className={cn(
                           'font-bold text-xs uppercase text-center leading-tight line-clamp-2',
-                          isWinterTheme
-                            ? 'text-orange-300'
-                            : 'text-orange-800 dark:text-orange-200'
+                          isWinterTheme ? 'text-orange-300' : 'text-orange-800 dark:text-orange-200'
                         )}
                       >
                         {teamTimeslot.teams?.name || 'Unknown'}

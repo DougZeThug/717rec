@@ -28,9 +28,7 @@ export const validateMatchScores = (games: GameData[], bestOf: number): Validati
   }
 
   // Reject tied games with non-zero scores (e.g., 5-5)
-  const hasTiedGameWithScore = games.some(
-    (g) => g.team1Score > 0 && g.team1Score === g.team2Score
-  );
+  const hasTiedGameWithScore = games.some((g) => g.team1Score > 0 && g.team1Score === g.team2Score);
 
   if (hasTiedGameWithScore) {
     return {

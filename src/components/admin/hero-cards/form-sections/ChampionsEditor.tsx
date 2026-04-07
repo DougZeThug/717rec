@@ -49,7 +49,8 @@ export const ChampionsEditor: React.FC<FormSectionProps> = ({ formData, onChange
   useEffect(() => {
     if (formData.card_type !== 'champions' || visibleDivisions.length === 0) return;
     const validNames = new Set(visibleDivisions.map((d) => d.display_division));
-    const currentChampions = (parseMetadata(formData.metadata).champions as Record<string, string>) || {};
+    const currentChampions =
+      (parseMetadata(formData.metadata).champions as Record<string, string>) || {};
     const staleKeys = Object.keys(currentChampions).filter((k) => !validNames.has(k));
     if (staleKeys.length > 0) {
       const cleaned: Record<string, string> = { ...currentChampions };

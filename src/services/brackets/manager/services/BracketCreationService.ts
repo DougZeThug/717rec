@@ -77,8 +77,8 @@ export class BracketCreationService {
 
       // Dynamic LB seed orderings based on bracket size (per brackets-manager docs)
       const lbOrderings: Record<number, string[]> = {
-        4:  ['natural', 'reverse'],
-        8:  ['natural', 'reverse', 'natural'],
+        4: ['natural', 'reverse'],
+        8: ['natural', 'reverse', 'natural'],
         16: ['natural', 'reverse_half_shift', 'reverse', 'natural'],
       };
       const seedOrdering = ['inner_outer', ...(lbOrderings[bracketSize] || lbOrderings[16])];
@@ -117,7 +117,7 @@ export class BracketCreationService {
         ) as StorageParticipant[];
 
         for (const participant of participantArray) {
-      if (participant.name === null) {
+          if (participant.name === null) {
             const { error: byeError } = await supabase
               .from('participant')
               .update({ position: null, team_id: null })

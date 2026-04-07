@@ -30,9 +30,11 @@ const TeamBadgeCollection: React.FC<TeamBadgeCollectionProps> = ({
   prefetchedBadges,
 }) => {
   // Skip the per-team query when prefetched data is provided
-  const { data: fetchedBadges, isLoading, error } = useTeamBadges(
-    prefetchedBadges !== undefined ? '' : teamId
-  );
+  const {
+    data: fetchedBadges,
+    isLoading,
+    error,
+  } = useTeamBadges(prefetchedBadges !== undefined ? '' : teamId);
 
   const badges = prefetchedBadges ?? fetchedBadges;
 

@@ -1,4 +1,5 @@
-import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/useToast';
@@ -11,8 +12,6 @@ import {
 } from '@/services/teams/TeamFetchService';
 import { Team } from '@/types';
 import { errorLog } from '@/utils/logger';
-
-import { useState } from 'react';
 
 export function useTeamMembership() {
   const { user } = useAuth();

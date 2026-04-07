@@ -41,12 +41,8 @@ const LeagueLeaderboardCarousel: React.FC<LeagueLeaderboardCarouselProps> = ({ r
         <div className="flex items-start gap-3">
           {/* Left: Title */}
           <div className="flex flex-col flex-shrink-0 pt-1">
-            <span className="text-sm font-semibold text-foreground leading-tight">
-              League
-            </span>
-            <span className="text-sm font-semibold text-foreground leading-tight">
-              Leaderboard
-            </span>
+            <span className="text-sm font-semibold text-foreground leading-tight">League</span>
+            <span className="text-sm font-semibold text-foreground leading-tight">Leaderboard</span>
             <span className="text-[10px] text-muted-foreground mt-0.5">
               {rankings.length} teams
             </span>

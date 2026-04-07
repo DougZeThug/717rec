@@ -38,7 +38,7 @@ export const AddDivisionButton: React.FC<AddDivisionButtonProps> = ({
       return;
     }
 
-    if (existingDivisions.some(d => d.toLowerCase() === trimmedName.toLowerCase())) {
+    if (existingDivisions.some((d) => d.toLowerCase() === trimmedName.toLowerCase())) {
       setError('A division with this name already exists');
       return;
     }

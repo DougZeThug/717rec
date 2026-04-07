@@ -22,7 +22,8 @@ import { errorLog } from '@/utils/logger';
 
 const TeamMembershipApprovalTab: React.FC = () => {
   const { toast } = useToast();
-  const { pendingMemberships, isLoading, isError, error, approveMembership, processingId } = usePendingMemberships();
+  const { pendingMemberships, isLoading, isError, error, approveMembership, processingId } =
+    usePendingMemberships();
 
   const handleApproval = async (membershipId: string, approved: boolean) => {
     try {
@@ -60,7 +61,9 @@ const TeamMembershipApprovalTab: React.FC = () => {
             <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">Failed to load memberships</h3>
             <p className="text-muted-foreground">
-              {error instanceof Error ? error.message : 'An unexpected error occurred. Please try again later.'}
+              {error instanceof Error
+                ? error.message
+                : 'An unexpected error occurred. Please try again later.'}
             </p>
           </div>
         </CardContent>
