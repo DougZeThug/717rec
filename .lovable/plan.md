@@ -1,16 +1,19 @@
 
 
-## Fix: package-lock.json out of sync
+## Fix Lint Violations in Bracket Test Files
 
-### Problem
+### Changes
 
-The CI pipeline (`npm ci`) fails because `@vitest/eslint-plugin@1.6.14` is in `package.json` but missing from `package-lock.json`. This happened when we swapped `eslint-plugin-vitest` for `@vitest/eslint-plugin` — the lockfile wasn't regenerated with `npm install`.
+**1. `src/utils/brackets/mappers/__tests__/teamMapper.test.ts`**
 
-### Fix
+- Replace `result!.id` / `result!.name` non-null assertions with guard assertions (`if (!result) throw new Error(...)`) before accessing properties
+- Replace `as any` casts with `as unknown as PlayoffTeam[]` for the intentionally-invalid test data, which satisfies the linter while still testing runtime validation
 
-Run `npm install --legacy-peer-deps` to regenerate `package-lock.json` with the correct entries. This is a lockfile-only change — no code or dependency changes.
+**2. `src/utils/brackets/validators/__tests__/bracketDataValidator.test.ts`**
+
+- Replace `null as any` with `null as unknown as PlayoffMatch[]` and `null as unknown as PlayoffTeam[]` for the two null-input tests
 
 ### Scope
 
-1 file updated: `package-lock.json`
+2 test files, no production code changes. Fixes 3 non-null assertions and 5 `as any` casts.
 
