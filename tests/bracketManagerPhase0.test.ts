@@ -267,8 +267,13 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
 
       await expect(service.updateMatch(options)).resolves.toBeUndefined();
 
-      // Verify status was updated to Ready (2)
-      expect(mockSupabaseFrom.update).toHaveBeenCalledWith({ status: 2 });
+      // BYE matches are now auto-completed (status 4) with scores
+      expect(mockSupabaseFrom.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 4,
+          opponent1_result: 'win',
+        })
+      );
     });
 
     it('should throw error with proper message on failure', async () => {

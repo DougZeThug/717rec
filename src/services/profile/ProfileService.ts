@@ -33,17 +33,23 @@ export const checkUsernameAvailability = async ({
     return { available: true };
   }
 
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('username')
-    .eq('username', username)
-    .maybeSingle();
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('username', username)
+      .maybeSingle();
 
-  if (error) {
-    handleDatabaseError(error, 'Failed to check username availability');
+    if (error) {
+      errorLog('Failed to check username availability:', error);
+      return { available: null };
+    }
+
+    return { available: !data };
+  } catch (err) {
+    errorLog('Unexpected error checking username availability:', err);
+    return { available: null };
   }
-
-  return { available: !data };
 };
 
 /**
