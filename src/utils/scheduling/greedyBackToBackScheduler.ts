@@ -342,7 +342,7 @@ function findBestOpponent(
     }
 
     // When relaxation allows rematches, still prefer non-rematches
-    if (relaxationLevel >= 2) {
+    if (relaxationLevel >= 2 || (rematchAllowedFor && rematchAllowedFor.size > 0)) {
       const aIsRematch = playedSet.has(pairKey(team.id, a.id));
       const bIsRematch = playedSet.has(pairKey(team.id, b.id));
       if (aIsRematch !== bIsRematch) return aIsRematch ? 1 : -1;
