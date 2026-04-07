@@ -1,28 +1,28 @@
 
 
-## Fix: Rename single-letter variables in greedyBackToBackScheduler.ts
+## Fix: Widen rematch deprioritization guard in findBestOpponent
 
 ### What's wrong
 
-The repair loop in the greedy scheduler uses `A`, `B`, `C`, `D` as variable names for teams. These are flagged as anti-pattern (JS-C1002: variable name too small).
+In the `findBestOpponent` sort (line 345), the "prefer fresh opponents" tiebreaker only activates at `relaxationLevel >= 2`. But the `rematchAllowedFor` mechanism allows specific teams to rematch at any relaxation level. When a team has both fresh and rematch opponents available at level 0 or 1, the sort doesn't distinguish them, so a rematch could be picked over a fresh opponent.
 
 ### Fix
 
-**File:** `src/utils/scheduling/greedyBackToBackScheduler.ts` (lines 913-931)
+**File:** `src/utils/scheduling/greedyBackToBackScheduler.ts` (line 345)
 
-| Line | Current | Change to |
-|------|---------|-----------|
-| 913 | `const A = teamMap.get(m1.teamAId)` | `const teamA = teamMap.get(m1.teamAId)` |
-| 914 | `const B = teamMap.get(m1.teamBId)` | `const teamB = teamMap.get(m1.teamBId)` |
-| 915 | `if (!A \|\| !B) continue` | `if (!teamA \|\| !teamB) continue` |
-| 923 | `const C = teamMap.get(m2.teamAId)` | `const teamC = teamMap.get(m2.teamAId)` |
-| 924 | `const D = teamMap.get(m2.teamBId)` | `const teamD = teamMap.get(m2.teamBId)` |
-| 925 | `if (!C \|\| !D) continue` | `if (!teamC \|\| !teamD) continue` |
-| 928-931 | References to `A, B, C, D` in rearrangements array | Update to `teamA, teamB, teamC, teamD` |
+Replace:
+```ts
+if (relaxationLevel >= 2) {
+```
 
-All downstream references to these variables in the same block also get renamed.
+With:
+```ts
+if (relaxationLevel >= 2 || (rematchAllowedFor && rematchAllowedFor.size > 0)) {
+```
+
+This makes the code match its own comment on line 329: "prefer fresh opponents even when rematches allowed."
 
 ### Scope
 
-One file, rename-only. No logic changes.
+One file, one line. No behavioral change when `rematchAllowedFor` is empty or undefined.
 
