@@ -180,7 +180,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
             className={cn(
               'text-xs px-2.5 py-1 rounded-md transition-all',
               !detailedView
-                ? 'bg-cornhole-navy text-white shadow-sm'
+                ? 'bg-cornhole-navy text-white ring-2 ring-blue-400/70 ring-offset-1 ring-offset-background shadow-[0_0_8px_rgba(96,165,250,0.5)]'
                 : 'text-muted-foreground hover:bg-accent'
             )}
           >
@@ -191,7 +191,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
             className={cn(
               'text-xs px-2.5 py-1 rounded-md transition-all',
               detailedView
-                ? 'bg-cornhole-navy text-white shadow-sm'
+                ? 'bg-cornhole-navy text-white ring-2 ring-blue-400/70 ring-offset-1 ring-offset-background shadow-[0_0_8px_rgba(96,165,250,0.5)]'
                 : 'text-muted-foreground hover:bg-accent'
             )}
           >
