@@ -83,7 +83,7 @@ export function generateScheduleGreedyWithTracking(
     baseTonightPairs,
     maxTierGap
   );
-  let relaxationLevel: RelaxationLevel = feasibility.recommendedLevel;
+  const relaxationLevel: RelaxationLevel = feasibility.recommendedLevel;
 
   if (!feasibility.isFeasible) {
     const relaxationNames: Record<RelaxationLevel, string> = {

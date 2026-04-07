@@ -256,10 +256,7 @@ export function scheduleEven(args: EvenScheduleArgs): {
   }
 
   scheduleLog(
-    `Generated ${allMatches.length} matches (${s1Matches.length} in ${slot1}, ${s2Matches.length} in ${slot2})` +
-      (diagnostics.relaxationApplied > 0
-        ? ` [relaxation: ${diagnostics.constraintsRelaxed.join(', ')}]`
-        : '')
+    `Generated ${allMatches.length} matches (${s1Matches.length} in ${slot1}, ${s2Matches.length} in ${slot2})${diagnostics.relaxationApplied > 0 ? ` [relaxation: ${diagnostics.constraintsRelaxed.join(', ')}]` : ''}`
   );
 
   return { matches: allMatches, relaxationLevel };

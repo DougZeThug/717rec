@@ -13,6 +13,7 @@ import { RelaxationLevel, ScheduledMatch } from './types';
  * find an existing match M=(A,B) where we can swap to (U1,A)+(U2,B)
  * or (U1,B)+(U2,A), resolving the stranding without creating new conflicts.
  */
+// eslint-disable-next-line complexity -- swap logic is inherently branchy; splitting reduces clarity
 function trySwapToFixUnmatched(
   matches: ScheduledMatch[],
   unmatchedTeams: Team[],
@@ -75,9 +76,9 @@ function trySwapToFixUnmatched(
 
       // Try swapping with each existing match
       for (let k = 0; k < result.length; k++) {
-        const m = result[k];
-        const teamA = teamMap.get(m.teamAId);
-        const teamB = teamMap.get(m.teamBId);
+        const existingMatch = result[k];
+        const teamA = teamMap.get(existingMatch.teamAId);
+        const teamB = teamMap.get(existingMatch.teamBId);
         if (!teamA || !teamB) continue;
 
         // Option 1: (U1, A) + (U2, B)

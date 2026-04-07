@@ -213,10 +213,7 @@ export function scheduleOdd(args: OddScheduleArgs): ScheduledMatch[] {
   }
 
   scheduleLog(
-    `Generated ${allMatches.length} matches (${s1Matches.length} in ${slot1}, ${s2Matches.length} in ${slot2}, 1 in ${slot3Name})` +
-      (diagnostics.relaxationApplied > 0
-        ? ` [relaxation: ${diagnostics.constraintsRelaxed.join(', ')}]`
-        : '')
+    `Generated ${allMatches.length} matches (${s1Matches.length} in ${slot1}, ${s2Matches.length} in ${slot2}, 1 in ${slot3Name})${diagnostics.relaxationApplied > 0 ? ` [relaxation: ${diagnostics.constraintsRelaxed.join(', ')}]` : ''}`
   );
   scheduleLog(`Bye1 (${bye1.name}) plays in ${slot2} + ${slot3Name}`);
   scheduleLog(`Bye2 (${bye2.name}) plays in ${slot1} + ${slot3Name}`);
