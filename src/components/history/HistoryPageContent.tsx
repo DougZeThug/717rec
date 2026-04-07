@@ -70,7 +70,7 @@ const HistoryPageContent: React.FC = () => {
   }
 
   return (
-    <WinterSection showIcicles lightIcicles className="space-y-4">
+    <WinterSection showIcicles lightIcicles className="space-y-2 md:space-y-4">
       {seasons.map((season) => (
         <SeasonAccordion key={season.id} season={season} />
       ))}
