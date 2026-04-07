@@ -910,9 +910,9 @@ function rematchRepairPass(
     const key1 = pairKey(m1.teamAId, m1.teamBId);
     if (!playedSet.has(key1)) continue; // not a rematch, skip
 
-    const A = teamMap.get(m1.teamAId);
-    const B = teamMap.get(m1.teamBId);
-    if (!A || !B) continue;
+    const teamA = teamMap.get(m1.teamAId);
+    const teamB = teamMap.get(m1.teamBId);
+    if (!teamA || !teamB) continue;
 
     let swapped = false;
     for (let jj = 0; jj < slotIdxs.length && !swapped; jj++) {
@@ -920,14 +920,14 @@ function rematchRepairPass(
       const j = slotIdxs[jj];
       const m2 = matches[j];
       const key2 = pairKey(m2.teamAId, m2.teamBId);
-      const C = teamMap.get(m2.teamAId);
-      const D = teamMap.get(m2.teamBId);
-      if (!C || !D) continue;
+      const teamC = teamMap.get(m2.teamAId);
+      const teamD = teamMap.get(m2.teamBId);
+      if (!teamC || !teamD) continue;
 
-      // Try (A,C) + (B,D) and (A,D) + (B,C)
+      // Try (teamA,teamC) + (teamB,teamD) and (teamA,teamD) + (teamB,teamC)
       const rearrangements: [Team, Team, Team, Team][] = [
-        [A, C, B, D],
-        [A, D, B, C],
+        [teamA, teamC, teamB, teamD],
+        [teamA, teamD, teamB, teamC],
       ];
 
       for (const [p1a, p1b, p2a, p2b] of rearrangements) {
