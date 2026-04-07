@@ -39,7 +39,7 @@ const SocialAuthButtons: React.FC<SocialAuthButtonsProps> = ({
           {isSubmitting ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
-            <LucideChrome className="mr-2 h-5 w-5" />
+            <Globe className="mr-2 h-5 w-5" />
           )}
           Google
         </Button>
