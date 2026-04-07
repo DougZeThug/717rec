@@ -1,37 +1,44 @@
 
 
-## Bump Dev Dependencies
+## Add Edge Case Tests for calculateSOS and calculateWinPercentage
 
-### What we're doing
+### What we're adding
 
-Updating 6 dev dependencies to their latest versions. All are minor/patch bumps except ESLint (9→10) and TypeScript (5→6), which are major but already listed with `^` prefixes in package.json matching the target versions.
+Two new test cases in existing test files — no production code changes.
 
-### Updates
+### Changes
 
-| Package | From | To | Risk |
-|---------|------|----|------|
-| `@types/node` | 25.2.3 | 25.5.0 | Minor — type additions only |
-| `eslint` | 9.39.3 | 10.1.0 | **Major** — ESLint 10 drops Node 18, removes deprecated APIs. Project already uses flat config so no migration needed. `typescript-eslint` 8.57.2 supports ESLint 10. |
-| `eslint-plugin-react-refresh` | 0.5.0 | 0.5.2 | Patch — bug fixes |
-| `typescript` | 5.9.3 | 6.0.2 | **Major** — TS 6 isolatedDeclarations default change, but this project doesn't emit declarations. No breaking impact expected. |
-| `typescript-eslint` | 8.56.0 | 8.57.2 | Minor — adds ESLint 10 compat |
-| `vitest` | 4.0.18 | 4.1.2 | Minor — new features, bug fixes |
+**1. `src/utils/rankingUtils/__tests__/calculateSOS.test.ts`** — Opponent with missing `division_id`
 
-### Compatibility note
+The source code (line 44) has `if (opponent && opponent.division_id)` — when an opponent has no `division_id`, it's skipped entirely (not counted, no weight added). This is a distinct branch from "division weight missing from map" (which uses the default 0.85). Currently untested.
 
-`@vitest/coverage-v8` is currently at `^4.0.18`. vitest 4.1.2 is compatible — the coverage plugin will resolve to a matching minor. We should bump it alongside to `^4.1.2` for consistency.
+New test: Create an opponent with `undefined` division_id. When it's the only opponent, `countedOpponents` stays 0, so the function returns the fallback `0.5`.
 
-`eslint-plugin-vitest` at `^0.5.4` should work with ESLint 10 — the flat config API hasn't changed for plugins.
+```ts
+it('returns 0.5 when opponent has no division_id', () => {
+  const t1 = team('t1', 'div-1');
+  const t2 = team('t2'); // no division_id
+  const sos = calculateSOS(t1, [t1, t2], [match('t1', 't2')], new Map());
+  expect(sos).toBe(0.5);
+});
+```
 
-### Steps
+**2. `src/utils/rankingUtils/__tests__/calculateWinPercentage.test.ts`** — Large numbers precision
 
-1. Update all 6 versions in `package.json` + bump `@vitest/coverage-v8` to `^4.1.2`
-2. Run `npm install --legacy-peer-deps` to sync lockfiles
-3. Run `npm run build` to verify no compile errors
-4. Run `npm run lint` to verify ESLint 10 works with existing config
-5. Run `npm run test` to verify all tests pass
+Verify that with very large win/loss counts, the result doesn't suffer floating-point drift that could affect ranking sort order.
+
+```ts
+it('handles very large numbers without precision issues', () => {
+  const wins = 999999;
+  const losses = 1;
+  const result = calculateWinPercentage(wins, losses);
+  expect(result).toBeCloseTo(999999 / 1000000, 10);
+  expect(result).toBeLessThan(1);
+  expect(result).toBeGreaterThan(0.999);
+});
+```
 
 ### Scope
 
-`package.json` + lockfile updates only. No code changes expected.
+2 test files, 1 test case each. No production code changes.
 
