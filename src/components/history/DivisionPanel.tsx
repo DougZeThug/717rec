@@ -7,7 +7,6 @@ import { useIsMobile } from '@/hooks/useMobile';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 
-import ChampionCard from './ChampionCard';
 import HistoricalStandingsTable from './HistoricalStandingsTable';
 
 interface SeasonData {
