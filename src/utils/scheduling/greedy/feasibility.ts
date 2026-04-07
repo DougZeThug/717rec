@@ -37,7 +37,8 @@ export function analyzeGreedyFeasibility(
   // Check if relaxing tier constraints would help (level 1 — relax first)
   let wouldHelpWithTier = false;
   for (const teamId of atRiskTeams) {
-    const team = teams.find((t) => t.id === teamId)!;
+    const team = teams.find((t) => t.id === teamId);
+    if (!team) continue;
     let validWithTier = 0;
     for (const other of teams) {
       if (other.id !== team.id && canPlay(team, other, playedSet, tonightPairs, maxTierGap, 1)) {
@@ -57,7 +58,8 @@ export function analyzeGreedyFeasibility(
   // Check if relaxing season rematches would help (level 2 — relax last)
   let wouldHelpWithRematch = false;
   for (const teamId of atRiskTeams) {
-    const team = teams.find((t) => t.id === teamId)!;
+    const team = teams.find((t) => t.id === teamId);
+    if (!team) continue;
     let validWithRematch = 0;
     for (const other of teams) {
       if (other.id !== team.id && canPlay(team, other, playedSet, tonightPairs, maxTierGap, 2)) {
