@@ -500,4 +500,133 @@ describe('greedyBackToBackScheduler', () => {
       expect(pairKey('2', '1')).toBe('1||2');
     });
   });
+
+  describe('Per-team rematch + forbiddenPairs hardness', () => {
+    it('should not produce season rematches when fresh opponents exist (rematch repair)', () => {
+      // 6 teams, all same tier. History: 1-2, 3-4, 5-6 already played.
+      // A naive greedy might pair (1,2) again; the scheduler must avoid it.
+      const teams: Team[] = [
+        createMockTeam('1', 'T1', 'Tier 1', 1),
+        createMockTeam('2', 'T2', 'Tier 1', 1),
+        createMockTeam('3', 'T3', 'Tier 1', 1),
+        createMockTeam('4', 'T4', 'Tier 1', 1),
+        createMockTeam('5', 'T5', 'Tier 1', 1),
+        createMockTeam('6', 'T6', 'Tier 1', 1),
+      ];
+      const historyPairs: Array<[string, string]> = [
+        ['1', '2'],
+        ['3', '4'],
+        ['5', '6'],
+      ];
+      const historySet = new Set(historyPairs.map(([a, b]) => pairKey(a, b)));
+
+      const result = generateScheduleGreedyWithTracking({
+        teams,
+        historyPairs,
+        slots: ['8:30', '9:00'],
+      });
+
+      const rematches = result.matches.filter((m) =>
+        historySet.has(pairKey(m.teamAId, m.teamBId))
+      );
+      expect(rematches).toHaveLength(0);
+      expect(result.matches).toHaveLength(6);
+    });
+
+    it('should honor forbiddenPairs across all relaxation paths', () => {
+      const teams: Team[] = [
+        createMockTeam('1', 'T1', 'Tier 1', 1),
+        createMockTeam('2', 'T2', 'Tier 1', 1),
+        createMockTeam('3', 'T3', 'Tier 1', 1),
+        createMockTeam('4', 'T4', 'Tier 1', 1),
+      ];
+      const forbiddenPairs = new Set<string>([pairKey('1', '2')]);
+
+      const result = generateScheduleGreedyWithTracking({
+        teams,
+        historyPairs: [],
+        slots: ['8:30', '9:00'],
+        forbiddenPairs,
+      });
+
+      // 1 and 2 must never be matched
+      const forbiddenMatch = result.matches.find(
+        (m) => pairKey(m.teamAId, m.teamBId) === pairKey('1', '2')
+      );
+      expect(forbiddenMatch).toBeUndefined();
+    });
+
+    it('should honor forbiddenPairs even under heavy season history', () => {
+      // Force the scheduler into relaxation territory while still requiring
+      // forbiddenPairs to be respected.
+      const teams: Team[] = [
+        createMockTeam('1', 'T1', 'Tier 1', 1),
+        createMockTeam('2', 'T2', 'Tier 1', 1),
+        createMockTeam('3', 'T3', 'Tier 1', 1),
+        createMockTeam('4', 'T4', 'Tier 1', 1),
+      ];
+      // Every fresh pairing exhausted EXCEPT 1-2 (which is forbidden) and 3-4
+      const historyPairs: Array<[string, string]> = [
+        ['1', '3'],
+        ['1', '4'],
+        ['2', '3'],
+        ['2', '4'],
+      ];
+      const forbiddenPairs = new Set<string>([pairKey('1', '2')]);
+
+      const result = generateScheduleGreedyWithTracking({
+        teams,
+        historyPairs,
+        slots: ['8:30', '9:00'],
+        forbiddenPairs,
+      });
+
+      const forbiddenMatch = result.matches.find(
+        (m) => pairKey(m.teamAId, m.teamBId) === pairKey('1', '2')
+      );
+      expect(forbiddenMatch).toBeUndefined();
+    });
+
+    it('should not reintroduce a season rematch on odd-team byes', () => {
+      const teams: Team[] = [
+        createMockTeam('1', 'T1', 'Tier 1', 1),
+        createMockTeam('2', 'T2', 'Tier 1', 1),
+        createMockTeam('3', 'T3', 'Tier 1', 1),
+        createMockTeam('4', 'T4', 'Tier 1', 1),
+        createMockTeam('5', 'T5', 'Tier 1', 1),
+        createMockTeam('6', 'T6', 'Tier 1', 1),
+        createMockTeam('7', 'T7', 'Tier 1', 1),
+        createMockTeam('8', 'T8', 'Tier 1', 1),
+        createMockTeam('9', 'T9', 'Tier 1', 1),
+      ];
+      const historyPairs: Array<[string, string]> = [
+        ['1', '2'],
+        ['3', '4'],
+        ['5', '6'],
+        ['7', '8'],
+      ];
+      const historySet = new Set(historyPairs.map(([a, b]) => pairKey(a, b)));
+
+      const result = generateScheduleGreedyWithTracking({
+        teams,
+        historyPairs,
+        slots: ['8:30', '9:00'],
+        thirdSlot: '9:30',
+      });
+
+      const rematches = result.matches.filter((m) =>
+        historySet.has(pairKey(m.teamAId, m.teamBId))
+      );
+      expect(rematches).toHaveLength(0);
+      // Every team should still get 2 matches
+      const counts = new Map<string, number>();
+      for (const m of result.matches) {
+        counts.set(m.teamAId, (counts.get(m.teamAId) || 0) + 1);
+        counts.set(m.teamBId, (counts.get(m.teamBId) || 0) + 1);
+      }
+      for (const t of teams) {
+        expect(counts.get(t.id)).toBe(2);
+      }
+    });
+  });
 });
