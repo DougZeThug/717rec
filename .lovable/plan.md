@@ -1,44 +1,22 @@
 
 
-## Add Edge Case Tests for calculateSOS and calculateWinPercentage
+## Verify ESLint 10 + TypeScript 6 Compatibility
 
-### What we're adding
+### What we're doing
 
-Two new test cases in existing test files — no production code changes.
+Running the full lint and typecheck suite to confirm the recent major version bumps (ESLint 9→10, TypeScript 5→6) produce no new warnings or errors.
 
-### Changes
+### Steps
 
-**1. `src/utils/rankingUtils/__tests__/calculateSOS.test.ts`** — Opponent with missing `division_id`
+1. **Typecheck**: `npx tsc --noEmit` — verifies all TypeScript files compile cleanly under TS 6
+2. **Lint**: `npx eslint . --max-warnings=0` — verifies ESLint 10 with the existing flat config produces no new warnings
+3. **Report**: Surface any new issues and propose fixes if needed
 
-The source code (line 44) has `if (opponent && opponent.division_id)` — when an opponent has no `division_id`, it's skipped entirely (not counted, no weight added). This is a distinct branch from "division weight missing from map" (which uses the default 0.85). Currently untested.
+### Expected outcome
 
-New test: Create an opponent with `undefined` division_id. When it's the only opponent, `countedOpponents` stays 0, so the function returns the fallback `0.5`.
-
-```ts
-it('returns 0.5 when opponent has no division_id', () => {
-  const t1 = team('t1', 'div-1');
-  const t2 = team('t2'); // no division_id
-  const sos = calculateSOS(t1, [t1, t2], [match('t1', 't2')], new Map());
-  expect(sos).toBe(0.5);
-});
-```
-
-**2. `src/utils/rankingUtils/__tests__/calculateWinPercentage.test.ts`** — Large numbers precision
-
-Verify that with very large win/loss counts, the result doesn't suffer floating-point drift that could affect ranking sort order.
-
-```ts
-it('handles very large numbers without precision issues', () => {
-  const wins = 999999;
-  const losses = 1;
-  const result = calculateWinPercentage(wins, losses);
-  expect(result).toBeCloseTo(999999 / 1000000, 10);
-  expect(result).toBeLessThan(1);
-  expect(result).toBeGreaterThan(0.999);
-});
-```
+Both commands pass cleanly. If any new warnings appear from the version bumps, we'll fix them in a follow-up.
 
 ### Scope
 
-2 test files, 1 test case each. No production code changes.
+No file changes — diagnostic only.
 
