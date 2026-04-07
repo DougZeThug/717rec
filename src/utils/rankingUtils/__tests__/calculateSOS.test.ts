@@ -50,4 +50,11 @@ describe('calculateSOS', () => {
     const sos = calculateSOS(t1, [t1, t2], [match('t1', 't2'), match('t1', 't2')], weights);
     expect(sos).toBe(0.8);
   });
+
+  it('returns 0.5 when opponent has no division_id', () => {
+    const t1 = team('t1', 'div-1');
+    const t2 = team('t2'); // no division_id
+    const sos = calculateSOS(t1, [t1, t2], [match('t1', 't2')], new Map());
+    expect(sos).toBe(0.5);
+  });
 });
