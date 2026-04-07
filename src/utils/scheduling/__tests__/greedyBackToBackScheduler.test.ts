@@ -643,4 +643,52 @@ describe('greedyBackToBackScheduler', () => {
       }
     });
   });
+
+  describe('Performance', () => {
+    it('handles 40 teams with dense history under 500ms', () => {
+      const tiers = ['Competitive', 'Intermediate', 'Recreational'];
+      const teams = Array.from({ length: 40 }, (_, i) => ({
+        id: `perf-${i}`,
+        name: `PerfTeam ${i}`,
+        divisionName: tiers[i % 3],
+      }));
+
+      // Generate dense history: ~60% of all possible pairs
+      const historyPairs: [string, string][] = [];
+      for (let i = 0; i < teams.length; i++) {
+        for (let j = i + 1; j < teams.length; j++) {
+          // Use a deterministic pattern to select ~60% of pairs
+          if ((i * 7 + j * 13) % 5 < 3) {
+            historyPairs.push([teams[i].id, teams[j].id]);
+          }
+        }
+      }
+
+      const start = performance.now();
+      const result = generateScheduleGreedyWithTracking({
+        teams,
+        historyPairs,
+        slots: ['8:30', '9:00'],
+        thirdSlot: '9:30',
+      });
+      const elapsed = performance.now() - start;
+
+      // Performance: must complete under 500ms
+      expect(elapsed).toBeLessThan(500);
+
+      // Completeness: all 40 teams should appear in at least one match
+      const scheduledTeamIds = new Set<string>();
+      for (const m of result.matches) {
+        scheduledTeamIds.add(m.teamAId);
+        scheduledTeamIds.add(m.teamBId);
+      }
+      expect(scheduledTeamIds.size).toBe(40);
+
+      // Log for visibility in test output
+      console.log(
+        `Stress test: ${elapsed.toFixed(1)}ms, ${result.matches.length} matches, ` +
+          `${historyPairs.length} history pairs, repairAttempted=${result.diagnostics.repairAttempted}`
+      );
+    });
+  });
 });
