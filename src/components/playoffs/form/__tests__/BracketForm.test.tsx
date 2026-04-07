@@ -25,6 +25,17 @@ vi.mock('../bracket-teams/components/BracketFormTeamsContainer', () => ({
   BracketFormTeamsContainer: () => <div data-testid="bracket-form-teams">Teams Component</div>,
 }));
 
+vi.mock('../BracketFormGrandFinal', () => ({
+  BracketFormGrandFinal: () => <div data-testid="bracket-form-grand-final">Grand Final</div>,
+}));
+
+// Polyfill ResizeObserver for jsdom (used by Radix UI internals)
+globalThis.ResizeObserver = globalThis.ResizeObserver || class {
+  observe() {}
+  disconnect() {}
+  unobserve() {}
+};
+
 const mockDivisions = [
   { id: 'div1', name: 'Division 1' },
   { id: 'div2', name: 'Division 2' },

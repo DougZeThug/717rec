@@ -98,9 +98,9 @@ describe('Team Stats Updates', () => {
       error: { message: 'Test error' },
     });
 
-    await expect(applyMatchResult('winner-id', 'loser-id', 2, 1)).rejects.toEqual({
-      message: 'Test error',
-    });
+    await expect(applyMatchResult('winner-id', 'loser-id', 2, 1)).rejects.toThrow(
+      'Failed to update team stats via RPC: Test error'
+    );
   });
 
   it('should throw an error when winnerId equals loserId', async () => {
