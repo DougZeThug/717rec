@@ -16,12 +16,24 @@ export default defineConfig(({ mode }) => ({
     },
   },
   test: {
-    environment: 'jsdom', // Switched to jsdom which has better compatibility
+    environment: 'jsdom',
     setupFiles: ['./src/setupTests.ts'],
     include: [
       '**/__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mjs,cts,tsx}',
       '**/tests/**/*.{test,spec}.{js,mjs,cjs,ts,mjs,cts,tsx}',
     ],
     globals: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/integrations/supabase/types.ts',
+        'src/components/ui/**',
+        'src/**/*.test.{ts,tsx}',
+        'src/**/*.spec.{ts,tsx}',
+        'src/setupTests.ts',
+      ],
+    },
   },
 }));
