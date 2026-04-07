@@ -1,27 +1,36 @@
 
 
-## Fix: Remove non-null assertions in feasibility.ts
+## Fix: Linter warnings in greedy scheduling files
 
-### What's wrong
+Five minor linter issues across 3 files.
 
-Two `teams.find(...)!` calls use the forbidden `!` non-null assertion (JS-0339). While the team will always be found (since `atRiskTeams` comes from the same `teams` array), the linter rightfully flags this.
+### Changes
 
-### Fix
+**1. `src/utils/scheduling/greedy/index.ts` (line 86)** — JS-0242: `let` to `const`
 
-**File:** `src/utils/scheduling/greedy/feasibility.ts` (lines 39 and 57)
+`relaxationLevel` is never reassigned in this file (it's only reassigned inside `scheduleEven`/`scheduleOdd` via their own local copy). Change `let` to `const`.
 
-Replace both instances of:
+**2. `src/utils/scheduling/greedy/scheduleEven.ts` (lines 250-254)** — JS-0246: string concatenation
+
+Replace `template + (ternary)` with a single template literal using `${}` interpolation for the ternary.
+
+**3. `src/utils/scheduling/greedy/scheduleOdd.ts` (lines 207-211)** — JS-0246: same fix
+
+Same pattern — embed the ternary inside the template literal.
+
+**4. `src/utils/scheduling/greedy/slotPairing.ts` (line 78)** — JS-C1002: rename `m` to `existingMatch`
+
+The loop variable `const m = result[k]` should use a descriptive name.
+
+**5. `src/utils/scheduling/greedy/slotPairing.ts` — JS-R1005: cyclomatic complexity of 51**
+
+This is a valid flag but the function is already well-structured with clear comment-delimited sections. Refactoring it would split tightly coupled swap logic across multiple functions with many shared parameters, reducing readability. Add a suppression comment explaining why:
+
 ```ts
-const team = teams.find((t) => t.id === teamId)!;
-```
-
-With:
-```ts
-const team = teams.find((t) => t.id === teamId);
-if (!team) continue;
+// eslint-disable-next-line complexity -- swap logic is inherently branchy; splitting reduces clarity
 ```
 
 ### Scope
 
-One file, two lines changed. No logic changes — teams will always be found, but the guard clause satisfies the linter and adds defensive safety.
+4 files, cosmetic/linter-only changes. No logic changes.
 
