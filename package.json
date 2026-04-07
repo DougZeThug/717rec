@@ -55,6 +55,7 @@
     "@tanstack/react-query": "5.96.2",
     "@types/edmonds-blossom": "^1.0.4",
     "@types/uuid": "^11.0.0",
+    "@vitest/eslint-plugin": "^1.6.14",
     "brackets-manager": "^1.9.1",
     "brackets-memory-db": "^1.0.5",
     "brackets-model": "^1.5.0",
