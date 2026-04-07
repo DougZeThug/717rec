@@ -238,6 +238,35 @@ describe('greedyBackToBackScheduler', () => {
       // S3 match should NOT be Team C vs Team D
       expect(s3Key).not.toBe('3||4');
     });
+
+    it('should give every team exactly 2 matches with 5 teams (small odd)', () => {
+      const teams: Team[] = [
+        createMockTeam('1', 'Team A', 'Tier 1', 1),
+        createMockTeam('2', 'Team B', 'Tier 1', 1),
+        createMockTeam('3', 'Team C', 'Tier 2', 2),
+        createMockTeam('4', 'Team D', 'Tier 2', 2),
+        createMockTeam('5', 'Team E', 'Tier 2', 2),
+      ];
+
+      const input: GreedySchedulerInput = {
+        teams,
+        historyPairs: [],
+        slots: ['8:30', '9:00'],
+        thirdSlot: '9:30',
+      };
+
+      const result = generateScheduleGreedy(input);
+
+      const teamMatchCounts = new Map<string, number>();
+      for (const match of result) {
+        teamMatchCounts.set(match.teamAId, (teamMatchCounts.get(match.teamAId) || 0) + 1);
+        teamMatchCounts.set(match.teamBId, (teamMatchCounts.get(match.teamBId) || 0) + 1);
+      }
+
+      for (const team of teams) {
+        expect(teamMatchCounts.get(team.id)).toBe(2);
+      }
+    });
   });
 
   describe('Tier gap constraints', () => {
