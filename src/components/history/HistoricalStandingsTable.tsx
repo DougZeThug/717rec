@@ -4,6 +4,7 @@ import React, { CSSProperties, useCallback } from 'react';
 import { TeamLogo } from '@/components/shared/TeamLogo';
 import { EntityCard } from '@/components/ui/entity-card';
 import { InlineEmptyState } from '@/components/ui/inline-empty-state';
+import { PowerScoreDisplay } from '@/components/ui/PowerScoreDisplay';
 import { VirtualizedList } from '@/components/ui/VirtualizedList';
 import { useIsMobile } from '@/hooks/useMobile';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
