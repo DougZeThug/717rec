@@ -1,14 +1,12 @@
 import { Team } from '@/types';
 import { scheduleLog, warnLog } from '@/utils/logger';
 import { pickBye } from './byeSelection';
-
-type ByeStrategy = 'last' | 'fewestPartners';
 import { canPlay, getTier } from './constraints';
 import { pairKey } from './pairKey';
 import { rematchRepairPass } from './rematchRepair';
 import { generateSlotPairings } from './slotPairing';
 import { attemptRepairPass } from './swapRepair';
-import { GreedySchedulerResult, RelaxationLevel, ScheduledMatch } from './types';
+import { ByeStrategy, GreedySchedulerResult, RelaxationLevel, ScheduledMatch } from './types';
 
 export interface OddScheduleArgs {
   teams: Team[];

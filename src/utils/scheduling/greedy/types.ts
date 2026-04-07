@@ -9,6 +9,8 @@ import { Team } from '@/types';
  */
 export type RelaxationLevel = 0 | 1 | 2 | 3;
 
+export type ByeStrategy = 'last' | 'fewestPartners';
+
 export interface GreedySchedulerInput {
   teams: Team[];
   historyPairs: Array<[string, string]>; // Season history
@@ -16,7 +18,7 @@ export interface GreedySchedulerInput {
   thirdSlot?: string; // Optional S3 for odd-team nights (e.g., "9:30")
   config?: {
     maxTierGap?: number; // Default: 1 (blocks T1 vs T3)
-    byeStrategy?: 'last' | 'fewestPartners'; // Default: 'last'
+    byeStrategy?: ByeStrategy; // Default: 'last'
   };
   // Pairs already created in other blocks (for double header teams)
   // These pairs will be forbidden to prevent duplicate opponents across blocks
@@ -52,4 +54,4 @@ export interface GreedySchedulerResult {
 }
 
 export const MAX_TIER_GAP = 1; // Block tier differences > 1
-export const DEFAULT_BYE_STRATEGY: 'last' | 'fewestPartners' = 'last';
+export const DEFAULT_BYE_STRATEGY: ByeStrategy = 'last';
