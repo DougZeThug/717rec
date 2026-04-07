@@ -41,7 +41,27 @@ const getWinPercentageColor = (percentage: number): string => {
   return 'text-red-600 dark:text-red-500';
 };
 
-// Mobile row component — EntityCard based
+// Small stat cell for mobile grid — matches RankingCard style
+const StatCell: React.FC<{
+  label: string;
+  value: string;
+  colorClass?: string;
+  isWinterTheme: boolean;
+}> = ({ label, value, colorClass, isWinterTheme }) => (
+  <div className="rounded-md bg-muted/50 px-2 py-1.5 flex flex-col items-center">
+    <span
+      className={cn(
+        'text-[10px] leading-tight uppercase tracking-wider',
+        isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
+      )}
+    >
+      {label}
+    </span>
+    <span className={cn('text-sm font-bold tabular-nums', colorClass)}>{value}</span>
+  </div>
+);
+
+// Mobile row component — EntityCard + PowerScoreGauge layout (matching RankingCard)
 const MobileTeamRow: React.FC<{
   team: SeasonData;
   style: CSSProperties;
@@ -51,10 +71,8 @@ const MobileTeamRow: React.FC<{
     team.match_wins + team.match_losses > 0
       ? (team.match_wins / (team.match_wins + team.match_losses)) * 100
       : 0;
-  const gameWinPercentage =
-    team.game_wins + team.game_losses > 0
-      ? (team.game_wins / (team.game_wins + team.game_losses)) * 100
-      : 0;
+
+  const powerScore100 = team.power_score ? team.power_score * 100 : null;
 
   return (
     <div style={style} className="pb-2">
@@ -67,16 +85,8 @@ const MobileTeamRow: React.FC<{
           team.runner_up && 'border-l-[3px] border-l-gray-400'
         )}
       >
-        {/* Header row: rank + badge + logo + name + record */}
+        {/* Header row: badge + logo + name + record */}
         <div className="flex items-center gap-2">
-          <span
-            className={cn(
-              'text-xs font-semibold tabular-nums w-5 text-center flex-shrink-0',
-              isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
-            )}
-          >
-            {team.playoff_rank || '-'}
-          </span>
           {team.champion && <Crown className="w-4 h-4 text-yellow-500 flex-shrink-0" />}
           {team.runner_up && <Medal className="w-4 h-4 text-gray-500 flex-shrink-0" />}
           <TeamLogo
@@ -103,57 +113,53 @@ const MobileTeamRow: React.FC<{
           </span>
         </div>
 
-        {/* Compact 2x2 stat grid */}
-        <div className="grid grid-cols-4 gap-1 mt-2">
-          <StatCell
-            label="Win%"
-            value={`${winPercentage.toFixed(1)}%`}
-            colorClass={getWinPercentageColor(winPercentage)}
-            isWinterTheme={isWinterTheme}
+        {/* Stats area: PowerScoreGauge + 2x2 grid */}
+        <div className="flex items-center gap-3 mt-2">
+          <PowerScoreDisplay
+            score={team.power_score}
+            source="team_season_stats"
+            display="gauge"
+            size="sm"
+            showLabel={true}
           />
-          <StatCell
-            label="GW%"
-            value={`${gameWinPercentage.toFixed(1)}%`}
-            colorClass={getWinPercentageColor(gameWinPercentage)}
-            isWinterTheme={isWinterTheme}
-          />
-          <StatCell
-            label="Power"
-            value={team.power_score ? (team.power_score * 100).toFixed(1) : '-'}
-            colorClass={getPowerScoreColor(team.power_score ? team.power_score * 100 : null)}
-            isWinterTheme={isWinterTheme}
-          />
-          <StatCell
-            label="SOS"
-            value={team.sos?.toFixed(3) ?? '-'}
-            colorClass={getSosColor(team.sos)}
-            isWinterTheme={isWinterTheme}
-          />
+          <div className="grid grid-cols-2 gap-1 flex-1">
+            <StatCell
+              label="Win%"
+              value={`${winPercentage.toFixed(1)}%`}
+              colorClass={getWinPercentageColor(winPercentage)}
+              isWinterTheme={isWinterTheme}
+            />
+            <StatCell
+              label="SOS"
+              value={team.sos?.toFixed(3) ?? '-'}
+              colorClass={getSosColor(team.sos)}
+              isWinterTheme={isWinterTheme}
+            />
+            <StatCell
+              label="Games"
+              value={`${team.game_wins}-${team.game_losses}`}
+              isWinterTheme={isWinterTheme}
+            />
+            <StatCell
+              label="Game%"
+              value={
+                team.game_wins + team.game_losses > 0
+                  ? `${((team.game_wins / (team.game_wins + team.game_losses)) * 100).toFixed(1)}%`
+                  : '0.0%'
+              }
+              colorClass={getWinPercentageColor(
+                team.game_wins + team.game_losses > 0
+                  ? (team.game_wins / (team.game_wins + team.game_losses)) * 100
+                  : 0
+              )}
+              isWinterTheme={isWinterTheme}
+            />
+          </div>
         </div>
       </EntityCard>
     </div>
   );
 };
-
-// Small stat cell for mobile grid
-const StatCell: React.FC<{
-  label: string;
-  value: string;
-  colorClass: string;
-  isWinterTheme: boolean;
-}> = ({ label, value, colorClass, isWinterTheme }) => (
-  <div className="flex flex-col items-center">
-    <span
-      className={cn(
-        'text-[10px] leading-tight',
-        isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
-      )}
-    >
-      {label}
-    </span>
-    <span className={cn('text-xs font-semibold tabular-nums', colorClass)}>{value}</span>
-  </div>
-);
 
 // Desktop table row component
 const DesktopTeamRow: React.FC<{
