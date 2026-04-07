@@ -52,7 +52,7 @@ export const BottomNav = React.memo(() => {
         'pb-[calc(env(safe-area-inset-bottom,0px)+12px)]',
         // Default theme
         !isWinterTheme && [
-          'bg-background/80 backdrop-blur-lg',
+          'bg-background',
           'border-t border-border',
           'shadow-[0_-1px_3px_rgba(0,0,0,0.05)] dark:shadow-[0_-1px_3px_rgba(0,0,0,0.2)]',
         ],

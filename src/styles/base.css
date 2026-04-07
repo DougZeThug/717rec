@@ -15,7 +15,6 @@
 html {
   transition: background-color var(--theme-transition-duration) ease;
   scroll-behavior: smooth;
-  overflow-x: hidden;
 }
 
 body {
