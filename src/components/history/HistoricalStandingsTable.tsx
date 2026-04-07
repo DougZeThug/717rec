@@ -314,8 +314,8 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
       return (
         <VirtualizedList
           items={teams}
-          rowHeight={110}
-          height={Math.min(teams.length * 110, 600)}
+          rowHeight={140}
+          height={Math.min(teams.length * 140, 600)}
           renderRow={renderMobileRow}
           overscanCount={3}
         />
