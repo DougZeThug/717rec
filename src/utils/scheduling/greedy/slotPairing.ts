@@ -23,7 +23,8 @@ function trySwapToFixUnmatched(
   teamMatchCounts: Map<string, number>,
   maxTierGap: number,
   newPairs: Set<string> | undefined,
-  relaxationLevel: RelaxationLevel
+  relaxationLevel: RelaxationLevel,
+  rematchAllowedFor?: Set<string>
 ): ScheduledMatch[] {
   const result = [...matches];
   const stillUnmatched = new Set(unmatchedTeams.map((t) => t.id));
@@ -37,7 +38,7 @@ function trySwapToFixUnmatched(
       if (!stillUnmatched.has(unmatchedList[j].id)) continue;
       const u1 = unmatchedList[i];
       const u2 = unmatchedList[j];
-      if (canPlay(u1, u2, playedSet, tonightPairs, maxTierGap, relaxationLevel)) {
+      if (canPlay(u1, u2, playedSet, tonightPairs, maxTierGap, relaxationLevel, rematchAllowedFor)) {
         const match: ScheduledMatch = {
           slot: slotName,
           teamAId: u1.id,
@@ -81,8 +82,8 @@ function trySwapToFixUnmatched(
 
         // Option 1: (U1, A) + (U2, B)
         if (
-          canPlay(u1, teamA, playedSet, tonightPairs, maxTierGap, relaxationLevel) &&
-          canPlay(u2, teamB, playedSet, tonightPairs, maxTierGap, relaxationLevel)
+          canPlay(u1, teamA, playedSet, tonightPairs, maxTierGap, relaxationLevel, rematchAllowedFor) &&
+          canPlay(u2, teamB, playedSet, tonightPairs, maxTierGap, relaxationLevel, rematchAllowedFor)
         ) {
           // Remove the old match's tonight pair
           const oldKey = pairKey(teamA.id, teamB.id);
@@ -137,8 +138,8 @@ function trySwapToFixUnmatched(
 
         // Option 2: (U1, B) + (U2, A)
         if (
-          canPlay(u1, teamB, playedSet, tonightPairs, maxTierGap, relaxationLevel) &&
-          canPlay(u2, teamA, playedSet, tonightPairs, maxTierGap, relaxationLevel)
+          canPlay(u1, teamB, playedSet, tonightPairs, maxTierGap, relaxationLevel, rematchAllowedFor) &&
+          canPlay(u2, teamA, playedSet, tonightPairs, maxTierGap, relaxationLevel, rematchAllowedFor)
         ) {
           const oldKey = pairKey(teamA.id, teamB.id);
           tonightPairs.delete(oldKey);
@@ -313,7 +314,8 @@ export function generateSlotPairings(
       teamMatchCounts,
       maxTierGap,
       newPairs,
-      relaxationLevel
+      relaxationLevel,
+      slotRematchAllowed
     );
     return swapResult;
   }
