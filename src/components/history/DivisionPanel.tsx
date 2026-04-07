@@ -7,7 +7,6 @@ import { useIsMobile } from '@/hooks/useMobile';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 
-import ChampionCard from './ChampionCard';
 import HistoricalStandingsTable from './HistoricalStandingsTable';
 
 interface SeasonData {
@@ -115,9 +114,7 @@ const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) =>
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            <div className="pt-2 space-y-4">
-              {champion && !isMobile && <ChampionCard team={champion} />}
-
+            <div className="pt-2">
               <HistoricalStandingsTable teams={sortedTeams} />
             </div>
           </motion.div>
