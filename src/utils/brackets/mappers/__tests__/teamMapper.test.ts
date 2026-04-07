@@ -49,9 +49,9 @@ describe('getTeamById', () => {
 
   it('returns a placeholder team when team not found and includePlaceholders is true', () => {
     const result = getTeamById('unknown-id', teamMap, { includePlaceholders: true });
-    expect(result).not.toBeNull();
-    expect(result!.id).toBe('unknown-id');
-    expect(result!.name).toContain('Team');
+    if (!result) throw new Error('Expected placeholder team but got null');
+    expect(result.id).toBe('unknown-id');
+    expect(result.name).toContain('Team');
   });
 
   it('uses custom placeholderPrefix when provided', () => {
@@ -59,7 +59,8 @@ describe('getTeamById', () => {
       includePlaceholders: true,
       placeholderPrefix: 'Bye',
     });
-    expect(result!.name).toMatch(/^Bye /);
+    if (!result) throw new Error('Expected placeholder team but got null');
+    expect(result.name).toMatch(/^Bye /);
   });
 });
 
@@ -90,9 +91,9 @@ describe('validateTeamData', () => {
 
   it('separates invalid entries (null, missing id, missing name)', () => {
     const validTeam = makeTeam('t1', 'Tigers');
-    const noId = { name: 'No ID' } as any;
-    const noName = { id: 't3' } as any;
-    const nullEntry = null as any;
+    const noId = { name: 'No ID' } as unknown as PlayoffTeam;
+    const noName = { id: 't3' } as unknown as PlayoffTeam;
+    const nullEntry = null as unknown as PlayoffTeam;
 
     const { valid, invalid } = validateTeamData([validTeam, noId, noName, nullEntry]);
     expect(valid).toHaveLength(1);

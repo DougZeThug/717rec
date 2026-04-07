@@ -30,13 +30,13 @@ describe('validateBracketData', () => {
   });
 
   it('errors when matches is not an array', () => {
-    const result = validateBracketData(null as any, []);
+    const result = validateBracketData(null as unknown as PlayoffMatch[], []);
     expect(result.isValid).toBe(false);
     expect(result.errors).toContain('Matches must be an array');
   });
 
   it('errors when teams is not an array', () => {
-    const result = validateBracketData([], null as any);
+    const result = validateBracketData([], null as unknown as PlayoffTeam[]);
     expect(result.isValid).toBe(false);
     expect(result.errors).toContain('Teams must be an array');
   });
