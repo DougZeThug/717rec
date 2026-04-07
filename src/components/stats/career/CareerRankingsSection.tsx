@@ -1,4 +1,4 @@
-import { ChevronDown, Download, Eye, EyeOff, Trophy } from 'lucide-react';
+import { ChevronDown, Download, Trophy } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React from 'react';
 
@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { LoadingState } from '@/components/ui/loading-state';
-import { Switch } from '@/components/ui/switch';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useCareerRankingsWithHidden } from '@/hooks/useCareerRankingsWithHidden';
 import { useIsMobile } from '@/hooks/useMobile';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
@@ -26,9 +24,6 @@ const CareerRankingsSection: React.FC = () => {
     data: careerRankings,
     isLoading,
     error,
-    showHidden,
-    toggleShowHidden,
-    hiddenTeamCount,
   } = useCareerRankingsWithHidden();
   const [isOpen, setIsOpen] = React.useState(false);
 
@@ -97,48 +92,11 @@ const CareerRankingsSection: React.FC = () => {
                       )}
                     >
                       Historical performance across all seasons and playoffs
-                      {showHidden && hiddenTeamCount > 0 && (
-                        <span className="ml-2 text-xs bg-muted px-2 py-1 rounded">
-                          +{hiddenTeamCount} hidden
-                        </span>
-                      )}
                     </CardDescription>
                   )}
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                {hiddenTeamCount > 0 && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div
-                          className="flex items-center gap-2"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <label
-                            htmlFor="show-hidden-toggle"
-                            className="text-sm font-medium cursor-pointer flex items-center gap-1"
-                          >
-                            {showHidden ? (
-                              <Eye className="h-3 w-3" />
-                            ) : (
-                              <EyeOff className="h-3 w-3" />
-                            )}
-                            <span className="hidden sm:inline">Hidden</span>
-                          </label>
-                          <Switch
-                            id="show-hidden-toggle"
-                            checked={showHidden}
-                            onCheckedChange={toggleShowHidden}
-                          />
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{showHidden ? 'Hide' : 'Show'} teams from the hidden division</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
                 {isOpen && careerRankings && careerRankings.length > 0 && (
                   <Button
                     variant="outline"
@@ -179,7 +137,7 @@ const CareerRankingsSection: React.FC = () => {
             {isLoading ? (
               <LoadingState variant="section" message="Loading career stats..." />
             ) : careerRankings && careerRankings.length > 0 ? (
-              <CareerRankingsTable rankings={careerRankings} showHidden={showHidden} />
+              <CareerRankingsTable rankings={careerRankings} />
             ) : (
               <div className="text-center py-12 text-muted-foreground">
                 No career statistics available.
