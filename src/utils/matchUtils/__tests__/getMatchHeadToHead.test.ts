@@ -21,7 +21,8 @@ describe('getMatchHeadToHead', () => {
   });
 
   it('returns null when team2Id is undefined', async () => {
-    expect(await getMatchHeadToHead('team-1')).toBeNull();
+    const team2Id: string | undefined = undefined;
+    expect(await getMatchHeadToHead('team-1', team2Id)).toBeNull();
   });
 
   it('returns null when both team IDs are the same', async () => {
