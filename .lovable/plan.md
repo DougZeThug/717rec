@@ -1,47 +1,47 @@
 
 
-## Redesign History Mobile Cards to Match Standings Cards
+## Tighten History Page Collapsed Accordion on Mobile
 
-### Problem
+### What's changing
 
-The history page mobile cards use a flat 4-column stat grid with bare centered text, while the standings cards use `bg-muted/50` rounded stat cells, a `PowerScoreGauge` ring, and a richer layout. The two look completely different.
+The collapsed season accordion headers currently have a large trophy icon circle (40x40), generous padding, and spread-out metadata. The reference screenshot shows a much tighter layout: season name + date inline, team/match count below, status badge right-aligned — all compact.
 
-### What changes
+### Changes
 
-**`src/components/history/HistoricalStandingsTable.tsx`** — Rebuild `MobileTeamRow` to mirror the `RankingCard` detailed view layout:
+**`src/components/history/SeasonAccordion.tsx`** — Collapsed header redesign (mobile only)
 
-**Current layout:**
+**Current layout (lines 149-253):**
 ```text
-┌────────────────────────────────┐
-│ -  [logo] Team Name       9-1  │
-│  Win%   GW%   Power   SOS     │  ← bare centered text, no backgrounds
-│  90.0%  79.2%  81.9  0.885    │
-└────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│ [40px trophy circle]  WINTER 1 2026     │  ← large icon, generous p-4
+│                       (Jan - Feb 2026)  │
+│                       👑 Cuzzo's Clinic  │
+│                       👥 19 teams  📅 193│
+│                                      ∨  │
+└─────────────────────────────────────────┘
 ```
 
-**New layout (matching RankingCard):**
+**New layout:**
 ```text
-┌────────────────────────────────┐
-│ 👑 [logo] Team Name       9-1  │  ← header row (same)
-│                                │
-│ ┌──────┐  ┌─────────┬────────┐│
-│ │ 81.9 │  │Win% │Game%     ││  ← PowerScoreGauge + 2x2 grid
-│ │ PWR  │  │90.0%│79.2%     ││     with bg-muted/50 rounded cells
-│ └──────┘  ├─────────┼────────┤│
-│           │SOS  │GW        ││
-│           │0.885│24-6      ││
-│           └─────────┴────────┘│
-└────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│ WINTER 1 2026 (Jan - Feb 2026)  🏆 Done │  ← no circle icon, tighter
+│ 👑 Cuzzo's Clinic                       │
+│ 19 teams · 193 matches              ∨  │
+└─────────────────────────────────────────┘
 ```
 
 Key changes:
-1. Add `PowerScoreGauge` component (same as RankingCard) on the left
-2. Replace flat 4-column grid with 2x2 grid using `rounded-md bg-muted/50 px-2 py-1.5` cells
-3. Use `text-[10px]` labels + `text-sm font-bold` values (matching RankingCard exactly)
-4. Add game record (W-L) as a stat cell, replace GW% with it
-5. Keep champion/runner-up left border accents
+1. **Remove the 40px trophy circle** on mobile — it takes too much horizontal space. Keep it on desktop via `hidden md:flex`.
+2. **Reduce padding** from `p-4` to `px-3 py-3 md:p-6` on the button.
+3. **Inline the status badge** (Active / Completed with trophy icon) on the right side of the first row, next to the season name and date.
+4. **Move champion names** to their own compact line directly under the title (no icons, just `👑 Name`).
+5. **Combine team count + match count** into a single line: `19 teams · 193 matches`.
+6. **Reduce gap** between metadata items from `gap-3` to `gap-1.5` on mobile.
+7. **Smaller chevron** area — keep it right-aligned but tighter.
+
+For non-active completed seasons, show a small `🏆 Completed` badge (or `Active Season` for active) — matching the reference screenshot's right-aligned status indicators.
 
 ### Scope
 
-1 file changed: `src/components/history/HistoricalStandingsTable.tsx` — `MobileTeamRow` component only. Desktop view unchanged.
+1 file: `src/components/history/SeasonAccordion.tsx` — collapsed header layout only. No data, logic, or expanded content changes. Team cards inside remain untouched.
 
