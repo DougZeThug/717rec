@@ -988,7 +988,7 @@ function rematchRepairPass(
         repaired++;
         swapped = true;
         scheduleLog(
-          `Rematch repair (${slotName}): (${A.name} vs ${B.name}) + (${C.name} vs ${D.name}) → ` +
+          `Rematch repair (${slotName}): (${teamA.name} vs ${teamB.name}) + (${teamC.name} vs ${teamD.name}) → ` +
             `(${p1a.name} vs ${p1b.name}) + (${p2a.name} vs ${p2b.name})`
         );
         break;
