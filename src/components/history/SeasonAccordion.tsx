@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Calendar, ChevronDown, Crown, Pencil, RefreshCw, Trophy, Users } from 'lucide-react';
+import { ChevronDown, Crown, Pencil, RefreshCw, Target, Trophy, TrendingUp } from 'lucide-react';
 import React, { useState } from 'react';
 
+import { TeamLogo } from '@/components/shared/TeamLogo';
 import { Button } from '@/components/ui/button';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
@@ -55,7 +56,7 @@ const useSeasonData = (seasonId: string, enabled: boolean) => {
       return transformedData;
     },
     enabled,
-    staleTime: 0, // Always refetch - important for admin edits
+    staleTime: 0,
     retry: 2,
     retryDelay: 1000,
   });
@@ -83,12 +84,9 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
     setIsExpanded(!isExpanded);
   };
 
-  // Group data by division with proper display names and ordering
-  // Uses rank-based splitting for Intermediate division -> Int 1 / Int 2
+  // Group data by division
   const divisionData = React.useMemo(() => {
     if (!seasonData) return {};
-
-    // Filter out Hidden divisions and group by display division name
     const grouped = seasonData
       .filter((team) => {
         const displayDivision = getHistoryDivisionDisplayName(team.division_name);
@@ -105,16 +103,12 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
         },
         {} as Record<string, SeasonData[]>
       );
-
     return grouped;
   }, [seasonData, season.name]);
 
   const hasChampions = seasonData?.some((team) => team.champion) || false;
+  const championTeams = seasonData?.filter((team) => team.champion) || [];
 
-  // Get champion names for preview
-  const champions = seasonData?.filter((team) => team.champion).map((team) => team.team_name) || [];
-
-  // Count total teams and matches
   const teamCount =
     seasonData?.filter((team) => {
       const displayDivision = getHistoryDivisionDisplayName(team.division_name);
@@ -122,15 +116,32 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
     }).length || 0;
   const totalMatches =
     seasonData?.reduce((sum, t) => sum + (t.match_wins || 0) + (t.match_losses || 0), 0) || 0;
-  const matchCount = Math.floor(totalMatches / 2); // Each match counted twice (once per team)
+  const matchCount = Math.floor(totalMatches / 2);
 
-  // Format date range
+  // Highlights
+  const highlights = React.useMemo(() => {
+    if (!seasonData || seasonData.length === 0) return null;
+    const mostWins = seasonData.reduce(
+      (max, team) => (team.match_wins > max.match_wins ? team : max),
+      seasonData[0]
+    );
+    const highestPS = seasonData.reduce(
+      (max, team) => ((team.power_score || 0) > (max.power_score || 0) ? team : max),
+      seasonData[0]
+    );
+    const mostGameWins = seasonData.reduce(
+      (max, team) => (team.game_wins > max.game_wins ? team : max),
+      seasonData[0]
+    );
+    return { mostWins, highestPS, mostGameWins };
+  }, [seasonData]);
+
   const formatDateRange = () => {
     if (!season.start_date) return null;
     const startMonth = format(new Date(season.start_date), 'MMM yyyy');
     if (season.end_date) {
       const endMonth = format(new Date(season.end_date), 'MMM yyyy');
-      return startMonth === endMonth ? startMonth : `${startMonth} - ${endMonth}`;
+      return startMonth === endMonth ? startMonth : `${startMonth} – ${endMonth}`;
     }
     return startMonth;
   };
@@ -140,126 +151,264 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
   return (
     <div
       className={cn(
-        'rounded-2xl shadow-lg overflow-hidden border',
+        'rounded-xl shadow-md overflow-hidden border',
         isWinterTheme
           ? 'frost-card winter-card-surface border-[hsla(199,60%,50%,0.2)]'
-          : 'bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700'
+          : 'bg-card border-border'
       )}
     >
-      <button
-        onClick={handleToggle}
+      {/* ── Header: Season name / date / status ── */}
+      <div
         className={cn(
-          'w-full px-3 py-3 md:p-6 text-left transition-all duration-200',
-          'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset',
+          'px-3 pt-3 pb-2 md:px-6 md:pt-5 md:pb-4',
           isWinterTheme
-            ? cn('hover:bg-white/5', isExpanded && 'bg-white/5')
-            : cn(
-                'hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-amber-50/30',
-                'dark:hover:from-slate-700/50 dark:hover:to-slate-700/30',
-                isExpanded &&
-                  'bg-gradient-to-r from-blue-50/30 to-amber-50/20 dark:from-slate-700/40 dark:to-slate-700/20'
-              )
+            ? 'border-b border-white/10'
+            : 'border-b border-border'
         )}
-        aria-expanded={isExpanded}
       >
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-start gap-3 min-w-0 flex-1">
-            {/* Trophy circle — desktop only */}
-            <div
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <h3
               className={cn(
-                'hidden md:flex w-10 h-10 rounded-full items-center justify-center shrink-0',
-                isWinterTheme
-                  ? hasChampions
-                    ? 'bg-gradient-to-br from-yellow-500/30 to-amber-500/20'
-                    : 'bg-white/10'
-                  : hasChampions
-                    ? 'bg-gradient-to-br from-yellow-100 to-amber-200 dark:from-yellow-900/40 dark:to-amber-800/40'
-                    : 'bg-gray-100 dark:bg-gray-700'
+                'text-lg md:text-xl font-bebas uppercase tracking-wide leading-tight',
+                isWinterTheme ? 'text-white' : 'text-foreground'
               )}
             >
-              <Trophy
+              {season.name}
+            </h3>
+            {dateRange && (
+              <span
                 className={cn(
-                  'w-5 h-5',
-                  hasChampions ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-400'
+                  'text-xs font-inter shrink-0',
+                  isWinterTheme ? 'text-white/60' : 'text-muted-foreground'
                 )}
-              />
-            </div>
-            <div className="min-w-0 space-y-0.5 md:space-y-1">
-              {/* Row 1: Season name + date + status badge */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3
+              >
+                {dateRange}
+              </span>
+            )}
+          </div>
+          {season.is_active ? (
+            <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 rounded-full text-xs font-medium shrink-0">
+              Active
+            </span>
+          ) : hasChampions ? (
+            <span
+              className={cn(
+                'px-2 py-0.5 rounded-full text-xs font-medium shrink-0',
+                isWinterTheme
+                  ? 'bg-amber-500/20 text-amber-300'
+                  : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300'
+              )}
+            >
+              🏆 Completed
+            </span>
+          ) : null}
+        </div>
+        {/* Team/match meta */}
+        {!isLoading && (teamCount > 0 || matchCount > 0) && (
+          <p
+            className={cn(
+              'text-[11px] mt-0.5',
+              isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
+            )}
+          >
+            {teamCount > 0 && `${teamCount} teams`}
+            {teamCount > 0 && matchCount > 0 && ' · '}
+            {matchCount > 0 && `${matchCount} matches`}
+          </p>
+        )}
+      </div>
+
+      {/* ── Summary: Champions (left) + Highlights (right) ── */}
+      {isLoading ? (
+        <div className="px-3 py-4 md:px-6">
+          <div className="animate-pulse flex gap-3">
+            <div className="flex-1 h-16 rounded-lg bg-muted/50" />
+            <div className="flex-1 h-16 rounded-lg bg-muted/50" />
+          </div>
+        </div>
+      ) : seasonData && seasonData.length > 0 ? (
+        <div className="px-3 py-2.5 md:px-6 md:py-4">
+          <div className="grid grid-cols-2 gap-2 md:gap-4">
+            {/* Champions box */}
+            <div
+              className={cn(
+                'rounded-lg p-2.5 md:p-3',
+                isWinterTheme
+                  ? 'bg-white/5 border border-white/10'
+                  : 'bg-muted/50 border border-border'
+              )}
+            >
+              <p
+                className={cn(
+                  'text-[10px] font-semibold uppercase tracking-wider mb-1.5',
+                  isWinterTheme ? 'text-amber-300/80' : 'text-amber-600 dark:text-amber-400'
+                )}
+              >
+                <Crown className="w-3 h-3 inline mr-1 -mt-0.5" />
+                Champions
+              </p>
+              {championTeams.length > 0 ? (
+                <div className="space-y-1.5">
+                  {championTeams.map((champ) => (
+                    <div key={champ.team_id} className="flex items-center gap-2">
+                      <TeamLogo
+                        imageUrl={champ.team_logo_url || champ.team_image_url}
+                        teamName={champ.team_name}
+                        size="xs"
+                        rounded
+                      />
+                      <div className="min-w-0">
+                        <p
+                          className={cn(
+                            'text-xs font-semibold truncate leading-tight',
+                            isWinterTheme ? 'text-white' : 'text-foreground'
+                          )}
+                        >
+                          {champ.team_name}
+                        </p>
+                        <p
+                          className={cn(
+                            'text-[10px] leading-tight',
+                            isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
+                          )}
+                        >
+                          {champ.match_wins}-{champ.match_losses}
+                          {champ.division_name ? ` · ${getHistoryDivisionDisplayName(champ.division_name)}` : ''}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p
                   className={cn(
-                    'text-lg md:text-xl font-bebas uppercase tracking-wide leading-tight',
-                    isWinterTheme ? 'text-white' : 'text-slate-900 dark:text-white'
+                    'text-xs italic',
+                    isWinterTheme ? 'text-white/40' : 'text-muted-foreground'
                   )}
                 >
-                  {season.name}
-                </h3>
-                {dateRange && (
-                  <span
-                    className={cn(
-                      'text-xs font-inter',
-                      isWinterTheme ? 'text-white/60' : 'text-muted-foreground'
-                    )}
-                  >
-                    ({dateRange})
-                  </span>
-                )}
-                {season.is_active ? (
-                  <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
-                    Active
-                  </span>
-                ) : hasChampions ? (
-                  <span
-                    className={cn(
-                      'px-2 py-0.5 rounded-full text-xs font-medium',
-                      isWinterTheme
-                        ? 'bg-amber-500/20 text-amber-300'
-                        : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300'
-                    )}
-                  >
-                    🏆 Completed
-                  </span>
-                ) : null}
-              </div>
+                  No champion
+                </p>
+              )}
+            </div>
 
-              {/* Row 2: Champion names */}
-              {isLoading ? (
-                <span className="text-muted-foreground text-xs animate-pulse">•••</span>
-              ) : (
-                <>
-                  {champions.length > 0 && (
-                    <p className="text-xs font-medium text-amber-600 dark:text-amber-400 truncate">
-                      👑 {champions.join(', ')}
-                    </p>
-                  )}
-                  {/* Row 3: Team count · Match count */}
-                  {(teamCount > 0 || matchCount > 0) && (
+            {/* Highlights box */}
+            <div
+              className={cn(
+                'rounded-lg p-2.5 md:p-3',
+                isWinterTheme
+                  ? 'bg-white/5 border border-white/10'
+                  : 'bg-muted/50 border border-border'
+              )}
+            >
+              <p
+                className={cn(
+                  'text-[10px] font-semibold uppercase tracking-wider mb-1.5',
+                  isWinterTheme ? 'text-white/60' : 'text-muted-foreground'
+                )}
+              >
+                <TrendingUp className="w-3 h-3 inline mr-1 -mt-0.5" />
+                Highlights
+              </p>
+              {highlights ? (
+                <div className="space-y-1">
+                  <div>
                     <p
                       className={cn(
-                        'text-xs',
+                        'text-[10px] leading-tight',
                         isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
                       )}
                     >
-                      {teamCount > 0 && `${teamCount} teams`}
-                      {teamCount > 0 && matchCount > 0 && ' · '}
-                      {matchCount > 0 && `${matchCount} matches`}
+                      Most Wins
                     </p>
+                    <p
+                      className={cn(
+                        'text-xs font-semibold truncate leading-tight',
+                        isWinterTheme ? 'text-white' : 'text-foreground'
+                      )}
+                    >
+                      {highlights.mostWins.team_name} ({highlights.mostWins.match_wins})
+                    </p>
+                  </div>
+                  <div>
+                    <p
+                      className={cn(
+                        'text-[10px] leading-tight',
+                        isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
+                      )}
+                    >
+                      Best Power Score
+                    </p>
+                    <p
+                      className={cn(
+                        'text-xs font-semibold truncate leading-tight',
+                        isWinterTheme ? 'text-white' : 'text-foreground'
+                      )}
+                    >
+                      {highlights.highestPS.team_name} (
+                      {highlights.highestPS.power_score
+                        ? (highlights.highestPS.power_score * 100).toFixed(1)
+                        : 'N/A'}
+                      )
+                    </p>
+                  </div>
+                  <div>
+                    <p
+                      className={cn(
+                        'text-[10px] leading-tight',
+                        isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
+                      )}
+                    >
+                      Most Game Wins
+                    </p>
+                    <p
+                      className={cn(
+                        'text-xs font-semibold truncate leading-tight',
+                        isWinterTheme ? 'text-white' : 'text-foreground'
+                      )}
+                    >
+                      {highlights.mostGameWins.team_name} ({highlights.mostGameWins.game_wins})
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <p
+                  className={cn(
+                    'text-xs italic',
+                    isWinterTheme ? 'text-white/40' : 'text-muted-foreground'
                   )}
-                </>
+                >
+                  No data yet
+                </p>
               )}
             </div>
           </div>
-          <ChevronDown
-            className={cn(
-              'w-5 h-5 shrink-0 mt-1 transition-transform duration-200',
-              isWinterTheme ? 'text-white/50' : 'text-muted-foreground',
-              isExpanded && 'rotate-180'
-            )}
-          />
         </div>
+      ) : null}
+
+      {/* ── Full Season Recap toggle ── */}
+      <button
+        onClick={handleToggle}
+        className={cn(
+          'w-full px-3 py-2 md:px-6 md:py-3 flex items-center justify-center gap-1.5',
+          'text-xs font-semibold uppercase tracking-wider transition-colors',
+          'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset',
+          isWinterTheme
+            ? 'text-white/60 hover:text-white/80 hover:bg-white/5 border-t border-white/10'
+            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-t border-border'
+        )}
+        aria-expanded={isExpanded}
+      >
+        Full Season Recap
+        <ChevronDown
+          className={cn(
+            'w-3.5 h-3.5 transition-transform duration-200',
+            isExpanded && 'rotate-180'
+          )}
+        />
       </button>
 
+      {/* ── Expanded content ── */}
       <AnimatePresence>
         {isExpanded && (
           <motion.div
@@ -271,8 +420,8 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
           >
             <div
               className={cn(
-                'p-3 md:p-4 lg:p-6 pt-0 border-t',
-                isWinterTheme ? 'border-white/10' : 'border-gray-200 dark:border-slate-600'
+                'p-3 md:p-4 lg:p-6 border-t',
+                isWinterTheme ? 'border-white/10' : 'border-border'
               )}
             >
               {isLoading ? (
@@ -282,7 +431,7 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
                   <div className="text-red-600 dark:text-red-400 mb-4">
                     <Trophy className="w-8 h-8 mx-auto mb-2" />
                     <p className="font-medium">Failed to load season data</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    <p className="text-sm text-muted-foreground mb-4">
                       {error instanceof Error ? error.message : 'An unexpected error occurred'}
                     </p>
                     <Button
@@ -298,8 +447,8 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
                   </div>
                 </div>
               ) : season.is_active && (!seasonData || seasonData.length === 0) ? (
-                <div className="text-center py-8 text-gray-600 dark:text-gray-400">
-                  <Trophy className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                <div className="text-center py-8 text-muted-foreground">
+                  <Trophy className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
                   <p>Season in progress – check back later</p>
                 </div>
               ) : isEditMode ? (
@@ -309,7 +458,6 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
                   onSave={async () => {
                     setIsSaving(true);
                     try {
-                      // Wait for fresh data before closing edit mode
                       await refetch();
                       setIsEditMode(false);
                     } finally {
@@ -320,7 +468,7 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
                   isSaving={isSaving}
                 />
               ) : (
-              <div className="space-y-3 md:space-y-6">
+                <div className="space-y-3 md:space-y-6">
                   {isAdminAccessGranted && (
                     <div className="flex justify-end">
                       <Button
