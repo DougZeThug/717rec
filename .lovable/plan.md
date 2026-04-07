@@ -1,28 +1,30 @@
 
 
-## Fix: Widen rematch deprioritization guard in findBestOpponent
+## Add stress test for `rematchRepairPass` O(N^2) performance
 
-### What's wrong
+### What we're doing
 
-In the `findBestOpponent` sort (line 345), the "prefer fresh opponents" tiebreaker only activates at `relaxationLevel >= 2`. But the `rematchAllowedFor` mechanism allows specific teams to rematch at any relaxation level. When a team has both fresh and rematch opponents available at level 0 or 1, the sort doesn't distinguish them, so a rematch could be picked over a fresh opponent.
+Adding a performance stress test with a large team pool (40+ teams) and dense match history to measure how long the `rematchRepairPass` loop takes. This validates that the O(N^2) swap logic remains fast enough at realistic upper bounds.
 
-### Fix
+### Changes
 
-**File:** `src/utils/scheduling/greedyBackToBackScheduler.ts` (line 345)
+**File:** `src/utils/scheduling/__tests__/greedyBackToBackScheduler.test.ts`
 
-Replace:
-```ts
-if (relaxationLevel >= 2) {
-```
+Append a new `describe('Performance')` block at the end of the test suite:
 
-With:
-```ts
-if (relaxationLevel >= 2 || (rematchAllowedFor && rematchAllowedFor.size > 0)) {
-```
+- **Test: "rematchRepairPass handles 40 teams with dense history under 500ms"**
+  - Create 40 teams across 3 tiers
+  - Generate dense `historyPairs`: every team has played ~60% of other teams (creating ~460 history pairs)
+  - Run `generateScheduleGreedyWithTracking` with this input
+  - Assert `performance.now()` delta is under 500ms
+  - Assert all 40 teams appear in matches (schedule completeness)
+  - Log the timing and `diagnostics.rematchesRepaired` count for visibility
 
-This makes the code match its own comment on line 329: "prefer fresh opponents even when rematches allowed."
+### Why this matters
+
+The repair pass is O(N^2) per slot — with 20 matches per slot, that's up to 400 pair comparisons × 2 rearrangements each. Dense history forces many iterations of the inner loop. This test catches regressions if someone accidentally makes it O(N^3) or adds expensive operations inside.
 
 ### Scope
 
-One file, one line. No behavioral change when `rematchAllowedFor` is empty or undefined.
+One file, one new test. No production code changes.
 
