@@ -26,4 +26,13 @@ describe('calculateWinPercentage', () => {
       0.75
     );
   });
+
+  it('handles very large numbers without precision issues', () => {
+    const wins = 999999;
+    const losses = 1;
+    const result = calculateWinPercentage(wins, losses);
+    expect(result).toBeCloseTo(999999 / 1000000, 10);
+    expect(result).toBeLessThan(1);
+    expect(result).toBeGreaterThan(0.999);
+  });
 });
