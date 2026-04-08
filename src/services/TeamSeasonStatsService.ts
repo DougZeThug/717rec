@@ -25,6 +25,10 @@ export interface TeamUpdate {
 /**
  * Fetch season-by-season breakdown stats for a team.
  * Returns null if no data exists.
+ *
+ * Query 1 (team_season_stats) is critical and throws on failure.
+ * Queries 2-6 are enrichment — errors are logged but not thrown,
+ * allowing graceful UI degradation with partial data.
  */
 export const fetchSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedStats | null> => {
   // Phase 1: Execute independent queries in parallel
@@ -117,6 +121,20 @@ export const fetchSeasonBreakdown = async (teamId: string): Promise<TeamAdvanced
     handleDatabaseError(seasonStatsResult.error, 'Failed to fetch team season stats');
   }
 
+  // Log errors from enrichment queries (non-critical — UI degrades gracefully)
+  if (allTeamSeasonStatsResult.error) {
+    errorLog('Failed to fetch all team season stats for division lookup:', allTeamSeasonStatsResult.error);
+  }
+  if (currentMatchesResult.error) {
+    errorLog('Failed to fetch current matches for season breakdown:', currentMatchesResult.error);
+  }
+  if (archivedMatchesResult.error) {
+    errorLog('Failed to fetch archived matches for season breakdown:', archivedMatchesResult.error);
+  }
+  if (playoffMatchesResult.error) {
+    errorLog('Failed to fetch playoff matches for season breakdown:', playoffMatchesResult.error);
+  }
+
   // Extract data from results
   const seasonStats = seasonStatsResult.data;
   const allTeamSeasonStats = allTeamSeasonStatsResult.data;
@@ -160,10 +178,14 @@ export const fetchSeasonBreakdown = async (teamId: string): Promise<TeamAdvanced
 
   const bracketInfoMap: Record<string, { season_id: string; division_weight: number }> = {};
   if (bracketIds.length > 0) {
-    const { data: brackets } = await supabase
+    const { data: brackets, error: bracketsError } = await supabase
       .from('brackets')
       .select('id, season_id, divisions(division_weight)')
       .in('id', bracketIds);
+
+    if (bracketsError) {
+      errorLog('Failed to fetch bracket info for season breakdown:', bracketsError);
+    }
 
     if (brackets) {
       for (const b of brackets) {
