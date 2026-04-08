@@ -159,7 +159,7 @@ export const fetchMatchForTie = async (matchId: string) => {
     .from('matches')
     .select('winner_id, loser_id, team1_id, team2_id, team1_game_wins, team2_game_wins')
     .eq('id', matchId)
-    .single();
+    .maybeSingle();
 
   if (fetchError) handleDatabaseError(fetchError, 'Failed to fetch match for tie');
   return ensureFound(currentMatch, 'Match', matchId);
@@ -175,7 +175,7 @@ export const fetchMatchTeamIds = async (matchId: string) => {
     .from('matches')
     .select('team1_id, team2_id')
     .eq('id', matchId)
-    .single();
+    .maybeSingle();
 
   if (matchError) handleDatabaseError(matchError, 'Failed to fetch match team IDs');
   return ensureFound(matchData, 'Match', matchId);

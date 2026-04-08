@@ -56,7 +56,7 @@ export const fetchPlayoffBracketData = async (bracketId: string): Promise<Playof
       'id, title, format, state, division_id, challonge_tournament_id, uses_brackets_manager, created_at, wb_champion_id, bracket_data, migrated, migrated_at, reset_match_needed'
     )
     .eq('id', bracketId)
-    .single();
+    .maybeSingle();
 
   if (error) {
     handleDatabaseError(error, 'Failed to fetch playoff bracket data');
@@ -484,7 +484,7 @@ export const fetchBracketsManagerMatchData = async (matchId: number) => {
       'id, stage_id, group_id, round_id, number, status, opponent1_id, opponent1_score, opponent1_result, opponent2_id, opponent2_score, opponent2_result'
     )
     .eq('id', matchId)
-    .single();
+    .maybeSingle();
 
   if (matchError) handleDatabaseError(matchError, 'Failed to fetch bracket match');
   const safeMatchData = ensureFound(matchData, 'BracketMatch', String(matchId));
