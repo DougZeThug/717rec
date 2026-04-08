@@ -1,26 +1,29 @@
 
 
-## Fix Lint Violations in Auto-Schedule Test Files
+## Fix `any` Types in Ranking Test File Mock Chains
 
 ### Problem
-5 lint violations across 3 test files: namespace imports, non-null assertions, and an async function without await.
+9 lint violations (JS-0323) across 3 ranking test files — all from `any` in `then`/`catch` callback parameters of mock thenable chains.
 
 ### Changes
 
-**1. `src/utils/autoSchedule/dualBlock/__tests__/index.test.ts`**
-- Replace `import * as DualBlock` with named imports for each exported function
-- Update all tests to reference the named imports directly instead of `DualBlock.xxx`
+**All 3 files** have identical `makeChain`/`makeQueryChain` helpers. Replace `any` with proper callback types:
 
-**2. `src/utils/autoSchedule/dualBlock/__tests__/pairingGenerator.test.ts`**
-- Replace 3 `result!.` non-null assertions with guard patterns:
-  ```typescript
-  if (!result) throw new Error('Expected result');
-  expect(result.pairings['Early']).toBeDefined();
-  ```
+```typescript
+then: ((
+  onFulfilled?: ((value: unknown) => unknown) | null,
+  onRejected?: ((reason: unknown) => unknown) | null
+) =>
+  Promise.resolve(result).then(onFulfilled, onRejected)) as PromiseLike<unknown>['then'],
+catch: (onRejected?: ((reason: unknown) => unknown) | null) =>
+  Promise.resolve(result).catch(onRejected),
+```
 
-**3. `src/utils/autoSchedule/__tests__/blossomPairingAlgorithm.test.ts`**
-- Change `haveTeamsPlayedFn: async () => false` to `haveTeamsPlayedFn: () => Promise.resolve(false)` — returns a Promise without the `async` keyword, satisfying the no-unused-await rule.
+**Files:**
+1. `src/services/rankings/__tests__/RankingCurrentService.test.ts`
+2. `src/services/rankings/__tests__/RankingCareerService.test.ts`
+3. `src/services/rankings/__tests__/RankingTrendsService.test.ts`
 
 ### Scope
-3 test files, no production code changes.
+3 files, type annotation changes only. No logic changes.
 
