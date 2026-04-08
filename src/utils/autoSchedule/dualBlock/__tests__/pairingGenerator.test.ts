@@ -64,9 +64,9 @@ describe('generateDualBlockPairings', () => {
       { primaryBlock: 'Early', secondaryBlock: 'Late' }
     );
 
-    expect(result).not.toBeNull();
-    expect(result!.pairings['Early']).toBeDefined();
-    expect(result!.pairings['Late']).toBeDefined();
+    if (!result) throw new Error('Expected non-null result');
+    expect(result.pairings['Early']).toBeDefined();
+    expect(result.pairings['Late']).toBeDefined();
   });
 
   it('calls generatePairingsWithBlossom exactly twice', async () => {
@@ -107,8 +107,8 @@ describe('generateDualBlockPairings', () => {
       { primaryBlock: 'Early', secondaryBlock: 'Late' }
     );
 
-    expect(result).not.toBeNull();
-    expect(result!.unmatchedTeamIds).toContain('p3');
+    if (!result) throw new Error('Expected non-null result');
+    expect(result.unmatchedTeamIds).toContain('p3');
   });
 
   it('invokes notifyCallback when a block is missing', async () => {
