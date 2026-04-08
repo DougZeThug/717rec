@@ -1,64 +1,26 @@
-
-
-## Fix: Add Error Logging for Enrichment Queries in TeamSeasonStatsService
+## Fix: Reduce Complexity & Template Literal in TeamSeasonStatsService
 
 ### Problem
-
-`fetchSeasonBreakdown` runs 6 DB queries but only handles errors on query 1. Queries 2–6 silently swallow errors, giving zero production observability (no Sentry, no console output). The UI degrades gracefully already — the missing piece is developer-facing error logging.
-
-### Approach
-
-Add `errorLog()` calls for queries 2–6. These are enrichment queries — they should **not** throw (that would break the entire response when only supplemental data failed). Instead, log the error so it appears in Sentry/console, then continue with empty/default data. This matches the pattern used in `WeeklyRecapService` and `RankingTrendsService`.
+1. `fetchSeasonBreakdown` has cyclomatic complexity of 28 (very-high risk)
+2. Line 353: template string used where a regular string suffices
 
 ### Changes
 
 **File: `src/services/TeamSeasonStatsService.ts`**
 
-After the existing error check for query 1 (line 118), add error logging for queries 2–5:
+**Fix 1 — Template literal (line 353):**
+Change `` errorLog(`Update verification failed for team_season_stats:`, ... `` to `errorLog('Update verification failed for team_season_stats:', ...`
 
-```typescript
-// Log errors from enrichment queries (non-critical — UI degrades gracefully)
-if (allTeamSeasonStatsResult.error) {
-  errorLog('Failed to fetch all team season stats for division lookup:', allTeamSeasonStatsResult.error);
-}
-if (currentMatchesResult.error) {
-  errorLog('Failed to fetch current matches for season breakdown:', currentMatchesResult.error);
-}
-if (archivedMatchesResult.error) {
-  errorLog('Failed to fetch archived matches for season breakdown:', archivedMatchesResult.error);
-}
-if (playoffMatchesResult.error) {
-  errorLog('Failed to fetch playoff matches for season breakdown:', playoffMatchesResult.error);
-}
-```
+**Fix 2 — Extract helpers to reduce complexity:**
 
-For query 6 (brackets, line 163), capture and log the error:
+Extract 4 inline blocks into helper functions (in the same file, above `fetchSeasonBreakdown`):
 
-```typescript
-const { data: brackets, error: bracketsError } = await supabase
-  .from('brackets')
-  .select('id, season_id, divisions(division_weight)')
-  .in('id', bracketIds);
+1. **`buildTeamDivisionMap(stats)`** — lines 165–172 (build Map from allTeamSeasonStats)
+2. **`buildBracketInfoMap(bracketIds)`** — lines 179–199 (fetch brackets, build map)
+3. **`groupMatchesBySeason(allMatches, playoffMatches)`** — lines 208–226 (group into Maps)
+4. **`buildSeasonBreakdown(stat, teamId, matchesBySeason, playoffMatchesBySeason, teamDivisionMap)`** — lines 229–273 (the `.map()` callback)
 
-if (bracketsError) {
-  errorLog('Failed to fetch bracket info for season breakdown:', bracketsError);
-}
-```
-
-Update the JSDoc on `fetchSeasonBreakdown` to document this:
-
-```typescript
-/**
- * Fetch season-by-season breakdown stats for a team.
- * Returns null if no data exists.
- *
- * Query 1 (team_season_stats) is critical and throws on failure.
- * Queries 2-6 are enrichment — errors are logged but not thrown,
- * allowing graceful UI degradation with partial data.
- */
-```
+Each extraction removes 3–6 branch points from the main function, bringing complexity well under 20.
 
 ### Scope
-
-1 file, logging additions only. No logic or behavior changes.
-
+1 file. Logic-preserving refactor only — no behavior changes.

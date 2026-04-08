@@ -20,6 +20,166 @@ export interface TeamUpdate {
   playoff_rank: number | null;
 }
 
+// ─── Helper functions for fetchSeasonBreakdown ────────────────────────────────
+
+const buildTeamDivisionMap = (
+  allTeamSeasonStats: { team_id: string; season_id: string; division_name: string | null }[] | null
+): Map<string, string> => {
+  const map = new Map<string, string>();
+  if (allTeamSeasonStats) {
+    for (const stat of allTeamSeasonStats) {
+      if (stat.team_id && stat.season_id && stat.division_name) {
+        map.set(`${stat.team_id}_${stat.season_id}`, stat.division_name);
+      }
+    }
+  }
+  return map;
+};
+
+const buildBracketInfoMap = async (
+  bracketIds: string[]
+): Promise<Record<string, { season_id: string; division_weight: number }>> => {
+  const bracketInfoMap: Record<string, { season_id: string; division_weight: number }> = {};
+  if (bracketIds.length === 0) return bracketInfoMap;
+
+  const { data: brackets, error: bracketsError } = await supabase
+    .from('brackets')
+    .select('id, season_id, divisions(division_weight)')
+    .in('id', bracketIds);
+
+  if (bracketsError) {
+    errorLog('Failed to fetch bracket info for season breakdown:', bracketsError);
+  }
+
+  if (brackets) {
+    for (const b of brackets) {
+      const divisions = b.divisions as DivisionRelation | null;
+      bracketInfoMap[b.id] = {
+        season_id: b.season_id || '',
+        division_weight: divisions?.division_weight ?? 0.85,
+      };
+    }
+  }
+
+  return bracketInfoMap;
+};
+
+interface MatchRecord {
+  winner_id: string | null;
+  loser_id: string | null;
+  team1_game_wins: number | null;
+  team2_game_wins: number | null;
+  team1_id: string | null;
+  team2_id: string | null;
+  season_id: string | null;
+}
+
+interface PlayoffMatchRecord {
+  winner_id: string | null;
+  loser_id: string | null;
+  team1_score: number | null;
+  team2_score: number | null;
+  team1_id: string | null;
+  team2_id: string | null;
+  bracket_id: string | null;
+  bracketInfo: { season_id: string; division_weight: number } | null;
+}
+
+const groupMatchesBySeason = (
+  allMatches: MatchRecord[],
+  playoffMatches: PlayoffMatchRecord[]
+): {
+  matchesBySeason: Map<string, MatchRecord[]>;
+  playoffMatchesBySeason: Map<string, PlayoffMatchRecord[]>;
+} => {
+  const matchesBySeason = new Map<string, MatchRecord[]>();
+  const playoffMatchesBySeason = new Map<string, PlayoffMatchRecord[]>();
+
+  for (const match of allMatches) {
+    if (!match.season_id) continue;
+    const existing = matchesBySeason.get(match.season_id) || [];
+    existing.push(match);
+    matchesBySeason.set(match.season_id, existing);
+  }
+
+  for (const match of playoffMatches) {
+    const seasonId = match.bracketInfo?.season_id;
+    if (!seasonId) continue;
+    const existing = playoffMatchesBySeason.get(seasonId) || [];
+    existing.push(match);
+    playoffMatchesBySeason.set(seasonId, existing);
+  }
+
+  return { matchesBySeason, playoffMatchesBySeason };
+};
+
+interface SeasonStatRow {
+  season_id: string;
+  match_wins: number | null;
+  match_losses: number | null;
+  game_wins: number | null;
+  game_losses: number | null;
+  sos: number | null;
+  power_score: number | null;
+  champion: boolean | null;
+  runner_up: boolean | null;
+  playoff_rank: number | null;
+  division_name: string | null;
+  seasons: unknown;
+}
+
+const buildSeasonBreakdown = (
+  stat: SeasonStatRow,
+  teamId: string,
+  matchesBySeason: Map<string, MatchRecord[]>,
+  playoffMatchesBySeason: Map<string, PlayoffMatchRecord[]>,
+  teamDivisionMap: Map<string, string>
+): SeasonBreakdown => {
+  const seasonId = stat.season_id;
+  const seasonMatches = matchesBySeason.get(seasonId) || [];
+  const seasonPlayoffMatches = playoffMatchesBySeason.get(seasonId) || [];
+
+  const { sweeps, closeWins, closeLosses, divisionRecords, playoffWins, playoffLosses } =
+    processSeasonMatches(teamId, seasonId, seasonMatches, seasonPlayoffMatches, teamDivisionMap);
+
+  const totalMatches = (stat.match_wins || 0) + (stat.match_losses || 0);
+  const winPct = totalMatches > 0 ? ((stat.match_wins || 0) / totalMatches) * 100 : 0;
+
+  const totalGames = (stat.game_wins || 0) + (stat.game_losses || 0);
+  const gameWinPct = totalGames > 0 ? ((stat.game_wins || 0) / totalGames) * 100 : 0;
+
+  const sweepRate = totalMatches > 0 ? (sweeps / totalMatches) * 100 : 0;
+  const totalCloseMatches = closeWins + closeLosses;
+  const clutchFactor = totalCloseMatches > 0 ? closeWins / totalCloseMatches : null;
+
+  const seasonInfo = stat.seasons as SeasonRelation | null;
+  return {
+    seasonId,
+    seasonName: seasonInfo?.name ?? 'Unknown',
+    divisionName: stat.division_name || 'Unknown',
+    matchWins: stat.match_wins || 0,
+    matchLosses: stat.match_losses || 0,
+    winPct,
+    gameWins: stat.game_wins || 0,
+    gameLosses: stat.game_losses || 0,
+    gameWinPct,
+    sos: stat.sos,
+    powerScore: stat.power_score !== null ? stat.power_score * 100 : null,
+    playoffWins,
+    playoffLosses,
+    playoffRank: stat.playoff_rank,
+    isChampion: stat.champion || false,
+    isRunnerUp: stat.runner_up || false,
+    isTop3: stat.playoff_rank !== null && stat.playoff_rank <= 3,
+    sweeps,
+    sweepRate,
+    closeWins,
+    closeLosses,
+    clutchFactor,
+    divisionRecords,
+  };
+};
+
 // ─── fetchSeasonBreakdown ─────────────────────────────────────────────────────
 
 /**
@@ -137,7 +297,6 @@ export const fetchSeasonBreakdown = async (teamId: string): Promise<TeamAdvanced
 
   // Extract data from results
   const seasonStats = seasonStatsResult.data;
-  const allTeamSeasonStats = allTeamSeasonStatsResult.data;
   const currentMatches = currentMatchesResult.data;
   const archivedMatches = archivedMatchesResult.data;
   const playoffMatchesRaw = playoffMatchesResult.data;
@@ -162,41 +321,13 @@ export const fetchSeasonBreakdown = async (teamId: string): Promise<TeamAdvanced
   }
 
   // Build team division map for opponent lookups
-  const teamDivisionMap = new Map<string, string>();
-  if (allTeamSeasonStats) {
-    for (const stat of allTeamSeasonStats) {
-      if (stat.team_id && stat.season_id && stat.division_name) {
-        teamDivisionMap.set(`${stat.team_id}_${stat.season_id}`, stat.division_name);
-      }
-    }
-  }
+  const teamDivisionMap = buildTeamDivisionMap(allTeamSeasonStatsResult.data);
 
   // Phase 2: Fetch bracket info (depends on playoffMatchesRaw from Phase 1)
   const bracketIds = [
     ...new Set((playoffMatchesRaw || []).map((m) => m.bracket_id).filter(Boolean)),
   ];
-
-  const bracketInfoMap: Record<string, { season_id: string; division_weight: number }> = {};
-  if (bracketIds.length > 0) {
-    const { data: brackets, error: bracketsError } = await supabase
-      .from('brackets')
-      .select('id, season_id, divisions(division_weight)')
-      .in('id', bracketIds);
-
-    if (bracketsError) {
-      errorLog('Failed to fetch bracket info for season breakdown:', bracketsError);
-    }
-
-    if (brackets) {
-      for (const b of brackets) {
-        const divisions = b.divisions as DivisionRelation | null;
-        bracketInfoMap[b.id] = {
-          season_id: b.season_id || '',
-          division_weight: divisions?.division_weight ?? 0.85,
-        };
-      }
-    }
-  }
+  const bracketInfoMap = await buildBracketInfoMap(bracketIds as string[]);
 
   // Enrich playoff matches with bracket info
   const playoffMatches = (playoffMatchesRaw || []).map((m) => ({
@@ -205,73 +336,15 @@ export const fetchSeasonBreakdown = async (teamId: string): Promise<TeamAdvanced
   }));
 
   // Group matches by season
-  const matchesBySeason = new Map<string, typeof allMatches>();
-  const playoffMatchesBySeason = new Map<string, typeof playoffMatches>();
-
-  for (const match of allMatches) {
-    if (!match.season_id) continue;
-    const existing = matchesBySeason.get(match.season_id) || [];
-    existing.push(match);
-    matchesBySeason.set(match.season_id, existing);
-  }
-
-  if (playoffMatches) {
-    for (const match of playoffMatches) {
-      const seasonId = match.bracketInfo?.season_id;
-      if (!seasonId) continue;
-      const existing = playoffMatchesBySeason.get(seasonId) || [];
-      existing.push(match);
-      playoffMatchesBySeason.set(seasonId, existing);
-    }
-  }
+  const { matchesBySeason, playoffMatchesBySeason } = groupMatchesBySeason(
+    allMatches,
+    playoffMatches
+  );
 
   // Build season breakdowns
-  const seasons: SeasonBreakdown[] = seasonStats.map((stat) => {
-    const seasonId = stat.season_id;
-    const seasonMatches = matchesBySeason.get(seasonId) || [];
-    const seasonPlayoffMatches = playoffMatchesBySeason.get(seasonId) || [];
-
-    // Process matches using extracted function
-    const { sweeps, closeWins, closeLosses, divisionRecords, playoffWins, playoffLosses } =
-      processSeasonMatches(teamId, seasonId, seasonMatches, seasonPlayoffMatches, teamDivisionMap);
-
-    const totalMatches = (stat.match_wins || 0) + (stat.match_losses || 0);
-    const winPct = totalMatches > 0 ? ((stat.match_wins || 0) / totalMatches) * 100 : 0;
-
-    const totalGames = (stat.game_wins || 0) + (stat.game_losses || 0);
-    const gameWinPct = totalGames > 0 ? ((stat.game_wins || 0) / totalGames) * 100 : 0;
-
-    const sweepRate = totalMatches > 0 ? (sweeps / totalMatches) * 100 : 0;
-    const totalCloseMatches = closeWins + closeLosses;
-    const clutchFactor = totalCloseMatches > 0 ? closeWins / totalCloseMatches : null;
-
-    const seasonInfo = stat.seasons as SeasonRelation | null;
-    return {
-      seasonId,
-      seasonName: seasonInfo?.name ?? 'Unknown',
-      divisionName: stat.division_name || 'Unknown',
-      matchWins: stat.match_wins || 0,
-      matchLosses: stat.match_losses || 0,
-      winPct,
-      gameWins: stat.game_wins || 0,
-      gameLosses: stat.game_losses || 0,
-      gameWinPct,
-      sos: stat.sos,
-      powerScore: stat.power_score !== null ? stat.power_score * 100 : null,
-      playoffWins,
-      playoffLosses,
-      playoffRank: stat.playoff_rank,
-      isChampion: stat.champion || false,
-      isRunnerUp: stat.runner_up || false,
-      isTop3: stat.playoff_rank !== null && stat.playoff_rank <= 3,
-      sweeps,
-      sweepRate,
-      closeWins,
-      closeLosses,
-      clutchFactor,
-      divisionRecords,
-    };
-  });
+  const seasons: SeasonBreakdown[] = seasonStats.map((stat) =>
+    buildSeasonBreakdown(stat, teamId, matchesBySeason, playoffMatchesBySeason, teamDivisionMap)
+  );
 
   // Calculate aggregated stats
   const seasonsWithPowerScore = seasons.filter((s) => s.powerScore !== null);
@@ -350,7 +423,7 @@ export const batchUpdateSeasonStats = async (updates: TeamUpdate[]): Promise<voi
       }
 
       if (!statsData || statsData.length === 0) {
-        errorLog(`Update verification failed for team_season_stats:`, {
+        errorLog('Update verification failed for team_season_stats:', {
           team_id: update.team_id,
           season_id: update.season_id,
           division_name: update.division_name,
