@@ -1,33 +1,24 @@
 
 
-## Fix: Remove `.in('team_id', teamIds)` filter from bulk team_details_archive query
+## Fix: Forward `rematchAllowedFor` to `tryCrossSlotSwap`
 
 ### Problem
 
-In `CareerBulkFetchService.ts`, the `team_details_archive` query filters by `.in('team_id', teamIds)`, which excludes opponent division history. When `calculateDivisionRecords` looks up an opponent's division via `teamDivisionMap`, the entry is missing and the match is silently skipped. The single-team path (`CareerFetchService.ts`) correctly fetches all rows unfiltered.
+`tryCrossSlotSwap` doesn't accept or forward the `rematchAllowedFor` parameter, so its `canPlay()` calls and `generateSlotPairings()` call always treat rematches as forbidden — even when a team has per-team rematch permission. This causes valid swaps to be rejected, forcing unnecessary broader relaxation.
 
-### Fix
+### Changes
 
-**`src/services/career/CareerBulkFetchService.ts`** (line 158)
+**`src/utils/scheduling/greedy/swapRepair.ts`**
 
-Remove `.in('team_id', teamIds)` from the `team_details_archive` query so opponent division history is included — matching the single-team path.
+1. Add `rematchAllowedFor?: Set<string>` parameter to `tryCrossSlotSwap` signature (after `relaxationLevel`)
+2. Forward it to both `canPlay()` calls (lines 75–76)
+3. Forward it to the `generateSlotPairings()` call (after `relaxationLevel`, line 101)
 
-```typescript
-// Before
-supabase
-  .from('team_details_archive')
-  .select('team_id, season_id, divisionname')
-  .in('team_id', teamIds),
+**`src/utils/scheduling/greedy/scheduleEven.ts`**
 
-// After
-supabase
-  .from('team_details_archive')
-  .select('team_id, season_id, divisionname'),
-```
-
-Update the comment on line 154 to clarify why it's unfiltered.
+4. Pass `perTeamRematchAllowed` to the `tryCrossSlotSwap()` call (line 102–112)
 
 ### Scope
 
-1 line removed in 1 file. No logic or schema changes.
+2 files, parameter threading only. No logic changes.
 
