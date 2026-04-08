@@ -1,29 +1,33 @@
 
 
-## Fix `any` Types in Ranking Test File Mock Chains
+## Fix: Remove `.in('team_id', teamIds)` filter from bulk team_details_archive query
 
 ### Problem
-9 lint violations (JS-0323) across 3 ranking test files — all from `any` in `then`/`catch` callback parameters of mock thenable chains.
 
-### Changes
+In `CareerBulkFetchService.ts`, the `team_details_archive` query filters by `.in('team_id', teamIds)`, which excludes opponent division history. When `calculateDivisionRecords` looks up an opponent's division via `teamDivisionMap`, the entry is missing and the match is silently skipped. The single-team path (`CareerFetchService.ts`) correctly fetches all rows unfiltered.
 
-**All 3 files** have identical `makeChain`/`makeQueryChain` helpers. Replace `any` with proper callback types:
+### Fix
+
+**`src/services/career/CareerBulkFetchService.ts`** (line 158)
+
+Remove `.in('team_id', teamIds)` from the `team_details_archive` query so opponent division history is included — matching the single-team path.
 
 ```typescript
-then: ((
-  onFulfilled?: ((value: unknown) => unknown) | null,
-  onRejected?: ((reason: unknown) => unknown) | null
-) =>
-  Promise.resolve(result).then(onFulfilled, onRejected)) as PromiseLike<unknown>['then'],
-catch: (onRejected?: ((reason: unknown) => unknown) | null) =>
-  Promise.resolve(result).catch(onRejected),
+// Before
+supabase
+  .from('team_details_archive')
+  .select('team_id, season_id, divisionname')
+  .in('team_id', teamIds),
+
+// After
+supabase
+  .from('team_details_archive')
+  .select('team_id, season_id, divisionname'),
 ```
 
-**Files:**
-1. `src/services/rankings/__tests__/RankingCurrentService.test.ts`
-2. `src/services/rankings/__tests__/RankingCareerService.test.ts`
-3. `src/services/rankings/__tests__/RankingTrendsService.test.ts`
+Update the comment on line 154 to clarify why it's unfiltered.
 
 ### Scope
-3 files, type annotation changes only. No logic changes.
+
+1 line removed in 1 file. No logic or schema changes.
 
