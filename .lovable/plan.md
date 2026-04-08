@@ -1,24 +1,36 @@
 
 
-## Fix: Forward `rematchAllowedFor` to `tryCrossSlotSwap`
+## Fix: Hidden Division Teams Missing from History Page
 
-### Problem
+### What's happening
 
-`tryCrossSlotSwap` doesn't accept or forward the `rematchAllowedFor` parameter, so its `canPlay()` calls and `generateSlotPairings()` call always treat rematches as forbidden — even when a team has per-team rematch permission. This causes valid swaps to be rejected, forcing unnecessary broader relaxation.
+When a team is moved to the "Hidden" division, their past season history entries on the history page disappear. This affects 79 team-season rows across all archived seasons.
 
-### Changes
+**Root cause**: Three places overwrite the frozen `division_name` in `team_season_stats` with the team's *current* division:
 
-**`src/utils/scheduling/greedy/swapRepair.ts`**
+1. **`v_team_season_agg` view** — joins `teams.division_id` to get `division_name`, so it always reflects the team's current division, not the one they played in
+2. **`upsert_team_season_stats()` RPC** — blindly overwrites `division_name` for all rows including archived seasons on every call
+3. **`archive_season()` STEP 2** — stamps current division over history at archive time (so if a team was hidden before archival, it gets "Hidden" baked in permanently)
 
-1. Add `rematchAllowedFor?: Set<string>` parameter to `tryCrossSlotSwap` signature (after `relaxationLevel`)
-2. Forward it to both `canPlay()` calls (lines 75–76)
-3. Forward it to the `generateSlotPairings()` call (after `relaxationLevel`, line 101)
+### What the migration will do (single SQL file, 4 parts)
 
-**`src/utils/scheduling/greedy/scheduleEven.ts`**
+**Part 1 — Fix the view**: Recreate `v_team_season_agg` so `division_name` uses `team_details_archive.divisionname` for archived seasons, falling back to the live `teams→divisions` join only for the active season.
 
-4. Pass `perTeamRematchAllowed` to the `tryCrossSlotSwap()` call (line 102–112)
+**Part 2 — Fix the upsert**: Rewrite `upsert_team_season_stats()` so `ON CONFLICT DO UPDATE` skips updating `division_name` when the season is archived. Stats (wins, losses, etc.) still update normally.
 
-### Scope
+**Part 3 — Fix archive_season**: Gate STEP 2's `UPDATE` so it won't stamp "Hidden" over an existing division_name. All other steps are unchanged.
 
-2 files, parameter threading only. No logic changes.
+**Part 4 — Repair corrupted data**: One-time `UPDATE` to restore 66 rows where `team_details_archive` has the correct historical division. A second pass infers division from opponent match data for ~4 more rows. The remaining ~9 rows (teams hidden before playing any matches in Fall 2025) cannot be automatically recovered — they'll need manual admin correction or will stay hidden for that season.
+
+### Files
+
+**New file**: `supabase/migrations/<timestamp>_fix_archived_division_name_preservation.sql`
+
+**No application code changes** — the frontend filter in `SeasonAccordion.tsx` that hides "Hidden" division teams is correct; the data was wrong.
+
+### Verification
+
+- Before: pick a hidden team (e.g. "Mailmen") → history page Fall 2025 → team is missing
+- After migration: same team appears under "Intermediate" in Fall 2025
+- Smoke test: score a match in the active season → confirm archived seasons don't flip back to "Hidden"
 
