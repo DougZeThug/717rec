@@ -55,9 +55,13 @@ const makeChain = (result: { data: unknown; error: unknown | null }) => {
     limit: () => chain,
     single: () => Promise.resolve(result),
     maybeSingle: () => Promise.resolve(result),
-    then: ((onFulfilled?: any, onRejected?: any) =>
+    then: ((
+      onFulfilled?: ((value: unknown) => unknown) | null,
+      onRejected?: ((reason: unknown) => unknown) | null,
+    ) =>
       Promise.resolve(result).then(onFulfilled, onRejected)) as PromiseLike<unknown>['then'],
-    catch: (onRejected?: any) => Promise.resolve(result).catch(onRejected),
+    catch: (onRejected?: ((reason: unknown) => unknown) | null) =>
+      Promise.resolve(result).catch(onRejected),
   };
   return chain;
 };
