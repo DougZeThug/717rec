@@ -59,12 +59,12 @@ const pgError = (message = 'query failed', code = '42P01') => ({
 
 /**
  * Returns a chain mock for querying the `seasons` table:
- *   .from('seasons').select('id').eq('is_active', true).single()
+ *   .from('seasons').select('id').eq('is_active', true).maybeSingle()
  */
 const seasonsSelectChain = (result: { data: unknown; error: unknown | null }) => ({
   select: () => ({
     eq: () => ({
-      single: () => Promise.resolve(result),
+      maybeSingle: () => Promise.resolve(result),
     }),
   }),
 });
