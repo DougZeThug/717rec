@@ -1,36 +1,64 @@
 
 
-## Fix: Hidden Division Teams Missing from History Page
+## Fix: Add Error Logging for Enrichment Queries in TeamSeasonStatsService
 
-### What's happening
+### Problem
 
-When a team is moved to the "Hidden" division, their past season history entries on the history page disappear. This affects 79 team-season rows across all archived seasons.
+`fetchSeasonBreakdown` runs 6 DB queries but only handles errors on query 1. Queries 2–6 silently swallow errors, giving zero production observability (no Sentry, no console output). The UI degrades gracefully already — the missing piece is developer-facing error logging.
 
-**Root cause**: Three places overwrite the frozen `division_name` in `team_season_stats` with the team's *current* division:
+### Approach
 
-1. **`v_team_season_agg` view** — joins `teams.division_id` to get `division_name`, so it always reflects the team's current division, not the one they played in
-2. **`upsert_team_season_stats()` RPC** — blindly overwrites `division_name` for all rows including archived seasons on every call
-3. **`archive_season()` STEP 2** — stamps current division over history at archive time (so if a team was hidden before archival, it gets "Hidden" baked in permanently)
+Add `errorLog()` calls for queries 2–6. These are enrichment queries — they should **not** throw (that would break the entire response when only supplemental data failed). Instead, log the error so it appears in Sentry/console, then continue with empty/default data. This matches the pattern used in `WeeklyRecapService` and `RankingTrendsService`.
 
-### What the migration will do (single SQL file, 4 parts)
+### Changes
 
-**Part 1 — Fix the view**: Recreate `v_team_season_agg` so `division_name` uses `team_details_archive.divisionname` for archived seasons, falling back to the live `teams→divisions` join only for the active season.
+**File: `src/services/TeamSeasonStatsService.ts`**
 
-**Part 2 — Fix the upsert**: Rewrite `upsert_team_season_stats()` so `ON CONFLICT DO UPDATE` skips updating `division_name` when the season is archived. Stats (wins, losses, etc.) still update normally.
+After the existing error check for query 1 (line 118), add error logging for queries 2–5:
 
-**Part 3 — Fix archive_season**: Gate STEP 2's `UPDATE` so it won't stamp "Hidden" over an existing division_name. All other steps are unchanged.
+```typescript
+// Log errors from enrichment queries (non-critical — UI degrades gracefully)
+if (allTeamSeasonStatsResult.error) {
+  errorLog('Failed to fetch all team season stats for division lookup:', allTeamSeasonStatsResult.error);
+}
+if (currentMatchesResult.error) {
+  errorLog('Failed to fetch current matches for season breakdown:', currentMatchesResult.error);
+}
+if (archivedMatchesResult.error) {
+  errorLog('Failed to fetch archived matches for season breakdown:', archivedMatchesResult.error);
+}
+if (playoffMatchesResult.error) {
+  errorLog('Failed to fetch playoff matches for season breakdown:', playoffMatchesResult.error);
+}
+```
 
-**Part 4 — Repair corrupted data**: One-time `UPDATE` to restore 66 rows where `team_details_archive` has the correct historical division. A second pass infers division from opponent match data for ~4 more rows. The remaining ~9 rows (teams hidden before playing any matches in Fall 2025) cannot be automatically recovered — they'll need manual admin correction or will stay hidden for that season.
+For query 6 (brackets, line 163), capture and log the error:
 
-### Files
+```typescript
+const { data: brackets, error: bracketsError } = await supabase
+  .from('brackets')
+  .select('id, season_id, divisions(division_weight)')
+  .in('id', bracketIds);
 
-**New file**: `supabase/migrations/<timestamp>_fix_archived_division_name_preservation.sql`
+if (bracketsError) {
+  errorLog('Failed to fetch bracket info for season breakdown:', bracketsError);
+}
+```
 
-**No application code changes** — the frontend filter in `SeasonAccordion.tsx` that hides "Hidden" division teams is correct; the data was wrong.
+Update the JSDoc on `fetchSeasonBreakdown` to document this:
 
-### Verification
+```typescript
+/**
+ * Fetch season-by-season breakdown stats for a team.
+ * Returns null if no data exists.
+ *
+ * Query 1 (team_season_stats) is critical and throws on failure.
+ * Queries 2-6 are enrichment — errors are logged but not thrown,
+ * allowing graceful UI degradation with partial data.
+ */
+```
 
-- Before: pick a hidden team (e.g. "Mailmen") → history page Fall 2025 → team is missing
-- After migration: same team appears under "Intermediate" in Fall 2025
-- Smoke test: score a match in the active season → confirm archived seasons don't flip back to "Hidden"
+### Scope
+
+1 file, logging additions only. No logic or behavior changes.
 
