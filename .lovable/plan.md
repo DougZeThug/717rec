@@ -1,26 +1,30 @@
-## Fix: Reduce Complexity & Template Literal in TeamSeasonStatsService
+
+
+## Fix: Update RankingPersistenceService test mock for `.maybeSingle()`
 
 ### Problem
-1. `fetchSeasonBreakdown` has cyclomatic complexity of 28 (very-high risk)
-2. Line 353: template string used where a regular string suffices
 
-### Changes
+The previous fix changed `getCurrentSeasonId` from `.single()` to `.maybeSingle()`, but the test's `seasonsSelectChain` helper only mocks `.single()` — not `.maybeSingle()`. The 4 failing tests all hit this missing method.
 
-**File: `src/services/TeamSeasonStatsService.ts`**
+### Change
 
-**Fix 1 — Template literal (line 353):**
-Change `` errorLog(`Update verification failed for team_season_stats:`, ... `` to `errorLog('Update verification failed for team_season_stats:', ...`
+**File: `src/services/rankings/__tests__/RankingPersistenceService.test.ts`**
 
-**Fix 2 — Extract helpers to reduce complexity:**
+Update `seasonsSelectChain` (lines 60–70) to mock `maybeSingle` instead of `single`:
 
-Extract 4 inline blocks into helper functions (in the same file, above `fetchSeasonBreakdown`):
+```typescript
+const seasonsSelectChain = (result: { data: unknown; error: unknown | null }) => ({
+  select: () => ({
+    eq: () => ({
+      maybeSingle: () => Promise.resolve(result),
+    }),
+  }),
+});
+```
 
-1. **`buildTeamDivisionMap(stats)`** — lines 165–172 (build Map from allTeamSeasonStats)
-2. **`buildBracketInfoMap(bracketIds)`** — lines 179–199 (fetch brackets, build map)
-3. **`groupMatchesBySeason(allMatches, playoffMatches)`** — lines 208–226 (group into Maps)
-4. **`buildSeasonBreakdown(stat, teamId, matchesBySeason, playoffMatchesBySeason, teamDivisionMap)`** — lines 229–273 (the `.map()` callback)
-
-Each extraction removes 3–6 branch points from the main function, bringing complexity well under 20.
+Update the JSDoc comment on line 62 to say `.maybeSingle()` instead of `.single()`.
 
 ### Scope
-1 file. Logic-preserving refactor only — no behavior changes.
+
+1 file, 2-line change. No logic changes.
+
