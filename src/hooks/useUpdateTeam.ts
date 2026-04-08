@@ -14,8 +14,9 @@ export const useUpdateTeam = () => {
       teamId: string;
       teamData: Omit<Team, 'id' | 'created_at'>;
     }) => updateTeamApi(teamId, teamData),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
+      queryClient.invalidateQueries({ queryKey: ['team-details', variables.teamId] });
     },
   });
 
