@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import {
-  getHistoryDivisionDisplayName,
-  getHistoryDivisionOrder,
-} from '@/utils/historyDivisionUtils';
+import { getHistoryDivisionOrder } from '@/utils/historyDivisionUtils';
 
 export interface EditableTeam {
   team_id: string;
@@ -42,67 +39,31 @@ interface UseHistoryEditingReturn {
   resetChanges: () => void;
 }
 
-// Rank offset for Intermediate 2 teams - teams with rank > this are in Int 2
-const INTERMEDIATE_2_RANK_OFFSET = 8;
-
 // Case-insensitive division name comparison
 const divisionsMatch = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 
-// Helper to get display division name for editing (splits Intermediate into Int 1/2)
-const getEditDisplayDivision = (
-  divisionName: string | null,
-  _playoffRank: number | null
-): string => {
-  if (!divisionName) return 'Uncategorized';
-  return getHistoryDivisionDisplayName(divisionName);
-};
-
-// Helper to get the display rank for editing (adjusts Int 2 ranks to 1-based within division)
-const getEditDisplayRank = (
-  divisionName: string | null,
-  playoffRank: number | null
-): number | null => {
-  if (!divisionName || playoffRank === null) return playoffRank;
-
-  const normalized = divisionName.toLowerCase().trim();
-
-  // If this is an Intermediate team that will display as "Intermediate 2",
-  // adjust rank for within-division ordering (e.g., rank 9 → 1, rank 10 → 2)
-  if (normalized === 'intermediate' && playoffRank > INTERMEDIATE_2_RANK_OFFSET) {
-    return playoffRank - INTERMEDIATE_2_RANK_OFFSET;
-  }
-
-  return playoffRank;
-};
-
-// Helper to get the storage division name (maps Int 1/2 back to Intermediate)
-const getStorageDivisionName = (displayDivision: string): string => {
-  const normalized = displayDivision.toLowerCase().trim();
-  if (normalized === 'intermediate 1' || normalized === 'intermediate 2') {
-    return 'Intermediate';
-  }
-  return displayDivision;
-};
+// Map a stored division_name to the value used in the editor.
+// archive_season() now writes literal "Intermediate 1" / "Intermediate 2" directly,
+// so this is just a null guard.
+const toEditableDivision = (divisionName: string | null): string => divisionName ?? 'Uncategorized';
 
 export const useHistoryEditing = ({
   initialTeams,
   seasonId: _seasonId,
 }: UseHistoryEditingProps): UseHistoryEditingReturn => {
-  // Local state for teams being edited - uses display divisions (Int 1/2) and adjusted ranks
+  // Local state for teams being edited
   const [teams, setTeams] = useState<EditableTeam[]>(() =>
     initialTeams.map((t) => ({
       ...t,
-      division_name: getEditDisplayDivision(t.division_name, t.playoff_rank),
-      playoff_rank: getEditDisplayRank(t.division_name, t.playoff_rank),
+      division_name: toEditableDivision(t.division_name),
     }))
   );
 
-  // Track original state to detect changes - also uses display divisions and adjusted ranks
+  // Track original state to detect changes
   const [originalTeams, setOriginalTeams] = useState<EditableTeam[]>(() =>
     initialTeams.map((t) => ({
       ...t,
-      division_name: getEditDisplayDivision(t.division_name, t.playoff_rank),
-      playoff_rank: getEditDisplayRank(t.division_name, t.playoff_rank),
+      division_name: toEditableDivision(t.division_name),
     }))
   );
 
@@ -113,8 +74,7 @@ export const useHistoryEditing = ({
   useEffect(() => {
     const newTeams = initialTeams.map((t) => ({
       ...t,
-      division_name: getEditDisplayDivision(t.division_name, t.playoff_rank),
-      playoff_rank: getEditDisplayRank(t.division_name, t.playoff_rank),
+      division_name: toEditableDivision(t.division_name),
     }));
     setOriginalTeams(newTeams);
     setTeams(newTeams);
@@ -319,35 +279,16 @@ export const useHistoryEditing = ({
     return customDivisions.length > 0;
   }, [teams, originalTeams, customDivisions]);
 
-  // Get all teams that have changed - maps display divisions back to storage divisions
-  // and adjusts playoff_rank for Intermediate 2 teams (adds offset so they persist correctly)
+  // Get all teams that have changed. The editor's division_name and playoff_rank
+  // are stored verbatim — no Intermediate 1/2 rewriting or rank offsets.
   const getChanges = useCallback((): EditableTeam[] => {
-    return teams
-      .filter((team) => {
-        const original = originalTeams.find((t) => t.team_id === team.team_id);
-        if (!original) return true;
-        return (
-          team.division_name !== original.division_name ||
-          team.playoff_rank !== original.playoff_rank
-        );
-      })
-      .map((team) => {
-        let adjustedRank = team.playoff_rank;
-
-        // Offset rank for Intermediate 2 teams so they persist correctly
-        // e.g., rank 1 in Int 2 → saved as rank 9
-        const normalized = team.division_name.toLowerCase().trim();
-        if (normalized === 'intermediate 2' && adjustedRank !== null) {
-          adjustedRank = adjustedRank + INTERMEDIATE_2_RANK_OFFSET;
-        }
-
-        return {
-          ...team,
-          playoff_rank: adjustedRank,
-          // Convert display division (Int 1/2) back to storage division (Intermediate)
-          division_name: getStorageDivisionName(team.division_name),
-        };
-      });
+    return teams.filter((team) => {
+      const original = originalTeams.find((t) => t.team_id === team.team_id);
+      if (!original) return true;
+      return (
+        team.division_name !== original.division_name || team.playoff_rank !== original.playoff_rank
+      );
+    });
   }, [teams, originalTeams]);
 
   // Reset all changes

@@ -292,14 +292,6 @@ export const fetchSeasonBreakdown = async (teamId: string): Promise<TeamAdvanced
 
 // ─── batchUpdateSeasonStats ───────────────────────────────────────────────────
 
-// Normalize division names - map "Intermediate 1" and "Intermediate 2" to "Intermediate"
-const normalizeDivisionName = (divisionName: string): string => {
-  if (divisionName.toLowerCase().startsWith('intermediate')) {
-    return 'Intermediate';
-  }
-  return divisionName;
-};
-
 /**
  * Batch update team_season_stats and team_details_archive for a list of team updates.
  * Processes in batches of 10 in parallel. Throws on any failure.
@@ -320,13 +312,11 @@ export const batchUpdateSeasonStats = async (updates: TeamUpdate[]): Promise<voi
   for (const batch of batches) {
     // Use Promise.all for parallel updates within each batch
     const updatePromises = batch.map(async (update) => {
-      const normalizedDivision = normalizeDivisionName(update.division_name);
-
       // Update team_season_stats with verification
       const { data: statsData, error: statsError } = await supabase
         .from('team_season_stats')
         .update({
-          division_name: normalizedDivision,
+          division_name: update.division_name,
           playoff_rank: update.playoff_rank,
         })
         .eq('team_id', update.team_id)
@@ -341,7 +331,7 @@ export const batchUpdateSeasonStats = async (updates: TeamUpdate[]): Promise<voi
         errorLog(`Update verification failed for team_season_stats:`, {
           team_id: update.team_id,
           season_id: update.season_id,
-          division_name: normalizedDivision,
+          division_name: update.division_name,
         });
         throw new NotFoundError('TeamSeasonStats', update.team_id);
       }
@@ -350,7 +340,7 @@ export const batchUpdateSeasonStats = async (updates: TeamUpdate[]): Promise<voi
       const { data: archiveData, error: archiveError } = await supabase
         .from('team_details_archive')
         .update({
-          divisionname: normalizedDivision,
+          divisionname: update.division_name,
         })
         .eq('team_id', update.team_id)
         .eq('season_id', update.season_id)
