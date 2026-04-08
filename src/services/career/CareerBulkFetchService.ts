@@ -151,11 +151,10 @@ export const fetchAllTeamsCareerData = async (
       `
       )
       .eq('iscompleted', true),
-    // All team details archive (already unfiltered in single-team version)
+    // All team details archive — unfiltered so opponent division history is available for division records
     supabase
       .from('team_details_archive')
-      .select('team_id, season_id, divisionname')
-      .in('team_id', teamIds),
+      .select('team_id, season_id, divisionname'),
     // All completed playoff matches
     supabase
       .from('playoff_matches')
