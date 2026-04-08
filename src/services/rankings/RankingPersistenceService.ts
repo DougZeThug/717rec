@@ -12,7 +12,7 @@ async function getCurrentSeasonId(): Promise<string> {
     .from('seasons')
     .select('id')
     .eq('is_active', true)
-    .single();
+    .maybeSingle();
 
   if (error) {
     handleDatabaseError(error, 'Failed to fetch current season');
