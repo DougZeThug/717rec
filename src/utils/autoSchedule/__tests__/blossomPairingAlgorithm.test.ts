@@ -11,7 +11,7 @@ import { generatePairingsWithBlossom } from '../blossomPairingAlgorithm';
  */
 const baseConfig = {
   avoidRematches: false,
-  haveTeamsPlayedFn: async () => false,
+  haveTeamsPlayedFn: () => Promise.resolve(false),
   getCompatibilityScoreFn: () => 5,
   playedPairsSet: new Set<string>(),
 };
