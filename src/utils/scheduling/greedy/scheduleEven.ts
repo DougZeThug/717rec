@@ -108,7 +108,8 @@ export function scheduleEven(args: EvenScheduleArgs): {
       playedSet,
       forbiddenPairs,
       maxTierGap,
-      relaxationLevel
+      relaxationLevel,
+      perTeamRematchAllowed
     );
 
     if (crossSlotResult) {

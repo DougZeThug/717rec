@@ -25,7 +25,8 @@ export function tryCrossSlotSwap(
   playedSet: Set<string>,
   forbiddenPairs: Set<string> | undefined,
   maxTierGap: number,
-  relaxationLevel: RelaxationLevel
+  relaxationLevel: RelaxationLevel,
+  rematchAllowedFor?: Set<string>
 ): { s1: ScheduledMatch[]; s2: ScheduledMatch[] } | null {
   // Identify unmatched teams in S2
   const s2PairedIds = new Set(s2Matches.flatMap((m) => [m.teamAId, m.teamBId]));
@@ -72,8 +73,8 @@ export function tryCrossSlotSwap(
         const newKey2 = pairKey(p2a.id, p2b.id);
 
         if (
-          !canPlay(p1a, p1b, playedSet, tempTonightPairs, maxTierGap, relaxationLevel) ||
-          !canPlay(p2a, p2b, playedSet, tempTonightPairs, maxTierGap, relaxationLevel)
+          !canPlay(p1a, p1b, playedSet, tempTonightPairs, maxTierGap, relaxationLevel, rematchAllowedFor) ||
+          !canPlay(p2a, p2b, playedSet, tempTonightPairs, maxTierGap, relaxationLevel, rematchAllowedFor)
         ) {
           continue;
         }
@@ -98,7 +99,8 @@ export function tryCrossSlotSwap(
           maxTierGap,
           undefined,
           tempNewPairs,
-          relaxationLevel
+          relaxationLevel,
+          rematchAllowedFor
         );
 
         const s2TeamCount = new Set(candidateS2.flatMap((m) => [m.teamAId, m.teamBId])).size;
