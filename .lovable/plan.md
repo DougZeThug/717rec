@@ -1,30 +1,24 @@
 
 
-## Fix: Update RankingPersistenceService test mock for `.maybeSingle()`
+## Fix: Add Missing useCallback Dependencies in usePairingOperations
 
 ### Problem
+Two `useCallback` hooks have missing dependency array entries, causing stale closure bugs in cross-block validation and pairing generation.
 
-The previous fix changed `getCurrentSeasonId` from `.single()` to `.maybeSingle()`, but the test's `seasonsSelectChain` helper only mocks `.single()` — not `.maybeSingle()`. The 4 failing tests all hit this missing method.
+### Changes
 
-### Change
+**File: `src/hooks/useAutoSchedule/usePairingOperations.ts`**
 
-**File: `src/services/rankings/__tests__/RankingPersistenceService.test.ts`**
-
-Update `seasonsSelectChain` (lines 60–70) to mock `maybeSingle` instead of `single`:
-
+1. **Line 193** — Add `teamBlockMap` to `handleGenerateClick` deps:
 ```typescript
-const seasonsSelectChain = (result: { data: unknown; error: unknown | null }) => ({
-  select: () => ({
-    eq: () => ({
-      maybeSingle: () => Promise.resolve(result),
-    }),
-  }),
-});
+[generateMatchPairings, toast, setActiveTab, teamBlockMap]
 ```
 
-Update the JSDoc comment on line 62 to say `.maybeSingle()` instead of `.single()`.
+2. **Line 325** — Add `teamBlockMap`, `generatorBlockMap`, `allTeams` to `handleApplySchedule` deps:
+```typescript
+[toast, qualityMetrics, teamBlockMap, generatorBlockMap, allTeams]
+```
 
 ### Scope
-
-1 file, 2-line change. No logic changes.
+1 file, 2 lines changed. No logic changes — only dependency arrays updated.
 
