@@ -27,6 +27,11 @@ export const invalidateMatchRelatedQueries = async (queryClient: QueryClient) =>
     'team-career-power-score',
     // Schedule and opponent data
     'season-opponent-history',
+    // Head-to-head data
+    'head-to-head',
+    'opponent-history',
+    'match-head-to-head',
+    'batch-head-to-head',
     'schedule',
     'upcoming-matches',
     // Playoff data
