@@ -10,7 +10,7 @@ export const isNativePlatform = (): boolean => {
 
 export const loginWithGoogleNative = async () => {
   if (!isNativePlatform()) {
-    return { success: false, error: 'This method is only available on native mobile platforms' };
+    return { success: false, error: new Error('This method is only available on native mobile platforms') };
   }
 
   try {
