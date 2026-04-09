@@ -59,7 +59,7 @@ export const MatchCommentsService = {
     userId: string
   ): Promise<{ username: string | null; teamName: string | null }> => {
     const [profileResult, membershipResult] = await Promise.all([
-      supabase.from('profiles').select('username').eq('id', userId).single(),
+      supabase.from('profiles').select('username').eq('id', userId).maybeSingle(),
       supabase
         .from('team_memberships')
         .select('team:teams(name)')
