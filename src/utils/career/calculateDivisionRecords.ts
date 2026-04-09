@@ -41,6 +41,25 @@ export const getTierFromWeight = (weight: number): DivisionTier => {
 };
 
 /**
+ * Iterates matches, resolves each to a tier via getTier, and records wins/losses.
+ * Skips matches where getTier returns null.
+ */
+function processMatchesWithTier<T extends { winner_id: string | null; loser_id: string | null }>(
+  matches: T[] | null,
+  getTier: (match: T) => DivisionTier | null,
+  records: DivisionRecords,
+  teamId: string
+): void {
+  if (!matches) return;
+  for (const match of matches) {
+    const tier = getTier(match);
+    if (!tier) continue;
+    if (match.winner_id === teamId) records[tier].wins++;
+    else if (match.loser_id === teamId) records[tier].losses++;
+  }
+}
+
+/**
  * Calculates win/loss records against each division tier.
  * Uses opponent's division at the time of the match.
  */
@@ -58,65 +77,43 @@ export const calculateDivisionRecords = ({
     recreational: { wins: 0, losses: 0 },
   };
 
-  // Process archived matches - look up opponent's division at time of match
-  if (archivedMatches) {
-    for (const match of archivedMatches) {
+  // Archived: look up opponent's historical division
+  processMatchesWithTier(
+    archivedMatches,
+    (match) => {
+      const opponentId = match.team1_id === teamId ? match.team2_id : match.team1_id;
+      if (!opponentId || !match.season_id) return null;
+      return categorizeDivision(teamDivisionMap.get(`${opponentId}_${match.season_id}`) || null);
+    },
+    division_records,
+    teamId
+  );
+
+  // Current: historical lookup with fallback to joined division data
+  processMatchesWithTier(
+    currentMatches,
+    (match) => {
       const isTeam1 = match.team1_id === teamId;
       const opponentId = isTeam1 ? match.team2_id : match.team1_id;
-      if (!opponentId || !match.season_id) continue;
-
-      const opponentDivision = teamDivisionMap.get(`${opponentId}_${match.season_id}`);
-      const tier = categorizeDivision(opponentDivision || null);
-
-      if (tier) {
-        if (match.winner_id === teamId) {
-          division_records[tier].wins++;
-        } else if (match.loser_id === teamId) {
-          division_records[tier].losses++;
-        }
-      }
-    }
-  }
-
-  // Add current season matches - look up opponent's division at time of match
-  if (currentMatches) {
-    for (const match of currentMatches) {
-      const isTeam1 = match.team1_id === teamId;
-      const opponentId = isTeam1 ? match.team2_id : match.team1_id;
-      if (!opponentId || !match.season_id) continue;
-
-      // Use historical lookup, fallback to current division for active season
+      if (!opponentId || !match.season_id) return null;
       const historicalDivision = teamDivisionMap.get(`${opponentId}_${match.season_id}`);
-      const fallbackDivision = isTeam1
-        ? match.team2?.divisions?.name
-        : match.team1?.divisions?.name;
-      const tier = categorizeDivision(historicalDivision || fallbackDivision || null);
+      const fallbackDivision = isTeam1 ? match.team2?.divisions?.name : match.team1?.divisions?.name;
+      return categorizeDivision(historicalDivision || fallbackDivision || null);
+    },
+    division_records,
+    teamId
+  );
 
-      if (tier) {
-        if (match.winner_id === teamId) {
-          division_records[tier].wins++;
-        } else if (match.loser_id === teamId) {
-          division_records[tier].losses++;
-        }
-      }
-    }
-  }
-
-  // Add playoff matches based on bracket display_division name (consistent with regular-season categorization)
-  if (playoffMatches) {
-    for (const match of playoffMatches) {
-      if (!match.bracket_id) continue;
-      const displayDivision = bracketDivisionDisplayNames[match.bracket_id] || null;
-      const tier = categorizeDivision(displayDivision);
-      if (!tier) continue;
-
-      if (match.winner_id === teamId) {
-        division_records[tier].wins++;
-      } else if (match.loser_id === teamId) {
-        division_records[tier].losses++;
-      }
-    }
-  }
+  // Playoff: classify by bracket's display_division name
+  processMatchesWithTier(
+    playoffMatches,
+    (match) => {
+      if (!match.bracket_id) return null;
+      return categorizeDivision(bracketDivisionDisplayNames[match.bracket_id] || null);
+    },
+    division_records,
+    teamId
+  );
 
   return division_records;
 };
