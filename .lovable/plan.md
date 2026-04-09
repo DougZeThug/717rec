@@ -1,24 +1,37 @@
 
 
-## Fix: Add Missing useCallback Dependencies in usePairingOperations
+## Fix: Memoize `initializeScores` to Stop Infinite Re-render Loop
 
 ### Problem
-Two `useCallback` hooks have missing dependency array entries, causing stale closure bugs in cross-block validation and pairing generation.
 
-### Changes
+`initializeScores` in `useMatchScoresState` is not wrapped in `useCallback`. The `useEffect` in `useUncompletedMatches` lists it as a dependency, so every render creates a new function reference → triggers the effect → calls `setScores` → re-renders → new reference → loop.
 
-**File: `src/hooks/useAutoSchedule/usePairingOperations.ts`**
+This also wipes any user-entered scores on every cycle.
 
-1. **Line 193** — Add `teamBlockMap` to `handleGenerateClick` deps:
+### Change
+
+**File: `src/hooks/matches/useMatchScoresState.ts`**
+
+Wrap `initializeScores` in `useCallback` with an empty dependency array (it only uses `setScores`, which is stable):
+
 ```typescript
-[generateMatchPairings, toast, setActiveTab, teamBlockMap]
-```
+import { useState, useCallback } from 'react';
 
-2. **Line 325** — Add `teamBlockMap`, `generatorBlockMap`, `allTeams` to `handleApplySchedule` deps:
-```typescript
-[toast, qualityMetrics, teamBlockMap, generatorBlockMap, allTeams]
+// ...
+
+const initializeScores = useCallback((newMatches: Match[]) => {
+  const initialScores: Record<string, { team1Score: string; team2Score: string }> = {};
+  newMatches.forEach((match) => {
+    initialScores[match.id] = {
+      team1Score: match.team1Score?.toString() || '',
+      team2Score: match.team2Score?.toString() || '',
+    };
+  });
+  setScores(initialScores);
+}, []);
 ```
 
 ### Scope
-1 file, 2 lines changed. No logic changes — only dependency arrays updated.
+
+1 file, wrapping one function in `useCallback`. No logic changes.
 
