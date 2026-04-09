@@ -65,6 +65,7 @@ describe('calculateDivisionRecords', () => {
       playoffMatches: null,
       teamDivisionMap: new Map(),
       bracketDivisionWeights: {},
+      bracketDivisionDisplayNames: {},
       teamId,
     });
 
@@ -95,6 +96,7 @@ describe('calculateDivisionRecords', () => {
       playoffMatches: null,
       teamDivisionMap: new Map(),
       bracketDivisionWeights: {},
+      bracketDivisionDisplayNames: {},
       teamId,
     });
 
@@ -122,6 +124,7 @@ describe('calculateDivisionRecords', () => {
       playoffMatches: null,
       teamDivisionMap: new Map(),
       bracketDivisionWeights: {},
+      bracketDivisionDisplayNames: {},
       teamId,
     });
 
@@ -151,13 +154,14 @@ describe('calculateDivisionRecords', () => {
       playoffMatches: null,
       teamDivisionMap,
       bracketDivisionWeights: {},
+      bracketDivisionDisplayNames: {},
       teamId,
     });
 
     expect(result.recreational.wins).toBe(1);
   });
 
-  it('categorizes playoff matches by bracket weight', () => {
+  it('categorizes playoff matches by bracket display division name', () => {
     const playoffMatches: PlayoffMatchData[] = [
       {
         winner_id: 'team-1',
@@ -184,15 +188,72 @@ describe('calculateDivisionRecords', () => {
       archivedMatches: null,
       playoffMatches,
       teamDivisionMap: new Map(),
-      bracketDivisionWeights: {
-        'comp-bracket': 1.0,
-        'rec-bracket': 0.25,
+      bracketDivisionWeights: {},
+      bracketDivisionDisplayNames: {
+        'comp-bracket': 'Competitive',
+        'rec-bracket': 'Recreational',
       },
       teamId,
     });
 
     expect(result.competitive.wins).toBe(1);
     expect(result.recreational.wins).toBe(1);
+  });
+
+  it('correctly categorizes Recreational High playoff bracket as recreational', () => {
+    // Regression: weight=0.50 previously mapped to intermediate via getTierFromWeight
+    const playoffMatches: PlayoffMatchData[] = [
+      {
+        winner_id: 'team-1',
+        loser_id: 'team-2',
+        team1_id: 'team-1',
+        team2_id: 'team-2',
+        team1_score: 2,
+        team2_score: 0,
+        bracket_id: 'rec-high-bracket',
+      },
+    ];
+
+    const result = calculateDivisionRecords({
+      currentMatches: null,
+      archivedMatches: null,
+      playoffMatches,
+      teamDivisionMap: new Map(),
+      bracketDivisionWeights: { 'rec-high-bracket': 0.5 },
+      bracketDivisionDisplayNames: { 'rec-high-bracket': 'Recreational' },
+      teamId,
+    });
+
+    expect(result.recreational.wins).toBe(1);
+    expect(result.intermediate.wins).toBe(0);
+  });
+
+  it('correctly categorizes cuspers playoff bracket as intermediate', () => {
+    // Regression: weight=0.90 previously mapped to competitive via getTierFromWeight
+    const playoffMatches: PlayoffMatchData[] = [
+      {
+        winner_id: 'team-1',
+        loser_id: 'team-2',
+        team1_id: 'team-1',
+        team2_id: 'team-2',
+        team1_score: 2,
+        team2_score: 0,
+        bracket_id: 'cuspers-bracket',
+      },
+    ];
+
+    const result = calculateDivisionRecords({
+      currentMatches: null,
+      archivedMatches: null,
+      playoffMatches,
+      teamDivisionMap: new Map(),
+      bracketDivisionWeights: { 'cuspers-bracket': 0.9 },
+      bracketDivisionDisplayNames: { 'cuspers-bracket': 'cuspers' },
+      teamId,
+    });
+
+    expect(result.intermediate.wins).toBe(1);
+    expect(result.competitive.wins).toBe(0);
   });
 
   it('skips playoff matches without bracket_id', () => {
@@ -214,6 +275,7 @@ describe('calculateDivisionRecords', () => {
       playoffMatches,
       teamDivisionMap: new Map(),
       bracketDivisionWeights: {},
+      bracketDivisionDisplayNames: {},
       teamId,
     });
 

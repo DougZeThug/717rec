@@ -123,8 +123,9 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
 
   const teamDivisionWeight = teamData?.divisions?.division_weight || 0.85;
 
-  // Get bracket division weights for competitive playoff detection
+  // Get bracket division weights and display names for playoff tier classification
   const bracketDivisionWeights: Record<string, number> = {};
+  const bracketDivisionDisplayNames: Record<string, string> = {};
   if (playoffMatches && playoffMatches.length > 0) {
     const bracketIds = [
       ...new Set(playoffMatches.map((match) => match.bracket_id).filter(Boolean)),
@@ -136,15 +137,19 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
         .select(
           `
           id,
-          divisions(division_weight)
+          divisions(division_weight, display_division)
         `
         )
         .in('id', bracketIds);
 
       if (bracketData) {
         for (const bracket of bracketData) {
-          const divisions = bracket.divisions as { division_weight: number } | null;
+          const divisions = bracket.divisions as {
+            division_weight: number;
+            display_division: string | null;
+          } | null;
           bracketDivisionWeights[bracket.id] = divisions?.division_weight || 0.85;
+          bracketDivisionDisplayNames[bracket.id] = divisions?.display_division ?? '';
         }
       }
     }
@@ -194,6 +199,7 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
     playoffMatches,
     teamDivisionMap,
     bracketDivisionWeights,
+    bracketDivisionDisplayNames,
     bracketSeasonMap,
     teamDivisionWeight,
     currentSeasonId,

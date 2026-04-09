@@ -35,6 +35,7 @@ async function computeTotalsFromBulkData(
     playoffMatches,
     teamDivisionMap,
     bracketDivisionWeights,
+    bracketDivisionDisplayNames,
     bracketSeasonMap,
     teamDivisionWeight,
     currentSeasonId,
@@ -90,6 +91,7 @@ async function computeTotalsFromBulkData(
     playoffMatches,
     teamDivisionMap,
     bracketDivisionWeights,
+    bracketDivisionDisplayNames,
     teamId,
   });
 

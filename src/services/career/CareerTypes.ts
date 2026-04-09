@@ -18,6 +18,7 @@ export interface CareerData {
   playoffMatches: PlayoffMatchData[] | null;
   teamDivisionMap: Map<string, string>;
   bracketDivisionWeights: Record<string, number>;
+  bracketDivisionDisplayNames: Record<string, string>;
   bracketSeasonMap: Record<string, string>;
   teamDivisionWeight: number;
   currentSeasonId: string | null;

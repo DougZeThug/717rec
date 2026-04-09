@@ -46,6 +46,7 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     playoffMatches,
     teamDivisionMap,
     bracketDivisionWeights,
+    bracketDivisionDisplayNames,
     bracketSeasonMap,
     teamDivisionWeight,
     currentSeasonId,
@@ -99,6 +100,7 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     playoffMatches,
     teamDivisionMap,
     bracketDivisionWeights,
+    bracketDivisionDisplayNames,
     teamId,
   });
 
