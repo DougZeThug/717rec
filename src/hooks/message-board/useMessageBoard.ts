@@ -213,16 +213,25 @@ export const useMessageBoard = (): UseMessageBoardResult => {
   // Memoized callback for message updated
   const handleMessageUpdated = useCallback(
     (updatedMessage: Message) => {
-      if (
+      const matchesFilter =
         (!filterOptions.category || updatedMessage.category === filterOptions.category) &&
         (!filterOptions.teamId || updatedMessage.team_id === filterOptions.teamId) &&
         (!filterOptions.searchQuery ||
-          updatedMessage.content.toLowerCase().includes(filterOptions.searchQuery.toLowerCase()))
-      ) {
-        setMessages((curr) =>
-          curr.map((msg) => (msg.id === updatedMessage.id ? updatedMessage : msg))
-        );
-      }
+          updatedMessage.content.toLowerCase().includes(filterOptions.searchQuery.toLowerCase()));
+
+      setMessages((curr) => {
+        const existsInList = curr.some((msg) => msg.id === updatedMessage.id);
+
+        if (existsInList) {
+          // Update in place if still matches filter, otherwise remove
+          return matchesFilter
+            ? curr.map((msg) => (msg.id === updatedMessage.id ? updatedMessage : msg))
+            : curr.filter((msg) => msg.id !== updatedMessage.id);
+        } else {
+          // Not in list — add only if it matches the filter
+          return matchesFilter ? [...curr, updatedMessage] : curr;
+        }
+      });
     },
     [filterOptions.category, filterOptions.teamId, filterOptions.searchQuery]
   );
