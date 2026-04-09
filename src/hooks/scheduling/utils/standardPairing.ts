@@ -60,6 +60,12 @@ export const scheduleStandardPairings = async (
     // Store pairings for this block
     pairings[block] = blockPairings;
 
+    // Update playedPairsSet so subsequent blocks avoid same-session rematches (double headers)
+    blockPairings.forEach((pair) => {
+      const pairingKey = [pair.team1.id, pair.team2.id].sort().join('-');
+      playedPairsSet.add(pairingKey);
+    });
+
     // Find unmatched teams
     const pairedTeamIds = new Set<string>();
     blockPairings.forEach((pair) => {
