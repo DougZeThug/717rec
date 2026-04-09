@@ -9,6 +9,8 @@ export interface MatchFormProps {
   onSubmit: (match: Omit<Match, 'id'>) => void;
   onCancel: () => void;
   form?: UseFormReturn<MatchFormValues>;
+  /** Whether an update operation is in progress (prevents double-submit) */
+  isUpdating?: boolean;
 }
 
 export interface MatchFormValues {

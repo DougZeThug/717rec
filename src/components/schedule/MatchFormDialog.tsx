@@ -19,6 +19,8 @@ interface MatchFormDialogProps {
   onSubmit: (match: Omit<Match, 'id'>) => void;
   /** Whether teams are still loading (for lazy-loaded teams) */
   isLoadingTeams?: boolean;
+  /** Whether an update operation is in progress */
+  isUpdating?: boolean;
 }
 
 const MatchFormDialog: React.FC<MatchFormDialogProps> = ({
@@ -28,6 +30,7 @@ const MatchFormDialog: React.FC<MatchFormDialogProps> = ({
   teams,
   onSubmit,
   isLoadingTeams = false,
+  isUpdating = false,
 }) => {
   return (
     <ResponsiveDialog open={isOpen} onOpenChange={onClose}>
@@ -43,7 +46,7 @@ const MatchFormDialog: React.FC<MatchFormDialogProps> = ({
             <Skeleton className="h-10 w-1/2" />
           </div>
         ) : (
-          <MatchFormRHF match={match} teams={teams} onSubmit={onSubmit} onCancel={onClose} />
+          <MatchFormRHF match={match} teams={teams} onSubmit={onSubmit} onCancel={onClose} isUpdating={isUpdating} />
         )}
       </ResponsiveDialogContent>
     </ResponsiveDialog>

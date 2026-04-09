@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 
 import { useTeamRecords } from '@/hooks/useTeamRecords';
 import { useToast } from '@/hooks/useToast';
@@ -25,10 +26,12 @@ export const useMatchUpdate = ({
   const { toast } = useToast();
   const { updateTeamRecords } = useTeamRecords();
   const queryClient = useQueryClient();
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const handleUpdateMatch = async (matchData: Omit<Match, 'id'>, teams: Team[]) => {
-    if (!editingMatch) return false;
+    if (!editingMatch || isUpdating) return false;
 
+    setIsUpdating(true);
     try {
       // Check if the winner/loser has changed
       const winnerChanged = editingMatch.winnerId !== matchData.winnerId;
@@ -213,10 +216,13 @@ export const useMatchUpdate = ({
         variant: 'destructive',
       });
       return false;
+    } finally {
+      setIsUpdating(false);
     }
   };
 
   return {
     handleUpdateMatch,
+    isUpdating,
   };
 };
