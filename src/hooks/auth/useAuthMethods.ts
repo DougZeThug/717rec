@@ -157,7 +157,7 @@ export const useAuthMethods = (
       } else {
         const errorMessage = result.error?.message || 'Failed to login with Google';
         handleAuthError(new Error(errorMessage), 'Native Google login');
-        return { success: false, error: errorMessage };
+        return { success: false, error: new Error(errorMessage) };
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -166,7 +166,8 @@ export const useAuthMethods = (
         handleAuthError(new Error('An unexpected error occurred'), 'Native Google login');
       }
 
-      return { success: false, error };
+      const wrappedError = error instanceof Error ? error : new Error('An unexpected error occurred');
+      return { success: false, error: wrappedError };
     }
   }, [clearAuthError, ensureThemeConsistency, handleAuthError]);
 

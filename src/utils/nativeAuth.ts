@@ -10,7 +10,7 @@ export const isNativePlatform = (): boolean => {
 
 export const loginWithGoogleNative = async () => {
   if (!isNativePlatform()) {
-    return { success: false, error: 'This method is only available on native mobile platforms' };
+    return { success: false, error: new Error('This method is only available on native mobile platforms') };
   }
 
   try {
@@ -50,8 +50,9 @@ export const loginWithGoogleNative = async () => {
     const data = await signInWithIdToken('google', idToken);
 
     return { success: true, user: data.user };
-  } catch (err: any) {
+  } catch (err: unknown) {
     errorLog('Exception during native Google login:', err);
-    return { success: false, error: err.message || 'An error occurred during native Google login' };
+    const error = err instanceof Error ? err : new Error(String(err));
+    return { success: false, error };
   }
 };
