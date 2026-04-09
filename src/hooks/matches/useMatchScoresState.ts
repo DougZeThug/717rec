@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 import { Match } from '@/types';
 
@@ -7,7 +7,7 @@ export function useMatchScoresState(matches: Match[] = []) {
     {}
   );
 
-  const initializeScores = (newMatches: Match[]) => {
+  const initializeScores = useCallback((newMatches: Match[]) => {
     const initialScores: Record<string, { team1Score: string; team2Score: string }> = {};
 
     newMatches.forEach((match) => {
@@ -18,7 +18,7 @@ export function useMatchScoresState(matches: Match[] = []) {
     });
 
     setScores(initialScores);
-  };
+  }, []);
 
   const handleScoreChange = (
     matchId: string,
