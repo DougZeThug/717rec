@@ -23,7 +23,7 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
   const [isDeleting, setIsDeleting] = useState(false);
   const queryClient = useQueryClient();
 
-  const { handleUpdateMatch } = useMatchUpdate({
+  const { handleUpdateMatch, isUpdating } = useMatchUpdate({
     matches,
     setMatches,
     editingMatch,
@@ -42,6 +42,7 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
     editingMatch,
     deleteMatchId,
     isDeleting,
+    isUpdating,
     setEditingMatch,
     setDeleteMatchId,
     handleUpdateMatch,
