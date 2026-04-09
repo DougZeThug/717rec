@@ -12,6 +12,7 @@ interface DivisionRecordsInput {
   playoffMatches: PlayoffMatchData[] | null;
   teamDivisionMap: Map<string, string>;
   bracketDivisionWeights: Record<string, number>;
+  bracketDivisionDisplayNames: Record<string, string>;
   teamId: string;
 }
 
@@ -48,7 +49,7 @@ export const calculateDivisionRecords = ({
   archivedMatches,
   playoffMatches,
   teamDivisionMap,
-  bracketDivisionWeights,
+  bracketDivisionDisplayNames,
   teamId,
 }: DivisionRecordsInput): DivisionRecords => {
   const division_records: DivisionRecords = {
@@ -101,12 +102,13 @@ export const calculateDivisionRecords = ({
     }
   }
 
-  // Add playoff matches based on bracket division weight
+  // Add playoff matches based on bracket display_division name (consistent with regular-season categorization)
   if (playoffMatches) {
     for (const match of playoffMatches) {
       if (!match.bracket_id) continue;
-      const bracketWeight = bracketDivisionWeights[match.bracket_id] || 0.85;
-      const tier = getTierFromWeight(bracketWeight);
+      const displayDivision = bracketDivisionDisplayNames[match.bracket_id] || null;
+      const tier = categorizeDivision(displayDivision);
+      if (!tier) continue;
 
       if (match.winner_id === teamId) {
         division_records[tier].wins++;

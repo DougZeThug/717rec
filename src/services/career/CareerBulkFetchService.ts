@@ -11,6 +11,7 @@ import { CareerData, TeamDetailsArchive } from './CareerTypes';
 // ── Module-level cache for bracket division weights & season map ────────
 let bracketCache: {
   bracketDivisionWeights: Record<string, number>;
+  bracketDivisionDisplayNames: Record<string, string>;
   bracketSeasonMap: Record<string, string>;
   timestamp: number;
 } | null = null;
@@ -247,14 +248,17 @@ export const fetchAllTeamsCareerData = async (
   // 4. Build bracket lookup maps from ALL playoff matches (use cache if fresh)
   const allPlayoffMatches = (allPlayoffMatchesResult.data as PlayoffMatchData[]) || [];
   let bracketDivisionWeights: Record<string, number>;
+  let bracketDivisionDisplayNames: Record<string, string>;
   let bracketSeasonMap: Record<string, string>;
 
   const now = Date.now();
   if (bracketCache && now - bracketCache.timestamp < BRACKET_CACHE_TTL) {
     bracketDivisionWeights = bracketCache.bracketDivisionWeights;
+    bracketDivisionDisplayNames = bracketCache.bracketDivisionDisplayNames;
     bracketSeasonMap = bracketCache.bracketSeasonMap;
   } else {
     bracketDivisionWeights = {};
+    bracketDivisionDisplayNames = {};
     bracketSeasonMap = {};
 
     const allBracketIds = [
@@ -264,13 +268,17 @@ export const fetchAllTeamsCareerData = async (
     if (allBracketIds.length > 0) {
       const { data: bracketData } = await supabase
         .from('brackets')
-        .select('id, season_id, divisions(division_weight)')
+        .select('id, season_id, divisions(division_weight, display_division)')
         .in('id', allBracketIds);
 
       if (bracketData) {
         for (const bracket of bracketData) {
-          const divisions = bracket.divisions as { division_weight: number } | null;
+          const divisions = bracket.divisions as {
+            division_weight: number;
+            display_division: string | null;
+          } | null;
           bracketDivisionWeights[bracket.id] = divisions?.division_weight ?? 0.85;
+          bracketDivisionDisplayNames[bracket.id] = divisions?.display_division ?? '';
           if (bracket.season_id) {
             bracketSeasonMap[bracket.id] = bracket.season_id;
           }
@@ -278,7 +286,7 @@ export const fetchAllTeamsCareerData = async (
       }
     }
 
-    bracketCache = { bracketDivisionWeights, bracketSeasonMap, timestamp: now };
+    bracketCache = { bracketDivisionWeights, bracketDivisionDisplayNames, bracketSeasonMap, timestamp: now };
   }
 
   // 5. Assemble per-team CareerData
@@ -306,6 +314,7 @@ export const fetchAllTeamsCareerData = async (
       playoffMatches: playoffMatchesByTeam.get(teamId) || null,
       teamDivisionMap,
       bracketDivisionWeights,
+      bracketDivisionDisplayNames,
       bracketSeasonMap,
       teamDivisionWeight: teamDivisionWeights.get(teamId) || 0.85,
       currentSeasonId,
