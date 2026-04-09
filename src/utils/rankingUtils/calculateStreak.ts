@@ -6,10 +6,14 @@ import { Match } from '@/types';
 export const calculateStreak = (teamId: string, allMatches: Match[] | undefined) => {
   if (!teamId || !allMatches || allMatches.length === 0) return undefined;
 
+  // Filter to completed matches for this team, excluding ties (winnerId is null)
   const teamMatches = allMatches
     .filter(
       (match) =>
-        match && match.iscompleted && (match.team1Id === teamId || match.team2Id === teamId)
+        match &&
+        match.iscompleted &&
+        match.winnerId !== null &&
+        (match.team1Id === teamId || match.team2Id === teamId)
     )
     .sort((a, b) => {
       const dateA = a.date ? new Date(a.date).getTime() : 0;
