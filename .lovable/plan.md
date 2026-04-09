@@ -1,49 +1,81 @@
 
 
-## Fix: Reorder Match Deletion to Delete Before Reversing Stats
+## Security Fixes: Team Memberships & Storage Policies
 
-### Problem
+### Finding 1: `user_is_team_member` missing approval check — **REAL, LOW RISK**
 
-All three match deletion paths (`useMatchDelete`, `EditScoresSection`, `MassScoreEntryTool`) decrement `teams.wins/losses` via `reverseTeamStats` BEFORE calling `deleteMatch`. If the delete fails (FK constraints, network error, etc.), career totals are permanently corrupted with no recovery — the match still exists but the stats have already been decremented.
+The function returns `true` for any membership row regardless of `is_approved`. This means a pending (unapproved) member can see other memberships on that team.
 
-### Why This Is Real
+**Fix**: Update the function to add `AND is_approved = true`.
 
-- `reverseTeamStats` calls an RPC that directly decrements `teams.wins/losses` — these are denormalized career totals with no recalculation function
-- `upsertTeamSeasonStats` only fixes `team_season_stats`, NOT `teams.wins/losses`
-- If `deleteMatch` fails after reversal, there is zero recovery path
-- The `statReversalUtils.ts` wrapper also calls `upsertTeamSeasonStats()` redundantly before deletion (recalculating season stats while the match still exists)
-
-### Fix
-
-In all three files, move `deleteMatch()` BEFORE `reverseTeamStats()`. Also remove the redundant `upsertTeamSeasonStats()` call inside `statReversalUtils.ts` for the delete path (it's called again after deletion anyway, and calling it before deletion is wrong — the match still exists).
-
-### Changes
-
-**1. `src/hooks/matches/updates/useMatchDelete.ts`**
-
-Reorder: call `deleteMatch` first, then `reverseTeamStats`, then `upsertTeamSeasonStats`.
-
-```typescript
-// Delete the match FIRST
-await deleteMatch(deleteMatchId);
-
-// If match was completed, reverse the team stats AFTER successful deletion
-if (matchToDelete.iscompleted && matchToDelete.winnerId && matchToDelete.loserId) {
-  // ... compute game wins ...
-  await reverseTeamStats(winnerId, loserId, winnerGameWins, loserGameWins);
-}
-
-// Refresh season stats after both deletion and reversal
-await upsertTeamSeasonStats();
+```sql
+CREATE OR REPLACE FUNCTION public.user_is_team_member(p_user_id uuid, p_team_id uuid)
+RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path = 'pg_catalog', 'public'
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.team_memberships
+    WHERE user_id = p_user_id
+      AND team_id = p_team_id
+      AND is_approved = true
+  );
+$$;
 ```
 
-**2. `src/components/admin/EditScoresSection.tsx`** — Same reorder.
+### Finding 2: Users can hijack approval by changing `team_id` — **REAL, MEDIUM RISK**
 
-**3. `src/components/admin/MassScoreEntryTool.tsx`** — Same reorder.
+The `USING` clause on "Users can update own membership team" only checks `user_id = auth.uid()` — it doesn't require the row to currently be unapproved. So a user with an **approved** membership can update their `team_id` to a different team. The `WITH CHECK` forces `is_approved = false` on the resulting row, but the damage is done: they changed teams and can request re-approval on the new team while the system treats it as a team-switch rather than a new request.
 
-**4. `src/hooks/matches/updates/utils/statReversalUtils.ts`** — Remove the `upsertTeamSeasonStats()` call from inside `reverseTeamStats`. Every caller already calls it separately after deletion. Calling it inside the reversal (before the match is deleted) recalculates season stats with the match still present, which is incorrect for the delete flow.
+More critically: between the UPDATE and admin review, the user briefly had an approved membership that they switched to a different team — the `validate_membership_approval` trigger only fires on approval changes, not team changes.
 
-### Scope
+**Fix**: Add `AND is_approved = false` to the `USING` clause so users can only modify **pending** membership rows:
 
-4 files. Logic reordering only — no new functions or behavior changes. Stats are still reversed and season stats are still refreshed; the only change is that deletion is confirmed before modifying career totals.
+```sql
+DROP POLICY "Users can update own membership team" ON public.team_memberships;
+
+CREATE POLICY "Users can update own membership team"
+  ON public.team_memberships FOR UPDATE TO authenticated
+  USING (user_id = auth.uid() AND is_approved = false)
+  WITH CHECK (
+    user_id = auth.uid()
+    AND is_approved = false
+    AND approved_by IS NULL
+    AND approved_at IS NULL
+  );
+```
+
+### Finding 3: Storage policies too permissive — **REAL, LOW RISK (trusted users)**
+
+The `teams` bucket INSERT policy (`Authenticated upload team images`) only checks `bucket_id = 'teams'` with no ownership check. Any authenticated user can upload/overwrite files for any team. The `team-images` bucket (if it exists) has the same issue.
+
+Given the app is "used internally by trusted team members only," this is lower risk. However, the fix is straightforward.
+
+**Fix**: Restrict uploads to team members or admins using a folder-per-team pattern (already in use — files are stored as `teams/{team_id}/...`):
+
+```sql
+DROP POLICY IF EXISTS "Authenticated upload team images" ON storage.objects;
+
+CREATE POLICY "Team members or admins upload team images"
+  ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK (
+    bucket_id = 'teams'
+    AND (
+      current_user_is_admin()
+      OR EXISTS (
+        SELECT 1 FROM public.team_memberships
+        WHERE user_id = auth.uid()
+          AND is_approved = true
+          AND team_id::text = (storage.foldername(name))[1]
+      )
+    )
+  );
+```
+
+### Summary
+
+One migration with three changes:
+1. Update `user_is_team_member` function to require `is_approved = true`
+2. Tighten `USING` clause on user self-update policy to only allow modifying pending rows
+3. Restrict `teams` bucket upload policy to team members/admins
 
