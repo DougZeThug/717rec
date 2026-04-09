@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useTeamRecords } from '@/hooks/useTeamRecords';
 import { useToast } from '@/hooks/useToast';
-import { updateMatch } from '@/services/matches/MatchWriteService';
+import { updateMatch, upsertTeamSeasonStats } from '@/services/matches/MatchWriteService';
 import { Match, Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 
