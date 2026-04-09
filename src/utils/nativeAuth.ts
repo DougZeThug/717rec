@@ -50,8 +50,9 @@ export const loginWithGoogleNative = async () => {
     const data = await signInWithIdToken('google', idToken);
 
     return { success: true, user: data.user };
-  } catch (err: any) {
+  } catch (err: unknown) {
     errorLog('Exception during native Google login:', err);
-    return { success: false, error: err.message || 'An error occurred during native Google login' };
+    const error = err instanceof Error ? err : new Error(String(err));
+    return { success: false, error };
   }
 };
