@@ -16,12 +16,14 @@ vi.mock('@/integrations/supabase/client', () => ({
 vi.mock('../constants', () => ({
   BACK_TO_BACK_PAIRS: {
     Early: { primary: '6:30 PM', secondary: '7:00 PM' },
+    MidEarly: { primary: '7:00 PM', secondary: '7:30 PM' },
     Mid: { primary: '7:30 PM', secondary: '8:00 PM' },
     Late: { primary: '8:30 PM', secondary: '9:00 PM' },
   },
   getPairConfig: vi.fn((pairName: string) => {
     const pairs: Record<string, { primary: string; secondary: string }> = {
       Early: { primary: '6:30 PM', secondary: '7:00 PM' },
+      MidEarly: { primary: '7:00 PM', secondary: '7:30 PM' },
       Mid: { primary: '7:30 PM', secondary: '8:00 PM' },
       Late: { primary: '8:30 PM', secondary: '9:00 PM' },
     };
@@ -123,6 +125,114 @@ describe('teamLoaderUtils', () => {
 
       // Should return empty array
       expect(teams).toHaveLength(0);
+    });
+
+    it('should include team with adjacent double-header when loading Early pair', async () => {
+      // A team assigned to both Early (6:30+7:00) and MidEarly (7:00+7:30).
+      // The query for Early returns all 4 rows because 7:00 PM appears in both pairs.
+      // The fix uses pair_slot to pick the correct slots for the Early pair.
+      const mockTeamData = [
+        {
+          id: 'slot-early-1',
+          team_id: 'team1',
+          timeslot: '6:30 PM',
+          match_date: '2023-06-15',
+          is_back_to_back: true,
+          pair_slot: '7:00 PM',
+          match_sequence: 1,
+          teams: {
+            id: 'team1',
+            name: 'Tigers',
+            logo_url: '/logos/tigers.png',
+            image_url: null,
+            division_id: 'division1',
+            divisions: { name: 'Division A', display_division: 'Division A' },
+            wins: 5,
+            losses: 2,
+            game_wins: 15,
+            game_losses: 6,
+          },
+        },
+        {
+          id: 'slot-early-2',
+          team_id: 'team1',
+          timeslot: '7:00 PM',
+          match_date: '2023-06-15',
+          is_back_to_back: true,
+          pair_slot: '6:30 PM',
+          match_sequence: 2,
+          teams: {
+            id: 'team1',
+            name: 'Tigers',
+            logo_url: '/logos/tigers.png',
+            image_url: null,
+            division_id: 'division1',
+            divisions: { name: 'Division A', display_division: 'Division A' },
+            wins: 5,
+            losses: 2,
+            game_wins: 15,
+            game_losses: 6,
+          },
+        },
+        {
+          id: 'slot-midearly-1',
+          team_id: 'team1',
+          timeslot: '7:00 PM',
+          match_date: '2023-06-15',
+          is_back_to_back: true,
+          pair_slot: '7:30 PM',
+          match_sequence: 1,
+          teams: {
+            id: 'team1',
+            name: 'Tigers',
+            logo_url: '/logos/tigers.png',
+            image_url: null,
+            division_id: 'division1',
+            divisions: { name: 'Division A', display_division: 'Division A' },
+            wins: 5,
+            losses: 2,
+            game_wins: 15,
+            game_losses: 6,
+          },
+        },
+        {
+          id: 'slot-midearly-2',
+          team_id: 'team1',
+          timeslot: '7:30 PM',
+          match_date: '2023-06-15',
+          is_back_to_back: true,
+          pair_slot: '7:00 PM',
+          match_sequence: 2,
+          teams: {
+            id: 'team1',
+            name: 'Tigers',
+            logo_url: '/logos/tigers.png',
+            image_url: null,
+            division_id: 'division1',
+            divisions: { name: 'Division A', display_division: 'Division A' },
+            wins: 5,
+            losses: 2,
+            game_wins: 15,
+            game_losses: 6,
+          },
+        },
+      ];
+
+      const mockResponse = { data: mockTeamData, error: null };
+      const mockEq3 = vi.fn().mockResolvedValue(mockResponse);
+      const mockIn = vi.fn().mockReturnValue({ eq: mockEq3 });
+      const mockEq2 = vi.fn().mockReturnValue({ in: mockIn });
+      const mockSelect = vi.fn().mockReturnValue({ eq: mockEq2 });
+      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
+
+      vi.mocked(supabase.from).mockImplementation(mockFrom);
+
+      const testDate = new Date('2023-06-15');
+      const teams = await getTeamsByBackToBackPair(testDate, 'Early');
+
+      // Team should be included — the fix correctly identifies Early pair slots via pair_slot
+      expect(teams).toHaveLength(1);
+      expect(teams[0].name).toBe('Tigers');
     });
 
     it('should handle database errors gracefully', async () => {

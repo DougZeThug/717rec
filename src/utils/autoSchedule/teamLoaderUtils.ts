@@ -61,21 +61,27 @@ export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Pr
       return [];
     }
 
-    // Group timeslots by team_id to ensure each team has both timeslots
-    const teamSlotMap = new Map<string, { primary?: any; secondary?: any }>();
+    // Collect all slots per team (don't collapse yet — a team may have slots from adjacent pairs)
+    const teamAllSlots = new Map<string, any[]>();
 
     timeslots.forEach((slot) => {
       if (!slot.team_id || !slot.teams) return;
+      const slots = teamAllSlots.get(slot.team_id) || [];
+      slots.push(slot);
+      teamAllSlots.set(slot.team_id, slots);
+    });
 
-      const teamData = teamSlotMap.get(slot.team_id) || {};
+    // Pick the correct primary/secondary by matching pair_slot to the requested pair
+    const teamSlotMap = new Map<string, { primary?: any; secondary?: any }>();
 
-      if (slot.match_sequence === 1) {
-        teamData.primary = slot;
-      } else if (slot.match_sequence === 2) {
-        teamData.secondary = slot;
-      }
-
-      teamSlotMap.set(slot.team_id, teamData);
+    teamAllSlots.forEach((slots, teamId) => {
+      const primary = slots.find(
+        (s) => s.timeslot === pairConfig.primary && s.pair_slot === pairConfig.secondary
+      );
+      const secondary = slots.find(
+        (s) => s.timeslot === pairConfig.secondary && s.pair_slot === pairConfig.primary
+      );
+      teamSlotMap.set(teamId, { primary, secondary });
     });
 
     // Only include teams that have BOTH timeslots assigned AND form a valid pair
