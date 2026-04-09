@@ -198,29 +198,38 @@ export const useScoreEntryData = () => {
       await invalidateMatchRelatedQueries(queryClient);
       const fetchedMatches = await fetchMatches(filters);
 
-      // Only merge if the fetch returned data — an empty array most likely signals
-      // a network error (fetchMatches returns [] on failure), and we must not blank
-      // the entire list in that case.
+      // Matches where the reversal ran but the score write failed.
+      // Their DB stats are already decremented; a retry must NOT reverse again.
+      // CRITICAL: This must run regardless of fetch success to prevent double-reversal.
+      const reversalAppliedButFailed = new Set(
+        submissionOutcomes.filter((r) => !r.succeeded && r.reversalApplied).map((r) => r.matchId)
+      );
+
+      if (reversalAppliedButFailed.size > 0) {
+        setOriginalMatches((prev) => {
+          const updated = new Map(prev);
+          reversalAppliedButFailed.forEach((matchId) => {
+            const existing = updated.get(matchId);
+            if (existing) {
+              updated.set(matchId, { ...existing, winnerId: null, loserId: null, iscompleted: false });
+            }
+          });
+          return updated;
+        });
+      }
+
+      // Only merge fetched data if the fetch returned results — an empty array
+      // most likely signals a network error (fetchMatches returns [] on failure),
+      // and we must not blank the entire list in that case.
       if (fetchedMatches.length > 0) {
         const fetchedById = new Map(fetchedMatches.map((m) => [m.id, m]));
 
-        // Matches where the reversal ran but the score write failed.
-        // Their DB stats are already decremented; a retry must NOT reverse again.
-        const reversalAppliedButFailed = new Set(
-          submissionOutcomes.filter((r) => !r.succeeded && r.reversalApplied).map((r) => r.matchId)
-        );
-
-        // Update originalMatches snapshot selectively:
-        //   • Succeeded → use fresh server state (correct baseline for future edits).
-        //   • Reversal-applied-but-failed → use fresh server state but clear the
-        //     winner/loser fields so the next retry skips re-reversal.
-        //   • All other matches → use fresh server state as-is.
+        // Update originalMatches with fresh server state for non-failed matches.
         setOriginalMatches((prev) => {
           const updated = new Map(prev);
           fetchedMatches.forEach((m) => {
-            if (reversalAppliedButFailed.has(m.id)) {
-              updated.set(m.id, { ...m, winnerId: null, loserId: null, iscompleted: false });
-            } else {
+            // Don't overwrite the cleared winner/loser we just set above
+            if (!reversalAppliedButFailed.has(m.id)) {
               updated.set(m.id, { ...m });
             }
           });
