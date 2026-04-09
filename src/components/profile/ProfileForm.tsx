@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -50,32 +50,42 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   const { isSubmitting } = form.formState;
   const username = form.watch('username');
 
+  // Track the latest username being checked to ignore stale responses
+  const latestCheckRef = useRef<string>('');
+
   // Check username availability
-  const handleUsernameAvailabilityCheck = async (value: string) => {
-    if (value.length < 3) {
-      setUsernameAvailable(null);
-      return;
-    }
+  const handleUsernameAvailabilityCheck = useCallback(
+    async (value: string) => {
+      if (value.length < 3) {
+        setUsernameAvailable(null);
+        return;
+      }
 
-    setIsCheckingUsername(true);
-    const { available } = await checkUsernameAvailability({
-      username: value,
-      currentUsername: initialUsername,
-    });
-
-    setUsernameAvailable(available);
-
-    if (available === false) {
-      form.setError('username', {
-        type: 'manual',
-        message: 'This name is already taken',
+      latestCheckRef.current = value;
+      setIsCheckingUsername(true);
+      const { available } = await checkUsernameAvailability({
+        username: value,
+        currentUsername: initialUsername,
       });
-    } else {
-      form.clearErrors('username');
-    }
 
-    setIsCheckingUsername(false);
-  };
+      // Ignore stale responses — only apply if this is still the latest check
+      if (latestCheckRef.current !== value) return;
+
+      setUsernameAvailable(available);
+
+      if (available === false) {
+        form.setError('username', {
+          type: 'manual',
+          message: 'This name is already taken',
+        });
+      } else {
+        form.clearErrors('username');
+      }
+
+      setIsCheckingUsername(false);
+    },
+    [initialUsername, form]
+  );
 
   // Debounce username checks
   useEffect(() => {
@@ -86,15 +96,16 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     }, 500);
 
     return () => clearTimeout(handler);
-  }, [username, initialUsername]);
+  }, [username, handleUsernameAvailabilityCheck]);
 
   const onSubmit = async (data: ProfileFormData) => {
     if (!user) return;
 
-    if (usernameAvailable === false) {
+    if (usernameAvailable === false || isCheckingUsername) {
       toast({
         title: 'Invalid first name',
-        description: 'Please choose another name',
+        description:
+          isCheckingUsername ? 'Please wait for the name check to complete' : 'Please choose another name',
         variant: 'destructive',
       });
       return;
