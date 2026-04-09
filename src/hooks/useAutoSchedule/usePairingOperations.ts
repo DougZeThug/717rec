@@ -190,7 +190,7 @@ export const usePairingOperations = (
         setIsProcessing(false);
       }
     },
-    [generateMatchPairings, toast, setActiveTab]
+    [generateMatchPairings, toast, setActiveTab, teamBlockMap]
   );
 
   /**
@@ -322,7 +322,7 @@ export const usePairingOperations = (
         return null;
       }
     },
-    [toast, qualityMetrics]
+    [toast, qualityMetrics, teamBlockMap, generatorBlockMap, allTeams]
   );
 
   return {
