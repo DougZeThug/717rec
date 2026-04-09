@@ -155,9 +155,9 @@ export const useAuthMethods = (
 
         return result;
       } else {
-        const errorMessage = result.error?.message || 'Failed to login with Google';
+        const errorMessage = typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to login with Google';
         handleAuthError(new Error(errorMessage), 'Native Google login');
-        return { success: false, error: errorMessage };
+        return { success: false, error: new Error(errorMessage) };
       }
     } catch (error) {
       if (error instanceof Error) {
