@@ -30,7 +30,7 @@ import {
 } from './form-utils';
 import { MatchFormProps, MatchFormValues } from './types';
 
-const MatchFormRHF: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCancel }) => {
+const MatchFormRHF: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCancel, isUpdating = false }) => {
   // Set up time slots with consistent formatting
   const timeSlots = [
     '6:30 PM',
@@ -295,7 +295,7 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCanc
           <Button
             type="submit"
             className="bg-cornhole-navy hover:bg-cornhole-navy/90"
-            disabled={!form.watch('timeSlot')}
+            disabled={!form.watch('timeSlot') || form.formState.isSubmitting || isUpdating}
           >
             {match ? (
               <>
