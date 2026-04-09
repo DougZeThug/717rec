@@ -136,10 +136,18 @@ export const createMatch = async (insertInput: MatchInsertInput) => {
 /**
  * Delete a match by ID
  * @throws {DatabaseError} When database operations fail
+ * @throws {NotFoundError} When the match does not exist (e.g. concurrent deletion)
  */
 export const deleteMatch = async (matchId: string) => {
-  const { error } = await supabase.from('matches').delete().eq('id', matchId);
+  const { data, error } = await supabase
+    .from('matches')
+    .delete()
+    .eq('id', matchId)
+    .select('id')
+    .maybeSingle();
+
   if (error) handleDatabaseError(error, 'Failed to delete match');
+  return ensureFound(data, 'Match', matchId);
 };
 
 /**
