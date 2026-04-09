@@ -33,7 +33,10 @@ const EditScoresSection = () => {
     try {
       const matchToDelete = matches.find((m) => m.id === deleteMatchId);
 
-      // If match was completed, reverse the team stats first
+      // Delete the match FIRST to ensure stats are only modified after successful deletion
+      await deleteMatch(deleteMatchId);
+
+      // If match was completed, reverse the team stats AFTER successful deletion
       if (matchToDelete?.iscompleted && matchToDelete.winnerId && matchToDelete.loserId) {
         const winnerGameWins =
           matchToDelete.winnerId === matchToDelete.team1Id
@@ -52,7 +55,6 @@ const EditScoresSection = () => {
         );
       }
 
-      await deleteMatch(deleteMatchId);
       await upsertTeamSeasonStats();
 
       toast({

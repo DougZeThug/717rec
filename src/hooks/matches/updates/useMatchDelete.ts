@@ -37,7 +37,10 @@ export const useMatchDelete = ({
         throw new Error('Match not found');
       }
 
-      // If match was completed, reverse the team stats BEFORE deleting
+      // Delete the match FIRST to ensure stats are only modified after successful deletion
+      await deleteMatch(deleteMatchId);
+
+      // If match was completed, reverse the team stats AFTER successful deletion
       if (matchToDelete.iscompleted && matchToDelete.winnerId && matchToDelete.loserId) {
         const winnerGameWins =
           matchToDelete.winnerId === matchToDelete.team1Id
@@ -56,11 +59,7 @@ export const useMatchDelete = ({
         );
       }
 
-      // Delete the match
-      await deleteMatch(deleteMatchId);
-
-      // AFTER deletion: Refresh team_season_stats to keep career data in sync
-      // This must happen after the match is deleted so the recalculation doesn't include the deleted match
+      // Refresh team_season_stats after deletion and reversal
       await upsertTeamSeasonStats();
 
       // Update the matches state
