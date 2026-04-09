@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useTeamRecords } from '@/hooks/useTeamRecords';
 import { useToast } from '@/hooks/useToast';
-import { updateMatch } from '@/services/matches/MatchWriteService';
+import { updateMatch, upsertTeamSeasonStats } from '@/services/matches/MatchWriteService';
 import { Match, Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 
@@ -171,12 +171,25 @@ export const useMatchUpdate = ({
           );
 
           if (!statsSuccess) {
-            toast({
-              title: 'Partial Failure',
-              description:
-                'Match was updated but team records failed to save. Please retry or contact an admin.',
-              variant: 'destructive',
-            });
+            // Attempt automatic reconciliation via upsert_team_season_stats
+            try {
+              await upsertTeamSeasonStats();
+              invalidateAllDataQueries(queryClient);
+              toast({
+                title: 'Partial Failure (Auto-Recovered)',
+                description:
+                  'Match was updated but team records failed to save. Season stats were reconciled automatically.',
+                variant: 'destructive',
+              });
+            } catch (reconcileError) {
+              errorLog('Failed to reconcile team season stats after partial failure:', reconcileError);
+              toast({
+                title: 'Partial Failure',
+                description:
+                  'Match was updated but team records failed to save. Please contact an admin to reconcile stats.',
+                variant: 'destructive',
+              });
+            }
             return false;
           }
         }
