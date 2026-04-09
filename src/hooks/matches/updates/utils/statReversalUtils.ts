@@ -1,14 +1,11 @@
-import {
-  reverseTeamStats as reverseTeamStatsService,
-  upsertTeamSeasonStats,
-} from '@/services/matches/MatchWriteService';
+import { reverseTeamStats as reverseTeamStatsService } from '@/services/matches/MatchWriteService';
 
 /**
- * Reverses team statistics for a completed match
- * This is called when:
- * 1. Deleting a completed match
- * 2. Changing the winner of an already-completed match
- * 3. Marking a completed match as incomplete
+ * Reverses team statistics for a completed match.
+ * Only decrements teams.wins/losses via RPC.
+ * Callers are responsible for calling upsertTeamSeasonStats() separately
+ * AFTER the match has been deleted/updated, so season stats recalculate
+ * without the removed/changed match.
  *
  * @param winnerId - ID of the team that won
  * @param loserId - ID of the team that lost
@@ -21,9 +18,5 @@ export const reverseTeamStats = async (
   winnerGameWins: number,
   loserGameWins: number
 ): Promise<void> => {
-  // Call the RPC to reverse team stats
   await reverseTeamStatsService(winnerId, loserId, winnerGameWins, loserGameWins);
-
-  // Refresh team_season_stats to keep career data in sync
-  await upsertTeamSeasonStats();
 };
