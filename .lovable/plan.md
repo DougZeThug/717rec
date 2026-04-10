@@ -1,31 +1,65 @@
 
 
-## Analysis: Realtime & Storage Security Findings
+## Plan: Fix RLS Performance Warnings
 
-### Finding 1: `realtime.messages` no RLS — **FALSE POSITIVE, should be ignored**
+The Supabase linter flagged two categories of performance issues across your database. Neither is a security problem -- they just make queries slightly slower than necessary.
 
-The `realtime.messages` table is in the **`realtime` schema**, which is a Supabase-reserved schema that we cannot and should not modify (per Supabase guidelines: modifying `auth`, `storage`, `realtime`, `supabase_functions`, or `vault` schemas can cause service degradation).
+### What's wrong
 
-More importantly, this finding is irrelevant to your app because:
+1. **`auth_rls_initplan`** (14 policies): Policies use `auth.uid()` directly instead of `(select auth.uid())`. Without the `select` wrapper, Postgres re-evaluates the function for every row instead of once per query.
 
-- All 7 realtime subscriptions in the codebase use **`postgres_changes`** only (no Broadcast or Presence channels)
-- `postgres_changes` authorization is governed by **RLS on the source tables** (`messages`, `match_comments`, `match_reactions`, `playoff_matches`, `match`, `brackets`), not by `realtime.messages`
-- All those source tables already have RLS enabled
-- Since all data in this app is public/read-accessible to authenticated users (league data, messages, reactions), the channel topic names don't expose private data
+2. **`multiple_permissive_policies`** (many entries): Tables like `divisions`, `games`, `group`, `match`, `match_game`, and `hero_cards` have an `ALL` or admin-only SELECT policy alongside a public SELECT policy. Since the `ALL` command implicitly includes SELECT, both fire for every query. The fix is to keep the public read policy and make the admin policy cover only INSERT/UPDATE/DELETE.
 
-**Action**: Ignore this finding with an explanation.
+### What we'll do
 
-### Finding 2: Storage `team-images` bucket DELETE/UPDATE policies — **REAL, already partially fixed**
+**One migration** that:
 
-The previous migration fixed the `teams` bucket INSERT policy. However, the `team-images` bucket still has permissive DELETE and UPDATE policies. Since these were flagged alongside the INSERT fix, we should tighten them too.
+1. Drops and recreates 14 RLS policies to wrap `auth.uid()` and `auth.<function>()` calls in `(select ...)`:
+   - `team_analysis`: delete, insert, update policies
+   - `teams`: "Team members can update own team"
+   - `profiles`: view own, update own
+   - `season_team_participation`: delete
+   - `team_memberships`: view, create, update own
+   - `ranking_snapshots`: delete
+   - `team_details_archive`: update
+   - `messages`: insert
+   - `team_requests`: view
 
-**Action**: Create a migration to replace the DELETE and UPDATE policies on `team-images` with ownership-scoped policies (same pattern as the INSERT fix — admin OR approved team member matching folder path).
+2. Fixes duplicate permissive SELECT on 6 tables by replacing the broad `ALL` policy with separate INSERT/UPDATE/DELETE policies (keeping the existing public SELECT):
+   - `divisions`: drop "Admin full access", create admin INSERT/UPDATE/DELETE
+   - `games`: same pattern
+   - `group`: drop "Admin write group", create admin INSERT/UPDATE/DELETE
+   - `match`: drop "Admin write match", create admin INSERT/UPDATE/DELETE
+   - `match_game`: drop "Admin write match_game", create admin INSERT/UPDATE/DELETE
+   - `hero_cards`: no change needed (the two SELECT policies serve different purposes -- admins see all, public sees visible only)
 
-### Implementation
+3. Also marks the `storage_team_images_write` security finding as fixed (from the previous migration).
 
-1. **Ignore** the `realtime_messages_no_rls` finding (reserved schema, all channels use postgres_changes with RLS on source tables)
-2. **One migration** to fix `team-images` storage DELETE and UPDATE policies:
-   - Drop `Allow authenticated users to delete team images`
-   - Drop `Allow authenticated users to update team images`
-   - Create ownership-scoped replacements using `current_user_is_admin()` OR `team_memberships` check with `(storage.foldername(name))[1]`
+### What changes
+
+- **1 migration file** -- purely policy rewrites, no schema or data changes
+- **0 code changes**
+
+### Technical detail
+
+Example of the initplan fix:
+```sql
+-- Before
+USING (id = auth.uid())
+-- After  
+USING (id = (select auth.uid()))
+```
+
+Example of the duplicate-policy fix:
+```sql
+-- Drop the ALL policy that overlaps with the public SELECT
+DROP POLICY "Admin full access" ON public.divisions;
+-- Replace with targeted write policies
+CREATE POLICY "Admin insert divisions" ON public.divisions FOR INSERT TO authenticated
+  WITH CHECK (current_user_is_admin());
+CREATE POLICY "Admin update divisions" ON public.divisions FOR UPDATE TO authenticated
+  USING (current_user_is_admin()) WITH CHECK (current_user_is_admin());
+CREATE POLICY "Admin delete divisions" ON public.divisions FOR DELETE TO authenticated
+  USING (current_user_is_admin());
+```
 
