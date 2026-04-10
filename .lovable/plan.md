@@ -1,40 +1,66 @@
 
 
-## Plan: Re-apply Policy Fixes (Previous Migration Was Truncated)
+## Plan: Fix Final 3 Duplicate Policy Warnings
 
-The last migration was supposed to contain all the policy rewrites but only the final line (`ALTER TABLE public.profiles DROP CONSTRAINT ...`) made it through. Every other fix from the approved plan still needs to be applied.
+### 1. `teams` SELECT -- two nearly identical opt-out filters
 
-### What happened
+"Public can view active teams" and "Public teams access with opt-out filter" do the same thing (filter out opted-out teams) with slightly different SQL. Drop both, create one combined policy.
 
-The migration file was truncated to a single line. All policy drops/creates were lost.
+### 2. `teams` UPDATE -- two overlapping membership checks
 
-### What we'll do
+"Approved team members can update teams" and "Team members can update own team" both check `team_memberships.is_approved = true` for the same user. They're redundant. Drop both, create one: "Approved members can update own team".
 
-Re-run the exact same approved plan in a new migration. One migration covering all remaining tables:
+### 3. `team_memberships` UPDATE -- intentionally different conditions
 
-**Group 1 -- Drop ALL, replace with INSERT/UPDATE/DELETE:**
-- `participant`: drop "Admin write participant"
-- `round`: drop "Admin write round"
-- `stage`: drop "Admin write stage"
-- `participants`: drop "Admins can manage participants"
-- `playoff_games`: drop "Admins can manage playoff games"
-- `power_score_snapshots`: drop "Admins can manage snapshots"
-- `team_season_stats`: drop "Admins can manage team season stats"
-- `matches_archive`: drop "Admins can manage archived matches"
-
-**Group 2 -- `team_details_archive`:** Drop "Admins can manage archive" (ALL) + "Admin users can update archive" (duplicate UPDATE). Create admin INSERT/UPDATE/DELETE.
-
-**Group 3 -- `teams`:** Drop "Admins full access to teams" (ALL).
-
-**Group 4 -- `seasons`:** Drop "Authenticated users can read seasons".
-
-**Group 5 -- Combine SELECT policies:**
-- `hero_cards`: merge two SELECT into one with `is_visible = true OR current_user_is_admin()`
-- `profiles`: merge two SELECT into one with `id = (select auth.uid()) OR current_user_is_admin()`
-
-**Group 6 -- `team_memberships` UPDATE:** Leave as-is (intentional, different conditions).
+"Admins can update any membership field" (admin-only) and "Users can update own membership team" (own pending only) serve different security purposes. To satisfy the linter without losing security, we can combine them into one policy with an OR condition: `current_user_is_admin() OR (user_id = auth.uid() AND is_approved = false)`, with a WITH CHECK that similarly branches.
 
 ### What changes
-- **1 migration file** -- policy rewrites only, no schema or data changes
+
+- **1 migration file** -- drop 6 policies, create 3 replacements
 - **0 code changes**
+
+### Technical detail
+
+```sql
+-- teams SELECT: drop both, keep the cleaner one
+DROP POLICY "Public can view active teams" ON public.teams;
+DROP POLICY "Public teams access with opt-out filter" ON public.teams;
+CREATE POLICY "Public read teams" ON public.teams FOR SELECT
+  USING (NOT EXISTS (
+    SELECT 1 FROM team_season_opt_out o
+    JOIN seasons s ON s.id = o.season_id AND s.is_active
+    WHERE o.team_id = teams.id
+  ));
+
+-- teams UPDATE: merge two identical membership checks
+DROP POLICY "Approved team members can update teams" ON public.teams;
+DROP POLICY "Team members can update own team" ON public.teams;
+CREATE POLICY "Approved members can update own team" ON public.teams FOR UPDATE TO authenticated
+  USING (EXISTS (
+    SELECT 1 FROM team_memberships
+    WHERE team_memberships.team_id = teams.id
+      AND team_memberships.user_id = (SELECT auth.uid())
+      AND team_memberships.is_approved = true
+  ))
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM team_memberships
+    WHERE team_memberships.team_id = teams.id
+      AND team_memberships.user_id = (SELECT auth.uid())
+      AND team_memberships.is_approved = true
+  ));
+
+-- team_memberships UPDATE: combine admin + user into one
+DROP POLICY "Admins can update any membership field" ON public.team_memberships;
+DROP POLICY "Users can update own membership team" ON public.team_memberships;
+CREATE POLICY "Update membership" ON public.team_memberships FOR UPDATE TO authenticated
+  USING (
+    current_user_is_admin()
+    OR (user_id = (SELECT auth.uid()) AND is_approved = false)
+  )
+  WITH CHECK (
+    current_user_is_admin()
+    OR (user_id = (SELECT auth.uid()) AND is_approved = false
+        AND approved_by IS NULL AND approved_at IS NULL)
+  );
+```
 
