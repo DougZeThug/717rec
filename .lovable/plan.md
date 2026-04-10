@@ -1,65 +1,55 @@
 
 
-## Plan: Fix RLS Performance Warnings
+## Plan: Fix Remaining Multiple Permissive Policies + Duplicate Index
 
-The Supabase linter flagged two categories of performance issues across your database. Neither is a security problem -- they just make queries slightly slower than necessary.
+These are all WARN-level performance issues, not security problems. The pattern is the same as the previous round: broad `ALL` policies overlap with specific `SELECT` policies, causing Postgres to evaluate both for every query.
 
-### What's wrong
+### Affected tables and fixes
 
-1. **`auth_rls_initplan`** (14 policies): Policies use `auth.uid()` directly instead of `(select auth.uid())`. Without the `select` wrapper, Postgres re-evaluates the function for every row instead of once per query.
+**Group 1 -- Drop ALL policy, replace with targeted INSERT/UPDATE/DELETE** (same pattern as before):
+- `participant`: drop "Admin write participant", create admin INSERT/UPDATE/DELETE
+- `round`: drop "Admin write round", create admin INSERT/UPDATE/DELETE
+- `stage`: drop "Admin write stage", create admin INSERT/UPDATE/DELETE
+- `participants`: drop "Admins can manage participants", create admin INSERT/UPDATE/DELETE
+- `playoff_games`: drop "Admins can manage playoff games", create admin INSERT/UPDATE/DELETE
+- `power_score_snapshots`: drop "Admins can manage snapshots", create admin INSERT/UPDATE/DELETE
+- `team_season_stats`: drop "Admins can manage team season stats", create admin INSERT/UPDATE/DELETE
+- `matches_archive`: drop "Admins can manage archived matches", create admin INSERT/UPDATE/DELETE
 
-2. **`multiple_permissive_policies`** (many entries): Tables like `divisions`, `games`, `group`, `match`, `match_game`, and `hero_cards` have an `ALL` or admin-only SELECT policy alongside a public SELECT policy. Since the `ALL` command implicitly includes SELECT, both fire for every query. The fix is to keep the public read policy and make the admin policy cover only INSERT/UPDATE/DELETE.
+**Group 2 -- `team_details_archive`**: Drop "Admins can manage archive" (ALL) and "Admin users can update archive" (duplicate UPDATE). Create admin INSERT/DELETE. Keep "read archive" SELECT.
 
-### What we'll do
+**Group 3 -- `teams`**: Drop "Admins full access to teams" (ALL). The specific policies ("Admins can create teams", "Admins can delete teams", "Team members can update own team", etc.) already cover all operations.
 
-**One migration** that:
+**Group 4 -- `seasons`**: Drop "Authenticated users can read seasons" since "Anyone can view seasons" (public role) already covers authenticated users.
 
-1. Drops and recreates 14 RLS policies to wrap `auth.uid()` and `auth.<function>()` calls in `(select ...)`:
-   - `team_analysis`: delete, insert, update policies
-   - `teams`: "Team members can update own team"
-   - `profiles`: view own, update own
-   - `season_team_participation`: delete
-   - `team_memberships`: view, create, update own
-   - `ranking_snapshots`: delete
-   - `team_details_archive`: update
-   - `messages`: insert
-   - `team_requests`: view
+**Group 5 -- Combine overlapping SELECT policies**:
+- `hero_cards`: Drop both SELECT policies, create one: `USING (is_visible = true OR current_user_is_admin())`
+- `profiles`: Drop both SELECT policies, create one: `USING (id = (select auth.uid()) OR current_user_is_admin())`
 
-2. Fixes duplicate permissive SELECT on 6 tables by replacing the broad `ALL` policy with separate INSERT/UPDATE/DELETE policies (keeping the existing public SELECT):
-   - `divisions`: drop "Admin full access", create admin INSERT/UPDATE/DELETE
-   - `games`: same pattern
-   - `group`: drop "Admin write group", create admin INSERT/UPDATE/DELETE
-   - `match`: drop "Admin write match", create admin INSERT/UPDATE/DELETE
-   - `match_game`: drop "Admin write match_game", create admin INSERT/UPDATE/DELETE
-   - `hero_cards`: no change needed (the two SELECT policies serve different purposes -- admins see all, public sees visible only)
+**Group 6 -- Intentional, leave as-is**:
+- `team_memberships` UPDATE: admin and user UPDATE policies have different conditions (admin = any row, user = own pending only). Both are needed for security. Performance cost is negligible.
 
-3. Also marks the `storage_team_images_write` security finding as fixed (from the previous migration).
+**Group 7 -- Duplicate index on `profiles`**:
+- Drop `profiles_username_key` (keep `profiles_username_unique`)
 
 ### What changes
 
-- **1 migration file** -- purely policy rewrites, no schema or data changes
+- **1 migration file** -- purely policy rewrites + drop one index, no schema or data changes
 - **0 code changes**
 
 ### Technical detail
 
-Example of the initplan fix:
 ```sql
--- Before
-USING (id = auth.uid())
--- After  
-USING (id = (select auth.uid()))
-```
+-- Example: hero_cards combined SELECT
+DROP POLICY "Admins can view all hero cards" ON public.hero_cards;
+DROP POLICY "Public can view visible hero cards" ON public.hero_cards;
+CREATE POLICY "Read hero cards" ON public.hero_cards FOR SELECT
+  USING (is_visible = true OR current_user_is_admin());
 
-Example of the duplicate-policy fix:
-```sql
--- Drop the ALL policy that overlaps with the public SELECT
-DROP POLICY "Admin full access" ON public.divisions;
--- Replace with targeted write policies
-CREATE POLICY "Admin insert divisions" ON public.divisions FOR INSERT TO authenticated
-  WITH CHECK (current_user_is_admin());
-CREATE POLICY "Admin update divisions" ON public.divisions FOR UPDATE TO authenticated
-  USING (current_user_is_admin()) WITH CHECK (current_user_is_admin());
-CREATE POLICY "Admin delete divisions" ON public.divisions FOR DELETE TO authenticated
-  USING (current_user_is_admin());
+-- Example: teams - just drop the redundant ALL
+DROP POLICY "Admins full access to teams" ON public.teams;
+
+-- Example: duplicate index
+DROP INDEX IF EXISTS public.profiles_username_key;
 ```
 
