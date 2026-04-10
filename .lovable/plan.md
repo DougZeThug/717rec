@@ -1,81 +1,88 @@
 
 
-## Security Fixes: Team Memberships & Storage Policies
+## Plan: Sync Brackets-Manager Match Results to playoff_matches
 
-### Finding 1: `user_is_team_member` missing approval check — **REAL, LOW RISK**
+### What's happening now
 
-The function returns `true` for any membership row regardless of `is_approved`. This means a pending (unapproved) member can see other memberships on that team.
+Your app has two separate match tables:
+- **`match`** table: used by the brackets-manager library (numeric IDs, stores participant IDs)
+- **`playoff_matches`** table: used by career stats, team history, and the bracket viewer (UUIDs, stores team UUIDs)
 
-**Fix**: Update the function to add `AND is_approved = true`.
+When you create a bracket, the `create-bracket` edge function creates rows in BOTH tables. When you score a match through the **legacy match editor**, it updates both tables. But when you score through the **brackets-manager editor** (clicking directly on bracket matches), it only updates the `match` table -- the `playoff_matches` table doesn't get updated, so career stats miss those results.
 
+A previous migration file (`20260112200000_sync_match_to_playoff_matches.sql`) exists in the repo but was **never applied** to the database. It only handled INSERT (creating shell rows), not UPDATE (syncing scores).
+
+### What we'll do
+
+#### Step 1: Database migration -- Add `match_id` column and sync triggers
+
+One migration that:
+
+1. **Adds `match_id` column** to `playoff_matches` (integer, nullable, unique) with a FK to `match.id`
+2. **Backfills `match_id`** on existing rows by matching on `bracket_id + round + position + match_type` between the two tables
+3. **Creates an INSERT trigger** on `match` that auto-creates a `playoff_matches` shell row (same as the unapplied migration)
+4. **Creates an UPDATE trigger** on `match` that syncs score/winner/status changes to the corresponding `playoff_matches` row, using `match_id` for the join. The trigger will:
+   - Map `opponent1_id`/`opponent2_id` to team UUIDs via the `participant` table
+   - Map `opponent1_result`/`opponent2_result` to `winner_id`/`loser_id`
+   - Map `opponent1_score`/`opponent2_score` to `team1_score`/`team2_score`
+   - Map numeric `status` (4 = completed) to text status
+5. **Backfills existing completed matches** from `match` table that have results not yet reflected in `playoff_matches` (the ~20 matches scored via brackets-manager editor)
+
+#### Step 2: Fix participant.team_id for older brackets
+
+Many older `participant` rows have `team_id = NULL`. The UPDATE trigger needs this to resolve team UUIDs. We'll backfill by matching `participant.name` to `teams.name`.
+
+### Technical details
+
+**Trigger function for UPDATE** (key logic):
 ```sql
-CREATE OR REPLACE FUNCTION public.user_is_team_member(p_user_id uuid, p_team_id uuid)
-RETURNS boolean
-LANGUAGE sql STABLE SECURITY DEFINER
-SET search_path = 'pg_catalog', 'public'
-AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM public.team_memberships
-    WHERE user_id = p_user_id
-      AND team_id = p_team_id
-      AND is_approved = true
-  );
-$$;
+CREATE OR REPLACE FUNCTION sync_match_update_to_playoff_matches()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public AS $$
+DECLARE
+  v_team1_id UUID; v_team2_id UUID;
+  v_winner_id UUID; v_loser_id UUID;
+BEGIN
+  -- Only sync when scores/results/status change
+  IF OLD.status = NEW.status 
+     AND OLD.opponent1_score IS NOT DISTINCT FROM NEW.opponent1_score
+     AND OLD.opponent2_score IS NOT DISTINCT FROM NEW.opponent2_score
+     AND OLD.opponent1_result IS NOT DISTINCT FROM NEW.opponent1_result
+     AND OLD.opponent2_result IS NOT DISTINCT FROM NEW.opponent2_result
+     AND OLD.opponent1_id IS NOT DISTINCT FROM NEW.opponent1_id
+     AND OLD.opponent2_id IS NOT DISTINCT FROM NEW.opponent2_id
+  THEN RETURN NEW;
+  END IF;
+  
+  -- Look up team UUIDs from participant table
+  SELECT p.team_id INTO v_team1_id FROM participant p WHERE p.id = NEW.opponent1_id;
+  SELECT p.team_id INTO v_team2_id FROM participant p WHERE p.id = NEW.opponent2_id;
+  
+  -- Determine winner/loser
+  IF NEW.opponent1_result = 'win' THEN v_winner_id := v_team1_id; v_loser_id := v_team2_id;
+  ELSIF NEW.opponent2_result = 'win' THEN v_winner_id := v_team2_id; v_loser_id := v_team1_id;
+  END IF;
+  
+  UPDATE playoff_matches SET
+    team1_id = v_team1_id, team2_id = v_team2_id,
+    team1_score = NEW.opponent1_score, team2_score = NEW.opponent2_score,
+    winner_id = v_winner_id, loser_id = v_loser_id,
+    status = CASE NEW.status WHEN 4 THEN 'completed' ELSE 'pending' END,
+    updated_at = NOW()
+  WHERE match_id = NEW.id;
+  
+  RETURN NEW;
+END; $$;
 ```
 
-### Finding 2: Users can hijack approval by changing `team_id` — **REAL, MEDIUM RISK**
+### What changes
 
-The `USING` clause on "Users can update own membership team" only checks `user_id = auth.uid()` — it doesn't require the row to currently be unapproved. So a user with an **approved** membership can update their `team_id` to a different team. The `WITH CHECK` forces `is_approved = false` on the resulting row, but the damage is done: they changed teams and can request re-approval on the new team while the system treats it as a team-switch rather than a new request.
+- **1 migration file** -- adds column, backfills linkage, creates both triggers, backfills scores
+- **0 code changes** -- the sync is entirely database-side; no hooks or services need modification
 
-More critically: between the UPDATE and admin review, the user briefly had an approved membership that they switched to a different team — the `validate_membership_approval` trigger only fires on approval changes, not team changes.
+### Why this approach
 
-**Fix**: Add `AND is_approved = false` to the `USING` clause so users can only modify **pending** membership rows:
-
-```sql
-DROP POLICY "Users can update own membership team" ON public.team_memberships;
-
-CREATE POLICY "Users can update own membership team"
-  ON public.team_memberships FOR UPDATE TO authenticated
-  USING (user_id = auth.uid() AND is_approved = false)
-  WITH CHECK (
-    user_id = auth.uid()
-    AND is_approved = false
-    AND approved_by IS NULL
-    AND approved_at IS NULL
-  );
-```
-
-### Finding 3: Storage policies too permissive — **REAL, LOW RISK (trusted users)**
-
-The `teams` bucket INSERT policy (`Authenticated upload team images`) only checks `bucket_id = 'teams'` with no ownership check. Any authenticated user can upload/overwrite files for any team. The `team-images` bucket (if it exists) has the same issue.
-
-Given the app is "used internally by trusted team members only," this is lower risk. However, the fix is straightforward.
-
-**Fix**: Restrict uploads to team members or admins using a folder-per-team pattern (already in use — files are stored as `teams/{team_id}/...`):
-
-```sql
-DROP POLICY IF EXISTS "Authenticated upload team images" ON storage.objects;
-
-CREATE POLICY "Team members or admins upload team images"
-  ON storage.objects FOR INSERT TO authenticated
-  WITH CHECK (
-    bucket_id = 'teams'
-    AND (
-      current_user_is_admin()
-      OR EXISTS (
-        SELECT 1 FROM public.team_memberships
-        WHERE user_id = auth.uid()
-          AND is_approved = true
-          AND team_id::text = (storage.foldername(name))[1]
-      )
-    )
-  );
-```
-
-### Summary
-
-One migration with three changes:
-1. Update `user_is_team_member` function to require `is_approved = true`
-2. Tighten `USING` clause on user self-update policy to only allow modifying pending rows
-3. Restrict `teams` bucket upload policy to team members/admins
+- The career system (`CareerFetchService`, `CareerBulkFetchService`, `TeamSeasonStatsService`) already reads from `playoff_matches` -- no refactoring needed
+- Database triggers guarantee consistency regardless of which editor is used
+- Backfill is safe because it uses `ON CONFLICT DO NOTHING` and only updates rows where `winner_id IS NULL`
 
