@@ -1,52 +1,44 @@
 
 
-## Plan: Fix INFO-Level Linter Warnings (Indexes + Auth Connection)
+## Plan: Add DELETE Trigger for Match-to-Playoff Sync
 
-These are all INFO-level, not security or correctness issues. They're minor performance optimizations.
+### The problem
 
-### 1. Add missing foreign key indexes (29 indexes)
+The sync triggers on the `match` table only cover INSERT and UPDATE. When a bracket is deleted, the `match` rows are removed but the corresponding `playoff_matches` rows remain as orphans.
 
-Foreign key columns without indexes cause slow DELETE/UPDATE cascades and slow joins. One migration to add all missing indexes:
+### The fix
 
-- `match`: `group_id` (covers both `fk_match_group` and `match_group_id_fkey`)
-- `matches`: `bracket_id`
-- `participants`: `team_id`
-- `playoff_games`: `winner_id`
-- `playoff_matches`: `team1_id`, `team2_id`, `loser_id`, `next_lose_match_id`, `next_win_match_id`, `winner_id` (note: `team1_id` and `team2_id` each have two FK constraints pointing to the same column -- one index per column is sufficient)
-- `playoff_team_records`: `bracket_id`
-- `power_score_snapshots`: `division_id`
-- `score_submissions`: `match_id`, `reviewed_by`
-- `season_team_participation`: `submitted_by`, `team_id`
-- `seasons`: `champion_team_id`, `runner_up_team_id`, `third_place_team_id`
-- `team_analysis`: `created_by`, `updated_by`
-- `team_memberships`: `approved_by`
-- `team_requests`: `season_id`
-- `team_season_opt_out`: `season_id`
-- `team_season_stats`: `team_id`
-- `team_stats`: `team_id`
+One migration that adds:
 
-### 2. Drop unused indexes (20 indexes)
+1. **A DELETE trigger function** (`sync_match_delete_to_playoff_matches`) -- when a row is deleted from `match`, it deletes the corresponding `playoff_matches` row where `match_id = OLD.id`.
 
-These indexes consume storage and slow down writes but have never been used:
+2. **The trigger** (`trg_sync_match_delete_to_playoff`) -- AFTER DELETE on `public.match`, fires the function above.
 
-- `brackets`: `idx_brackets_bracket_data`, `idx_brackets_division_id`, `idx_brackets_migrated`, `idx_brackets_wb_champion_id`
-- `debug_match_updates`: `idx_debug_match_updates_user_id`
-- `messages`: `idx_messages_team_created`, `idx_messages_user_created`, `idx_messages_user_id`
-- `participant`: `idx_participant_team_id`, `idx_participant_position`, `idx_participant_tournament`
-- `participants`: `idx_participants_tournament`
-- `seasons`: `idx_seasons_is_archived`
-- `power_score_snapshots`: `idx_snapshots_team_season`
-- `team_memberships`: `idx_team_memberships_is_approved`, `idx_team_memberships_team`
-- `match_reactions`: `match_reactions_match_id_idx`
-- `matches_archive`: `matches_archive_iscompleted_idx`
-- `team_requests`: `idx_team_requests_team_id`, `idx_team_requests_created_at`
+This completes the sync lifecycle: INSERT creates the playoff_match, UPDATE keeps it current, DELETE removes it.
 
-### 3. Auth DB connection strategy -- skip
+### Technical detail
 
-This is a Supabase infrastructure setting (switch from absolute to percentage-based connection allocation). It cannot be changed via migration -- it's configured in the Supabase dashboard under project settings. I'll note this for you but won't include it in the migration.
+```sql
+CREATE OR REPLACE FUNCTION public.sync_match_delete_to_playoff_matches()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = 'public'
+AS $$
+BEGIN
+  DELETE FROM playoff_matches WHERE match_id = OLD.id;
+  RETURN OLD;
+END;
+$$;
+
+CREATE TRIGGER trg_sync_match_delete_to_playoff
+  AFTER DELETE ON public.match
+  FOR EACH ROW
+  EXECUTE FUNCTION public.sync_match_delete_to_playoff_matches();
+```
 
 ### What changes
 
-- **1 migration file** -- CREATE INDEX + DROP INDEX statements only, no schema or data changes
-- **0 code changes**
+- **1 migration file** -- adds the delete trigger function and attaches it
+- **0 code changes** -- existing bracket deletion code already deletes from the `match` table; this trigger handles the rest automatically
 
