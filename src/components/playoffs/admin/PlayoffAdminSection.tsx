@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PlayoffBracket, Team } from '@/types';
 
+import EditMatchParticipantsDialog from './EditMatchParticipantsDialog';
 import PlayoffMatchList from './PlayoffMatchList';
 
 interface PlayoffAdminSectionProps {
@@ -23,6 +24,8 @@ const PlayoffAdminSection: React.FC<PlayoffAdminSectionProps> = ({
     return sessionStorage.getItem(PLAYOFF_ADMIN_TAB_KEY) || 'matches';
   });
 
+  const [editTeamsMatchId, setEditTeamsMatchId] = useState<string | null>(null);
+
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
     sessionStorage.setItem(PLAYOFF_ADMIN_TAB_KEY, tabId);
@@ -33,6 +36,19 @@ const PlayoffAdminSection: React.FC<PlayoffAdminSectionProps> = ({
   const loserMatches = bracket.matches.filter((m) => m.matchType === 'losers');
   const finalMatches = bracket.matches.filter((m) => m.matchType === 'finals');
   const playInMatches = bracket.matches.filter((m) => m.matchType === 'play-in');
+
+  // Look up the match currently being edited so we can pass its current teams into the dialog
+  const editingMatch = useMemo(
+    () => (editTeamsMatchId ? bracket.matches.find((m) => m.id === editTeamsMatchId) : null),
+    [editTeamsMatchId, bracket.matches]
+  );
+
+  // Only brackets-manager brackets have numeric match IDs on the `match` table.
+  // If this bracket is legacy (uses_brackets_manager !== true), skip the Teams action.
+  const supportsTeamEdit = bracket.uses_brackets_manager === true;
+  const handleEditTeams = supportsTeamEdit ? setEditTeamsMatchId : undefined;
+
+  const editingMatchIdNumber = editingMatch ? parseInt(editingMatch.id, 10) : null;
 
   return (
     <Card className="border rounded-lg overflow-hidden">
@@ -49,6 +65,7 @@ const PlayoffAdminSection: React.FC<PlayoffAdminSectionProps> = ({
             matches={bracket.matches}
             teams={teams}
             onEditMatch={onEditMatch}
+            onEditTeams={handleEditTeams}
             title={`All Matches - ${bracket.name}`}
           />
         </TabsContent>
@@ -58,6 +75,7 @@ const PlayoffAdminSection: React.FC<PlayoffAdminSectionProps> = ({
             matches={winnerMatches}
             teams={teams}
             onEditMatch={onEditMatch}
+            onEditTeams={handleEditTeams}
             title="Winners Bracket"
             matchTypeFilter="winners"
           />
@@ -68,6 +86,7 @@ const PlayoffAdminSection: React.FC<PlayoffAdminSectionProps> = ({
             matches={loserMatches}
             teams={teams}
             onEditMatch={onEditMatch}
+            onEditTeams={handleEditTeams}
             title="Losers Bracket"
             matchTypeFilter="losers"
           />
@@ -78,10 +97,25 @@ const PlayoffAdminSection: React.FC<PlayoffAdminSectionProps> = ({
             matches={[...finalMatches, ...playInMatches]}
             teams={teams}
             onEditMatch={onEditMatch}
+            onEditTeams={handleEditTeams}
             title="Finals & Play-in Matches"
           />
         </TabsContent>
       </Tabs>
+
+      {supportsTeamEdit && (
+        <EditMatchParticipantsDialog
+          open={editTeamsMatchId !== null && editingMatchIdNumber !== null}
+          onOpenChange={(open) => {
+            if (!open) setEditTeamsMatchId(null);
+          }}
+          bracketId={bracket.id}
+          matchId={editingMatchIdNumber}
+          currentTeam1Id={editingMatch?.team1Id ?? null}
+          currentTeam2Id={editingMatch?.team2Id ?? null}
+          teams={teams}
+        />
+      )}
     </Card>
   );
 };

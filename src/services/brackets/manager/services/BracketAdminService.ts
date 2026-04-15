@@ -1,8 +1,10 @@
 import { supabase } from '@/integrations/supabase/client';
 import { BusinessLogicError } from '@/types/errors';
+import { handleDatabaseError } from '@/utils/errorHandler';
 import { bracketLog, errorLog, failureLog, successLog } from '@/utils/logger';
 
 import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
+import type { StorageMatch, StorageParticipant, StorageStage } from '../types/BracketServiceTypes';
 
 /**
  * Service for admin operations on brackets (BYE handling, match status control)
@@ -156,6 +158,176 @@ export class BracketAdminService {
         error
       );
     }
+  }
+
+  /**
+   * Admin-only: Swap one or both teams in an unplayed match.
+   *
+   * Use case: fixing a seeding decision after the bracket has started but before the
+   * match has been played. This is the app-side equivalent of editing `opponent1_id`
+   * or `opponent2_id` directly in Supabase.
+   *
+   * Guards: refuses to edit matches whose status is Completed (4) or whose opponents
+   * already have a 'win' or 'loss' result.
+   *
+   * If a selected team does not yet have a participant row for this tournament (rare
+   * edge case — e.g., picking a team that wasn't originally in the bracket), a new
+   * participant row is created.
+   *
+   * @param matchId - Match ID in the brackets-manager database
+   * @param newOpponent1TeamId - Team UUID to place in opponent1 slot, or null to clear
+   * @param newOpponent2TeamId - Team UUID to place in opponent2 slot, or null to clear
+   */
+  async editMatchParticipants(
+    matchId: number,
+    newOpponent1TeamId: string | null,
+    newOpponent2TeamId: string | null
+  ): Promise<{
+    matchId: number;
+    opponent1_id: number | null;
+    opponent2_id: number | null;
+    message: string;
+  }> {
+    bracketLog('Admin editMatchParticipants requested', {
+      matchId,
+      newOpponent1TeamId,
+      newOpponent2TeamId,
+    });
+
+    try {
+      // Load the current match
+      const matchData = (await this.storage.select('match', matchId)) as StorageMatch | null;
+      if (!matchData) {
+        throw new BusinessLogicError(`Match ${matchId} not found`);
+      }
+
+      // Guard: only allow editing matches that have NOT been played
+      if (matchData.status === 4) {
+        throw new BusinessLogicError(
+          'Cannot edit teams on a completed match. This feature is only for unplayed matches.'
+        );
+      }
+      const opp1Result = matchData.opponent1?.result;
+      const opp2Result = matchData.opponent2?.result;
+      if (opp1Result === 'win' || opp1Result === 'loss' || opp2Result === 'win' || opp2Result === 'loss') {
+        throw new BusinessLogicError(
+          'Cannot edit teams on a match that already has a win/loss result recorded.'
+        );
+      }
+
+      // Resolve the tournament so we can look up participants
+      const stage = (await this.storage.select('stage', matchData.stage_id)) as StorageStage | null;
+      if (!stage) {
+        throw new BusinessLogicError(`Stage ${matchData.stage_id} not found for match ${matchId}`);
+      }
+      const tournamentId = stage.tournament_id;
+
+      // Fetch all participants in this tournament
+      const participantsRaw = await this.storage.select('participant', {
+        tournament_id: tournamentId,
+      });
+      const participants = (
+        Array.isArray(participantsRaw) ? participantsRaw : participantsRaw ? [participantsRaw] : []
+      ) as StorageParticipant[];
+
+      // Resolve each selected team to a participant.id, creating a participant row if needed
+      const resolvedOpp1Id = await this.resolveTeamToParticipantId(
+        newOpponent1TeamId,
+        tournamentId,
+        participants
+      );
+      const resolvedOpp2Id = await this.resolveTeamToParticipantId(
+        newOpponent2TeamId,
+        tournamentId,
+        participants
+      );
+
+      // Direct SQL update on the match row — mirrors the manual Supabase edit workflow
+      const { error } = await supabase
+        .from('match')
+        .update({
+          opponent1_id: resolvedOpp1Id,
+          opponent2_id: resolvedOpp2Id,
+        })
+        .eq('id', matchId);
+
+      if (error) {
+        handleDatabaseError(error, 'Failed to update match participants');
+      }
+
+      // Refresh the participant cache so subsequent reads reflect the new row (if we inserted one)
+      this.storage.clearParticipantCache();
+      await this.storage.loadParticipantsForTournament(tournamentId);
+
+      successLog(`Admin edited participants on match ${matchId}`, {
+        opponent1_id: resolvedOpp1Id,
+        opponent2_id: resolvedOpp2Id,
+      });
+
+      return {
+        matchId,
+        opponent1_id: resolvedOpp1Id,
+        opponent2_id: resolvedOpp2Id,
+        message: 'Match teams updated',
+      };
+    } catch (error) {
+      failureLog('Admin editMatchParticipants failed', error);
+      if (error instanceof BusinessLogicError) throw error;
+      throw new BusinessLogicError(
+        `Failed to edit match participants: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error
+      );
+    }
+  }
+
+  /**
+   * Map a team UUID to its participant.id for the given tournament.
+   *
+   * - Returns null if teamId is null (clears the slot)
+   * - Returns the existing participant.id if one already exists for this team
+   * - Otherwise inserts a new participant row (using the team's name) and returns the new id
+   */
+  private async resolveTeamToParticipantId(
+    teamId: string | null,
+    tournamentId: string,
+    participants: StorageParticipant[]
+  ): Promise<number | null> {
+    if (!teamId) return null;
+
+    const existing = participants.find((p) => p.team_id === teamId);
+    if (existing) return existing.id;
+
+    // Team has no participant row in this tournament — create one.
+    bracketLog(`No participant row for team ${teamId} in tournament ${tournamentId} — creating one`);
+
+    const { data: team, error: teamError } = await supabase
+      .from('teams')
+      .select('id, name')
+      .eq('id', teamId)
+      .single();
+
+    if (teamError || !team) {
+      throw new BusinessLogicError(`Team ${teamId} not found`);
+    }
+
+    const { data: inserted, error: insertError } = await supabase
+      .from('participant')
+      .insert({
+        tournament_id: tournamentId,
+        name: team.name,
+        team_id: team.id,
+      })
+      .select('id')
+      .single();
+
+    if (insertError || !inserted) {
+      handleDatabaseError(
+        insertError ?? new Error('Insert returned no row'),
+        'Failed to create participant for team'
+      );
+    }
+
+    return (inserted as { id: number }).id;
   }
 
   /**

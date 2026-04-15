@@ -1,4 +1,4 @@
-import { Edit, RefreshCcw } from 'lucide-react';
+import { ArrowLeftRight, Edit, RefreshCcw } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,7 @@ interface PlayoffMatchListProps {
   matches: PlayoffMatch[];
   teams: Team[];
   onEditMatch: (matchId: string, quickEdit: boolean) => void;
+  onEditTeams?: (matchId: string) => void;
   title?: string;
   roundFilter?: number;
   matchTypeFilter?: string;
@@ -27,6 +28,7 @@ const PlayoffMatchList: React.FC<PlayoffMatchListProps> = ({
   matches,
   teams,
   onEditMatch,
+  onEditTeams,
   title = 'Playoff Matches',
   roundFilter,
   matchTypeFilter,
@@ -253,6 +255,23 @@ const PlayoffMatchList: React.FC<PlayoffMatchListProps> = ({
                             <RefreshCcw className="h-4 w-4 mr-1" />
                             Quick
                           </Button>
+
+                          {onEditTeams && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => onEditTeams(match.id)}
+                              disabled={!!match.winnerId}
+                              title={
+                                match.winnerId
+                                  ? 'Cannot edit teams on a completed match'
+                                  : 'Change which teams are in this matchup'
+                              }
+                            >
+                              <ArrowLeftRight className="h-4 w-4 mr-1" />
+                              Teams
+                            </Button>
+                          )}
                         </div>
                       </div>
                     ))}

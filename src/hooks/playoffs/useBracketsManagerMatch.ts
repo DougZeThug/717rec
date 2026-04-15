@@ -12,12 +12,14 @@ export interface BracketsManagerMatchData {
   opponent1: {
     id: number;
     name: string;
+    team_id: string | null;
     score: number | null;
     result: string | null;
   } | null;
   opponent2: {
     id: number;
     name: string;
+    team_id: string | null;
     score: number | null;
     result: string | null;
   } | null;
@@ -50,6 +52,7 @@ export const useBracketsManagerMatch = (matchId: number | null) => {
           ? {
               id: opponent1Data.id,
               name: opponent1Data.name,
+              team_id: opponent1Data.team_id ?? null,
               score: matchData.opponent1_score,
               result: matchData.opponent1_result,
             }
@@ -58,6 +61,7 @@ export const useBracketsManagerMatch = (matchId: number | null) => {
           ? {
               id: opponent2Data.id,
               name: opponent2Data.name,
+              team_id: opponent2Data.team_id ?? null,
               score: matchData.opponent2_score,
               result: matchData.opponent2_result,
             }

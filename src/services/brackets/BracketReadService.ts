@@ -503,14 +503,14 @@ export const fetchBracketsManagerMatchData = async (matchId: number) => {
     safeMatchData.opponent1_id
       ? supabase
           .from('participant')
-          .select('id, name')
+          .select('id, name, team_id')
           .eq('id', safeMatchData.opponent1_id)
           .single()
       : Promise.resolve({ data: null, error: null }),
     safeMatchData.opponent2_id
       ? supabase
           .from('participant')
-          .select('id, name')
+          .select('id, name, team_id')
           .eq('id', safeMatchData.opponent2_id)
           .single()
       : Promise.resolve({ data: null, error: null }),

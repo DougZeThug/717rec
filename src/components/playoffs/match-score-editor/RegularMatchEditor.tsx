@@ -1,4 +1,4 @@
-import { Loader2 } from 'lucide-react';
+import { ArrowLeftRight, Loader2 } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,8 @@ interface RegularMatchEditorProps {
   isSaving: boolean;
   onSave: () => void;
   onClose: () => void;
+  onEditTeams?: () => void;
+  canEditTeams?: boolean;
 }
 
 export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
@@ -35,6 +37,8 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
   isSaving,
   onSave,
   onClose,
+  onEditTeams,
+  canEditTeams,
 }) => {
   return (
     <DialogContent className="sm:max-w-[500px]">
@@ -87,14 +91,35 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
         )}
       </div>
 
-      <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={onClose} disabled={isSaving}>
-          Cancel
-        </Button>
-        <Button onClick={onSave} disabled={isSaving}>
-          {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Save Changes
-        </Button>
+      <div className="flex items-center justify-between gap-2">
+        <div>
+          {onEditTeams && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onEditTeams}
+              disabled={isSaving || !canEditTeams}
+              title={
+                canEditTeams
+                  ? 'Change which teams are in this matchup'
+                  : 'Teams can only be swapped on unplayed matches'
+              }
+            >
+              <ArrowLeftRight className="mr-1 h-4 w-4" />
+              Edit teams
+            </Button>
+          )}
+        </div>
+
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={onClose} disabled={isSaving}>
+            Cancel
+          </Button>
+          <Button onClick={onSave} disabled={isSaving}>
+            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Save Changes
+          </Button>
+        </div>
       </div>
     </DialogContent>
   );
