@@ -259,10 +259,7 @@ export class BracketAdminService {
       this.storage.clearParticipantCache();
       await this.storage.loadParticipantsForTournament(tournamentId);
 
-      successLog(`Admin edited participants on match ${matchId}`, {
-        opponent1_id: resolvedOpp1Id,
-        opponent2_id: resolvedOpp2Id,
-      });
+      successLog(`Admin edited participants on match ${matchId}`, `opponent1_id=${resolvedOpp1Id}, opponent2_id=${resolvedOpp2Id}`);
 
       return {
         matchId,
@@ -320,11 +317,11 @@ export class BracketAdminService {
       .select('id')
       .single();
 
-    if (insertError || !inserted) {
-      handleDatabaseError(
-        insertError ?? new Error('Insert returned no row'),
-        'Failed to create participant for team'
-      );
+    if (insertError) {
+      handleDatabaseError(insertError, 'Failed to create participant for team');
+    }
+    if (!inserted) {
+      throw new Error('Failed to create participant for team: insert returned no row');
     }
 
     return (inserted as { id: number }).id;
