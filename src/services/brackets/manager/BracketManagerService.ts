@@ -308,6 +308,28 @@ export class BracketManagerService {
   async adminToggleByeReady(matchId: number, makeReady: boolean, clearDownstream: boolean = false) {
     return this.adminService.adminToggleByeReady(matchId, makeReady, clearDownstream);
   }
+
+  /**
+   * Admin-only: Swap one or both teams in an unplayed match.
+   *
+   * Use case: fixing a seeding decision after the bracket has started but before the
+   * match has been played. Refuses to edit matches whose status is Completed (4) or
+   * whose opponents already have a 'win' or 'loss' result recorded.
+   *
+   * @param matchId - Match ID in the brackets-manager database
+   * @param newOpponent1TeamId - Team UUID to place in opponent1 slot, or null to clear
+   * @param newOpponent2TeamId - Team UUID to place in opponent2 slot, or null to clear
+   *
+   * @example
+   * await bracketManagerService.editMatchParticipants(42, 'team-uuid-a', 'team-uuid-b');
+   */
+  async editMatchParticipants(
+    matchId: number,
+    newOpponent1TeamId: string | null,
+    newOpponent2TeamId: string | null
+  ) {
+    return this.adminService.editMatchParticipants(matchId, newOpponent1TeamId, newOpponent2TeamId);
+  }
 }
 
 // Export singleton instance
