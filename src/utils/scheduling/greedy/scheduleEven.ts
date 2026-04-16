@@ -130,6 +130,13 @@ export function scheduleEven(args: EvenScheduleArgs): {
         teamMatchCounts.set(m.teamBId, (teamMatchCounts.get(m.teamBId) || 0) + 1);
       }
 
+      diagnostics.rematchesRepaired += rematchRepairPass(
+        s1Matches, slot1, sortedTeams, playedSet, tonightPairs, newPairs, maxTierGap
+      );
+      diagnostics.rematchesRepaired += rematchRepairPass(
+        s2Matches, slot2, sortedTeams, playedSet, tonightPairs, newPairs, maxTierGap
+      );
+
       allMatches = [...s1Matches, ...s2Matches];
     }
   }
