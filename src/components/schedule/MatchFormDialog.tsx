@@ -21,6 +21,8 @@ interface MatchFormDialogProps {
   isLoadingTeams?: boolean;
   /** Whether an update operation is in progress */
   isUpdating?: boolean;
+  /** Whether a create operation is in progress */
+  isCreating?: boolean;
 }
 
 const MatchFormDialog: React.FC<MatchFormDialogProps> = ({
@@ -31,6 +33,7 @@ const MatchFormDialog: React.FC<MatchFormDialogProps> = ({
   onSubmit,
   isLoadingTeams = false,
   isUpdating = false,
+  isCreating = false,
 }) => {
   return (
     <ResponsiveDialog open={isOpen} onOpenChange={onClose}>
@@ -46,7 +49,7 @@ const MatchFormDialog: React.FC<MatchFormDialogProps> = ({
             <Skeleton className="h-10 w-1/2" />
           </div>
         ) : (
-          <MatchFormRHF match={match} teams={teams} onSubmit={onSubmit} onCancel={onClose} isUpdating={isUpdating} />
+          <MatchFormRHF match={match} teams={teams} onSubmit={onSubmit} onCancel={onClose} isUpdating={isUpdating} isCreating={isCreating} />
         )}
       </ResponsiveDialogContent>
     </ResponsiveDialog>

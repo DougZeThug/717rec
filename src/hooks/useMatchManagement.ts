@@ -13,7 +13,7 @@ export const useMatchManagement = (initialMatches: Match[]) => {
     setMatches(initialMatches);
   }, [initialMatches]);
 
-  const { isFormOpen, setIsFormOpen, handleCreateMatch } = useMatchCreation(matches, setMatches);
+  const { isFormOpen, setIsFormOpen, handleCreateMatch, isCreating } = useMatchCreation(matches, setMatches);
 
   const {
     editingMatch,
@@ -33,6 +33,7 @@ export const useMatchManagement = (initialMatches: Match[]) => {
     deleteMatchId,
     isDeleting,
     isUpdating,
+    isCreating,
     setEditingMatch,
     setIsFormOpen,
     setDeleteMatchId,
