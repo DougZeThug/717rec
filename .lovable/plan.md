@@ -1,56 +1,30 @@
 
 
-## Plan: Fix Double-Submit Race Condition in Match Updates
+## Plan: Add Rematch Repair After Cross-Slot Swap
 
 ### The problem
 
-`useMatchUpdate` uses `useState` for its `isUpdating` guard. React state updates are batched and applied on the next render, so two rapid submits in the same event loop tick both see `isUpdating === false` and both proceed — doubling team stat increments.
-
-`useMatchSubmission.handleSubmitScore` has no guard at all, making it equally vulnerable.
+In `scheduleEven.ts`, after a successful cross-slot swap, `rematchRepairPass` is never called on the new S1/S2 matches. Every other code path (initial generation, relaxation retries) calls it. This is an oversight — swap results can contain avoidable season rematches.
 
 ### The fix
 
-**1. `useMatchUpdate.ts`** — Add a `useRef` as a synchronous guard alongside the existing `useState`:
+**1 file** — `src/utils/scheduling/greedy/scheduleEven.ts`
+
+Add two `rematchRepairPass` calls after rebuilding `tonightPairs`/`newPairs`/`teamMatchCounts` from the cross-slot swap result, before setting `allMatches`:
 
 ```typescript
-import { useRef, useState } from 'react';
-
-const [isUpdating, setIsUpdating] = useState(false);
-const isUpdatingRef = useRef(false);
-
-const handleUpdateMatch = async (...) => {
-  if (!editingMatch || isUpdatingRef.current) return false;
-  isUpdatingRef.current = true;
-  setIsUpdating(true);
-  try {
-    // ... existing logic ...
-  } finally {
-    isUpdatingRef.current = false;
-    setIsUpdating(false);
-  }
-};
+diagnostics.rematchesRepaired += rematchRepairPass(
+  s1Matches, slot1, sortedTeams, playedSet, tonightPairs, newPairs, maxTierGap
+);
+diagnostics.rematchesRepaired += rematchRepairPass(
+  s2Matches, slot2, sortedTeams, playedSet, tonightPairs, newPairs, maxTierGap
+);
 ```
 
-**2. `useMatchSubmission.ts`** — Add the same ref-based guard:
-
-```typescript
-import { useRef } from 'react';
-
-const isSubmittingRef = useRef(false);
-
-const handleSubmitScore = async (params) => {
-  if (isSubmittingRef.current) return false;
-  isSubmittingRef.current = true;
-  try {
-    // ... existing logic ...
-  } finally {
-    isSubmittingRef.current = false;
-  }
-};
-```
+This goes right before the existing `allMatches = [...s1Matches, ...s2Matches];` line inside the `if (crossSlotResult)` block (~line 99).
 
 ### What changes
 
-- **2 files** — `useMatchUpdate.ts` and `useMatchSubmission.ts`: add `useRef` synchronous guards
+- **1 file** — add 2 function calls, 0 new imports needed (`rematchRepairPass` is already imported)
 - **0 migrations, 0 other files**
 
