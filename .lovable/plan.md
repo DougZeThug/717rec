@@ -1,31 +1,35 @@
 
 
-## Plan: Fix Tied Matches Counted as Losses in Streak Calculation
+## Plan: Fix Realtime UPDATE Inserting Messages Out of Order
 
 ### The problem
 
-In `calculateStreak.ts`, tied matches (where `winnerId` is `undefined` after transformation) slip through the `winnerId !== null` filter because `undefined !== null` is `true` in JavaScript. These ties then get counted as losses.
+In `useMessageBoard.ts`, when a realtime UPDATE arrives for a message not in the current list, it's appended at the end (`[...curr, updatedMessage]`), breaking the `created_at` descending sort order.
 
 ### The fix
 
-**1 file** — `src/utils/rankingUtils/calculateStreak.ts` (line 15)
+**1 file** — `src/hooks/message-board/useMessageBoard.ts`
 
-Change strict inequality to loose inequality:
+In `handleMessageUpdated`, replace the append logic with a sorted insertion. When the updated message isn't in the list and matches filters, insert it at the correct position based on `created_at` descending:
 
-```diff
-- match.winnerId !== null &&
-+ match.winnerId != null &&
+```typescript
+// Not in list — insert at correct position to maintain created_at desc order
+if (matchesFilter) {
+  const insertIndex = curr.findIndex(
+    (msg) => msg.created_at < updatedMessage.created_at
+  );
+  if (insertIndex === -1) {
+    return [...curr, updatedMessage]; // Oldest — append at end
+  }
+  return [...curr.slice(0, insertIndex), updatedMessage, ...curr.slice(insertIndex)];
+}
+return curr;
 ```
 
-This filters out both `null` and `undefined`, matching the `Match` type where `winnerId?: string` (i.e. `string | undefined`).
-
-**1 file** — `src/utils/rankingUtils/__tests__/calculateStreak.test.ts`
-
-Add a test case confirming ties with `winnerId: undefined` are excluded from streak calculation.
+This mirrors how the insert handler prepends newest messages and keeps the list consistent with the server's `order('created_at', { ascending: false })`.
 
 ### What changes
 
-- **1 source file** — one-character fix (`!==` → `!=`)
-- **1 test file** — add tie-exclusion test
-- **0 migrations**
+- **1 file** — `src/hooks/message-board/useMessageBoard.ts`: replace `[...curr, updatedMessage]` with sorted insertion (~4 lines)
+- **0 migrations, 0 other files**
 
