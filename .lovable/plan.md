@@ -1,39 +1,28 @@
 
 
-## Plan: Prevent Double-Click Duplicate Match Creation
+## Plan: Add Missing Admin UPDATE Policy for Teams Table
 
 ### The problem
 
-`useMatchCreation` has no guard against concurrent calls, unlike `useMatchUpdate` which has `isUpdating` + a ref guard. Double-clicking "Create Match" fires two requests. Additionally, `handleSubmitForm` in `MatchFormRHF` doesn't return/await the `onSubmit` promise, so RHF's `isSubmitting` resets immediately.
+The `teams` table has RLS policies for admin INSERT and DELETE, but **no admin UPDATE policy**. The only UPDATE policy is "Approved members can update own team", which checks `team_memberships`. When an admin changes a team's division, the update is blocked by RLS unless the admin happens to be an approved member of that specific team.
 
 ### The fix
 
-**3 files changed:**
+**1 migration** — Add an admin UPDATE policy to the `teams` table:
 
-**1. `src/hooks/useMatchCreation.ts`** — Add `isCreating` state + ref guard (mirroring `useMatchUpdate`):
-- Add `const [isCreating, setIsCreating] = useState(false)` and `const isCreatingRef = useRef(false)`
-- Guard `handleCreateMatch` with `if (isCreatingRef.current) return false`
-- Wrap body in `try/finally` setting the ref and state
-- Return `isCreating` from the hook
+```sql
+CREATE POLICY "Admins can update teams"
+  ON public.teams
+  FOR UPDATE
+  TO authenticated
+  USING (current_user_is_admin())
+  WITH CHECK (current_user_is_admin());
+```
 
-**2. `src/hooks/useMatchManagement.ts`** — Thread `isCreating` through to consumers.
-
-**3. `src/components/schedule/MatchFormRHF.tsx`** — Add `isCreating` prop to disabled condition on submit button:
-- Update `MatchFormProps` in `types.ts` to include `isCreating?: boolean`
-- Add `isCreating` to the button's `disabled` check
-
-**4. `src/components/schedule/MatchFormDialog.tsx`** — Pass `isCreating` prop through to `MatchFormRHF`.
-
-**5. `src/pages/Schedule.tsx`** — Pass `isCreating` from `useMatchManagement` to `MatchFormDialog`.
-
-**6. `src/components/schedule/types.ts`** — Add `isCreating?: boolean` to `MatchFormProps`.
-
-### Runtime error
-
-There's also a "Rendered more hooks" error in `useAuth`/`useAuthProfile` that appears to be a hot-reload artifact from our previous edit adding `useRef`+`useEffect`. I'll verify and fix if needed.
+This matches the existing pattern used on every other admin-managed table (divisions, matches, brackets, etc.).
 
 ### What changes
 
-- **4-6 files** — add `isCreating` guard and thread it to the submit button
-- **0 migrations**
+- **1 migration file** — adds the missing RLS policy
+- **0 source files changed**
 
