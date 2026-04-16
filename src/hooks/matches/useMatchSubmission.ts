@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { useRef } from 'react';
 
 import { useToast } from '@/hooks/useToast';
 import { errorLog, matchLog } from '@/utils/logger';
@@ -14,6 +15,7 @@ export const useMatchSubmission = () => {
   const queryClient = useQueryClient();
   const { updateTeamStats } = useTeamRecordUpdate();
   const { validateScore } = useScoreValidation();
+  const isSubmittingRef = useRef(false);
 
   const handleSubmitScore = async ({
     matchId,
