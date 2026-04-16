@@ -12,7 +12,7 @@ export const calculateStreak = (teamId: string, allMatches: Match[] | undefined)
       (match) =>
         match &&
         match.iscompleted &&
-        match.winnerId !== null &&
+        match.winnerId != null &&
         (match.team1Id === teamId || match.team2Id === teamId)
     )
     .sort((a, b) => {
