@@ -13,6 +13,13 @@ export const useAuthProfile = (user: User | null, navigate: NavigateFunction) =>
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isProfileLoading, setIsProfileLoading] = useState<boolean>(false);
 
+  // Track current user ID via ref to detect cross-tab user changes during async operations
+  const currentUserIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    currentUserIdRef.current = user?.id ?? null;
+  }, [user]);
+
   // Fetch user profile from database
   const fetchProfile = useCallback(async (userId: string): Promise<UserProfile | null> => {
     return fetchAuthProfile(userId);
@@ -34,7 +41,7 @@ export const useAuthProfile = (user: User | null, navigate: NavigateFunction) =>
     const fetchUserId = user.id;
     try {
       const profileData = await fetchProfile(fetchUserId);
-      if (user?.id !== fetchUserId) return; // Abort if user changed during fetch
+      if (currentUserIdRef.current !== fetchUserId) return; // Abort if user changed during fetch
       setProfile(profileData);
     } catch (error) {
       errorLog('Failed to refresh profile:', error);
