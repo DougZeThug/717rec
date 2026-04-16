@@ -228,8 +228,17 @@ export const useMessageBoard = (): UseMessageBoardResult => {
             ? curr.map((msg) => (msg.id === updatedMessage.id ? updatedMessage : msg))
             : curr.filter((msg) => msg.id !== updatedMessage.id);
         } else {
-          // Not in list — add only if it matches the filter
-          return matchesFilter ? [...curr, updatedMessage] : curr;
+          // Not in list — insert at correct position to maintain created_at desc order
+          if (matchesFilter) {
+            const insertIndex = curr.findIndex(
+              (msg) => msg.created_at && updatedMessage.created_at && msg.created_at < updatedMessage.created_at
+            );
+            if (insertIndex === -1) {
+              return [...curr, updatedMessage];
+            }
+            return [...curr.slice(0, insertIndex), updatedMessage, ...curr.slice(insertIndex)];
+          }
+          return curr;
         }
       });
     },
