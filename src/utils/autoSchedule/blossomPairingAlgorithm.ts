@@ -126,8 +126,9 @@ function analyzeGraphFeasibility(
       }
 
       // Check rematch constraint (with relaxation support)
-      const hasPlayedBefore =
-        config.avoidRematches && haveTeamsPlayedBeforeSync(team1.id, team2.id, config);
+      // Always check playedPairsSet — covers both season history (when avoidRematches=true)
+      // and same-session rematches (always added by standardPairing across blocks)
+      const hasPlayedBefore = haveTeamsPlayedBeforeSync(team1.id, team2.id, config);
       const rematchBlocked =
         relaxationLevel < 1 && hasPlayedBefore && !isBothRecreational(team1, team2);
 
@@ -232,8 +233,8 @@ function buildWeightedGraphWithRelaxation(
       }
 
       // Rematch constraint check
-      const hasPlayedBefore =
-        config.avoidRematches && haveTeamsPlayedBeforeSync(team1.id, team2.id, config);
+      // Always check playedPairsSet — covers both season history and same-session rematches
+      const hasPlayedBefore = haveTeamsPlayedBeforeSync(team1.id, team2.id, config);
       if (effectiveRelaxation < 1 && hasPlayedBefore && !isBothRecreational(team1, team2)) {
         continue;
       }
@@ -593,12 +594,12 @@ function shouldExcludeEdge(team1: Team, team2: Team, config: TeamPairingConfig):
   }
 
   // Hard constraint: Block rematches (except T3 vs T3)
-  if (config.avoidRematches) {
-    const hasPlayedBefore = haveTeamsPlayedBeforeSync(team1.id, team2.id, config);
-    if (hasPlayedBefore && !isBothRecreational(team1, team2)) {
-      debugLog(`Blocking rematch: ${team1.name} vs ${team2.name}`);
-      return true;
-    }
+  // Always check playedPairsSet — covers both season history (when avoidRematches=true)
+  // and same-session rematches (always added by standardPairing across blocks)
+  const hasPlayedBefore = haveTeamsPlayedBeforeSync(team1.id, team2.id, config);
+  if (hasPlayedBefore && !isBothRecreational(team1, team2)) {
+    debugLog(`Blocking rematch: ${team1.name} vs ${team2.name}`);
+    return true;
   }
 
   return false;
