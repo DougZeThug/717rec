@@ -24,6 +24,8 @@ export const useMatchSubmission = () => {
     team1GameWins = 0,
     team2GameWins = 0,
   }: SubmitScoreParams) => {
+    if (isSubmittingRef.current) return false;
+    isSubmittingRef.current = true;
     try {
       // Ensure game wins are properly parsed as integers
       const parsedTeam1GameWins = parseInt(String(team1GameWins)) || 0;
@@ -80,6 +82,8 @@ export const useMatchSubmission = () => {
         variant: 'destructive',
       });
       return false;
+    } finally {
+      isSubmittingRef.current = false;
     }
   };
 
