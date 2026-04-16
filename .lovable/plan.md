@@ -1,41 +1,39 @@
 
 
-## Plan: Fix Stale Closure Race Check in refreshProfile
+## Plan: Prevent Double-Click Duplicate Match Creation
 
 ### The problem
 
-In `useAuthProfile.ts`, `refreshProfile` captures `user` in its closure. The check `if (user?.id !== fetchUserId) return` compares two values from the same closure — it can never detect a user change mid-flight. Cross-tab sign-in can cause User B to see User A's profile.
+`useMatchCreation` has no guard against concurrent calls, unlike `useMatchUpdate` which has `isUpdating` + a ref guard. Double-clicking "Create Match" fires two requests. Additionally, `handleSubmitForm` in `MatchFormRHF` doesn't return/await the `onSubmit` promise, so RHF's `isSubmitting` resets immediately.
 
 ### The fix
 
-**1 file** — `src/hooks/auth/useAuthProfile.ts`
+**3 files changed:**
 
-Add a `useRef` to track the current user ID, updated via `useEffect`. Compare against the ref instead of the closure variable:
+**1. `src/hooks/useMatchCreation.ts`** — Add `isCreating` state + ref guard (mirroring `useMatchUpdate`):
+- Add `const [isCreating, setIsCreating] = useState(false)` and `const isCreatingRef = useRef(false)`
+- Guard `handleCreateMatch` with `if (isCreatingRef.current) return false`
+- Wrap body in `try/finally` setting the ref and state
+- Return `isCreating` from the hook
 
-```typescript
-const currentUserIdRef = useRef<string | null>(null);
+**2. `src/hooks/useMatchManagement.ts`** — Thread `isCreating` through to consumers.
 
-useEffect(() => {
-  currentUserIdRef.current = user?.id ?? null;
-}, [user]);
+**3. `src/components/schedule/MatchFormRHF.tsx`** — Add `isCreating` prop to disabled condition on submit button:
+- Update `MatchFormProps` in `types.ts` to include `isCreating?: boolean`
+- Add `isCreating` to the button's `disabled` check
 
-const refreshProfile = useCallback(async () => {
-  if (!user) return;
-  const fetchUserId = user.id;
-  try {
-    const profileData = await fetchProfile(fetchUserId);
-    if (currentUserIdRef.current !== fetchUserId) return;
-    setProfile(profileData);
-  } catch (error) {
-    errorLog('Failed to refresh profile:', error);
-  }
-}, [user, fetchProfile]);
-```
+**4. `src/components/schedule/MatchFormDialog.tsx`** — Pass `isCreating` prop through to `MatchFormRHF`.
 
-This matches the mutable `currentUserId` pattern already used in `src/hooks/auth/index.ts`.
+**5. `src/pages/Schedule.tsx`** — Pass `isCreating` from `useMatchManagement` to `MatchFormDialog`.
+
+**6. `src/components/schedule/types.ts`** — Add `isCreating?: boolean` to `MatchFormProps`.
+
+### Runtime error
+
+There's also a "Rendered more hooks" error in `useAuth`/`useAuthProfile` that appears to be a hot-reload artifact from our previous edit adding `useRef`+`useEffect`. I'll verify and fix if needed.
 
 ### What changes
 
-- **1 file** — `src/hooks/auth/useAuthProfile.ts`: add `useRef` + `useEffect`, update race check
-- **0 migrations, 0 other files**
+- **4-6 files** — add `isCreating` guard and thread it to the submit button
+- **0 migrations**
 
