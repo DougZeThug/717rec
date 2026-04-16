@@ -324,7 +324,9 @@ export class BracketAdminService {
       throw new Error('Failed to create participant for team: insert returned no row');
     }
 
-    return (inserted as { id: number }).id;
+    const newId = (inserted as { id: number }).id;
+    participants.push({ id: newId, tournament_id: tournamentId, name: team.name, team_id: teamId });
+    return newId;
   }
 
   /**
