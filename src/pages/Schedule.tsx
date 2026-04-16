@@ -83,6 +83,7 @@ const Schedule = () => {
     deleteMatchId,
     isDeleting,
     isUpdating,
+    isCreating,
     setEditingMatch,
     setIsFormOpen,
     setDeleteMatchId,
@@ -179,6 +180,7 @@ const Schedule = () => {
         onSubmit={editingMatch ? handleUpdateMatchAdapter : handleCreateMatchAdapter}
         isLoadingTeams={teamsLoading}
         isUpdating={isUpdating}
+        isCreating={isCreating}
       />
 
       <DeleteMatchDialog

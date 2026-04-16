@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { createDateWithTime } from '@/components/schedule/form-utils';
 import { useToast } from '@/hooks/useToast';
@@ -9,10 +9,15 @@ import { errorLog } from '@/utils/logger';
 
 export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]) => void) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const isCreatingRef = useRef(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const handleCreateMatch = async (matchData: Omit<Match, 'id'>, _teams: Team[]) => {
+    if (isCreatingRef.current) return false;
+    isCreatingRef.current = true;
+    setIsCreating(true);
     try {
       // Ensure we have a valid date with proper time
       let dateWithTime = new Date(matchData.date);
@@ -76,6 +81,9 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
         variant: 'destructive',
       });
       return false;
+    } finally {
+      setIsCreating(false);
+      isCreatingRef.current = false;
     }
   };
 
@@ -83,5 +91,6 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
     isFormOpen,
     setIsFormOpen,
     handleCreateMatch,
+    isCreating,
   };
 };

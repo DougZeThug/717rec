@@ -11,6 +11,8 @@ export interface MatchFormProps {
   form?: UseFormReturn<MatchFormValues>;
   /** Whether an update operation is in progress (prevents double-submit) */
   isUpdating?: boolean;
+  /** Whether a create operation is in progress (prevents double-submit) */
+  isCreating?: boolean;
 }
 
 export interface MatchFormValues {
