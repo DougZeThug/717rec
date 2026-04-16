@@ -1,44 +1,33 @@
 
 
-## Plan: Add DELETE Trigger for Match-to-Playoff Sync
+## Plan: Fix Double-Insert When Both Slots Resolve the Same New Team
 
 ### The problem
 
-The sync triggers on the `match` table only cover INSERT and UPDATE. When a bracket is deleted, the `match` rows are removed but the corresponding `playoff_matches` rows remain as orphans.
+`resolveTeamToParticipantId` is called twice with the same `participants` array snapshot. If both opponent slots are set to the same team that doesn't have a participant row yet, both calls will fail the `find()` check and each insert a new participant — creating a duplicate.
 
 ### The fix
 
-One migration that adds:
+In `editMatchParticipants` (around line 234-243), after resolving opponent 1, push any newly created participant into the `participants` array before resolving opponent 2. This way the second call sees the row created by the first.
 
-1. **A DELETE trigger function** (`sync_match_delete_to_playoff_matches`) -- when a row is deleted from `match`, it deletes the corresponding `playoff_matches` row where `match_id = OLD.id`.
+**Change `resolveTeamToParticipantId`** to return both the `id` and a flag/object indicating whether it created a new row (and the participant data). Then push that into `participants` before the second call.
 
-2. **The trigger** (`trg_sync_match_delete_to_playoff`) -- AFTER DELETE on `public.match`, fires the function above.
-
-This completes the sync lifecycle: INSERT creates the playoff_match, UPDATE keeps it current, DELETE removes it.
+Simpler approach: have `resolveTeamToParticipantId` accept the mutable array and push onto it when it creates a row. Since arrays are passed by reference in JS, the second call will see the update.
 
 ### Technical detail
 
-```sql
-CREATE OR REPLACE FUNCTION public.sync_match_delete_to_playoff_matches()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = 'public'
-AS $$
-BEGIN
-  DELETE FROM playoff_matches WHERE match_id = OLD.id;
-  RETURN OLD;
-END;
-$$;
+In `resolveTeamToParticipantId` (line ~287-330), after inserting a new participant, push the new entry onto the `participants` array:
 
-CREATE TRIGGER trg_sync_match_delete_to_playoff
-  AFTER DELETE ON public.match
-  FOR EACH ROW
-  EXECUTE FUNCTION public.sync_match_delete_to_playoff_matches();
+```typescript
+// After successful insert (around line 320):
+participants.push({ id: inserted.id, tournament_id: tournamentId, name: team.name, team_id: teamId });
+return inserted.id;
 ```
+
+That's it — one line addition. The array is passed by reference, so the second call will find the participant created by the first call.
 
 ### What changes
 
-- **1 migration file** -- adds the delete trigger function and attaches it
-- **0 code changes** -- existing bracket deletion code already deletes from the `match` table; this trigger handles the rest automatically
+- **1 file** — `src/services/brackets/manager/services/BracketAdminService.ts`: add one line after participant insert to push the new entry into the shared array
+- **0 migrations, 0 other files**
 
