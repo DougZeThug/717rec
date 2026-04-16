@@ -1,5 +1,5 @@
 import { User } from '@supabase/supabase-js';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { NavigateFunction } from 'react-router';
 
 import { fetchAuthProfile } from '@/services/profile/ProfileService';
