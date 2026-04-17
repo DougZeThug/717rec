@@ -1,7 +1,7 @@
 {
   "name": "vite_react_shadcn_ts",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -124,5 +124,6 @@
     "typescript-eslint": "8.58.2",
     "vite": "7.3.2",
     "vitest": "4.1.4"
-  }
+  },
+  "license": "MIT"
 }
