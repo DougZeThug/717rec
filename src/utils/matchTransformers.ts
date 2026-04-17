@@ -299,7 +299,9 @@ export interface PlayoffMatchWithTeams extends PlayoffMatch {
 /**
  * Transform database playoff match with team data included
  */
-export function transformDatabasePlayoffMatchWithTeams(match: any): PlayoffMatchWithTeams {
+export function transformDatabasePlayoffMatchWithTeams(
+  match: RawPlayoffMatchRow
+): PlayoffMatchWithTeams {
   const baseMatch = transformDatabasePlayoffMatch(match);
 
   return {
@@ -312,7 +314,9 @@ export function transformDatabasePlayoffMatchWithTeams(match: any): PlayoffMatch
 /**
  * Transform multiple database playoff matches with team data
  */
-export function transformDatabasePlayoffMatchesWithTeams(matches: any[]): PlayoffMatchWithTeams[] {
+export function transformDatabasePlayoffMatchesWithTeams(
+  matches: RawPlayoffMatchRow[]
+): PlayoffMatchWithTeams[] {
   if (!matches) return [];
   return matches.map(transformDatabasePlayoffMatchWithTeams);
 }
