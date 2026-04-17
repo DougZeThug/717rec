@@ -16,13 +16,97 @@ export interface TransformMatchOptions {
   context?: string;
 }
 
+// ============= Raw Input Row Types =============
+// These describe the shape of raw Supabase rows (with optional joined data)
+// passed to the transformers. They intentionally allow optional/nullable fields
+// to mirror what Supabase returns from `.select(...)` with joins.
+
+interface RawTeamJoinObject {
+  id?: string;
+  team_id?: string;
+  name?: string | null;
+  image_url?: string | null;
+  logo_url?: string | null;
+  divisionname?: string | null;
+  divisionName?: string | null;
+  division_id?: string | null;
+  power_score?: number | null;
+  sos?: number | null;
+}
+
+type RawTeamJoin = RawTeamJoinObject | RawTeamJoinObject[] | null | undefined;
+
+interface RawMatchRow {
+  id: string;
+  team1_id?: string | null;
+  team2_id?: string | null;
+  team1_score?: number | null;
+  team2_score?: number | null;
+  date?: string | null;
+  created_at?: string | null;
+  location?: string | null;
+  iscompleted?: boolean | null;
+  winner_id?: string | null;
+  loser_id?: string | null;
+  round_number?: number | null;
+  position?: number | null;
+  bracket_id?: string | null;
+  match_type?: string | null;
+  next_match_id?: string | null;
+  next_loser_match_id?: string | null;
+  best_of?: number | null;
+  team1_game_wins?: number | null;
+  team2_game_wins?: number | null;
+  team1?: RawTeamJoin;
+  team2?: RawTeamJoin;
+}
+
+interface RawPlayoffGameRow {
+  id: string;
+  match_id?: string | null;
+  game_number?: number;
+  team1_score?: number | null;
+  team2_score?: number | null;
+  winner_id?: string | null;
+}
+
+interface RawPlayoffMatchRow {
+  id: string;
+  bracket_id?: string | null;
+  round?: number | null;
+  position?: number | null;
+  team1_id?: string | null;
+  team2_id?: string | null;
+  winner_id?: string | null;
+  loser_id?: string | null;
+  team1_score?: number | null;
+  team2_score?: number | null;
+  team1_game_wins?: number | null;
+  team2_game_wins?: number | null;
+  match_type?: PlayoffMatch['matchType'] | string | null;
+  best_of?: number | null;
+  team1_seed?: number | null;
+  team2_seed?: number | null;
+  next_win_match_id?: string | null;
+  next_lose_match_id?: string | null;
+  next_match_id?: string | null;
+  next_loser_match_id?: string | null;
+  status?: PlayoffMatch['status'] | string | null;
+  iscompleted?: boolean | null;
+  playoff_games?: RawPlayoffGameRow[];
+  team1?: RawTeamJoin;
+  team2?: RawTeamJoin;
+}
+
+type RawRealtimePlayoffMatch = Omit<RawPlayoffMatchRow, 'playoff_games' | 'team1' | 'team2'>;
+
 // ============= Helper Functions =============
 
 /**
  * Extract team details from nested join results (handles array or object format)
  * Includes stats fields (power_score, sos, division_id) for predictions
  */
-function extractTeamDetails(team: any): Match['team1Details'] {
+function extractTeamDetails(team: RawTeamJoin): Match['team1Details'] {
   if (!team) return null;
   const t = Array.isArray(team) ? team[0] : team;
   if (!t) return null;
