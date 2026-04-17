@@ -197,9 +197,8 @@ describe('fetchSeasonOpponentHistory', () => {
 
     const result = await fetchSeasonOpponentHistory();
 
-    expect(result).not.toBeNull();
-    expect(result!.seasonId).toBe('season-1');
-    expect(result!.teams.length).toBeGreaterThan(0);
+    expect(result).toMatchObject({ seasonId: 'season-1' });
+    expect(result?.teams.length).toBeGreaterThan(0);
   });
 
   it('returns null when no active season', async () => {

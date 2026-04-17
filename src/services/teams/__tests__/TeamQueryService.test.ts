@@ -15,7 +15,7 @@ vi.mock('@/utils/logger', () => ({
 }));
 
 vi.mock('@/utils/teamTransformer', () => ({
-  transformTeamRow: (row: any) => ({
+  transformTeamRow: (row: Record<string, unknown>) => ({
     id: row.team_id,
     name: row.name,
     wins: row.wins ?? 0,

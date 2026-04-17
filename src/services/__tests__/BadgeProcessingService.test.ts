@@ -116,7 +116,7 @@ describe('BadgeProcessingService.calculateTeamStreak', () => {
     const row = { streak_type: 'win', streak_count: 5 };
     mockRpc.mockResolvedValue({ data: [row], error: null });
     const result = await BadgeProcessingService.calculateTeamStreak('t1');
-    expect(result!.streak_count).toBe(5);
+    expect(result).toMatchObject({ streak_count: 5 });
     expect(mockRpc).toHaveBeenCalledWith('calculate_team_streak', { p_team_id: 't1' });
   });
 

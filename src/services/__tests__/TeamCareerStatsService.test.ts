@@ -50,16 +50,8 @@ describe('fetchBatchHeadToHead', () => {
     expect(result.has('t1-t2')).toBe(true);
     expect(result.has('t2-t1')).toBe(true);
 
-    const forward = result.get('t1-t2')!;
-    expect(forward.team1Wins).toBe(3);
-    expect(forward.team2Wins).toBe(1);
-    expect(forward.totalMatches).toBe(4);
-    expect(forward.isFirstMeeting).toBe(false);
-
-    // Reversed perspective
-    const reversed = result.get('t2-t1')!;
-    expect(reversed.team1Wins).toBe(1);
-    expect(reversed.team2Wins).toBe(3);
+    expect(result.get('t1-t2')).toMatchObject({ team1Wins: 3, team2Wins: 1, totalMatches: 4, isFirstMeeting: false });
+    expect(result.get('t2-t1')).toMatchObject({ team1Wins: 1, team2Wins: 3 });
   });
 
   it('returns empty Map when no results', async () => {
@@ -73,7 +65,7 @@ describe('fetchBatchHeadToHead', () => {
     mockRpc.mockResolvedValue({ data: [row], error: null });
 
     const result = await fetchBatchHeadToHead(pairs);
-    expect(result.get('t1-t2')!.isFirstMeeting).toBe(true);
+    expect(result.get('t1-t2')).toMatchObject({ isFirstMeeting: true });
   });
 
   it('throws DatabaseError on RPC error', async () => {

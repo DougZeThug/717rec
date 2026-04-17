@@ -146,7 +146,7 @@ describe('submitTeamRequest', () => {
     });
 
     const result = await submitTeamRequest({ team_id: 'team-1', request_type: 'reschedule' });
-    expect(result!.team_id).toBe('team-1');
+    expect(result).toMatchObject({ team_id: 'team-1' });
     expect(mockFrom).toHaveBeenCalledWith('team_requests');
   });
 
@@ -176,7 +176,7 @@ describe('updateTeamRequestStatus', () => {
       update: () => ({ eq: () => ({ select: () => ({ single: () => Promise.resolve({ data: makeRequest({ status: 'APPROVED' }), error: null }) }) }) }),
     });
     const result = await updateTeamRequestStatus({ id: 'req-1', status: 'APPROVED' });
-    expect(result!.status).toBe('APPROVED');
+    expect(result).toMatchObject({ status: 'APPROVED' });
   });
 
   it('throws DatabaseError on error', async () => {

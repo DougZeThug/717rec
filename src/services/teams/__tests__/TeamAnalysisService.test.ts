@@ -44,8 +44,7 @@ describe('fetchTeamAnalysis', () => {
       }),
     });
     const result = await fetchTeamAnalysis('team-1');
-    expect(result).not.toBeNull();
-    expect(result!.team_id).toBe('team-1');
+    expect(result).toMatchObject({ team_id: 'team-1' });
     expect(mockFrom).toHaveBeenCalledWith('team_analysis');
   });
 

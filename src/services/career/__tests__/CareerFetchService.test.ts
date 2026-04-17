@@ -73,9 +73,7 @@ describe('fetchCareerData', () => {
 
     const result = await fetchCareerData('team-1');
 
-    expect(result).not.toBeNull();
-    expect(result!.currentSeasonId).toBe('season-1');
-    expect(result!.teamDivisionWeight).toBe(0.85);
+    expect(result).toMatchObject({ currentSeasonId: 'season-1', teamDivisionWeight: 0.85 });
   });
 
   it('throws DatabaseError when season_stats query fails (critical error)', async () => {

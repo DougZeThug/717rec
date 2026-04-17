@@ -20,7 +20,7 @@ const makeRaw = (overrides: Record<string, unknown> = {}) => ({
 
 describe('formatTimeslotResponse', () => {
   it('returns empty array for null input', () => {
-    expect(TimeslotTransformer.formatTimeslotResponse(null as any)).toEqual([]);
+    expect(TimeslotTransformer.formatTimeslotResponse(null as unknown as [])).toEqual([]);
   });
 
   it('returns empty array for empty array', () => {
@@ -58,9 +58,7 @@ describe('formatSingleTimeslot', () => {
       teams: { id: 't-1', name: 'Eagles', logo_url: 'logo.png', image_url: 'img.png' },
     });
     const result = TimeslotTransformer.formatSingleTimeslot(raw);
-    expect(result.teams).toBeDefined();
-    expect(result.teams!.name).toBe('Eagles');
-    expect(result.teams!.divisionName).toBeNull();
+    expect(result.teams).toMatchObject({ name: 'Eagles', divisionName: null });
   });
 
   it('sets teams to undefined when null', () => {

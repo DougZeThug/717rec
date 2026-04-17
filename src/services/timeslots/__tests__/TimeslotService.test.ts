@@ -17,7 +17,7 @@ vi.mock('../BackToBackTimeslotService', () => ({
   BackToBackTimeslotService: {
     addBackToBackTimeslot: vi.fn().mockResolvedValue([]),
     addTimeslot: vi.fn().mockResolvedValue([]),
-    deleteTimeslot: vi.fn().mockResolvedValue(undefined),
+    deleteTimeslot: vi.fn().mockResolvedValue(null),
   },
 }));
 
@@ -33,7 +33,7 @@ vi.mock('../TimeslotBatchService', () => ({
     batchAssignBackToBackTimeslots: vi.fn().mockResolvedValue([]),
     batchAssignTimeslots: vi.fn().mockResolvedValue([]),
     insertTimeslot: vi.fn().mockResolvedValue(null),
-    deleteTimeslotSimple: vi.fn().mockResolvedValue(undefined),
+    deleteTimeslotSimple: vi.fn().mockResolvedValue(null),
     batchInsertTimeslots: vi.fn().mockResolvedValue([]),
   },
 }));

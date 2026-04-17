@@ -53,8 +53,7 @@ describe('fetchTeamMembership', () => {
       select: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve({ data: makeMembershipRow(), error: null }) }) }),
     });
     const result = await fetchTeamMembership('user-1');
-    expect(result).not.toBeNull();
-    expect(result!.team_id).toBe('team-1');
+    expect(result).toMatchObject({ team_id: 'team-1' });
   });
 
   it('returns null when no membership', async () => {

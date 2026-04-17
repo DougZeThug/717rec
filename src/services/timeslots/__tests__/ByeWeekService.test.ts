@@ -76,8 +76,7 @@ describe('ByeWeekService.assignByeWeek', () => {
 
     const result = await ByeWeekService.assignByeWeek(new Date('2026-04-17'), 'team-1');
 
-    expect(result.teams).toBeDefined();
-    expect(result.teams!.name).toBe('Eagles');
+    expect(result.teams).toMatchObject({ name: 'Eagles' });
   });
 
   it('sets teams to undefined when null', async () => {

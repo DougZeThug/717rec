@@ -238,7 +238,7 @@ describe('fetchBracketInfo', () => {
       select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: makeBracket(), error: null }) }) }),
     });
     const result = await fetchBracketInfo('b-1');
-    expect(result!.id).toBe('b-1');
+    expect(result).toMatchObject({ id: 'b-1' });
   });
 
   it('throws DatabaseError on error', async () => {
@@ -279,9 +279,7 @@ describe('fetchPlayoffTeams', () => {
   it('returns merged team data on success', async () => {
     const teamDetailRow = { team_id: 't-1', name: 'Eagles', logo_url: null, image_url: null, division_id: 'd-1', divisionname: 'Gold', wins: 5, losses: 1, game_wins: 10, game_losses: 3, players: [], power_score: 80, sos: 0.6, win_percentage: 0.83, game_win_percentage: 0.77, close_match_losses: 0 };
     const seedRow = { id: 't-1', seed: 2 };
-    let callCount = 0;
     mockFrom.mockImplementation((table: string) => {
-      callCount++;
       if (table === 'v_team_details') {
         return { select: () => Promise.resolve({ data: [teamDetailRow], error: null }) };
       }
@@ -315,7 +313,7 @@ describe('fetchBmMatchWithStage', () => {
       select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: row, error: null }) }) }),
     });
     const result = await fetchBmMatchWithStage(1);
-    expect(result!.id).toBe(1);
+    expect(result).toMatchObject({ id: 1 });
   });
 
   it('throws DatabaseError on error', async () => {
@@ -337,7 +335,7 @@ describe('fetchPlayoffMatchWithBracket', () => {
       select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: row, error: null }) }) }),
     });
     const result = await fetchPlayoffMatchWithBracket('m-1');
-    expect(result!.id).toBe('m-1');
+    expect(result).toMatchObject({ id: 'm-1' });
   });
 
   it('throws DatabaseError on error', async () => {
@@ -359,7 +357,7 @@ describe('fetchBmMatchData', () => {
       select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: row, error: null }) }) }),
     });
     const result = await fetchBmMatchData(1);
-    expect(result!.opponent1_id).toBe(1);
+    expect(result).toMatchObject({ opponent1_id: 1 });
   });
 
   it('throws DatabaseError on error', async () => {
@@ -408,7 +406,7 @@ describe('fetchPlayoffMatchTeams', () => {
       select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { team1_id: 't1', team2_id: 't2' }, error: null }) }) }),
     });
     const result = await fetchPlayoffMatchTeams('m-1');
-    expect(result!.team1_id).toBe('t1');
+    expect(result).toMatchObject({ team1_id: 't1' });
   });
 
   it('throws DatabaseError on error', async () => {
@@ -429,7 +427,7 @@ describe('fetchBracketWithDivision', () => {
       select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: makeBracket(), error: null }) }) }),
     });
     const result = await fetchBracketWithDivision('b-1');
-    expect(result!.id).toBe('b-1');
+    expect(result).toMatchObject({ id: 'b-1' });
   });
 
   it('throws DatabaseError on error', async () => {

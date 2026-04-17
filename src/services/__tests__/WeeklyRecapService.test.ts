@@ -25,14 +25,14 @@ const emptyState = { weekNumber: null, upsets: [], hotStreaks: [], hasData: fals
 
 // Builds a minimal chain that always resolves with the given result
 function makeChain(result: { data: unknown; error: unknown }) {
-  const r = Promise.resolve(result);
+  const resolved = Promise.resolve(result);
   const leafChain = Object.assign(Promise.resolve(result), {
     single: () => Promise.resolve(result),
     not: () => Promise.resolve(result),
     limit: () => ({ single: () => Promise.resolve(result) }),
     order: () => leafChain,
   });
-  return Object.assign(r, {
+  return Object.assign(resolved, {
     eq: () => leafChain,
     is: () => leafChain,
     not: () => leafChain,

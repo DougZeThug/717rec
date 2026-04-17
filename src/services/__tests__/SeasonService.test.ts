@@ -70,7 +70,7 @@ describe('SeasonService.fetchActiveSeason', () => {
       select: () => ({ eq: () => Promise.resolve({ data: [makeSeason()], error: null }) }),
     });
     const result = await SeasonService.fetchActiveSeason();
-    expect(result!.id).toBe('s-1');
+    expect(result).toMatchObject({ id: 's-1' });
   });
 
   it('returns null when no active seasons', async () => {
@@ -109,7 +109,7 @@ describe('SeasonService.fetchConfirmationSeason', () => {
   it('returns season when confirmation is open', async () => {
     mockFrom.mockReturnValue(chain({ data: makeSeason({ confirmation_open: true }), error: null }));
     const result = await SeasonService.fetchConfirmationSeason();
-    expect(result!.confirmation_open).toBe(true);
+    expect(result).toMatchObject({ confirmation_open: true });
   });
 
   it('returns null when PGRST116 (no rows)', async () => {
@@ -136,7 +136,7 @@ describe('SeasonService.fetchTeamParticipation', () => {
     const row = { id: 'p-1', season_id: 's-1', team_id: 't-1', status: 'PLAYING' as const, submitted_by: null, submitted_by_name: null, created_at: '2026-01-01', updated_at: '2026-01-01' };
     mockFrom.mockReturnValue(chain({ data: row, error: null }));
     const result = await SeasonService.fetchTeamParticipation('s-1', 't-1');
-    expect(result!.status).toBe('PLAYING');
+    expect(result).toMatchObject({ status: 'PLAYING' });
   });
 
   it('returns null when not found', async () => {
@@ -182,7 +182,7 @@ describe('SeasonService.submitParticipation', () => {
       upsert: () => ({ select: () => ({ single: () => Promise.resolve({ data: { id: 'p-1', status: 'PLAYING' }, error: null }) }) }),
     });
     const result = await SeasonService.submitParticipation({ seasonId: 's-1', teamId: 't-1', status: 'PLAYING' });
-    expect(result!.status).toBe('PLAYING');
+    expect(result).toMatchObject({ status: 'PLAYING' });
   });
 
   it('throws DatabaseError on upsert error', async () => {
@@ -277,7 +277,7 @@ describe('SeasonService.createSeason', () => {
       insert: () => ({ select: () => ({ single: () => Promise.resolve({ data: makeSeason(), error: null }) }) }),
     });
     const result = await SeasonService.createSeason({ name: 'Season 1', start_date: '2026-01-01' });
-    expect(result!.id).toBe('s-1');
+    expect(result).toMatchObject({ id: 's-1' });
   });
 
   it('throws DatabaseError on error', async () => {
@@ -298,7 +298,7 @@ describe('SeasonService.updateSeason', () => {
       update: () => ({ eq: () => ({ select: () => ({ single: () => Promise.resolve({ data: makeSeason({ name: 'Updated' }), error: null }) }) }) }),
     });
     const result = await SeasonService.updateSeason('s-1', { name: 'Updated', start_date: '2026-01-01' });
-    expect(result!.name).toBe('Updated');
+    expect(result).toMatchObject({ name: 'Updated' });
   });
 
   it('throws DatabaseError on error', async () => {
@@ -318,7 +318,7 @@ describe('SeasonService.activateSeason', () => {
     mockRpc.mockResolvedValue({ data: makeSeason(), error: null });
     const result = await SeasonService.activateSeason('s-1');
     expect(mockRpc).toHaveBeenCalledWith('activate_season', { season_id: 's-1' });
-    expect(result!.id).toBe('s-1');
+    expect(result).toMatchObject({ id: 's-1' });
   });
 
   it('throws DatabaseError on error', async () => {

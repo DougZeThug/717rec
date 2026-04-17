@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import type { Team } from '@/types';
+
 import { calculateTeamStats, formatTeamStats, getTeamRank } from '../TeamCalculationService';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -11,7 +13,7 @@ const makeTeam = (overrides: Record<string, unknown> = {}) =>
     power_score: 75.5, sos: 0.6,
     win_percentage: 0, game_win_percentage: 0,
     ...overrides,
-  } as any);
+  } as Team);
 
 // ─── calculateTeamStats ───────────────────────────────────────────────────────
 

@@ -94,13 +94,13 @@ describe('fetchAllTeamsCareerData', () => {
     const result = await fetchAllTeamsCareerData(['t1']);
 
     expect(result.size).toBe(1);
-    const data = result.get('t1')!;
-    expect(data).not.toBeNull();
-    expect(data.currentSeasonId).toBe('s-1');
-    expect(data.teamDivisionWeight).toBe(0.9);
-    expect(data.seasonStats).toHaveLength(1);
-    expect(data.seasonPowerScores).toHaveLength(1);
-    expect(data.seasonPowerScores[0].power_score).toBe(80);
+    const data = result.get('t1');
+    expect(data).toBeDefined();
+    expect(data?.currentSeasonId).toBe('s-1');
+    expect(data?.teamDivisionWeight).toBe(0.9);
+    expect(data?.seasonStats).toHaveLength(1);
+    expect(data?.seasonPowerScores).toHaveLength(1);
+    expect(data?.seasonPowerScores[0].power_score).toBe(80);
   });
 
   it('includes entry for teamId with no stats (defaults applied)', async () => {
@@ -113,9 +113,9 @@ describe('fetchAllTeamsCareerData', () => {
     const result = await fetchAllTeamsCareerData(['t1']);
 
     expect(result.has('t1')).toBe(true);
-    const data = result.get('t1')!;
-    expect(data.seasonStats).toHaveLength(0);
-    expect(data.teamDivisionWeight).toBe(0.85); // default
+    const data = result.get('t1');
+    expect(data?.seasonStats).toHaveLength(0);
+    expect(data?.teamDivisionWeight).toBe(0.85);
   });
 
   it('throws DatabaseError when season_stats query fails', async () => {
@@ -137,10 +137,10 @@ describe('fetchAllTeamsCareerData', () => {
 
     const result = await fetchAllTeamsCareerData(['t1']);
     expect(result.size).toBe(1);
-    const data = result.get('t1')!;
-    expect(data.currentMatches).toBeNull();
-    expect(data.archivedMatches).toBeNull();
-    expect(data.playoffMatches).toBeNull();
+    const data = result.get('t1');
+    expect(data?.currentMatches).toBeNull();
+    expect(data?.archivedMatches).toBeNull();
+    expect(data?.playoffMatches).toBeNull();
   });
 
   it('groups matches for the correct team', async () => {
@@ -153,8 +153,7 @@ describe('fetchAllTeamsCareerData', () => {
     }));
 
     const result = await fetchAllTeamsCareerData(['t1']);
-    const data = result.get('t1')!;
-    expect(data.currentMatches).toHaveLength(1);
+    expect(result.get('t1')?.currentMatches).toHaveLength(1);
   });
 
   it('excludes teams not in teamIds from returned map', async () => {
