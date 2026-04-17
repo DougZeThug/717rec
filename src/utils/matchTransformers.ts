@@ -127,28 +127,30 @@ function extractTeamDetails(team: RawTeamJoin): Match['team1Details'] {
  * Extract team data for playoff matches
  */
 function extractPlayoffTeam(
-  team: any
+  team: RawTeamJoin
 ): { id: string; name: string; logoUrl: string | null } | undefined {
   if (!team) return undefined;
+  const t = Array.isArray(team) ? team[0] : team;
+  if (!t) return undefined;
   return {
-    id: team.id,
-    name: team.name,
-    logoUrl: team.image_url || team.logo_url || null,
+    id: t.id ?? t.team_id ?? '',
+    name: t.name ?? '',
+    logoUrl: t.image_url || t.logo_url || null,
   };
 }
 
 /**
  * Transform a playoff game row to PlayoffGame format
  */
-function transformPlayoffGame(game: any): PlayoffGame {
+function transformPlayoffGame(game: RawPlayoffGameRow): PlayoffGame {
   return {
     id: game.id,
-    matchId: game.match_id,
+    matchId: game.match_id ?? undefined,
     gameNumber: game.game_number,
-    team1Score: game.team1_score,
-    team2Score: game.team2_score,
-    winnerId: game.winner_id,
-    winner: game.winner_id,
+    team1Score: game.team1_score as number,
+    team2Score: game.team2_score as number,
+    winnerId: game.winner_id ?? undefined,
+    winner: game.winner_id ?? undefined,
   };
 }
 
@@ -161,7 +163,10 @@ function transformPlayoffGame(game: any): PlayoffGame {
  * @param options - Transform options
  * @returns Transformed Match object
  */
-export function transformDatabaseMatch(match: any, options: TransformMatchOptions = {}): Match {
+export function transformDatabaseMatch(
+  match: RawMatchRow,
+  options: TransformMatchOptions = {}
+): Match {
   const { normalizeDate = true, context } = options;
 
   // Handle date - use normalizeDateWithTime if enabled, otherwise fallback
@@ -200,7 +205,10 @@ export function transformDatabaseMatch(match: any, options: TransformMatchOption
 /**
  * Transform multiple database match rows to Match array
  */
-export function transformDatabaseMatches(matches: any[], options?: TransformMatchOptions): Match[] {
+export function transformDatabaseMatches(
+  matches: RawMatchRow[],
+  options?: TransformMatchOptions
+): Match[] {
   if (!matches) return [];
   return matches.map((m) => transformDatabaseMatch(m, options));
 }
@@ -211,12 +219,12 @@ export function transformDatabaseMatches(matches: any[], options?: TransformMatc
  * @param match - Raw database row from 'playoff_matches' table
  * @returns Transformed PlayoffMatch object
  */
-export function transformDatabasePlayoffMatch(match: any): PlayoffMatch {
+export function transformDatabasePlayoffMatch(match: RawPlayoffMatchRow): PlayoffMatch {
   const games = match.playoff_games || [];
 
   // Calculate game wins from games array
-  const team1GameWins = games.filter((g: any) => g.winner_id === match.team1_id).length;
-  const team2GameWins = games.filter((g: any) => g.winner_id === match.team2_id).length;
+  const team1GameWins = games.filter((g: RawPlayoffGameRow) => g.winner_id === match.team1_id).length;
+  const team2GameWins = games.filter((g: RawPlayoffGameRow) => g.winner_id === match.team2_id).length;
 
   return {
     id: match.id,
@@ -231,13 +239,13 @@ export function transformDatabasePlayoffMatch(match: any): PlayoffMatch {
     team2Score: match.team2_score ?? null,
     team1GameWins: team1GameWins ?? match.team1_game_wins ?? 0,
     team2GameWins: team2GameWins ?? match.team2_game_wins ?? 0,
-    matchType: match.match_type ?? 'winners',
+    matchType: (match.match_type as PlayoffMatch['matchType']) ?? 'winners',
     bestOf: match.best_of ?? 3,
     team1Seed: match.team1_seed ?? null,
     team2Seed: match.team2_seed ?? null,
     nextWinMatchId: match.next_win_match_id ?? match.next_match_id ?? null,
     nextLoseMatchId: match.next_lose_match_id ?? match.next_loser_match_id ?? null,
-    status: match.status || (match.iscompleted ? 'completed' : 'pending'),
+    status: (match.status as PlayoffMatch['status']) || (match.iscompleted ? 'completed' : 'pending'),
     games: games.map(transformPlayoffGame),
   };
 }
@@ -245,7 +253,7 @@ export function transformDatabasePlayoffMatch(match: any): PlayoffMatch {
 /**
  * Transform multiple database playoff match rows to PlayoffMatch array
  */
-export function transformDatabasePlayoffMatches(matches: any[]): PlayoffMatch[] {
+export function transformDatabasePlayoffMatches(matches: RawPlayoffMatchRow[]): PlayoffMatch[] {
   if (!matches) return [];
   return matches.map(transformDatabasePlayoffMatch);
 }
@@ -253,7 +261,7 @@ export function transformDatabasePlayoffMatches(matches: any[]): PlayoffMatch[] 
 /**
  * Transform a realtime payload to PlayoffMatch format (minimal fields from realtime update)
  */
-export function transformRealtimePlayoffMatch(payload: any): PlayoffMatch {
+export function transformRealtimePlayoffMatch(payload: RawRealtimePlayoffMatch): PlayoffMatch {
   return {
     id: payload.id,
     bracket_id: payload.bracket_id || '',
@@ -267,13 +275,13 @@ export function transformRealtimePlayoffMatch(payload: any): PlayoffMatch {
     team2Score: payload.team2_score ?? null,
     team1GameWins: payload.team1_game_wins ?? 0,
     team2GameWins: payload.team2_game_wins ?? 0,
-    matchType: payload.match_type ?? 'winners',
+    matchType: (payload.match_type as PlayoffMatch['matchType']) ?? 'winners',
     bestOf: payload.best_of ?? 3,
     team1Seed: payload.team1_seed ?? null,
     team2Seed: payload.team2_seed ?? null,
     nextWinMatchId: payload.next_win_match_id ?? null,
     nextLoseMatchId: payload.next_lose_match_id ?? null,
-    status: payload.status || 'pending',
+    status: (payload.status as PlayoffMatch['status']) || 'pending',
     games: [],
   };
 }
