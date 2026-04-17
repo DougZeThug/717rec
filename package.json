@@ -124,5 +124,9 @@
     "typescript-eslint": "8.58.2",
     "vite": "7.3.2",
     "vitest": "4.1.4"
+  },
+  "overrides": {
+    "sucrase": "3.32.0",
+    "glob": "7.1.6"
   }
 }
