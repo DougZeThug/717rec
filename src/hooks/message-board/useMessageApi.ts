@@ -64,7 +64,7 @@ export const useMessageApi = () => {
         description: 'Your message could not be posted. Please try again.',
         variant: 'destructive',
       });
-      throw new Error('Failed to create message');
+      throw new Error('Failed to create message', { cause: e });
     }
   };
 
@@ -97,7 +97,7 @@ export const useMessageApi = () => {
         description: 'Your message could not be updated. Please try again.',
         variant: 'destructive',
       });
-      throw new Error('Failed to update message');
+      throw new Error('Failed to update message', { cause: e });
     }
 
     toast({
@@ -127,7 +127,7 @@ export const useMessageApi = () => {
         description: 'Your message could not be deleted. Please try again.',
         variant: 'destructive',
       });
-      throw new Error('Failed to delete message');
+      throw new Error('Failed to delete message', { cause: e });
     }
 
     toast({

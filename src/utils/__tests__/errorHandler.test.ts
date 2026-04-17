@@ -32,14 +32,28 @@ vi.mock('@/utils/logger', () => ({
   dbLog: vi.fn(),
 }));
 
-const makePostgrestError = (overrides?: Partial<PostgrestError>): PostgrestError => ({
-  message: 'db error',
-  code: '42P01',
-  details: 'details text',
-  hint: 'hint text',
-  name: 'PostgrestError',
-  ...overrides,
-});
+const makePostgrestError = (overrides?: Partial<PostgrestError>): PostgrestError => {
+  const base = {
+    message: 'db error',
+    code: '42P01',
+    details: 'details text',
+    hint: 'hint text',
+    name: 'PostgrestError',
+    ...overrides,
+  };
+  return {
+    ...base,
+    toJSON() {
+      return {
+        name: base.name,
+        message: base.message,
+        details: base.details,
+        hint: base.hint,
+        code: base.code,
+      };
+    },
+  } as PostgrestError;
+};
 
 // ─── handleDatabaseError ─────────────────────────────────────────────────────
 

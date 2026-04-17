@@ -153,11 +153,15 @@ export class BracketUpdateService {
                       `⚠️ Both slots occupied in next match ${nextMatch.id} — skipping to prevent overwrite`
                     );
                   } else {
-                    const updateFields: Record<string, unknown> = {};
+                    const updateFields: {
+                      opponent1_id?: number;
+                      opponent2_id?: number;
+                      status?: number;
+                    } = {};
                     if (targetSlot === 'opponent1') {
-                      updateFields.opponent1_id = winnerId;
+                      updateFields.opponent1_id = Number(winnerId);
                     } else {
-                      updateFields.opponent2_id = winnerId;
+                      updateFields.opponent2_id = Number(winnerId);
                     }
 
                     const otherSlotFilled =

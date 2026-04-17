@@ -30,8 +30,8 @@ export const initSentry = () => {
     // Only send errors in production
     enabled: import.meta.env.PROD,
 
-    // Send default PII data to Sentry (e.g., automatic IP address collection)
-    sendDefaultPii: true,
+    // Disable automatic PII collection (IP, cookies, headers). User IDs set via setUser() are still sent intentionally.
+    sendDefaultPii: false,
 
     // NO integrations on initial load - replay added lazily below
     integrations: [],
@@ -61,6 +61,9 @@ export const initSentry = () => {
 
     // Filter out known non-critical errors
     beforeSend(event, hint) {
+      // Scrub sensitive query-string params from request URLs/query strings
+      scrubSensitiveQueryParams(event);
+
       const error = hint.originalException;
 
       // ── Browser-level noise filters (non-network) ──
@@ -128,6 +131,71 @@ export const initSentry = () => {
         addLazyIntegrations();
       }, 12000);
     }
+  }
+};
+
+/**
+ * Known sensitive query-string params to scrub from URLs in Sentry events.
+ */
+const SENSITIVE_QUERY_PARAMS = [
+  'token',
+  'access_token',
+  'refresh_token',
+  'id_token',
+  'apikey',
+  'api_key',
+  'key',
+  'secret',
+  'password',
+  'email',
+  'code',
+];
+
+const scrubUrl = (url: string): string => {
+  try {
+    // Handle relative URLs by giving them a dummy base
+    const hasProtocol = /^https?:\/\//i.test(url);
+    const u = new URL(url, hasProtocol ? undefined : 'http://_');
+    let mutated = false;
+    for (const param of SENSITIVE_QUERY_PARAMS) {
+      if (u.searchParams.has(param)) {
+        u.searchParams.set(param, '[Filtered]');
+        mutated = true;
+      }
+    }
+    if (!mutated) return url;
+    return hasProtocol ? u.toString() : `${u.pathname}${u.search}${u.hash}`;
+  } catch {
+    return url;
+  }
+};
+
+const scrubQueryString = (qs: string): string => {
+  try {
+    const params = new URLSearchParams(qs.startsWith('?') ? qs.slice(1) : qs);
+    let mutated = false;
+    for (const param of SENSITIVE_QUERY_PARAMS) {
+      if (params.has(param)) {
+        params.set(param, '[Filtered]');
+        mutated = true;
+      }
+    }
+    if (!mutated) return qs;
+    const result = params.toString();
+    return qs.startsWith('?') ? `?${result}` : result;
+  } catch {
+    return qs;
+  }
+};
+
+const scrubSensitiveQueryParams = (event: Sentry.ErrorEvent): void => {
+  const req = event.request;
+  if (!req) return;
+  if (typeof req.url === 'string') {
+    req.url = scrubUrl(req.url);
+  }
+  if (typeof req.query_string === 'string') {
+    req.query_string = scrubQueryString(req.query_string);
   }
 };
 
