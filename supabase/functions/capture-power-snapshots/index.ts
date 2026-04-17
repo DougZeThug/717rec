@@ -1,3 +1,7 @@
+// SECURITY NOTE: This function uses verify_jwt = false in supabase/config.toml
+// because it is invoked by a scheduled cron job, which cannot present a user JWT.
+// Caller identity is enforced via the CRON_WEBHOOK_SECRET bearer token validated
+// below. Do NOT enable JWT verification — it will break the cron schedule.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {

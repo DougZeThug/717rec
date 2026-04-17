@@ -15,6 +15,7 @@ interface SupportRequest {
   email: string;
   subject: string;
   message: string;
+  website?: string; // honeypot - real users never fill this
 }
 
 function escapeHtml(str: string): string {
@@ -35,6 +36,46 @@ const SUBJECT_LABELS: Record<string, string> = {
   other: 'Other',
 };
 
+// ---- In-memory rate limiter (per-worker) ----
+// Limit: 3 submissions per IP per 10 minutes. Single-worker scope is acceptable
+// for a contact form; brief resets on cold start are fine.
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const RATE_LIMIT_MAX = 3;
+const ipHits = new Map<string, number[]>();
+
+function getClientIp(req: Request): string {
+  const fwd = req.headers.get('x-forwarded-for');
+  if (fwd) return fwd.split(',')[0].trim();
+  return req.headers.get('cf-connecting-ip') || req.headers.get('x-real-ip') || 'unknown';
+}
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const cutoff = now - RATE_LIMIT_WINDOW_MS;
+  const hits = (ipHits.get(ip) || []).filter((t) => t > cutoff);
+  if (hits.length >= RATE_LIMIT_MAX) {
+    ipHits.set(ip, hits);
+    return true;
+  }
+  hits.push(now);
+  ipHits.set(ip, hits);
+
+  // Opportunistic cleanup to prevent unbounded growth
+  if (ipHits.size > 5000) {
+    for (const [k, v] of ipHits) {
+      const filtered = v.filter((t) => t > cutoff);
+      if (filtered.length === 0) ipHits.delete(k);
+      else ipHits.set(k, filtered);
+    }
+  }
+  return false;
+}
+
+function countUrls(text: string): number {
+  const matches = text.match(/https?:\/\/|www\./gi);
+  return matches ? matches.length : 0;
+}
+
 serve(async (req: Request) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -42,7 +83,26 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { name, email, subject, message }: SupportRequest = await req.json();
+    const ip = getClientIp(req);
+
+    // Rate limit check
+    if (isRateLimited(ip)) {
+      console.warn('[Support] Rate limit exceeded for IP:', ip);
+      return new Response(
+        JSON.stringify({ error: 'Too many requests. Please try again later.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { name, email, subject, message, website }: SupportRequest = await req.json();
+
+    // Honeypot: bots fill hidden fields. Silently succeed without sending email.
+    if (website && website.trim().length > 0) {
+      console.log('[Support] Honeypot triggered from IP:', ip);
+      return new Response(JSON.stringify({ success: true, message: 'Message sent successfully' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Validate required fields
     if (!name || !email || !subject || !message) {
@@ -55,6 +115,15 @@ serve(async (req: Request) => {
     // Validate input lengths
     if (name.length > 100 || email.length > 255 || subject.length > 100 || message.length > 5000) {
       return new Response(JSON.stringify({ error: 'Input exceeds maximum length' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Spam signature: too many URLs in message
+    if (countUrls(message) > 5) {
+      console.warn('[Support] URL-spam blocked from IP:', ip);
+      return new Response(JSON.stringify({ error: 'Message contains too many links' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
