@@ -382,7 +382,8 @@ export class BracketNormalizationService {
             `🔧 [PROPAGATE] Winner ${winnerId} → Round ${nextRound.number} Match ${nextMatchNumber} ${targetSlot}`
           );
 
-          const updateFields: Record<string, unknown> = {};
+          const updateFields: { opponent1_id?: number; opponent2_id?: number; status?: number } =
+            {};
           if (targetSlot === 'opponent1') {
             updateFields.opponent1_id = winnerId;
           } else {

@@ -164,7 +164,7 @@ export const updateMembershipApproval = async (
   membershipId: string,
   approved: boolean
 ): Promise<void> => {
-  const updateData: Record<string, unknown> = {
+  const updateData: { is_approved: boolean; approved_at?: string; approved_by?: string } = {
     is_approved: approved,
   };
 
