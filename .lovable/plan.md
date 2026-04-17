@@ -1,43 +1,152 @@
 
 
-## Plan: Fix Realtime "CHANNEL_ERROR" + Clean Up Dead Realtime Hooks
+Let me explore the relevant files first.
+<lov-tool-use id="toolu_vrtx_01Ba3xqKhH3WyckoVqJt3cYp" name="code--exec" integration-id="code" data="{\"command\": \"grep -n \\\"any\\\" src/utils/matchTransformers.ts | head -40\", \"user_facing_description\": \"Checking any usage in matchTransformers\"}">
+</lov-tool-use>
 
-### What the trajectory log showed
+<lov-tool-use id="toolu_vrtx_01VPBLWxDXC4GRWyAfuEAwPJ" name="code--exec" integration-id="code" data="{\"command\": \"ls src/types/ && grep -n \\\"matches\\\\|playoff_matches\\\\|playoff_games\\\" src/integrations/supabase/types.ts | head -20\", \"user_facing_description\": \"Locating generated types\"}">
+</lov-tool-use>
 
-1. **Repeated bracket queries** — the brackets-manager library performs many small sequential SELECTs on `stage`/`group`/`round`/`match` (e.g., the same `group_id=298` and `stage_id=105` are fetched 4-5 times during one bracket render). This is how `brackets-manager` works internally — not something we can fix without forking the library. Not a bug, just verbose.
-2. **`Realtime subscription FAILED`** at the end of the log — emitted by `useBracketsManagerRealtime` when its channel hits `CHANNEL_ERROR`.
-3. Two **dead realtime hooks** still in the codebase that subscribe to tables NOT in the realtime publication (so they always silently fail):
-   - `usePlayoffRealtime.ts` — subscribes to `playoff_matches` (not in publication, hook isn't imported anywhere)
-   - `useBracketCompletion.ts` — subscribes to `brackets` (not in publication)
+<lov-tool-use id="toolu_vrtx_01CmpvfLXwBgLQeEjBwsGqBK" name="code--exec" integration-id="code" data="{\"command\": \"grep -n \\\"any\\\" src/utils/matchTransformers.ts\", \"user_facing_description\": \"Listing any usages\"}">
+</lov-tool-use>
 
-### Root cause of the CHANNEL_ERROR
+<lov-tool-use id="toolu_vrtx_01WG4fZ3Bz454iYw1sirRRMf" name="code--exec" integration-id="code" data="{\"command\": \"ls src/types/ 2>&1; echo \\\"---\\\"; ls src/integrations/supabase/\", \"user_facing_description\": \"Locating generated types\"}">
+</lov-tool-use>
+<lov-plan>
 
-I verified:
-- `match` table IS in `supabase_realtime` publication ✓
-- RLS allows public SELECT on `match` ✓
-- Replica identity is FULL ✓
+## Plan: Replace `any` in `matchTransformers.ts` with proper types
 
-So the DB side is correct. The most likely cause is the **channel cleanup race** in `useBracketsManagerRealtime` (lines 85-89): when the effect re-runs (StrictMode in dev, or `stageId` arriving after `bracketId`), it loops through `supabase.getChannels()` and removes any channel whose topic includes `bracket-matches-${bracketId}`. If a previous channel is still in `joining` state, removing it mid-handshake causes the new channel to receive `CHANNEL_ERROR` from the server.
+### Goal
+Remove all 12 `any` annotations in `src/utils/matchTransformers.ts` without changing runtime behavior. These transformers normalize raw Supabase rows (sometimes with joined teams or playoff games) into our app types.
 
-### The fix
+### Approach: input rows are unions, not single Row types
 
-**1. `src/hooks/brackets/useBracketsManagerRealtime.ts`** — Remove the speculative cleanup loop. The hook's own `return () => removeChannel(channel)` already handles cleanup correctly. Add a small retry on `CHANNEL_ERROR` (one retry after 2s) so a transient handshake error self-heals instead of leaving the indicator red.
+The transformers don't receive a clean `Database['public']['Tables']['matches']['Row']` — they receive that row plus optional joined data (teams, playoff_games) that may arrive as object, array, or missing. Forcing the generated `Row` type would lie about what's actually there.
 
-**2. `src/hooks/usePlayoffRealtime.ts`** — Delete the file. It's unused and subscribes to a table not in the publication.
+The safe pattern: define **narrow input interfaces** that describe only the fields each transformer reads, with `unknown`/optional joined fields. Behavior is unchanged because we only narrow types — we don't add validation, throws, or transformations.
 
-**3. `src/hooks/useBracketCompletion.ts`** — Either:
-   - Add `brackets` to the realtime publication via migration so the existing logic works, OR
-   - Replace the realtime listen with a one-shot check inside the existing `useBracketsManagerRealtime` payload handler (when a match update completes the final, call `calculateFinalStandings`).
+### Specific changes
 
-   Recommendation: **add `brackets` to the publication** (1-line migration). This is the smallest, safest change and keeps the hook's intent.
+**1. New input row interfaces** at the top of `matchTransformers.ts`:
+
+```ts
+// Raw team join (object or array, depending on join syntax)
+type RawTeamJoin = {
+  id?: string;
+  team_id?: string;
+  name?: string | null;
+  image_url?: string | null;
+  logo_url?: string | null;
+  divisionname?: string | null;
+  divisionName?: string | null;
+  division_id?: string | null;
+  power_score?: number | null;
+  sos?: number | null;
+} | null | undefined;
+
+interface RawMatchRow {
+  id: string;
+  team1_id?: string | null;
+  team2_id?: string | null;
+  team1_score?: number | null;
+  team2_score?: number | null;
+  date?: string | null;
+  created_at?: string | null;
+  location?: string | null;
+  iscompleted?: boolean | null;
+  winner_id?: string | null;
+  loser_id?: string | null;
+  round_number?: number | null;
+  position?: number | null;
+  bracket_id?: string | null;
+  match_type?: Match['match_type'];
+  next_match_id?: string | null;
+  next_loser_match_id?: string | null;
+  best_of?: number | null;
+  team1_game_wins?: number | null;
+  team2_game_wins?: number | null;
+  team1?: RawTeamJoin | RawTeamJoin[];
+  team2?: RawTeamJoin | RawTeamJoin[];
+}
+
+interface RawPlayoffGameRow {
+  id: string;
+  match_id: string | null;
+  game_number: number;
+  team1_score: number | null;
+  team2_score: number | null;
+  winner_id: string | null;
+}
+
+interface RawPlayoffMatchRow {
+  id: string;
+  bracket_id?: string | null;
+  round?: number | null;
+  position?: number | null;
+  team1_id?: string | null;
+  team2_id?: string | null;
+  winner_id?: string | null;
+  loser_id?: string | null;
+  team1_score?: number | null;
+  team2_score?: number | null;
+  team1_game_wins?: number | null;
+  team2_game_wins?: number | null;
+  match_type?: PlayoffMatch['matchType'];
+  best_of?: number | null;
+  team1_seed?: number | null;
+  team2_seed?: number | null;
+  next_win_match_id?: string | null;
+  next_lose_match_id?: string | null;
+  next_match_id?: string | null;
+  next_loser_match_id?: string | null;
+  status?: string | null;
+  iscompleted?: boolean | null;
+  playoff_games?: RawPlayoffGameRow[];
+  team1?: RawTeamJoin | RawTeamJoin[];
+  team2?: RawTeamJoin | RawTeamJoin[];
+}
+
+interface RawRealtimePlayoffMatch extends Omit<RawPlayoffMatchRow, 'playoff_games'> {}
+```
+
+**2. Function signature swaps (no body changes):**
+
+| Function | Before | After |
+|---|---|---|
+| `extractTeamDetails` | `team: any` | `team: RawTeamJoin \| RawTeamJoin[]` |
+| `extractPlayoffTeam` | `team: any` | `team: RawTeamJoin \| RawTeamJoin[]` |
+| `transformPlayoffGame` | `game: any` | `game: RawPlayoffGameRow` |
+| `transformDatabaseMatch` | `match: any` | `match: RawMatchRow` |
+| `transformDatabaseMatches` | `matches: any[]` | `matches: RawMatchRow[]` |
+| `transformDatabasePlayoffMatch` | `match: any` | `match: RawPlayoffMatchRow` |
+| `.filter((g: any) => …)` | `g: any` | `g: RawPlayoffGameRow` |
+| `transformDatabasePlayoffMatches` | `matches: any[]` | `matches: RawPlayoffMatchRow[]` |
+| `transformRealtimePlayoffMatch` | `payload: any` | `payload: RawRealtimePlayoffMatch` |
+| `transformDatabasePlayoffMatchWithTeams` | `match: any` | `match: RawPlayoffMatchRow` |
+| `transformDatabasePlayoffMatchesWithTeams` | `matches: any[]` | `matches: RawPlayoffMatchRow[]` |
+
+**3. Body-level adjustments (minimal):**
+- `extractTeamDetails`: keep `Array.isArray` branch — types already allow it.
+- Inside `transformDatabaseMatch`, `match.team1`/`match.team2` are passed to `extractTeamDetails` — types align.
+- No `as` casts needed except possibly one narrow cast where the generated `Match['match_type']` enum is assigned — verify in implementation.
+
+### Safety: zero behavior change
+- No runtime code added or removed.
+- No `??`/`||` operators changed.
+- No new validation or throws.
+- All call sites still pass the same shapes (Supabase responses with `.select('… , team1:teams(...)')`).
+
+### Verification steps after implementation
+1. `npx tsc --noEmit` must pass with zero new errors.
+2. `npx eslint src/utils/matchTransformers.ts` must report 0 problems (down from 12).
+3. Smoke test in preview: open Schedule, Standings, Playoffs, and Mass Score Entry pages — all consume these transformers.
+4. Confirm bracket realtime updates still flow (previously fixed).
 
 ### What changes
+- **1 file edited**: `src/utils/matchTransformers.ts` (~50 lines added for interfaces, 12 signature swaps).
+- **0 other source files changed** — interfaces are file-local; exported function signatures still accept the same runtime shapes.
+- **0 migrations**.
 
-- **2 source files edited** (`useBracketsManagerRealtime.ts`, `useBracketCompletion.ts` — no logic change, just relies on publication being added)
-- **1 source file deleted** (`usePlayoffRealtime.ts`)
-- **1 migration** — `ALTER PUBLICATION supabase_realtime ADD TABLE public.brackets;` and set `REPLICA IDENTITY FULL`
-
-### What I'm NOT changing
-
-- The brackets-manager query volume — it's library-internal and would need a caching wrapper around `SupabaseSqlStorage.select()` to fix. Worth a separate dedicated effort if perceived as slow; otherwise leave alone (calls are ~70ms each and run once on bracket open).
+### Rollback
+If anything breaks, revert the single file. No DB or call-site changes to undo.
 
