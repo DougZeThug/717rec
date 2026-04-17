@@ -99,8 +99,7 @@ describe('generatePairingsWithBlossom', () => {
 
     const t1t2Pairing = result.find(
       (p) =>
-        (p.team1.id === 't1' && p.team2.id === 't2') ||
-        (p.team1.id === 't2' && p.team2.id === 't1')
+        (p.team1.id === 't1' && p.team2.id === 't2') || (p.team1.id === 't2' && p.team2.id === 't1')
     );
     if (t1t2Pairing) {
       expect(t1t2Pairing.hasPlayedBefore).toBe(true);

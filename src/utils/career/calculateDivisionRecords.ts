@@ -97,7 +97,9 @@ export const calculateDivisionRecords = ({
       const opponentId = isTeam1 ? match.team2_id : match.team1_id;
       if (!opponentId || !match.season_id) return null;
       const historicalDivision = teamDivisionMap.get(`${opponentId}_${match.season_id}`);
-      const fallbackDivision = isTeam1 ? match.team2?.divisions?.name : match.team1?.divisions?.name;
+      const fallbackDivision = isTeam1
+        ? match.team2?.divisions?.name
+        : match.team1?.divisions?.name;
       return categorizeDivision(historicalDivision || fallbackDivision || null);
     },
     division_records,

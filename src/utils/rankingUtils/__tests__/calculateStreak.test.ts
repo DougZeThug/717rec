@@ -62,7 +62,14 @@ describe('calculateStreak', () => {
 
   it('excludes ties (winnerId undefined) from streak', () => {
     const matches = [
-      { id: 'm1', team1Id: T, team2Id: 'team-2', winnerId: undefined, iscompleted: true, date: '2024-01-03' } as Match,
+      {
+        id: 'm1',
+        team1Id: T,
+        team2Id: 'team-2',
+        winnerId: undefined,
+        iscompleted: true,
+        date: '2024-01-03',
+      } as Match,
       match('m2', T, 'team-3', T, '2024-01-02'),
       match('m3', T, 'team-4', T, '2024-01-01'),
     ];

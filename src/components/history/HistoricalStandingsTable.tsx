@@ -184,7 +184,8 @@ const DesktopTeamRow: React.FC<{
         isWinterTheme
           ? cn(
               'hover:bg-white/5',
-              team.champion && 'bg-yellow-500/10 hover:bg-yellow-500/15 border-l-[3px] border-l-yellow-400',
+              team.champion &&
+                'bg-yellow-500/10 hover:bg-yellow-500/15 border-l-[3px] border-l-yellow-400',
               team.runner_up && 'bg-white/5 hover:bg-white/10 border-l-[3px] border-l-gray-400',
               !team.champion && !team.runner_up && 'border-l-[3px] border-l-transparent'
             )
@@ -192,8 +193,7 @@ const DesktopTeamRow: React.FC<{
               'hover:bg-accent/50',
               team.champion &&
                 'bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 border-l-[3px] border-l-yellow-400',
-              team.runner_up &&
-                'bg-muted/50 hover:bg-muted border-l-[3px] border-l-gray-400',
+              team.runner_up && 'bg-muted/50 hover:bg-muted border-l-[3px] border-l-gray-400',
               !team.champion && !team.runner_up && 'border-l-[3px] border-l-transparent'
             )
       )}
@@ -209,9 +209,7 @@ const DesktopTeamRow: React.FC<{
       <div className="py-2 px-2 flex-1 min-w-[120px]">
         <div className="flex items-center gap-2">
           {team.champion && <Crown className="w-4 h-4 text-yellow-500 flex-shrink-0" />}
-          {team.runner_up && (
-            <Medal className="w-4 h-4 text-gray-500 flex-shrink-0" />
-          )}
+          {team.runner_up && <Medal className="w-4 h-4 text-gray-500 flex-shrink-0" />}
           <TeamLogo
             imageUrl={team.team_image_url || team.team_logo_url}
             teamName={team.team_name}
@@ -219,10 +217,7 @@ const DesktopTeamRow: React.FC<{
             className="flex-shrink-0"
           />
           <span
-            className={cn(
-              'font-medium truncate',
-              isWinterTheme ? 'text-white' : 'text-foreground'
-            )}
+            className={cn('font-medium truncate', isWinterTheme ? 'text-white' : 'text-foreground')}
           >
             {team.team_name}
           </span>

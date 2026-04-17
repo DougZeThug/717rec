@@ -283,7 +283,10 @@ export const fetchSeasonBreakdown = async (teamId: string): Promise<TeamAdvanced
 
   // Log errors from enrichment queries (non-critical — UI degrades gracefully)
   if (allTeamSeasonStatsResult.error) {
-    errorLog('Failed to fetch all team season stats for division lookup:', allTeamSeasonStatsResult.error);
+    errorLog(
+      'Failed to fetch all team season stats for division lookup:',
+      allTeamSeasonStatsResult.error
+    );
   }
   if (currentMatchesResult.error) {
     errorLog('Failed to fetch current matches for season breakdown:', currentMatchesResult.error);

@@ -35,9 +35,8 @@ const makeQueryChain = (result: { data: unknown; error: unknown | null }) => {
   const chain: Record<string, unknown> & PromiseLike<unknown> = {
     then: ((
       onFulfilled?: ((value: unknown) => unknown) | null,
-      onRejected?: ((reason: unknown) => unknown) | null,
-    ) =>
-      Promise.resolve(result).then(onFulfilled, onRejected)) as PromiseLike<unknown>['then'],
+      onRejected?: ((reason: unknown) => unknown) | null
+    ) => Promise.resolve(result).then(onFulfilled, onRejected)) as PromiseLike<unknown>['then'],
     catch: (onRejected?: ((reason: unknown) => unknown) | null) =>
       Promise.resolve(result).catch(onRejected),
   };

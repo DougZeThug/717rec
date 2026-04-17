@@ -62,9 +62,7 @@ async function computeTotalsFromBulkData(
   // career_match_wins/losses already includes playoff matches (via the
   // v_team_season_agg view for historical seasons and explicit addition
   // for the current season), so we must NOT add career_playoff_* again.
-  const totalMatches =
-    matchStats.career_match_wins +
-    matchStats.career_match_losses;
+  const totalMatches = matchStats.career_match_wins + matchStats.career_match_losses;
 
   const regularMatches = [
     ...(Array.isArray(currentMatches) ? currentMatches : []),

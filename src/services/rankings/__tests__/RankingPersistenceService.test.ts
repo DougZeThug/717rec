@@ -34,12 +34,13 @@ const localStorageMock = {
 vi.stubGlobal('localStorage', localStorageMock);
 
 // Import after mocks
+import type { Ranking } from '@/types';
+
 import {
   loadRankingsFromDatabase,
   migrateLocalStorageToDatabase,
   saveRankingsToDatabase,
 } from '../RankingPersistenceService';
-import type { Ranking } from '@/types';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -190,9 +191,7 @@ describe('loadRankingsFromDatabase', () => {
   });
 
   it('throws DatabaseError when the snapshots query fails', async () => {
-    mockFrom.mockReturnValue(
-      loadSnapshotsChain({ data: null, error: pgError('select failed') })
-    );
+    mockFrom.mockReturnValue(loadSnapshotsChain({ data: null, error: pgError('select failed') }));
 
     await expect(loadRankingsFromDatabase('season-1')).rejects.toThrow(DatabaseError);
   });

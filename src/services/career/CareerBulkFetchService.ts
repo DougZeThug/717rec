@@ -100,10 +100,7 @@ function buildTeamDivisionMaps(
 /**
  * Groups season stats rows by team_id, filtering to only tracked teams.
  */
-function groupSeasonStats(
-  data: unknown,
-  teamIdSet: Set<string>
-): Map<string, RawSeasonStatsRow[]> {
+function groupSeasonStats(data: unknown, teamIdSet: Set<string>): Map<string, RawSeasonStatsRow[]> {
   const map = new Map<string, RawSeasonStatsRow[]>();
   for (const row of (data as RawSeasonStatsRow[]) ?? []) {
     if (!row.team_id || !teamIdSet.has(row.team_id)) continue;
@@ -157,7 +154,12 @@ async function loadBracketLookups(allPlayoffMatches: PlayoffMatchData[]): Promis
     }
   }
 
-  bracketCache = { bracketDivisionWeights, bracketDivisionDisplayNames, bracketSeasonMap, timestamp: now };
+  bracketCache = {
+    bracketDivisionWeights,
+    bracketDivisionDisplayNames,
+    bracketSeasonMap,
+    timestamp: now,
+  };
   return { bracketDivisionWeights, bracketDivisionDisplayNames, bracketSeasonMap };
 }
 
@@ -240,9 +242,7 @@ export const fetchAllTeamsCareerData = async (
       )
       .eq('iscompleted', true),
     // All team details archive — unfiltered so opponent division history is available for division records
-    supabase
-      .from('team_details_archive')
-      .select('team_id, season_id, divisionname'),
+    supabase.from('team_details_archive').select('team_id, season_id, divisionname'),
     // All completed playoff matches
     supabase
       .from('playoff_matches')
@@ -269,8 +269,10 @@ export const fetchAllTeamsCareerData = async (
 
   // Log non-critical errors
   if (allMatchesResult.error) warnLog('Error fetching bulk matches:', allMatchesResult.error);
-  if (allArchivedMatchesResult.error) warnLog('Error fetching bulk archived matches:', allArchivedMatchesResult.error);
-  if (allPlayoffMatchesResult.error) warnLog('Error fetching bulk playoff matches:', allPlayoffMatchesResult.error);
+  if (allArchivedMatchesResult.error)
+    warnLog('Error fetching bulk archived matches:', allArchivedMatchesResult.error);
+  if (allPlayoffMatchesResult.error)
+    warnLog('Error fetching bulk playoff matches:', allPlayoffMatchesResult.error);
 
   // 2. Build shared lookup maps (computed once, shared across all teams)
   const { teamDivisionWeights, teamDivisionMap } = buildTeamDivisionMaps(

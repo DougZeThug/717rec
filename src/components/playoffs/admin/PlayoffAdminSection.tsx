@@ -48,7 +48,8 @@ const PlayoffAdminSection: React.FC<PlayoffAdminSectionProps> = ({
   const supportsTeamEdit = bracket.uses_brackets_manager === true;
   const handleEditTeams = supportsTeamEdit ? setEditTeamsMatchId : undefined;
 
-  const editingMatchIdNumber = editingMatch && /^\d+$/.test(editingMatch.id) ? Number(editingMatch.id) : null;
+  const editingMatchIdNumber =
+    editingMatch && /^\d+$/.test(editingMatch.id) ? Number(editingMatch.id) : null;
 
   return (
     <Card className="border rounded-lg overflow-hidden">

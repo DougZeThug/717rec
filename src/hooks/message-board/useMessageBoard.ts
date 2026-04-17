@@ -231,7 +231,10 @@ export const useMessageBoard = (): UseMessageBoardResult => {
           // Not in list — insert at correct position to maintain created_at desc order
           if (matchesFilter) {
             const insertIndex = curr.findIndex(
-              (msg) => msg.created_at && updatedMessage.created_at && msg.created_at < updatedMessage.created_at
+              (msg) =>
+                msg.created_at &&
+                updatedMessage.created_at &&
+                msg.created_at < updatedMessage.created_at
             );
             if (insertIndex === -1) {
               return [...curr, updatedMessage];

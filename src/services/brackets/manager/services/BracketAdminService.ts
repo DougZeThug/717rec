@@ -209,7 +209,12 @@ export class BracketAdminService {
       }
       const opp1Result = matchData.opponent1?.result;
       const opp2Result = matchData.opponent2?.result;
-      if (opp1Result === 'win' || opp1Result === 'loss' || opp2Result === 'win' || opp2Result === 'loss') {
+      if (
+        opp1Result === 'win' ||
+        opp1Result === 'loss' ||
+        opp2Result === 'win' ||
+        opp2Result === 'loss'
+      ) {
         throw new BusinessLogicError(
           'Cannot edit teams on a match that already has a win/loss result recorded.'
         );
@@ -259,7 +264,10 @@ export class BracketAdminService {
       this.storage.clearParticipantCache();
       await this.storage.loadParticipantsForTournament(tournamentId);
 
-      successLog(`Admin edited participants on match ${matchId}`, `opponent1_id=${resolvedOpp1Id}, opponent2_id=${resolvedOpp2Id}`);
+      successLog(
+        `Admin edited participants on match ${matchId}`,
+        `opponent1_id=${resolvedOpp1Id}, opponent2_id=${resolvedOpp2Id}`
+      );
 
       return {
         matchId,
@@ -295,7 +303,9 @@ export class BracketAdminService {
     if (existing) return existing.id;
 
     // Team has no participant row in this tournament — create one.
-    bracketLog(`No participant row for team ${teamId} in tournament ${tournamentId} — creating one`);
+    bracketLog(
+      `No participant row for team ${teamId} in tournament ${tournamentId} — creating one`
+    );
 
     const { data: team, error: teamError } = await supabase
       .from('teams')

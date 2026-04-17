@@ -1,6 +1,8 @@
-import { describe, it, expect } from 'vitest';
-import { validateBracketData, validateMatchConnections } from '../bracketDataValidator';
+import { describe, expect, it } from 'vitest';
+
 import type { PlayoffMatch, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
+
+import { validateBracketData, validateMatchConnections } from '../bracketDataValidator';
 
 const makeTeam = (id: string): PlayoffTeam => ({ id, name: `Team ${id}` });
 
@@ -20,9 +22,7 @@ const makeMatch = (overrides: Partial<PlayoffMatch> = {}): PlayoffMatch => ({
 describe('validateBracketData', () => {
   it('returns isValid:true for a fully valid bracket', () => {
     const teams = [makeTeam('t1'), makeTeam('t2')];
-    const matches = [
-      makeMatch({ id: 'm1', team1Id: 't1', team2Id: 't2', winnerId: 't1' }),
-    ];
+    const matches = [makeMatch({ id: 'm1', team1Id: 't1', team2Id: 't2', winnerId: 't1' })];
     const result = validateBracketData(matches, teams);
     expect(result.isValid).toBe(true);
     expect(result.errors).toHaveLength(0);
@@ -69,7 +69,9 @@ describe('validateBracketData', () => {
     const matches = [makeMatch({ team1Id: 't1', team2Id: 't2', winnerId: 't3' })];
     const result = validateBracketData(matches, teams);
     expect(result.isValid).toBe(false);
-    expect(result.errors.some((e) => e.includes('winnerId must be one of the participating teams'))).toBe(true);
+    expect(
+      result.errors.some((e) => e.includes('winnerId must be one of the participating teams'))
+    ).toBe(true);
   });
 
   it('warns when completed match has no winnerId', () => {
@@ -118,10 +120,7 @@ describe('validateMatchConnections', () => {
   });
 
   it('returns isValid:true when nextWinMatchId points to a real match', () => {
-    const matches = [
-      makeMatch({ id: 'm1', nextWinMatchId: 'm2' }),
-      makeMatch({ id: 'm2' }),
-    ];
+    const matches = [makeMatch({ id: 'm1', nextWinMatchId: 'm2' }), makeMatch({ id: 'm2' })];
     const result = validateMatchConnections(matches);
     expect(result.isValid).toBe(true);
   });

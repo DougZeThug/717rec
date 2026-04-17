@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { HeadToHeadService } from '@/services/HeadToHeadService';
+
 import { getMatchHeadToHead } from '../getMatchHeadToHead';
 
 vi.mock('@/services/HeadToHeadService', () => ({

@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
-import { isValidUuidSafe, isBracketComplete, isBracketInProgress } from '../playoffUtils';
+import { describe, expect, it } from 'vitest';
+
 import type { PlayoffBracket } from '../playoffTypes';
+import { isBracketComplete, isBracketInProgress, isValidUuidSafe } from '../playoffUtils';
 
 const makeBracket = (state: PlayoffBracket['state']): PlayoffBracket => ({
   id: 'b1',

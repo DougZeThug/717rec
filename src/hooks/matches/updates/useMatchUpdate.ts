@@ -187,7 +187,10 @@ export const useMatchUpdate = ({
                 variant: 'destructive',
               });
             } catch (reconcileError) {
-              errorLog('Failed to reconcile team season stats after partial failure:', reconcileError);
+              errorLog(
+                'Failed to reconcile team season stats after partial failure:',
+                reconcileError
+              );
               toast({
                 title: 'Partial Failure',
                 description:

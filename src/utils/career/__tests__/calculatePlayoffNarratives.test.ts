@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  calculatePlayoffConsistency,
-  getPlayoffFinishLabel,
-} from '../calculatePlayoffNarratives';
+import { calculatePlayoffConsistency, getPlayoffFinishLabel } from '../calculatePlayoffNarratives';
 import type { SeasonStats } from '../types';
 
 const season = (playoff_rank: number | null): SeasonStats => ({

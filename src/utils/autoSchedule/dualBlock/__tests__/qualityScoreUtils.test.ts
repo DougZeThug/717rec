@@ -79,9 +79,30 @@ describe('calculateOverallQualityScore', () => {
 
   it('result is always between 0 and 100', () => {
     const cases = [
-      { crossBlockCompatibility: 5, teamsWithBothMatches: 2, teamsWithDuplicateOpponents: 1, totalTeams: 4, averageCompatibilityScore: 6, blockBalanceScore: 50 },
-      { crossBlockCompatibility: 0, teamsWithBothMatches: 0, teamsWithDuplicateOpponents: 0, totalTeams: 2, averageCompatibilityScore: 0, blockBalanceScore: 0 },
-      { crossBlockCompatibility: 10, teamsWithBothMatches: 6, teamsWithDuplicateOpponents: 0, totalTeams: 6, averageCompatibilityScore: 9, blockBalanceScore: 100 },
+      {
+        crossBlockCompatibility: 5,
+        teamsWithBothMatches: 2,
+        teamsWithDuplicateOpponents: 1,
+        totalTeams: 4,
+        averageCompatibilityScore: 6,
+        blockBalanceScore: 50,
+      },
+      {
+        crossBlockCompatibility: 0,
+        teamsWithBothMatches: 0,
+        teamsWithDuplicateOpponents: 0,
+        totalTeams: 2,
+        averageCompatibilityScore: 0,
+        blockBalanceScore: 0,
+      },
+      {
+        crossBlockCompatibility: 10,
+        teamsWithBothMatches: 6,
+        teamsWithDuplicateOpponents: 0,
+        totalTeams: 6,
+        averageCompatibilityScore: 9,
+        blockBalanceScore: 100,
+      },
     ];
     for (const input of cases) {
       const result = calculateOverallQualityScore(input);
