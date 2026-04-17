@@ -1,50 +1,43 @@
 
 
-## Plan: Restrict Public Bucket Listing
+## Plan: Fix Realtime "CHANNEL_ERROR" + Clean Up Dead Realtime Hooks
 
-### The problem
+### What the trajectory log showed
 
-Four public buckets (`teams`, `team-images`, `hero-cards`, `team-logos`) have broad SELECT policies on `storage.objects` like `bucket_id = 'teams'`. This lets any anonymous client call `storage.from('teams').list()` and enumerate every file in every team folder. Public read of known URLs is fine — listing all files is not.
+1. **Repeated bracket queries** — the brackets-manager library performs many small sequential SELECTs on `stage`/`group`/`round`/`match` (e.g., the same `group_id=298` and `stage_id=105` are fetched 4-5 times during one bracket render). This is how `brackets-manager` works internally — not something we can fix without forking the library. Not a bug, just verbose.
+2. **`Realtime subscription FAILED`** at the end of the log — emitted by `useBracketsManagerRealtime` when its channel hits `CHANNEL_ERROR`.
+3. Two **dead realtime hooks** still in the codebase that subscribe to tables NOT in the realtime publication (so they always silently fail):
+   - `usePlayoffRealtime.ts` — subscribes to `playoff_matches` (not in publication, hook isn't imported anywhere)
+   - `useBracketCompletion.ts` — subscribes to `brackets` (not in publication)
+
+### Root cause of the CHANNEL_ERROR
+
+I verified:
+- `match` table IS in `supabase_realtime` publication ✓
+- RLS allows public SELECT on `match` ✓
+- Replica identity is FULL ✓
+
+So the DB side is correct. The most likely cause is the **channel cleanup race** in `useBracketsManagerRealtime` (lines 85-89): when the effect re-runs (StrictMode in dev, or `stageId` arriving after `bracketId`), it loops through `supabase.getChannels()` and removes any channel whose topic includes `bracket-matches-${bracketId}`. If a previous channel is still in `joining` state, removing it mid-handshake causes the new channel to receive `CHANNEL_ERROR` from the server.
 
 ### The fix
 
-**1 migration** — Replace the broad SELECT policies so reads still work via direct public URLs, but `.list()` calls return no rows for anonymous users. The standard pattern is to keep public `getPublicUrl()` working (which doesn't query `storage.objects`) while restricting the SELECT policy so listing requires authentication or admin.
+**1. `src/hooks/brackets/useBracketsManagerRealtime.ts`** — Remove the speculative cleanup loop. The hook's own `return () => removeChannel(channel)` already handles cleanup correctly. Add a small retry on `CHANNEL_ERROR` (one retry after 2s) so a transient handshake error self-heals instead of leaving the indicator red.
 
-For each affected bucket:
+**2. `src/hooks/usePlayoffRealtime.ts`** — Delete the file. It's unused and subscribes to a table not in the publication.
 
-```sql
--- teams
-DROP POLICY "Public Access for team images" ON storage.objects;
-CREATE POLICY "Authenticated can list team images"
-  ON storage.objects FOR SELECT TO authenticated
-  USING (bucket_id = 'teams');
+**3. `src/hooks/useBracketCompletion.ts`** — Either:
+   - Add `brackets` to the realtime publication via migration so the existing logic works, OR
+   - Replace the realtime listen with a one-shot check inside the existing `useBracketsManagerRealtime` payload handler (when a match update completes the final, call `calculateFinalStandings`).
 
--- team-images
-DROP POLICY "Allow public read access on team images" ON storage.objects;
-CREATE POLICY "Authenticated can list team-images"
-  ON storage.objects FOR SELECT TO authenticated
-  USING (bucket_id = 'team-images');
-
--- hero-cards
-DROP POLICY "Anyone can read hero-cards" ON storage.objects;
-CREATE POLICY "Authenticated can list hero-cards"
-  ON storage.objects FOR SELECT TO authenticated
-  USING (bucket_id = 'hero-cards');
-
--- team-logos: no SELECT policy currently exists, add authenticated-only
-CREATE POLICY "Authenticated can list team-logos"
-  ON storage.objects FOR SELECT TO authenticated
-  USING (bucket_id = 'team-logos');
-```
-
-Buckets stay `public = true`, so `getPublicUrl()` URLs continue to render images for anonymous visitors (the CDN serves them without hitting RLS). Only `.list()` and metadata queries now require auth.
-
-### Verification needed first
-
-I need to confirm no anonymous code path calls `.list()` on these buckets. `TeamDeleteService.ts` calls `.list('teams/<id>')` but it runs from the admin panel (authenticated). I'll grep for other `.list(` callers before applying the migration to be safe.
+   Recommendation: **add `brackets` to the publication** (1-line migration). This is the smallest, safest change and keeps the hook's intent.
 
 ### What changes
 
-- **1 migration** — drops 3 broad public SELECT policies, adds 4 authenticated-only SELECT policies
-- **0 source files changed** (assuming verification passes)
+- **2 source files edited** (`useBracketsManagerRealtime.ts`, `useBracketCompletion.ts` — no logic change, just relies on publication being added)
+- **1 source file deleted** (`usePlayoffRealtime.ts`)
+- **1 migration** — `ALTER PUBLICATION supabase_realtime ADD TABLE public.brackets;` and set `REPLICA IDENTITY FULL`
+
+### What I'm NOT changing
+
+- The brackets-manager query volume — it's library-internal and would need a caching wrapper around `SupabaseSqlStorage.select()` to fix. Worth a separate dedicated effort if perceived as slow; otherwise leave alone (calls are ~70ms each and run once on bracket open).
 
