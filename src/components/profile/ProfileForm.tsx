@@ -104,8 +104,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     if (usernameAvailable === false || isCheckingUsername) {
       toast({
         title: 'Invalid first name',
-        description:
-          isCheckingUsername ? 'Please wait for the name check to complete' : 'Please choose another name',
+        description: isCheckingUsername
+          ? 'Please wait for the name check to complete'
+          : 'Please choose another name',
         variant: 'destructive',
       });
       return;

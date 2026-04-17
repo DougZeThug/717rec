@@ -3,9 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { createMockTeam } from '@/utils/test/autoSchedule/testHelpers';
 
 import {
+  type CrossBlockViolation,
   logCrossBlockViolations,
   validateNoCrossBlockMatches,
-  type CrossBlockViolation,
 } from '../validationUtils';
 
 /** Minimal AutoScheduleMatch shape used by validateNoCrossBlockMatches */

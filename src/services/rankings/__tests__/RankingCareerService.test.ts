@@ -57,9 +57,8 @@ const makeChain = (result: { data: unknown; error: unknown | null }) => {
     maybeSingle: () => Promise.resolve(result),
     then: ((
       onFulfilled?: ((value: unknown) => unknown) | null,
-      onRejected?: ((reason: unknown) => unknown) | null,
-    ) =>
-      Promise.resolve(result).then(onFulfilled, onRejected)) as PromiseLike<unknown>['then'],
+      onRejected?: ((reason: unknown) => unknown) | null
+    ) => Promise.resolve(result).then(onFulfilled, onRejected)) as PromiseLike<unknown>['then'],
     catch: (onRejected?: ((reason: unknown) => unknown) | null) =>
       Promise.resolve(result).catch(onRejected),
   };
@@ -161,7 +160,13 @@ describe('fetchHistoricalPowerScores', () => {
       },
       power_score_snapshots: {
         data: [
-          { team_id: 't1', power_score: 70, snapshot_date: '2025-01-01', week_number: 1, season_id: 's1' },
+          {
+            team_id: 't1',
+            power_score: 70,
+            snapshot_date: '2025-01-01',
+            week_number: 1,
+            season_id: 's1',
+          },
         ],
         error: null,
       },

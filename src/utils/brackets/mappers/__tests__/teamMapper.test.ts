@@ -1,12 +1,14 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+
+import type { PlayoffTeam } from '@/utils/playoffs/playoffTypes';
+
 import {
+  createPlaceholderTeam,
   createTeamMap,
   getTeamById,
-  createPlaceholderTeam,
-  validateTeamData,
   normalizeTeamsForDisplay,
+  validateTeamData,
 } from '../teamMapper';
-import type { PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 
 const makeTeam = (id: string, name: string, overrides: Partial<PlayoffTeam> = {}): PlayoffTeam => ({
   id,
@@ -129,7 +131,10 @@ describe('normalizeTeamsForDisplay', () => {
   });
 
   it('preserves existing logo_url and image_url', () => {
-    const team = makeTeam('t1', 'Tigers', { logo_url: 'http://logo.png', image_url: 'http://img.png' });
+    const team = makeTeam('t1', 'Tigers', {
+      logo_url: 'http://logo.png',
+      image_url: 'http://img.png',
+    });
     const result = normalizeTeamsForDisplay([team]);
     expect(result[0].logo_url).toBe('http://logo.png');
     expect(result[0].image_url).toBe('http://img.png');

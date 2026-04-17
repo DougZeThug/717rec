@@ -7,11 +7,13 @@ describe('calculateCareerClutchRate', () => {
   const teamId = 'team-1';
 
   it('returns zeros when no matches are provided', () => {
-    expect(calculateCareerClutchRate({ regularMatches: [], playoffMatches: null, teamId })).toEqual({
-      career_clutch_wins: 0,
-      career_clutch_game3s: 0,
-      career_clutch_win_pct: 0,
-    });
+    expect(calculateCareerClutchRate({ regularMatches: [], playoffMatches: null, teamId })).toEqual(
+      {
+        career_clutch_wins: 0,
+        career_clutch_game3s: 0,
+        career_clutch_win_pct: 0,
+      }
+    );
   });
 
   it('returns zeros when no game-3 matches exist (all 2-0)', () => {

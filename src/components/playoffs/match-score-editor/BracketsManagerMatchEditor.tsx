@@ -81,17 +81,18 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
     matchData.opponent2?.result !== 'win' &&
     matchData.opponent2?.result !== 'loss';
 
-  const editTeamsDialog = matchId !== null ? (
-    <EditMatchParticipantsDialog
-      open={isEditTeamsOpen}
-      onOpenChange={setIsEditTeamsOpen}
-      bracketId={bracketId}
-      matchId={matchId}
-      currentTeam1Id={matchData.opponent1?.team_id ?? null}
-      currentTeam2Id={matchData.opponent2?.team_id ?? null}
-      teams={teams ?? []}
-    />
-  ) : null;
+  const editTeamsDialog =
+    matchId !== null ? (
+      <EditMatchParticipantsDialog
+        open={isEditTeamsOpen}
+        onOpenChange={setIsEditTeamsOpen}
+        bracketId={bracketId}
+        matchId={matchId}
+        currentTeam1Id={matchData.opponent1?.team_id ?? null}
+        currentTeam2Id={matchData.opponent2?.team_id ?? null}
+        teams={teams ?? []}
+      />
+    ) : null;
 
   if (isBye && byeWinner) {
     return (

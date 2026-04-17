@@ -49,7 +49,14 @@ const MatchFormDialog: React.FC<MatchFormDialogProps> = ({
             <Skeleton className="h-10 w-1/2" />
           </div>
         ) : (
-          <MatchFormRHF match={match} teams={teams} onSubmit={onSubmit} onCancel={onClose} isUpdating={isUpdating} isCreating={isCreating} />
+          <MatchFormRHF
+            match={match}
+            teams={teams}
+            onSubmit={onSubmit}
+            onCancel={onClose}
+            isUpdating={isUpdating}
+            isCreating={isCreating}
+          />
         )}
       </ResponsiveDialogContent>
     </ResponsiveDialog>

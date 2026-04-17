@@ -211,7 +211,12 @@ export const useScoreEntryData = () => {
           reversalAppliedButFailed.forEach((matchId) => {
             const existing = updated.get(matchId);
             if (existing) {
-              updated.set(matchId, { ...existing, winnerId: null, loserId: null, iscompleted: false });
+              updated.set(matchId, {
+                ...existing,
+                winnerId: null,
+                loserId: null,
+                iscompleted: false,
+              });
             }
           });
           return updated;

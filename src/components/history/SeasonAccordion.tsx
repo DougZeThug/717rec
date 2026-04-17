@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, Crown, Pencil, RefreshCw, Target, Trophy, TrendingUp } from 'lucide-react';
+import { ChevronDown, Crown, Pencil, RefreshCw, Target, TrendingUp, Trophy } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { TeamLogo } from '@/components/shared/TeamLogo';
@@ -161,9 +161,7 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
       <div
         className={cn(
           'px-3 pt-3 pb-2 md:px-6 md:pt-5 md:pb-4',
-          isWinterTheme
-            ? 'border-b border-white/10'
-            : 'border-b border-border'
+          isWinterTheme ? 'border-b border-white/10' : 'border-b border-border'
         )}
       >
         <div className="flex items-center justify-between gap-2">
@@ -274,7 +272,9 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
                           )}
                         >
                           {champ.match_wins}-{champ.match_losses}
-                          {champ.division_name ? ` · ${getHistoryDivisionDisplayName(champ.division_name)}` : ''}
+                          {champ.division_name
+                            ? ` · ${getHistoryDivisionDisplayName(champ.division_name)}`
+                            : ''}
                         </p>
                       </div>
                     </div>

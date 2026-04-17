@@ -73,8 +73,24 @@ export function tryCrossSlotSwap(
         const newKey2 = pairKey(p2a.id, p2b.id);
 
         if (
-          !canPlay(p1a, p1b, playedSet, tempTonightPairs, maxTierGap, relaxationLevel, rematchAllowedFor) ||
-          !canPlay(p2a, p2b, playedSet, tempTonightPairs, maxTierGap, relaxationLevel, rematchAllowedFor)
+          !canPlay(
+            p1a,
+            p1b,
+            playedSet,
+            tempTonightPairs,
+            maxTierGap,
+            relaxationLevel,
+            rematchAllowedFor
+          ) ||
+          !canPlay(
+            p2a,
+            p2b,
+            playedSet,
+            tempTonightPairs,
+            maxTierGap,
+            relaxationLevel,
+            rematchAllowedFor
+          )
         ) {
           continue;
         }

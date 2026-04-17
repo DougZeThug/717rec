@@ -32,11 +32,7 @@ export const usePlayoffEditMatchParticipants = (bracketId: string | null) => {
         opponent1TeamId,
         opponent2TeamId,
       });
-      return bracketManagerService.editMatchParticipants(
-        matchId,
-        opponent1TeamId,
-        opponent2TeamId
-      );
+      return bracketManagerService.editMatchParticipants(matchId, opponent1TeamId, opponent2TeamId);
     },
     onSuccess: async () => {
       await invalidateMatchRelatedQueries(queryClient);

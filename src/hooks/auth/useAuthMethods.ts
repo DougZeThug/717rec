@@ -166,7 +166,8 @@ export const useAuthMethods = (
         handleAuthError(new Error('An unexpected error occurred'), 'Native Google login');
       }
 
-      const wrappedError = error instanceof Error ? error : new Error('An unexpected error occurred');
+      const wrappedError =
+        error instanceof Error ? error : new Error('An unexpected error occurred');
       return { success: false, error: wrappedError };
     }
   }, [clearAuthError, ensureThemeConsistency, handleAuthError]);

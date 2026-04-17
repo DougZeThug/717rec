@@ -23,10 +23,7 @@ vi.mock('@/utils/logger', () => ({
 import { warnLog } from '@/utils/logger';
 
 // Import after mocks
-import {
-  fetchPowerScoreTrends,
-  fetchWeeklyPowerScoreTrends,
-} from '../RankingTrendsService';
+import { fetchPowerScoreTrends, fetchWeeklyPowerScoreTrends } from '../RankingTrendsService';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -58,9 +55,8 @@ const makeChain = (result: Result) => {
     maybeSingle: () => Promise.resolve(result),
     then: ((
       onFulfilled?: ((value: unknown) => unknown) | null,
-      onRejected?: ((reason: unknown) => unknown) | null,
-    ) =>
-      Promise.resolve(result).then(onFulfilled, onRejected)) as PromiseLike<unknown>['then'],
+      onRejected?: ((reason: unknown) => unknown) | null
+    ) => Promise.resolve(result).then(onFulfilled, onRejected)) as PromiseLike<unknown>['then'],
     catch: (onRejected?: ((reason: unknown) => unknown) | null) =>
       Promise.resolve(result).catch(onRejected),
   };

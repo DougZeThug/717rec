@@ -38,7 +38,9 @@ describe('balanceTeamsBetweenBlocks', () => {
       { id: 's2', power_score: 50 },
     ]);
 
-    const result = balanceTeamsBetweenBlocks(primary, secondary, { unmatchedTeamStrategy: 'lowest-rank' });
+    const result = balanceTeamsBetweenBlocks(primary, secondary, {
+      unmatchedTeamStrategy: 'lowest-rank',
+    });
 
     expect(result.primaryAdjusted).toHaveLength(2);
     expect(result.unmatchedTeamIds).toHaveLength(1);
@@ -57,7 +59,9 @@ describe('balanceTeamsBetweenBlocks', () => {
       { id: 's3', power_score: 75 },
     ]);
 
-    const result = balanceTeamsBetweenBlocks(primary, secondary, { unmatchedTeamStrategy: 'lowest-rank' });
+    const result = balanceTeamsBetweenBlocks(primary, secondary, {
+      unmatchedTeamStrategy: 'lowest-rank',
+    });
 
     expect(result.secondaryAdjusted).toHaveLength(2);
     expect(result.unmatchedTeamIds).toHaveLength(1);
@@ -76,7 +80,9 @@ describe('balanceTeamsBetweenBlocks', () => {
       { id: 's3', power_score: 90 },
     ]);
 
-    const result = balanceTeamsBetweenBlocks(primary, secondary, { unmatchedTeamStrategy: 'lowest-rank' });
+    const result = balanceTeamsBetweenBlocks(primary, secondary, {
+      unmatchedTeamStrategy: 'lowest-rank',
+    });
 
     expect(result.primaryAdjusted).toHaveLength(2);
     expect(result.unmatchedTeamIds).toHaveLength(1);
@@ -95,7 +101,12 @@ describe('balanceTeamsBetweenBlocks', () => {
     ]);
     const callback = vi.fn();
 
-    balanceTeamsBetweenBlocks(primary, secondary, { unmatchedTeamStrategy: 'lowest-rank' }, callback);
+    balanceTeamsBetweenBlocks(
+      primary,
+      secondary,
+      { unmatchedTeamStrategy: 'lowest-rank' },
+      callback
+    );
 
     expect(callback).toHaveBeenCalledOnce();
     const callArg = callback.mock.calls[0][0];
@@ -108,7 +119,10 @@ describe('balanceTeamsBetweenBlocks', () => {
       { id: 'p2', power_score: 50 },
       { id: 'p3', power_score: 80 },
     ]);
-    const secondary = makeTeams([{ id: 's1', power_score: 60 }, { id: 's2', power_score: 40 }]);
+    const secondary = makeTeams([
+      { id: 's1', power_score: 60 },
+      { id: 's2', power_score: 40 },
+    ]);
 
     expect(() => balanceTeamsBetweenBlocks(primary, secondary)).not.toThrow();
   });
@@ -119,7 +133,10 @@ describe('balanceTeamsBetweenBlocks', () => {
       { id: 'p2', power_score: 50 },
       { id: 'p3', power_score: 80 },
     ]);
-    const secondary = makeTeams([{ id: 's1', power_score: 60 }, { id: 's2', power_score: 40 }]);
+    const secondary = makeTeams([
+      { id: 's1', power_score: 60 },
+      { id: 's2', power_score: 40 },
+    ]);
     const originalPrimaryLength = primary.length;
     const originalSecondaryLength = secondary.length;
 
@@ -130,7 +147,10 @@ describe('balanceTeamsBetweenBlocks', () => {
   });
 
   it('handles empty primary with even secondary without crashing', () => {
-    const secondary = makeTeams([{ id: 's1', power_score: 60 }, { id: 's2', power_score: 40 }]);
+    const secondary = makeTeams([
+      { id: 's1', power_score: 60 },
+      { id: 's2', power_score: 40 },
+    ]);
 
     const result = balanceTeamsBetweenBlocks([], secondary);
 
