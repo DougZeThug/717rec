@@ -64,6 +64,8 @@ This project is built with:
 
 Simply open [Lovable](https://lovable.dev/projects/71485458-eece-4db2-a818-0dbc3e38e42e) and click on Share -> Publish.
 
+For governed releases (versioning, tags, deployment checklist, rollback steps), use the runbook in [`docs/RELEASE_AND_DEPLOYMENT.md`](docs/RELEASE_AND_DEPLOYMENT.md).
+
 ## Can I connect a custom domain to my Lovable project?
 
 Yes it is!
