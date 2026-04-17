@@ -1,30 +1,35 @@
 
 
-## Plan: Attach `cause` to re-thrown errors in `useMessageApi.ts`
+## Plan: Resolve `package.json` merge conflict
 
 ### Why
-Lint rule `preserve-caught-error` requires that when you catch an error and throw a new one, you preserve the original via `{ cause: e }`. Three `catch` blocks in `src/hooks/message-board/useMessageApi.ts` (lines 67, 100, 130) throw new `Error(...)` without attaching the caught error.
+`package.json` contains an unresolved Git merge conflict between two branches:
+- `codex/add-license-and-versioning-to-project` added `"license": "MIT"`
+- `main` added the `"overrides"` block (the npm cache fix from earlier)
+
+The `<<<<<<<`, `=======`, `>>>>>>>` markers make the JSON invalid, breaking the build.
 
 ### Fix
-In each of the three `catch (e)` blocks (createMessage, updateMessage, deleteMessage), change:
-```ts
-throw new Error('Failed to create message');
-```
-to:
-```ts
-throw new Error('Failed to create message', { cause: e });
-```
+Keep **both** changes — they don't conflict semantically. Replace the conflict block with:
 
-(Same pattern for the update and delete messages.)
-
-### Why safe
-- `ErrorOptions` with `cause` is already declared in `src/types/error-options.d.ts` — TypeScript will accept it.
-- No runtime behavior change: toast still fires, error still propagates, original stack preserved for debugging.
-- One file, three one-line edits.
+```json
+  },
+  "license": "MIT",
+  "overrides": {
+    "sucrase": "3.32.0",
+    "glob": "7.1.6"
+  }
+}
+```
 
 ### Files touched
-- `src/hooks/message-board/useMessageApi.ts`
+- `package.json` (remove conflict markers, merge both additions)
+
+### Verification
+- File parses as valid JSON
+- `bun install` runs without the earlier 404 errors (overrides preserved)
+- License field present for the versioning branch's intent
 
 ### Rollback
-Revert the file. One-step.
+Revert the file. One step.
 
