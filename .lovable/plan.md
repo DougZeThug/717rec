@@ -1,39 +1,30 @@
 
 
-## Plan: Bump 6 dev dependencies (Dependabot grouped PR)
+## Plan: Regenerate `package-lock.json` to sync with `package.json`
 
 ### Why
-Routine grouped Dependabot update for dev tooling. Five patch bumps and one minor bump — all semver-safe.
+CI runs `npm ci`, which requires `package.json` and `package-lock.json` to be perfectly in sync. The recent dependency bumps updated `package.json` and `bun.lock`, but the repo also has a `package-lock.json` (used by GitHub Actions per `.github/workflows/test.yml` line: `cache: 'npm'` + `npm ci`) that was **not** refreshed. Result: `npm ci` fails with 40+ "lock file does not satisfy" errors.
 
-### Risk per bump
+### Root cause
+- Lovable's sandbox uses `bun` → updates `bun.lock`.
+- GitHub Actions uses `npm ci` → reads `package-lock.json`.
+- The two lockfiles drifted.
 
-**Zero risk (patch bumps)** — bug fixes only:
-- `@types/node` 25.5.2 → 25.6.0 — type definitions only, no runtime impact
-- `eslint-plugin-react-hooks` 7.0.1 → 7.1.1
-- `typescript` 6.0.2 → 6.0.3
-- `typescript-eslint` 8.58.0 → 8.58.2
-- `vitest` 4.1.3 → 4.1.4 (matches the already-bumped `@vitest/coverage-v8` 4.1.4 — keeps versions aligned)
-
-**Low risk (minor bump)**:
-- `eslint-plugin-simple-import-sort` 12.1.1 → 13.0.0 — major version bump per semver, but this plugin's major bumps historically only drop old Node support; no rule changes affecting our `simple-import-sort/imports` config in `eslint.config.js`. Worst case: a few files need `npm run lint --fix` (auto-fixable).
+### Fix
+Run `npm install` locally (in the sandbox, in default mode) to regenerate `package-lock.json` from the current `package.json`. This produces a fresh lockfile that matches every version in `package.json`, including all transitive deps (browserslist, caniuse-lite, @vitest/utils, etc. that the error log flagged as missing/mismatched).
 
 ### What changes
-- **1 file edited**: `package.json` — bump 6 devDependency entries.
-- **1 file regenerated**: `bun.lock` — refreshed on install.
-- **0 source files changed**, **0 config changes**, **0 migrations**.
-
-### Safety guarantees
-- All dev-only — zero impact on production bundle.
-- `vitest` and `@vitest/coverage-v8` stay version-aligned (both 4.1.4).
-- `eslint.config.js` `simple-import-sort` rules unchanged; auto-fix available if needed.
-- `.npmrc` `legacy-peer-deps=true` preserved.
+- **1 file regenerated**: `package-lock.json` (the only file CI cares about).
+- **0 source files changed**, **0 `package.json` changes**, **0 `bun.lock` changes**.
 
 ### Steps
-1. Update the 6 version entries in `package.json`.
-2. Reinstall to refresh `bun.lock`.
-3. Verify: `npx tsc --noEmit` passes, `npm run lint` passes, `npm test` green, `npm run build` succeeds.
-4. If `simple-import-sort` v13 flags any files, run `npm run lint -- --fix`.
+1. Run `npm install --legacy-peer-deps` (respects `.npmrc`) to rebuild `package-lock.json`.
+2. Verify the new lockfile contains the expected versions (vite 7.3.2, @sentry/react 10.49.0, @supabase/supabase-js 2.103.3, etc.).
+3. Confirm `npm ci --legacy-peer-deps` would now succeed (dry validation).
+
+### Long-term note (optional, not part of this fix)
+The repo maintains two lockfiles (`bun.lock` + `package-lock.json`), which guarantees this drift will recur on every Dependabot bump. Worth considering: pick one package manager and delete the other lockfile. Not doing it now — out of scope for this fix.
 
 ### Rollback
-Revert `package.json` + `bun.lock` from git. Single-step revert.
+Revert `package-lock.json` from git history. Single-step.
 
