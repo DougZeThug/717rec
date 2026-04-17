@@ -78,15 +78,10 @@ export function useBracketsManagerRealtime(
 
     bracketLog('Setting up realtime subscription for match table', { bracketId, stageId });
 
-    const channelName = `bracket-matches-${bracketId}-${stageId}`;
-
-    // Remove any existing channel with this base name to prevent
-    // "cannot add postgres_changes callbacks after subscribe()" errors
-    supabase.getChannels().forEach((ch) => {
-      if (ch.topic.includes(`bracket-matches-${bracketId}`)) {
-        supabase.removeChannel(ch);
-      }
-    });
+    // Unique channel name per mount avoids handshake collisions with stale channels
+    const channelName = `bracket-matches-${bracketId}-${stageId}-${Date.now()}`;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+    let hasRetried = false;
 
     const channel = supabase
       .channel(channelName)
@@ -120,13 +115,23 @@ export function useBracketsManagerRealtime(
           bracketLog('Realtime subscription to match table ACTIVE');
           setRealtimeEnabled(true);
         } else if (status === 'CHANNEL_ERROR') {
-          errorLog('Realtime subscription FAILED', { bracketId, stageId });
           setRealtimeEnabled(false);
+          if (!hasRetried) {
+            hasRetried = true;
+            bracketLog('Realtime CHANNEL_ERROR — retrying once in 2s', { bracketId, stageId });
+            retryTimer = setTimeout(() => {
+              supabase.removeChannel(channel);
+              channel.subscribe();
+            }, 2000);
+          } else {
+            errorLog('Realtime subscription FAILED after retry', { bracketId, stageId });
+          }
         }
       });
 
     return () => {
       bracketLog('Cleaning up match table realtime subscription');
+      if (retryTimer) clearTimeout(retryTimer);
       supabase.removeChannel(channel);
       setRealtimeEnabled(false);
     };
