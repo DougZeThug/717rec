@@ -159,9 +159,9 @@ export class BracketUpdateService {
                       status?: number;
                     } = {};
                     if (targetSlot === 'opponent1') {
-                      updateFields.opponent1_id = winnerId;
+                      updateFields.opponent1_id = Number(winnerId);
                     } else {
-                      updateFields.opponent2_id = winnerId;
+                      updateFields.opponent2_id = Number(winnerId);
                     }
 
                     const otherSlotFilled =
