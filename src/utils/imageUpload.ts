@@ -1,8 +1,62 @@
 import imageCompression from 'browser-image-compression';
 import { v4 as uuidv4 } from 'uuid';
 
+import { ADMIN_CONFIG } from '@/config/admin';
 import { supabase } from '@/integrations/supabase/client';
 import { errorLog, warnLog } from '@/utils/logger';
+
+const ALLOWED_IMAGE_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const ALLOWED_IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp']);
+const FILE_SIGNATURES = {
+  jpeg: [0xff, 0xd8, 0xff],
+  png: [0x89, 0x50, 0x4e, 0x47],
+  webp: [0x52, 0x49, 0x46, 0x46], // RIFF....WEBP checked separately
+} as const;
+
+const hasAllowedExtension = (fileName: string): boolean => {
+  const fileExtension = fileName.split('.').pop()?.toLowerCase() ?? '';
+  return ALLOWED_IMAGE_EXTENSIONS.has(fileExtension);
+};
+
+const matchesFileSignature = (bytes: Uint8Array): boolean => {
+  const isJpeg = FILE_SIGNATURES.jpeg.every((byte, index) => bytes[index] === byte);
+  if (isJpeg) return true;
+
+  const isPng = FILE_SIGNATURES.png.every((byte, index) => bytes[index] === byte);
+  if (isPng) return true;
+
+  const hasRiffHeader = FILE_SIGNATURES.webp.every((byte, index) => bytes[index] === byte);
+  const hasWebpType =
+    bytes[8] === 0x57 && // W
+    bytes[9] === 0x45 && // E
+    bytes[10] === 0x42 && // B
+    bytes[11] === 0x50; // P
+
+  return hasRiffHeader && hasWebpType;
+};
+
+const validateImageFile = async (file: File, maxBytes = ADMIN_CONFIG.maxUploadSize): Promise<void> => {
+  if (!hasAllowedExtension(file.name)) {
+    throw new Error('Unsupported file extension. Use JPG, PNG, or WebP.');
+  }
+
+  if (!ALLOWED_IMAGE_MIME_TYPES.has(file.type)) {
+    throw new Error('Unsupported file type. Use JPEG, PNG, or WebP images only.');
+  }
+
+  if (file.size <= 0) {
+    throw new Error('File is empty. Please choose a valid image.');
+  }
+
+  if (file.size > maxBytes) {
+    throw new Error(`File is too large. Maximum size is ${Math.round(maxBytes / 1024 / 1024)}MB.`);
+  }
+
+  const headerBytes = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+  if (!matchesFileSignature(headerBytes)) {
+    throw new Error('File signature does not match an allowed image format.');
+  }
+};
 
 /**
  * Uploads an image for hero cards (flyers) WITHOUT any compression or resizing.
@@ -11,11 +65,18 @@ import { errorLog, warnLog } from '@/utils/logger';
  * @returns URL to the uploaded image
  */
 export const uploadHeroCardImage = async (file: File): Promise<string> => {
-  const fileExt = file.name.split('.').pop();
+  await validateImageFile(file);
+
+  const fileExt = file.name.split('.').pop()?.toLowerCase() ?? 'jpg';
   const fileName = `${uuidv4()}.${fileExt}`;
   const filePath = `flyers/${fileName}`;
 
-  const { error } = await supabase.storage.from('hero-cards').upload(filePath, file);
+  const { error } = await supabase.storage.from('hero-cards').upload(filePath, file, {
+    cacheControl: '3600',
+    upsert: false,
+    contentType: file.type,
+  });
+
   if (error) {
     errorLog('Error uploading hero card image:', error);
     throw error;
@@ -87,6 +148,8 @@ const isValidCompressedImage = async (file: File): Promise<boolean> => {
  * @returns URL to the uploaded image
  */
 export const uploadTeamImage = async (file: File, teamId?: string) => {
+  await validateImageFile(file);
+
   let fileToUpload: File;
   const maxSizeMB = 0.15; // 150KB max size for quality at larger dimensions
   const maxWidthOrHeight = 300; // Max dimensions 300x300px for crisp display on high-DPI screens
@@ -122,7 +185,7 @@ export const uploadTeamImage = async (file: File, teamId?: string) => {
   }
 
   // Generate a unique filename with correct extension based on actual file type
-  const fileExt = fileToUpload.type === 'image/webp' ? 'webp' : file.name.split('.').pop();
+  const fileExt = fileToUpload.type === 'image/webp' ? 'webp' : file.name.split('.').pop()?.toLowerCase() ?? 'jpg';
   const fileName = `${uuidv4()}.${fileExt}`;
 
   // Create path based on team ID if available
@@ -130,7 +193,11 @@ export const uploadTeamImage = async (file: File, teamId?: string) => {
 
   try {
     // Upload the file to Supabase storage
-    const { error } = await supabase.storage.from('teams').upload(filePath, fileToUpload);
+    const { error } = await supabase.storage.from('teams').upload(filePath, fileToUpload, {
+      cacheControl: '3600',
+      upsert: false,
+      contentType: fileToUpload.type,
+    });
 
     if (error) {
       errorLog('Error uploading image:', error);
