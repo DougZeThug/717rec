@@ -43,6 +43,7 @@ const mockSeason: Season = {
   end_date: '2025-06-01',
   is_active: false,
   created_at: '2025-01-01T00:00:00Z',
+  is_archived: false,
 };
 
 // ─── Tests ───────────────────────────────────────────────────────────────────

@@ -70,7 +70,7 @@ const defaultHookState = {
 describe('TeamMembershipApprovalTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockApproveMembership.mockResolvedValue();
+    mockApproveMembership.mockResolvedValue(undefined);
     mockUsePendingMemberships.mockReturnValue({ ...defaultHookState });
   });
 
