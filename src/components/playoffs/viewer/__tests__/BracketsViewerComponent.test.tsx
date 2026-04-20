@@ -77,14 +77,12 @@ import { PlayoffBracket, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const makeBracket = (overrides: Partial<PlayoffBracket> = {}): PlayoffBracket & {
-  bracket_data?: unknown;
+  bracket_data?: import('brackets-memory-db').InMemoryDatabase['data'];
 } => ({
   id: 'bracket-1',
   name: 'Championship',
   format: 'single_elimination',
-  status: 'active',
-  division_id: null,
-  season_id: 'season-1',
+  state: 'in_progress',
   created_at: '2025-01-01T00:00:00Z',
   uses_brackets_manager: false,
   ...overrides,
@@ -94,7 +92,6 @@ const makeTeam = (id: string): PlayoffTeam => ({
   id,
   name: `Team ${id}`,
   seed: 1,
-  logoUrl: null,
 });
 
 const teams = [makeTeam('t1'), makeTeam('t2')];
