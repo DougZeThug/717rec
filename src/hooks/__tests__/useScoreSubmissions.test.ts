@@ -74,7 +74,7 @@ describe('useScoreSubmissions', () => {
 
   it('handleApproveSubmission calls service with approved and removes from list', async () => {
     (fetchScoreSubmissions as ReturnType<typeof vi.fn>).mockResolvedValue(mockSubmissions);
-    (updateScoreSubmissionStatus as ReturnType<typeof vi.fn>).mockResolvedValue();
+    (updateScoreSubmissionStatus as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
     const { result } = renderHook(() => useScoreSubmissions());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
@@ -90,7 +90,7 @@ describe('useScoreSubmissions', () => {
 
   it('handleRejectSubmission calls service with rejected and removes from list', async () => {
     (fetchScoreSubmissions as ReturnType<typeof vi.fn>).mockResolvedValue(mockSubmissions);
-    (updateScoreSubmissionStatus as ReturnType<typeof vi.fn>).mockResolvedValue();
+    (updateScoreSubmissionStatus as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
     const { result } = renderHook(() => useScoreSubmissions());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 

@@ -205,8 +205,8 @@ describe('usePlayoffEditMatch', () => {
   describe('handleSaveMatchScore', () => {
     it('calls applyOptimisticUpdate, updateMatch, and onSuccess on success', async () => {
       (fetchBmMatchWithStage as ReturnType<typeof vi.fn>).mockResolvedValue(mockBmMatch);
-      mockUpdateMatch.mockResolvedValue();
-      const mockRefetch = vi.fn().mockResolvedValue();
+      mockUpdateMatch.mockResolvedValue(undefined);
+      const mockRefetch = vi.fn().mockResolvedValue(undefined);
       const { result } = renderHook(() => usePlayoffEditMatch(), { wrapper: createWrapper() });
 
       await act(async () => {

@@ -8,7 +8,7 @@ import type { Match } from '@/types';
 
 const mockToast = vi.fn();
 const mockHandleSubmitScore = vi.fn();
-const mockFetchTeams = vi.fn().mockResolvedValue();
+const mockFetchTeams = vi.fn().mockResolvedValue(undefined);
 
 vi.mock('@/services/matches/MatchReadService', () => ({
   fetchUncompletedMatches: vi.fn(),
