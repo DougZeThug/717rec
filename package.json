@@ -114,8 +114,8 @@
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "eslint-plugin-simple-import-sort": "13.0.0",
-    "globals": "17.5.0",
     "glob": "7.1.6",
+    "globals": "17.5.0",
     "jsdom": "29.0.2",
     "lovable-tagger": "^1.1.13",
     "postcss": "8.5.10",
@@ -126,11 +126,9 @@
     "vite": "7.3.2",
     "vitest": "4.1.4"
   },
-
   "license": "MIT",
   "overrides": {
     "sucrase": "3.32.0",
     "glob": "7.1.6"
   }
-
 }
