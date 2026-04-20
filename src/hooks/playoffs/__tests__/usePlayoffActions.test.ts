@@ -103,7 +103,7 @@ describe('usePlayoffActions', () => {
       const { result } = renderHook(() => usePlayoffActions(), { wrapper: createWrapper() });
 
       // Start delete without awaiting
-      act(() => { result.current.deleteBracket('bracket-1', 'Spring').catch(() => {}); });
+      act(() => { result.current.deleteBracket('bracket-1', 'Spring').catch(vi.fn()); });
       await waitFor(() => expect(result.current.isDeleting).toBe(true));
 
       // Second call while in progress should be no-op
