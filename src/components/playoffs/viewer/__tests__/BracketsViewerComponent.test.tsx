@@ -10,8 +10,10 @@ let mockIsInitialized = true;
 let mockRenderError: string | null = null;
 const mockGetPlayoffMatchIdRef = { current: vi.fn() };
 
+type MockMatch = { id: number; opponent1: { id: string } | null; opponent2: { id: string } | null };
+
 // Capture the onMatchClicked callback passed by the component
-let capturedOnMatchClicked: ((match: any) => void) | null = null;
+let capturedOnMatchClicked: ((match: MockMatch) => void) | null = null;
 
 vi.mock('@/components/playoffs/viewer/useBracketsViewerScript', () => ({
   useBracketsViewerScript: () => ({
@@ -21,8 +23,8 @@ vi.mock('@/components/playoffs/viewer/useBracketsViewerScript', () => ({
 }));
 
 vi.mock('@/components/playoffs/viewer/useBracketsViewerRenderer', () => ({
-  useBracketsViewerRenderer: (opts: any) => {
-    capturedOnMatchClicked = opts.onMatchClicked;
+  useBracketsViewerRenderer: (opts: { onMatchClicked?: (match: MockMatch) => void; [key: string]: unknown }) => {
+    capturedOnMatchClicked = opts.onMatchClicked ?? null;
     return {
       isInitialized: mockIsInitialized,
       error: mockRenderError,
@@ -32,7 +34,17 @@ vi.mock('@/components/playoffs/viewer/useBracketsViewerRenderer', () => ({
 }));
 
 vi.mock('@/components/playoffs/match-score-editor/BracketsManagerMatchEditor', () => ({
-  BracketsManagerMatchEditor: ({ isOpen, matchId, onClose, onSaved }: any) =>
+  BracketsManagerMatchEditor: ({
+    isOpen,
+    matchId,
+    onClose,
+    onSaved,
+  }: {
+    isOpen: boolean;
+    matchId: number | null;
+    onClose: () => void;
+    onSaved?: () => void;
+  }) =>
     isOpen ? (
       <div data-testid="bm-editor" data-match-id={String(matchId)}>
         <button data-testid="bm-close" onClick={onClose}>
@@ -65,7 +77,7 @@ import { PlayoffBracket, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const makeBracket = (overrides: Partial<PlayoffBracket> = {}): PlayoffBracket & {
-  bracket_data?: any;
+  bracket_data?: unknown;
 } => ({
   id: 'bracket-1',
   name: 'Championship',
@@ -104,7 +116,7 @@ describe('BracketsViewerComponent', () => {
     it('renders error when bracket has no id', () => {
       render(
         <BracketsViewerComponent
-          bracket={{ ...makeBracket(), id: '' } as any}
+          bracket={{ ...makeBracket(), id: '' } as unknown as PlayoffBracket}
           teams={teams}
         />,
       );

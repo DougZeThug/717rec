@@ -8,8 +8,38 @@ const mockHandleSave = vi.fn();
 const mockHandleToggleByeStatus = vi.fn();
 const mockOnClose = vi.fn();
 
+type Opponent = { id: number; team_id: string; name: string; score: number; result: string | null };
+type MockMatchData = { id: number; status: number; opponent1: Opponent | null; opponent2: Opponent | null; games: unknown[] };
+interface MockEditorState {
+  matchData: MockMatchData | null;
+  isLoading: boolean;
+  error: Error | null;
+  opponent1Score: number;
+  setOpponent1Score: ReturnType<typeof vi.fn>;
+  opponent2Score: number;
+  setOpponent2Score: ReturnType<typeof vi.fn>;
+  isSaving: boolean;
+  isTogglingStatus: boolean;
+  byeEligible: null;
+  handleSave: ReturnType<typeof vi.fn>;
+  handleToggleByeStatus: ReturnType<typeof vi.fn>;
+}
+
 // Mutable factory to override per-test
-let mockEditorState: any = {};
+let mockEditorState: MockEditorState = {
+  matchData: null,
+  isLoading: false,
+  error: null,
+  opponent1Score: 0,
+  setOpponent1Score: vi.fn(),
+  opponent2Score: 0,
+  setOpponent2Score: vi.fn(),
+  isSaving: false,
+  isTogglingStatus: false,
+  byeEligible: null,
+  handleSave: mockHandleSave,
+  handleToggleByeStatus: mockHandleToggleByeStatus,
+};
 
 vi.mock('@/components/playoffs/match-score-editor/useMatchEditorState', () => ({
   useMatchEditorState: () => mockEditorState,
@@ -20,14 +50,14 @@ vi.mock('@/hooks/playoffs/usePlayoffTeams', () => ({
 }));
 
 vi.mock('@/components/playoffs/admin/EditMatchParticipantsDialog', () => ({
-  default: ({ open }: any) =>
+  default: ({ open }: { open: boolean }) =>
     open ? <div data-testid="edit-participants-dialog" /> : null,
 }));
 
 vi.mock('@/components/playoffs/match-score-editor/ByeMatchEditor', () => ({
-  ByeMatchEditor: (props: any) => (
+  ByeMatchEditor: ({ onClose }: { onClose: () => void }) => (
     <div data-testid="bye-match-editor">
-      <button data-testid="bye-close" onClick={props.onClose}>
+      <button data-testid="bye-close" onClick={onClose}>
         Close
       </button>
     </div>
@@ -35,14 +65,26 @@ vi.mock('@/components/playoffs/match-score-editor/ByeMatchEditor', () => ({
 }));
 
 vi.mock('@/components/playoffs/match-score-editor/RegularMatchEditor', () => ({
-  RegularMatchEditor: (props: any) => (
-    <div data-testid="regular-match-editor" data-can-edit-teams={String(props.canEditTeams)}>
-      <span data-testid="opp1-name">{props.opponent1Name}</span>
-      <span data-testid="opp2-name">{props.opponent2Name}</span>
-      <button data-testid="edit-teams-btn" onClick={props.onEditTeams}>
+  RegularMatchEditor: ({
+    opponent1Name,
+    opponent2Name,
+    canEditTeams,
+    onEditTeams,
+    onClose,
+  }: {
+    opponent1Name: string;
+    opponent2Name: string;
+    canEditTeams: boolean;
+    onEditTeams: () => void;
+    onClose: () => void;
+  }) => (
+    <div data-testid="regular-match-editor" data-can-edit-teams={String(canEditTeams)}>
+      <span data-testid="opp1-name">{opponent1Name}</span>
+      <span data-testid="opp2-name">{opponent2Name}</span>
+      <button data-testid="edit-teams-btn" onClick={onEditTeams}>
         Edit Teams
       </button>
-      <button data-testid="regular-close" onClick={props.onClose}>
+      <button data-testid="regular-close" onClick={onClose}>
         Close
       </button>
     </div>
@@ -51,11 +93,11 @@ vi.mock('@/components/playoffs/match-score-editor/RegularMatchEditor', () => ({
 
 // Inline Dialog mock so portals render in the test tree
 vi.mock('@/components/ui/dialog', () => ({
-  Dialog: ({ children, open }: any) =>
+  Dialog: ({ children, open }: { children: React.ReactNode; open: boolean }) =>
     open ? <div role="dialog">{children}</div> : null,
-  DialogContent: ({ children }: any) => <div>{children}</div>,
-  DialogHeader: ({ children }: any) => <div>{children}</div>,
-  DialogTitle: ({ children }: any) => <h2>{children}</h2>,
+  DialogContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DialogHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DialogTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
 }));
 
 // ─── Import after mocks ───────────────────────────────────────────────────────
@@ -79,7 +121,7 @@ const defaultEditorState = {
   handleToggleByeStatus: mockHandleToggleByeStatus,
 };
 
-const makeMatchData = (overrides: any = {}) => ({
+const makeMatchData = (overrides: Partial<MockMatchData> = {}): MockMatchData => ({
   id: 5,
   status: 1,
   opponent1: { id: 1, team_id: 't1', name: 'Team One', score: 0, result: null },

@@ -12,7 +12,19 @@ vi.mock('@/hooks/useMobile', () => ({
 }));
 
 vi.mock('@/components/stats/RankingsDesktopView', () => ({
-  default: ({ sortOptions, onSortChange, rankings, expandedTeam, toggleExpand }: any) => (
+  default: ({
+    sortOptions,
+    onSortChange,
+    rankings,
+    expandedTeam,
+    toggleExpand,
+  }: {
+    sortOptions: { field: string; direction: string };
+    onSortChange: (field: string) => void;
+    rankings: { teamId: string; divisionRank?: number }[];
+    expandedTeam: string | null;
+    toggleExpand: (id: string) => void;
+  }) => (
     <div
       data-testid="desktop-view"
       data-sort-field={sortOptions.field}
@@ -25,7 +37,7 @@ vi.mock('@/components/stats/RankingsDesktopView', () => ({
       <button data-testid="sort-wins" onClick={() => onSortChange('wins')}>
         Sort wins
       </button>
-      {rankings.map((r: any) => (
+      {rankings.map((r) => (
         <div key={r.teamId} data-testid={`team-row-${r.teamId}`}>
           <span data-testid={`div-rank-${r.teamId}`}>{r.divisionRank ?? ''}</span>
           <button data-testid={`expand-${r.teamId}`} onClick={() => toggleExpand(r.teamId)}>
@@ -38,7 +50,15 @@ vi.mock('@/components/stats/RankingsDesktopView', () => ({
 }));
 
 vi.mock('@/components/stats/RankingsMobileView', () => ({
-  default: ({ sortOptions, onSortChange, rankings }: any) => (
+  default: ({
+    sortOptions,
+    onSortChange,
+    rankings,
+  }: {
+    sortOptions: { field: string; direction: string };
+    onSortChange: (field: string) => void;
+    rankings: { teamId: string }[];
+  }) => (
     <div
       data-testid="mobile-view"
       data-sort-field={sortOptions.field}
@@ -47,7 +67,7 @@ vi.mock('@/components/stats/RankingsMobileView', () => ({
       <button data-testid="mobile-sort-wins" onClick={() => onSortChange('wins')}>
         Sort wins
       </button>
-      {rankings.map((r: any) => (
+      {rankings.map((r) => (
         <div key={r.teamId} data-testid={`mobile-team-${r.teamId}`} />
       ))}
     </div>

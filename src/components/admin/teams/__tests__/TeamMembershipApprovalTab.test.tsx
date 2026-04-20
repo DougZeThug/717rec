@@ -8,12 +8,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockApproveMembership = vi.fn();
 const mockToast = vi.fn();
 
+// Hoisted so it is available inside the vi.mock factory below
+const mockUsePendingMemberships = vi.hoisted(() => vi.fn());
+
 vi.mock('@/hooks/usePendingMemberships', () => ({
   usePendingMemberships: () => mockUsePendingMemberships(),
 }));
-
-// Mutable factory so each test can override the return value
-let mockUsePendingMemberships = vi.fn();
 
 vi.mock('@/components/shared/TeamLogo', () => ({
   TeamLogo: ({ teamName }: { teamName: string }) => (
@@ -70,7 +70,7 @@ const defaultHookState = {
 describe('TeamMembershipApprovalTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockApproveMembership.mockResolvedValue(undefined);
+    mockApproveMembership.mockResolvedValue();
     mockUsePendingMemberships.mockReturnValue({ ...defaultHookState });
   });
 

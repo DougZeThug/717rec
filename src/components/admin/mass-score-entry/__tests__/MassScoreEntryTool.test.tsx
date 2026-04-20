@@ -14,7 +14,26 @@ const mockHandleScoreChange = vi.fn();
 const mockHandleGameWinsChange = vi.fn();
 const mockHandleMarkCompleted = vi.fn();
 
-let mockScoreEntryData: any = {};
+// Defined before mockScoreEntryData so typeof can be used for the variable type
+const _defaultScoreEntryState = {
+  matches: [] as { id: string; isEdited: boolean; isValid: boolean }[],
+  loading: false,
+  submitting: false,
+  failedMatches: [] as string[],
+  errorMessages: {} as Record<string, string>,
+  brackets: [] as { id: string; title: string }[],
+  filters: { date: undefined as Date | undefined, bracketId: undefined as string | undefined },
+  handleScoreChange: mockHandleScoreChange,
+  handleGameWinsChange: mockHandleGameWinsChange,
+  handleMarkCompleted: mockHandleMarkCompleted,
+  handleSubmitAll: mockHandleSubmitAll,
+  clearErrors: mockClearErrors,
+  setFilterDate: mockSetFilterDate,
+  setBracketFilter: mockSetBracketFilter,
+  clearFilters: mockClearFilters,
+};
+
+let mockScoreEntryData: typeof _defaultScoreEntryState = { ..._defaultScoreEntryState };
 
 vi.mock(
   '@/components/admin/mass-score-entry/hooks/useScoreEntryData',
@@ -34,7 +53,7 @@ vi.mock('@/components/admin/AdminSectionWrapper', () => ({
 }));
 
 vi.mock('@/components/admin/mass-score-entry/components/ScoreEntryToolbar', () => ({
-  default: ({ onClearFilters }: any) => (
+  default: ({ onClearFilters }: { onClearFilters: () => void }) => (
     <div data-testid="score-entry-toolbar">
       <button data-testid="toolbar-clear" onClick={onClearFilters}>
         Clear
@@ -61,38 +80,18 @@ vi.mock('framer-motion', () => ({
 
 import MassScoreEntryTool from '../MassScoreEntryTool';
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-const defaultState = {
-  matches: [],
-  loading: false,
-  submitting: false,
-  failedMatches: [],
-  errorMessages: {},
-  brackets: [],
-  filters: { date: undefined, bracketId: undefined },
-  handleScoreChange: mockHandleScoreChange,
-  handleGameWinsChange: mockHandleGameWinsChange,
-  handleMarkCompleted: mockHandleMarkCompleted,
-  handleSubmitAll: mockHandleSubmitAll,
-  clearErrors: mockClearErrors,
-  setFilterDate: mockSetFilterDate,
-  setBracketFilter: mockSetBracketFilter,
-  clearFilters: mockClearFilters,
-};
-
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
 describe('MassScoreEntryTool', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockScoreEntryData = { ...defaultState };
+    mockScoreEntryData = { ..._defaultScoreEntryState };
   });
 
   describe('submit button state', () => {
     it('disables submit when there are no valid edited matches', () => {
       mockScoreEntryData = {
-        ...defaultState,
+        ..._defaultScoreEntryState,
         matches: [{ id: 'm1', isEdited: false, isValid: true }],
       };
 
@@ -105,7 +104,7 @@ describe('MassScoreEntryTool', () => {
 
     it('disables submit when edited match is invalid', () => {
       mockScoreEntryData = {
-        ...defaultState,
+        ..._defaultScoreEntryState,
         matches: [{ id: 'm1', isEdited: true, isValid: false }],
       };
 
@@ -118,7 +117,7 @@ describe('MassScoreEntryTool', () => {
 
     it('enables submit and shows count when there are valid edited matches', () => {
       mockScoreEntryData = {
-        ...defaultState,
+        ..._defaultScoreEntryState,
         matches: [
           { id: 'm1', isEdited: true, isValid: true },
           { id: 'm2', isEdited: true, isValid: true },
@@ -134,7 +133,7 @@ describe('MassScoreEntryTool', () => {
 
     it('disables submit when submitting is true', () => {
       mockScoreEntryData = {
-        ...defaultState,
+        ..._defaultScoreEntryState,
         submitting: true,
         matches: [{ id: 'm1', isEdited: true, isValid: true }],
       };
@@ -147,7 +146,7 @@ describe('MassScoreEntryTool', () => {
 
     it('calls handleSubmitAll when submit button is clicked', async () => {
       mockScoreEntryData = {
-        ...defaultState,
+        ..._defaultScoreEntryState,
         matches: [{ id: 'm1', isEdited: true, isValid: true }],
       };
 
@@ -163,7 +162,7 @@ describe('MassScoreEntryTool', () => {
     it('shows date filter tag when date filter is active', () => {
       const filterDate = new Date('2025-01-04');
       mockScoreEntryData = {
-        ...defaultState,
+        ..._defaultScoreEntryState,
         filters: { date: filterDate, bracketId: undefined },
       };
 
@@ -175,7 +174,7 @@ describe('MassScoreEntryTool', () => {
 
     it('shows bracket filter tag when a bracket is selected', () => {
       mockScoreEntryData = {
-        ...defaultState,
+        ..._defaultScoreEntryState,
         brackets: [{ id: 'bracket-1', title: 'Spring Playoffs' }],
         filters: { date: undefined, bracketId: 'bracket-1' },
       };
@@ -201,7 +200,7 @@ describe('MassScoreEntryTool', () => {
   describe('error alert', () => {
     it('renders ErrorAlert when there are failed matches', () => {
       mockScoreEntryData = {
-        ...defaultState,
+        ..._defaultScoreEntryState,
         failedMatches: ['m1', 'm2'],
       };
 

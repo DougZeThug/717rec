@@ -61,7 +61,7 @@ describe('MatchesTable', () => {
   });
 
   it('renders the skeleton when loading is true', () => {
-    render(<MatchesTable {...tableProps} matches={[]} loading={true} />);
+    render(<MatchesTable {...tableProps} matches={[]} loading />);
 
     expect(screen.getByTestId('matches-table-skeleton')).toBeInTheDocument();
     expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();

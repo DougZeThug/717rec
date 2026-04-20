@@ -12,7 +12,15 @@ vi.mock('@/hooks/useMobile', () => ({
 }));
 
 vi.mock('@/components/stats/career/CareerRankingsDesktopView', () => ({
-  default: ({ sortOptions, onSortChange, rankings }: any) => (
+  default: ({
+    sortOptions,
+    onSortChange,
+    rankings,
+  }: {
+    sortOptions: { field: string; direction: string };
+    onSortChange: (field: string) => void;
+    rankings: { teamId: string; careerPowerScore: number }[];
+  }) => (
     <div
       data-testid="career-desktop-view"
       data-sort-field={sortOptions.field}
@@ -24,7 +32,7 @@ vi.mock('@/components/stats/career/CareerRankingsDesktopView', () => ({
       <button data-testid="sort-careerMatchWins" onClick={() => onSortChange('careerMatchWins')}>
         Sort careerMatchWins
       </button>
-      {rankings.map((r: any) => (
+      {rankings.map((r) => (
         <div
           key={r.teamId}
           data-testid={`career-row-${r.teamId}`}
@@ -36,7 +44,13 @@ vi.mock('@/components/stats/career/CareerRankingsDesktopView', () => ({
 }));
 
 vi.mock('@/components/stats/career/CareerRankingsMobileView', () => ({
-  default: ({ sortOptions, onSortChange }: any) => (
+  default: ({
+    sortOptions,
+    onSortChange,
+  }: {
+    sortOptions: { field: string; direction: string };
+    onSortChange: (field: string) => void;
+  }) => (
     <div
       data-testid="career-mobile-view"
       data-sort-field={sortOptions.field}

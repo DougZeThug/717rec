@@ -297,7 +297,7 @@ describe('useBatchMatchForm', () => {
       });
     });
 
-    const submitPromise = act(async () => {
+    const submitPromise = act(() => {
       result.current.handleSubmit();
     });
 

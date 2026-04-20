@@ -7,14 +7,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockSubmitScore = vi.fn();
 
+// Hoisted so it is available inside the vi.mock factory below
+const mockIsSubmitting = vi.hoisted(() => vi.fn(() => false));
+
 vi.mock('@/hooks/usePendingScoresMatches', () => ({
   usePendingScoresMatches: () => ({
     submitScore: mockSubmitScore,
     isSubmitting: mockIsSubmitting(),
   }),
 }));
-
-let mockIsSubmitting = vi.fn(() => false);
 
 vi.mock('../utils', () => ({
   formatDate: (_d: string) => '01/04/2025',
@@ -80,7 +81,7 @@ const renderModal = (props: Partial<{ open: boolean; onClose: () => void }> = {}
 describe('ScoreSubmissionModal', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockIsSubmitting = vi.fn(() => false);
+    mockIsSubmitting.mockImplementation(() => false);
     mockSubmitScore.mockResolvedValue(true);
   });
 
@@ -199,10 +200,10 @@ describe('ScoreSubmissionModal', () => {
   });
 
   it('disables Submit and Cancel when isSubmitting is true', () => {
-    mockIsSubmitting = vi.fn(() => true);
+    mockIsSubmitting.mockImplementation(() => true);
 
     render(
-      <ScoreSubmissionModal match={mockMatch} open={true} onClose={vi.fn()} />,
+      <ScoreSubmissionModal match={mockMatch} open onClose={vi.fn()} />,
     );
 
     // Button text changes to "Submitting..." when isSubmitting is true
