@@ -32,7 +32,8 @@ describe('useTeamDetails', () => {
   });
 
   it('is disabled when teamId is undefined', () => {
-    const { result } = renderHook(() => useTeamDetails(undefined), {
+    const teamId: string | undefined = undefined;
+    const { result } = renderHook(() => useTeamDetails(teamId), {
       wrapper: createWrapper(),
     });
     expect(result.current.isLoading).toBe(false);
@@ -41,7 +42,7 @@ describe('useTeamDetails', () => {
   });
 
   it('shows loading state while fetching', () => {
-    (fetchTeamDetails as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(() => {}));
+    (fetchTeamDetails as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(vi.fn()));
     const { result } = renderHook(() => useTeamDetails('team-1'), {
       wrapper: createWrapper(),
     });

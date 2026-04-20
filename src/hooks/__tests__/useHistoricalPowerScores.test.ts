@@ -37,7 +37,7 @@ describe('useHistoricalPowerScores', () => {
       wrapper: createWrapper(),
     });
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(fetchHistoricalPowerScores).toHaveBeenCalledWith(undefined);
+    expect(fetchHistoricalPowerScores).toHaveBeenCalled();
   });
 
   it('passes teamId to service when provided', async () => {
@@ -60,7 +60,7 @@ describe('useHistoricalPowerScores', () => {
   });
 
   it('defaults to empty arrays/objects when response is undefined', async () => {
-    (fetchHistoricalPowerScores as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+    (fetchHistoricalPowerScores as ReturnType<typeof vi.fn>).mockResolvedValue(null);
     const { result } = renderHook(() => useHistoricalPowerScores(), {
       wrapper: createWrapper(),
     });

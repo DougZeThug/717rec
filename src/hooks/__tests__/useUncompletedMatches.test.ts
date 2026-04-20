@@ -4,10 +4,11 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useUncompletedMatches } from '../useUncompletedMatches';
+import type { Match } from '@/types';
 
 const mockToast = vi.fn();
 const mockHandleSubmitScore = vi.fn();
-const mockFetchTeams = vi.fn().mockResolvedValue(undefined);
+const mockFetchTeams = vi.fn().mockResolvedValue();
 
 vi.mock('@/services/matches/MatchReadService', () => ({
   fetchUncompletedMatches: vi.fn(),
@@ -60,7 +61,7 @@ const createWrapper = () => {
 const mockMatches = [
   { id: 'match-1', team1Id: 'team-a', team2Id: 'team-b', iscompleted: false },
   { id: 'match-2', team1Id: 'team-c', team2Id: 'team-d', iscompleted: false },
-] as any[];
+] as unknown as Match[];
 
 describe('useUncompletedMatches', () => {
   beforeEach(() => {
@@ -68,7 +69,7 @@ describe('useUncompletedMatches', () => {
   });
 
   it('shows loading state while fetching', () => {
-    (fetchUncompletedMatches as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(() => {}));
+    (fetchUncompletedMatches as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(vi.fn()));
     const { result } = renderHook(() => useUncompletedMatches(), {
       wrapper: createWrapper(),
     });

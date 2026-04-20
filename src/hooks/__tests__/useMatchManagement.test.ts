@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useMatchManagement } from '../useMatchManagement';
+import type { Match } from '@/types';
 
 const mockHandleCreateMatch = vi.fn();
 const mockSetIsFormOpen = vi.fn();
@@ -41,7 +42,7 @@ const makeMatch = (id: string) =>
     team1Id: 'team-a',
     team2Id: 'team-b',
     iscompleted: false,
-  }) as any;
+  }) as unknown as Match;
 
 describe('useMatchManagement', () => {
   beforeEach(() => {
@@ -102,7 +103,7 @@ describe('useMatchManagement', () => {
 
   it('exposes handleCreateMatch from sub-hook', async () => {
     const { result } = renderHook(() => useMatchManagement([]));
-    await act(async () => { await result.current.handleCreateMatch({} as any); });
+    await act(async () => { await result.current.handleCreateMatch({} as unknown as Omit<Match, 'id'>, []); });
     expect(mockHandleCreateMatch).toHaveBeenCalled();
   });
 });

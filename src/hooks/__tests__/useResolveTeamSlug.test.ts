@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -34,7 +34,8 @@ describe('useResolveTeamSlug', () => {
   });
 
   it('returns undefined teamId and no loading for undefined param', () => {
-    const { result } = renderHook(() => useResolveTeamSlug(undefined), {
+    const teamParam: string | undefined = undefined;
+    const { result } = renderHook(() => useResolveTeamSlug(teamParam), {
       wrapper: createWrapper(),
     });
     expect(result.current.teamId).toBeUndefined();

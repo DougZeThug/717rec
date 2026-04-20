@@ -2,6 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useMyNextMatch } from '../useMyNextMatch';
+import type { Match } from '@/types';
 
 vi.mock('@/contexts/AuthContext', () => ({
   useAuth: vi.fn(),
@@ -37,7 +38,7 @@ const makeMatch = (id: string, date: string, completed = false) =>
     round_number: 1,
     team1Details: null,
     team2Details: { name: 'Beta', image_url: null, logo_url: null },
-  }) as any;
+  }) as unknown as Match;
 
 describe('useMyNextMatch', () => {
   beforeEach(() => {

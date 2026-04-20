@@ -30,7 +30,7 @@ describe('useSeedValidation', () => {
   });
 
   it('is disabled when divisionId is undefined', () => {
-    const { result } = renderHook(() => useSeedValidation(undefined), {
+    const { result } = renderHook(() => useSeedValidation(), {
       wrapper: createWrapper(),
     });
     expect(result.current.isLoading).toBe(false);
@@ -39,7 +39,7 @@ describe('useSeedValidation', () => {
   });
 
   it('shows loading state while fetching', () => {
-    (validateSeeds as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(() => {}));
+    (validateSeeds as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(vi.fn()));
     const { result } = renderHook(() => useSeedValidation('div-1'), {
       wrapper: createWrapper(),
     });

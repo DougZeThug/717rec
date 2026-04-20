@@ -2,6 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useLeagueInsights } from '../useLeagueInsights';
+import type { Ranking } from '@/types';
 
 vi.mock('@/hooks/useTeamRankings', () => ({
   useTeamRankings: vi.fn(),
@@ -26,7 +27,7 @@ const makeRanking = (id: string, power: number, wins = 3, losses = 1, div = 'Div
     streak: 'W2',
     divisionName: div,
     logoUrl: null,
-  }) as any;
+  }) as unknown as Ranking;
 
 describe('useLeagueInsights', () => {
   beforeEach(() => {
@@ -69,8 +70,8 @@ describe('useLeagueInsights', () => {
     });
     const { result } = renderHook(() => useLeagueInsights());
     expect(result.current.overview).not.toBeNull();
-    expect(result.current.overview!.totalTeams).toBe(3);
-    expect(result.current.overview!.totalMatches).toBeGreaterThan(0);
+    expect(result.current.overview?.totalTeams).toBe(3);
+    expect(result.current.overview?.totalMatches).toBeGreaterThan(0);
   });
 
   it('computes divisionStrength grouped by division', () => {
@@ -95,7 +96,7 @@ describe('useLeagueInsights', () => {
     });
     const { result } = renderHook(() => useLeagueInsights());
     expect(result.current.parity).not.toBeNull();
-    expect(result.current.parity!.topBottomGap).toBe(50);
+    expect(result.current.parity?.topBottomGap).toBe(50);
   });
 
   it('includes riser in topPerformers when trend data present', () => {

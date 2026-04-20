@@ -4,39 +4,22 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Hoist mutable state used inside vi.mock factories
-const {
-  mockToast,
-  mockRemoveChannel,
-  mockChannel,
-  mockFrom,
-  mockFromSelect,
-  mockFromEq,
-  mockFromLimit,
-  mockFromSingle,
-} = vi.hoisted(() => {
+const { mockToast, mockRemoveChannel, mockChannel, mockFrom, mockFromSingle } = vi.hoisted(() => {
   const mockToast = vi.fn();
   const mockRemoveChannel = vi.fn();
   const mockFromSingle = vi.fn().mockResolvedValue({ data: { id: 42 }, error: null });
-  const mockFromLimit = vi.fn(() => ({ single: mockFromSingle }));
-  const mockFromEq = vi.fn(() => ({ limit: mockFromLimit }));
-  const mockFromSelect = vi.fn(() => ({ eq: mockFromEq }));
-  const mockFrom = vi.fn(() => ({ select: mockFromSelect }));
-
-  const mockChannel = {
-    on: vi.fn(),
-    subscribe: vi.fn(),
-  };
-
-  return {
-    mockToast,
-    mockRemoveChannel,
-    mockChannel,
-    mockFrom,
-    mockFromSelect,
-    mockFromEq,
-    mockFromLimit,
-    mockFromSingle,
-  };
+  // Build the from() chain inline — intermediate fns not needed outside this scope
+  const mockFrom = vi.fn(() => ({
+    select: vi.fn(() => ({
+      eq: vi.fn(() => ({
+        limit: vi.fn(() => ({
+          single: mockFromSingle,
+        })),
+      })),
+    })),
+  }));
+  const mockChannel = { on: vi.fn(), subscribe: vi.fn() };
+  return { mockToast, mockRemoveChannel, mockChannel, mockFrom, mockFromSingle };
 });
 
 vi.mock('@/integrations/supabase/client', () => ({
@@ -138,7 +121,8 @@ describe('useBracketsManagerRealtime', () => {
       wrapper,
     });
     await waitFor(() => expect(capturedSubscribeCallback).not.toBeNull());
-    act(() => { capturedSubscribeCallback!('SUBSCRIBED'); });
+    const subscribeCb = capturedSubscribeCallback as (status: string) => void;
+    act(() => { subscribeCb('SUBSCRIBED'); });
     await waitFor(() => expect(result.current.realtimeEnabled).toBe(true));
   });
 
@@ -148,9 +132,10 @@ describe('useBracketsManagerRealtime', () => {
       wrapper,
     });
     await waitFor(() => expect(capturedSubscribeCallback).not.toBeNull());
-    act(() => { capturedSubscribeCallback!('SUBSCRIBED'); });
+    const subscribeCb = capturedSubscribeCallback as (status: string) => void;
+    act(() => { subscribeCb('SUBSCRIBED'); });
     await waitFor(() => expect(result.current.realtimeEnabled).toBe(true));
-    act(() => { capturedSubscribeCallback!('CHANNEL_ERROR'); });
+    act(() => { subscribeCb('CHANNEL_ERROR'); });
     await waitFor(() => expect(result.current.realtimeEnabled).toBe(false));
   });
 
@@ -159,10 +144,9 @@ describe('useBracketsManagerRealtime', () => {
     const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
     renderHook(() => useBracketsManagerRealtime(BRACKET_ID, STAGE_ID), { wrapper });
     await waitFor(() => expect(capturedPayloadCallback).not.toBeNull());
+    const payloadCb = capturedPayloadCallback as (payload: unknown) => void;
 
-    act(() => {
-      capturedPayloadCallback!({ eventType: 'UPDATE', new: { id: 1 } });
-    });
+    act(() => { payloadCb({ eventType: 'UPDATE', new: { id: 1 } }); });
 
     expect(invalidateSpy).toHaveBeenCalledWith(
       expect.objectContaining({ queryKey: ['bracket-data', BRACKET_ID] })
@@ -176,10 +160,9 @@ describe('useBracketsManagerRealtime', () => {
     const { wrapper } = createWrapper();
     renderHook(() => useBracketsManagerRealtime(BRACKET_ID, STAGE_ID), { wrapper });
     await waitFor(() => expect(capturedPayloadCallback).not.toBeNull());
+    const payloadCb = capturedPayloadCallback as (payload: unknown) => void;
 
-    act(() => {
-      capturedPayloadCallback!({ eventType: 'UPDATE', new: { id: 1 } });
-    });
+    act(() => { payloadCb({ eventType: 'UPDATE', new: { id: 1 } }); });
 
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({ title: 'Bracket Updated' })
@@ -202,11 +185,10 @@ describe('useBracketsManagerRealtime', () => {
       wrapper,
     });
     await waitFor(() => expect(capturedPayloadCallback).not.toBeNull());
+    const payloadCb = capturedPayloadCallback as (payload: unknown) => void;
     expect(result.current.lastUpdate).toBeNull();
 
-    act(() => {
-      capturedPayloadCallback!({ eventType: 'UPDATE', new: { id: 1 } });
-    });
+    act(() => { payloadCb({ eventType: 'UPDATE', new: { id: 1 } }); });
 
     await waitFor(() => expect(result.current.lastUpdate).toBeInstanceOf(Date));
   });

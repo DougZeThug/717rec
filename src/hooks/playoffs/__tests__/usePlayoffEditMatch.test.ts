@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -205,8 +205,8 @@ describe('usePlayoffEditMatch', () => {
   describe('handleSaveMatchScore', () => {
     it('calls applyOptimisticUpdate, updateMatch, and onSuccess on success', async () => {
       (fetchBmMatchWithStage as ReturnType<typeof vi.fn>).mockResolvedValue(mockBmMatch);
-      mockUpdateMatch.mockResolvedValue(undefined);
-      const mockRefetch = vi.fn().mockResolvedValue(undefined);
+      mockUpdateMatch.mockResolvedValue();
+      const mockRefetch = vi.fn().mockResolvedValue();
       const { result } = renderHook(() => usePlayoffEditMatch(), { wrapper: createWrapper() });
 
       await act(async () => {

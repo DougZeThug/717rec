@@ -2,6 +2,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useTeamRankings } from '../useTeamRankings';
+import type { Team } from '@/types';
 
 vi.mock('@/hooks/rankings/usePreviousRankings', () => ({
   usePreviousRankings: vi.fn(),
@@ -48,7 +49,7 @@ const makeTeam = (id: string, powerScore: number | null = 80) =>
     imageUrl: null,
     logoUrl: null,
     close_match_losses: 0,
-  }) as any;
+  }) as unknown as Team;
 
 describe('useTeamRankings', () => {
   beforeEach(() => {

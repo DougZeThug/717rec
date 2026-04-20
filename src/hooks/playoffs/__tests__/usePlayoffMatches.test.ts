@@ -39,7 +39,7 @@ describe('usePlayoffMatches', () => {
   });
 
   it('shows loading state while fetching', () => {
-    (fetchPlayoffMatches as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(() => {}));
+    (fetchPlayoffMatches as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(vi.fn()));
     const { result } = renderHook(() => usePlayoffMatches('bracket-1'), {
       wrapper: createWrapper(),
     });

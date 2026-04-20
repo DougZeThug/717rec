@@ -51,7 +51,8 @@ describe('useTeamMatches', () => {
   });
 
   it('returns empty arrays and no loading when teamId is undefined', () => {
-    const { result } = renderHook(() => useTeamMatches(undefined), {
+    const teamId: string | undefined = undefined;
+    const { result } = renderHook(() => useTeamMatches(teamId), {
       wrapper: createWrapper(),
     });
     expect(result.current.upcomingMatches).toEqual([]);
@@ -60,7 +61,7 @@ describe('useTeamMatches', () => {
   });
 
   it('shows loading state while fetching', () => {
-    (fetchTeamMatchesData as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(() => {}));
+    (fetchTeamMatchesData as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(vi.fn()));
     const { result } = renderHook(() => useTeamMatches('team-a'), {
       wrapper: createWrapper(),
     });
