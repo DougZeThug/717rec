@@ -73,7 +73,7 @@ describe('upsertTeamAnalysis', () => {
   beforeEach(() => vi.clearAllMocks());
 
   const input = {
-    overall: 'Great team.', strengths: 'Serves.', weaknesses: 'Defense.',
+    overall: 'Great team.', strengths: ['Serves.'], weaknesses: ['Defense.'],
     trends: 'Stable', rivalry_insights: null,
   };
 
