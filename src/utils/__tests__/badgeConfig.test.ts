@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { BadgeType } from '@/types/badges';
+import { BadgeType, TeamBadgeEvent } from '@/types/badges';
 
 import { badgeConfigs, getBadgeConfig, getBadgesByCategory } from '../badgeConfig';
 
@@ -30,10 +30,17 @@ describe('getBadgeConfig', () => {
   });
 
   it('returns cyan variant for intermediate_champion with High division metadata', () => {
-    const config = getBadgeConfig('intermediate_champion', {
+    const badge: TeamBadgeEvent = {
+      id: 'badge-1',
+      team_id: 'team-1',
       badge_type: 'intermediate_champion',
+      season_id: null,
+      awarded_at: new Date().toISOString(),
       metadata: { division: 'Intermediate High' },
-    } as any);
+      is_active: true,
+      created_at: new Date().toISOString(),
+    };
+    const config = getBadgeConfig('intermediate_champion', badge);
     expect(config.name).toBe('Intermediate High Champion');
     expect(config.gradient).toContain('cyan');
   });

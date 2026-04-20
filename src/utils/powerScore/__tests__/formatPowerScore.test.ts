@@ -3,8 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { formatPowerScore } from '../formatPowerScore';
 
 describe('formatPowerScore', () => {
-  it('returns em dash for undefined', () => {
-    expect(formatPowerScore(undefined)).toBe('—');
+  it('returns em dash when power score is absent', () => {
+    const score: number | undefined = undefined;
+    expect(formatPowerScore(score)).toBe('—');
   });
 
   it('formats 0 as "0.0"', () => {

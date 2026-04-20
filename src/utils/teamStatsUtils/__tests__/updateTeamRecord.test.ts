@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/services/teams/TeamUpdateService', () => ({
-  updateTeamWinLossRecord: vi.fn().mockResolvedValue(undefined),
+  updateTeamWinLossRecord: vi.fn(),
 }));
 
 vi.mock('@/utils/logger', () => ({

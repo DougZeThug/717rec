@@ -10,7 +10,6 @@ import { Team } from '@/types';
 
 import { pairKey } from '../pairKey';
 import { attemptRepairPass } from '../swapRepair';
-import { ScheduledMatch } from '../types';
 
 function makeTeam(id: string, divisionName = 'Competitive'): Team {
   return {
@@ -25,20 +24,6 @@ function makeTeam(id: string, divisionName = 'Competitive'): Team {
     game_losses: 0,
     created_at: new Date().toISOString(),
   } as Team;
-}
-
-function makeMatch(slot: string, a: Team, b: Team): ScheduledMatch {
-  return {
-    slot,
-    teamAId: a.id,
-    teamBId: b.id,
-    teamAName: a.name,
-    teamBName: b.name,
-    divisionA: a.divisionName || 'Unknown',
-    divisionB: b.divisionName || 'Unknown',
-    tierA: 1,
-    tierB: 1,
-  };
 }
 
 describe('attemptRepairPass', () => {

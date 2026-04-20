@@ -13,7 +13,8 @@ describe('getLogoStatus', () => {
   });
 
   it('returns missing for undefined', () => {
-    expect(getLogoStatus(undefined)).toBe('missing');
+    const url: string | null | undefined = undefined;
+    expect(getLogoStatus(url)).toBe('missing');
   });
 
   it('returns missing for empty string', () => {

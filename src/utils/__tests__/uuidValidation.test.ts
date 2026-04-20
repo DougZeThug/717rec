@@ -64,9 +64,10 @@ describe('isValidUuidSafe', () => {
   });
 
   it('returns false for a non-string', () => {
+    const undef: unknown = undefined;
     expect(isValidUuidSafe(123)).toBe(false);
     expect(isValidUuidSafe(null)).toBe(false);
-    expect(isValidUuidSafe(undefined)).toBe(false);
+    expect(isValidUuidSafe(undef)).toBe(false);
   });
 
   it('returns false for an empty string', () => {
