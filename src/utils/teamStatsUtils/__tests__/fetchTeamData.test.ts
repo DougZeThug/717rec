@@ -25,6 +25,7 @@ describe('fetchTeamData', () => {
       losses: 1,
       game_wins: 8,
       game_losses: 4,
+      divisions: { name: 'Competitive' },
     };
     vi.mocked(fetchTeamForStats).mockResolvedValue(mockTeam);
 
