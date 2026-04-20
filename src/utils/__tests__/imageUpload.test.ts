@@ -41,18 +41,20 @@ describe('imageUpload validation', () => {
     vi.clearAllMocks();
     uploadMock.mockResolvedValue({ error: null });
     getPublicUrlMock.mockReturnValue({ data: { publicUrl: 'https://cdn.example.com/file.jpg' } });
-    imageCompressionMock.mockImplementation(async (file: File, options?: { fileType?: string }) => {
+    imageCompressionMock.mockImplementation((file: File, options?: { fileType?: string }) => {
       if (options?.fileType === 'image/webp') {
-        return new File([new Uint8Array([82, 73, 70, 70, 0, 0, 0, 0, 87, 69, 66, 80])], 'logo.webp', {
-          type: 'image/webp',
-        });
+        return Promise.resolve(
+          new File([new Uint8Array([82, 73, 70, 70, 0, 0, 0, 0, 87, 69, 66, 80])], 'logo.webp', {
+            type: 'image/webp',
+          })
+        );
       }
 
-      return file;
+      return Promise.resolve(file);
     });
 
     vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test');
-    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
 
     class MockImage {
       width = 100;
