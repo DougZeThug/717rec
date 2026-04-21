@@ -17,20 +17,32 @@ per-file percentages with line-by-line highlighting.
 
 ## Current baseline
 
-Last measured: 2026-04-17 (86 test files, all passing).
+Last measured: 2026-04-21 (181 test files, all passing).
 
 | Metric     | Covered |
 | ---------- | ------- |
-| Lines      | 16.67%  |
-| Statements | 16.29%  |
-| Functions  | 12.06%  |
-| Branches   | 11.81%  |
+| Lines      | 27.27%  |
+| Statements | 26.96%  |
+| Functions  | 21.12%  |
+| Branches   | 19.98%  |
 
 The overall number is low because most React components and UI pages are not
 yet under test. The logic-heavy areas (utils, scheduling, rankings, career
 math) are in much better shape — see the per-area table below.
 
 Full baseline output is saved to `coverage-baseline.txt` at the repo root.
+
+### Baseline generation note
+
+To keep this baseline consistent across updates, run coverage from the repo
+root in a normal dev environment and capture the full terminal output:
+
+```bash
+npm run test:coverage | tee coverage-baseline.txt
+```
+
+Then copy the summary values from that run into this section (date, test file
+count, top-level metrics, and area table).
 
 ## Coverage by area
 
@@ -39,28 +51,28 @@ over time; anything already above target is just "keep it green".
 
 | Area                              | Lines today | Target | Notes                                       |
 | --------------------------------- | ----------- | ------ | ------------------------------------------- |
-| `src/services/**`                 | 9%          | 70%    | Data access layer — priority to raise       |
-| `src/services/auth`               | 30%         | 70%    |                                             |
-| `src/hooks/**`                    | 5%          | 60%    | React Query hooks wrapping services         |
-| `src/hooks/matches`               | 24%         | 60%    | Best-covered hooks area today               |
-| `src/utils/**` (aggregate)        | 15%         | 85%    | Pure functions — easiest wins               |
-| `src/utils/career`                | 87%         | 85%    | On target                                   |
-| `src/utils/rankingUtils`          | 95%         | 85%    | On target                                   |
-| `src/utils/predictions`           | 96%         | 85%    | On target                                   |
+| `src/services/**`                 | 53%         | 70%    | Data access layer — now over halfway        |
+| `src/services/auth`               | 100%        | 70%    | On target                                   |
+| `src/hooks/**`                    | 18%         | 60%    | React Query hooks wrapping services         |
+| `src/hooks/matches`               | 21%         | 60%    | Coverage spread across many small hooks     |
+| `src/utils/**` (aggregate)        | 59%         | 85%    | Pure functions — still best place for gains |
+| `src/utils/career`                | 89%         | 85%    | On target                                   |
+| `src/utils/rankingUtils`          | 96%         | 85%    | On target                                   |
+| `src/utils/predictions`           | 95%         | 85%    | On target                                   |
 | `src/utils/playoffs`              | 100%        | 85%    | On target                                   |
 | `src/utils/matchUtils`            | 100%        | 85%    | On target                                   |
 | `src/utils/brackets/mappers`      | 100%        | 85%    | On target                                   |
 | `src/utils/brackets/validators`   | 100%        | 85%    | On target                                   |
-| `src/utils/auth`                  | 69%         | 85%    | Close                                       |
-| `src/utils/autoSchedule`          | 56%         | 85%    | Complex scheduling algorithms — gradual     |
-| `src/utils/autoSchedule/dualBlock`| 88%         | 85%    | On target                                   |
-| `src/utils/scheduling/greedy`     | 62%         | 85%    | Several sub-modules still at 0%             |
-| `src/utils/colors`                | 4%          | 60%    | Small pure helpers — easy to raise          |
+| `src/utils/auth`                  | 90%         | 85%    | On target                                   |
+| `src/utils/autoSchedule`          | 77%         | 85%    | Complex scheduling algorithms — gradual     |
+| `src/utils/autoSchedule/dualBlock`| 89%         | 85%    | On target                                   |
+| `src/utils/scheduling/greedy`     | 71%         | 85%    | `swapRepair` now covered but still low      |
+| `src/utils/colors`                | 5%          | 60%    | Small pure helpers — easy to raise          |
 | `src/utils/timezone`              | 7%          | 60%    | Important for match scheduling correctness  |
 | `src/utils/teamDetailsUtils`      | 0%          | 60%    |                                             |
-| `src/utils/teamStatsUtils`        | 0%          | 60%    |                                             |
-| `src/pages/**`                    | 9%          | 40%    | Mostly integration-style tests              |
-| `src/components/**` (non-UI)      | near 0%     | 40%    | Component coverage is lowest priority       |
+| `src/utils/teamStatsUtils`        | 100%        | 60%    | On target                                   |
+| `src/pages/**`                    | 10%         | 40%    | Mostly integration-style tests              |
+| `src/components/**` (non-UI)      | 10%         | 40%    | Component coverage is still lowest priority |
 | `src/types`                       | 77%         | —      | Types only — no target                      |
 
 ## What's tested today
