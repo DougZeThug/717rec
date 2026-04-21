@@ -40,6 +40,41 @@ export const useSeasonMutations = () => {
     },
   });
 
+  // Same side-effect surface as archiveSeason — partial-archive archives
+  // regular-season matches and resets team counters, so all match/stats caches
+  // need invalidation too.
+  const activateSeasonWithPartialArchive = useMutation({
+    mutationFn: SeasonService.activateSeasonWithPartialArchive,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['seasons'] });
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      queryClient.invalidateQueries({ queryKey: ['rankings'] });
+      queryClient.invalidateQueries({ queryKey: ['v_team_details'] });
+      queryClient.invalidateQueries({ queryKey: ['teamStats'] });
+      queryClient.invalidateQueries({ queryKey: ['standings'] });
+      queryClient.invalidateQueries({ queryKey: ['careerRankings'] });
+      queryClient.invalidateQueries({ queryKey: ['bracket-data'] });
+      queryClient.invalidateQueries({ queryKey: ['playoff-matches'] });
+    },
+  });
+
+  const finalizePlayoffs = useMutation({
+    mutationFn: SeasonService.finalizePlayoffs,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['seasons'] });
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      queryClient.invalidateQueries({ queryKey: ['rankings'] });
+      queryClient.invalidateQueries({ queryKey: ['v_team_details'] });
+      queryClient.invalidateQueries({ queryKey: ['teamStats'] });
+      queryClient.invalidateQueries({ queryKey: ['standings'] });
+      queryClient.invalidateQueries({ queryKey: ['careerRankings'] });
+      queryClient.invalidateQueries({ queryKey: ['bracket-data'] });
+      queryClient.invalidateQueries({ queryKey: ['playoff-matches'] });
+    },
+  });
+
   const archiveSeason = useMutation({
     mutationFn: ({ id }: ArchiveSeasonData) => SeasonService.archiveSeason(id),
     onSuccess: () => {
@@ -61,6 +96,8 @@ export const useSeasonMutations = () => {
     createSeason,
     updateSeason,
     activateSeason,
+    activateSeasonWithPartialArchive,
+    finalizePlayoffs,
     archiveSeason,
   };
 };
