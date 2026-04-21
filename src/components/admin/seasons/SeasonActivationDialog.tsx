@@ -12,6 +12,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { useSeasonMutations } from '@/hooks/useSeasonMutations';
 import { useSeasons } from '@/hooks/useSeasons';
 import { toast } from '@/hooks/useToast';
@@ -29,20 +31,30 @@ const SeasonActivationDialog: React.FC<SeasonActivationDialogProps> = ({
   season,
 }) => {
   const { data: seasons } = useSeasons();
-  const { activateSeason } = useSeasonMutations();
+  const { activateSeason, activateSeasonWithPartialArchive } = useSeasonMutations();
   const [isActivating, setIsActivating] = useState(false);
+  const [keepOldPlayoffsActive, setKeepOldPlayoffsActive] = useState(false);
 
   const activeSeason = seasons?.find((s) => s.is_active);
   const hasActiveSeason = !!activeSeason;
+  const showOverlapOption = hasActiveSeason && activeSeason?.id !== season.id;
 
   const handleActivate = async () => {
     setIsActivating(true);
     try {
-      await activateSeason.mutateAsync(season.id);
-      toast({
-        title: 'Success',
-        description: `${season.name} is now the active season`,
-      });
+      if (showOverlapOption && keepOldPlayoffsActive) {
+        await activateSeasonWithPartialArchive.mutateAsync(season.id);
+        toast({
+          title: 'Success',
+          description: `${season.name} is active; ${activeSeason?.name}'s playoffs remain in progress.`,
+        });
+      } else {
+        await activateSeason.mutateAsync(season.id);
+        toast({
+          title: 'Success',
+          description: `${season.name} is now the active season`,
+        });
+      }
       onClose();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to activate season';
@@ -77,13 +89,43 @@ const SeasonActivationDialog: React.FC<SeasonActivationDialogProps> = ({
           </Alert>
         )}
 
+        {showOverlapOption && (
+          <div className="flex items-start gap-2 rounded-md border p-3">
+            <Checkbox
+              id="keep-playoffs-active"
+              checked={keepOldPlayoffsActive}
+              onCheckedChange={(checked) => setKeepOldPlayoffsActive(checked === true)}
+              className="mt-0.5"
+            />
+            <div className="space-y-1">
+              <Label htmlFor="keep-playoffs-active" className="font-medium cursor-pointer">
+                Keep {activeSeason?.name}'s playoffs active
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Archives {activeSeason?.name}'s regular-season matches now, but leaves the
+                in-progress playoff bracket running. New regular matches will schedule on{' '}
+                {season?.name}. You'll finalize the playoffs later from Season Management.
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-2 text-sm text-muted-foreground">
           <p>When you activate this season:</p>
           <ul className="list-disc list-inside space-y-1 ml-4">
             <li>It becomes the primary season for all league activities</li>
             <li>New matches will be associated with this season</li>
             <li>Team stats will be tracked for this season</li>
-            {hasActiveSeason && <li>The current active season will be deactivated</li>}
+            {hasActiveSeason && !keepOldPlayoffsActive && (
+              <li>The current active season will be deactivated</li>
+            )}
+            {showOverlapOption && keepOldPlayoffsActive && (
+              <>
+                <li>{activeSeason?.name}'s regular-season matches will be archived</li>
+                <li>{activeSeason?.name}'s playoff bracket will stay in progress</li>
+                <li>Team wins/losses counters will reset for {season?.name}</li>
+              </>
+            )}
           </ul>
         </div>
 
