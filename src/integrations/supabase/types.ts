@@ -2517,6 +2517,7 @@ export type Database = {
           is_active: boolean
           is_archived: boolean
           name: string
+          playoffs_active: boolean
           runner_up_team_id: string | null
           start_date: string
           third_place_team_id: string | null
@@ -2531,6 +2532,7 @@ export type Database = {
           is_active?: boolean
           is_archived?: boolean
           name: string
+          playoffs_active?: boolean
           runner_up_team_id?: string | null
           start_date?: string
           third_place_team_id?: string | null
@@ -2545,6 +2547,7 @@ export type Database = {
           is_active?: boolean
           is_archived?: boolean
           name?: string
+          playoffs_active?: boolean
           runner_up_team_id?: string | null
           start_date?: string
           third_place_team_id?: string | null
@@ -4165,6 +4168,31 @@ export type Database = {
           is_active: boolean
           is_archived: boolean
           name: string
+          playoffs_active: boolean
+          runner_up_team_id: string | null
+          start_date: string
+          third_place_team_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "seasons"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      activate_season_with_partial_archive: {
+        Args: { p_new_season_id: string }
+        Returns: {
+          champion_team_id: string | null
+          confirmation_open: boolean
+          created_at: string
+          end_date: string | null
+          id: string
+          is_active: boolean
+          is_archived: boolean
+          name: string
+          playoffs_active: boolean
           runner_up_team_id: string | null
           start_date: string
           third_place_team_id: string | null
@@ -4203,6 +4231,7 @@ export type Database = {
           is_active: boolean
           is_archived: boolean
           name: string
+          playoffs_active: boolean
           runner_up_team_id: string | null
           start_date: string
           third_place_team_id: string | null
@@ -4251,6 +4280,35 @@ export type Database = {
         Returns: undefined
       }
       current_user_is_admin: { Args: never; Returns: boolean }
+      finalize_playoffs: {
+        Args: {
+          p_champion_team_id?: string
+          p_runner_up_team_id?: string
+          p_season_id: string
+          p_third_place_team_id?: string
+        }
+        Returns: {
+          champion_team_id: string | null
+          confirmation_open: boolean
+          created_at: string
+          end_date: string | null
+          id: string
+          is_active: boolean
+          is_archived: boolean
+          name: string
+          playoffs_active: boolean
+          runner_up_team_id: string | null
+          start_date: string
+          third_place_team_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "seasons"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       get_all_team_badges: {
         Args: never
         Returns: {
@@ -4381,6 +4439,30 @@ export type Database = {
         Returns: undefined
       }
       mark_match_as_tie: { Args: { p_match_id: string }; Returns: boolean }
+      partial_archive_season: {
+        Args: { p_season_id: string }
+        Returns: {
+          champion_team_id: string | null
+          confirmation_open: boolean
+          created_at: string
+          end_date: string | null
+          id: string
+          is_active: boolean
+          is_archived: boolean
+          name: string
+          playoffs_active: boolean
+          runner_up_team_id: string | null
+          start_date: string
+          third_place_team_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "seasons"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       process_match_badges: {
         Args: { p_team1_id: string; p_team2_id: string }
         Returns: Json
