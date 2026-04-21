@@ -1,40 +1,44 @@
 
 
-## Plan: Fix 17 TypeScript build errors in test files
+## Plan: Apply pending `playoffs_active` migration to fix 45 build errors
 
-### What's broken
+### Root cause
 
-Three test files drifted out of sync with their source types. All errors are in **test files only** — no production code is affected.
+A migration file exists at `supabase/migrations/20260421_add_playoffs_active.sql` that adds:
+- `playoffs_active boolean NOT NULL DEFAULT false` column on `seasons`
+- A `BEFORE INSERT/UPDATE` trigger (`ensure_single_playoffs_active_season`) enforcing only one playoffs-active season at a time
+- Two new RPCs: `partial_archive_season` and `finalize_playoffs`
+- Updates the existing `activate_season` and adds `activate_season_with_partial_archive`
 
-### Errors and fixes
+**This migration has never been applied to the live database.** Verified: the `seasons` table currently has no `playoffs_active` column.
 
-**1. `SeasonForm.test.tsx` (1 error)** — `mockSeason` is missing the required `is_archived` field on the `Season` type.
-- Add `is_archived: false` to the mock object.
+Because every `SeasonService` query selects `playoffs_active`, Supabase's typed client widens the result to `SelectQueryError<"column 'playoffs_active' does not exist on 'seasons'">`. That error type has no `.id`, `.name`, `.is_active`, etc., which cascades into all 45 reported errors across 12 files.
 
-**2. `TeamMembershipApprovalTab.test.tsx` (1 error)** — `mockApproveMembership.mockResolvedValue()` is called with zero args (same TS arity issue we fixed before).
-- Change to `mockApproveMembership.mockResolvedValue(undefined)`.
+### Fix (one migration, two tiny code edits)
 
-**3. `BracketsViewerComponent.test.tsx` (15 errors)** — The test helpers don't match the current `PlayoffBracket` / `PlayoffTeam` types:
-   - `makeBracket` uses `status: 'active'` → the type field is `state` with values `'pending' | 'in_progress' | 'completed'`. Replace with `state: 'in_progress'`.
-   - `makeBracket` includes `division_id: null` and `season_id: 'season-1'` → neither exists on `PlayoffBracket`. Remove both (or move `division_id` to the optional `divisionId` string field if needed; tests don't read it, so just remove).
-   - `makeTeam` uses `logoUrl: null` → the type field is `logo_url: string | undefined`. Remove the line (it's optional and tests don't read it).
-   - The component prop type is `PlayoffBracket & { bracket_data?: InMemoryDatabase['data'] }`, but the helper returns `bracket_data?: unknown`. Change the helper's return-type annotation to match: `PlayoffBracket & { bracket_data?: import('brackets-memory-db').InMemoryDatabase['data'] }`. Since no test sets `bracket_data`, the field stays absent and no test bodies need to change.
+**1. Apply the pending migration** — re-run `supabase/migrations/20260421_add_playoffs_active.sql` against the live database. This adds the column, trigger, and RPCs. Once the column exists, Supabase regenerates `src/integrations/supabase/types.ts` and all 43 cascade errors disappear automatically. The `@ts-expect-error` lines in `SeasonService.ts` (lines 83-85, 340-342, 360-362) will then start failing for being unused — they can stay for one more push and be removed in a follow-up, OR I'll remove them in this same change to keep the build clean.
+
+**2. Fix `src/components/admin/seasons/__tests__/SeasonForm.test.tsx`** (1 line) — add `playoffs_active: false` to the `mockSeason` object. The `Season` type now requires this field.
+
+**3. Fix `src/services/SeasonService.ts` `fetchHistoricalSeasons`** (1 line) — extend its `.select(...)` from `'id, name, start_date, end_date, is_active'` to include `is_archived, playoffs_active, created_at, champion_team_id, runner_up_team_id, confirmation_open` so its return type matches `Season[]` (the hook `useHistoricalSeasons` is typed against the full `Season` shape).
 
 ### Files touched
 
-- `src/components/admin/seasons/__tests__/SeasonForm.test.tsx` — 1 line
-- `src/components/admin/teams/__tests__/TeamMembershipApprovalTab.test.tsx` — 1 line
-- `src/components/playoffs/viewer/__tests__/BracketsViewerComponent.test.tsx` — ~6 lines (helper definitions only; test bodies untouched)
+- Apply migration: `supabase/migrations/20260421_add_playoffs_active.sql` (existing — just run it)
+- Edit: `src/services/SeasonService.ts` (extend `fetchHistoricalSeasons` select; remove the 3 `@ts-expect-error` lines after types regenerate)
+- Edit: `src/components/admin/seasons/__tests__/SeasonForm.test.tsx` (add `playoffs_active: false`)
 
-### Edge function "errors" in the report
+### Edge function "errors" at top of report
 
-The 4 `Check supabase/functions/...` lines at the top are pre-existing Deno-vs-Node typecheck noise that the project's main build doesn't gate on. They're not new and not caused by recent changes. **Not addressing them in this fix.** If you want them cleaned up, that's a separate plan.
+Same pre-existing Deno typecheck noise as last time — unrelated, not addressed here.
 
 ### Verification
 
-Run `npm run typecheck` — all 17 errors should clear. No runtime behavior changes since these are test-only type fixes.
+1. Migration runs cleanly (column added, trigger created, RPCs registered).
+2. `npm run typecheck` clears all 45 errors.
+3. Existing season behavior unchanged (column defaults to `false` on every existing season).
 
 ### Rollback
 
-Revert the 3 test files. One step.
+Migration is additive only (adds column with safe default, adds new RPCs/trigger). Rolling back means dropping the column and trigger — one reverse migration. Code edits revert in one step.
 
