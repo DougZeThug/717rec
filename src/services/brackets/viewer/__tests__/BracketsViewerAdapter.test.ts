@@ -51,7 +51,11 @@ const pgError = () => ({
   name: 'PostgrestError',
 });
 
-const setupSupabaseForTransform = (overrides: Partial<Record<string, any>> = {}) => {
+type QueryResult = { data: unknown; error: unknown | null };
+
+const setupSupabaseForTransform = (
+  overrides: Partial<Record<string, QueryResult>> = {}
+) => {
   const responses = {
     stage: { data: [{ id: 11, name: 'Playoffs', type: 'single_elimination', tournament_id: 'b1', number: 1, settings: {} }], error: null },
     match: { data: [{ id: 100, stage_id: 11, group_id: 1, round_id: 1, number: 1, child_count: 0, opponent1_id: 1, opponent1_score: 2, opponent1_result: 'win', opponent2_id: 2, opponent2_score: 1, opponent2_result: 'loss', status: 4 }], error: null },
