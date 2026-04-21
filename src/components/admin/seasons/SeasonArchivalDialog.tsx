@@ -24,6 +24,44 @@ interface SeasonArchivalDialogProps {
   season: Season;
 }
 
+const ArchivalDialogHeader: React.FC<{ seasonName?: string }> = ({ seasonName }) => (
+  <AlertDialogHeader>
+    <AlertDialogTitle className="flex items-center gap-2">
+      <Trophy className="h-5 w-5 text-yellow-500" />
+      Archive Season: {seasonName}
+    </AlertDialogTitle>
+    <AlertDialogDescription>
+      Archive this season and designate final standings. This action cannot be undone.
+    </AlertDialogDescription>
+  </AlertDialogHeader>
+);
+
+interface KeepPlayoffsCheckboxProps {
+  checked: boolean;
+  onChange: (value: boolean) => void;
+}
+
+const KeepPlayoffsCheckbox: React.FC<KeepPlayoffsCheckboxProps> = ({ checked, onChange }) => (
+  <div className="flex items-start gap-2 rounded-md border p-3">
+    <Checkbox
+      id="keep-playoffs-active"
+      checked={checked}
+      onCheckedChange={(value) => onChange(value === true)}
+      className="mt-0.5"
+    />
+    <div className="space-y-1">
+      <Label htmlFor="keep-playoffs-active" className="font-medium cursor-pointer">
+        Keep playoffs active
+      </Label>
+      <p className="text-xs text-muted-foreground">
+        Archives regular-season matches and resets team stat counters, but leaves the playoff
+        bracket editable. Finalize playoffs later from Season Management to record champions and
+        close out the season.
+      </p>
+    </div>
+  </div>
+);
+
 const PartialArchivalWarning: React.FC = () => (
   <>
     <strong>This will perform a partial archival:</strong>
@@ -48,6 +86,42 @@ const FullArchivalWarning: React.FC = () => (
     </ul>
     A new season must be activated to continue league activities.
   </>
+);
+
+const ArchivalAlert: React.FC<{ partial: boolean }> = ({ partial }) => (
+  <Alert>
+    <AlertTriangle className="h-4 w-4" />
+    <AlertDescription>{partial ? <PartialArchivalWarning /> : <FullArchivalWarning />}</AlertDescription>
+  </Alert>
+);
+
+interface ArchivalDialogFooterProps {
+  isArchiving: boolean;
+  keepPlayoffsActive: boolean;
+  onArchive: () => void;
+}
+
+const buttonLabel = (isArchiving: boolean, keepPlayoffsActive: boolean) => {
+  if (isArchiving) return 'Archiving...';
+  if (keepPlayoffsActive) return 'Archive & Keep Playoffs';
+  return 'Archive Season';
+};
+
+const ArchivalDialogFooter: React.FC<ArchivalDialogFooterProps> = ({
+  isArchiving,
+  keepPlayoffsActive,
+  onArchive,
+}) => (
+  <AlertDialogFooter>
+    <AlertDialogCancel>Cancel</AlertDialogCancel>
+    <AlertDialogAction
+      onClick={onArchive}
+      disabled={isArchiving}
+      className="bg-orange-600 hover:bg-orange-700"
+    >
+      {buttonLabel(isArchiving, keepPlayoffsActive)}
+    </AlertDialogAction>
+  </AlertDialogFooter>
 );
 
 const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({ isOpen, onClose, season }) => {
@@ -87,56 +161,14 @@ const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({ isOpen, onC
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent className="max-w-md">
-        <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-yellow-500" />
-            Archive Season: {season?.name}
-          </AlertDialogTitle>
-          <AlertDialogDescription>
-            Archive this season and designate final standings. This action cannot be undone.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-
-        <div className="flex items-start gap-2 rounded-md border p-3">
-          <Checkbox
-            id="keep-playoffs-active"
-            checked={keepPlayoffsActive}
-            onCheckedChange={(checked) => setKeepPlayoffsActive(checked === true)}
-            className="mt-0.5"
-          />
-          <div className="space-y-1">
-            <Label htmlFor="keep-playoffs-active" className="font-medium cursor-pointer">
-              Keep playoffs active
-            </Label>
-            <p className="text-xs text-muted-foreground">
-              Archives regular-season matches and resets team stat counters, but leaves the playoff
-              bracket editable. Finalize playoffs later from Season Management to record champions
-              and close out the season.
-            </p>
-          </div>
-        </div>
-
-        <Alert>
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            {keepPlayoffsActive ? <PartialArchivalWarning /> : <FullArchivalWarning />}
-          </AlertDescription>
-        </Alert>
-
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handleArchive}
-            disabled={isArchiving}
-            className="bg-orange-600 hover:bg-orange-700"
-          >
-            {isArchiving
-              ? 'Archiving...'
-              : keepPlayoffsActive
-                ? 'Archive & Keep Playoffs'
-                : 'Archive Season'}
-          </AlertDialogAction>
-        </AlertDialogFooter>
+        <ArchivalDialogHeader seasonName={season?.name} />
+        <KeepPlayoffsCheckbox checked={keepPlayoffsActive} onChange={setKeepPlayoffsActive} />
+        <ArchivalAlert partial={keepPlayoffsActive} />
+        <ArchivalDialogFooter
+          isArchiving={isArchiving}
+          keepPlayoffsActive={keepPlayoffsActive}
+          onArchive={handleArchive}
+        />
       </AlertDialogContent>
     </AlertDialog>
   );
