@@ -22,7 +22,7 @@ interface SeasonFinalizePlayoffsDialogProps {
   season: Season;
 }
 
-const FinalizeStepsList: React.FC = () => (
+const StepsList: React.FC = () => (
   <ul className="list-disc ml-4 mt-1 text-xs space-y-0.5">
     <li>Refresh team season stats with final playoff results</li>
     <li>Auto-detect champion, runner-up, and playoff ranks from the bracket</li>
@@ -30,6 +30,45 @@ const FinalizeStepsList: React.FC = () => (
     <li>Rotate season badges and award champion badges</li>
     <li>Mark the season as fully archived</li>
   </ul>
+);
+
+const DialogHeader: React.FC<{ seasonName: string }> = ({ seasonName }) => (
+  <AlertDialogHeader>
+    <AlertDialogTitle className="flex items-center gap-2">
+      <Trophy className="h-5 w-5 text-yellow-500" />
+      Finalize Playoffs: {seasonName}
+    </AlertDialogTitle>
+    <AlertDialogDescription>
+      Finalize the playoff bracket for this season. Only run this once every playoff match has a
+      winner. This action cannot be undone.
+    </AlertDialogDescription>
+  </AlertDialogHeader>
+);
+
+const DialogBody: React.FC = () => (
+  <Alert>
+    <Trophy className="h-4 w-4" />
+    <AlertDescription>
+      <strong>This will:</strong>
+      <StepsList />
+    </AlertDescription>
+  </Alert>
+);
+
+const DialogActions: React.FC<{ isFinalizing: boolean; onFinalize: () => void }> = ({
+  isFinalizing,
+  onFinalize,
+}) => (
+  <AlertDialogFooter>
+    <AlertDialogCancel>Cancel</AlertDialogCancel>
+    <AlertDialogAction
+      onClick={onFinalize}
+      disabled={isFinalizing}
+      className="bg-yellow-600 hover:bg-yellow-700"
+    >
+      {isFinalizing ? 'Finalizing...' : 'Finalize Playoffs'}
+    </AlertDialogAction>
+  </AlertDialogFooter>
 );
 
 const SeasonFinalizePlayoffsDialog: React.FC<SeasonFinalizePlayoffsDialogProps> = ({
@@ -69,35 +108,9 @@ const SeasonFinalizePlayoffsDialog: React.FC<SeasonFinalizePlayoffsDialogProps> 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent className="max-w-md">
-        <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-yellow-500" />
-            Finalize Playoffs: {season?.name}
-          </AlertDialogTitle>
-          <AlertDialogDescription>
-            Finalize the playoff bracket for this season. Only run this once every playoff match
-            has a winner. This action cannot be undone.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-
-        <Alert>
-          <Trophy className="h-4 w-4" />
-          <AlertDescription>
-            <strong>This will:</strong>
-            <FinalizeStepsList />
-          </AlertDescription>
-        </Alert>
-
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handleFinalize}
-            disabled={isFinalizing}
-            className="bg-yellow-600 hover:bg-yellow-700"
-          >
-            {isFinalizing ? 'Finalizing...' : 'Finalize Playoffs'}
-          </AlertDialogAction>
-        </AlertDialogFooter>
+        <DialogHeader seasonName={season?.name} />
+        <DialogBody />
+        <DialogActions isFinalizing={isFinalizing} onFinalize={handleFinalize} />
       </AlertDialogContent>
     </AlertDialog>
   );
