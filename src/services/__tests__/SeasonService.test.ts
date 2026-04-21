@@ -344,3 +344,98 @@ describe('SeasonService.archiveSeason', () => {
     await expect(SeasonService.archiveSeason('s-1')).rejects.toThrow(DatabaseError);
   });
 });
+
+// ─── partialArchive / playoffs RPCs ───────────────────────────────────────────
+
+describe('SeasonService.activateSeasonWithPartialArchive', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('calls the RPC with p_new_season_id and returns the season', async () => {
+    mockRpc.mockResolvedValue({ data: makeSeason(), error: null });
+    const result = await SeasonService.activateSeasonWithPartialArchive('s-1');
+    expect(mockRpc).toHaveBeenCalledWith('activate_season_with_partial_archive', {
+      p_new_season_id: 's-1',
+    });
+    expect(result).toMatchObject({ id: 's-1' });
+  });
+
+  it('throws DatabaseError on RPC error', async () => {
+    mockRpc.mockResolvedValue({ data: null, error: pgError() });
+    await expect(SeasonService.activateSeasonWithPartialArchive('s-1')).rejects.toThrow(DatabaseError);
+  });
+});
+
+describe('SeasonService.finalizePlayoffs', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('passes all four params to the RPC mapped to p_* keys', async () => {
+    mockRpc.mockResolvedValue({ data: makeSeason({ is_archived: true }), error: null });
+    const result = await SeasonService.finalizePlayoffs({
+      seasonId: 's-1',
+      championTeamId: 't-c',
+      runnerUpTeamId: 't-r',
+      thirdPlaceTeamId: 't-3',
+    });
+    expect(mockRpc).toHaveBeenCalledWith('finalize_playoffs', {
+      p_season_id: 's-1',
+      p_champion_team_id: 't-c',
+      p_runner_up_team_id: 't-r',
+      p_third_place_team_id: 't-3',
+    });
+    expect(result).toMatchObject({ is_archived: true });
+  });
+
+  it('coalesces missing optional team ids to null', async () => {
+    mockRpc.mockResolvedValue({ data: makeSeason(), error: null });
+    await SeasonService.finalizePlayoffs({ seasonId: 's-1' });
+    expect(mockRpc).toHaveBeenCalledWith('finalize_playoffs', {
+      p_season_id: 's-1',
+      p_champion_team_id: null,
+      p_runner_up_team_id: null,
+      p_third_place_team_id: null,
+    });
+  });
+
+  it('throws DatabaseError on RPC error', async () => {
+    mockRpc.mockResolvedValue({ data: null, error: pgError() });
+    await expect(SeasonService.finalizePlayoffs({ seasonId: 's-1' })).rejects.toThrow(DatabaseError);
+  });
+});
+
+describe('SeasonService.fetchPlayoffActiveSeason', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('returns the playoffs-active season when exactly one exists', async () => {
+    mockFrom.mockReturnValue({
+      select: () => ({ eq: () => Promise.resolve({ data: [makeSeason({ playoffs_active: true })], error: null }) }),
+    });
+    const result = await SeasonService.fetchPlayoffActiveSeason();
+    expect(result).toMatchObject({ id: 's-1' });
+  });
+
+  it('returns null when none', async () => {
+    mockFrom.mockReturnValue({
+      select: () => ({ eq: () => Promise.resolve({ data: [], error: null }) }),
+    });
+    expect(await SeasonService.fetchPlayoffActiveSeason()).toBeNull();
+  });
+
+  it('throws BusinessLogicError when more than one playoffs-active season', async () => {
+    mockFrom.mockReturnValue({
+      select: () => ({
+        eq: () => Promise.resolve({
+          data: [makeSeason({ id: 's-1' }), makeSeason({ id: 's-2' })],
+          error: null,
+        }),
+      }),
+    });
+    await expect(SeasonService.fetchPlayoffActiveSeason()).rejects.toThrow(BusinessLogicError);
+  });
+
+  it('throws DatabaseError on DB error', async () => {
+    mockFrom.mockReturnValue({
+      select: () => ({ eq: () => Promise.resolve({ data: null, error: pgError() }) }),
+    });
+    await expect(SeasonService.fetchPlayoffActiveSeason()).rejects.toThrow(DatabaseError);
+  });
+});

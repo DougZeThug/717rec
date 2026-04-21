@@ -85,6 +85,12 @@ constraints, rematch repair), `sanitizeReturnTo`.
 mass-score-entry, batch-matches auto-schedule warnings, history page,
 `ProtectedAdminRoute`, `AdminDashboard`, `Auth` page.
 
+**Season workflow:** `SeasonService` (incl. `partial_archive`, `finalize_playoffs`,
+`activate_season_with_partial_archive`, `fetchPlayoffActiveSeason`),
+`useSeasonMutations` (cache invalidation + error surfacing for the new RPCs),
+`SeasonActivationDialog` (the "keep playoffs active" branch),
+`SeasonFinalizePlayoffsDialog` (confirm / cancel / error paths).
+
 See `__tests__/` folders next to the source for unit tests and the root
 `tests/` folder for integration tests.
 
@@ -114,3 +120,26 @@ Configured in `vitest.config.ts` under `test.coverage.exclude`:
 `npm run test:coverage` is **not** currently part of CI or a pre-commit hook.
 When we're ready, wiring it into `.github/workflows/` and/or a `pre-push` hook
 would prevent regressions. That's a separate, optional step.
+
+## Manual checks: overlapping seasons
+
+The three new Postgres RPCs and the `ensure_single_playoffs_active_season`
+trigger run inside the database and aren't covered by the JS test suite. After
+any change touching `supabase/migrations/*playoffs_active*` or the SeasonService
+RPC wrappers, run this 4-step smoke check in a staging environment:
+
+1. **Plain activation**: activate a season normally (checkbox unchecked). Old
+   season flips to `is_active=false`; new season flips to `is_active=true`. No
+   `playoffs_active` flags should be set.
+2. **Activate with partial archive**: activate a new season with the "Keep
+   playoffs active" checkbox **checked**. Old season:
+   `is_active=false, playoffs_active=true`; its completed regular-season
+   matches move to `matches_archive`; team win/loss counters reset.
+3. **Trigger guard**: in SQL, manually try
+   `UPDATE seasons SET playoffs_active = true WHERE id = '<some other season>';`
+   while another season already has `playoffs_active=true`. The trigger should
+   flip the previous season's flag to `false` so only one row is true.
+4. **Finalize playoffs**: from Season Management, click "Finalize Playoffs" on
+   the partial-archived season. It should flip to
+   `is_active=false, is_archived=true, playoffs_active=false`, snapshot team
+   details, and award champion badges in the relevant divisions.
