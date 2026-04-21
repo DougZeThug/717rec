@@ -80,8 +80,6 @@ export const SeasonService = {
       .select(
         'id, name, is_active, is_archived, playoffs_active, start_date, end_date, created_at, champion_team_id, runner_up_team_id, confirmation_open'
       )
-      // @ts-expect-error playoffs_active is added by migration 20260421_add_playoffs_active.sql;
-      // remove this once src/integrations/supabase/types.ts is regenerated.
       .eq('playoffs_active', true);
 
     if (error) {
@@ -337,8 +335,6 @@ export const SeasonService = {
   // season. Admin-gated by the underlying RPC.
   activateSeasonWithPartialArchive: async (seasonId: string) => {
     const { data: season, error } = await supabase.rpc(
-      // @ts-expect-error new RPC added by migration 20260421_add_playoffs_active.sql;
-      // remove this cast once src/integrations/supabase/types.ts is regenerated.
       'activate_season_with_partial_archive',
       { p_new_season_id: seasonId }
     );
@@ -357,8 +353,6 @@ export const SeasonService = {
     thirdPlaceTeamId?: string | null;
   }) => {
     const { data: season, error } = await supabase.rpc(
-      // @ts-expect-error new RPC added by migration 20260421_add_playoffs_active.sql;
-      // remove this cast once src/integrations/supabase/types.ts is regenerated.
       'finalize_playoffs',
       {
         p_season_id: params.seasonId,
