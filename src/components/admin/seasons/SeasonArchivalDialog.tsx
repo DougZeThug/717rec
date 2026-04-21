@@ -24,6 +24,32 @@ interface SeasonArchivalDialogProps {
   season: Season;
 }
 
+const PartialArchivalWarning: React.FC = () => (
+  <>
+    <strong>This will perform a partial archival:</strong>
+    <ul className="list-disc ml-4 mt-1 text-xs space-y-0.5">
+      <li>Archive completed regular-season matches to history</li>
+      <li>Reset team win/loss counters for the next season</li>
+      <li>Keep the playoff bracket editable</li>
+      <li>Mark the season &quot;Playoffs In Progress&quot;</li>
+    </ul>
+    Finalize playoffs later from Season Management to record champions.
+  </>
+);
+
+const FullArchivalWarning: React.FC = () => (
+  <>
+    <strong>Warning:</strong> This will perform a full archival:
+    <ul className="list-disc ml-4 mt-1 text-xs space-y-0.5">
+      <li>Snapshot all team stats &amp; power scores</li>
+      <li>Auto-detect division playoff champions from bracket data</li>
+      <li>Archive all completed matches to history</li>
+      <li>Deactivate the season permanently</li>
+    </ul>
+    A new season must be activated to continue league activities.
+  </>
+);
+
 const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({ isOpen, onClose, season }) => {
   const { archiveSeason, partialArchiveSeason } = useSeasonMutations();
   const [isArchiving, setIsArchiving] = useState(false);
@@ -93,29 +119,7 @@ const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({ isOpen, onC
         <Alert>
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            {keepPlayoffsActive ? (
-              <>
-                <strong>This will perform a partial archival:</strong>
-                <ul className="list-disc ml-4 mt-1 text-xs space-y-0.5">
-                  <li>Archive completed regular-season matches to history</li>
-                  <li>Reset team win/loss counters for the next season</li>
-                  <li>Keep the playoff bracket editable</li>
-                  <li>Mark the season &quot;Playoffs In Progress&quot;</li>
-                </ul>
-                Finalize playoffs later from Season Management to record champions.
-              </>
-            ) : (
-              <>
-                <strong>Warning:</strong> This will perform a full archival:
-                <ul className="list-disc ml-4 mt-1 text-xs space-y-0.5">
-                  <li>Snapshot all team stats &amp; power scores</li>
-                  <li>Auto-detect division playoff champions from bracket data</li>
-                  <li>Archive all completed matches to history</li>
-                  <li>Deactivate the season permanently</li>
-                </ul>
-                A new season must be activated to continue league activities.
-              </>
-            )}
+            {keepPlayoffsActive ? <PartialArchivalWarning /> : <FullArchivalWarning />}
           </AlertDescription>
         </Alert>
 
