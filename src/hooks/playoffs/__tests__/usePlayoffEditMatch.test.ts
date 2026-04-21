@@ -45,6 +45,7 @@ import {
   fetchBmMatchWithStage,
   fetchPlayoffMatchWithBracket,
 } from '@/services/brackets/BracketReadService';
+import { useOptimisticScoreMutation } from '@/hooks/playoffs/useOptimisticScoreMutation';
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -138,6 +139,19 @@ describe('usePlayoffEditMatch', () => {
       expect(mockToast).toHaveBeenCalledWith(
         expect.objectContaining({ variant: 'destructive' })
       );
+    });
+
+    it('updates optimistic mutation with bracket-specific query context after loading match', async () => {
+      (fetchBmMatchWithStage as ReturnType<typeof vi.fn>).mockResolvedValue(mockBmMatch);
+      const { result } = renderHook(() => usePlayoffEditMatch(), { wrapper: createWrapper() });
+
+      expect(useOptimisticScoreMutation).toHaveBeenCalledWith(null);
+
+      await act(async () => {
+        await result.current.handleEditMatch('42');
+      });
+
+      expect(useOptimisticScoreMutation).toHaveBeenLastCalledWith('bracket-123');
     });
   });
 
@@ -241,6 +255,33 @@ describe('usePlayoffEditMatch', () => {
       });
 
       expect(mockOnError).toHaveBeenCalled();
+    });
+
+    it('shows optimistic success toast before mutation resolves', async () => {
+      (fetchBmMatchWithStage as ReturnType<typeof vi.fn>).mockResolvedValue(mockBmMatch);
+      let resolveUpdate: () => void = () => {};
+      mockUpdateMatch.mockReturnValue(
+        new Promise<void>((resolve) => {
+          resolveUpdate = resolve;
+        })
+      );
+
+      const { result } = renderHook(() => usePlayoffEditMatch(), { wrapper: createWrapper() });
+
+      await act(async () => {
+        await result.current.handleEditMatch('42');
+      });
+      const savePromise = result.current.handleSaveMatchScore('42', 2, 1, [], 2, 1, vi.fn());
+
+      expect(mockApplyOptimisticUpdate).toHaveBeenCalled();
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Score saved!', description: 'Updating bracket...' })
+      );
+
+      await act(async () => {
+        resolveUpdate();
+      });
+      await savePromise;
     });
   });
 });
