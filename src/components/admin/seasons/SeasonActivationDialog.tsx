@@ -99,12 +99,12 @@ const SeasonActivationDialog: React.FC<SeasonActivationDialogProps> = ({
             />
             <div className="space-y-1">
               <Label htmlFor="keep-playoffs-active" className="font-medium cursor-pointer">
-                Keep {activeSeason?.name}'s playoffs active
+                Keep {activeSeason?.name}&apos;s playoffs active
               </Label>
               <p className="text-xs text-muted-foreground">
-                Archives {activeSeason?.name}'s regular-season matches now, but leaves the
+                Archives {activeSeason?.name}&apos;s regular-season matches now, but leaves the
                 in-progress playoff bracket running. New regular matches will schedule on{' '}
-                {season?.name}. You'll finalize the playoffs later from Season Management.
+                {season?.name}. You&apos;ll finalize the playoffs later from Season Management.
               </p>
             </div>
           </div>
@@ -121,8 +121,8 @@ const SeasonActivationDialog: React.FC<SeasonActivationDialogProps> = ({
             )}
             {showOverlapOption && keepOldPlayoffsActive && (
               <>
-                <li>{activeSeason?.name}'s regular-season matches will be archived</li>
-                <li>{activeSeason?.name}'s playoff bracket will stay in progress</li>
+                <li>{activeSeason?.name}&apos;s regular-season matches will be archived</li>
+                <li>{activeSeason?.name}&apos;s playoff bracket will stay in progress</li>
                 <li>Team wins/losses counters will reset for {season?.name}</li>
               </>
             )}

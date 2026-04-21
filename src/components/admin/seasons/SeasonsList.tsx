@@ -143,7 +143,7 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
       ))}
       {finalizingSeason && (
         <SeasonFinalizePlayoffsDialog
-          isOpen={!!finalizingSeason}
+          isOpen={Boolean(finalizingSeason)}
           onClose={() => setFinalizingSeason(null)}
           season={finalizingSeason}
         />

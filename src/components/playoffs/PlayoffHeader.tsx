@@ -13,10 +13,10 @@ const PlayoffHeader: React.FC<PlayoffHeaderProps> = ({ selectedSeasonId }) => {
   const { data: activeSeason } = useActiveSeason();
 
   const showOverlapBanner =
-    !!playoffSeason &&
-    !!activeSeason &&
-    playoffSeason.id !== activeSeason.id &&
-    selectedSeasonId === playoffSeason.id;
+    Boolean(playoffSeason) &&
+    Boolean(activeSeason) &&
+    playoffSeason?.id !== activeSeason?.id &&
+    selectedSeasonId === playoffSeason?.id;
 
   return (
     <>

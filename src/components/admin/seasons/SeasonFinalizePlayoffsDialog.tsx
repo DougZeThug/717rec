@@ -22,6 +22,16 @@ interface SeasonFinalizePlayoffsDialogProps {
   season: Season;
 }
 
+const FinalizeStepsList: React.FC = () => (
+  <ul className="list-disc ml-4 mt-1 text-xs space-y-0.5">
+    <li>Refresh team season stats with final playoff results</li>
+    <li>Auto-detect champion, runner-up, and playoff ranks from the bracket</li>
+    <li>Snapshot team details for the season archive</li>
+    <li>Rotate season badges and award champion badges</li>
+    <li>Mark the season as fully archived</li>
+  </ul>
+);
+
 const SeasonFinalizePlayoffsDialog: React.FC<SeasonFinalizePlayoffsDialogProps> = ({
   isOpen,
   onClose,
@@ -74,13 +84,7 @@ const SeasonFinalizePlayoffsDialog: React.FC<SeasonFinalizePlayoffsDialogProps> 
           <Trophy className="h-4 w-4" />
           <AlertDescription>
             <strong>This will:</strong>
-            <ul className="list-disc ml-4 mt-1 text-xs space-y-0.5">
-              <li>Refresh team season stats with final playoff results</li>
-              <li>Auto-detect champion, runner-up, and playoff ranks from the bracket</li>
-              <li>Snapshot team details for the season archive</li>
-              <li>Rotate season badges and award champion badges</li>
-              <li>Mark the season as fully archived</li>
-            </ul>
+            <FinalizeStepsList />
           </AlertDescription>
         </Alert>
 
