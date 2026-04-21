@@ -92,6 +92,22 @@ export const useSeasonMutations = () => {
     },
   });
 
+  const partialArchiveSeason = useMutation({
+    mutationFn: ({ id }: ArchiveSeasonData) => SeasonService.partialArchiveSeason(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['seasons'] });
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      queryClient.invalidateQueries({ queryKey: ['rankings'] });
+      queryClient.invalidateQueries({ queryKey: ['v_team_details'] });
+      queryClient.invalidateQueries({ queryKey: ['teamStats'] });
+      queryClient.invalidateQueries({ queryKey: ['standings'] });
+      queryClient.invalidateQueries({ queryKey: ['careerRankings'] });
+      queryClient.invalidateQueries({ queryKey: ['bracket-data'] });
+      queryClient.invalidateQueries({ queryKey: ['playoff-matches'] });
+    },
+  });
+
   return {
     createSeason,
     updateSeason,
@@ -99,5 +115,6 @@ export const useSeasonMutations = () => {
     activateSeasonWithPartialArchive,
     finalizePlayoffs,
     archiveSeason,
+    partialArchiveSeason,
   };
 };

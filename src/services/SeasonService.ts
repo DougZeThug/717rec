@@ -377,4 +377,16 @@ export const SeasonService = {
     if (error) handleDatabaseError(error, 'Failed to archive season');
     return season;
   },
+
+  // Archives regular-season matches and resets team counters without finalizing
+  // champions. Sets is_active=false and playoffs_active=true so the playoff
+  // bracket stays editable; finalize_playoffs closes the season out later.
+  partialArchiveSeason: async (seasonId: string) => {
+    const { data: season, error } = await supabase.rpc('partial_archive_season', {
+      p_season_id: seasonId,
+    });
+
+    if (error) handleDatabaseError(error, 'Failed to partially archive season');
+    return season;
+  },
 };
