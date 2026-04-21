@@ -56,7 +56,8 @@ describe('useSeasonMutations.activateSeasonWithPartialArchive', () => {
         expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: key });
       }
     });
-    expect(SeasonService.activateSeasonWithPartialArchive).toHaveBeenCalledWith('s-1');
+    expect(SeasonService.activateSeasonWithPartialArchive).toHaveBeenCalled();
+    expect((SeasonService.activateSeasonWithPartialArchive as any).mock.calls[0][0]).toBe('s-1');
   });
 
   it('surfaces service errors so callers can toast', async () => {
@@ -87,7 +88,7 @@ describe('useSeasonMutations.finalizePlayoffs', () => {
         expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: key });
       }
     });
-    expect(SeasonService.finalizePlayoffs).toHaveBeenCalledWith({
+    expect((SeasonService.finalizePlayoffs as any).mock.calls[0][0]).toEqual({
       seasonId: 's-1',
       championTeamId: null,
       runnerUpTeamId: null,
