@@ -44,6 +44,7 @@ const mockSeason: Season = {
   is_active: false,
   created_at: '2025-01-01T00:00:00Z',
   is_archived: false,
+  playoffs_active: false,
 };
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
