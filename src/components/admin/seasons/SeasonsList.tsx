@@ -1,12 +1,14 @@
 import { motion } from 'framer-motion';
-import { Archive, Calendar, Edit } from 'lucide-react';
-import React from 'react';
+import { Archive, Calendar, Edit, Trophy } from 'lucide-react';
+import React, { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Season } from '@/types/season';
+
+import SeasonFinalizePlayoffsDialog from './SeasonFinalizePlayoffsDialog';
 
 interface SeasonsListProps {
   seasons: Season[] | undefined;
@@ -15,6 +17,7 @@ interface SeasonsListProps {
 }
 
 const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSeason }) => {
+  const [finalizingSeason, setFinalizingSeason] = useState<Season | null>(null);
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -53,6 +56,12 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
           Active
         </Badge>
       );
+    } else if (season.playoffs_active) {
+      return (
+        <Badge variant="default" className="bg-yellow-500">
+          Playoffs In Progress
+        </Badge>
+      );
     } else if (season.is_archived) {
       return <Badge variant="secondary">Archived</Badge>;
     } else {
@@ -89,6 +98,19 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
               </div>
               <div className="flex items-center gap-2">
                 {getStatusBadge(season)}
+                {season.playoffs_active && (
+                  <motion.div whileTap={{ scale: 0.95 }}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setFinalizingSeason(season)}
+                      className="flex items-center gap-1"
+                    >
+                      <Trophy className="h-3 w-3" />
+                      Finalize Playoffs
+                    </Button>
+                  </motion.div>
+                )}
                 <motion.div whileTap={{ scale: 0.95 }}>
                   <Button
                     variant="outline"
@@ -119,6 +141,13 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
           </CardContent>
         </Card>
       ))}
+      {finalizingSeason && (
+        <SeasonFinalizePlayoffsDialog
+          isOpen={Boolean(finalizingSeason)}
+          onClose={() => setFinalizingSeason(null)}
+          season={finalizingSeason}
+        />
+      )}
     </div>
   );
 };

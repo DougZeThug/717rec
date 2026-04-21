@@ -18,6 +18,14 @@ export const useActiveSeason = () => {
   });
 };
 
+export const usePlayoffActiveSeason = () => {
+  return useQuery({
+    queryKey: ['seasons', 'playoff-active'],
+    queryFn: SeasonService.fetchPlayoffActiveSeason,
+    staleTime: 1000 * 60 * 10, // Cache for 10 minutes
+  });
+};
+
 export const useHistoricalSeasons = () => {
   return useQuery({
     queryKey: ['seasons', 'historical'],

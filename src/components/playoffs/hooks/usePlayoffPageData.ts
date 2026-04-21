@@ -8,7 +8,7 @@ import { usePlayoffTeams } from '@/hooks/playoffs/usePlayoffTeams';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { useDivisions } from '@/hooks/useDivisions';
 import { usePlayoffData } from '@/hooks/usePlayoffViewModel.compat';
-import { useActiveSeason } from '@/hooks/useSeasons';
+import { useActiveSeason, usePlayoffActiveSeason } from '@/hooks/useSeasons';
 import { deleteBracket as deleteBracketService } from '@/services/brackets/BracketWriteService';
 import { convertErrorToString, getUIErrorMessage, logError } from '@/utils/errorHandler';
 import { bracketLog, cacheLog, errorLog, playoffLog } from '@/utils/logger';
@@ -52,17 +52,21 @@ export function usePlayoffPageData(): PlayoffPageData {
 
   const { isAdminAccessGranted: isAdmin, isLoading: adminLoading } = useAdminAccess();
 
-  // Season selection - defaults to active season
+  // Season selection - prefer the season whose playoffs are still in progress
+  // (partially-archived season), fall back to the regular active season.
+  const { data: playoffSeason } = usePlayoffActiveSeason();
   const { data: activeSeason } = useActiveSeason();
   const [selectedSeasonId, setSelectedSeasonId] = useState<string | null>(null);
 
-  // Initialize selectedSeasonId to active season when it loads
   useEffect(() => {
-    if (activeSeason && !selectedSeasonId) {
+    if (selectedSeasonId) return;
+    if (playoffSeason) {
+      setSelectedSeasonId(playoffSeason.id);
+    } else if (activeSeason) {
       setSelectedSeasonId(activeSeason.id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeSeason]);
+  }, [playoffSeason, activeSeason]);
 
   // Sync bracket selection from URL params
   const bracketParam = searchParams.get('bracket') || null;

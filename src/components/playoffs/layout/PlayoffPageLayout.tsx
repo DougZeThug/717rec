@@ -63,7 +63,7 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
       )}
     >
       <div className="max-w-7xl mx-auto">
-        <PlayoffHeader />
+        <PlayoffHeader selectedSeasonId={data.selectedSeasonId} />
 
         {/* Season selector - desktop only (mobile moves to bottom bar) */}
         <div className="hidden md:block mb-4">

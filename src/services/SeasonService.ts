@@ -36,7 +36,7 @@ export const SeasonService = {
     const { data, error } = await supabase
       .from('seasons')
       .select(
-        'id, name, is_active, is_archived, start_date, end_date, created_at, champion_team_id, runner_up_team_id, confirmation_open'
+        'id, name, is_active, is_archived, playoffs_active, start_date, end_date, created_at, champion_team_id, runner_up_team_id, confirmation_open'
       )
       .order('created_at', { ascending: false });
 
@@ -53,7 +53,7 @@ export const SeasonService = {
     const { data: activeSeasons, error } = await supabase
       .from('seasons')
       .select(
-        'id, name, is_active, is_archived, start_date, end_date, created_at, champion_team_id, runner_up_team_id, confirmation_open'
+        'id, name, is_active, is_archived, playoffs_active, start_date, end_date, created_at, champion_team_id, runner_up_team_id, confirmation_open'
       )
       .eq('is_active', true);
 
@@ -72,13 +72,38 @@ export const SeasonService = {
     return activeSeasons?.[0] ?? null;
   },
 
+  // From useSeasons.ts (usePlayoffActiveSeason) — season whose playoff bracket is
+  // still in progress after the regular season has been partially archived.
+  fetchPlayoffActiveSeason: async () => {
+    const { data: seasons, error } = await supabase
+      .from('seasons')
+      .select(
+        'id, name, is_active, is_archived, playoffs_active, start_date, end_date, created_at, champion_team_id, runner_up_team_id, confirmation_open'
+      )
+      // @ts-expect-error playoffs_active is added by migration 20260421_add_playoffs_active.sql;
+      // remove this once src/integrations/supabase/types.ts is regenerated.
+      .eq('playoffs_active', true);
+
+    if (error) {
+      handleDatabaseError(error, 'Failed to fetch playoffs-active season');
+    }
+
+    if (seasons && seasons.length > 1) {
+      const errorMsg = `Data integrity violation: ${seasons.length} playoffs-active seasons found. Only one season can have playoffs active at a time.`;
+      errorLog(errorMsg, { seasonIds: seasons.map((s) => s.id) });
+      throw new BusinessLogicError(errorMsg);
+    }
+
+    return seasons?.[0] ?? null;
+  },
+
   // From useSeasonParticipation.ts (useConfirmationSeason)
   fetchConfirmationSeason: async () => {
     // First try to find an active season with confirmation open
     const { data, error } = await supabase
       .from('seasons')
       .select(
-        'id, name, is_active, is_archived, start_date, end_date, created_at, champion_team_id, runner_up_team_id, confirmation_open'
+        'id, name, is_active, is_archived, playoffs_active, start_date, end_date, created_at, champion_team_id, runner_up_team_id, confirmation_open'
       )
       .eq('is_active', true)
       .eq('confirmation_open', true)
@@ -303,6 +328,47 @@ export const SeasonService = {
     });
 
     if (error) handleDatabaseError(error, 'Failed to activate season');
+    return season;
+  },
+
+  // Activates the target season AND partial-archives the currently-active one so
+  // its playoff bracket keeps going. Regular-season matches for the old season
+  // are moved to matches_archive; playoffs_active is set to true on the old
+  // season. Admin-gated by the underlying RPC.
+  activateSeasonWithPartialArchive: async (seasonId: string) => {
+    const { data: season, error } = await supabase.rpc(
+      // @ts-expect-error new RPC added by migration 20260421_add_playoffs_active.sql;
+      // remove this cast once src/integrations/supabase/types.ts is regenerated.
+      'activate_season_with_partial_archive',
+      { p_new_season_id: seasonId }
+    );
+
+    if (error) handleDatabaseError(error, 'Failed to activate season with partial archive');
+    return season;
+  },
+
+  // Finalizes playoffs for a season that was previously partial-archived:
+  // detects champions, snapshots team details, rotates badges, sets
+  // is_archived=true and playoffs_active=false. Admin-gated by the RPC.
+  finalizePlayoffs: async (params: {
+    seasonId: string;
+    championTeamId?: string | null;
+    runnerUpTeamId?: string | null;
+    thirdPlaceTeamId?: string | null;
+  }) => {
+    const { data: season, error } = await supabase.rpc(
+      // @ts-expect-error new RPC added by migration 20260421_add_playoffs_active.sql;
+      // remove this cast once src/integrations/supabase/types.ts is regenerated.
+      'finalize_playoffs',
+      {
+        p_season_id: params.seasonId,
+        p_champion_team_id: params.championTeamId ?? null,
+        p_runner_up_team_id: params.runnerUpTeamId ?? null,
+        p_third_place_team_id: params.thirdPlaceTeamId ?? null,
+      }
+    );
+
+    if (error) handleDatabaseError(error, 'Failed to finalize playoffs');
     return season;
   },
 
