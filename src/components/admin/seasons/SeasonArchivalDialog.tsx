@@ -1,5 +1,5 @@
 import { AlertTriangle, Trophy } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
@@ -128,6 +128,15 @@ const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({ isOpen, onC
   const { archiveSeason, partialArchiveSeason } = useSeasonMutations();
   const [isArchiving, setIsArchiving] = useState(false);
   const [keepPlayoffsActive, setKeepPlayoffsActive] = useState(false);
+
+  // Reset transient dialog state each time it opens so a previous cancellation
+  // (or stuck "Archiving..." from an error) doesn't leak into the next session.
+  useEffect(() => {
+    if (isOpen) {
+      setKeepPlayoffsActive(false);
+      setIsArchiving(false);
+    }
+  }, [isOpen]);
 
   const handleArchive = async () => {
     setIsArchiving(true);
