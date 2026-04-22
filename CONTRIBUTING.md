@@ -13,6 +13,23 @@ Before marking any feature or bugfix as complete, ensure it meets the criteria i
 - [ ] Accessible via keyboard
 - [ ] Follows pattern documentation
 
+
+## Dependency Update Rules
+
+To prevent dependency drift between `package.json` and `package-lock.json`:
+
+- CI uses `npm ci` (not `npm install`) to install dependencies from the lockfile.
+- Pull requests should not be merged when the **Dependency Install Check / npm ci** status check is failing.
+- If you change `package.json`, update and commit `package-lock.json` in the same PR.
+
+### Repository setup (maintainers)
+
+In GitHub branch protection for `main`/`master`, add this required status check:
+
+- `Dependency Install Check / npm ci`
+
+This guarantees PRs cannot merge if `npm ci` fails.
+
 ## Project Structure
 
 ```
