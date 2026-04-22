@@ -1,48 +1,54 @@
 
 
-## Plan: Wire up the Contact form honeypot field
+## Plan: Fix concurrent match submissions in `useMatchSubmission`
 
 ### The bug
 
-The Edge Function `send-support-email` checks a `website` honeypot field (bots auto-fill hidden inputs), but the frontend never sends it. So the honeypot can never trigger.
+`useMatchSubmission` uses a single boolean ref (`isSubmittingRef`) to prevent double-submits. When `useScoreEntryData` calls `handleSubmitScore` for many matches concurrently via `Promise.all`, the first call flips the boolean to `true`, and every other concurrent call returns `false` immediately. Result: only one match in a batch ever reaches the database.
+
+The original intent of the guard (added in commit 9e7f5af0) was to block **duplicate submissions of the same match**, not to serialize unrelated matches.
 
 ### The fix
 
-Two small frontend changes — no backend changes needed.
+Replace the boolean ref with a `Set<string>` of in-flight match IDs, so the guard is per-match.
 
-**1. `src/services/support/ContactService.ts`**
-Add the optional `website` field to `contactSchema` and to the `submitContactForm` payload so it's forwarded to the Edge Function:
+In `src/hooks/matches/useMatchSubmission.ts`:
+
 ```ts
-website: z.string().optional(),
-```
-And include `website: data.website` in the body sent to `supabase.functions.invoke('send-support-email', ...)`.
+const submittingMatchIds = useRef(new Set<string>());
 
-**2. `src/pages/Contact.tsx`**
-- Add `website: ''` to `defaultValues`.
-- Add a hidden honeypot input registered with the form. Use the standard "off-screen + aria-hidden + tabIndex={-1} + autoComplete='off'" pattern so screen readers and keyboard users skip it but bots that parse the DOM and fill all inputs will populate it.
-
-```tsx
-<input
-  type="text"
-  tabIndex={-1}
-  autoComplete="off"
-  aria-hidden="true"
-  className="absolute left-[-9999px] h-0 w-0 opacity-0"
-  {...form.register('website')}
-/>
+const handleSubmitScore = async ({ matchId, /* ... */ }: SubmitScoreParams) => {
+  if (submittingMatchIds.current.has(matchId)) return false;
+  submittingMatchIds.current.add(matchId);
+  try {
+    // ... existing submission logic unchanged
+  } finally {
+    submittingMatchIds.current.delete(matchId);
+  }
+};
 ```
+
+Everything inside `try` (validation, `updateMatchScore`, `updateTeamStats`, cache invalidation, toast) stays exactly the same. Only the guard mechanism changes.
 
 ### Test coverage
 
-Add a test for `ContactService` confirming the schema accepts `website` and that `submitContactForm` forwards it. (If a test file doesn't exist, create `src/services/support/__tests__/ContactService.test.ts`.)
+Update `src/hooks/matches/__tests__/useMatchSubmission.test.ts`:
+
+1. **Add a regression test**: call `handleSubmitScore` concurrently for three different match IDs via `Promise.all`. Assert all three resolve to `true` and that `updateMatchScore` is called three times.
+2. **Add a same-match guard test**: fire two concurrent calls with the same `matchId` while `updateMatchScore` is pending (use a deferred promise). Assert the second returns `false` immediately and `updateMatchScore` is called only once. After the first resolves, a third call with the same id succeeds.
+
+### Files touched
+
+- Edit: `src/hooks/matches/useMatchSubmission.ts` — swap `isSubmittingRef` (boolean) for `submittingMatchIds` (Set of string).
+- Edit: `src/hooks/matches/__tests__/useMatchSubmission.test.ts` — add the two tests above.
 
 ### Verification
 
-1. `npm test` — new test passes.
-2. Manual: open Contact page → DevTools → set the hidden `website` input value → submit → backend logs "Honeypot triggered" and the user still sees a success toast (silent reject by design).
-3. Normal submissions (empty `website`) continue to send email as before.
+1. `npm test` — all existing tests still pass; new concurrent and same-match tests pass.
+2. Manual: open Mass Score Entry → edit several matches → click Submit All → every edited match updates (not just the first), success toast reflects the full count.
+3. No behavior change for single-match submissions (the existing `MatchSubmissionDialog` flow).
 
 ### Rollback
 
-Revert the two files and the new test. One step.
+Revert the two files. One step.
 
