@@ -78,61 +78,72 @@ export function useBracketsManagerRealtime(
 
     bracketLog('Setting up realtime subscription for match table', { bracketId, stageId });
 
-    // Unique channel name per mount avoids handshake collisions with stale channels
-    const channelName = `bracket-matches-${bracketId}-${stageId}-${Date.now()}`;
+    let currentChannel: ReturnType<typeof supabase.channel> | null = null;
     let retryTimer: ReturnType<typeof setTimeout> | null = null;
     let hasRetried = false;
 
-    const channel = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // Listen to INSERT, UPDATE, DELETE
-          schema: 'public',
-          table: 'match',
-          filter: `stage_id=eq.${stageId}`,
-        },
-        (payload) => {
-          bracketLog('Match table updated via realtime:', payload);
-          setLastUpdate(new Date());
+    // Build a fresh channel each time. Phoenix channels set `joinedOnce` on the
+    // first join and never reset it, so retries must use a brand-new instance.
+    const connect = (): ReturnType<typeof supabase.channel> => {
+      // Unique channel name per attempt avoids handshake collisions with stale channels
+      const channelName = `bracket-matches-${bracketId}-${stageId}-${Date.now()}`;
+      return supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          {
+            event: '*', // Listen to INSERT, UPDATE, DELETE
+            schema: 'public',
+            table: 'match',
+            filter: `stage_id=eq.${stageId}`,
+          },
+          (payload) => {
+            bracketLog('Match table updated via realtime:', payload);
+            setLastUpdate(new Date());
 
-          // Immediately invalidate and refetch the cache
-          queryClientRef.current.invalidateQueries({ queryKey: ['bracket-data', bracketId] });
-          queryClientRef.current.invalidateQueries({ queryKey: ['bracket-info', bracketId] });
-          queryClientRef.current.refetchQueries({ queryKey: ['bracket-data', bracketId] });
+            // Immediately invalidate and refetch the cache
+            queryClientRef.current.invalidateQueries({ queryKey: ['bracket-data', bracketId] });
+            queryClientRef.current.invalidateQueries({ queryKey: ['bracket-info', bracketId] });
+            queryClientRef.current.refetchQueries({ queryKey: ['bracket-data', bracketId] });
 
-          toastRef.current({
-            title: 'Bracket Updated',
-            description: 'Match scores have been updated.',
-            duration: 3000,
-          });
-        }
-      )
-      .subscribe((status) => {
-        bracketLog('Realtime subscription status:', { status, bracketId, stageId });
-        if (status === 'SUBSCRIBED') {
-          bracketLog('Realtime subscription to match table ACTIVE');
-          setRealtimeEnabled(true);
-        } else if (status === 'CHANNEL_ERROR') {
-          setRealtimeEnabled(false);
-          if (!hasRetried) {
-            hasRetried = true;
-            bracketLog('Realtime CHANNEL_ERROR — retrying once in 2s', { bracketId, stageId });
-            retryTimer = setTimeout(() => {
-              supabase.removeChannel(channel);
-              channel.subscribe();
-            }, 2000);
-          } else {
-            errorLog('Realtime subscription FAILED after retry', { bracketId, stageId });
+            toastRef.current({
+              title: 'Bracket Updated',
+              description: 'Match scores have been updated.',
+              duration: 3000,
+            });
           }
-        }
-      });
+        )
+        .subscribe((status) => {
+          bracketLog('Realtime subscription status:', { status, bracketId, stageId });
+          if (status === 'SUBSCRIBED') {
+            bracketLog('Realtime subscription to match table ACTIVE');
+            setRealtimeEnabled(true);
+          } else if (status === 'CHANNEL_ERROR') {
+            setRealtimeEnabled(false);
+            if (!hasRetried) {
+              hasRetried = true;
+              bracketLog('Realtime CHANNEL_ERROR — retrying once in 2s', { bracketId, stageId });
+              retryTimer = setTimeout(async () => {
+                // Tear down the failed channel, then create a fresh instance.
+                // Reusing the original channel throws "tried to join multiple times".
+                if (currentChannel) {
+                  await supabase.removeChannel(currentChannel);
+                }
+                currentChannel = connect();
+              }, 2000);
+            } else {
+              errorLog('Realtime subscription FAILED after retry', { bracketId, stageId });
+            }
+          }
+        });
+    };
+
+    currentChannel = connect();
 
     return () => {
       bracketLog('Cleaning up match table realtime subscription');
       if (retryTimer) clearTimeout(retryTimer);
-      supabase.removeChannel(channel);
+      if (currentChannel) supabase.removeChannel(currentChannel);
       setRealtimeEnabled(false);
     };
   }, [bracketId, stageId]); // Only depend on bracketId and stageId - toast/queryClient accessed via refs
