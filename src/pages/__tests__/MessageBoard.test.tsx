@@ -24,7 +24,7 @@ vi.mock('@/components/layout/PageHeader', () => ({
   default: ({ title }: { title: React.ReactNode }) => <h1>{title}</h1>,
 }));
 vi.mock('@/components/transitions/PageTransition', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
 vi.mock('@/components/message-board/MessageFilterBar', () => ({
@@ -56,8 +56,8 @@ vi.mock('@/components/message-board/MessageFeed', () => ({
   },
 }));
 
-vi.mock('@/components/message-board/MessageInput', () => ({
-  default: ({ onSend }: { onSend: (content: string) => Promise<void> }) => {
+vi.mock('@/components/message-board/MessageInput', () => {
+  const MockMessageInput = ({ onSend }: { onSend: (content: string) => Promise<void> }) => {
     const [submitted, setSubmitted] = React.useState('');
     return (
       <div>
@@ -72,8 +72,10 @@ vi.mock('@/components/message-board/MessageInput', () => ({
         {submitted && <p>{submitted}</p>}
       </div>
     );
-  },
-}));
+  };
+
+  return { default: MockMessageInput };
+});
 
 vi.mock('@/components/message-board/LoginPrompt', () => ({
   default: () => <p>Please log in</p>,
@@ -102,13 +104,13 @@ const baseMessageBoardState = {
   messages: [],
   isLoading: false,
   error: null,
-  postMessage: vi.fn().mockResolvedValue(undefined),
-  editMessage: vi.fn().mockResolvedValue(undefined),
-  deleteMessage: vi.fn().mockResolvedValue(undefined),
+  postMessage: vi.fn().mockResolvedValue(),
+  editMessage: vi.fn().mockResolvedValue(),
+  deleteMessage: vi.fn().mockResolvedValue(),
   hasMore: false,
   loadingMore: false,
   loadMoreMessages: vi.fn(),
-  refreshMessages: vi.fn().mockResolvedValue(undefined),
+  refreshMessages: vi.fn().mockResolvedValue(),
   filterOptions: { type: 'all' },
   setFilter: vi.fn(),
 };
@@ -175,7 +177,7 @@ describe('MessageBoard page', () => {
   });
 
   it('lets an authenticated user submit a message', async () => {
-    const postMessage = vi.fn().mockResolvedValue(undefined);
+    const postMessage = vi.fn().mockResolvedValue();
     mockUseMessageBoard.mockReturnValue({
       ...baseMessageBoardState,
       postMessage,
