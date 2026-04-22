@@ -17,6 +17,7 @@ vi.mock('@/utils/logger', () => ({
 }));
 
 import { BracketNormalizationService } from '../BracketNormalizationService';
+import type { SupabaseSqlStorage } from '../../SupabaseSqlStorage';
 
 describe('BracketNormalizationService', () => {
   beforeEach(() => {
@@ -32,14 +33,14 @@ describe('BracketNormalizationService', () => {
         .mockResolvedValueOnce([{ id: 21, number: 1 }])
         .mockResolvedValueOnce([{ id: 31, status: 1, opponent1: { id: 8 }, opponent2: { id: 8 } }]),
       update: vi.fn(),
-    } as any;
+    };
 
     const eq = vi.fn(() => Promise.resolve({ error: null }));
     mockFrom.mockReturnValue({
       update: vi.fn(() => ({ eq })),
     });
 
-    const service = new BracketNormalizationService(storage);
+    const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
     await service.normalizeLosersR1(100);
 
     expect(mockFrom).toHaveBeenCalledWith('match');
@@ -52,9 +53,9 @@ describe('BracketNormalizationService', () => {
       clearParticipantCache: vi.fn(),
       select: vi.fn().mockResolvedValueOnce([{ id: 1, number: 1 }]),
       update: vi.fn(),
-    } as any;
+    };
 
-    const service = new BracketNormalizationService(storage);
+    const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
     await expect(service.normalizeLosersR1(200)).resolves.toBeUndefined();
 
     expect(storage.update).not.toHaveBeenCalled();
@@ -70,7 +71,7 @@ describe('BracketNormalizationService', () => {
         .mockResolvedValueOnce([{ id: 21, number: 1 }])
         .mockResolvedValueOnce([{ id: 31, status: 1, opponent1: { id: 8 }, opponent2: null }]),
       update: vi.fn(),
-    } as any;
+    };
 
     mockFrom.mockReturnValue({
       update: vi.fn(() => ({
@@ -78,7 +79,7 @@ describe('BracketNormalizationService', () => {
       })),
     });
 
-    const service = new BracketNormalizationService(storage);
+    const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
     await service.normalizeLosersR1(300);
 
     expect(mockFrom).not.toHaveBeenCalled();

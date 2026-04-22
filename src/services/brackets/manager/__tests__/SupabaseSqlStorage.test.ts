@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { DataTypes } from 'brackets-manager';
 
 const { mockFrom } = vi.hoisted(() => ({
   mockFrom: vi.fn(),
@@ -103,7 +104,10 @@ describe('SupabaseSqlStorage', () => {
       storage.update(
         'match',
         { id: 42 },
-        { opponent1: { id: null, score: null, result: null }, status: 1 } as any
+        {
+          opponent1: { id: null, score: null, result: null },
+          status: 1,
+        } as Partial<DataTypes['match']>
       )
     ).rejects.toEqual(pgError);
 

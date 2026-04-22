@@ -17,59 +17,75 @@ const {
 }));
 
 vi.mock('brackets-manager', () => ({
-  BracketsManager: vi.fn().mockImplementation(() => ({
-    create: { stage: createStageMock },
-    update: { match: updateMatchMock },
-  })),
+  BracketsManager: vi.fn(function MockBracketsManager() {
+    return {
+      create: { stage: createStageMock },
+      update: { match: updateMatchMock },
+    };
+  }),
 }));
 
 vi.mock('../SupabaseSqlStorage', () => ({
-  SupabaseSqlStorage: vi.fn().mockImplementation(() => ({
-    select: vi.fn(),
-    update: vi.fn(),
-    loadParticipantsForTournament: vi.fn(),
-    clearParticipantCache: vi.fn(),
-  })),
+  SupabaseSqlStorage: vi.fn(function MockSupabaseSqlStorage() {
+    return {
+      select: vi.fn(),
+      update: vi.fn(),
+      loadParticipantsForTournament: vi.fn(),
+      clearParticipantCache: vi.fn(),
+    };
+  }),
 }));
 
 vi.mock('../services/BracketCreationService', () => ({
-  BracketCreationService: vi.fn().mockImplementation(() => ({
-    createBracket: createBracketMock,
-  })),
+  BracketCreationService: vi.fn(function MockBracketCreationService() {
+    return {
+      createBracket: createBracketMock,
+    };
+  }),
 }));
 
 vi.mock('../services/BracketUpdateService', () => ({
-  BracketUpdateService: vi.fn().mockImplementation(() => ({
-    updateMatch: updateMatchMock,
-  })),
+  BracketUpdateService: vi.fn(function MockBracketUpdateService() {
+    return {
+      updateMatch: updateMatchMock,
+    };
+  }),
 }));
 
 vi.mock('../services/BracketNormalizationService', () => ({
-  BracketNormalizationService: vi.fn().mockImplementation(() => ({
-    normalizeLosersR1: normalizeR1Mock,
-    normalizeGrandFinalPopulation: normalizeGFMock,
-    propagateCompletedMatches: propagateMock,
-  })),
+  BracketNormalizationService: vi.fn(function MockBracketNormalizationService() {
+    return {
+      normalizeLosersR1: normalizeR1Mock,
+      normalizeGrandFinalPopulation: normalizeGFMock,
+      propagateCompletedMatches: propagateMock,
+    };
+  }),
 }));
 
 vi.mock('../services/BracketAdminService', () => ({
-  BracketAdminService: vi.fn().mockImplementation(() => ({
-    checkByeEligibility: vi.fn(),
-    adminToggleByeReady: vi.fn(),
-    editMatchParticipants: vi.fn(),
-  })),
+  BracketAdminService: vi.fn(function MockBracketAdminService() {
+    return {
+      checkByeEligibility: vi.fn(),
+      adminToggleByeReady: vi.fn(),
+      editMatchParticipants: vi.fn(),
+    };
+  }),
 }));
 
 vi.mock('../services/BracketStandingsService', () => ({
-  BracketStandingsService: vi.fn().mockImplementation(() => ({
-    calculateFinalStandings: vi.fn(),
-  })),
+  BracketStandingsService: vi.fn(function MockBracketStandingsService() {
+    return {
+      calculateFinalStandings: vi.fn(),
+    };
+  }),
 }));
 
 vi.mock('../services/BracketSeedingService', () => ({
-  BracketSeedingService: vi.fn().mockImplementation(() => ({
-    updateSeeding: vi.fn(),
-  })),
+  BracketSeedingService: vi.fn(function MockBracketSeedingService() {
+    return {
+      updateSeeding: vi.fn(),
+    };
+  }),
 }));
 
 import { BracketManagerService } from '../BracketManagerService';
@@ -80,8 +96,8 @@ describe('BracketManagerService', () => {
   });
 
   it('happy path lifecycle: createBracket then updateMatch delegate to specialized services', async () => {
-    createBracketMock.mockResolvedValue(undefined);
-    updateMatchMock.mockResolvedValue(undefined);
+    createBracketMock.mockResolvedValue();
+    updateMatchMock.mockResolvedValue();
 
     const service = new BracketManagerService();
 

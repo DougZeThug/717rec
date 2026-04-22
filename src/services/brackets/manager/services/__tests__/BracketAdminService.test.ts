@@ -27,6 +27,7 @@ vi.mock('@/utils/logger', () => ({
 import { BusinessLogicError } from '@/types/errors';
 
 import { BracketAdminService } from '../BracketAdminService';
+import type { SupabaseSqlStorage } from '../../SupabaseSqlStorage';
 
 const updateEqChain = (result: { error: unknown }) => ({
   update: vi.fn(() => ({
@@ -47,7 +48,7 @@ describe('BracketAdminService', () => {
         .mockResolvedValueOnce({ id: 10, group_id: 20 })
         .mockResolvedValueOnce({ id: 20, number: 2 })
         .mockResolvedValueOnce({ id: 501, name: 'Team One' }),
-    } as any;
+    };
 
     const matchTable = updateEqChain({ error: null });
     mockFrom.mockImplementation((table: string) => {
@@ -55,7 +56,7 @@ describe('BracketAdminService', () => {
       return updateEqChain({ error: null });
     });
 
-    const service = new BracketAdminService(storage);
+    const service = new BracketAdminService(storage as unknown as SupabaseSqlStorage);
     const result = await service.adminToggleByeReady(99, true);
 
     expect(result).toEqual(
@@ -75,9 +76,9 @@ describe('BracketAdminService', () => {
         .fn()
         .mockResolvedValueOnce({ id: 42, round_id: 200, status: 1, opponent1: { id: 9 }, opponent2: null })
         .mockResolvedValueOnce(null),
-    } as any;
+    };
 
-    const service = new BracketAdminService(storage);
+    const service = new BracketAdminService(storage as unknown as SupabaseSqlStorage);
     const action = service.adminToggleByeReady(42, true);
     await expect(action).rejects.toThrow(BusinessLogicError);
     await expect(action).rejects.toThrow(/Cannot set to Ready/i);
@@ -98,7 +99,7 @@ describe('BracketAdminService', () => {
         .mockResolvedValueOnce([{ id: 12, team_id: 'team-a', tournament_id: 'tour-1', name: 'A' }]),
       clearParticipantCache: vi.fn(),
       loadParticipantsForTournament: vi.fn(),
-    } as any;
+    };
 
     const pgErr = { message: 'write failed', code: '23505' };
     const dbError = new DatabaseError('Failed to update match participants', pgErr);
@@ -111,7 +112,7 @@ describe('BracketAdminService', () => {
       return updateEqChain({ error: null });
     });
 
-    const service = new BracketAdminService(storage);
+    const service = new BracketAdminService(storage as unknown as SupabaseSqlStorage);
 
     await expect(service.editMatchParticipants(7, 'team-a', null)).rejects.toMatchObject({
       name: 'BusinessLogicError',
