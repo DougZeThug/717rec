@@ -40,7 +40,10 @@ const validateImageFile = async (file: File, maxBytes = ADMIN_CONFIG.maxUploadSi
     throw new Error('Unsupported file extension. Use JPG, PNG, or WebP.');
   }
 
-  if (!ALLOWED_IMAGE_MIME_TYPES.has(file.type)) {
+  // Allow empty file.type — browsers may not set a MIME type for some sources
+  // (e.g. drag-and-drop from desktop apps). Content is still validated below
+  // via the file signature check.
+  if (file.type !== '' && !ALLOWED_IMAGE_MIME_TYPES.has(file.type)) {
     throw new Error('Unsupported file type. Use JPEG, PNG, or WebP images only.');
   }
 
