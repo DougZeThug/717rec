@@ -9,13 +9,21 @@ export const contactSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   subject: z.string().min(1, 'Please select a subject'),
   message: z.string().min(10, 'Message must be at least 10 characters'),
+  // Honeypot field - hidden from real users; bots auto-fill it
+  website: z.string().optional(),
 });
 
 export type ContactFormData = z.infer<typeof contactSchema>;
 
 export const submitContactRequest = async (data: ContactFormData): Promise<void> => {
   const { error } = await supabase.functions.invoke('send-support-email', {
-    body: data,
+    body: {
+      name: data.name,
+      email: data.email,
+      subject: data.subject,
+      message: data.message,
+      website: data.website ?? '',
+    },
   });
 
   if (error) {
