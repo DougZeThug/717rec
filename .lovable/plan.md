@@ -1,52 +1,62 @@
 
 
-## Plan: Fix concurrent match submissions in `useMatchSubmission`
+## Plan: Make Sentry URL scrubbing case-insensitive
 
 ### The bug
 
-`useMatchSubmission` uses a single boolean ref (`isSubmittingRef`) to prevent double-submits. When `useScoreEntryData` calls `handleSubmitScore` for many matches concurrently via `Promise.all`, the first call flips the boolean to `true`, and every other concurrent call returns `false` immediately. Result: only one match in a batch ever reaches the database.
-
-The original intent of the guard (added in commit 9e7f5af0) was to block **duplicate submissions of the same match**, not to serialize unrelated matches.
+`scrubUrl` and `scrubQueryString` in `src/utils/sentry.ts` loop over the lowercase `SENSITIVE_QUERY_PARAMS` list and call `URLSearchParams.has(param)`. That check is case-sensitive, so `?TOKEN=...`, `?Password=...`, or `?API_KEY=...` slip through unredacted into Sentry events.
 
 ### The fix
 
-Replace the boolean ref with a `Set<string>` of in-flight match IDs, so the guard is per-match.
+Iterate the URL's actual params and compare each key's lowercased form against a lowercase set. Scrub the original key (preserving casing in the URL while replacing the value).
 
-In `src/hooks/matches/useMatchSubmission.ts`:
+In `src/utils/sentry.ts`:
 
-```ts
-const submittingMatchIds = useRef(new Set<string>());
+1. Build a single lowercase lookup once:
+   ```ts
+   const SENSITIVE_QUERY_PARAMS_LOWER = new Set(
+     SENSITIVE_QUERY_PARAMS.map((p) => p.toLowerCase())
+   );
+   ```
+2. Replace both loops with:
+   ```ts
+   for (const key of Array.from(u.searchParams.keys())) {
+     if (SENSITIVE_QUERY_PARAMS_LOWER.has(key.toLowerCase())) {
+       u.searchParams.set(key, '[Filtered]');
+       mutated = true;
+     }
+   }
+   ```
+   (Snapshotting the keys with `Array.from` avoids mutating-while-iterating on `URLSearchParams`.)
+3. Same change in `scrubQueryString` against the local `params` object.
 
-const handleSubmitScore = async ({ matchId, /* ... */ }: SubmitScoreParams) => {
-  if (submittingMatchIds.current.has(matchId)) return false;
-  submittingMatchIds.current.add(matchId);
-  try {
-    // ... existing submission logic unchanged
-  } finally {
-    submittingMatchIds.current.delete(matchId);
-  }
-};
-```
-
-Everything inside `try` (validation, `updateMatchScore`, `updateTeamStats`, cache invalidation, toast) stays exactly the same. Only the guard mechanism changes.
+No other behavior changes — the scrub list, return shape, and try/catch fallbacks stay identical.
 
 ### Test coverage
 
-Update `src/hooks/matches/__tests__/useMatchSubmission.test.ts`:
+Create `src/utils/__tests__/sentry.test.ts` (new file). Since `scrubUrl` / `scrubQueryString` aren't exported, expose them for testing by either:
+- Exporting them from `sentry.ts` (preferred — small surface, internal helpers), or
+- Testing through `scrubSensitiveQueryParams` by exporting it.
 
-1. **Add a regression test**: call `handleSubmitScore` concurrently for three different match IDs via `Promise.all`. Assert all three resolve to `true` and that `updateMatchScore` is called three times.
-2. **Add a same-match guard test**: fire two concurrent calls with the same `matchId` while `updateMatchScore` is pending (use a deferred promise). Assert the second returns `false` immediately and `updateMatchScore` is called only once. After the first resolves, a third call with the same id succeeds.
+Recommended: add `export` to `scrubUrl` and `scrubQueryString` so tests are direct.
+
+Tests:
+1. Lowercase param `?token=abc` → filtered (regression — current behavior).
+2. Uppercase `?TOKEN=abc` → filtered (new — fails today).
+3. Mixed case `?Password=abc&Api_Key=xyz` → both filtered.
+4. Non-sensitive param `?page=2` → untouched.
+5. Mixed sensitive + non-sensitive preserves order/casing of non-sensitive keys.
+6. `scrubQueryString` variant covering the same cases, including with and without leading `?`.
 
 ### Files touched
 
-- Edit: `src/hooks/matches/useMatchSubmission.ts` — swap `isSubmittingRef` (boolean) for `submittingMatchIds` (Set of string).
-- Edit: `src/hooks/matches/__tests__/useMatchSubmission.test.ts` — add the two tests above.
+- Edit: `src/utils/sentry.ts` — add lowercase set, swap both loops, export the two helpers.
+- Create: `src/utils/__tests__/sentry.test.ts` — the cases above.
 
 ### Verification
 
-1. `npm test` — all existing tests still pass; new concurrent and same-match tests pass.
-2. Manual: open Mass Score Entry → edit several matches → click Submit All → every edited match updates (not just the first), success toast reflects the full count.
-3. No behavior change for single-match submissions (the existing `MatchSubmissionDialog` flow).
+1. `npm test src/utils/__tests__/sentry.test.ts` — all new cases pass.
+2. Existing Sentry behavior unchanged in production (only the matching logic widened).
 
 ### Rollback
 
