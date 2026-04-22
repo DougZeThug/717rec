@@ -17,14 +17,14 @@ per-file percentages with line-by-line highlighting.
 
 ## Current baseline
 
-Last measured: 2026-04-21 (181 test files, all passing).
+Last measured: 2026-04-22 (200 test files, all passing).
 
 | Metric     | Covered |
 | ---------- | ------- |
-| Lines      | 27.27%  |
-| Statements | 26.96%  |
-| Functions  | 21.12%  |
-| Branches   | 19.98%  |
+| Lines      | 31.22%  |
+| Statements | 30.93%  |
+| Functions  | 24.25%  |
+| Branches   | 23.12%  |
 
 The overall number is low because most React components and UI pages are not
 yet under test. The logic-heavy areas (utils, scheduling, rankings, career
@@ -100,11 +100,11 @@ over time; anything already above target is just "keep it green".
 
 | Area                              | Lines today | Target | Notes                                       |
 | --------------------------------- | ----------- | ------ | ------------------------------------------- |
-| `src/services/**`                 | 53%         | 70%    | Data access layer — now over halfway        |
+| `src/services/**`                 | 56%         | 70%    | Data access layer — trending up             |
 | `src/services/auth`               | 100%        | 70%    | On target                                   |
-| `src/hooks/**`                    | 18%         | 60%    | React Query hooks wrapping services         |
+| `src/hooks/**`                    | 22%         | 60%    | React Query hooks wrapping services         |
 | `src/hooks/matches`               | 21%         | 60%    | Coverage spread across many small hooks     |
-| `src/utils/**` (aggregate)        | 59%         | 85%    | Pure functions — still best place for gains |
+| `src/utils/**` (aggregate)        | 69%         | 85%    | Strong gains from logic-heavy utility tests |
 | `src/utils/career`                | 89%         | 85%    | On target                                   |
 | `src/utils/rankingUtils`          | 96%         | 85%    | On target                                   |
 | `src/utils/predictions`           | 95%         | 85%    | On target                                   |
@@ -115,12 +115,12 @@ over time; anything already above target is just "keep it green".
 | `src/utils/auth`                  | 90%         | 85%    | On target                                   |
 | `src/utils/autoSchedule`          | 77%         | 85%    | Complex scheduling algorithms — gradual     |
 | `src/utils/autoSchedule/dualBlock`| 89%         | 85%    | On target                                   |
-| `src/utils/scheduling/greedy`     | 71%         | 85%    | `swapRepair` now covered but still low      |
-| `src/utils/colors`                | 5%          | 60%    | Small pure helpers — easy to raise          |
-| `src/utils/timezone`              | 7%          | 60%    | Important for match scheduling correctness  |
-| `src/utils/teamDetailsUtils`      | 0%          | 60%    |                                             |
+| `src/utils/scheduling/greedy`     | 71%         | 85%    | `swapRepair` improved but still below target|
+| `src/utils/colors`                | 89%         | 60%    | On target                                   |
+| `src/utils/timezone`              | 87%         | 60%    | On target                                   |
+| `src/utils/teamDetailsUtils`      | 73%         | 60%    | On target                                   |
 | `src/utils/teamStatsUtils`        | 100%        | 60%    | On target                                   |
-| `src/pages/**`                    | 10%         | 40%    | Mostly integration-style tests              |
+| `src/pages/**`                    | 33%         | 40%    | Mostly integration-style tests              |
 | `src/components/**` (non-UI)      | 10%         | 40%    | Component coverage is still lowest priority |
 | `src/types`                       | 77%         | —      | Types only — no target                      |
 
