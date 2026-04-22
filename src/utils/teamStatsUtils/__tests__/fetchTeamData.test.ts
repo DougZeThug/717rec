@@ -17,7 +17,28 @@ import { fetchTeamData } from '../fetchTeamData';
 describe('fetchTeamData', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it.each([
+  type FetchCase = {
+    label: string;
+    teamId: string;
+    serviceResult: {
+      id: string;
+      name: string;
+      wins: number;
+      losses: number;
+      game_wins: number;
+      game_losses: number;
+    } | null;
+    expected: {
+      id: string;
+      name: string;
+      wins: number;
+      losses: number;
+      game_wins: number;
+      game_losses: number;
+    } | null;
+  };
+
+  it.each<FetchCase>([
     {
       label: 'valid team object',
       teamId: 'team-1',
@@ -45,7 +66,7 @@ describe('fetchTeamData', () => {
       expected: null,
     },
   ])('returns expected result for $label', async ({ teamId, serviceResult, expected }) => {
-    vi.mocked(fetchTeamForStats).mockResolvedValue(serviceResult as any);
+    vi.mocked(fetchTeamForStats).mockResolvedValue(serviceResult);
 
     await expect(fetchTeamData(teamId)).resolves.toEqual(expected);
     expect(fetchTeamForStats).toHaveBeenCalledWith(teamId);

@@ -109,7 +109,7 @@ describe('color modules table-driven coverage', () => {
   });
 
   it('keeps sweep rate utility behavior aligned with centralized export', () => {
-    expect(getSweepRateColor(undefined)).toBe('text-muted-foreground');
+    expect(getSweepRateColor()).toBe('text-muted-foreground');
     expect(getSweepRateColor(40)).toBe('text-blue-600 dark:text-blue-500');
   });
 });
