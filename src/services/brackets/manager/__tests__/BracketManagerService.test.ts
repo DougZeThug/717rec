@@ -96,8 +96,8 @@ describe('BracketManagerService', () => {
   });
 
   it('happy path lifecycle: createBracket then updateMatch delegate to specialized services', async () => {
-    createBracketMock.mockResolvedValue();
-    updateMatchMock.mockResolvedValue();
+    createBracketMock.mockResolvedValue(undefined);
+    updateMatchMock.mockResolvedValue(undefined);
 
     const service = new BracketManagerService();
 
