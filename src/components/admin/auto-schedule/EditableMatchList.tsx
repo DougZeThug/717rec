@@ -1,4 +1,4 @@
-import { AlertCircle, CheckCircle } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CheckCircle } from 'lucide-react';
 import React, { useMemo } from 'react';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -48,6 +48,12 @@ const EditableMatchList: React.FC<EditableMatchListProps> = ({
     return validation.errors.find((error) => error.matchId === matchId);
   };
 
+  // Get warning for specific match (e.g., rematch)
+  const getMatchWarning = (matchId: string) => {
+    if (!validation) return null;
+    return validation.warnings.find((warning) => warning.matchId === matchId);
+  };
+
   if (matches.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -60,20 +66,41 @@ const EditableMatchList: React.FC<EditableMatchListProps> = ({
     <div className="space-y-4">
       {/* Validation Summary */}
       {validation && (
-        <Alert variant={validation.isValid ? 'default' : 'destructive'}>
-          {validation.isValid ? (
-            <CheckCircle className="h-4 w-4" />
-          ) : (
+        <Alert
+          variant={validation.isValid ? 'default' : 'destructive'}
+          className={
+            validation.isValid && validation.warnings.length > 0
+              ? 'border-amber-400 dark:border-amber-500/60'
+              : undefined
+          }
+        >
+          {!validation.isValid ? (
             <AlertCircle className="h-4 w-4" />
+          ) : validation.warnings.length > 0 ? (
+            <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+          ) : (
+            <CheckCircle className="h-4 w-4" />
           )}
           <AlertDescription>
-            {validation.isValid ? (
-              <span>Schedule is valid with no conflicts</span>
-            ) : (
+            {!validation.isValid ? (
               <span>
                 Found {validation.errors.length} error{validation.errors.length !== 1 ? 's' : ''}.
                 {validation.errors.length > 0 && ' Fix the issues highlighted below.'}
+                {validation.warnings.length > 0 && (
+                  <>
+                    {' '}
+                    {validation.warnings.length} rematch warning
+                    {validation.warnings.length !== 1 ? 's' : ''} also present.
+                  </>
+                )}
               </span>
+            ) : validation.warnings.length > 0 ? (
+              <span>
+                Schedule is valid. {validation.warnings.length} rematch warning
+                {validation.warnings.length !== 1 ? 's' : ''} — review highlighted matches.
+              </span>
+            ) : (
+              <span>Schedule is valid with no conflicts</span>
             )}
           </AlertDescription>
         </Alert>
@@ -89,6 +116,7 @@ const EditableMatchList: React.FC<EditableMatchListProps> = ({
           <div className="space-y-3">
             {timeslotMatches.map((match) => {
               const error = getMatchError(match.id);
+              const warning = getMatchWarning(match.id);
               return (
                 <EditableMatchCard
                   key={match.id}
@@ -100,6 +128,8 @@ const EditableMatchList: React.FC<EditableMatchListProps> = ({
                   onRemove={onRemove}
                   hasError={!!error}
                   errorMessage={error?.message}
+                  hasWarning={!!warning}
+                  warningMessage={warning?.message}
                 />
               );
             })}
