@@ -62,7 +62,10 @@ const DialogActions: React.FC<{ isFinalizing: boolean; onFinalize: () => void }>
   <AlertDialogFooter>
     <AlertDialogCancel>Cancel</AlertDialogCancel>
     <AlertDialogAction
-      onClick={onFinalize}
+      onClick={(e) => {
+        e.preventDefault();
+        onFinalize();
+      }}
       disabled={isFinalizing}
       className="bg-yellow-600 hover:bg-yellow-700"
     >

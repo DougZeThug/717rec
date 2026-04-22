@@ -72,14 +72,32 @@ describe('SeasonFinalizePlayoffsDialog', () => {
         expect.objectContaining({ variant: 'destructive', description: 'rpc failed' })
       )
     );
-    // Note: AlertDialogAction triggers onOpenChange regardless of mutation
-    // outcome — the parent decides whether to keep the dialog mounted. Here we
-    // only assert the failure was surfaced via toast.
+    // Dialog must stay open on failure so the user can retry.
+    expect(onClose).not.toHaveBeenCalled();
   });
 
   it('does not call the mutation when Cancel is clicked', async () => {
     render(<SeasonFinalizePlayoffsDialog isOpen onClose={vi.fn()} season={season} />);
     await userEvent.click(screen.getByRole('button', { name: /cancel/i }));
     expect(finalizeMock).not.toHaveBeenCalled();
+  });
+
+  it('shows "Finalizing..." and disables the action while the mutation is pending', async () => {
+    let resolveFn: (value: unknown) => void = () => {};
+    finalizeMock.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveFn = resolve;
+        })
+    );
+    render(<SeasonFinalizePlayoffsDialog isOpen onClose={vi.fn()} season={season} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /finalize playoffs/i }));
+
+    const pendingButton = await screen.findByRole('button', { name: /finalizing\.\.\./i });
+    expect(pendingButton).toBeDisabled();
+
+    resolveFn({ id: 's-1', is_archived: true });
+    await waitFor(() => expect(finalizeMock).toHaveBeenCalled());
   });
 });
