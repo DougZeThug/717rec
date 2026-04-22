@@ -50,15 +50,18 @@ export function buildWeightedGraph(teams: Team[], config: TeamPairingConfig): Ed
       const rawScore = config.getCompatibilityScoreFn(team1, team2);
       let weight = rawScore;
 
-      // Check if teams have played before (using pre-fetched Set for O(1) lookup)
-      const hasPlayedBefore = config.avoidRematches
-        ? haveTeamsPlayedBeforeSync(team1.id, team2.id, config)
-        : false;
+      // Always compute accurate metadata — covers both season history (when
+      // avoidRematches=true) and same-session rematches (always added by
+      // standardPairing across blocks). Downstream consumers (toast counts,
+      // quality analysis, metrics) rely on hasPlayedBefore being correct
+      // regardless of the avoidRematches flag.
+      const hasPlayedBefore = haveTeamsPlayedBeforeSync(team1.id, team2.id, config);
 
-      // Apply rematch penalty for T3 vs T3 (recreational) rematches.
-      // shouldExcludeEdge allows these through, but they should still be
-      // penalized so the algorithm prefers non-rematch alternatives.
-      if (hasPlayedBefore && isBothRecreational(team1, team2)) {
+      // Apply rematch penalty for T3 vs T3 (recreational) rematches only when
+      // the user opted into rematch avoidance. shouldExcludeEdge allows these
+      // through, but they should still be penalized so the algorithm prefers
+      // non-rematch alternatives.
+      if (config.avoidRematches && hasPlayedBefore && isBothRecreational(team1, team2)) {
         weight -= 50;
       }
 
