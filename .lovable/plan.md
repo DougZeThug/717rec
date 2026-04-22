@@ -1,49 +1,50 @@
 
 
-## Plan: Fix Playoffs season-default race condition
+## Plan: Keep Finalize Playoffs dialog open during async work
 
 ### The bug
 
-In `usePlayoffPageData.ts` (lines 61–69), the effect that picks the default season runs as soon as either query resolves. If `activeSeason` returns from cache first, it gets selected — and the `if (selectedSeasonId) return` guard then blocks the correction when `playoffSeason` (the higher-priority pick) arrives moments later. Result: users land on the regular season's empty bracket page instead of the in-progress playoff season.
+In `SeasonFinalizePlayoffsDialog.tsx`, the `AlertDialogAction` button's `onClick` directly calls `onFinalize` without `e.preventDefault()`. Radix's `AlertDialogAction` auto-closes the dialog on click, so:
+- The "Finalizing..." loading state never appears.
+- On failure, the dialog is gone and the user must reopen to retry.
+
+The repo already has the right pattern in `DeleteBracketDialog.tsx` — call `e.preventDefault()`, then close manually only on success.
 
 ### The fix
 
-Wait for **both** queries to settle before choosing a default. TanStack Query's `data` is `undefined` while loading and `null`/object once settled, so we just gate on that.
+In `src/components/admin/seasons/SeasonFinalizePlayoffsDialog.tsx`:
 
-```ts
-useEffect(() => {
-  if (selectedSeasonId) return;
-  // Wait until both queries have settled
-  if (playoffSeason === undefined || activeSeason === undefined) return;
+1. Change `DialogActions` so `onFinalize` receives the click event:
+   ```tsx
+   onClick={(e) => {
+     e.preventDefault();
+     onFinalize();
+   }}
+   ```
+2. `handleFinalize` already calls `onClose()` on success and skips it on failure (the `try`/`catch` returns before `onClose` in the error path) — no change needed there. Verify by reading the function.
 
-  if (playoffSeason) {
-    setSelectedSeasonId(playoffSeason.id);
-  } else if (activeSeason) {
-    setSelectedSeasonId(activeSeason.id);
-  }
-}, [playoffSeason, activeSeason, selectedSeasonId]);
-```
-
-Also add `selectedSeasonId` to the dependency array (it's already used inside) and drop the `eslint-disable-next-line` since deps will now be exhaustive.
-
-### Files touched
-
-- Edit: `src/components/playoffs/hooks/usePlayoffPageData.ts` — replace the effect at lines 61–69.
+Net effect: dialog stays open while the RPC runs (showing "Finalizing..."), closes on success, stays open on failure so the user can retry.
 
 ### Test coverage
 
-Add `src/components/playoffs/hooks/__tests__/usePlayoffPageData.season-default.test.ts` with three cases (mock `useActiveSeason` and `usePlayoffActiveSeason`, plus the other hooks the file imports as no-ops):
-1. **Race case**: `activeSeason` resolves first (playoff still `undefined`) → no selection yet. Then `playoffSeason` resolves → `selectedSeasonId === playoffSeason.id`. (This is the regression test.)
-2. **No playoff in progress**: `playoffSeason` settles to `null`, `activeSeason` to a season → falls back to active season's id.
-3. **Both already cached**: both resolved on first render → picks `playoffSeason.id`.
+Update `src/components/admin/seasons/__tests__/SeasonFinalizePlayoffsDialog.test.tsx`:
+
+- **Restore the regression assertion** that was removed in commit f1e09a2b: on failure, `onClose` must NOT be called. Remove the outdated comment that justified dropping it.
+- **Add a loading-state test**: while the mutation is pending, the action button shows "Finalizing..." and is disabled. Use a deferred promise so we can assert mid-flight before resolving.
+- Existing success and cancel tests stay as-is.
+
+### Files touched
+
+- Edit: `src/components/admin/seasons/SeasonFinalizePlayoffsDialog.tsx` — wrap `onFinalize` in an event handler that calls `e.preventDefault()`.
+- Edit: `src/components/admin/seasons/__tests__/SeasonFinalizePlayoffsDialog.test.tsx` — restore failure assertion, add loading-state test.
 
 ### Verification
 
-1. `npm test` — new test passes; existing playoff tests still pass.
-2. Manual: with a partially-archived season in progress, navigate Stats → Playoffs → page lands on the playoff season, not the regular active season.
-3. No behavior change when there's no overlap (single active season, no playoffs in progress).
+1. `npm test` — all four tests pass, including the restored failure-case assertion.
+2. Manual: open Season Management → Finalize Playoffs → click button → "Finalizing..." appears → dialog closes on success. If the RPC errors, dialog stays open with the error toast.
+3. No behavior change to the success path or other dialogs.
 
 ### Rollback
 
-Revert the one hook file and delete the new test. One step.
+Revert the two files. One step.
 
