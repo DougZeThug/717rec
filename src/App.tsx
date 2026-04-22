@@ -1,4 +1,4 @@
-import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React, { lazy, Suspense, useEffect, useRef } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
@@ -9,7 +9,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { NavigationProvider } from '@/contexts/NavigationContext';
 import { initAnalytics, trackPageView } from '@/utils/analytics';
-import { routeLog } from '@/utils/logger';
+import { errorLog, routeLog } from '@/utils/logger';
 import { preloadCoreRoutes } from '@/utils/routePrefetch';
 import { metrics } from '@/utils/sentry';
 
@@ -53,6 +53,15 @@ const queryClient = new QueryClient({
   },
   queryCache: new QueryCache({
     onError: () => metrics.count('query_error', 1, { type: 'query' }),
+  }),
+  mutationCache: new MutationCache({
+    onError: (error, _vars, _ctx, mutation) => {
+      metrics.count('mutation_error', 1, { type: 'mutation' });
+      const keyLabel = mutation.options.mutationKey
+        ? `: ${JSON.stringify(mutation.options.mutationKey)}`
+        : '';
+      errorLog(`Mutation failed${keyLabel}`, error);
+    },
   }),
 });
 
