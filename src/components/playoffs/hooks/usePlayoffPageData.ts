@@ -60,13 +60,16 @@ export function usePlayoffPageData(): PlayoffPageData {
 
   useEffect(() => {
     if (selectedSeasonId) return;
+    // Wait until both queries have settled (data is undefined while loading,
+    // null/object once resolved). This prevents a race where activeSeason
+    // resolves from cache first and gets selected before playoffSeason arrives.
+    if (playoffSeason === undefined || activeSeason === undefined) return;
     if (playoffSeason) {
       setSelectedSeasonId(playoffSeason.id);
     } else if (activeSeason) {
       setSelectedSeasonId(activeSeason.id);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playoffSeason, activeSeason]);
+  }, [playoffSeason, activeSeason, selectedSeasonId]);
 
   // Sync bracket selection from URL params
   const bracketParam = searchParams.get('bracket') || null;
