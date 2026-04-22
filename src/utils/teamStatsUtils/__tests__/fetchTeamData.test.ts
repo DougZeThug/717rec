@@ -27,6 +27,7 @@ describe('fetchTeamData', () => {
       losses: number;
       game_wins: number;
       game_losses: number;
+      divisions: { name: string };
     } | null;
     expected: {
       id: string;
@@ -35,6 +36,7 @@ describe('fetchTeamData', () => {
       losses: number;
       game_wins: number;
       game_losses: number;
+      divisions: { name: string };
     } | null;
   };
 
@@ -49,6 +51,7 @@ describe('fetchTeamData', () => {
         losses: 1,
         game_wins: 8,
         game_losses: 4,
+        divisions: { name: 'Competitive' },
       },
       expected: {
         id: 'team-1',
@@ -57,6 +60,7 @@ describe('fetchTeamData', () => {
         losses: 1,
         game_wins: 8,
         game_losses: 4,
+        divisions: { name: 'Competitive' },
       },
     },
     {

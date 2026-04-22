@@ -27,8 +27,8 @@ type MinimalMatch = Pick<
 
 describe('teamDetails utilities', () => {
   it('handles undefined/empty inputs with safe defaults', () => {
-    expect(getUpcomingAndPastMatches()).toEqual({ upcomingMatches: [], pastMatches: [] });
-    expect(calculateSweepRate('team-a')).toEqual({ sweeps: 0, totalMatches: 0, sweepRate: 0 });
+    expect(getUpcomingAndPastMatches([])).toEqual({ upcomingMatches: [], pastMatches: [] });
+    expect(calculateSweepRate('team-a', [])).toEqual({ sweeps: 0, totalMatches: 0, sweepRate: 0 });
     expect(calculateClutchRecord('team-a', [])).toEqual({ clutchWins: 0, clutchLosses: 0, game3Matches: 0, clutchWinPct: 0 });
     expect(classifyRivalries([])).toEqual({
       mostPlayed: [],
