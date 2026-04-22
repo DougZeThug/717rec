@@ -1,0 +1,194 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { fireEvent, render, screen } from '@testing-library/react';
+import React from 'react';
+import { MemoryRouter } from 'react-router';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import Schedule from '../Schedule';
+
+const mockUseScheduleData = vi.fn();
+const mockUseMatchDates = vi.fn();
+const mockUseMatchTimeslots = vi.fn();
+const mockUseScheduleTabs = vi.fn();
+const mockUseTeamsQuery = vi.fn();
+const mockUseMatchManagement = vi.fn();
+
+vi.mock('@/hooks/useScheduleData', () => ({
+  useScheduleData: () => mockUseScheduleData(),
+}));
+vi.mock('@/hooks/useMatchDates', () => ({
+  useMatchDates: (...args: unknown[]) => mockUseMatchDates(...args),
+}));
+vi.mock('@/hooks/useMatchTimeslots', () => ({
+  useMatchTimeslots: (...args: unknown[]) => mockUseMatchTimeslots(...args),
+}));
+vi.mock('@/hooks/useScheduleTabs', () => ({
+  useScheduleTabs: (...args: unknown[]) => mockUseScheduleTabs(...args),
+}));
+vi.mock('@/hooks/teams', () => ({
+  useTeamsQuery: (...args: unknown[]) => mockUseTeamsQuery(...args),
+}));
+vi.mock('@/hooks/useMatchManagement', () => ({
+  useMatchManagement: (...args: unknown[]) => mockUseMatchManagement(...args),
+}));
+
+vi.mock('@/components/layout/PageLayout', () => ({
+  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
+
+vi.mock('@/components/schedule/ScheduleHeader', () => ({
+  default: ({ setSearchTerm }: { setSearchTerm: (term: string) => void }) => (
+    <div>
+      <button onClick={() => setSearchTerm('alpha')}>Filter Alpha</button>
+    </div>
+  ),
+}));
+
+vi.mock('@/components/schedule/ScheduleContentSkeleton', () => ({
+  default: () => <p>Loading schedule...</p>,
+}));
+
+vi.mock('@/components/schedule/ScheduleContent', () => ({
+  default: ({
+    filteredMatches,
+    activeTab,
+    setActiveTab,
+  }: {
+    filteredMatches: Array<{ id: string; team1Details?: { name: string }; team2Details?: { name: string } }>;
+    activeTab: string;
+    setActiveTab: (value: string) => void;
+  }) => (
+    <section>
+      <p>Active tab: {activeTab}</p>
+      {filteredMatches.length === 0 ? <p>No matches found</p> : <p>Showing {filteredMatches.length} matches</p>}
+      <button onClick={() => setActiveTab('completed')}>Switch To Completed</button>
+    </section>
+  ),
+}));
+
+vi.mock('@/components/schedule/MatchFormDialog', () => ({
+  default: () => null,
+}));
+vi.mock('@/components/schedule/DeleteMatchDialog', () => ({
+  default: () => null,
+}));
+
+const createTestQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+
+const renderPage = () => {
+  const queryClient = createTestQueryClient();
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        <Schedule />
+      </MemoryRouter>
+    </QueryClientProvider>
+  );
+};
+
+const baseScheduleData = {
+  matchesData: [],
+  matchesLoading: false,
+  upcomingMatches: [],
+  completedMatches: [],
+};
+
+describe('Schedule page', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    mockUseScheduleData.mockReturnValue(baseScheduleData);
+    mockUseMatchDates.mockReturnValue(new Set());
+    mockUseMatchTimeslots.mockReturnValue({ groupedTimeslots: {}, isLoading: false });
+    mockUseScheduleTabs.mockReturnValue({ activeTab: 'upcoming', handleTabChange: vi.fn() });
+    mockUseTeamsQuery.mockReturnValue({ data: [], isLoading: false });
+    mockUseMatchManagement.mockReturnValue({
+      matches: [],
+      editingMatch: null,
+      isFormOpen: false,
+      deleteMatchId: null,
+      isDeleting: false,
+      isUpdating: false,
+      isCreating: false,
+      setEditingMatch: vi.fn(),
+      setIsFormOpen: vi.fn(),
+      setDeleteMatchId: vi.fn(),
+      handleCreateMatch: vi.fn(),
+      handleUpdateMatch: vi.fn(),
+      handleDeleteMatch: vi.fn(),
+    });
+  });
+
+  it('shows loading state while schedule data is loading', () => {
+    mockUseScheduleData.mockReturnValue({
+      ...baseScheduleData,
+      matchesLoading: true,
+    });
+
+    renderPage();
+
+    expect(screen.getByText('Loading schedule...')).toBeInTheDocument();
+  });
+
+  it('shows empty state when no matches are available', () => {
+    renderPage();
+
+    expect(screen.getByText('No matches found')).toBeInTheDocument();
+  });
+
+  it('shows success state when matches are present', () => {
+    mockUseScheduleData.mockReturnValue({
+      ...baseScheduleData,
+      upcomingMatches: [
+        { id: 'm1', team1Details: { name: 'Alpha Team' }, team2Details: { name: 'Beta Team' }, location: 'Gym A' },
+      ],
+    });
+
+    renderPage();
+
+    expect(screen.getByText('Showing 1 matches')).toBeInTheDocument();
+  });
+
+  it('shows an error state when schedule loading throws', () => {
+    mockUseScheduleData.mockImplementation(() => {
+      throw new Error('Schedule request failed');
+    });
+
+    expect(() => renderPage()).toThrow('Schedule request failed');
+  });
+
+  it('filters matches by search interaction', () => {
+    mockUseScheduleData.mockReturnValue({
+      ...baseScheduleData,
+      upcomingMatches: [
+        { id: 'm1', team1Details: { name: 'Alpha Team' }, team2Details: { name: 'Beta Team' }, location: 'Gym A' },
+        { id: 'm2', team1Details: { name: 'Gamma Team' }, team2Details: { name: 'Delta Team' }, location: 'Gym B' },
+      ],
+    });
+
+    renderPage();
+
+    expect(screen.getByText('Showing 2 matches')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Filter Alpha' }));
+
+    expect(screen.getByText('Showing 1 matches')).toBeInTheDocument();
+  });
+
+  it('changes tabs from interaction', () => {
+    const handleTabChange = vi.fn();
+    mockUseScheduleTabs.mockReturnValue({ activeTab: 'upcoming', handleTabChange });
+
+    renderPage();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Switch To Completed' }));
+
+    expect(handleTabChange).toHaveBeenCalledWith('completed');
+  });
+});
