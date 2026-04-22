@@ -162,9 +162,10 @@ export function buildEdgesWithRelaxationLevel(
       }
 
       // Rematch constraint check (relaxed at level 1+)
-      const hasPlayedBefore =
-        config.avoidRematches && haveTeamsPlayedBeforeSync(team1.id, team2.id, config);
-      if (relaxationLevel < 1 && hasPlayedBefore && !isBothRecreational(team1, team2)) {
+      // Always compute accurate metadata; only gate the constraint/penalty on avoidRematches.
+      const hasPlayedBefore = haveTeamsPlayedBeforeSync(team1.id, team2.id, config);
+      const rematchActive = config.avoidRematches && hasPlayedBefore;
+      if (relaxationLevel < 1 && rematchActive && !isBothRecreational(team1, team2)) {
         continue;
       }
 
@@ -173,7 +174,7 @@ export function buildEdgesWithRelaxationLevel(
 
       // Apply penalty for relaxed constraints
       let adjustedWeight = rawScore;
-      if (hasPlayedBefore) {
+      if (rematchActive) {
         adjustedWeight -= 50;
       }
       if (isExtremeTierDifference(team1, team2)) {
@@ -185,7 +186,7 @@ export function buildEdgesWithRelaxationLevel(
         team2,
         weight: adjustedWeight,
         rawScore,
-        hasPlayedBefore: hasPlayedBefore || false,
+        hasPlayedBefore,
         pairingKey,
       });
     }
