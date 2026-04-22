@@ -128,7 +128,7 @@ describe('useMessageBoard', () => {
   it('applies optimistic edit/delete and realtime inserts', async () => {
     mockFetchMessages.mockResolvedValue([baseMessage]);
     mockUpdateMessage.mockResolvedValue(true);
-    mockDeleteMessage.mockResolvedValue();
+    mockDeleteMessage.mockResolvedValue(undefined);
 
     const { result } = renderHook(() => useMessageBoard(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
