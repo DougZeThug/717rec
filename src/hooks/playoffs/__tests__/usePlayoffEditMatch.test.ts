@@ -259,7 +259,7 @@ describe('usePlayoffEditMatch', () => {
 
     it('shows optimistic success toast before mutation resolves', async () => {
       (fetchBmMatchWithStage as ReturnType<typeof vi.fn>).mockResolvedValue(mockBmMatch);
-      let resolveUpdate: () => void = () => {};
+      let resolveUpdate!: () => void;
       mockUpdateMatch.mockReturnValue(
         new Promise<void>((resolve) => {
           resolveUpdate = resolve;
@@ -278,7 +278,7 @@ describe('usePlayoffEditMatch', () => {
         expect.objectContaining({ title: 'Score saved!', description: 'Updating bracket...' })
       );
 
-      await act(async () => {
+      act(() => {
         resolveUpdate();
       });
       await savePromise;
