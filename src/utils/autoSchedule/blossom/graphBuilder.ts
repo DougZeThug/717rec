@@ -212,9 +212,8 @@ export function _buildRelaxedGraph(teams: Team[], config: TeamPairingConfig): Ed
       }
 
       const rawScore = config.getCompatibilityScoreFn(team1, team2);
-      const hasPlayedBefore = config.avoidRematches
-        ? haveTeamsPlayedBeforeSync(team1.id, team2.id, config)
-        : false;
+      // Always compute accurate metadata so downstream stats stay correct.
+      const hasPlayedBefore = haveTeamsPlayedBeforeSync(team1.id, team2.id, config);
 
       const pairingKey = [team1.id, team2.id].sort().join('-');
 
