@@ -9,45 +9,82 @@ vi.mock('@/utils/logger', () => ({
   errorLog: vi.fn(),
 }));
 
-import { Team } from '@/types';
 import { fetchTeamForStats } from '@/services/teams/TeamFetchService';
+import { errorLog, teamLog } from '@/utils/logger';
 
 import { fetchTeamData } from '../fetchTeamData';
 
 describe('fetchTeamData', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('returns the team when found', async () => {
-    const mockTeam = {
-      id: 'team-1',
-      name: 'Test Team',
-      wins: 3,
-      losses: 1,
-      game_wins: 8,
-      game_losses: 4,
-      divisions: { name: 'Competitive' },
-    };
-    vi.mocked(fetchTeamForStats).mockResolvedValue(mockTeam);
+  type FetchCase = {
+    label: string;
+    teamId: string;
+    serviceResult: {
+      id: string;
+      name: string;
+      wins: number;
+      losses: number;
+      game_wins: number;
+      game_losses: number;
+    } | null;
+    expected: {
+      id: string;
+      name: string;
+      wins: number;
+      losses: number;
+      game_wins: number;
+      game_losses: number;
+    } | null;
+  };
 
-    const result = await fetchTeamData('team-1');
+  it.each<FetchCase>([
+    {
+      label: 'valid team object',
+      teamId: 'team-1',
+      serviceResult: {
+        id: 'team-1',
+        name: 'Test Team',
+        wins: 3,
+        losses: 1,
+        game_wins: 8,
+        game_losses: 4,
+      },
+      expected: {
+        id: 'team-1',
+        name: 'Test Team',
+        wins: 3,
+        losses: 1,
+        game_wins: 8,
+        game_losses: 4,
+      },
+    },
+    {
+      label: 'invalid id returns null',
+      teamId: 'unknown-id',
+      serviceResult: null,
+      expected: null,
+    },
+  ])('returns expected result for $label', async ({ teamId, serviceResult, expected }) => {
+    vi.mocked(fetchTeamForStats).mockResolvedValue(serviceResult);
 
-    expect(result).toEqual(mockTeam);
-    expect(fetchTeamForStats).toHaveBeenCalledWith('team-1');
+    await expect(fetchTeamData(teamId)).resolves.toEqual(expected);
+    expect(fetchTeamForStats).toHaveBeenCalledWith(teamId);
   });
 
-  it('returns null when no team is found', async () => {
+  it('logs error path when no team is found', async () => {
     vi.mocked(fetchTeamForStats).mockResolvedValue(null);
 
-    const result = await fetchTeamData('unknown-id');
+    await fetchTeamData('missing-team');
 
-    expect(result).toBeNull();
+    expect(errorLog).toHaveBeenCalledWith('ERROR FETCHING TEAM:', 'No team found with ID: missing-team');
   });
 
-  it('calls fetchTeamForStats with the provided teamId', async () => {
-    vi.mocked(fetchTeamForStats).mockResolvedValue(null);
+  it('propagates service errors to caller', async () => {
+    const err = new Error('DB down');
+    vi.mocked(fetchTeamForStats).mockRejectedValue(err);
 
-    await fetchTeamData('specific-id');
-
-    expect(fetchTeamForStats).toHaveBeenCalledWith('specific-id');
+    await expect(fetchTeamData('team-1')).rejects.toThrow('DB down');
+    expect(teamLog).toHaveBeenCalledWith('Fetching team data for ID:', 'team-1');
   });
 });
