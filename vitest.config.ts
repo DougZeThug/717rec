@@ -35,6 +35,30 @@ export default defineConfig(({ mode }) => ({
         'src/**/*.spec.{ts,tsx}',
         'src/setupTests.ts',
       ],
+      thresholds: {
+        lines: 27.27,
+        functions: 21.12,
+        branches: 19.98,
+        statements: 26.96,
+        'src/services/**': {
+          lines: 45,
+          functions: 40,
+          branches: 35,
+          statements: 45,
+        },
+        'src/hooks/**': {
+          lines: 15,
+          functions: 15,
+          branches: 12,
+          statements: 15,
+        },
+        'src/utils/**': {
+          lines: 50,
+          functions: 45,
+          branches: 40,
+          statements: 50,
+        },
+      },
     },
   },
 }));
