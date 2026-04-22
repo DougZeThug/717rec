@@ -223,4 +223,72 @@ describe('useMatchSubmission', () => {
       })
     );
   });
+
+  it('allows concurrent submissions for different match IDs', async () => {
+    vi.mocked(updateMatchScore).mockImplementation(async ({ matchId }) => ({
+      data: { id: matchId },
+      team1_id: 'team-1',
+      team2_id: 'team-2',
+      team1Win: true,
+    }));
+
+    const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
+
+    const results = await Promise.all([
+      result.current.handleSubmitScore({ matchId: 'm1', team1Score: 2, team2Score: 1 }),
+      result.current.handleSubmitScore({ matchId: 'm2', team1Score: 2, team2Score: 1 }),
+      result.current.handleSubmitScore({ matchId: 'm3', team1Score: 2, team2Score: 1 }),
+    ]);
+
+    expect(results).toEqual([true, true, true]);
+    expect(updateMatchScore).toHaveBeenCalledTimes(3);
+  });
+
+  it('blocks duplicate concurrent submissions for the same match ID', async () => {
+    let resolveFirst: (value: any) => void;
+    const pending = new Promise((resolve) => {
+      resolveFirst = resolve;
+    });
+
+    vi.mocked(updateMatchScore).mockImplementationOnce(() => pending as any);
+
+    const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
+
+    const first = result.current.handleSubmitScore({
+      matchId: 'same-match',
+      team1Score: 2,
+      team2Score: 1,
+    });
+    const secondImmediate = await result.current.handleSubmitScore({
+      matchId: 'same-match',
+      team1Score: 2,
+      team2Score: 1,
+    });
+
+    expect(secondImmediate).toBe(false);
+    expect(updateMatchScore).toHaveBeenCalledTimes(1);
+
+    resolveFirst!({
+      data: { id: 'same-match' },
+      team1_id: 'team-1',
+      team2_id: 'team-2',
+      team1Win: true,
+    });
+    await first;
+
+    vi.mocked(updateMatchScore).mockResolvedValueOnce({
+      data: { id: 'same-match' },
+      team1_id: 'team-1',
+      team2_id: 'team-2',
+      team1Win: true,
+    });
+
+    const third = await result.current.handleSubmitScore({
+      matchId: 'same-match',
+      team1Score: 3,
+      team2Score: 1,
+    });
+    expect(third).toBe(true);
+    expect(updateMatchScore).toHaveBeenCalledTimes(2);
+  });
 });

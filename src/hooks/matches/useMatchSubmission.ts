@@ -15,7 +15,7 @@ export const useMatchSubmission = () => {
   const queryClient = useQueryClient();
   const { updateTeamStats } = useTeamRecordUpdate();
   const { validateScore } = useScoreValidation();
-  const isSubmittingRef = useRef(false);
+  const submittingMatchIds = useRef<Set<string>>(new Set());
 
   const handleSubmitScore = async ({
     matchId,
@@ -24,8 +24,8 @@ export const useMatchSubmission = () => {
     team1GameWins = 0,
     team2GameWins = 0,
   }: SubmitScoreParams) => {
-    if (isSubmittingRef.current) return false;
-    isSubmittingRef.current = true;
+    if (submittingMatchIds.current.has(matchId)) return false;
+    submittingMatchIds.current.add(matchId);
     try {
       // Ensure game wins are properly parsed as integers
       const parsedTeam1GameWins = parseInt(String(team1GameWins)) || 0;
@@ -83,7 +83,7 @@ export const useMatchSubmission = () => {
       });
       return false;
     } finally {
-      isSubmittingRef.current = false;
+      submittingMatchIds.current.delete(matchId);
     }
   };
 
