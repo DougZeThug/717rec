@@ -104,13 +104,13 @@ const baseMessageBoardState = {
   messages: [],
   isLoading: false,
   error: null,
-  postMessage: vi.fn().mockResolvedValue(),
-  editMessage: vi.fn().mockResolvedValue(),
-  deleteMessage: vi.fn().mockResolvedValue(),
+  postMessage: vi.fn().mockResolvedValue(undefined),
+  editMessage: vi.fn().mockResolvedValue(undefined),
+  deleteMessage: vi.fn().mockResolvedValue(undefined),
   hasMore: false,
   loadingMore: false,
   loadMoreMessages: vi.fn(),
-  refreshMessages: vi.fn().mockResolvedValue(),
+  refreshMessages: vi.fn().mockResolvedValue(undefined),
   filterOptions: { type: 'all' },
   setFilter: vi.fn(),
 };
@@ -177,7 +177,7 @@ describe('MessageBoard page', () => {
   });
 
   it('lets an authenticated user submit a message', async () => {
-    const postMessage = vi.fn().mockResolvedValue();
+    const postMessage = vi.fn().mockResolvedValue(undefined);
     mockUseMessageBoard.mockReturnValue({
       ...baseMessageBoardState,
       postMessage,
