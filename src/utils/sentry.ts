@@ -151,15 +151,19 @@ const SENSITIVE_QUERY_PARAMS = [
   'code',
 ];
 
-const scrubUrl = (url: string): string => {
+const SENSITIVE_QUERY_PARAMS_LOWER = new Set(
+  SENSITIVE_QUERY_PARAMS.map((p) => p.toLowerCase())
+);
+
+export const scrubUrl = (url: string): string => {
   try {
     // Handle relative URLs by giving them a dummy base
     const hasProtocol = /^https?:\/\//i.test(url);
     const u = new URL(url, hasProtocol ? undefined : 'http://_');
     let mutated = false;
-    for (const param of SENSITIVE_QUERY_PARAMS) {
-      if (u.searchParams.has(param)) {
-        u.searchParams.set(param, '[Filtered]');
+    for (const key of Array.from(u.searchParams.keys())) {
+      if (SENSITIVE_QUERY_PARAMS_LOWER.has(key.toLowerCase())) {
+        u.searchParams.set(key, '[Filtered]');
         mutated = true;
       }
     }
@@ -170,13 +174,13 @@ const scrubUrl = (url: string): string => {
   }
 };
 
-const scrubQueryString = (qs: string): string => {
+export const scrubQueryString = (qs: string): string => {
   try {
     const params = new URLSearchParams(qs.startsWith('?') ? qs.slice(1) : qs);
     let mutated = false;
-    for (const param of SENSITIVE_QUERY_PARAMS) {
-      if (params.has(param)) {
-        params.set(param, '[Filtered]');
+    for (const key of Array.from(params.keys())) {
+      if (SENSITIVE_QUERY_PARAMS_LOWER.has(key.toLowerCase())) {
+        params.set(key, '[Filtered]');
         mutated = true;
       }
     }
