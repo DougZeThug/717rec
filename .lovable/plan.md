@@ -1,74 +1,60 @@
 
 
-## Plan: Fix realtime retry by recreating the channel instance
+## Plan: Show "Rematch" indicator on each match card in edit mode
 
-### The bug
+### What admins will see
 
-In `src/hooks/brackets/useBracketsManagerRealtime.ts`, the `CHANNEL_ERROR` retry tears down the channel with `supabase.removeChannel(channel)` and then immediately calls `channel.subscribe()` on that same (now-removed) channel. Phoenix's underlying channel sets `joinedOnce = true` on the first join and never resets it, so the retry throws `"tried to join multiple times..."` inside the `setTimeout` callback. The exception is swallowed, `realtimeEnabled` stays `false`, and the user gets no more live bracket updates until they refresh.
+In edit mode, each match card already shows a red border + message when there's an **error** (e.g. duplicate team). This plan adds the same per-card treatment for **rematch warnings** so admins immediately see when the teams they just selected have already played each other this season — matching the indicator they get in preview mode.
 
-### The fix
+For every editable match where the chosen teams have played before:
+- A small amber **"Rematch"** badge appears in the card header (with a 🔁 icon and tooltip: "These teams have already played each other this season").
+- An amber left border on the card (non-blocking, distinct from the red error border).
+- The validation summary alert at the top of the list now also reports warning counts, e.g. *"Schedule is valid. 2 rematch warnings — review highlighted matches."*
 
-Refactor the subscription into a small `connect()` helper inside the existing `useEffect` so retries create a brand-new channel each time, with all listeners reattached. Await `removeChannel` before reconnecting to avoid racing teardown.
+Selecting a different opponent updates the indicator within ~1s (the existing `useEditableMatches` validation effect already re-runs `validateMatchSchedule` on every change, which calls `haveTeamsPlayedBefore` — no extra fetching needed).
 
-Sketch (inside the existing effect in `useBracketsManagerRealtime.ts`):
+### Technical changes
 
-```ts
-let currentChannel: ReturnType<typeof supabase.channel> | null = null;
-let retryTimer: ReturnType<typeof setTimeout> | null = null;
-let hasRetried = false;
+The pipe is already in place: `useEditableMatches` runs `validateMatchSchedule`, which produces `validation.warnings` containing `{ matchId, type: 'rematch', message }`. Today only `validation.errors` are surfaced per card. We just need to surface `validation.warnings` too.
 
-const connect = () => {
-  const channelName = `bracket-matches-${bracketId}-${stageId}-${Date.now()}`;
-  const channel = supabase
-    .channel(channelName)
-    .on('postgres_changes',
-      { event: '*', schema: 'public', table: 'match', filter: `stage_id=eq.${stageId}` },
-      (payload) => { /* same handler as today */ })
-    .subscribe((status) => {
-      if (status === 'SUBSCRIBED') {
-        setRealtimeEnabled(true);
-      } else if (status === 'CHANNEL_ERROR') {
-        setRealtimeEnabled(false);
-        if (!hasRetried) {
-          hasRetried = true;
-          retryTimer = setTimeout(async () => {
-            if (currentChannel) await supabase.removeChannel(currentChannel);
-            currentChannel = connect(); // brand-new channel, fresh joinedOnce
-          }, 2000);
-        } else {
-          errorLog('Realtime subscription FAILED after retry', { bracketId, stageId });
-        }
-      }
-    });
-  return channel;
-};
+**1. `src/components/admin/auto-schedule/EditableMatchList.tsx`**
+- Add a `getMatchWarning(matchId)` lookup mirroring the existing `getMatchError`, returning the first warning whose `matchId` matches.
+- Pass `hasWarning` and `warningMessage` props down to `EditableMatchCard`.
+- Update the top summary `Alert` to mention warning count when `validation.isValid && warnings.length > 0` (use `default` variant with an amber tint or the existing default styling).
 
-currentChannel = connect();
+**2. `src/components/admin/auto-schedule/EditableMatchCard.tsx`**
+- Extend props with optional `hasWarning?: boolean` and `warningMessage?: string`.
+- Apply an amber border (`border-amber-400` / dark equivalent) when `hasWarning && !hasError` — error border still wins when both are present.
+- Above the team selectors, render a small badge row when `hasWarning`:
+  ```tsx
+  {hasWarning && !hasError && (
+    <div className="mb-3 flex items-center gap-2 text-amber-700 dark:text-amber-300 text-sm">
+      <RotateCcw className="h-4 w-4" />
+      <span>{warningMessage ?? 'Rematch — these teams have already played'}</span>
+    </div>
+  )}
+  ```
+- Use the existing `Badge` component for visual consistency with other warning chips in the app.
 
-return () => {
-  if (retryTimer) clearTimeout(retryTimer);
-  if (currentChannel) supabase.removeChannel(currentChannel);
-  setRealtimeEnabled(false);
-};
-```
-
-Behavioral notes:
-- The realtime payload handler, toast, and cache-invalidation logic stay identical.
-- `hasRetried` still caps retries at one attempt per effect lifecycle (matches today's behavior).
-- Cleanup always tears down whichever channel is currently active (original or retry).
-- A unique channel name (already includes `Date.now()`) avoids handshake collisions on the new instance.
+**3. No changes needed to:**
+- `useEditableMatches.ts` — already produces warnings.
+- `validation.ts` — `checkForRematches` already populates them.
+- `MatchesTab.tsx` / `ScheduleWorkflowTabs.tsx` / `AutoScheduleTab.tsx` — `validation` is already threaded through.
 
 ### Files touched
 
-- Edit: `src/hooks/brackets/useBracketsManagerRealtime.ts` — extract `connect()`, recreate channel on retry, await `removeChannel`.
+- Edit: `src/components/admin/auto-schedule/EditableMatchList.tsx` — surface warnings, expand summary alert.
+- Edit: `src/components/admin/auto-schedule/EditableMatchCard.tsx` — accept + render warning indicator.
 
 ### Verification
 
-1. Manual: open the Playoffs page, confirm "Realtime ON" indicator appears. Temporarily simulate a channel error (e.g., revoke realtime perms or disconnect Wi-Fi briefly) — within ~2s, the indicator should recover to ON instead of staying OFF.
-2. Console logs show "Realtime CHANNEL_ERROR — retrying once in 2s" followed by a new "Realtime subscription to match table ACTIVE" without the Phoenix "tried to join multiple times" exception.
-3. No regression on first-time subscribes or on unmount cleanup.
+1. Open Admin → Batch Match Creation → Auto Schedule → generate a schedule → toggle **Edit** mode.
+2. In any match card, change one team's opponent to a team they've already played this season → within a moment, an amber "Rematch" badge and amber border appear on that card.
+3. Change to a fresh opponent → badge disappears.
+4. Cards with both an error (e.g. duplicate team in same timeslot) and a rematch still show the red error styling/message; rematch indicator is suppressed to avoid noise.
+5. Top summary alert reflects "X rematch warnings" when applicable.
 
 ### Rollback
 
-Revert the single file. One step.
+Revert the two files. One step. The validation pipeline is unchanged.
 
