@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import React, { useState } from 'react';
+import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Season } from '@/types/season';
@@ -36,18 +36,6 @@ const season: Season = {
   runner_up_team_id: null,
 };
 
-const Harness: React.FC = () => {
-  const [open, setOpen] = useState(true);
-  return (
-    <>
-      <button type="button" onClick={() => setOpen((v) => !v)}>
-        toggle
-      </button>
-      <SeasonArchivalDialog isOpen={open} onClose={() => setOpen(false)} season={season} />
-    </>
-  );
-};
-
 describe('SeasonArchivalDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -55,24 +43,21 @@ describe('SeasonArchivalDialog', () => {
 
   it('resets the "Keep playoffs active" checkbox each time the dialog reopens', async () => {
     const user = userEvent.setup();
-    render(<Harness />);
+    const { rerender } = render(
+      <SeasonArchivalDialog isOpen onClose={vi.fn()} season={season} />
+    );
 
-    // Initial state: unchecked
     let checkbox = screen.getByRole('checkbox', { name: /keep playoffs active/i });
     expect(checkbox).not.toBeChecked();
 
-    // User checks it
     await user.click(checkbox);
     checkbox = screen.getByRole('checkbox', { name: /keep playoffs active/i });
     expect(checkbox).toBeChecked();
 
-    // Close (simulates Cancel)
-    await user.click(screen.getByRole('button', { name: /toggle/i }));
+    // Close, then reopen the dialog (component stays mounted across cycles)
+    rerender(<SeasonArchivalDialog isOpen={false} onClose={vi.fn()} season={season} />);
+    rerender(<SeasonArchivalDialog isOpen onClose={vi.fn()} season={season} />);
 
-    // Reopen
-    await user.click(screen.getByRole('button', { name: /toggle/i }));
-
-    // Should be reset to unchecked
     checkbox = screen.getByRole('checkbox', { name: /keep playoffs active/i });
     expect(checkbox).not.toBeChecked();
   });
