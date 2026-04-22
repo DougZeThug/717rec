@@ -1,64 +1,74 @@
 
 
-## Plan: Make Sentry URL scrubbing case-insensitive
+## Plan: Fix realtime retry by recreating the channel instance
 
 ### The bug
 
-`scrubUrl` and `scrubQueryString` in `src/utils/sentry.ts` loop over the lowercase `SENSITIVE_QUERY_PARAMS` list and call `URLSearchParams.has(param)`. That check is case-sensitive, so `?TOKEN=...`, `?Password=...`, or `?API_KEY=...` slip through unredacted into Sentry events.
+In `src/hooks/brackets/useBracketsManagerRealtime.ts`, the `CHANNEL_ERROR` retry tears down the channel with `supabase.removeChannel(channel)` and then immediately calls `channel.subscribe()` on that same (now-removed) channel. Phoenix's underlying channel sets `joinedOnce = true` on the first join and never resets it, so the retry throws `"tried to join multiple times..."` inside the `setTimeout` callback. The exception is swallowed, `realtimeEnabled` stays `false`, and the user gets no more live bracket updates until they refresh.
 
 ### The fix
 
-Iterate the URL's actual params and compare each key's lowercased form against a lowercase set. Scrub the original key (preserving casing in the URL while replacing the value).
+Refactor the subscription into a small `connect()` helper inside the existing `useEffect` so retries create a brand-new channel each time, with all listeners reattached. Await `removeChannel` before reconnecting to avoid racing teardown.
 
-In `src/utils/sentry.ts`:
+Sketch (inside the existing effect in `useBracketsManagerRealtime.ts`):
 
-1. Build a single lowercase lookup once:
-   ```ts
-   const SENSITIVE_QUERY_PARAMS_LOWER = new Set(
-     SENSITIVE_QUERY_PARAMS.map((p) => p.toLowerCase())
-   );
-   ```
-2. Replace both loops with:
-   ```ts
-   for (const key of Array.from(u.searchParams.keys())) {
-     if (SENSITIVE_QUERY_PARAMS_LOWER.has(key.toLowerCase())) {
-       u.searchParams.set(key, '[Filtered]');
-       mutated = true;
-     }
-   }
-   ```
-   (Snapshotting the keys with `Array.from` avoids mutating-while-iterating on `URLSearchParams`.)
-3. Same change in `scrubQueryString` against the local `params` object.
+```ts
+let currentChannel: ReturnType<typeof supabase.channel> | null = null;
+let retryTimer: ReturnType<typeof setTimeout> | null = null;
+let hasRetried = false;
 
-No other behavior changes — the scrub list, return shape, and try/catch fallbacks stay identical.
+const connect = () => {
+  const channelName = `bracket-matches-${bracketId}-${stageId}-${Date.now()}`;
+  const channel = supabase
+    .channel(channelName)
+    .on('postgres_changes',
+      { event: '*', schema: 'public', table: 'match', filter: `stage_id=eq.${stageId}` },
+      (payload) => { /* same handler as today */ })
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        setRealtimeEnabled(true);
+      } else if (status === 'CHANNEL_ERROR') {
+        setRealtimeEnabled(false);
+        if (!hasRetried) {
+          hasRetried = true;
+          retryTimer = setTimeout(async () => {
+            if (currentChannel) await supabase.removeChannel(currentChannel);
+            currentChannel = connect(); // brand-new channel, fresh joinedOnce
+          }, 2000);
+        } else {
+          errorLog('Realtime subscription FAILED after retry', { bracketId, stageId });
+        }
+      }
+    });
+  return channel;
+};
 
-### Test coverage
+currentChannel = connect();
 
-Create `src/utils/__tests__/sentry.test.ts` (new file). Since `scrubUrl` / `scrubQueryString` aren't exported, expose them for testing by either:
-- Exporting them from `sentry.ts` (preferred — small surface, internal helpers), or
-- Testing through `scrubSensitiveQueryParams` by exporting it.
+return () => {
+  if (retryTimer) clearTimeout(retryTimer);
+  if (currentChannel) supabase.removeChannel(currentChannel);
+  setRealtimeEnabled(false);
+};
+```
 
-Recommended: add `export` to `scrubUrl` and `scrubQueryString` so tests are direct.
-
-Tests:
-1. Lowercase param `?token=abc` → filtered (regression — current behavior).
-2. Uppercase `?TOKEN=abc` → filtered (new — fails today).
-3. Mixed case `?Password=abc&Api_Key=xyz` → both filtered.
-4. Non-sensitive param `?page=2` → untouched.
-5. Mixed sensitive + non-sensitive preserves order/casing of non-sensitive keys.
-6. `scrubQueryString` variant covering the same cases, including with and without leading `?`.
+Behavioral notes:
+- The realtime payload handler, toast, and cache-invalidation logic stay identical.
+- `hasRetried` still caps retries at one attempt per effect lifecycle (matches today's behavior).
+- Cleanup always tears down whichever channel is currently active (original or retry).
+- A unique channel name (already includes `Date.now()`) avoids handshake collisions on the new instance.
 
 ### Files touched
 
-- Edit: `src/utils/sentry.ts` — add lowercase set, swap both loops, export the two helpers.
-- Create: `src/utils/__tests__/sentry.test.ts` — the cases above.
+- Edit: `src/hooks/brackets/useBracketsManagerRealtime.ts` — extract `connect()`, recreate channel on retry, await `removeChannel`.
 
 ### Verification
 
-1. `npm test src/utils/__tests__/sentry.test.ts` — all new cases pass.
-2. Existing Sentry behavior unchanged in production (only the matching logic widened).
+1. Manual: open the Playoffs page, confirm "Realtime ON" indicator appears. Temporarily simulate a channel error (e.g., revoke realtime perms or disconnect Wi-Fi briefly) — within ~2s, the indicator should recover to ON instead of staying OFF.
+2. Console logs show "Realtime CHANNEL_ERROR — retrying once in 2s" followed by a new "Realtime subscription to match table ACTIVE" without the Phoenix "tried to join multiple times" exception.
+3. No regression on first-time subscribes or on unmount cleanup.
 
 ### Rollback
 
-Revert the two files. One step.
+Revert the single file. One step.
 
