@@ -1,4 +1,4 @@
-import { ArrowLeftRight } from 'lucide-react';
+import { ArrowLeftRight, RotateCcw } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,8 @@ interface EditableMatchCardProps {
   onRemove: (matchId: string) => void;
   hasError?: boolean;
   errorMessage?: string;
+  hasWarning?: boolean;
+  warningMessage?: string;
 }
 
 const timeSlotOptions = [
@@ -45,6 +47,8 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
   onRemove,
   hasError,
   errorMessage,
+  hasWarning,
+  warningMessage,
 }) => {
   const getTeamById = (id: string | null) => {
     if (!id) return null;
@@ -56,11 +60,27 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
 
   return (
     <div
-      className={`p-4 border rounded-lg bg-card shadow-sm ${hasError ? 'border-destructive' : ''}`}
+      className={`p-4 border rounded-lg bg-card shadow-sm ${
+        hasError
+          ? 'border-destructive'
+          : hasWarning
+            ? 'border-amber-400 dark:border-amber-500/60 border-l-4'
+            : ''
+      }`}
     >
       {hasError && errorMessage && (
         <div className="mb-3 p-2 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">
           {errorMessage}
+        </div>
+      )}
+
+      {hasWarning && !hasError && (
+        <div
+          className="mb-3 flex items-center gap-2 text-sm text-amber-700 dark:text-amber-300"
+          title="These teams have already played each other this season"
+        >
+          <RotateCcw className="h-4 w-4" />
+          <span>{warningMessage ?? 'Rematch — these teams have already played'}</span>
         </div>
       )}
 
