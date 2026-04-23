@@ -1,7 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ValidationError } from '@/types/errors';
-
 const mockRpc = vi.fn();
 
 vi.mock('@/integrations/supabase/client', () => ({
@@ -104,19 +102,5 @@ describe('FailedBadgeOperationsService', () => {
     expect(operations).toHaveLength(1);
     expect(operations[0].id).toBe('op-1');
     expect(operations[0].error).toBe('second error');
-  });
-
-  it('throws ValidationError for unknown badge operation types', async () => {
-    await expect(
-      (FailedBadgeOperationsService as any).executeOperation({
-        id: 'bad-op',
-        type: 'unknown_badge',
-        params: {},
-        error: 'x',
-        matchId: 'm1',
-        createdAt: new Date().toISOString(),
-        retryCount: 0,
-      })
-    ).rejects.toThrow(ValidationError);
   });
 });

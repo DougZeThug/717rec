@@ -2,6 +2,38 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DatabaseError } from '@/types/errors';
 
+interface PostgrestErrorLike {
+  message: string;
+  code: string;
+  details: string | null;
+  hint: string | null;
+  name: string;
+}
+
+interface QueryResult<TData> {
+  data: TData | null;
+  error: PostgrestErrorLike | null;
+}
+
+interface SeasonRow {
+  season_id: string;
+  match_wins: number;
+  match_losses: number;
+  game_wins: number;
+  game_losses: number;
+  sos: number;
+  power_score: number;
+  champion: boolean;
+  runner_up: boolean;
+  playoff_rank: number;
+  division_name: string;
+  seasons: {
+    id: string;
+    name: string;
+    start_date: string;
+  };
+}
+
 const mockFrom = vi.fn();
 const mockErrorLog = vi.fn();
 
@@ -37,9 +69,7 @@ vi.mock('@/hooks/teams/seasonBreakdown/calculateSeasonStats', () => ({
 
 import { fetchSeasonBreakdown } from '../TeamSeasonStatsService';
 
-type QueryResult = { data: any; error: any };
-
-const createSeasonStatsQuery = (result: QueryResult, selects: string[]) => ({
+const createSeasonStatsQuery = <TData>(result: QueryResult<TData>, selects: string[]) => ({
   select: (columns: string) => {
     selects.push(columns);
     return {
@@ -50,7 +80,7 @@ const createSeasonStatsQuery = (result: QueryResult, selects: string[]) => ({
   },
 });
 
-const createSimpleEqQuery = (result: QueryResult, selects: string[]) => ({
+const createSimpleEqQuery = <TData>(result: QueryResult<TData>, selects: string[]) => ({
   select: (columns: string) => {
     selects.push(columns);
     return {
@@ -59,7 +89,7 @@ const createSimpleEqQuery = (result: QueryResult, selects: string[]) => ({
   },
 });
 
-const createOrEqQuery = (result: QueryResult, selects: string[]) => ({
+const createOrEqQuery = <TData>(result: QueryResult<TData>, selects: string[]) => ({
   select: (columns: string) => {
     selects.push(columns);
     return {
@@ -70,7 +100,7 @@ const createOrEqQuery = (result: QueryResult, selects: string[]) => ({
   },
 });
 
-const createOrNotQuery = (result: QueryResult, selects: string[]) => ({
+const createOrNotQuery = <TData>(result: QueryResult<TData>, selects: string[]) => ({
   select: (columns: string) => {
     selects.push(columns);
     return {
@@ -81,7 +111,7 @@ const createOrNotQuery = (result: QueryResult, selects: string[]) => ({
   },
 });
 
-const createInQuery = (result: QueryResult, selects: string[]) => ({
+const createInQuery = <TData>(result: QueryResult<TData>, selects: string[]) => ({
   select: (columns: string) => {
     selects.push(columns);
     return {
@@ -90,7 +120,7 @@ const createInQuery = (result: QueryResult, selects: string[]) => ({
   },
 });
 
-const seasonRow = (overrides?: Partial<any>) => ({
+const seasonRow = (overrides?: Partial<SeasonRow>): SeasonRow => ({
   season_id: 's1',
   match_wins: 8,
   match_losses: 2,
@@ -120,8 +150,8 @@ describe('fetchSeasonBreakdown', () => {
     Object.values(selectCalls).forEach((arr) => arr.splice(0, arr.length));
   });
 
-  const setupQueries = (overrides?: Partial<Record<string, QueryResult>>) => {
-    const results: Record<string, QueryResult> = {
+  const setupQueries = (overrides?: Partial<Record<string, QueryResult<unknown>>>) => {
+    const results: Record<string, QueryResult<unknown>> = {
       team_season_stats: { data: [seasonRow(), seasonRow({ season_id: 's2', power_score: 0.6 })], error: null },
       all_team_season_stats: {
         data: [
