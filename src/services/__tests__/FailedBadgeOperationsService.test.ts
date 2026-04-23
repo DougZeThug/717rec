@@ -27,7 +27,7 @@ describe('FailedBadgeOperationsService', () => {
     vi.clearAllMocks();
     vi.useFakeTimers();
     localStorage.clear();
-    vi.spyOn(crypto, 'randomUUID').mockReturnValue('op-1');
+    vi.spyOn(crypto, 'randomUUID').mockReturnValue('op-1' as `${string}-${string}-${string}-${string}-${string}`);
   });
 
   it('retries queued operations and removes successful ones from pending storage', async () => {
@@ -81,8 +81,8 @@ describe('FailedBadgeOperationsService', () => {
 
   it('dedupes repeated failed operations for the same match/type/params', () => {
     vi.spyOn(crypto, 'randomUUID')
-      .mockReturnValueOnce('op-1')
-      .mockReturnValueOnce('op-2');
+      .mockReturnValueOnce('op-1' as `${string}-${string}-${string}-${string}-${string}`)
+      .mockReturnValueOnce('op-2' as `${string}-${string}-${string}-${string}-${string}`);
 
     FailedBadgeOperationsService.queueFailedOperation(
       'match_badges',
