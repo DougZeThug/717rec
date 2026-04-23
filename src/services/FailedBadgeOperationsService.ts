@@ -73,6 +73,24 @@ export class FailedBadgeOperationsService {
     matchId: string
   ): void {
     const operations = this.getFailedOperations();
+    const normalizedParams = JSON.stringify(params);
+    const existingOperation = operations.find(
+      (operation) =>
+        operation.type === type &&
+        operation.matchId === matchId &&
+        JSON.stringify(operation.params) === normalizedParams
+    );
+
+    if (existingOperation) {
+      existingOperation.error = error instanceof Error ? error.message : String(error);
+      existingOperation.lastRetryAt = new Date().toISOString();
+      this.saveFailedOperations(operations);
+      warnLog('Duplicate badge operation merged into existing retry item:', {
+        type,
+        matchId,
+      });
+      return;
+    }
 
     const newOperation: FailedBadgeOperation = {
       id: crypto.randomUUID(),
