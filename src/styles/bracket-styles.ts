@@ -4,6 +4,8 @@
  * This reduces unused CSS on initial page load by ~20-30KB
  */
 
+import { errorLog } from '@/utils/logger';
+
 let stylesLoaded = false;
 
 export const loadBracketStyles = async (): Promise<void> => {
@@ -19,7 +21,7 @@ export const loadBracketStyles = async (): Promise<void> => {
     ]);
     stylesLoaded = true;
   } catch (error) {
-    console.error('Failed to load bracket styles:', error);
+    errorLog('Failed to load bracket styles:', error);
   }
 };
 
