@@ -193,6 +193,29 @@ export class BracketUpdateService {
           // =============================================
           // NORMAL MATCH PATH: use brackets-manager library
           // =============================================
+          // ⭐ Unlock archived matches (status 5) before update
+          // The brackets-manager library locks matches with status 5 (Archived),
+          // which happens automatically once a downstream round progresses.
+          // Admins still need to be able to correct earlier-round scores, so we
+          // temporarily flip the status back to 4 (Completed) before updating.
+          if (currentMatch.status === 5) {
+            bracketLog(
+              `🔓 Match ${matchId} is Archived (status 5) — temporarily unlocking to status 4 for admin edit`
+            );
+            const { error: unlockError } = await supabase
+              .from('match')
+              .update({ status: 4 })
+              .eq('id', matchId);
+
+            if (unlockError) {
+              errorLog(`Failed to unlock archived match ${matchId}:`, unlockError);
+              throw new BusinessLogicError(
+                `Failed to unlock archived match: ${unlockError.message}`,
+                unlockError
+              );
+            }
+          }
+
           bracketLog(`CALLING manager.update.match() with:`, {
             id: matchId,
             opponent1: scores.opponent1,
