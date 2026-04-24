@@ -15,14 +15,13 @@ Services (throw) → Hooks (catch + handle) → Components (display)
 **Rule: ALWAYS throw errors, NEVER return null on error**
 
 Services are responsible for data fetching and mutations. They should:
-- Throw typed errors (e.g., `SupabaseError`, `ValidationError`)
-- Log before throwing using `errorLog()`
+- Use `handleDatabaseError()` for database errors (logs and throws)
+- Use `ensureFound()` for required resources (throws NotFoundError)
 - Let the calling hook handle the error
 
 ```typescript
 // ✅ CORRECT
-import { SupabaseError } from '@/utils/errors';
-import { errorLog } from '@/utils/logger';
+import { handleDatabaseError, ensureFound } from '@/utils/errorHandler';
 
 export class MyService {
   static async getData(id: string) {
@@ -32,12 +31,8 @@ export class MyService {
       .eq('id', id)
       .single();
 
-    if (error) {
-      errorLog('Error fetching data:', error);
-      throw new SupabaseError(error.message, 'my_table', 'getData');
-    }
-
-    return data;
+    if (error) handleDatabaseError(error, 'Failed to fetch data');
+    return ensureFound(data, 'Data', id);
   }
 }
 
@@ -144,27 +139,28 @@ const errorInfo = handleError(error, 'Creating team');
 const errorInfo = handleErrorSilent(error, 'Background sync');
 ```
 
-### `createServiceError()`
+### `handleDatabaseError()`
 
-Create standardized service errors:
+Handle database errors consistently:
 
 ```typescript
-import { createServiceError } from '@/utils/errorHandling';
+import { handleDatabaseError } from '@/utils/errorHandler';
 
 if (error) {
-  throw createServiceError('fetchTeams', 'teams', error);
+  handleDatabaseError(error, 'Failed to fetch teams');
 }
 ```
 
-### `withRetry()`
+### `withErrorHandling()`
 
-Retry transient errors automatically:
+Wrap operations with consistent error handling:
 
 ```typescript
-import { withRetry } from '@/utils/errorHandling';
+import { withErrorHandling } from '@/utils/errorHandler';
 
-const result = await withRetry(() => 
-  supabase.from('teams').select('id, name, division_id, created_at')
+const result = await withErrorHandling(
+  () => supabase.from('teams').select('*'),
+  'Fetching teams'
 );
 ```
 
@@ -172,16 +168,16 @@ const result = await withRetry(() =>
 
 | Error Class | Use Case |
 |------------|----------|
-| `SupabaseError` | Database operations |
-| `ChallongeError` | Challonge API calls |
-| `BracketValidationError` | Bracket validation |
-| `TeamValidationError` | Team validation |
-| `MatchSyncError` | Match synchronization |
+| `DatabaseError` | Database operations |
+| `NotFoundError` | Resource not found |
+| `ValidationError` | Invalid input or validation failures |
+| `AuthorizationError` | Insufficient permissions |
+| `BusinessLogicError` | Rule violations or invalid state |
 
 ## Best Practices
 
-1. **Be specific**: Use typed errors with context (table, operation)
-2. **Log before throwing**: Always log in services before throwing
-3. **User-friendly messages**: Use `categorizeError()` for user messaging
+1. **Be specific**: Use `handleDatabaseError()` and `ensureFound()` with descriptive context
+2. **Use error helpers**: `handleDatabaseError()` logs automatically before throwing
+3. **User-friendly messages**: Use `handleHookError()` in hooks for user messaging
 4. **Provide recovery**: Always offer retry when possible
 5. **Don't swallow errors**: Never catch without handling or re-throwing
