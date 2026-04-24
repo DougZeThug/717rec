@@ -6,6 +6,7 @@ import { DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+import { MatchStatusBadge } from './MatchStatusBadge';
 import type { ByeEligibility } from './useMatchEditorState';
 
 interface ByeMatchEditorProps {
@@ -21,6 +22,7 @@ interface ByeMatchEditorProps {
   onSave: () => void;
   onClose: () => void;
   onToggleByeStatus: (clearDownstream: boolean) => void;
+  status?: number;
 }
 
 export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
@@ -36,12 +38,15 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
   onSave,
   onClose,
   onToggleByeStatus,
+  status,
 }) => {
   return (
     <DialogContent className="max-w-[95vw] sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle className="text-base sm:text-lg">Match Forfeit - BYE</DialogTitle>
       </DialogHeader>
+
+      <MatchStatusBadge status={status ?? byeEligible?.currentStatus} />
 
       <div className="space-y-4 sm:space-y-6 py-2 sm:py-4">
         <div className="text-center py-2 sm:py-4">

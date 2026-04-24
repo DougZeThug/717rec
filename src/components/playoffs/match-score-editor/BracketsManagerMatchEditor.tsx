@@ -111,6 +111,7 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
             onSave={handleSave}
             onClose={onClose}
             onToggleByeStatus={handleToggleByeStatus}
+          status={matchData.status}
           />
         </Dialog>
         {editTeamsDialog}
@@ -135,6 +136,7 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
           onClose={onClose}
           onEditTeams={() => setIsEditTeamsOpen(true)}
           canEditTeams={canEditTeams}
+          status={matchData.status}
         />
       </Dialog>
       {editTeamsDialog}

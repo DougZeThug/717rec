@@ -6,6 +6,8 @@ import { DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+import { MatchStatusBadge } from './MatchStatusBadge';
+
 interface RegularMatchEditorProps {
   opponent1Name: string;
   opponent2Name: string;
@@ -24,6 +26,7 @@ interface RegularMatchEditorProps {
   onClose: () => void;
   onEditTeams?: () => void;
   canEditTeams?: boolean;
+  status?: number;
 }
 
 export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
@@ -39,12 +42,15 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
   onClose,
   onEditTeams,
   canEditTeams,
+  status,
 }) => {
   return (
     <DialogContent className="sm:max-w-[500px]">
       <DialogHeader>
         <DialogTitle>Edit Match Score</DialogTitle>
       </DialogHeader>
+
+      <MatchStatusBadge status={status} />
 
       <div className="space-y-6 py-4">
         {/* Team 1 Score */}
