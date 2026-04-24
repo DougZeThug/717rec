@@ -193,24 +193,48 @@ export class BracketUpdateService {
           // =============================================
           // NORMAL MATCH PATH: use brackets-manager library
           // =============================================
-          // ⭐ Unlock archived matches (status 5) before update
-          // The brackets-manager library locks matches with status 5 (Archived),
-          // which happens automatically once a downstream round progresses.
-          // Admins still need to be able to correct earlier-round scores, so we
-          // temporarily flip the status back to 4 (Completed) before updating.
+          // ⭐ Unlock matches that the brackets-manager library will refuse to update.
+          //
+          // Library status meanings:
+          //   0 = Locked, 1 = Waiting, 2 = Ready, 3 = Running,
+          //   4 = Completed, 5 = Archived
+          //
+          // The library throws "The match is locked." for status 0, 1, and 5.
+          // Real-world cases we hit:
+          //   • status 5 (Archived) — a downstream round already progressed,
+          //     but admins still need to correct earlier scores. Flip 5 → 4.
+          //   • status 0/1 on a fully populated match — happens on the first
+          //     Grand Final match in a double-elimination bracket when the
+          //     library doesn't auto-promote it to Ready. Flip 0/1 → 2.
+          //
+          // Safety: we only auto-promote 0/1 when BOTH opponents are present
+          // and it isn't a BYE match, so genuinely incomplete matches stay locked.
+          const bothOpponentsPresent =
+            !!currentMatch.opponent1?.id && !!currentMatch.opponent2?.id;
+
+          let unlockToStatus: number | null = null;
           if (currentMatch.status === 5) {
+            unlockToStatus = 4;
+          } else if (
+            bothOpponentsPresent &&
+            (currentMatch.status === 0 || currentMatch.status === 1)
+          ) {
+            unlockToStatus = 2;
+          }
+
+          if (unlockToStatus !== null) {
             bracketLog(
-              `🔓 Match ${matchId} is Archived (status 5) — temporarily unlocking to status 4 for admin edit`
+              `🔓 Match ${matchId} status ${currentMatch.status} — temporarily unlocking to status ${unlockToStatus} for admin edit`
             );
             const { error: unlockError } = await supabase
               .from('match')
-              .update({ status: 4 })
+              .update({ status: unlockToStatus })
               .eq('id', matchId);
 
             if (unlockError) {
-              errorLog(`Failed to unlock archived match ${matchId}:`, unlockError);
+              errorLog(`Failed to unlock match ${matchId}:`, unlockError);
               throw new BusinessLogicError(
-                `Failed to unlock archived match: ${unlockError.message}`,
+                `Failed to unlock match: ${unlockError.message}`,
                 unlockError
               );
             }
