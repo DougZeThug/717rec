@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DatabaseError } from '@/types/errors';
+import { DatabaseError, NotFoundError } from '@/types/errors';
 
 interface PostgrestErrorLike {
   message: string;
@@ -36,6 +36,7 @@ interface SeasonRow {
 
 const mockFrom = vi.fn();
 const mockErrorLog = vi.fn();
+const mockDbLog = vi.fn();
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
@@ -45,7 +46,7 @@ vi.mock('@/integrations/supabase/client', () => ({
 
 vi.mock('@/utils/logger', () => ({
   errorLog: (...args: unknown[]) => mockErrorLog(...args),
-  dbLog: vi.fn(),
+  dbLog: (...args: unknown[]) => mockDbLog(...args),
 }));
 
 vi.mock('@/hooks/teams/seasonBreakdown/processSeasonMatches', () => ({
@@ -67,7 +68,7 @@ vi.mock('@/hooks/teams/seasonBreakdown/calculateSeasonStats', () => ({
   })),
 }));
 
-import { fetchSeasonBreakdown } from '../TeamSeasonStatsService';
+import { batchUpdateSeasonStats, fetchSeasonBreakdown } from '../TeamSeasonStatsService';
 
 const createSeasonStatsQuery = <TData>(result: QueryResult<TData>, selects: string[]) => ({
   select: (columns: string) => {
@@ -152,7 +153,10 @@ describe('fetchSeasonBreakdown', () => {
 
   const setupQueries = (overrides?: Partial<Record<string, QueryResult<unknown>>>) => {
     const results: Record<string, QueryResult<unknown>> = {
-      team_season_stats: { data: [seasonRow(), seasonRow({ season_id: 's2', power_score: 0.6 })], error: null },
+      team_season_stats: {
+        data: [seasonRow(), seasonRow({ season_id: 's2', power_score: 0.6 })],
+        error: null,
+      },
       all_team_season_stats: {
         data: [
           { team_id: 'team-1', season_id: 's1', division_name: 'Alpha' },
@@ -163,12 +167,22 @@ describe('fetchSeasonBreakdown', () => {
       matches: {
         data: [
           {
-            winner_id: 'team-1', loser_id: 'team-2', team1_game_wins: 2, team2_game_wins: 1,
-            team1_id: 'team-1', team2_id: 'team-2', season_id: 's1',
+            winner_id: 'team-1',
+            loser_id: 'team-2',
+            team1_game_wins: 2,
+            team2_game_wins: 1,
+            team1_id: 'team-1',
+            team2_id: 'team-2',
+            season_id: 's1',
           },
           {
-            winner_id: 'team-1', loser_id: 'team-3', team1_game_wins: 2, team2_game_wins: 0,
-            team1_id: 'team-1', team2_id: 'team-3', season_id: 's2',
+            winner_id: 'team-1',
+            loser_id: 'team-3',
+            team1_game_wins: 2,
+            team2_game_wins: 0,
+            team1_id: 'team-1',
+            team2_id: 'team-3',
+            season_id: 's2',
           },
         ],
         error: null,
@@ -177,8 +191,13 @@ describe('fetchSeasonBreakdown', () => {
       playoff_matches: {
         data: [
           {
-            winner_id: 'team-1', loser_id: 'team-4', team1_score: 2, team2_score: 1,
-            team1_id: 'team-1', team2_id: 'team-4', bracket_id: 'b1',
+            winner_id: 'team-1',
+            loser_id: 'team-4',
+            team1_score: 2,
+            team2_score: 1,
+            team1_id: 'team-1',
+            team2_id: 'team-4',
+            bracket_id: 'b1',
           },
         ],
         error: null,
@@ -222,20 +241,12 @@ describe('fetchSeasonBreakdown', () => {
     expect(result?.worstSeason?.seasonId).toBe('s2');
   });
 
-  it('returns a safe empty shape when no season rows exist', async () => {
+  it('returns null when no season rows exist', async () => {
     setupQueries({ team_season_stats: { data: [], error: null } });
 
     const result = await fetchSeasonBreakdown('team-1');
 
-    expect(result).toEqual({
-      seasons: [],
-      bestSeason: null,
-      worstSeason: null,
-      averagePowerScore: 0,
-      powerScoreTrend: 'stable',
-      bestDivisionTier: null,
-      worstDivisionTier: null,
-    });
+    expect(result).toBeNull();
   });
 
   it('throws DatabaseError when team season stats query fails', async () => {
@@ -253,6 +264,37 @@ describe('fetchSeasonBreakdown', () => {
     });
 
     await expect(fetchSeasonBreakdown('team-1')).rejects.toThrow(DatabaseError);
+  });
+
+  it('keeps enrichment failures non-fatal and logs each query failure', async () => {
+    const enrichmentError = {
+      message: 'temporary failure',
+      code: '57014',
+      details: null,
+      hint: null,
+      name: 'PostgrestError',
+    };
+
+    setupQueries({
+      all_team_season_stats: { data: null, error: enrichmentError },
+      matches: { data: null, error: enrichmentError },
+      matches_archive: { data: null, error: enrichmentError },
+      playoff_matches: { data: null, error: enrichmentError },
+      brackets: { data: null, error: enrichmentError },
+    });
+
+    const result = await fetchSeasonBreakdown('team-1');
+
+    expect(result?.seasons).toHaveLength(2);
+    expect(mockErrorLog).toHaveBeenCalledWith(
+      'Failed to fetch current matches for season breakdown:',
+      enrichmentError
+    );
+    expect(mockErrorLog).toHaveBeenCalledWith(
+      'Failed to fetch archived matches for season breakdown:',
+      enrichmentError
+    );
+    expect(mockErrorLog.mock.calls.length).toBeGreaterThanOrEqual(3);
   });
 
   it('uses explicit column lists in all select queries', async () => {
@@ -277,5 +319,89 @@ describe('fetchSeasonBreakdown', () => {
     expect(selectCalls.matches[0]).toContain('winner_id');
     expect(selectCalls.playoff_matches[0]).toContain('bracket_id');
     expect(selectCalls.brackets[0]).toContain('divisions(division_weight)');
+  });
+});
+
+describe('batchUpdateSeasonStats', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const setupUpdateQueries = (options?: {
+    missingTeamSeasonStats?: boolean;
+    archiveError?: PostgrestErrorLike | null;
+  }) => {
+    const optionValues = {
+      missingTeamSeasonStats: false,
+      archiveError: null,
+      ...options,
+    };
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'team_season_stats') {
+        return {
+          update: () => ({
+            eq: () => ({
+              eq: () => ({
+                select: () =>
+                  Promise.resolve({
+                    data: optionValues.missingTeamSeasonStats ? [] : [{ team_id: 'team-1' }],
+                    error: null,
+                  }),
+              }),
+            }),
+          }),
+        };
+      }
+
+      if (table === 'team_details_archive') {
+        return {
+          update: () => ({
+            eq: () => ({
+              eq: () => ({
+                select: () =>
+                  Promise.resolve({
+                    data: [{ team_id: 'team-1' }],
+                    error: optionValues.archiveError,
+                  }),
+              }),
+            }),
+          }),
+        };
+      }
+
+      throw new Error(`Unexpected table: ${table}`);
+    });
+  };
+
+  it('returns early when updates list is empty', async () => {
+    await batchUpdateSeasonStats([]);
+
+    expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockDbLog).not.toHaveBeenCalled();
+  });
+
+  it('updates both tables and logs start/end messages', async () => {
+    setupUpdateQueries();
+
+    await batchUpdateSeasonStats([
+      { team_id: 'team-1', season_id: 's1', division_name: 'Alpha', playoff_rank: 1 },
+      { team_id: 'team-2', season_id: 's2', division_name: 'Beta', playoff_rank: 2 },
+    ]);
+
+    expect(mockFrom).toHaveBeenCalledWith('team_season_stats');
+    expect(mockFrom).toHaveBeenCalledWith('team_details_archive');
+    expect(mockDbLog).toHaveBeenNthCalledWith(1, 'Updating 2 team season stats...');
+    expect(mockDbLog).toHaveBeenNthCalledWith(2, 'Successfully updated 2 team season stats');
+  });
+
+  it('throws NotFoundError when team_season_stats update does not return rows', async () => {
+    setupUpdateQueries({ missingTeamSeasonStats: true });
+
+    await expect(
+      batchUpdateSeasonStats([
+        { team_id: 'team-1', season_id: 's1', division_name: 'Alpha', playoff_rank: 1 },
+      ])
+    ).rejects.toThrow(NotFoundError);
   });
 });
