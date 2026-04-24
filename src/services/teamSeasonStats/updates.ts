@@ -48,7 +48,7 @@ export const batchUpdateSeasonStats = async (updates: TeamUpdate[]): Promise<voi
         throw new NotFoundError('TeamSeasonStats', update.team_id);
       }
 
-      const { data: archiveData, error: archiveError } = await supabase
+      const { error: archiveError } = await supabase
         .from('team_details_archive')
         .update({
           divisionname: update.division_name,
@@ -62,10 +62,6 @@ export const batchUpdateSeasonStats = async (updates: TeamUpdate[]): Promise<voi
           archiveError,
           `Failed to update team_details_archive for ${update.team_id}`
         );
-      }
-
-      if (!archiveData || archiveData.length === 0) {
-        return;
       }
     });
 
