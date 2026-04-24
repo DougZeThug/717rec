@@ -28,13 +28,23 @@ interface StatusDisplay {
 
 const getStatusDisplay = (status: number | undefined): StatusDisplay => {
   switch (status) {
+    case 0:
+      return {
+        label: 'Locked',
+        description:
+          'Earlier matches feeding into this one have not finished yet. Saving will be allowed once both teams are confirmed.',
+        Icon: Lock,
+        variant: 'outline',
+        editable: false,
+      };
     case 1:
       return {
         label: 'Waiting',
-        description: 'Opponents not yet determined',
+        description:
+          'The bracket has not promoted this match to Ready yet. If both teams are shown above, saving will unlock it automatically.',
         Icon: Clock,
         variant: 'outline',
-        editable: false,
+        editable: true,
       };
     case 2:
       return {
