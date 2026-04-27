@@ -4,6 +4,8 @@ import {
 } from '@/hooks/teams/seasonBreakdown/calculateSeasonStats';
 import { TeamAdvancedStats } from '@/types/teamAdvancedStats';
 import { SeasonBreakdown } from '@/types/teamAdvancedStats';
+import type { PostgrestError } from '@supabase/supabase-js';
+
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
@@ -29,7 +31,10 @@ export const fetchSeasonBreakdown = async (teamId: string): Promise<TeamAdvanced
   } = await fetchSeasonBreakdownQueries(teamId);
 
   if (seasonStatsResult.error) {
-    handleDatabaseError(seasonStatsResult.error, 'Failed to fetch team season stats');
+    handleDatabaseError(
+      seasonStatsResult.error as PostgrestError,
+      'Failed to fetch team season stats'
+    );
   }
 
   if (allTeamSeasonStatsResult.error) {
@@ -73,7 +78,15 @@ export const fetchSeasonBreakdown = async (teamId: string): Promise<TeamAdvanced
     errorLog('Failed to fetch bracket info for season breakdown:', bracketsError);
   }
 
-  const bracketInfoMap = buildBracketInfoMap(brackets);
+  const bracketInfoMap = buildBracketInfoMap(
+    (brackets ?? []).map((b) => ({
+      id: b.id,
+      season_id: b.season_id,
+      divisions: b.divisions
+        ? { division_weight: b.divisions.division_weight ?? 0.85 }
+        : null,
+    }))
+  );
 
   const playoffMatches = (playoffMatchesRaw || []).map((match) => ({
     ...match,
