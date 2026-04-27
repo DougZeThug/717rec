@@ -16,114 +16,289 @@ vi.mock('@/utils/logger', () => ({
   successLog: vi.fn(),
 }));
 
+import { errorLog } from '@/utils/logger';
+
 import type { SupabaseSqlStorage } from '../../SupabaseSqlStorage';
 import { BracketNormalizationService } from '../BracketNormalizationService';
+
+type StorageDouble = {
+  clearParticipantCache: ReturnType<typeof vi.fn>;
+  select: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+};
+
+const createStorageDouble = (): StorageDouble => ({
+  clearParticipantCache: vi.fn(),
+  select: vi.fn(),
+  update: vi.fn(),
+});
+
+const mockSupabaseDirectUpdate = (result: { error: unknown }) => {
+  const eq = vi.fn().mockResolvedValue(result);
+  const update = vi.fn(() => ({ eq }));
+
+  mockFrom.mockReturnValue({ update });
+
+  return { update, eq };
+};
 
 describe('BracketNormalizationService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('fixes duplicate participant in losers round 1 via direct Supabase update', async () => {
-    const storage = {
-      clearParticipantCache: vi.fn(),
-      select: vi
-        .fn()
-        .mockResolvedValueOnce([{ id: 11, number: 2 }])
-        .mockResolvedValueOnce([{ id: 21, number: 1 }])
-        .mockResolvedValueOnce([{ id: 31, status: 1, opponent1: { id: 8 }, opponent2: { id: 8 } }]),
-      update: vi.fn(),
-    };
+  describe('calculateLBRounds', () => {
+    it.each([
+      { bracketSize: 4, expected: 2 },
+      { bracketSize: 8, expected: 4 },
+      { bracketSize: 16, expected: 6 },
+      { bracketSize: 2, expected: 0 },
+    ])('returns $expected for bracket size $bracketSize', ({ bracketSize, expected }) => {
+      const storage = createStorageDouble();
+      const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
 
-    const eq = vi.fn(() => Promise.resolve({ error: null }));
-    mockFrom.mockReturnValue({
-      update: vi.fn(() => ({ eq })),
+      expect(service.calculateLBRounds(bracketSize)).toBe(expected);
     });
-
-    const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
-    await service.normalizeLosersR1(100);
-
-    expect(mockFrom).toHaveBeenCalledWith('match');
-    expect(eq).toHaveBeenCalledWith('id', 31);
-    expect(storage.clearParticipantCache).toHaveBeenCalledTimes(2);
   });
 
-  it('populates GF opponent2 from completed LB final winner', async () => {
-    const storage = {
-      clearParticipantCache: vi.fn(),
-      select: vi
-        .fn()
+  describe('findLBFinalMatch', () => {
+    it('returns null when LB group is missing', async () => {
+      const storage = createStorageDouble();
+      storage.select.mockResolvedValueOnce([{ id: 1, number: 1 }]);
+
+      const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
+
+      await expect(service.findLBFinalMatch(100)).resolves.toBeNull();
+    });
+
+    it('returns null when LB rounds are missing', async () => {
+      const storage = createStorageDouble();
+      storage.select
+        .mockResolvedValueOnce([{ id: 10, number: 2 }])
+        .mockResolvedValueOnce([]);
+
+      const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
+
+      await expect(service.findLBFinalMatch(100)).resolves.toBeNull();
+    });
+
+    it('returns final round match on happy path', async () => {
+      const storage = createStorageDouble();
+      const expectedMatch = { id: 600, round_id: 300, status: 1, opponent1: { id: 3 }, opponent2: null };
+
+      storage.select
+        .mockResolvedValueOnce([{ id: 10, number: 2 }])
         .mockResolvedValueOnce([
-          { id: 11, number: 2 },
-          { id: 12, number: 3 },
+          { id: 200, number: 1 },
+          { id: 300, number: 4 },
         ])
-        .mockResolvedValueOnce([{ id: 41, number: 1 }])
-        .mockResolvedValueOnce([{ id: 51, status: 2, opponent1: { id: 3 }, opponent2: null }])
+        .mockResolvedValueOnce([expectedMatch]);
+
+      const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
+
+      await expect(service.findLBFinalMatch(100)).resolves.toEqual(expectedMatch);
+    });
+
+    it('returns null when select fails', async () => {
+      const storage = createStorageDouble();
+      storage.select.mockRejectedValueOnce(new Error('db down'));
+
+      const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
+
+      await expect(service.findLBFinalMatch(100)).resolves.toBeNull();
+      expect(errorLog).toHaveBeenCalled();
+    });
+  });
+
+  describe('normalizeGrandFinalPopulation', () => {
+    it('is a no-op when GF group is missing', async () => {
+      const storage = createStorageDouble();
+      storage.select.mockResolvedValueOnce([{ id: 1, number: 1 }]);
+
+      const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
+
+      await expect(service.normalizeGrandFinalPopulation(101)).resolves.toBeUndefined();
+      expect(storage.update).not.toHaveBeenCalled();
+    });
+
+    it('is a no-op when GF round is missing', async () => {
+      const storage = createStorageDouble();
+      storage.select
+        .mockResolvedValueOnce([{ id: 30, number: 3 }])
+        .mockResolvedValueOnce([{ id: 31, number: 2 }]);
+
+      const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
+
+      await expect(service.normalizeGrandFinalPopulation(101)).resolves.toBeUndefined();
+      expect(storage.update).not.toHaveBeenCalled();
+    });
+
+    it('is a no-op when GF match is missing', async () => {
+      const storage = createStorageDouble();
+      storage.select
+        .mockResolvedValueOnce([{ id: 30, number: 3 }])
+        .mockResolvedValueOnce([{ id: 32, number: 1 }])
+        .mockResolvedValueOnce([]);
+
+      const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
+
+      await expect(service.normalizeGrandFinalPopulation(101)).resolves.toBeUndefined();
+      expect(storage.update).not.toHaveBeenCalled();
+    });
+
+    it('does not update when GF opponent2 is already set', async () => {
+      const storage = createStorageDouble();
+      storage.select
+        .mockResolvedValueOnce([{ id: 30, number: 3 }])
+        .mockResolvedValueOnce([{ id: 32, number: 1 }])
         .mockResolvedValueOnce([
-          { id: 11, number: 2 },
-          { id: 12, number: 3 },
+          { id: 70, status: 1, opponent1: { id: 5 }, opponent2: { id: 8 } },
+        ]);
+
+      const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
+
+      await service.normalizeGrandFinalPopulation(101);
+
+      expect(storage.update).not.toHaveBeenCalled();
+    });
+
+    it('updates GF opponent2 when LB final is complete', async () => {
+      const storage = createStorageDouble();
+      storage.select
+        .mockResolvedValueOnce([{ id: 30, number: 3 }])
+        .mockResolvedValueOnce([{ id: 32, number: 1 }])
+        .mockResolvedValueOnce([{ id: 70, status: 2, opponent1: { id: 5 }, opponent2: null }])
+        .mockResolvedValueOnce([{ id: 10, number: 2 }])
+        .mockResolvedValueOnce([
+          { id: 110, number: 1 },
+          { id: 120, number: 4 },
         ])
-        .mockResolvedValueOnce([{ id: 31, number: 4 }])
         .mockResolvedValueOnce([
           {
-            id: 61,
+            id: 200,
             status: 4,
-            opponent1: { id: 7, result: 'loss' },
-            opponent2: { id: 9, result: 'win' },
+            opponent1: { id: 12, result: 'loss' },
+            opponent2: { id: 17, result: 'win' },
           },
-        ]),
-      update: vi.fn().mockResolvedValue(),
-    };
+        ]);
+      storage.update.mockResolvedValue(undefined);
 
-    const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
-    await service.normalizeGrandFinalPopulation(100);
+      const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
 
-    expect(storage.update).toHaveBeenCalledWith(
-      'match',
-      { id: 51 },
-      {
-        opponent2: { id: 9, position: undefined },
-        status: 2,
-      }
-    );
-  });
+      await service.normalizeGrandFinalPopulation(101);
 
-  it('returns early when losers bracket group is absent', async () => {
-    const storage = {
-      clearParticipantCache: vi.fn(),
-      select: vi.fn().mockResolvedValueOnce([{ id: 1, number: 1 }]),
-      update: vi.fn(),
-    };
-
-    const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
-    await expect(service.normalizeLosersR1(200)).resolves.toBeUndefined();
-
-    expect(storage.update).not.toHaveBeenCalled();
-    expect(mockFrom).not.toHaveBeenCalled();
-  });
-
-  it('is idempotent when no duplicate exists in losers round 1', async () => {
-    const storage = {
-      clearParticipantCache: vi.fn(),
-      select: vi
-        .fn()
-        .mockResolvedValueOnce([{ id: 11, number: 2 }])
-        .mockResolvedValueOnce([{ id: 21, number: 1 }])
-        .mockResolvedValueOnce([{ id: 31, status: 1, opponent1: { id: 8 }, opponent2: null }]),
-      update: vi.fn(),
-    };
-
-    mockFrom.mockReturnValue({
-      update: vi.fn(() => ({
-        eq: vi.fn(() => Promise.resolve({ error: null })),
-      })),
+      expect(storage.update).toHaveBeenCalledWith(
+        'match',
+        { id: 70 },
+        {
+          opponent2: { id: 17, position: undefined },
+          status: 2,
+        }
+      );
     });
 
-    const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
-    await service.normalizeLosersR1(300);
+    it('swallows errors defensively', async () => {
+      const storage = createStorageDouble();
+      storage.select.mockRejectedValueOnce(new Error('unexpected storage failure'));
 
-    expect(mockFrom).not.toHaveBeenCalled();
-    expect(storage.update).not.toHaveBeenCalled();
+      const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
+
+      await expect(service.normalizeGrandFinalPopulation(101)).resolves.toBeUndefined();
+      expect(errorLog).toHaveBeenCalled();
+    });
+  });
+
+  describe('normalizeLosersR1', () => {
+    it('returns early when LB group is absent', async () => {
+      const storage = createStorageDouble();
+      storage.select.mockResolvedValueOnce([{ id: 1, number: 1 }]);
+
+      const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
+
+      await expect(service.normalizeLosersR1(200)).resolves.toBeUndefined();
+
+      expect(storage.update).not.toHaveBeenCalled();
+      expect(mockFrom).not.toHaveBeenCalled();
+    });
+
+    it('returns early when LB R1 is absent', async () => {
+      const storage = createStorageDouble();
+      storage.select
+        .mockResolvedValueOnce([{ id: 11, number: 2 }])
+        .mockResolvedValueOnce([]);
+
+      const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
+
+      await expect(service.normalizeLosersR1(200)).resolves.toBeUndefined();
+
+      expect(storage.update).not.toHaveBeenCalled();
+      expect(mockFrom).not.toHaveBeenCalled();
+    });
+
+    it('triggers direct SQL clear + cache clear on duplicate opponents', async () => {
+      const storage = createStorageDouble();
+      storage.select
+        .mockResolvedValueOnce([{ id: 11, number: 2 }])
+        .mockResolvedValueOnce([{ id: 21, number: 1 }])
+        .mockResolvedValueOnce([{ id: 31, status: 1, opponent1: { id: 8 }, opponent2: { id: 8 } }]);
+
+      const { eq } = mockSupabaseDirectUpdate({ error: null });
+
+      const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
+      await service.normalizeLosersR1(100);
+
+      expect(mockFrom).toHaveBeenCalledWith('match');
+      expect(eq).toHaveBeenCalledWith('id', 31);
+      expect(storage.clearParticipantCache).toHaveBeenCalledTimes(2);
+    });
+
+    it('logs direct SQL errors and continues to next match', async () => {
+      const storage = createStorageDouble();
+      storage.select
+        .mockResolvedValueOnce([{ id: 11, number: 2 }])
+        .mockResolvedValueOnce([{ id: 21, number: 1 }])
+        .mockResolvedValueOnce([
+          { id: 31, status: 1, opponent1: { id: 8 }, opponent2: { id: 8 } },
+          { id: 32, status: 1, opponent1: null, opponent2: { id: 10 } },
+        ]);
+
+      mockSupabaseDirectUpdate({ error: { message: 'sql failed' } });
+
+      const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
+      await service.normalizeLosersR1(100);
+
+      expect(errorLog).toHaveBeenCalled();
+      expect(storage.update).toHaveBeenCalledWith(
+        'match',
+        { id: 32 },
+        {
+          opponent1: { id: 10, score: null, result: null },
+          opponent2: { id: null, score: null, result: null },
+          status: 1,
+        }
+      );
+    });
+
+    it('shifts opponent2 to opponent1 when opponent1 is missing', async () => {
+      const storage = createStorageDouble();
+      storage.select
+        .mockResolvedValueOnce([{ id: 11, number: 2 }])
+        .mockResolvedValueOnce([{ id: 21, number: 1 }])
+        .mockResolvedValueOnce([{ id: 32, status: 3, opponent1: null, opponent2: { id: 44 } }]);
+
+      const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
+      await service.normalizeLosersR1(100);
+
+      expect(storage.update).toHaveBeenCalledWith(
+        'match',
+        { id: 32 },
+        {
+          opponent1: { id: 44, score: null, result: null },
+          opponent2: { id: null, score: null, result: null },
+          status: 3,
+        }
+      );
+    });
   });
 
   it('repairs propagation for completed match winners', async () => {
