@@ -12,6 +12,21 @@ interface PersistedMatchSlotState {
   status: number;
 }
 
+async function getNextMatch(
+  nextRoundId: number,
+  nextMatchNumber: number
+): Promise<PersistedMatchSlotState | null> {
+  const { data: nextMatches } = await supabase
+    .from('match')
+    .select('id, opponent1_id, opponent2_id, status')
+    .eq('round_id', nextRoundId)
+    .eq('number', nextMatchNumber);
+
+  if (!nextMatches || !nextMatches.length) return null;
+
+  return nextMatches[0] as PersistedMatchSlotState;
+}
+
 export class MatchPropagationRepairService {
   constructor(
     private storage: SupabaseSqlStorage,
@@ -41,9 +56,9 @@ export class MatchPropagationRepairService {
     const matchesArray = (Array.isArray(matches) ? matches : [matches]) as StorageMatch[];
 
     const nextRoundMatches = await this.storage.select('match', { round_id: nextRound.id });
-    const nextRoundMatchesArray = (Array.isArray(nextRoundMatches)
-      ? nextRoundMatches
-      : [nextRoundMatches]) as StorageMatch[];
+    const nextRoundMatchesArray = (
+      Array.isArray(nextRoundMatches) ? nextRoundMatches : [nextRoundMatches]
+    ) as StorageMatch[];
     const isOneToOne = nextRoundMatchesArray.length === matchesArray.length;
 
     for (const match of matchesArray) {
@@ -59,7 +74,7 @@ export class MatchPropagationRepairService {
       if (!winnerId) continue;
 
       const nextMatchNumber = isOneToOne ? match.number : Math.ceil(match.number / 2);
-      const nextMatch = await this.getNextMatch(nextRound.id, nextMatchNumber);
+      const nextMatch = await getNextMatch(nextRound.id, nextMatchNumber);
 
       if (!nextMatch) continue;
       if (nextMatch.opponent1_id === winnerId || nextMatch.opponent2_id === winnerId) continue;
@@ -89,7 +104,9 @@ export class MatchPropagationRepairService {
       }
 
       const otherSlotFilled =
-        targetSlot === 'opponent1' ? Boolean(nextMatch.opponent2_id) : Boolean(nextMatch.opponent1_id);
+        targetSlot === 'opponent1'
+          ? Boolean(nextMatch.opponent2_id)
+          : Boolean(nextMatch.opponent1_id);
       if (nextMatch.status <= 1 && otherSlotFilled) {
         updateFields.status = 2;
       }
@@ -97,20 +114,5 @@ export class MatchPropagationRepairService {
       await supabase.from('match').update(updateFields).eq('id', nextMatch.id);
       bracketLog(`✅ [PROPAGATE] Winner ${winnerId} placed in match ${nextMatch.id}`);
     }
-  }
-
-  private async getNextMatch(
-    nextRoundId: number,
-    nextMatchNumber: number
-  ): Promise<PersistedMatchSlotState | null> {
-    const { data: nextMatches } = await supabase
-      .from('match')
-      .select('id, opponent1_id, opponent2_id, status')
-      .eq('round_id', nextRoundId)
-      .eq('number', nextMatchNumber);
-
-    if (!nextMatches || !nextMatches.length) return null;
-
-    return nextMatches[0] as PersistedMatchSlotState;
   }
 }

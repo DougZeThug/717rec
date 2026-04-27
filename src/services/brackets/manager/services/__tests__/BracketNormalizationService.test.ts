@@ -16,8 +16,8 @@ vi.mock('@/utils/logger', () => ({
   successLog: vi.fn(),
 }));
 
-import { BracketNormalizationService } from '../BracketNormalizationService';
 import type { SupabaseSqlStorage } from '../../SupabaseSqlStorage';
+import { BracketNormalizationService } from '../BracketNormalizationService';
 
 describe('BracketNormalizationService', () => {
   beforeEach(() => {
@@ -72,7 +72,7 @@ describe('BracketNormalizationService', () => {
             opponent2: { id: 9, result: 'win' },
           },
         ]),
-      update: vi.fn().mockResolvedValue(undefined),
+      update: vi.fn().mockResolvedValue(),
     };
 
     const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
@@ -137,7 +137,13 @@ describe('BracketNormalizationService', () => {
           { id: 22, number: 2 },
         ])
         .mockResolvedValueOnce([
-          { id: 31, number: 1, status: 4, opponent1: { id: 18, result: 'win' }, opponent2: { id: 5 } },
+          {
+            id: 31,
+            number: 1,
+            status: 4,
+            opponent1: { id: 18, result: 'win' },
+            opponent2: { id: 5 },
+          },
         ])
         .mockResolvedValueOnce([{ id: 41, number: 1 }]),
       update: vi.fn(),

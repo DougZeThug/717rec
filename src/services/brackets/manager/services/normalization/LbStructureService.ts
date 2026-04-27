@@ -3,9 +3,11 @@ import type { StorageGroup, StorageRound } from '../../types/BracketServiceTypes
 
 export class LbStructureService {
   constructor(private storage: SupabaseSqlStorage) {}
+  private readonly roundsPerWinnerRound = 2;
+  private readonly roundAdjustment = 2;
 
   calculateLBRounds(bracketSize: number): number {
-    return Math.log2(bracketSize) * 2 - 2;
+    return Math.log2(bracketSize) * this.roundsPerWinnerRound - this.roundAdjustment;
   }
 
   async findLbGroup(stageId: number): Promise<StorageGroup | null> {
