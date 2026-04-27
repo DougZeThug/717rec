@@ -181,7 +181,6 @@ describe('BracketNormalizationService', () => {
             opponent2: { id: 17, result: 'win' },
           },
         ]);
-      storage.update.mockResolvedValue(undefined);
 
       const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
 
