@@ -98,31 +98,31 @@ count, top-level metrics, and area table).
 Line coverage snapshot by folder. Targets are what we want each area to reach
 over time; anything already above target is just "keep it green".
 
-| Area                              | Lines today | Target | Notes                                       |
-| --------------------------------- | ----------- | ------ | ------------------------------------------- |
-| `src/services/**`                 | 56%         | 70%    | Data access layer — trending up             |
-| `src/services/auth`               | 100%        | 70%    | On target                                   |
-| `src/hooks/**`                    | 22%         | 60%    | React Query hooks wrapping services         |
-| `src/hooks/matches`               | 21%         | 60%    | Coverage spread across many small hooks     |
-| `src/utils/**` (aggregate)        | 69%         | 85%    | Strong gains from logic-heavy utility tests |
-| `src/utils/career`                | 89%         | 85%    | On target                                   |
-| `src/utils/rankingUtils`          | 96%         | 85%    | On target                                   |
-| `src/utils/predictions`           | 95%         | 85%    | On target                                   |
-| `src/utils/playoffs`              | 100%        | 85%    | On target                                   |
-| `src/utils/matchUtils`            | 100%        | 85%    | On target                                   |
-| `src/utils/brackets/mappers`      | 100%        | 85%    | On target                                   |
-| `src/utils/brackets/validators`   | 100%        | 85%    | On target                                   |
-| `src/utils/auth`                  | 90%         | 85%    | On target                                   |
-| `src/utils/autoSchedule`          | 77%         | 85%    | Complex scheduling algorithms — gradual     |
-| `src/utils/autoSchedule/dualBlock`| 89%         | 85%    | On target                                   |
-| `src/utils/scheduling/greedy`     | 71%         | 85%    | `swapRepair` improved but still below target|
-| `src/utils/colors`                | 89%         | 60%    | On target                                   |
-| `src/utils/timezone`              | 87%         | 60%    | On target                                   |
-| `src/utils/teamDetailsUtils`      | 73%         | 60%    | On target                                   |
-| `src/utils/teamStatsUtils`        | 100%        | 60%    | On target                                   |
-| `src/pages/**`                    | 33%         | 40%    | Mostly integration-style tests              |
-| `src/components/**` (non-UI)      | 10%         | 40%    | Component coverage is still lowest priority |
-| `src/types`                       | 77%         | —      | Types only — no target                      |
+| Area                               | Lines today | Target | Notes                                        |
+| ---------------------------------- | ----------- | ------ | -------------------------------------------- |
+| `src/services/**`                  | 56%         | 70%    | Data access layer — trending up              |
+| `src/services/auth`                | 100%        | 70%    | On target                                    |
+| `src/hooks/**`                     | 22%         | 60%    | React Query hooks wrapping services          |
+| `src/hooks/matches`                | 21%         | 60%    | Coverage spread across many small hooks      |
+| `src/utils/**` (aggregate)         | 69%         | 85%    | Strong gains from logic-heavy utility tests  |
+| `src/utils/career`                 | 89%         | 85%    | On target                                    |
+| `src/utils/rankingUtils`           | 96%         | 85%    | On target                                    |
+| `src/utils/predictions`            | 95%         | 85%    | On target                                    |
+| `src/utils/playoffs`               | 100%        | 85%    | On target                                    |
+| `src/utils/matchUtils`             | 100%        | 85%    | On target                                    |
+| `src/utils/brackets/mappers`       | 100%        | 85%    | On target                                    |
+| `src/utils/brackets/validators`    | 100%        | 85%    | On target                                    |
+| `src/utils/auth`                   | 90%         | 85%    | On target                                    |
+| `src/utils/autoSchedule`           | 77%         | 85%    | Complex scheduling algorithms — gradual      |
+| `src/utils/autoSchedule/dualBlock` | 89%         | 85%    | On target                                    |
+| `src/utils/scheduling/greedy`      | 71%         | 85%    | `swapRepair` improved but still below target |
+| `src/utils/colors`                 | 89%         | 60%    | On target                                    |
+| `src/utils/timezone`               | 87%         | 60%    | On target                                    |
+| `src/utils/teamDetailsUtils`       | 73%         | 60%    | On target                                    |
+| `src/utils/teamStatsUtils`         | 100%        | 60%    | On target                                    |
+| `src/pages/**`                     | 33%         | 40%    | Mostly integration-style tests               |
+| `src/components/**` (non-UI)       | 10%         | 40%    | Component coverage is still lowest priority  |
+| `src/types`                        | 77%         | —      | Types only — no target                       |
 
 ## What's tested today
 
@@ -182,11 +182,14 @@ Coverage enforcement runs on pull requests via
 `.github/workflows/coverage-threshold.yml`, which executes:
 
 ```bash
-npm run test:coverage
+npm run test:coverage:ci
 ```
 
 Because Vitest thresholds are configured in `vitest.config.ts`, that workflow
 fails automatically when any enforced global or folder threshold regresses.
+
+DeepSource reporting should invoke the same lightweight coverage command first so
+its uploaded artifact matches CI behavior (`npm run test:coverage:ci`).
 
 ## Manual checks: overlapping seasons
 
