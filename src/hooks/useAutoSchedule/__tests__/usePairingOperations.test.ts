@@ -189,9 +189,10 @@ describe('usePairingOperations', () => {
       );
     });
 
-    expect(mockGenerateMatchPairings).toHaveBeenCalledWith(
-      selectedDate,
-      timeBlockTeams,
+    const firstGenerateCall = mockGenerateMatchPairings.mock.calls[0];
+    expect(firstGenerateCall[0]).toEqual(selectedDate);
+    expect(firstGenerateCall[1]).toEqual(timeBlockTeams);
+    expect(firstGenerateCall[2]).toEqual(
       expect.objectContaining({
         avoidRematches: true,
         prioritizeQuality: true,
@@ -202,9 +203,9 @@ describe('usePairingOperations', () => {
           recordWeight: 3.5,
           gameRecordWeight: 2,
         }),
-      }),
-      undefined
+      })
     );
+    expect(firstGenerateCall[3]).toBeUndefined();
 
     expect(result.current.generatedPairings).toEqual(pairings);
     expect(result.current.unmatchedTeamIds).toEqual(['99']);
@@ -232,17 +233,18 @@ describe('usePairingOperations', () => {
       );
     });
 
-    expect(mockGenerateMatchPairings).toHaveBeenLastCalledWith(
-      selectedDate,
-      timeBlockTeams,
+    const lastGenerateCall = mockGenerateMatchPairings.mock.calls.at(-1);
+    expect(lastGenerateCall?.[0]).toEqual(selectedDate);
+    expect(lastGenerateCall?.[1]).toEqual(timeBlockTeams);
+    expect(lastGenerateCall?.[2]).toEqual(
       expect.objectContaining({
         avoidRematches: false,
         prioritizeQuality: false,
         dualMatchMode: false,
         weights: undefined,
-      }),
-      undefined
+      })
     );
+    expect(lastGenerateCall?.[3]).toBeUndefined();
   });
 
   it('handles generation failure (null result) and thrown errors with finally cleanup', async () => {
