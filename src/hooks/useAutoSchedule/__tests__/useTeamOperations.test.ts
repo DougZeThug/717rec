@@ -186,7 +186,7 @@ describe('useTeamOperations', () => {
     await expect(result.current.loadTeamsForPair(new Date('2026-04-20T00:00:00.000Z'), 'Early')).resolves.toEqual([]);
   });
 
-  it('balanceBackToBackTeams keeps even counts and removes unmatched IDs per strategy', async () => {
+  it('balanceBackToBackTeams keeps even counts and removes unmatched IDs per strategy', () => {
     const evenTeams = [buildTeam('1', 100), buildTeam('2', 90)];
     const oddTeams = [buildTeam('3', 80), buildTeam('4', 70), buildTeam('5', 60)];
 
