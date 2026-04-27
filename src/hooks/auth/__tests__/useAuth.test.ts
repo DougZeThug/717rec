@@ -1,5 +1,8 @@
+import { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { UserProfile } from '@/types/user';
 
 import { useAuth } from '../index';
 
@@ -17,12 +20,14 @@ const signOut = vi.fn();
 const signInWithGoogle = vi.fn();
 const signInWithGoogleNative = vi.fn();
 
-let authStateCallback: ((event: string, session: any) => void | Promise<void>) | null = null;
+type AuthStateCallback = (event: AuthChangeEvent, session: Session | null) => void | Promise<void>;
+
+let authStateCallback: AuthStateCallback | null = null;
 let unsubscribeSpy: ReturnType<typeof vi.fn>;
 
-let profileState: any;
+let profileState: UserProfile | null;
 let isProfileLoadingState = false;
-const setProfileSpy = vi.fn((value: any) => {
+const setProfileSpy = vi.fn((value: UserProfile | null) => {
   profileState = value;
 });
 const setIsProfileLoadingSpy = vi.fn((value: boolean) => {
@@ -57,9 +62,8 @@ vi.mock('@/hooks/useToast', () => ({
   toast: (...args: unknown[]) => mockToast(...args),
 }));
 
-const makeSession = (id: string, email = `${id}@example.com`) => ({
-  user: { id, email },
-});
+const makeSession = (id: string, email = `${id}@example.com`) =>
+  ({ user: { id, email } }) as Session;
 
 const setupUseAuthProfileMock = () => {
   mockUseAuthProfile.mockImplementation(() => ({
@@ -92,7 +96,7 @@ describe('useAuth', () => {
 
     setupUseAuthProfileMock();
 
-    mockOnAuthStateChange.mockImplementation((cb: any) => {
+    mockOnAuthStateChange.mockImplementation((cb: AuthStateCallback) => {
       authStateCallback = cb;
       return { data: { subscription: { unsubscribe: unsubscribeSpy } } };
     });
@@ -242,7 +246,9 @@ describe('useAuth', () => {
   it('discards stale profile fetch when user changes before timeout resolves', async () => {
     vi.useFakeTimers();
     mockGetAuthSession.mockResolvedValue({ data: { session: null }, error: null });
-    fetchProfileSpy.mockImplementation(async (userId: string) => ({ username: userId }));
+    fetchProfileSpy.mockImplementation((userId: string) =>
+      Promise.resolve({ username: userId } as UserProfile)
+    );
 
     renderHook(() => useAuth());
 
