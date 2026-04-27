@@ -27,7 +27,20 @@ vi.mock('@/utils/rankingUtils/calculateStreak', () => ({
 
 import { WeeklyRecapService } from '../WeeklyRecapService';
 
-type QueryResult = { data: any; error: any };
+type QueryResult = { data: unknown; error: unknown };
+
+type QueryChain = PromiseLike<QueryResult> & {
+  eq: (column: string, value: unknown) => QueryChain;
+  is: (column: string, value: unknown) => QueryChain;
+  not: (column: string, operator: string, value: unknown) => QueryChain;
+  in: (column: string, values: unknown[]) => QueryChain;
+  neq: (column: string, value: unknown) => QueryChain;
+  gte: (column: string, value: unknown) => QueryChain;
+  lt: (column: string, value: unknown) => QueryChain;
+  order: (column: string, options?: unknown) => QueryChain;
+  limit: (count: number) => QueryChain;
+  single: () => Promise<QueryResult>;
+};
 
 type QuerySpy = {
   eq: ReturnType<typeof vi.fn>;
@@ -51,7 +64,7 @@ function createSupabaseMock(queuedByTable: Record<string, QueryResult[]>) {
     const queue = queuedByTable[table] ?? [];
     const result = queue.shift() ?? { data: null, error: null };
 
-    const query: any = {};
+    const query = {} as QueryChain;
 
     const eq = vi.fn(() => query);
     const is = vi.fn(() => query);
@@ -62,7 +75,7 @@ function createSupabaseMock(queuedByTable: Record<string, QueryResult[]>) {
     const lt = vi.fn(() => query);
     const order = vi.fn(() => query);
     const limit = vi.fn(() => query);
-    const single = vi.fn(async () => result);
+    const single = vi.fn(() => Promise.resolve(result));
 
     Object.assign(query, {
       eq,
