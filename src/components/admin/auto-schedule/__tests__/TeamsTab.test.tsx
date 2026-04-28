@@ -21,8 +21,14 @@ vi.mock('@/components/admin/auto-schedule/ManualTeamAssignment', () => ({
   ),
 }));
 
+type WarningDisplayProps = {
+  oddBlocks?: number;
+  unmatchedTeams?: number;
+  insufficientBlocks?: string[];
+};
+
 vi.mock('@/components/admin/batch-matches/auto-schedule/WarningDisplay', () => ({
-  WarningDisplay: ({ oddBlocks, unmatchedTeams, insufficientBlocks }: any) => (
+  WarningDisplay: ({ oddBlocks, unmatchedTeams, insufficientBlocks = [] }: WarningDisplayProps) => (
     <div data-testid="warning-display">
       odd:{oddBlocks}|unmatched:{unmatchedTeams}|insufficient:{insufficientBlocks.length}
     </div>

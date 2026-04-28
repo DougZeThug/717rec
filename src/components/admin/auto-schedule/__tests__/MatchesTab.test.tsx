@@ -3,6 +3,11 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+import type {
+  DualBlockValidationResult,
+  DualMatchMetrics,
+} from '@/utils/autoSchedule/dualBlock/types';
+
 import MatchesTab from '../tabs/MatchesTab';
 
 vi.mock('@/components/admin/batch-matches/auto-schedule/ScheduleMatchesPreview', () => ({
@@ -56,7 +61,12 @@ describe('MatchesTab', () => {
     generatedPairings: pairings,
     unmatchedTeamIds: [],
     isGenerating: false,
-    matchQualityMetrics: { qualityRating: 'Good', averageCompatibilityScore: 7.5, totalMatches: 2, rematchCount: 0 },
+    matchQualityMetrics: {
+      qualityRating: 'Good',
+      averageCompatibilityScore: 7.5,
+      totalMatches: 2,
+      rematchCount: 0,
+    },
     onApplySchedule: vi.fn(),
     onSaveSchedule: vi.fn().mockResolvedValue(true),
     onToggleEditMode: vi.fn(),
@@ -64,18 +74,40 @@ describe('MatchesTab', () => {
     dualMatchMode: true,
   };
 
+  const duplicateMetrics: DualMatchMetrics = {
+    overallQualityScore: 78,
+    teamsWithBothMatches: 3,
+    teamsWithSingleMatch: 0,
+    crossBlockCompatibility: 8.1,
+    teamsWithDuplicateOpponents: 1,
+    averageCompatibilityScore: 7.5,
+    blockBalanceScore: 100,
+  };
+
+  const cleanMetrics: DualMatchMetrics = {
+    overallQualityScore: 88,
+    teamsWithBothMatches: 3,
+    teamsWithSingleMatch: 0,
+    crossBlockCompatibility: 8.4,
+    teamsWithDuplicateOpponents: 0,
+    averageCompatibilityScore: 7.8,
+    blockBalanceScore: 100,
+  };
+
   it.each([
     { isEditMode: false, hasUnsavedEdits: false, expectedPanel: 'matches-preview' },
     { isEditMode: true, hasUnsavedEdits: true, expectedPanel: 'editable-match-list' },
   ])('renders correct assignment/preview path for state %#', (state) => {
-    vi.mocked(calculateDualBlockMetrics).mockReturnValue({
-      overallQualityScore: 78,
-      teamsWithBothMatches: 3,
-      teamsWithSingleMatch: 0,
-      crossBlockCompatibility: 8.1,
-      teamsWithDuplicateOpponents: 1,
-    } as any);
-    vi.mocked(validateDualBlockSchedule).mockReturnValue({ teamsWithDuplicateOpponents: ['a'] } as any);
+    const duplicateValidation: DualBlockValidationResult = {
+      isValid: false,
+      teamsWithDuplicateOpponents: ['a'],
+      overbookedTeams: [],
+      warnings: [],
+      errors: [],
+    };
+
+    vi.mocked(calculateDualBlockMetrics).mockReturnValue(duplicateMetrics);
+    vi.mocked(validateDualBlockSchedule).mockReturnValue(duplicateValidation);
 
     render(<MatchesTab {...baseProps} {...state} />);
 
@@ -84,14 +116,16 @@ describe('MatchesTab', () => {
   });
 
   it('handles edit-mode actions and validation-driven save button disabling', async () => {
-    vi.mocked(calculateDualBlockMetrics).mockReturnValue({
-      overallQualityScore: 88,
-      teamsWithBothMatches: 3,
-      teamsWithSingleMatch: 0,
-      crossBlockCompatibility: 8.4,
-      teamsWithDuplicateOpponents: 0,
-    } as any);
-    vi.mocked(validateDualBlockSchedule).mockReturnValue({ teamsWithDuplicateOpponents: [] } as any);
+    const cleanValidation: DualBlockValidationResult = {
+      isValid: true,
+      teamsWithDuplicateOpponents: [],
+      overbookedTeams: [],
+      warnings: [],
+      errors: [],
+    };
+
+    vi.mocked(calculateDualBlockMetrics).mockReturnValue(cleanMetrics);
+    vi.mocked(validateDualBlockSchedule).mockReturnValue(cleanValidation);
 
     const user = userEvent.setup();
     const onToggleEditMode = vi.fn();
@@ -100,8 +134,8 @@ describe('MatchesTab', () => {
     render(
       <MatchesTab
         {...baseProps}
-        isEditMode={true}
-        hasUnsavedEdits={true}
+        isEditMode
+        hasUnsavedEdits
         onToggleEditMode={onToggleEditMode}
         onResetEdits={onResetEdits}
         validation={{ isValid: false, errors: [], warnings: [] }}
