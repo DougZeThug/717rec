@@ -15,7 +15,7 @@ type ValidationResult = { valid: boolean; error?: string };
 
 type Deferred<T> = {
   promise: Promise<T>;
-  resolve: (value: T) => void;
+  resolve: (value?: T) => void;
   reject: (reason?: unknown) => void;
 };
 
@@ -155,7 +155,7 @@ describe('useTimeslotMutation', () => {
 
     const pending = result.current.deleteTimeslot('slot-1');
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
-    deferred.resolve(undefined);
+    deferred.resolve();
 
     await expect(pending).resolves.toBe(true);
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
@@ -392,7 +392,7 @@ describe('useTimeslotMutation', () => {
     removeByeWeekMock.mockReturnValueOnce(successDeferred.promise);
     const successPending = result.current.removeByeWeek('bye-1');
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
-    successDeferred.resolve(undefined);
+    successDeferred.resolve();
 
     await expect(successPending).resolves.toBe(true);
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
