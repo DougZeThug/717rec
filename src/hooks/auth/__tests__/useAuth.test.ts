@@ -132,7 +132,7 @@ describe('useAuth', () => {
     expect(result.current.signInWithGoogleNative).toBe(signInWithGoogleNative);
     expect(result.current.refreshProfile).toBe(refreshProfileSpy);
 
-    await act(async () => {
+    act(() => {
       result.current.clearAuthError();
     });
   });
