@@ -7,11 +7,15 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig(({ mode }) => {
   const isCi = process.env.CI === 'true' || process.env.CI === '1';
   const isCiCoverage = process.env.VITEST_CI_COVERAGE === '1';
-  // Keep json-summary in every environment for DeepSource ingestion while
-  // avoiding html report generation costs in CI.
-  const coverageReporter = isCi
+  const isDeepSourceCoverage = process.env.VITEST_DEEPSOURCE === '1';
+  // Keep PR/CI coverage lightweight by skipping HTML reports, and switch to
+  // LCOV-only output for the dedicated DeepSource path.
+  const coverageReporter = isDeepSourceCoverage
+    ? ['text', 'lcovonly']
+    : isCi
     ? ['text', 'json-summary']
     : ['text', 'html', 'json-summary'];
+  const reportsDirectory = isDeepSourceCoverage ? './coverage/deepsource' : './coverage';
   const coverageInclude = isCiCoverage
     ? ['src/services/**/*.{ts,tsx}', 'src/hooks/**/*.{ts,tsx}', 'src/utils/**/*.{ts,tsx}']
     : ['src/**/*.{ts,tsx}'];
@@ -38,7 +42,7 @@ export default defineConfig(({ mode }) => {
       coverage: {
         provider: 'v8',
         reporter: coverageReporter,
-        reportsDirectory: './coverage',
+        reportsDirectory,
         include: coverageInclude,
         exclude: [
           'src/integrations/supabase/types.ts',

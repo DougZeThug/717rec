@@ -30,6 +30,12 @@ In GitHub branch protection for `main`/`master`, add this required status check:
 
 This guarantees PRs cannot merge if `npm ci` fails.
 
+## Coverage workflow expectations
+
+- **PR gates** should run the lightweight coverage command: `npm run test:coverage:ci`.
+- **DeepSource uploads** should run: `npm run test:coverage:deepsource` (8-minute hard timeout, LCOV output at `coverage/deepsource/lcov.info`).
+- **Full HTML/full-scope coverage** (`npm run test:coverage`) is reserved for local analysis and scheduled/nightly or main-branch health workflows, not every PR gate.
+
 ## Project Structure
 
 ```

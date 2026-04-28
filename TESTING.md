@@ -10,6 +10,8 @@ full testing guide.
 npm test              # run the full suite once
 npm run test:watch    # re-run on file changes (while you're coding)
 npm run test:coverage # run once and produce a coverage report
+npm run test:coverage:ci # PR gate: lightweight threshold enforcement
+npm run test:coverage:deepsource # DeepSource artifact: LCOV @ coverage/deepsource/lcov.info (8m timeout)
 ```
 
 After `test:coverage`, open `coverage/index.html` in a browser to see
@@ -188,8 +190,18 @@ npm run test:coverage:ci
 Because Vitest thresholds are configured in `vitest.config.ts`, that workflow
 fails automatically when any enforced global or folder threshold regresses.
 
-DeepSource reporting should invoke the same lightweight coverage command first so
-its uploaded artifact matches CI behavior (`npm run test:coverage:ci`).
+DeepSource reporting should invoke its dedicated lightweight command:
+
+```bash
+npm run test:coverage:deepsource
+```
+
+This command enforces a hard runtime cap (`timeout 8m`) and emits the exact
+artifact DeepSource expects in this repo: LCOV at
+`coverage/deepsource/lcov.info`.
+
+Use `npm run test:coverage` (full-scope + HTML report) for local diagnostics and
+nightly/main-branch health checks rather than every PR gate.
 
 ## Manual checks: overlapping seasons
 
