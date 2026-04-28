@@ -250,7 +250,7 @@ over time; anything already above target is just "keep it green".
 `MatchWriteService`, `RankingCareerService`, `RankingPersistenceService`,
 `RankingCurrentService`, `RankingTrendsService`.
 
-**Hooks:** `usePendingMatches`, `useTeamScheduleLoader`, `usePairingGenerator`,
+**Hooks:** `useAuth`, `useAuthMethods`, `usePendingMatches`, `useTeamScheduleLoader`, `usePairingGenerator`,
 `useMatchComments`, match-submission and team-record-update hooks,
 match query-cache utilities, team-stats util.
 
