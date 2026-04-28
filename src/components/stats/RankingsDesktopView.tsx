@@ -2,6 +2,7 @@ import { useTheme } from 'next-themes';
 import React from 'react';
 
 import { Ranking } from '@/types';
+import { sortHistoryDivisions } from '@/utils/historyDivisionUtils';
 
 import DivisionRankingsSection from './desktop/DivisionRankingsSection';
 import { SortOptions } from './RankingsTable';
@@ -43,7 +44,7 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
 
   return (
     <div className="font-inter">
-      {Object.entries(rankingsByDivision).map(([displayDivision, divisionRankings]) => (
+      {sortHistoryDivisions(Object.entries(rankingsByDivision)).map(([displayDivision, divisionRankings]) => (
         <DivisionRankingsSection
           key={displayDivision}
           divisionName={displayDivision}
