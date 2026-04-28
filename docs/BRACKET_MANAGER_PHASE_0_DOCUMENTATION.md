@@ -403,7 +403,7 @@ All public methods must have integration tests covering:
 - ❌ `calculateFinalStandings()` - **MISSING TESTS**
 - ❌ `checkByeEligibility()` - **MISSING TESTS**
 - ❌ `adminToggleByeReady()` - **MISSING TESTS**
-- ❌ `normalizeLosersR1()` - **MISSING TESTS**
+- ✅ `normalizeLosersR1()` - Has tests
 - ⚠️ `getStorage()` - Simple getter, low priority
 
 ---
