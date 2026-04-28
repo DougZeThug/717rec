@@ -40,7 +40,6 @@ Grade: **B+**, trending up. The last audit's biggest items have been fixed. Rema
 | `src/services/brackets/manager/services/BracketAdminService.ts` | 503 |
 | `src/services/TeamSeasonStatsService.ts` | 465 |
 | `src/services/brackets/manager/SupabaseSqlStorage.ts` | 445 |
-| `src/services/brackets/manager/services/BracketNormalizationService.ts` | 409 |
 
 Also worth calling out (not a service, but over 500 lines): `src/utils/predictions/predictMatch.ts` — 570 lines. Cohesive algorithm, so splitting is lower priority.
 
@@ -129,7 +128,7 @@ Playoff editors from the March audit (`BracketsManagerMatchEditor`, `BracketsVie
 ## Prioritized action list
 
 ### P1 — Architecture / rule violations
-1. Split `BracketAdminService.ts` (503) and `BracketNormalizationService.ts` (409) into sub-services per the 400-line rule. `TeamSeasonStatsService.ts` (465) and `SupabaseSqlStorage.ts` (445) as well.
+1. Split `BracketAdminService.ts` (503), `TeamSeasonStatsService.ts` (465), and `SupabaseSqlStorage.ts` (445) into sub-services per the 400-line rule.
 2. Split the five oversized components listed in §4. `SeasonAccordion` and `TeamAdvancedStatsSection` first — they're the largest and most user-facing.
 3. Replace the one real-code `console.error` in `src/styles/bracket-styles.ts:22` with `errorLog()` from `@/utils/logger`.
 
