@@ -23,4 +23,4 @@ jobs:
         run: npm ci
 
       - name: Run test coverage (fails on threshold regression)
-        run: npm run test:coverage
+        run: npm run test:coverage:ci
