@@ -33,7 +33,7 @@ describe('useAuthForm', () => {
 
     mockSignIn.mockResolvedValue({ session: null });
     mockSignUp.mockResolvedValue({ session: null });
-    mockSignInWithGoogle.mockResolvedValue(undefined);
+    mockSignInWithGoogle.mockResolvedValue();
     mockSignInWithGoogleNative.mockResolvedValue({ success: true, error: null });
 
     mockUseAuth.mockReturnValue({
@@ -73,7 +73,7 @@ describe('useAuthForm', () => {
     expect(result.current.emailError).toBe('Please enter a valid email address');
     expect(result.current.passwordError).toBe('Password must be at least 6 characters');
 
-    await act(async () => {
+    act(() => {
       result.current.setActiveTab('signup');
     });
 
