@@ -49,20 +49,19 @@ const wrapper = ({ children }: { children: React.ReactNode }) => {
   return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
 };
 
-const makeMatch = (overrides: Partial<MatchWithTeams> = {}): MatchWithTeams =>
-  ({
-    id: 'm1',
-    team1Id: 't1',
-    team2Id: 't2',
-    team1Score: 1,
-    team2Score: 0,
-    team1_game_wins: 2,
-    team2_game_wins: 0,
-    iscompleted: true,
-    isEdited: true,
-    isValid: true,
-    ...overrides,
-  }) as MatchWithTeams;
+const makeMatch = (overrides: Partial<MatchWithTeams> = {}): MatchWithTeams => ({
+  id: 'm1',
+  team1Id: 't1',
+  team2Id: 't2',
+  team1Score: 1,
+  team2Score: 0,
+  team1_game_wins: 2,
+  team2_game_wins: 0,
+  iscompleted: true,
+  isEdited: true,
+  isValid: true,
+  ...overrides,
+});
 
 describe('useScoreSubmission', () => {
   beforeEach(() => {
@@ -70,7 +69,7 @@ describe('useScoreSubmission', () => {
     mockFailedMatches = [];
     mockValidateMatch.mockReturnValue({ isValid: true, correctedMatch: makeMatch() });
     mockUpdateMatch.mockResolvedValue(true);
-    mockInvalidateMatchRelatedQueries.mockResolvedValue(undefined);
+    mockInvalidateMatchRelatedQueries.mockResolvedValue();
   });
 
   it('handles success branch and refreshes matches', async () => {
@@ -82,9 +81,7 @@ describe('useScoreSubmission', () => {
     });
 
     expect(mockUpdateMatch).toHaveBeenCalledTimes(1);
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Success' })
-    );
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Success' }));
     expect(fetchMatches).toHaveBeenCalledTimes(1);
   });
 
@@ -93,18 +90,16 @@ describe('useScoreSubmission', () => {
     mockUpdateMatch.mockResolvedValueOnce(true);
     const fetchMatches = vi.fn().mockResolvedValue([]);
 
-    const { result, rerender } = renderHook(
-      ({ matches }) => useScoreSubmission(matches, fetchMatches),
-      { wrapper, initialProps: { matches: [makeMatch()] } }
-    );
+    const { result, rerender } = renderHook(({ matches }) => useScoreSubmission(matches, fetchMatches), {
+      wrapper,
+      initialProps: { matches: [makeMatch()] },
+    });
 
     await act(async () => {
       await result.current.handleSubmitAll();
     });
 
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Partial Success' })
-    );
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Partial Success' }));
 
     mockUpdateMatch.mockResolvedValue(false);
     rerender({ matches: [makeMatch({ id: 'm2' })] });
@@ -113,9 +108,7 @@ describe('useScoreSubmission', () => {
       await result.current.handleSubmitAll();
     });
 
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Error' })
-    );
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Error' }));
   });
 
   it('handles validation failure and thrown update error branch', async () => {

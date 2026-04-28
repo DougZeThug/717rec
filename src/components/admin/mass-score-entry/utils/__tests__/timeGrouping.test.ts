@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { MatchWithTeams } from '../../types';
+
 vi.mock('@/utils/timezone/formatters', () => ({
   extractTimeSlotFromUTC: vi.fn((date: string) => (date.includes('10:00') ? '10:00 AM' : '2:00 PM')),
 }));
@@ -11,12 +13,19 @@ vi.mock('@/utils/logger', () => ({
 
 import { groupMatchesByTimeSlot, sortTimeSlots } from '../timeGrouping';
 
+const makeMatch = (overrides: Partial<MatchWithTeams> = {}): MatchWithTeams => ({
+  id: 'm1',
+  team1Id: 't1',
+  team2Id: 't2',
+  ...overrides,
+});
+
 describe('timeGrouping helpers', () => {
   it('groups matches by timeslot and handles no-time entries', () => {
     const grouped = groupMatchesByTimeSlot([
-      { id: 'm1', date: '2026-02-01T10:00:00.000Z' } as any,
-      { id: 'm2', date: '2026-02-01T14:00:00.000Z' } as any,
-      { id: 'm3' } as any,
+      makeMatch({ id: 'm1', date: '2026-02-01T10:00:00.000Z' }),
+      makeMatch({ id: 'm2', date: '2026-02-01T14:00:00.000Z' }),
+      makeMatch({ id: 'm3' }),
     ]);
 
     expect(grouped['10:00 AM']).toHaveLength(1);
