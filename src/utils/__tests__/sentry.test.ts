@@ -1,5 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+type RequestIdleCallbackFn = (cb: () => void, opts?: { timeout?: number }) => number;
+type GlobalWithRequestIdle = typeof globalThis & { requestIdleCallback?: RequestIdleCallbackFn };
+type WindowWithRequestIdle = Window & { requestIdleCallback?: RequestIdleCallbackFn };
+
+const runtimeGlobal = globalThis as GlobalWithRequestIdle;
+const runtimeWindow = window as WindowWithRequestIdle;
+
 const initMock = vi.fn();
 const getClientMock = vi.fn();
 const replayIntegrationMock = vi.fn(() => ({ name: 'replay' }));
@@ -12,7 +19,7 @@ vi.mock('@sentry/react', () => ({
   browserTracingIntegration: browserTracingIntegrationMock,
 }));
 
-const importSentryModule = async ({
+const importSentryModule = ({
   dsn = 'https://dsn@example.ingest.sentry.io/1',
   prod = false,
   mode = 'test',
@@ -28,17 +35,13 @@ const importSentryModule = async ({
   return import('../sentry');
 };
 
-const originalRequestIdleCallback = (globalThis as typeof globalThis & {
-  requestIdleCallback?: (cb: () => void, opts?: { timeout?: number }) => number;
-}).requestIdleCallback;
+const originalRequestIdleCallback = runtimeGlobal.requestIdleCallback;
 
 describe('sentry utils', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.unstubAllEnvs();
-
-    (globalThis as typeof globalThis & { requestIdleCallback?: typeof originalRequestIdleCallback }).requestIdleCallback =
-      originalRequestIdleCallback;
+    runtimeGlobal.requestIdleCallback = originalRequestIdleCallback;
   });
 
   describe('scrubUrl', () => {
@@ -121,17 +124,19 @@ describe('sentry utils', () => {
     });
 
     it('logs warning and returns when DSN is empty', async () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
       const { initSentry } = await importSentryModule({ dsn: '' });
 
       initSentry();
 
       expect(initMock).not.toHaveBeenCalled();
-      expect(warnSpy).toHaveBeenCalledWith('[Sentry] DSN not configured - error reporting disabled');
+      expect(warnSpy).toHaveBeenCalledWith(
+        '[Sentry] DSN not configured - error reporting disabled'
+      );
     });
 
     it('calls Sentry.init with expected config when DSN is present', async () => {
-      (globalThis as any).requestIdleCallback = vi.fn();
+      runtimeGlobal.requestIdleCallback = vi.fn();
       const { initSentry } = await importSentryModule({
         dsn: 'https://abc@example.ingest.sentry.io/123',
         prod: true,
@@ -209,8 +214,12 @@ describe('sentry utils', () => {
       initSentry();
       const config = initMock.mock.calls[0][0];
 
-      expect(config.beforeSend({}, { originalException: new Error('ResizeObserver loop exceeded') })).toBeNull();
-      expect(config.beforeSend({}, { originalException: new Error('Loading chunk 11 failed') })).toBeNull();
+      expect(
+        config.beforeSend({}, { originalException: new Error('ResizeObserver loop exceeded') })
+      ).toBeNull();
+      expect(
+        config.beforeSend({}, { originalException: new Error('Loading chunk 11 failed') })
+      ).toBeNull();
     });
 
     it('beforeSend drops only true network TypeError variants', async () => {
@@ -256,16 +265,16 @@ describe('sentry utils', () => {
     it('schedules lazy integrations via requestIdleCallback in PROD', async () => {
       const addIntegration = vi.fn();
       getClientMock.mockReturnValue({ addIntegration });
-      (globalThis as typeof globalThis & { requestIdleCallback?: (cb: () => void) => number }).requestIdleCallback =
-        vi.fn((cb: () => void) => {
-          cb();
-          return 1;
-        });
+      const requestIdleCallbackMock = vi.fn((cb: () => void) => {
+        cb();
+        return 1;
+      });
+      runtimeGlobal.requestIdleCallback = requestIdleCallbackMock;
 
       const { initSentry } = await importSentryModule({ prod: true });
       initSentry();
 
-      expect((globalThis as any).requestIdleCallback).toHaveBeenCalled();
+      expect(requestIdleCallbackMock).toHaveBeenCalled();
       expect(addIntegration).toHaveBeenCalledTimes(2);
       expect(replayIntegrationMock).toHaveBeenCalledTimes(1);
       expect(browserTracingIntegrationMock).toHaveBeenCalledTimes(1);
@@ -274,8 +283,8 @@ describe('sentry utils', () => {
     it('schedules lazy integrations via setTimeout fallback in PROD without requestIdleCallback', async () => {
       const addIntegration = vi.fn();
       getClientMock.mockReturnValue({ addIntegration });
-      delete (window as any).requestIdleCallback;
-      delete (globalThis as any).requestIdleCallback;
+      delete runtimeWindow.requestIdleCallback;
+      delete runtimeGlobal.requestIdleCallback;
       vi.spyOn(globalThis, 'setTimeout').mockImplementation((cb: TimerHandler) => {
         if (typeof cb === 'function') cb();
         return 1 as unknown as ReturnType<typeof setTimeout>;
@@ -289,19 +298,20 @@ describe('sentry utils', () => {
     });
 
     it('does not schedule lazy integrations in non-PROD', async () => {
-      (globalThis as any).requestIdleCallback = vi.fn();
+      const requestIdleCallbackMock = vi.fn();
+      runtimeGlobal.requestIdleCallback = requestIdleCallbackMock;
       const timeoutSpy = vi.spyOn(globalThis, 'setTimeout');
 
       const { initSentry } = await importSentryModule({ prod: false, mode: 'test' });
       initSentry();
 
-      expect((globalThis as any).requestIdleCallback).not.toHaveBeenCalled();
+      expect(requestIdleCallbackMock).not.toHaveBeenCalled();
       expect(timeoutSpy).not.toHaveBeenCalled();
     });
 
     it('lazy integration adder is safe when getClient() returns null', async () => {
       getClientMock.mockReturnValue(null);
-      (globalThis as any).requestIdleCallback = vi.fn((cb: () => void) => {
+      runtimeGlobal.requestIdleCallback = vi.fn((cb: () => void) => {
         cb();
         return 1;
       });
@@ -316,7 +326,7 @@ describe('sentry utils', () => {
       getClientMock.mockImplementation(() => {
         throw new Error('boom');
       });
-      (globalThis as any).requestIdleCallback = vi.fn((cb: () => void) => {
+      runtimeGlobal.requestIdleCallback = vi.fn((cb: () => void) => {
         cb();
         return 1;
       });
