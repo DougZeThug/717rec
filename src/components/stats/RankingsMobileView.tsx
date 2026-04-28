@@ -17,6 +17,7 @@ import RankingCard from './RankingCard';
 import { SortOptions } from './RankingsTable';
 import TeamSearchDrawer from './TeamSearchDrawer';
 import ViewToggle from './ViewToggle';
+import { sortHistoryDivisions } from '@/utils/historyDivisionUtils';
 
 interface RankingsMobileViewProps {
   rankings: Ranking[];
@@ -237,7 +238,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
       )}
 
       <div className="space-y-2" ref={sectionRef}>
-        {Object.entries(rankingsByDivision).map(([displayDivision, divisionRankings]) => (
+        {sortHistoryDivisions(Object.entries(rankingsByDivision)).map(([displayDivision, divisionRankings]) => (
           <div key={displayDivision} className="space-y-1">
             {!showUnified && (
               <h3
