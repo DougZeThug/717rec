@@ -5,8 +5,11 @@ import { defineConfig } from 'vitest/config';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
+  const isCi = process.env.CI === 'true' || process.env.CI === '1';
   const isCiCoverage = process.env.VITEST_CI_COVERAGE === '1';
-  const coverageReporter = isCiCoverage
+  // Keep json-summary in every environment for DeepSource ingestion while
+  // avoiding html report generation costs in CI.
+  const coverageReporter = isCi
     ? ['text', 'json-summary']
     : ['text', 'html', 'json-summary'];
   const coverageInclude = isCiCoverage
