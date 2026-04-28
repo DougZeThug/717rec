@@ -6,11 +6,12 @@ import { describe, expect, it, vi } from 'vitest';
 import Navbar from '@/components/layout/Navbar';
 
 vi.mock('framer-motion', () => ({
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
   motion: {
-    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-      (() => { const { layout: _layout, ...rest } = props as any; return <div {...rest}>{children}</div>; })()
-    ),
+    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement> & { layout?: boolean }) => {
+      const { layout: _layout, ...rest } = props;
+      return <div {...rest}>{children}</div>;
+    },
   },
 }));
 
