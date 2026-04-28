@@ -17,6 +17,7 @@ import RankingCard from './RankingCard';
 import { SortOptions } from './RankingsTable';
 import TeamSearchDrawer from './TeamSearchDrawer';
 import ViewToggle from './ViewToggle';
+import { sortHistoryDivisions } from '@/utils/historyDivisionUtils';
 
 interface RankingsMobileViewProps {
   rankings: Ranking[];
