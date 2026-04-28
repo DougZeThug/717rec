@@ -9,7 +9,7 @@ import Contact from '../Contact';
 const mockToast = vi.fn();
 const mockSubmitContactRequest = vi.fn();
 
-vi.mock('react-helmet-async', () => ({ Helmet: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
+vi.mock('react-helmet-async', () => ({ Helmet: ({ children }: { children: React.ReactNode }) => children }));
 
 vi.mock('react-hook-form', () => ({
   useForm: () => ({
@@ -61,8 +61,8 @@ vi.mock('@/components/ui/select', () => ({
   SelectValue: ({ placeholder }: { placeholder: string }) => <span>{placeholder}</span>,
 }));
 vi.mock('@/components/ui/form', () => ({
-  Form: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  FormControl: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  Form: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  FormControl: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   FormField: ({ render }: { render: Function }) => render({ field: { value: '', onChange: vi.fn() } }),
   FormItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   FormLabel: ({ children }: { children: React.ReactNode }) => <label>{children}</label>,
@@ -85,7 +85,7 @@ const renderPage = () => {
 describe('Contact page', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSubmitContactRequest.mockResolvedValue(undefined);
+    mockSubmitContactRequest.mockResolvedValue();
   });
 
   it('shows loading state during form submission', async () => {

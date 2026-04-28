@@ -36,7 +36,7 @@ vi.mock('@/components/layout/PageLayout', () => ({
 vi.mock('@/components/transitions/PageTransition', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
-vi.mock('react-helmet-async', () => ({ Helmet: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
+vi.mock('react-helmet-async', () => ({ Helmet: ({ children }: { children: React.ReactNode }) => children }));
 vi.mock('@/components/home/HeroSection', () => ({ default: () => <p>Hero Section</p> }));
 vi.mock('@/components/hero/HeroCardSkeleton', () => ({ default: () => <p>Loading hero cards...</p> }));
 vi.mock('@/components/home/MyNextMatchSkeleton', () => ({ default: () => <p>Loading next match...</p> }));

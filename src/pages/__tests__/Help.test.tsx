@@ -9,7 +9,7 @@ import Help from '../Help';
 const mockUseAdminAccess = vi.fn();
 const mockHelpState = vi.fn();
 
-vi.mock('react-helmet-async', () => ({ Helmet: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
+vi.mock('react-helmet-async', () => ({ Helmet: ({ children }: { children: React.ReactNode }) => children }));
 vi.mock('@/hooks/useAdminAccess', () => ({ useAdminAccess: () => mockUseAdminAccess() }));
 vi.mock('@/components/help/HelpQuickLinks', () => ({ HelpQuickLinks: () => <p>Quick Links</p> }));
 vi.mock('@/components/help/HelpAdminCTA', () => ({ HelpAdminCTA: () => <p>Admin CTA</p> }));
