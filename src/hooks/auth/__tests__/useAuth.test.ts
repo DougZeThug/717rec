@@ -116,15 +116,25 @@ describe('useAuth', () => {
       expect(result.current.authInitialized).toBe(true);
     });
 
+    await act(async () => {
+      await authStateCallback?.('INITIAL_SESSION', null);
+    });
+
     expect(result.current.session).toBeNull();
     expect(result.current.user).toBeNull();
-    expect(setProfileSpy).not.toHaveBeenCalled();
+    expect(result.current.authError).toBeNull();
+    expect(setProfileSpy).toHaveBeenCalledWith(null);
+    expect(setIsProfileLoadingSpy).toHaveBeenCalledWith(false);
     expect(result.current.signIn).toBe(signIn);
     expect(result.current.signUp).toBe(signUp);
     expect(result.current.signOut).toBe(signOut);
     expect(result.current.signInWithGoogle).toBe(signInWithGoogle);
     expect(result.current.signInWithGoogleNative).toBe(signInWithGoogleNative);
     expect(result.current.refreshProfile).toBe(refreshProfileSpy);
+
+    act(() => {
+      result.current.clearAuthError();
+    });
   });
 
   it('loads profile for initial session and calls checkProfileSetup', async () => {
@@ -172,9 +182,14 @@ describe('useAuth', () => {
     expect(mockGetAuthSession).toHaveBeenCalledTimes(3);
     expect(result.current.authInitialized).toBe(true);
     expect(result.current.isLoading).toBe(false);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2000);
+    });
+    expect(mockGetAuthSession).toHaveBeenCalledTimes(3);
   });
 
-  it('handles auth events and profile fetch lifecycle', async () => {
+  it('handles SIGNED_IN, INITIAL_SESSION, TOKEN_REFRESHED and PASSWORD_RECOVERY events', async () => {
     vi.useFakeTimers();
     mockGetAuthSession.mockResolvedValue({ data: { session: null }, error: null });
     fetchProfileSpy.mockResolvedValue({ username: 'event-user' });
@@ -186,19 +201,26 @@ describe('useAuth', () => {
     });
     expect(authStateCallback).toBeTruthy();
 
-    const events = ['SIGNED_IN', 'INITIAL_SESSION', 'TOKEN_REFRESHED', 'PASSWORD_RECOVERY'];
+    const events: AuthChangeEvent[] = [
+      'SIGNED_IN',
+      'INITIAL_SESSION',
+      'TOKEN_REFRESHED',
+      'PASSWORD_RECOVERY',
+    ];
+
     for (const event of events) {
       await act(async () => {
         await authStateCallback?.(event, makeSession(`${event.toLowerCase()}-id`));
       });
 
       await act(async () => {
-        await vi.runOnlyPendingTimersAsync();
+        await vi.advanceTimersByTimeAsync(0);
       });
     }
 
     expect(fetchProfileSpy).toHaveBeenCalledTimes(4);
     expect(checkProfileSetupSpy).toHaveBeenCalledTimes(1);
+    expect(checkProfileSetupSpy).toHaveBeenCalledWith({ username: 'event-user' });
   });
 
   it('shows destructive toast when SIGNED_IN profile fetch fails', async () => {
@@ -211,11 +233,10 @@ describe('useAuth', () => {
     await act(async () => {
       await Promise.resolve();
     });
-    expect(authStateCallback).toBeTruthy();
 
     await act(async () => {
       await authStateCallback?.('SIGNED_IN', makeSession('toast-user'));
-      await vi.runOnlyPendingTimersAsync();
+      await vi.advanceTimersByTimeAsync(0);
     });
 
     expect(mockToast).toHaveBeenCalledWith(
@@ -243,7 +264,7 @@ describe('useAuth', () => {
     expect(setIsProfileLoadingSpy).toHaveBeenCalledWith(false);
   });
 
-  it('discards stale profile fetch when user changes before timeout resolves', async () => {
+  it('discards stale profile fetch when user changes before timeout callback resolves', async () => {
     vi.useFakeTimers();
     mockGetAuthSession.mockResolvedValue({ data: { session: null }, error: null });
     fetchProfileSpy.mockImplementation((userId: string) =>
@@ -255,12 +276,11 @@ describe('useAuth', () => {
     await act(async () => {
       await Promise.resolve();
     });
-    expect(authStateCallback).toBeTruthy();
 
     await act(async () => {
       await authStateCallback?.('SIGNED_IN', makeSession('user-a'));
       await authStateCallback?.('SIGNED_IN', makeSession('user-b'));
-      await vi.runOnlyPendingTimersAsync();
+      await vi.advanceTimersByTimeAsync(0);
     });
 
     expect(fetchProfileSpy).toHaveBeenCalledTimes(1);
