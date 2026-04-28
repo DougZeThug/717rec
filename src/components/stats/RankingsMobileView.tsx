@@ -237,7 +237,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
       )}
 
       <div className="space-y-2" ref={sectionRef}>
-        {Object.entries(rankingsByDivision).map(([displayDivision, divisionRankings]) => (
+        {sortHistoryDivisions(Object.entries(rankingsByDivision)).map(([displayDivision, divisionRankings]) => (
           <div key={displayDivision} className="space-y-1">
             {!showUnified && (
               <h3
