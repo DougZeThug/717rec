@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -89,10 +89,23 @@ describe('Contact page', () => {
   });
 
   it('shows loading state during form submission', async () => {
-    mockSubmitContactRequest.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 50)));
+    let resolveSubmit: (() => void) | undefined;
+    mockSubmitContactRequest.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveSubmit = resolve;
+        })
+    );
+
     renderPage();
     fireEvent.click(screen.getByRole('button', { name: /Send Message/i }));
-    expect(await screen.findByText('Sending...')).toBeInTheDocument();
+
+    const submitButton = await screen.findByRole('button', { name: /Sending.../i });
+    expect(submitButton).toBeDisabled();
+
+    await act(async () => {
+      resolveSubmit?.();
+    });
   });
 
   it('shows happy path after successful submission', async () => {
