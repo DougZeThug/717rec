@@ -64,4 +64,4 @@ if (updatedBaseline === baselineBlock) {
 
 await writeFile(TESTING_DOC_PATH, `${before}${updatedBaseline}${after}`, 'utf8');
 
-console.log(`Updated ${TESTING_DOC_PATH} baseline from ${COVERAGE_SUMMARY_PATH} (${isoDate}).`);
+process.stdout.write(`Updated ${TESTING_DOC_PATH} baseline from ${COVERAGE_SUMMARY_PATH} (${isoDate}).\n`);
