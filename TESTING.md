@@ -9,7 +9,8 @@ full testing guide.
 ```bash
 npm test              # run the full suite once
 npm run test:watch    # re-run on file changes (while you're coding)
-npm run test:coverage # run once and produce a coverage report
+npm run test:coverage # fast gate: lightweight coverage reporters (text + json-summary)
+npm run test:coverage:full # deep local diagnostics: includes HTML artifact at coverage/index.html
 npm run test:coverage:refresh-docs # run coverage and auto-sync baseline metrics in this doc
 npm run test:coverage:ci # PR gate: lightweight threshold enforcement
 npm run test:coverage:deepsource # DeepSource artifact: LCOV @ coverage/deepsource/lcov.info (15m timeout)
@@ -18,7 +19,7 @@ npm run test:coverage:debug # serial + verbose coverage diagnostics (15m timeout
 
 Single source of truth: script values in `package.json` are authoritative; this document should mirror those exact script definitions.
 
-After `test:coverage`, open `coverage/index.html` in a browser to see
+After `test:coverage:full`, open `coverage/index.html` in a browser to see
 per-file percentages with line-by-line highlighting.
 
 
@@ -59,7 +60,7 @@ Full baseline output is saved to `coverage-baseline.txt` at the repo root.
 ## Coverage threshold policy (enforced)
 
 Vitest coverage thresholds are now enforced in CI and locally via
-`npm run test:coverage`.
+`npm run test:coverage` (fast gate) or `npm run test:coverage:full` (deep local diagnostics).
 
 ### Stage 1 (active now): no regression at the global level
 
@@ -223,8 +224,8 @@ This command enforces a hard runtime cap (`timeout 15m`) and emits the exact
 artifact DeepSource expects in this repo: LCOV at
 `coverage/deepsource/lcov.info`.
 
-Use `npm run test:coverage` (full-scope + HTML report) for local diagnostics and
-nightly/main-branch health checks rather than every PR gate.
+Use `npm run test:coverage` for fast local/CI gating and
+`npm run test:coverage:full` for deep local diagnostics with HTML output.
 
 ## Manual checks: overlapping seasons
 
