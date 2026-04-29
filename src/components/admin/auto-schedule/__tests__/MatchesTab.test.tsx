@@ -38,6 +38,7 @@ describe('MatchesTab', () => {
         team1: { id: 'a', name: 'Team A' },
         team2: { id: 'b', name: 'Team B' },
         compatibilityScore: 8,
+        hasPlayedBefore: false,
       },
     ],
     Late: [
@@ -45,6 +46,7 @@ describe('MatchesTab', () => {
         team1: { id: 'a', name: 'Team A' },
         team2: { id: 'c', name: 'Team C' },
         compatibilityScore: 7,
+        hasPlayedBefore: false,
       },
     ],
   };

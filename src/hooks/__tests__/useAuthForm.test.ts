@@ -33,7 +33,7 @@ describe('useAuthForm', () => {
 
     mockSignIn.mockResolvedValue({ session: null });
     mockSignUp.mockResolvedValue({ session: null });
-    mockSignInWithGoogle.mockResolvedValue();
+    mockSignInWithGoogle.mockResolvedValue(undefined);
     mockSignInWithGoogleNative.mockResolvedValue({ success: true, error: null });
 
     mockUseAuth.mockReturnValue({

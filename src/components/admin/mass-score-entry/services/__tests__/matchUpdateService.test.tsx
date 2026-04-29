@@ -43,7 +43,7 @@ const makeMatch = (overrides: Partial<MatchWithTeams> = {}): MatchWithTeams => (
 describe('useMatchUpdateService', () => {
   it('updates match and team stats on success', async () => {
     mockUpdateMatchInDatabase.mockResolvedValueOnce(true);
-    mockUpdateTeamStats.mockResolvedValueOnce();
+    mockUpdateTeamStats.mockResolvedValueOnce(undefined);
 
     const { result } = renderHook(() => useMatchUpdateService());
 
