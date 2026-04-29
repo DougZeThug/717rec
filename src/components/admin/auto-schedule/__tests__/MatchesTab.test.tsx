@@ -64,7 +64,7 @@ describe('MatchesTab', () => {
     unmatchedTeamIds: [],
     isGenerating: false,
     matchQualityMetrics: {
-      qualityRating: 'Good',
+      qualityRating: 'Good' as const,
       averageCompatibilityScore: 7.5,
       totalMatches: 2,
       rematchCount: 0,
@@ -77,7 +77,7 @@ describe('MatchesTab', () => {
       performanceMetrics: {
         generationTimeMs: 0,
         algorithmsUsed: [],
-        optimizationLevel: 'standard',
+        optimizationLevel: 'standard' as const,
       },
       feedback: { strengths: [], improvements: [], recommendations: [] },
     },
