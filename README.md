@@ -78,7 +78,7 @@ npm run test:coverage:debug:subset
 ```
 
 - `test:coverage` keeps the full local developer report (`coverage/index.html`).
-- `test:coverage:ci` runs the lightweight PR-gate coverage pass.
+- `test:coverage:ci` runs the lightweight PR-gate coverage pass with a **10-minute hard timeout** in deterministic single-worker mode (`timeout 10m env CI=true vitest run --coverage --maxWorkers=1`).
 - `test:coverage:deepsource` is the DeepSource path: it has a **15-minute hard runtime budget** and emits **LCOV only** at `coverage/deepsource/lcov.info`.
 
 Single source of truth: script values in `package.json` are authoritative; documentation should match those exact script definitions.
@@ -86,6 +86,8 @@ Single source of truth: script values in `package.json` are authoritative; docum
 - `test:coverage:debug:subset` runs only `src/services`, `src/hooks`, and `src/utils` test files so teams can bisect by directory quickly.
 
 ### Coverage hang triage playbook
+
+When coverage fails or times out in CI, reproduce locally with `npm run test:coverage:debug` first.
 
 When coverage appears to hang, run this sequence exactly to narrow down the culprit without guesswork:
 
