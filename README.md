@@ -73,11 +73,44 @@ npm test
 npm run test:coverage
 npm run test:coverage:ci
 npm run test:coverage:deepsource
+npm run test:coverage:debug
+npm run test:coverage:debug:subset
 ```
 
 - `test:coverage` keeps the full local developer report (`coverage/index.html`).
 - `test:coverage:ci` runs the lightweight PR-gate coverage pass.
 - `test:coverage:deepsource` is the DeepSource path: it has an **8-minute hard runtime budget** and emits **LCOV only** at `coverage/deepsource/lcov.info`.
+- `test:coverage:debug` runs coverage in single-thread mode with verbose logging to isolate hangs.
+- `test:coverage:debug:subset` runs only `src/services`, `src/hooks`, and `src/utils` test files so teams can bisect by directory quickly.
+
+### Coverage hang triage playbook
+
+When coverage appears to hang, run this sequence exactly to narrow down the culprit without guesswork:
+
+1. **Confirm hang in deterministic mode**
+   ```sh
+   npm run test:coverage:debug
+   ```
+2. **Run focused subset (services/hooks/utils)**
+   ```sh
+   npm run test:coverage:debug:subset
+   ```
+3. **Bisect by directory with file-pattern execution**
+   ```sh
+   npm run test:coverage:debug -- "src/services/**/{__tests__,tests}/**/*.{test,spec}.{ts,tsx}"
+   npm run test:coverage:debug -- "src/hooks/**/{__tests__,tests}/**/*.{test,spec}.{ts,tsx}"
+   npm run test:coverage:debug -- "src/utils/**/{__tests__,tests}/**/*.{test,spec}.{ts,tsx}"
+   ```
+4. **Narrow to one package/folder**
+   ```sh
+   npm run test:coverage:debug -- "src/services/<area>/**/{__tests__,tests}/**/*.{test,spec}.{ts,tsx}"
+   ```
+5. **Narrow to one file**
+   ```sh
+   npm run test:coverage:debug -- "src/services/<area>/tests/<name>.test.ts"
+   ```
+
+If a directory keeps hanging, temporarily tighten `test.include` in `vitest.config.ts` to only that directory's globs, then rerun `npm run test:coverage:debug`. Keep shrinking the include globs until a single culprit spec is identified, then restore the broader include patterns after fixing the test.
 
 ## Can I connect a custom domain to my Lovable project?
 
