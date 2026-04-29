@@ -68,6 +68,18 @@ describe('MatchesTab', () => {
       averageCompatibilityScore: 7.5,
       totalMatches: 2,
       rematchCount: 0,
+      opponentDiversity: { duplicateOpponents: 0, uniqueOpponents: 2, diversityScore: 100 },
+      powerScoreAnalysis: {
+        averagePowerScoreDifference: 0,
+        balancedMatches: 2,
+        unbalancedMatches: 0,
+      },
+      performanceMetrics: {
+        generationTimeMs: 0,
+        algorithmsUsed: [],
+        optimizationLevel: 'standard',
+      },
+      feedback: { strengths: [], improvements: [], recommendations: [] },
     },
     onApplySchedule: vi.fn(),
     onSaveSchedule: vi.fn().mockResolvedValue(true),
