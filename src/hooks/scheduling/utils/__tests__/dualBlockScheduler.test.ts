@@ -7,6 +7,7 @@ import {
   generateScheduleGreedyWithTracking,
   pairKey,
 } from '@/utils/scheduling/greedyBackToBackScheduler';
+import type { ScheduledMatch } from '@/utils/scheduling/greedy';
 
 import { scheduleDualBlockPairings } from '../dualBlockScheduler';
 
@@ -38,6 +39,20 @@ const makeTeam = (id: string, divisionName = 'Intermediate'): Team => ({
   divisionName,
 });
 
+const makeMatch = (m: {
+  teamAId: string;
+  teamBId: string;
+  slot: string;
+  tierA: number;
+  tierB: number;
+}): ScheduledMatch => ({
+  ...m,
+  teamAName: `Team ${m.teamAId}`,
+  teamBName: `Team ${m.teamBId}`,
+  divisionA: 'Intermediate',
+  divisionB: 'Intermediate',
+});
+
 const defaultDiagnostics = {
   relaxationApplied: 0 as const,
   constraintsRelaxed: [],
@@ -50,16 +65,16 @@ describe('scheduleDualBlockPairings', () => {
   beforeEach(() => {
     vi.resetAllMocks();
 
-    mockGetBackToBackPair.mockReturnValue('S3');
-    mockGetPairConfig.mockImplementation((pairName: string) => {
+    mockGetBackToBackPair.mockReturnValue('S3' as never);
+    mockGetPairConfig.mockImplementation(((pairName: string) => {
       if (pairName === 'Early') {
-        return { primary: 'S1', secondary: 'S2' };
+        return { primary: 'S1', secondary: 'S2', label: 'Early Pair' };
       }
       if (pairName === 'Mid') {
-        return { primary: 'S3', secondary: 'S4' };
+        return { primary: 'S3', secondary: 'S4', label: 'Mid Pair' };
       }
       return null;
-    });
+    }) as never);
     mockPairKey.mockImplementation((a: string, b: string) => [a, b].sort().join('::'));
     mockGenerateScheduleGreedyWithTracking.mockReturnValue({
       matches: [],
