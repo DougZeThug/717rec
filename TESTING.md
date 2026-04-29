@@ -164,7 +164,7 @@ dual-block pairing, validation, edge cases), greedy scheduler (feasibility,
 constraints, rematch repair), `sanitizeReturnTo`.
 
 **Components / pages (sampled):** Playoff bracket form (many sub-pieces),
-mass-score-entry, batch-matches auto-schedule warnings, history page,
+mass-score-entry, batch-matches auto-schedule warnings, history page (incl. editing),
 `ProtectedAdminRoute`, `AdminDashboard`, `Auth` page.
 
 **Season workflow:** `SeasonService` (incl. `partial_archive`, `finalize_playoffs`,
