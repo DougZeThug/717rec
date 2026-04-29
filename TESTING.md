@@ -10,6 +10,7 @@ full testing guide.
 npm test              # run the full suite once
 npm run test:watch    # re-run on file changes (while you're coding)
 npm run test:coverage # run once and produce a coverage report
+npm run test:coverage:refresh-docs # run coverage and auto-sync baseline metrics in this doc
 npm run test:coverage:ci # PR gate: lightweight threshold enforcement
 npm run test:coverage:deepsource # DeepSource artifact: LCOV @ coverage/deepsource/lcov.info (15m timeout)
 npm run test:coverage:debug # serial + verbose coverage diagnostics (15m timeout)
@@ -104,15 +105,16 @@ description and an updated table in this file.
 
 ### Baseline generation note
 
-To keep this baseline consistent across updates, run coverage from the repo
-root in a normal dev environment and capture the full terminal output:
+To keep this baseline consistent across updates, run a single command from the
+repo root:
 
 ```bash
-npm run test:coverage:update-baseline
+npm run test:coverage:refresh-docs
 ```
 
-Then copy the summary values from that run into this section (date, test file
-count, top-level metrics, and area table).
+This command runs coverage, reads `coverage/coverage-summary.json`, and
+automatically updates the `## Current baseline` date + top-level metric rows in
+this file.
 
 ## Coverage by area
 
