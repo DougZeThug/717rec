@@ -89,10 +89,13 @@ describe('Contact page', () => {
   });
 
   it('shows loading state during form submission', async () => {
-    mockSubmitContactRequest.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 50)));
+    mockSubmitContactRequest.mockImplementation(() => new Promise<void>(() => undefined));
+
     renderPage();
     fireEvent.click(screen.getByRole('button', { name: /Send Message/i }));
-    expect(await screen.findByText('Sending...')).toBeInTheDocument();
+
+    const submitButton = await screen.findByRole('button', { name: /Sending.../i });
+    expect(submitButton).toBeDisabled();
   });
 
   it('shows happy path after successful submission', async () => {
