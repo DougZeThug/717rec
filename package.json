@@ -21,7 +21,8 @@
     "test:coverage:debug:subset": "env CI=true timeout 15m sh -c 'vitest run --coverage --reporter=verbose --maxWorkers=1 --pool=forks --fileParallelism=false $(rg --files src/services src/hooks src/utils | rg \"(/__tests__/|/tests/).*(test|spec)\\.(ts|tsx)$\")'",
     "test:coverage:update-baseline": "./tools/update-coverage-baseline.sh",
     "test:coverage:sync-docs": "node tools/sync-testing-baseline.mjs",
-    "test:coverage:refresh-docs": "npm run test:coverage && npm run test:coverage:sync-docs"
+    "test:coverage:refresh-docs": "npm run test:coverage && npm run test:coverage:sync-docs",
+    "test:coverage:triage": "./tools/coverage-triage.sh"
   },
   "dependencies": {
     "@capacitor/core": "8.3.1",

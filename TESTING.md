@@ -15,6 +15,7 @@ npm run test:coverage:refresh-docs # run coverage and auto-sync baseline metrics
 npm run test:coverage:ci # PR gate: lightweight threshold enforcement
 npm run test:coverage:deepsource # DeepSource artifact: LCOV @ coverage/deepsource/lcov.info (15m timeout)
 npm run test:coverage:debug # serial + verbose coverage diagnostics (15m timeout)
+npm run test:coverage:triage # bounded verbose coverage run with timestamped triage log
 ```
 
 Single source of truth: script values in `package.json` are authoritative; this document should mirror those exact script definitions.
@@ -25,7 +26,15 @@ per-file percentages with line-by-line highlighting.
 
 ## Coverage troubleshooting (hangs/timeouts)
 
-If coverage appears to hang in CI/Codex, use this quick triage sequence:
+If coverage appears to hang in CI/Codex, start with the dedicated triage command first:
+
+```bash
+npm run test:coverage:triage
+```
+
+This command runs a bounded verbose coverage pass and writes a timestamped log to `logs/coverage-triage/coverage-triage-<UTC timestamp>.log`.
+
+After triage logging, use this quick follow-up sequence as needed:
 
 ```bash
 timeout 10m npm run test:coverage
