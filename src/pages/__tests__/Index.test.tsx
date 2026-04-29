@@ -36,19 +36,31 @@ vi.mock('@/components/layout/PageLayout', () => ({
 vi.mock('@/components/transitions/PageTransition', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
-vi.mock('react-helmet-async', () => ({ Helmet: ({ children }: { children: React.ReactNode }) => children }));
+vi.mock('react-helmet-async', () => ({
+  Helmet: ({ children }: { children: React.ReactNode }) => children,
+}));
 vi.mock('@/components/home/HeroSection', () => ({ default: () => <p>Hero Section</p> }));
-vi.mock('@/components/hero/HeroCardSkeleton', () => ({ default: () => <p>Loading hero cards...</p> }));
-vi.mock('@/components/home/MyNextMatchSkeleton', () => ({ default: () => <p>Loading next match...</p> }));
-vi.mock('@/components/home/TeamOfTheWeekSkeleton', () => ({ default: () => <p>Loading team of week...</p> }));
-vi.mock('@/components/home/WeeklyRecapSkeleton', () => ({ default: () => <p>Loading recap...</p> }));
+vi.mock('@/components/hero/HeroCardSkeleton', () => ({
+  default: () => <p>Loading hero cards...</p>,
+}));
+vi.mock('@/components/home/MyNextMatchSkeleton', () => ({
+  default: () => <p>Loading next match...</p>,
+}));
+vi.mock('@/components/home/TeamOfTheWeekSkeleton', () => ({
+  default: () => <p>Loading team of week...</p>,
+}));
+vi.mock('@/components/home/WeeklyRecapSkeleton', () => ({
+  default: () => <p>Loading recap...</p>,
+}));
 vi.mock('@/components/home/LeagueHistoryBar', () => ({ default: () => <p>League History</p> }));
 vi.mock('@/components/home/MyMatchesSection', () => ({ default: () => <p>My Matches</p> }));
 vi.mock('@/components/home/PendingScoresCard', () => ({ default: () => <p>Pending Scores</p> }));
 vi.mock('@/components/home/TeamOfTheWeekCard', () => ({ default: () => <p>Team Of Week</p> }));
 vi.mock('@/components/home/WeeklyRecapCard', () => ({ default: () => <p>Weekly Recap</p> }));
 vi.mock('@/components/hero/HeroCard', () => ({ default: () => <p>Hero Card</p> }));
-vi.mock('@/components/hero/ParticipationHeroCard', () => ({ default: () => <p>Participation Card</p> }));
+vi.mock('@/components/hero/ParticipationHeroCard', () => ({
+  default: () => <p>Participation Card</p>,
+}));
 vi.mock('@/components/home/CallToAction', () => ({ default: () => <p>Call To Action</p> }));
 vi.mock('@/components/home/TopTeams', () => ({
   default: ({ teams }: { teams: Array<{ id: string }> }) =>
@@ -78,7 +90,10 @@ describe('Index page', () => {
     mockUseTeams.mockReturnValue({ teams: [{ id: 't-1', power_score: 80 }], isLoading: false });
     mockUsePendingScoresMatches.mockReturnValue({ matches: [], isLoading: false });
     mockUseHeroCards.mockReturnValue({ data: [{ id: 'h-1' }], isLoading: false });
-    mockUseWeeklyPowerScoreTrends.mockReturnValue({ data: { trends: [], latestWeek: 5 }, isLoading: false });
+    mockUseWeeklyPowerScoreTrends.mockReturnValue({
+      data: { trends: [], latestWeek: 5 },
+      isLoading: false,
+    });
     mockUseWeeklyRecap.mockReturnValue({ data: { hasData: false }, isLoading: false });
     mockUseConfirmationSeason.mockReturnValue({ data: null });
     mockUseMyNextMatch.mockReturnValue({

@@ -9,7 +9,9 @@ import Contact from '../Contact';
 const mockToast = vi.fn();
 const mockSubmitContactRequest = vi.fn();
 
-vi.mock('react-helmet-async', () => ({ Helmet: ({ children }: { children: React.ReactNode }) => children }));
+vi.mock('react-helmet-async', () => ({
+  Helmet: ({ children }: { children: React.ReactNode }) => children,
+}));
 
 vi.mock('react-hook-form', () => ({
   useForm: () => ({
@@ -41,8 +43,12 @@ vi.mock('@/services/support/ContactService', async () => {
 });
 vi.mock('@/utils/analytics', () => ({ trackContactForm: vi.fn() }));
 
-vi.mock('@/components/layout/PageLayout', () => ({ default: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
-vi.mock('@/components/transitions/PageTransition', () => ({ default: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
+vi.mock('@/components/layout/PageLayout', () => ({
+  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
+vi.mock('@/components/transitions/PageTransition', () => ({
+  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
 vi.mock('@/components/ui/card', () => ({
   Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   CardContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -50,9 +56,15 @@ vi.mock('@/components/ui/card', () => ({
   CardHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   CardTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
 }));
-vi.mock('@/components/ui/button', () => ({ Button: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props} /> }));
-vi.mock('@/components/ui/input', () => ({ Input: (props: React.InputHTMLAttributes<HTMLInputElement>) => <input {...props} /> }));
-vi.mock('@/components/ui/textarea', () => ({ Textarea: (props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => <textarea {...props} /> }));
+vi.mock('@/components/ui/button', () => ({
+  Button: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props} />,
+}));
+vi.mock('@/components/ui/input', () => ({
+  Input: (props: React.InputHTMLAttributes<HTMLInputElement>) => <input {...props} />,
+}));
+vi.mock('@/components/ui/textarea', () => ({
+  Textarea: (props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => <textarea {...props} />,
+}));
 vi.mock('@/components/ui/select', () => ({
   Select: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   SelectContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -63,13 +75,15 @@ vi.mock('@/components/ui/select', () => ({
 vi.mock('@/components/ui/form', () => ({
   Form: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   FormControl: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  FormField: ({ render }: { render: Function }) => render({ field: { value: '', onChange: vi.fn() } }),
+  FormField: ({ render }: { render: Function }) =>
+    render({ field: { value: '', onChange: vi.fn() } }),
   FormItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   FormLabel: ({ children }: { children: React.ReactNode }) => <label>{children}</label>,
   FormMessage: () => null,
 }));
 
-const createTestQueryClient = () => new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+const createTestQueryClient = () =>
+  new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
 
 const renderPage = () => {
   const queryClient = createTestQueryClient();
@@ -89,7 +103,9 @@ describe('Contact page', () => {
   });
 
   it('shows loading state during form submission', async () => {
-    mockSubmitContactRequest.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 50)));
+    mockSubmitContactRequest.mockImplementation(
+      () => new Promise((resolve) => setTimeout(resolve, 50))
+    );
     renderPage();
     fireEvent.click(screen.getByRole('button', { name: /Send Message/i }));
     expect(await screen.findByText('Sending...')).toBeInTheDocument();
@@ -106,7 +122,9 @@ describe('Contact page', () => {
     renderPage();
     fireEvent.click(screen.getByRole('button', { name: /Send Message/i }));
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Error', variant: 'destructive' }));
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Error', variant: 'destructive' })
+      );
     });
   });
 });

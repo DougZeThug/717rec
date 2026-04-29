@@ -17,7 +17,9 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
 }));
 
 vi.mock('@/utils/matchTransformers', () => ({
@@ -30,17 +32,17 @@ import {
   fetchBmMatchWithStage,
   fetchBracketInfo,
   fetchBracketParticipants,
-  fetchBracketWithDivision,
   fetchBracketsForSelector,
   fetchBracketsManagerMatchData,
   fetchBracketsOverview,
+  fetchBracketWithDivision,
   fetchFinalStandings,
   fetchGroupsAndMatches,
   fetchParticipantsByIds,
   fetchPlayoffBracketData,
+  fetchPlayoffMatches,
   fetchPlayoffMatchTeams,
   fetchPlayoffMatchWithBracket,
-  fetchPlayoffMatches,
   fetchPlayoffTeams,
   fetchStageAndParticipants,
   fetchTeamsByNames,
@@ -50,14 +52,27 @@ import {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'query failed', code = '42P01') => ({
-  message: msg, code, details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code,
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 const makeBracket = () => ({
-  id: 'b-1', title: 'Gold Bracket', format: 'single_elimination', state: 'pending',
-  division_id: 'd-1', challonge_tournament_id: null, uses_brackets_manager: false,
-  created_at: '2026-01-01T00:00:00Z', wb_champion_id: null, bracket_data: null,
-  migrated: false, migrated_at: null, reset_match_needed: false,
+  id: 'b-1',
+  title: 'Gold Bracket',
+  format: 'single_elimination',
+  state: 'pending',
+  division_id: 'd-1',
+  challonge_tournament_id: null,
+  uses_brackets_manager: false,
+  created_at: '2026-01-01T00:00:00Z',
+  wb_champion_id: null,
+  bracket_data: null,
+  migrated: false,
+  migrated_at: null,
+  reset_match_needed: false,
 });
 
 // ─── fetchBracketsForSelector ─────────────────────────────────────────────────
@@ -67,7 +82,9 @@ describe('fetchBracketsForSelector', () => {
 
   it('returns bracket options on success', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ order: () => Promise.resolve({ data: [{ id: 'b-1', title: 'Gold Bracket' }], error: null }) }),
+      select: () => ({
+        order: () => Promise.resolve({ data: [{ id: 'b-1', title: 'Gold Bracket' }], error: null }),
+      }),
     });
     const result = await fetchBracketsForSelector();
     expect(result).toHaveLength(1);
@@ -96,7 +113,9 @@ describe('fetchPlayoffBracketData', () => {
 
   it('returns mapped bracket on success', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve({ data: makeBracket(), error: null }) }) }),
+      select: () => ({
+        eq: () => ({ maybeSingle: () => Promise.resolve({ data: makeBracket(), error: null }) }),
+      }),
     });
     const result = await fetchPlayoffBracketData('b-1');
     expect(result.id).toBe('b-1');
@@ -105,14 +124,18 @@ describe('fetchPlayoffBracketData', () => {
 
   it('throws NotFoundError when bracket not found', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }) }),
+      select: () => ({
+        eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
+      }),
     });
     await expect(fetchPlayoffBracketData('b-missing')).rejects.toThrow(NotFoundError);
   });
 
   it('throws DatabaseError on Supabase error', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+      select: () => ({
+        eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: pgError() }) }),
+      }),
     });
     await expect(fetchPlayoffBracketData('b-1')).rejects.toThrow(DatabaseError);
   });
@@ -125,15 +148,29 @@ describe('fetchPlayoffMatches', () => {
 
   it('returns empty array when no matches', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ order: () => ({ order: () => Promise.resolve({ data: [], error: null }) }) }) }),
+      select: () => ({
+        eq: () => ({ order: () => ({ order: () => Promise.resolve({ data: [], error: null }) }) }),
+      }),
     });
     expect(await fetchPlayoffMatches('b-1')).toEqual([]);
   });
 
   it('returns transformed matches on success', async () => {
-    const row = { id: 'm-1', bracket_id: 'b-1', round: 1, position: 0, team1: null, team2: null, playoff_games: [] };
+    const row = {
+      id: 'm-1',
+      bracket_id: 'b-1',
+      round: 1,
+      position: 0,
+      team1: null,
+      team2: null,
+      playoff_games: [],
+    };
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ order: () => ({ order: () => Promise.resolve({ data: [row], error: null }) }) }) }),
+      select: () => ({
+        eq: () => ({
+          order: () => ({ order: () => Promise.resolve({ data: [row], error: null }) }),
+        }),
+      }),
     });
     const result = await fetchPlayoffMatches('b-1');
     expect(result).toHaveLength(1);
@@ -141,7 +178,11 @@ describe('fetchPlayoffMatches', () => {
 
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ order: () => ({ order: () => Promise.resolve({ data: null, error: pgError() }) }) }) }),
+      select: () => ({
+        eq: () => ({
+          order: () => ({ order: () => Promise.resolve({ data: null, error: pgError() }) }),
+        }),
+      }),
     });
     await expect(fetchPlayoffMatches('b-1')).rejects.toThrow(DatabaseError);
   });
@@ -177,7 +218,12 @@ describe('fetchBracketParticipants', () => {
 
   it('returns participants on success', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ order: () => Promise.resolve({ data: [{ id: 1, name: 'Eagles', position: 1 }], error: null }) }) }),
+      select: () => ({
+        eq: () => ({
+          order: () =>
+            Promise.resolve({ data: [{ id: 1, name: 'Eagles', position: 1 }], error: null }),
+        }),
+      }),
     });
     const result = await fetchBracketParticipants('b-1');
     expect(result).toHaveLength(1);
@@ -185,7 +231,9 @@ describe('fetchBracketParticipants', () => {
 
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ order: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+      select: () => ({
+        eq: () => ({ order: () => Promise.resolve({ data: null, error: pgError() }) }),
+      }),
     });
     await expect(fetchBracketParticipants('b-1')).rejects.toThrow(DatabaseError);
   });
@@ -235,7 +283,9 @@ describe('fetchBracketInfo', () => {
 
   it('returns bracket info on success', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: makeBracket(), error: null }) }) }),
+      select: () => ({
+        eq: () => ({ single: () => Promise.resolve({ data: makeBracket(), error: null }) }),
+      }),
     });
     const result = await fetchBracketInfo('b-1');
     expect(result).toMatchObject({ id: 'b-1' });
@@ -243,7 +293,9 @@ describe('fetchBracketInfo', () => {
 
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+      select: () => ({
+        eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }),
+      }),
     });
     await expect(fetchBracketInfo('b-1')).rejects.toThrow(DatabaseError);
   });
@@ -255,9 +307,18 @@ describe('fetchFinalStandings', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns standings on success', async () => {
-    const row = { placement: 1, wins: 3, losses: 0, game_wins: 6, game_losses: 1, teams: { id: 't-1', name: 'Eagles', logo_url: null, image_url: null } };
+    const row = {
+      placement: 1,
+      wins: 3,
+      losses: 0,
+      game_wins: 6,
+      game_losses: 1,
+      teams: { id: 't-1', name: 'Eagles', logo_url: null, image_url: null },
+    };
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ not: () => ({ order: () => Promise.resolve({ data: [row], error: null }) }) }) }),
+      select: () => ({
+        eq: () => ({ not: () => ({ order: () => Promise.resolve({ data: [row], error: null }) }) }),
+      }),
     });
     const result = await fetchFinalStandings('b-1');
     expect(result).toHaveLength(1);
@@ -265,7 +326,11 @@ describe('fetchFinalStandings', () => {
 
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ not: () => ({ order: () => Promise.resolve({ data: null, error: pgError() }) }) }) }),
+      select: () => ({
+        eq: () => ({
+          not: () => ({ order: () => Promise.resolve({ data: null, error: pgError() }) }),
+        }),
+      }),
     });
     await expect(fetchFinalStandings('b-1')).rejects.toThrow(DatabaseError);
   });
@@ -277,7 +342,24 @@ describe('fetchPlayoffTeams', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns merged team data on success', async () => {
-    const teamDetailRow = { team_id: 't-1', name: 'Eagles', logo_url: null, image_url: null, division_id: 'd-1', divisionname: 'Gold', wins: 5, losses: 1, game_wins: 10, game_losses: 3, players: [], power_score: 80, sos: 0.6, win_percentage: 0.83, game_win_percentage: 0.77, close_match_losses: 0 };
+    const teamDetailRow = {
+      team_id: 't-1',
+      name: 'Eagles',
+      logo_url: null,
+      image_url: null,
+      division_id: 'd-1',
+      divisionname: 'Gold',
+      wins: 5,
+      losses: 1,
+      game_wins: 10,
+      game_losses: 3,
+      players: [],
+      power_score: 80,
+      sos: 0.6,
+      win_percentage: 0.83,
+      game_win_percentage: 0.77,
+      close_match_losses: 0,
+    };
     const seedRow = { id: 't-1', seed: 2 };
     mockFrom.mockImplementation((table: string) => {
       if (table === 'v_team_details') {
@@ -308,7 +390,29 @@ describe('fetchBmMatchWithStage', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns match data on success', async () => {
-    const row = { id: 1, stage_id: 10, group_id: 1, round_id: 1, number: 1, status: 'pending', opponent1_id: 1, opponent1_score: null, opponent1_result: null, opponent2_id: 2, opponent2_score: null, opponent2_result: null, child_count: 0, stage: { id: 10, name: 'Stage 1', type: 'single_elimination', tournament_id: 'b-1', number: 1, settings: {} } };
+    const row = {
+      id: 1,
+      stage_id: 10,
+      group_id: 1,
+      round_id: 1,
+      number: 1,
+      status: 'pending',
+      opponent1_id: 1,
+      opponent1_score: null,
+      opponent1_result: null,
+      opponent2_id: 2,
+      opponent2_score: null,
+      opponent2_result: null,
+      child_count: 0,
+      stage: {
+        id: 10,
+        name: 'Stage 1',
+        type: 'single_elimination',
+        tournament_id: 'b-1',
+        number: 1,
+        settings: {},
+      },
+    };
     mockFrom.mockReturnValue({
       select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: row, error: null }) }) }),
     });
@@ -318,7 +422,9 @@ describe('fetchBmMatchWithStage', () => {
 
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+      select: () => ({
+        eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }),
+      }),
     });
     await expect(fetchBmMatchWithStage(1)).rejects.toThrow(DatabaseError);
   });
@@ -330,7 +436,12 @@ describe('fetchPlayoffMatchWithBracket', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns match data on success', async () => {
-    const row = { id: 'm-1', bracket_id: 'b-1', bracket: { id: 'b-1', uses_brackets_manager: false }, playoff_games: [] };
+    const row = {
+      id: 'm-1',
+      bracket_id: 'b-1',
+      bracket: { id: 'b-1', uses_brackets_manager: false },
+      playoff_games: [],
+    };
     mockFrom.mockReturnValue({
       select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: row, error: null }) }) }),
     });
@@ -340,7 +451,9 @@ describe('fetchPlayoffMatchWithBracket', () => {
 
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+      select: () => ({
+        eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }),
+      }),
     });
     await expect(fetchPlayoffMatchWithBracket('m-1')).rejects.toThrow(DatabaseError);
   });
@@ -362,7 +475,9 @@ describe('fetchBmMatchData', () => {
 
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+      select: () => ({
+        eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }),
+      }),
     });
     await expect(fetchBmMatchData(1)).rejects.toThrow(DatabaseError);
   });
@@ -375,7 +490,10 @@ describe('fetchParticipantsByIds', () => {
 
   it('returns participants on success', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ in: () => Promise.resolve({ data: [{ id: 1, name: 'Eagles', tournament_id: 'b-1' }], error: null }) }),
+      select: () => ({
+        in: () =>
+          Promise.resolve({ data: [{ id: 1, name: 'Eagles', tournament_id: 'b-1' }], error: null }),
+      }),
     });
     const result = await fetchParticipantsByIds([1]);
     expect(result).toHaveLength(1);
@@ -403,7 +521,11 @@ describe('fetchPlayoffMatchTeams', () => {
 
   it('returns team ids on success', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { team1_id: 't1', team2_id: 't2' }, error: null }) }) }),
+      select: () => ({
+        eq: () => ({
+          single: () => Promise.resolve({ data: { team1_id: 't1', team2_id: 't2' }, error: null }),
+        }),
+      }),
     });
     const result = await fetchPlayoffMatchTeams('m-1');
     expect(result).toMatchObject({ team1_id: 't1' });
@@ -411,7 +533,9 @@ describe('fetchPlayoffMatchTeams', () => {
 
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+      select: () => ({
+        eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }),
+      }),
     });
     await expect(fetchPlayoffMatchTeams('m-1')).rejects.toThrow(DatabaseError);
   });
@@ -424,7 +548,9 @@ describe('fetchBracketWithDivision', () => {
 
   it('returns bracket data on success', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: makeBracket(), error: null }) }) }),
+      select: () => ({
+        eq: () => ({ single: () => Promise.resolve({ data: makeBracket(), error: null }) }),
+      }),
     });
     const result = await fetchBracketWithDivision('b-1');
     expect(result).toMatchObject({ id: 'b-1' });
@@ -432,7 +558,9 @@ describe('fetchBracketWithDivision', () => {
 
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+      select: () => ({
+        eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }),
+      }),
     });
     await expect(fetchBracketWithDivision('b-1')).rejects.toThrow(DatabaseError);
   });
@@ -446,12 +574,14 @@ describe('fetchStageAndParticipants', () => {
   it('returns stages and participants on success', async () => {
     mockFrom.mockImplementation((table: string) => ({
       select: () => ({
-        eq: () => Promise.resolve({
-          data: table === 'stage'
-            ? [{ id: 1, name: 'Stage 1', type: 'single_elimination', tournament_id: 'b-1' }]
-            : [{ id: 1, name: 'Eagles', position: 1, tournament_id: 'b-1' }],
-          error: null,
-        }),
+        eq: () =>
+          Promise.resolve({
+            data:
+              table === 'stage'
+                ? [{ id: 1, name: 'Stage 1', type: 'single_elimination', tournament_id: 'b-1' }]
+                : [{ id: 1, name: 'Eagles', position: 1, tournament_id: 'b-1' }],
+            error: null,
+          }),
       }),
     }));
     const result = await fetchStageAndParticipants('b-1');
@@ -462,10 +592,11 @@ describe('fetchStageAndParticipants', () => {
   it('throws DatabaseError when stage query fails', async () => {
     mockFrom.mockImplementation((table: string) => ({
       select: () => ({
-        eq: () => Promise.resolve({
-          data: null,
-          error: table === 'stage' ? pgError() : null,
-        }),
+        eq: () =>
+          Promise.resolve({
+            data: null,
+            error: table === 'stage' ? pgError() : null,
+          }),
       }),
     }));
     await expect(fetchStageAndParticipants('b-1')).rejects.toThrow(DatabaseError);
@@ -480,12 +611,12 @@ describe('fetchGroupsAndMatches', () => {
   it('returns groups and matches on success', async () => {
     mockFrom.mockImplementation((table: string) => ({
       select: () => ({
-        eq: () => Promise.resolve({
-          data: table === 'group'
-            ? [{ id: 1, number: 1, stage_id: 10 }]
-            : [{ id: 1, group_id: 1 }],
-          error: null,
-        }),
+        eq: () =>
+          Promise.resolve({
+            data:
+              table === 'group' ? [{ id: 1, number: 1, stage_id: 10 }] : [{ id: 1, group_id: 1 }],
+            error: null,
+          }),
       }),
     }));
     const result = await fetchGroupsAndMatches(10);
@@ -496,10 +627,11 @@ describe('fetchGroupsAndMatches', () => {
   it('throws DatabaseError when groups query fails', async () => {
     mockFrom.mockImplementation((table: string) => ({
       select: () => ({
-        eq: () => Promise.resolve({
-          data: null,
-          error: table === 'group' ? pgError() : null,
-        }),
+        eq: () =>
+          Promise.resolve({
+            data: null,
+            error: table === 'group' ? pgError() : null,
+          }),
       }),
     }));
     await expect(fetchGroupsAndMatches(10)).rejects.toThrow(DatabaseError);
@@ -513,7 +645,10 @@ describe('fetchTeamsByNames', () => {
 
   it('returns teams on success', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ in: () => Promise.resolve({ data: [{ id: 't-1', name: 'Eagles', image_url: null }], error: null }) }),
+      select: () => ({
+        in: () =>
+          Promise.resolve({ data: [{ id: 't-1', name: 'Eagles', image_url: null }], error: null }),
+      }),
     });
     const result = await fetchTeamsByNames(['Eagles']);
     expect(result).toHaveLength(1);
@@ -540,8 +675,30 @@ describe('fetchBracketsManagerMatchData', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns combined match data on success', async () => {
-    const matchRow = { id: 1, stage_id: 10, group_id: 1, round_id: 1, number: 1, status: 'pending', opponent1_id: 1, opponent1_score: null, opponent1_result: null, opponent2_id: 2, opponent2_score: null, opponent2_result: null };
-    const gamesRow = [{ id: 'g-1', number: 1, match_id: 1, status: 'pending', opponent1_score: null, opponent2_score: null }];
+    const matchRow = {
+      id: 1,
+      stage_id: 10,
+      group_id: 1,
+      round_id: 1,
+      number: 1,
+      status: 'pending',
+      opponent1_id: 1,
+      opponent1_score: null,
+      opponent1_result: null,
+      opponent2_id: 2,
+      opponent2_score: null,
+      opponent2_result: null,
+    };
+    const gamesRow = [
+      {
+        id: 'g-1',
+        number: 1,
+        match_id: 1,
+        status: 'pending',
+        opponent1_score: null,
+        opponent2_score: null,
+      },
+    ];
 
     let tableCallIdx = 0;
     mockFrom.mockImplementation((table: string) => {
@@ -549,16 +706,35 @@ describe('fetchBracketsManagerMatchData', () => {
         tableCallIdx++;
         if (tableCallIdx === 1) {
           // First match call: maybeSingle for main match
-          return { select: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve({ data: matchRow, error: null }) }) }) };
+          return {
+            select: () => ({
+              eq: () => ({ maybeSingle: () => Promise.resolve({ data: matchRow, error: null }) }),
+            }),
+          };
         }
         // Second match call for games won't happen as it's match_game
-        return { select: () => ({ eq: () => ({ order: () => Promise.resolve({ data: [], error: null }) }) }) };
+        return {
+          select: () => ({
+            eq: () => ({ order: () => Promise.resolve({ data: [], error: null }) }),
+          }),
+        };
       }
       if (table === 'match_game') {
-        return { select: () => ({ eq: () => ({ order: () => Promise.resolve({ data: gamesRow, error: null }) }) }) };
+        return {
+          select: () => ({
+            eq: () => ({ order: () => Promise.resolve({ data: gamesRow, error: null }) }),
+          }),
+        };
       }
       // participant
-      return { select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { id: 1, name: 'Eagles', team_id: 't-1' }, error: null }) }) }) };
+      return {
+        select: () => ({
+          eq: () => ({
+            single: () =>
+              Promise.resolve({ data: { id: 1, name: 'Eagles', team_id: 't-1' }, error: null }),
+          }),
+        }),
+      };
     });
 
     const result = await fetchBracketsManagerMatchData(1);
@@ -568,14 +744,18 @@ describe('fetchBracketsManagerMatchData', () => {
 
   it('throws NotFoundError when match not found', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }) }),
+      select: () => ({
+        eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
+      }),
     });
     await expect(fetchBracketsManagerMatchData(99)).rejects.toThrow(NotFoundError);
   });
 
   it('throws DatabaseError on match query error', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+      select: () => ({
+        eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: pgError() }) }),
+      }),
     });
     await expect(fetchBracketsManagerMatchData(1)).rejects.toThrow(DatabaseError);
   });

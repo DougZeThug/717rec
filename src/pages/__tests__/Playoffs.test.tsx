@@ -13,7 +13,11 @@ vi.mock('@/components/playoffs/hooks/usePlayoffPageData', () => ({
 }));
 
 vi.mock('@/components/playoffs/layout/PlayoffPageLayout', () => ({
-  default: ({ data }: { data: { isLoading?: boolean; error?: string | null; bracket?: unknown[] } }) => {
+  default: ({
+    data,
+  }: {
+    data: { isLoading?: boolean; error?: string | null; bracket?: unknown[] };
+  }) => {
     if (data.isLoading) return <p>Loading playoffs...</p>;
     if (data.error) return <p>{data.error}</p>;
     if (!data.bracket?.length) return <p>No playoff bracket yet</p>;
@@ -40,7 +44,11 @@ const renderPage = () => {
 describe('Playoffs page', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUsePlayoffPageData.mockReturnValue({ isLoading: false, error: null, bracket: [{ id: 'b-1' }] });
+    mockUsePlayoffPageData.mockReturnValue({
+      isLoading: false,
+      error: null,
+      bracket: [{ id: 'b-1' }],
+    });
   });
 
   it('shows loading state', () => {

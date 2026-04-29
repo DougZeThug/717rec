@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DataTypes } from 'brackets-manager';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { mockFrom, mockHandleDatabaseError, mockBracketLog, mockErrorLog } = vi.hoisted(() => ({
   mockFrom: vi.fn(),
@@ -134,7 +134,9 @@ describe('SupabaseSqlStorage', () => {
   });
 
   it('non-match select uses configured explicit columns', async () => {
-    const eq = vi.fn().mockResolvedValue({ data: [{ id: 6, name: 'Stage 1', number: 1 }], error: null });
+    const eq = vi
+      .fn()
+      .mockResolvedValue({ data: [{ id: 6, name: 'Stage 1', number: 1 }], error: null });
     const select = vi.fn(() => ({ eq }));
     mockFrom.mockReturnValue({ select });
 
@@ -202,7 +204,9 @@ describe('SupabaseSqlStorage', () => {
 
   it('update supports id filter and object filter branches', async () => {
     const eqForPrefetch = vi.fn().mockReturnThis();
-    const single = vi.fn().mockResolvedValue({ data: { id: 42, opponent1_id: 99, opponent2_id: 77 } });
+    const single = vi
+      .fn()
+      .mockResolvedValue({ data: { id: 42, opponent1_id: 99, opponent2_id: 77 } });
 
     const eqUpdateId = vi.fn().mockResolvedValue({ error: null });
     const eqUpdateObject = vi
@@ -236,11 +240,10 @@ describe('SupabaseSqlStorage', () => {
 
     const storage = new SupabaseSqlStorage();
 
-    const idResult = await storage.update(
-      'match',
-      42,
-      { opponent1: { id: 1 }, opponent2: { id: 2 } } as Partial<DataTypes['match']>
-    );
+    const idResult = await storage.update('match', 42, {
+      opponent1: { id: 1 },
+      opponent2: { id: 2 },
+    } as Partial<DataTypes['match']>);
 
     const objectResult = await storage.update(
       'match',
@@ -270,14 +273,10 @@ describe('SupabaseSqlStorage', () => {
 
     const storage = new SupabaseSqlStorage();
 
-    await storage.update(
-      'match',
-      { id: 77 },
-      {
-        opponent1: { id: null, score: null, result: null },
-        opponent2: { id: null, score: null, result: null },
-      } as Partial<DataTypes['match']>
-    );
+    await storage.update('match', { id: 77 }, {
+      opponent1: { id: null, score: null, result: null },
+      opponent2: { id: null, score: null, result: null },
+    } as Partial<DataTypes['match']>);
 
     const payload = update.mock.calls[0][0] as Record<string, unknown>;
     expect(payload).not.toHaveProperty('opponent1_id');
@@ -299,9 +298,13 @@ describe('SupabaseSqlStorage', () => {
     }));
 
     const storage = new SupabaseSqlStorage();
-    await storage.update('stage', { id: 5 } as Partial<DataTypes['stage']>, {
-      name: 'Updated stage',
-    } as Partial<DataTypes['stage']>);
+    await storage.update(
+      'stage',
+      { id: 5 } as Partial<DataTypes['stage']>,
+      {
+        name: 'Updated stage',
+      } as Partial<DataTypes['stage']>
+    );
 
     expect(stageSelect).not.toHaveBeenCalled();
     expect(stageUpdateEq).toHaveBeenCalledWith('id', 5);
@@ -345,21 +348,32 @@ describe('SupabaseSqlStorage', () => {
     await expect(
       storage.select('stage', { tournament_id: 't2' } as Partial<DataTypes['stage']>)
     ).rejects.toEqual(selectError);
-    expect(mockHandleDatabaseError).toHaveBeenCalledWith(selectError, 'Failed to select from bracket table');
+    expect(mockHandleDatabaseError).toHaveBeenCalledWith(
+      selectError,
+      'Failed to select from bracket table'
+    );
 
     mockFrom.mockReturnValueOnce({
-      insert: vi.fn(() => ({ select: vi.fn().mockResolvedValue({ data: null, error: insertError }) })),
+      insert: vi.fn(() => ({
+        select: vi.fn().mockResolvedValue({ data: null, error: insertError }),
+      })),
     });
-    await expect(storage.insert('stage', { name: 'S', number: 1 } as never)).rejects.toEqual(insertError);
+    await expect(storage.insert('stage', { name: 'S', number: 1 } as never)).rejects.toEqual(
+      insertError
+    );
     expect(mockErrorLog).toHaveBeenCalledWith('Insert failed for stage:', insertError);
 
     mockFrom.mockReturnValueOnce({
       update: vi.fn(() => ({ eq: vi.fn().mockResolvedValue({ error: updateError }) })),
     });
     await expect(
-      storage.update('stage', { id: 1 } as Partial<DataTypes['stage']>, {
-        name: 'bad',
-      } as Partial<DataTypes['stage']>)
+      storage.update(
+        'stage',
+        { id: 1 } as Partial<DataTypes['stage']>,
+        {
+          name: 'bad',
+        } as Partial<DataTypes['stage']>
+      )
     ).rejects.toEqual(updateError);
     expect(mockErrorLog).toHaveBeenCalledWith('Update failed for stage:', updateError);
 

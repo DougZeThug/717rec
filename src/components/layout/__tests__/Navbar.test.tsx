@@ -28,7 +28,9 @@ vi.mock('@/components/navigation/CommandPalette', () => ({
 }));
 
 vi.mock('@/components/layout/navbar/NavActions', () => ({
-  default: ({ size }: { size?: string }) => <div data-testid="nav-actions">actions-{size ?? 'default'}</div>,
+  default: ({ size }: { size?: string }) => (
+    <div data-testid="nav-actions">actions-{size ?? 'default'}</div>
+  ),
 }));
 
 describe('Navbar', () => {

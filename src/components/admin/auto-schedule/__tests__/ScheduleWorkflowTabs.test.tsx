@@ -57,7 +57,9 @@ describe('ScheduleWorkflowTabs', () => {
 
     await user.click(screen.getByRole('tab', { name: '2. Matches' }));
 
-    rerender(<ScheduleWorkflowTabs {...baseProps} activeTab="pairings" setActiveTab={setActiveTab} />);
+    rerender(
+      <ScheduleWorkflowTabs {...baseProps} activeTab="pairings" setActiveTab={setActiveTab} />
+    );
     await user.click(screen.getByRole('tab', { name: '3. Export' }));
 
     expect(setActiveTab).toHaveBeenCalledWith('pairings');

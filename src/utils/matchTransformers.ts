@@ -223,8 +223,12 @@ export function transformDatabasePlayoffMatch(match: RawPlayoffMatchRow): Playof
   const games = match.playoff_games || [];
 
   // Calculate game wins from games array
-  const team1GameWins = games.filter((g: RawPlayoffGameRow) => g.winner_id === match.team1_id).length;
-  const team2GameWins = games.filter((g: RawPlayoffGameRow) => g.winner_id === match.team2_id).length;
+  const team1GameWins = games.filter(
+    (g: RawPlayoffGameRow) => g.winner_id === match.team1_id
+  ).length;
+  const team2GameWins = games.filter(
+    (g: RawPlayoffGameRow) => g.winner_id === match.team2_id
+  ).length;
 
   return {
     id: match.id,
@@ -245,7 +249,8 @@ export function transformDatabasePlayoffMatch(match: RawPlayoffMatchRow): Playof
     team2Seed: match.team2_seed ?? null,
     nextWinMatchId: match.next_win_match_id ?? match.next_match_id ?? null,
     nextLoseMatchId: match.next_lose_match_id ?? match.next_loser_match_id ?? null,
-    status: (match.status as PlayoffMatch['status']) || (match.iscompleted ? 'completed' : 'pending'),
+    status:
+      (match.status as PlayoffMatch['status']) || (match.iscompleted ? 'completed' : 'pending'),
     games: games.map(transformPlayoffGame),
   };
 }

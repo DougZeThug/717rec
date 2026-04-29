@@ -209,8 +209,7 @@ export class BracketUpdateService {
           //
           // Safety: we only auto-promote 0/1 when BOTH opponents are present
           // and it isn't a BYE match, so genuinely incomplete matches stay locked.
-          const bothOpponentsPresent =
-            !!currentMatch.opponent1?.id && !!currentMatch.opponent2?.id;
+          const bothOpponentsPresent = !!currentMatch.opponent1?.id && !!currentMatch.opponent2?.id;
 
           let unlockToStatus: number | null = null;
           if (currentMatch.status === 5) {

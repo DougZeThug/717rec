@@ -24,7 +24,11 @@ import { TimeslotQueryService } from '../TimeslotQueryService';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'query failed') => ({
-  message: msg, code: '42P01', details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 const makeRawSlot = (overrides: Record<string, unknown> = {}) => ({
@@ -163,7 +167,9 @@ describe('TimeslotQueryService.fetchWeekTimeslotsByTeam', () => {
       selectEqGteLteOrderChain({ data: [makeRawSlot(), makeRawSlot({ id: 'ts-2' })], error: null })
     );
     const result = await TimeslotQueryService.fetchWeekTimeslotsByTeam(
-      'team-1', '2026-04-14', '2026-04-20'
+      'team-1',
+      '2026-04-14',
+      '2026-04-20'
     );
     expect(result).toHaveLength(2);
   });
@@ -171,7 +177,9 @@ describe('TimeslotQueryService.fetchWeekTimeslotsByTeam', () => {
   it('returns empty array when no rows', async () => {
     mockFrom.mockReturnValue(selectEqGteLteOrderChain({ data: null, error: null }));
     const result = await TimeslotQueryService.fetchWeekTimeslotsByTeam(
-      'team-1', '2026-04-14', '2026-04-20'
+      'team-1',
+      '2026-04-14',
+      '2026-04-20'
     );
     expect(result).toEqual([]);
   });
@@ -192,7 +200,9 @@ describe('TimeslotQueryService.fetchTimeslotsForPair', () => {
   it('returns rows for the pair slots', async () => {
     mockFrom.mockReturnValue(selectEqInEqChain({ data: [makeRawSlot()], error: null }));
     const result = await TimeslotQueryService.fetchTimeslotsForPair(
-      '2026-04-17', '6:30 PM', '7:00 PM'
+      '2026-04-17',
+      '6:30 PM',
+      '7:00 PM'
     );
     expect(result).toHaveLength(1);
   });
@@ -200,7 +210,9 @@ describe('TimeslotQueryService.fetchTimeslotsForPair', () => {
   it('returns empty array when no rows', async () => {
     mockFrom.mockReturnValue(selectEqInEqChain({ data: null, error: null }));
     const result = await TimeslotQueryService.fetchTimeslotsForPair(
-      '2026-04-17', '6:30 PM', '7:00 PM'
+      '2026-04-17',
+      '6:30 PM',
+      '7:00 PM'
     );
     expect(result).toEqual([]);
   });
@@ -219,7 +231,9 @@ describe('TimeslotQueryService.fetchTeamsByTimeslot', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns rows for the given timeslot', async () => {
-    mockFrom.mockReturnValue(selectEqEqChain({ data: [{ team_id: 'team-1', teams: null }], error: null }));
+    mockFrom.mockReturnValue(
+      selectEqEqChain({ data: [{ team_id: 'team-1', teams: null }], error: null })
+    );
     const result = await TimeslotQueryService.fetchTeamsByTimeslot('2026-04-17', '6:30 PM');
     expect(result).toHaveLength(1);
   });
@@ -259,7 +273,10 @@ describe('TimeslotQueryService.fetchTimeslotValidation', () => {
     const rows = [{ timeslot: '6:30 PM', match_sequence: 1 }];
     mockFrom.mockReturnValue(validationChain({ data: rows, error: null }));
     const result = await TimeslotQueryService.fetchTimeslotValidation(
-      '2026-04-17', 'team-1', '6:30 PM', '7:00 PM'
+      '2026-04-17',
+      'team-1',
+      '6:30 PM',
+      '7:00 PM'
     );
     expect(result).toEqual(rows);
   });
@@ -267,7 +284,10 @@ describe('TimeslotQueryService.fetchTimeslotValidation', () => {
   it('returns null on error (does not throw)', async () => {
     mockFrom.mockReturnValue(validationChain({ data: null, error: pgError() }));
     const result = await TimeslotQueryService.fetchTimeslotValidation(
-      '2026-04-17', 'team-1', '6:30 PM', '7:00 PM'
+      '2026-04-17',
+      'team-1',
+      '6:30 PM',
+      '7:00 PM'
     );
     expect(result).toBeNull();
   });
@@ -275,7 +295,10 @@ describe('TimeslotQueryService.fetchTimeslotValidation', () => {
   it('returns null when data is null and no error', async () => {
     mockFrom.mockReturnValue(validationChain({ data: null, error: null }));
     const result = await TimeslotQueryService.fetchTimeslotValidation(
-      '2026-04-17', 'team-1', '6:30 PM', '7:00 PM'
+      '2026-04-17',
+      'team-1',
+      '6:30 PM',
+      '7:00 PM'
     );
     expect(result).toBeNull();
   });

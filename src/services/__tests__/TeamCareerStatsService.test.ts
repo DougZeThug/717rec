@@ -11,7 +11,9 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
 }));
 
 // Import after mocks
@@ -20,7 +22,11 @@ import { fetchBatchHeadToHead } from '../TeamCareerStatsService';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'rpc failed') => ({
-  message: msg, code: '42P01', details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 const makeH2HRow = (team1Id: string, team2Id: string) => ({
@@ -38,7 +44,10 @@ const makeH2HRow = (team1Id: string, team2Id: string) => ({
 describe('fetchBatchHeadToHead', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  const pairs = [{ team1: 't1', team2: 't2' }, { team1: 't3', team2: 't4' }];
+  const pairs = [
+    { team1: 't1', team2: 't2' },
+    { team1: 't3', team2: 't4' },
+  ];
 
   it('returns a Map with both orderings of each pair', async () => {
     const rows = [makeH2HRow('t1', 't2')];
@@ -50,7 +59,12 @@ describe('fetchBatchHeadToHead', () => {
     expect(result.has('t1-t2')).toBe(true);
     expect(result.has('t2-t1')).toBe(true);
 
-    expect(result.get('t1-t2')).toMatchObject({ team1Wins: 3, team2Wins: 1, totalMatches: 4, isFirstMeeting: false });
+    expect(result.get('t1-t2')).toMatchObject({
+      team1Wins: 3,
+      team2Wins: 1,
+      totalMatches: 4,
+      isFirstMeeting: false,
+    });
     expect(result.get('t2-t1')).toMatchObject({ team1Wins: 1, team2Wins: 3 });
   });
 

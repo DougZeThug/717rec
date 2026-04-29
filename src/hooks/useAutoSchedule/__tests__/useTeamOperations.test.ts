@@ -99,7 +99,9 @@ describe('useTeamOperations', () => {
     expect(mockGetAllBackToBackTeams).not.toHaveBeenCalled();
 
     mockValidateScheduleDate.mockReturnValue(false);
-    await expect(result.current.handleLoadTeams(new Date('2026-04-20T00:00:00.000Z'))).resolves.toEqual({});
+    await expect(
+      result.current.handleLoadTeams(new Date('2026-04-20T00:00:00.000Z'))
+    ).resolves.toEqual({});
     expect(mockGetAllBackToBackTeams).not.toHaveBeenCalled();
   });
 
@@ -113,10 +115,14 @@ describe('useTeamOperations', () => {
     const { result } = renderHook(() => useTeamOperations());
 
     await act(async () => {
-      const response = await result.current.handleLoadTeams(new Date('2026-04-20T00:00:00.000Z'), true, {
-        primaryBlock: 'Early',
-        secondaryBlock: 'Late',
-      });
+      const response = await result.current.handleLoadTeams(
+        new Date('2026-04-20T00:00:00.000Z'),
+        true,
+        {
+          primaryBlock: 'Early',
+          secondaryBlock: 'Late',
+        }
+      );
       expect(response).toEqual(loadedTeams);
     });
 
@@ -175,15 +181,21 @@ describe('useTeamOperations', () => {
     const { result } = renderHook(() => useTeamOperations());
 
     mockValidateScheduleDate.mockReturnValueOnce(false);
-    await expect(result.current.loadTeamsForPair(new Date('2026-04-20T00:00:00.000Z'), 'Early')).resolves.toEqual([]);
+    await expect(
+      result.current.loadTeamsForPair(new Date('2026-04-20T00:00:00.000Z'), 'Early')
+    ).resolves.toEqual([]);
 
     const pairTeams = [buildTeam('10'), buildTeam('11')];
     mockGetTeamsByBackToBackPair.mockResolvedValueOnce(pairTeams);
 
-    await expect(result.current.loadTeamsForPair(new Date('2026-04-20T00:00:00.000Z'), 'Early')).resolves.toEqual(pairTeams);
+    await expect(
+      result.current.loadTeamsForPair(new Date('2026-04-20T00:00:00.000Z'), 'Early')
+    ).resolves.toEqual(pairTeams);
 
     mockGetTeamsByBackToBackPair.mockRejectedValueOnce(new Error('fetch failed'));
-    await expect(result.current.loadTeamsForPair(new Date('2026-04-20T00:00:00.000Z'), 'Early')).resolves.toEqual([]);
+    await expect(
+      result.current.loadTeamsForPair(new Date('2026-04-20T00:00:00.000Z'), 'Early')
+    ).resolves.toEqual([]);
   });
 
   it('balanceBackToBackTeams keeps even counts and removes unmatched IDs per strategy', () => {
@@ -199,11 +211,15 @@ describe('useTeamOperations', () => {
       });
     });
 
-    const lowestRank = result.current.balanceBackToBackTeams({ unmatchedTeamStrategy: 'lowest-rank' });
+    const lowestRank = result.current.balanceBackToBackTeams({
+      unmatchedTeamStrategy: 'lowest-rank',
+    });
     expect(lowestRank.balancedTeams.EvenPair).toEqual(evenTeams);
     expect(lowestRank.unmatchedTeamIds).toEqual(['5']);
 
-    const highestRank = result.current.balanceBackToBackTeams({ unmatchedTeamStrategy: 'highest-rank' });
+    const highestRank = result.current.balanceBackToBackTeams({
+      unmatchedTeamStrategy: 'highest-rank',
+    });
     expect(highestRank.unmatchedTeamIds).toEqual(['3']);
 
     const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.4);

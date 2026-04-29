@@ -134,6 +134,8 @@ describe('MassScoreEntryTool wiring', () => {
         })
       );
     });
-    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: '✅ Matches Submitted' }));
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: '✅ Matches Submitted' })
+    );
   });
 });

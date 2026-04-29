@@ -11,7 +11,9 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
 }));
 
 // Import after mocks
@@ -20,7 +22,11 @@ import { CareerQueryService } from '../CareerQueryService';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'query failed') => ({
-  message: msg, code: '42P01', details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 // ─── fetchTeamSeasonPowerScores ───────────────────────────────────────────────
@@ -49,7 +55,9 @@ describe('CareerQueryService.fetchTeamSeasonPowerScores', () => {
 
   it('throws DatabaseError on Supabase error', async () => {
     mockFrom.mockReturnValue(chain({ data: null, error: pgError() }));
-    await expect(CareerQueryService.fetchTeamSeasonPowerScores('team-1')).rejects.toThrow(DatabaseError);
+    await expect(CareerQueryService.fetchTeamSeasonPowerScores('team-1')).rejects.toThrow(
+      DatabaseError
+    );
   });
 });
 

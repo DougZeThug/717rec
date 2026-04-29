@@ -8,7 +8,9 @@ import { HeroCard } from '@/types/heroCard';
 
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div {...props}>{children}</div>,
+    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+      <div {...props}>{children}</div>
+    ),
   },
 }));
 

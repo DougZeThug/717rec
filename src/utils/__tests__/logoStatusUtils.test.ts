@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  getLogoStatus,
-  getStatusColor,
-  getStatusIcon,
-  getStatusLabel,
-} from '../logoStatusUtils';
+import { getLogoStatus, getStatusColor, getStatusIcon, getStatusLabel } from '../logoStatusUtils';
 
 describe('getLogoStatus', () => {
   it('returns missing for null', () => {

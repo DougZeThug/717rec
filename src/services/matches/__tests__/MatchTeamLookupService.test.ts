@@ -11,7 +11,10 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(), matchLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
+  matchLog: vi.fn(),
 }));
 
 // Import after mocks
@@ -20,14 +23,30 @@ import { fetchTeamMatchesData, fetchTeamsByIds, fetchTeamsMap } from '../MatchTe
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'query failed') => ({
-  message: msg, code: '42P01', details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 const makeTeam = (id = 'team-1') => ({
-  team_id: id, name: 'Eagles', image_url: null, logo_url: null,
-  players: [], wins: 0, losses: 0, game_wins: 0, game_losses: 0,
-  created_at: '2026-01-01T00:00:00Z', division_id: 'd1', divisionname: 'Div A',
-  sos: null, power_score: null, win_percentage: 0, game_win_percentage: 0,
+  team_id: id,
+  name: 'Eagles',
+  image_url: null,
+  logo_url: null,
+  players: [],
+  wins: 0,
+  losses: 0,
+  game_wins: 0,
+  game_losses: 0,
+  created_at: '2026-01-01T00:00:00Z',
+  division_id: 'd1',
+  divisionname: 'Div A',
+  sos: null,
+  power_score: null,
+  win_percentage: 0,
+  game_win_percentage: 0,
 });
 
 // ─── fetchTeamMatchesData ─────────────────────────────────────────────────────
@@ -39,13 +58,19 @@ describe('fetchTeamMatchesData', () => {
     mockFrom.mockImplementation((table: string) => {
       if (table === 'seasons') {
         return {
-          select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { id: 'season-1' }, error: null }) }) }),
+          select: () => ({
+            eq: () => ({
+              single: () => Promise.resolve({ data: { id: 'season-1' }, error: null }),
+            }),
+          }),
         };
       }
       // matches: .select().eq().or().order()
       return {
         select: () => ({
-          eq: () => ({ or: () => ({ order: () => Promise.resolve({ data: [{ id: 'm-1' }], error: null }) }) }),
+          eq: () => ({
+            or: () => ({ order: () => Promise.resolve({ data: [{ id: 'm-1' }], error: null }) }),
+          }),
         }),
       };
     });
@@ -58,7 +83,9 @@ describe('fetchTeamMatchesData', () => {
 
   it('returns null when no active season', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }),
+      select: () => ({
+        eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }),
+      }),
     });
     const result = await fetchTeamMatchesData('team-1');
     expect(result).toBeNull();
@@ -68,7 +95,9 @@ describe('fetchTeamMatchesData', () => {
     mockFrom.mockImplementation((table: string) => {
       if (table === 'seasons') {
         return {
-          select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { id: 's-1' }, error: null }) }) }),
+          select: () => ({
+            eq: () => ({ single: () => Promise.resolve({ data: { id: 's-1' }, error: null }) }),
+          }),
         };
       }
       return {
@@ -85,12 +114,16 @@ describe('fetchTeamMatchesData', () => {
     mockFrom.mockImplementation((table: string) => {
       if (table === 'seasons') {
         return {
-          select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { id: 's-1' }, error: null }) }) }),
+          select: () => ({
+            eq: () => ({ single: () => Promise.resolve({ data: { id: 's-1' }, error: null }) }),
+          }),
         };
       }
       return {
         select: () => ({
-          eq: () => ({ or: () => ({ order: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+          eq: () => ({
+            or: () => ({ order: () => Promise.resolve({ data: null, error: pgError() }) }),
+          }),
         }),
       };
     });
@@ -105,7 +138,9 @@ describe('fetchTeamsByIds', () => {
 
   it('returns teams matching given IDs', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ in: () => Promise.resolve({ data: [makeTeam('t1'), makeTeam('t2')], error: null }) }),
+      select: () => ({
+        in: () => Promise.resolve({ data: [makeTeam('t1'), makeTeam('t2')], error: null }),
+      }),
     });
     const result = await fetchTeamsByIds(['t1', 't2']);
     expect(result).toHaveLength(2);

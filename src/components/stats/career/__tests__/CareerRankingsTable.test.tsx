@@ -68,8 +68,9 @@ vi.mock('@/components/stats/career/CareerRankingsMobileView', () => ({
 
 // ─── Import after mocks ───────────────────────────────────────────────────────
 
-import CareerRankingsTable from '../CareerRankingsTable';
 import { CareerRanking } from '@/types/career';
+
+import CareerRankingsTable from '../CareerRankingsTable';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

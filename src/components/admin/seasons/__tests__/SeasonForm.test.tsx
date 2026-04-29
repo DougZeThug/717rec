@@ -31,8 +31,9 @@ vi.mock('@/hooks/useSeasonalTheme', () => ({
 
 // ─── Import after mocks ───────────────────────────────────────────────────────
 
-import SeasonForm from '../SeasonForm';
 import { Season } from '@/types/season';
+
+import SeasonForm from '../SeasonForm';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -116,7 +117,7 @@ describe('SeasonForm', () => {
 
       await waitFor(() => {
         expect(mockCreateMutateAsync).toHaveBeenCalledWith(
-          expect.objectContaining({ name: 'Fall 2025', start_date: '2025-09-01' }),
+          expect.objectContaining({ name: 'Fall 2025', start_date: '2025-09-01' })
         );
       });
     });
@@ -148,9 +149,7 @@ describe('SeasonForm', () => {
       await userEvent.click(screen.getByRole('button', { name: /create season/i }));
 
       await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith(
-          expect.objectContaining({ variant: 'destructive' }),
-        );
+        expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
       });
       expect(mockOnClose).not.toHaveBeenCalled();
     });
@@ -190,7 +189,7 @@ describe('SeasonForm', () => {
 
       await waitFor(() => {
         expect(mockUpdateMutateAsync).toHaveBeenCalledWith(
-          expect.objectContaining({ id: 'season-1', name: 'Spring 2025' }),
+          expect.objectContaining({ id: 'season-1', name: 'Spring 2025' })
         );
       });
     });

@@ -43,9 +43,7 @@ describe('SeasonArchivalDialog', () => {
 
   it('resets the "Keep playoffs active" checkbox each time the dialog reopens', async () => {
     const user = userEvent.setup();
-    const { rerender } = render(
-      <SeasonArchivalDialog isOpen onClose={vi.fn()} season={season} />
-    );
+    const { rerender } = render(<SeasonArchivalDialog isOpen onClose={vi.fn()} season={season} />);
 
     let checkbox = screen.getByRole('checkbox', { name: /keep playoffs active/i });
     expect(checkbox).not.toBeChecked();

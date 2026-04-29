@@ -3,7 +3,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { MatchWithTeams } from '../../types';
 
 vi.mock('@/utils/timezone/formatters', () => ({
-  extractTimeSlotFromUTC: vi.fn((date: string) => (date.includes('10:00') ? '10:00 AM' : '2:00 PM')),
+  extractTimeSlotFromUTC: vi.fn((date: string) =>
+    date.includes('10:00') ? '10:00 AM' : '2:00 PM'
+  ),
 }));
 
 vi.mock('@/utils/logger', () => ({

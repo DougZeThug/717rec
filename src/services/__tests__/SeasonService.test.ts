@@ -19,7 +19,9 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
 }));
 
 // Import after mocks
@@ -28,13 +30,24 @@ import { SeasonService } from '../SeasonService';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'query failed', code = '42P01') => ({
-  message: msg, code, details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code,
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 const makeSeason = (overrides: Record<string, unknown> = {}) => ({
-  id: 's-1', name: 'Season 1', is_active: true, is_archived: false,
-  start_date: '2026-01-01', end_date: null, created_at: '2026-01-01T00:00:00Z',
-  champion_team_id: null, runner_up_team_id: null, confirmation_open: false,
+  id: 's-1',
+  name: 'Season 1',
+  is_active: true,
+  is_archived: false,
+  start_date: '2026-01-01',
+  end_date: null,
+  created_at: '2026-01-01T00:00:00Z',
+  champion_team_id: null,
+  runner_up_team_id: null,
+  confirmation_open: false,
   ...overrides,
 });
 
@@ -83,7 +96,11 @@ describe('SeasonService.fetchActiveSeason', () => {
   it('throws BusinessLogicError when multiple active seasons found', async () => {
     mockFrom.mockReturnValue({
       select: () => ({
-        eq: () => Promise.resolve({ data: [makeSeason({ id: 's-1' }), makeSeason({ id: 's-2' })], error: null }),
+        eq: () =>
+          Promise.resolve({
+            data: [makeSeason({ id: 's-1' }), makeSeason({ id: 's-2' })],
+            error: null,
+          }),
       }),
     });
     await expect(SeasonService.fetchActiveSeason()).rejects.toThrow(BusinessLogicError);
@@ -133,7 +150,16 @@ describe('SeasonService.fetchTeamParticipation', () => {
   });
 
   it('returns participation record when found', async () => {
-    const row = { id: 'p-1', season_id: 's-1', team_id: 't-1', status: 'PLAYING' as const, submitted_by: null, submitted_by_name: null, created_at: '2026-01-01', updated_at: '2026-01-01' };
+    const row = {
+      id: 'p-1',
+      season_id: 's-1',
+      team_id: 't-1',
+      status: 'PLAYING' as const,
+      submitted_by: null,
+      submitted_by_name: null,
+      created_at: '2026-01-01',
+      updated_at: '2026-01-01',
+    };
     mockFrom.mockReturnValue(chain({ data: row, error: null }));
     const result = await SeasonService.fetchTeamParticipation('s-1', 't-1');
     expect(result).toMatchObject({ status: 'PLAYING' });
@@ -157,7 +183,9 @@ describe('SeasonService.fetchSeasonParticipations', () => {
 
   it('returns participations array on success', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => Promise.resolve({ data: [{ id: 'p-1', status: 'PLAYING' }], error: null }) }),
+      select: () => ({
+        eq: () => Promise.resolve({ data: [{ id: 'p-1', status: 'PLAYING' }], error: null }),
+      }),
     });
     const result = await SeasonService.fetchSeasonParticipations('s-1');
     expect(result).toHaveLength(1);
@@ -179,18 +207,30 @@ describe('SeasonService.submitParticipation', () => {
   it('returns upserted record on success', async () => {
     mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'u-1' } } });
     mockFrom.mockReturnValue({
-      upsert: () => ({ select: () => ({ single: () => Promise.resolve({ data: { id: 'p-1', status: 'PLAYING' }, error: null }) }) }),
+      upsert: () => ({
+        select: () => ({
+          single: () => Promise.resolve({ data: { id: 'p-1', status: 'PLAYING' }, error: null }),
+        }),
+      }),
     });
-    const result = await SeasonService.submitParticipation({ seasonId: 's-1', teamId: 't-1', status: 'PLAYING' });
+    const result = await SeasonService.submitParticipation({
+      seasonId: 's-1',
+      teamId: 't-1',
+      status: 'PLAYING',
+    });
     expect(result).toMatchObject({ status: 'PLAYING' });
   });
 
   it('throws DatabaseError on upsert error', async () => {
     mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'u-1' } } });
     mockFrom.mockReturnValue({
-      upsert: () => ({ select: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+      upsert: () => ({
+        select: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }),
+      }),
     });
-    await expect(SeasonService.submitParticipation({ seasonId: 's-1', teamId: 't-1', status: 'PLAYING' })).rejects.toThrow(DatabaseError);
+    await expect(
+      SeasonService.submitParticipation({ seasonId: 's-1', teamId: 't-1', status: 'PLAYING' })
+    ).rejects.toThrow(DatabaseError);
   });
 });
 
@@ -201,7 +241,13 @@ describe('SeasonService.fetchSeasonStatIds', () => {
 
   it('returns unique season ids', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ order: () => Promise.resolve({ data: [{ season_id: 's-1' }, { season_id: 's-1' }, { season_id: 's-2' }], error: null }) }),
+      select: () => ({
+        order: () =>
+          Promise.resolve({
+            data: [{ season_id: 's-1' }, { season_id: 's-1' }, { season_id: 's-2' }],
+            error: null,
+          }),
+      }),
     });
     const result = await SeasonService.fetchSeasonStatIds();
     expect(result).toHaveLength(2);
@@ -223,9 +269,22 @@ describe('SeasonService.fetchStatsBySeason', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns transformed stats with team_name', async () => {
-    const row = { team_id: 't-1', season_id: 's-1', match_wins: 5, match_losses: 1, game_wins: 10, game_losses: 3, power_score: 80, sos: 0.6, recorded_at: null, teams: { name: 'Eagles' } };
+    const row = {
+      team_id: 't-1',
+      season_id: 's-1',
+      match_wins: 5,
+      match_losses: 1,
+      game_wins: 10,
+      game_losses: 3,
+      power_score: 80,
+      sos: 0.6,
+      recorded_at: null,
+      teams: { name: 'Eagles' },
+    };
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ order: () => Promise.resolve({ data: [row], error: null }) }) }),
+      select: () => ({
+        eq: () => ({ order: () => Promise.resolve({ data: [row], error: null }) }),
+      }),
     });
     const result = await SeasonService.fetchStatsBySeason('s-1');
     expect(result[0].team_name).toBe('Eagles');
@@ -233,7 +292,9 @@ describe('SeasonService.fetchStatsBySeason', () => {
 
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ order: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+      select: () => ({
+        eq: () => ({ order: () => Promise.resolve({ data: null, error: pgError() }) }),
+      }),
     });
     await expect(SeasonService.fetchStatsBySeason('s-1')).rejects.toThrow(DatabaseError);
   });
@@ -274,7 +335,9 @@ describe('SeasonService.createSeason', () => {
 
   it('returns new season on success', async () => {
     mockFrom.mockReturnValue({
-      insert: () => ({ select: () => ({ single: () => Promise.resolve({ data: makeSeason(), error: null }) }) }),
+      insert: () => ({
+        select: () => ({ single: () => Promise.resolve({ data: makeSeason(), error: null }) }),
+      }),
     });
     const result = await SeasonService.createSeason({ name: 'Season 1', start_date: '2026-01-01' });
     expect(result).toMatchObject({ id: 's-1' });
@@ -282,9 +345,13 @@ describe('SeasonService.createSeason', () => {
 
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue({
-      insert: () => ({ select: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+      insert: () => ({
+        select: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }),
+      }),
     });
-    await expect(SeasonService.createSeason({ name: 'Season 1', start_date: '2026-01-01' })).rejects.toThrow(DatabaseError);
+    await expect(
+      SeasonService.createSeason({ name: 'Season 1', start_date: '2026-01-01' })
+    ).rejects.toThrow(DatabaseError);
   });
 });
 
@@ -295,17 +362,32 @@ describe('SeasonService.updateSeason', () => {
 
   it('returns updated season on success', async () => {
     mockFrom.mockReturnValue({
-      update: () => ({ eq: () => ({ select: () => ({ single: () => Promise.resolve({ data: makeSeason({ name: 'Updated' }), error: null }) }) }) }),
+      update: () => ({
+        eq: () => ({
+          select: () => ({
+            single: () => Promise.resolve({ data: makeSeason({ name: 'Updated' }), error: null }),
+          }),
+        }),
+      }),
     });
-    const result = await SeasonService.updateSeason('s-1', { name: 'Updated', start_date: '2026-01-01' });
+    const result = await SeasonService.updateSeason('s-1', {
+      name: 'Updated',
+      start_date: '2026-01-01',
+    });
     expect(result).toMatchObject({ name: 'Updated' });
   });
 
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue({
-      update: () => ({ eq: () => ({ select: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }) }) }),
+      update: () => ({
+        eq: () => ({
+          select: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }),
+        }),
+      }),
     });
-    await expect(SeasonService.updateSeason('s-1', { name: 'X', start_date: '2026-01-01' })).rejects.toThrow(DatabaseError);
+    await expect(
+      SeasonService.updateSeason('s-1', { name: 'X', start_date: '2026-01-01' })
+    ).rejects.toThrow(DatabaseError);
   });
 });
 
@@ -335,7 +417,10 @@ describe('SeasonService.archiveSeason', () => {
   it('resolves on success', async () => {
     mockRpc.mockResolvedValue({ data: makeSeason(), error: null });
     const result = await SeasonService.archiveSeason('s-1');
-    expect(mockRpc).toHaveBeenCalledWith('archive_season', expect.objectContaining({ p_season_id: 's-1' }));
+    expect(mockRpc).toHaveBeenCalledWith(
+      'archive_season',
+      expect.objectContaining({ p_season_id: 's-1' })
+    );
     expect(result).not.toBeNull();
   });
 
@@ -361,7 +446,9 @@ describe('SeasonService.activateSeasonWithPartialArchive', () => {
 
   it('throws DatabaseError on RPC error', async () => {
     mockRpc.mockResolvedValue({ data: null, error: pgError() });
-    await expect(SeasonService.activateSeasonWithPartialArchive('s-1')).rejects.toThrow(DatabaseError);
+    await expect(SeasonService.activateSeasonWithPartialArchive('s-1')).rejects.toThrow(
+      DatabaseError
+    );
   });
 });
 
@@ -398,7 +485,9 @@ describe('SeasonService.finalizePlayoffs', () => {
 
   it('throws DatabaseError on RPC error', async () => {
     mockRpc.mockResolvedValue({ data: null, error: pgError() });
-    await expect(SeasonService.finalizePlayoffs({ seasonId: 's-1' })).rejects.toThrow(DatabaseError);
+    await expect(SeasonService.finalizePlayoffs({ seasonId: 's-1' })).rejects.toThrow(
+      DatabaseError
+    );
   });
 });
 
@@ -407,7 +496,9 @@ describe('SeasonService.fetchPlayoffActiveSeason', () => {
 
   it('returns the playoffs-active season when exactly one exists', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => Promise.resolve({ data: [makeSeason({ playoffs_active: true })], error: null }) }),
+      select: () => ({
+        eq: () => Promise.resolve({ data: [makeSeason({ playoffs_active: true })], error: null }),
+      }),
     });
     const result = await SeasonService.fetchPlayoffActiveSeason();
     expect(result).toMatchObject({ id: 's-1' });
@@ -423,10 +514,11 @@ describe('SeasonService.fetchPlayoffActiveSeason', () => {
   it('throws BusinessLogicError when more than one playoffs-active season', async () => {
     mockFrom.mockReturnValue({
       select: () => ({
-        eq: () => Promise.resolve({
-          data: [makeSeason({ id: 's-1' }), makeSeason({ id: 's-2' })],
-          error: null,
-        }),
+        eq: () =>
+          Promise.resolve({
+            data: [makeSeason({ id: 's-1' }), makeSeason({ id: 's-2' })],
+            error: null,
+          }),
       }),
     });
     await expect(SeasonService.fetchPlayoffActiveSeason()).rejects.toThrow(BusinessLogicError);

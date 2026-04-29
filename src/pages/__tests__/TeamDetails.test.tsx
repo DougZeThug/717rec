@@ -44,7 +44,9 @@ vi.mock('@/components/navigation/AnimatedBreadcrumbs', () => ({
 vi.mock('@/components/teams/TeamHeader', () => ({
   default: ({ team }: { team: { name: string } }) => <h1>{team.name}</h1>,
 }));
-vi.mock('@/components/teams/TeamPerformanceCards', () => ({ default: () => <p>Performance Cards</p> }));
+vi.mock('@/components/teams/TeamPerformanceCards', () => ({
+  default: () => <p>Performance Cards</p>,
+}));
 vi.mock('@/components/teams/PlayerList', () => ({ default: () => <p>Roster Section</p> }));
 vi.mock('@/components/ui/CollapsibleSection', () => ({
   CollapsibleSection: ({ title, children }: { title: string; children: React.ReactNode }) => (
@@ -55,7 +57,9 @@ vi.mock('@/components/ui/CollapsibleSection', () => ({
   ),
 }));
 vi.mock('@/components/teams/StatBreakdown', () => ({ default: () => <p>Stat Breakdown</p> }));
-vi.mock('@/components/teams/TeamAdvancedStatsSection', () => ({ default: () => <p>Advanced Stats</p> }));
+vi.mock('@/components/teams/TeamAdvancedStatsSection', () => ({
+  default: () => <p>Advanced Stats</p>,
+}));
 vi.mock('@/components/teams/TeamReportCard', () => ({ default: () => <p>Report Card</p> }));
 vi.mock('@/components/teams/RivalryHighlights', () => ({ default: () => <p>Rivalries</p> }));
 vi.mock('@/components/stats/HeadToHeadRecords', () => ({ default: () => <p>Head to Head</p> }));
@@ -64,7 +68,9 @@ vi.mock('@/components/teams/MatchList', () => ({
     matches.length === 0 ? <p>No Match History</p> : <p>Match History Loaded</p>,
 }));
 vi.mock('@/components/teams/TeamTotals', () => ({ default: () => <p>Career Totals</p> }));
-vi.mock('@/components/teams/TeamCareerPowerScoreChart', () => ({ default: () => <p>Power Score Chart</p> }));
+vi.mock('@/components/teams/TeamCareerPowerScoreChart', () => ({
+  default: () => <p>Power Score Chart</p>,
+}));
 vi.mock('@/components/badges/TeamBadgeCollection', () => ({ default: () => <p>Team Badges</p> }));
 
 const createTestQueryClient = () =>

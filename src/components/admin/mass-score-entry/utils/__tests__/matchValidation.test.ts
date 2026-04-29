@@ -17,8 +17,6 @@ describe('matchValidation helpers', () => {
     expect(validateGameWins(-1, 0)).toBe(false);
 
     expect(validateMatchResult(1, 0, 2, 1)).toEqual({ isValid: true });
-    expect(validateMatchResult(1, 0, 1, 2)).toEqual(
-      expect.objectContaining({ isValid: false })
-    );
+    expect(validateMatchResult(1, 0, 1, 2)).toEqual(expect.objectContaining({ isValid: false }));
   });
 });

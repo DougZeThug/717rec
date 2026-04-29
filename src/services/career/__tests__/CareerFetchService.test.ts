@@ -11,7 +11,9 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
 }));
 
 vi.mock('@/config/cache', () => ({
@@ -24,7 +26,11 @@ import { fetchCareerData } from '../CareerFetchService';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'query failed') => ({
-  message: msg, code: '42P01', details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 // Minimal successful result set
@@ -54,8 +60,8 @@ describe('fetchCareerData', () => {
     return Object.assign(Promise.resolve(result), {
       eq: () => eqResult,
       or: () => ({
-        eq: () => Promise.resolve(result),   // matches, matches_archive
-        not: () => Promise.resolve(result),  // playoff_matches
+        eq: () => Promise.resolve(result), // matches, matches_archive
+        not: () => Promise.resolve(result), // playoff_matches
       }),
       in: () => Promise.resolve({ data: [], error: null }),
     });
@@ -77,21 +83,25 @@ describe('fetchCareerData', () => {
   });
 
   it('throws DatabaseError when season_stats query fails (critical error)', async () => {
-    mockFrom.mockImplementation(makeFromImpl({
-      ...successResults,
-      team_season_stats: { data: null, error: pgError('season stats failed') },
-    }));
+    mockFrom.mockImplementation(
+      makeFromImpl({
+        ...successResults,
+        team_season_stats: { data: null, error: pgError('season stats failed') },
+      })
+    );
 
     await expect(fetchCareerData('team-1')).rejects.toThrow(DatabaseError);
   });
 
   it('returns result even when non-critical queries fail (matches, archived, playoff)', async () => {
-    mockFrom.mockImplementation(makeFromImpl({
-      ...successResults,
-      matches: { data: null, error: pgError('non-critical') },
-      matches_archive: { data: null, error: pgError('non-critical') },
-      playoff_matches: { data: null, error: pgError('non-critical') },
-    }));
+    mockFrom.mockImplementation(
+      makeFromImpl({
+        ...successResults,
+        matches: { data: null, error: pgError('non-critical') },
+        matches_archive: { data: null, error: pgError('non-critical') },
+        playoff_matches: { data: null, error: pgError('non-critical') },
+      })
+    );
 
     // Non-critical errors are logged but don't throw
     const result = await fetchCareerData('team-1');

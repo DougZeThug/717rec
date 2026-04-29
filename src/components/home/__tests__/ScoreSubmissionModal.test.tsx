@@ -26,27 +26,18 @@ vi.mock('../utils', () => ({
 vi.mock('@/components/ui/responsive-dialog', () => ({
   ResponsiveDialog: ({ children, open }: { children: React.ReactNode; open: boolean }) =>
     open ? <div role="dialog">{children}</div> : null,
-  ResponsiveDialogContent: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
-  ResponsiveDialogHeader: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
-  ResponsiveDialogTitle: ({ children }: { children: React.ReactNode }) => (
-    <h2>{children}</h2>
-  ),
-  ResponsiveDialogDescription: ({ children }: { children: React.ReactNode }) => (
-    <p>{children}</p>
-  ),
-  ResponsiveDialogFooter: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
+  ResponsiveDialogContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  ResponsiveDialogHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  ResponsiveDialogTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
+  ResponsiveDialogDescription: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
+  ResponsiveDialogFooter: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
 // ─── Import after mocks ───────────────────────────────────────────────────────
 
-import { ScoreSubmissionModal } from '../ScoreSubmissionModal';
 import { PendingMatch } from '@/hooks/usePendingScoresMatches';
+
+import { ScoreSubmissionModal } from '../ScoreSubmissionModal';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -67,11 +58,7 @@ const renderModal = (props: Partial<{ open: boolean; onClose: () => void }> = {}
   return {
     onClose,
     ...render(
-      <ScoreSubmissionModal
-        match={mockMatch}
-        open={props.open ?? true}
-        onClose={onClose}
-      />,
+      <ScoreSubmissionModal match={mockMatch} open={props.open ?? true} onClose={onClose} />
     ),
   };
 };
@@ -113,7 +100,7 @@ describe('ScoreSubmissionModal', () => {
     // Fill message but leave name empty
     await userEvent.type(
       screen.getByPlaceholderText(/e\.g\., Team Alpha beat/i),
-      'Team Alpha won 2-1',
+      'Team Alpha won 2-1'
     );
 
     await userEvent.click(screen.getByRole('button', { name: /submit report/i }));
@@ -145,7 +132,7 @@ describe('ScoreSubmissionModal', () => {
     await userEvent.type(screen.getByPlaceholderText('e.g., Team Alpha'), 'Team Alpha');
     await userEvent.type(
       screen.getByPlaceholderText(/e\.g\., Team Alpha beat/i),
-      'Team Alpha won 2-1',
+      'Team Alpha won 2-1'
     );
 
     await userEvent.click(screen.getByRole('button', { name: /submit report/i }));
@@ -165,7 +152,7 @@ describe('ScoreSubmissionModal', () => {
     await userEvent.type(screen.getByPlaceholderText('Enter your name'), 'Jane');
     await userEvent.type(
       screen.getByPlaceholderText(/e\.g\., Team Alpha beat/i),
-      'Great match, 2-1',
+      'Great match, 2-1'
     );
 
     await userEvent.click(screen.getByRole('button', { name: /submit report/i }));
@@ -182,7 +169,7 @@ describe('ScoreSubmissionModal', () => {
     await userEvent.type(screen.getByPlaceholderText('Enter your name'), 'Jane');
     await userEvent.type(
       screen.getByPlaceholderText(/e\.g\., Team Alpha beat/i),
-      'Great match, 2-1',
+      'Great match, 2-1'
     );
 
     await userEvent.click(screen.getByRole('button', { name: /submit report/i }));
@@ -202,9 +189,7 @@ describe('ScoreSubmissionModal', () => {
   it('disables Submit and Cancel when isSubmitting is true', () => {
     mockIsSubmitting.mockImplementation(() => true);
 
-    render(
-      <ScoreSubmissionModal match={mockMatch} open onClose={vi.fn()} />,
-    );
+    render(<ScoreSubmissionModal match={mockMatch} open onClose={vi.fn()} />);
 
     // Button text changes to "Submitting..." when isSubmitting is true
     expect(screen.getByRole('button', { name: /submitting/i })).toBeDisabled();

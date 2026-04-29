@@ -6,17 +6,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // ─── Mocks ───────────────────────────────────────────────────────────────────
 
 // vi.hoisted ensures these are available when vi.mock factories run (which are hoisted)
-const {
-  mockBatchCreateMatches,
-  mockFetchActiveSeason,
-  mockCreateDateWithTime,
-  mockToast,
-} = vi.hoisted(() => ({
-  mockBatchCreateMatches: vi.fn(),
-  mockFetchActiveSeason: vi.fn(),
-  mockCreateDateWithTime: vi.fn(),
-  mockToast: vi.fn(),
-}));
+const { mockBatchCreateMatches, mockFetchActiveSeason, mockCreateDateWithTime, mockToast } =
+  vi.hoisted(() => ({
+    mockBatchCreateMatches: vi.fn(),
+    mockFetchActiveSeason: vi.fn(),
+    mockCreateDateWithTime: vi.fn(),
+    mockToast: vi.fn(),
+  }));
 
 vi.mock('@/services/matches/MatchWriteService', () => ({
   batchCreateMatches: mockBatchCreateMatches,
@@ -172,9 +168,7 @@ describe('useBatchMatchForm', () => {
     });
 
     expect(submitResult).toBe(false);
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ variant: 'destructive' }),
-    );
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
     expect(mockBatchCreateMatches).not.toHaveBeenCalled();
   });
 
@@ -188,9 +182,7 @@ describe('useBatchMatchForm', () => {
     });
 
     expect(submitResult).toBe(false);
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ variant: 'destructive' }),
-    );
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
   });
 
   it('handleSubmit returns false when the same team appears in two matches', async () => {
@@ -220,9 +212,7 @@ describe('useBatchMatchForm', () => {
     });
 
     expect(submitResult).toBe(false);
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ variant: 'destructive' }),
-    );
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
   });
 
   it('handleSubmit success calls services, shows success toast, and resets the form', async () => {
@@ -272,9 +262,7 @@ describe('useBatchMatchForm', () => {
     });
 
     expect(submitResult).toBe(false);
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ variant: 'destructive' }),
-    );
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
   });
 
   it('isSubmitting is true during submission and false after', async () => {
@@ -283,7 +271,7 @@ describe('useBatchMatchForm', () => {
     mockBatchCreateMatches.mockReturnValue(
       new Promise((res) => {
         resolveCreate = res;
-      }),
+      })
     );
 
     const { result } = renderHook(() => useBatchMatchForm([]), { wrapper: createWrapper() });

@@ -11,7 +11,10 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(), matchLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
+  matchLog: vi.fn(),
 }));
 
 // Import after mocks
@@ -20,12 +23,20 @@ import { MatchReactionsService } from '../MatchReactionsService';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'query failed') => ({
-  message: msg, code: '42P01', details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 const makeReaction = (overrides: Record<string, unknown> = {}) => ({
-  id: 'reaction-1', match_id: 'match-1', user_id: 'user-1',
-  emoji: '🔥', created_at: '2026-04-17T18:00:00Z', ...overrides,
+  id: 'reaction-1',
+  match_id: 'match-1',
+  user_id: 'user-1',
+  emoji: '🔥',
+  created_at: '2026-04-17T18:00:00Z',
+  ...overrides,
 });
 
 // ─── fetchReactions ───────────────────────────────────────────────────────────
@@ -77,9 +88,9 @@ describe('MatchReactionsService.insertReaction', () => {
     mockFrom.mockReturnValue({
       upsert: () => Promise.resolve({ error: pgError() }),
     });
-    await expect(
-      MatchReactionsService.insertReaction('match-1', 'user-1', '🔥')
-    ).rejects.toThrow(DatabaseError);
+    await expect(MatchReactionsService.insertReaction('match-1', 'user-1', '🔥')).rejects.toThrow(
+      DatabaseError
+    );
   });
 });
 
@@ -102,8 +113,8 @@ describe('MatchReactionsService.deleteReaction', () => {
     mockFrom.mockReturnValue({
       delete: () => ({ eq: () => ({ eq: () => Promise.resolve({ error: pgError() }) }) }),
     });
-    await expect(
-      MatchReactionsService.deleteReaction('reaction-1', 'user-1')
-    ).rejects.toThrow(DatabaseError);
+    await expect(MatchReactionsService.deleteReaction('reaction-1', 'user-1')).rejects.toThrow(
+      DatabaseError
+    );
   });
 });

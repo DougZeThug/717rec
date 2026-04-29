@@ -38,7 +38,11 @@ describe('pickBye — fewestPartners strategy', () => {
     // teamA (Competitive) can play teamB (Competitive) — 1 valid partner
     // teamB (Competitive) can play teamA (Competitive) — 1 valid partner
     // teamC (Recreational) can play nobody with maxTierGap=1 against only Competitive teams
-    const teams = [makeTeam('a', 'Competitive'), makeTeam('b', 'Competitive'), makeTeam('c', 'Recreational')];
+    const teams = [
+      makeTeam('a', 'Competitive'),
+      makeTeam('b', 'Competitive'),
+      makeTeam('c', 'Recreational'),
+    ];
     const bye = pickBye(teams, 'fewestPartners', new Set(), 1);
     // teamC has 0 valid opponents (tier gap 2 > maxTierGap 1) → selected as bye
     expect(bye.id).toBe('c');

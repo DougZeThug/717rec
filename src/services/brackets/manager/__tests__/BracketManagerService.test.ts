@@ -119,13 +119,13 @@ describe('BracketManagerService', () => {
     expect(createBracketMock).toHaveBeenCalledWith(
       expect.objectContaining({ bracketId: 'b-1', format: 'double_elimination' })
     );
-    expect(updateMatchMock).toHaveBeenCalledWith(
-      expect.objectContaining({ matchId: 77 })
-    );
+    expect(updateMatchMock).toHaveBeenCalledWith(expect.objectContaining({ matchId: 77 }));
   });
 
   it('malformed bracket input: createBracket invariants reject invalid payloads from creation service', async () => {
-    createBracketMock.mockRejectedValue(new Error('Bracket creation failed: malformed bracket input'));
+    createBracketMock.mockRejectedValue(
+      new Error('Bracket creation failed: malformed bracket input')
+    );
 
     const service = new BracketManagerService();
 
@@ -139,7 +139,9 @@ describe('BracketManagerService', () => {
   });
 
   it('partial write failure: update lifecycle bubbles downstream update service failures', async () => {
-    updateMatchMock.mockRejectedValue(new Error('partial write failures while updating next round'));
+    updateMatchMock.mockRejectedValue(
+      new Error('partial write failures while updating next round')
+    );
 
     const service = new BracketManagerService();
 

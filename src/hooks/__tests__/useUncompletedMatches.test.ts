@@ -3,8 +3,9 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useUncompletedMatches } from '../useUncompletedMatches';
 import type { Match } from '@/types';
+
+import { useUncompletedMatches } from '../useUncompletedMatches';
 
 const mockToast = vi.fn();
 const mockHandleSubmitScore = vi.fn();
@@ -87,16 +88,12 @@ describe('useUncompletedMatches', () => {
   });
 
   it('shows error toast and throws when service fails', async () => {
-    (fetchUncompletedMatches as ReturnType<typeof vi.fn>).mockRejectedValue(
-      new Error('DB error')
-    );
+    (fetchUncompletedMatches as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('DB error'));
     const { result } = renderHook(() => useUncompletedMatches(), {
       wrapper: createWrapper(),
     });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ variant: 'destructive' })
-    );
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
   });
 
   it('toggleItem flips openItems for a given id', async () => {
@@ -107,9 +104,13 @@ describe('useUncompletedMatches', () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     expect(result.current.openItems['match-1']).toBeUndefined();
-    act(() => { result.current.toggleItem('match-1'); });
+    act(() => {
+      result.current.toggleItem('match-1');
+    });
     expect(result.current.openItems['match-1']).toBe(true);
-    act(() => { result.current.toggleItem('match-1'); });
+    act(() => {
+      result.current.toggleItem('match-1');
+    });
     expect(result.current.openItems['match-1']).toBe(false);
   });
 

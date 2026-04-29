@@ -11,16 +11,29 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(), teamLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
+  teamLog: vi.fn(),
 }));
 
 // Import after mocks
-import { getHiddenDivisionId, getHiddenTeams, hideTeam, isTeamHidden, unhideTeam } from '../TeamHiddenService';
+import {
+  getHiddenDivisionId,
+  getHiddenTeams,
+  hideTeam,
+  isTeamHidden,
+  unhideTeam,
+} from '../TeamHiddenService';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'query failed', code = '42P01') => ({
-  message: msg, code, details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code,
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 const singleChain = (result: { data: unknown; error: unknown }) => ({
@@ -68,7 +81,14 @@ describe('hideTeam', () => {
         callCount++;
         if (callCount === 1) {
           // Fetch team
-          return { select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { division_id: 'div-1', name: 'Eagles' }, error: null }) }) }) };
+          return {
+            select: () => ({
+              eq: () => ({
+                single: () =>
+                  Promise.resolve({ data: { division_id: 'div-1', name: 'Eagles' }, error: null }),
+              }),
+            }),
+          };
         }
         // Update
         return updateEqChain({ error: null });
@@ -84,7 +104,9 @@ describe('hideTeam', () => {
 
   it('throws NotFoundError when team not found', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }),
+      select: () => ({
+        eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }),
+      }),
     });
     await expect(hideTeam('team-1')).rejects.toThrow(NotFoundError);
   });
@@ -95,7 +117,17 @@ describe('hideTeam', () => {
       if (table === 'teams') {
         callCount++;
         if (callCount === 1) {
-          return { select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { division_id: 'hidden-div', name: 'Eagles' }, error: null }) }) }) };
+          return {
+            select: () => ({
+              eq: () => ({
+                single: () =>
+                  Promise.resolve({
+                    data: { division_id: 'hidden-div', name: 'Eagles' },
+                    error: null,
+                  }),
+              }),
+            }),
+          };
         }
       }
       return singleChain({ data: { id: 'hidden-div' }, error: null });
@@ -116,7 +148,17 @@ describe('unhideTeam', () => {
       if (table === 'teams') {
         callCount++;
         if (callCount === 1) {
-          return { select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { division_id: 'hidden-div', name: 'Eagles' }, error: null }) }) }) };
+          return {
+            select: () => ({
+              eq: () => ({
+                single: () =>
+                  Promise.resolve({
+                    data: { division_id: 'hidden-div', name: 'Eagles' },
+                    error: null,
+                  }),
+              }),
+            }),
+          };
         }
         return updateEqChain({ error: null });
       }
@@ -130,7 +172,9 @@ describe('unhideTeam', () => {
 
   it('throws NotFoundError when team not found', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }),
+      select: () => ({
+        eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }),
+      }),
     });
     await expect(unhideTeam('team-1', 'div-2')).rejects.toThrow(NotFoundError);
   });
@@ -182,7 +226,11 @@ describe('getHiddenTeams', () => {
       callCount++;
       if (callCount === 1) return singleChain({ data: { id: 'hidden-div' }, error: null });
       return {
-        select: () => ({ eq: () => ({ order: () => Promise.resolve({ data: [{ id: 'team-h', name: 'Ghost' }], error: null }) }) }),
+        select: () => ({
+          eq: () => ({
+            order: () => Promise.resolve({ data: [{ id: 'team-h', name: 'Ghost' }], error: null }),
+          }),
+        }),
       };
     });
     const result = await getHiddenTeams();

@@ -238,7 +238,9 @@ describe('scheduleDualBlockPairings', () => {
     );
 
     expect(result.pairings).toEqual({});
-    expect(mockErrorLog).toHaveBeenCalledWith(expect.stringContaining('CROSS-BLOCK MATCH DETECTED:'));
+    expect(mockErrorLog).toHaveBeenCalledWith(
+      expect.stringContaining('CROSS-BLOCK MATCH DETECTED:')
+    );
   });
 
   it('passes accumulated forbidden/session pairs between block scheduler calls', async () => {
