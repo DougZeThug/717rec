@@ -79,7 +79,7 @@ npm run test:coverage:debug:subset
 
 - `test:coverage` keeps the full local developer report (`coverage/index.html`).
 - `test:coverage:ci` runs the lightweight PR-gate coverage pass.
-- `test:coverage:deepsource` is the DeepSource path: it has an **8-minute hard runtime budget** and emits **LCOV only** at `coverage/deepsource/lcov.info`.
+- `test:coverage:deepsource` is the DeepSource path: it has an **15-minute hard runtime budget** and emits **LCOV only** at `coverage/deepsource/lcov.info`.
 - `test:coverage:debug` runs coverage in single-thread mode with verbose logging to isolate hangs.
 - `test:coverage:debug:subset` runs only `src/services`, `src/hooks`, and `src/utils` test files so teams can bisect by directory quickly.
 
