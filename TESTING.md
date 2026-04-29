@@ -108,7 +108,7 @@ To keep this baseline consistent across updates, run coverage from the repo
 root in a normal dev environment and capture the full terminal output:
 
 ```bash
-npm run test:coverage | tee coverage-baseline.txt
+npm run test:coverage:update-baseline
 ```
 
 Then copy the summary values from that run into this section (date, test file
