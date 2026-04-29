@@ -38,6 +38,7 @@ describe('MatchesTab', () => {
         team1: { id: 'a', name: 'Team A' },
         team2: { id: 'b', name: 'Team B' },
         compatibilityScore: 8,
+        hasPlayedBefore: false,
       },
     ],
     Late: [
@@ -45,6 +46,7 @@ describe('MatchesTab', () => {
         team1: { id: 'a', name: 'Team A' },
         team2: { id: 'c', name: 'Team C' },
         compatibilityScore: 7,
+        hasPlayedBefore: false,
       },
     ],
   };
@@ -62,10 +64,22 @@ describe('MatchesTab', () => {
     unmatchedTeamIds: [],
     isGenerating: false,
     matchQualityMetrics: {
-      qualityRating: 'Good',
+      qualityRating: 'Good' as const,
       averageCompatibilityScore: 7.5,
       totalMatches: 2,
       rematchCount: 0,
+      opponentDiversity: { duplicateOpponents: 0, uniqueOpponents: 2, diversityScore: 100 },
+      powerScoreAnalysis: {
+        averagePowerScoreDifference: 0,
+        balancedMatches: 2,
+        unbalancedMatches: 0,
+      },
+      performanceMetrics: {
+        generationTimeMs: 0,
+        algorithmsUsed: [],
+        optimizationLevel: 'standard' as const,
+      },
+      feedback: { strengths: [], improvements: [], recommendations: [] },
     },
     onApplySchedule: vi.fn(),
     onSaveSchedule: vi.fn().mockResolvedValue(true),

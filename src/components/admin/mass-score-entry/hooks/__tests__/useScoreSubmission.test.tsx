@@ -69,7 +69,7 @@ describe('useScoreSubmission', () => {
     mockFailedMatches = [];
     mockValidateMatch.mockReturnValue({ isValid: true, correctedMatch: makeMatch() });
     mockUpdateMatch.mockResolvedValue(true);
-    mockInvalidateMatchRelatedQueries.mockResolvedValue();
+    mockInvalidateMatchRelatedQueries.mockResolvedValue(undefined);
   });
 
   it('handles success branch and refreshes matches', async () => {

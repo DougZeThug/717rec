@@ -3,7 +3,7 @@ import type { DataTypes } from 'brackets-manager';
 
 const { mockFrom, mockHandleDatabaseError, mockBracketLog, mockErrorLog } = vi.hoisted(() => ({
   mockFrom: vi.fn(),
-  mockHandleDatabaseError: vi.fn((error: unknown) => {
+  mockHandleDatabaseError: vi.fn((error: unknown, _context?: string) => {
     throw error;
   }),
   mockBracketLog: vi.fn(),
@@ -239,7 +239,7 @@ describe('SupabaseSqlStorage', () => {
     const idResult = await storage.update(
       'match',
       42,
-      { opponent1: { id: 1 }, opponent2: { id: 2 } } as Partial<DataTypes['match']>
+      { opponent1: { id: 1 }, opponent2: { id: 2 } } as unknown as DataTypes['match']
     );
 
     const objectResult = await storage.update(
@@ -261,7 +261,9 @@ describe('SupabaseSqlStorage', () => {
       error: null,
     });
     const updateEq = vi.fn().mockResolvedValue({ error: null });
-    const update = vi.fn(() => ({ eq: updateEq }));
+    const update = vi.fn<(payload: Record<string, unknown>) => { eq: typeof updateEq }>(
+      () => ({ eq: updateEq })
+    );
 
     mockFrom.mockReturnValue({
       select: vi.fn(() => ({ eq: vi.fn(() => ({ single })) })),

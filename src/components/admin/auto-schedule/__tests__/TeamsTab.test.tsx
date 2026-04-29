@@ -71,7 +71,13 @@ describe('TeamsTab', () => {
       label: 'insufficient teams warning',
     },
   ])('renders validation warnings for $label', ({ insufficientBlocks, shouldShowWarning }) => {
-    vi.mocked(validateTeamCounts).mockReturnValue({ insufficientBlocks });
+    vi.mocked(validateTeamCounts).mockReturnValue({
+      isValid: insufficientBlocks.length === 0,
+      insufficientBlocks,
+      hasOddBlocks: false,
+      oddBlocks: [],
+      totalTeams: 2,
+    });
 
     render(<TeamsTab {...baseProps} />);
 
@@ -83,7 +89,13 @@ describe('TeamsTab', () => {
   });
 
   it('switches between preview and edit rendering modes', async () => {
-    vi.mocked(validateTeamCounts).mockReturnValue({ insufficientBlocks: [] });
+    vi.mocked(validateTeamCounts).mockReturnValue({
+      isValid: true,
+      insufficientBlocks: [],
+      hasOddBlocks: false,
+      oddBlocks: [],
+      totalTeams: 2,
+    });
     const user = userEvent.setup();
 
     render(<TeamsTab {...baseProps} oddBlocks={0} />);
@@ -98,7 +110,13 @@ describe('TeamsTab', () => {
   });
 
   it('merges manual assignments and returns to auto-loaded tab', async () => {
-    vi.mocked(validateTeamCounts).mockReturnValue({ insufficientBlocks: [] });
+    vi.mocked(validateTeamCounts).mockReturnValue({
+      isValid: true,
+      insufficientBlocks: [],
+      hasOddBlocks: false,
+      oddBlocks: [],
+      totalTeams: 2,
+    });
     const user = userEvent.setup();
     const onManualTeamAssign = vi.fn();
 

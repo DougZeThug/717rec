@@ -131,9 +131,9 @@
     "prettier": "3.8.3",
     "tailwindcss": "3.4.11",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.58.2",
+    "typescript-eslint": "8.59.1",
     "vite": "7.3.2",
-    "vitest": "4.1.4"
+    "vitest": "4.1.5"
   },
   "license": "MIT",
   "overrides": {

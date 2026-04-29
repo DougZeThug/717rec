@@ -7,6 +7,7 @@ import {
   generateScheduleGreedyWithTracking,
   pairKey,
 } from '@/utils/scheduling/greedyBackToBackScheduler';
+import type { ScheduledMatch } from '@/utils/scheduling/greedy';
 
 import { scheduleDualBlockPairings } from '../dualBlockScheduler';
 
@@ -38,6 +39,20 @@ const makeTeam = (id: string, divisionName = 'Intermediate'): Team => ({
   divisionName,
 });
 
+const makeMatch = (m: {
+  teamAId: string;
+  teamBId: string;
+  slot: string;
+  tierA: number;
+  tierB: number;
+}): ScheduledMatch => ({
+  ...m,
+  teamAName: `Team ${m.teamAId}`,
+  teamBName: `Team ${m.teamBId}`,
+  divisionA: 'Intermediate',
+  divisionB: 'Intermediate',
+});
+
 const defaultDiagnostics = {
   relaxationApplied: 0 as const,
   constraintsRelaxed: [],
@@ -50,16 +65,16 @@ describe('scheduleDualBlockPairings', () => {
   beforeEach(() => {
     vi.resetAllMocks();
 
-    mockGetBackToBackPair.mockReturnValue('S3');
-    mockGetPairConfig.mockImplementation((pairName: string) => {
+    mockGetBackToBackPair.mockReturnValue('S3' as never);
+    mockGetPairConfig.mockImplementation(((pairName: string) => {
       if (pairName === 'Early') {
-        return { primary: 'S1', secondary: 'S2' };
+        return { primary: 'S1', secondary: 'S2', label: 'Early Pair' };
       }
       if (pairName === 'Mid') {
-        return { primary: 'S3', secondary: 'S4' };
+        return { primary: 'S3', secondary: 'S4', label: 'Mid Pair' };
       }
       return null;
-    });
+    }) as never);
     mockPairKey.mockImplementation((a: string, b: string) => [a, b].sort().join('::'));
     mockGenerateScheduleGreedyWithTracking.mockReturnValue({
       matches: [],
@@ -113,13 +128,13 @@ describe('scheduleDualBlockPairings', () => {
 
     mockGenerateScheduleGreedyWithTracking.mockReturnValueOnce({
       matches: [
-        {
+        makeMatch({
           teamAId: 'A',
           teamBId: 'B',
           slot: 'S2',
           tierA: 1,
           tierB: 1,
-        },
+        }),
       ],
       newPairs: new Set(['A::B']),
       diagnostics: defaultDiagnostics,
@@ -151,13 +166,13 @@ describe('scheduleDualBlockPairings', () => {
     mockGenerateScheduleGreedyWithTracking
       .mockReturnValueOnce({
         matches: [
-          {
+          makeMatch({
             teamAId: 'A',
             teamBId: 'B',
             slot: 'S1',
             tierA: 1,
             tierB: 2,
-          },
+          }),
         ],
         newPairs: new Set(['A::B']),
         diagnostics: {
@@ -168,13 +183,13 @@ describe('scheduleDualBlockPairings', () => {
       })
       .mockReturnValueOnce({
         matches: [
-          {
+          makeMatch({
             teamAId: 'C',
             teamBId: 'D',
             slot: 'S3',
             tierA: 2,
             tierB: 2,
-          },
+          }),
         ],
         newPairs: new Set(['C::D']),
         diagnostics: {
@@ -214,13 +229,13 @@ describe('scheduleDualBlockPairings', () => {
 
     mockGenerateScheduleGreedyWithTracking.mockReturnValueOnce({
       matches: [
-        {
+        makeMatch({
           teamAId: 'A',
           teamBId: 'B',
           slot: 'S1',
           tierA: 1,
           tierB: 1,
-        },
+        }),
       ],
       newPairs: new Set(['A::B']),
       diagnostics: defaultDiagnostics,
@@ -246,20 +261,20 @@ describe('scheduleDualBlockPairings', () => {
     const midTeams = [makeTeam('A'), makeTeam('C')];
     const forbiddenPairsSnapshots: string[][] = [];
 
-    mockGenerateScheduleGreedyWithTracking.mockImplementation(({ teams, forbiddenPairs }) => {
+    mockGenerateScheduleGreedyWithTracking.mockImplementation((({ teams, forbiddenPairs }) => {
       forbiddenPairsSnapshots.push(Array.from(forbiddenPairs || []));
 
       const teamIds = teams.map((team) => team.id).sort();
       if (teamIds.join(',') === 'A,B') {
         return {
           matches: [
-            {
+            makeMatch({
               teamAId: 'A',
               teamBId: 'B',
               slot: 'S1',
               tierA: 1,
               tierB: 1,
-            },
+            }),
           ],
           newPairs: new Set(['A::B']),
           diagnostics: defaultDiagnostics,
@@ -268,18 +283,18 @@ describe('scheduleDualBlockPairings', () => {
 
       return {
         matches: [
-          {
+          makeMatch({
             teamAId: 'A',
             teamBId: 'C',
             slot: 'S3',
             tierA: 1,
             tierB: 2,
-          },
+          }),
         ],
         newPairs: new Set(['A::C']),
         diagnostics: defaultDiagnostics,
       };
-    });
+    }) as never);
 
     await scheduleDualBlockPairings(
       {
