@@ -11,11 +11,30 @@ npm test              # run the full suite once
 npm run test:watch    # re-run on file changes (while you're coding)
 npm run test:coverage # run once and produce a coverage report
 npm run test:coverage:ci # PR gate: lightweight threshold enforcement
-npm run test:coverage:deepsource # DeepSource artifact: LCOV @ coverage/deepsource/lcov.info (8m timeout)
+npm run test:coverage:deepsource # DeepSource artifact: LCOV @ coverage/deepsource/lcov.info (15m timeout)
+npm run test:coverage:debug # serial + verbose coverage diagnostics (15m timeout)
 ```
 
 After `test:coverage`, open `coverage/index.html` in a browser to see
 per-file percentages with line-by-line highlighting.
+
+
+## Coverage troubleshooting (hangs/timeouts)
+
+If coverage appears to hang in CI/Codex, use this quick triage sequence:
+
+```bash
+timeout 10m npm run test:coverage
+timeout 10m npm test
+timeout 10m env CI=true npx vitest run --coverage --reporter=verbose
+timeout 10m env CI=true npx vitest run --coverage --maxWorkers=1
+```
+
+Interpretation:
+
+- If `npm test` passes but coverage times out, the issue is coverage-only.
+- Use `--reporter=verbose` to see the last completed suite before the stall.
+- If `--maxWorkers=1` is stable, keep serial coverage in CI for reliability.
 
 ## Current baseline
 
