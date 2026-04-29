@@ -16,6 +16,8 @@ npm run test:coverage:deepsource # DeepSource artifact: LCOV @ coverage/deepsour
 npm run test:coverage:debug # serial + verbose coverage diagnostics (15m timeout)
 ```
 
+Single source of truth: script values in `package.json` are authoritative; this document should mirror those exact script definitions.
+
 After `test:coverage`, open `coverage/index.html` in a browser to see
 per-file percentages with line-by-line highlighting.
 
@@ -217,7 +219,7 @@ DeepSource reporting should invoke its dedicated lightweight command:
 npm run test:coverage:deepsource
 ```
 
-This command enforces a hard runtime cap (`timeout 8m`) and emits the exact
+This command enforces a hard runtime cap (`timeout 15m`) and emits the exact
 artifact DeepSource expects in this repo: LCOV at
 `coverage/deepsource/lcov.info`.
 
