@@ -66,6 +66,16 @@ export const ExampleService = {
 
 <important if="working with tests">
 
+- **Running tests from an agent shell (Codex / Claude Code):** the `vitest`
+  binary is local to `node_modules/.bin` and is often not on `PATH` in
+  sandboxed shells. Do not call bare `vitest`. Use one of:
+  ```bash
+  npm test                                                 # full suite
+  npm run test:file -- src/path/to/File.test.tsx           # single file
+  npx vitest run src/path/to/File.test.tsx                 # equivalent
+  ```
+  Use `npm` only — this repo does not use `pnpm` or `yarn`.
+
 - Mock Radix UI pointer capture methods in test setup — jsdom doesn't support them:
   ```typescript
   beforeAll(() => {
