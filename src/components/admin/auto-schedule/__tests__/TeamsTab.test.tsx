@@ -41,6 +41,7 @@ vi.mock('@/utils/autoSchedule/edgeCaseUtils', () => ({
 
 vi.mock('@/hooks/useSeasonalTheme', () => ({
   useSeasonalTheme: () => ({ isWinterTheme: false }),
+  useSeasonalThemeBase: () => ({ isWinterTheme: false }),
 }));
 
 import { validateTeamCounts } from '@/utils/autoSchedule/edgeCaseUtils';
