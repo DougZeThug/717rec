@@ -10,6 +10,7 @@ export default defineConfig(({ mode }) => {
   const isDeepSourceCoverage = process.env.VITEST_DEEPSOURCE === '1';
   const isLightCoverage = process.env.VITEST_LIGHT_COVERAGE === '1';
   const isLocalDiagnostics = process.env.VITEST_LOCAL_DIAGNOSTICS === '1';
+  const isFastCoverage = process.env.VITEST_FAST_COVERAGE === '1';
   // Keep CI/fast-gate coverage lightweight and reserve HTML for explicit
   // local diagnostics only.
   const coverageReporter = isDeepSourceCoverage
@@ -43,6 +44,28 @@ export default defineConfig(({ mode }) => {
         '**/tests/**/*.{test,spec}.{js,mjs,cjs,ts,mjs,cts,tsx}',
       ],
       globals: true,
+      // Surface hangs faster instead of waiting on Vitest's silent defaults.
+      testTimeout: 15_000,
+      hookTimeout: 15_000,
+      teardownTimeout: 10_000,
+      // Fast coverage path: parallel forks + shared module graph per worker.
+      // Falls back to Vitest defaults when VITEST_FAST_COVERAGE is not set,
+      // so existing scripts (`test:coverage:debug`, `:triage`, `:ci`) keep
+      // their current single-worker behaviour.
+      ...(isFastCoverage
+        ? {
+            pool: 'forks' as const,
+            poolOptions: {
+              forks: {
+                singleFork: false,
+                maxForks: 4,
+                minForks: 1,
+              },
+            },
+            fileParallelism: true,
+            isolate: false,
+          }
+        : {}),
       coverage: {
         provider: 'v8',
         reporter: coverageReporter,
