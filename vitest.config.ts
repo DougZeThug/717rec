@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => {
   const isCiCoverage = process.env.VITEST_CI_COVERAGE === '1';
   const isDeepSourceCoverage = process.env.VITEST_DEEPSOURCE === '1';
   const isLightCoverage = process.env.VITEST_LIGHT_COVERAGE === '1';
+  const isFastCoverage = process.env.VITEST_FAST_COVERAGE === '1';
   const isLocalDiagnostics = process.env.VITEST_LOCAL_DIAGNOSTICS === '1';
   // Keep CI/fast-gate coverage lightweight and reserve HTML for explicit
   // local diagnostics only.
@@ -43,6 +44,14 @@ export default defineConfig(({ mode }) => {
         '**/tests/**/*.{test,spec}.{js,mjs,cjs,ts,mjs,cts,tsx}',
       ],
       globals: true,
+      ...(isFastCoverage
+        ? {
+            pool: 'forks',
+            poolOptions: { forks: { maxForks: 2, singleFork: false } },
+            isolate: true,
+            fileParallelism: true,
+          }
+        : {}),
       coverage: {
         provider: 'v8',
         reporter: coverageReporter,
