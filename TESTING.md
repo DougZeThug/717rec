@@ -8,6 +8,7 @@ full testing guide.
 
 ```bash
 npm test              # run the full suite once
+npm run test:file -- <path>  # run a single test file (agent-safe; injects node_modules/.bin into PATH)
 npm run test:watch    # re-run on file changes (while you're coding)
 npm run test:coverage # fast gate: parallel forked workers + lightweight reporters (text + json-summary)
 npm run test:coverage:serial # slow single-worker fallback for diagnosing flaky parallel coverage runs
@@ -49,6 +50,23 @@ Interpretation:
 - If `npm test` passes but coverage times out, the issue is coverage-only.
 - Use `--reporter=verbose` to see the last completed suite before the stall.
 - The default `test:coverage` runs in fast parallel mode (`VITEST_FAST_COVERAGE=1` → forked workers). If parallelism appears unstable, fall back to `npm run test:coverage:serial` to confirm before changing CI defaults.
+
+## Troubleshooting agent shells (Codex / Claude Code)
+
+If you see either of these errors when an AI agent tries to run a single test file:
+
+- `sh: 1: vitest: not found` — the shell doesn't have `node_modules/.bin` on `PATH`.
+- `pnpm: command not found` / "toolchain path issue" — this repo uses **npm**, not pnpm.
+
+Use one of these instead (all reliably resolve the local vitest binary):
+
+```bash
+npm run test:file -- src/components/foo/__tests__/Foo.test.tsx
+npx vitest run src/components/foo/__tests__/Foo.test.tsx
+./node_modules/.bin/vitest run src/components/foo/__tests__/Foo.test.tsx
+```
+
+Do not use `pnpm` or `yarn` — neither is installed.
 
 ## Current baseline
 

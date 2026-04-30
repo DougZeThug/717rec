@@ -11,6 +11,7 @@
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:file": "vitest run",
     "test:coverage": "env VITEST_LIGHT_COVERAGE=1 VITEST_FAST_COVERAGE=1 vitest run --coverage",
     "test:coverage:serial": "env VITEST_LIGHT_COVERAGE=1 vitest run --coverage --maxWorkers=1",
     "test:coverage:full": "env VITEST_LOCAL_DIAGNOSTICS=1 vitest run --coverage",
