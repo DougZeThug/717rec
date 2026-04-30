@@ -71,14 +71,16 @@ For governed releases (versioning, tags, deployment checklist, rollback steps), 
 ```sh
 npm test
 npm run test:coverage
+npm run test:coverage:serial
 npm run test:coverage:ci
 npm run test:coverage:deepsource
 npm run test:coverage:debug
 npm run test:coverage:debug:subset
 ```
 
-- `test:coverage` keeps the full local developer report (`coverage/index.html`).
-- `test:coverage:ci` runs the lightweight PR-gate coverage pass with a **10-minute hard timeout** in deterministic single-worker mode (`timeout 10m env CI=true vitest run --coverage --maxWorkers=1`).
+- `test:coverage` is the default fast coverage path: parallel forked workers (`VITEST_FAST_COVERAGE=1`) with lightweight reporters. Use this for everyday local + Codex/Claude runs.
+- `test:coverage:serial` is the slow single-worker fallback for diagnosing flaky parallel runs.
+- `test:coverage:ci` runs the PR-gate coverage pass with a **10-minute hard timeout** in fast parallel mode (`timeout 10m env CI=true VITEST_CI_COVERAGE=1 VITEST_FAST_COVERAGE=1 vitest run --coverage`).
 - `test:coverage:deepsource` is the DeepSource path: it has a **15-minute hard runtime budget** and emits **LCOV only** at `coverage/deepsource/lcov.info`.
 
 Single source of truth: script values in `package.json` are authoritative; documentation should match those exact script definitions.

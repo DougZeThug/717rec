@@ -9,10 +9,11 @@ full testing guide.
 ```bash
 npm test              # run the full suite once
 npm run test:watch    # re-run on file changes (while you're coding)
-npm run test:coverage # fast gate: lightweight coverage reporters (text + json-summary)
+npm run test:coverage # fast gate: parallel forked workers + lightweight reporters (text + json-summary)
+npm run test:coverage:serial # slow single-worker fallback for diagnosing flaky parallel coverage runs
 npm run test:coverage:full # deep local diagnostics: includes HTML artifact at coverage/index.html
 npm run test:coverage:refresh-docs # run coverage and auto-sync baseline metrics in this doc
-npm run test:coverage:ci # PR gate: lightweight threshold enforcement
+npm run test:coverage:ci # PR gate: fast parallel threshold enforcement (10m timeout)
 npm run test:coverage:deepsource # DeepSource artifact: LCOV @ coverage/deepsource/lcov.info (15m timeout)
 npm run test:coverage:debug # serial + verbose coverage diagnostics (15m timeout)
 npm run test:coverage:triage # bounded verbose coverage run with timestamped triage log
@@ -47,7 +48,7 @@ Interpretation:
 
 - If `npm test` passes but coverage times out, the issue is coverage-only.
 - Use `--reporter=verbose` to see the last completed suite before the stall.
-- If `--maxWorkers=1` is stable, keep serial coverage in CI for reliability.
+- The default `test:coverage` runs in fast parallel mode (`VITEST_FAST_COVERAGE=1` → forked workers). If parallelism appears unstable, fall back to `npm run test:coverage:serial` to confirm before changing CI defaults.
 
 ## Current baseline
 
