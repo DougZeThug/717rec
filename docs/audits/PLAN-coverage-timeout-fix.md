@@ -38,12 +38,11 @@ a single bad test.
 These add seconds, not minutes — fix them for hygiene, not as the
 primary lever:
 
-- Real-timer waits in 6 places:
-  - `src/pages/__tests__/Contact.test.tsx:92` — `setTimeout(resolve, 50)`
+- Real-timer waits in 5 remaining places (Contact.test.tsx:92 was fixed in commit 92802236):
   - `src/hooks/message-board/__tests__/useMessageBoard.test.ts:118` — 350ms
   - `src/hooks/useAutoSchedule/__tests__/useAutoScheduleState.test.ts:59,80,100` — 350ms each
   - `src/hooks/auth/__tests__/useAuth.test.ts:295` — 50ms
-  Total ≈ 1.5s. Not material to the 40 min problem.
+  Total ≈ 1.3s. Not material to the 40 min problem.
 
 - `src/services/__tests__/FailedBadgeOperationsService.test.ts:28` —
   `vi.useFakeTimers()` in `beforeEach` with no matching
@@ -105,7 +104,7 @@ documented in that section either way.
 Each numbered step is a separate commit. Stop and report after each;
 don't batch.
 
-### Step 1 — Reproduce and fix the Contact test failure
+### Step 1 — Reproduce and fix the Contact test failure ✅ COMPLETED
 
 Independent of timeout work; do first so a clean coverage run is
 possible.
@@ -116,6 +115,8 @@ possible.
    either bump the delay, switch to fake timers + `act`, or assert
    on the disabled button instead of the spinner text.
 3. Commit: `fix(test): repair Contact page test mocks`.
+
+**Completed in commit 92802236ea07160685ddabd15bff30ee551a2ba6**: Replaced the 50ms setTimeout with a never-resolving promise and changed assertion to check disabled button state instead of loading text.
 
 ### Step 2 — Set hard hook/test timeouts so future hangs surface fast
 
@@ -134,15 +135,14 @@ Pure observability change; no runtime impact on healthy runs.
 
 ### Step 3 — Tidy the small real-timer / fake-timer hygiene issues
 
-Small wall-time gain, larger hygiene gain. One commit, six edits.
+Small wall-time gain, larger hygiene gain. One commit, five edits (Contact.test.tsx already fixed).
 
 1. Convert each of these to `vi.useFakeTimers()` + advance, **or**
    shorten the wait to <10ms if the test is genuinely about wall time:
    - `src/hooks/message-board/__tests__/useMessageBoard.test.ts:118`
    - `src/hooks/useAutoSchedule/__tests__/useAutoScheduleState.test.ts:59,80,100`
    - `src/hooks/auth/__tests__/useAuth.test.ts:295`
-   - `src/pages/__tests__/Contact.test.tsx:92` (only if not already
-     resolved by Step 1)
+   - ~~`src/pages/__tests__/Contact.test.tsx:92`~~ (already resolved in Step 1)
 2. In `src/services/__tests__/FailedBadgeOperationsService.test.ts`,
    add `afterEach(() => vi.useRealTimers())`.
 3. Commit: `test: remove real-timer waits and add fake-timer cleanup`.
@@ -276,7 +276,7 @@ Once Step 5 is proven stable.
 
 ## 6. Verification checklist
 
-- [ ] `npx vitest run src/pages/__tests__/Contact.test.tsx` is green.
+- [x] `npx vitest run src/pages/__tests__/Contact.test.tsx` is green.
 - [ ] `npm run test` is green.
 - [ ] `time npm run test:coverage:fast` finishes well under 10 min and
       writes `coverage/coverage-summary.json`.
