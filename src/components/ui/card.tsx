@@ -1,7 +1,7 @@
 import { useTheme } from 'next-themes';
 import * as React from 'react';
 
-import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
+import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { getDivisionGradientClass, gradients } from '@/styles/design-system';
 
@@ -17,7 +17,10 @@ const Card = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement> & CardVariantProps
 >(({ className, variant = 'default', division, noWinter = false, ...props }, ref) => {
   const { resolvedTheme } = useTheme();
-  const { isWinterTheme } = useSeasonalTheme();
+  // Card only needs the winter flag, not homepage detection — using the
+  // location-free base hook avoids needless re-renders on route changes
+  // and keeps Card renderable outside a Router (e.g. in unit tests).
+  const { isWinterTheme } = useSeasonalThemeBase();
   const isLight = resolvedTheme === 'light';
 
   // Get the appropriate gradient based on variant and division

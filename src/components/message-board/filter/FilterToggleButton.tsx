@@ -30,6 +30,8 @@ const FilterToggleButton: React.FC<FilterToggleButtonProps> = ({
       size="icon"
       className={cn('flex-shrink-0 border', !hasActiveFilters && 'dark:border-gray-600')}
       onClick={onClick}
+      aria-label={_isActive ? 'Hide filters' : 'Show filters'}
+      aria-expanded={_isActive}
     >
       <Filter className="h-4 w-4" />
       {hasActiveFilters && (
