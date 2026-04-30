@@ -75,6 +75,7 @@ npm run test:coverage:ci
 npm run test:coverage:deepsource
 npm run test:coverage:debug
 npm run test:coverage:debug:subset
+npm run test:coverage:triage
 ```
 
 - `test:coverage` keeps the full local developer report (`coverage/index.html`).
@@ -87,9 +88,15 @@ Single source of truth: script values in `package.json` are authoritative; docum
 
 ### Coverage hang triage playbook
 
-When coverage fails or times out in CI, reproduce locally with `npm run test:coverage:debug` first.
+When coverage fails or times out in CI, start with the dedicated triage command first:
 
-When coverage appears to hang, run this sequence exactly to narrow down the culprit without guesswork:
+```sh
+npm run test:coverage:triage
+```
+
+This command runs a bounded verbose coverage pass and writes a timestamped log to `logs/coverage-triage/coverage-triage-<UTC timestamp>.log`.
+
+After triage logging, run this sequence exactly to narrow down the culprit without guesswork:
 
 1. **Confirm hang in deterministic mode**
    ```sh
