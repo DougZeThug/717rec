@@ -12,6 +12,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:coverage": "env VITEST_LIGHT_COVERAGE=1 vitest run --coverage",
+    "test:coverage:fast": "env VITEST_LIGHT_COVERAGE=1 VITEST_FAST_COVERAGE=1 vitest run --coverage",
     "test:coverage:full": "env VITEST_LOCAL_DIAGNOSTICS=1 vitest run --coverage",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
