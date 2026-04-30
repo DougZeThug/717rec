@@ -14,6 +14,7 @@ vi.mock('framer-motion', () => ({
 
 vi.mock('@/hooks/useSeasonalTheme', () => ({
   useSeasonalTheme: () => ({ shouldApplyWinter: false }),
+  useSeasonalThemeBase: () => ({ isWinterTheme: false }),
 }));
 
 describe('AnnouncementHeroCard', () => {
