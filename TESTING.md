@@ -51,14 +51,14 @@ Interpretation:
 
 ## Current baseline
 
-Last measured: 2026-04-22 (200 test files, all passing).
+Last measured: 2026-04-30.
 
 | Metric     | Covered |
 | ---------- | ------- |
-| Lines      | 31.22%  |
-| Statements | 30.93%  |
-| Functions  | 24.25%  |
-| Branches   | 23.12%  |
+| Lines      | 40.56%  |
+| Statements | 39.98%  |
+| Functions  | 31.23%  |
+| Branches   | 30.77%  |
 
 The overall number is low because most React components and UI pages are not
 yet under test. The logic-heavy areas (utils, scheduling, rankings, career
