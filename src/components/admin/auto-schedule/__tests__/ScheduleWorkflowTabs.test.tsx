@@ -19,6 +19,7 @@ vi.mock('@/components/admin/auto-schedule/tabs/ExportTab', () => ({
 
 vi.mock('@/hooks/useSeasonalTheme', () => ({
   useSeasonalTheme: () => ({ isWinterTheme: false }),
+  useSeasonalThemeBase: () => ({ isWinterTheme: false, isDark: true, shouldApplyWinterBase: false, winterClass: '' }),
 }));
 
 describe('ScheduleWorkflowTabs', () => {
