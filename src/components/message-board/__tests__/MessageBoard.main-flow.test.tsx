@@ -95,7 +95,7 @@ describe('message board main flow components', () => {
     expect(onLoadMore).toHaveBeenCalledTimes(1);
   });
 
-  it('updates visible items through filter/search controls and active filter chips', async () => {
+  it('updates visible items through filter/search controls and active filter chips', () => {
     const onFilterChange = vi.fn();
     const onRefresh = vi.fn();
     const filterOptions: FilterOptions = { category: 'Tips', teamId: 't1', searchQuery: 'schedule' };
@@ -129,7 +129,7 @@ describe('message board main flow components', () => {
   });
 
   it('handles composer validation and category selection', async () => {
-    const onSend = vi.fn().mockResolvedValue(undefined);
+    const onSend = vi.fn().mockResolvedValue();
     withClient(<MessageInput onSend={onSend} />);
 
     const textbox = screen.getByPlaceholderText('Type a message...');
@@ -143,7 +143,12 @@ describe('message board main flow components', () => {
     fireEvent.change(textbox, { target: { value: '  valid admin announcement  ' } });
     fireEvent.click(screen.getByRole('combobox'));
     fireEvent.click(screen.getByRole('option', { name: 'Announcement' }));
-    fireEvent.submit(textbox.closest('form')!);
+    const form = textbox.closest('form');
+    expect(form).not.toBeNull();
+    if (!form) {
+      throw new Error('Expected composer form to exist');
+    }
+    fireEvent.submit(form);
 
     await waitFor(() =>
       expect(onSend).toHaveBeenCalledWith('valid admin announcement', 'Announcement')
@@ -151,7 +156,7 @@ describe('message board main flow components', () => {
   });
 
   it('supports message edit/cancel/save and permission branches in controls', async () => {
-    const onSave = vi.fn().mockResolvedValue(undefined);
+    const onSave = vi.fn().mockResolvedValue();
     const onCancel = vi.fn();
 
     withClient(<MessageEditForm content="Original text" onSave={onSave} onCancel={onCancel} />);
@@ -163,7 +168,7 @@ describe('message board main flow components', () => {
     fireEvent.keyDown(screen.getByPlaceholderText('Edit message...'), { key: 'Escape' });
     expect(onCancel).toHaveBeenCalled();
 
-    const onDelete = vi.fn().mockResolvedValue(undefined);
+    const onDelete = vi.fn().mockResolvedValue();
     const setShowDeleteConfirm = vi.fn();
     const setShowOptions = vi.fn();
 
