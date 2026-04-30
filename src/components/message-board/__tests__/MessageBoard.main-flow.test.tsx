@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import React from 'react';
+import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import MessageFeed from '@/components/message-board/MessageFeed';
@@ -61,7 +62,11 @@ const fixtureMessages: Message[] = [
 
 const withClient = (ui: React.ReactElement) => {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+  return render(
+    <MemoryRouter>
+      <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+    </MemoryRouter>
+  );
 };
 
 describe('message board main flow components', () => {
@@ -115,6 +120,9 @@ describe('message board main flow components', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Refresh messages' }));
     expect(onRefresh).toHaveBeenCalled();
 
+    // Open the advanced-filters panel so the active-filter chips become visible.
+    fireEvent.click(screen.getByRole('button', { name: /show filters/i }));
+
     fireEvent.click(screen.getByRole('button', { name: /remove category filter/i }));
     fireEvent.click(screen.getByRole('button', { name: /remove team filter/i }));
     fireEvent.click(screen.getByRole('button', { name: /remove search filter/i }));
@@ -123,7 +131,6 @@ describe('message board main flow components', () => {
     expect(onFilterChange).toHaveBeenCalledWith({ teamId: null });
     expect(onFilterChange).toHaveBeenCalledWith({ searchQuery: null });
 
-    fireEvent.click(screen.getByRole('button', { name: /show filters/i }));
     fireEvent.click(screen.getByRole('button', { name: /clear filters/i }));
     expect(onFilterChange).toHaveBeenCalledWith({ category: null, teamId: null, searchQuery: null });
   });
@@ -172,7 +179,7 @@ describe('message board main flow components', () => {
     const setShowDeleteConfirm = vi.fn();
     const setShowOptions = vi.fn();
 
-    const { rerender } = withClient(
+    withClient(
       <MessageControls
         isAuthor={false}
         showOptions
@@ -186,19 +193,17 @@ describe('message board main flow components', () => {
     );
     expect(screen.queryByRole('button', { name: /delete/i })).not.toBeInTheDocument();
 
-    rerender(
-      <QueryClientProvider client={new QueryClient()}>
-        <MessageControls
-          isAuthor
-          showOptions
-          isDeleting={false}
-          showDeleteConfirm
-          setShowDeleteConfirm={setShowDeleteConfirm}
-          setShowOptions={setShowOptions}
-          onDelete={onDelete}
-          onEdit={vi.fn()}
-        />
-      </QueryClientProvider>
+    withClient(
+      <MessageControls
+        isAuthor
+        showOptions
+        isDeleting={false}
+        showDeleteConfirm
+        setShowDeleteConfirm={setShowDeleteConfirm}
+        setShowOptions={setShowOptions}
+        onDelete={onDelete}
+        onEdit={vi.fn()}
+      />
     );
 
     fireEvent.click(screen.getByRole('button', { name: /^delete$/i }));
