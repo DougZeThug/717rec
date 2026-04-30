@@ -120,6 +120,7 @@
   "overrides": {
     "glob": "13.0.6",
     "sucrase": "3.32.0",
+    "uuid": "14.0.0",
   },
   "packages": {
     "@adobe/css-tools": ["@adobe/css-tools@4.4.2", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@adobe/css-tools/-/css-tools-4.4.2.tgz", {}, ""],
@@ -1508,8 +1509,6 @@
 
     "ast-v8-to-istanbul/js-tokens": ["js-tokens@10.0.0", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/js-tokens/-/js-tokens-10.0.0.tgz", {}, ""],
 
-    "brackets-manager/uuid": ["uuid@9.0.1", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/uuid/-/uuid-9.0.1.tgz", { "bin": "dist/bin/uuid" }, ""],
-
     "chokidar/glob-parent": ["glob-parent@5.1.2", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/glob-parent/-/glob-parent-5.1.2.tgz", { "dependencies": { "is-glob": "^4.0.1" } }, ""],
 
     "dom-serializer/entities": ["entities@4.5.0", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/entities/-/entities-4.5.0.tgz", {}, ""],
@@ -1517,8 +1516,6 @@
     "duplexer2/readable-stream": ["readable-stream@2.3.8", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/readable-stream/-/readable-stream-2.3.8.tgz", { "dependencies": { "core-util-is": "~1.0.0", "inherits": "~2.0.3", "isarray": "~1.0.0", "process-nextick-args": "~2.0.0", "safe-buffer": "~5.1.1", "string_decoder": "~1.1.1", "util-deprecate": "~1.0.1" } }, ""],
 
     "exceljs/saxes": ["saxes@5.0.1", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/saxes/-/saxes-5.0.1.tgz", { "dependencies": { "xmlchars": "^2.2.0" } }, ""],
-
-    "exceljs/uuid": ["uuid@8.3.2", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/uuid/-/uuid-8.3.2.tgz", { "bin": "dist/bin/uuid" }, ""],
 
     "fast-glob/glob-parent": ["glob-parent@5.1.2", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/glob-parent/-/glob-parent-5.1.2.tgz", { "dependencies": { "is-glob": "^4.0.1" } }, ""],
 
