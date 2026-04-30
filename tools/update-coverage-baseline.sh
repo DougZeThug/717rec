@@ -2,7 +2,8 @@
 set -euo pipefail
 
 BASELINE_FILE="coverage-baseline.txt"
-SUMMARY_HEADER="% Coverage report from v8"
+# Match against the unstyled substring; reporters may wrap the header in ANSI escape codes.
+SUMMARY_HEADER="Coverage report from"
 TMP_FILE="$(mktemp)"
 
 cleanup() {
