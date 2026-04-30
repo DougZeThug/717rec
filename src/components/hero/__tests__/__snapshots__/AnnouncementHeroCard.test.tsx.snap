@@ -1,0 +1,147 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AnnouncementHeroCard > matches snapshot without CTA link 1`] = `
+<DocumentFragment>
+  <div
+    transition="[object Object]"
+    whilehover="[object Object]"
+    whiletap="[object Object]"
+  >
+    <div
+      class="relative rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-200 overflow-hidden dark:border-t-amber-400 border border-white/20 bg-blue-500"
+    >
+      <div
+        class="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 pointer-events-none"
+      />
+      <div
+        class="absolute top-2 left-4 opacity-30"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-trophy w-8 h-8"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978"
+          />
+          <path
+            d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978"
+          />
+          <path
+            d="M18 9h1.5a1 1 0 0 0 0-5H18"
+          />
+          <path
+            d="M4 22h16"
+          />
+          <path
+            d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"
+          />
+          <path
+            d="M6 9H4.5a1 1 0 0 1 0-5H6"
+          />
+        </svg>
+      </div>
+      <div
+        class="absolute bottom-2 right-4 opacity-30"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-trophy w-8 h-8"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978"
+          />
+          <path
+            d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978"
+          />
+          <path
+            d="M18 9h1.5a1 1 0 0 0 0-5H18"
+          />
+          <path
+            d="M4 22h16"
+          />
+          <path
+            d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"
+          />
+          <path
+            d="M6 9H4.5a1 1 0 0 1 0-5H6"
+          />
+        </svg>
+      </div>
+      <div
+        class="relative z-10 flex items-center justify-center gap-3 px-6 py-5 text-white"
+      >
+        <div
+          animate="[object Object]"
+          initial="[object Object]"
+          transition="[object Object]"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-trophy w-6 h-6"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978"
+            />
+            <path
+              d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978"
+            />
+            <path
+              d="M18 9h1.5a1 1 0 0 0 0-5H18"
+            />
+            <path
+              d="M4 22h16"
+            />
+            <path
+              d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"
+            />
+            <path
+              d="M6 9H4.5a1 1 0 0 1 0-5H6"
+            />
+          </svg>
+        </div>
+        <div
+          class="text-center"
+        >
+          <h3
+            class="text-xl md:text-2xl font-bebas uppercase tracking-wide"
+          >
+            Spring Finals
+          </h3>
+          <p
+            class="text-sm font-inter mt-1 opacity-90"
+          >
+            Join us this weekend
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
