@@ -139,6 +139,7 @@
   "license": "MIT",
   "overrides": {
     "sucrase": "3.32.0",
-    "glob": "13.0.6"
+    "glob": "13.0.6",
+    "uuid": "$uuid"
   }
 }
