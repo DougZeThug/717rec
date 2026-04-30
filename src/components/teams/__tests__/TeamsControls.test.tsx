@@ -1,0 +1,34 @@
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import React from 'react';
+import { describe, expect, it, vi } from 'vitest';
+
+vi.mock('@/hooks/useMobile', () => ({ useIsMobile: () => false }));
+
+import { TeamsFilters } from '../TeamsFilters';
+import TeamsSortToggle from '../TeamsSortToggle';
+import TeamsDisplayModeToggle from '../TeamsDisplayModeToggle';
+
+describe('Teams controls', () => {
+  it('changes sort mode', async () => {
+    const setSortMode = vi.fn();
+    render(<TeamsSortToggle sortMode="rank" setSortMode={setSortMode} />);
+    await userEvent.click(screen.getByRole('button', { name: /a–z/i }));
+    expect(setSortMode).toHaveBeenCalledWith('alpha');
+  });
+
+  it('toggles display mode', async () => {
+    const onDisplayModeChange = vi.fn();
+    render(<TeamsDisplayModeToggle displayMode="all" onDisplayModeChange={onDisplayModeChange} />);
+    await userEvent.click(screen.getByRole('radio', { name: /view teams by division/i }));
+    expect(onDisplayModeChange).toHaveBeenCalledWith('grouped');
+  });
+
+  it('changes division filter', async () => {
+    const onDivisionChange = vi.fn();
+    render(<TeamsFilters selectedDivision="all" onDivisionChange={onDivisionChange} divisions={[{ id: 'd1', name: 'Alpha' } as any]} />);
+    await userEvent.click(screen.getByRole('combobox'));
+    await userEvent.click(screen.getByText('Alpha'));
+    expect(onDivisionChange).toHaveBeenCalledWith('d1');
+  });
+});
