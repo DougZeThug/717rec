@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { Division } from '@/types';
+
 vi.mock('@/hooks/useMobile', () => ({ useIsMobile: () => false }));
 
 import { TeamsFilters } from '../TeamsFilters';
@@ -13,7 +15,7 @@ describe('Teams controls', () => {
   it('changes sort mode', async () => {
     const setSortMode = vi.fn();
     render(<TeamsSortToggle sortMode="rank" setSortMode={setSortMode} />);
-    await userEvent.click(screen.getByRole('button', { name: /a–z/i }));
+    await userEvent.click(screen.getByRole('button', { name: 'A–Z' }));
     expect(setSortMode).toHaveBeenCalledWith('alpha');
   });
 
@@ -26,7 +28,8 @@ describe('Teams controls', () => {
 
   it('changes division filter', async () => {
     const onDivisionChange = vi.fn();
-    render(<TeamsFilters selectedDivision="all" onDivisionChange={onDivisionChange} divisions={[{ id: 'd1', name: 'Alpha' } as any]} />);
+    const divisions: Division[] = [{ id: 'd1', name: 'Alpha' } as Division];
+    render(<TeamsFilters selectedDivision="all" onDivisionChange={onDivisionChange} divisions={divisions} />);
     await userEvent.click(screen.getByRole('combobox'));
     await userEvent.click(screen.getByText('Alpha'));
     expect(onDivisionChange).toHaveBeenCalledWith('d1');
