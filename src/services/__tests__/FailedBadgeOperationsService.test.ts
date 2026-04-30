@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockRpc = vi.fn();
 
@@ -28,6 +28,10 @@ describe('FailedBadgeOperationsService', () => {
     vi.useFakeTimers();
     localStorage.clear();
     vi.spyOn(crypto, 'randomUUID').mockReturnValue('op-1' as `${string}-${string}-${string}-${string}-${string}`);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('retries queued operations and removes successful ones from pending storage', async () => {
