@@ -7,15 +7,19 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import TeamsPage from '../TeamsPage';
 
 const mockTeamsState = vi.fn();
+const mockContainer = vi.fn();
 
 vi.mock('@/components/layout/PageLayout', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  default: ({ children }: { children: React.ReactNode }) => <div data-testid="teams-page-layout">{children}</div>,
 }));
 
 vi.mock('@/components/teams/TeamsPageContainer', () => ({
   default: () => {
     const state = mockTeamsState();
+    mockContainer(state);
+
     if (state.isLoading) return <p>Loading teams...</p>;
+    if (state.error) return <p>{state.error}</p>;
     if (state.isEmpty) return <p>No teams found</p>;
     return <p>Teams directory loaded</p>;
   },
@@ -38,22 +42,32 @@ const renderPage = () => {
 describe('TeamsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockTeamsState.mockReturnValue({ isLoading: false, isEmpty: false });
+    mockTeamsState.mockReturnValue({ isLoading: false, isEmpty: false, error: null });
   });
 
-  it('shows loading state', () => {
-    mockTeamsState.mockReturnValue({ isLoading: true, isEmpty: false });
+  it('wires page layout and teams container for the success state', () => {
+    renderPage();
+
+    expect(screen.getByTestId('teams-page-layout')).toBeInTheDocument();
+    expect(screen.getByText('Teams directory loaded')).toBeInTheDocument();
+    expect(mockContainer).toHaveBeenCalledWith({ isLoading: false, isEmpty: false, error: null });
+  });
+
+  it('shows loading-state UI while teams are being fetched', () => {
+    mockTeamsState.mockReturnValue({ isLoading: true, isEmpty: false, error: null });
     renderPage();
     expect(screen.getByText('Loading teams...')).toBeInTheDocument();
+    expect(screen.queryByText('Teams directory loaded')).not.toBeInTheDocument();
   });
 
-  it('shows happy path render', () => {
+  it('shows user-visible fallback when teams fetch fails', () => {
+    mockTeamsState.mockReturnValue({ isLoading: false, isEmpty: false, error: 'Failed to load teams' });
     renderPage();
-    expect(screen.getByText('Teams directory loaded')).toBeInTheDocument();
+    expect(screen.getByText('Failed to load teams')).toBeInTheDocument();
   });
 
-  it('shows empty-state branch', () => {
-    mockTeamsState.mockReturnValue({ isLoading: false, isEmpty: true });
+  it('shows empty-state UI when no teams are returned', () => {
+    mockTeamsState.mockReturnValue({ isLoading: false, isEmpty: true, error: null });
     renderPage();
     expect(screen.getByText('No teams found')).toBeInTheDocument();
   });
