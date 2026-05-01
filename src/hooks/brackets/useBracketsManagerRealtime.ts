@@ -81,6 +81,7 @@ export function useBracketsManagerRealtime(
     let currentChannel: ReturnType<typeof supabase.channel> | null = null;
     let retryTimer: ReturnType<typeof setTimeout> | null = null;
     let hasRetried = false;
+    let isCancelled = false;
 
     // Build a fresh channel each time. Phoenix channels set `joinedOnce` on the
     // first join and never reset it, so retries must use a brand-new instance.
@@ -124,11 +125,13 @@ export function useBracketsManagerRealtime(
               hasRetried = true;
               bracketLog('Realtime CHANNEL_ERROR — retrying once in 2s', { bracketId, stageId });
               retryTimer = setTimeout(async () => {
+                if (isCancelled) return;
                 // Tear down the failed channel, then create a fresh instance.
                 // Reusing the original channel throws "tried to join multiple times".
                 if (currentChannel) {
                   await supabase.removeChannel(currentChannel);
                 }
+                if (isCancelled) return;
                 currentChannel = connect();
               }, 2000);
             } else {
@@ -142,6 +145,7 @@ export function useBracketsManagerRealtime(
 
     return () => {
       bracketLog('Cleaning up match table realtime subscription');
+      isCancelled = true;
       if (retryTimer) clearTimeout(retryTimer);
       if (currentChannel) supabase.removeChannel(currentChannel);
       setRealtimeEnabled(false);
