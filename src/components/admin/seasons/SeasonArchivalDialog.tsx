@@ -90,7 +90,7 @@ const FullArchivalWarning: React.FC = () => (
 
 const ArchivalAlert: React.FC<{ partial: boolean }> = ({ partial }) => (
   <Alert>
-    <AlertTriangle className="size-4" />
+    <AlertTriangle className="h-4 w-4" />
     <AlertDescription>
       {partial ? <PartialArchivalWarning /> : <FullArchivalWarning />}
     </AlertDescription>

@@ -261,7 +261,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                   {divisionRankings.map((ranking, idx) => {
                     const globalIndex = rankings.findIndex((r) => r.teamId === ranking.teamId);
                     return (
-                      <m.div
+                      <motion.div
                         key={ranking.teamId}
                         ref={(el) => {
                           if (el) teamRefs.current.set(ranking.teamId, el);
@@ -292,7 +292,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                           showDivision={showUnified}
                           prefetchedBadges={badgesByTeam.get(ranking.teamId) || []}
                         />
-                      </m.div>
+                      </motion.div>
                     );
                   })}
                 </AnimatePresence>

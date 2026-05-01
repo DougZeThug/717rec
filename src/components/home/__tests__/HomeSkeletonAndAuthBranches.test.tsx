@@ -27,14 +27,25 @@ const sampleMatch: Match = {
   date: '2026-03-01T19:00:00.000Z',
   team1_game_wins: 1,
   team2_game_wins: 2,
+  week: null,
+  season_id: 's1',
+  status: 'completed',
+  location: null,
   created_at: '2026-01-01T00:00:00.000Z',
+  updated_at: '2026-01-01T00:00:00.000Z',
 };
 
 const sampleTeam: Team = {
   id: 't1',
   name: 'Alpha',
-  logoUrl: undefined,
+  logo_url: null,
   created_at: '2026-01-01T00:00:00.000Z',
+  captain_id: null,
+  co_captain_id: null,
+  division: null,
+  league_id: null,
+  is_active: true,
+  archived_at: null,
 };
 
 const recapData: WeeklyRecapData = { weekNumber: 10, upsets: [], hotStreaks: [], hasData: false };
@@ -42,13 +53,12 @@ const recapRiser: WeeklyPowerScoreTrend = {
   teamId: 't1',
   teamName: 'Heat',
   division: 'West',
-  logoUrl: undefined,
+  logoUrl: null,
   previousScore: 980,
   currentScore: 1005,
   delta: 2.5,
   percentChange: 2.6,
-  currentWeek: 10,
-  previousWeek: 9,
+
 };
 
 describe('skeleton to content transitions', () => {
