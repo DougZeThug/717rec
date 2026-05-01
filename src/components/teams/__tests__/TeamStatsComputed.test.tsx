@@ -2,8 +2,8 @@ import { render, screen } from '@testing-library/react';
 import React, { PropsWithChildren } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { TeamSeasonBreakdownData } from '@/hooks/useTeamSeasonBreakdown';
-import { TeamReportCardGrades } from '@/hooks/useTeamReportCard';
+import type { TeamAdvancedStats } from '@/hooks/teams/seasonBreakdown';
+import type { TeamGrades } from '@/utils/reportCardUtils';
 
 vi.mock('@/components/ui/CollapsibleSection', () => ({
   CollapsibleSection: ({ children, title }: PropsWithChildren<{ title: string }>) => (
@@ -46,14 +46,14 @@ describe('Computed stats rendering', () => {
   });
 
   it('report card missing stats fallback', () => {
-    mockReportCard.mockReturnValue({ grades: null as TeamReportCardGrades | null, isLoading: false });
+    mockReportCard.mockReturnValue({ grades: null as TeamGrades | null, isLoading: false });
     render(<TeamReportCard teamId="t1" standalone />);
     expect(screen.getByText(/not enough data/i)).toBeInTheDocument();
   });
 
   it('advanced section missing seasons fallback', () => {
     mockAdvanced.mockReturnValue({
-      advancedStats: { seasons: [] } as TeamSeasonBreakdownData,
+      advancedStats: { seasons: [] } as unknown as TeamAdvancedStats,
       isLoading: false,
     });
     render(<TeamAdvancedStatsSection teamId="t1" />);
