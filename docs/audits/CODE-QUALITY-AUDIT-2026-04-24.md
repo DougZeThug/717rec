@@ -24,7 +24,7 @@ Grade: **B+**, trending up. The last audit's biggest items have been fixed. Rema
 ### New or unchanged problems
 - 4 service files still exceed the 400-line rule.
 - 5 components still exceed 400 lines (only partial overlap with the March list).
-- `any` count went **up** from 130 → 203 (mostly in tests; a few real-code hotspots).
+- `any` count went **up** from 130 → 194 (mostly in tests; a few real-code hotspots).
 - `.env` is committed to git (see §7 — this is public VITE_ keys, not a secret leak, but still non-standard).
 
 ---
@@ -58,7 +58,7 @@ Also worth calling out (not a service, but over 500 lines): `src/utils/predictio
 
 ## 3. Type safety
 
-- `: any` / `as any` / `<any>` occurrences: **203** across the codebase (up from 130).
+- `: any` / `as any` / `<any>` occurrences: **194** across the codebase (up from 130).
   - Roughly half are in test files (mocks) — low risk.
   - Real-code hotspots worth triaging:
     - `src/components/playoffs/form/bracket-teams/hooks/useBracketFormData.ts` — 14
