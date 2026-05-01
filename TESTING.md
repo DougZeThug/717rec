@@ -330,7 +330,10 @@ constraints, rematch repair), `sanitizeReturnTo`.
 
 **Components / pages (sampled):** Playoff bracket form (many sub-pieces),
 mass-score-entry, batch-matches auto-schedule warnings, history page,
-`ProtectedAdminRoute`, `AdminDashboard`, `Auth` page.
+`ProtectedAdminRoute`, `AdminDashboard`, `Auth` page, home dashboard components
+(states, fallbacks, and transitions for `MyNextMatchCard`, `PendingScoresCard`,
+`RecentMatches`, `TopTeams`, `TeamOfTheWeekCard`, `WeeklyRecapCard`,
+`CallToAction`, `HeroSection`).
 
 **Season workflow:** `SeasonService` (incl. `partial_archive`, `finalize_playoffs`,
 `activate_season_with_partial_archive`, `fetchPlayoffActiveSeason`),
