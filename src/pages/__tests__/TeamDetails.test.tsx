@@ -29,16 +29,29 @@ vi.mock('@/hooks/useTeamMatches', () => ({ useTeamMatches: (...args: unknown[]) 
 vi.mock('@/hooks/useTeamRankings', () => ({ useTeamRankings: (...args: unknown[]) => mockUseTeamRankings(...args) }));
 
 vi.mock('@/components/ui/skeleton', () => ({ Skeleton: () => <div>Loading team details...</div> }));
-vi.mock('@/components/teams/TeamDetailsStickyNav', () => ({ default: () => (mockStickyNav(), <p>Sticky Nav</p>) }));
+vi.mock('@/components/teams/TeamDetailsStickyNav', () => ({
+  default: () => {
+    mockStickyNav();
+    return <p>Sticky Nav</p>;
+  },
+}));
 vi.mock('@/components/navigation/AnimatedBreadcrumbs', () => ({ default: () => <nav aria-label="breadcrumbs">Team Breadcrumbs</nav> }));
 vi.mock('@/components/teams/TeamHeader', () => ({
-  default: ({ team }: { team: { name: string } }) => (mockTeamHeader(team), <h1>{team.name}</h1>),
+  default: ({ team }: { team: { name: string } }) => {
+    mockTeamHeader(team);
+    return <h1>{team.name}</h1>;
+  },
 }));
 vi.mock('@/components/teams/TeamPerformanceCards', () => ({ default: () => <p>Performance Cards</p> }));
 vi.mock('@/components/teams/PlayerList', () => ({ default: () => <p>Roster Section</p> }));
 vi.mock('@/components/ui/CollapsibleSection', () => ({ CollapsibleSection: ({ title, children }: { title: string; children: React.ReactNode }) => <section><h2>{title}</h2>{children}</section> }));
 vi.mock('@/components/teams/StatBreakdown', () => ({ default: () => <p>Stat Breakdown</p> }));
-vi.mock('@/components/teams/TeamAdvancedStatsSection', () => ({ default: ({ teamId }: { teamId: string }) => (mockAdvancedStatsSection(teamId), <p>Advanced Stats</p>) }));
+vi.mock('@/components/teams/TeamAdvancedStatsSection', () => ({
+  default: ({ teamId }: { teamId: string }) => {
+    mockAdvancedStatsSection(teamId);
+    return <p>Advanced Stats</p>;
+  },
+}));
 vi.mock('@/components/teams/TeamReportCard', () => ({ default: () => <p>Report Card</p> }));
 vi.mock('@/components/teams/RivalryHighlights', () => ({ default: () => <p>Rivalries</p> }));
 vi.mock('@/components/stats/HeadToHeadRecords', () => ({ default: () => <p>Head to Head</p> }));

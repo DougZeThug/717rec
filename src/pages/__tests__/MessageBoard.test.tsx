@@ -17,7 +17,7 @@ vi.mock('@/hooks/useToast', () => ({ toast: (...args: unknown[]) => mockToast(..
 vi.mock('@/components/layout/PageLayout', () => ({ default: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
 vi.mock('@/components/layout/PageHeader', () => ({ default: ({ title }: { title: React.ReactNode }) => <h1>{title}</h1> }));
 vi.mock('@/components/transitions/PageTransition', () => ({ default: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
-vi.mock('@/components/message-board/MessageFilterBar', () => ({ default: ({ onFilterChange, onRefresh }: { onFilterChange: (value: string) => void; onRefresh: () => Promise<void> }) => <><button onClick={() => onFilterChange('announcements')}>Filter Announcements</button><button onClick={() => void onRefresh()}>Refresh Messages</button></> }));
+vi.mock('@/components/message-board/MessageFilterBar', () => ({ default: ({ onFilterChange, onRefresh }: { onFilterChange: (value: string) => void; onRefresh: () => Promise<void> }) => <><button onClick={() => onFilterChange('announcements')}>Filter Announcements</button><button onClick={() => { onRefresh(); }}>Refresh Messages</button></> }));
 vi.mock('@/components/message-board/MessageFeed', () => ({ default: ({ messages, isLoading, error }: { messages: Array<{ id: string; content: string }>; isLoading: boolean; error: string | null }) => { if (isLoading) return <p>Loading messages...</p>; if (error) return <p>{error}</p>; if (messages.length === 0) return <p>No Messages Yet</p>; return <ul>{messages.map((message) => <li key={message.id}>{message.content}</li>)}</ul>; } }));
 vi.mock('@/components/message-board/MessageInput', () => ({ default: ({ onSend }: { onSend: (content: string) => Promise<void> }) => <button onClick={async () => await onSend('Hello from test')}>Send Message</button> }));
 vi.mock('@/components/message-board/LoginPrompt', () => ({ default: () => <p>Please log in</p> }));
@@ -27,8 +27,8 @@ const renderPage = () => render(<QueryClientProvider client={createTestQueryClie
 
 const baseMessageBoardState = {
   messages: [], isLoading: false, error: null,
-  postMessage: vi.fn().mockResolvedValue(undefined), editMessage: vi.fn().mockResolvedValue(undefined), deleteMessage: vi.fn().mockResolvedValue(undefined),
-  hasMore: false, loadingMore: false, loadMoreMessages: vi.fn(), refreshMessages: vi.fn().mockResolvedValue(undefined), filterOptions: { type: 'all' }, setFilter: vi.fn(),
+  postMessage: vi.fn().mockResolvedValue(), editMessage: vi.fn().mockResolvedValue(), deleteMessage: vi.fn().mockResolvedValue(),
+  hasMore: false, loadingMore: false, loadMoreMessages: vi.fn(), refreshMessages: vi.fn().mockResolvedValue(), filterOptions: { type: 'all' }, setFilter: vi.fn(),
 };
 
 describe('MessageBoard page', () => {
