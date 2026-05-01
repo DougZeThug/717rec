@@ -1,6 +1,6 @@
 import { errorLog } from '@/utils/logger';
 
-import type { StorageMatch } from '../../types/BracketServiceTypes';
+import type { StorageGroup, StorageMatch, StorageRound } from '../../types/BracketServiceTypes';
 import type { BracketAdminDeps, ByeEligibilityResult, MatchEligibilityContext } from './types';
 
 const STATUS_NAMES: Record<number, string> = {
