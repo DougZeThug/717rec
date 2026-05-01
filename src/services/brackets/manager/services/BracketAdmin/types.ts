@@ -1,8 +1,21 @@
 import type { SupabaseSqlStorage } from '../../SupabaseSqlStorage';
-import type { StorageParticipant } from '../../types/BracketServiceTypes';
+import type {
+  StorageGroup,
+  StorageMatch,
+  StorageParticipant,
+  StorageRound,
+} from '../../types/BracketServiceTypes';
 
 export type BracketAdminDeps = {
   storage: SupabaseSqlStorage;
+};
+
+export type MatchEligibilityContext = {
+  matchData: StorageMatch;
+  round: StorageRound;
+  group: StorageGroup;
+  opponent1Name: string | null;
+  opponent2Name: string | null;
 };
 
 export type EditMatchParticipantsResult = {

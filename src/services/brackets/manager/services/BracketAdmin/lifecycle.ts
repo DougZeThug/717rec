@@ -11,7 +11,7 @@ export async function adminToggleByeReady(
   deps: BracketAdminDeps,
   matchId: number,
   makeReady: boolean,
-  clearDownstream: boolean = false
+  clearDownstream = false
 ): Promise<ToggleByeReadyResult> {
   bracketLog(`Admin BYE toggle requested for match ${matchId}`, { makeReady, clearDownstream });
 
@@ -47,7 +47,11 @@ export async function adminToggleByeReady(
           }
         }
 
-        bracketLog('Cleared downstream matches (full cascade)', { matchId, clearedCount: downstream.length, clearedIds: downstream.map((m: any) => m.id) });
+        bracketLog('Cleared downstream matches (full cascade)', {
+          matchId,
+          clearedCount: downstream.length,
+          clearedIds: downstream.map((match) => match.id),
+        });
       }
 
       const { error: reopenError } = await supabase

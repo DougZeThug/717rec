@@ -10,15 +10,15 @@ import { editMatchParticipants } from './participants';
 export class BracketAdminService {
   constructor(private storage: SupabaseSqlStorage) {}
 
-  async checkByeEligibility(matchId: number) {
+  checkByeEligibility(matchId: number) {
     return isLosersByeMatch({ storage: this.storage }, matchId);
   }
 
-  async adminToggleByeReady(matchId: number, makeReady: boolean, clearDownstream: boolean = false) {
+  adminToggleByeReady(matchId: number, makeReady: boolean, clearDownstream = false) {
     return adminToggleByeReady({ storage: this.storage }, matchId, makeReady, clearDownstream);
   }
 
-  async editMatchParticipants(
+  editMatchParticipants(
     matchId: number,
     newOpponent1TeamId: string | null,
     newOpponent2TeamId: string | null
