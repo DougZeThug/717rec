@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { BusinessLogicError } from '@/types/errors';
+import { handleDatabaseError } from '@/utils/errorHandler';
 import { bracketLog, failureLog, successLog } from '@/utils/logger';
 
 import { isLosersByeMatch } from './eligibility';
@@ -29,13 +30,39 @@ export async function adminToggleByeReady(
       if (clearDownstream) {
         const downstream = await collectDownstreamChain(deps, matchId);
         for (const downstreamMatch of downstream) {
-          await supabase.from('match').update({ status: 1, opponent1_id: null, opponent2_id: null, opponent1_result: null, opponent2_result: null, opponent1_score: null, opponent2_score: null }).eq('id', downstreamMatch.id);
+          const { error } = await supabase
+            .from('match')
+            .update({
+              status: 1,
+              opponent1_id: null,
+              opponent2_id: null,
+              opponent1_result: null,
+              opponent2_result: null,
+              opponent1_score: null,
+              opponent2_score: null,
+            })
+            .eq('id', downstreamMatch.id);
+          if (error) {
+            handleDatabaseError(error, `Failed to clear downstream match ${downstreamMatch.id}`);
+          }
         }
 
         bracketLog('Cleared downstream matches (full cascade)', { matchId, clearedCount: downstream.length, clearedIds: downstream.map((m: any) => m.id) });
       }
 
-      await supabase.from('match').update({ opponent1_result: null, opponent2_result: null, opponent1_score: null, opponent2_score: null, status: 2 }).eq('id', matchId);
+      const { error: reopenError } = await supabase
+        .from('match')
+        .update({
+          opponent1_result: null,
+          opponent2_result: null,
+          opponent1_score: null,
+          opponent2_score: null,
+          status: 2,
+        })
+        .eq('id', matchId);
+      if (reopenError) {
+        handleDatabaseError(reopenError, `Failed to reopen match ${matchId}`);
+      }
       successLog(`Reopened completed BYE match ${matchId} to Ready`);
 
       return { matchId, status: 2, statusName: 'Ready', message: clearDownstream ? 'Match reopened and downstream matches cleared' : 'Match reopened to Ready status' };
@@ -46,7 +73,13 @@ export async function adminToggleByeReady(
         throw new BusinessLogicError(`Cannot set to Ready: ${check.reason}. Match must be a Losers Bracket BYE match in Locked/Waiting status.`);
       }
 
-      await supabase.from('match').update({ status: 2 }).eq('id', matchId);
+      const { error: readyError } = await supabase
+        .from('match')
+        .update({ status: 2 })
+        .eq('id', matchId);
+      if (readyError) {
+        handleDatabaseError(readyError, `Failed to set match ${matchId} to Ready`);
+      }
       successLog(`Admin unlocked BYE match ${matchId} to Ready`);
       return { matchId, status: 2, statusName: 'Ready', message: 'Match unlocked to Ready status. You can now enter scores and advance the bracket.' };
     }
@@ -56,7 +89,13 @@ export async function adminToggleByeReady(
       throw new BusinessLogicError(`Cannot revert: Match is ${check.meta.currentStatusName}. Only Ready (2) or Running (3) matches can be reverted.`);
     }
 
-    await supabase.from('match').update({ status: 1 }).eq('id', matchId);
+    const { error: waitingError } = await supabase
+      .from('match')
+      .update({ status: 1 })
+      .eq('id', matchId);
+    if (waitingError) {
+      handleDatabaseError(waitingError, `Failed to set match ${matchId} to Waiting`);
+    }
     successLog(`Admin reverted BYE match ${matchId} to Waiting`);
 
     return { matchId, status: 1, statusName: 'Waiting', message: 'Match reverted to Waiting status. Status toggle is available again.' };
