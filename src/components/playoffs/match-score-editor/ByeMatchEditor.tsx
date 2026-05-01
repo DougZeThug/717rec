@@ -46,7 +46,7 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
         <DialogTitle className="text-base sm:text-lg">Match Forfeit - BYE</DialogTitle>
       </DialogHeader>
 
-      <MatchStatusBadge status={status ?? byeEligible?.currentStatus} />
+      <MatchStatusBadge status={byeEligible?.currentStatus ?? status} />
 
       <div className="space-y-4 sm:space-y-6 py-2 sm:py-4">
         <div className="text-center py-2 sm:py-4">
