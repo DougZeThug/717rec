@@ -132,14 +132,13 @@ describe('leaderboard and highlight widgets', () => {
     const trend: WeeklyPowerScoreTrend = {
       teamId: 't1',
       teamName: 'Rockets',
-      logoUrl: undefined,
+      logoUrl: null,
       division: 'East',
       delta: 4.2,
       percentChange: 6.5,
       previousScore: 1234,
       currentScore: 1276,
-      currentWeek: 7,
-      previousWeek: 6,
+
     };
     render(
       <MemoryRouter>
