@@ -22,19 +22,17 @@ import WeeklyRecapSkeleton from '../WeeklyRecapSkeleton';
 
 const sampleMatch: Match = {
   id: 'm10', team1Id: 't1', team2Id: 't2', date: '2026-03-01T19:00:00.000Z',
-  team1_game_wins: 1, team2_game_wins: 2, week: null, season_id: 's1', status: 'completed',
-  location: null, created_at: '2026-01-01T00:00:00.000Z', updated_at: '2026-01-01T00:00:00.000Z',
+  team1_game_wins: 1, team2_game_wins: 2, created_at: '2026-01-01T00:00:00.000Z',
 };
 
 const sampleTeam: Team = {
-  id: 't1', name: 'Alpha', logo_url: null, created_at: '2026-01-01T00:00:00.000Z',
-  captain_id: null, co_captain_id: null, division: null, league_id: null, is_active: true, archived_at: null,
+  id: 't1', name: 'Alpha', logoUrl: undefined, created_at: '2026-01-01T00:00:00.000Z',
 };
 
-const recapData: WeeklyRecapData = { weekNumber: 10, upsets: [], hotStreaks: [] };
+const recapData: WeeklyRecapData = { weekNumber: 10, upsets: [], hotStreaks: [], hasData: false };
 const recapRiser: WeeklyPowerScoreTrend = {
-  teamId: 't1', teamName: 'Heat', division: 'West', logoUrl: null,
-  previousScore: 980, currentScore: 1005, delta: 2.5, percentChange: 2.6,
+  teamId: 't1', teamName: 'Heat', division: 'West', logoUrl: undefined,
+  previousScore: 980, currentScore: 1005, delta: 2.5, percentChange: 2.6, currentWeek: 10, previousWeek: 9,
 };
 
 describe('skeleton to content transitions', () => {

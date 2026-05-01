@@ -51,38 +51,29 @@ const baseMatch: Match = {
   date: '2026-02-14T18:00:00.000Z',
   team1_game_wins: 2,
   team2_game_wins: 1,
-  week: null,
-  season_id: 's1',
-  status: 'completed',
-  location: null,
   created_at: '2026-01-01T00:00:00.000Z',
-  updated_at: '2026-01-01T00:00:00.000Z',
 };
 
 const baseTeam: Team = {
   id: 't1',
   name: 'Alpha',
-  logo_url: null,
+  logoUrl: undefined,
   created_at: '2026-01-01T00:00:00.000Z',
-  captain_id: null,
-  co_captain_id: null,
-  division: null,
-  league_id: null,
-  is_active: true,
-  archived_at: null,
 };
 
-const weeklyRecapBase: WeeklyRecapData = { weekNumber: 8, upsets: [], hotStreaks: [] };
+const weeklyRecapBase: WeeklyRecapData = { weekNumber: 8, upsets: [], hotStreaks: [], hasData: false };
 
 const risingTrend: WeeklyPowerScoreTrend = {
   teamId: 't9',
   teamName: 'Clutch',
   division: 'East',
-  logoUrl: null,
+  logoUrl: undefined,
   previousScore: 900,
   currentScore: 931,
   delta: 3.1,
   percentChange: 3.4,
+  currentWeek: 8,
+  previousWeek: 7,
 };
 
 describe('home dashboard cards', () => {
@@ -129,7 +120,7 @@ describe('leaderboard and highlight widgets', () => {
 
   it('verifies TeamOfTheWeekCard formatting with partial data', () => {
     const trend: WeeklyPowerScoreTrend = {
-      teamId: 't1', teamName: 'Rockets', logoUrl: null, division: 'East', delta: 4.2, percentChange: 6.5, previousScore: 1234, currentScore: 1276,
+      teamId: 't1', teamName: 'Rockets', logoUrl: undefined, division: 'East', delta: 4.2, percentChange: 6.5, previousScore: 1234, currentScore: 1276, currentWeek: 7, previousWeek: 6,
     };
     render(<MemoryRouter><TeamOfTheWeekCard weekNumber={7} trend={trend} /></MemoryRouter>);
     expect(screen.getByText('+4.2')).toBeInTheDocument();
