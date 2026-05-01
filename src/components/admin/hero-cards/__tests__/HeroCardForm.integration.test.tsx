@@ -21,23 +21,16 @@ vi.mock('../TargetSelector', () => ({
 }));
 vi.mock('@/components/hero/HeroCard', () => ({ default: () => <div data-testid="preview" /> }));
 
-class ResizeObserverMock {
-  observe(_target: Element): void {
-    void _target;
-  }
-  unobserve(_target: Element): void {
-    void _target;
-  }
-  disconnect(): void {
-    // no-op for tests
-  }
-}
-
 const renderForm = (ui: React.ReactElement) =>
   render(<QueryClientProvider client={new QueryClient()}>{ui}</QueryClientProvider>);
 
 beforeAll(() => {
-  globalThis.ResizeObserver = ResizeObserverMock as typeof ResizeObserver;
+  function ResizeObserverCtor(this: { observe: () => undefined; unobserve: () => undefined; disconnect: () => undefined }) {
+    this.observe = () => undefined;
+    this.unobserve = () => undefined;
+    this.disconnect = () => undefined;
+  }
+  globalThis.ResizeObserver = ResizeObserverCtor as unknown as typeof ResizeObserver;
 });
 
 const makeCard = (overrides: Partial<HeroCard> = {}): HeroCard => ({

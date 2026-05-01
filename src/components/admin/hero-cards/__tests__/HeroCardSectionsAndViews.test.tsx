@@ -18,20 +18,13 @@ import {
   TargetingDisplaySection,
 } from '../form-sections';
 
-class ResizeObserverMock {
-  observe(_target: Element): void {
-    void _target;
-  }
-  unobserve(_target: Element): void {
-    void _target;
-  }
-  disconnect(): void {
-    // no-op for tests
-  }
-}
-
 beforeAll(() => {
-  globalThis.ResizeObserver = ResizeObserverMock as typeof ResizeObserver;
+  function ResizeObserverCtor(this: { observe: () => undefined; unobserve: () => undefined; disconnect: () => undefined }) {
+    this.observe = () => undefined;
+    this.unobserve = () => undefined;
+    this.disconnect = () => undefined;
+  }
+  globalThis.ResizeObserver = ResizeObserverCtor as unknown as typeof ResizeObserver;
 });
 
 const baseForm: HeroCardFormData = {
