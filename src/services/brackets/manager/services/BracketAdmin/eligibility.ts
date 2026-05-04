@@ -31,12 +31,20 @@ async function loadEligibilityContext(
   )) as unknown as StorageGroup | null;
   if (!group) return { reason: 'Group not found' };
 
-  const opponent1Name = matchData.opponent1?.id
-    ? ((await deps.storage.select('participant', matchData.opponent1.id))?.name ?? null)
+  const opponent1Participant = matchData.opponent1?.id
+    ? await deps.storage.select('participant', matchData.opponent1.id)
     : null;
-  const opponent2Name = matchData.opponent2?.id
-    ? ((await deps.storage.select('participant', matchData.opponent2.id))?.name ?? null)
+  const opponent2Participant = matchData.opponent2?.id
+    ? await deps.storage.select('participant', matchData.opponent2.id)
     : null;
+  const opponent1Name =
+    opponent1Participant && !Array.isArray(opponent1Participant)
+      ? (opponent1Participant.name ?? null)
+      : null;
+  const opponent2Name =
+    opponent2Participant && !Array.isArray(opponent2Participant)
+      ? (opponent2Participant.name ?? null)
+      : null;
 
   return { context: { matchData, round, group, opponent1Name, opponent2Name } };
 }
