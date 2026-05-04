@@ -129,6 +129,33 @@ function MoversSection({ risers, faller, winter }: { risers: WeeklyPowerScoreTre
   return (<section className="space-y-2"><div className="flex items-center gap-1.5 mb-1"><TrendingUp size={13} className="text-emerald-500" /><span className={cn(typeScale.caption, 'font-semibold uppercase tracking-wider text-muted-foreground')}>Movers</span></div>{risers.map((trend) => <MoverRow key={trend.teamId} trend={trend} direction="up" winter={winter} />)}{faller && faller.delta < 0 && <MoverRow trend={faller} direction="down" winter={winter} />}</section>);
 }
 
+
+function WeeklyRecapHeader({ weekNumber, winter }: { weekNumber: number | null; winter: boolean }) {
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <ClipboardList size={16} className={winter ? 'text-cyan-400' : 'text-violet-500'} />
+        <span
+          className={cn(
+            'text-xs font-semibold uppercase tracking-wider',
+            winter ? 'text-cyan-300' : 'text-violet-600 dark:text-violet-400'
+          )}
+        >
+          Weekly Recap
+        </span>
+      </div>
+      {weekNumber !== null && (
+        <Badge
+          variant={winter ? 'winter' : 'outline'}
+          className={cn('text-xs', !winter && 'border-muted-foreground/30')}
+        >
+          Week {weekNumber}
+        </Badge>
+      )}
+    </div>
+  );
+}
+
 const WeeklyRecapCard: React.FC<WeeklyRecapCardProps> = ({ data, risers, faller }) => {
   const { shouldApplyWinter } = useSeasonalTheme();
   const hasUpsets = data.upsets.length > 0;
@@ -140,7 +167,7 @@ const WeeklyRecapCard: React.FC<WeeklyRecapCardProps> = ({ data, risers, faller 
     <Card className={cn('relative overflow-hidden', shouldApplyWinter ? 'winter-card-full' : 'border-violet-500/20 bg-gradient-to-br from-violet-500/5 via-background to-indigo-500/5')} style={{ minHeight: '160px' }}>
       <div className={cn('absolute inset-0 opacity-50', shouldApplyWinter ? 'bg-gradient-to-r from-cyan-500/5 via-transparent to-violet-500/5' : 'bg-gradient-to-r from-violet-500/10 via-transparent to-indigo-500/10')} />
       <CardContent className="relative p-3 md:p-6 space-y-3 md:space-y-5">
-        <div className="flex items-center justify-between"><div className="flex items-center gap-2"><ClipboardList size={16} className={shouldApplyWinter ? 'text-cyan-400' : 'text-violet-500'} /><span className={cn('text-xs font-semibold uppercase tracking-wider', shouldApplyWinter ? 'text-cyan-300' : 'text-violet-600 dark:text-violet-400')}>Weekly Recap</span></div>{data.weekNumber !== null && <Badge variant={shouldApplyWinter ? 'winter' : 'outline'} className={cn('text-xs', !shouldApplyWinter && 'border-muted-foreground/30')}>Week {data.weekNumber}</Badge>}</div>
+        <WeeklyRecapHeader weekNumber={data.weekNumber} winter={shouldApplyWinter} />
         <UpsetsSection upsets={data.upsets} winter={shouldApplyWinter} />
         {hasUpsets && (hasStreaks || hasMovers) && <div className="hidden md:block border-t border-border/50" />}
         <StreaksSection streaks={data.hotStreaks} winter={shouldApplyWinter} />
