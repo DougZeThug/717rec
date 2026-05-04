@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import SeasonAccordion from '../SeasonAccordion';
 
@@ -76,8 +76,12 @@ const wrap = (ui: React.ReactNode) =>
   );
 
 describe('SeasonAccordionExpandedContent onSave integration', () => {
-  it('refetches season data and exits edit mode when onSave resolves', async () => {
+  beforeEach(() => {
+    fetchSeasonStatsForAccordion.mockReset();
     editModeProps.length = 0;
+  });
+
+  it('refetches season data and exits edit mode when onSave resolves', async () => {
     fetchSeasonStatsForAccordion.mockResolvedValue(sampleData);
 
     wrap(<SeasonAccordion season={season} />);
@@ -99,7 +103,6 @@ describe('SeasonAccordionExpandedContent onSave integration', () => {
   });
 
   it('keeps user in edit mode and surfaces saving=false when refetch fails', async () => {
-    editModeProps.length = 0;
     fetchSeasonStatsForAccordion.mockResolvedValueOnce(sampleData);
 
     wrap(<SeasonAccordion season={season} />);
