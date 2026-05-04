@@ -32,7 +32,9 @@ export const useTimeslotGrouping = (groupedTimeslots: Record<string, TeamTimeslo
   }, [groupedTimeslots]);
 
   const { regularTimeslots, byeWeekTimeslots, doubleHeaderInfo } = useMemo(() => {
-    const orderedEntries = Object.entries(groupedTimeslots).sort(([a], [b]) => sortTimeslotKeys(a, b));
+    const orderedEntries = Object.entries(groupedTimeslots).sort(([a], [b]) =>
+      sortTimeslotKeys(a, b)
+    );
     const allTimeslots = orderedEntries.flatMap(([, teams]) => teams);
     const doubleHeaderTeams = new Map<string, { slot1: string; slot2: string }>();
     const seenDoubleHeaderTeams = new Set<string>();
@@ -72,5 +74,11 @@ export const useTimeslotGrouping = (groupedTimeslots: Record<string, TeamTimeslo
     setExpandedTimeslots((prev) => ({ ...prev, [timeslot]: !prev[timeslot] }));
   }, []);
 
-  return { regularTimeslots, byeWeekTimeslots, doubleHeaderInfo, expandedTimeslots, toggleTimeslot };
+  return {
+    regularTimeslots,
+    byeWeekTimeslots,
+    doubleHeaderInfo,
+    expandedTimeslots,
+    toggleTimeslot,
+  };
 };

@@ -12,10 +12,22 @@ interface TeamAdvancedStatsSeasonsTabProps {
 const tableHeaders = [
   { label: 'Season', className: 'py-2 px-2 md:px-4 font-medium text-muted-foreground' },
   { label: 'Record', className: 'py-2 px-2 md:px-4 font-medium text-muted-foreground text-center' },
-  { label: 'Games', className: 'py-2 px-2 md:px-4 font-medium text-muted-foreground text-center hidden md:table-cell' },
+  {
+    label: 'Games',
+    className:
+      'py-2 px-2 md:px-4 font-medium text-muted-foreground text-center hidden md:table-cell',
+  },
   { label: 'Power', className: 'py-2 px-2 md:px-4 font-medium text-muted-foreground text-center' },
-  { label: 'Playoff', className: 'py-2 px-2 md:px-4 font-medium text-muted-foreground text-center hidden lg:table-cell' },
-  { label: 'Quality', className: 'py-2 px-2 md:px-4 font-medium text-muted-foreground text-center hidden xl:table-cell' },
+  {
+    label: 'Playoff',
+    className:
+      'py-2 px-2 md:px-4 font-medium text-muted-foreground text-center hidden lg:table-cell',
+  },
+  {
+    label: 'Quality',
+    className:
+      'py-2 px-2 md:px-4 font-medium text-muted-foreground text-center hidden xl:table-cell',
+  },
 ];
 
 const SeasonsTable = ({

@@ -67,7 +67,12 @@ const ByeWeekDesktopRow = ({ teamTimeslot, teamIndex, isWinterTheme }: ByeWeekDe
         ) : (
           <span className="text-gray-500 dark:text-gray-400 truncate">Unknown Team</span>
         )}
-        <span className={cn('text-xs', isWinterTheme ? 'text-orange-400' : 'text-orange-600 dark:text-orange-300')}>
+        <span
+          className={cn(
+            'text-xs',
+            isWinterTheme ? 'text-orange-400' : 'text-orange-600 dark:text-orange-300'
+          )}
+        >
           Not playing this week
         </span>
       </div>
@@ -123,13 +128,25 @@ const TimeslotSectionCard = ({
 
 const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, isLoading }) => {
   const { isWinterTheme } = useSeasonalThemeBase();
-  const { regularTimeslots, byeWeekTimeslots, doubleHeaderInfo, expandedTimeslots, toggleTimeslot } =
-    useTimeslotGrouping(groupedTimeslots);
+  const {
+    regularTimeslots,
+    byeWeekTimeslots,
+    doubleHeaderInfo,
+    expandedTimeslots,
+    toggleTimeslot,
+  } = useTimeslotGrouping(groupedTimeslots);
 
   if (isLoading) return <LoadingState message="Loading timeslots..." />;
   if (regularTimeslots.length === 0 && byeWeekTimeslots.length === 0) {
     return (
-      <div className={cn('text-center py-8 rounded-xl', 'bg-gradient-to-br from-blue-50/50 via-gray-50 to-orange-50/30', 'dark:from-gray-800/50 dark:via-gray-800/30 dark:to-gray-900/50', 'border border-gray-200 dark:border-gray-700')}>
+      <div
+        className={cn(
+          'text-center py-8 rounded-xl',
+          'bg-gradient-to-br from-blue-50/50 via-gray-50 to-orange-50/30',
+          'dark:from-gray-800/50 dark:via-gray-800/30 dark:to-gray-900/50',
+          'border border-gray-200 dark:border-gray-700'
+        )}
+      >
         <Calendar className="h-8 w-8 mx-auto mb-2 text-gray-400 dark:text-gray-500" />
         <p className="text-gray-500 dark:text-gray-400">No timeslots scheduled for this date.</p>
       </div>
@@ -145,7 +162,11 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
           teams={teams}
           open={expandedTimeslots[timeslot]}
           onToggle={() => toggleTimeslot(timeslot)}
-          cardClass={cn('overflow-hidden border-gray-200 dark:border-gray-700 transition-all duration-300 p-0', animations.entranceLeft, `animation-delay-${index * 100}`)}
+          cardClass={cn(
+            'overflow-hidden border-gray-200 dark:border-gray-700 transition-all duration-300 p-0',
+            animations.entranceLeft,
+            `animation-delay-${index * 100}`
+          )}
         >
           <div className="p-2 md:hidden">
             <div className="grid grid-cols-2 gap-2">
@@ -183,9 +204,18 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
           open={expandedTimeslots[timeslot]}
           onToggle={() => toggleTimeslot(timeslot)}
           isByeWeek
-          cardClass={cn('overflow-hidden border-orange-200 dark:border-orange-700 transition-all duration-300 p-0', animations.entranceLeft, `animation-delay-${(regularTimeslots.length + index) * 100}`)}
+          cardClass={cn(
+            'overflow-hidden border-orange-200 dark:border-orange-700 transition-all duration-300 p-0',
+            animations.entranceLeft,
+            `animation-delay-${(regularTimeslots.length + index) * 100}`
+          )}
         >
-          <div className={cn('p-2 md:hidden', isWinterTheme ? 'bg-orange-900/20' : 'bg-orange-50 dark:bg-orange-900/10')}>
+          <div
+            className={cn(
+              'p-2 md:hidden',
+              isWinterTheme ? 'bg-orange-900/20' : 'bg-orange-50 dark:bg-orange-900/10'
+            )}
+          >
             <div className="grid grid-cols-2 gap-2">
               {teams.map((teamTimeslot) => (
                 <TimeslotMatchRowMobile
@@ -198,8 +228,20 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
               ))}
             </div>
           </div>
-          <div className={cn('hidden md:block p-4', isWinterTheme ? 'bg-orange-900/20' : 'bg-orange-50 dark:bg-orange-900/10')}>
-            <div className={cn('divide-y', isWinterTheme ? 'divide-orange-500/20' : 'divide-orange-200 dark:divide-orange-700/50')}>
+          <div
+            className={cn(
+              'hidden md:block p-4',
+              isWinterTheme ? 'bg-orange-900/20' : 'bg-orange-50 dark:bg-orange-900/10'
+            )}
+          >
+            <div
+              className={cn(
+                'divide-y',
+                isWinterTheme
+                  ? 'divide-orange-500/20'
+                  : 'divide-orange-200 dark:divide-orange-700/50'
+              )}
+            >
               {teams.map((teamTimeslot, teamIndex) => (
                 <ByeWeekDesktopRow
                   key={teamTimeslot.id}

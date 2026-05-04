@@ -57,17 +57,24 @@ export const useSeasonAccordionViewModel = (season: Season, seasonData?: SeasonD
   const championTeams = seasonData?.filter((team) => team.champion) || [];
 
   const teamCount = visibleTeams.length;
-  const totalMatches = seasonData?.reduce((sum, t) => sum + (t.match_wins || 0) + (t.match_losses || 0), 0) || 0;
+  const totalMatches =
+    seasonData?.reduce((sum, t) => sum + (t.match_wins || 0) + (t.match_losses || 0), 0) || 0;
   const matchCount = Math.floor(totalMatches / 2);
 
   const highlights = React.useMemo(() => {
     if (!seasonData || seasonData.length === 0) return null;
-    const mostWins = seasonData.reduce((max, team) => (team.match_wins > max.match_wins ? team : max), seasonData[0]);
+    const mostWins = seasonData.reduce(
+      (max, team) => (team.match_wins > max.match_wins ? team : max),
+      seasonData[0]
+    );
     const highestPS = seasonData.reduce(
       (max, team) => ((team.power_score || 0) > (max.power_score || 0) ? team : max),
       seasonData[0]
     );
-    const mostGameWins = seasonData.reduce((max, team) => (team.game_wins > max.game_wins ? team : max), seasonData[0]);
+    const mostGameWins = seasonData.reduce(
+      (max, team) => (team.game_wins > max.game_wins ? team : max),
+      seasonData[0]
+    );
     return { mostWins, highestPS, mostGameWins };
   }, [seasonData]);
 

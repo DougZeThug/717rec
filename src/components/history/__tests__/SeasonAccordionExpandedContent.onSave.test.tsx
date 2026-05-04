@@ -128,9 +128,7 @@ describe('SeasonAccordionExpandedContent onSave integration', () => {
     });
 
     // Mid-flight: refetch is pending, isSaving should be true on the next render.
-    await waitFor(() =>
-      expect(editModeProps[editModeProps.length - 1].isSaving).toBe(true)
-    );
+    await waitFor(() => expect(editModeProps[editModeProps.length - 1].isSaving).toBe(true));
 
     await act(async () => {
       resolveRefetch(sampleData);
