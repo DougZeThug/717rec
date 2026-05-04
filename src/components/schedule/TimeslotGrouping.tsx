@@ -154,6 +154,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
                   key={teamTimeslot.id}
                   teamTimeslot={teamTimeslot}
                   isWinterTheme={isWinterTheme}
+                  doubleHeaderInfo={doubleHeaderInfo}
                 />
               ))}
             </div>
@@ -192,6 +193,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
                   key={teamTimeslot.id}
                   teamTimeslot={teamTimeslot}
                   isWinterTheme={isWinterTheme}
+                  doubleHeaderInfo={doubleHeaderInfo}
                 />
               ))}
             </div>

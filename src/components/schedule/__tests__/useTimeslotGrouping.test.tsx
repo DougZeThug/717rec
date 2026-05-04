@@ -37,6 +37,22 @@ describe('useTimeslotGrouping', () => {
     expect(result.current.byeWeekTimeslots.map((t) => t.timeslot)).toEqual(['BYE']);
   });
 
+
+  it('reinitializes expanded defaults when grouped timeslots change', () => {
+    const first = { '9:00 PM': [makeSlot('1', '9:00 PM', 'A')] };
+    const second = { '7:00 PM': [makeSlot('2', '7:00 PM', 'B')], '9:00 PM': [makeSlot('3', '9:00 PM', 'C')] };
+    const { result, rerender } = renderHook(({ grouped }) => useTimeslotGrouping(grouped), {
+      initialProps: { grouped: first },
+    });
+
+    act(() => result.current.toggleTimeslot('9:00 PM'));
+    expect(result.current.expandedTimeslots['9:00 PM']).toBe(false);
+
+    rerender({ grouped: second });
+    expect(result.current.expandedTimeslots['7:00 PM']).toBe(true);
+    expect(result.current.expandedTimeslots['9:00 PM']).toBe(false);
+  });
+
   it('defaults only first sorted group expanded and toggles state', () => {
     const grouped = { '9:00 PM': [makeSlot('2', '9:00 PM', 'B')], '7:00 PM': [makeSlot('3', '7:00 PM', 'C')] };
     const { result } = renderHook(() => useTimeslotGrouping(grouped));

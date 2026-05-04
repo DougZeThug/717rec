@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { TeamTimeslot } from '@/types';
 
@@ -13,15 +13,23 @@ const sortTimeslotKeys = (a: string, b: string): number => {
   return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
 };
 
-export const useTimeslotGrouping = (groupedTimeslots: Record<string, TeamTimeslot[]>) => {
-  const [expandedTimeslots, setExpandedTimeslots] = useState<Record<string, boolean>>(() => {
-    const initialState: Record<string, boolean> = {};
-    const sortedTimeslots = Object.keys(groupedTimeslots).sort(sortTimeslotKeys);
-    sortedTimeslots.forEach((timeslot, index) => {
-      initialState[timeslot] = index === 0;
-    });
-    return initialState;
+const buildInitialExpandedState = (groupedTimeslots: Record<string, TeamTimeslot[]>) => {
+  const initialState: Record<string, boolean> = {};
+  const sortedTimeslots = Object.keys(groupedTimeslots).sort(sortTimeslotKeys);
+  sortedTimeslots.forEach((timeslot, index) => {
+    initialState[timeslot] = index === 0;
   });
+  return initialState;
+};
+
+export const useTimeslotGrouping = (groupedTimeslots: Record<string, TeamTimeslot[]>) => {
+  const [expandedTimeslots, setExpandedTimeslots] = useState<Record<string, boolean>>(() =>
+    buildInitialExpandedState(groupedTimeslots)
+  );
+
+  useEffect(() => {
+    setExpandedTimeslots(buildInitialExpandedState(groupedTimeslots));
+  }, [groupedTimeslots]);
 
   const { regularTimeslots, byeWeekTimeslots, doubleHeaderInfo } = useMemo(() => {
     const orderedEntries = Object.entries(groupedTimeslots).sort(([a], [b]) => sortTimeslotKeys(a, b));
@@ -31,7 +39,6 @@ export const useTimeslotGrouping = (groupedTimeslots: Record<string, TeamTimeslo
 
     allTimeslots.forEach((ts) => {
       if (!ts.is_double_header || doubleHeaderTeams.has(ts.team_id)) return;
-
       const teamSlots = allTimeslots
         .filter((t) => t.team_id === ts.team_id && t.is_double_header)
         .sort((a, b) => (a.match_sequence || 0) - (b.match_sequence || 0));
@@ -44,16 +51,15 @@ export const useTimeslotGrouping = (groupedTimeslots: Record<string, TeamTimeslo
       }
     });
 
-    const processed = orderedEntries.map(([timeslot, teams]) => {
-      const filteredTeams = teams.filter((ts) => {
+    const processed = orderedEntries.map(([timeslot, teams]) => ({
+      timeslot,
+      teams: teams.filter((ts) => {
         if (!ts.is_double_header) return true;
         if (seenDoubleHeaderTeams.has(ts.team_id)) return false;
         seenDoubleHeaderTeams.add(ts.team_id);
         return true;
-      });
-
-      return { timeslot, teams: filteredTeams };
-    });
+      }),
+    }));
 
     return {
       regularTimeslots: processed.filter((entry) => entry.timeslot !== 'BYE') as TimeslotSection[],
