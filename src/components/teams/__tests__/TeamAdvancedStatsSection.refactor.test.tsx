@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -32,6 +32,24 @@ describe('Team advanced stats refactor behavior', () => {
     expect(screen.queryByText('vs Competitive')).not.toBeInTheDocument();
     rerender(<table><tbody><SeasonRow season={baseSeason} isExpanded onToggle={onToggle} /></tbody></table>);
     expect(screen.getByText('vs Competitive')).toBeInTheDocument();
+  });
+
+  it('does not toggle for non-expandable rows', () => {
+    const nonExpandableSeason: SeasonBreakdown = {
+      ...baseSeason,
+      seasonId: 's-no-divisions',
+      divisionRecords: {
+        competitive: { wins: 0, losses: 0, gameWins: 0, gameLosses: 0 },
+        intermediate: { wins: 0, losses: 0, gameWins: 0, gameLosses: 0 },
+        recreational: { wins: 0, losses: 0, gameWins: 0, gameLosses: 0 },
+      },
+    };
+    const nonExpandableToggle = vi.fn();
+    render(
+      <table><tbody><SeasonRow season={nonExpandableSeason} isExpanded={false} onToggle={nonExpandableToggle} /></tbody></table>
+    );
+    fireEvent.click(screen.getByText('Spring 2025'));
+    expect(nonExpandableToggle).not.toHaveBeenCalled();
   });
 
   it('conditionally renders insights blocks', () => {

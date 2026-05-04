@@ -48,26 +48,35 @@ const PlayoffCell = ({ season }: { season: SeasonBreakdown }) => {
   );
 };
 
+const SeasonCell = ({
+  season,
+  isExpanded,
+  hasDivisionRecords,
+}: Pick<MainSeasonRowProps, 'season' | 'isExpanded' | 'hasDivisionRecords'>) => (
+  <td className="py-3 px-2 md:px-4">
+    <div className="flex items-center gap-2">
+      {hasDivisionRecords ? <ExpansionIcon isExpanded={isExpanded} /> : <div className="w-[14px]" />}
+      <div>
+        <div className="font-medium text-sm">{season.seasonName}</div>
+        <span className={cn('text-xs px-1.5 py-0.5 rounded border', getDivisionBadgeColor(season.divisionName))}>
+          {season.divisionName}
+        </span>
+      </div>
+    </div>
+  </td>
+);
+
 const MainSeasonRow = ({ season, isExpanded, onToggle, hasDivisionRecords }: MainSeasonRowProps) => (
   <tr
     key={`${season.seasonId}-main`}
     className={cn(
-      'border-b border-border/50 hover:bg-muted/30 transition-colors cursor-pointer',
+      'border-b border-border/50 transition-colors',
+      hasDivisionRecords && 'hover:bg-muted/30 cursor-pointer',
       isExpanded && 'bg-muted/20'
     )}
-    onClick={onToggle}
+    onClick={hasDivisionRecords ? onToggle : undefined}
   >
-    <td className="py-3 px-2 md:px-4">
-      <div className="flex items-center gap-2">
-        {hasDivisionRecords ? <ExpansionIcon isExpanded={isExpanded} /> : <div className="w-[14px]" />}
-        <div>
-          <div className="font-medium text-sm">{season.seasonName}</div>
-          <span className={cn('text-xs px-1.5 py-0.5 rounded border', getDivisionBadgeColor(season.divisionName))}>
-            {season.divisionName}
-          </span>
-        </div>
-      </div>
-    </td>
+    <SeasonCell season={season} isExpanded={isExpanded} hasDivisionRecords={hasDivisionRecords} />
 
     <td className="py-3 px-2 md:px-4 text-center">
       <div className="font-mono text-sm font-medium">
