@@ -237,8 +237,7 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
                   : 'bg-muted/50 border border-border'
               )}
             >
-              <p
-                className={cn(
+              <p className={cn(
                   'text-[10px] font-semibold uppercase tracking-wider mb-1.5',
                   isWinterTheme ? 'text-amber-300/80' : 'text-amber-600 dark:text-amber-400'
                 )}
