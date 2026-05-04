@@ -18,7 +18,9 @@ vi.mock('@/components/layout/PageLayout', () => ({
 vi.mock('@/components/transitions/PageTransition', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
-vi.mock('@/components/navigation/AnimatedBreadcrumbs', () => ({ default: () => <p>Breadcrumbs</p> }));
+vi.mock('@/components/navigation/AnimatedBreadcrumbs', () => ({
+  default: () => <p>Breadcrumbs</p>,
+}));
 vi.mock('@/components/layout/PageHeader', () => ({
   default: ({ title, description }: { title: string; description?: string }) => (
     <header>

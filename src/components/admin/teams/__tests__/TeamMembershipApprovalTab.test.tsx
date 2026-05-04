@@ -16,9 +16,7 @@ vi.mock('@/hooks/usePendingMemberships', () => ({
 }));
 
 vi.mock('@/components/shared/TeamLogo', () => ({
-  TeamLogo: ({ teamName }: { teamName: string }) => (
-    <div data-testid={`team-logo-${teamName}`} />
-  ),
+  TeamLogo: ({ teamName }: { teamName: string }) => <div data-testid={`team-logo-${teamName}`} />,
 }));
 
 vi.mock('@/hooks/useToast', () => ({
@@ -160,7 +158,7 @@ describe('TeamMembershipApprovalTab', () => {
 
     await waitFor(() => {
       expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({ title: 'Membership Approved' }),
+        expect.objectContaining({ title: 'Membership Approved' })
       );
     });
   });
@@ -201,7 +199,7 @@ describe('TeamMembershipApprovalTab', () => {
 
     await waitFor(() => {
       expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({ title: 'Membership Rejected' }),
+        expect.objectContaining({ title: 'Membership Rejected' })
       );
     });
   });
@@ -260,9 +258,7 @@ describe('TeamMembershipApprovalTab', () => {
     await userEvent.click(screen.getByRole('button', { name: /approve/i }));
 
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({ variant: 'destructive' }),
-      );
+      expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
     });
   });
 });

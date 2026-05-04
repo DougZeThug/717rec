@@ -35,7 +35,10 @@ const matchesFileSignature = (bytes: Uint8Array): boolean => {
   return hasRiffHeader && hasWebpType;
 };
 
-const validateImageFile = async (file: File, maxBytes = ADMIN_CONFIG.maxUploadSize): Promise<void> => {
+const validateImageFile = async (
+  file: File,
+  maxBytes = ADMIN_CONFIG.maxUploadSize
+): Promise<void> => {
   if (!hasAllowedExtension(file.name)) {
     throw new Error('Unsupported file extension. Use JPG, PNG, or WebP.');
   }
@@ -188,7 +191,10 @@ export const uploadTeamImage = async (file: File, teamId?: string) => {
   }
 
   // Generate a unique filename with correct extension based on actual file type
-  const fileExt = fileToUpload.type === 'image/webp' ? 'webp' : file.name.split('.').pop()?.toLowerCase() ?? 'jpg';
+  const fileExt =
+    fileToUpload.type === 'image/webp'
+      ? 'webp'
+      : (file.name.split('.').pop()?.toLowerCase() ?? 'jpg');
   const fileName = `${uuidv4()}.${fileExt}`;
 
   // Create path based on team ID if available

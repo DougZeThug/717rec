@@ -2,11 +2,7 @@ import { Team } from '@/types';
 import { warnLog } from '@/utils/logger';
 
 import { haveTeamsPlayedBeforeSync } from './historyUtils';
-import {
-  getTierFromDivision,
-  isBothRecreational,
-  isExtremeTierDifference,
-} from './tierUtils';
+import { getTierFromDivision, isBothRecreational, isExtremeTierDifference } from './tierUtils';
 import {
   GraphFeasibilityResult,
   RelaxationLevel,

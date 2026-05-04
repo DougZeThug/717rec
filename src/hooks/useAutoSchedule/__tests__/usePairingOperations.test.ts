@@ -286,7 +286,8 @@ describe('usePairingOperations', () => {
     expect(mockErrorLog).toHaveBeenCalled();
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({
-        description: 'An unexpected error occurred while generating the schedule. Please try again.',
+        description:
+          'An unexpected error occurred while generating the schedule. Please try again.',
         variant: 'destructive',
       })
     );

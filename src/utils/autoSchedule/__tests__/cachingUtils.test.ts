@@ -5,9 +5,9 @@ import { Team } from '@/types';
 import {
   clearCompatibilityCache,
   clearMatchHistoryCache,
-  getCacheKey,
   getCachedCompatibilityScore,
   getCachedMatchHistory,
+  getCacheKey,
 } from '../cachingUtils';
 
 function makeTeam(id: string): Team {

@@ -19,7 +19,12 @@ vi.mock('@/components/admin/auto-schedule/tabs/ExportTab', () => ({
 
 vi.mock('@/hooks/useSeasonalTheme', () => ({
   useSeasonalTheme: () => ({ isWinterTheme: false }),
-  useSeasonalThemeBase: () => ({ isWinterTheme: false, isDark: true, shouldApplyWinterBase: false, winterClass: '' }),
+  useSeasonalThemeBase: () => ({
+    isWinterTheme: false,
+    isDark: true,
+    shouldApplyWinterBase: false,
+    winterClass: '',
+  }),
 }));
 
 describe('ScheduleWorkflowTabs', () => {
@@ -58,7 +63,9 @@ describe('ScheduleWorkflowTabs', () => {
 
     await user.click(screen.getByRole('tab', { name: '2. Matches' }));
 
-    rerender(<ScheduleWorkflowTabs {...baseProps} activeTab="pairings" setActiveTab={setActiveTab} />);
+    rerender(
+      <ScheduleWorkflowTabs {...baseProps} activeTab="pairings" setActiveTab={setActiveTab} />
+    );
     await user.click(screen.getByRole('tab', { name: '3. Export' }));
 
     expect(setActiveTab).toHaveBeenCalledWith('pairings');

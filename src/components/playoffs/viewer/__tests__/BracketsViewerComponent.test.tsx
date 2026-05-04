@@ -23,7 +23,10 @@ vi.mock('@/components/playoffs/viewer/useBracketsViewerScript', () => ({
 }));
 
 vi.mock('@/components/playoffs/viewer/useBracketsViewerRenderer', () => ({
-  useBracketsViewerRenderer: (opts: { onMatchClicked?: (match: MockMatch) => void; [key: string]: unknown }) => {
+  useBracketsViewerRenderer: (opts: {
+    onMatchClicked?: (match: MockMatch) => void;
+    [key: string]: unknown;
+  }) => {
     capturedOnMatchClicked = opts.onMatchClicked ?? null;
     return {
       isInitialized: mockIsInitialized,
@@ -71,12 +74,15 @@ vi.mock('@/components/ui/loading-state', () => ({
 
 // ─── Import after mocks ───────────────────────────────────────────────────────
 
-import { BracketsViewerComponent } from '../BracketsViewerComponent';
 import { PlayoffBracket, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
+
+import { BracketsViewerComponent } from '../BracketsViewerComponent';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const makeBracket = (overrides: Partial<PlayoffBracket> = {}): PlayoffBracket & {
+const makeBracket = (
+  overrides: Partial<PlayoffBracket> = {}
+): PlayoffBracket & {
   bracket_data?: import('brackets-memory-db').InMemoryDatabase['data'];
 } => ({
   id: 'bracket-1',
@@ -115,7 +121,7 @@ describe('BracketsViewerComponent', () => {
         <BracketsViewerComponent
           bracket={{ ...makeBracket(), id: '' } as unknown as PlayoffBracket}
           teams={teams}
-        />,
+        />
       );
       expect(screen.getByText('Cannot render bracket: Invalid data')).toBeInTheDocument();
     });
@@ -144,7 +150,7 @@ describe('BracketsViewerComponent', () => {
     it('renders the bracket region with accessible aria-label', () => {
       render(<BracketsViewerComponent bracket={makeBracket()} teams={teams} />);
       expect(
-        screen.getByRole('region', { name: /Playoff Bracket: Championship/i }),
+        screen.getByRole('region', { name: /Playoff Bracket: Championship/i })
       ).toBeInTheDocument();
     });
 
@@ -178,7 +184,7 @@ describe('BracketsViewerComponent', () => {
           bracket={makeBracket()}
           teams={teams}
           onMatchClick={mockOnMatchClick}
-        />,
+        />
       );
 
       act(() => {
@@ -197,7 +203,7 @@ describe('BracketsViewerComponent', () => {
           bracket={bmBracket}
           teams={teams}
           onMatchClick={mockOnMatchClick}
-        />,
+        />
       );
 
       act(() => {
@@ -217,7 +223,7 @@ describe('BracketsViewerComponent', () => {
           bracket={makeBracket({ uses_brackets_manager: false })}
           teams={teams}
           onMatchClick={mockOnMatchClick}
-        />,
+        />
       );
 
       act(() => {
@@ -236,7 +242,7 @@ describe('BracketsViewerComponent', () => {
           bracket={makeBracket({ uses_brackets_manager: false })}
           teams={teams}
           onMatchClick={mockOnMatchClick}
-        />,
+        />
       );
 
       act(() => {
@@ -250,13 +256,7 @@ describe('BracketsViewerComponent', () => {
   describe('BracketsManagerMatchEditor lifecycle', () => {
     it('closes editor and clears matchId when onClose is called', async () => {
       const bmBracket = makeBracket({ uses_brackets_manager: true });
-      render(
-        <BracketsViewerComponent
-          bracket={bmBracket}
-          teams={teams}
-          onMatchClick={vi.fn()}
-        />,
-      );
+      render(<BracketsViewerComponent bracket={bmBracket} teams={teams} onMatchClick={vi.fn()} />);
 
       // Open the editor
       act(() => {

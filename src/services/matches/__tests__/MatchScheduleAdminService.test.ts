@@ -11,7 +11,10 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(), matchLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
+  matchLog: vi.fn(),
 }));
 
 vi.mock('@/utils/timezone', () => ({
@@ -27,11 +30,18 @@ import { fetchMatchesForAdmin, fetchScheduleMatches } from '../MatchScheduleAdmi
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'query failed') => ({
-  message: msg, code: '42P01', details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 const makeMatch = (id = 'match-1') => ({
-  id, team1_id: 'team-1', team2_id: 'team-2', date: '2026-04-17T18:00:00Z',
+  id,
+  team1_id: 'team-1',
+  team2_id: 'team-2',
+  date: '2026-04-17T18:00:00Z',
 });
 
 // ─── fetchMatchesForAdmin ─────────────────────────────────────────────────────
@@ -101,12 +111,18 @@ describe('fetchScheduleMatches', () => {
     mockFrom.mockImplementation((table: string) => {
       if (table === 'seasons') {
         return {
-          select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { id: 'season-1' }, error: null }) }) }),
+          select: () => ({
+            eq: () => ({
+              single: () => Promise.resolve({ data: { id: 'season-1' }, error: null }),
+            }),
+          }),
         };
       }
       // matches
       return {
-        select: () => ({ eq: () => ({ order: () => Promise.resolve({ data: [makeMatch()], error: null }) }) }),
+        select: () => ({
+          eq: () => ({ order: () => Promise.resolve({ data: [makeMatch()], error: null }) }),
+        }),
       };
     });
     const result = await fetchScheduleMatches();
@@ -115,7 +131,9 @@ describe('fetchScheduleMatches', () => {
 
   it('returns empty array when no active season', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }),
+      select: () => ({
+        eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }),
+      }),
     });
     expect(await fetchScheduleMatches()).toEqual([]);
   });
@@ -124,11 +142,17 @@ describe('fetchScheduleMatches', () => {
     mockFrom.mockImplementation((table: string) => {
       if (table === 'seasons') {
         return {
-          select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { id: 'season-1' }, error: null }) }) }),
+          select: () => ({
+            eq: () => ({
+              single: () => Promise.resolve({ data: { id: 'season-1' }, error: null }),
+            }),
+          }),
         };
       }
       return {
-        select: () => ({ eq: () => ({ order: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+        select: () => ({
+          eq: () => ({ order: () => Promise.resolve({ data: null, error: pgError() }) }),
+        }),
       };
     });
     await expect(fetchScheduleMatches()).rejects.toThrow(DatabaseError);

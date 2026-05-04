@@ -14,21 +14,88 @@ vi.mock('@/hooks/useMessageBoard', () => ({ useMessageBoard: () => mockUseMessag
 vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => mockUseAuth() }));
 vi.mock('@/hooks/useToast', () => ({ toast: (...args: unknown[]) => mockToast(...args) }));
 
-vi.mock('@/components/layout/PageLayout', () => ({ default: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
-vi.mock('@/components/layout/PageHeader', () => ({ default: ({ title }: { title: React.ReactNode }) => <h1>{title}</h1> }));
-vi.mock('@/components/transitions/PageTransition', () => ({ default: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
-vi.mock('@/components/message-board/MessageFilterBar', () => ({ default: ({ onFilterChange, onRefresh }: { onFilterChange: (value: string) => void; onRefresh: () => Promise<void> }) => <><button onClick={() => onFilterChange('announcements')}>Filter Announcements</button><button onClick={() => { onRefresh(); }}>Refresh Messages</button></> }));
-vi.mock('@/components/message-board/MessageFeed', () => ({ default: ({ messages, isLoading, error }: { messages: Array<{ id: string; content: string }>; isLoading: boolean; error: string | null }) => { if (isLoading) return <p>Loading messages...</p>; if (error) return <p>{error}</p>; if (messages.length === 0) return <p>No Messages Yet</p>; return <ul>{messages.map((message) => <li key={message.id}>{message.content}</li>)}</ul>; } }));
-vi.mock('@/components/message-board/MessageInput', () => ({ default: ({ onSend }: { onSend: (content: string) => Promise<void> }) => <button onClick={async () => await onSend('Hello from test')}>Send Message</button> }));
+vi.mock('@/components/layout/PageLayout', () => ({
+  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
+vi.mock('@/components/layout/PageHeader', () => ({
+  default: ({ title }: { title: React.ReactNode }) => <h1>{title}</h1>,
+}));
+vi.mock('@/components/transitions/PageTransition', () => ({
+  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
+vi.mock('@/components/message-board/MessageFilterBar', () => ({
+  default: ({
+    onFilterChange,
+    onRefresh,
+  }: {
+    onFilterChange: (value: string) => void;
+    onRefresh: () => Promise<void>;
+  }) => (
+    <>
+      <button onClick={() => onFilterChange('announcements')}>Filter Announcements</button>
+      <button
+        onClick={() => {
+          onRefresh();
+        }}
+      >
+        Refresh Messages
+      </button>
+    </>
+  ),
+}));
+vi.mock('@/components/message-board/MessageFeed', () => ({
+  default: ({
+    messages,
+    isLoading,
+    error,
+  }: {
+    messages: Array<{ id: string; content: string }>;
+    isLoading: boolean;
+    error: string | null;
+  }) => {
+    if (isLoading) return <p>Loading messages...</p>;
+    if (error) return <p>{error}</p>;
+    if (messages.length === 0) return <p>No Messages Yet</p>;
+    return (
+      <ul>
+        {messages.map((message) => (
+          <li key={message.id}>{message.content}</li>
+        ))}
+      </ul>
+    );
+  },
+}));
+vi.mock('@/components/message-board/MessageInput', () => ({
+  default: ({ onSend }: { onSend: (content: string) => Promise<void> }) => (
+    <button onClick={async () => await onSend('Hello from test')}>Send Message</button>
+  ),
+}));
 vi.mock('@/components/message-board/LoginPrompt', () => ({ default: () => <p>Please log in</p> }));
 
-const createTestQueryClient = () => new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-const renderPage = () => render(<QueryClientProvider client={createTestQueryClient()}><MemoryRouter><MessageBoard /></MemoryRouter></QueryClientProvider>);
+const createTestQueryClient = () =>
+  new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+const renderPage = () =>
+  render(
+    <QueryClientProvider client={createTestQueryClient()}>
+      <MemoryRouter>
+        <MessageBoard />
+      </MemoryRouter>
+    </QueryClientProvider>
+  );
 
 const baseMessageBoardState = {
-  messages: [], isLoading: false, error: null,
-  postMessage: vi.fn().mockResolvedValue(undefined), editMessage: vi.fn().mockResolvedValue(undefined), deleteMessage: vi.fn().mockResolvedValue(undefined),
-  hasMore: false, loadingMore: false, loadMoreMessages: vi.fn(), refreshMessages: vi.fn().mockResolvedValue(undefined), filterOptions: { type: 'all' }, setFilter: vi.fn(),
+  messages: [],
+  isLoading: false,
+  error: null,
+  postMessage: vi.fn().mockResolvedValue(undefined),
+  editMessage: vi.fn().mockResolvedValue(undefined),
+  deleteMessage: vi.fn().mockResolvedValue(undefined),
+  hasMore: false,
+  loadingMore: false,
+  loadMoreMessages: vi.fn(),
+  refreshMessages: vi.fn().mockResolvedValue(undefined),
+  filterOptions: { type: 'all' },
+  setFilter: vi.fn(),
 };
 
 describe('MessageBoard page', () => {
@@ -50,13 +117,19 @@ describe('MessageBoard page', () => {
   });
 
   it('shows success state with messages', () => {
-    mockUseMessageBoard.mockReturnValue({ ...baseMessageBoardState, messages: [{ id: 'm1', content: 'League update posted' }] });
+    mockUseMessageBoard.mockReturnValue({
+      ...baseMessageBoardState,
+      messages: [{ id: 'm1', content: 'League update posted' }],
+    });
     renderPage();
     expect(screen.getByText('League update posted')).toBeInTheDocument();
   });
 
   it('shows error fallback when message load fails', () => {
-    mockUseMessageBoard.mockReturnValue({ ...baseMessageBoardState, error: 'Unable to load messages' });
+    mockUseMessageBoard.mockReturnValue({
+      ...baseMessageBoardState,
+      error: 'Unable to load messages',
+    });
     renderPage();
     expect(screen.getByText('Unable to load messages')).toBeInTheDocument();
   });

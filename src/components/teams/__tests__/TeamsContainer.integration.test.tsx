@@ -32,12 +32,24 @@ vi.mock('@/utils/teamGrouping', () => ({
 }));
 vi.mock('../TeamList', () => ({
   TeamList: ({ teams, isLoading }: TeamListMockProps) => (
-    <div>{isLoading ? 'Loading teams...' : teams.length ? teams.map((t) => t.name).join(', ') : 'No teams yet'}</div>
+    <div>
+      {isLoading
+        ? 'Loading teams...'
+        : teams.length
+          ? teams.map((t) => t.name).join(', ')
+          : 'No teams yet'}
+    </div>
   ),
 }));
 vi.mock('../TeamsByDivision', () => ({
   TeamsByDivision: ({ teamsByDivision, isLoading }: TeamsByDivisionMockProps) => (
-    <div>{isLoading ? 'Loading grouped teams...' : Object.keys(teamsByDivision).length ? 'Grouped teams loaded' : 'No grouped teams'}</div>
+    <div>
+      {isLoading
+        ? 'Loading grouped teams...'
+        : Object.keys(teamsByDivision).length
+          ? 'Grouped teams loaded'
+          : 'No grouped teams'}
+    </div>
   ),
 }));
 

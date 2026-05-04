@@ -66,9 +66,7 @@ describe('useScoreSubmissions', () => {
     (fetchScoreSubmissions as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('DB error'));
     const { result } = renderHook(() => useScoreSubmissions());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ variant: 'destructive' })
-    );
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
     expect(result.current.submissions).toEqual([]);
   });
 
@@ -117,9 +115,7 @@ describe('useScoreSubmissions', () => {
     });
 
     expect(result.current.submissions).toHaveLength(2);
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ variant: 'destructive' })
-    );
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
   });
 
   it('refetch re-calls the service', async () => {

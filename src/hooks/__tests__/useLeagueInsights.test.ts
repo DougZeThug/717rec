@@ -1,8 +1,9 @@
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useLeagueInsights } from '../useLeagueInsights';
 import type { Ranking } from '@/types';
+
+import { useLeagueInsights } from '../useLeagueInsights';
 
 vi.mock('@/hooks/useTeamRankings', () => ({
   useTeamRankings: vi.fn(),
@@ -104,13 +105,15 @@ describe('useLeagueInsights', () => {
       rankings: [makeRanking('a', 90, 3, 1)],
       isLoading: false,
     });
-    (useWeeklyPowerScoreTrends as ReturnType<typeof vi.fn>).mockReturnValueOnce({
-      data: { trends: [{ teamId: 'a', teamName: 'Team a', delta: 5.5, logoUrl: null }] },
-      isLoading: false,
-    }).mockReturnValueOnce({
-      data: undefined,
-      isLoading: false,
-    });
+    (useWeeklyPowerScoreTrends as ReturnType<typeof vi.fn>)
+      .mockReturnValueOnce({
+        data: { trends: [{ teamId: 'a', teamName: 'Team a', delta: 5.5, logoUrl: null }] },
+        isLoading: false,
+      })
+      .mockReturnValueOnce({
+        data: undefined,
+        isLoading: false,
+      });
     const { result } = renderHook(() => useLeagueInsights());
     const mostImproved = result.current.topPerformers.find((p) => p.category === 'Most Improved');
     expect(mostImproved).toBeDefined();

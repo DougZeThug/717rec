@@ -9,18 +9,36 @@ import Help from '../Help';
 const mockUseAdminAccess = vi.fn();
 const mockHelpState = vi.fn();
 
-vi.mock('react-helmet-async', () => ({ Helmet: ({ children }: { children: React.ReactNode }) => children }));
+vi.mock('react-helmet-async', () => ({
+  Helmet: ({ children }: { children: React.ReactNode }) => children,
+}));
 vi.mock('@/hooks/useAdminAccess', () => ({ useAdminAccess: () => mockUseAdminAccess() }));
 vi.mock('@/components/help/HelpQuickLinks', () => ({ HelpQuickLinks: () => <p>Quick Links</p> }));
 vi.mock('@/components/help/HelpAdminCTA', () => ({ HelpAdminCTA: () => <p>Admin CTA</p> }));
-vi.mock('@/components/help/sections/WelcomeSection', () => ({ WelcomeSection: () => <p>Welcome Section</p> }));
-vi.mock('@/components/help/sections/StandingsSection', () => ({ StandingsSection: () => <p>Standings Section</p> }));
-vi.mock('@/components/help/sections/ScheduleSection', () => ({ ScheduleSection: () => <p>Schedule Section</p> }));
-vi.mock('@/components/help/sections/TeamsSection', () => ({ TeamsSection: () => <p>Teams Section</p> }));
-vi.mock('@/components/help/sections/PlayoffsSection', () => ({ PlayoffsSection: () => <p>Playoffs Section</p> }));
-vi.mock('@/components/help/sections/MessageBoardSection', () => ({ MessageBoardSection: () => <p>Message Board Section</p> }));
-vi.mock('@/components/help/sections/HistorySection', () => ({ HistorySection: () => <p>History Section</p> }));
-vi.mock('@/components/help/sections/AccessibilitySection', () => ({ AccessibilitySection: () => <p>Accessibility Section</p> }));
+vi.mock('@/components/help/sections/WelcomeSection', () => ({
+  WelcomeSection: () => <p>Welcome Section</p>,
+}));
+vi.mock('@/components/help/sections/StandingsSection', () => ({
+  StandingsSection: () => <p>Standings Section</p>,
+}));
+vi.mock('@/components/help/sections/ScheduleSection', () => ({
+  ScheduleSection: () => <p>Schedule Section</p>,
+}));
+vi.mock('@/components/help/sections/TeamsSection', () => ({
+  TeamsSection: () => <p>Teams Section</p>,
+}));
+vi.mock('@/components/help/sections/PlayoffsSection', () => ({
+  PlayoffsSection: () => <p>Playoffs Section</p>,
+}));
+vi.mock('@/components/help/sections/MessageBoardSection', () => ({
+  MessageBoardSection: () => <p>Message Board Section</p>,
+}));
+vi.mock('@/components/help/sections/HistorySection', () => ({
+  HistorySection: () => <p>History Section</p>,
+}));
+vi.mock('@/components/help/sections/AccessibilitySection', () => ({
+  AccessibilitySection: () => <p>Accessibility Section</p>,
+}));
 vi.mock('@/components/help/sections/FAQSection', () => ({ FAQSection: () => <p>FAQ Section</p> }));
 vi.mock('@/components/help/sections/admin/AdminSections', () => ({
   AdminSections: () => {
@@ -29,7 +47,9 @@ vi.mock('@/components/help/sections/admin/AdminSections', () => ({
     return <p>Admin Help</p>;
   },
 }));
-vi.mock('@/components/ui/accordion', () => ({ Accordion: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
+vi.mock('@/components/ui/accordion', () => ({
+  Accordion: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
 
 const createTestQueryClient = () =>
   new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });

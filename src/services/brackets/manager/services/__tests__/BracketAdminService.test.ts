@@ -26,8 +26,8 @@ vi.mock('@/utils/logger', () => ({
 
 import { BusinessLogicError } from '@/types/errors';
 
-import { BracketAdminService } from '../BracketAdminService';
 import type { SupabaseSqlStorage } from '../../SupabaseSqlStorage';
+import { BracketAdminService } from '../BracketAdminService';
 
 const updateEqChain = (result: { error: unknown }) => ({
   update: vi.fn(() => ({
@@ -44,7 +44,13 @@ describe('BracketAdminService', () => {
     const storage = {
       select: vi
         .fn()
-        .mockResolvedValueOnce({ id: 99, round_id: 10, status: 1, opponent1: { id: 501 }, opponent2: null })
+        .mockResolvedValueOnce({
+          id: 99,
+          round_id: 10,
+          status: 1,
+          opponent1: { id: 501 },
+          opponent2: null,
+        })
         .mockResolvedValueOnce({ id: 10, group_id: 20 })
         .mockResolvedValueOnce({ id: 20, number: 2 })
         .mockResolvedValueOnce({ id: 501, name: 'Team One' }),
@@ -74,7 +80,13 @@ describe('BracketAdminService', () => {
     const storage = {
       select: vi
         .fn()
-        .mockResolvedValueOnce({ id: 42, round_id: 200, status: 1, opponent1: { id: 9 }, opponent2: null })
+        .mockResolvedValueOnce({
+          id: 42,
+          round_id: 200,
+          status: 1,
+          opponent1: { id: 9 },
+          opponent2: null,
+        })
         .mockResolvedValueOnce(null),
     };
 

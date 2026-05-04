@@ -35,12 +35,9 @@ const _defaultScoreEntryState = {
 
 let mockScoreEntryData: typeof _defaultScoreEntryState = { ..._defaultScoreEntryState };
 
-vi.mock(
-  '@/components/admin/mass-score-entry/hooks/useScoreEntryData',
-  () => ({
-    useScoreEntryData: () => mockScoreEntryData,
-  }),
-);
+vi.mock('@/components/admin/mass-score-entry/hooks/useScoreEntryData', () => ({
+  useScoreEntryData: () => mockScoreEntryData,
+}));
 
 vi.mock('@/components/admin/mass-score-entry/MatchesTable', () => ({
   default: () => <div data-testid="matches-table" />,
@@ -97,9 +94,7 @@ describe('MassScoreEntryTool', () => {
 
       render(<MassScoreEntryTool />);
 
-      expect(
-        screen.getByRole('button', { name: /submit all changes/i }),
-      ).toBeDisabled();
+      expect(screen.getByRole('button', { name: /submit all changes/i })).toBeDisabled();
     });
 
     it('disables submit when edited match is invalid', () => {
@@ -110,9 +105,7 @@ describe('MassScoreEntryTool', () => {
 
       render(<MassScoreEntryTool />);
 
-      expect(
-        screen.getByRole('button', { name: /submit all changes/i }),
-      ).toBeDisabled();
+      expect(screen.getByRole('button', { name: /submit all changes/i })).toBeDisabled();
     });
 
     it('enables submit and shows count when there are valid edited matches', () => {
@@ -126,9 +119,7 @@ describe('MassScoreEntryTool', () => {
 
       render(<MassScoreEntryTool />);
 
-      expect(
-        screen.getByRole('button', { name: /submit \(2\) changes/i }),
-      ).toBeEnabled();
+      expect(screen.getByRole('button', { name: /submit \(2\) changes/i })).toBeEnabled();
     });
 
     it('disables submit when submitting is true', () => {

@@ -23,7 +23,9 @@ export async function adminToggleByeReady(
       if (!clearDownstream) {
         const downstream = await collectDownstreamChain(deps, matchId);
         if (downstream.length > 0) {
-          throw new BusinessLogicError('Cannot reopen completed match: downstream matches have been populated. Use "Reopen + Clear Downstream" option to cascade clear downstream matches.');
+          throw new BusinessLogicError(
+            'Cannot reopen completed match: downstream matches have been populated. Use "Reopen + Clear Downstream" option to cascade clear downstream matches.'
+          );
         }
       }
 
@@ -69,12 +71,21 @@ export async function adminToggleByeReady(
       }
       successLog(`Reopened completed BYE match ${matchId} to Ready`);
 
-      return { matchId, status: 2, statusName: 'Ready', message: clearDownstream ? 'Match reopened and downstream matches cleared' : 'Match reopened to Ready status' };
+      return {
+        matchId,
+        status: 2,
+        statusName: 'Ready',
+        message: clearDownstream
+          ? 'Match reopened and downstream matches cleared'
+          : 'Match reopened to Ready status',
+      };
     }
 
     if (makeReady) {
       if (!check.ok) {
-        throw new BusinessLogicError(`Cannot set to Ready: ${check.reason}. Match must be a Losers Bracket BYE match in Locked/Waiting status.`);
+        throw new BusinessLogicError(
+          `Cannot set to Ready: ${check.reason}. Match must be a Losers Bracket BYE match in Locked/Waiting status.`
+        );
       }
 
       const { error: readyError } = await supabase
@@ -85,12 +96,20 @@ export async function adminToggleByeReady(
         handleDatabaseError(readyError, `Failed to set match ${matchId} to Ready`);
       }
       successLog(`Admin unlocked BYE match ${matchId} to Ready`);
-      return { matchId, status: 2, statusName: 'Ready', message: 'Match unlocked to Ready status. You can now enter scores and advance the bracket.' };
+      return {
+        matchId,
+        status: 2,
+        statusName: 'Ready',
+        message:
+          'Match unlocked to Ready status. You can now enter scores and advance the bracket.',
+      };
     }
 
     if (!check.meta) throw new BusinessLogicError('Cannot revert: Match data unavailable');
     if (check.meta.status >= 4) {
-      throw new BusinessLogicError(`Cannot revert: Match is ${check.meta.currentStatusName}. Only Ready (2) or Running (3) matches can be reverted.`);
+      throw new BusinessLogicError(
+        `Cannot revert: Match is ${check.meta.currentStatusName}. Only Ready (2) or Running (3) matches can be reverted.`
+      );
     }
 
     const { error: waitingError } = await supabase
@@ -102,9 +121,17 @@ export async function adminToggleByeReady(
     }
     successLog(`Admin reverted BYE match ${matchId} to Waiting`);
 
-    return { matchId, status: 1, statusName: 'Waiting', message: 'Match reverted to Waiting status. Status toggle is available again.' };
+    return {
+      matchId,
+      status: 1,
+      statusName: 'Waiting',
+      message: 'Match reverted to Waiting status. Status toggle is available again.',
+    };
   } catch (error) {
     failureLog('Admin BYE toggle failed', error);
-    throw new BusinessLogicError(`Failed to toggle BYE match status: ${error instanceof Error ? error.message : 'Unknown error'}`, error);
+    throw new BusinessLogicError(
+      `Failed to toggle BYE match status: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error
+    );
   }
 }

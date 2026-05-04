@@ -11,7 +11,10 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(), matchLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
+  matchLog: vi.fn(),
 }));
 
 // Import after mocks
@@ -20,13 +23,22 @@ import { MatchCommentsService } from '../MatchCommentsService';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'query failed') => ({
-  message: msg, code: '42P01', details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 const makeComment = (overrides: Record<string, unknown> = {}) => ({
-  id: 'comment-1', match_id: 'match-1', user_id: 'user-1',
-  username: 'alice', team_name: 'Eagles', content: 'Good game!',
-  created_at: '2026-04-17T18:00:00Z', ...overrides,
+  id: 'comment-1',
+  match_id: 'match-1',
+  user_id: 'user-1',
+  username: 'alice',
+  team_name: 'Eagles',
+  content: 'Good game!',
+  created_at: '2026-04-17T18:00:00Z',
+  ...overrides,
 });
 
 // ─── fetchComments ────────────────────────────────────────────────────────────
@@ -36,7 +48,9 @@ describe('MatchCommentsService.fetchComments', () => {
 
   it('returns comments on success', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ order: () => Promise.resolve({ data: [makeComment()], error: null }) }) }),
+      select: () => ({
+        eq: () => ({ order: () => Promise.resolve({ data: [makeComment()], error: null }) }),
+      }),
     });
     const result = await MatchCommentsService.fetchComments('match-1');
     expect(result).toHaveLength(1);
@@ -53,7 +67,9 @@ describe('MatchCommentsService.fetchComments', () => {
 
   it('throws DatabaseError on Supabase error', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ order: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+      select: () => ({
+        eq: () => ({ order: () => Promise.resolve({ data: null, error: pgError() }) }),
+      }),
     });
     await expect(MatchCommentsService.fetchComments('match-1')).rejects.toThrow(DatabaseError);
   });
@@ -69,7 +85,9 @@ describe('MatchCommentsService.addComment', () => {
   it('returns the created comment on success', async () => {
     mockFrom.mockReturnValue({
       insert: () => ({
-        select: () => ({ single: () => Promise.resolve({ data: makeComment({ content: 'GG!' }), error: null }) }),
+        select: () => ({
+          single: () => Promise.resolve({ data: makeComment({ content: 'GG!' }), error: null }),
+        }),
       }),
     });
     const result = await MatchCommentsService.addComment('match-1', payload);
@@ -83,7 +101,9 @@ describe('MatchCommentsService.addComment', () => {
         select: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }),
       }),
     });
-    await expect(MatchCommentsService.addComment('match-1', payload)).rejects.toThrow(DatabaseError);
+    await expect(MatchCommentsService.addComment('match-1', payload)).rejects.toThrow(
+      DatabaseError
+    );
   });
 });
 
@@ -96,7 +116,9 @@ describe('MatchCommentsService.deleteComment', () => {
     mockFrom.mockReturnValue({
       delete: () => ({ eq: () => ({ eq: () => Promise.resolve({ error: null }) }) }),
     });
-    await expect(MatchCommentsService.deleteComment('comment-1', 'user-1')).resolves.toBeUndefined();
+    await expect(
+      MatchCommentsService.deleteComment('comment-1', 'user-1')
+    ).resolves.toBeUndefined();
     expect(mockFrom).toHaveBeenCalledWith('match_comments');
   });
 
@@ -104,7 +126,9 @@ describe('MatchCommentsService.deleteComment', () => {
     mockFrom.mockReturnValue({
       delete: () => ({ eq: () => ({ eq: () => Promise.resolve({ error: pgError() }) }) }),
     });
-    await expect(MatchCommentsService.deleteComment('comment-1', 'user-1')).rejects.toThrow(DatabaseError);
+    await expect(MatchCommentsService.deleteComment('comment-1', 'user-1')).rejects.toThrow(
+      DatabaseError
+    );
   });
 });
 
@@ -117,13 +141,19 @@ describe('MatchCommentsService.fetchCommentAuthorInfo', () => {
     mockFrom.mockImplementation((table: string) => {
       if (table === 'profiles') {
         return {
-          select: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve({ data: { username: 'alice' }, error: null }) }) }),
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () => Promise.resolve({ data: { username: 'alice' }, error: null }),
+            }),
+          }),
         };
       }
       // team_memberships
       return {
         select: () => ({
-          eq: () => ({ maybeSingle: () => Promise.resolve({ data: { team: { name: 'Eagles' } }, error: null }) }),
+          eq: () => ({
+            maybeSingle: () => Promise.resolve({ data: { team: { name: 'Eagles' } }, error: null }),
+          }),
         }),
       };
     });
@@ -135,7 +165,9 @@ describe('MatchCommentsService.fetchCommentAuthorInfo', () => {
 
   it('returns nulls when profile and membership are not found', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }) }),
+      select: () => ({
+        eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
+      }),
     });
     const result = await MatchCommentsService.fetchCommentAuthorInfo('user-1');
     expect(result.username).toBeNull();
@@ -146,13 +178,19 @@ describe('MatchCommentsService.fetchCommentAuthorInfo', () => {
     mockFrom.mockImplementation((table: string) => {
       if (table === 'profiles') {
         return {
-          select: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+          select: () => ({
+            eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: pgError() }) }),
+          }),
         };
       }
       return {
-        select: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }) }),
+        select: () => ({
+          eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
+        }),
       };
     });
-    await expect(MatchCommentsService.fetchCommentAuthorInfo('user-1')).rejects.toThrow(DatabaseError);
+    await expect(MatchCommentsService.fetchCommentAuthorInfo('user-1')).rejects.toThrow(
+      DatabaseError
+    );
   });
 });

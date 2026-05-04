@@ -1,8 +1,9 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useTeamRankings } from '../useTeamRankings';
 import type { Team } from '@/types';
+
+import { useTeamRankings } from '../useTeamRankings';
 
 vi.mock('@/hooks/rankings/usePreviousRankings', () => ({
   usePreviousRankings: vi.fn(),

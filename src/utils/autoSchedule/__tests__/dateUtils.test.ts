@@ -6,11 +6,7 @@ vi.mock('@/utils/logger', () => ({
   timezoneLog: vi.fn(),
 }));
 
-import {
-  createSafeScheduleDate,
-  normalizeScheduleDate,
-  validateScheduleDate,
-} from '../dateUtils';
+import { createSafeScheduleDate, normalizeScheduleDate, validateScheduleDate } from '../dateUtils';
 
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
 

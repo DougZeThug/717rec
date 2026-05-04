@@ -69,10 +69,7 @@ describe('useOptimisticScoreMutation', () => {
     });
 
     // Cache unchanged since bracketId is null
-    const data = queryClient.getQueryData<{ matches: unknown[] }>([
-      'bracket-data',
-      BRACKET_ID,
-    ]);
+    const data = queryClient.getQueryData<{ matches: unknown[] }>(['bracket-data', BRACKET_ID]);
     expect((data?.matches[0] as { opponent1_score: number }).opponent1_score).toBe(0);
   });
 
@@ -86,7 +83,9 @@ describe('useOptimisticScoreMutation', () => {
       result.current.applyOptimisticUpdate(MATCH_ID, 2, 1, 2, 1, 'team-a', 'team-b');
     });
 
-    const data = queryClient.getQueryData<{ matches: { opponent1_score: number; opponent2_score: number; status: number }[] }>(['bracket-data', BRACKET_ID]);
+    const data = queryClient.getQueryData<{
+      matches: { opponent1_score: number; opponent2_score: number; status: number }[];
+    }>(['bracket-data', BRACKET_ID]);
     expect(data?.matches[0].opponent1_score).toBe(2);
     expect(data?.matches[0].opponent2_score).toBe(1);
     expect(data?.matches[0].status).toBe(4); // completed in BM
@@ -102,7 +101,9 @@ describe('useOptimisticScoreMutation', () => {
       result.current.applyOptimisticUpdate(MATCH_ID, 2, 1, 2, 1, 'team-a', 'team-b');
     });
 
-    const data = queryClient.getQueryData<{ matches: { team1Score: number; team2Score: number; winnerId: string }[] }>(['bracket-data', BRACKET_ID]);
+    const data = queryClient.getQueryData<{
+      matches: { team1Score: number; team2Score: number; winnerId: string }[];
+    }>(['bracket-data', BRACKET_ID]);
     expect(data?.matches[0].team1Score).toBe(2);
     expect(data?.matches[0].team2Score).toBe(1);
     expect(data?.matches[0].winnerId).toBe('team-a'); // team1GameWins > team2GameWins
@@ -124,7 +125,10 @@ describe('useOptimisticScoreMutation', () => {
       result.current.rollback();
     });
 
-    const data = queryClient.getQueryData<{ matches: { opponent1_score: number | null }[] }>(['bracket-data', BRACKET_ID]);
+    const data = queryClient.getQueryData<{ matches: { opponent1_score: number | null }[] }>([
+      'bracket-data',
+      BRACKET_ID,
+    ]);
     expect(data?.matches[0].opponent1_score).toBe(5);
   });
 
@@ -146,7 +150,10 @@ describe('useOptimisticScoreMutation', () => {
       expect.objectContaining({ title: 'Update Failed', variant: 'destructive' })
     );
     // Cache should be restored
-    const data = queryClient.getQueryData<{ matches: { opponent1_score: number }[] }>(['bracket-data', BRACKET_ID]);
+    const data = queryClient.getQueryData<{ matches: { opponent1_score: number }[] }>([
+      'bracket-data',
+      BRACKET_ID,
+    ]);
     expect(data?.matches[0].opponent1_score).toBe(0);
   });
 
@@ -169,10 +176,15 @@ describe('useOptimisticScoreMutation', () => {
     });
 
     // Advance past the 15s timeout — no rollback toast should fire
-    act(() => { vi.advanceTimersByTime(20000); });
+    act(() => {
+      vi.advanceTimersByTime(20000);
+    });
 
     expect(mockToast).not.toHaveBeenCalled();
-    const data = queryClient.getQueryData<{ matches: { opponent1_score: number }[] }>(['bracket-data', BRACKET_ID]);
+    const data = queryClient.getQueryData<{ matches: { opponent1_score: number }[] }>([
+      'bracket-data',
+      BRACKET_ID,
+    ]);
     expect(data?.matches[0].opponent1_score).toBe(2); // still updated
   });
 
@@ -191,13 +203,18 @@ describe('useOptimisticScoreMutation', () => {
       result.current.applyOptimisticUpdate(MATCH_ID, 2, 1, 2, 1, 'team-a', 'team-b');
     });
 
-    act(() => { vi.advanceTimersByTime(15000); });
+    act(() => {
+      vi.advanceTimersByTime(15000);
+    });
 
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({ title: 'Update Timeout', variant: 'destructive' })
     );
     // Cache should be restored to original 0
-    const data = queryClient.getQueryData<{ matches: { opponent1_score: number }[] }>(['bracket-data', BRACKET_ID]);
+    const data = queryClient.getQueryData<{ matches: { opponent1_score: number }[] }>([
+      'bracket-data',
+      BRACKET_ID,
+    ]);
     expect(data?.matches[0].opponent1_score).toBe(0);
   });
 });

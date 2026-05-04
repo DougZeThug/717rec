@@ -65,18 +65,14 @@ describe('useAdminAccess', () => {
   });
 
   it('shows loading and denies access when authInitialized=false', () => {
-    (useAuth as ReturnType<typeof vi.fn>).mockReturnValue(
-      makeAuth({ authInitialized: false })
-    );
+    (useAuth as ReturnType<typeof vi.fn>).mockReturnValue(makeAuth({ authInitialized: false }));
     const { result } = renderHook(() => useAdminAccess());
     expect(result.current.isLoading).toBe(true);
     expect(result.current.isAdminAccessGranted).toBe(false);
   });
 
   it('shows loading when profile is still loading', () => {
-    (useAuth as ReturnType<typeof vi.fn>).mockReturnValue(
-      makeAuth({ isProfileLoading: true })
-    );
+    (useAuth as ReturnType<typeof vi.fn>).mockReturnValue(makeAuth({ isProfileLoading: true }));
     const { result } = renderHook(() => useAdminAccess());
     expect(result.current.isLoading).toBe(true);
   });
@@ -95,8 +91,6 @@ describe('useAdminAccess', () => {
     act(() => {
       result.current.revokeAdminAccess();
     });
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ variant: 'destructive' })
-    );
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
   });
 });

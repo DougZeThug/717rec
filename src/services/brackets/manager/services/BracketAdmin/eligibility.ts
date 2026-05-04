@@ -19,10 +19,16 @@ async function loadEligibilityContext(
   const matchData = (await deps.storage.select('match', matchId)) as StorageMatch | null;
   if (!matchData) return { reason: 'Match not found' };
 
-  const round = (await deps.storage.select('round', matchData.round_id)) as unknown as StorageRound | null;
+  const round = (await deps.storage.select(
+    'round',
+    matchData.round_id
+  )) as unknown as StorageRound | null;
   if (!round) return { reason: 'Round not found' };
 
-  const group = (await deps.storage.select('group', round.group_id)) as unknown as StorageGroup | null;
+  const group = (await deps.storage.select(
+    'group',
+    round.group_id
+  )) as unknown as StorageGroup | null;
   if (!group) return { reason: 'Group not found' };
 
   const opponent1Name = matchData.opponent1?.id
@@ -61,7 +67,8 @@ function buildEligibility(context: MatchEligibilityContext): ByeEligibilityResul
     opponent2Name,
   };
 
-  const isEligible = isLosers && exactlyOneReal && isByeSide && (lockedOrWaiting || isCompletedMatch);
+  const isEligible =
+    isLosers && exactlyOneReal && isByeSide && (lockedOrWaiting || isCompletedMatch);
   if (isEligible) return { ok: true, meta };
 
   const reasons: string[] = [];

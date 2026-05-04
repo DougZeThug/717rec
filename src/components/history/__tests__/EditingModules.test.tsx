@@ -1,10 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import SeasonAccordion from '../SeasonAccordion';
 import EditModeContainer from '../editing/EditModeContainer';
+import SeasonAccordion from '../SeasonAccordion';
 
 const {
   mockToast,
@@ -27,7 +27,9 @@ const {
 vi.mock('@/hooks/useToast', () => ({ toast: mockToast }));
 vi.mock('@/hooks/useAdminAccess', () => ({ useAdminAccess: () => mockUseAdminAccess() }));
 vi.mock('../editing/EditableDivisionPanel', () => ({
-  default: ({ divisionName }: { divisionName: string }) => <div data-testid={`division-${divisionName}`} />,
+  default: ({ divisionName }: { divisionName: string }) => (
+    <div data-testid={`division-${divisionName}`} />
+  ),
 }));
 vi.mock('../editing/AddDivisionButton', () => ({
   default: () => <div data-testid="add-division" />,

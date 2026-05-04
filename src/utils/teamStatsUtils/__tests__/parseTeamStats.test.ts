@@ -32,7 +32,12 @@ describe('parseTeamStats', () => {
     {
       label: 'invalid IDs and values become NaN',
       input: { wins: 'team-a', losses: 'N/A', game_wins: '-', game_losses: '---' },
-      expected: { wins: Number.NaN, losses: Number.NaN, gameWins: Number.NaN, gameLosses: Number.NaN },
+      expected: {
+        wins: Number.NaN,
+        losses: Number.NaN,
+        gameWins: Number.NaN,
+        gameLosses: Number.NaN,
+      },
     },
   ])('parses stats for $label', ({ input, expected }) => {
     const result = parseTeamStats(input);

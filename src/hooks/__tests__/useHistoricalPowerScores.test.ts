@@ -20,9 +20,7 @@ const createWrapper = () => {
 };
 
 const mockResponse = {
-  historicalScores: [
-    { team_id: 'team-1', power_scores: [{ date: '2026-01-01', score: 75.0 }] },
-  ],
+  historicalScores: [{ team_id: 'team-1', power_scores: [{ date: '2026-01-01', score: 75.0 }] }],
   previousScores: { 'team-1': 70.5 },
 };
 

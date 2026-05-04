@@ -1,8 +1,9 @@
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useMyNextMatch } from '../useMyNextMatch';
 import type { Match } from '@/types';
+
+import { useMyNextMatch } from '../useMyNextMatch';
 
 vi.mock('@/contexts/AuthContext', () => ({
   useAuth: vi.fn(),
@@ -17,8 +18,8 @@ vi.mock('@/hooks/useTeamMatches', () => ({
 }));
 
 import { useAuth } from '@/contexts/AuthContext';
-import { useTeamMembership } from '@/hooks/useTeamMembership';
 import { useTeamMatches } from '@/hooks/useTeamMatches';
+import { useTeamMembership } from '@/hooks/useTeamMembership';
 
 const mockUser = { id: 'user-1', email: 'user@example.com' };
 

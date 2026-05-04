@@ -3,11 +3,10 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, it, vi, beforeEach, beforeAll } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { HeroCard, HeroCardFormData } from '@/types/heroCard';
 
-import HeroCardsTab from '../HeroCardsTab';
 import {
   AdvancedSettingsSection,
   CallToActionSection,
@@ -17,9 +16,14 @@ import {
   HeroCardPreview,
   TargetingDisplaySection,
 } from '../form-sections';
+import HeroCardsTab from '../HeroCardsTab';
 
 beforeAll(() => {
-  function ResizeObserverCtor(this: { observe: () => undefined; unobserve: () => undefined; disconnect: () => undefined }) {
+  function ResizeObserverCtor(this: {
+    observe: () => undefined;
+    unobserve: () => undefined;
+    disconnect: () => undefined;
+  }) {
     this.observe = () => undefined;
     this.unobserve = () => undefined;
     this.disconnect = () => undefined;
@@ -64,15 +68,24 @@ vi.mock('@/hooks/useDivisions', () => ({
   useDivisions: () => ({ divisions: [{ id: 'd1', display_division: 'Alpha' }] }),
 }));
 vi.mock('@/services/HeroCardService', () => ({
-  HeroCardService: { fetchTeamsForChampions: vi.fn().mockResolvedValue([{ id: 'team1', name: 'Aces' }]) },
+  HeroCardService: {
+    fetchTeamsForChampions: vi.fn().mockResolvedValue([{ id: 'team1', name: 'Aces' }]),
+  },
 }));
-vi.mock('../TargetSelector', () => ({ TargetTypeSelector: () => <div />, TargetEntitySelector: () => <div /> }));
+vi.mock('../TargetSelector', () => ({
+  TargetTypeSelector: () => <div />,
+  TargetEntitySelector: () => <div />,
+}));
 vi.mock('@/hooks/useSeasonalTheme', () => ({
   useSeasonalTheme: () => ({ isHomepage: false, currentTheme: 'default' }),
   useSeasonalThemeBase: () => ({ isWinterTheme: false }),
 }));
 vi.mock('@/components/hero/HeroCard', () => ({
-  default: ({ card }: { card: HeroCard }) => <div data-testid="hero-preview">{card.title}|{card.subtitle ?? 'none'}</div>,
+  default: ({ card }: { card: HeroCard }) => (
+    <div data-testid="hero-preview">
+      {card.title}|{card.subtitle ?? 'none'}
+    </div>
+  ),
 }));
 
 const wrap = (ui: React.ReactElement) =>
@@ -122,11 +135,20 @@ describe('hero cards sections/views', () => {
     await userEvent.type(screen.getByLabelText('Button Text'), 'Go');
     expect(onChange).toHaveBeenCalledWith('cta_label', expect.any(String));
 
-    rerender(<TargetingDisplaySection formData={{ ...baseForm, card_type: 'event' }} onChange={onChange} />);
+    rerender(
+      <TargetingDisplaySection formData={{ ...baseForm, card_type: 'event' }} onChange={onChange} />
+    );
     await userEvent.type(screen.getByLabelText('Buy-in'), '$20');
     expect(onChange).toHaveBeenCalledWith('metadata', expect.any(String));
 
-    rerender(<AdvancedSettingsSection formData={baseForm} onChange={onChange} isOpen onOpenChange={vi.fn()} />);
+    rerender(
+      <AdvancedSettingsSection
+        formData={baseForm}
+        onChange={onChange}
+        isOpen
+        onOpenChange={vi.fn()}
+      />
+    );
     await userEvent.type(screen.getByLabelText('Icon Name (raw)'), 'Star');
     expect(onChange).toHaveBeenCalledWith('icon_name', expect.any(String));
   });

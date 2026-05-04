@@ -23,14 +23,7 @@ function makeTeam(id: string, divisionName = 'Competitive'): Team {
 describe('findBestOpponent', () => {
   it('returns null when no valid candidates exist', () => {
     const team = makeTeam('a');
-    const result = findBestOpponent(
-      team,
-      [],
-      new Set(),
-      new Set(),
-      new Map(),
-      1
-    );
+    const result = findBestOpponent(team, [], new Set(), new Set(), new Map(), 1);
     expect(result).toBeNull();
   });
 
@@ -50,14 +43,7 @@ describe('findBestOpponent', () => {
   it('returns the only valid candidate', () => {
     const team = makeTeam('a');
     const opp = makeTeam('b');
-    const result = findBestOpponent(
-      team,
-      [opp],
-      new Set(),
-      new Set(),
-      new Map(),
-      1
-    );
+    const result = findBestOpponent(team, [opp], new Set(), new Set(), new Map(), 1);
     expect(result?.id).toBe('b');
   });
 
@@ -81,15 +67,7 @@ describe('findBestOpponent', () => {
     const team = makeTeam('a');
     const opp = makeTeam('b');
     const played = new Set([pairKey('a', 'b')]);
-    const result = findBestOpponent(
-      team,
-      [opp],
-      played,
-      new Set(),
-      new Map(),
-      1,
-      0
-    );
+    const result = findBestOpponent(team, [opp], played, new Set(), new Map(), 1, 0);
     expect(result).toBeNull();
   });
 
@@ -114,14 +92,7 @@ describe('findBestOpponent', () => {
     const team = makeTeam('z', 'Competitive');
     const alpha = makeTeam('apple', 'Competitive');
     const beta = makeTeam('banana', 'Competitive');
-    const result = findBestOpponent(
-      team,
-      [beta, alpha],
-      new Set(),
-      new Set(),
-      new Map(),
-      1
-    );
+    const result = findBestOpponent(team, [beta, alpha], new Set(), new Set(), new Map(), 1);
     expect(result?.id).toBe('apple');
   });
 });

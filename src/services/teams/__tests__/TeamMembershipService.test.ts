@@ -17,7 +17,10 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(), teamLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
+  teamLog: vi.fn(),
 }));
 
 // Import after mocks
@@ -33,14 +36,32 @@ import {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'query failed') => ({
-  message: msg, code: '42P01', details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 const makeMembershipRow = () => ({
-  id: 'mem-1', user_id: 'user-1', team_id: 'team-1',
-  joined_at: '2026-01-01T00:00:00Z', is_approved: true,
-  approved_by: 'admin-1', approved_at: '2026-01-02T00:00:00Z',
-  team: { id: 'team-1', name: 'Eagles', logo_url: null, image_url: 'img.png', division_id: 'd1', wins: 0, losses: 0, game_wins: 0, game_losses: 0 },
+  id: 'mem-1',
+  user_id: 'user-1',
+  team_id: 'team-1',
+  joined_at: '2026-01-01T00:00:00Z',
+  is_approved: true,
+  approved_by: 'admin-1',
+  approved_at: '2026-01-02T00:00:00Z',
+  team: {
+    id: 'team-1',
+    name: 'Eagles',
+    logo_url: null,
+    image_url: 'img.png',
+    division_id: 'd1',
+    wins: 0,
+    losses: 0,
+    game_wins: 0,
+    game_losses: 0,
+  },
 });
 
 // ─── fetchTeamMembership ──────────────────────────────────────────────────────
@@ -50,7 +71,11 @@ describe('fetchTeamMembership', () => {
 
   it('returns membership when found', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve({ data: makeMembershipRow(), error: null }) }) }),
+      select: () => ({
+        eq: () => ({
+          maybeSingle: () => Promise.resolve({ data: makeMembershipRow(), error: null }),
+        }),
+      }),
     });
     const result = await fetchTeamMembership('user-1');
     expect(result).toMatchObject({ team_id: 'team-1' });
@@ -58,14 +83,18 @@ describe('fetchTeamMembership', () => {
 
   it('returns null when no membership', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }) }),
+      select: () => ({
+        eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
+      }),
     });
     expect(await fetchTeamMembership('user-1')).toBeNull();
   });
 
   it('throws DatabaseError on Supabase error', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+      select: () => ({
+        eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: pgError() }) }),
+      }),
     });
     await expect(fetchTeamMembership('user-1')).rejects.toThrow(DatabaseError);
   });
@@ -158,7 +187,9 @@ describe('fetchPendingMembershipCount', () => {
 describe('fetchPendingMembershipsForAdmin', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  const memberships = [{ id: 'mem-1', user_id: 'u1', team_id: 't1', joined_at: '2026-01-01', is_approved: false }];
+  const memberships = [
+    { id: 'mem-1', user_id: 'u1', team_id: 't1', joined_at: '2026-01-01', is_approved: false },
+  ];
   const profiles = [{ id: 'u1', username: 'alice', full_name: 'Alice', avatar_url: null }];
   const teams = [{ id: 't1', name: 'Eagles', logo_url: null, image_url: null }];
 
@@ -169,7 +200,9 @@ describe('fetchPendingMembershipsForAdmin', () => {
         callCount++;
         if (callCount === 1) {
           return {
-            select: () => ({ eq: () => ({ order: () => Promise.resolve({ data: memberships, error: null }) }) }),
+            select: () => ({
+              eq: () => ({ order: () => Promise.resolve({ data: memberships, error: null }) }),
+            }),
           };
         }
       }

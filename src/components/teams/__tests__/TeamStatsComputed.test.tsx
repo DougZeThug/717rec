@@ -23,9 +23,9 @@ vi.mock('@/hooks/useTeamSeasonBreakdown', () => ({
   useTeamSeasonBreakdown: (teamId: string) => mockAdvanced(teamId),
 }));
 
-import TeamStats from '../TeamStats';
-import TeamReportCard from '../TeamReportCard';
 import TeamAdvancedStatsSection from '../TeamAdvancedStatsSection';
+import TeamReportCard from '../TeamReportCard';
+import TeamStats from '../TeamStats';
 
 describe('Computed stats rendering', () => {
   it('renders zero-match values correctly', () => {
@@ -39,7 +39,7 @@ describe('Computed stats rendering', () => {
         gameWinPercentage="0.0"
         sos={0}
         powerScore={0}
-      />,
+      />
     );
     expect(screen.getAllByText('0-0').length).toBeGreaterThan(0);
     expect(screen.getAllByText('0.0%').length).toBeGreaterThan(0);

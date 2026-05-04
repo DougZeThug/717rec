@@ -74,7 +74,9 @@ describe('useScoreSubmission', () => {
 
   it('handles success branch and refreshes matches', async () => {
     const fetchMatches = vi.fn().mockResolvedValue([]);
-    const { result } = renderHook(() => useScoreSubmission([makeMatch()], fetchMatches), { wrapper });
+    const { result } = renderHook(() => useScoreSubmission([makeMatch()], fetchMatches), {
+      wrapper,
+    });
 
     await act(async () => {
       await result.current.handleSubmitAll();
@@ -90,10 +92,13 @@ describe('useScoreSubmission', () => {
     mockUpdateMatch.mockResolvedValueOnce(true);
     const fetchMatches = vi.fn().mockResolvedValue([]);
 
-    const { result, rerender } = renderHook(({ matches }) => useScoreSubmission(matches, fetchMatches), {
-      wrapper,
-      initialProps: { matches: [makeMatch()] },
-    });
+    const { result, rerender } = renderHook(
+      ({ matches }) => useScoreSubmission(matches, fetchMatches),
+      {
+        wrapper,
+        initialProps: { matches: [makeMatch()] },
+      }
+    );
 
     await act(async () => {
       await result.current.handleSubmitAll();
@@ -115,7 +120,9 @@ describe('useScoreSubmission', () => {
     const fetchMatches = vi.fn().mockResolvedValue([]);
     mockValidateMatch.mockReturnValueOnce({ isValid: false });
 
-    const { result } = renderHook(() => useScoreSubmission([makeMatch()], fetchMatches), { wrapper });
+    const { result } = renderHook(() => useScoreSubmission([makeMatch()], fetchMatches), {
+      wrapper,
+    });
 
     await act(async () => {
       await result.current.handleSubmitAll();

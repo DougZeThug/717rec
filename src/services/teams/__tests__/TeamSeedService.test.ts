@@ -15,7 +15,10 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(), teamLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
+  teamLog: vi.fn(),
 }));
 
 // Import after mocks
@@ -24,7 +27,11 @@ import { bulkUpdateTeamSeeds, resetDivisionSeeds, updateTeamSeed } from '../Team
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'rpc failed') => ({
-  message: msg, code: '42P01', details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 // ─── updateTeamSeed ───────────────────────────────────────────────────────────
@@ -56,7 +63,10 @@ describe('updateTeamSeed', () => {
 describe('bulkUpdateTeamSeeds', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  const updates = [{ teamId: 'team-1', seed: 1 }, { teamId: 'team-2', seed: 2 }];
+  const updates = [
+    { teamId: 'team-1', seed: 1 },
+    { teamId: 'team-2', seed: 2 },
+  ];
 
   it('calls batch_update_team_seeds RPC and returns results', async () => {
     mockRpc.mockResolvedValue({ data: { results: [{ ok: true }] }, error: null });

@@ -1,8 +1,9 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useMatchManagement } from '../useMatchManagement';
 import type { Match } from '@/types';
+
+import { useMatchManagement } from '../useMatchManagement';
 
 const mockHandleCreateMatch = vi.fn();
 const mockSetIsFormOpen = vi.fn();
@@ -57,10 +58,9 @@ describe('useMatchManagement', () => {
 
   it('updates matches when initialMatches prop changes', () => {
     const initial = [makeMatch('m-1')];
-    const { result, rerender } = renderHook(
-      ({ matches }) => useMatchManagement(matches),
-      { initialProps: { matches: initial } }
-    );
+    const { result, rerender } = renderHook(({ matches }) => useMatchManagement(matches), {
+      initialProps: { matches: initial },
+    });
     expect(result.current.matches).toHaveLength(1);
 
     const updated = [makeMatch('m-1'), makeMatch('m-2')];
@@ -97,13 +97,17 @@ describe('useMatchManagement', () => {
 
   it('exposes the setIsFormOpen function from sub-hook', () => {
     const { result } = renderHook(() => useMatchManagement([]));
-    act(() => { result.current.setIsFormOpen(true); });
+    act(() => {
+      result.current.setIsFormOpen(true);
+    });
     expect(mockSetIsFormOpen).toHaveBeenCalledWith(true);
   });
 
   it('exposes handleCreateMatch from sub-hook', async () => {
     const { result } = renderHook(() => useMatchManagement([]));
-    await act(async () => { await result.current.handleCreateMatch({} as unknown as Omit<Match, 'id'>, []); });
+    await act(async () => {
+      await result.current.handleCreateMatch({} as unknown as Omit<Match, 'id'>, []);
+    });
     expect(mockHandleCreateMatch).toHaveBeenCalled();
   });
 });

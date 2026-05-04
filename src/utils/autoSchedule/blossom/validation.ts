@@ -3,11 +3,7 @@ import { TeamPairing } from '@/types/autoSchedule';
 import { errorLog, warnLog } from '@/utils/logger';
 
 import { haveTeamsPlayedBeforeSync } from './historyUtils';
-import {
-  getTierFromDivision,
-  isBothRecreational,
-  isExtremeTierDifference,
-} from './tierUtils';
+import { getTierFromDivision, isBothRecreational, isExtremeTierDifference } from './tierUtils';
 import { TeamPairingConfig } from './types';
 
 /**

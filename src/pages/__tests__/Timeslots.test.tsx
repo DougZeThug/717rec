@@ -12,10 +12,14 @@ const mockUseTimeslots = vi.fn();
 
 vi.mock('@/hooks/teams', () => ({ useTeamsQuery: () => mockUseTeamsQuery() }));
 vi.mock('@/hooks/useAdminAccess', () => ({ useAdminAccess: () => mockUseAdminAccess() }));
-vi.mock('@/hooks/useTimeslots', () => ({ useTimeslots: (...args: unknown[]) => mockUseTimeslots(...args) }));
+vi.mock('@/hooks/useTimeslots', () => ({
+  useTimeslots: (...args: unknown[]) => mockUseTimeslots(...args),
+}));
 vi.mock('@/hooks/useToast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 
-vi.mock('@/components/timeslots/TimeslotAssignment', () => ({ default: () => <p>Timeslot Assignment</p> }));
+vi.mock('@/components/timeslots/TimeslotAssignment', () => ({
+  default: () => <p>Timeslot Assignment</p>,
+}));
 vi.mock('@/components/timeslots/TimeslotList', () => ({ default: () => <p>Timeslot List</p> }));
 vi.mock('@/components/ui/calendar', () => ({ Calendar: () => <div>Calendar</div> }));
 vi.mock('@/components/ui/card', () => ({
@@ -24,7 +28,9 @@ vi.mock('@/components/ui/card', () => ({
   CardHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   CardTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
 }));
-vi.mock('@/components/ui/loading-state', () => ({ LoadingState: ({ message }: { message: string }) => <p>{message}</p> }));
+vi.mock('@/components/ui/loading-state', () => ({
+  LoadingState: ({ message }: { message: string }) => <p>{message}</p>,
+}));
 
 const createTestQueryClient = () =>
   new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });

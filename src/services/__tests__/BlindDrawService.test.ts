@@ -11,7 +11,9 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
 }));
 
 // Import after mocks
@@ -20,7 +22,11 @@ import { BlindDrawService } from '../BlindDrawService';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'query failed') => ({
-  message: msg, code: '42P01', details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 const makeSettings = () => ({
@@ -31,7 +37,11 @@ const makeSettings = () => ({
 });
 
 const makeSignup = () => ({
-  id: 'signup-1', event_date: '2026-04-17', first_name: 'Alice', last_initial: 'S', created_at: '2026-04-17T10:00:00Z',
+  id: 'signup-1',
+  event_date: '2026-04-17',
+  first_name: 'Alice',
+  last_initial: 'S',
+  created_at: '2026-04-17T10:00:00Z',
 });
 
 // ─── fetchBlindDrawSettings ───────────────────────────────────────────────────
@@ -41,7 +51,9 @@ describe('BlindDrawService.fetchBlindDrawSettings', () => {
 
   it('returns settings on success', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ limit: () => ({ single: () => Promise.resolve({ data: makeSettings(), error: null }) }) }),
+      select: () => ({
+        limit: () => ({ single: () => Promise.resolve({ data: makeSettings(), error: null }) }),
+      }),
     });
     const result = await BlindDrawService.fetchBlindDrawSettings();
     expect(result.id).toBe('settings-1');
@@ -49,7 +61,9 @@ describe('BlindDrawService.fetchBlindDrawSettings', () => {
 
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ limit: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+      select: () => ({
+        limit: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }),
+      }),
     });
     await expect(BlindDrawService.fetchBlindDrawSettings()).rejects.toThrow(DatabaseError);
   });
@@ -64,14 +78,18 @@ describe('BlindDrawService.updateBlindDrawSettings', () => {
     mockFrom.mockReturnValue({
       update: () => ({ eq: () => Promise.resolve({ error: null }) }),
     });
-    await expect(BlindDrawService.updateBlindDrawSettings({ id: 'settings-1', message: 'Hello' })).resolves.toBeUndefined();
+    await expect(
+      BlindDrawService.updateBlindDrawSettings({ id: 'settings-1', message: 'Hello' })
+    ).resolves.toBeUndefined();
   });
 
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue({
       update: () => ({ eq: () => Promise.resolve({ error: pgError() }) }),
     });
-    await expect(BlindDrawService.updateBlindDrawSettings({ id: 'settings-1', message: 'Hello' })).rejects.toThrow(DatabaseError);
+    await expect(
+      BlindDrawService.updateBlindDrawSettings({ id: 'settings-1', message: 'Hello' })
+    ).rejects.toThrow(DatabaseError);
   });
 });
 
@@ -144,14 +162,26 @@ describe('BlindDrawService.createSignup', () => {
     mockFrom.mockReturnValue({
       insert: () => Promise.resolve({ error: null }),
     });
-    await expect(BlindDrawService.createSignup({ eventDate: '2026-04-17', firstName: 'Alice', lastInitial: 's' })).resolves.toBeUndefined();
+    await expect(
+      BlindDrawService.createSignup({
+        eventDate: '2026-04-17',
+        firstName: 'Alice',
+        lastInitial: 's',
+      })
+    ).resolves.toBeUndefined();
   });
 
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue({
       insert: () => Promise.resolve({ error: pgError() }),
     });
-    await expect(BlindDrawService.createSignup({ eventDate: '2026-04-17', firstName: 'Alice', lastInitial: 's' })).rejects.toThrow(DatabaseError);
+    await expect(
+      BlindDrawService.createSignup({
+        eventDate: '2026-04-17',
+        firstName: 'Alice',
+        lastInitial: 's',
+      })
+    ).rejects.toThrow(DatabaseError);
   });
 });
 

@@ -11,7 +11,9 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
 }));
 
 // Import after mocks
@@ -20,7 +22,11 @@ import { DivisionService } from '../DivisionService';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'query failed') => ({
-  message: msg, code: '42P01', details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 // .select().order()
@@ -34,7 +40,15 @@ describe('DivisionService.fetchDivisions', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns divisions on success', async () => {
-    const rows = [{ id: 'd1', name: 'Gold', division_weight: 0.9, display_division: 'Gold', created_at: '2026-01-01' }];
+    const rows = [
+      {
+        id: 'd1',
+        name: 'Gold',
+        division_weight: 0.9,
+        display_division: 'Gold',
+        created_at: '2026-01-01',
+      },
+    ];
     mockFrom.mockReturnValue(chain({ data: rows, error: null }));
     const result = await DivisionService.fetchDivisions();
     expect(result).toHaveLength(1);

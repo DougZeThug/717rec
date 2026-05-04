@@ -157,7 +157,9 @@ describe('useMessageBoard', () => {
 
   it('shows load-more toast on failure', async () => {
     mockFetchMessages
-      .mockResolvedValueOnce(Array.from({ length: 10 }, (_, i) => ({ ...baseMessage, id: `m${i}` })))
+      .mockResolvedValueOnce(
+        Array.from({ length: 10 }, (_, i) => ({ ...baseMessage, id: `m${i}` }))
+      )
       .mockRejectedValueOnce(new Error('load more failed'));
 
     const { result } = renderHook(() => useMessageBoard(), { wrapper: createWrapper() });
