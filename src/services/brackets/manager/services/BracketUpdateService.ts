@@ -40,7 +40,10 @@ export class BracketUpdateService {
     return matchUpdateQueue.enqueue(async () => {
       try {
         // ⭐ Fetch current match state before update
-        const currentMatch = await this.storage.select('match', matchId);
+        const currentMatch = (await this.storage.select(
+          'match',
+          matchId
+        )) as unknown as StorageMatch;
         bracketLog(`CURRENT MATCH STATE - Match ${matchId}:`, {
           opponent1: currentMatch.opponent1,
           opponent2: currentMatch.opponent2,
@@ -303,17 +306,20 @@ export class BracketUpdateService {
         await this.normalizationService.propagateCompletedMatches(stageId);
 
         // ⭐ Fetch and log next matches to see propagation results
-        const updatedMatch = await this.storage.select('match', matchId);
+        const updatedMatch = (await this.storage.select(
+          'match',
+          matchId
+        )) as unknown as StorageMatch;
         bracketLog(`UPDATED MATCH STATE - Match ${matchId}:`, {
           opponent1: updatedMatch.opponent1,
           opponent2: updatedMatch.opponent2,
         });
 
         // Log all LB matches to see propagation
-        const allMatches = await this.storage.select('match', {
+        const allMatches = (await this.storage.select('match', {
           stage_id: updatedMatch.stage_id,
           group_id: 2, // Loser bracket group
-        });
+        })) as unknown as StorageMatch[];
         bracketLog(
           `ALL LB MATCHES after Match ${matchId} update:`,
           allMatches.map((m) => ({
