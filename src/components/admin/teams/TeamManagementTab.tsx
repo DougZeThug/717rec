@@ -49,34 +49,53 @@ const TeamManagementTabList = ({ pendingMembershipCount }: { pendingMembershipCo
   </TabsList>
 );
 
+
+const ManageTeamsContent = ({ searchTerm, setSearchTerm, selectedDivision, setSelectedDivision, divisions, filteredTeams, isUpdating, setEditingTeam, handleDivisionChange }: Pick<TabsProps, 'searchTerm' | 'setSearchTerm' | 'selectedDivision' | 'setSelectedDivision' | 'divisions' | 'filteredTeams' | 'isUpdating' | 'setEditingTeam' | 'handleDivisionChange'>) => (
+  <TabsContent value="manage" className="space-y-4">
+    <ManageTeamsPane
+      searchTerm={searchTerm}
+      onSearchTermChange={setSearchTerm}
+      selectedDivision={selectedDivision}
+      onSelectedDivisionChange={setSelectedDivision}
+      divisions={divisions}
+      filteredTeams={filteredTeams}
+      actions={{
+        onEdit: setEditingTeam,
+        onDivisionChange: (teamId, value) => handleDivisionChange(teamId, value === 'unassigned' ? null : value),
+        isUpdatingTeam: (teamId) => isUpdating === teamId,
+      }}
+    />
+  </TabsContent>
+);
+
+const CreateTeamContent = ({ handleTeamSubmit }: Pick<TabsProps, 'handleTeamSubmit'>) => (
+  <TabsContent value="create">
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2"><Plus className="h-5 w-5" />Create New Team</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <TeamForm onSubmit={handleTeamSubmit} onCancel={noop} />
+      </CardContent>
+    </Card>
+  </TabsContent>
+);
+
 const TeamManagementTabs = ({ pendingMembershipCount, searchTerm, setSearchTerm, selectedDivision, setSelectedDivision, divisions, filteredTeams, isUpdating, setEditingTeam, handleDivisionChange, handleTeamSubmit }: TabsProps) => (
   <Tabs defaultValue="manage" className="space-y-4">
     <TeamManagementTabList pendingMembershipCount={pendingMembershipCount} />
-    <TabsContent value="manage" className="space-y-4">
-      <ManageTeamsPane
-        searchTerm={searchTerm}
-        onSearchTermChange={setSearchTerm}
-        selectedDivision={selectedDivision}
-        onSelectedDivisionChange={setSelectedDivision}
-        divisions={divisions}
-        filteredTeams={filteredTeams}
-        actions={{
-          onEdit: setEditingTeam,
-          onDivisionChange: (teamId, value) => handleDivisionChange(teamId, value === 'unassigned' ? null : value),
-          isUpdatingTeam: (teamId) => isUpdating === teamId,
-        }}
-      />
-    </TabsContent>
-    <TabsContent value="create">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Plus className="h-5 w-5" />Create New Team</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <TeamForm onSubmit={handleTeamSubmit} onCancel={noop} />
-        </CardContent>
-      </Card>
-    </TabsContent>
+    <ManageTeamsContent
+      searchTerm={searchTerm}
+      setSearchTerm={setSearchTerm}
+      selectedDivision={selectedDivision}
+      setSelectedDivision={setSelectedDivision}
+      divisions={divisions}
+      filteredTeams={filteredTeams}
+      isUpdating={isUpdating}
+      setEditingTeam={setEditingTeam}
+      handleDivisionChange={handleDivisionChange}
+    />
+    <CreateTeamContent handleTeamSubmit={handleTeamSubmit} />
     <TabsContent value="logos"><BulkLogoUpdateTab /></TabsContent>
     <TabsContent value="approvals"><TeamMembershipApprovalTab /></TabsContent>
   </Tabs>
