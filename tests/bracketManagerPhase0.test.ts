@@ -613,8 +613,15 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
             { id: 2, opponent1: { id: 1 }, opponent2: { id: 3 }, stage_id: 1 },
           ]);
         }
+        // All rounds in stage - checkDownstreamPopulation uses this to build roundNumberById map
+        if (table === 'round' && typeof filter === 'object' && filter.stage_id) {
+          return Promise.resolve([
+            { id: 1, number: 1, stage_id: 1 },
+            { id: 2, number: 2, stage_id: 1 },
+          ]);
+        }
         if (table === 'round' && filter === 1) {
-          return Promise.resolve({ id: 1, group_id: 2 });
+          return Promise.resolve({ id: 1, group_id: 2, number: 1 });
         }
         if (table === 'group' && filter === 2) {
           return Promise.resolve({ id: 2, number: 2 });
