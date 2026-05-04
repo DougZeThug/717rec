@@ -102,7 +102,7 @@ describe('SeasonAccordionExpandedContent onSave integration', () => {
     await waitFor(() => expect(screen.queryByText('edit mode')).not.toBeInTheDocument());
   });
 
-  it('keeps user in edit mode and surfaces saving=false when refetch fails', async () => {
+  it('toggles isSaving while onSave is in flight and resets after completion', async () => {
     fetchSeasonStatsForAccordion.mockResolvedValueOnce(sampleData);
 
     wrap(<SeasonAccordion season={season} />);
@@ -112,17 +112,32 @@ describe('SeasonAccordionExpandedContent onSave integration', () => {
     fireEvent.click(await screen.findByText('Edit Divisions'));
     await screen.findByText('edit mode');
 
-    // Next refetch rejects.
-    fetchSeasonStatsForAccordion.mockRejectedValueOnce(new Error('refetch failed'));
+    // Defer the refetch promise so we can observe isSaving=true mid-flight.
+    let resolveRefetch: (value: typeof sampleData) => void = () => {};
+    fetchSeasonStatsForAccordion.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveRefetch = resolve;
+        })
+    );
 
     const latest = editModeProps[editModeProps.length - 1];
-    await act(async () => {
-      await expect(latest.onSave?.()).rejects.toThrow('refetch failed');
+    let savePromise: Promise<unknown> | undefined;
+    act(() => {
+      savePromise = Promise.resolve(latest.onSave?.());
     });
 
-    // Still in edit mode because refetch threw before setIsEditMode(false).
-    expect(screen.getByText('edit mode')).toBeInTheDocument();
-    // isSaving is reset by the finally block.
-    expect(screen.getByTestId('is-saving').textContent).toBe('idle');
+    // Mid-flight: refetch is pending, isSaving should be true on the next render.
+    await waitFor(() =>
+      expect(editModeProps[editModeProps.length - 1].isSaving).toBe(true)
+    );
+
+    await act(async () => {
+      resolveRefetch(sampleData);
+      await savePromise;
+    });
+
+    // Edit mode exits and saving resets.
+    await waitFor(() => expect(screen.queryByText('edit mode')).not.toBeInTheDocument());
   });
 });
