@@ -26,17 +26,38 @@ type TeamMobileCardProps = {
   actions: TeamItemActionApi;
 };
 
+const TeamAvatar = ({ team }: { team: Team }) =>
+  team.logoUrl || team.imageUrl ? (
+    <img src={team.logoUrl || team.imageUrl} alt={team.name} className="h-6 w-6 rounded-full object-cover shrink-0" />
+  ) : (
+    <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center shrink-0">
+      <Users className="h-3 w-3 text-muted-foreground" />
+    </div>
+  );
+
+const TeamDivisionSelect = ({ team, divisions, actions }: TeamMobileCardProps) => (
+  <Select value={team.division_id || 'unassigned'} onValueChange={(value) => actions.onDivisionChange(team.id, value)} disabled={actions.isUpdatingTeam(team.id)}>
+    <SelectTrigger className="w-full">
+      <SelectValue />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="unassigned">
+        <Badge variant="secondary">Unassigned</Badge>
+      </SelectItem>
+      {divisions.map((division) => (
+        <SelectItem key={division.id} value={division.id}>
+          {division.name}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+);
+
 const TeamMobileCard = ({ team, divisions, actions }: TeamMobileCardProps) => (
-  <div key={team.id} className="border border-border rounded-lg p-3 space-y-2 bg-card">
+  <div className="border border-border rounded-lg p-3 space-y-2 bg-card">
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2 min-w-0">
-        {team.logoUrl || team.imageUrl ? (
-          <img src={team.logoUrl || team.imageUrl} alt={team.name} className="h-6 w-6 rounded-full object-cover shrink-0" />
-        ) : (
-          <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center shrink-0">
-            <Users className="h-3 w-3 text-muted-foreground" />
-          </div>
-        )}
+        <TeamAvatar team={team} />
         <span className="font-medium text-sm truncate">{team.name}</span>
       </div>
       <motion.div whileTap={{ scale: 0.9 }}>
@@ -45,25 +66,7 @@ const TeamMobileCard = ({ team, divisions, actions }: TeamMobileCardProps) => (
         </Button>
       </motion.div>
     </div>
-    <Select
-      value={team.division_id || 'unassigned'}
-      onValueChange={(value) => actions.onDivisionChange(team.id, value)}
-      disabled={actions.isUpdatingTeam(team.id)}
-    >
-      <SelectTrigger className="w-full">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="unassigned">
-          <Badge variant="secondary">Unassigned</Badge>
-        </SelectItem>
-        {divisions.map((division) => (
-          <SelectItem key={division.id} value={division.id}>
-            {division.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <TeamDivisionSelect team={team} divisions={divisions} actions={actions} />
   </div>
 );
 
