@@ -101,14 +101,14 @@ describe('imageUpload validation', () => {
     expect(uploadMock).not.toHaveBeenCalled();
   });
 
-  it('accepts a valid JPEG with empty MIME type (browser could not detect)', async () => {
+  it('rejects file with empty MIME type (strict validation)', async () => {
     const jpegHeader = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0, 0, 0, 0, 0, 0, 0, 0]);
     const file = new File([jpegHeader], 'photo.jpg', { type: '' });
 
-    const publicUrl = await uploadHeroCardImage(file);
-
-    expect(uploadMock).toHaveBeenCalled();
-    expect(publicUrl).toBe('https://cdn.example.com/file.jpg');
+    await expect(uploadHeroCardImage(file)).rejects.toThrow(
+      'Unsupported file type. Use JPEG, PNG, or WebP images only.'
+    );
+    expect(uploadMock).not.toHaveBeenCalled();
   });
 
   it('uploads team image into team-specific path', async () => {
