@@ -20,6 +20,8 @@ import ManageTeamsPane from './ManageTeamsPane';
 import TeamManagementStatsCards from './TeamManagementStatsCards';
 import TeamMembershipApprovalTab from './TeamMembershipApprovalTab';
 
+const noop = () => undefined;
+
 const TeamManagementTab = () => {
   const { toast } = useToast();
   const { createTeam } = useTeams();
@@ -62,8 +64,7 @@ const TeamManagementTab = () => {
       if (!team) return;
 
       await updateTeam(teamId, { ...team, division_id: newDivisionId });
-
-      toast({ title: 'Division Updated', description: `Team division has been updated successfully.` });
+      toast({ title: 'Division Updated', description: 'Team division has been updated successfully.' });
       refetchTeams();
     } catch (error) {
       errorLog('Error updating team division:', error);
@@ -76,10 +77,7 @@ const TeamManagementTab = () => {
   const filteredTeams =
     teams?.filter((team) => {
       const matchesSearch = team.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesDivision =
-        selectedDivision === 'all' ||
-        (selectedDivision === 'unassigned' && !team.division_id) ||
-        team.division_id === selectedDivision;
+      const matchesDivision = selectedDivision === 'all' || (selectedDivision === 'unassigned' && !team.division_id) || team.division_id === selectedDivision;
       return matchesSearch && matchesDivision;
     }) || [];
 
@@ -96,19 +94,16 @@ const TeamManagementTab = () => {
   return (
     <div className="space-y-6">
       <TeamManagementStatsCards teamStats={teamStats} />
-
       <Tabs defaultValue="manage" className="space-y-4">
         <TabsList>
           <TabsTrigger value="manage">Manage Teams</TabsTrigger>
           <TabsTrigger value="create">Create Team</TabsTrigger>
           <TabsTrigger value="logos" className="gap-1.5"><Image className="h-3.5 w-3.5" />Update Logos</TabsTrigger>
           <TabsTrigger value="approvals" className="gap-1.5">
-            <UserCheck className="h-3.5 w-3.5" />
-            Member Approvals
+            <UserCheck className="h-3.5 w-3.5" />Member Approvals
             {pendingMembershipCount > 0 && <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-xs">{pendingMembershipCount}</Badge>}
           </TabsTrigger>
         </TabsList>
-
         <TabsContent value="manage" className="space-y-4">
           <ManageTeamsPane
             searchTerm={searchTerm}
@@ -124,15 +119,19 @@ const TeamManagementTab = () => {
             }}
           />
         </TabsContent>
-
         <TabsContent value="create">
-          <Card><CardHeader><CardTitle className="flex items-center gap-2"><Plus className="h-5 w-5" />Create New Team</CardTitle></CardHeader><CardContent><TeamForm onSubmit={handleTeamSubmit} onCancel={() => {}} /></CardContent></Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Plus className="h-5 w-5" />Create New Team</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TeamForm onSubmit={handleTeamSubmit} onCancel={noop} />
+            </CardContent>
+          </Card>
         </TabsContent>
-
         <TabsContent value="logos"><BulkLogoUpdateTab /></TabsContent>
         <TabsContent value="approvals"><TeamMembershipApprovalTab /></TabsContent>
       </Tabs>
-
       <EditTeamDialog
         team={editingTeam}
         onOpenChange={(open) => !open && setEditingTeam(null)}

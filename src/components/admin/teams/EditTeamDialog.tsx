@@ -10,7 +10,7 @@ type EditTeamDialogProps = {
 };
 
 const EditTeamDialog = ({ team, onOpenChange, onSubmit, onCancel }: EditTeamDialogProps) => (
-  <Dialog open={!!team} onOpenChange={onOpenChange}>
+  <Dialog open={Boolean(team)} onOpenChange={onOpenChange}>
     <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle>Edit Team: {team?.name}</DialogTitle>

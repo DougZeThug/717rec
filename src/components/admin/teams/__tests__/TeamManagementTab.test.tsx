@@ -59,6 +59,13 @@ const teams = [
   { id: '3', name: 'Charlie', division_id: 'div-west', logoUrl: null, imageUrl: null },
 ];
 
+const getComboboxByText = (text: string) => {
+  const box = screen.getAllByRole('combobox').find((el) => el.textContent?.includes(text));
+  expect(box).toBeDefined();
+  if (!box) throw new Error(`Unable to find combobox with text: ${text}`);
+  return box;
+};
+
 describe('TeamManagementTab', () => {
   beforeAll(() => {
     HTMLElement.prototype.setPointerCapture = vi.fn();
@@ -69,7 +76,7 @@ describe('TeamManagementTab', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUpdateTeam.mockResolvedValue(undefined);
+    mockUpdateTeam.mockResolvedValue();
     mockUseTeamsQuery.mockReturnValue({
       data: teams,
       isLoading: false,
@@ -94,19 +101,14 @@ describe('TeamManagementTab', () => {
     const user = userEvent.setup();
     render(<TeamManagementTab />);
 
-    const eastDivisionSelect = screen.getAllByRole('combobox').find((el) => el.textContent?.includes('East'));
-    expect(eastDivisionSelect).toBeTruthy();
-
-    await user.click(eastDivisionSelect!);
+    await user.click(getComboboxByText('East'));
     await user.click(screen.getAllByRole('option', { name: 'West' })[0]);
 
     await waitFor(() => {
       expect(mockUpdateTeam).toHaveBeenCalledWith('1', expect.objectContaining({ division_id: 'div-west' }));
     });
 
-    const westDivisionSelect = screen.getAllByRole('combobox').find((el) => el.textContent?.includes('West'));
-    expect(westDivisionSelect).toBeTruthy();
-    await user.click(westDivisionSelect!);
+    await user.click(getComboboxByText('West'));
     await user.click(screen.getAllByRole('option', { name: 'Unassigned' })[0]);
 
     await waitFor(() => {
@@ -118,7 +120,11 @@ describe('TeamManagementTab', () => {
     const user = userEvent.setup();
     render(<TeamManagementTab />);
 
-    await user.click(screen.getAllByRole('button').filter((b) => b.querySelector('svg')).at(0)!);
+    const editButton = screen.getAllByRole('button').find((button) => button.querySelector('svg'));
+    expect(editButton).toBeDefined();
+    if (!editButton) throw new Error('Edit button not found');
+
+    await user.click(editButton);
     expect(screen.getByText('Editing Alpha')).toBeInTheDocument();
 
     await user.click(screen.getByText('Cancel Edit'));
