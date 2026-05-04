@@ -14,10 +14,13 @@ interface SeasonRowProps {
 }
 
 export const SeasonRow = ({ season, isExpanded, onToggle }: SeasonRowProps) => {
-  const hasDivisionRecords =
-    season.divisionRecords.competitive.wins + season.divisionRecords.competitive.losses > 0 ||
-    season.divisionRecords.intermediate.wins + season.divisionRecords.intermediate.losses > 0 ||
-    season.divisionRecords.recreational.wins + season.divisionRecords.recreational.losses > 0;
+  const divisionCards = [
+    { tier: 'competitive' as const, record: season.divisionRecords.competitive },
+    { tier: 'intermediate' as const, record: season.divisionRecords.intermediate },
+    { tier: 'recreational' as const, record: season.divisionRecords.recreational },
+  ];
+  const visibleDivisionCards = divisionCards.filter(({ record }) => record.wins + record.losses > 0);
+  const hasDivisionRecords = visibleDivisionCards.length > 0;
 
   return (
     <>
@@ -118,24 +121,9 @@ export const SeasonRow = ({ season, isExpanded, onToggle }: SeasonRowProps) => {
         <tr className="bg-muted/10">
           <td colSpan={6} className="py-2 px-4 md:px-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {season.divisionRecords.competitive.wins + season.divisionRecords.competitive.losses >
-                0 && (
-                <DivisionRecordCard tier="competitive" record={season.divisionRecords.competitive} />
-              )}
-              {season.divisionRecords.intermediate.wins + season.divisionRecords.intermediate.losses >
-                0 && (
-                <DivisionRecordCard
-                  tier="intermediate"
-                  record={season.divisionRecords.intermediate}
-                />
-              )}
-              {season.divisionRecords.recreational.wins + season.divisionRecords.recreational.losses >
-                0 && (
-                <DivisionRecordCard
-                  tier="recreational"
-                  record={season.divisionRecords.recreational}
-                />
-              )}
+              {visibleDivisionCards.map(({ tier, record }) => (
+                <DivisionRecordCard key={tier} tier={tier} record={record} />
+              ))}
             </div>
           </td>
         </tr>

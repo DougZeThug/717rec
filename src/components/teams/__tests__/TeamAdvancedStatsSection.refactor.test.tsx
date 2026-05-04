@@ -1,6 +1,6 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { TeamAdvancedStats } from '@/hooks/teams/seasonBreakdown';
 import type { SeasonBreakdown } from '@/types/teamAdvancedStats';
@@ -23,12 +23,14 @@ const baseSeason: SeasonBreakdown = {
 };
 
 describe('Team advanced stats refactor behavior', () => {
+  const onToggle = vi.fn();
+
   it('season row expands/collapses division records', () => {
     const { rerender } = render(
-      <table><tbody><SeasonRow season={baseSeason} isExpanded={false} onToggle={() => {}} /></tbody></table>
+      <table><tbody><SeasonRow season={baseSeason} isExpanded={false} onToggle={onToggle} /></tbody></table>
     );
     expect(screen.queryByText('vs Competitive')).not.toBeInTheDocument();
-    rerender(<table><tbody><SeasonRow season={baseSeason} isExpanded onToggle={() => {}} /></tbody></table>);
+    rerender(<table><tbody><SeasonRow season={baseSeason} isExpanded onToggle={onToggle} /></tbody></table>);
     expect(screen.getByText('vs Competitive')).toBeInTheDocument();
   });
 

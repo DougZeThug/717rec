@@ -82,8 +82,8 @@ export const TeamAdvancedStatsInsightsTab = ({ advancedStats }: TeamAdvancedStat
         </div>
         <div className="flex flex-wrap gap-2">
           {advancedStats.seasons
-            .filter((s) => s.playoffRank !== null)
-            .sort((a, b) => (a.playoffRank || 99) - (b.playoffRank || 99))
+            .filter((s): s is typeof s & { playoffRank: number } => s.playoffRank !== null)
+            .sort((a, b) => a.playoffRank - b.playoffRank)
             .map((s) => (
               <div
                 key={s.seasonId}
@@ -100,7 +100,7 @@ export const TeamAdvancedStatsInsightsTab = ({ advancedStats }: TeamAdvancedStat
               >
                 {s.playoffRank === 1 && <Trophy size={12} />}
                 {s.playoffRank === 2 && <Award size={12} />}
-                {getPlayoffFinishLabel(s.playoffRank!)}
+                {getPlayoffFinishLabel(s.playoffRank)}
                 <span className="text-xs opacity-70">
                   {s.seasonName} ({s.divisionName})
                 </span>
