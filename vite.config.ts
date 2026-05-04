@@ -17,7 +17,6 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-motion': ['framer-motion'],
-          'vendor-dnd': ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities'],
           'vendor-supabase': ['@supabase/supabase-js'],
           // Separate Sentry into its own chunk so it doesn't block main bundle
           'vendor-sentry': ['@sentry/react'],
