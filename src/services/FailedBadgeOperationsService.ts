@@ -19,20 +19,78 @@ export type BadgeOperationType =
   | 'bully_winner'
   | 'bully_loser';
 
-export interface FailedBadgeOperation {
+type MatchBadgesParams = { team1Id: string; team2Id: string };
+type KingslayerParams = { winnerId: string; loserId: string };
+type ClutchPerformerParams = { winnerId: string; team1GameWins: number; team2GameWins: number };
+type ConsistentPerformerParams = { winnerId: string };
+type TeamIdParams = { teamId: string };
+
+type BadgeOperationParams = {
+  match_badges: MatchBadgesParams;
+  kingslayer: KingslayerParams;
+  clutch_performer: ClutchPerformerParams;
+  consistent_performer: ConsistentPerformerParams;
+  ice_cold_winner: TeamIdParams;
+  ice_cold_loser: TeamIdParams;
+  broom_crew_winner: TeamIdParams;
+  broom_crew_loser: TeamIdParams;
+  gatekeeper_winner: TeamIdParams;
+  gatekeeper_loser: TeamIdParams;
+  chaos_agent_winner: TeamIdParams;
+  chaos_agent_loser: TeamIdParams;
+  bully_winner: TeamIdParams;
+  bully_loser: TeamIdParams;
+};
+
+type FailedBadgeOperationBase = {
   id: string;
-  type: BadgeOperationType;
-  params: Record<string, any>;
   error: string;
   matchId: string;
   createdAt: string;
   retryCount: number;
   lastRetryAt?: string;
-}
+};
+
+export type FailedBadgeOperation = {
+  [K in BadgeOperationType]: FailedBadgeOperationBase & { type: K; params: BadgeOperationParams[K] };
+}[BadgeOperationType];
 
 const STORAGE_KEY = 'failed_badge_operations';
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 5000;
+
+const VALID_OPERATION_TYPES = new Set<string>([
+  'match_badges',
+  'kingslayer',
+  'clutch_performer',
+  'consistent_performer',
+  'ice_cold_winner',
+  'ice_cold_loser',
+  'broom_crew_winner',
+  'broom_crew_loser',
+  'gatekeeper_winner',
+  'gatekeeper_loser',
+  'chaos_agent_winner',
+  'chaos_agent_loser',
+  'bully_winner',
+  'bully_loser',
+]);
+
+function isValidFailedBadgeOperation(item: unknown): item is FailedBadgeOperation {
+  if (!item || typeof item !== 'object') return false;
+  const op = item as Record<string, unknown>;
+  return (
+    typeof op.id === 'string' &&
+    typeof op.type === 'string' &&
+    VALID_OPERATION_TYPES.has(op.type) &&
+    typeof op.params === 'object' &&
+    op.params !== null &&
+    typeof op.error === 'string' &&
+    typeof op.matchId === 'string' &&
+    typeof op.createdAt === 'string' &&
+    typeof op.retryCount === 'number'
+  );
+}
 
 /**
  * Service to handle failed badge operations with retry capability
@@ -45,7 +103,10 @@ export class FailedBadgeOperationsService {
   static getFailedOperations(): FailedBadgeOperation[] {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
+      if (!stored) return [];
+      const parsed: unknown = JSON.parse(stored);
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(isValidFailedBadgeOperation);
     } catch (e) {
       errorLog('Failed to read badge operations from storage:', e);
       return [];
@@ -66,9 +127,9 @@ export class FailedBadgeOperationsService {
   /**
    * Queue a failed badge operation for retry
    */
-  static queueFailedOperation(
-    type: FailedBadgeOperation['type'],
-    params: Record<string, any>,
+  static queueFailedOperation<T extends BadgeOperationType>(
+    type: T,
+    params: BadgeOperationParams[T],
     error: Error | string,
     matchId: string
   ): void {
@@ -92,7 +153,7 @@ export class FailedBadgeOperationsService {
       return;
     }
 
-    const newOperation: FailedBadgeOperation = {
+    const newOperation = {
       id: crypto.randomUUID(),
       type,
       params,
@@ -100,7 +161,7 @@ export class FailedBadgeOperationsService {
       matchId,
       createdAt: new Date().toISOString(),
       retryCount: 0,
-    };
+    } as FailedBadgeOperation;
 
     operations.push(newOperation);
     this.saveFailedOperations(operations);
