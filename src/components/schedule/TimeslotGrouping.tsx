@@ -24,7 +24,13 @@ interface TimeslotGroupingProps {
   isLoading: boolean;
 }
 
-const ByeWeekDesktopRow = ({ teamTimeslot, teamIndex, isWinterTheme }: any) => (
+interface ByeWeekDesktopRowProps {
+  teamTimeslot: TeamTimeslot;
+  teamIndex: number;
+  isWinterTheme: boolean;
+}
+
+const ByeWeekDesktopRow = ({ teamTimeslot, teamIndex, isWinterTheme }: ByeWeekDesktopRowProps) => (
   <div
     className={cn(
       'flex items-center justify-between p-3',
@@ -81,16 +87,25 @@ const ByeWeekDesktopRow = ({ teamTimeslot, teamIndex, isWinterTheme }: any) => (
   </div>
 );
 
+interface TimeslotSectionCardProps {
+  timeslot: string;
+  teams: TeamTimeslot[];
+  open: boolean;
+  onToggle: () => void;
+  isByeWeek?: boolean;
+  cardClass: string;
+  children: React.ReactNode;
+}
+
 const TimeslotSectionCard = ({
   timeslot,
   teams,
   open,
   onToggle,
   isByeWeek,
-  isWinterTheme,
   cardClass,
   children,
-}: any) => (
+}: TimeslotSectionCardProps) => (
   <AppCard className={cardClass} elevation="default" isInteractive={false}>
     <Collapsible open={open} onOpenChange={onToggle} className="w-full">
       <CollapsibleTrigger className="w-full">
@@ -130,7 +145,6 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
           teams={teams}
           open={expandedTimeslots[timeslot]}
           onToggle={() => toggleTimeslot(timeslot)}
-          isWinterTheme={isWinterTheme}
           cardClass={cn('overflow-hidden border-gray-200 dark:border-gray-700 transition-all duration-300 p-0', animations.entranceLeft, `animation-delay-${index * 100}`)}
         >
           <div className="p-2 md:hidden">
@@ -168,7 +182,6 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
           open={expandedTimeslots[timeslot]}
           onToggle={() => toggleTimeslot(timeslot)}
           isByeWeek
-          isWinterTheme={isWinterTheme}
           cardClass={cn('overflow-hidden border-orange-200 dark:border-orange-700 transition-all duration-300 p-0', animations.entranceLeft, `animation-delay-${(regularTimeslots.length + index) * 100}`)}
         >
           <div className={cn('p-2 md:hidden', isWinterTheme ? 'bg-orange-900/20' : 'bg-orange-50 dark:bg-orange-900/10')}>
