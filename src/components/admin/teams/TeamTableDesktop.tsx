@@ -1,0 +1,80 @@
+import { motion } from 'framer-motion';
+import { Edit, Users } from 'lucide-react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Team } from '@/types';
+
+import { TeamItemActionApi } from './TeamListMobile';
+
+type DivisionOption = { id: string; name: string };
+
+type TeamTableDesktopProps = {
+  teams: Team[];
+  divisions: DivisionOption[];
+  actions: TeamItemActionApi;
+};
+
+const TeamTableDesktop = ({ teams, divisions, actions }: TeamTableDesktopProps) => (
+  <div className="border rounded-lg hidden sm:block">
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Team</TableHead>
+          <TableHead>Division</TableHead>
+          <TableHead>Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {teams.map((team) => (
+          <TableRow key={team.id} className="transition-colors duration-150 hover:bg-muted/50 active:bg-muted">
+            <TableCell>
+              <div className="flex items-center gap-2">
+                {team.logoUrl || team.imageUrl ? (
+                  <img src={team.logoUrl || team.imageUrl} alt={team.name} className="h-6 w-6 rounded-full object-cover shrink-0" />
+                ) : (
+                  <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center shrink-0">
+                    <Users className="h-3 w-3 text-muted-foreground" />
+                  </div>
+                )}
+                <span className="font-medium">{team.name}</span>
+              </div>
+            </TableCell>
+            <TableCell>
+              <Select
+                value={team.division_id || 'unassigned'}
+                onValueChange={(value) => actions.onDivisionChange(team.id, value)}
+                disabled={actions.isUpdatingTeam(team.id)}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unassigned">
+                    <Badge variant="secondary">Unassigned</Badge>
+                  </SelectItem>
+                  {divisions.map((division) => (
+                    <SelectItem key={division.id} value={division.id}>
+                      {division.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </TableCell>
+            <TableCell>
+              <motion.div whileTap={{ scale: 0.9 }}>
+                <Button variant="outline" size="sm" onClick={() => actions.onEdit(team)}>
+                  <Edit className="h-3 w-3" />
+                </Button>
+              </motion.div>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  </div>
+);
+
+export default TeamTableDesktop;
