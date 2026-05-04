@@ -3,7 +3,13 @@ import { act, renderHook } from '@testing-library/react';
 import { useTimeslotGrouping } from '@/components/schedule/timeslot-grouping/useTimeslotGrouping';
 import { TeamTimeslot } from '@/types';
 
-const makeSlot = (id: string, timeslot: string, teamId: string, seq = 1, isDh = false): TeamTimeslot => ({
+const makeSlot = (
+  id: string,
+  timeslot: string,
+  teamId: string,
+  seq = 1,
+  isDh = false
+): TeamTimeslot => ({
   id,
   timeslot,
   team_id: teamId,
@@ -31,16 +37,22 @@ describe('useTimeslotGrouping', () => {
   });
 
   it('sorts deterministically with BYE last', () => {
-    const grouped = { BYE: [makeSlot('1', 'BYE', 'A')], '9:00 PM': [makeSlot('2', '9:00 PM', 'B')], '7:00 PM': [makeSlot('3', '7:00 PM', 'C')] };
+    const grouped = {
+      BYE: [makeSlot('1', 'BYE', 'A')],
+      '9:00 PM': [makeSlot('2', '9:00 PM', 'B')],
+      '7:00 PM': [makeSlot('3', '7:00 PM', 'C')],
+    };
     const { result } = renderHook(() => useTimeslotGrouping(grouped));
     expect(result.current.regularTimeslots.map((t) => t.timeslot)).toEqual(['7:00 PM', '9:00 PM']);
     expect(result.current.byeWeekTimeslots.map((t) => t.timeslot)).toEqual(['BYE']);
   });
 
-
   it('reinitializes expanded defaults when grouped timeslots change', () => {
     const first = { '9:00 PM': [makeSlot('1', '9:00 PM', 'A')] };
-    const second = { '7:00 PM': [makeSlot('2', '7:00 PM', 'B')], '9:00 PM': [makeSlot('3', '9:00 PM', 'C')] };
+    const second = {
+      '7:00 PM': [makeSlot('2', '7:00 PM', 'B')],
+      '9:00 PM': [makeSlot('3', '9:00 PM', 'C')],
+    };
     const { result, rerender } = renderHook(({ grouped }) => useTimeslotGrouping(grouped), {
       initialProps: { grouped: first },
     });
@@ -54,7 +66,10 @@ describe('useTimeslotGrouping', () => {
   });
 
   it('defaults only first sorted group expanded and toggles state', () => {
-    const grouped = { '9:00 PM': [makeSlot('2', '9:00 PM', 'B')], '7:00 PM': [makeSlot('3', '7:00 PM', 'C')] };
+    const grouped = {
+      '9:00 PM': [makeSlot('2', '9:00 PM', 'B')],
+      '7:00 PM': [makeSlot('3', '7:00 PM', 'C')],
+    };
     const { result } = renderHook(() => useTimeslotGrouping(grouped));
 
     expect(result.current.expandedTimeslots['7:00 PM']).toBe(true);

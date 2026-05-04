@@ -28,11 +28,7 @@ describe('TimeslotMatchRowMobile', () => {
     const dhInfo = new Map([['t1', { slot1: '7:00 PM', slot2: '9:00 PM' }]]);
     render(
       <MemoryRouter>
-        <TimeslotMatchRowMobile
-          teamTimeslot={ts}
-          isWinterTheme={false}
-          doubleHeaderInfo={dhInfo}
-        />
+        <TimeslotMatchRowMobile teamTimeslot={ts} isWinterTheme={false} doubleHeaderInfo={dhInfo} />
       </MemoryRouter>
     );
     expect(screen.getByText(/DH 7:00 PM\/9:00 PM/)).toBeInTheDocument();

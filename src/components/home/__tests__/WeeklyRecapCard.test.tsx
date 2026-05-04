@@ -28,7 +28,9 @@ describe('WeeklyRecapCard', () => {
           matchResult: '2-1',
         },
       ],
-      hotStreaks: [{ teamId: 't3', teamName: 'The Jets', logoUrl: null, division: 'West', streak: 'W5' }],
+      hotStreaks: [
+        { teamId: 't3', teamName: 'The Jets', logoUrl: null, division: 'West', streak: 'W5' },
+      ],
     };
 
     const risers = [
@@ -52,10 +54,22 @@ describe('WeeklyRecapCard', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getAllByRole('link', { name: /LA Knights/i })[0]).toHaveAttribute('href', '/teams/la-knights');
-    expect(screen.getAllByRole('link', { name: /St. Louis Crew/i })[0]).toHaveAttribute('href', '/teams/st-louis-crew');
-    expect(screen.getAllByRole('link', { name: /The Jets/i })[0]).toHaveAttribute('href', '/teams/the-jets');
-    expect(screen.getByRole('link', { name: /NYC Ballers/i })).toHaveAttribute('href', '/teams/nyc-ballers');
+    expect(screen.getAllByRole('link', { name: /LA Knights/i })[0]).toHaveAttribute(
+      'href',
+      '/teams/la-knights'
+    );
+    expect(screen.getAllByRole('link', { name: /St. Louis Crew/i })[0]).toHaveAttribute(
+      'href',
+      '/teams/st-louis-crew'
+    );
+    expect(screen.getAllByRole('link', { name: /The Jets/i })[0]).toHaveAttribute(
+      'href',
+      '/teams/the-jets'
+    );
+    expect(screen.getByRole('link', { name: /NYC Ballers/i })).toHaveAttribute(
+      'href',
+      '/teams/nyc-ballers'
+    );
   });
 
   it('hides missing sections when section data is absent', () => {

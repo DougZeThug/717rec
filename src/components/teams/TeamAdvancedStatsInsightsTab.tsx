@@ -8,7 +8,9 @@ interface TeamAdvancedStatsInsightsTabProps {
   advancedStats: TeamAdvancedStats;
 }
 
-export const TeamAdvancedStatsInsightsTab = ({ advancedStats }: TeamAdvancedStatsInsightsTabProps) => (
+export const TeamAdvancedStatsInsightsTab = ({
+  advancedStats,
+}: TeamAdvancedStatsInsightsTabProps) => (
   <div className="space-y-4">
     {advancedStats.bestSeason && (
       <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
@@ -43,7 +45,9 @@ export const TeamAdvancedStatsInsightsTab = ({ advancedStats }: TeamAdvancedStat
               <TrendingDown size={16} className="text-red-500" />
               <span className="font-medium text-sm">Toughest Matchup</span>
             </div>
-            <div className="text-lg font-semibold capitalize">{advancedStats.worstDivisionTier}</div>
+            <div className="text-lg font-semibold capitalize">
+              {advancedStats.worstDivisionTier}
+            </div>
           </div>
         )}
     </div>
@@ -62,7 +66,9 @@ export const TeamAdvancedStatsInsightsTab = ({ advancedStats }: TeamAdvancedStat
                 key={s.seasonId}
                 className={cn(
                   'px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-1.5',
-                  s.isChampion ? 'bg-yellow-500/20 text-yellow-400' : 'bg-slate-500/20 text-slate-400'
+                  s.isChampion
+                    ? 'bg-yellow-500/20 text-yellow-400'
+                    : 'bg-slate-500/20 text-slate-400'
                 )}
               >
                 {s.isChampion ? <Trophy size={12} /> : <Award size={12} />}

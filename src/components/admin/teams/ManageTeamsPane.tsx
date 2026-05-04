@@ -2,7 +2,13 @@ import { Search, Users } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Team } from '@/types';
 
 import TeamListMobile, { TeamItemActionApi } from './TeamListMobile';
@@ -20,7 +26,20 @@ type ManageTeamsPaneProps = {
   actions: TeamItemActionApi;
 };
 
-const TeamManagementFilters = ({ searchTerm, onSearchTermChange, selectedDivision, onSelectedDivisionChange, divisions }: Pick<ManageTeamsPaneProps, 'searchTerm' | 'onSearchTermChange' | 'selectedDivision' | 'onSelectedDivisionChange' | 'divisions'>) => (
+const TeamManagementFilters = ({
+  searchTerm,
+  onSearchTermChange,
+  selectedDivision,
+  onSelectedDivisionChange,
+  divisions,
+}: Pick<
+  ManageTeamsPaneProps,
+  | 'searchTerm'
+  | 'onSearchTermChange'
+  | 'selectedDivision'
+  | 'onSelectedDivisionChange'
+  | 'divisions'
+>) => (
   <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
     <div className="relative flex-1">
       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -77,7 +96,9 @@ const ManageTeamsPane = ({
       <TeamTableDesktop teams={filteredTeams} divisions={divisions} actions={actions} />
 
       {filteredTeams.length === 0 && (
-        <div className="text-center py-8 text-muted-foreground">No teams found matching your criteria.</div>
+        <div className="text-center py-8 text-muted-foreground">
+          No teams found matching your criteria.
+        </div>
       )}
     </CardContent>
   </Card>

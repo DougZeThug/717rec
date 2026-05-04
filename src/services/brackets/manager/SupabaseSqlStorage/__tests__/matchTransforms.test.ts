@@ -4,11 +4,7 @@ vi.mock('@/utils/logger', () => ({
   bracketLog: vi.fn(),
 }));
 
-import {
-  mergeOpponentSlots,
-  transformMatchFromDb,
-  transformMatchToDb,
-} from '../matchTransforms';
+import { mergeOpponentSlots, transformMatchFromDb, transformMatchToDb } from '../matchTransforms';
 import type { DbMatch, ParticipantCacheEntry } from '../types';
 
 describe('mergeOpponentSlots', () => {

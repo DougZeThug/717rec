@@ -1,6 +1,5 @@
-import { ReactNode } from 'react';
-
 import { Edit, Settings, Users } from 'lucide-react';
+import { ReactNode } from 'react';
 
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -33,9 +32,21 @@ const StatCard = ({ icon, value, label }: StatCardProps) => (
 const TeamManagementStatsCards = ({ teamStats }: TeamManagementStatsCardsProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <StatCard icon={<Users className="h-8 w-8 text-primary" />} value={teamStats.total} label="Total Teams" />
-      <StatCard icon={<Settings className="h-8 w-8 text-green-600" />} value={teamStats.withDivisions} label="Assigned to Divisions" />
-      <StatCard icon={<Edit className="h-8 w-8 text-orange-600" />} value={teamStats.unassigned} label="Unassigned" />
+      <StatCard
+        icon={<Users className="h-8 w-8 text-primary" />}
+        value={teamStats.total}
+        label="Total Teams"
+      />
+      <StatCard
+        icon={<Settings className="h-8 w-8 text-green-600" />}
+        value={teamStats.withDivisions}
+        label="Assigned to Divisions"
+      />
+      <StatCard
+        icon={<Edit className="h-8 w-8 text-orange-600" />}
+        value={teamStats.unassigned}
+        label="Unassigned"
+      />
     </div>
   );
 };

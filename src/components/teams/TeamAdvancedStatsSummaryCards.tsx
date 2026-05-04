@@ -53,7 +53,9 @@ export const TeamAdvancedStatsSummaryCards = ({
           <TrendIcon size={14} className={trendColor} />
           <span className="text-xs text-muted-foreground">Trend</span>
         </div>
-        <div className={cn('font-medium text-sm capitalize', trendColor)}>{advancedStats.powerScoreTrend}</div>
+        <div className={cn('font-medium text-sm capitalize', trendColor)}>
+          {advancedStats.powerScoreTrend}
+        </div>
       </div>
       <div className="p-3 rounded-lg bg-muted/50 border border-border">
         <div className="flex items-center gap-2 mb-1">

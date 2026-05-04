@@ -105,14 +105,20 @@ describe('TeamManagementTab', () => {
     await user.click(screen.getAllByRole('option', { name: 'West' })[0]);
 
     await waitFor(() => {
-      expect(mockUpdateTeam).toHaveBeenCalledWith('1', expect.objectContaining({ division_id: 'div-west' }));
+      expect(mockUpdateTeam).toHaveBeenCalledWith(
+        '1',
+        expect.objectContaining({ division_id: 'div-west' })
+      );
     });
 
     await user.click(getComboboxByText('West'));
     await user.click(screen.getAllByRole('option', { name: 'Unassigned' })[0]);
 
     await waitFor(() => {
-      expect(mockUpdateTeam).toHaveBeenCalledWith('3', expect.objectContaining({ division_id: null }));
+      expect(mockUpdateTeam).toHaveBeenCalledWith(
+        '3',
+        expect.objectContaining({ division_id: null })
+      );
     });
   });
 

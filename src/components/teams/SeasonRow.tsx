@@ -36,7 +36,11 @@ const PlayoffCell = ({ season }: { season: SeasonBreakdown }) => {
       <span
         className={cn(
           'font-mono text-sm font-medium',
-          season.isChampion ? 'text-yellow-500' : season.isTop3 ? 'text-emerald-500' : 'text-foreground'
+          season.isChampion
+            ? 'text-yellow-500'
+            : season.isTop3
+              ? 'text-emerald-500'
+              : 'text-foreground'
         )}
       >
         #{season.playoffRank}
@@ -55,10 +59,19 @@ const SeasonCell = ({
 }: Pick<MainSeasonRowProps, 'season' | 'isExpanded' | 'hasDivisionRecords'>) => (
   <td className="py-3 px-2 md:px-4">
     <div className="flex items-center gap-2">
-      {hasDivisionRecords ? <ExpansionIcon isExpanded={isExpanded} /> : <div className="w-[14px]" />}
+      {hasDivisionRecords ? (
+        <ExpansionIcon isExpanded={isExpanded} />
+      ) : (
+        <div className="w-[14px]" />
+      )}
       <div>
         <div className="font-medium text-sm">{season.seasonName}</div>
-        <span className={cn('text-xs px-1.5 py-0.5 rounded border', getDivisionBadgeColor(season.divisionName))}>
+        <span
+          className={cn(
+            'text-xs px-1.5 py-0.5 rounded border',
+            getDivisionBadgeColor(season.divisionName)
+          )}
+        >
           {season.divisionName}
         </span>
       </div>
@@ -66,7 +79,12 @@ const SeasonCell = ({
   </td>
 );
 
-const MainSeasonRow = ({ season, isExpanded, onToggle, hasDivisionRecords }: MainSeasonRowProps) => (
+const MainSeasonRow = ({
+  season,
+  isExpanded,
+  onToggle,
+  hasDivisionRecords,
+}: MainSeasonRowProps) => (
   <tr
     key={`${season.seasonId}-main`}
     className={cn(
@@ -124,7 +142,9 @@ export const SeasonRow = ({ season, isExpanded, onToggle }: SeasonRowProps) => {
     { tier: 'intermediate' as const, record: season.divisionRecords.intermediate },
     { tier: 'recreational' as const, record: season.divisionRecords.recreational },
   ];
-  const visibleDivisionCards = divisionCards.filter(({ record }) => record.wins + record.losses > 0);
+  const visibleDivisionCards = divisionCards.filter(
+    ({ record }) => record.wins + record.losses > 0
+  );
   const hasDivisionRecords = visibleDivisionCards.length > 0;
 
   return [

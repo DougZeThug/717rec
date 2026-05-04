@@ -3,7 +3,13 @@ import { Edit, Users } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Team } from '@/types';
 
 type DivisionOption = { id: string; name: string };
@@ -28,7 +34,11 @@ type TeamMobileCardProps = {
 
 const TeamAvatar = ({ team }: { team: Team }) =>
   team.logoUrl || team.imageUrl ? (
-    <img src={team.logoUrl || team.imageUrl} alt={team.name} className="h-6 w-6 rounded-full object-cover shrink-0" />
+    <img
+      src={team.logoUrl || team.imageUrl}
+      alt={team.name}
+      className="h-6 w-6 rounded-full object-cover shrink-0"
+    />
   ) : (
     <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center shrink-0">
       <Users className="h-3 w-3 text-muted-foreground" />
@@ -36,7 +46,11 @@ const TeamAvatar = ({ team }: { team: Team }) =>
   );
 
 const TeamDivisionSelect = ({ team, divisions, actions }: TeamMobileCardProps) => (
-  <Select value={team.division_id || 'unassigned'} onValueChange={(value) => actions.onDivisionChange(team.id, value)} disabled={actions.isUpdatingTeam(team.id)}>
+  <Select
+    value={team.division_id || 'unassigned'}
+    onValueChange={(value) => actions.onDivisionChange(team.id, value)}
+    disabled={actions.isUpdatingTeam(team.id)}
+  >
     <SelectTrigger className="w-full">
       <SelectValue />
     </SelectTrigger>
@@ -61,7 +75,12 @@ const TeamMobileCard = ({ team, divisions, actions }: TeamMobileCardProps) => (
         <span className="font-medium text-sm truncate">{team.name}</span>
       </div>
       <motion.div whileTap={{ scale: 0.9 }}>
-        <Button variant="outline" size="sm" aria-label={`Edit ${team.name}`} onClick={() => actions.onEdit(team)}>
+        <Button
+          variant="outline"
+          size="sm"
+          aria-label={`Edit ${team.name}`}
+          onClick={() => actions.onEdit(team)}
+        >
           <Edit className="h-3 w-3" />
         </Button>
       </motion.div>

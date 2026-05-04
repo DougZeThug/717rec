@@ -36,21 +36,48 @@ type TabsProps = {
   handleTeamSubmit: (teamData: Omit<Team, 'id' | 'created_at'>) => Promise<void>;
 };
 
-
 const TeamManagementTabList = ({ pendingMembershipCount }: { pendingMembershipCount: number }) => (
   <TabsList>
     <TabsTrigger value="manage">Manage Teams</TabsTrigger>
     <TabsTrigger value="create">Create Team</TabsTrigger>
-    <TabsTrigger value="logos" className="gap-1.5"><Image className="h-3.5 w-3.5" />Update Logos</TabsTrigger>
+    <TabsTrigger value="logos" className="gap-1.5">
+      <Image className="h-3.5 w-3.5" />
+      Update Logos
+    </TabsTrigger>
     <TabsTrigger value="approvals" className="gap-1.5">
-      <UserCheck className="h-3.5 w-3.5" />Member Approvals
-      {pendingMembershipCount > 0 && <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-xs">{pendingMembershipCount}</Badge>}
+      <UserCheck className="h-3.5 w-3.5" />
+      Member Approvals
+      {pendingMembershipCount > 0 && (
+        <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-xs">
+          {pendingMembershipCount}
+        </Badge>
+      )}
     </TabsTrigger>
   </TabsList>
 );
 
-
-const ManageTeamsContent = ({ searchTerm, setSearchTerm, selectedDivision, setSelectedDivision, divisions, filteredTeams, isUpdating, setEditingTeam, handleDivisionChange }: Pick<TabsProps, 'searchTerm' | 'setSearchTerm' | 'selectedDivision' | 'setSelectedDivision' | 'divisions' | 'filteredTeams' | 'isUpdating' | 'setEditingTeam' | 'handleDivisionChange'>) => (
+const ManageTeamsContent = ({
+  searchTerm,
+  setSearchTerm,
+  selectedDivision,
+  setSelectedDivision,
+  divisions,
+  filteredTeams,
+  isUpdating,
+  setEditingTeam,
+  handleDivisionChange,
+}: Pick<
+  TabsProps,
+  | 'searchTerm'
+  | 'setSearchTerm'
+  | 'selectedDivision'
+  | 'setSelectedDivision'
+  | 'divisions'
+  | 'filteredTeams'
+  | 'isUpdating'
+  | 'setEditingTeam'
+  | 'handleDivisionChange'
+>) => (
   <TabsContent value="manage" className="space-y-4">
     <ManageTeamsPane
       searchTerm={searchTerm}
@@ -61,7 +88,8 @@ const ManageTeamsContent = ({ searchTerm, setSearchTerm, selectedDivision, setSe
       filteredTeams={filteredTeams}
       actions={{
         onEdit: setEditingTeam,
-        onDivisionChange: (teamId, value) => handleDivisionChange(teamId, value === 'unassigned' ? null : value),
+        onDivisionChange: (teamId, value) =>
+          handleDivisionChange(teamId, value === 'unassigned' ? null : value),
         isUpdatingTeam: (teamId) => isUpdating === teamId,
       }}
     />
@@ -72,7 +100,10 @@ const CreateTeamContent = ({ handleTeamSubmit }: Pick<TabsProps, 'handleTeamSubm
   <TabsContent value="create">
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2"><Plus className="h-5 w-5" />Create New Team</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Plus className="h-5 w-5" />
+          Create New Team
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <TeamForm onSubmit={handleTeamSubmit} onCancel={noop} />
@@ -81,7 +112,19 @@ const CreateTeamContent = ({ handleTeamSubmit }: Pick<TabsProps, 'handleTeamSubm
   </TabsContent>
 );
 
-const TeamManagementTabs = ({ pendingMembershipCount, searchTerm, setSearchTerm, selectedDivision, setSelectedDivision, divisions, filteredTeams, isUpdating, setEditingTeam, handleDivisionChange, handleTeamSubmit }: TabsProps) => (
+const TeamManagementTabs = ({
+  pendingMembershipCount,
+  searchTerm,
+  setSearchTerm,
+  selectedDivision,
+  setSelectedDivision,
+  divisions,
+  filteredTeams,
+  isUpdating,
+  setEditingTeam,
+  handleDivisionChange,
+  handleTeamSubmit,
+}: TabsProps) => (
   <Tabs defaultValue="manage" className="space-y-4">
     <TeamManagementTabList pendingMembershipCount={pendingMembershipCount} />
     <ManageTeamsContent
@@ -96,15 +139,23 @@ const TeamManagementTabs = ({ pendingMembershipCount, searchTerm, setSearchTerm,
       handleDivisionChange={handleDivisionChange}
     />
     <CreateTeamContent handleTeamSubmit={handleTeamSubmit} />
-    <TabsContent value="logos"><BulkLogoUpdateTab /></TabsContent>
-    <TabsContent value="approvals"><TeamMembershipApprovalTab /></TabsContent>
+    <TabsContent value="logos">
+      <BulkLogoUpdateTab />
+    </TabsContent>
+    <TabsContent value="approvals">
+      <TeamMembershipApprovalTab />
+    </TabsContent>
   </Tabs>
 );
 
 const TeamManagementTab = () => {
   const { toast } = useToast();
   const { createTeam } = useTeams();
-  const { data: teams, isLoading: isLoadingTeams, refetch: refetchTeams } = useTeamsQuery({ includeHidden: true });
+  const {
+    data: teams,
+    isLoading: isLoadingTeams,
+    refetch: refetchTeams,
+  } = useTeamsQuery({ includeHidden: true });
   const { divisions, isLoading: isLoadingDivisions } = useDivisions();
   const { data: pendingMembershipCount = 0 } = usePendingMembershipCount();
   const { updateTeam } = useUpdateTeam();
@@ -116,7 +167,10 @@ const TeamManagementTab = () => {
   const handleTeamSubmit = async (teamData: Omit<Team, 'id' | 'created_at'>) => {
     try {
       const newTeam = await createTeam(teamData);
-      toast({ title: 'Team Created', description: `${newTeam.name} has been successfully created.` });
+      toast({
+        title: 'Team Created',
+        description: `${newTeam.name} has been successfully created.`,
+      });
       refetchTeams();
     } catch (error) {
       errorLog('Error creating team:', error);
@@ -127,12 +181,19 @@ const TeamManagementTab = () => {
     if (!editingTeam) return;
     try {
       await updateTeam(editingTeam.id, teamData);
-      toast({ title: 'Team Updated', description: `${teamData.name} has been successfully updated.` });
+      toast({
+        title: 'Team Updated',
+        description: `${teamData.name} has been successfully updated.`,
+      });
       setEditingTeam(null);
       refetchTeams();
     } catch (error) {
       errorLog('Error updating team:', error);
-      toast({ title: 'Update Failed', description: 'Failed to update team. Please try again.', variant: 'destructive' });
+      toast({
+        title: 'Update Failed',
+        description: 'Failed to update team. Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -142,11 +203,18 @@ const TeamManagementTab = () => {
       const team = teams?.find((t) => t.id === teamId);
       if (!team) return;
       await updateTeam(teamId, { ...team, division_id: newDivisionId });
-      toast({ title: 'Division Updated', description: 'Team division has been updated successfully.' });
+      toast({
+        title: 'Division Updated',
+        description: 'Team division has been updated successfully.',
+      });
       refetchTeams();
     } catch (error) {
       errorLog('Error updating team division:', error);
-      toast({ title: 'Update Failed', description: 'Failed to update team division. Please try again.', variant: 'destructive' });
+      toast({
+        title: 'Update Failed',
+        description: 'Failed to update team division. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setIsUpdating(null);
     }
@@ -155,7 +223,10 @@ const TeamManagementTab = () => {
   const filteredTeams =
     teams?.filter((team) => {
       const matchesSearch = team.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesDivision = selectedDivision === 'all' || (selectedDivision === 'unassigned' && !team.division_id) || team.division_id === selectedDivision;
+      const matchesDivision =
+        selectedDivision === 'all' ||
+        (selectedDivision === 'unassigned' && !team.division_id) ||
+        team.division_id === selectedDivision;
       return matchesSearch && matchesDivision;
     }) || [];
 
@@ -166,7 +237,11 @@ const TeamManagementTab = () => {
   };
 
   if (isLoadingTeams || isLoadingDivisions) {
-    return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   return (
@@ -185,7 +260,12 @@ const TeamManagementTab = () => {
         handleDivisionChange={handleDivisionChange}
         handleTeamSubmit={handleTeamSubmit}
       />
-      <EditTeamDialog team={editingTeam} onOpenChange={(open) => !open && setEditingTeam(null)} onSubmit={handleEditTeam} onCancel={() => setEditingTeam(null)} />
+      <EditTeamDialog
+        team={editingTeam}
+        onOpenChange={(open) => !open && setEditingTeam(null)}
+        onSubmit={handleEditTeam}
+        onCancel={() => setEditingTeam(null)}
+      />
     </div>
   );
 };
