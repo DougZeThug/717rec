@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
+import { describe, expect, it } from 'vitest';
 
 import { TimeslotMatchRowMobile } from '@/components/schedule/timeslot-grouping/TimeslotGroupBits';
 import { TeamTimeslot } from '@/types';
