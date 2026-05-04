@@ -4,7 +4,7 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import SeasonAccordion from '../SeasonAccordion';
-import { useSeasonAccordionViewModel } from '../useSeasonAccordionViewModel';
+import { SeasonData, useSeasonAccordionViewModel } from '../useSeasonAccordionViewModel';
 
 vi.mock('@/hooks/useSeasonalTheme', () => ({ useSeasonalThemeBase: () => ({ isWinterTheme: false }) }));
 vi.mock('@/hooks/useAdminAccess', () => ({ useAdminAccess: () => ({ isAdminAccessGranted: true }) }));
@@ -20,7 +20,7 @@ const wrap = (ui: React.ReactNode) => render(<QueryClientProvider client={new Qu
 
 describe('useSeasonAccordionViewModel', () => {
   it('excludes hidden divisions from groups and team counts, computes highlights', () => {
-    const data: any = [
+    const data: SeasonData[] = [
       { team_id: '1', division_name: 'Hidden Alpha', champion: true, team_name: 'A', match_wins: 5, match_losses: 1, game_wins: 11, game_losses: 3, power_score: 0.5, season_id: 's1', sos: null, runner_up: false, playoff_rank: null, team_logo_url: null, team_image_url: null },
       { team_id: '2', division_name: 'Competitive', champion: false, team_name: 'B', match_wins: 9, match_losses: 1, game_wins: 7, game_losses: 3, power_score: 0.9, season_id: 's1', sos: null, runner_up: false, playoff_rank: null, team_logo_url: null, team_image_url: null },
       { team_id: '3', division_name: 'Casual', champion: false, team_name: 'C', match_wins: 3, match_losses: 5, game_wins: 15, game_losses: 8, power_score: 0.2, season_id: 's1', sos: null, runner_up: false, playoff_rank: null, team_logo_url: null, team_image_url: null },
