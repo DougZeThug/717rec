@@ -36,17 +36,22 @@ type TabsProps = {
   handleTeamSubmit: (teamData: Omit<Team, 'id' | 'created_at'>) => Promise<void>;
 };
 
+
+const TeamManagementTabList = ({ pendingMembershipCount }: { pendingMembershipCount: number }) => (
+  <TabsList>
+    <TabsTrigger value="manage">Manage Teams</TabsTrigger>
+    <TabsTrigger value="create">Create Team</TabsTrigger>
+    <TabsTrigger value="logos" className="gap-1.5"><Image className="h-3.5 w-3.5" />Update Logos</TabsTrigger>
+    <TabsTrigger value="approvals" className="gap-1.5">
+      <UserCheck className="h-3.5 w-3.5" />Member Approvals
+      {pendingMembershipCount > 0 && <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-xs">{pendingMembershipCount}</Badge>}
+    </TabsTrigger>
+  </TabsList>
+);
+
 const TeamManagementTabs = ({ pendingMembershipCount, searchTerm, setSearchTerm, selectedDivision, setSelectedDivision, divisions, filteredTeams, isUpdating, setEditingTeam, handleDivisionChange, handleTeamSubmit }: TabsProps) => (
   <Tabs defaultValue="manage" className="space-y-4">
-    <TabsList>
-      <TabsTrigger value="manage">Manage Teams</TabsTrigger>
-      <TabsTrigger value="create">Create Team</TabsTrigger>
-      <TabsTrigger value="logos" className="gap-1.5"><Image className="h-3.5 w-3.5" />Update Logos</TabsTrigger>
-      <TabsTrigger value="approvals" className="gap-1.5">
-        <UserCheck className="h-3.5 w-3.5" />Member Approvals
-        {pendingMembershipCount > 0 && <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-xs">{pendingMembershipCount}</Badge>}
-      </TabsTrigger>
-    </TabsList>
+    <TeamManagementTabList pendingMembershipCount={pendingMembershipCount} />
     <TabsContent value="manage" className="space-y-4">
       <ManageTeamsPane
         searchTerm={searchTerm}

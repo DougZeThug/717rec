@@ -50,6 +50,16 @@ const TeamDivisionCell = ({ team, divisions, actions }: TeamTableRowProps) => (
   </Select>
 );
 
+const TeamTableHeader = () => (
+  <TableHeader>
+    <TableRow>
+      <TableHead>Team</TableHead>
+      <TableHead>Division</TableHead>
+      <TableHead>Actions</TableHead>
+    </TableRow>
+  </TableHeader>
+);
+
 const TeamTableRowItem = ({ team, divisions, actions }: TeamTableRowProps) => (
   <TableRow className="transition-colors duration-150 hover:bg-muted/50 active:bg-muted">
     <TableCell>
@@ -74,13 +84,7 @@ const TeamTableRowItem = ({ team, divisions, actions }: TeamTableRowProps) => (
 const TeamTableDesktop = ({ teams, divisions, actions }: TeamTableDesktopProps) => (
   <div className="border rounded-lg hidden sm:block">
     <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Team</TableHead>
-          <TableHead>Division</TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
+      <TeamTableHeader />
       <TableBody>{teams.map((team) => <TeamTableRowItem key={team.id} team={team} divisions={divisions} actions={actions} />)}</TableBody>
     </Table>
   </div>
