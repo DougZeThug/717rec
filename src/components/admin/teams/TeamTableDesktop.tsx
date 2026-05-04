@@ -17,6 +17,57 @@ type TeamTableDesktopProps = {
   actions: TeamItemActionApi;
 };
 
+type TeamTableRowProps = {
+  team: Team;
+  divisions: DivisionOption[];
+  actions: TeamItemActionApi;
+};
+
+const TeamTableRowItem = ({ team, divisions, actions }: TeamTableRowProps) => (
+  <TableRow key={team.id} className="transition-colors duration-150 hover:bg-muted/50 active:bg-muted">
+    <TableCell>
+      <div className="flex items-center gap-2">
+        {team.logoUrl || team.imageUrl ? (
+          <img src={team.logoUrl || team.imageUrl} alt={team.name} className="h-6 w-6 rounded-full object-cover shrink-0" />
+        ) : (
+          <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center shrink-0">
+            <Users className="h-3 w-3 text-muted-foreground" />
+          </div>
+        )}
+        <span className="font-medium">{team.name}</span>
+      </div>
+    </TableCell>
+    <TableCell>
+      <Select
+        value={team.division_id || 'unassigned'}
+        onValueChange={(value) => actions.onDivisionChange(team.id, value)}
+        disabled={actions.isUpdatingTeam(team.id)}
+      >
+        <SelectTrigger className="w-40">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="unassigned">
+            <Badge variant="secondary">Unassigned</Badge>
+          </SelectItem>
+          {divisions.map((division) => (
+            <SelectItem key={division.id} value={division.id}>
+              {division.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </TableCell>
+    <TableCell>
+      <motion.div whileTap={{ scale: 0.9 }}>
+        <Button variant="outline" size="sm" aria-label={`Edit ${team.name}`} onClick={() => actions.onEdit(team)}>
+          <Edit className="h-3 w-3" />
+        </Button>
+      </motion.div>
+    </TableCell>
+  </TableRow>
+);
+
 const TeamTableDesktop = ({ teams, divisions, actions }: TeamTableDesktopProps) => (
   <div className="border rounded-lg hidden sm:block">
     <Table>
@@ -29,48 +80,7 @@ const TeamTableDesktop = ({ teams, divisions, actions }: TeamTableDesktopProps) 
       </TableHeader>
       <TableBody>
         {teams.map((team) => (
-          <TableRow key={team.id} className="transition-colors duration-150 hover:bg-muted/50 active:bg-muted">
-            <TableCell>
-              <div className="flex items-center gap-2">
-                {team.logoUrl || team.imageUrl ? (
-                  <img src={team.logoUrl || team.imageUrl} alt={team.name} className="h-6 w-6 rounded-full object-cover shrink-0" />
-                ) : (
-                  <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center shrink-0">
-                    <Users className="h-3 w-3 text-muted-foreground" />
-                  </div>
-                )}
-                <span className="font-medium">{team.name}</span>
-              </div>
-            </TableCell>
-            <TableCell>
-              <Select
-                value={team.division_id || 'unassigned'}
-                onValueChange={(value) => actions.onDivisionChange(team.id, value)}
-                disabled={actions.isUpdatingTeam(team.id)}
-              >
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="unassigned">
-                    <Badge variant="secondary">Unassigned</Badge>
-                  </SelectItem>
-                  {divisions.map((division) => (
-                    <SelectItem key={division.id} value={division.id}>
-                      {division.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </TableCell>
-            <TableCell>
-              <motion.div whileTap={{ scale: 0.9 }}>
-                <Button variant="outline" size="sm" onClick={() => actions.onEdit(team)}>
-                  <Edit className="h-3 w-3" />
-                </Button>
-              </motion.div>
-            </TableCell>
-          </TableRow>
+          <TeamTableRowItem key={team.id} team={team} divisions={divisions} actions={actions} />
         ))}
       </TableBody>
     </Table>
