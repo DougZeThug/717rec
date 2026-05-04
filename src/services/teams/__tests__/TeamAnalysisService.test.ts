@@ -11,7 +11,10 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(), teamLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
+  teamLog: vi.fn(),
 }));
 
 // Import after mocks
@@ -20,15 +23,23 @@ import { fetchTeamAnalysis, upsertTeamAnalysis } from '../TeamAnalysisService';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'query failed') => ({
-  message: msg, code: '42P01', details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 const makeAnalysis = (overrides: Record<string, unknown> = {}) => ({
-  id: 'analysis-1', team_id: 'team-1',
+  id: 'analysis-1',
+  team_id: 'team-1',
   overall: 'Strong team with good chemistry.',
-  strengths: 'Great serves.', weaknesses: 'Inconsistent defense.',
-  trends: 'Improving', rivalry_insights: null,
-  created_at: '2026-01-01T00:00:00Z', updated_at: '2026-04-01T00:00:00Z',
+  strengths: 'Great serves.',
+  weaknesses: 'Inconsistent defense.',
+  trends: 'Improving',
+  rivalry_insights: null,
+  created_at: '2026-01-01T00:00:00Z',
+  updated_at: '2026-04-01T00:00:00Z',
   ...overrides,
 });
 
@@ -73,14 +84,19 @@ describe('upsertTeamAnalysis', () => {
   beforeEach(() => vi.clearAllMocks());
 
   const input = {
-    overall: 'Great team.', strengths: ['Serves.'], weaknesses: ['Defense.'],
-    trends: 'Stable', rivalry_insights: null,
+    overall: 'Great team.',
+    strengths: ['Serves.'],
+    weaknesses: ['Defense.'],
+    trends: 'Stable',
+    rivalry_insights: null,
   };
 
   it('returns upserted data on success', async () => {
     const row = makeAnalysis();
     mockFrom.mockReturnValue({
-      upsert: () => ({ select: () => ({ single: () => Promise.resolve({ data: row, error: null }) }) }),
+      upsert: () => ({
+        select: () => ({ single: () => Promise.resolve({ data: row, error: null }) }),
+      }),
     });
     const result = await upsertTeamAnalysis('team-1', input, 'admin-1', 'admin-1');
     expect(result).toEqual(row);
@@ -89,8 +105,12 @@ describe('upsertTeamAnalysis', () => {
 
   it('throws DatabaseError on Supabase error', async () => {
     mockFrom.mockReturnValue({
-      upsert: () => ({ select: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+      upsert: () => ({
+        select: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }),
+      }),
     });
-    await expect(upsertTeamAnalysis('team-1', input, 'admin-1', 'admin-1')).rejects.toThrow(DatabaseError);
+    await expect(upsertTeamAnalysis('team-1', input, 'admin-1', 'admin-1')).rejects.toThrow(
+      DatabaseError
+    );
   });
 });

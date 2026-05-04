@@ -1,11 +1,11 @@
+import type { PostgrestError } from '@supabase/supabase-js';
+
 import {
   calculateBestWorstDivisionTiers,
   calculatePowerScoreTrend,
 } from '@/hooks/teams/seasonBreakdown/calculateSeasonStats';
 import { TeamAdvancedStats } from '@/types/teamAdvancedStats';
 import { SeasonBreakdown } from '@/types/teamAdvancedStats';
-import type { PostgrestError } from '@supabase/supabase-js';
-
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
@@ -82,9 +82,7 @@ export const fetchSeasonBreakdown = async (teamId: string): Promise<TeamAdvanced
     (brackets ?? []).map((b) => ({
       id: b.id,
       season_id: b.season_id,
-      divisions: b.divisions
-        ? { division_weight: b.divisions.division_weight ?? 0.85 }
-        : null,
+      divisions: b.divisions ? { division_weight: b.divisions.division_weight ?? 0.85 } : null,
     }))
   );
 
@@ -93,7 +91,10 @@ export const fetchSeasonBreakdown = async (teamId: string): Promise<TeamAdvanced
     bracketInfo: match.bracket_id ? bracketInfoMap[match.bracket_id] : null,
   }));
 
-  const { matchesBySeason, playoffMatchesBySeason } = groupMatchesBySeason(allMatches, playoffMatches);
+  const { matchesBySeason, playoffMatchesBySeason } = groupMatchesBySeason(
+    allMatches,
+    playoffMatches
+  );
 
   const seasons: SeasonBreakdown[] = seasonStats.map((stat) =>
     buildSeasonBreakdown(stat, teamId, matchesBySeason, playoffMatchesBySeason, teamDivisionMap)

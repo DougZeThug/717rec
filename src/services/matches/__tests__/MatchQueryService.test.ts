@@ -11,15 +11,18 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(), matchLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
+  matchLog: vi.fn(),
 }));
 
 // Import after mocks
 import {
+  fetchMatchesWithTeams,
   fetchMatchForTie,
   fetchMatchTeamIds,
   fetchMatchTimeslots,
-  fetchMatchesWithTeams,
   fetchPendingMatches,
   fetchPendingScoresMatches,
   fetchScoreSubmissions,
@@ -29,12 +32,21 @@ import {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'query failed') => ({
-  message: msg, code: '42P01', details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 const makeMatch = (overrides: Record<string, unknown> = {}) => ({
-  id: 'match-1', team1_id: 'team-1', team2_id: 'team-2',
-  iscompleted: false, winner_id: null, date: '2026-04-17T18:00:00Z', ...overrides,
+  id: 'match-1',
+  team1_id: 'team-1',
+  team2_id: 'team-2',
+  iscompleted: false,
+  winner_id: null,
+  date: '2026-04-17T18:00:00Z',
+  ...overrides,
 });
 
 // Chain: .select().order() → Promise (fetchMatchesWithTeams no filters)
@@ -115,7 +127,9 @@ describe('fetchPendingMatches', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns pending matches', async () => {
-    mockFrom.mockReturnValue(selectEqIsOrderChain({ data: [makeMatch({ iscompleted: true })], error: null }));
+    mockFrom.mockReturnValue(
+      selectEqIsOrderChain({ data: [makeMatch({ iscompleted: true })], error: null })
+    );
     const result = await fetchPendingMatches();
     expect(result).toHaveLength(1);
   });
@@ -183,7 +197,9 @@ describe('fetchMatchTimeslots', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns timeslots for a date', async () => {
-    mockFrom.mockReturnValue(selectEqChain({ data: [{ id: 'ts-1', timeslot: '6:30 PM' }], error: null }));
+    mockFrom.mockReturnValue(
+      selectEqChain({ data: [{ id: 'ts-1', timeslot: '6:30 PM' }], error: null })
+    );
     const result = await fetchMatchTimeslots('2026-04-17');
     expect(result).toHaveLength(1);
     expect(mockFrom).toHaveBeenCalledWith('team_timeslots');
@@ -206,7 +222,9 @@ describe('fetchScoreSubmissions', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns pending submissions', async () => {
-    mockFrom.mockReturnValue(selectEqOrderDescChain({ data: [{ id: 'sub-1', status: 'pending' }], error: null }));
+    mockFrom.mockReturnValue(
+      selectEqOrderDescChain({ data: [{ id: 'sub-1', status: 'pending' }], error: null })
+    );
     const result = await fetchScoreSubmissions();
     expect(result).toHaveLength(1);
     expect(mockFrom).toHaveBeenCalledWith('score_submissions');
@@ -229,7 +247,14 @@ describe('fetchMatchForTie', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns match data when found', async () => {
-    const match = { winner_id: null, loser_id: null, team1_id: 't1', team2_id: 't2', team1_game_wins: 1, team2_game_wins: 1 };
+    const match = {
+      winner_id: null,
+      loser_id: null,
+      team1_id: 't1',
+      team2_id: 't2',
+      team1_game_wins: 1,
+      team2_game_wins: 1,
+    };
     mockFrom.mockReturnValue(selectEqMaybeSingleChain({ data: match, error: null }));
     const result = await fetchMatchForTie('match-1');
     expect(result.team1_id).toBe('t1');
@@ -252,7 +277,9 @@ describe('fetchMatchTeamIds', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns team IDs when found', async () => {
-    mockFrom.mockReturnValue(selectEqMaybeSingleChain({ data: { team1_id: 't1', team2_id: 't2' }, error: null }));
+    mockFrom.mockReturnValue(
+      selectEqMaybeSingleChain({ data: { team1_id: 't1', team2_id: 't2' }, error: null })
+    );
     const result = await fetchMatchTeamIds('match-1');
     expect(result.team1_id).toBe('t1');
     expect(result.team2_id).toBe('t2');

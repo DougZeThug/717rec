@@ -14,7 +14,11 @@ vi.mock('@/components/admin/batch-matches/auto-schedule/InteractiveSchedulePrevi
 }));
 
 vi.mock('@/components/admin/auto-schedule/ManualTeamAssignment', () => ({
-  default: ({ onTeamsAssigned }: { onTeamsAssigned: (teams: Record<string, unknown[]>) => void }) => (
+  default: ({
+    onTeamsAssigned,
+  }: {
+    onTeamsAssigned: (teams: Record<string, unknown[]>) => void;
+  }) => (
     <button onClick={() => onTeamsAssigned({ Late: [{ id: 'team-c', name: 'Team C' }] })}>
       Add Team C
     </button>

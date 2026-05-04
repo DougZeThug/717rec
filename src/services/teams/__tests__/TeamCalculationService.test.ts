@@ -8,12 +8,18 @@ import { calculateTeamStats, formatTeamStats, getTeamRank } from '../TeamCalcula
 
 const makeTeam = (overrides: Record<string, unknown> = {}) =>
   ({
-    id: 'team-1', name: 'Eagles',
-    wins: 4, losses: 2, game_wins: 9, game_losses: 5,
-    power_score: 75.5, sos: 0.6,
-    win_percentage: 0, game_win_percentage: 0,
+    id: 'team-1',
+    name: 'Eagles',
+    wins: 4,
+    losses: 2,
+    game_wins: 9,
+    game_losses: 5,
+    power_score: 75.5,
+    sos: 0.6,
+    win_percentage: 0,
+    game_win_percentage: 0,
     ...overrides,
-  } as Team);
+  }) as Team;
 
 // ─── calculateTeamStats ───────────────────────────────────────────────────────
 
@@ -49,7 +55,9 @@ describe('calculateTeamStats', () => {
   });
 
   it('calculates totalMatches and totalGames', () => {
-    const stats = calculateTeamStats(makeTeam({ wins: 3, losses: 2, game_wins: 7, game_losses: 4 }));
+    const stats = calculateTeamStats(
+      makeTeam({ wins: 3, losses: 2, game_wins: 7, game_losses: 4 })
+    );
     expect(stats.totalMatches).toBe(5);
     expect(stats.totalGames).toBe(11);
   });

@@ -88,10 +88,10 @@ serve(async (req: Request) => {
     // Rate limit check
     if (isRateLimited(ip)) {
       console.warn('[Support] Rate limit exceeded for IP:', ip);
-      return new Response(
-        JSON.stringify({ error: 'Too many requests. Please try again later.' }),
-        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'Too many requests. Please try again later.' }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const { name, email, subject, message, website }: SupportRequest = await req.json();

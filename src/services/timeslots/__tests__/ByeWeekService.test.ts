@@ -11,7 +11,11 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(), scheduleLog: vi.fn(), teamLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
+  scheduleLog: vi.fn(),
+  teamLog: vi.fn(),
 }));
 
 // Import after mocks
@@ -20,7 +24,11 @@ import { ByeWeekService } from '../ByeWeekService';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'query failed') => ({
-  message: msg, code: '42P01', details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 const makeByeRow = (overrides: Record<string, unknown> = {}) => ({
@@ -87,9 +95,9 @@ describe('ByeWeekService.assignByeWeek', () => {
 
   it('throws DatabaseError on Supabase error', async () => {
     mockFrom.mockReturnValue(singleChain({ data: null, error: pgError() }));
-    await expect(
-      ByeWeekService.assignByeWeek(new Date('2026-04-17'), 'team-1')
-    ).rejects.toThrow(DatabaseError);
+    await expect(ByeWeekService.assignByeWeek(new Date('2026-04-17'), 'team-1')).rejects.toThrow(
+      DatabaseError
+    );
   });
 });
 
@@ -99,10 +107,16 @@ describe('ByeWeekService.batchAssignByeWeeks', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns an array of TeamTimeslots on success', async () => {
-    const rows = [makeByeRow({ id: 'ts-1', team_id: 'team-1' }), makeByeRow({ id: 'ts-2', team_id: 'team-2' })];
+    const rows = [
+      makeByeRow({ id: 'ts-1', team_id: 'team-1' }),
+      makeByeRow({ id: 'ts-2', team_id: 'team-2' }),
+    ];
     mockFrom.mockReturnValue(batchChain({ data: rows, error: null }));
 
-    const result = await ByeWeekService.batchAssignByeWeeks(new Date('2026-04-17'), ['team-1', 'team-2']);
+    const result = await ByeWeekService.batchAssignByeWeeks(new Date('2026-04-17'), [
+      'team-1',
+      'team-2',
+    ]);
 
     expect(result).toHaveLength(2);
     expect(result[0].timeslot).toBe('BYE');

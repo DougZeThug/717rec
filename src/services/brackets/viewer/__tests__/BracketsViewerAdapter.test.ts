@@ -23,10 +23,9 @@ vi.mock('../bracketViewerUtils', () => ({
 
 vi.mock('../SourceNodeCalculator', () => ({
   calculateSourceNodeIds: vi.fn((matches) => matches),
-  toViewerOpponent: vi.fn((id: number | null, score: number | null, result: unknown, position?: number) =>
-    id
-      ? { id, score: score ?? undefined, result: result ?? undefined, position }
-      : null
+  toViewerOpponent: vi.fn(
+    (id: number | null, score: number | null, result: unknown, position?: number) =>
+      id ? { id, score: score ?? undefined, result: result ?? undefined, position } : null
   ),
 }));
 
@@ -53,14 +52,54 @@ const pgError = () => ({
 
 type QueryResult = { data: unknown; error: unknown | null };
 
-const setupSupabaseForTransform = (
-  overrides: Partial<Record<string, QueryResult>> = {}
-) => {
+const setupSupabaseForTransform = (overrides: Partial<Record<string, QueryResult>> = {}) => {
   const responses = {
-    stage: { data: [{ id: 11, name: 'Playoffs', type: 'single_elimination', tournament_id: 'b1', number: 1, settings: {} }], error: null },
-    match: { data: [{ id: 100, stage_id: 11, group_id: 1, round_id: 1, number: 1, child_count: 0, opponent1_id: 1, opponent1_score: 2, opponent1_result: 'win', opponent2_id: 2, opponent2_score: 1, opponent2_result: 'loss', status: 4 }], error: null },
-    match_game: { data: [{ id: 1, number: 1, match_id: 100, status: 4, opponent1_score: 21, opponent2_score: 15 }], error: null },
-    participant: { data: [{ id: 1, name: 'Aces', tournament_id: 'b1', position: 1 }, { id: 2, name: 'Birds', tournament_id: 'b1', position: 2 }], error: null },
+    stage: {
+      data: [
+        {
+          id: 11,
+          name: 'Playoffs',
+          type: 'single_elimination',
+          tournament_id: 'b1',
+          number: 1,
+          settings: {},
+        },
+      ],
+      error: null,
+    },
+    match: {
+      data: [
+        {
+          id: 100,
+          stage_id: 11,
+          group_id: 1,
+          round_id: 1,
+          number: 1,
+          child_count: 0,
+          opponent1_id: 1,
+          opponent1_score: 2,
+          opponent1_result: 'win',
+          opponent2_id: 2,
+          opponent2_score: 1,
+          opponent2_result: 'loss',
+          status: 4,
+        },
+      ],
+      error: null,
+    },
+    match_game: {
+      data: [
+        { id: 1, number: 1, match_id: 100, status: 4, opponent1_score: 21, opponent2_score: 15 },
+      ],
+      error: null,
+    },
+    participant: {
+      data: [
+        { id: 1, name: 'Aces', tournament_id: 'b1', position: 1 },
+        { id: 2, name: 'Birds', tournament_id: 'b1', position: 2 },
+      ],
+      error: null,
+    },
     group: { data: [{ id: 1, number: 1, stage_id: 11 }], error: null },
     round: { data: [{ id: 1, group_id: 1, number: 1 }], error: null },
     teams: { data: [{ name: 'Aces', logo_url: 'logo.png', image_url: null }], error: null },
@@ -109,7 +148,11 @@ describe('BracketsViewerAdapter.transformFromSql', () => {
   });
 
   it('handles null optional datasets as valid empty results', async () => {
-    setupSupabaseForTransform({ match: { data: null, error: null }, participant: { data: null, error: null }, teams: { data: null, error: null } });
+    setupSupabaseForTransform({
+      match: { data: null, error: null },
+      participant: { data: null, error: null },
+      teams: { data: null, error: null },
+    });
 
     const result = await BracketsViewerAdapter.transformFromSql('b1');
 

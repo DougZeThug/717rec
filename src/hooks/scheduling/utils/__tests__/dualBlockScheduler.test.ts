@@ -3,11 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Team } from '@/types';
 import { getBackToBackPair, getPairConfig } from '@/utils/autoSchedule/constants';
 import { errorLog } from '@/utils/logger';
+import type { ScheduledMatch } from '@/utils/scheduling/greedy';
 import {
   generateScheduleGreedyWithTracking,
   pairKey,
 } from '@/utils/scheduling/greedyBackToBackScheduler';
-import type { ScheduledMatch } from '@/utils/scheduling/greedy';
 
 import { scheduleDualBlockPairings } from '../dualBlockScheduler';
 
@@ -253,7 +253,9 @@ describe('scheduleDualBlockPairings', () => {
     );
 
     expect(result.pairings).toEqual({});
-    expect(mockErrorLog).toHaveBeenCalledWith(expect.stringContaining('CROSS-BLOCK MATCH DETECTED:'));
+    expect(mockErrorLog).toHaveBeenCalledWith(
+      expect.stringContaining('CROSS-BLOCK MATCH DETECTED:')
+    );
   });
 
   it('passes accumulated forbidden/session pairs between block scheduler calls', async () => {

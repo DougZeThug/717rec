@@ -41,11 +41,11 @@ vi.mock('@/utils/logger', () => ({
   errorLog: vi.fn(),
 }));
 
+import { useOptimisticScoreMutation } from '@/hooks/playoffs/useOptimisticScoreMutation';
 import {
   fetchBmMatchWithStage,
   fetchPlayoffMatchWithBracket,
 } from '@/services/brackets/BracketReadService';
-import { useOptimisticScoreMutation } from '@/hooks/playoffs/useOptimisticScoreMutation';
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -65,7 +65,13 @@ const mockBmMatch = {
   number: 1,
   child_count: 3,
   status: 2,
-  stage: { id: 1, tournament_id: 'bracket-123', name: 'Main', type: 'single_elimination', number: 1 },
+  stage: {
+    id: 1,
+    tournament_id: 'bracket-123',
+    name: 'Main',
+    type: 'single_elimination',
+    number: 1,
+  },
 };
 
 const mockLegacyMatch = {
@@ -122,9 +128,7 @@ describe('usePlayoffEditMatch', () => {
       });
 
       expect(result.current.editingMatch).toBeNull();
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({ title: 'Match Locked' })
-      );
+      expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Match Locked' }));
     });
 
     it('shows error toast when BM match fetch returns null', async () => {
@@ -136,9 +140,7 @@ describe('usePlayoffEditMatch', () => {
       });
 
       expect(result.current.editingMatch).toBeNull();
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({ variant: 'destructive' })
-      );
+      expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
     });
 
     it('updates optimistic mutation with bracket-specific query context after loading match', async () => {
@@ -178,9 +180,7 @@ describe('usePlayoffEditMatch', () => {
       });
 
       expect(result.current.editingMatch).toBeNull();
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({ title: 'Error' })
-      );
+      expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Error' }));
     });
 
     it('shows Match Locked when teams not yet determined', async () => {
@@ -195,9 +195,7 @@ describe('usePlayoffEditMatch', () => {
         await result.current.handleEditMatch('match-uuid-1');
       });
 
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({ title: 'Match Locked' })
-      );
+      expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Match Locked' }));
     });
   });
 
@@ -211,7 +209,9 @@ describe('usePlayoffEditMatch', () => {
       });
       expect(result.current.editingMatch).not.toBeNull();
 
-      act(() => { result.current.handleCloseMatchEditor(); });
+      act(() => {
+        result.current.handleCloseMatchEditor();
+      });
       expect(result.current.editingMatch).toBeNull();
     });
   });

@@ -45,9 +45,7 @@ describe('transformTeamRow', () => {
   });
 
   it('prefers image_url over logo_url for logoUrl and imageUrl', () => {
-    const team = transformTeamRow(
-      makeRow({ image_url: 'img.webp', logo_url: 'logo.png' })
-    );
+    const team = transformTeamRow(makeRow({ image_url: 'img.webp', logo_url: 'logo.png' }));
     expect(team.logoUrl).toBe('img.webp');
     expect(team.imageUrl).toBe('img.webp');
   });

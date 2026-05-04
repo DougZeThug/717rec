@@ -38,7 +38,10 @@ describe('BracketValidationService.validateFormData', () => {
     [{ ...validPayload, divisionId: '' }, 'Division selection is required'],
     [{ ...validPayload, divisionId: '   ' }, 'Division ID cannot be empty'],
     [{ ...validPayload, divisionId: 123 as unknown as string }, 'Invalid form data structure'],
-    [{ ...validPayload, divisionId: 'not-a-uuid' }, 'Selected division has invalid UUID format: not-a-uuid'],
+    [
+      { ...validPayload, divisionId: 'not-a-uuid' },
+      'Selected division has invalid UUID format: not-a-uuid',
+    ],
   ])('returns error for invalid division (%j)', (payload, expectedError) => {
     const result = BracketValidationService.validateFormData(payload);
 
@@ -85,10 +88,18 @@ describe('BracketValidationService.validateTeamSelection', () => {
   });
 
   it('flags empty/null/non-string entries', () => {
-    const result = BracketValidationService.validateTeamSelection(['', null, 123] as unknown as string[]);
+    const result = BracketValidationService.validateTeamSelection([
+      '',
+      null,
+      123,
+    ] as unknown as string[]);
 
     expect(result.isValid).toBe(false);
-    expect(result.invalidTeams).toEqual(['Team at position 1', 'Team at position 2', 'Team at position 3']);
+    expect(result.invalidTeams).toEqual([
+      'Team at position 1',
+      'Team at position 2',
+      'Team at position 3',
+    ]);
     expect(result.errors).toContain('Empty or invalid team ID at position 1');
     expect(result.errors).toContain('Empty or invalid team ID at position 2');
     expect(result.errors).toContain('Empty or invalid team ID at position 3');
@@ -165,13 +176,11 @@ describe('BracketValidationService.validateForSubmission', () => {
   });
 
   it('returns team validation errors when team validation fails', () => {
-    const teamSpy = vi
-      .spyOn(BracketValidationService, 'validateTeamSelection')
-      .mockReturnValue({
-        isValid: false,
-        invalidTeams: ['Team at position 1'],
-        errors: ['Invalid team ID format at position 1: forced-by-test'],
-      });
+    const teamSpy = vi.spyOn(BracketValidationService, 'validateTeamSelection').mockReturnValue({
+      isValid: false,
+      invalidTeams: ['Team at position 1'],
+      errors: ['Invalid team ID format at position 1: forced-by-test'],
+    });
 
     const result = BracketValidationService.validateForSubmission(validPayload);
 

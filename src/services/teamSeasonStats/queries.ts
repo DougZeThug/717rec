@@ -11,7 +11,10 @@ export interface FetchSeasonBreakdownQueryResults {
   };
   currentMatchesResult: { data: MatchRecord[] | null; error: unknown | null };
   archivedMatchesResult: { data: MatchRecord[] | null; error: unknown | null };
-  playoffMatchesResult: { data: Omit<PlayoffMatchRecord, 'bracketInfo'>[] | null; error: unknown | null };
+  playoffMatchesResult: {
+    data: Omit<PlayoffMatchRecord, 'bracketInfo'>[] | null;
+    error: unknown | null;
+  };
 }
 
 export const fetchSeasonBreakdownQueries = async (

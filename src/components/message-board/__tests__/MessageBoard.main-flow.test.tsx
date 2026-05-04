@@ -4,11 +4,11 @@ import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import MessageControls from '@/components/message-board/message-item/MessageControls';
+import MessageEditForm from '@/components/message-board/message-item/MessageEditForm';
 import MessageFeed from '@/components/message-board/MessageFeed';
 import MessageFilterBar from '@/components/message-board/MessageFilterBar';
 import MessageInput from '@/components/message-board/MessageInput';
-import MessageEditForm from '@/components/message-board/message-item/MessageEditForm';
-import MessageControls from '@/components/message-board/message-item/MessageControls';
 import MessageReactions from '@/components/message-board/reactions/MessageReactions';
 import type { FilterOptions } from '@/hooks/message-board/types';
 import type { Message } from '@/types/reactions';
@@ -74,7 +74,12 @@ describe('message board main flow components', () => {
     vi.clearAllMocks();
     mockUseAuth.mockReturnValue({ user: { id: 'u1' } });
     mockUseAdminAccess.mockReturnValue({ isAdminAccessGranted: true });
-    mockUseTeams.mockReturnValue({ teams: [{ id: 't1', name: 'Wolves' }, { id: 't2', name: 'Hawks' }] });
+    mockUseTeams.mockReturnValue({
+      teams: [
+        { id: 't1', name: 'Wolves' },
+        { id: 't2', name: 'Hawks' },
+      ],
+    });
     mockUseInView.mockReturnValue({ ref: vi.fn(), inView: false });
   });
 
@@ -103,7 +108,11 @@ describe('message board main flow components', () => {
   it('updates visible items through filter/search controls and active filter chips', () => {
     const onFilterChange = vi.fn();
     const onRefresh = vi.fn();
-    const filterOptions: FilterOptions = { category: 'Question', teamId: 't1', searchQuery: 'schedule' };
+    const filterOptions: FilterOptions = {
+      category: 'Question',
+      teamId: 't1',
+      searchQuery: 'schedule',
+    };
 
     withClient(
       <MessageFilterBar
@@ -132,7 +141,11 @@ describe('message board main flow components', () => {
     expect(onFilterChange).toHaveBeenCalledWith({ searchQuery: null });
 
     fireEvent.click(screen.getByRole('button', { name: /clear filters/i }));
-    expect(onFilterChange).toHaveBeenCalledWith({ category: null, teamId: null, searchQuery: null });
+    expect(onFilterChange).toHaveBeenCalledWith({
+      category: null,
+      teamId: null,
+      searchQuery: null,
+    });
   });
 
   it('handles composer validation and category selection', async () => {
@@ -144,7 +157,9 @@ describe('message board main flow components', () => {
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Empty message' }));
 
     fireEvent.change(textbox, { target: { value: 'x'.repeat(501) } });
-    const sendButton = screen.getAllByRole('button').find((btn) => btn.getAttribute('type') === 'submit');
+    const sendButton = screen
+      .getAllByRole('button')
+      .find((btn) => btn.getAttribute('type') === 'submit');
     expect(sendButton).toBeDisabled();
 
     fireEvent.change(textbox, { target: { value: '  valid admin announcement  ' } });
@@ -168,7 +183,9 @@ describe('message board main flow components', () => {
 
     withClient(<MessageEditForm content="Original text" onSave={onSave} onCancel={onCancel} />);
 
-    fireEvent.change(screen.getByPlaceholderText('Edit message...'), { target: { value: 'Updated text' } });
+    fireEvent.change(screen.getByPlaceholderText('Edit message...'), {
+      target: { value: 'Updated text' },
+    });
     fireEvent.click(screen.getByRole('button', { name: /save/i }));
     await waitFor(() => expect(onSave).toHaveBeenCalledWith('Updated text'));
 
@@ -213,7 +230,11 @@ describe('message board main flow components', () => {
   it('toggles reactions and shows error rollback via toast', () => {
     const addReaction = vi.fn((emoji: string) => {
       if (emoji === '🔥') {
-        mockToast({ title: 'Error', description: 'Failed to add reaction', variant: 'destructive' });
+        mockToast({
+          title: 'Error',
+          description: 'Failed to add reaction',
+          variant: 'destructive',
+        });
       }
     });
 

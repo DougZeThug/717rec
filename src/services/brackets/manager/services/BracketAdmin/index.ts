@@ -1,5 +1,4 @@
 import type { SupabaseSqlStorage } from '../../SupabaseSqlStorage';
-
 import { isLosersByeMatch } from './eligibility';
 import { adminToggleByeReady } from './lifecycle';
 import { editMatchParticipants } from './participants';

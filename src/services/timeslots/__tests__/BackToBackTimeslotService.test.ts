@@ -11,7 +11,11 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(), scheduleLog: vi.fn(), teamLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
+  scheduleLog: vi.fn(),
+  teamLog: vi.fn(),
 }));
 
 // Mock autoSchedule/constants — return real-looking pair config
@@ -30,7 +34,11 @@ import { BackToBackTimeslotService } from '../BackToBackTimeslotService';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'query failed') => ({
-  message: msg, code: '42P01', details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 const makeRawSlot = (overrides: Record<string, unknown> = {}) => ({
@@ -84,7 +92,10 @@ describe('BackToBackTimeslotService.addBackToBackTimeslot', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('inserts both timeslot rows and returns transformed results', async () => {
-    const rows = [makeRawSlot(), makeRawSlot({ id: 'ts-2', timeslot: '7:00 PM', match_sequence: 2 })];
+    const rows = [
+      makeRawSlot(),
+      makeRawSlot({ id: 'ts-2', timeslot: '7:00 PM', match_sequence: 2 }),
+    ];
     mockFrom.mockReturnValue(insertSelectChain({ data: rows, error: null }));
 
     const result = await BackToBackTimeslotService.addBackToBackTimeslot(
@@ -101,14 +112,20 @@ describe('BackToBackTimeslotService.addBackToBackTimeslot', () => {
   it('returns empty array when data is null', async () => {
     mockFrom.mockReturnValue(insertSelectChain({ data: null, error: null }));
     const result = await BackToBackTimeslotService.addBackToBackTimeslot(
-      new Date('2026-04-17'), 'team-1', 'Early'
+      new Date('2026-04-17'),
+      'team-1',
+      'Early'
     );
     expect(result).toEqual([]);
   });
 
   it('throws ValidationError for invalid pairName', async () => {
     await expect(
-      BackToBackTimeslotService.addBackToBackTimeslot(new Date('2026-04-17'), 'team-1', 'InvalidPair')
+      BackToBackTimeslotService.addBackToBackTimeslot(
+        new Date('2026-04-17'),
+        'team-1',
+        'InvalidPair'
+      )
     ).rejects.toThrow(ValidationError);
     expect(mockFrom).not.toHaveBeenCalled();
   });
@@ -128,26 +145,36 @@ describe('BackToBackTimeslotService.deleteTimeslot — back-to-back', () => {
 
   it('deletes all pair slots when is_back_to_back is true', async () => {
     const fetchResult = {
-      data: { team_id: 'team-1', match_date: '2026-04-17', is_back_to_back: true, pair_slot: '7:00 PM' },
+      data: {
+        team_id: 'team-1',
+        match_date: '2026-04-17',
+        is_back_to_back: true,
+        pair_slot: '7:00 PM',
+      },
       error: null,
     };
-    mockFrom.mockImplementation(
-      makeFetchAndDeleteMock(fetchResult, { error: null })
-    );
+    mockFrom.mockImplementation(makeFetchAndDeleteMock(fetchResult, { error: null }));
 
     await expect(BackToBackTimeslotService.deleteTimeslot('ts-1')).resolves.toBeUndefined();
   });
 
   it('throws DatabaseError when the fetch step fails', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+      select: () => ({
+        eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }),
+      }),
     });
     await expect(BackToBackTimeslotService.deleteTimeslot('ts-1')).rejects.toThrow(DatabaseError);
   });
 
   it('throws DatabaseError when the delete step fails', async () => {
     const fetchResult = {
-      data: { team_id: 'team-1', match_date: '2026-04-17', is_back_to_back: true, pair_slot: '7:00 PM' },
+      data: {
+        team_id: 'team-1',
+        match_date: '2026-04-17',
+        is_back_to_back: true,
+        pair_slot: '7:00 PM',
+      },
       error: null,
     };
     mockFrom.mockImplementation(
@@ -172,7 +199,12 @@ describe('BackToBackTimeslotService.deleteTimeslot — single slot', () => {
             eq: () => ({
               single: () =>
                 Promise.resolve({
-                  data: { team_id: 'team-1', match_date: '2026-04-17', is_back_to_back: false, pair_slot: null },
+                  data: {
+                    team_id: 'team-1',
+                    match_date: '2026-04-17',
+                    is_back_to_back: false,
+                    pair_slot: null,
+                  },
                   error: null,
                 }),
             }),

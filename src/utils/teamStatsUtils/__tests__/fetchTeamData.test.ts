@@ -81,7 +81,10 @@ describe('fetchTeamData', () => {
 
     await fetchTeamData('missing-team');
 
-    expect(errorLog).toHaveBeenCalledWith('ERROR FETCHING TEAM:', 'No team found with ID: missing-team');
+    expect(errorLog).toHaveBeenCalledWith(
+      'ERROR FETCHING TEAM:',
+      'No team found with ID: missing-team'
+    );
   });
 
   it('propagates service errors to caller', async () => {

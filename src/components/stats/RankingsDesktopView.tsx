@@ -44,20 +44,22 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
 
   return (
     <div className="font-inter">
-      {sortHistoryDivisions(Object.entries(rankingsByDivision)).map(([displayDivision, divisionRankings]) => (
-        <DivisionRankingsSection
-          key={displayDivision}
-          divisionName={displayDivision}
-          rankings={divisionRankings}
-          allRankings={rankings}
-          expandedTeam={expandedTeam}
-          toggleExpand={toggleExpand}
-          sortOptions={sortOptions}
-          onSortChange={onSortChange}
-          showUnified={showUnified}
-          isLight={isLight}
-        />
-      ))}
+      {sortHistoryDivisions(Object.entries(rankingsByDivision)).map(
+        ([displayDivision, divisionRankings]) => (
+          <DivisionRankingsSection
+            key={displayDivision}
+            divisionName={displayDivision}
+            rankings={divisionRankings}
+            allRankings={rankings}
+            expandedTeam={expandedTeam}
+            toggleExpand={toggleExpand}
+            sortOptions={sortOptions}
+            onSortChange={onSortChange}
+            showUnified={showUnified}
+            isLight={isLight}
+          />
+        )
+      )}
     </div>
   );
 };

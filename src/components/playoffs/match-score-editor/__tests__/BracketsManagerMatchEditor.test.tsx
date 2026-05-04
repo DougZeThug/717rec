@@ -9,7 +9,13 @@ const mockHandleToggleByeStatus = vi.fn();
 const mockOnClose = vi.fn();
 
 type Opponent = { id: number; team_id: string; name: string; score: number; result: string | null };
-type MockMatchData = { id: number; status: number; opponent1: Opponent | null; opponent2: Opponent | null; games: unknown[] };
+type MockMatchData = {
+  id: number;
+  status: number;
+  opponent1: Opponent | null;
+  opponent2: Opponent | null;
+  games: unknown[];
+};
 interface MockEditorState {
   matchData: MockMatchData | null;
   isLoading: boolean;

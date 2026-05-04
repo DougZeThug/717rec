@@ -76,8 +76,9 @@ vi.mock('@/components/stats/RankingsMobileView', () => ({
 
 // ─── Import after mocks ───────────────────────────────────────────────────────
 
-import RankingsTable from '../RankingsTable';
 import { Ranking } from '@/types';
+
+import RankingsTable from '../RankingsTable';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

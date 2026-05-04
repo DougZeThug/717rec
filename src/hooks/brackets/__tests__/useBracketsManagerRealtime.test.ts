@@ -39,8 +39,9 @@ vi.mock('@/utils/logger', () => ({
   errorLog: vi.fn(),
 }));
 
-import { useBracketsManagerRealtime } from '../useBracketsManagerRealtime';
 import { supabase } from '@/integrations/supabase/client';
+
+import { useBracketsManagerRealtime } from '../useBracketsManagerRealtime';
 
 const BRACKET_ID = 'bracket-abc';
 const STAGE_ID = 42;
@@ -122,7 +123,9 @@ describe('useBracketsManagerRealtime', () => {
     });
     await waitFor(() => expect(capturedSubscribeCallback).not.toBeNull());
     const subscribeCb = capturedSubscribeCallback as (status: string) => void;
-    act(() => { subscribeCb('SUBSCRIBED'); });
+    act(() => {
+      subscribeCb('SUBSCRIBED');
+    });
     await waitFor(() => expect(result.current.realtimeEnabled).toBe(true));
   });
 
@@ -133,9 +136,13 @@ describe('useBracketsManagerRealtime', () => {
     });
     await waitFor(() => expect(capturedSubscribeCallback).not.toBeNull());
     const subscribeCb = capturedSubscribeCallback as (status: string) => void;
-    act(() => { subscribeCb('SUBSCRIBED'); });
+    act(() => {
+      subscribeCb('SUBSCRIBED');
+    });
     await waitFor(() => expect(result.current.realtimeEnabled).toBe(true));
-    act(() => { subscribeCb('CHANNEL_ERROR'); });
+    act(() => {
+      subscribeCb('CHANNEL_ERROR');
+    });
     await waitFor(() => expect(result.current.realtimeEnabled).toBe(false));
   });
 
@@ -146,7 +153,9 @@ describe('useBracketsManagerRealtime', () => {
     await waitFor(() => expect(capturedPayloadCallback).not.toBeNull());
     const payloadCb = capturedPayloadCallback as (payload: unknown) => void;
 
-    act(() => { payloadCb({ eventType: 'UPDATE', new: { id: 1 } }); });
+    act(() => {
+      payloadCb({ eventType: 'UPDATE', new: { id: 1 } });
+    });
 
     expect(invalidateSpy).toHaveBeenCalledWith(
       expect.objectContaining({ queryKey: ['bracket-data', BRACKET_ID] })
@@ -162,11 +171,11 @@ describe('useBracketsManagerRealtime', () => {
     await waitFor(() => expect(capturedPayloadCallback).not.toBeNull());
     const payloadCb = capturedPayloadCallback as (payload: unknown) => void;
 
-    act(() => { payloadCb({ eventType: 'UPDATE', new: { id: 1 } }); });
+    act(() => {
+      payloadCb({ eventType: 'UPDATE', new: { id: 1 } });
+    });
 
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Bracket Updated' })
-    );
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Bracket Updated' }));
   });
 
   it('calls supabase.removeChannel on unmount', async () => {
@@ -188,7 +197,9 @@ describe('useBracketsManagerRealtime', () => {
     const payloadCb = capturedPayloadCallback as (payload: unknown) => void;
     expect(result.current.lastUpdate).toBeNull();
 
-    act(() => { payloadCb({ eventType: 'UPDATE', new: { id: 1 } }); });
+    act(() => {
+      payloadCb({ eventType: 'UPDATE', new: { id: 1 } });
+    });
 
     await waitFor(() => expect(result.current.lastUpdate).toBeInstanceOf(Date));
   });

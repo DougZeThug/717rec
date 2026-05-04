@@ -37,7 +37,13 @@ describe('MessageReactionsService.fetchReactions', () => {
 
   it('returns reaction rows and uses explicit selected columns', async () => {
     const rows = [
-      { id: 'r1', message_id: 'm1', user_id: 'u1', emoji: '🔥', created_at: '2026-04-01T00:00:00Z' },
+      {
+        id: 'r1',
+        message_id: 'm1',
+        user_id: 'u1',
+        emoji: '🔥',
+        created_at: '2026-04-01T00:00:00Z',
+      },
     ];
     setupFetch({ data: rows, error: null });
 

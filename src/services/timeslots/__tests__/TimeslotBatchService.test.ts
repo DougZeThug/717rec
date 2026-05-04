@@ -11,7 +11,11 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(), scheduleLog: vi.fn(), teamLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
+  scheduleLog: vi.fn(),
+  teamLog: vi.fn(),
 }));
 
 vi.mock('@/utils/autoSchedule/constants', () => ({
@@ -27,13 +31,25 @@ import { TimeslotBatchService } from '../TimeslotBatchService';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'query failed') => ({
-  message: msg, code: '42P01', details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 const makeRawSlot = (overrides: Record<string, unknown> = {}) => ({
-  id: 'ts-1', match_date: '2026-04-17', timeslot: '6:30 PM', team_id: 'team-1',
-  created_at: '2026-04-17T00:00:00Z', is_back_to_back: true, is_double_header: false,
-  pair_slot: '7:00 PM', match_sequence: 1, teams: null, ...overrides,
+  id: 'ts-1',
+  match_date: '2026-04-17',
+  timeslot: '6:30 PM',
+  team_id: 'team-1',
+  created_at: '2026-04-17T00:00:00Z',
+  is_back_to_back: true,
+  is_double_header: false,
+  pair_slot: '7:00 PM',
+  match_sequence: 1,
+  teams: null,
+  ...overrides,
 });
 
 const insertSelectChain = (result: { data: unknown; error: unknown }) => ({
@@ -61,7 +77,9 @@ describe('TimeslotBatchService.batchAssignBackToBackTimeslots', () => {
     mockFrom.mockReturnValue(insertSelectChain({ data: rows, error: null }));
 
     const result = await TimeslotBatchService.batchAssignBackToBackTimeslots(
-      new Date('2026-04-17'), ['team-1'], 'Early'
+      new Date('2026-04-17'),
+      ['team-1'],
+      'Early'
     );
 
     expect(result).toHaveLength(2);
@@ -78,7 +96,9 @@ describe('TimeslotBatchService.batchAssignBackToBackTimeslots', () => {
   it('returns empty array when data is null', async () => {
     mockFrom.mockReturnValue(insertSelectChain({ data: null, error: null }));
     const result = await TimeslotBatchService.batchAssignBackToBackTimeslots(
-      new Date('2026-04-17'), ['team-1'], 'Early'
+      new Date('2026-04-17'),
+      ['team-1'],
+      'Early'
     );
     expect(result).toEqual([]);
   });
@@ -86,7 +106,11 @@ describe('TimeslotBatchService.batchAssignBackToBackTimeslots', () => {
   it('throws DatabaseError on Supabase error', async () => {
     mockFrom.mockReturnValue(insertSelectChain({ data: null, error: pgError() }));
     await expect(
-      TimeslotBatchService.batchAssignBackToBackTimeslots(new Date('2026-04-17'), ['team-1'], 'Early')
+      TimeslotBatchService.batchAssignBackToBackTimeslots(
+        new Date('2026-04-17'),
+        ['team-1'],
+        'Early'
+      )
     ).rejects.toThrow(DatabaseError);
   });
 });
@@ -158,6 +182,8 @@ describe('TimeslotBatchService.batchInsertTimeslots', () => {
 
   it('throws DatabaseError on Supabase error', async () => {
     mockFrom.mockReturnValue(insertSelectChain({ data: null, error: pgError() }));
-    await expect(TimeslotBatchService.batchInsertTimeslots(insertData)).rejects.toThrow(DatabaseError);
+    await expect(TimeslotBatchService.batchInsertTimeslots(insertData)).rejects.toThrow(
+      DatabaseError
+    );
   });
 });

@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { describe, expect, it, vi, beforeEach, beforeAll } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { HeroCard } from '@/types/heroCard';
 
@@ -17,7 +17,8 @@ vi.mock('@/hooks/useHeroCards', () => ({
   useHeroCardMutations: () => ({ ...mocks, isCreating: false, isUpdating: false }),
 }));
 vi.mock('../TargetSelector', () => ({
-  TargetTypeSelector: () => <div />, TargetEntitySelector: () => <div />,
+  TargetTypeSelector: () => <div />,
+  TargetEntitySelector: () => <div />,
 }));
 vi.mock('@/components/hero/HeroCard', () => ({ default: () => <div data-testid="preview" /> }));
 
@@ -25,7 +26,11 @@ const renderForm = (ui: React.ReactElement) =>
   render(<QueryClientProvider client={new QueryClient()}>{ui}</QueryClientProvider>);
 
 beforeAll(() => {
-  function ResizeObserverCtor(this: { observe: () => undefined; unobserve: () => undefined; disconnect: () => undefined }) {
+  function ResizeObserverCtor(this: {
+    observe: () => undefined;
+    unobserve: () => undefined;
+    disconnect: () => undefined;
+  }) {
     this.observe = () => undefined;
     this.unobserve = () => undefined;
     this.disconnect = () => undefined;
@@ -83,7 +88,10 @@ describe('HeroCardForm integration', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Create Card' }));
 
     expect(mocks.createCard).toHaveBeenCalledTimes(1);
-    expect(mocks.createCard.mock.calls[0][0]).toMatchObject({ slug: 'spring-launch', title: 'Spring Launch' });
+    expect(mocks.createCard.mock.calls[0][0]).toMatchObject({
+      slug: 'spring-launch',
+      title: 'Spring Launch',
+    });
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
@@ -96,7 +104,9 @@ describe('HeroCardForm integration', () => {
     await userEvent.type(screen.getByLabelText('Headline'), 'Updated');
     await userEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
 
-    expect(mocks.updateCard).toHaveBeenCalledWith(expect.objectContaining({ id: 'c1', title: 'Updated' }));
+    expect(mocks.updateCard).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'c1', title: 'Updated' })
+    );
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

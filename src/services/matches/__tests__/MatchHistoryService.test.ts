@@ -11,7 +11,10 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(), matchLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
+  matchLog: vi.fn(),
 }));
 
 // Import after mocks
@@ -27,7 +30,11 @@ import {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'query failed') => ({
-  message: msg, code: '42P01', details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 // ─── fetchActiveSeasonIdStrict ────────────────────────────────────────────────
@@ -37,7 +44,9 @@ describe('fetchActiveSeasonIdStrict', () => {
 
   it('returns season id when found', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { id: 'season-1' }, error: null }) }) }),
+      select: () => ({
+        eq: () => ({ single: () => Promise.resolve({ data: { id: 'season-1' }, error: null }) }),
+      }),
     });
     const id = await fetchActiveSeasonIdStrict();
     expect(id).toBe('season-1');
@@ -45,7 +54,9 @@ describe('fetchActiveSeasonIdStrict', () => {
 
   it('throws DatabaseError on Supabase error', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+      select: () => ({
+        eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }),
+      }),
     });
     await expect(fetchActiveSeasonIdStrict()).rejects.toThrow(DatabaseError);
   });
@@ -184,10 +195,20 @@ describe('fetchSeasonOpponentHistory', () => {
   it('returns opponent history on success', async () => {
     mockFrom.mockImplementation((table: string) => {
       if (table === 'seasons') {
-        return { select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: activeSeason, error: null }) }) }) };
+        return {
+          select: () => ({
+            eq: () => ({ single: () => Promise.resolve({ data: activeSeason, error: null }) }),
+          }),
+        };
       }
       if (table === 'matches') {
-        return { select: () => ({ eq: () => ({ eq: () => ({ is: () => Promise.resolve({ data: matches, error: null }) }) }) }) };
+        return {
+          select: () => ({
+            eq: () => ({
+              eq: () => ({ is: () => Promise.resolve({ data: matches, error: null }) }),
+            }),
+          }),
+        };
       }
       if (table === 'teams') {
         return { select: () => Promise.resolve({ data: teams, error: null }) };
@@ -203,7 +224,9 @@ describe('fetchSeasonOpponentHistory', () => {
 
   it('returns null when no active season', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError('PGRST116') }) }) }),
+      select: () => ({
+        eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError('PGRST116') }) }),
+      }),
     });
     const result = await fetchSeasonOpponentHistory();
     expect(result).toBeNull();
@@ -212,10 +235,20 @@ describe('fetchSeasonOpponentHistory', () => {
   it('throws DatabaseError when matches query fails', async () => {
     mockFrom.mockImplementation((table: string) => {
       if (table === 'seasons') {
-        return { select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: activeSeason, error: null }) }) }) };
+        return {
+          select: () => ({
+            eq: () => ({ single: () => Promise.resolve({ data: activeSeason, error: null }) }),
+          }),
+        };
       }
       // matches query fails
-      return { select: () => ({ eq: () => ({ eq: () => ({ is: () => Promise.resolve({ data: null, error: pgError() }) }) }) }) };
+      return {
+        select: () => ({
+          eq: () => ({
+            eq: () => ({ is: () => Promise.resolve({ data: null, error: pgError() }) }),
+          }),
+        }),
+      };
     });
     await expect(fetchSeasonOpponentHistory()).rejects.toThrow(DatabaseError);
   });

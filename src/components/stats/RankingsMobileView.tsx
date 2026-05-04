@@ -10,6 +10,7 @@ import { useAllTeamBadges } from '@/hooks/useTeamBadges';
 import { cn } from '@/lib/utils';
 import { Ranking } from '@/types';
 import { TeamBadgeEvent } from '@/types/badges';
+import { sortHistoryDivisions } from '@/utils/historyDivisionUtils';
 import { debugLog } from '@/utils/logger';
 
 import LeagueLeaderboardCarousel from './LeagueLeaderboardCarousel';
@@ -17,7 +18,6 @@ import RankingCard from './RankingCard';
 import { SortOptions } from './RankingsTable';
 import TeamSearchDrawer from './TeamSearchDrawer';
 import ViewToggle from './ViewToggle';
-import { sortHistoryDivisions } from '@/utils/historyDivisionUtils';
 
 interface RankingsMobileViewProps {
   rankings: Ranking[];
@@ -238,66 +238,68 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
       )}
 
       <div className="space-y-2" ref={sectionRef}>
-        {sortHistoryDivisions(Object.entries(rankingsByDivision)).map(([displayDivision, divisionRankings]) => (
-          <div key={displayDivision} className="space-y-1">
-            {!showUnified && (
-              <h3
-                className={cn(
-                  'text-lg font-medium flex items-center font-inter',
-                  isWinterTheme
-                    ? 'text-[hsl(var(--foreground))] border-l-4 border-[hsl(var(--frost-border))] pl-2 bg-white/5'
-                    : 'text-foreground border-l-4 border-blue-500 dark:border-blue-700 pl-2 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent'
-                )}
-              >
-                {displayDivision}{' '}
-                <span className="ml-2 text-xs text-muted-foreground font-inter">
-                  ({divisionRankings.length})
-                </span>
-              </h3>
-            )}
-            <div className="space-y-1">
-              <AnimatePresence mode="popLayout">
-                {divisionRankings.map((ranking, idx) => {
-                  const globalIndex = rankings.findIndex((r) => r.teamId === ranking.teamId);
-                  return (
-                    <motion.div
-                      key={ranking.teamId}
-                      ref={(el) => {
-                        if (el) teamRefs.current.set(ranking.teamId, el);
-                      }}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{
-                        duration: 0.2,
-                        delay: idx * 0.03,
-                        type: 'spring',
-                        stiffness: 500,
-                        damping: 30,
-                      }}
-                      layout
-                      className={cn(
-                        'transition-all duration-300',
-                        highlightedTeamId === ranking.teamId &&
-                          'ring-2 ring-primary ring-offset-2 ring-offset-background rounded-lg animate-pulse'
-                      )}
-                    >
-                      <RankingCard
-                        ranking={ranking}
-                        index={globalIndex}
-                        expandedTeam={expandedTeam}
-                        onToggleExpand={toggleExpand}
-                        compactView={!detailedView}
-                        showDivision={showUnified}
-                        prefetchedBadges={badgesByTeam.get(ranking.teamId) || []}
-                      />
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
+        {sortHistoryDivisions(Object.entries(rankingsByDivision)).map(
+          ([displayDivision, divisionRankings]) => (
+            <div key={displayDivision} className="space-y-1">
+              {!showUnified && (
+                <h3
+                  className={cn(
+                    'text-lg font-medium flex items-center font-inter',
+                    isWinterTheme
+                      ? 'text-[hsl(var(--foreground))] border-l-4 border-[hsl(var(--frost-border))] pl-2 bg-white/5'
+                      : 'text-foreground border-l-4 border-blue-500 dark:border-blue-700 pl-2 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent'
+                  )}
+                >
+                  {displayDivision}{' '}
+                  <span className="ml-2 text-xs text-muted-foreground font-inter">
+                    ({divisionRankings.length})
+                  </span>
+                </h3>
+              )}
+              <div className="space-y-1">
+                <AnimatePresence mode="popLayout">
+                  {divisionRankings.map((ranking, idx) => {
+                    const globalIndex = rankings.findIndex((r) => r.teamId === ranking.teamId);
+                    return (
+                      <motion.div
+                        key={ranking.teamId}
+                        ref={(el) => {
+                          if (el) teamRefs.current.set(ranking.teamId, el);
+                        }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{
+                          duration: 0.2,
+                          delay: idx * 0.03,
+                          type: 'spring',
+                          stiffness: 500,
+                          damping: 30,
+                        }}
+                        layout
+                        className={cn(
+                          'transition-all duration-300',
+                          highlightedTeamId === ranking.teamId &&
+                            'ring-2 ring-primary ring-offset-2 ring-offset-background rounded-lg animate-pulse'
+                        )}
+                      >
+                        <RankingCard
+                          ranking={ranking}
+                          index={globalIndex}
+                          expandedTeam={expandedTeam}
+                          onToggleExpand={toggleExpand}
+                          compactView={!detailedView}
+                          showDivision={showUnified}
+                          prefetchedBadges={badgesByTeam.get(ranking.teamId) || []}
+                        />
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        )}
       </div>
 
       {/* Find My Team FAB — only visible when standings section is in viewport */}

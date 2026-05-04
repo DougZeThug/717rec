@@ -73,9 +73,7 @@ describe('BracketNormalizationService', () => {
 
     it('returns null when LB rounds are missing', async () => {
       const storage = createStorageDouble();
-      storage.select
-        .mockResolvedValueOnce([{ id: 10, number: 2 }])
-        .mockResolvedValueOnce([]);
+      storage.select.mockResolvedValueOnce([{ id: 10, number: 2 }]).mockResolvedValueOnce([]);
 
       const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
 
@@ -84,7 +82,13 @@ describe('BracketNormalizationService', () => {
 
     it('returns final round match on happy path', async () => {
       const storage = createStorageDouble();
-      const expectedMatch = { id: 600, round_id: 300, status: 1, opponent1: { id: 3 }, opponent2: null };
+      const expectedMatch = {
+        id: 600,
+        round_id: 300,
+        status: 1,
+        opponent1: { id: 3 },
+        opponent2: null,
+      };
 
       storage.select
         .mockResolvedValueOnce([{ id: 10, number: 2 }])
@@ -151,9 +155,7 @@ describe('BracketNormalizationService', () => {
       storage.select
         .mockResolvedValueOnce([{ id: 30, number: 3 }])
         .mockResolvedValueOnce([{ id: 32, number: 1 }])
-        .mockResolvedValueOnce([
-          { id: 70, status: 1, opponent1: { id: 5 }, opponent2: { id: 8 } },
-        ]);
+        .mockResolvedValueOnce([{ id: 70, status: 1, opponent1: { id: 5 }, opponent2: { id: 8 } }]);
 
       const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
 
@@ -222,9 +224,7 @@ describe('BracketNormalizationService', () => {
 
     it('returns early when LB R1 is absent', async () => {
       const storage = createStorageDouble();
-      storage.select
-        .mockResolvedValueOnce([{ id: 11, number: 2 }])
-        .mockResolvedValueOnce([]);
+      storage.select.mockResolvedValueOnce([{ id: 11, number: 2 }]).mockResolvedValueOnce([]);
 
       const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
 

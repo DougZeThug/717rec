@@ -111,7 +111,9 @@ describe('SeasonActivationDialog', () => {
     await waitFor(() => expect(partialArchiveMock).toHaveBeenCalledWith('s-target'));
     expect(activateMock).not.toHaveBeenCalled();
     expect(toastMock).toHaveBeenCalledWith(
-      expect.objectContaining({ description: expect.stringMatching(/playoffs remain in progress/i) })
+      expect.objectContaining({
+        description: expect.stringMatching(/playoffs remain in progress/i),
+      })
     );
   });
 
@@ -126,7 +128,9 @@ describe('SeasonActivationDialog', () => {
 
     await userEvent.click(screen.getByLabelText(/keep .* playoffs active/i));
 
-    expect(screen.queryByText(/current active season will be deactivated/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/current active season will be deactivated/i)
+    ).not.toBeInTheDocument();
     expect(screen.getByText(/regular-season matches will be archived/i)).toBeInTheDocument();
     expect(screen.getByText(/playoff bracket will stay in progress/i)).toBeInTheDocument();
   });

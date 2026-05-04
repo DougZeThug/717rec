@@ -334,10 +334,9 @@ export const SeasonService = {
   // are moved to matches_archive; playoffs_active is set to true on the old
   // season. Admin-gated by the underlying RPC.
   activateSeasonWithPartialArchive: async (seasonId: string) => {
-    const { data: season, error } = await supabase.rpc(
-      'activate_season_with_partial_archive',
-      { p_new_season_id: seasonId }
-    );
+    const { data: season, error } = await supabase.rpc('activate_season_with_partial_archive', {
+      p_new_season_id: seasonId,
+    });
 
     if (error) handleDatabaseError(error, 'Failed to activate season with partial archive');
     return season;
@@ -352,15 +351,12 @@ export const SeasonService = {
     runnerUpTeamId?: string | null;
     thirdPlaceTeamId?: string | null;
   }) => {
-    const { data: season, error } = await supabase.rpc(
-      'finalize_playoffs',
-      {
-        p_season_id: params.seasonId,
-        p_champion_team_id: params.championTeamId ?? null,
-        p_runner_up_team_id: params.runnerUpTeamId ?? null,
-        p_third_place_team_id: params.thirdPlaceTeamId ?? null,
-      }
-    );
+    const { data: season, error } = await supabase.rpc('finalize_playoffs', {
+      p_season_id: params.seasonId,
+      p_champion_team_id: params.championTeamId ?? null,
+      p_runner_up_team_id: params.runnerUpTeamId ?? null,
+      p_third_place_team_id: params.thirdPlaceTeamId ?? null,
+    });
 
     if (error) handleDatabaseError(error, 'Failed to finalize playoffs');
     return season;

@@ -54,13 +54,21 @@ vi.mock('@/components/schedule/ScheduleContent', () => ({
     activeTab,
     setActiveTab,
   }: {
-    filteredMatches: Array<{ id: string; team1Details?: { name: string }; team2Details?: { name: string } }>;
+    filteredMatches: Array<{
+      id: string;
+      team1Details?: { name: string };
+      team2Details?: { name: string };
+    }>;
     activeTab: string;
     setActiveTab: (value: string) => void;
   }) => (
     <section>
       <p>Active tab: {activeTab}</p>
-      {filteredMatches.length === 0 ? <p>No matches found</p> : <p>Showing {filteredMatches.length} matches</p>}
+      {filteredMatches.length === 0 ? (
+        <p>No matches found</p>
+      ) : (
+        <p>Showing {filteredMatches.length} matches</p>
+      )}
       <button onClick={() => setActiveTab('completed')}>Switch To Completed</button>
     </section>
   ),
@@ -146,7 +154,12 @@ describe('Schedule page', () => {
     mockUseScheduleData.mockReturnValue({
       ...baseScheduleData,
       upcomingMatches: [
-        { id: 'm1', team1Details: { name: 'Alpha Team' }, team2Details: { name: 'Beta Team' }, location: 'Gym A' },
+        {
+          id: 'm1',
+          team1Details: { name: 'Alpha Team' },
+          team2Details: { name: 'Beta Team' },
+          location: 'Gym A',
+        },
       ],
     });
 
@@ -167,8 +180,18 @@ describe('Schedule page', () => {
     mockUseScheduleData.mockReturnValue({
       ...baseScheduleData,
       upcomingMatches: [
-        { id: 'm1', team1Details: { name: 'Alpha Team' }, team2Details: { name: 'Beta Team' }, location: 'Gym A' },
-        { id: 'm2', team1Details: { name: 'Gamma Team' }, team2Details: { name: 'Delta Team' }, location: 'Gym B' },
+        {
+          id: 'm1',
+          team1Details: { name: 'Alpha Team' },
+          team2Details: { name: 'Beta Team' },
+          location: 'Gym A',
+        },
+        {
+          id: 'm2',
+          team1Details: { name: 'Gamma Team' },
+          team2Details: { name: 'Delta Team' },
+          location: 'Gym B',
+        },
       ],
     });
 

@@ -25,7 +25,9 @@ describe('validateMatchSubmission', () => {
         team1Score: 1,
         team2Score: 0,
       })
-    ).toEqual(expect.objectContaining({ isValid: false, errorMessage: 'Game wins cannot be tied' }));
+    ).toEqual(
+      expect.objectContaining({ isValid: false, errorMessage: 'Game wins cannot be tied' })
+    );
 
     expect(
       validateMatchSubmission({

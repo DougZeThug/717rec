@@ -30,12 +30,12 @@ vi.mock('@/utils/logger', () => ({
   errorLog: vi.fn(),
 }));
 
+import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
 import {
   deleteBracket,
   updatePlayoffMatchResult,
   upsertPlayoffGame,
 } from '@/services/brackets/BracketWriteService';
-import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -60,9 +60,7 @@ describe('usePlayoffActions', () => {
       });
 
       expect(deleteBracket).toHaveBeenCalledWith('bracket-1');
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({ title: 'Bracket Deleted' })
-      );
+      expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Bracket Deleted' }));
       expect(invalidateMatchRelatedQueries).toHaveBeenCalled();
     });
 
@@ -90,20 +88,22 @@ describe('usePlayoffActions', () => {
       });
 
       expect(result.current.isDeleting).toBe(false);
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({ variant: 'destructive' })
-      );
+      expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
     });
 
     it('does nothing when isDeleting is already true', async () => {
       let resolveDelete!: () => void;
       (deleteBracket as ReturnType<typeof vi.fn>).mockReturnValue(
-        new Promise<void>((res) => { resolveDelete = res; })
+        new Promise<void>((res) => {
+          resolveDelete = res;
+        })
       );
       const { result } = renderHook(() => usePlayoffActions(), { wrapper: createWrapper() });
 
       // Start delete without awaiting
-      act(() => { result.current.deleteBracket('bracket-1', 'Spring').catch(vi.fn()); });
+      act(() => {
+        result.current.deleteBracket('bracket-1', 'Spring').catch(vi.fn());
+      });
       await waitFor(() => expect(result.current.isDeleting).toBe(true));
 
       // Second call while in progress should be no-op
@@ -166,9 +166,7 @@ describe('usePlayoffActions', () => {
         }
       });
 
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({ variant: 'destructive' })
-      );
+      expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
     });
   });
 });

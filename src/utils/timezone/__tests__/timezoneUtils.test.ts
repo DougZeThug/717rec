@@ -69,8 +69,18 @@ describe('timezone utilities', () => {
   });
 
   it.each([
-    { label: 'missing time string', date: new Date('2026-03-01T00:00:00.000Z'), time: '', expected: '' },
-    { label: 'valid timestamp output', date: new Date('2026-03-01T00:00:00.000Z'), time: '6:30 PM', expected: /2026-03-01T\d{2}:30:00.000Z/ },
+    {
+      label: 'missing time string',
+      date: new Date('2026-03-01T00:00:00.000Z'),
+      time: '',
+      expected: '',
+    },
+    {
+      label: 'valid timestamp output',
+      date: new Date('2026-03-01T00:00:00.000Z'),
+      time: '6:30 PM',
+      expected: /2026-03-01T\d{2}:30:00.000Z/,
+    },
   ])('formatTimeToUTC: $label', ({ date, time, expected }) => {
     const result = formatTimeToUTC(date, time);
 
@@ -109,11 +119,9 @@ describe('timezone utilities', () => {
   });
 
   it('extractTimeSlotFromUTC returns exact slots when formatter output matches', () => {
-    vi.spyOn(Intl, 'DateTimeFormat').mockImplementation(
-      function () {
-        return buildDateTimeFormatResult('7:30 PM');
-      } as unknown as typeof Intl.DateTimeFormat
-    );
+    vi.spyOn(Intl, 'DateTimeFormat').mockImplementation(function () {
+      return buildDateTimeFormatResult('7:30 PM');
+    } as unknown as typeof Intl.DateTimeFormat);
 
     expect(extractTimeSlotFromUTC('2026-03-01T00:00:00.000Z')).toBe('7:30 PM');
   });
@@ -124,22 +132,19 @@ describe('timezone utilities', () => {
     { formatted: '9:50 PM', expected: '10:00 PM' },
     { formatted: 'bad-data', expected: 'No Time' },
   ])('extractTimeSlotFromUTC normalization for $formatted', ({ formatted, expected }) => {
-    vi.spyOn(Intl, 'DateTimeFormat').mockImplementation(
-      function () {
-        return buildDateTimeFormatResult(formatted);
-      } as unknown as typeof Intl.DateTimeFormat
-    );
+    vi.spyOn(Intl, 'DateTimeFormat').mockImplementation(function () {
+      return buildDateTimeFormatResult(formatted);
+    } as unknown as typeof Intl.DateTimeFormat);
 
     expect(extractTimeSlotFromUTC(new Date('2026-03-01T00:00:00.000Z'))).toBe(expected);
   });
 
   it('formatUTCToLocalTimeString supports 24-hour and seconds options', () => {
-    vi.spyOn(Intl, 'DateTimeFormat').mockImplementation(
-      function (_locales, options) {
-        const formatted = options?.hour12 === false && options?.second === '2-digit' ? '19:30:00' : '7:30 PM';
-        return buildDateTimeFormatResult(formatted);
-      } as unknown as typeof Intl.DateTimeFormat
-    );
+    vi.spyOn(Intl, 'DateTimeFormat').mockImplementation(function (_locales, options) {
+      const formatted =
+        options?.hour12 === false && options?.second === '2-digit' ? '19:30:00' : '7:30 PM';
+      return buildDateTimeFormatResult(formatted);
+    } as unknown as typeof Intl.DateTimeFormat);
 
     const date = new Date('2026-03-01T19:30:00.000Z');
     expect(formatUTCToLocalTimeString(date)).toBe('7:30 PM');

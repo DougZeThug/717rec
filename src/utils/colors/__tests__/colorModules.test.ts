@@ -65,10 +65,38 @@ describe('color modules table-driven coverage', () => {
   });
 
   it.each([
-    { score: null, color: 'text-gray-400 dark:text-gray-500', bg: 'bg-gray-100 dark:bg-gray-900/20', border: 'border-gray-300 dark:border-gray-700', description: 'No Data', formatted: 'N/A' },
-    { score: 85, color: 'text-yellow-600 dark:text-yellow-500', bg: 'bg-yellow-100 dark:bg-yellow-900/20', border: 'border-yellow-300 dark:border-yellow-700', description: 'Elite Performance', formatted: '85.0' },
-    { score: 70, color: 'text-green-600 dark:text-green-500', bg: 'bg-green-100 dark:bg-green-900/20', border: 'border-green-300 dark:border-green-700', description: 'Excellent', formatted: '70.0' },
-    { score: 15, color: 'text-red-600 dark:text-red-500', bg: 'bg-red-100 dark:bg-red-900/20', border: 'border-red-300 dark:border-red-700', description: 'Critical Performance', formatted: '15.0' },
+    {
+      score: null,
+      color: 'text-gray-400 dark:text-gray-500',
+      bg: 'bg-gray-100 dark:bg-gray-900/20',
+      border: 'border-gray-300 dark:border-gray-700',
+      description: 'No Data',
+      formatted: 'N/A',
+    },
+    {
+      score: 85,
+      color: 'text-yellow-600 dark:text-yellow-500',
+      bg: 'bg-yellow-100 dark:bg-yellow-900/20',
+      border: 'border-yellow-300 dark:border-yellow-700',
+      description: 'Elite Performance',
+      formatted: '85.0',
+    },
+    {
+      score: 70,
+      color: 'text-green-600 dark:text-green-500',
+      bg: 'bg-green-100 dark:bg-green-900/20',
+      border: 'border-green-300 dark:border-green-700',
+      description: 'Excellent',
+      formatted: '70.0',
+    },
+    {
+      score: 15,
+      color: 'text-red-600 dark:text-red-500',
+      bg: 'bg-red-100 dark:bg-red-900/20',
+      border: 'border-red-300 dark:border-red-700',
+      description: 'Critical Performance',
+      formatted: '15.0',
+    },
   ])('power score buckets for $score', ({ score, color, bg, border, description, formatted }) => {
     expect(getPowerScoreColor(score)).toBe(color);
     expect(getPowerScoreBackgroundColor(score)).toBe(bg);
@@ -78,9 +106,24 @@ describe('color modules table-driven coverage', () => {
   });
 
   it.each([
-    { count: 3, text: 'text-yellow-600 dark:text-yellow-500 font-semibold', bg: 'bg-yellow-100 dark:bg-yellow-900/20', runnerUp: 'text-gray-600 dark:text-gray-400 font-medium' },
-    { count: 1, text: 'text-yellow-700 dark:text-yellow-400 font-medium', bg: 'bg-yellow-50 dark:bg-yellow-900/10', runnerUp: 'text-gray-600 dark:text-gray-400' },
-    { count: 0, text: 'text-gray-600 dark:text-gray-400', bg: '', runnerUp: 'text-gray-500 dark:text-gray-500' },
+    {
+      count: 3,
+      text: 'text-yellow-600 dark:text-yellow-500 font-semibold',
+      bg: 'bg-yellow-100 dark:bg-yellow-900/20',
+      runnerUp: 'text-gray-600 dark:text-gray-400 font-medium',
+    },
+    {
+      count: 1,
+      text: 'text-yellow-700 dark:text-yellow-400 font-medium',
+      bg: 'bg-yellow-50 dark:bg-yellow-900/10',
+      runnerUp: 'text-gray-600 dark:text-gray-400',
+    },
+    {
+      count: 0,
+      text: 'text-gray-600 dark:text-gray-400',
+      bg: '',
+      runnerUp: 'text-gray-500 dark:text-gray-500',
+    },
   ])('championship/runners-up buckets for $count', ({ count, text, bg, runnerUp }) => {
     expect(getChampionshipColor(count)).toBe(text);
     expect(getChampionshipBackgroundColor(count)).toBe(bg);
@@ -88,10 +131,26 @@ describe('color modules table-driven coverage', () => {
   });
 
   it.each([
-    { input: 0.8, winColor: 'text-green-600 dark:text-green-500', winBg: 'bg-green-100 dark:bg-green-900/20' },
-    { input: 0.6, winColor: 'text-blue-600 dark:text-blue-500', winBg: 'bg-blue-100 dark:bg-blue-900/20' },
-    { input: 0.45, winColor: 'text-orange-500 dark:text-orange-400', winBg: 'bg-orange-100 dark:bg-orange-900/20' },
-    { input: 0.2, winColor: 'text-red-600 dark:text-red-500', winBg: 'bg-red-100 dark:bg-red-900/20' },
+    {
+      input: 0.8,
+      winColor: 'text-green-600 dark:text-green-500',
+      winBg: 'bg-green-100 dark:bg-green-900/20',
+    },
+    {
+      input: 0.6,
+      winColor: 'text-blue-600 dark:text-blue-500',
+      winBg: 'bg-blue-100 dark:bg-blue-900/20',
+    },
+    {
+      input: 0.45,
+      winColor: 'text-orange-500 dark:text-orange-400',
+      winBg: 'bg-orange-100 dark:bg-orange-900/20',
+    },
+    {
+      input: 0.2,
+      winColor: 'text-red-600 dark:text-red-500',
+      winBg: 'bg-red-100 dark:bg-red-900/20',
+    },
   ])('win% buckets for $input', ({ input, winColor, winBg }) => {
     expect(getWinPercentageColor(input)).toBe(winColor);
     expect(getWinPercentageBackgroundColor(input)).toBe(winBg);

@@ -69,7 +69,11 @@ describe('TimeslotService', () => {
   it('delegates addBackToBackTimeslot to BackToBackTimeslotService', async () => {
     const date = new Date('2026-04-17');
     await TimeslotService.addBackToBackTimeslot(date, 'team-1', 'Early');
-    expect(BackToBackTimeslotService.addBackToBackTimeslot).toHaveBeenCalledWith(date, 'team-1', 'Early');
+    expect(BackToBackTimeslotService.addBackToBackTimeslot).toHaveBeenCalledWith(
+      date,
+      'team-1',
+      'Early'
+    );
   });
 
   it('delegates deleteTimeslot to BackToBackTimeslotService', async () => {
@@ -80,18 +84,31 @@ describe('TimeslotService', () => {
   it('delegates assignDoubleHeader to DoubleHeaderService', async () => {
     const date = new Date('2026-04-17');
     await TimeslotService.assignDoubleHeader(date, 'team-1', '6:30 PM', '7:30 PM');
-    expect(DoubleHeaderService.assignDoubleHeader).toHaveBeenCalledWith(date, 'team-1', '6:30 PM', '7:30 PM');
+    expect(DoubleHeaderService.assignDoubleHeader).toHaveBeenCalledWith(
+      date,
+      'team-1',
+      '6:30 PM',
+      '7:30 PM'
+    );
   });
 
   it('delegates batchAssignBackToBackTimeslots to TimeslotBatchService', async () => {
     const date = new Date('2026-04-17');
     await TimeslotService.batchAssignBackToBackTimeslots(date, ['team-1'], 'Early');
-    expect(TimeslotBatchService.batchAssignBackToBackTimeslots).toHaveBeenCalledWith(date, ['team-1'], 'Early');
+    expect(TimeslotBatchService.batchAssignBackToBackTimeslots).toHaveBeenCalledWith(
+      date,
+      ['team-1'],
+      'Early'
+    );
   });
 
   it('delegates insertTimeslot to TimeslotBatchService', async () => {
     await TimeslotService.insertTimeslot('2026-04-17', 'team-1', '6:30 PM');
-    expect(TimeslotBatchService.insertTimeslot).toHaveBeenCalledWith('2026-04-17', 'team-1', '6:30 PM');
+    expect(TimeslotBatchService.insertTimeslot).toHaveBeenCalledWith(
+      '2026-04-17',
+      'team-1',
+      '6:30 PM'
+    );
   });
 
   it('delegates deleteTimeslotSimple to TimeslotBatchService', async () => {

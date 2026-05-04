@@ -151,9 +151,7 @@ const SENSITIVE_QUERY_PARAMS = [
   'code',
 ];
 
-const SENSITIVE_QUERY_PARAMS_LOWER = new Set(
-  SENSITIVE_QUERY_PARAMS.map((p) => p.toLowerCase())
-);
+const SENSITIVE_QUERY_PARAMS_LOWER = new Set(SENSITIVE_QUERY_PARAMS.map((p) => p.toLowerCase()));
 
 export const scrubUrl = (url: string): string => {
   try {

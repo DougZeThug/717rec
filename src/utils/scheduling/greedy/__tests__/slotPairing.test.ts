@@ -52,14 +52,7 @@ describe('generateSlotPairings', () => {
     const teams = ['a', 'b', 'c', 'd'].map((id) => makeTeam(id));
     const matchCounts = new Map(teams.map((t) => [t.id, 0]));
 
-    const matches = generateSlotPairings(
-      teams,
-      'Early',
-      new Set(),
-      new Set(),
-      matchCounts,
-      1
-    );
+    const matches = generateSlotPairings(teams, 'Early', new Set(), new Set(), matchCounts, 1);
 
     matches.forEach((m) => expect(m.slot).toBe('Early'));
   });
@@ -68,14 +61,7 @@ describe('generateSlotPairings', () => {
     const teams = ['a', 'b', 'c', 'd', 'e', 'f'].map((id) => makeTeam(id));
     const matchCounts = new Map(teams.map((t) => [t.id, 0]));
 
-    const matches = generateSlotPairings(
-      teams,
-      'S1',
-      new Set(),
-      new Set(),
-      matchCounts,
-      1
-    );
+    const matches = generateSlotPairings(teams, 'S1', new Set(), new Set(), matchCounts, 1);
 
     expect(matches).toHaveLength(3);
   });

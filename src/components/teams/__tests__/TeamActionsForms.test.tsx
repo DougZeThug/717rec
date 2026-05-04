@@ -11,7 +11,9 @@ vi.mock('@/utils/imageUpload', () => ({
   uploadTeamImage: (file: File, teamId?: string) => mockUpload(file, teamId),
 }));
 vi.mock('@/hooks/useToast', () => ({ useToast: () => ({ toast: mockToast }) }));
-vi.mock('@/hooks/useDivisions', () => ({ useDivisions: () => ({ divisions: [], isLoading: false }) }));
+vi.mock('@/hooks/useDivisions', () => ({
+  useDivisions: () => ({ divisions: [], isLoading: false }),
+}));
 
 import { TeamDeleteDialog } from '../TeamDeleteDialog';
 import { TeamEditForm } from '../TeamEditForm';
@@ -50,7 +52,9 @@ describe('Team destructive/edit actions', () => {
     const file = new File(['x'], 'x.png', { type: 'image/png' });
     await userEvent.upload(input as HTMLInputElement, file);
     await waitFor(() =>
-      expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Image Upload Failed' }))
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Image Upload Failed' })
+      )
     );
   });
 });

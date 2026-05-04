@@ -35,12 +35,10 @@ const createPlayoffMatch = (
     team1_id: string | null;
     team2_id: string | null;
     bracket_id: string | null;
-    bracketInfo:
-      | {
-          season_id: string;
-          division_weight: number;
-        }
-      | null;
+    bracketInfo: {
+      season_id: string;
+      division_weight: number;
+    } | null;
   }> = {}
 ) => ({
   winner_id: null,
@@ -118,7 +116,13 @@ describe('processSeasonMatches', () => {
       [`opp-unknown-tier_${SEASON_ID}`, 'Elite Premier'],
     ]);
 
-    const result = processSeasonMatches(TEAM_ID, SEASON_ID, regularSeasonMatches, [], teamDivisionMap);
+    const result = processSeasonMatches(
+      TEAM_ID,
+      SEASON_ID,
+      regularSeasonMatches,
+      [],
+      teamDivisionMap
+    );
 
     expect(result).toEqual({
       sweeps: 2,

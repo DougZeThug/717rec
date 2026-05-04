@@ -11,7 +11,10 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(), teamLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
+  teamLog: vi.fn(),
 }));
 
 vi.mock('@/utils/teamTransformer', () => ({
@@ -45,15 +48,33 @@ import {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'query failed') => ({
-  message: msg, code: '42P01', details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 const makeTeamRow = (overrides: Record<string, unknown> = {}) => ({
-  team_id: 'team-1', name: 'Eagles', logo_url: null, image_url: null,
-  players: [], wins: 0, losses: 0, game_wins: 0, game_losses: 0,
-  created_at: '2026-01-01T00:00:00Z', division_id: 'd1', divisionname: 'Div A',
-  sos: null, power_score: null, win_percentage: 0, game_win_percentage: 0,
-  close_match_losses: null, seed: null, ...overrides,
+  team_id: 'team-1',
+  name: 'Eagles',
+  logo_url: null,
+  image_url: null,
+  players: [],
+  wins: 0,
+  losses: 0,
+  game_wins: 0,
+  game_losses: 0,
+  created_at: '2026-01-01T00:00:00Z',
+  division_id: 'd1',
+  divisionname: 'Div A',
+  sos: null,
+  power_score: null,
+  win_percentage: 0,
+  game_win_percentage: 0,
+  close_match_losses: null,
+  seed: null,
+  ...overrides,
 });
 
 // ─── fetchTeamsFromApi ────────────────────────────────────────────────────────
@@ -176,7 +197,15 @@ describe('fetchAvailableTeams', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns mapped teams on success', async () => {
-    const row = { id: 'team-1', name: 'Eagles', logo_url: null, image_url: 'img.png', division_id: 'd1', wins: 2, losses: 1 };
+    const row = {
+      id: 'team-1',
+      name: 'Eagles',
+      logo_url: null,
+      image_url: 'img.png',
+      division_id: 'd1',
+      wins: 2,
+      losses: 1,
+    };
     mockFrom.mockReturnValue({
       select: () => ({ order: () => Promise.resolve({ data: [row], error: null }) }),
     });
@@ -207,7 +236,15 @@ describe('fetchTeamForStats', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns team data when found', async () => {
-    const row = { id: 'team-1', name: 'Eagles', wins: 4, losses: 2, game_wins: 8, game_losses: 5, divisions: { name: 'Div A' } };
+    const row = {
+      id: 'team-1',
+      name: 'Eagles',
+      wins: 4,
+      losses: 2,
+      game_wins: 8,
+      game_losses: 5,
+      divisions: { name: 'Div A' },
+    };
     mockFrom.mockReturnValue({
       select: () => ({
         eq: () => ({ maybeSingle: () => Promise.resolve({ data: row, error: null }) }),

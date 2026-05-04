@@ -11,7 +11,10 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(), badgeLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
+  badgeLog: vi.fn(),
 }));
 
 // Import after mocks
@@ -20,7 +23,11 @@ import { BadgeProcessingService } from '../BadgeProcessingService';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'rpc failed') => ({
-  message: msg, code: '42P01', details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 // ─── processMatchBadges ───────────────────────────────────────────────────────
@@ -31,13 +38,18 @@ describe('BadgeProcessingService.processMatchBadges', () => {
   it('returns badge data on success', async () => {
     mockRpc.mockResolvedValue({ data: { badges_awarded: 2 }, error: null });
     const result = await BadgeProcessingService.processMatchBadges('t1', 't2');
-    expect(mockRpc).toHaveBeenCalledWith('process_match_badges', { p_team1_id: 't1', p_team2_id: 't2' });
+    expect(mockRpc).toHaveBeenCalledWith('process_match_badges', {
+      p_team1_id: 't1',
+      p_team2_id: 't2',
+    });
     expect(result.badges_awarded).toBe(2);
   });
 
   it('throws DatabaseError on rpc error', async () => {
     mockRpc.mockResolvedValue({ data: null, error: pgError() });
-    await expect(BadgeProcessingService.processMatchBadges('t1', 't2')).rejects.toThrow(DatabaseError);
+    await expect(BadgeProcessingService.processMatchBadges('t1', 't2')).rejects.toThrow(
+      DatabaseError
+    );
   });
 });
 
@@ -49,13 +61,18 @@ describe('BadgeProcessingService.processKingslayerBadge', () => {
   it('returns badge data on success', async () => {
     mockRpc.mockResolvedValue({ data: { awarded: true }, error: null });
     const result = await BadgeProcessingService.processKingslayerBadge('winner', 'loser');
-    expect(mockRpc).toHaveBeenCalledWith('award_kingslayer_badge', { p_winner_id: 'winner', p_loser_id: 'loser' });
+    expect(mockRpc).toHaveBeenCalledWith('award_kingslayer_badge', {
+      p_winner_id: 'winner',
+      p_loser_id: 'loser',
+    });
     expect(result.awarded).toBe(true);
   });
 
   it('throws DatabaseError on rpc error', async () => {
     mockRpc.mockResolvedValue({ data: null, error: pgError() });
-    await expect(BadgeProcessingService.processKingslayerBadge('w', 'l')).rejects.toThrow(DatabaseError);
+    await expect(BadgeProcessingService.processKingslayerBadge('w', 'l')).rejects.toThrow(
+      DatabaseError
+    );
   });
 });
 
@@ -85,7 +102,9 @@ describe('BadgeProcessingService.processClutchPerformerBadge', () => {
 
   it('throws DatabaseError on rpc error', async () => {
     mockRpc.mockResolvedValue({ data: null, error: pgError() });
-    await expect(BadgeProcessingService.processClutchPerformerBadge('t1', 2, 1)).rejects.toThrow(DatabaseError);
+    await expect(BadgeProcessingService.processClutchPerformerBadge('t1', 2, 1)).rejects.toThrow(
+      DatabaseError
+    );
   });
 });
 
@@ -103,7 +122,9 @@ describe('BadgeProcessingService.processConsistentPerformerBadge', () => {
 
   it('throws DatabaseError on rpc error', async () => {
     mockRpc.mockResolvedValue({ data: null, error: pgError() });
-    await expect(BadgeProcessingService.processConsistentPerformerBadge('t1')).rejects.toThrow(DatabaseError);
+    await expect(BadgeProcessingService.processConsistentPerformerBadge('t1')).rejects.toThrow(
+      DatabaseError
+    );
   });
 });
 
@@ -202,7 +223,9 @@ describe('BadgeProcessingService.processGatekeeperBadge', () => {
 
   it('throws DatabaseError on rpc error', async () => {
     mockRpc.mockResolvedValue({ data: null, error: pgError() });
-    await expect(BadgeProcessingService.processGatekeeperBadge('t1')).rejects.toThrow(DatabaseError);
+    await expect(BadgeProcessingService.processGatekeeperBadge('t1')).rejects.toThrow(
+      DatabaseError
+    );
   });
 });
 
@@ -219,7 +242,9 @@ describe('BadgeProcessingService.processChaosAgentBadge', () => {
 
   it('throws DatabaseError on rpc error', async () => {
     mockRpc.mockResolvedValue({ data: null, error: pgError() });
-    await expect(BadgeProcessingService.processChaosAgentBadge('t1')).rejects.toThrow(DatabaseError);
+    await expect(BadgeProcessingService.processChaosAgentBadge('t1')).rejects.toThrow(
+      DatabaseError
+    );
   });
 });
 

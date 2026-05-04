@@ -11,7 +11,10 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(), teamLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
+  teamLog: vi.fn(),
 }));
 
 // Import after mocks
@@ -20,13 +23,22 @@ import { fetchAllTeamBadges, fetchSeasonBadges, fetchTeamBadges } from '../TeamB
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'query failed') => ({
-  message: msg, code: '42P01', details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 const makeBadge = (overrides: Record<string, unknown> = {}) => ({
-  id: 'badge-1', team_id: 'team-1', badge_type: 'kingslayer',
-  season_id: 'season-1', awarded_at: '2026-04-01T00:00:00Z',
-  metadata: {}, is_active: true, created_at: '2026-04-01T00:00:00Z',
+  id: 'badge-1',
+  team_id: 'team-1',
+  badge_type: 'kingslayer',
+  season_id: 'season-1',
+  awarded_at: '2026-04-01T00:00:00Z',
+  metadata: {},
+  is_active: true,
+  created_at: '2026-04-01T00:00:00Z',
   ...overrides,
 });
 
@@ -70,7 +82,12 @@ describe('fetchAllTeamBadges', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns all active badges', async () => {
-    mockFrom.mockReturnValue(oneEqOrderChain({ data: [makeBadge(), makeBadge({ id: 'b2', team_id: 'team-2' })], error: null }));
+    mockFrom.mockReturnValue(
+      oneEqOrderChain({
+        data: [makeBadge(), makeBadge({ id: 'b2', team_id: 'team-2' })],
+        error: null,
+      })
+    );
     const result = await fetchAllTeamBadges();
     expect(result).toHaveLength(2);
   });

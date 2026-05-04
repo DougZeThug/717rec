@@ -7,9 +7,9 @@ import { Division } from '@/types';
 
 vi.mock('@/hooks/useMobile', () => ({ useIsMobile: () => false }));
 
+import TeamsDisplayModeToggle from '../TeamsDisplayModeToggle';
 import { TeamsFilters } from '../TeamsFilters';
 import TeamsSortToggle from '../TeamsSortToggle';
-import TeamsDisplayModeToggle from '../TeamsDisplayModeToggle';
 
 describe('Teams controls', () => {
   it('changes sort mode', async () => {
@@ -29,7 +29,13 @@ describe('Teams controls', () => {
   it('changes division filter', async () => {
     const onDivisionChange = vi.fn();
     const divisions: Division[] = [{ id: 'd1', name: 'Alpha' } as Division];
-    render(<TeamsFilters selectedDivision="all" onDivisionChange={onDivisionChange} divisions={divisions} />);
+    render(
+      <TeamsFilters
+        selectedDivision="all"
+        onDivisionChange={onDivisionChange}
+        divisions={divisions}
+      />
+    );
     await userEvent.click(screen.getByRole('combobox'));
     await userEvent.click(screen.getByText('Alpha'));
     expect(onDivisionChange).toHaveBeenCalledWith('d1');

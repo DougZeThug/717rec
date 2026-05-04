@@ -40,7 +40,8 @@ vi.mock('@/utils/teamDetailsUtils/matchOutcomeUtils', () => ({
 }));
 
 vi.mock('@/utils/teamDetailsUtils/sweepRateUtils', () => ({
-  calculateSweepRate: (teamId: string, matches: unknown[]) => mockCalculateSweepRate(teamId, matches),
+  calculateSweepRate: (teamId: string, matches: unknown[]) =>
+    mockCalculateSweepRate(teamId, matches),
 }));
 
 describe('useTeamReportCard', () => {

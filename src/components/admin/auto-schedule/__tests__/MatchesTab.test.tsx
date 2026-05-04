@@ -29,7 +29,10 @@ vi.mock('@/utils/autoSchedule/dualBlock', () => ({
   validateDualBlockSchedule: vi.fn(),
 }));
 
-import { calculateDualBlockMetrics, validateDualBlockSchedule } from '@/utils/autoSchedule/dualBlock';
+import {
+  calculateDualBlockMetrics,
+  validateDualBlockSchedule,
+} from '@/utils/autoSchedule/dualBlock';
 
 describe('MatchesTab', () => {
   const pairings = {

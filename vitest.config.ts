@@ -16,10 +16,10 @@ export default defineConfig(({ mode }) => {
   const coverageReporter = isDeepSourceCoverage
     ? ['text', 'lcovonly']
     : isCi || isLightCoverage
-    ? ['text', 'json-summary']
-    : isLocalDiagnostics
-    ? ['text', 'html', 'json-summary']
-    : ['text', 'json-summary'];
+      ? ['text', 'json-summary']
+      : isLocalDiagnostics
+        ? ['text', 'html', 'json-summary']
+        : ['text', 'json-summary'];
   const reportsDirectory = isDeepSourceCoverage ? './coverage/deepsource' : './coverage';
   const coverageInclude = isCiCoverage
     ? ['src/services/**/*.{ts,tsx}', 'src/hooks/**/*.{ts,tsx}', 'src/utils/**/*.{ts,tsx}']

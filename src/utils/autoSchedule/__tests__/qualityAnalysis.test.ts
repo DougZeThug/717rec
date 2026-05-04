@@ -107,8 +107,16 @@ describe('generateQualityFeedback', () => {
     averageCompatibilityScore: 8,
     qualityRating: 'Excellent',
     opponentDiversity: { duplicateOpponents: 0, uniqueOpponents: 8, diversityScore: 100 },
-    powerScoreAnalysis: { averagePowerScoreDifference: 1, balancedMatches: 4, unbalancedMatches: 0 },
-    performanceMetrics: { generationTimeMs: 100, algorithmsUsed: ['standard'], optimizationLevel: 'standard' },
+    powerScoreAnalysis: {
+      averagePowerScoreDifference: 1,
+      balancedMatches: 4,
+      unbalancedMatches: 0,
+    },
+    performanceMetrics: {
+      generationTimeMs: 100,
+      algorithmsUsed: ['standard'],
+      optimizationLevel: 'standard',
+    },
     feedback: { strengths: [], improvements: [], recommendations: [] },
   };
 

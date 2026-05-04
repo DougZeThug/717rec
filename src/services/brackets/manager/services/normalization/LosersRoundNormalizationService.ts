@@ -34,7 +34,9 @@ export class LosersRoundNormalizationService {
           bracketLog(
             `[NORMALIZE] DUPLICATE DETECTED in LB R1 Match ${match.id}: Participant ${opponent1Id} in both slots`
           );
-          bracketLog('[NORMALIZE] Force-clearing opponent2 using direct SQL to bypass defensive merge');
+          bracketLog(
+            '[NORMALIZE] Force-clearing opponent2 using direct SQL to bypass defensive merge'
+          );
 
           // Direct SQL is intentional for this edge case: it bypasses storage adapter merge behavior,
           // which otherwise rehydrates the old opponent2 payload and prevents duplicate cleanup.

@@ -11,7 +11,9 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/utils/logger', () => ({
-  errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn(),
+  errorLog: vi.fn(),
+  warnLog: vi.fn(),
+  dbLog: vi.fn(),
 }));
 
 vi.mock('@/config/cache', () => ({
@@ -24,7 +26,11 @@ import { fetchAllTeamsCareerData } from '../CareerBulkFetchService';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pgError = (msg = 'query failed') => ({
-  message: msg, code: '42P01', details: null, hint: null, name: 'PostgrestError',
+  message: msg,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 function buildFromMock(overrides: Record<string, { data: unknown; error: unknown }>) {
@@ -104,11 +110,13 @@ describe('fetchAllTeamsCareerData', () => {
   });
 
   it('includes entry for teamId with no stats (defaults applied)', async () => {
-    mockFrom.mockImplementation(buildFromMock({
-      ...successOverrides,
-      team_season_stats: { data: [], error: null },
-      teams: { data: [], error: null },
-    }));
+    mockFrom.mockImplementation(
+      buildFromMock({
+        ...successOverrides,
+        team_season_stats: { data: [], error: null },
+        teams: { data: [], error: null },
+      })
+    );
 
     const result = await fetchAllTeamsCareerData(['t1']);
 
@@ -119,21 +127,25 @@ describe('fetchAllTeamsCareerData', () => {
   });
 
   it('throws DatabaseError when season_stats query fails', async () => {
-    mockFrom.mockImplementation(buildFromMock({
-      ...successOverrides,
-      team_season_stats: { data: null, error: pgError('season stats failed') },
-    }));
+    mockFrom.mockImplementation(
+      buildFromMock({
+        ...successOverrides,
+        team_season_stats: { data: null, error: pgError('season stats failed') },
+      })
+    );
 
     await expect(fetchAllTeamsCareerData(['t1'])).rejects.toThrow(DatabaseError);
   });
 
   it('continues and returns data when non-critical queries fail', async () => {
-    mockFrom.mockImplementation(buildFromMock({
-      ...successOverrides,
-      matches: { data: null, error: pgError('matches failed') },
-      matches_archive: { data: null, error: pgError('archive failed') },
-      playoff_matches: { data: null, error: pgError('playoff failed') },
-    }));
+    mockFrom.mockImplementation(
+      buildFromMock({
+        ...successOverrides,
+        matches: { data: null, error: pgError('matches failed') },
+        matches_archive: { data: null, error: pgError('archive failed') },
+        playoff_matches: { data: null, error: pgError('playoff failed') },
+      })
+    );
 
     const result = await fetchAllTeamsCareerData(['t1']);
     expect(result.size).toBe(1);
@@ -145,12 +157,24 @@ describe('fetchAllTeamsCareerData', () => {
 
   it('groups matches for the correct team', async () => {
     const matches = [
-      { winner_id: 't1', loser_id: 't2', team1_game_wins: 2, team2_game_wins: 0, team1_id: 't1', team2_id: 't2', season_id: 's-1', team1: null, team2: null },
+      {
+        winner_id: 't1',
+        loser_id: 't2',
+        team1_game_wins: 2,
+        team2_game_wins: 0,
+        team1_id: 't1',
+        team2_id: 't2',
+        season_id: 's-1',
+        team1: null,
+        team2: null,
+      },
     ];
-    mockFrom.mockImplementation(buildFromMock({
-      ...successOverrides,
-      matches: { data: matches, error: null },
-    }));
+    mockFrom.mockImplementation(
+      buildFromMock({
+        ...successOverrides,
+        matches: { data: matches, error: null },
+      })
+    );
 
     const result = await fetchAllTeamsCareerData(['t1']);
     expect(result.get('t1')?.currentMatches).toHaveLength(1);

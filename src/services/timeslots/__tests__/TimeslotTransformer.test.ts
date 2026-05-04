@@ -39,12 +39,16 @@ describe('formatTimeslotResponse', () => {
 
 describe('formatSingleTimeslot', () => {
   it('defaults is_back_to_back to false when absent', () => {
-    const result = TimeslotTransformer.formatSingleTimeslot(makeRaw({ is_back_to_back: undefined }));
+    const result = TimeslotTransformer.formatSingleTimeslot(
+      makeRaw({ is_back_to_back: undefined })
+    );
     expect(result.is_back_to_back).toBe(false);
   });
 
   it('defaults is_double_header to false when absent', () => {
-    const result = TimeslotTransformer.formatSingleTimeslot(makeRaw({ is_double_header: undefined }));
+    const result = TimeslotTransformer.formatSingleTimeslot(
+      makeRaw({ is_double_header: undefined })
+    );
     expect(result.is_double_header).toBe(false);
   });
 

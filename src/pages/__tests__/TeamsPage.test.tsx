@@ -10,7 +10,9 @@ const mockTeamsState = vi.fn();
 const mockContainer = vi.fn();
 
 vi.mock('@/components/layout/PageLayout', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <div data-testid="teams-page-layout">{children}</div>,
+  default: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="teams-page-layout">{children}</div>
+  ),
 }));
 
 vi.mock('@/components/teams/TeamsPageContainer', () => ({
@@ -61,7 +63,11 @@ describe('TeamsPage', () => {
   });
 
   it('shows user-visible fallback when teams fetch fails', () => {
-    mockTeamsState.mockReturnValue({ isLoading: false, isEmpty: false, error: 'Failed to load teams' });
+    mockTeamsState.mockReturnValue({
+      isLoading: false,
+      isEmpty: false,
+      error: 'Failed to load teams',
+    });
     renderPage();
     expect(screen.getByText('Failed to load teams')).toBeInTheDocument();
   });

@@ -12,9 +12,24 @@ describe('ScoreParser', () => {
       team1Score: 2,
       team2Score: 1,
       games: [
-        expect.objectContaining({ matchId: 'match-1', gameNumber: 1, team1Score: 21, team2Score: 15 }),
-        expect.objectContaining({ matchId: 'match-1', gameNumber: 2, team1Score: 21, team2Score: 15 }),
-        expect.objectContaining({ matchId: 'match-1', gameNumber: 3, team1Score: 15, team2Score: 21 }),
+        expect.objectContaining({
+          matchId: 'match-1',
+          gameNumber: 1,
+          team1Score: 21,
+          team2Score: 15,
+        }),
+        expect.objectContaining({
+          matchId: 'match-1',
+          gameNumber: 2,
+          team1Score: 21,
+          team2Score: 15,
+        }),
+        expect.objectContaining({
+          matchId: 'match-1',
+          gameNumber: 3,
+          team1Score: 15,
+          team2Score: 21,
+        }),
       ],
     });
   });

@@ -88,8 +88,10 @@ function createSupabaseMock(queuedByTable: Record<string, QueryResult[]>) {
       order,
       limit,
       single,
-      then: (onFulfilled: (value: QueryResult) => unknown, onRejected?: (reason: unknown) => unknown) =>
-        Promise.resolve(result).then(onFulfilled, onRejected),
+      then: (
+        onFulfilled: (value: QueryResult) => unknown,
+        onRejected?: (reason: unknown) => unknown
+      ) => Promise.resolve(result).then(onFulfilled, onRejected),
     });
 
     if (!querySpies[table]) querySpies[table] = [];
@@ -433,7 +435,13 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
     expect(result.upsets[1].matchResult).toBe('2–1');
 
     expect(result.hotStreaks).toHaveLength(5);
-    expect(result.hotStreaks.map((h) => h.teamId)).toEqual(['st-1', 'st-2', 'st-3', 'st-5', 'st-6']);
+    expect(result.hotStreaks.map((h) => h.teamId)).toEqual([
+      'st-1',
+      'st-2',
+      'st-3',
+      'st-5',
+      'st-6',
+    ]);
 
     const upsetMatchQuery = querySpies.matches[1];
     expect(upsetMatchQuery.eq).toHaveBeenCalledWith('season_id', 's-2026');

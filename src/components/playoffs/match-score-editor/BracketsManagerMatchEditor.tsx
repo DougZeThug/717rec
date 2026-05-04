@@ -111,7 +111,7 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
             onSave={handleSave}
             onClose={onClose}
             onToggleByeStatus={handleToggleByeStatus}
-          status={matchData.status}
+            status={matchData.status}
           />
         </Dialog>
         {editTeamsDialog}

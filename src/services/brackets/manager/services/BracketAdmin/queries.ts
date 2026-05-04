@@ -8,9 +8,10 @@ export async function collectDownstreamChain(
   const currentMatch = (await deps.storage.select('match', matchId)) as StorageMatch | null;
   if (!currentMatch) return [];
 
-  const currentRound = (await deps.storage.select('round', currentMatch.round_id)) as
-    | StorageRound
-    | null;
+  const currentRound = (await deps.storage.select(
+    'round',
+    currentMatch.round_id
+  )) as StorageRound | null;
   if (!currentRound) return [];
 
   const allRounds = (await deps.storage.select('round', {
