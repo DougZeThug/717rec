@@ -6,20 +6,21 @@ import type { BmMatch, BmOpponentSlot, DbMatch, ParticipantCacheEntry } from './
  * Helper: Defensive merge to prevent null from overwriting filled opponent slots
  */
 export function mergeOpponentSlots(prev: DbMatch | null, patch: DbMatch): DbMatch {
-  const out = { ...patch };
-
-  for (const slot of ['opponent1_id', 'opponent2_id'] as const) {
-    if (slot in patch) {
-      const incoming = patch[slot];
-      // If incoming is null but previous slot has a value, don't overwrite
-      if (incoming === null && prev?.[slot] != null) {
-        bracketLog(`Defensive merge: Prevented null overwrite of ${slot}`);
-        delete out[slot];
+  return Object.fromEntries(
+    Object.entries(patch).filter(([key, value]) => {
+      if (key !== 'opponent1_id' && key !== 'opponent2_id') {
+        return true;
       }
-    }
-  }
 
-  return out;
+      const slot = key as 'opponent1_id' | 'opponent2_id';
+      const shouldDrop = value === null && prev?.[slot] != null;
+      if (shouldDrop) {
+        bracketLog(`Defensive merge: Prevented null overwrite of ${slot}`);
+      }
+
+      return !shouldDrop;
+    })
+  ) as DbMatch;
 }
 
 /**

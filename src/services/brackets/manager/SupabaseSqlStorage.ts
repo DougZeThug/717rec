@@ -5,7 +5,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { bracketLog, errorLog } from '@/utils/logger';
 
-import { mergeOpponentSlots, transformMatchFromDb, transformMatchToDb } from './SupabaseSqlStorage/matchTransforms';
+import {
+  mergeOpponentSlots,
+  transformMatchFromDb,
+  transformMatchToDb,
+} from './SupabaseSqlStorage/matchTransforms';
 import type { BmMatch, DbMatch, Id, ParticipantCacheEntry } from './SupabaseSqlStorage/types';
 
 /**
@@ -89,9 +93,7 @@ export class SupabaseSqlStorage implements CrudInterface {
 
         // For match table, transform from DB format; cast to DataTypes[T] since TypeScript can't infer the conditional
         return (
-          table === 'match'
-            ? transformMatchFromDb(data as DbMatch, this.participantCache)
-            : data
+          table === 'match' ? transformMatchFromDb(data as DbMatch, this.participantCache) : data
         ) as DataTypes[T];
       } else {
         Object.entries(filter).forEach(([key, value]) => {
@@ -111,11 +113,10 @@ export class SupabaseSqlStorage implements CrudInterface {
     return transformedData as DataTypes[T][];
   }
 
-
   /**
    * Transform data for database storage based on table type
    */
-  private transformDataForDb<T extends keyof DataTypes>(
+  private static transformDataForDb<T extends keyof DataTypes>(
     table: T,
     data: Partial<DataTypes[T]>
   ): Partial<DataTypes[T]> | DbMatch {
@@ -124,14 +125,6 @@ export class SupabaseSqlStorage implements CrudInterface {
     }
     return data;
   }
-
-  // Select overloads
-  async select<T extends keyof DataTypes>(table: T): Promise<DataTypes[T][]>;
-  async select<T extends keyof DataTypes>(table: T, id: Id): Promise<DataTypes[T] | null>;
-  async select<T extends keyof DataTypes>(
-    table: T,
-    filter: Partial<DataTypes[T]>
-  ): Promise<DataTypes[T][]>;
 
   async select<T extends keyof DataTypes>(
     table: T,
@@ -160,7 +153,7 @@ export class SupabaseSqlStorage implements CrudInterface {
 
     // Transform data for database storage
     const transformedItems = items.map((item) =>
-      this.transformDataForDb(table, item as Partial<DataTypes[T]>)
+      SupabaseSqlStorage.transformDataForDb(table, item as Partial<DataTypes[T]>)
     );
 
     const { data, error } = await client
@@ -200,7 +193,7 @@ export class SupabaseSqlStorage implements CrudInterface {
     const client = this.getClient();
 
     // Transform data for database storage
-    let transformedValues = this.transformDataForDb(table, values);
+    let transformedValues = SupabaseSqlStorage.transformDataForDb(table, values);
 
     bracketLog(`Update ${table}`, { filter });
 
