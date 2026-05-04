@@ -13,7 +13,7 @@ export interface UpdateMatchScoreParams {
 }
 
 export interface UpdateMatchScoreResult {
-  data: any;
+  data: Awaited<ReturnType<typeof updateMatch>>;
   team1_id: string;
   team2_id: string;
   team1Win: boolean;
