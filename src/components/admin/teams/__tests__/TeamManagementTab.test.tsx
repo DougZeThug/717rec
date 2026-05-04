@@ -76,7 +76,7 @@ describe('TeamManagementTab', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUpdateTeam.mockResolvedValue();
+    mockUpdateTeam.mockResolvedValue(undefined);
     mockUseTeamsQuery.mockReturnValue({
       data: teams,
       isLoading: false,

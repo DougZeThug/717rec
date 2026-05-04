@@ -21,15 +21,18 @@ describe('WeeklyRecapCard', () => {
           winnerId: 't1',
           winnerName: 'LA Knights',
           winnerLogoUrl: null,
+          winnerPowerScore: 75,
           loserId: 't2',
           loserName: 'St. Louis Crew',
           loserLogoUrl: null,
+          loserPowerScore: 80,
           powerScoreGap: 2.4,
           matchResult: '2-1',
+          weekNumber: 7,
         },
       ],
       hotStreaks: [
-        { teamId: 't3', teamName: 'The Jets', logoUrl: null, division: 'West', streak: 'W5' },
+        { teamId: 't3', teamName: 'The Jets', logoUrl: null, division: 'West', streak: 'W5', streakCount: 5 },
       ],
     };
 
