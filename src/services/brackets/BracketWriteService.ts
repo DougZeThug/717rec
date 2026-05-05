@@ -113,6 +113,19 @@ export const insertPlayoffGames = async (
   }
 };
 
+// Full response shape from batch_update_team_seeds RPC
+export interface BatchSeedUpdateResult {
+  total_updates: number;
+  successful_updates: number;
+  failed_updates: number;
+  results: Array<{
+    team_id: string;
+    success: boolean;
+    seed?: number | null;
+    error?: string;
+  }>;
+}
+
 /**
  * Update a single team's seed value
  * Used by useOptimisticTeamMutations hook
@@ -125,21 +138,25 @@ export const updateTeamSeed = async (
     .from('teams')
     .update({ seed })
     .eq('id', teamId)
-    .select()
+    .select('id, seed')
     .single();
 
   if (error) {
     handleDatabaseError(error, 'Failed to update team seed');
   }
 
+  // handleDatabaseError throws on error, so data is present here
   return data as { id: string; seed: number | null };
 };
 
 /**
  * Batch update team seeds via RPC
  * Used by useOptimisticTeamMutations hook
+ * Returns the full RPC response including per-team success/failure details.
  */
-export const batchUpdateTeamSeeds = async (updates: Array<{ team_id: string; seed: string }>) => {
+export const batchUpdateTeamSeeds = async (
+  updates: Array<{ team_id: string; seed: string }>
+): Promise<BatchSeedUpdateResult> => {
   const { data, error } = await supabase.rpc('batch_update_team_seeds', {
     p_updates: updates,
   });
@@ -148,5 +165,6 @@ export const batchUpdateTeamSeeds = async (updates: Array<{ team_id: string; see
     handleDatabaseError(error, 'Failed to batch update team seeds');
   }
 
-  return data;
+  // batch_update_team_seeds returns Json; cast at this single boundary point
+  return data as BatchSeedUpdateResult;
 };

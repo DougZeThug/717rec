@@ -1,28 +1,42 @@
 import { supabase } from '@/integrations/supabase/client';
-import { handleDatabaseError } from '@/utils/errorHandler';
+import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 
 /**
  * Service layer for team seed operations
  * Abstracts Supabase mutations from presentation components
  */
 
+export interface SeedUpdateResult {
+  id: string;
+  seed: number | null;
+}
+
+// Shape of each item inside the `results` array returned by batch_update_team_seeds RPC
+export interface BulkSeedResult {
+  id: string;
+  seed: number | null;
+}
+
 /**
  * Update a single team's seed value
  * @throws {DatabaseError} When database operations fail
  */
-export const updateTeamSeed = async (teamId: string, seed: number | null): Promise<any> => {
+export const updateTeamSeed = async (
+  teamId: string,
+  seed: number | null
+): Promise<SeedUpdateResult> => {
   const { data, error } = await supabase
     .from('teams')
     .update({ seed })
     .eq('id', teamId)
-    .select()
+    .select('id, seed')
     .single();
 
   if (error) {
     handleDatabaseError(error, 'Failed to update team seed');
   }
 
-  return data;
+  return ensureFound(data, 'Team', teamId);
 };
 
 /**
@@ -35,7 +49,7 @@ export const updateTeamSeed = async (teamId: string, seed: number | null): Promi
  */
 export const bulkUpdateTeamSeeds = async (
   updates: Array<{ teamId: string; seed: number | null }>
-): Promise<any[]> => {
+): Promise<BulkSeedResult[]> => {
   const { data, error } = await supabase.rpc('batch_update_team_seeds', {
     p_updates: updates.map(({ teamId, seed }) => ({
       team_id: teamId,
@@ -47,7 +61,9 @@ export const bulkUpdateTeamSeeds = async (
     handleDatabaseError(error, 'Failed to bulk update team seeds');
   }
 
-  return (data as any)?.results ?? [];
+  // batch_update_team_seeds returns Json; the actual shape is { results: BulkSeedResult[] }
+  const payload = data as { results?: BulkSeedResult[] } | null;
+  return payload?.results ?? [];
 };
 
 /**

@@ -2,7 +2,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useRef, useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
-import { batchUpdateTeamSeeds, updateTeamSeed } from '@/services/brackets/BracketWriteService';
+import type { Team } from '@/types';
+import {
+  BatchSeedUpdateResult,
+  batchUpdateTeamSeeds,
+  updateTeamSeed,
+} from '@/services/brackets/BracketWriteService';
 
 import { TeamSeedUpdate } from './useTeamSeedMutation';
 
@@ -12,18 +17,6 @@ interface OptimisticUpdate {
   previousSeed: number | null;
   newSeed: number | null;
   timestamp: number;
-}
-
-interface BatchUpdateResult {
-  total_updates: number;
-  successful_updates: number;
-  failed_updates: number;
-  results: Array<{
-    team_id: string;
-    success: boolean;
-    seed?: number | null;
-    error?: string;
-  }>;
 }
 
 interface OptimisticMutationState {
@@ -47,13 +40,13 @@ export const useOptimisticTeamMutations = () => {
   const createOptimisticUpdate = useCallback(
     (teamId: string, newSeed: number | null): OptimisticUpdate => {
       // Get current seed from cache
-      const currentTeams = queryClient.getQueryData(['playoff-teams']) as any[];
+      const currentTeams = queryClient.getQueryData<Team[]>(['playoff-teams']);
       const currentTeam = currentTeams?.find((team) => team.id === teamId);
 
       return {
         id: `${teamId}-${Date.now()}`,
         teamId,
-        previousSeed: currentTeam?.seed || null,
+        previousSeed: currentTeam?.seed ?? null,
         newSeed,
         timestamp: Date.now(),
       };
@@ -64,10 +57,10 @@ export const useOptimisticTeamMutations = () => {
   // Apply optimistic update to cache
   const applyOptimisticUpdate = useCallback(
     (update: OptimisticUpdate) => {
-      queryClient.setQueryData(['playoff-teams'], (oldData: any[] | undefined) => {
+      queryClient.setQueryData<Team[]>(['playoff-teams'], (oldData) => {
         if (!oldData) return oldData;
         return oldData.map((team) =>
-          team.id === update.teamId ? { ...team, seed: update.newSeed } : team
+          team.id === update.teamId ? { ...team, seed: update.newSeed ?? undefined } : team
         );
       });
 
@@ -89,11 +82,13 @@ export const useOptimisticTeamMutations = () => {
       const currentPendingUpdates = optimisticState.pendingUpdates;
 
       // Rollback cache changes
-      queryClient.setQueryData(['playoff-teams'], (oldData: any[] | undefined) => {
+      queryClient.setQueryData<Team[]>(['playoff-teams'], (oldData) => {
         if (!oldData) return oldData;
         return oldData.map((team) => {
-          const update = currentPendingUpdates.get(team.id);
-          return update ? { ...team, seed: update.previousSeed } : team;
+          const pendingUpdate = currentPendingUpdates.get(team.id);
+          return pendingUpdate
+            ? { ...team, seed: pendingUpdate.previousSeed ?? undefined }
+            : team;
         });
       });
 
@@ -178,7 +173,7 @@ export const useOptimisticTeamMutations = () => {
 
   // Batch update with optimistic UI
   const optimisticBatchUpdate = useMutation({
-    mutationFn: async (updates: TeamSeedUpdate[]) => {
+    mutationFn: async (updates: TeamSeedUpdate[]): Promise<BatchSeedUpdateResult> => {
       // Create and apply all optimistic updates
       const _optimisticUpdates = updates.map(({ teamId, seed }) => {
         const update = createOptimisticUpdate(teamId, seed);
@@ -199,14 +194,13 @@ export const useOptimisticTeamMutations = () => {
         });
       }, 15000); // 15 second timeout for batch
 
-      // Perform batch database update using the new function
+      // Perform batch database update
       const batchData = updates.map(({ teamId, seed }) => ({
         team_id: teamId,
         seed: seed === null ? 'null' : seed.toString(),
       }));
 
-      const data = await batchUpdateTeamSeeds(batchData);
-      return data as unknown as BatchUpdateResult;
+      return await batchUpdateTeamSeeds(batchData);
     },
     onSuccess: (result, _variables) => {
       // Clear timeout
