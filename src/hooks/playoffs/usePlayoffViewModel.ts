@@ -1,15 +1,23 @@
-import { BracketMatchesByType } from '@/services/brackets/types';
 import { convertErrorToString, getUIErrorMessage, logError } from '@/utils/errorHandler';
 import { playoffLog, warnLog } from '@/utils/logger';
-import type { PlayoffViewModel } from '@/utils/playoffs/playoffTypes';
+import type { PlayoffMatch, PlayoffViewModel } from '@/utils/playoffs/playoffTypes';
 
 import { usePlayoffActions } from './usePlayoffActions';
 import { usePlayoffBracketData } from './usePlayoffBracketData';
 import { usePlayoffMatches } from './usePlayoffMatches';
 import { usePlayoffTeams } from './usePlayoffTeams';
 
+// Flat groups returned by the local grouper before the cast to the nested viewer type
+type FlatMatchGroups = {
+  winners: PlayoffMatch[];
+  losers: PlayoffMatch[];
+  finals: PlayoffMatch[];
+};
+
 // Local helper to group bracket matches by type
-const groupBracketMatchesByType = (matches: any[]): BracketMatchesByType => {
+// Note: returns flat arrays per group. The cast to PlayoffViewModel['bracketMatchesByType']
+// (which expects [][], round-organised) happens at the usage site below — contained there.
+const groupBracketMatchesByType = (matches: PlayoffMatch[]): FlatMatchGroups => {
   if (!Array.isArray(matches)) {
     return { winners: [], losers: [], finals: [] };
   }
@@ -114,5 +122,5 @@ export { usePlayoffBracketData } from './usePlayoffBracketData';
 export { usePlayoffMatches } from './usePlayoffMatches';
 export { usePlayoffTeams } from './usePlayoffTeams';
 
-// Re-export the BracketMatchesByType type for convenience
-export type { BracketMatchesByType } from '@/services/brackets/types';
+// Re-export the canonical BracketMatchesByType for convenience
+export type { BracketMatchesByType } from '@/utils/playoffs/playoffTypes';

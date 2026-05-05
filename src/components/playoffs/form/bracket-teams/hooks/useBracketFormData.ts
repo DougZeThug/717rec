@@ -2,7 +2,7 @@ import React from 'react';
 
 import { usePlayoffTeams } from '@/hooks/playoffs/usePlayoffTeams';
 import { useSeedValidation } from '@/hooks/playoffs/useSeedValidation';
-import { Division } from '@/types';
+import { Division, Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 
 import { BracketFormDataResult, ProcessedTeam, SeedValidationState } from '../types';
@@ -17,7 +17,7 @@ import { assignMixedSeeds } from '../utils/seedAssignment';
  */
 export const useBracketFormData = (
   divisions: Division[] = [],
-  providedTeams?: any[],
+  providedTeams?: Team[],
   divisionId?: string
 ): BracketFormDataResult => {
   // ALWAYS call hooks first (before any conditional logic) to comply with React Rules of Hooks
@@ -32,7 +32,7 @@ export const useBracketFormData = (
   // An explicitly provided array (even empty) bypasses the fetch - it's a valid "no teams" state.
   const shouldUseProvidedTeams =
     providedTeams !== undefined && providedTeams !== null && Array.isArray(providedTeams);
-  const teamsToProcess = shouldUseProvidedTeams ? providedTeams : fetchedTeams || [];
+  const teamsToProcess: Team[] = shouldUseProvidedTeams ? providedTeams : fetchedTeams || [];
   const isLoadingTeams = shouldUseProvidedTeams ? false : isLoading;
 
   // Determine error state. Only an error when fetching (not when teams explicitly provided).
@@ -75,30 +75,30 @@ export const useBracketFormData = (
       const sortedTeams = [...teamsToProcess]
         .filter((team) => team && typeof team.id === 'string')
         .sort((a, b) => {
-          const aPowerScore = (a as any).power_score;
-          const bPowerScore = (b as any).power_score;
+          const aPowerScore = a.power_score;
+          const bPowerScore = b.power_score;
 
           // Handle NULL power scores - put them at the end
-          if (aPowerScore === null && bPowerScore === null) {
-            // Both are NULL, sort by win percentage as secondary
-            const aWinPct = (a as any).win_percentage || 0;
-            const bWinPct = (b as any).win_percentage || 0;
+          if (aPowerScore == null && bPowerScore == null) {
+            // Both are NULL/undefined, sort by win percentage as secondary
+            const aWinPct = a.win_percentage ?? 0;
+            const bWinPct = b.win_percentage ?? 0;
             if (bWinPct !== aWinPct) {
               return bWinPct - aWinPct;
             }
             // Tertiary sort by name
             return (a.name || '').localeCompare(b.name || '');
           }
-          if (aPowerScore === null) return 1; // a goes to end
-          if (bPowerScore === null) return -1; // b goes to end
+          if (aPowerScore == null) return 1; // a goes to end
+          if (bPowerScore == null) return -1; // b goes to end
 
           // Both have power scores, sort normally (descending)
           if (bPowerScore !== aPowerScore) {
             return bPowerScore - aPowerScore;
           }
           // Secondary sort by win percentage
-          const aWinPct = (a as any).win_percentage || 0;
-          const bWinPct = (b as any).win_percentage || 0;
+          const aWinPct = a.win_percentage ?? 0;
+          const bWinPct = b.win_percentage ?? 0;
           if (bWinPct !== aWinPct) {
             return bWinPct - aWinPct;
           }
@@ -107,6 +107,7 @@ export const useBracketFormData = (
         });
 
       // Handle mixed seed assignment: manual seeds + auto-assigned seeds
+      // assignMixedSeeds spreads team properties onto TeamWithSeed (index signature allows any field)
       const teamsWithMixedSeeds = assignMixedSeeds(sortedTeams);
       const processed: ProcessedTeam[] = teamsWithMixedSeeds.map((team) => ({
         id: team.id,
@@ -115,20 +116,19 @@ export const useBracketFormData = (
         losses: team.losses || 0,
         game_wins: team.game_wins || 0,
         game_losses: team.game_losses || 0,
-        divisionName:
-          (team as any).divisionName || (team as any).divisionname || 'Unknown Division',
+        divisionName: team.divisionName || 'Unknown Division',
         division_id: team.division_id || team.division || null,
-        imageUrl: team.imageUrl || team.image_url || team.logoUrl || team.logo_url || null,
-        logoUrl: team.logoUrl || team.logo_url || team.imageUrl || team.image_url || null,
+        imageUrl: team.imageUrl || team.logoUrl || null,
+        logoUrl: team.logoUrl || team.imageUrl || null,
         players: Array.isArray(team.players) ? team.players : [],
         seed: team.finalSeed, // Use the calculated seed
-        power_score: (team as any).power_score || 0,
-        powerScore: (team as any).power_score || 0,
-        sos: (team as any).sos || 0.5,
-        win_percentage: (team as any).win_percentage || 0,
-        game_win_percentage: (team as any).game_win_percentage || 0,
+        power_score: team.power_score || 0,
+        powerScore: team.power_score || 0,
+        sos: team.sos || 0.5,
+        win_percentage: team.win_percentage || 0,
+        game_win_percentage: team.game_win_percentage || 0,
         created_at: team.created_at || new Date().toISOString(),
-        close_match_losses: (team as any).close_match_losses || 0,
+        close_match_losses: team.close_match_losses || 0,
       }));
 
       return { processedTeams: processed, processingError: null };
