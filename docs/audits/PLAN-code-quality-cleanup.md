@@ -80,7 +80,6 @@ None have moved.
 | `src/components/teams/TeamAdvancedStatsSection.tsx` | 508 |
 | `src/components/schedule/TimeslotGrouping.tsx` | 490 |
 | `src/components/home/WeeklyRecapCard.tsx` | 433 |
-| `src/components/admin/teams/TeamManagementTab.tsx` | 406 |
 
 ### Approach (one commit per file, in this order)
 Largest and most user-facing first.
@@ -93,7 +92,6 @@ Test each in the browser after splitting.
 ### Step 3.2 — `TeamAdvancedStatsSection.tsx`
 ### Step 3.3 — `TimeslotGrouping.tsx`
 ### Step 3.4 — `WeeklyRecapCard.tsx`
-### Step 3.5 — `TeamManagementTab.tsx`
 
 **Verify each:** `npm test` passes; load the relevant page in the dev server
 and click around to confirm nothing regressed.
