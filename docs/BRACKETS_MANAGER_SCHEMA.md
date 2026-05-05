@@ -193,7 +193,7 @@ All tables have RLS enabled with the following policies:
 
 ### Storage Adapter
 
-The `SupabaseSqlStorage` class (`src/services/brackets/manager/SupabaseSqlStorage.ts`) implements the `CrudInterface` from `brackets-manager` and translates operations to Supabase queries.
+The `SupabaseSqlStorage` class (`src/services/brackets/manager/SupabaseSqlStorage.ts`) implements the `CrudInterface` from `brackets-manager` and translates operations to Supabase queries. Match data type definitions and transformations are in the `SupabaseSqlStorage/` subdirectory.
 
 ### Key Features
 
