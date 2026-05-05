@@ -200,7 +200,7 @@ export const useOptimisticTeamMutations = () => {
         seed: seed === null ? 'null' : seed.toString(),
       }));
 
-      return batchUpdateTeamSeeds(batchData);
+      return await batchUpdateTeamSeeds(batchData);
     },
     onSuccess: (result, _variables) => {
       // Clear timeout
