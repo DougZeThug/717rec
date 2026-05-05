@@ -106,14 +106,13 @@ Don't do this as a dedicated sweep. Instead, **whenever we work on one of these
 files for another reason, replace its `any`s.** Hotspots, in order:
 
 1. `src/components/playoffs/form/bracket-teams/hooks/useBracketFormData.ts` — 14 `any`
-2. `src/services/BadgeProcessingService.ts` — 10 `any`
-3. `src/services/brackets/viewer/BracketsViewerAdapter.ts` — 6 `as unknown as`
+2. `src/services/brackets/viewer/BracketsViewerAdapter.ts` — 6 `as unknown as`
    double casts. Either write a real `.d.ts` for the external lib or narrow them.
-4. `src/components/ui/charts/utils/tooltipUtils.ts` — 6 `any`
-5. `src/components/ui/charts/ChartLegend.tsx` — 6 `any`
-6. `src/components/stats/career/AllTeamsCareerPowerScoreChart.tsx` — 6 `any`
+3. `src/components/ui/charts/utils/tooltipUtils.ts` — 6 `any`
+4. `src/components/ui/charts/ChartLegend.tsx` — 6 `any`
+5. `src/components/stats/career/AllTeamsCareerPowerScoreChart.tsx` — 6 `any`
 
-Test-file `any`s (52 of the 203) are acceptable mocks — leave them.
+Test-file `any`s (52 of the 190) are acceptable mocks — leave them.
 
 ---
 

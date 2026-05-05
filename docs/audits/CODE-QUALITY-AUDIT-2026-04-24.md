@@ -24,7 +24,7 @@ Grade: **B+**, trending up. The last audit's biggest items have been fixed. Rema
 ### New or unchanged problems
 - 4 service files still exceed the 400-line rule.
 - 5 components still exceed 400 lines (only partial overlap with the March list).
-- `any` count went **up** from 130 → 203 (mostly in tests; a few real-code hotspots).
+- `any` count went **up** from 130 → 190 (mostly in tests; a few real-code hotspots).
 - `.env` is committed to git (see §7 — this is public VITE_ keys, not a secret leak, but still non-standard).
 
 ---
@@ -58,11 +58,10 @@ Also worth calling out (not a service, but over 500 lines): `src/utils/predictio
 
 ## 3. Type safety
 
-- `: any` / `as any` / `<any>` occurrences: **203** across the codebase (up from 130).
+- `: any` / `as any` / `<any>` occurrences: **190** across the codebase (up from 130).
   - Roughly half are in test files (mocks) — low risk.
   - Real-code hotspots worth triaging:
     - `src/components/playoffs/form/bracket-teams/hooks/useBracketFormData.ts` — 14
-    - `src/services/BadgeProcessingService.ts` — 10
     - `src/types/brackets-viewer.d.ts` — 8 (external-lib type bridge, likely unavoidable)
     - `src/components/ui/charts/utils/tooltipUtils.ts` — 6
     - `src/components/ui/charts/ChartLegend.tsx` — 6
@@ -134,7 +133,7 @@ Playoff editors from the March audit (`BracketsManagerMatchEditor`, `BracketsVie
 3. Replace the one real-code `console.error` in `src/styles/bracket-styles.ts:22` with `errorLog()` from `@/utils/logger`.
 
 ### P2 — Typing hotspots
-4. Replace `any` in `useBracketFormData.ts` (14) and `BadgeProcessingService.ts` (10) with real types.
+4. Replace `any` in `useBracketFormData.ts` (14) with real types.
 5. Audit the 6 `as unknown as` casts in `BracketsViewerAdapter.ts` — either add a real type declaration for the external lib or narrow the casts.
 
 ### P3 — Test coverage
