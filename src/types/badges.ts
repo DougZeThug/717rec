@@ -82,3 +82,13 @@ export type BadgeMetadata =
   | StreakBadgeMetadata
   | PerformanceBadgeMetadata
   | Record<string, unknown>;
+
+import type {
+  BadgeOperationParams,
+  BadgeOperationType,
+  FailedBadgeOperation,
+} from '@/services/FailedBadgeOperationsService';
+
+export type BadgeOperationKind = BadgeOperationType;
+export type { BadgeOperationParams, FailedBadgeOperation };
+
