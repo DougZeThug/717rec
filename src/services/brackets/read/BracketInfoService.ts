@@ -1,6 +1,67 @@
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 import type { BracketState, PlayoffBracket } from '@/utils/playoffs/playoffTypes';
+
+type BracketRow = Tables<'brackets'>;
+
+type BracketDivisionRow = {
+  name: string | null;
+  display_division: string | null;
+};
+
+type BracketDomainRow = Pick<
+  BracketRow,
+  | 'id'
+  | 'title'
+  | 'format'
+  | 'state'
+  | 'division_id'
+  | 'challonge_tournament_id'
+  | 'uses_brackets_manager'
+  | 'created_at'
+  | 'wb_champion_id'
+  | 'bracket_data'
+  | 'migrated'
+  | 'migrated_at'
+  | 'reset_match_needed'
+> & {
+  name?: string;
+};
+
+type BracketsOverviewRow = Pick<
+  BracketRow,
+  | 'id'
+  | 'title'
+  | 'format'
+  | 'state'
+  | 'division_id'
+  | 'season_id'
+  | 'challonge_tournament_id'
+  | 'uses_brackets_manager'
+  | 'created_at'
+> & {
+  divisions: BracketDivisionRow | null;
+};
+
+type BracketInfoRow = Pick<
+  BracketRow,
+  'id' | 'title' | 'format' | 'state' | 'uses_brackets_manager' | 'bracket_data' | 'participants'
+>;
+
+type BracketWithDivisionRow = Pick<
+  BracketRow,
+  | 'id'
+  | 'title'
+  | 'format'
+  | 'state'
+  | 'division_id'
+  | 'challonge_tournament_id'
+  | 'uses_brackets_manager'
+  | 'bracket_data'
+> & {
+  divisions: BracketDivisionRow;
+};
 
 // Helper to normalize bracket state - handles both legacy and current DB values
 const computeBracketState = (state: string): BracketState =>
@@ -11,7 +72,7 @@ const computeBracketState = (state: string): BracketState =>
       : 'pending';
 
 // Normalization function to convert Supabase rows to PlayoffBracket objects
-const mapRowToBracket = (row: any): PlayoffBracket => ({
+const mapRowToBracket = (row: BracketDomainRow): PlayoffBracket => ({
   ...row,
   name: row.title || row.name,
   matches: [],
@@ -42,7 +103,9 @@ export const fetchPlayoffBracketData = async (bracketId: string): Promise<Playof
  * Fetch brackets overview (with divisions) optionally filtered by season
  * Used by usePlayoffViewModel.compat.ts
  */
-export const fetchBracketsOverview = async (seasonId?: string | null) => {
+export const fetchBracketsOverview = async (
+  seasonId?: string | null
+): Promise<BracketsOverviewRow[]> => {
   let query = supabase
     .from('brackets')
     .select(
@@ -63,14 +126,14 @@ export const fetchBracketsOverview = async (seasonId?: string | null) => {
     handleDatabaseError(error, 'Failed to fetch brackets overview');
   }
 
-  return data ?? [];
+  return (data ?? []) as BracketsOverviewRow[];
 };
 
 /**
  * Fetch bracket info for JSONB/uses_brackets_manager check
  * Used by BracketView component
  */
-export const fetchBracketInfo = async (bracketId: string) => {
+export const fetchBracketInfo = async (bracketId: string): Promise<BracketInfoRow> => {
   const { data, error } = await supabase
     .from('brackets')
     .select('id, title, format, state, uses_brackets_manager, bracket_data, participants')
@@ -81,14 +144,14 @@ export const fetchBracketInfo = async (bracketId: string) => {
     handleDatabaseError(error, 'Failed to fetch bracket info');
   }
 
-  return data;
+  return ensureFound(data, 'BracketInfo', bracketId) as BracketInfoRow;
 };
 
 /**
  * Fetch bracket with division join for bracket data loading
  * Used by useBracketData hook (step 1)
  */
-export const fetchBracketWithDivision = async (bracketId: string) => {
+export const fetchBracketWithDivision = async (bracketId: string): Promise<BracketWithDivisionRow> => {
   const { data, error } = await supabase
     .from('brackets')
     .select(
@@ -111,5 +174,5 @@ export const fetchBracketWithDivision = async (bracketId: string) => {
     handleDatabaseError(error, 'Failed to fetch bracket with division');
   }
 
-  return data;
+  return ensureFound(data, 'BracketWithDivision', bracketId) as BracketWithDivisionRow;
 };
