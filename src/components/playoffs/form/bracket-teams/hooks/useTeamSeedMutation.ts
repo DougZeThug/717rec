@@ -73,7 +73,11 @@ export const useTeamSeedMutation = () => {
   });
 
   // Reset all seeds in a division to automatic
-  const resetDivisionSeeds = useMutation<void, Error, string>({
+  const resetDivisionSeeds = useMutation<
+    Awaited<ReturnType<typeof resetDivisionSeedsService>>,
+    Error,
+    string
+  >({
     mutationFn: async (divisionId) => {
       return await resetDivisionSeedsService(divisionId);
     },
