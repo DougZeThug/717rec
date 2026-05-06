@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 
 import { BRACKET_FORMATS, BRACKET_STATES } from '@/constants/brackets';
-import { useBracketData, SimpleBracketData } from '@/hooks/brackets/useBracketData';
+import { useBracketData } from '@/hooks/brackets/useBracketData';
 import { usePlayoffTeams } from '@/hooks/playoffs/usePlayoffTeams';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { useDivisions } from '@/hooks/useDivisions';
@@ -13,10 +13,9 @@ import { deleteBracket as deleteBracketService } from '@/services/brackets/Brack
 import { convertErrorToString, getUIErrorMessage, logError } from '@/utils/errorHandler';
 import { bracketLog, cacheLog, errorLog, playoffLog } from '@/utils/logger';
 import { BracketFormat, BracketState, PlayoffBracket } from '@/utils/playoffs/playoffTypes';
-import { Division, Team } from '@/types';
 
 export interface PlayoffPageData {
-  profile: null;
+  profile: any;
   isAdmin: boolean;
   selectedBracketId: string | null;
   setSelectedBracketId: (id: string | null) => void;
@@ -24,20 +23,20 @@ export interface PlayoffPageData {
   error: string | null;
   divisionsError: string | null;
   bracketsError: string | null;
-  divisions: Division[];
+  divisions: any[];
   divisionsLoading: boolean;
   availableDivisions: string[];
-  allBrackets: PlayoffBracket[];
+  allBrackets: any[];
   bracketsLoading: boolean;
-  teamsByDivision: Record<string, Team[]>;
-  bracketsByDivision: Record<string, PlayoffBracket[]>;
+  teamsByDivision: Record<string, any>;
+  bracketsByDivision: Record<string, any>;
   typesafeBracketsByDivision: Record<string, PlayoffBracket[]>;
   allBracketsData: PlayoffBracket[];
   handleBracketCreated: () => void;
   handleTeamDivisionChange: (teamId: string, divisionName: string) => Promise<void>;
-  refetchBrackets: () => Promise<void>;
-  bracket: SimpleBracketData | null | undefined;
-  teams: Team[];
+  refetchBrackets: () => Promise<any>;
+  bracket: any;
+  teams: any[];
   teamsLoading: boolean;
   deleteBracket: (bracketId: string, bracketName: string) => Promise<void>;
   isLoading: boolean;

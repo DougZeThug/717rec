@@ -1,28 +1,24 @@
+import { BracketMatchesByType } from '@/services/brackets/types';
 import { convertErrorToString, getUIErrorMessage, logError } from '@/utils/errorHandler';
 import { playoffLog, warnLog } from '@/utils/logger';
-import type {
-  PlayoffMatch,
-  PlayoffMatchesByType,
-  PlayoffViewModel,
-} from '@/utils/playoffs/playoffTypes';
+import type { PlayoffViewModel } from '@/utils/playoffs/playoffTypes';
 
 import { usePlayoffActions } from './usePlayoffActions';
 import { usePlayoffBracketData } from './usePlayoffBracketData';
 import { usePlayoffMatches } from './usePlayoffMatches';
 import { usePlayoffTeams } from './usePlayoffTeams';
 
-// Groups flat PlayoffMatch[] arrays by matchType. Round organisation happens in
-// the brackets-viewer adapter layer, not here.
-const groupBracketMatchesByType = (matches: PlayoffMatch[]): PlayoffMatchesByType => {
+// Local helper to group bracket matches by type
+const groupBracketMatchesByType = (matches: any[]): BracketMatchesByType => {
   if (!Array.isArray(matches)) {
     return { winners: [], losers: [], finals: [] };
   }
 
-  return {
-    winners: matches.filter((match) => match.matchType === 'winners'),
-    losers: matches.filter((match) => match.matchType === 'losers'),
-    finals: matches.filter((match) => match.matchType === 'finals'),
-  };
+  const winners = matches.filter((match) => match.matchType === 'winners');
+  const losers = matches.filter((match) => match.matchType === 'losers');
+  const finals = matches.filter((match) => match.matchType === 'finals');
+
+  return { winners, losers, finals };
 };
 
 /**
@@ -73,7 +69,9 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
 
   // Process bracket data to separate winners, losers and finals matches
   const bracketMatchesByType: PlayoffViewModel['bracketMatchesByType'] =
-    safeMatches.length > 0 ? groupBracketMatchesByType(safeMatches) : null;
+    safeMatches.length > 0
+      ? (groupBracketMatchesByType(safeMatches) as PlayoffViewModel['bracketMatchesByType'])
+      : null;
 
   // Simplified refetch function - no aggressive cache operations
   const refetch = async () => {
@@ -116,5 +114,5 @@ export { usePlayoffBracketData } from './usePlayoffBracketData';
 export { usePlayoffMatches } from './usePlayoffMatches';
 export { usePlayoffTeams } from './usePlayoffTeams';
 
-// Re-export the canonical BracketMatchesByType for convenience
-export type { BracketMatchesByType } from '@/utils/playoffs/playoffTypes';
+// Re-export the BracketMatchesByType type for convenience
+export type { BracketMatchesByType } from '@/services/brackets/types';
