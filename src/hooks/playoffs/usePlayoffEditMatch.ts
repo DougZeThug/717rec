@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
+import type { AsyncVoidCallback } from '@/types/callbacks';
 import {
   fetchBmMatchWithStage,
   fetchPlayoffMatchWithBracket,
@@ -278,7 +279,7 @@ export const usePlayoffEditMatch = () => {
       games: { team1Score: number; team2Score: number }[],
       team1GameWins: number,
       team2GameWins: number,
-      refetchBrackets: () => Promise<void>
+      refetchBrackets: AsyncVoidCallback
     ) => {
       playoffLog('Saving match score (optimistic):', { matchId, team1GameWins, team2GameWins });
 

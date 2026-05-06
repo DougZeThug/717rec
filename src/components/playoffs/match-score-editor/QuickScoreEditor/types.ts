@@ -1,4 +1,5 @@
 import { PlayoffMatch, Team } from '@/types';
+import type { AsyncVoidCallback } from '@/types/callbacks';
 
 export interface QuickScoreEditorProps {
   match: PlayoffMatch;
@@ -10,7 +11,7 @@ export interface QuickScoreEditorProps {
     games: { team1Score: number; team2Score: number }[],
     team1GameWins: number,
     team2GameWins: number,
-    refetchBrackets: () => Promise<any>
+    refetchBrackets: AsyncVoidCallback
   ) => Promise<void>;
   onCancel: () => void;
 }

@@ -1,4 +1,5 @@
 import type { PlayoffMatch, Team } from '@/types';
+import type { AsyncVoidCallback } from '@/types/callbacks';
 
 export interface MatchScoreEditorProps {
   match: PlayoffMatch;
@@ -10,7 +11,7 @@ export interface MatchScoreEditorProps {
     games: GameData[],
     team1GameWins: number,
     team2GameWins: number,
-    refetchBrackets: () => Promise<any>
+    refetchBrackets: AsyncVoidCallback
   ) => Promise<void>;
   onCancel: () => void;
 }
