@@ -1,4 +1,9 @@
 import { supabase } from '@/integrations/supabase/client';
+import {
+  bulkUpdateTeamSeeds as bulkUpdateTeamSeedsService,
+  updateTeamSeed as updateTeamSeedService,
+} from '@/services/teams/TeamSeedService';
+import type { BulkTeamSeedUpdateResult, TeamSeedUpdateInput, TeamSeedUpdateResult } from '@/types/seeding';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { dbLog } from '@/utils/logger';
 
@@ -117,36 +122,15 @@ export const insertPlayoffGames = async (
  * Update a single team's seed value
  * Used by useOptimisticTeamMutations hook
  */
-export const updateTeamSeed = async (
+export const updateTeamSeed = (
   teamId: string,
   seed: number | null
-): Promise<{ id: string; seed: number | null }> => {
-  const { data, error } = await supabase
-    .from('teams')
-    .update({ seed })
-    .eq('id', teamId)
-    .select()
-    .single();
-
-  if (error) {
-    handleDatabaseError(error, 'Failed to update team seed');
-  }
-
-  return data as { id: string; seed: number | null };
-};
+): Promise<TeamSeedUpdateResult> => updateTeamSeedService(teamId, seed);
 
 /**
  * Batch update team seeds via RPC
  * Used by useOptimisticTeamMutations hook
  */
-export const batchUpdateTeamSeeds = async (updates: Array<{ team_id: string; seed: string }>) => {
-  const { data, error } = await supabase.rpc('batch_update_team_seeds', {
-    p_updates: updates,
-  });
-
-  if (error) {
-    handleDatabaseError(error, 'Failed to batch update team seeds');
-  }
-
-  return data;
-};
+export const batchUpdateTeamSeeds = (
+  updates: TeamSeedUpdateInput[]
+): Promise<BulkTeamSeedUpdateResult[]> => bulkUpdateTeamSeedsService(updates);

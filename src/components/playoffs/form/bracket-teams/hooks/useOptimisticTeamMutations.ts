@@ -14,17 +14,6 @@ interface OptimisticUpdate {
   timestamp: number;
 }
 
-interface BatchUpdateResult {
-  total_updates: number;
-  successful_updates: number;
-  failed_updates: number;
-  results: Array<{
-    team_id: string;
-    success: boolean;
-    seed?: number | null;
-    error?: string;
-  }>;
-}
 
 interface OptimisticMutationState {
   pendingUpdates: Map<string, OptimisticUpdate>;
@@ -178,7 +167,7 @@ export const useOptimisticTeamMutations = () => {
 
   // Batch update with optimistic UI
   const optimisticBatchUpdate = useMutation({
-    mutationFn: async (updates: TeamSeedUpdate[]) => {
+    mutationFn: (updates: TeamSeedUpdate[]) => {
       // Create and apply all optimistic updates
       const _optimisticUpdates = updates.map(({ teamId, seed }) => {
         const update = createOptimisticUpdate(teamId, seed);
@@ -200,13 +189,7 @@ export const useOptimisticTeamMutations = () => {
       }, 15000); // 15 second timeout for batch
 
       // Perform batch database update using the new function
-      const batchData = updates.map(({ teamId, seed }) => ({
-        team_id: teamId,
-        seed: seed === null ? 'null' : seed.toString(),
-      }));
-
-      const data = await batchUpdateTeamSeeds(batchData);
-      return data as unknown as BatchUpdateResult;
+      return batchUpdateTeamSeeds(updates);
     },
     onSuccess: (result, _variables) => {
       // Clear timeout
@@ -215,8 +198,8 @@ export const useOptimisticTeamMutations = () => {
       }
 
       // Process results and handle partial failures
-      const failedUpdates = result.results.filter((r) => !r.success);
-      const successfulTeamIds = result.results.filter((r) => r.success).map((r) => r.team_id);
+      const failedUpdates = result.filter((r) => !r.ok);
+      const successfulTeamIds = result.filter((r) => r.ok).map((r) => r.team_id).filter(Boolean) as string[];
 
       // Clear pending updates for successful ones
       setOptimisticState((prev) => {
@@ -232,13 +215,13 @@ export const useOptimisticTeamMutations = () => {
 
         toast({
           title: 'Partial Update Success',
-          description: `${result.successful_updates} seeds updated successfully. ${result.failed_updates} failed.`,
+          description: `${successfulTeamIds.length} seeds updated successfully. ${failedUpdates.length} failed.`,
           variant: 'destructive',
         });
       } else {
         toast({
           title: 'Batch Update Success',
-          description: `All ${result.successful_updates} team seeds updated successfully.`,
+          description: `All ${successfulTeamIds.length} team seeds updated successfully.`,
         });
       }
 
