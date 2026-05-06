@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router';
 
 import { BRACKET_FORMATS, BRACKET_STATES } from '@/constants/brackets';
 import { useBracketData } from '@/hooks/brackets/useBracketData';
+import type { SimpleBracketData } from '@/hooks/brackets/useBracketData';
 import { usePlayoffTeams } from '@/hooks/playoffs/usePlayoffTeams';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { useDivisions } from '@/hooks/useDivisions';
@@ -12,10 +13,13 @@ import { useActiveSeason, usePlayoffActiveSeason } from '@/hooks/useSeasons';
 import { deleteBracket as deleteBracketService } from '@/services/brackets/BracketWriteService';
 import { convertErrorToString, getUIErrorMessage, logError } from '@/utils/errorHandler';
 import { bracketLog, cacheLog, errorLog, playoffLog } from '@/utils/logger';
-import { BracketFormat, BracketState, PlayoffBracket } from '@/utils/playoffs/playoffTypes';
+import { BracketFormat, BracketState, PlayoffBracket, Team } from '@/utils/playoffs/playoffTypes';
+
+type Division = ReturnType<typeof useDivisions>['divisions'][number];
+type TeamsByDivision = Record<string, Team[]>;
 
 export interface PlayoffPageData {
-  profile: any;
+  profile: null;
   isAdmin: boolean;
   selectedBracketId: string | null;
   setSelectedBracketId: (id: string | null) => void;
@@ -23,20 +27,20 @@ export interface PlayoffPageData {
   error: string | null;
   divisionsError: string | null;
   bracketsError: string | null;
-  divisions: any[];
+  divisions: Division[];
   divisionsLoading: boolean;
   availableDivisions: string[];
-  allBrackets: any[];
+  allBrackets: PlayoffBracket[];
   bracketsLoading: boolean;
-  teamsByDivision: Record<string, any>;
-  bracketsByDivision: Record<string, any>;
+  teamsByDivision: TeamsByDivision;
+  bracketsByDivision: Record<string, PlayoffBracket[]>;
   typesafeBracketsByDivision: Record<string, PlayoffBracket[]>;
   allBracketsData: PlayoffBracket[];
   handleBracketCreated: () => void;
   handleTeamDivisionChange: (teamId: string, divisionName: string) => Promise<void>;
-  refetchBrackets: () => Promise<any>;
-  bracket: any;
-  teams: any[];
+  refetchBrackets: () => Promise<void>;
+  bracket: SimpleBracketData | null | undefined;
+  teams: Team[];
   teamsLoading: boolean;
   deleteBracket: (bracketId: string, bracketName: string) => Promise<void>;
   isLoading: boolean;
@@ -270,7 +274,7 @@ export function usePlayoffPageData(): PlayoffPageData {
         cacheLog('Refetched brackets data (no selected bracket)');
       }
 
-      return true;
+      return;
     } catch (error) {
       errorLog('Error in refetchBrackets:', error);
       const errorMessage = getUIErrorMessage(error, 'Failed to refresh data');
