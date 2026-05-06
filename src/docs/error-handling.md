@@ -28,7 +28,7 @@ export class MyService {
   static async getData(id: string) {
     const { data, error } = await supabase
       .from('my_table')
-      .select('*')
+      .select('id, name, status, created_at')
       .eq('id', id)
       .single();
 
@@ -164,7 +164,7 @@ Retry transient errors automatically:
 import { withRetry } from '@/utils/errorHandling';
 
 const result = await withRetry(() => 
-  supabase.from('teams').select('*')
+  supabase.from('teams').select('id, name, division_id, created_at')
 );
 ```
 
