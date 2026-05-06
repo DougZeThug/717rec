@@ -6,6 +6,7 @@ import {
   resetDivisionSeeds as resetDivisionSeedsService,
   updateTeamSeed,
 } from '@/services/teams/TeamSeedService';
+import type { BulkTeamSeedUpdateResult, TeamSeedUpdateResult } from '@/types/seeding';
 import { errorLog } from '@/utils/logger';
 
 import { formatUserError, withRetry } from '../utils/mutationErrorHandling';
@@ -28,8 +29,8 @@ export const useTeamSeedMutation = () => {
   const { toast } = useToast();
 
   // Single team seed update with retry logic
-  const updateSingleTeamSeed = useMutation({
-    mutationFn: async ({ teamId, seed }: { teamId: string; seed: number | null }) => {
+  const updateSingleTeamSeed = useMutation<TeamSeedUpdateResult, Error, TeamSeedUpdate>({
+    mutationFn: async ({ teamId, seed }) => {
       return withRetry(async () => {
         return await updateTeamSeed(teamId, seed);
       });
@@ -49,8 +50,8 @@ export const useTeamSeedMutation = () => {
   });
 
   // Bulk seed updates
-  const bulkUpdateSeeds = useMutation({
-    mutationFn: async ({ updates, divisionId: _divisionId }: BulkSeedUpdateParams) => {
+  const bulkUpdateSeeds = useMutation<BulkTeamSeedUpdateResult[], Error, BulkSeedUpdateParams>({
+    mutationFn: async ({ updates, divisionId: _divisionId }) => {
       return await bulkUpdateTeamSeeds(updates);
     },
     onSuccess: () => {
@@ -72,8 +73,8 @@ export const useTeamSeedMutation = () => {
   });
 
   // Reset all seeds in a division to automatic
-  const resetDivisionSeeds = useMutation({
-    mutationFn: async (divisionId: string) => {
+  const resetDivisionSeeds = useMutation<void, Error, string>({
+    mutationFn: async (divisionId) => {
       return await resetDivisionSeedsService(divisionId);
     },
     onSuccess: () => {
