@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from 'react';
 import { useToast } from '@/hooks/useToast';
 import { batchUpdateTeamSeeds, updateTeamSeed } from '@/services/brackets/BracketWriteService';
 
+import { ProcessedTeam } from '../types';
 import { TeamSeedUpdate } from './useTeamSeedMutation';
 
 interface OptimisticUpdate {
@@ -14,6 +15,7 @@ interface OptimisticUpdate {
   timestamp: number;
 }
 
+type SeededTeamsCacheValue = ProcessedTeam[] | undefined;
 
 interface OptimisticMutationState {
   pendingUpdates: Map<string, OptimisticUpdate>;
@@ -36,7 +38,7 @@ export const useOptimisticTeamMutations = () => {
   const createOptimisticUpdate = useCallback(
     (teamId: string, newSeed: number | null): OptimisticUpdate => {
       // Get current seed from cache
-      const currentTeams = queryClient.getQueryData(['playoff-teams']) as any[];
+      const currentTeams = queryClient.getQueryData<SeededTeamsCacheValue>(['playoff-teams']);
       const currentTeam = currentTeams?.find((team) => team.id === teamId);
 
       return {
@@ -53,7 +55,7 @@ export const useOptimisticTeamMutations = () => {
   // Apply optimistic update to cache
   const applyOptimisticUpdate = useCallback(
     (update: OptimisticUpdate) => {
-      queryClient.setQueryData(['playoff-teams'], (oldData: any[] | undefined) => {
+      queryClient.setQueryData<SeededTeamsCacheValue>(['playoff-teams'], (oldData) => {
         if (!oldData) return oldData;
         return oldData.map((team) =>
           team.id === update.teamId ? { ...team, seed: update.newSeed } : team
@@ -78,7 +80,7 @@ export const useOptimisticTeamMutations = () => {
       const currentPendingUpdates = optimisticState.pendingUpdates;
 
       // Rollback cache changes
-      queryClient.setQueryData(['playoff-teams'], (oldData: any[] | undefined) => {
+      queryClient.setQueryData<SeededTeamsCacheValue>(['playoff-teams'], (oldData) => {
         if (!oldData) return oldData;
         return oldData.map((team) => {
           const update = currentPendingUpdates.get(team.id);
@@ -198,8 +200,13 @@ export const useOptimisticTeamMutations = () => {
       }
 
       // Process results and handle partial failures
-      const failedUpdates = result.filter((r) => !r.ok);
-      const successfulTeamIds = result.filter((r) => r.ok).map((r) => r.team_id).filter(Boolean) as string[];
+      const failedUpdates = result.filter((updateResult) => !updateResult.ok);
+      const successfulTeamIds = result
+        .filter(
+          (updateResult): updateResult is typeof updateResult & { team_id: string } =>
+            updateResult.ok && typeof updateResult.team_id === 'string'
+        )
+        .map((updateResult) => updateResult.team_id);
 
       // Clear pending updates for successful ones
       setOptimisticState((prev) => {
@@ -210,7 +217,9 @@ export const useOptimisticTeamMutations = () => {
 
       // Rollback failed updates
       if (failedUpdates.length > 0) {
-        const failedTeamIds = failedUpdates.map((u) => u.team_id);
+        const failedTeamIds = failedUpdates
+          .map((updateResult) => updateResult.team_id)
+          .filter((teamId): teamId is string => typeof teamId === 'string');
         rollbackUpdates(failedTeamIds);
 
         toast({
