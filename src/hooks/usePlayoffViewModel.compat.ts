@@ -6,13 +6,18 @@ import { useTeamsArray } from '@/hooks/teams';
 import { useDivisions } from '@/hooks/useDivisions';
 import type { Database } from '@/integrations/supabase/types';
 import { fetchBracketsOverview } from '@/services/brackets/BracketReadService';
-import type { BracketOverviewRow } from '@/services/brackets/read/BracketInfoService';
 import { bracketLog } from '@/utils/logger';
 import type { PlayoffBracket, PlayoffMatch } from '@/utils/playoffs/playoffTypes';
 import { groupTeamsByDivision } from '@/utils/teamGrouping';
 
-// Helper type alias kept for _mapMatchRow below
+// Helper type aliases
 type PlayoffMatchRow = Database['public']['Tables']['playoff_matches']['Row'];
+type BracketRow = Database['public']['Tables']['brackets']['Row'];
+type DivisionRow = Database['public']['Tables']['divisions']['Row'];
+
+interface BracketRowWithRels extends BracketRow {
+  divisions: DivisionRow | null;
+}
 
 // Row-to-Domain mapper
 const _mapMatchRow = (row: PlayoffMatchRow): PlayoffMatch => ({
@@ -63,10 +68,10 @@ export const usePlayoffData = (isAdmin: boolean = false, seasonId?: string | nul
     queryFn: async () => {
       bracketLog('Fetching brackets overview for season:', seasonId);
 
-      const data: BracketOverviewRow[] = await fetchBracketsOverview(seasonId);
+      const data = (await fetchBracketsOverview(seasonId)) as unknown as BracketRowWithRels[];
 
       // Transform to domain objects
-      let brackets: PlayoffBracket[] = data.map((br) => ({
+      let brackets: PlayoffBracket[] = (data ?? []).map((br) => ({
         id: br.id,
         name: br.title,
         division: br.divisions?.name,
@@ -192,5 +197,9 @@ export const usePlayoffBracketData = (bracketId: string) => {
   };
 };
 
-// Re-export the canonical type so existing imports from this module keep working
-export type { BracketMatchesByType } from '@/utils/playoffs/playoffTypes';
+// Re-export the type from the brackets services
+export type BracketMatchesByType = {
+  winners: any[][];
+  losers: any[][];
+  finals: any[];
+};

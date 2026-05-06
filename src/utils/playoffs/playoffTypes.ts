@@ -117,22 +117,11 @@ export interface BracketMatchDisplay {
   nextLoseMatchId?: string | null;
 }
 
-// BracketMatchesByType: round-organised nested arrays, used by matchGroupers.ts
-// for bracket display via the brackets-viewer adapter.
 export type BracketMatchesByType = {
   winners: BracketMatchDisplay[][];
   losers: BracketMatchDisplay[][];
   finals: BracketMatchDisplay[];
   playIn?: BracketMatchDisplay[][];
-};
-
-// PlayoffMatchesByType: flat per-type arrays, used by usePlayoffViewModel hook.
-// Matches are not yet round-organised at this layer; the viewer adapter handles layout.
-export type PlayoffMatchesByType = {
-  winners: PlayoffMatch[];
-  losers: PlayoffMatch[];
-  finals: PlayoffMatch[];
-  playIn?: PlayoffMatch[];
 };
 
 // Legacy type aliases for backward compatibility
@@ -144,7 +133,7 @@ export interface PlayoffViewModel {
   bracket: PlayoffBracket | null;
   isLoading: boolean;
   error: string | null; // Updated to use string for UI consistency
-  bracketMatchesByType: PlayoffMatchesByType | null;
+  bracketMatchesByType: BracketMatchesByType | null;
 
   // Teams data
   teams: PlayoffTeam[];
