@@ -2,6 +2,7 @@ import { BadgeProcessingService } from '@/services/BadgeProcessingService';
 import { FailedBadgeOperationsService } from '@/services/FailedBadgeOperationsService';
 import { fetchMatchTeamIds } from '@/services/matches/MatchReadService';
 import { updateMatch } from '@/services/matches/MatchWriteService';
+import { BadgeOperationParams, BadgeOperationType } from '@/types/badges';
 import { badgeLog, matchLog, warnLog } from '@/utils/logger';
 
 export interface UpdateMatchScoreParams {
@@ -18,6 +19,14 @@ export interface UpdateMatchScoreResult {
   team2_id: string;
   team1Win: boolean;
 }
+
+type BadgeOperation = {
+  [K in BadgeOperationType]: {
+    type: K;
+    params: BadgeOperationParams[K];
+    execute: () => Promise<unknown>;
+  };
+}[BadgeOperationType];
 
 export const updateMatchScore = async ({
   matchId,
@@ -67,7 +76,7 @@ export const updateMatchScore = async ({
 
   // Process all badges for both teams after match completion
   // Each badge type is processed independently to avoid cascading failures
-  const badgeOperations = [
+  const badgeOperations: BadgeOperation[] = [
     {
       type: 'match_badges' as const,
       params: { team1Id: team1_id, team2Id: team2_id },
