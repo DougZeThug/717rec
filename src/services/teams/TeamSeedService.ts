@@ -60,15 +60,15 @@ export const bulkUpdateTeamSeeds = async (
 };
 
 
-const isBulkTeamSeedUpdateResult = (value: unknown): value is BulkTeamSeedUpdateResult => {
+function isBulkTeamSeedUpdateResult(value: unknown): value is BulkTeamSeedUpdateResult {
   if (!value || typeof value !== 'object') return false;
 
   const candidate = value as Record<string, unknown>;
 
   return typeof candidate.ok === 'boolean';
-};
+}
 
-const parseBulkTeamSeedUpdateResults = (data: unknown): BulkTeamSeedUpdateResult[] => {
+function parseBulkTeamSeedUpdateResults(data: unknown): BulkTeamSeedUpdateResult[] {
   if (!data || typeof data !== 'object' || !('results' in data)) {
     return [];
   }
@@ -80,7 +80,7 @@ const parseBulkTeamSeedUpdateResults = (data: unknown): BulkTeamSeedUpdateResult
   }
 
   return results.filter(isBulkTeamSeedUpdateResult);
-};
+}
 
 /**
  * Reset all seeds in a division to automatic using RPC
