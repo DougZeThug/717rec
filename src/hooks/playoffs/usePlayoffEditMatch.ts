@@ -278,7 +278,7 @@ export const usePlayoffEditMatch = () => {
       games: { team1Score: number; team2Score: number }[],
       team1GameWins: number,
       team2GameWins: number,
-      refetchBrackets: () => Promise<any>
+      refetchBrackets: () => Promise<void>
     ) => {
       playoffLog('Saving match score (optimistic):', { matchId, team1GameWins, team2GameWins });
 
