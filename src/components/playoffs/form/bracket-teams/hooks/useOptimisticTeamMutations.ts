@@ -167,7 +167,7 @@ export const useOptimisticTeamMutations = () => {
 
   // Batch update with optimistic UI
   const optimisticBatchUpdate = useMutation({
-    mutationFn: async (updates: TeamSeedUpdate[]) => {
+    mutationFn: (updates: TeamSeedUpdate[]) => {
       // Create and apply all optimistic updates
       const _optimisticUpdates = updates.map(({ teamId, seed }) => {
         const update = createOptimisticUpdate(teamId, seed);

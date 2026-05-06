@@ -122,7 +122,7 @@ export const insertPlayoffGames = async (
  * Update a single team's seed value
  * Used by useOptimisticTeamMutations hook
  */
-export const updateTeamSeed = async (
+export const updateTeamSeed = (
   teamId: string,
   seed: number | null
 ): Promise<TeamSeedUpdateResult> => updateTeamSeedService(teamId, seed);
@@ -131,6 +131,6 @@ export const updateTeamSeed = async (
  * Batch update team seeds via RPC
  * Used by useOptimisticTeamMutations hook
  */
-export const batchUpdateTeamSeeds = async (
+export const batchUpdateTeamSeeds = (
   updates: TeamSeedUpdateInput[]
 ): Promise<BulkTeamSeedUpdateResult[]> => bulkUpdateTeamSeedsService(updates);
