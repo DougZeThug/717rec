@@ -61,7 +61,6 @@ Also worth calling out (not a service, but over 500 lines): `src/utils/predictio
 - `: any` / `as any` / `<any>` occurrences: **203** across the codebase (up from 130).
   - Roughly half are in test files (mocks) — low risk.
   - Real-code hotspots worth triaging:
-    - `src/components/playoffs/form/bracket-teams/hooks/useBracketFormData.ts` — 14
     - `src/services/BadgeProcessingService.ts` — 10
     - `src/types/brackets-viewer.d.ts` — 8 (external-lib type bridge, likely unavoidable)
     - `src/components/ui/charts/utils/tooltipUtils.ts` — 6
@@ -134,7 +133,7 @@ Playoff editors from the March audit (`BracketsManagerMatchEditor`, `BracketsVie
 3. Replace the one real-code `console.error` in `src/styles/bracket-styles.ts:22` with `errorLog()` from `@/utils/logger`.
 
 ### P2 — Typing hotspots
-4. Replace `any` in `useBracketFormData.ts` (14) and `BadgeProcessingService.ts` (10) with real types.
+4. Replace `any` in `BadgeProcessingService.ts` (10) with real types.
 5. Audit the 6 `as unknown as` casts in `BracketsViewerAdapter.ts` — either add a real type declaration for the external lib or narrow the casts.
 
 ### P3 — Test coverage
