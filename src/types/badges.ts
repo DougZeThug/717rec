@@ -83,6 +83,32 @@ export type BadgeMetadata =
   | PerformanceBadgeMetadata
   | Record<string, unknown>;
 
+export type BadgeRpcJsonResult = {
+  awarded?: boolean;
+  badge_type?: BadgeType;
+  reason?: string;
+  [key: string]: Json | string | number | boolean | null | undefined;
+};
+
+export type TeamStreakRpcResult = {
+  streak_type: string;
+  streak_count: number;
+};
+
+export interface BadgeRpcResult {
+  process_match_badges: BadgeRpcJsonResult;
+  award_kingslayer_badge: BadgeRpcJsonResult;
+  award_clutch_performer_badge: BadgeRpcJsonResult;
+  award_consistent_performer_badge: BadgeRpcJsonResult;
+  award_streak_badges: BadgeRpcJsonResult;
+  award_ice_cold_badge: BadgeRpcJsonResult;
+  award_broom_crew_badge: BadgeRpcJsonResult;
+  award_gatekeeper_badge: BadgeRpcJsonResult;
+  award_chaos_agent_badge: BadgeRpcJsonResult;
+  award_bully_badge: BadgeRpcJsonResult;
+  calculate_team_streak: TeamStreakRpcResult[];
+}
+
 import type {
   BadgeOperationParams,
   BadgeOperationType,
@@ -91,4 +117,3 @@ import type {
 
 export type BadgeOperationKind = BadgeOperationType;
 export type { BadgeOperationParams, FailedBadgeOperation };
-
