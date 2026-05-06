@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import type { Json, Tables } from '@/integrations/supabase/types';
+import type { Tables } from '@/integrations/supabase/types';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 import type { BracketState, PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
