@@ -1,4 +1,4 @@
-import { BracketMatchesByType } from '@/services/brackets/types';
+import { BracketMatchesByType, BracketMatch } from '@/services/brackets/types';
 import { convertErrorToString, getUIErrorMessage, logError } from '@/utils/errorHandler';
 import { playoffLog, warnLog } from '@/utils/logger';
 import type { PlayoffViewModel } from '@/utils/playoffs/playoffTypes';
@@ -7,16 +7,19 @@ import { usePlayoffActions } from './usePlayoffActions';
 import { usePlayoffBracketData } from './usePlayoffBracketData';
 import { usePlayoffMatches } from './usePlayoffMatches';
 import { usePlayoffTeams } from './usePlayoffTeams';
+import type { PlayoffMatchWithTeams } from '@/utils/matchTransformers';
 
 // Local helper to group bracket matches by type
-const groupBracketMatchesByType = (matches: any[]): BracketMatchesByType => {
+const groupBracketMatchesByType = (
+  matches: PlayoffMatchWithTeams[]
+): { winners: BracketMatch[]; losers: BracketMatch[]; finals: BracketMatch[] } => {
   if (!Array.isArray(matches)) {
     return { winners: [], losers: [], finals: [] };
   }
 
-  const winners = matches.filter((match) => match.matchType === 'winners');
-  const losers = matches.filter((match) => match.matchType === 'losers');
-  const finals = matches.filter((match) => match.matchType === 'finals');
+  const winners = matches.filter((match): match is BracketMatch => match.matchType === 'winners');
+  const losers = matches.filter((match): match is BracketMatch => match.matchType === 'losers');
+  const finals = matches.filter((match): match is BracketMatch => match.matchType === 'finals');
 
   return { winners, losers, finals };
 };
@@ -70,7 +73,7 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   // Process bracket data to separate winners, losers and finals matches
   const bracketMatchesByType: PlayoffViewModel['bracketMatchesByType'] =
     safeMatches.length > 0
-      ? (groupBracketMatchesByType(safeMatches) as PlayoffViewModel['bracketMatchesByType'])
+      ? (groupBracketMatchesByType(safeMatches) as unknown as PlayoffViewModel['bracketMatchesByType'])
       : null;
 
   // Simplified refetch function - no aggressive cache operations
