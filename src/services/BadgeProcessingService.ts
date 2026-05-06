@@ -6,7 +6,7 @@ export class BadgeProcessingService {
   /**
    * Process all badges for both teams after a match is completed
    */
-  static async processMatchBadges(team1Id: string, team2Id: string): Promise<void> {
+  static async processMatchBadges(team1Id: string, team2Id: string): Promise<unknown> {
     badgeLog('Processing match badges for teams:', team1Id, team2Id);
 
     const { data, error } = await supabase.rpc('process_match_badges', {
@@ -17,12 +17,13 @@ export class BadgeProcessingService {
     if (error) handleDatabaseError(error, 'Failed to process match badges');
 
     badgeLog('Badge processing complete', data);
+    return data;
   }
 
   /**
    * Process kingslayer badge for a specific match
    */
-  static async processKingslayerBadge(winnerId: string, loserId: string): Promise<void> {
+  static async processKingslayerBadge(winnerId: string, loserId: string): Promise<unknown> {
     badgeLog('Processing kingslayer badge:', winnerId, 'defeated', loserId);
 
     const { data, error } = await supabase.rpc('award_kingslayer_badge', {
@@ -33,6 +34,7 @@ export class BadgeProcessingService {
     if (error) handleDatabaseError(error, 'Failed to process kingslayer badge');
 
     badgeLog('Kingslayer badge processed', data);
+    return data;
   }
 
   /**
@@ -42,14 +44,14 @@ export class BadgeProcessingService {
     winnerId: string,
     team1GameWins: number,
     team2GameWins: number
-  ): Promise<void> {
+  ): Promise<unknown> {
     // Check if this was a 2-1 victory
     const isClutchWin =
       (team1GameWins === 2 && team2GameWins === 1) || (team1GameWins === 1 && team2GameWins === 2);
 
     if (!isClutchWin) {
       badgeLog('Not a 2-1 match, skipping clutch performer');
-      return;
+      return { awarded: false };
     }
 
     badgeLog('Processing clutch performer badge for:', winnerId);
@@ -61,12 +63,13 @@ export class BadgeProcessingService {
     if (error) handleDatabaseError(error, 'Failed to process clutch performer badge');
 
     badgeLog('Clutch performer badge processed', data);
+    return data;
   }
 
   /**
    * Process consistent performer badge for a specific team after a win
    */
-  static async processConsistentPerformerBadge(winnerId: string): Promise<void> {
+  static async processConsistentPerformerBadge(winnerId: string): Promise<unknown> {
     badgeLog('Processing consistent performer badge for:', winnerId);
 
     const { data, error } = await supabase.rpc('award_consistent_performer_badge', {
@@ -76,6 +79,7 @@ export class BadgeProcessingService {
     if (error) handleDatabaseError(error, 'Failed to process consistent performer badge');
 
     badgeLog('Consistent performer badge processed', data);
+    return data;
   }
 
   /**
@@ -96,7 +100,7 @@ export class BadgeProcessingService {
   /**
    * Award streak badges for a specific team
    */
-  static async awardStreakBadges(teamId: string): Promise<void> {
+  static async awardStreakBadges(teamId: string): Promise<unknown> {
     const { data, error } = await supabase.rpc('award_streak_badges', {
       p_team_id: teamId,
     });
@@ -104,6 +108,7 @@ export class BadgeProcessingService {
     if (error) handleDatabaseError(error, 'Failed to award streak badges');
 
     badgeLog('Streak badges awarded', data);
+    return data;
   }
 
   // =========================================================================
@@ -113,7 +118,7 @@ export class BadgeProcessingService {
   /**
    * Process Ice Cold badge - 3 consecutive 2-1 wins
    */
-  static async processIceColdBadge(teamId: string): Promise<void> {
+  static async processIceColdBadge(teamId: string): Promise<unknown> {
     badgeLog('Processing Ice Cold badge for:', teamId);
 
     const { data, error } = await supabase.rpc('award_ice_cold_badge', {
@@ -123,12 +128,13 @@ export class BadgeProcessingService {
     if (error) handleDatabaseError(error, 'Failed to process Ice Cold badge');
 
     badgeLog('Ice Cold badge processed:', data);
+    return data;
   }
 
   /**
    * Process Broom Crew badge - 3 consecutive sweeps (2-0 wins)
    */
-  static async processBroomCrewBadge(teamId: string): Promise<void> {
+  static async processBroomCrewBadge(teamId: string): Promise<unknown> {
     badgeLog('Processing Broom Crew badge for:', teamId);
 
     const { data, error } = await supabase.rpc('award_broom_crew_badge', {
@@ -138,12 +144,13 @@ export class BadgeProcessingService {
     if (error) handleDatabaseError(error, 'Failed to process Broom Crew badge');
 
     badgeLog('Broom Crew badge processed:', data);
+    return data;
   }
 
   /**
    * Process Gatekeeper badge - beats 3+ teams with higher power score
    */
-  static async processGatekeeperBadge(teamId: string): Promise<void> {
+  static async processGatekeeperBadge(teamId: string): Promise<unknown> {
     badgeLog('Processing Gatekeeper badge for:', teamId);
 
     const { data, error } = await supabase.rpc('award_gatekeeper_badge', {
@@ -153,12 +160,13 @@ export class BadgeProcessingService {
     if (error) handleDatabaseError(error, 'Failed to process Gatekeeper badge');
 
     badgeLog('Gatekeeper badge processed:', data);
+    return data;
   }
 
   /**
    * Process Chaos Agent badge - alternating W/L for 6+ matches
    */
-  static async processChaosAgentBadge(teamId: string): Promise<void> {
+  static async processChaosAgentBadge(teamId: string): Promise<unknown> {
     badgeLog('Processing Chaos Agent badge for:', teamId);
 
     const { data, error } = await supabase.rpc('award_chaos_agent_badge', {
@@ -168,12 +176,13 @@ export class BadgeProcessingService {
     if (error) handleDatabaseError(error, 'Failed to process Chaos Agent badge');
 
     badgeLog('Chaos Agent badge processed:', data);
+    return data;
   }
 
   /**
    * Process Bully badge - 4+ game wins against teams with 20+ lower division weight
    */
-  static async processBullyBadge(teamId: string): Promise<void> {
+  static async processBullyBadge(teamId: string): Promise<unknown> {
     badgeLog('Processing Bully badge for:', teamId);
 
     const { data, error } = await supabase.rpc('award_bully_badge', {
@@ -183,5 +192,6 @@ export class BadgeProcessingService {
     if (error) handleDatabaseError(error, 'Failed to process Bully badge');
 
     badgeLog('Bully badge processed:', data);
+    return data;
   }
 }
