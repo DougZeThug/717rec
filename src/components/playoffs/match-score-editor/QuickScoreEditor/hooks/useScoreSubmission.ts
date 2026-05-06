@@ -5,6 +5,7 @@ import { errorLog, scoreLog } from '@/utils/logger';
 
 import { ScoreOption } from '../types';
 import { generateGameData } from '../utils/scoreOptionUtils';
+import type { AsyncVoidCallback } from '@/types/callbacks';
 
 interface UseScoreSubmissionProps {
   match: PlayoffMatch;
@@ -15,7 +16,7 @@ interface UseScoreSubmissionProps {
     games: { team1Score: number; team2Score: number }[],
     team1GameWins: number,
     team2GameWins: number,
-    refetchBrackets: () => Promise<any>
+    refetchBrackets: AsyncVoidCallback
   ) => Promise<void>;
   setIsSubmitting: (value: boolean) => void;
   setSelectedOption: (value: string | null) => void;

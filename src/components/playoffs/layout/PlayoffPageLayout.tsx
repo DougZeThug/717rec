@@ -13,6 +13,7 @@ import { PlayoffPageData } from '../hooks/usePlayoffPageData';
 import { usePlayoffViewState } from '../hooks/usePlayoffViewState';
 import { useViewSelection } from '../hooks/useViewSelection';
 import { PlayoffViewSelector } from './PlayoffViewSelector';
+import type { AsyncVoidCallback } from '@/types/callbacks';
 
 interface PlayoffPageLayoutProps {
   data: PlayoffPageData;
@@ -39,7 +40,7 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
       games: { team1Score: number; team2Score: number }[],
       team1GameWins: number,
       team2GameWins: number,
-      _refetchBrackets: () => Promise<any>
+      _refetchBrackets: AsyncVoidCallback
     ) => {
       await handlers.handleSaveMatchScore(
         matchId,

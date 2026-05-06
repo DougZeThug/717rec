@@ -4,6 +4,7 @@ import BracketCreationDialog from '@/components/playoffs/BracketCreationDialog';
 import DeleteBracketDialog from '@/components/playoffs/DeleteBracketDialog';
 import { MatchScoreEditor, QuickScoreEditor } from '@/components/playoffs/match-score-editor';
 import TeamDivisionDialog from '@/components/playoffs/TeamDivisionDialog';
+import type { AsyncVoidCallback } from '@/types/callbacks';
 import {
   Dialog,
   DialogContent,
@@ -41,7 +42,7 @@ interface PlayoffDialogsProps {
     games: { team1Score: number; team2Score: number }[],
     team1GameWins: number,
     team2GameWins: number,
-    refetchBrackets: () => Promise<any>
+    refetchBrackets: AsyncVoidCallback
   ) => Promise<void>;
 
   // Delete bracket dialog

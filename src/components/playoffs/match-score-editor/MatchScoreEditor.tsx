@@ -3,6 +3,7 @@ import React from 'react';
 import type { PlayoffMatch, Team } from '@/types';
 
 import MatchScoreEditor from './MatchScoreEditor/MatchScoreEditor';
+import type { AsyncVoidCallback } from '@/types/callbacks';
 
 interface MatchScoreEditorWrapperProps {
   match: PlayoffMatch;
@@ -14,7 +15,7 @@ interface MatchScoreEditorWrapperProps {
     games: { team1Score: number; team2Score: number }[],
     team1GameWins: number,
     team2GameWins: number,
-    refetchBrackets: () => Promise<any>
+    refetchBrackets: AsyncVoidCallback
   ) => Promise<void>;
   onCancel: () => void;
 }
