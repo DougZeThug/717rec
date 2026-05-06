@@ -4,44 +4,12 @@ import { useMemo } from 'react';
 import { usePlayoffViewModel } from '@/hooks/playoffs/usePlayoffViewModel';
 import { useTeamsArray } from '@/hooks/teams';
 import { useDivisions } from '@/hooks/useDivisions';
-import type { Database } from '@/integrations/supabase/types';
 import { fetchBracketsOverview } from '@/services/brackets/BracketReadService';
+import type { BracketsOverviewRow } from '@/services/brackets/BracketReadService';
+import type { BracketMatchesByType } from '@/services/brackets/types';
 import { bracketLog } from '@/utils/logger';
-import type { PlayoffBracket, PlayoffMatch } from '@/utils/playoffs/playoffTypes';
+import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 import { groupTeamsByDivision } from '@/utils/teamGrouping';
-
-// Helper type aliases
-type PlayoffMatchRow = Database['public']['Tables']['playoff_matches']['Row'];
-type BracketRow = Database['public']['Tables']['brackets']['Row'];
-type DivisionRow = Database['public']['Tables']['divisions']['Row'];
-
-interface BracketRowWithRels extends BracketRow {
-  divisions: DivisionRow | null;
-}
-
-// Row-to-Domain mapper
-const _mapMatchRow = (row: PlayoffMatchRow): PlayoffMatch => ({
-  id: row.id,
-  round: row.round ?? 0,
-  position: row.position ?? 0,
-  team1Id: row.team1_id,
-  team2Id: row.team2_id,
-  winnerId: row.winner_id,
-  loserId: row.loser_id,
-  team1Score: row.team1_score,
-  team2Score: row.team2_score,
-  team1GameWins: null,
-  team2GameWins: null,
-  matchType: (row.match_type as PlayoffMatch['matchType']) ?? 'winners',
-  bestOf: row.best_of ?? 3,
-  games: [],
-  team1Seed: row.team1_seed,
-  team2Seed: row.team2_seed,
-  nextWinMatchId: row.next_win_match_id,
-  nextLoseMatchId: row.next_lose_match_id,
-  bracket_id: row.bracket_id ?? '',
-  status: (row.status as PlayoffMatch['status']) ?? 'pending',
-});
 
 /** Temporary shim exposing the legacy shape for Playoffs.tsx */
 export const usePlayoffData = (isAdmin: boolean = false, seasonId?: string | null) => {
@@ -68,7 +36,7 @@ export const usePlayoffData = (isAdmin: boolean = false, seasonId?: string | nul
     queryFn: async () => {
       bracketLog('Fetching brackets overview for season:', seasonId);
 
-      const data = (await fetchBracketsOverview(seasonId)) as unknown as BracketRowWithRels[];
+      const data: BracketsOverviewRow[] = await fetchBracketsOverview(seasonId);
 
       // Transform to domain objects
       let brackets: PlayoffBracket[] = (data ?? []).map((br) => ({
@@ -198,8 +166,4 @@ export const usePlayoffBracketData = (bracketId: string) => {
 };
 
 // Re-export the type from the brackets services
-export type BracketMatchesByType = {
-  winners: any[][];
-  losers: any[][];
-  finals: any[];
-};
+export type { BracketMatchesByType };

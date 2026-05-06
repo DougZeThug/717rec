@@ -29,7 +29,7 @@ type BracketDomainRow = Pick<
   name?: string;
 };
 
-type BracketsOverviewRow = Pick<
+export type BracketsOverviewRow = Pick<
   BracketRow,
   | 'id'
   | 'title'
