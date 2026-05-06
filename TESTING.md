@@ -183,7 +183,7 @@ over time; anything already above target is just "keep it green".
 **Services:** `ProfileService`, `HeadToHeadService`, `TeamFetchService`,
 `TeamCreateService`, `TeamUpdateService`, `MatchReadService`,
 `MatchWriteService`, `RankingCareerService`, `RankingPersistenceService`,
-`RankingCurrentService`, `RankingTrendsService`.
+`RankingCurrentService`, `RankingTrendsService`, `BracketInfoService`.
 
 **Hooks:** `usePendingMatches`, `useTeamScheduleLoader`, `usePairingGenerator`,
 match-submission and team-record-update hooks, match query-cache utilities,
