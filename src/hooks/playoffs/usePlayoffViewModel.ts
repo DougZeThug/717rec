@@ -1,4 +1,4 @@
-import { BracketMatchesByType, BracketMatch } from '@/services/brackets/types';
+import { BracketMatch } from '@/services/brackets/types';
 import { convertErrorToString, getUIErrorMessage, logError } from '@/utils/errorHandler';
 import { playoffLog, warnLog } from '@/utils/logger';
 import type { PlayoffViewModel } from '@/utils/playoffs/playoffTypes';
