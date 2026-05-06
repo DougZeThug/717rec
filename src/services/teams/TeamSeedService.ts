@@ -1,5 +1,11 @@
 import { supabase } from '@/integrations/supabase/client';
 import { handleDatabaseError } from '@/utils/errorHandler';
+import type {
+  BulkTeamSeedUpdateResult,
+  BulkTeamSeedUpdateRpcResponse,
+  TeamSeedUpdateInput,
+  TeamSeedUpdateResult,
+} from '@/types/seeding';
 
 /**
  * Service layer for team seed operations
@@ -10,7 +16,10 @@ import { handleDatabaseError } from '@/utils/errorHandler';
  * Update a single team's seed value
  * @throws {DatabaseError} When database operations fail
  */
-export const updateTeamSeed = async (teamId: string, seed: number | null): Promise<any> => {
+export const updateTeamSeed = async (
+  teamId: string,
+  seed: number | null
+): Promise<TeamSeedUpdateResult> => {
   const { data, error } = await supabase
     .from('teams')
     .update({ seed })
@@ -22,7 +31,7 @@ export const updateTeamSeed = async (teamId: string, seed: number | null): Promi
     handleDatabaseError(error, 'Failed to update team seed');
   }
 
-  return data;
+  return data as TeamSeedUpdateResult;
 };
 
 /**
@@ -34,8 +43,8 @@ export const updateTeamSeed = async (teamId: string, seed: number | null): Promi
  * @throws {DatabaseError} When database operations fail
  */
 export const bulkUpdateTeamSeeds = async (
-  updates: Array<{ teamId: string; seed: number | null }>
-): Promise<any[]> => {
+  updates: TeamSeedUpdateInput[]
+): Promise<BulkTeamSeedUpdateResult[]> => {
   const { data, error } = await supabase.rpc('batch_update_team_seeds', {
     p_updates: updates.map(({ teamId, seed }) => ({
       team_id: teamId,
@@ -47,7 +56,30 @@ export const bulkUpdateTeamSeeds = async (
     handleDatabaseError(error, 'Failed to bulk update team seeds');
   }
 
-  return (data as any)?.results ?? [];
+  return parseBulkTeamSeedUpdateResults(data);
+};
+
+
+const isBulkTeamSeedUpdateResult = (value: unknown): value is BulkTeamSeedUpdateResult => {
+  if (!value || typeof value !== 'object') return false;
+
+  const candidate = value as Record<string, unknown>;
+
+  return typeof candidate.ok === 'boolean';
+};
+
+const parseBulkTeamSeedUpdateResults = (data: unknown): BulkTeamSeedUpdateResult[] => {
+  if (!data || typeof data !== 'object' || !('results' in data)) {
+    return [];
+  }
+
+  const { results } = data as BulkTeamSeedUpdateRpcResponse;
+
+  if (!Array.isArray(results)) {
+    return [];
+  }
+
+  return results.filter(isBulkTeamSeedUpdateResult);
 };
 
 /**
