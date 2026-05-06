@@ -25,7 +25,7 @@ type ClutchPerformerParams = { winnerId: string; team1GameWins: number; team2Gam
 type ConsistentPerformerParams = { winnerId: string };
 type TeamIdParams = { teamId: string };
 
-type BadgeOperationParams = {
+export type BadgeOperationParams = {
   match_badges: MatchBadgesParams;
   kingslayer: KingslayerParams;
   clutch_performer: ClutchPerformerParams;
