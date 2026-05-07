@@ -1,4 +1,3 @@
-import { BracketMatch } from '@/services/brackets/types';
 import { convertErrorToString, getUIErrorMessage, logError } from '@/utils/errorHandler';
 import { playoffLog, warnLog } from '@/utils/logger';
 import type { PlayoffViewModel } from '@/utils/playoffs/playoffTypes';
@@ -10,16 +9,14 @@ import { usePlayoffTeams } from './usePlayoffTeams';
 import type { PlayoffMatchWithTeams } from '@/utils/matchTransformers';
 
 // Local helper to group bracket matches by type
-const groupBracketMatchesByType = (
-  matches: PlayoffMatchWithTeams[]
-): { winners: BracketMatch[]; losers: BracketMatch[]; finals: BracketMatch[] } => {
+const groupBracketMatchesByType = (matches: PlayoffMatchWithTeams[]) => {
   if (!Array.isArray(matches)) {
     return { winners: [], losers: [], finals: [] };
   }
 
-  const winners = matches.filter((match): match is BracketMatch => match.matchType === 'winners');
-  const losers = matches.filter((match): match is BracketMatch => match.matchType === 'losers');
-  const finals = matches.filter((match): match is BracketMatch => match.matchType === 'finals');
+  const winners = matches.filter((m) => m.matchType === 'winners');
+  const losers = matches.filter((m) => m.matchType === 'losers');
+  const finals = matches.filter((m) => m.matchType === 'finals');
 
   return { winners, losers, finals };
 };

@@ -7,6 +7,7 @@ import BracketList from '../BracketList';
 import { usePlayoffHandlers } from '../hooks/usePlayoffHandlers';
 import { PlayoffPageData } from '../hooks/usePlayoffPageData';
 import TeamDivisionTable from '../TeamDivisionTable';
+import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
 interface AdminViewProps {
   bracketDialogOpen: boolean;
@@ -70,7 +71,7 @@ const AdminView: React.FC<AdminViewProps> = ({
           data.bracket.id === data.selectedBracketId && (
             <BracketDetail
               bracketId={data.selectedBracketId}
-              bracket={data.bracket}
+              bracket={data.bracket as unknown as PlayoffBracket}
               teams={data.teams}
               bracketLoading={data.isLoading}
               onEditBracket={handleCreateBracketClick}
