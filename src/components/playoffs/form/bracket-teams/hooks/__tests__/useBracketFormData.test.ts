@@ -160,9 +160,10 @@ describe('useBracketFormData', () => {
       { id: 'team3', name: 'Team 3', division_id: 'div2' },
     ];
 
-    const { result } = renderHook(() => useBracketFormData(mockDivisions, invalidTeams), {
-      wrapper,
-    });
+    const { result } = renderHook(
+      () => useBracketFormData(mockDivisions, invalidTeams as unknown as Parameters<typeof useBracketFormData>[1]),
+      { wrapper }
+    );
 
     await waitFor(() => {
       // Should filter out invalid teams and process valid ones
