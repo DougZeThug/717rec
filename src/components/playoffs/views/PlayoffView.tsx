@@ -4,6 +4,7 @@ import BracketDetail from '@/components/playoffs/BracketDetail';
 import BracketList from '@/components/playoffs/BracketList';
 
 import { PlayoffPageData } from '../hooks/usePlayoffPageData';
+import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
 interface PlayoffViewProps {
   bracketDialogOpen: boolean;
@@ -46,7 +47,7 @@ const PlayoffView: React.FC<PlayoffViewProps> = ({
         data.bracket.id === data.selectedBracketId && (
           <BracketDetail
             bracketId={data.selectedBracketId}
-            bracket={data.bracket}
+            bracket={data.bracket as unknown as PlayoffBracket}
             teams={data.teams}
             bracketLoading={data.isLoading}
             onEditBracket={undefined}

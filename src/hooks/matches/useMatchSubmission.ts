@@ -60,7 +60,7 @@ export const useMatchSubmission = () => {
       await updateTeamStats(
         team1Win ? team1_id : team2_id,
         team1Win ? team2_id : team1_id,
-        data,
+        [data],
         team1Win ? parsedTeam1GameWins : parsedTeam2GameWins,
         team1Win ? parsedTeam2GameWins : parsedTeam1GameWins
       );

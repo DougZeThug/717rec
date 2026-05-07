@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { warnLog, errorLog } from '@/utils/logger';
 import { parseStoredJson } from '@/utils/storage/parseStoredJson';
+import type { StorageParseResult } from '@/utils/storage/types';
 
 const isPrimitiveValue = (value: unknown): value is string | number | boolean =>
   typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
@@ -27,13 +28,13 @@ export function usePersistedState<T>(
     }
 
     if (validate) {
-      const parsedResult = parseStoredJson(savedValue, validate);
+      const parsedResult: StorageParseResult<T> = parseStoredJson(savedValue, validate);
 
       if (parsedResult.ok) {
         return parsedResult.value;
       }
 
-      if (parsedResult.error !== 'missing') {
+      if ('error' in parsedResult && parsedResult.error !== 'missing') {
         errorLog(
           'Failed to parse persisted state for key "%s" with validator. Falling back to default value. Reason: %s',
           key,
