@@ -281,7 +281,7 @@ describe('useMatchSubmission', () => {
       team1_id: 'team-1',
       team2_id: 'team-2',
       team1Win: true,
-    });
+    } as unknown as UpdateMatchScoreResult);
 
     const third = await result.current.handleSubmitScore({
       matchId: 'same-match',
