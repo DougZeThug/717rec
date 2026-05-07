@@ -45,7 +45,7 @@ vi.mock('@/utils/logger', () => ({
   errorLog: vi.fn(),
 }));
 
-import { updateMatchScore } from '../utils/matchDatabaseUtils';
+import { updateMatchScore, type UpdateMatchScoreResult } from '../utils/matchDatabaseUtils';
 import { invalidateMatchRelatedQueries } from '../utils/queryCacheUtils';
 
 const createWrapper = () => {
@@ -76,7 +76,7 @@ describe('useMatchSubmission', () => {
       team2_id: 'team-2',
       team1Win: true,
     };
-    vi.mocked(updateMatchScore).mockResolvedValue(mockResult);
+    vi.mocked(updateMatchScore).mockResolvedValue(mockResult as unknown as UpdateMatchScoreResult);
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
 
@@ -105,7 +105,7 @@ describe('useMatchSubmission', () => {
       team2_id: 'team-2',
       team1Win: true,
     };
-    vi.mocked(updateMatchScore).mockResolvedValue(mockResult);
+    vi.mocked(updateMatchScore).mockResolvedValue(mockResult as unknown as UpdateMatchScoreResult);
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
 
@@ -125,7 +125,7 @@ describe('useMatchSubmission', () => {
       team2_id: 'team-2',
       team1Win: false,
     };
-    vi.mocked(updateMatchScore).mockResolvedValue(mockResult);
+    vi.mocked(updateMatchScore).mockResolvedValue(mockResult as unknown as UpdateMatchScoreResult);
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
 
@@ -145,7 +145,7 @@ describe('useMatchSubmission', () => {
       team2_id: 'team-2',
       team1Win: true,
     };
-    vi.mocked(updateMatchScore).mockResolvedValue(mockResult);
+    vi.mocked(updateMatchScore).mockResolvedValue(mockResult as unknown as UpdateMatchScoreResult);
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
 
@@ -179,7 +179,7 @@ describe('useMatchSubmission', () => {
       team2_id: 'team-2',
       team1Win: true,
     };
-    vi.mocked(updateMatchScore).mockResolvedValue(mockResult);
+    vi.mocked(updateMatchScore).mockResolvedValue(mockResult as unknown as UpdateMatchScoreResult);
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
 
@@ -206,7 +206,7 @@ describe('useMatchSubmission', () => {
       team2_id: 'team-2',
       team1Win: true,
     };
-    vi.mocked(updateMatchScore).mockResolvedValue(mockResult);
+    vi.mocked(updateMatchScore).mockResolvedValue(mockResult as unknown as UpdateMatchScoreResult);
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
 
@@ -230,7 +230,7 @@ describe('useMatchSubmission', () => {
       team1_id: 'team-1',
       team2_id: 'team-2',
       team1Win: true,
-    }));
+    } as unknown as UpdateMatchScoreResult));
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
 
