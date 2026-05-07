@@ -10,7 +10,7 @@ export class BadgeProcessingService {
   static async processMatchBadges(team1Id: string, team2Id: string): Promise<unknown> {
     badgeLog('Processing match badges for teams:', team1Id, team2Id);
 
-    const { data, error } = await supabase.rpc<BadgeRpcResult['process_match_badges']>(
+    const { data, error } = await supabase.rpc(
       'process_match_badges',
       {
       p_team1_id: team1Id,
@@ -30,7 +30,7 @@ export class BadgeProcessingService {
   static async processKingslayerBadge(winnerId: string, loserId: string): Promise<unknown> {
     badgeLog('Processing kingslayer badge:', winnerId, 'defeated', loserId);
 
-    const { data, error } = await supabase.rpc<BadgeRpcResult['award_kingslayer_badge']>(
+    const { data, error } = await supabase.rpc(
       'award_kingslayer_badge',
       {
       p_winner_id: winnerId,
@@ -63,7 +63,7 @@ export class BadgeProcessingService {
 
     badgeLog('Processing clutch performer badge for:', winnerId);
 
-    const { data, error } = await supabase.rpc<BadgeRpcResult['award_clutch_performer_badge']>(
+    const { data, error } = await supabase.rpc(
       'award_clutch_performer_badge',
       {
       p_team_id: winnerId,
@@ -82,7 +82,7 @@ export class BadgeProcessingService {
   static async processConsistentPerformerBadge(winnerId: string): Promise<unknown> {
     badgeLog('Processing consistent performer badge for:', winnerId);
 
-    const { data, error } = await supabase.rpc<BadgeRpcResult['award_consistent_performer_badge']>(
+    const { data, error } = await supabase.rpc(
       'award_consistent_performer_badge',
       {
       p_team_id: winnerId,
@@ -101,7 +101,7 @@ export class BadgeProcessingService {
   static async calculateTeamStreak(
     teamId: string
   ): Promise<{ streak_type: string; streak_count: number } | null> {
-    const { data, error } = await supabase.rpc<BadgeRpcResult['calculate_team_streak']>(
+    const { data, error } = await supabase.rpc(
       'calculate_team_streak',
       {
       p_team_id: teamId,
@@ -117,7 +117,7 @@ export class BadgeProcessingService {
    * Award streak badges for a specific team
    */
   static async awardStreakBadges(teamId: string): Promise<unknown> {
-    const { data, error } = await supabase.rpc<BadgeRpcResult['award_streak_badges']>(
+    const { data, error } = await supabase.rpc(
       'award_streak_badges',
       {
       p_team_id: teamId,
@@ -140,7 +140,7 @@ export class BadgeProcessingService {
   static async processIceColdBadge(teamId: string): Promise<unknown> {
     badgeLog('Processing Ice Cold badge for:', teamId);
 
-    const { data, error } = await supabase.rpc<BadgeRpcResult['award_ice_cold_badge']>(
+    const { data, error } = await supabase.rpc(
       'award_ice_cold_badge',
       {
       p_team_id: teamId,
@@ -159,7 +159,7 @@ export class BadgeProcessingService {
   static async processBroomCrewBadge(teamId: string): Promise<unknown> {
     badgeLog('Processing Broom Crew badge for:', teamId);
 
-    const { data, error } = await supabase.rpc<BadgeRpcResult['award_broom_crew_badge']>(
+    const { data, error } = await supabase.rpc(
       'award_broom_crew_badge',
       {
       p_team_id: teamId,
@@ -178,7 +178,7 @@ export class BadgeProcessingService {
   static async processGatekeeperBadge(teamId: string): Promise<unknown> {
     badgeLog('Processing Gatekeeper badge for:', teamId);
 
-    const { data, error } = await supabase.rpc<BadgeRpcResult['award_gatekeeper_badge']>(
+    const { data, error } = await supabase.rpc(
       'award_gatekeeper_badge',
       {
       p_team_id: teamId,
@@ -197,7 +197,7 @@ export class BadgeProcessingService {
   static async processChaosAgentBadge(teamId: string): Promise<unknown> {
     badgeLog('Processing Chaos Agent badge for:', teamId);
 
-    const { data, error } = await supabase.rpc<BadgeRpcResult['award_chaos_agent_badge']>(
+    const { data, error } = await supabase.rpc(
       'award_chaos_agent_badge',
       {
       p_team_id: teamId,
@@ -216,7 +216,7 @@ export class BadgeProcessingService {
   static async processBullyBadge(teamId: string): Promise<unknown> {
     badgeLog('Processing Bully badge for:', teamId);
 
-    const { data, error } = await supabase.rpc<BadgeRpcResult['award_bully_badge']>(
+    const { data, error } = await supabase.rpc(
       'award_bully_badge',
       {
       p_team_id: teamId,
