@@ -34,7 +34,7 @@ export function usePersistedState<T>(
         return parsedResult.value;
       }
 
-      if (parsedResult.error !== 'missing') {
+      if ('error' in parsedResult && parsedResult.error !== 'missing') {
         errorLog(
           'Failed to parse persisted state for key "%s" with validator. Falling back to default value. Reason: %s',
           key,
