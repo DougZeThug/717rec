@@ -31,17 +31,17 @@ export function usePersistedState<T>(
 
       if (parsedResult.ok) {
         return parsedResult.value;
-      }
+      } else {
+        if (parsedResult.error !== 'missing') {
+          errorLog(
+            'Failed to parse persisted state for key "%s" with validator. Falling back to default value. Reason: %s',
+            key,
+            parsedResult.error,
+          );
+        }
 
-      if (!parsedResult.ok && parsedResult.error !== 'missing') {
-        errorLog(
-          'Failed to parse persisted state for key "%s" with validator. Falling back to default value. Reason: %s',
-          key,
-          parsedResult.error,
-        );
+        return defaultValue;
       }
-
-      return defaultValue;
     }
 
     try {
