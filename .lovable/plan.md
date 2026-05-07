@@ -1,59 +1,55 @@
-## Why nothing loads for anon (or any non-admin) users
+## Problem
 
-The recent security migration revoked `SELECT` on `team_season_opt_out` from `anon` and `PUBLIC`. I confirmed via the live anon REST API:
+On mobile, the Schedule page's **Upcoming** tab uses `SwipeableDateGroups`, which shows one date at a time. The active index defaults to `0`, and `groupedMatches` is sorted oldest→newest. Result: stale unplayed matches from 4/30 are shown first, instead of the current 5/7 upcoming slate.
 
-```
-GET /rest/v1/teams       → 42501 permission denied for table team_season_opt_out
-GET /rest/v1/v_pending_matches → 42501 permission denied for table team_season_opt_out
-```
-
-The `teams` table RLS policy "Public read teams" contains a subquery against `team_season_opt_out`:
-
-```sql
-NOT EXISTS (SELECT 1 FROM team_season_opt_out o JOIN seasons s ...)
-```
-
-RLS policy expressions execute **as the calling role**, not as the table owner (the earlier assumption in the security memory was wrong). With anon now lacking `SELECT` on `team_season_opt_out`, every read of `teams` fails — which cascades to:
-
-- `v_pending_matches` (security_invoker view → joins teams) → "Failed to load pending matches"
-- `ChampionsHeroCard` → `HeroCardService.fetchChampionTeams` → "Unable to load champions"
-- Standings, Teams page, anything joining/reading teams.
+Desktop renders all groups stacked, so it doesn't have this issue.
 
 ## Fix
 
-Wrap the opt-out check in a `SECURITY DEFINER` helper so the policy doesn't require callers to read the table directly. This keeps `team_season_opt_out` locked down (per the original security finding) while restoring public team reads.
+In `src/components/schedule/ScheduleContent.tsx`, derive a smart default index for the upcoming carousel instead of hard-coding `useState(0)`:
 
-### Migration
+1. Compute `defaultUpcomingIndex` from `groupedMatches` whenever `activeTab === 'upcoming'`:
+   - Find the first group whose `date` is `>= today` (start-of-day comparison).
+   - If none exists (all upcoming are in the past — edge case of stale unscored matches with no future schedule), fall back to the **last** group (most recent) rather than `0`.
+2. Sync `upcomingIndex` to that default via a `useEffect` that runs when `groupedMatches` identity changes — but only if the user hasn't manually swiped yet for this dataset. Simplest implementation: track a ref `userHasInteractedRef`; reset to `false` whenever `groupedMatches` reference changes; set to `true` inside `setUpcomingIndex` wrapper passed to `SwipeableDateGroups`.
+3. Apply the same logic to `completedIndex` is unnecessary — completed is sorted newest-first so index 0 is already correct.
 
-```sql
-CREATE OR REPLACE FUNCTION public.is_team_opted_out_active(_team_id uuid)
-RETURNS boolean
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT EXISTS (
-    SELECT 1
-    FROM team_season_opt_out o
-    JOIN seasons s ON s.id = o.season_id AND s.is_active
-    WHERE o.team_id = _team_id
-  )
-$$;
+### Code shape
 
-REVOKE EXECUTE ON FUNCTION public.is_team_opted_out_active(uuid) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.is_team_opted_out_active(uuid) TO anon, authenticated;
+```ts
+const upcomingDefaultIndex = useMemo(() => {
+  if (activeTab !== 'upcoming' || groupedMatches.length === 0) return 0;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const idx = groupedMatches.findIndex((g) => {
+    const d = new Date(g.date);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime() >= today.getTime();
+  });
+  return idx === -1 ? groupedMatches.length - 1 : idx;
+}, [activeTab, groupedMatches]);
 
-DROP POLICY "Public read teams" ON public.teams;
-CREATE POLICY "Public read teams" ON public.teams
-  FOR SELECT
-  USING (NOT public.is_team_opted_out_active(id));
+const upcomingInteractedRef = useRef(false);
+useEffect(() => {
+  upcomingInteractedRef.current = false;
+  setUpcomingIndex(upcomingDefaultIndex);
+}, [upcomingDefaultIndex]);
+
+const handleUpcomingIndexChange = (i: number) => {
+  upcomingInteractedRef.current = true;
+  setUpcomingIndex(i);
+};
 ```
 
-### Verification
+Pass `handleUpcomingIndexChange` to `SwipeableDateGroups` for the upcoming tab.
 
-After migration, re-test the anon REST endpoints — both `teams` and `v_pending_matches` should return rows. The Champions card and pending-matches section should load on the live site for signed-out visitors.
+## Files changed
 
-### Update security memory
+- `src/components/schedule/ScheduleContent.tsx` — add smart default index logic for upcoming carousel.
 
-Note that RLS subqueries run as the invoking role (correcting the prior note), and document `is_team_opted_out_active` as the sanctioned bridge into `team_season_opt_out`.
+## Verification
+
+- On mobile, open Schedule → Upcoming. With today = 5/7: should land on the 5/7 group, not 4/30.
+- Swiping left/right still works and is preserved (no snap-back during the same session).
+- On desktop, no behavior change (carousel not used).
+- Completed tab unchanged (already shows newest first).
