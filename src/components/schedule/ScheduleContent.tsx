@@ -1,6 +1,6 @@
 import { format, isSameDay, isToday, parseISO } from 'date-fns';
 import { Calendar, CalendarDays, CheckCircle, Clock, Trophy } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { EmptyState } from '@/components/ui/empty-state';
@@ -40,6 +40,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
   const navigate = useNavigate();
   const [upcomingIndex, setUpcomingIndex] = useState(0);
   const [completedIndex, setCompletedIndex] = useState(0);
+  const upcomingInteractedRef = useRef(false);
 
   // Group matches by date
   const groupedMatches = useMemo(() => {
@@ -77,6 +78,30 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
       return a.date.getTime() - b.date.getTime(); // Oldest first for upcoming
     });
   }, [filteredMatches, activeTab]);
+
+  // Smart default for the mobile upcoming carousel: land on today's group
+  // (or the next future one), not stale past unscored matches.
+  const upcomingDefaultIndex = useMemo(() => {
+    if (activeTab !== 'upcoming' || groupedMatches.length === 0) return 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const idx = groupedMatches.findIndex((g) => {
+      const d = new Date(g.date);
+      d.setHours(0, 0, 0, 0);
+      return d.getTime() >= today.getTime();
+    });
+    return idx === -1 ? groupedMatches.length - 1 : idx;
+  }, [activeTab, groupedMatches]);
+
+  useEffect(() => {
+    upcomingInteractedRef.current = false;
+    setUpcomingIndex(upcomingDefaultIndex);
+  }, [upcomingDefaultIndex]);
+
+  const handleUpcomingIndexChange = (i: number) => {
+    upcomingInteractedRef.current = true;
+    setUpcomingIndex(i);
+  };
 
   // For empty state
   const isEmptyState = groupedMatches.length === 0;
@@ -131,7 +156,9 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
           onEditMatch={onEditMatch}
           onDeleteMatch={onDeleteMatch}
           activeIndex={activeTab === 'upcoming' ? upcomingIndex : completedIndex}
-          onIndexChange={activeTab === 'upcoming' ? setUpcomingIndex : setCompletedIndex}
+          onIndexChange={
+            activeTab === 'upcoming' ? handleUpcomingIndexChange : setCompletedIndex
+          }
         />
       );
     }
