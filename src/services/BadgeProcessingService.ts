@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { BadgeRpcResult } from '@/types/badges';
+import { TeamStreakRpcResult } from '@/types/badges';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { badgeLog } from '@/utils/logger';
 
@@ -110,7 +110,8 @@ export class BadgeProcessingService {
 
     if (error) handleDatabaseError(error, 'Failed to calculate team streak');
 
-    return data && data.length > 0 ? data[0] : null;
+    const rows = (data as TeamStreakRpcResult[] | null) ?? [];
+    return rows.length > 0 ? rows[0] : null;
   }
 
   /**
