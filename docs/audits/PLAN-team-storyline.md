@@ -35,10 +35,10 @@ Each "chapter" is a card with a headline, a date chip, a tiny chart or score, an
 | Team & season info | `src/services/teams/TeamFetchService.ts`, `SeasonService.ts` |
 | Match history per team | `src/services/matches/MatchHistoryService.ts`, `useTeamMatches` hook |
 | Per-season breakdown | `src/hooks/teams/seasonBreakdown/` |
-| Badge events | `src/services/BadgeProcessingService.ts`, `TeamBadgeService.ts` |
+| Badge events | `src/services/BadgeProcessingService.ts`, `src/services/teams/TeamBadgeService.ts` |
 | Head-to-head / rivalry | `src/services/HeadToHeadService.ts`, `RivalryHighlights.tsx` |
 | Power-score history | `useHistoricalPowerScores.ts`, `TeamCareerPowerScoreChart.tsx` |
-| Curated analysis text | `team_analysis` table via `TeamAnalysisService.ts` |
+| Curated analysis text | `team_analysis` table via `src/services/teams/TeamAnalysisService.ts` |
 | Weekly recap pattern (similar shape) | `WeeklyRecapService.ts` |
 
 **Important:** No new raw data plumbing is required. We're composing existing data into a new shape.
