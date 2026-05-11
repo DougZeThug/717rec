@@ -1,4 +1,4 @@
-import { MatchQualityMetrics } from '@/types/autoSchedule';
+import { AutoScheduleMatch, MatchQualityMetrics } from '@/types/autoSchedule';
 
 export interface UseAutoScheduleState {
   // Date and tab state
@@ -20,8 +20,8 @@ export interface UseAutoScheduleState {
   setIsProcessing: (isProcessing: boolean) => void;
 
   // Generated data
-  generatedMatches: any[] | null;
-  setGeneratedMatches: (matches: any[]) => void;
+  generatedMatches: AutoScheduleMatch[] | null;
+  setGeneratedMatches: (matches: AutoScheduleMatch[]) => void;
   matchQualityMetrics: MatchQualityMetrics | null;
   setMatchQualityMetrics: (metrics: MatchQualityMetrics | null) => void;
 }

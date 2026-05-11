@@ -5,6 +5,7 @@ import {
   TimeBlockTeamsMap,
 } from '@/types/autoSchedule';
 import { scheduleLog, warnLog } from '@/utils/logger';
+import { parseStoredJson } from '@/utils/storage/parseStoredJson';
 
 const STORAGE_KEY = 'autoScheduleState';
 
@@ -59,6 +60,62 @@ export const getDefaultPersistedState = (): PersistedAutoScheduleState => ({
   teamBlockMap: {},
 });
 
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean';
+const isString = (value: unknown): value is string => typeof value === 'string';
+const isStringArray = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every(isString);
+const isRecord = (value: unknown): value is Record<string, unknown> => isObject(value);
+
+const isAutoScheduleMatch = (value: unknown): value is AutoScheduleMatch => {
+  if (!isObject(value)) return false;
+
+  const blockType = value.blockType;
+  const hasValidBlockType =
+    blockType === undefined || blockType === 'primary' || blockType === 'secondary';
+
+  return (
+    isString(value.id) &&
+    isString(value.team1Id) &&
+    isString(value.team2Id) &&
+    isString(value.timeslot) &&
+    (value.date instanceof Date || isString(value.date)) &&
+    hasValidBlockType
+  );
+};
+
+const isMatchQualityMetrics = (value: unknown): value is MatchQualityMetrics => {
+  if (value === null) return true;
+  return isObject(value);
+};
+
+export const isPersistedAutoScheduleState = (
+  value: unknown,
+): value is PersistedAutoScheduleState => {
+  if (!isObject(value)) return false;
+
+  return (
+    (value.selectedDate === null || isString(value.selectedDate)) &&
+    isString(value.activeTab) &&
+    isBoolean(value.isEditMode) &&
+    isBoolean(value.avoidRematches) &&
+    isBoolean(value.prioritizeQuality) &&
+    isBoolean(value.dualMatchMode) &&
+    Array.isArray(value.generatedMatches) &&
+    value.generatedMatches.every(isAutoScheduleMatch) &&
+    Array.isArray(value.editableMatches) &&
+    value.editableMatches.every(isAutoScheduleMatch) &&
+    isMatchQualityMetrics(value.matchQualityMetrics) &&
+    isRecord(value.generatedPairings) &&
+    isStringArray(value.unmatchedTeamIds) &&
+    isRecord(value.timeBlockTeams) &&
+    isRecord(value.originalTimeBlockTeams) &&
+    isRecord(value.teamBlockMap)
+  );
+};
+
 /**
  * Load persisted state from sessionStorage
  */
@@ -67,7 +124,16 @@ export function loadAutoScheduleState(): PersistedAutoScheduleState | null {
     const stored = sessionStorage.getItem(STORAGE_KEY);
     if (!stored) return null;
 
-    const parsed = JSON.parse(stored) as PersistedAutoScheduleState;
+    const result = parseStoredJson(stored, isPersistedAutoScheduleState);
+    if (!result.ok) {
+      warnLog(
+        'Failed to load auto-schedule state from sessionStorage due to invalid persisted shape:',
+        result.error,
+      );
+      return null;
+    }
+
+    const parsed = result.value;
     scheduleLog('Loaded auto-schedule state from sessionStorage');
     return parsed;
   } catch (error) {
