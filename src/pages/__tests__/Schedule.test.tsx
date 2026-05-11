@@ -184,23 +184,28 @@ describe('Schedule page', () => {
 
   it('shows an error state when schedule loading throws', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    mockUseScheduleData.mockImplementation(() => {
-      throw new Error('Schedule request failed');
-    });
+    try {
+      mockUseScheduleData.mockImplementation(() => {
+        // Intentionally throw to verify ErrorBoundary fallback behavior.
+        throw new Error('Schedule request failed');
+      });
 
-    const queryClient = createTestQueryClient();
-    render(
-      <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <TestErrorBoundary>
-            <Schedule />
-          </TestErrorBoundary>
-        </MemoryRouter>
-      </QueryClientProvider>
-    );
+      const queryClient = createTestQueryClient();
+      render(
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter>
+            <TestErrorBoundary>
+              <Schedule />
+            </TestErrorBoundary>
+          </MemoryRouter>
+        </QueryClientProvider>
+      );
 
-    expect(screen.getByText('Schedule error')).toBeInTheDocument();
-    errorSpy.mockRestore();
+      expect(screen.getByText('Schedule error')).toBeInTheDocument();
+      expect(mockUseScheduleData).toHaveBeenCalled();
+    } finally {
+      errorSpy.mockRestore();
+    }
   });
 
   it('filters matches by search interaction', () => {
