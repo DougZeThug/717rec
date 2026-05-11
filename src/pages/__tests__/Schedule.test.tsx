@@ -186,8 +186,8 @@ describe('Schedule page', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     try {
       mockUseScheduleData.mockImplementation(() => {
-        // Intentionally throw to verify ErrorBoundary fallback behavior.
-        throw new Error('Schedule request failed');
+        // Intentionally unique test-only message for easier debug output attribution.
+        throw new Error('TEST_INTENTIONAL: Schedule hook failure');
       });
 
       const queryClient = createTestQueryClient();
