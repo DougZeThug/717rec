@@ -22,10 +22,13 @@
 
 ```typescript
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 import { handleDatabaseError, ensureFound } from '@/utils/errorHandler';
 
+type ItemRow = Tables<'items'>;
+
 export const ExampleService = {
-  fetchItems: async (seasonId: string) => {
+  fetchItems: async (seasonId: string): Promise<ItemRow[]> => {
     const { data, error } = await supabase
       .from('items')
       .select('id, name, season_id, created_at')
@@ -35,7 +38,7 @@ export const ExampleService = {
     return data ?? [];
   },
 
-  fetchItemById: async (id: string) => {
+  fetchItemById: async (id: string): Promise<ItemRow> => {
     const { data, error } = await supabase
       .from('items')
       .select('id, name, season_id, created_at')
