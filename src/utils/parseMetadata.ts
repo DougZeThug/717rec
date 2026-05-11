@@ -3,6 +3,7 @@ import { ValidationError } from '@/types/errors';
 import {
   EventWeekWinners,
   HeroCardMetadata,
+  HeroCardMetadataByType,
   HeroCardType,
   ChampionsHeroCardMetadata,
   EventHeroCardMetadata,
