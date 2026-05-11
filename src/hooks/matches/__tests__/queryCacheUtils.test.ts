@@ -12,7 +12,7 @@ describe('queryCacheUtils', () => {
 
   beforeEach(() => {
     queryClient = new QueryClient();
-    vi.spyOn(queryClient, 'invalidateQueries').mockResolvedValue(undefined);
+    vi.spyOn(queryClient, 'invalidateQueries').mockResolvedValue();
   });
 
   describe('invalidateMatchRelatedQueries', () => {
