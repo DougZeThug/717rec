@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { Match, Ranking, Team } from '@/types';
 import { debugLog, errorLog } from '@/utils/logger';
-import { updateRankChanges } from '@/utils/rankingUtils';
+import { saveRankingsToStorage, updateRankChanges } from '@/utils/rankingUtils';
 import { calculateStreak } from '@/utils/rankingUtils/calculateStreak';
 
 import { usePreviousRankings } from './rankings/usePreviousRankings';
@@ -111,6 +111,14 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
 
         // Update rank changes based on previous rankings
         const finalRankings = updateRankChanges(sortedRankings);
+
+        if (finalRankings.length > 0) {
+          try {
+            await saveRankingsToStorage(finalRankings);
+          } catch (saveError) {
+            errorLog('Failed to persist rankings snapshot:', saveError);
+          }
+        }
 
         setRankings(finalRankings);
       } catch (error) {

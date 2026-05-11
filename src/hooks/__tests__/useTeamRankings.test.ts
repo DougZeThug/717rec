@@ -24,6 +24,7 @@ vi.mock('@/utils/logger', () => ({
 
 vi.mock('@/utils/rankingUtils', () => ({
   updateRankChanges: vi.fn((rankings: unknown[]) => rankings),
+  saveRankingsToStorage: vi.fn(() => Promise.resolve()),
 }));
 
 vi.mock('@/utils/rankingUtils/calculateStreak', () => ({
@@ -33,6 +34,7 @@ vi.mock('@/utils/rankingUtils/calculateStreak', () => ({
 import { usePreviousRankings } from '@/hooks/rankings/usePreviousRankings';
 import { useRankingsData } from '@/hooks/rankings/useRankingsData';
 import { useTeams } from '@/hooks/useTeams';
+import { saveRankingsToStorage } from '@/utils/rankingUtils';
 
 const makeTeam = (id: string, powerScore: number | null = 80) =>
   ({
@@ -112,5 +114,39 @@ describe('useTeamRankings', () => {
     const { result } = renderHook(() => useTeamRankings(customTeams));
     await waitFor(() => expect(result.current.rankings.length).toBe(1));
     expect(result.current.rankings[0].teamId).toBe('custom-1');
+  });
+
+
+  it('persists computed rankings when teams are available', async () => {
+    (useTeams as ReturnType<typeof vi.fn>).mockReturnValue({
+      teams: [makeTeam('persist-1', 88), makeTeam('persist-2', 77)],
+      isLoading: false,
+    });
+
+    renderHook(() => useTeamRankings());
+
+    await waitFor(() => {
+      expect(saveRankingsToStorage).toHaveBeenCalledTimes(1);
+      expect(saveRankingsToStorage).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({ teamId: 'persist-1' }),
+          expect.objectContaining({ teamId: 'persist-2' }),
+        ])
+      );
+    });
+  });
+
+  it('persists computed rankings for anonymous context (no session dependency)', async () => {
+    (useTeams as ReturnType<typeof vi.fn>).mockReturnValue({
+      teams: [makeTeam('anon-1', 92)],
+      isLoading: false,
+    });
+
+    renderHook(() => useTeamRankings());
+
+    await waitFor(() => expect(saveRankingsToStorage).toHaveBeenCalledTimes(1));
+    expect(saveRankingsToStorage).toHaveBeenCalledWith(
+      expect.arrayContaining([expect.objectContaining({ teamId: 'anon-1' })])
+    );
   });
 });
