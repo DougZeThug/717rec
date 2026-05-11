@@ -7,10 +7,14 @@ import { errorLog } from '@/utils/logger';
 export type { BlindDrawSignup } from '@/services/BlindDrawService';
 
 // Fetch signup count for public display (no auth required)
-export const useBlindDrawSignupCount = () => {
+export const useBlindDrawSignupCount = (eventDate?: string) => {
   return useQuery({
-    queryKey: ['blind-draw-signup-count'],
-    queryFn: BlindDrawService.fetchBlindDrawSignupCount,
+    queryKey: ['blind-draw-signup-count', eventDate],
+    queryFn: () => {
+      if (!eventDate) return 0;
+      return BlindDrawService.fetchBlindDrawSignupCount(eventDate);
+    },
+    enabled: !!eventDate,
     staleTime: 1000 * 60 * 2,
   });
 };
