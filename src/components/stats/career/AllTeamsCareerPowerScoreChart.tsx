@@ -75,16 +75,16 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
     .filter((p) => p.value !== null)
     .filter((p) => {
       if (selectedTeamIds.length === 0) return true;
-      const teamId = p.dataKey.replace('team_', '');
+      const teamId = String(p.dataKey ?? '').replace('team_', '');
       return selectedTeamIds.includes(teamId);
     })
-    .sort((a, b) => (b.value || 0) - (a.value || 0));
+    .sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0));
 
   return (
     <div className="bg-card border border-border rounded-lg p-3 shadow-lg max-h-64 overflow-y-auto">
       <p className="font-semibold text-sm mb-2">{seasonName}</p>
       {visibleTeams.map((entry, index: number) => {
-        const teamId = entry.dataKey.replace('team_', '');
+        const teamId = String(entry.dataKey ?? '').replace('team_', '');
         const team = teamsData?.find((t: TeamCareerData) => t.teamId === teamId);
         return (
           <p key={index} className="text-xs">
@@ -96,7 +96,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
             >
               {team?.teamName}
             </Link>
-            : <span className="font-bold">{entry.value?.toFixed(1)}</span>
+            : <span className="font-bold">{Number(entry.value ?? 0).toFixed(1)}</span>
           </p>
         );
       })}
