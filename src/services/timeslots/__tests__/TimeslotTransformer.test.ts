@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import { TimeslotTransformer } from '../TimeslotTransformer';
+import { TimeslotRow } from '../types';
 
-const makeRaw = (overrides: Record<string, unknown> = {}) => ({
+const makeRaw = (overrides: Partial<TimeslotRow> = {}): TimeslotRow => ({
   id: 'ts-1',
   match_date: '2026-04-17',
   timeslot: '6:30 PM',
@@ -25,6 +26,26 @@ describe('formatTimeslotResponse', () => {
 
   it('returns empty array for empty array', () => {
     expect(TimeslotTransformer.formatTimeslotResponse([])).toEqual([]);
+  });
+
+  it('accepts minimally populated typed row and preserves defaults', () => {
+    const typedRow: TimeslotRow = {
+      id: 'typed-1',
+      match_date: '2026-04-18',
+      timeslot: '7:00 PM',
+      team_id: 'team-typed',
+      is_back_to_back: null,
+      is_double_header: null,
+      pair_slot: undefined,
+      match_sequence: undefined,
+      teams: null,
+    };
+
+    const result = TimeslotTransformer.formatSingleTimeslot(typedRow);
+    expect(result.is_back_to_back).toBe(false);
+    expect(result.is_double_header).toBe(false);
+    expect(result.pair_slot).toBeNull();
+    expect(result.teams).toBeUndefined();
   });
 
   it('maps each item to TeamTimeslot shape', () => {
