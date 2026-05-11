@@ -71,6 +71,16 @@ describe('queryCacheUtils', () => {
       expect(queryKeys).toContain('playoff-matches');
       expect(queryKeys).toContain('bracket-data');
     });
+
+    it('does not read rankings snapshots from React Query cache for persistence', async () => {
+      const getQueryDataSpy = vi.spyOn(queryClient, 'getQueryData');
+      const setTimeoutSpy = vi.spyOn(globalThis, 'setTimeout');
+
+      await invalidateMatchRelatedQueries(queryClient);
+
+      expect(getQueryDataSpy).not.toHaveBeenCalledWith(['rankings']);
+      expect(setTimeoutSpy).not.toHaveBeenCalled();
+    });
   });
 
   describe('batchInvalidateQueries', () => {
