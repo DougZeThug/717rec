@@ -123,7 +123,7 @@ export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Pr
         name: teamData.name || 'Unknown Team',
         logoUrl: teamData.image_url || teamData.logo_url || null,
         imageUrl: teamData.image_url || teamData.logo_url || null,
-        players: Array.isArray(teamData.players) ? teamData.players : [],
+        players: Array.isArray(teamData.players) ? (teamData.players as string[]) : [],
         wins: teamData.wins || 0,
         losses: teamData.losses || 0,
         game_wins: teamData.game_wins || 0,
