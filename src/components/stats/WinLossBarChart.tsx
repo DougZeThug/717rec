@@ -1,8 +1,6 @@
 import { useTheme } from 'next-themes';
 import React from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import type { Props as XAxisTickProps } from 'recharts/types/cartesian/CartesianAxis';
-
 import { chartLog } from '@/utils/logger';
 
 import ChartEmptyState from './ChartEmptyState';
@@ -32,7 +30,12 @@ const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
   const barColorLoss = '#ef4444';
   const maxLabelLength = isMobile ? 7 : 12;
 
-  const CustomXAxisTick = ({ x, y, payload }: XAxisTickProps) => {
+  const CustomXAxisTick = (props: {
+    x?: number;
+    y?: number;
+    payload?: { value: unknown };
+  }) => {
+    const { x, y, payload } = props;
     if (!payload || typeof payload.value === 'undefined') return null;
     const label = typeof payload.value === 'string' ? payload.value : String(payload.value);
     const truncated = truncateLabel(label, maxLabelLength);
