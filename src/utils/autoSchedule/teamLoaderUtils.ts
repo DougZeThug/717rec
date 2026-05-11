@@ -1,4 +1,5 @@
 import { TimeslotService } from '@/services/timeslots/TimeslotService';
+import { TimeslotWithTeamsRow } from '@/services/timeslots/types';
 import { Team } from '@/types';
 import { errorLog, scheduleLog, warnLog } from '@/utils/logger';
 
@@ -62,7 +63,7 @@ export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Pr
     }
 
     // Group timeslots by team_id to ensure each team has both timeslots
-    const teamSlotMap = new Map<string, { primary?: any; secondary?: any }>();
+    const teamSlotMap = new Map<string, { primary?: TimeslotWithTeamsRow; secondary?: TimeslotWithTeamsRow }>();
 
     timeslots.forEach((slot) => {
       if (!slot.team_id || !slot.teams) return;

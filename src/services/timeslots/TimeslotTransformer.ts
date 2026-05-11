@@ -1,11 +1,13 @@
 import { TeamTimeslot, TimeslotGroup } from '@/types/timeslots';
 
+import { TimeslotRow } from './types';
+
 export class TimeslotTransformer {
   /**
    * Transform raw database response to TeamTimeslot format
    * Enhanced to handle back-to-back scheduling fields
    */
-  static formatTimeslotResponse(data: any[]): TeamTimeslot[] {
+  static formatTimeslotResponse(data: TimeslotRow[] | null | undefined): TeamTimeslot[] {
     if (!data || !Array.isArray(data)) {
       return [];
     }
@@ -17,7 +19,7 @@ export class TimeslotTransformer {
    * Transform single timeslot record
    * Enhanced to handle back-to-back scheduling fields
    */
-  static formatSingleTimeslot(item: any): TeamTimeslot {
+  static formatSingleTimeslot(item: TimeslotRow): TeamTimeslot {
     return {
       id: item.id,
       match_date: item.match_date,
