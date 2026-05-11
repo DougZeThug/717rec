@@ -29,3 +29,18 @@ export interface AuthContextType {
   authError: string | null;
   clearAuthError: () => void;
 }
+
+
+export type NativeGoogleLoginResult = {
+  result?:
+    | { idToken?: string; serverAuthCode?: string }
+    | { accessToken?: string; token?: string }
+    | Record<string, unknown>
+    | null;
+};
+
+export type AuthErrorDetails = {
+  message: string;
+  context?: string;
+  originalError?: unknown;
+};

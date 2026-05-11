@@ -14,6 +14,14 @@ import { loginWithGoogleNative as nativeGoogleLogin } from '@/utils/nativeAuth';
 
 import { HandleAuthErrorFn } from './utils/authErrorHandler';
 
+
+const extractWeakPasswordReasons = (
+  data: Awaited<ReturnType<typeof signUpWithEmail>>
+): WeakPasswordReasons | null => {
+  const withWeakPassword = data as { weakPassword?: WeakPasswordReasons };
+  return withWeakPassword.weakPassword || null;
+};
+
 /**
  * Hook for authentication methods (sign in, sign up, sign out, OAuth)
  */
@@ -71,16 +79,10 @@ export const useAuthMethods = (
           description: 'Please check your email to confirm your account',
         });
 
-        const signUpData = data as unknown as {
-          user: typeof data.user;
-          session: typeof data.session;
-          weakPassword?: WeakPasswordReasons;
-        };
-
         return {
           user: data.user,
           session: data.session,
-          weakPassword: signUpData.weakPassword || null,
+          weakPassword: extractWeakPasswordReasons(data),
         };
       } catch (error) {
         if (error instanceof Error) {
