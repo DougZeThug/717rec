@@ -66,11 +66,10 @@ export const HeroCardService = {
   },
 
   updateHeroCard: async ({ id, ...formData }: Partial<HeroCard> & { id: string }) => {
+    const { metadata, ...rest } = formData;
     const payload = {
-      ...formData,
-      ...(formData.metadata !== undefined
-        ? { metadata: formData.metadata as unknown as Json }
-        : {}),
+      ...rest,
+      ...(metadata !== undefined ? { metadata: metadata as unknown as Json } : {}),
       updated_at: new Date().toISOString(),
     };
     const { data, error } = await supabase
