@@ -5,6 +5,24 @@ import { signInWithIdToken } from '@/services/auth/AuthService';
 import { NativeGoogleLoginResult } from '@/types/auth';
 import { authLog, errorLog } from '@/utils/logger';
 
+const extractIdToken = (result: NativeGoogleLoginResult): string | undefined => {
+  const payload = result.result;
+  if (!payload || typeof payload !== 'object') return undefined;
+
+  if ('idToken' in payload && typeof payload.idToken === 'string') {
+    return payload.idToken;
+  }
+
+  if ('serverAuthCode' in payload && typeof payload.serverAuthCode === 'string') {
+    return payload.serverAuthCode;
+  }
+
+  const tokenValue = (payload as { accessToken?: unknown; token?: unknown }).accessToken
+    ?? (payload as { accessToken?: unknown; token?: unknown }).token;
+
+  return typeof tokenValue === 'string' ? tokenValue : undefined;
+};
+
 export const isNativePlatform = (): boolean => {
   return Capacitor.isNativePlatform();
 };
@@ -43,23 +61,4 @@ export const loginWithGoogleNative = async () => {
     const error = err instanceof Error ? err : new Error(String(err));
     return { success: false, error };
   }
-};
-
-
-const extractIdToken = (result: NativeGoogleLoginResult): string | undefined => {
-  const payload = result.result;
-  if (!payload || typeof payload !== 'object') return undefined;
-
-  if ('idToken' in payload && typeof payload.idToken === 'string') {
-    return payload.idToken;
-  }
-
-  if ('serverAuthCode' in payload && typeof payload.serverAuthCode === 'string') {
-    return payload.serverAuthCode;
-  }
-
-  const tokenValue = (payload as { accessToken?: unknown; token?: unknown }).accessToken
-    ?? (payload as { accessToken?: unknown; token?: unknown }).token;
-
-  return typeof tokenValue === 'string' ? tokenValue : undefined;
 };
