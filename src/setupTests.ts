@@ -42,6 +42,10 @@ for (const proto of [Element.prototype, HTMLElement.prototype]) {
   }
 }
 
+// jsdom doesn't implement window.scrollTo — stub it to silence "Not implemented" warnings
+window.scrollTo = (() => {}) as typeof window.scrollTo;
+Element.prototype.scrollTo = (() => {}) as typeof Element.prototype.scrollTo;
+
 // Mock IntersectionObserver for better test compatibility with complete interface
 globalThis.IntersectionObserver =
   globalThis.IntersectionObserver ||

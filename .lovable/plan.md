@@ -1,148 +1,42 @@
 ## Goal
 
-Fix all 40 TypeScript build errors across 10 files, organized into 7 surgical groups. No feature/runtime changes — type alignment only.
+All 2183 tests pass, but the test output is polluted by two noisy log streams. Silence them so CI logs stay clean.
 
-## Group 1 — `src/hooks/matches/utils/matchDatabaseUtils.ts` (1 error)
+## Issues
 
-`BadgeOperationType` is no longer re-exported from `@/types/badges` (only `BadgeOperationKind` is). Change the import to alias:
+1. **`Error: Schedule request failed` printed twice** — comes from `src/pages/__tests__/Schedule.test.tsx` test `"shows an error state when schedule loading throws"`. The mock intentionally throws inside render to assert `expect(() => renderPage()).toThrow(...)`. React 18 still logs the caught render error to `console.error` and re-dispatches it via jsdom's event system, producing two stderr lines even though the test passes.
 
-```ts
-import { BadgeOperationParams, BadgeOperationKind as BadgeOperationType } from '@/types/badges';
-```
+2. **`Not implemented: Window's scrollTo() method` (≈5 lines)** — jsdom doesn't implement `window.scrollTo`. Something during route transitions / page mounts (e.g. `ScrollToTop`-style effect) calls it.
 
-## Group 2 — `BadgeProcessingService.ts` + its test (12 + 7 = 19 errors)
+## Fix
 
-The Supabase v2 `.rpc()` overload no longer accepts `BadgeRpcResult['x']` as a generic argument — it expects an RPC function name from generated types.
+### 1. Replace the throwing-render test with an ErrorBoundary assertion
 
-**Service file (12 errors):** Drop the explicit generic on all 11 `supabase.rpc<…>(…)` call sites. Cast at the return site instead, e.g.:
+In `src/pages/__tests__/Schedule.test.tsx`, change the error test from "expect render to throw" to "render inside an error boundary and assert the fallback". This avoids React's uncaught-error logging entirely.
 
-```ts
-const { data, error } = await supabase.rpc('process_match_badges', { ... });
-if (error) handleDatabaseError(error, '...');
-return data as BadgeRpcResult['process_match_badges'];
-```
+- Add a tiny inline `class ErrorBoundary extends React.Component` with `getDerivedStateFromError` that renders a known fallback (e.g. `"Schedule error"`).
+- Wrap `<Schedule />` in `renderPage()` (or a variant) with that boundary.
+- Silence `console.error` for that single test via `vi.spyOn(console, 'error').mockImplementation(() => {})` then restore in an `afterEach` / inline `mockRestore()`. React still logs once even with a boundary.
+- Assertion becomes `expect(screen.getByText('Schedule error')).toBeInTheDocument()`.
 
-**Special case at line 113 (`calculateTeamStreak`)** — after dropping the generic, `data` is typed as `Json` and `data[0]` becomes `string`, breaking the `{ streak_type, streak_count }` return. Cast explicitly:
+### 2. Stub `window.scrollTo` in the global test setup
 
-```ts
-const rows = (data as TeamStreakRpcResult[] | null) ?? [];
-return rows.length > 0 ? rows[0] : null;
-```
-
-**Test file (7 errors):** the service methods now return `unknown`. Cast at each assertion site to a small inline shape:
+In `src/setupTests.ts`, add:
 
 ```ts
-const result = (await BadgeProcessingService.processMatchBadges(...)) as { badges_awarded: number };
-expect(result.badges_awarded).toBe(...);
-```
-
-Apply analogously to the 6 `.awarded` accesses.
-
-## Group 3 — `src/hooks/playoffs/usePlayoffViewModel.ts` (6 errors)
-
-The local helper claims `match is BracketMatch` but operates on `PlayoffMatchWithTeams[]`, which has different optional fields. Drop the type predicate and align the helper's return type with the input:
-
-```ts
-const groupBracketMatchesByType = (matches: PlayoffMatchWithTeams[]) => {
-  const winners = matches.filter((m) => m.matchType === 'winners');
-  const losers  = matches.filter((m) => m.matchType === 'losers');
-  const finals  = matches.filter((m) => m.matchType === 'finals');
-  return { winners, losers, finals };
-};
-```
-
-The existing `as unknown as PlayoffViewModel['bracketMatchesByType']` cast at the call site already absorbs the boundary mismatch — leave it in place.
-
-## Group 4 — `AdminView.tsx` and `PlayoffView.tsx` (2 errors)
-
-`SimpleBracketData` lacks `bestOf`/`bracket_id` on its matches but is being passed where `PlayoffBracket` is expected. Add a one-line cast at the prop boundary in both files:
-
-```tsx
-<SomeComponent bracket={data as unknown as PlayoffBracket} ... />
-```
-
-This mirrors the existing playoff cast pattern noted in the codebase audit.
-
-## Group 5 — `useMatchSubmission.ts` + its test (1 + 8 = 9 errors)
-
-**Real cause of line 63 error:** `updateMatch` returns a single match row object (single-row, not array). It is then passed into `updateTeamStats(..., data, ...)` as the third argument, but `updateTeamStats` declares `teams: any[]` (`src/hooks/matches/useTeamRecordUpdate.ts`). A single object isn't assignable to `any[]`.
-
-Inspecting `updateTeamRecords` (`src/hooks/useTeamRecords.ts`) shows the `teams` parameter is typed `Team[]` and used only for debug logging — the actual stat write goes through `updateTeamStatsRecord(winnerId, loserId, …)` and doesn't read from `teams`. So this argument is effectively unused.
-
-**Fix:** in `useMatchSubmission.ts:63`, wrap as `[data]` so the type aligns and we still pass useful debug context. No cast needed:
-
-```ts
-await updateTeamStats(
-  team1Win ? team1_id : team2_id,
-  team1Win ? team2_id : team1_id,
-  [data],
-  ...
-);
-```
-
-This avoids retyping `UpdateMatchScoreResult` (which lives in `matchDatabaseUtils.ts`, not `useMatchSubmission.ts` — the previous draft pointed at the wrong file).
-
-**Test file (8 errors):** the test's `mockResult.data: { id: 'm1', ... }` doesn't satisfy the full `Tables<'matches'>` shape that `Awaited<ReturnType<typeof updateMatch>>` resolves to. Add a small fixture helper at the top of the test file:
-
-```ts
-import type { Tables } from '@/integrations/supabase/types';
-
-const mockMatchRow = (overrides: Partial<Tables<'matches'>> = {}): Tables<'matches'> =>
-  ({
-    id: 'm1', best_of: 3, bracket_id: null, created_at: '', date: '',
-    iscompleted: true, location: '', loser_id: null, match_type: 'winners',
-    metadata: null, /* …all required fields with safe defaults… */
-    winner_id: null, team1_score: 0, team2_score: 0,
-    ...overrides,
-  } as Tables<'matches'>);
-```
-
-Then replace each `data: { id: ... }` with `data: mockMatchRow({ id: ..., team1_score: ... })`. Touches the 7 `mockResolvedValue`/`mockResolvedValueOnce` sites + the `resolveFirst!({...})` call at line 271.
-
-## Group 6 — `useBracketFormData.test.ts` (1 error)
-
-The test fixture at line 159 intentionally includes `{ name: 'Team without ID' }` to verify the missing-required-field path — making `id` required would defeat the test. Use the cast option at line 163 instead:
-
-```ts
-const { result } = renderHook(
-  () => useBracketFormData(mockDivisions, invalidTeams as unknown as BracketFormTeam[]),
-  { wrapper }
-);
-```
-
-(Add the `BracketFormTeam` type import if missing.)
-
-## Group 7 — `usePersistedState.ts` (2 errors)
-
-The file already uses early-return after `parsedResult.ok`, but TS is not narrowing the discriminated union for the subsequent `parsedResult.error` access. Combine into a single guard so narrowing is explicit:
-
-```ts
-if (parsedResult.ok) {
-  return parsedResult.value;
+if (!window.scrollTo || window.scrollTo.toString().includes('Not implemented')) {
+  window.scrollTo = (() => {}) as typeof window.scrollTo;
 }
-if (parsedResult.error !== 'missing') {
-  errorLog(...);
-}
-return defaultValue;
 ```
 
-If TS still complains, add an `else` branch instead so the discriminant is unambiguous within scope.
+(Plus the same on `Element.prototype.scrollTo` for safety.) This removes all "Not implemented: Window's scrollTo()" messages across the suite without changing any production code.
 
 ## Verification
 
-- Run `npx tsc -b` after each group; expect totals to drop: 1 → 19 → 6 → 2 → 9 → 1 → 2.
-- After all 7 groups, expect 0 errors.
-- No runtime behavior change — pure type alignment. The only semantic-adjacent change is `[data]` instead of `data` in Group 5, which still passes correct data and matches the parameter's intended shape.
+- Run `npx vitest run src/pages/__tests__/Schedule.test.tsx` — should pass with no `Error: Schedule request failed` lines in stderr.
+- Run `npm test` — full suite should still report 2183 passed with no `scrollTo` "Not implemented" warnings.
 
-## Files touched (10)
+## Out of scope
 
-1. `src/hooks/matches/utils/matchDatabaseUtils.ts`
-2. `src/services/BadgeProcessingService.ts`
-3. `src/services/__tests__/BadgeProcessingService.test.ts`
-4. `src/hooks/playoffs/usePlayoffViewModel.ts`
-5. `src/components/playoffs/views/AdminView.tsx`
-6. `src/components/playoffs/views/PlayoffView.tsx`
-7. `src/hooks/matches/useMatchSubmission.ts`
-8. `src/hooks/matches/__tests__/useMatchSubmission.test.ts`
-9. `src/components/playoffs/form/bracket-teams/hooks/__tests__/useBracketFormData.test.ts`
-10. `src/hooks/usePersistedState.ts`
+- No production code changes.
+- No changes to other tests beyond the one Schedule test case being rewritten.

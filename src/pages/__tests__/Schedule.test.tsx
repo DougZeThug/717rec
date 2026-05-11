@@ -6,6 +6,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import Schedule from '../Schedule';
 
+class TestErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) return <p>Schedule error</p>;
+    return this.props.children;
+  }
+}
+
 const mockUseScheduleData = vi.fn();
 const mockUseMatchDates = vi.fn();
 const mockUseMatchTimeslots = vi.fn();
@@ -169,11 +183,24 @@ describe('Schedule page', () => {
   });
 
   it('shows an error state when schedule loading throws', () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     mockUseScheduleData.mockImplementation(() => {
       throw new Error('Schedule request failed');
     });
 
-    expect(() => renderPage()).toThrow('Schedule request failed');
+    const queryClient = createTestQueryClient();
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <TestErrorBoundary>
+            <Schedule />
+          </TestErrorBoundary>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    expect(screen.getByText('Schedule error')).toBeInTheDocument();
+    errorSpy.mockRestore();
   });
 
   it('filters matches by search interaction', () => {
