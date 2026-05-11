@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { HeroCard } from '@/types/heroCard';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { parseHeroCardMetadata } from '@/utils/parseMetadata';
+import type { Json } from '@/integrations/supabase/types';
 
 const HERO_CARD_SELECT =
   'id, slug, title, subtitle, body, cta_label, cta_url, background_color, text_color, accent_color, image_url, icon_name, is_visible, sort_order, target_type, target_id, card_type, metadata, created_at, updated_at';
@@ -57,16 +58,24 @@ export const HeroCardService = {
   },
 
   createHeroCard: async (formData: Omit<HeroCard, 'id' | 'created_at' | 'updated_at'>) => {
-    const { data, error } = await supabase.from('hero_cards').insert([formData]).select().single();
+    const payload = { ...formData, metadata: formData.metadata as unknown as Json };
+    const { data, error } = await supabase.from('hero_cards').insert([payload]).select().single();
 
     if (error) handleDatabaseError(error, 'Failed to create hero card');
     return data;
   },
 
   updateHeroCard: async ({ id, ...formData }: Partial<HeroCard> & { id: string }) => {
+    const payload = {
+      ...formData,
+      ...(formData.metadata !== undefined
+        ? { metadata: formData.metadata as unknown as Json }
+        : {}),
+      updated_at: new Date().toISOString(),
+    };
     const { data, error } = await supabase
       .from('hero_cards')
-      .update({ ...formData, updated_at: new Date().toISOString() })
+      .update(payload)
       .eq('id', id)
       .select()
       .single();
