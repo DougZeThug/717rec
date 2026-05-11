@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import type { TooltipContentProps } from 'recharts';
 import type { Props as DotProps } from 'recharts/types/shape/Dot';
 
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
@@ -46,9 +47,13 @@ const CustomDot = (props: DotProps & { payload?: SeasonPowerScoreData }) => {
   );
 };
 
-const CustomLabel = (props: any) => {
-  const { x, y, payload } = props;
+interface TeamLabelProps {
+  x?: number;
+  y?: number;
+  payload?: SeasonPowerScoreData;
+}
 
+const CustomLabel = ({ x, y, payload }: TeamLabelProps) => {
   if (!payload || payload.playoffRank === null) {
     return null;
   }
@@ -75,10 +80,12 @@ const CustomLabel = (props: any) => {
   );
 };
 
-const CustomTooltip = ({ active, payload }: any) => {
+type TeamTooltipPayload = TooltipContentProps<number, string>['payload'];
+
+const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: TeamTooltipPayload }) => {
   if (!active || !payload || !payload[0]) return null;
 
-  const data: SeasonPowerScoreData = payload[0].payload;
+  const data = payload[0].payload as SeasonPowerScoreData;
 
   let placementText = '';
   if (data.isChampion) {

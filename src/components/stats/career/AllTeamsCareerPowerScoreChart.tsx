@@ -11,6 +11,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import type { TooltipContentProps } from 'recharts';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -40,7 +41,7 @@ const transformDataForChart = (teamsData?: TeamCareerData[]) => {
   return Array.from(allSeasons)
     .sort((a, b) => (seasonOrderMap.get(a) || 0) - (seasonOrderMap.get(b) || 0))
     .map((seasonName) => {
-      const dataPoint: any = { seasonName };
+      const dataPoint: Record<string, number | null | string> = { seasonName };
 
       teamsData.forEach((team) => {
         const seasonStat = team.seasonData.find((s) => s.seasonName === seasonName);
@@ -54,7 +55,7 @@ const transformDataForChart = (teamsData?: TeamCareerData[]) => {
 
 interface CustomTooltipProps {
   active?: boolean;
-  payload?: ReadonlyArray<any>;
+  payload?: TooltipContentProps<number, string>['payload'];
   teamsData?: TeamCareerData[];
   selectedTeamIds: string[];
 }
@@ -71,18 +72,18 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
 
   // Show only selected teams in tooltip if any are selected, otherwise show all
   const visibleTeams = (payload ?? [])
-    .filter((p: any) => p.value !== null)
-    .filter((p: any) => {
+    .filter((p) => p.value !== null)
+    .filter((p) => {
       if (selectedTeamIds.length === 0) return true;
       const teamId = p.dataKey.replace('team_', '');
       return selectedTeamIds.includes(teamId);
     })
-    .sort((a: any, b: any) => (b.value || 0) - (a.value || 0));
+    .sort((a, b) => (b.value || 0) - (a.value || 0));
 
   return (
     <div className="bg-card border border-border rounded-lg p-3 shadow-lg max-h-64 overflow-y-auto">
       <p className="font-semibold text-sm mb-2">{seasonName}</p>
-      {visibleTeams.map((entry: any, index: number) => {
+      {visibleTeams.map((entry, index: number) => {
         const teamId = entry.dataKey.replace('team_', '');
         const team = teamsData?.find((t: TeamCareerData) => t.teamId === teamId);
         return (

@@ -6,16 +6,9 @@ import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 
 import { ChartStyle } from './ChartStyle';
+import type { ChartConfigMap } from './types';
 
-export type ChartConfig = {
-  [k in string]: {
-    label?: React.ReactNode;
-    icon?: React.ComponentType;
-  } & (
-    | { color?: string; theme?: never }
-    | { color?: never; theme: Record<'light' | 'dark', string> }
-  );
-};
+export type ChartConfig = ChartConfigMap;
 
 type ChartContextProps = {
   config: ChartConfig;
