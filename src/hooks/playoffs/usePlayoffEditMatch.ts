@@ -5,71 +5,25 @@ import {
   fetchBmMatchWithStage,
   fetchPlayoffMatchWithBracket,
 } from '@/services/brackets/BracketReadService';
+import type {
+  BracketManagerMatchWithStage,
+  LegacyPlayoffMatchWithGames,
+} from '@/services/brackets/read/types';
 import type { AsyncVoidCallback } from '@/types/callbacks';
 import { errorLog, playoffLog } from '@/utils/logger';
-import type { PlayoffBracket, PlayoffMatch, PlayoffMatchType } from '@/utils/playoffs/playoffTypes';
+import type { PlayoffBracket, PlayoffMatch } from '@/utils/playoffs/playoffTypes';
 
 import { useOptimisticScoreMutation } from './useOptimisticScoreMutation';
 import { usePlayoffMatchUpdate } from './usePlayoffMatchUpdate';
 
-/**
- * Stage data from brackets-manager match query
- */
-interface BmStageData {
-  id: number;
-  tournament_id: string;
-  name?: string;
-  type?: string;
-  number?: number;
-}
-
-/**
- * Brackets-manager match data from database
- */
-interface BmMatchData {
-  id: number;
-  opponent1_id: number | null;
-  opponent2_id: number | null;
-  opponent1_score: number | null;
-  opponent2_score: number | null;
-  round_id: number | null;
-  number: number | null;
-  child_count: number | null;
-  status: number;
-  stage?: BmStageData;
-}
-
-/**
- * Bracket reference from playoff_matches join
- */
-interface BracketRef {
-  id: string;
-  uses_brackets_manager: boolean;
-}
-
-/**
- * Playoff match data from database
- */
-interface DbPlayoffMatch {
-  id: string;
-  bracket_id: string;
-  round: number;
-  position: number;
-  team1_id: string | null;
-  team2_id: string | null;
-  winner_id: string | null;
-  loser_id: string | null;
-  team1_score: number | null;
-  team2_score: number | null;
-  match_type: PlayoffMatchType;
-  best_of: number | null;
-  team1_seed: number | null;
-  team2_seed: number | null;
-  next_win_match_id: string | null;
-  next_lose_match_id: string | null;
-  status: string | null;
-  bracket?: BracketRef;
-}
+const toPlayoffGame = (game: LegacyPlayoffMatchWithGames['playoff_games'][number]) => ({
+  id: game.id,
+  matchId: game.match_id,
+  gameNumber: game.game_number,
+  team1Score: game.team1_score,
+  team2Score: game.team2_score,
+  winnerId: game.winner_id,
+});
 
 export const usePlayoffEditMatch = () => {
   const [editingMatch, setEditingMatch] = useState<PlayoffMatch | null>(null);
@@ -96,7 +50,9 @@ export const usePlayoffEditMatch = () => {
 
         if (isInteger) {
           // Fetch from brackets-manager match table
-          const matchData = await fetchBmMatchWithStage(parseInt(matchId));
+          const matchData: BracketManagerMatchWithStage | null = await fetchBmMatchWithStage(
+            parseInt(matchId)
+          );
 
           if (!matchData) {
             errorLog('Error fetching brackets-manager match: no data', { matchId });
@@ -108,10 +64,8 @@ export const usePlayoffEditMatch = () => {
             return;
           }
 
-          const typedMatchData = matchData as unknown as BmMatchData;
-
           // Check if match has both opponents
-          if (!typedMatchData.opponent1_id || !typedMatchData.opponent2_id) {
+          if (!matchData.opponent1_id || !matchData.opponent2_id) {
             toast({
               title: 'Match Locked',
               description:
@@ -121,8 +75,8 @@ export const usePlayoffEditMatch = () => {
           }
 
           // Get bracket info
-          const stageData = typedMatchData.stage;
-          const bracketId = stageData?.tournament_id;
+          const stageData = matchData.stage;
+          const bracketId = stageData?.tournament_id?.toString();
 
           if (!bracketId) {
             toast({
@@ -173,7 +127,7 @@ export const usePlayoffEditMatch = () => {
           setIsQuickEdit(quickEdit);
         } else {
           // Fetch from playoff_matches table (UUID)
-          let matchData: any;
+          let matchData: LegacyPlayoffMatchWithGames | null = null;
           try {
             matchData = await fetchPlayoffMatchWithBracket(matchId);
           } catch (fetchError) {
@@ -206,47 +160,38 @@ export const usePlayoffEditMatch = () => {
             return;
           }
 
-          const typedMatchData = matchData as unknown as DbPlayoffMatch;
-
           // Store bracket info for routing
           setCurrentBracket({
-            id: typedMatchData.bracket_id,
-            uses_brackets_manager: typedMatchData.bracket?.uses_brackets_manager || false,
+            id: matchData.bracket_id,
+            uses_brackets_manager: matchData.bracket?.uses_brackets_manager || false,
             format: 'Single Elimination',
             state: 'in_progress',
           } as PlayoffBracket);
 
           // Convert database match to PlayoffMatch format
           const playoffMatch: PlayoffMatch = {
-            id: typedMatchData.id,
-            bracket_id: typedMatchData.bracket_id,
-            round: typedMatchData.round,
-            position: typedMatchData.position,
-            team1Id: typedMatchData.team1_id,
-            team2Id: typedMatchData.team2_id,
-            winnerId: typedMatchData.winner_id,
-            loserId: typedMatchData.loser_id,
-            team1Score: typedMatchData.team1_score,
-            team2Score: typedMatchData.team2_score,
+            id: matchData.id,
+            bracket_id: matchData.bracket_id,
+            round: matchData.round,
+            position: matchData.position,
+            team1Id: matchData.team1_id,
+            team2Id: matchData.team2_id,
+            winnerId: matchData.winner_id,
+            loserId: matchData.loser_id,
+            team1Score: matchData.team1_score,
+            team2Score: matchData.team2_score,
             team1GameWins: null,
             team2GameWins: null,
-            matchType: typedMatchData.match_type,
-            bestOf: typedMatchData.best_of || 3,
-            team1Seed: typedMatchData.team1_seed,
-            team2Seed: typedMatchData.team2_seed,
-            nextWinMatchId: typedMatchData.next_win_match_id,
-            nextLoseMatchId: typedMatchData.next_lose_match_id,
-            status: (typedMatchData.status as 'pending' | 'in_progress' | 'completed') || 'pending',
-            games: ((matchData as any).playoff_games || [])
-              .sort((a: any, b: any) => a.game_number - b.game_number)
-              .map((g: any) => ({
-                id: g.id,
-                matchId: g.match_id,
-                gameNumber: g.game_number,
-                team1Score: g.team1_score,
-                team2Score: g.team2_score,
-                winnerId: g.winner_id,
-              })),
+            matchType: matchData.match_type,
+            bestOf: matchData.best_of || 3,
+            team1Seed: matchData.team1_seed,
+            team2Seed: matchData.team2_seed,
+            nextWinMatchId: matchData.next_win_match_id,
+            nextLoseMatchId: matchData.next_lose_match_id,
+            status: (matchData.status as 'pending' | 'in_progress' | 'completed') || 'pending',
+            games: (matchData.playoff_games ?? [])
+              .sort((a, b) => a.game_number - b.game_number)
+              .map(toPlayoffGame),
           };
 
           playoffLog('Loaded playoff match:', playoffMatch.id);
