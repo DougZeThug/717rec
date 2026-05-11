@@ -1,6 +1,7 @@
 import { useTheme } from 'next-themes';
 import React from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import type { Props as XAxisTickProps } from 'recharts/types/cartesian/CartesianAxis';
 
 import { chartLog } from '@/utils/logger';
 
@@ -10,8 +11,15 @@ import WinLossTooltip from './WinLossTooltip';
 const truncateLabel = (label: string, max = 10) =>
   label.length > max ? label.slice(0, max - 1) + '…' : label;
 
+interface WinLossDataItem {
+  displayName: string;
+  tooltipName?: string;
+  wins: number;
+  losses: number;
+}
+
 interface BarChartProps {
-  data: Array<any>;
+  data: WinLossDataItem[];
   isMobile: boolean;
 }
 
@@ -24,10 +32,9 @@ const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
   const barColorLoss = '#ef4444';
   const maxLabelLength = isMobile ? 7 : 12;
 
-  const CustomXAxisTick = (props: any) => {
-    const { x, y, payload } = props;
+  const CustomXAxisTick = ({ x, y, payload }: XAxisTickProps) => {
     if (!payload || typeof payload.value === 'undefined') return null;
-    const label = payload.value || '';
+    const label = typeof payload.value === 'string' ? payload.value : String(payload.value);
     const truncated = truncateLabel(label, maxLabelLength);
 
     return (
@@ -54,12 +61,8 @@ const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
 
   chartLog('WinLossBarChart rendering with data length:', data?.length);
 
-  // Check for empty/zero data
   const hasData =
-    data &&
-    Array.isArray(data) &&
-    data.length > 0 &&
-    data.some((d) => (d.wins || 0) + (d.losses || 0) > 0);
+    data && Array.isArray(data) && data.length > 0 && data.some((d) => (d.wins || 0) + (d.losses || 0) > 0);
 
   if (!hasData) {
     return <ChartEmptyState message="Records available after matches" />;
@@ -67,7 +70,7 @@ const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
 
   chartLog(
     'Rendering chart with data',
-    data.map((t: any, i: number) => ({
+    data.map((t, i: number) => ({
       displayName: t.displayName,
       wins: t.wins,
       losses: t.losses,
