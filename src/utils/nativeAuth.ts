@@ -2,7 +2,26 @@ import { Capacitor } from '@capacitor/core';
 import { SocialLogin } from '@capgo/capacitor-social-login';
 
 import { signInWithIdToken } from '@/services/auth/AuthService';
+import { NativeGoogleLoginResult } from '@/types/auth';
 import { authLog, errorLog } from '@/utils/logger';
+
+const extractIdToken = (result: NativeGoogleLoginResult): string | undefined => {
+  const payload = result.result;
+  if (!payload || typeof payload !== 'object') return undefined;
+
+  if ('idToken' in payload && typeof payload.idToken === 'string') {
+    return payload.idToken;
+  }
+
+  if ('serverAuthCode' in payload && typeof payload.serverAuthCode === 'string') {
+    return payload.serverAuthCode;
+  }
+
+  const tokenValue = (payload as { accessToken?: unknown; token?: unknown }).accessToken
+    ?? (payload as { accessToken?: unknown; token?: unknown }).token;
+
+  return typeof tokenValue === 'string' ? tokenValue : undefined;
+};
 
 export const isNativePlatform = (): boolean => {
   return Capacitor.isNativePlatform();
@@ -27,23 +46,7 @@ export const loginWithGoogleNative = async () => {
     // Log the response structure to understand what we're getting
     authLog('Google login response structure:', JSON.stringify(response));
 
-    // Based on the GoogleLoginResponseOnline type, we need to access the id token differently
-    // The structure is different between platforms, so we need to handle multiple possible locations
-    let idToken: string | undefined;
-
-    // Try to access idToken from different possible locations in the response
-    if (response.result) {
-      if ('idToken' in response.result) {
-        idToken = (response.result as any).idToken;
-      } else if ('serverAuthCode' in response.result) {
-        // This is a typical structure for Android
-        idToken = (response.result as any).serverAuthCode;
-      } else if (typeof response.result === 'object' && response.result !== null) {
-        // Navigate deeper if needed
-        const resultObj = response.result as any;
-        idToken = resultObj.idToken || resultObj.accessToken || resultObj.token;
-      }
-    }
+    const idToken = extractIdToken(response as NativeGoogleLoginResult);
 
     if (!idToken) {
       throw new Error('Failed to retrieve ID token from Google login response');
