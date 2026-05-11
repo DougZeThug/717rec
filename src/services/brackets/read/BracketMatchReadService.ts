@@ -1,12 +1,19 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
-import { transformDatabasePlayoffMatchesWithTeams } from '@/utils/matchTransformers';
+import {
+  transformDatabasePlayoffMatchesWithTeams,
+  type PlayoffMatchWithTeams,
+} from '@/utils/matchTransformers';
+import type {
+  BracketManagerMatchWithStage,
+  LegacyPlayoffMatchWithGames,
+} from './types';
 
 /**
  * Fetch playoff matches for a bracket with team data
  * Used by usePlayoffMatches hook
  */
-export const fetchPlayoffMatches = async (bracketId: string) => {
+export const fetchPlayoffMatches = async (bracketId: string): Promise<PlayoffMatchWithTeams[]> => {
   const { data, error } = await supabase
     .from('playoff_matches')
     .select(
@@ -36,7 +43,9 @@ export const fetchPlayoffMatches = async (bracketId: string) => {
  * Fetch a brackets-manager match with its stage data
  * Used by usePlayoffEditMatch hook (integer matchId path)
  */
-export const fetchBmMatchWithStage = async (matchId: number) => {
+export const fetchBmMatchWithStage = async (
+  matchId: number
+): Promise<BracketManagerMatchWithStage | null> => {
   const { data, error } = await supabase
     .from('match')
     .select(
@@ -56,7 +65,9 @@ export const fetchBmMatchWithStage = async (matchId: number) => {
  * Fetch a legacy playoff match with bracket info and games
  * Used by usePlayoffEditMatch hook (UUID matchId path)
  */
-export const fetchPlayoffMatchWithBracket = async (matchId: string) => {
+export const fetchPlayoffMatchWithBracket = async (
+  matchId: string
+): Promise<LegacyPlayoffMatchWithGames | null> => {
   const { data, error } = await supabase
     .from('playoff_matches')
     .select(
@@ -82,7 +93,9 @@ export const fetchPlayoffMatchWithBracket = async (matchId: string) => {
  * Fetch brackets-manager match opponent and stage data
  * Used by usePlayoffMatchUpdate hook (BM path)
  */
-export const fetchBmMatchData = async (matchId: number) => {
+export const fetchBmMatchData = async (
+  matchId: number
+): Promise<{ opponent1_id: number | null; opponent2_id: number | null; stage_id: number } | null> => {
   const { data, error } = await supabase
     .from('match')
     .select('opponent1_id, opponent2_id, stage_id')
