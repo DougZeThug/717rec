@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { warnLog, errorLog } from '@/utils/logger';
+import { errorLog, warnLog } from '@/utils/logger';
 import { parseStoredJson } from '@/utils/storage/parseStoredJson';
 import type { StorageParseResult } from '@/utils/storage/types';
 
@@ -17,7 +17,7 @@ const isPrimitiveValue = (value: unknown): value is string | number | boolean =>
 export function usePersistedState<T>(
   key: string,
   defaultValue: T,
-  validate?: (v: unknown) => v is T,
+  validate?: (v: unknown) => v is T
 ): [T, (value: T) => void] {
   // Initialize state from localStorage or use default
   const [value, setValue] = useState<T>(() => {
@@ -38,7 +38,7 @@ export function usePersistedState<T>(
         errorLog(
           'Failed to parse persisted state for key "%s" with validator. Falling back to default value. Reason: %s',
           key,
-          parsedResult.error,
+          parsedResult.error
         );
       }
 
@@ -54,7 +54,7 @@ export function usePersistedState<T>(
 
       warnLog(
         'usePersistedState legacy fallback for non-primitive default on key "%s" is deprecated. Pass a validator to avoid stale or invalid persisted data.',
-        key,
+        key
       );
       errorLog('Failed to parse persisted state for key "%s":', key, e);
 

@@ -19,13 +19,15 @@ export type TimeslotRow = {
 };
 
 export type TimeslotWithTeamsRow = TimeslotRow & {
-  teams: (TimeslotRowTeam & {
-    players?: unknown[] | null;
-    wins?: number | null;
-    losses?: number | null;
-    game_wins?: number | null;
-    game_losses?: number | null;
-    division_id?: string | null;
-    divisions?: { name?: string | null; display_division?: string | null } | null;
-  }) | null;
+  teams:
+    | (TimeslotRowTeam & {
+        players?: unknown[] | null;
+        wins?: number | null;
+        losses?: number | null;
+        game_wins?: number | null;
+        game_losses?: number | null;
+        division_id?: string | null;
+        divisions?: { name?: string | null; display_division?: string | null } | null;
+      })
+    | null;
 };

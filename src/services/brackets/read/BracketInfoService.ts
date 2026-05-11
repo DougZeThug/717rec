@@ -151,7 +151,9 @@ export const fetchBracketInfo = async (bracketId: string): Promise<BracketInfoRo
  * Fetch bracket with division join for bracket data loading
  * Used by useBracketData hook (step 1)
  */
-export const fetchBracketWithDivision = async (bracketId: string): Promise<BracketWithDivisionRow> => {
+export const fetchBracketWithDivision = async (
+  bracketId: string
+): Promise<BracketWithDivisionRow> => {
   const { data, error } = await supabase
     .from('brackets')
     .select(

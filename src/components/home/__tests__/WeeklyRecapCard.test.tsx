@@ -32,7 +32,14 @@ describe('WeeklyRecapCard', () => {
         },
       ],
       hotStreaks: [
-        { teamId: 't3', teamName: 'The Jets', logoUrl: null, division: 'West', streak: 'W5', streakCount: 5 },
+        {
+          teamId: 't3',
+          teamName: 'The Jets',
+          logoUrl: null,
+          division: 'West',
+          streak: 'W5',
+          streakCount: 5,
+        },
       ],
     };
 

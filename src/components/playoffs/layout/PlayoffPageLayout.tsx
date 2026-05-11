@@ -7,13 +7,13 @@ import SeasonSelector from '@/components/playoffs/SeasonSelector';
 import { useBracketsManagerRealtime } from '@/hooks/brackets/useBracketsManagerRealtime';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
+import type { AsyncVoidCallback } from '@/types/callbacks';
 
 import { usePlayoffHandlers } from '../hooks/usePlayoffHandlers';
 import { PlayoffPageData } from '../hooks/usePlayoffPageData';
 import { usePlayoffViewState } from '../hooks/usePlayoffViewState';
 import { useViewSelection } from '../hooks/useViewSelection';
 import { PlayoffViewSelector } from './PlayoffViewSelector';
-import type { AsyncVoidCallback } from '@/types/callbacks';
 
 interface PlayoffPageLayoutProps {
   data: PlayoffPageData;

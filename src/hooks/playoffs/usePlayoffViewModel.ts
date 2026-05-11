@@ -1,12 +1,12 @@
 import { convertErrorToString, getUIErrorMessage, logError } from '@/utils/errorHandler';
 import { playoffLog, warnLog } from '@/utils/logger';
+import type { PlayoffMatchWithTeams } from '@/utils/matchTransformers';
 import type { PlayoffViewModel } from '@/utils/playoffs/playoffTypes';
 
 import { usePlayoffActions } from './usePlayoffActions';
 import { usePlayoffBracketData } from './usePlayoffBracketData';
 import { usePlayoffMatches } from './usePlayoffMatches';
 import { usePlayoffTeams } from './usePlayoffTeams';
-import type { PlayoffMatchWithTeams } from '@/utils/matchTransformers';
 
 // Local helper to group bracket matches by type
 const groupBracketMatchesByType = (matches: PlayoffMatchWithTeams[]) => {
@@ -70,7 +70,9 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   // Process bracket data to separate winners, losers and finals matches
   const bracketMatchesByType: PlayoffViewModel['bracketMatchesByType'] =
     safeMatches.length > 0
-      ? (groupBracketMatchesByType(safeMatches) as unknown as PlayoffViewModel['bracketMatchesByType'])
+      ? (groupBracketMatchesByType(
+          safeMatches
+        ) as unknown as PlayoffViewModel['bracketMatchesByType'])
       : null;
 
   // Simplified refetch function - no aggressive cache operations

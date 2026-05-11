@@ -3,8 +3,8 @@ import React from 'react';
 import { usePlayoffTeams } from '@/hooks/playoffs/usePlayoffTeams';
 import { useSeedValidation } from '@/hooks/playoffs/useSeedValidation';
 import { Division } from '@/types';
-import type { Team as PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 import { errorLog } from '@/utils/logger';
+import type { Team as PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 
 import { BracketFormDataResult, ProcessedTeam, SeedValidationState } from '../types';
 import { assignMixedSeeds } from '../utils/seedAssignment';
@@ -134,8 +134,7 @@ export const useBracketFormData = (
         losses: team.losses || 0,
         game_wins: team.game_wins || 0,
         game_losses: team.game_losses || 0,
-        divisionName:
-          getTeamDivisionName(team),
+        divisionName: getTeamDivisionName(team),
         division_id: team.division_id || team.division || null,
         imageUrl: team.imageUrl || team.image_url || team.logoUrl || team.logo_url || null,
         logoUrl: team.logoUrl || team.logo_url || team.imageUrl || team.image_url || null,

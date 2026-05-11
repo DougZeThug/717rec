@@ -1,11 +1,11 @@
 import { useCallback, useRef, useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
-import type { AsyncVoidCallback } from '@/types/callbacks';
 import {
   fetchBmMatchWithStage,
   fetchPlayoffMatchWithBracket,
 } from '@/services/brackets/BracketReadService';
+import type { AsyncVoidCallback } from '@/types/callbacks';
 import { errorLog, playoffLog } from '@/utils/logger';
 import type { PlayoffBracket, PlayoffMatch, PlayoffMatchType } from '@/utils/playoffs/playoffTypes';
 

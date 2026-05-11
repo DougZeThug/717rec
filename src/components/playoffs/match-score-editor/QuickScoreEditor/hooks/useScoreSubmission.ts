@@ -1,11 +1,11 @@
 import { useCallback } from 'react';
 
 import { PlayoffMatch } from '@/types';
+import type { AsyncVoidCallback } from '@/types/callbacks';
 import { errorLog, scoreLog } from '@/utils/logger';
 
 import { ScoreOption } from '../types';
 import { generateGameData } from '../utils/scoreOptionUtils';
-import type { AsyncVoidCallback } from '@/types/callbacks';
 
 interface UseScoreSubmissionProps {
   match: PlayoffMatch;

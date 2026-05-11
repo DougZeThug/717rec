@@ -52,7 +52,10 @@ type FailedBadgeOperationBase = {
 };
 
 export type FailedBadgeOperation = {
-  [K in BadgeOperationType]: FailedBadgeOperationBase & { type: K; params: BadgeOperationParams[K] };
+  [K in BadgeOperationType]: FailedBadgeOperationBase & {
+    type: K;
+    params: BadgeOperationParams[K];
+  };
 }[BadgeOperationType];
 
 const STORAGE_KEY = 'failed_badge_operations';

@@ -2,9 +2,9 @@ import React from 'react';
 
 import BracketDetail from '@/components/playoffs/BracketDetail';
 import BracketList from '@/components/playoffs/BracketList';
+import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
 import { PlayoffPageData } from '../hooks/usePlayoffPageData';
-import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
 interface PlayoffViewProps {
   bracketDialogOpen: boolean;

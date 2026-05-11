@@ -3,7 +3,11 @@ import {
   bulkUpdateTeamSeeds as bulkUpdateTeamSeedsService,
   updateTeamSeed as updateTeamSeedService,
 } from '@/services/teams/TeamSeedService';
-import type { BulkTeamSeedUpdateResult, TeamSeedUpdateInput, TeamSeedUpdateResult } from '@/types/seeding';
+import type {
+  BulkTeamSeedUpdateResult,
+  TeamSeedUpdateInput,
+  TeamSeedUpdateResult,
+} from '@/types/seeding';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { dbLog } from '@/utils/logger';
 

@@ -11,6 +11,7 @@
  * - BracketStandingsService: final standings
  */
 
+export type { BracketsOverviewRow } from './read/BracketInfoService';
 export {
   fetchBracketInfo,
   fetchBracketsOverview,
@@ -36,5 +37,3 @@ export type { BracketOption } from './read/BracketSelectorService';
 export { fetchBracketsForSelector } from './read/BracketSelectorService';
 export { fetchGroupsAndMatches, fetchStageAndParticipants } from './read/BracketStageService';
 export { fetchFinalStandings } from './read/BracketStandingsService';
-
-export type { BracketsOverviewRow } from './read/BracketInfoService';

@@ -161,7 +161,11 @@ describe('useBracketFormData', () => {
     ];
 
     const { result } = renderHook(
-      () => useBracketFormData(mockDivisions, invalidTeams as unknown as Parameters<typeof useBracketFormData>[1]),
+      () =>
+        useBracketFormData(
+          mockDivisions,
+          invalidTeams as unknown as Parameters<typeof useBracketFormData>[1]
+        ),
       { wrapper }
     );
 
