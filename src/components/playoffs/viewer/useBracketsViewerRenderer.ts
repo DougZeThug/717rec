@@ -18,7 +18,7 @@ const fingerprint = (matches: any[]): string => {
 };
 
 /** Custom round name formatter for brackets-viewer. */
-const customRoundName = (info: any): string => {
+const customRoundName = (info: BracketsViewerCustomRoundInfo): string => {
   const { groupType, roundNumber, roundCount } = info;
 
   if (groupType === 'final-group') {
@@ -57,7 +57,7 @@ interface UseBracketsViewerRendererOptions {
   containerId: string;
   isScriptReady: boolean;
   refreshCounter: number;
-  onMatchClicked: (match: any) => void;
+  onMatchClicked: (match: BracketsViewerMatchClick) => void;
 }
 
 /**
