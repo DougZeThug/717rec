@@ -1,10 +1,10 @@
 import { supabase } from '@/integrations/supabase/client';
 import type {
-  BulkTeamSeedUpdateResult,
-  BulkTeamSeedUpdateRpcResponse,
-  TeamSeedUpdateInput,
-  TeamSeedUpdateResult,
-} from '@/types/seeding';
+  Phase3BulkTeamSeedUpdateResult as BulkTeamSeedUpdateResult,
+  Phase3BulkTeamSeedUpdateRpcResponse as BulkTeamSeedUpdateRpcResponse,
+  Phase3TeamSeedUpdateInput as TeamSeedUpdateInput,
+  Phase3TeamSeedUpdateResult as TeamSeedUpdateResult,
+} from '@/types/phase3';
 import { handleDatabaseError } from '@/utils/errorHandler';
 
 /**
