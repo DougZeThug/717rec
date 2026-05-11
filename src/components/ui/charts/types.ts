@@ -1,4 +1,4 @@
-import type * as React from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import type { TooltipContentProps } from 'recharts';
 
 export type ChartPayloadItem<TValue = unknown, TName = string> = NonNullable<
@@ -7,8 +7,8 @@ export type ChartPayloadItem<TValue = unknown, TName = string> = NonNullable<
 
 export type ChartConfigMap = {
   [k: string]: {
-    label?: React.ReactNode;
-    icon?: React.ComponentType;
+    label?: ReactNode;
+    icon?: ComponentType;
   } & (
     | { color?: string; theme?: never }
     | { color?: never; theme: Record<'light' | 'dark', string> }
