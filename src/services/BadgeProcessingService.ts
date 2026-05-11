@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { TeamStreakRpcResult } from '@/types/badges';
+import type { Phase3TeamStreakRpcResult as TeamStreakRpcResult } from '@/types/phase3';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { badgeLog } from '@/utils/logger';
 

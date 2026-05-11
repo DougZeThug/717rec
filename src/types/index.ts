@@ -192,3 +192,6 @@ export * from './user';
 
 // Team career power score types
 export * from './teamCareerPowerScore';
+
+// Phase 3 contract-alignment exports
+export * from './phase3';
