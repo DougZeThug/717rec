@@ -18,6 +18,22 @@ interface BracketsViewerData {
   participants: any[];
 }
 
+interface BracketsViewerCustomRoundInfo {
+  groupType?: 'final-group' | 'winner-bracket' | 'loser-bracket' | string;
+  roundNumber: number;
+  roundCount: number;
+}
+
+interface BracketsViewerMatchClick {
+  id: number;
+  stage_id?: number | null;
+  group_id?: number | null;
+  round_id?: number | null;
+  number?: number | null;
+  opponent1?: any;
+  opponent2?: any;
+}
+
 interface BracketsViewerConfig {
   selector?: string;
   clear?: boolean;
@@ -26,8 +42,8 @@ interface BracketsViewerConfig {
   showSlotsOrigin?: boolean;
   showLowerBracketSlotsOrigin?: boolean;
   highlightParticipantOnHover?: boolean;
-  onMatchClick?: (match: any) => void;
-  customRoundName?: (info: any) => string;
+  onMatchClick?: (match: BracketsViewerMatchClick) => void;
+  customRoundName?: (info: BracketsViewerCustomRoundInfo) => string;
 }
 
 export {};
