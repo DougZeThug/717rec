@@ -1,7 +1,12 @@
 import type { ComponentType, ReactNode } from 'react';
 import type { TooltipContentProps } from 'recharts';
 
-export type ChartPayloadItem<TValue = unknown, TName = string> = NonNullable<
+type ChartValueType = number | string | ReadonlyArray<number | string>;
+
+export type ChartPayloadItem<
+  TValue extends ChartValueType = ChartValueType,
+  TName extends string = string,
+> = NonNullable<
   TooltipContentProps<TValue, TName>['payload']
 >[number];
 

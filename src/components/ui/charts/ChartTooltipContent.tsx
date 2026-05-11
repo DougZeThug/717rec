@@ -73,7 +73,9 @@ export const ChartTooltipContent = React.forwardRef<HTMLDivElement, ChartTooltip
 
       if (labelFormatter) {
         return (
-          <div className={cn('font-medium', labelClassName)}>{labelFormatter(value, payload)}</div>
+          <div className={cn('font-medium', labelClassName)}>
+            {labelFormatter(value as string | number, payload)}
+          </div>
         );
       }
 

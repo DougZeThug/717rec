@@ -1,6 +1,6 @@
 import type { ChartConfigMap, ChartPayloadItem } from '../types';
 
-type ChartPayload = ChartPayloadItem<unknown, string>;
+type ChartPayload = ChartPayloadItem;
 
 type PayloadLike =
   | ChartPayload
