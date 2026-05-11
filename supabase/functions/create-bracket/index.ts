@@ -55,6 +55,52 @@ async function challongeFetch(
   return await res.json();
 }
 
+type BracketFormat = 'singleElim' | 'doubleElim';
+
+type BracketMatchType = 'winners' | 'losers' | 'finals';
+
+type TournamentTeam = {
+  id: string;
+  name: string;
+  seed?: number;
+};
+
+type GeneratedBracketMatch = {
+  id: string;
+  bracket_id: string;
+  round: number;
+  position: number;
+  match_type: BracketMatchType;
+  team1_id: string | null;
+  team2_id: string | null;
+  team1_seed: number | null;
+  team2_seed: number | null;
+  next_win_match_id: string | null;
+  next_lose_match_id: string | null;
+  best_of: number;
+  status: 'pending';
+};
+
+type SeedingPair = {
+  team1: TournamentTeam | null;
+  team2: TournamentTeam | null;
+};
+
+type SingleEliminationGenerationResult = {
+  matches: GeneratedBracketMatch[];
+  matchIdMap: Map<string, string>;
+};
+
+type DoubleEliminationGenerationResult = {
+  matches: GeneratedBracketMatch[];
+  winnersMatchIds: Map<string, string>;
+  losersMatchIds: Map<string, string>;
+  grandFinalsR1Id: string;
+  grandFinalsR2Id: string;
+};
+
+type GeneratedBracketResult = SingleEliminationGenerationResult | DoubleEliminationGenerationResult;
+
 // Tournament bracket generation utilities
 class BracketGenerator {
   static calculateBracketSize(teamCount: number): number {
@@ -81,9 +127,9 @@ class BracketGenerator {
   }
 
   static generateSingleElimination(
-    teams: Array<{ id: string; name: string; seed?: number }>,
+    teams: TournamentTeam[],
     bracketId: string
-  ) {
+  ): SingleEliminationGenerationResult {
     // Teams are already sorted by ranking in bracket-creator.ts, preserve this order
     log(
       `Teams for single elimination:`,
@@ -92,7 +138,7 @@ class BracketGenerator {
 
     const bracketSize = this.calculateBracketSize(teams.length);
     const rounds = this.calculateRounds(bracketSize);
-    const matches: any[] = [];
+    const matches: GeneratedBracketMatch[] = [];
 
     // Create a mapping of round/position to match IDs for reference
     const matchIdMap = new Map<string, string>();
@@ -157,11 +203,8 @@ class BracketGenerator {
   }
 
   // Helper function to generate proper tournament seeding pairs
-  static generateSeedingPairs(
-    teams: Array<{ id: string; name: string; seed?: number }>,
-    bracketSize: number
-  ) {
-    const pairs: Array<{ team1: any; team2: any }> = [];
+  static generateSeedingPairs(teams: TournamentTeam[], bracketSize: number) {
+    const pairs: SeedingPair[] = [];
 
     // Generate proper tournament seeding pairs: 1 vs bracketSize, 2 vs (bracketSize-1), etc.
     const numMatches = bracketSize / 2;
@@ -188,9 +231,9 @@ class BracketGenerator {
   }
 
   static generateDoubleElimination(
-    teams: Array<{ id: string; name: string; seed?: number }>,
+    teams: TournamentTeam[],
     bracketId: string
-  ) {
+  ): DoubleEliminationGenerationResult {
     // Teams are already sorted by ranking in bracket-creator.ts, preserve this order
     log(
       `Teams for double elimination:`,
@@ -199,7 +242,7 @@ class BracketGenerator {
 
     const bracketSize = this.calculateBracketSize(teams.length);
     const rounds = this.calculateRounds(bracketSize);
-    const matches: any[] = [];
+    const matches: GeneratedBracketMatch[] = [];
 
     log(`Generating double elimination for ${teams.length} teams, ${rounds} winners rounds`);
 
@@ -369,12 +412,8 @@ class BracketGenerator {
 interface CreateBracketPayload {
   name: string;
   divisionId: string;
-  format: 'singleElim' | 'doubleElim';
-  teams: Array<{
-    id: string;
-    name: string;
-    seed?: number;
-  }>;
+  format: BracketFormat;
+  teams: TournamentTeam[];
 }
 
 interface BracketRecord {
@@ -650,7 +689,7 @@ serve(async (req) => {
     log('[MATCHES] Generating playoff match structure...');
 
     // Declare bracketResult outside the try block so it's accessible in the return statement
-    let bracketResult: any = null;
+    let bracketResult: GeneratedBracketResult | null = null;
 
     try {
       if (payload.format === 'singleElim') {
