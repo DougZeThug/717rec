@@ -62,7 +62,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
   const pastWinners = (metadata.past_winners as WeekWinners[]) || [];
 
   const eventDate = startTimeStr ? getEventDateEST(startTimeStr) : null;
-  const { data: signupCount } = useBlindDrawSignupCount();
+  const { data: signupCount } = useBlindDrawSignupCount(eventDate ?? undefined);
 
   useEffect(() => {
     if (!startTimeStr) return;

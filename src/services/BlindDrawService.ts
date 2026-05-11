@@ -41,12 +41,12 @@ export const BlindDrawService = {
     if (error) handleDatabaseError(error, 'Failed to update blind draw settings');
   },
 
-  fetchBlindDrawSignupCount: async (): Promise<number> => {
-    const { count, error } = await supabase
-      .from('blind_draw_signups')
-      .select('id', { count: 'exact', head: true });
+  fetchBlindDrawSignupCount: async (eventDate: string): Promise<number> => {
+    const { data, error } = await supabase.rpc('get_blind_draw_signup_count', {
+      p_event_date: eventDate,
+    });
     if (error) handleDatabaseError(error, 'Failed to fetch blind draw signup count');
-    return count ?? 0;
+    return data ?? 0;
   },
 
   fetchBlindDrawSignups: async (eventDate?: string): Promise<BlindDrawSignup[]> => {

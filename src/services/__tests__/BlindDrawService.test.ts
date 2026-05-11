@@ -5,9 +5,13 @@ import { DatabaseError } from '@/types/errors';
 // ─── Supabase mock ────────────────────────────────────────────────────────────
 
 const mockFrom = vi.fn();
+const mockRpc = vi.fn();
 
 vi.mock('@/integrations/supabase/client', () => ({
-  supabase: { from: (table: string) => mockFrom(table) },
+  supabase: {
+    from: (table: string) => mockFrom(table),
+    rpc: (fn: string, args?: unknown) => mockRpc(fn, args),
+  },
 }));
 
 vi.mock('@/utils/logger', () => ({
@@ -99,24 +103,20 @@ describe('BlindDrawService.fetchBlindDrawSignupCount', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns the count', async () => {
-    mockFrom.mockReturnValue({
-      select: () => Promise.resolve({ count: 7, error: null }),
-    });
-    expect(await BlindDrawService.fetchBlindDrawSignupCount()).toBe(7);
+    mockRpc.mockResolvedValue({ data: 7, error: null });
+    expect(await BlindDrawService.fetchBlindDrawSignupCount('2026-04-17')).toBe(7);
   });
 
   it('returns 0 when count is null', async () => {
-    mockFrom.mockReturnValue({
-      select: () => Promise.resolve({ count: null, error: null }),
-    });
-    expect(await BlindDrawService.fetchBlindDrawSignupCount()).toBe(0);
+    mockRpc.mockResolvedValue({ data: null, error: null });
+    expect(await BlindDrawService.fetchBlindDrawSignupCount('2026-04-17')).toBe(0);
   });
 
   it('throws DatabaseError on error', async () => {
-    mockFrom.mockReturnValue({
-      select: () => Promise.resolve({ count: null, error: pgError() }),
-    });
-    await expect(BlindDrawService.fetchBlindDrawSignupCount()).rejects.toThrow(DatabaseError);
+    mockRpc.mockResolvedValue({ data: null, error: pgError() });
+    await expect(BlindDrawService.fetchBlindDrawSignupCount('2026-04-17')).rejects.toThrow(
+      DatabaseError
+    );
   });
 });
 
