@@ -5,6 +5,22 @@ import { BracketsViewerAdapter, ViewerDataWithMapping } from '@/services/bracket
 import { bracketLog, errorLog, warnLog } from '@/utils/logger';
 import { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
+type BracketsViewerCustomRoundInfo = {
+  groupType?: 'final-group' | 'winner-bracket' | 'loser-bracket' | string;
+  roundNumber: number;
+  roundCount: number;
+};
+
+type BracketsViewerMatchClick = {
+  id: number;
+  stage_id?: number | null;
+  group_id?: number | null;
+  round_id?: number | null;
+  number?: number | null;
+  opponent1?: any;
+  opponent2?: any;
+};
+
 /** Fingerprint function to detect identical match data and skip redundant renders. */
 const fingerprint = (matches: any[]): string => {
   const ids = matches.map((x) => x.id).join(',');
