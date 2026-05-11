@@ -24,6 +24,16 @@ export class BracketsViewerAdapter {
   private static teamIdMap: Map<string, number> = new Map();
 
   /**
+   * Boundary cast — see ANY_PHASE_2.
+   * Centralizes the unchecked casts at the brackets-viewer adapter boundary
+   * where upstream rows (Supabase / brackets-manager JSONB) are handed off to
+   * the viewer's expected shapes. No runtime validation is performed.
+   */
+  private static castToViewer<T>(value: unknown): T {
+    return value as T;
+  }
+
+  /**
    * Transform from brackets-manager SQL tables
    */
   static async transformFromSql(bracketId: string): Promise<ViewerDataWithMapping> {
@@ -245,12 +255,12 @@ export class BracketsViewerAdapter {
 
     return {
       data: {
-        stages: stages as unknown as ViewerStage[],
+        stages: this.castToViewer<ViewerStage[]>(stages),
         groups: groups as BracketGroupRow[],
         rounds: rounds as BracketRoundRow[],
         matches: matchesWithSources,
-        matchGames: transformedMatchGames as unknown as ViewerMatchGame[],
-        participants: transformedParticipants as unknown as ViewerParticipant[],
+        matchGames: this.castToViewer<ViewerMatchGame[]>(transformedMatchGames),
+        participants: this.castToViewer<ViewerParticipant[]>(transformedParticipants),
       },
       getPlayoffMatchId: (viewerMatchId: number) => {
         const result = reverseMatchIdMap.get(viewerMatchId);
@@ -275,7 +285,7 @@ export class BracketsViewerAdapter {
     // Create match ID mapping (brackets-manager match ID -> playoff match UUID)
     const reverseMatchIdMap = new Map<number, string>();
 
-    const matches = (bracketData.match || []) as unknown as ViewerMatch[];
+    const matches = this.castToViewer<ViewerMatch[]>(bracketData.match || []);
     const groups = (bracketData.group || []) as BracketGroupRow[];
     const rounds = (bracketData.round || []) as BracketRoundRow[];
 
@@ -291,11 +301,11 @@ export class BracketsViewerAdapter {
 
     return {
       data: {
-        stages: (bracketData.stage || []) as unknown as ViewerStage[],
+        stages: this.castToViewer<ViewerStage[]>(bracketData.stage || []),
         groups: groups,
         rounds: rounds,
         matches: matchesWithSources,
-        matchGames: (bracketData.match_game || []) as unknown as ViewerMatchGame[],
+        matchGames: this.castToViewer<ViewerMatchGame[]>(bracketData.match_game || []),
         participants: (bracketData.participant || []) as ViewerParticipant[],
       },
       getPlayoffMatchId: (viewerMatchId: number) => reverseMatchIdMap.get(viewerMatchId),
