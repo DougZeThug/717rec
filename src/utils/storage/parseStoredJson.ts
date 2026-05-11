@@ -2,7 +2,7 @@ import { StorageParseResult } from './types';
 
 export function parseStoredJson<T>(
   raw: string | null,
-  validate: (v: unknown) => v is T,
+  validate: (v: unknown) => v is T
 ): StorageParseResult<T> {
   if (raw === null) {
     return { ok: false, error: 'missing' };

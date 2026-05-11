@@ -156,9 +156,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
           onEditMatch={onEditMatch}
           onDeleteMatch={onDeleteMatch}
           activeIndex={activeTab === 'upcoming' ? upcomingIndex : completedIndex}
-          onIndexChange={
-            activeTab === 'upcoming' ? handleUpcomingIndexChange : setCompletedIndex
-          }
+          onIndexChange={activeTab === 'upcoming' ? handleUpcomingIndexChange : setCompletedIndex}
         />
       );
     }

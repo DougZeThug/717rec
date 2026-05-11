@@ -1,13 +1,13 @@
 import React from 'react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
 import BracketDetail from '../BracketDetail';
 import BracketList from '../BracketList';
 import { usePlayoffHandlers } from '../hooks/usePlayoffHandlers';
 import { PlayoffPageData } from '../hooks/usePlayoffPageData';
 import TeamDivisionTable from '../TeamDivisionTable';
-import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
 interface AdminViewProps {
   bracketDialogOpen: boolean;

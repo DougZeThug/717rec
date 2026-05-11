@@ -2,7 +2,7 @@ import { BadgeProcessingService } from '@/services/BadgeProcessingService';
 import { FailedBadgeOperationsService } from '@/services/FailedBadgeOperationsService';
 import { fetchMatchTeamIds } from '@/services/matches/MatchReadService';
 import { updateMatch } from '@/services/matches/MatchWriteService';
-import { BadgeOperationParams, BadgeOperationKind as BadgeOperationType } from '@/types/badges';
+import { BadgeOperationKind as BadgeOperationType, BadgeOperationParams } from '@/types/badges';
 import { badgeLog, matchLog, warnLog } from '@/utils/logger';
 
 export interface UpdateMatchScoreParams {

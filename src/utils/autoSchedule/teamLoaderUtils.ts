@@ -63,7 +63,10 @@ export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Pr
     }
 
     // Group timeslots by team_id to ensure each team has both timeslots
-    const teamSlotMap = new Map<string, { primary?: TimeslotWithTeamsRow; secondary?: TimeslotWithTeamsRow }>();
+    const teamSlotMap = new Map<
+      string,
+      { primary?: TimeslotWithTeamsRow; secondary?: TimeslotWithTeamsRow }
+    >();
 
     timeslots.forEach((slot) => {
       if (!slot.team_id || !slot.teams) return;

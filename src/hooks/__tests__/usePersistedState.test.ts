@@ -33,7 +33,7 @@ describe('usePersistedState', () => {
     };
 
     const { result } = renderHook(() =>
-      usePersistedState('persisted-key', { theme: 'light' }, isTheme),
+      usePersistedState('persisted-key', { theme: 'light' }, isTheme)
     );
 
     expect(result.current[0]).toEqual({ theme: 'dark' });
@@ -50,14 +50,14 @@ describe('usePersistedState', () => {
     };
 
     const { result } = renderHook(() =>
-      usePersistedState('persisted-key', { theme: 'light' }, isTheme),
+      usePersistedState('persisted-key', { theme: 'light' }, isTheme)
     );
 
     expect(result.current[0]).toEqual({ theme: 'light' });
     expect(mockErrorLog).toHaveBeenCalledWith(
       expect.stringContaining('Failed to parse persisted state for key "%s" with validator.'),
       'persisted-key',
-      'invalid_json',
+      'invalid_json'
     );
   });
 
@@ -72,14 +72,14 @@ describe('usePersistedState', () => {
     };
 
     const { result } = renderHook(() =>
-      usePersistedState('persisted-key', { theme: 'light' }, isTheme),
+      usePersistedState('persisted-key', { theme: 'light' }, isTheme)
     );
 
     expect(result.current[0]).toEqual({ theme: 'light' });
     expect(mockErrorLog).toHaveBeenCalledWith(
       expect.stringContaining('Failed to parse persisted state for key "%s" with validator.'),
       'persisted-key',
-      'invalid_shape',
+      'invalid_shape'
     );
   });
 });

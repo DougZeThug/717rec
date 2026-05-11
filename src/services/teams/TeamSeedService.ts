@@ -1,11 +1,11 @@
 import { supabase } from '@/integrations/supabase/client';
-import { handleDatabaseError } from '@/utils/errorHandler';
 import type {
   BulkTeamSeedUpdateResult,
   BulkTeamSeedUpdateRpcResponse,
   TeamSeedUpdateInput,
   TeamSeedUpdateResult,
 } from '@/types/seeding';
+import { handleDatabaseError } from '@/utils/errorHandler';
 
 /**
  * Service layer for team seed operations
@@ -58,7 +58,6 @@ export const bulkUpdateTeamSeeds = async (
 
   return parseBulkTeamSeedUpdateResults(data);
 };
-
 
 function isBulkTeamSeedUpdateResult(value: unknown): value is BulkTeamSeedUpdateResult {
   if (!value || typeof value !== 'object') return false;

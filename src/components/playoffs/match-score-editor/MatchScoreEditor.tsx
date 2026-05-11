@@ -1,9 +1,9 @@
 import React from 'react';
 
 import type { PlayoffMatch, Team } from '@/types';
+import type { AsyncVoidCallback } from '@/types/callbacks';
 
 import MatchScoreEditor from './MatchScoreEditor/MatchScoreEditor';
-import type { AsyncVoidCallback } from '@/types/callbacks';
 
 interface MatchScoreEditorWrapperProps {
   match: PlayoffMatch;

@@ -4,7 +4,6 @@ import BracketCreationDialog from '@/components/playoffs/BracketCreationDialog';
 import DeleteBracketDialog from '@/components/playoffs/DeleteBracketDialog';
 import { MatchScoreEditor, QuickScoreEditor } from '@/components/playoffs/match-score-editor';
 import TeamDivisionDialog from '@/components/playoffs/TeamDivisionDialog';
-import type { AsyncVoidCallback } from '@/types/callbacks';
 import {
   Dialog,
   DialogContent,
@@ -13,6 +12,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Division, PlayoffMatch, Team } from '@/types';
+import type { AsyncVoidCallback } from '@/types/callbacks';
 
 interface PlayoffDialogsProps {
   // Team division dialog
