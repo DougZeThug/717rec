@@ -182,7 +182,7 @@ export const usePlayoffEditMatch = () => {
             team2Score: matchData.team2_score,
             team1GameWins: null,
             team2GameWins: null,
-            matchType: matchData.match_type,
+            matchType: matchData.match_type as PlayoffMatch['matchType'],
             bestOf: matchData.best_of || 3,
             team1Seed: matchData.team1_seed,
             team2Seed: matchData.team2_seed,

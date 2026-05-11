@@ -133,6 +133,7 @@ export function loadAutoScheduleState(): PersistedAutoScheduleState | null {
       return null;
     }
 
+    if (!('value' in result)) return null;
     const parsed = result.value;
     scheduleLog('Loaded auto-schedule state from sessionStorage');
     return parsed;

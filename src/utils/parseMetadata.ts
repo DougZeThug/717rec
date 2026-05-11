@@ -3,6 +3,7 @@ import { ValidationError } from '@/types/errors';
 import {
   EventWeekWinners,
   HeroCardMetadata,
+  HeroCardMetadataByType,
   HeroCardType,
   ChampionsHeroCardMetadata,
   EventHeroCardMetadata,
@@ -72,7 +73,12 @@ const parseEventMetadata = (input: Record<string, unknown>): EventHeroCardMetada
   return input as EventHeroCardMetadata;
 };
 
-export const parseHeroCardMetadata = (input: unknown, cardType: HeroCardType): HeroCardMetadata => {
+export function parseHeroCardMetadata<T extends HeroCardType>(
+  input: unknown,
+  cardType: T,
+): HeroCardMetadataByType[T];
+export function parseHeroCardMetadata(input: unknown, cardType: HeroCardType): HeroCardMetadata;
+export function parseHeroCardMetadata(input: unknown, cardType: HeroCardType): HeroCardMetadata {
   if (!isObject(input)) {
     throw new ValidationError('Invalid hero card metadata: expected an object');
   }
@@ -85,4 +91,4 @@ export const parseHeroCardMetadata = (input: unknown, cardType: HeroCardType): H
     default:
       return input;
   }
-};
+}
