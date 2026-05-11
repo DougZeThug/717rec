@@ -8,6 +8,47 @@ export type HeroCardType =
   | 'request'
   | 'flyer';
 
+export interface EventWinner {
+  place: number;
+  names: string;
+}
+
+export interface EventWeekWinners {
+  week: number;
+  winners: EventWinner[];
+}
+
+export interface StandardHeroCardMetadata {
+  [key: string]: unknown;
+}
+
+export interface ChampionsHeroCardMetadata {
+  champions?: Record<string, string>;
+  [key: string]: unknown;
+}
+
+export interface EventHeroCardMetadata {
+  is_active_event?: boolean;
+  check_in_time?: string;
+  start_time?: string;
+  buy_in?: string;
+  payouts?: string;
+  past_winners?: EventWeekWinners[];
+  [key: string]: unknown;
+}
+
+export type HeroCardMetadataByType = {
+  standard: StandardHeroCardMetadata;
+  champions: ChampionsHeroCardMetadata;
+  event: EventHeroCardMetadata;
+  announcement: StandardHeroCardMetadata;
+  participation: StandardHeroCardMetadata;
+  request: StandardHeroCardMetadata;
+  flyer: StandardHeroCardMetadata;
+};
+
+export type HeroCardMetadata = HeroCardMetadataByType[HeroCardType];
+
 export interface HeroCard {
   id: string;
   slug: string;
@@ -26,7 +67,7 @@ export interface HeroCard {
   target_type: HeroCardTargetType;
   target_id: string | null;
   card_type: HeroCardType;
-  metadata: Record<string, any>;
+  metadata: HeroCardMetadata;
   created_at: string;
   updated_at: string;
 }

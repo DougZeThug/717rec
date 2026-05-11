@@ -6,7 +6,9 @@ vi.mock('@/utils/logger', () => ({
   timezoneLog: vi.fn(),
 }));
 
-import { parseMetadata } from '../parseMetadata';
+import { ValidationError } from '@/types/errors';
+
+import { parseHeroCardMetadata, parseMetadata } from '../parseMetadata';
 
 describe('parseMetadata', () => {
   beforeEach(() => {
@@ -43,5 +45,27 @@ describe('parseMetadata', () => {
     const { errorLog } = await import('@/utils/logger');
     parseMetadata('{"valid":true}');
     expect(errorLog).not.toHaveBeenCalled();
+  });
+});
+
+describe('parseHeroCardMetadata', () => {
+  it('accepts champions metadata and tolerates extra keys', () => {
+    const parsed = parseHeroCardMetadata(
+      { champions: { East: 'team-1' }, extra: 'ok' },
+      'champions'
+    );
+    expect(parsed).toEqual({ champions: { East: 'team-1' }, extra: 'ok' });
+  });
+
+  it('throws on invalid champions map shape', () => {
+    expect(() =>
+      parseHeroCardMetadata({ champions: { East: 42 } }, 'champions')
+    ).toThrow(ValidationError);
+  });
+
+  it('throws on invalid event winners shape', () => {
+    expect(() =>
+      parseHeroCardMetadata({ past_winners: [{ week: '1' }] }, 'event')
+    ).toThrow(ValidationError);
   });
 });

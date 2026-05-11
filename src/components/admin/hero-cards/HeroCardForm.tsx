@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useHeroCardMutations } from '@/hooks/useHeroCards';
 import { HeroCard, HeroCardFormData, HeroCardTargetType, HeroCardType } from '@/types/heroCard';
-import { errorLog } from '@/utils/logger';
+import { parseMetadata, parseHeroCardMetadata } from '@/utils/parseMetadata';
 
 import {
   AdvancedSettingsSection,
@@ -77,12 +77,7 @@ const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    let metadata = {};
-    try {
-      metadata = JSON.parse(formData.metadata);
-    } catch (e) {
-      errorLog('Failed to parse hero card metadata JSON:', e);
-    }
+    const metadata = parseHeroCardMetadata(parseMetadata(formData.metadata), formData.card_type);
 
     const payload = {
       slug: formData.slug,
@@ -113,12 +108,7 @@ const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
   };
 
   // Build preview card object
-  let previewMetadata = {};
-  try {
-    previewMetadata = JSON.parse(formData.metadata);
-  } catch {
-    // keep default empty object
-  }
+  const previewMetadata = parseHeroCardMetadata(parseMetadata(formData.metadata), formData.card_type);
 
   const previewCard: HeroCard = {
     id: card?.id || 'preview',
