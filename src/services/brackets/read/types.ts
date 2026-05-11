@@ -18,7 +18,7 @@ export interface BracketManagerMatchWithStage {
     type: string;
     tournament_id: number | string;
     number: number;
-    settings: Record<string, unknown> | null;
+    settings: unknown;
   } | null;
 }
 
