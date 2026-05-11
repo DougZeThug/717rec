@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { HeroCard } from '@/types/heroCard';
 import { handleDatabaseError } from '@/utils/errorHandler';
+import { parseHeroCardMetadata } from '@/utils/parseMetadata';
 
 const HERO_CARD_SELECT =
   'id, slug, title, subtitle, body, cta_label, cta_url, background_color, text_color, accent_color, image_url, icon_name, is_visible, sort_order, target_type, target_id, card_type, metadata, created_at, updated_at';
@@ -17,6 +18,11 @@ interface TeamBasic {
 }
 
 export const HeroCardService = {
+  parseHeroCardRow: (row: HeroCard): HeroCard => ({
+    ...row,
+    metadata: parseHeroCardMetadata(row.metadata, row.card_type),
+  }),
+
   fetchVisibleHeroCards: async (): Promise<HeroCard[]> => {
     const { data, error } = await supabase
       .from('hero_cards')
@@ -25,7 +31,7 @@ export const HeroCardService = {
       .order('sort_order', { ascending: true });
 
     if (error) handleDatabaseError(error, 'Failed to fetch hero cards');
-    return (data ?? []) as HeroCard[];
+    return (data ?? []).map((row) => HeroCardService.parseHeroCardRow(row as HeroCard));
   },
 
   fetchAllHeroCards: async (): Promise<HeroCard[]> => {
@@ -35,7 +41,7 @@ export const HeroCardService = {
       .order('sort_order', { ascending: true });
 
     if (error) handleDatabaseError(error, 'Failed to fetch all hero cards');
-    return (data ?? []) as HeroCard[];
+    return (data ?? []).map((row) => HeroCardService.parseHeroCardRow(row as HeroCard));
   },
 
   fetchHeroCardById: async (id: string | null): Promise<HeroCard | null> => {
@@ -47,7 +53,7 @@ export const HeroCardService = {
       .single();
 
     if (error) handleDatabaseError(error, 'Failed to fetch hero card');
-    return data as HeroCard;
+    return HeroCardService.parseHeroCardRow(data as HeroCard);
   },
 
   createHeroCard: async (formData: Omit<HeroCard, 'id' | 'created_at' | 'updated_at'>) => {

@@ -1,31 +1,22 @@
 import { Medal, Plus, Trash2 } from 'lucide-react';
 import React from 'react';
 
+import { EventWeekWinners } from '@/types/heroCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { parseMetadata } from '@/utils/parseMetadata';
+import { parseMetadata, parseHeroCardMetadata } from '@/utils/parseMetadata';
 
 import { SectionHeader } from './SectionHeader';
 import { FormSectionProps } from './types';
 
-interface Winner {
-  place: number;
-  names: string;
-}
-
-interface WeekWinners {
-  week: number;
-  winners: Winner[];
-}
-
 export const EventWinnersEditor: React.FC<FormSectionProps> = ({ formData, onChange }) => {
   if (formData.card_type !== 'event') return null;
 
-  const metadata = parseMetadata(formData.metadata);
-  const pastWinners: WeekWinners[] = (metadata.past_winners as WeekWinners[]) || [];
+  const metadata = parseHeroCardMetadata(parseMetadata(formData.metadata), 'event');
+  const pastWinners: EventWeekWinners[] = metadata.past_winners || [];
 
-  const updateWinners = (updated: WeekWinners[]) => {
+  const updateWinners = (updated: EventWeekWinners[]) => {
     const newMetadata = { ...metadata, past_winners: updated };
     onChange('metadata', JSON.stringify(newMetadata, null, 2));
   };
