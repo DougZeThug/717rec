@@ -38,6 +38,41 @@ Phase 1 and Phase 2 established higher-level shared types and read-model contrac
 
 ---
 
+## A.1 Implementation status snapshot (2026-05-12 verification)
+
+This section tracks the actual state of each Phase 3 PR on branch
+`claude/plan-phase-3-any-remediation-UNsfh` so future sessions stop assuming PRs
+are merged when they are not.
+
+| PR | Title | Status | Evidence |
+|---:|---|---|---|
+| 1 | Phase 3 prerequisites / contract alignment | ✅ Merged | Commit `8c3a5e4` ("chore: align phase 3 critical flow type contracts"), merged via PR #609. Added `src/types/phase3.ts` re-export hub. |
+| 2 | Create-bracket generator DTO typing | ❌ Outstanding | `supabase/functions/create-bracket/index.ts` still contains all four planned `any` sites — lines 95, 164, 202, 653. No commits touching this file since the initial import (`9243b81`). |
+| 3 | Create-bracket insert payload typing | ⏳ Not started | Depends on PR 2. |
+| 4 | Match edit read-model typing | ⏳ Not started | — |
+| 5 | Match score update input/result contracts | ⏳ Not started | — |
+| 6 | Badge RPC result typing | ⏳ Not started | — |
+| 7 | Badge retry queue typing + parser | ⏳ Not started | — |
+| 8 | Seed mutation rollback/cache typing | ⏳ Not started | — |
+| 9 | Auth/native SDK boundary typing | ⏳ Not started | — |
+| 10 | Third-party containment cleanup | ⏳ Not started | — |
+
+### Plain-English: where things stand
+- The plan exists. The prereq alignment shim exists.
+- The **first real write-path PR (PR 2) has not landed.** The four documented `any`
+  sites are still in the edge function, untouched.
+- Until PR 2 lands, PR 3 (typed insert payloads) is blocked, because PR 3 builds
+  on the generator DTO shapes PR 2 is supposed to introduce.
+
+### Why this matters
+Skipping PR 2 leaves the highest-priority cluster from §J row 1 (`Priority Score
+13`) and row 2 (`Priority Score 14`) un-typed. These are the two clusters with
+the explicit "can persist malformed tournament graph" failure mode. The PR 1
+shim does not address them — it only re-exports already-existing app-side types
+and the edge function does not import that shim.
+
+---
+
 ## B. Current findings by target area
 
 ## B1) Create-bracket edge function
@@ -624,19 +659,140 @@ Primary unsafe spots confirmed in `supabase/functions/create-bracket/index.ts`:
 **Rollback plan:** revert PR.  
 **Follow-up PR unlocked:** PR 2.
 
-### PR 2
-**Title:** Create-bracket generator DTO typing  
-**Goal:** Type generated bracket match structures and seeding pairs without changing algorithm output.  
-**Files likely touched:** `supabase/functions/create-bracket/index.ts` (optionally `types.ts` adjacent).  
-**Unsafe patterns addressed:** `matches: any[]`, `pairs team1/team2 any`, `bracketResult any` (generation side).  
-**Contracts/types introduced:** `BracketFormat`, `GeneratedBracketMatch`, format-specific generation result contracts, `SeedingPair`.  
-**Behavior changes:** **none**.  
-**Why this PR is safe:** algorithm untouched; type-only shape contracts.  
-**Regression risks:** high if accidental branch narrowing; reviewers focus on emitted payload equivalence.  
-**Verification commands:** `npm run typecheck`, edge-function checks used in repo workflow, `npm run lint`.  
-**Manual smoke tests:** create/load single-elim and double-elim bracket; inspect generated rounds/matches.  
-**Rollback plan:** revert PR.  
-**Follow-up PR unlocked:** PR 3.
+### PR 2 — STATUS: ❌ OUTSTANDING (detailed spec)
+
+**Title:** Create-bracket generator DTO typing
+**Goal:** Type generated bracket match structures and seeding pairs without changing algorithm output.
+
+**Exact `any` sites still in the repo (verified 2026-05-12):**
+- `supabase/functions/create-bracket/index.ts:95` — `const matches: any[] = [];` inside `generateSingleElimination`.
+- `supabase/functions/create-bracket/index.ts:164` — `const pairs: Array<{ team1: any; team2: any }> = [];` inside `generateSeedingPairs`.
+- `supabase/functions/create-bracket/index.ts:202` — `const matches: any[] = [];` inside `generateDoubleElimination`.
+- `supabase/functions/create-bracket/index.ts:653` — `let bracketResult: any = null;` in the serve handler before the format branch.
+
+**Files likely touched:**
+- `supabase/functions/create-bracket/index.ts` (primary; replace `any` sites; leave algorithm untouched).
+- New: `supabase/functions/create-bracket/types.ts` (adjacent, edge-only module — keeps Deno-style imports separate from the app's `src/` types and avoids accidentally pulling Node/React deps into the edge function bundle).
+
+**Why a separate `types.ts` next to the edge function (not `src/types/`):**
+- Edge function runs on Deno, not Vite/Node. Importing from `@/...` would not resolve.
+- Edge function `any` is a generation-internal contract, not a domain contract. It should not leak into the app.
+- Phase 3 architecture rule: "Raw DB/RPC/SDK input" vs "internal 717REC domain" vs "third-party DTOs" must stay separated. The generator output is a fourth world — *edge-function-internal* — and belongs in its own file.
+
+**Contracts/types to introduce (PR 2 only — generation side, NOT insert payloads):**
+
+```ts
+// supabase/functions/create-bracket/types.ts (planned shape — do NOT implement until PR is approved)
+
+export type BracketFormat = 'singleElim' | 'doubleElim';
+
+export type GeneratedMatchType = 'winners' | 'losers' | 'finals';
+export type GeneratedMatchStatus = 'pending';
+
+export interface SeedTeam {
+  id: string;
+  name: string;
+  seed?: number;
+}
+
+export interface SeedingPair {
+  team1: SeedTeam | null;
+  team2: SeedTeam | null;
+}
+
+/**
+ * Shape of a row pushed into `matches` arrays inside BracketGenerator.
+ * Must match exactly what is later inserted into `playoff_matches`.
+ * Nullable fields stay nullable — BYEs and uninitialized references depend on it.
+ */
+export interface GeneratedBracketMatch {
+  id: string;
+  bracket_id: string;
+  round: number;
+  position: number;
+  match_type: GeneratedMatchType;
+  team1_id: string | null;
+  team2_id: string | null;
+  team1_seed: number | null;
+  team2_seed: number | null;
+  next_win_match_id: string | null;
+  next_lose_match_id: string | null;
+  best_of: number;
+  status: GeneratedMatchStatus;
+}
+
+export interface SingleElimGenerationResult {
+  format: 'singleElim';
+  matches: GeneratedBracketMatch[];
+  matchIdMap: Map<string, string>;
+}
+
+export interface DoubleElimGenerationResult {
+  format: 'doubleElim';
+  matches: GeneratedBracketMatch[];
+  winnersMatchIds: Map<string, string>;
+  losersMatchIds: Map<string, string>;
+  grandFinalsR1Id: string;
+  grandFinalsR2Id: string;
+}
+
+/** Discriminated union so the serve handler narrows on `format` instead of `any`. */
+export type GeneratedBracketResult =
+  | SingleElimGenerationResult
+  | DoubleElimGenerationResult;
+```
+
+**Mapping from `any` sites → new types:**
+| Line | Current | Replace with |
+|---|---|---|
+| 95  | `const matches: any[] = [];` | `const matches: GeneratedBracketMatch[] = [];` |
+| 156 (return) | `return { matches, matchIdMap };` | annotate `generateSingleElimination` return as `SingleElimGenerationResult` (with `format: 'singleElim'` added to the returned object) |
+| 164 | `const pairs: Array<{ team1: any; team2: any }> = [];` | `const pairs: SeedingPair[] = [];` |
+| 202 | `const matches: any[] = [];` | `const matches: GeneratedBracketMatch[] = [];` |
+| 365 (return) | `return { matches, winnersMatchIds, losersMatchIds, grandFinalsR1Id, grandFinalsR2Id };` | annotate `generateDoubleElimination` return as `DoubleElimGenerationResult` (with `format: 'doubleElim'` added) |
+| 653 | `let bracketResult: any = null;` | `let bracketResult: GeneratedBracketResult \| null = null;` |
+
+**Why adding `format` to each result is non-behavioral:**
+- The handler at lines 656–662 already branches on `payload.format`. Adding the same value as a field lets TS narrow `bracketResult` after the branch. The emitted JSON response does not include `bracketResult` directly; only `bracket` and `matches_generated` are returned (lines 863–875). So no API contract change.
+
+**Behavior changes:** **none**. Algorithm output is identical. The `matches` array elements have the exact same property set, same nullability, same status string `'pending'`, same `match_type` literals.
+
+**Critical guard rails (reviewers MUST verify):**
+1. `team1_id`, `team2_id`, `team1_seed`, `team2_seed`, `next_win_match_id`, `next_lose_match_id` MUST remain nullable in the type. Narrowing these to non-null breaks BYE handling at line 122–134 and the three-pass wiring at lines 668–838.
+2. `match_type` literal union must include `'winners' | 'losers' | 'finals'`. Do NOT add `'play-in'`, `'consolation'`, etc., even if they look "obvious." The algorithm only emits those three today (lines 141, 277, 312, 333, 349). Adding extras invites future drift.
+3. Do not promote the new types into `src/types/`. Keep them edge-only.
+4. Do not change `best_of` from `number` to a literal union. Single-elim uses 3 (line 148), grand finals use 5 (lines 340, 356). Literal narrowing here is a footgun.
+5. Do not change `status` semantics. Today every generated match starts as `'pending'`. The status union may legitimately widen later when the manager runs — but at *generation time* `'pending'` is the only legal value.
+6. Discriminated union (`format` field) must be added to the returned objects from the generator methods, otherwise the handler narrowing at line 656–662 is purely structural and TS may still permit cross-shape mistakes.
+
+**Why this PR is safe:** algorithm untouched; type-only shape contracts; no insert payload types yet (those land in PR 3).
+
+**Regression risks:**
+- **High** if a reviewer accidentally narrows nullable fields → bracket creation writes malformed graphs (`Top 3 dangerous areas` row 1).
+- **Medium** if `match_type` union accidentally omits `'losers'` or `'finals'` → double-elimination loser feed breaks.
+- **Low** for the rest — type-only annotation in functions whose return values are passed straight to `supabaseAdmin.from('playoff_matches').insert(...)` which already coerces structurally.
+
+**Verification commands:**
+- `npm run typecheck` (app-side; should be unchanged).
+- `deno check supabase/functions/create-bracket/index.ts` if available locally (edge-function type check).
+- `npm run lint`.
+- Whatever Supabase edge-function workflow the repo uses on CI (`.github/workflows/` includes a coverage check and dependency check — confirm during PR which workflow validates edge functions).
+
+**Manual smoke tests:**
+- Create a single-elimination bracket with 8 teams (no byes). Verify match count, round counts, and that `next_win_match_id` references are correctly populated.
+- Create a single-elimination bracket with 5–7 teams (forces byes). Verify BYE matches are inserted with `team_id` nulls.
+- Create a double-elimination bracket with 8 teams. Verify winners bracket, losers bracket, **both** grand finals matches (R1 and R2 reset), and that loser bracket feed lines up (every winners match has a `next_lose_match_id`).
+- Spot-check the persisted `playoff_matches` rows in Supabase to confirm column values are unchanged versus pre-PR baseline.
+
+**Rollback plan:** revert the PR. Edge function is stateless; no schema or data migration to undo.
+
+**Follow-up PR unlocked:** PR 3 (insert payload typing) — which can then reuse `GeneratedBracketMatch` as the input type for the typed `BracketInsertPayload` / `PlayoffMatchInsertPayload` contracts.
+
+**Out of scope for PR 2 (do NOT bundle in):**
+- Typing the `tournamentData` / `participantData` / `startData` Challonge responses. Those are Challonge SDK boundary and belong in a separate containment pass.
+- Typing the Supabase `insert(...).select(...).single()` return shapes. That is PR 3.
+- Touching `BracketGenerator.calculateBracketSize` / `calculateRounds`. Algorithm is frozen.
+- Adding runtime validation (zod, etc.) for the request body. That is a separate hardening PR if desired.
 
 ### PR 3
 **Title:** Create-bracket insert payload typing  
