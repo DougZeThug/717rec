@@ -1,689 +1,174 @@
 # ANY Phase 3 — Business-Critical Flows Plan
 
+> **Revision 2 — 2026-05-12.** This document was rewritten end-to-end after a grounded file-by-file survey of every Phase 3 target. The original plan over-scoped the remaining work because it didn't credit the cleanup that has already shipped through Phase 2 follow-up PRs. This revision re-scopes Phase 3 to only what is still genuinely unsafe.
+
+---
+
 ## A. Executive summary
 
 ### What Phase 3 is fixing
-Phase 3 is focused on unsafe typing in **business-critical write and side-effect paths** where bad types can cause real production damage:
-- Persisting malformed bracket graphs.
-- Saving incorrect match completion state.
-- Hiding failed badge operations behind weak result typing.
-- Showing successful optimistic seed updates while rollback is incorrect.
-- Mishandling auth/native login boundary results and error metadata.
+Phase 3 closes the remaining unsafe-`any` gaps in **business-critical write paths and side-effect flows** where bad types can:
 
-### What Phase 3 is explicitly not fixing
-- Not a broad app-wide `any` cleanup.
-- No TypeScript strict mode enablement.
-- No broad eslint unsafe-any enforcement rollout.
-- No DB schema, migration, or RLS policy changes.
+- Persist a malformed bracket graph (edge function — still unfixed).
+- Hide every failure mode of every badge RPC behind `Promise<unknown>` (badge service — still unfixed).
+- Mislabel auth errors when surfaced through the shared error pipeline (auth service bridge cast — still unfixed).
+- Pass arbitrary shapes through the playoff editing chain via three remaining hook-level casts (`usePlayoffEditMatch.ts`).
+
+### What Phase 3 is explicitly NOT fixing
+- No strict mode enablement.
+- No broad eslint unsafe-any rollout.
+- No DB schema, migration, or RLS changes.
 - No bracket algorithm rewrite.
-- No loser bracket feed or BYE behavior changes.
-- No badge rules changes.
+- No loser-bracket feed, BYE, or grand-finals reset behavior changes.
+- No badge award logic changes.
 - No auth behavior changes.
+- No third-party type purity campaign.
+- No mass UI cleanup.
 
 ### Why business-critical flows come after shared contracts
-Phase 1 and Phase 2 established higher-level shared types and read-model contract improvements. Phase 3 now uses those foundations to tighten **write-path truth** and **boundary parsing** where compiler silence can mask runtime corruption.
+Phase 1 hardened the playoff read model. Phase 2 hardened shared abstractions, badge retry payloads, optimistic seed mutations, and recharts containment. Phase 3 now sits on top of those stable contracts and targets the **write side** and **boundary parsing** that previous phases deliberately left alone.
 
-### Which flows can corrupt data
-- Create-bracket edge function generation + insert payloads.
-- Match score completion update payloads and status/result mapping.
-- Seed mutation batch writes with optimistic cache desync risk.
-
-### Which flows can hide failed operations
-- Badge RPC calls returning weakly-typed results.
-- Retry queue payload parsing that accepts malformed historic payloads too loosely.
-- Auth error/result boundaries that flatten useful provider-specific details.
+### Plain-English risk picture
+- **The single biggest remaining risk is the create-bracket edge function.** It still types its generated match graph as `any[]`. A reviewer can't catch a field-shape mistake from a type error today — it would only show up after a malformed graph is persisted.
+- **The second biggest is badge RPC return typing.** Every method returns `Promise<unknown>`. A silent failure (RPC returning an error envelope, awarding zero badges, etc.) is invisible to the compiler.
+- **The auth bridge cast** is the third because it forges a `PostgrestError` shape from an `AuthError`. The forgery is what the rest of the app uses to talk about auth failures, which means auth error metadata is the wrong shape at every consumer.
+- Everything else is either already done or is a one-line tightening.
 
 ### Expected risk level
-**High risk if done carelessly.** This phase must be executed as small, isolated, rollback-safe PRs.
+**Medium overall** for the remaining work (it was rated "High" in the original plan, but more than half of the originally-scoped clusters are already clean). High concentration of risk in two files: the edge function and the badge service.
 
 ---
 
-## A.1 Implementation status snapshot (2026-05-12 verification)
+## A.1 Implementation status snapshot (verified 2026-05-12)
 
-This section tracks the actual state of each Phase 3 PR on branch
-`claude/plan-phase-3-any-remediation-UNsfh` so future sessions stop assuming PRs
-are merged when they are not.
+Status as it actually exists on `claude/plan-phase-3-any-remediation-UNsfh` today. Verified by reading every target file — quote line numbers in §B.
 
 | PR | Title | Status | Evidence |
 |---:|---|---|---|
-| 1 | Phase 3 prerequisites / contract alignment | ✅ Merged | Commit `8c3a5e4` ("chore: align phase 3 critical flow type contracts"), merged via PR #609. Added `src/types/phase3.ts` re-export hub. |
-| 2 | Create-bracket generator DTO typing | ❌ Outstanding | `supabase/functions/create-bracket/index.ts` still contains all four planned `any` sites — lines 95, 164, 202, 653. No commits touching this file since the initial import (`9243b81`). |
-| 3 | Create-bracket insert payload typing | ⏳ Not started | Depends on PR 2. |
-| 4 | Match edit read-model typing | ⏳ Not started | — |
-| 5 | Match score update input/result contracts | ⏳ Not started | — |
-| 6 | Badge RPC result typing | ⏳ Not started | — |
-| 7 | Badge retry queue typing + parser | ⏳ Not started | — |
-| 8 | Seed mutation rollback/cache typing | ⏳ Not started | — |
-| 9 | Auth/native SDK boundary typing | ⏳ Not started | — |
-| 10 | Third-party containment cleanup | ⏳ Not started | — |
+| 1 | Phase 3 prereq / contract alignment | **MERGED** | Commit `8c3a5e4`, PR #609. `src/types/phase3.ts` re-exports shared contracts. |
+| 2 | Create-bracket generator DTO typing | **OUTSTANDING** | `supabase/functions/create-bracket/index.ts:95, :164, :202, :653` still `any`. |
+| 3 | Create-bracket insert payload typing | **OUTSTANDING** | Insert call sites (`brackets`, `participants`, `playoff_matches`) still pass loosely-typed objects. |
+| 4 | Match edit read-model typing | **SUPERSEDED — partial work remains** | `BracketMatchReadService.ts` and `src/services/brackets/read/types.ts` are already cleanly typed (no casts). Three hook-side casts remain in `usePlayoffEditMatch.ts:95, :169, :185, :191`. Re-scoped as smaller "PR 4b" below. |
+| 5 | Match score update input/result contracts | **SUPERSEDED — minor parity remains** | `MatchScoreEditor/types.ts` is clean. `MatchScoreEditorProps.onSave` is already typed. `usePlayoffMatchUpdate.ts` uses `as const` only for `'win' \| 'loss'` literals (safe). The only remaining unsafe pattern in this cluster is `PlayoffDialogs.tsx:21` `teamsByDivision: Record<string, any>`. Re-scoped as "PR 5b" below. |
+| 6 | Badge RPC result typing | **OUTSTANDING** | Every public method on `BadgeProcessingService` returns `Promise<unknown>` (lines 6–199). |
+| 7 | Badge retry queue typing + parser | **DONE** | `FailedBadgeOperationsService.ts` already has a discriminated `BadgeOperation` union, a runtime `isValidFailedBadgeOperation()` guard, and quarantine behavior. No further PR needed. |
+| 8 | Seed mutation rollback/cache typing | **DONE** | `TeamSeedService.ts`, `BracketWriteService.ts`, `useOptimisticTeamMutations.ts`, and `useTeamSeedMutation.ts` are all cleanly typed today (no casts). No further PR needed. |
+| 9 | Auth/native SDK boundary typing | **OUTSTANDING (narrow)** | Three real casts remain: `AuthService.ts:17` (`as unknown as PostgrestError`), `useAuthMethods.ts:21` (`data as { weakPassword?: WeakPasswordReasons }`), `nativeAuth.ts:49` (`response as NativeGoogleLoginResult`). |
+| 10 | Third-party containment cleanup | **OUTSTANDING** | `src/types/brackets-viewer.d.ts` still declares `stages/groups/rounds/matches/matchGames/participants` as `any[]` and `opponent1/opponent2` as `any`. Adapter (`SupabaseSqlStorage.ts`) has only one local extension cast which is acceptable. |
 
-### Plain-English: where things stand
-- The plan exists. The prereq alignment shim exists.
-- The **first real write-path PR (PR 2) has not landed.** The four documented `any`
-  sites are still in the edge function, untouched.
-- Until PR 2 lands, PR 3 (typed insert payloads) is blocked, because PR 3 builds
-  on the generator DTO shapes PR 2 is supposed to introduce.
-
-### Why this matters
-Skipping PR 2 leaves the highest-priority cluster from §J row 1 (`Priority Score
-13`) and row 2 (`Priority Score 14`) un-typed. These are the two clusters with
-the explicit "can persist malformed tournament graph" failure mode. The PR 1
-shim does not address them — it only re-exports already-existing app-side types
-and the edge function does not import that shim.
+### Plain-English takeaway
+- Only **4 of the original 10 PRs** need real work: PR 2, PR 3, PR 6, PR 9. PR 4 and PR 5 collapse into much smaller "b" variants. PR 7 and PR 8 are done.
+- Together this represents roughly **half** of the originally-scoped Phase 3 effort.
 
 ---
 
-## B. Current findings by target area
+## B. Current findings by target area (file-grounded)
 
-## B1) Create-bracket edge function
-**File inspected:** `supabase/functions/create-bracket/index.ts`
+Every line number below was verified on the current branch.
 
-### Unsafe patterns found
-- `const matches: any[] = [];` (single elimination generation)
-- `const pairs: Array<{ team1: any; team2: any }> = [];` (seeding pairs)
-- `const matches: any[] = [];` (double elimination generation)
-- `let bracketResult: any = null;`
+### B1. Create-bracket edge function
+**File:** `supabase/functions/create-bracket/index.ts` (917 lines).
 
-### Representative snippets
-- `const matches: any[] = [];`
-- `const pairs: Array<{ team1: any; team2: any }> = [];`
-- `let bracketResult: any = null;`
+| Line | Pattern | Bucket |
+|---:|---|---|
+| 95  | `const matches: any[] = [];` (single-elim generator) | Bracket graph generation any |
+| 164 | `const pairs: Array<{ team1: any; team2: any }> = [];` (seeding pairs) | Bracket graph generation any |
+| 202 | `const matches: any[] = [];` (double-elim generator) | Bracket graph generation any |
+| 653 | `let bracketResult: any = null;` (format-branch result holder) | Bracket graph generation any |
 
-### Classification
-- Upstream vs downstream: **Upstream**
-- Touches write path: **Yes**
-- Touches persisted data: **Yes** (`brackets`, `participants`, `playoff_matches`)
-- Touches brackets-manager behavior: **Indirectly** (it creates graph consumed later by manager/viewers)
-- Real truth vs compiler silence: **Compiler silence**
+Insert payloads are passed structurally to `supabaseAdmin.from('brackets').insert({...})` (line 608), `participants` (line 637), and `playoff_matches` (line 669) without explicit types. Today these are accepted because Supabase's generated `Database` types coerce on insert, but the *generator* output is not constrained, so a future drift between generator code and table shape would not be caught at compile time.
 
----
+- **Touches write path:** yes.
+- **Touches persisted data:** yes (`brackets`, `participants`, `playoff_matches`).
+- **Touches brackets-manager behavior:** indirectly. The generated graph is what brackets-manager (or the legacy viewer) reads later.
+- **Real truth or compiler silence:** compiler silence.
 
-## B2) Match score update / edit flow
-**Files inspected:**
-- `src/hooks/playoffs/usePlayoffEditMatch.ts`
-- `src/services/brackets/read/BracketMatchReadService.ts`
-- `src/components/playoffs/match-score-editor/MatchScoreEditor/types.ts`
-- `src/components/playoffs/dialogs/PlayoffDialogs.tsx`
-- `src/hooks/matches/utils/matchDatabaseUtils.ts`
+### B2. Match score update / edit flow
 
-### Unsafe patterns found
-- `teamsByDivision: Record<string, any>` in `PlayoffDialogs`.
-- Status/type conversions via casts in `usePlayoffEditMatch`:
-  - `matchData.match_type as PlayoffMatch['matchType']`
-  - `status: (matchData.status as 'pending' | 'in_progress' | 'completed') || 'pending'`
-  - `setCurrentBracket(... as PlayoffBracket)`
-- Legacy UUID path and BM integer path merged in one hook; type truth split is implicit, not explicit.
+| File | Cast / pattern | Line | Notes |
+|---|---|---:|---|
+| `src/hooks/playoffs/usePlayoffEditMatch.ts` | `} as PlayoffBracket` | 95  | constructs single-match "bracket" wrapper from BM data |
+| same | `} as PlayoffBracket` | 169 | constructs single-match "bracket" wrapper from legacy DB row |
+| same | `matchData.match_type as PlayoffMatch['matchType']` | 185 | narrows DB string to union literal |
+| same | `(matchData.status as 'pending' \| 'in_progress' \| 'completed')` | 191 | narrows DB string to union literal |
+| same | `error as Error` | 272 | safe catch-block narrowing (acceptable) |
+| `src/components/playoffs/dialogs/PlayoffDialogs.tsx` | `teamsByDivision: Record<string, any>` | 21 | weak prop bag for division → teams map |
 
-### Representative snippets
-- `teamsByDivision: Record<string, any>;`
-- `matchType: matchData.match_type as PlayoffMatch['matchType'],`
-- `status: (matchData.status as 'pending' | 'in_progress' | 'completed') || 'pending',`
+Everything else in this flow is already clean. `BracketMatchReadService.ts` and `src/services/brackets/read/types.ts` are typed without casts. `MatchScoreEditor/types.ts` and `usePlayoffMatchUpdate.ts` are clean.
 
-### Classification
-- Upstream vs downstream: **Mixed** (read-service + hook mapping)
-- Touches write path: **Yes** (edit/save flow)
-- Touches persisted data: **Yes** (score update flow)
-- Touches brackets-manager behavior: **Yes** (integer BM path mapping)
-- Real truth vs compiler silence: **Mostly compiler silence at mapping points**
+- **Touches write path:** yes (legacy and BM match update paths).
+- **Touches persisted data:** yes.
+- **Touches brackets-manager behavior:** yes (the BM-integer branch goes through `bracketManagerService.updateMatch`).
+- **Real truth or compiler silence:** compiler silence at the four cast sites; everything around them is real type truth.
 
----
+### B3. Badge processing and retry path
 
-## B3) Badge processing and retry path
-**Files inspected:**
-- `src/services/BadgeProcessingService.ts`
-- `src/services/FailedBadgeOperationsService.ts`
-- `src/hooks/matches/utils/matchDatabaseUtils.ts`
+| File | Pattern | Lines | Bucket |
+|---|---|---:|---|
+| `src/services/BadgeProcessingService.ts` | every public method returns `Promise<unknown>` | 6–199 | Badge RPC/result any |
+| `src/services/FailedBadgeOperationsService.ts` | already discriminated + runtime guard `isValidFailedBadgeOperation` | 22–96 | **Done — no change needed** |
+| `src/hooks/matches/utils/matchDatabaseUtils.ts` | only `as const` narrowings on union discriminators | 81–148 | **Safe** |
 
-### Unsafe patterns found
-- Badge RPC methods mostly typed as `Promise<unknown>`.
-- Retry storage parser validates operation envelope but operation-specific `params` are only checked as generic object.
-- Retry replay path relies on discriminant switch (good), but old malformed payloads can still slip through weak param checks.
+Badge processing fires 9 RPCs in `processMatchBadges` (and several callers) and silently swallows their results because nothing inspects them. A failed RPC returns a typed Supabase error which today is invisible at the call site type signature.
 
-### Representative snippets
-- `static async processMatchBadges(...): Promise<unknown>`
-- `typeof op.params === 'object' && op.params !== null`
+- **Touches write path:** side-effect path after match write.
+- **Touches persisted data:** badge tables via RPC.
+- **Touches brackets-manager behavior:** no.
+- **Real truth or compiler silence:** compiler silence on RPC envelopes.
 
-### Classification
-- Upstream vs downstream: **Upstream at RPC/storage boundaries**
-- Touches write path: **Side-effect path after write**
-- Touches persisted data: **Indirectly** (badge tables/RPC effects)
-- Touches brackets-manager behavior: **No**
-- Real truth vs compiler silence: **Compiler silence for RPC payload/result contracts**
+### B4. Seed mutation confirmation / rollback path
+Per the survey, **all four files in this cluster are already clean**:
 
----
+- `src/services/teams/TeamSeedService.ts` — no casts. `updateTeamSeed` returns a typed `TeamSeedUpdateResult`. `bulkUpdateTeamSeeds` returns `BulkTeamSeedUpdateResult[]` via the typed RPC envelope.
+- `src/services/brackets/BracketWriteService.ts` — no casts.
+- `src/components/playoffs/form/bracket-teams/hooks/useOptimisticTeamMutations.ts` — typed `OptimisticUpdate` shape, typed `lastError: Error | null`, no casts.
+- `src/components/playoffs/form/bracket-teams/hooks/useTeamSeedMutation.ts` — typed React Query 5 `UseMutationResult` returns. No casts.
 
-## B4) Seed mutation confirmation / rollback
-**Files inspected:**
-- `src/services/teams/TeamSeedService.ts`
-- `src/services/brackets/BracketWriteService.ts`
-- `src/components/playoffs/form/bracket-teams/hooks/useOptimisticTeamMutations.ts`
-- `src/components/playoffs/form/bracket-teams/hooks/useTeamSeedMutation.ts`
+There is **no Phase 3 work remaining here** unless we deliberately add documentation about cache key contracts. We aren't going to, because nothing is broken and the goal is to not change behavior.
 
-### Unsafe patterns found
-- Cast after single-team seed update:
-  - `return data as TeamSeedUpdateResult;`
-- Rollback state uses mutable `Map` with timing sensitivity and `error as Error` casts.
-- Batch parser only strongly checks `ok`; leaves wider payload trust ambiguous.
+- **Real truth or compiler silence:** real type truth.
 
-### Representative snippets
-- `return data as TeamSeedUpdateResult;`
-- `setOptimisticState((prev) => ({ ...prev, lastError: error as Error }));`
+### B5. Auth / native login boundary
 
-### Classification
-- Upstream vs downstream: **Mixed**
-- Touches write path: **Yes**
-- Touches persisted data: **Yes**
-- Touches brackets-manager behavior: **No direct manager dependency**
-- Real truth vs compiler silence: **Compiler silence at service return + optimistic error typing**
+| File | Cast | Line | What it does |
+|---|---|---:|---|
+| `src/services/auth/AuthService.ts` | `as unknown as PostgrestError` | 17 | `toPgError(AuthError)` fabricates a `PostgrestError` shape to feed `handleDatabaseError`. The fabricated object is missing required `PostgrestError` fields (the real type has more fields than the literal). |
+| `src/utils/nativeAuth.ts` | `response as NativeGoogleLoginResult` | 49 | accepts the Capgo SDK response shape. The `NativeGoogleLoginResult` type already exists in `src/types/auth.ts` and tolerates either a nested `result` or a flat token bag. |
+| `src/hooks/auth/useAuthMethods.ts` | `data as { weakPassword?: WeakPasswordReasons }` | 21 | post-signup narrowing to extract optional weak-password metadata that Supabase types as a top-level optional field. |
+
+- **Touches write path:** no (auth/session only).
+- **Touches persisted data:** indirectly via session lifecycle.
+- **Touches brackets-manager behavior:** no.
+- **Real truth or compiler silence:** the `AuthService` bridge is **active misdirection** — it claims to be a `PostgrestError` and isn't. The other two are compiler silence at SDK boundaries.
+
+### B6. Third-party containment
+**File:** `src/types/brackets-viewer.d.ts`.
+
+| Line | Pattern |
+|---:|---|
+| 12  | `stages: any[]` |
+| 13  | `groups?: any[]` |
+| 14  | `rounds?: any[]` |
+| 15  | `matches: any[]` |
+| 16  | `matchGames: any[]` |
+| 17  | `participants: any[]` |
+| 32  | `opponent1?: any` |
+| 33  | `opponent2?: any` |
+
+This is a third-party UMD library declaration. The `any[]` choices were deliberate to accept the library's actual at-runtime shapes. Phase 2 already isolated other third-party `any` (recharts) behind containment helpers. Phase 3's PR 10 should bring this file under the same containment pattern — without breaking any rendering behavior.
+
+`src/services/brackets/manager/SupabaseSqlStorage.ts` has one local extension cast (`p as DataTypes['participant'] & { position?: number }`) at line 39. This is **acceptable** — it is the canonical "library DTO with an app-specific optional field" containment pattern. Leave it.
 
 ---
 
-## B5) Auth / native login boundary
-**Files inspected:**
-- `src/utils/nativeAuth.ts`
-- `src/hooks/auth/useAuthMethods.ts`
-- `src/services/auth/AuthService.ts`
+## C. Create-bracket edge function — implementation plan
 
-### Unsafe patterns found
-- Double-cast bridge:
-  - `}) as unknown as PostgrestError;`
-- Native plugin response cast:
-  - `extractIdToken(response as NativeGoogleLoginResult);`
-- Weak password extraction cast in hook:
-  - `const withWeakPassword = data as { weakPassword?: WeakPasswordReasons };`
+The PR 2 detailed spec from revision 1 is correct and is preserved below. PR 3 (insert-payload typing) gets a tighter spec here than revision 1 had.
 
-### Representative snippets
-- `as unknown as PostgrestError`
-- `response as NativeGoogleLoginResult`
-
-### Classification
-- Upstream vs downstream: **Upstream boundary parsing + downstream hook extraction**
-- Touches write path: **No DB write path, but auth/session behavior**
-- Touches persisted data: **Indirectly via session/auth flows**
-- Touches brackets-manager behavior: **No**
-- Real truth vs compiler silence: **Compiler silence**
-
----
-
-## C. Create-bracket edge function analysis
-
-Primary unsafe spots confirmed in `supabase/functions/create-bracket/index.ts`:
-- `matches: any[]`
-- `{ team1: any; team2: any }`
-- `let bracketResult: any`
-- Format-specific result ambiguity
-- Weak generated match object shape
-- Weak seeding pair object shape
-- Weak next-match wiring contracts
-- Weak insert payload contracts
-
-### Planned contracts (no implementation yet)
-
-1. `BracketFormat`
-- **Location:** `supabase/functions/create-bracket/index.ts` (or local `types.ts`)
-- **Kind:** Generation input contract
-- **Removes:** implicit string branches and `any` branch result ambiguity
-- **Must not change:** accepted formats or branching behavior
-
-2. `GeneratedBracketMatch`
-- **Location:** same edge function scope
-- **Kind:** Generation-internal match base shape
-- **Removes:** `matches: any[]`
-- **Must not change:** match fields or generated values
-
-3. `GeneratedSingleEliminationMatch`
-4. `GeneratedDoubleEliminationMatch`
-5. `GeneratedRoundRobinMatch` (planning placeholder only)
-- **Location:** edge function
-- **Kind:** Format-specific generation-internal match variants
-- **Removes:** format ambiguity under one `any[]`
-- **Must not change:** output structure currently inserted
-
-6. `SeedingPair`
-- **Location:** edge function
-- **Kind:** generation-internal pairing shape (`team1` / `team2` nullable)
-- **Removes:** `{ team1: any; team2: any }`
-- **Must not change:** BYE representation (`null` team)
-
-7. `GeneratedBracketResult`
-8. `SingleElimGenerationResult`
-9. `DoubleElimGenerationResult`
-10. `RoundRobinGenerationResult` (placeholder)
-- **Location:** edge function
-- **Kind:** generation result union
-- **Removes:** `let bracketResult: any`
-- **Must not change:** algorithm, rounds, mapping IDs
-
-11. `BracketInsertPayload`
-12. `PlayoffMatchInsertPayload`
-- **Location:** edge function (or shared supabase edge function types)
-- **Kind:** DB insert/update payload contracts
-- **Removes:** post-generation insert trust on loose object shape
-- **Must not change:** inserted columns and values
-
----
-
-## D. Match score update / edit flow analysis
-
-### Required domain split (explicit)
-1. **Read service** reads raw DB/BM rows.
-2. **Read service mapper** converts raw to editor-safe domain shape.
-3. **Hook** picks legacy UUID path vs BM integer path only.
-4. **UI/editor** receives only editor-safe typed shape.
-
-### Planned contracts
-- `LegacyPlayoffMatchWithGames` (verify/extend existing)
-- `BracketManagerEditableMatch`
-- `EditablePlayoffMatchData`
-- `PlayoffGameRow`
-- `MatchScoreUpdateInput`
-- `MatchScoreUpdateResult`
-- `CompletedMatchResult`
-- `AsyncVoidCallback` (already present; reuse)
-
-### Key issues to fix (planning)
-- Remove score editor and dialog reliance on ad hoc `games` object literals.
-- Remove status/match-type casts in hook by making mapper return exact domain shape.
-- Keep both legacy UUID and BM integer paths intact with explicit union discriminator.
-
----
-
-## E. Badge processing / retry path analysis
-
-### Issues to address
-- RPC responses currently mostly `unknown` without result contracts.
-- Retry params validation is too shallow for old malformed payloads.
-- Replay behavior currently safe-ish but not robustly typed per operation.
-
-### Planned contracts
-- `BadgeOperationKind`
-- `BadgeOperationParams`
-- `BadgeOperation`
-- `FailedBadgeOperation`
-- `BadgeRpcSuccess`
-- `BadgeRpcFailure`
-- `BadgeRpcResult`
-- `BadgeRetryStoragePayload`
-- `BadgeRetryParseResult`
-
-### Parsing rule
-- Use `unknown` only at raw storage/RPC boundary.
-- Immediately narrow with guards.
-- Use discriminated unions by operation type.
-- Quarantine malformed payloads; do not crash retry worker; do not silently drop valid items.
-
----
-
-## F. Seed mutation confirmation / rollback analysis
-
-### Issues to address
-- Batch result ambiguity and minimal parser checks.
-- Optimistic rollback depends on mutable pending map and broad assumptions.
-- Single team update currently cast-based at service boundary.
-
-### Planned contracts
-- `SeededTeam`
-- `SeedUpdateInput`
-- `BatchSeedUpdateInput`
-- `BatchSeedUpdateResult`
-- `SeedMutationContext`
-- `SeedMutationRollbackSnapshot`
-- `SeedCacheValue`
-
-### Cache typing plan
-- Explicit query key constants for `['playoff-teams']` and `['seed-validation']`.
-- Explicit cache value contract per key.
-- Rollback snapshot should store pre-mutation values keyed by team ID.
-
----
-
-## G. Auth / native login boundary analysis
-
-### Issues to address
-- `as unknown as` bridge from AuthError to PostgrestError.
-- Native plugin result cast without explicit parse object.
-- Weak-password metadata extraction via cast in hook.
-
-### Planned contracts
-- `NativeGoogleLoginResult`
-- `NativeAuthTokenResult`
-- `AuthWeakPasswordDetails`
-- `AuthServiceResult`
-- `AuthErrorDetails`
-- `AuthProvider`
-- `AuthBoundaryParseResult`
-
-### Boundary policy
-- Keep SDK result raw as `unknown` until parsed.
-- Parse in auth boundary utility/service layer.
-- Hooks receive app-owned auth result types only.
-
----
-
-## H. Boundary mapping strategy
-
-| Boundary | Raw input type | Parser/guard location | Internal type returned | Invalid data behavior |
-|---|---|---|---|---|
-| Supabase edge function request body | `unknown` JSON | `supabase/functions/create-bracket` parser helper | `CreateBracketPayload` | Throw (400-style error response) |
-| Supabase query results | client generic output | `src/services/**` mappers | app domain rows/models | Throw via `handleDatabaseError` or validation error |
-| Supabase RPC results | `unknown` | badge/seed services parsers | discriminated union result | Throw for critical failures; return explicit failure variant where current behavior expects continuation |
-| localStorage retry payload | `unknown` JSON.parse | `FailedBadgeOperationsService` parse helper | `BadgeRetryParseResult` | Quarantine malformed entries + log |
-| React Query cache snapshots | possibly undefined | optimistic seed hook helpers | `SeedCacheValue` | no-op + invalidate on mismatch |
-| Native auth SDK responses | `unknown` plugin data | `src/utils/nativeAuth.ts` parser | `NativeAuthTokenResult` | return typed auth failure |
-| brackets-manager DTOs | third-party weak DTO | read adapter/service boundary | internal playoff domain | throw or fallback with explicit unreachable guard |
-| legacy playoff DB rows | Supabase row | read service mapper | `EditablePlayoffMatchData` | throw / not-found error path |
-
----
-
-## I. Recommended small-diff implementation sequence
-
-## Step 1 — Prereq contract alignment
-- **Files likely touched:** shared types from Phases 1/2 + references in Phase 3 files
-- **Casts likely removed:** none initially; inventory + alignment only
-- **Expected behavior unchanged:** yes
-- **Risk:** Low
-- **Verification command:** `npm run typecheck`
-- **Manual smoke test:** none required beyond app boot
-- **Rollback strategy:** revert single commit
-
-## Step 2 — Create-bracket generator DTO typing
-- **Files likely touched:** `supabase/functions/create-bracket/index.ts`
-- **Casts likely removed:** `matches any[]`, seeding pair `any`, `bracketResult any`
-- **Expected behavior unchanged:** yes
-- **Risk:** High
-- **Verification command:** edge-function type/lint checks + `npm run typecheck`
-- **Manual smoke test:** create single-elim + double-elim bracket
-- **Rollback strategy:** revert PR
-
-## Step 3 — Create-bracket insert payload typing
-- **Files likely touched:** same edge function file
-- **Casts likely removed:** loose insert payload assumptions
-- **Expected behavior unchanged:** yes
-- **Risk:** Medium
-- **Verification command:** `npm run typecheck`
-- **Manual smoke test:** create bracket and verify matches persisted
-- **Rollback strategy:** revert PR
-
-## Step 4 — Match edit read-service return typing
-- **Files likely touched:** `BracketMatchReadService.ts`, read types files, hook usage
-- **Casts likely removed:** match type/status casts in hook
-- **Expected behavior unchanged:** yes
-- **Risk:** Medium
-- **Verification command:** `npm run typecheck && npm run test:file -- src/hooks/playoffs/usePlayoffEditMatch.ts`
-- **Manual smoke test:** open both UUID and integer matches in editor
-- **Rollback strategy:** revert PR
-
-## Step 5 — Score update input/result contracts
-- **Files likely touched:** hook + editor prop types + match utils
-- **Casts likely removed:** ad hoc callback and result assumptions
-- **Expected behavior unchanged:** yes
-- **Risk:** Medium
-- **Verification command:** `npm run typecheck`
-- **Manual smoke test:** save score; confirm status/result display
-- **Rollback strategy:** revert PR
-
-## Step 6 — Badge RPC result contracts
-- **Files likely touched:** `BadgeProcessingService.ts`
-- **Casts likely removed:** generic unknown result assumptions
-- **Expected behavior unchanged:** yes
-- **Risk:** Medium
-- **Verification command:** `npm run typecheck && npm run test:file -- src/services/BadgeProcessingService.ts`
-- **Manual smoke test:** complete match and verify badge side effects run
-- **Rollback strategy:** revert PR
-
-## Step 7 — Badge retry discriminated union + parser
-- **Files likely touched:** `FailedBadgeOperationsService.ts`, types
-- **Casts likely removed:** shallow params trust
-- **Expected behavior unchanged:** yes (except safer malformed payload handling)
-- **Risk:** Medium
-- **Verification command:** `npm run typecheck && npm run test:file -- src/services/FailedBadgeOperationsService.ts`
-- **Manual smoke test:** inject malformed/local valid retry items; run retry
-- **Rollback strategy:** revert PR
-
-## Step 8 — Seed mutation cache/rollback contracts
-- **Files likely touched:** `TeamSeedService.ts`, optimistic hooks
-- **Casts likely removed:** `data as TeamSeedUpdateResult`, `error as Error`
-- **Expected behavior unchanged:** yes
-- **Risk:** Medium
-- **Verification command:** `npm run typecheck && npm run test:file -- src/components/playoffs/form/bracket-teams/hooks/useOptimisticTeamMutations.ts`
-- **Manual smoke test:** reseed teams; simulate error; verify rollback correctness
-- **Rollback strategy:** revert PR
-
-## Step 9 — Auth SDK boundary guards
-- **Files likely touched:** `nativeAuth.ts`, `useAuthMethods.ts`, `AuthService.ts`
-- **Casts likely removed:** `as unknown as PostgrestError`, plugin result cast, weak password cast
-- **Expected behavior unchanged:** yes
-- **Risk:** Medium
-- **Verification command:** `npm run typecheck`
-- **Manual smoke test:** web login/signup + native login + weak password flow
-- **Rollback strategy:** revert PR
-
-## Step 10 — Third-party containment pass
-- **Files likely touched:** adapter containment files only where needed
-- **Casts likely removed/contained:** unavoidable casts isolated into named helpers
-- **Expected behavior unchanged:** yes
-- **Risk:** Low-Medium
-- **Verification command:** `npm run typecheck && npm run build`
-- **Manual smoke test:** bracket viewer render regression check
-- **Rollback strategy:** revert PR
-
----
-
-## J. Ranked Phase 3 findings table
-
-| Rank | Cluster | Files | Pattern | Bucket | Blast Radius (1-5) | Runtime Risk (1-5) | Ease of Replacement (1-5) | Priority Score | Why this matters | Recommended fix type |
-|---:|---|---|---|---|---:|---:|---:|---:|---|---|
-| 1 | Create-bracket generation payloads | `supabase/functions/create-bracket/index.ts` | `matches: any[]`, `pairs any`, `bracketResult any` | Bracket graph generation any / Persisted write-path any | 5 | 5 | 3 | 13 | Can persist malformed tournament graph | Edge-function internal DTO contracts |
-| 2 | Create-bracket branch result ambiguity | same | format-dependent `any` result object | Supabase query/RPC result any | 5 | 5 | 4 | 14 | Wrong branch shape hidden until runtime | Discriminated result union |
-| 3 | Match edit mapping casts | `usePlayoffEditMatch.ts` | status/matchType casts | Match score/update any | 4 | 5 | 3 | 12 | Wrong mapping can break score edit state | service-level mapper contracts |
-| 4 | Badge RPC weak result typing | `BadgeProcessingService.ts` | `Promise<unknown>` RPC results | Badge RPC/result any | 4 | 4 | 4 | 12 | Failing side-effects become opaque | RPC success/failure unions |
-| 5 | Retry parser shallow params check | `FailedBadgeOperationsService.ts` | params only object-check | Retry payload/storage any | 4 | 5 | 3 | 12 | Bad replay payload can fail repeatedly silently | discriminated parser + quarantine |
-| 6 | Seed service casted return | `TeamSeedService.ts` | `data as TeamSeedUpdateResult` | Persisted write-path any | 4 | 4 | 4 | 12 | Compiler silence on write return truth | explicit row parser/selector typing |
-| 7 | Optimistic rollback state assumptions | `useOptimisticTeamMutations.ts` | mutable pending map timing, `error as Error` | Optimistic update/cache any | 3 | 4 | 3 | 10 | UI can report false success | typed rollback snapshot/context |
-| 8 | Auth error bridge cast | `AuthService.ts` | `as unknown as PostgrestError` | Auth SDK boundary any | 3 | 4 | 4 | 11 | Error metadata may be mislabeled | explicit auth error mapper contract |
-| 9 | Native SDK response cast | `nativeAuth.ts` | `response as NativeGoogleLoginResult` | Auth SDK boundary any | 3 | 4 | 3 | 10 | Token extraction can break quietly | boundary parser guard |
-| 10 | Dialog broad bag prop | `PlayoffDialogs.tsx` | `Record<string, any>` | Low-value local any | 2 | 2 | 5 | 9 | Weakens team-division data flow confidence | narrow prop contract |
-
----
-
-## K. Regression risks (explicit)
-- Bracket creation writes malformed match graph.
-- Double-elimination loser bracket feed breaks.
-- BYE handling changes accidentally.
-- Playoff score save succeeds but badge side effects fail silently.
-- Failed badge retries replay wrong payloads.
-- Old retry queue payloads crash parsing.
-- Optimistic seed update reports success but rollback is wrong.
-- React Query cache gets wrong shape and UI desyncs.
-- Legacy UUID match edit path breaks.
-- BM integer match edit path breaks.
-- Match status/result mapping narrows incorrectly.
-- Native login token extraction breaks.
-- Weak-password details disappear.
-- Auth errors become swallowed/mislabeled.
-
----
-
-## L. Verification plan
-
-### Actual scripts available (from `package.json`)
-- `npm run typecheck`
-- `npm run lint`
-- `npm test`
-- `npm run test:file -- <path>`
-- `npm run test:coverage`
-- `npm run test:coverage:serial`
-- `npm run build`
-
-### Minimum verification matrix for each Phase 3 PR
-1. TypeScript check.
-2. Lint.
-3. Focused tests for touched area (if present).
-4. Build.
-
-### Manual smoke tests (required across phase)
-- Create/load single elimination bracket.
-- Create/load double elimination bracket.
-- Confirm BYE behavior unchanged.
-- Confirm loser bracket feed unchanged.
-- Confirm bracket viewer still renders matches/participants.
-- Edit playoff match score.
-- Complete a match.
-- Confirm match status/result UI updates.
-- Confirm badges process after completion.
-- Force/inspect failed badge retry behavior.
-- Seed/reseed teams.
-- Confirm optimistic update + rollback behavior.
-- Test native/web login if auth touched.
-- Confirm weak-password messaging if signup touched.
-
----
-
-## M. Safe-to-ignore / contain (Phase 3 scope)
-
-1. Unavoidable brackets-viewer global casts
-- **Why acceptable:** third-party display boundary; not core write path.
-- **How to document:** boundary comment + typed adapter wrapper.
-- **What not to do:** don’t spread these casts into services/hooks.
-
-2. Isolated brackets-manager adapter casts
-- **Why acceptable:** manager DTO boundary where typings can be weak.
-- **How to document:** named containment helper with rationale.
-- **What not to do:** don’t cast in business services.
-
-3. Storybook shims
-- **Why acceptable:** non-production runtime.
-- **How to document:** test/dev-only note.
-- **What not to do:** don’t mix with app runtime types.
-
-4. Icon registry broad component typing
-- **Why acceptable:** low runtime risk compared to Phase 3 flows.
-- **How to document:** technical debt list.
-- **What not to do:** don’t prioritize over write-path fixes.
-
-5. Recharts payload casts already isolated by Phase 2
-- **Why acceptable:** already contained and non-write-critical.
-- **How to document:** link to containment location.
-- **What not to do:** no broad chart typing campaign in Phase 3.
-
-6. Test-only anys outside business-critical coverage
-- **Why acceptable:** low production impact.
-- **How to document:** exclude list in phase notes.
-- **What not to do:** avoid touching unless required for critical-flow tests.
-
----
-
-## N. Non-goals
-- No source implementation in this planning artifact.
-- No strict mode enablement.
-- No broad eslint unsafe-any rollout.
-- No database migrations.
-- No Supabase schema changes.
-- No RLS policy changes.
-- No bracket algorithm rewrite.
-- No bracket generation behavior changes.
-- No loser bracket feed changes.
-- No BYE behavior changes.
-- No badge award logic changes.
-- No auth behavior changes.
-- No mass UI cleanup.
-- No full third-party type purity campaign.
-
----
-
-## O. Final Phase 3 roadmap
-
-## 1) Top 10 Phase 3 targets (descending)
-1. `supabase/functions/create-bracket/index.ts` — generator `any` removal.
-2. `supabase/functions/create-bracket/index.ts` — typed insert payloads.
-3. `src/services/brackets/read/BracketMatchReadService.ts` — typed read mapper split.
-4. `src/hooks/playoffs/usePlayoffEditMatch.ts` — remove cast-based mapping.
-5. `src/hooks/matches/utils/matchDatabaseUtils.ts` — typed score update and completion result.
-6. `src/services/BadgeProcessingService.ts` — typed RPC result unions.
-7. `src/services/FailedBadgeOperationsService.ts` — discriminated retry parser + quarantine.
-8. `src/services/teams/TeamSeedService.ts` — remove cast return and tighten batch parser.
-9. `src/components/playoffs/form/bracket-teams/hooks/useOptimisticTeamMutations.ts` — typed rollback snapshot/cache.
-10. `src/services/auth/AuthService.ts` + `src/utils/nativeAuth.ts` + `src/hooks/auth/useAuthMethods.ts` — auth boundary typing.
-
-## 2) Top 5 safest quick wins
-1. Replace `Record<string, any>` in `PlayoffDialogs` with specific division/team map type.
-2. Replace `as unknown as PostgrestError` with explicit auth error mapping contract.
-3. Add operation-specific `params` guards in retry parser.
-4. Introduce explicit `MatchScoreUpdateInput/Result` alias contracts used by hook/editor.
-5. Tighten `TeamSeedService` single/batch parser contracts to remove cast trust.
-
-## 3) Top 5 dangerous areas
-1. Create-bracket three-pass generation and match reference wiring.
-2. Double-elimination loser feed + grand finals reset mapping.
-3. Badge retry replay with malformed historic payloads.
-4. Optimistic seed rollback synchronization with cache truth.
-5. Native auth token extraction and weak-password metadata path.
-
-## 4) Suggested implementation order for 1 week
-- Day 1: PR 1 (prereq alignment)
-- Day 2: PR 2 (create-bracket DTO typing)
-- Day 3: PR 3 (create-bracket insert payload typing)
-- Day 4: PR 4 (match edit read-model typing)
-- Day 5: PR 5 (match score update contracts)
-
-## 5) Suggested implementation order for 2 weeks
-- Week 1: PRs 1–5
-- Week 2:
-  - PR 6 (badge RPC result typing)
-  - PR 7 (badge retry parser/union)
-  - PR 8 (seed optimistic rollback/cache typing)
-  - PR 9 (auth/native boundary typing)
-  - PR 10 (third-party containment final pass)
-
-## 6) Prerequisites from Phase 1/2
-- Shared playoff domain contracts are present and stable.
-- Existing seeding types are stable (`TeamSeedUpdateInput`, batch result contracts).
-- Error utilities remain standard (`handleDatabaseError`, `ensureFound`).
-- Existing BM/viewer containment boundaries are intact and not refactored in parallel.
-
----
-
-## Safe PR breakdown for Phase 3 implementation
-
-### PR 1
-**Title:** Phase 3 prerequisites check / contract alignment  
-**Goal:** Confirm Phase 1/2 contracts exist and identify missing prerequisites before write-path typing.  
-**Files likely touched:** planning notes + minimal shared types index references only.  
-**Unsafe patterns addressed:** None directly; dependency inventory only.  
-**Contracts/types introduced:** none or tiny aliases only if strictly required.  
-**Behavior changes:** **none**.  
-**Why this PR is safe:** no runtime logic change.  
-**Regression risks:** very low.  
-**Verification commands:** `npm run typecheck`, `npm run lint`.  
-**Manual smoke tests:** app boot and playoff page load.  
-**Rollback plan:** revert PR.  
-**Follow-up PR unlocked:** PR 2.
-
-### PR 2 — STATUS: ❌ OUTSTANDING (detailed spec)
-
-**Title:** Create-bracket generator DTO typing
-**Goal:** Type generated bracket match structures and seeding pairs without changing algorithm output.
-
-**Exact `any` sites still in the repo (verified 2026-05-12):**
-- `supabase/functions/create-bracket/index.ts:95` — `const matches: any[] = [];` inside `generateSingleElimination`.
-- `supabase/functions/create-bracket/index.ts:164` — `const pairs: Array<{ team1: any; team2: any }> = [];` inside `generateSeedingPairs`.
-- `supabase/functions/create-bracket/index.ts:202` — `const matches: any[] = [];` inside `generateDoubleElimination`.
-- `supabase/functions/create-bracket/index.ts:653` — `let bracketResult: any = null;` in the serve handler before the format branch.
-
-**Files likely touched:**
-- `supabase/functions/create-bracket/index.ts` (primary; replace `any` sites; leave algorithm untouched).
-- New: `supabase/functions/create-bracket/types.ts` (adjacent, edge-only module — keeps Deno-style imports separate from the app's `src/` types and avoids accidentally pulling Node/React deps into the edge function bundle).
-
-**Why a separate `types.ts` next to the edge function (not `src/types/`):**
-- Edge function runs on Deno, not Vite/Node. Importing from `@/...` would not resolve.
-- Edge function `any` is a generation-internal contract, not a domain contract. It should not leak into the app.
-- Phase 3 architecture rule: "Raw DB/RPC/SDK input" vs "internal 717REC domain" vs "third-party DTOs" must stay separated. The generator output is a fourth world — *edge-function-internal* — and belongs in its own file.
-
-**Contracts/types to introduce (PR 2 only — generation side, NOT insert payloads):**
+### Planned generation-side contracts (PR 2)
+Live in a new `supabase/functions/create-bracket/types.ts` (edge-only — Deno module, must NOT import from `@/...`).
 
 ```ts
-// supabase/functions/create-bracket/types.ts (planned shape — do NOT implement until PR is approved)
-
 export type BracketFormat = 'singleElim' | 'doubleElim';
 
 export type GeneratedMatchType = 'winners' | 'losers' | 'finals';
@@ -696,15 +181,10 @@ export interface SeedTeam {
 }
 
 export interface SeedingPair {
-  team1: SeedTeam | null;
+  team1: SeedTeam | null;   // null = BYE
   team2: SeedTeam | null;
 }
 
-/**
- * Shape of a row pushed into `matches` arrays inside BracketGenerator.
- * Must match exactly what is later inserted into `playoff_matches`.
- * Nullable fields stay nullable — BYEs and uninitialized references depend on it.
- */
 export interface GeneratedBracketMatch {
   id: string;
   bracket_id: string;
@@ -736,238 +216,561 @@ export interface DoubleElimGenerationResult {
   grandFinalsR2Id: string;
 }
 
-/** Discriminated union so the serve handler narrows on `format` instead of `any`. */
 export type GeneratedBracketResult =
   | SingleElimGenerationResult
   | DoubleElimGenerationResult;
 ```
 
-**Mapping from `any` sites → new types:**
-| Line | Current | Replace with |
-|---|---|---|
-| 95  | `const matches: any[] = [];` | `const matches: GeneratedBracketMatch[] = [];` |
-| 156 (return) | `return { matches, matchIdMap };` | annotate `generateSingleElimination` return as `SingleElimGenerationResult` (with `format: 'singleElim'` added to the returned object) |
-| 164 | `const pairs: Array<{ team1: any; team2: any }> = [];` | `const pairs: SeedingPair[] = [];` |
-| 202 | `const matches: any[] = [];` | `const matches: GeneratedBracketMatch[] = [];` |
-| 365 (return) | `return { matches, winnersMatchIds, losersMatchIds, grandFinalsR1Id, grandFinalsR2Id };` | annotate `generateDoubleElimination` return as `DoubleElimGenerationResult` (with `format: 'doubleElim'` added) |
-| 653 | `let bracketResult: any = null;` | `let bracketResult: GeneratedBracketResult \| null = null;` |
+### Planned insert-payload contracts (PR 3)
+Same file. These represent the *write* boundary — the actual DB row shape on insert. The point is to make any drift between generator output and table shape a compile error.
 
-**Why adding `format` to each result is non-behavioral:**
-- The handler at lines 656–662 already branches on `payload.format`. Adding the same value as a field lets TS narrow `bracketResult` after the branch. The emitted JSON response does not include `bracketResult` directly; only `bracket` and `matches_generated` are returned (lines 863–875). So no API contract change.
+```ts
+export interface BracketInsertPayload {
+  title: string;
+  division_id: string;
+  format: BracketFormat;
+  state: 'pending';
+  challonge_tournament_id: number;
+}
 
-**Behavior changes:** **none**. Algorithm output is identical. The `matches` array elements have the exact same property set, same nullability, same status string `'pending'`, same `match_type` literals.
+export interface ParticipantInsertPayload {
+  bracket_id: string;
+  team_id: string;
+  position: number;
+  name: string;
+}
 
-**Critical guard rails (reviewers MUST verify):**
-1. `team1_id`, `team2_id`, `team1_seed`, `team2_seed`, `next_win_match_id`, `next_lose_match_id` MUST remain nullable in the type. Narrowing these to non-null breaks BYE handling at line 122–134 and the three-pass wiring at lines 668–838.
-2. `match_type` literal union must include `'winners' | 'losers' | 'finals'`. Do NOT add `'play-in'`, `'consolation'`, etc., even if they look "obvious." The algorithm only emits those three today (lines 141, 277, 312, 333, 349). Adding extras invites future drift.
-3. Do not promote the new types into `src/types/`. Keep them edge-only.
-4. Do not change `best_of` from `number` to a literal union. Single-elim uses 3 (line 148), grand finals use 5 (lines 340, 356). Literal narrowing here is a footgun.
-5. Do not change `status` semantics. Today every generated match starts as `'pending'`. The status union may legitimately widen later when the manager runs — but at *generation time* `'pending'` is the only legal value.
-6. Discriminated union (`format` field) must be added to the returned objects from the generator methods, otherwise the handler narrowing at line 656–662 is purely structural and TS may still permit cross-shape mistakes.
+/** Insert payload for one row in `playoff_matches`. Field-for-field identical to GeneratedBracketMatch. */
+export type PlayoffMatchInsertPayload = GeneratedBracketMatch;
+```
 
-**Why this PR is safe:** algorithm untouched; type-only shape contracts; no insert payload types yet (those land in PR 3).
+PR 3 then narrows the three insert call sites (line 608, 637, 669) to accept these types. No SQL changes, no column changes, no behavior changes.
 
-**Regression risks:**
-- **High** if a reviewer accidentally narrows nullable fields → bracket creation writes malformed graphs (`Top 3 dangerous areas` row 1).
-- **Medium** if `match_type` union accidentally omits `'losers'` or `'finals'` → double-elimination loser feed breaks.
-- **Low** for the rest — type-only annotation in functions whose return values are passed straight to `supabaseAdmin.from('playoff_matches').insert(...)` which already coerces structurally.
-
-**Verification commands:**
-- `npm run typecheck` (app-side; should be unchanged).
-- `deno check supabase/functions/create-bracket/index.ts` if available locally (edge-function type check).
-- `npm run lint`.
-- Whatever Supabase edge-function workflow the repo uses on CI (`.github/workflows/` includes a coverage check and dependency check — confirm during PR which workflow validates edge functions).
-
-**Manual smoke tests:**
-- Create a single-elimination bracket with 8 teams (no byes). Verify match count, round counts, and that `next_win_match_id` references are correctly populated.
-- Create a single-elimination bracket with 5–7 teams (forces byes). Verify BYE matches are inserted with `team_id` nulls.
-- Create a double-elimination bracket with 8 teams. Verify winners bracket, losers bracket, **both** grand finals matches (R1 and R2 reset), and that loser bracket feed lines up (every winners match has a `next_lose_match_id`).
-- Spot-check the persisted `playoff_matches` rows in Supabase to confirm column values are unchanged versus pre-PR baseline.
-
-**Rollback plan:** revert the PR. Edge function is stateless; no schema or data migration to undo.
-
-**Follow-up PR unlocked:** PR 3 (insert payload typing) — which can then reuse `GeneratedBracketMatch` as the input type for the typed `BracketInsertPayload` / `PlayoffMatchInsertPayload` contracts.
-
-**Out of scope for PR 2 (do NOT bundle in):**
-- Typing the `tournamentData` / `participantData` / `startData` Challonge responses. Those are Challonge SDK boundary and belong in a separate containment pass.
-- Typing the Supabase `insert(...).select(...).single()` return shapes. That is PR 3.
-- Touching `BracketGenerator.calculateBracketSize` / `calculateRounds`. Algorithm is frozen.
-- Adding runtime validation (zod, etc.) for the request body. That is a separate hardening PR if desired.
-
-### PR 3
-**Title:** Create-bracket insert payload typing  
-**Goal:** Type Supabase insert/update payloads for bracket/playoff match writes, preserving existing behavior.  
-**Files likely touched:** `supabase/functions/create-bracket/index.ts`.  
-**Unsafe patterns addressed:** loose insert payload shape trust.  
-**Contracts/types introduced:** `BracketInsertPayload`, `PlayoffMatchInsertPayload`.  
-**Behavior changes:** **none**.  
-**Why this PR is safe:** SQL calls/columns remain same; only compile-time correctness improves.  
-**Regression risks:** medium if required nullable fields accidentally narrowed.  
-**Verification commands:** `npm run typecheck`, `npm run lint`.  
-**Manual smoke tests:** create bracket and verify persisted match graph integrity.  
-**Rollback plan:** revert PR.  
-**Follow-up PR unlocked:** PR 10 later containment confidence.
-
-### PR 4
-**Title:** Match edit read-model typing  
-**Goal:** Type `BracketMatchReadService` returns and separate legacy UUID path from BM integer path mapping.  
-**Files likely touched:** `src/services/brackets/read/BracketMatchReadService.ts`, related read types, `usePlayoffEditMatch.ts`.  
-**Unsafe patterns addressed:** mapping casts for match type/status/current bracket shape.  
-**Contracts/types introduced:** `BracketManagerEditableMatch`, `EditablePlayoffMatchData`, `PlayoffGameRow`.  
-**Behavior changes:** **none**.  
-**Why this PR is safe:** route logic unchanged; only shape mapping centralized and typed.  
-**Regression risks:** medium around null opponents and status mapping.  
-**Verification commands:** `npm run typecheck`, `npm run test:file -- src/hooks/playoffs/usePlayoffEditMatch.ts`, `npm run lint`.  
-**Manual smoke tests:** open/edit legacy UUID match and BM integer match.  
-**Rollback plan:** revert PR.  
-**Follow-up PR unlocked:** PR 5.
-
-### PR 5
-**Title:** Match score update input/result contracts  
-**Goal:** Type score editor inputs, match completion result, and refetch callback contracts.  
-**Files likely touched:** `MatchScoreEditor/types.ts`, `PlayoffDialogs.tsx`, `usePlayoffEditMatch.ts`, `matchDatabaseUtils.ts`, match update services.  
-**Unsafe patterns addressed:** ad hoc score payload shapes and callback typing gaps.  
-**Contracts/types introduced:** `MatchScoreUpdateInput`, `MatchScoreUpdateResult`, `CompletedMatchResult`, `AsyncVoidCallback` alignment.  
-**Behavior changes:** **none**.  
-**Why this PR is safe:** no persistence rule changes; contract consistency only.  
-**Regression risks:** medium around result/status mapping and editor save flow.  
-**Verification commands:** `npm run typecheck`, `npm run lint`, `npm run test:file -- src/hooks/playoffs/usePlayoffEditMatch.ts`.  
-**Manual smoke tests:** save score, complete match, verify bracket/status refresh.  
-**Rollback plan:** revert PR.  
-**Follow-up PR unlocked:** PR 6.
-
-### PR 6
-**Title:** Badge RPC result typing  
-**Goal:** Type badge RPC response envelopes while preserving badge award behavior and partial failure handling.  
-**Files likely touched:** `src/services/BadgeProcessingService.ts`, optional shared badge types.  
-**Unsafe patterns addressed:** generic `Promise<unknown>` return contracts.  
-**Contracts/types introduced:** `BadgeRpcSuccess`, `BadgeRpcFailure`, `BadgeRpcResult`.  
-**Behavior changes:** **none**.  
-**Why this PR is safe:** RPC names/inputs unchanged; only typed interpretation added.  
-**Regression risks:** medium if parser wrongly rejects valid result variants.  
-**Verification commands:** `npm run typecheck`, `npm run lint`, focused badge service tests if present.  
-**Manual smoke tests:** complete match; confirm badge ops continue independently.  
-**Rollback plan:** revert PR.  
-**Follow-up PR unlocked:** PR 7.
-
-### PR 7
-**Title:** Badge retry queue typing and parser  
-**Goal:** Add discriminated retry operation payload typing and safe localStorage parser strategy.  
-**Files likely touched:** `src/services/FailedBadgeOperationsService.ts`, badge retry types.  
-**Unsafe patterns addressed:** shallow `params` object validation and replay trust.  
-**Contracts/types introduced:** `BadgeRetryStoragePayload`, `BadgeRetryParseResult`, refined discriminated params union.  
-**Behavior changes:** **none** expected for valid payloads; malformed legacy payloads quarantined (safe behavior).  
-**Why this PR is safe:** retry worker remains tolerant; no valid payload drop.  
-**Regression risks:** medium-high if parser over-restricts older but valid payload variants.  
-**Verification commands:** `npm run typecheck`, `npm run lint`, focused retry tests.  
-**Manual smoke tests:** inject valid + malformed queue items and run retry flow.  
-**Rollback plan:** revert PR.  
-**Follow-up PR unlocked:** better production observability and admin queue trust.
-
-### PR 8
-**Title:** Seed mutation rollback/cache typing  
-**Goal:** Type optimistic cache value, rollback snapshots, and batch result interpretation.  
-**Files likely touched:** `TeamSeedService.ts`, `BracketWriteService.ts`, `useOptimisticTeamMutations.ts`, `useTeamSeedMutation.ts`.  
-**Unsafe patterns addressed:** casted seed update return, `error as Error`, rollback assumptions.  
-**Contracts/types introduced:** `SeedMutationContext`, `SeedMutationRollbackSnapshot`, `SeedCacheValue`, tightened `BatchSeedUpdateResult`.  
-**Behavior changes:** **none**.  
-**Why this PR is safe:** preserves optimistic UX; only formalizes rollback truth and result parsing.  
-**Regression risks:** medium around partial success rollback edge-cases.  
-**Verification commands:** `npm run typecheck`, `npm run lint`, focused seed hook tests if present.  
-**Manual smoke tests:** batch reseed, partial failure simulation, rollback confirmation.  
-**Rollback plan:** revert PR.  
-**Follow-up PR unlocked:** predictable seed mutation observability.
-
-### PR 9
-**Title:** Auth/native SDK boundary typing  
-**Goal:** Parse native SDK responses safely and type weak-password/auth-error details without behavior change.  
-**Files likely touched:** `src/utils/nativeAuth.ts`, `src/hooks/auth/useAuthMethods.ts`, `src/services/auth/AuthService.ts`.  
-**Unsafe patterns addressed:** `as unknown as PostgrestError`, native response cast, weak-password cast extraction.  
-**Contracts/types introduced:** `NativeAuthTokenResult`, `AuthWeakPasswordDetails`, `AuthServiceResult`, `AuthBoundaryParseResult`.  
-**Behavior changes:** **none**.  
-**Why this PR is safe:** keeps same auth providers and flows; improves boundary truth.  
-**Regression risks:** medium around provider-specific token fields and error messaging.  
-**Verification commands:** `npm run typecheck`, `npm run lint`.  
-**Manual smoke tests:** web login/signup, native login, weak-password messaging path.  
-**Rollback plan:** revert PR.  
-**Follow-up PR unlocked:** cleaner auth hooks without casts.
-
-### PR 10
-**Title:** Third-party containment cleanup  
-**Goal:** Localize unavoidable brackets-manager/brackets-viewer casts behind named boundary helpers.  
-**Files likely touched:** containment adapter files only (`brackets-viewer` / BM adapter boundaries).  
-**Unsafe patterns addressed:** scattered boundary casts outside containment.  
-**Contracts/types introduced:** named boundary helper wrappers and comments documenting why cast is contained.  
-**Behavior changes:** **none**.  
-**Why this PR is safe:** containment-only pass after app-owned contracts stabilize.  
-**Regression risks:** low-medium if helper accidentally changes mapped shape.  
-**Verification commands:** `npm run typecheck`, `npm run lint`, `npm run build`.  
-**Manual smoke tests:** bracket viewer render + match interaction sanity checks.  
-**Rollback plan:** revert PR.  
-**Follow-up PR unlocked:** future low-risk refactoring of third-party adapters.
+### Behavior that MUST stay identical (PR 2 + PR 3)
+- All nullability preserved (every `_id` and `_seed` and `next_*_match_id` field).
+- `match_type` union stays `'winners' | 'losers' | 'finals'` — do not introduce `'play-in'`, `'consolation'`, or anything else; the algorithm doesn't emit them.
+- `best_of` stays `number` (single-elim uses 3, grand finals use 5). Don't narrow to a union.
+- `status` stays `'pending'` at generation time. Don't widen to the runtime status union.
+- `format` discriminator added to each generator return must not be serialized into the DB insert (it stays in the in-memory generation result; the insert payload is `GeneratedBracketMatch` only).
 
 ---
 
-## Recommended PR order with risk/value/dependency
+## D. Match edit flow — implementation plan (re-scoped)
 
-| PR | Risk | Expected Value | Suggested Review Focus | Merge Independently | Depends On |
+**Major change vs. original plan:** `BracketMatchReadService` is already cleanly typed. The original PR 4 ("type the read service") is therefore done. What remains is removing the four casts that still live in `usePlayoffEditMatch.ts`.
+
+### What to replace and how
+
+1. **Lines 95 and 169 — `} as PlayoffBracket`.** The hook builds a single-match "wrapper bracket" to feed the editor. Today it builds an object literal then casts. The safest fix is:
+   - Define a small helper `buildEditorBracketForMatch(match: PlayoffMatch): PlayoffBracket` next to the hook (not in service), which constructs the bracket from typed inputs.
+   - Helper returns a real `PlayoffBracket` so the cast disappears at the call site without altering the runtime object.
+
+2. **Line 185 — `matchData.match_type as PlayoffMatch['matchType']`.** This is a DB-string-to-union narrowing. The right fix is a small guard:
+   ```ts
+   const parseMatchType = (raw: string): PlayoffMatch['matchType'] => {
+     if (raw === 'winners' || raw === 'losers' || raw === 'finals') return raw;
+     return 'winners'; // existing implicit fallback — keep behavior
+   };
+   ```
+   Live this in `src/services/brackets/read/` next to the existing read types so the read layer owns the parsing, not the hook.
+
+3. **Line 191 — status cast `as 'pending' | 'in_progress' | 'completed'`.** Same pattern: a `parseLegacyMatchStatus` guard with the existing `'pending'` fallback (line 191 already has `|| 'pending'` — preserve that).
+
+4. **Line 272 — `error as Error`.** This is a defensive narrowing inside a catch block. **Leave it.** Replacing it with `error instanceof Error ? error : new Error(String(error))` is a behavior tweak and outside scope.
+
+### What MUST stay identical
+- The legacy UUID vs BM-integer branch detection (line 48 — `Number.isInteger(...)`).
+- The "both opponents required" BYE-guard at lines 67–75.
+- The fallback values (`'pending'` for unknown status, default `'winners'` for unknown match_type).
+- The shape returned to `setEditingMatch` (the `PlayoffMatch` literal).
+
+### PlayoffDialogs `teamsByDivision` (covered here for atomicity)
+The prop is currently `Record<string, any>`. It is consumed only to drive the team-division dialog. The right fix is to narrow to `Record<string, TeamWithDivision[]>` (or whatever the existing array shape is — check the call site in the parent page before deciding). This is a one-line change in `PlayoffDialogs.tsx:21` plus matching the parent's actual data shape. Verify with `npm run typecheck` that no other consumer breaks.
+
+---
+
+## E. Badge RPC result typing — implementation plan
+
+**Re-scope:** retry parser work (originally PR 7) is already done. The only remaining piece is `BadgeProcessingService.ts`.
+
+### What's wrong today
+Every public method returns `Promise<unknown>`. The `unknown` is honest — these are RPC envelopes — but it leaks "I don't care what came back" semantics into every caller. Today nothing inspects the return value. If an RPC starts returning `{ error: '...' }` envelopes, the failure is invisible.
+
+### Planned contracts
+Live in `src/types/badges.ts` (file already exists with `BadgeRpcJsonResult`).
+
+```ts
+export interface BadgeRpcSuccess {
+  ok: true;
+  data: BadgeRpcJsonResult;
+}
+
+export interface BadgeRpcFailure {
+  ok: false;
+  error: string;
+  raw?: unknown;
+}
+
+export type BadgeRpcResult = BadgeRpcSuccess | BadgeRpcFailure;
+```
+
+### What to change
+Convert each method on `BadgeProcessingService` from `Promise<unknown>` to `Promise<BadgeRpcResult>`. Add an internal `wrap()` helper that turns the Supabase RPC `{ data, error }` envelope into a `BadgeRpcResult`. The wrapper preserves current behavior because today callers never inspect the result — adding richer return data doesn't break anyone.
+
+### What MUST stay identical
+- **All RPC names and parameters.** No `.rpc()` call site changes argument values.
+- **The "process each badge independently" semantics** in `matchDatabaseUtils.ts:77–79` — if one badge RPC fails, others must still run. The wrapper returns a failure result instead of throwing, which matches today's "swallow and continue" behavior. Do not switch to throw.
+- **The retry-queueing branch** in `matchDatabaseUtils.ts:162–168`. Today it queues on caught errors. Decide explicitly: do we also queue when `result.ok === false`? **Default: no.** Today the code only queues on thrown errors. If we change that, it's a behavior change and out of scope for this PR. Leave queueing logic alone.
+
+---
+
+## F. Seed mutation flow — implementation plan
+**No work required.** All four files are clean. This section is intentionally short.
+
+If a future PR wants to add cache-key constants and a typed `SeedCacheValue`, it should be filed as a Phase 4 hardening task, not bundled into Phase 3.
+
+---
+
+## G. Auth boundary — implementation plan
+
+### G1. `AuthService.ts:17` — the bridge cast
+This is the only **active misdirection** in the auth boundary. `toPgError` claims its return is a `PostgrestError` and constructs an object that is missing fields. The forgery works today only because `handleDatabaseError` is structurally tolerant.
+
+**Planned fix:** stop pretending. Two options:
+
+- **Option A (preferred):** add a tiny `handleAuthError(error: AuthError, message: string)` to `src/utils/errorHandler` and call it instead. No more bridge cast. No behavior change because the new helper produces the same thrown error class with the same message.
+- **Option B:** keep the bridge but make it a real `PostgrestError`-shaped value by extending the literal to include the missing fields. Less clean than A.
+
+PR 9 should pick A.
+
+### G2. `useAuthMethods.ts:21` — weak-password narrowing
+`data as { weakPassword?: WeakPasswordReasons }` is a one-line narrowing on the Supabase `signUp` response. The cleanest fix is a tiny type guard inline (`'weakPassword' in data ? data.weakPassword : undefined`), no SDK type imports needed.
+
+### G3. `nativeAuth.ts:49` — Capgo response cast
+This is the **right boundary** for a third-party SDK response. The right fix is to keep `response` as `unknown` and call a parser:
+```ts
+const parsed = parseNativeGoogleLoginResult(response); // returns NativeGoogleLoginResult | null
+if (!parsed) {
+  return { success: false, error: new Error('Unrecognized native login response') };
+}
+const idToken = extractIdToken(parsed);
+```
+The parser lives in `src/utils/nativeAuth.ts` alongside `extractIdToken`. Keep the existing tolerant shape that allows either nested `result.idToken` or a flat `idToken` bag.
+
+### What MUST stay identical
+- **Error message text** users see. The new `handleAuthError` must produce the same strings as `toPgError(...) -> handleDatabaseError(...)` does today.
+- **The native login fallback chain** in `extractIdToken` (nested vs flat token bag).
+- **The signUp weak-password surface** — the hook's `signUp` return must still expose `weakPassword`.
+- **No new thrown exceptions.** `nativeAuth` already returns `{ success: false, error }`; preserve that envelope on parse failure.
+
+---
+
+## H. Boundary mapping strategy
+
+For each boundary, the policy is the same: raw input is `unknown` or the library-declared shape; a parser/guard returns an app-owned domain type; failures throw at write-path boundaries and return a result envelope at side-effect boundaries.
+
+| Boundary | Raw input | Parser/guard location | Returns | On failure |
+|---|---|---|---|---|
+| Edge function request body | `unknown` (already JSON-parsed) | inline `CreateBracketPayload` interface + existing imperative validation (lines 449–505) | `CreateBracketPayload` | **throw** (preserves current `400` response path) |
+| Supabase query results | typed by `Database` types | services in `src/services/` | domain types | **throw** via `handleDatabaseError` |
+| Supabase RPC results | `{ data, error }` envelope | RPC-specific wrappers in services | discriminated success/failure | **return failure result**, do not throw (preserve current swallow semantics for badges) |
+| localStorage retry payloads | `string` | `isValidFailedBadgeOperation` (already present) | `FailedBadgeOperation` | **skip + log** (already happens) |
+| React Query cache snapshots | already typed | hooks via `queryClient.getQueryData<T>(...)` | typed | none — read-only |
+| Native auth SDK responses | `unknown` | new `parseNativeGoogleLoginResult` | `NativeGoogleLoginResult \| null` | **return null + caller surfaces "unrecognized"** |
+| brackets-manager DTOs | library-typed | adapter (`SupabaseSqlStorage` + viewer adapter) | library types | adapter throws |
+| Legacy playoff DB rows | typed by `Database` types | `BracketMatchReadService` (already done) | `LegacyPlayoffMatchWithGames` | **throw** via `ensureFound`/`handleDatabaseError` |
+
+---
+
+## I. Recommended small-diff implementation sequence
+
+PRs are sized so each is independently reviewable and rollback-safe.
+
+### Step 1 — PR 2: Create-bracket generator DTO typing
+- **Files:** `supabase/functions/create-bracket/index.ts` + new `supabase/functions/create-bracket/types.ts`.
+- **Casts removed:** 4 (lines 95, 164, 202, 653).
+- **Behavior:** unchanged.
+- **Risk:** medium-high. The risk is mostly *review* risk — reviewers must verify nullable fields stay nullable.
+- **Verification:** `npm run typecheck`, `npm run lint`. **No local Deno** — edge function type-checking happens via Supabase CLI or CI workflow. Confirm in PR which workflow validates edge functions.
+- **Smoke tests:** single-elim 8 teams, single-elim 5 teams (forces byes), double-elim 8 teams. Inspect persisted match graph in Supabase.
+- **Rollback:** revert PR.
+
+### Step 2 — PR 3: Create-bracket insert payload typing
+- **Files:** `supabase/functions/create-bracket/index.ts` (and adds insert payload types to the same `types.ts` from PR 2).
+- **Casts removed:** zero (these aren't casts today, just structurally-typed inserts). The win is **compile-time enforcement that generator output matches table shape.**
+- **Behavior:** unchanged.
+- **Risk:** medium. Field-rename drift across PR 2/3 is the main hazard.
+- **Verification:** same as PR 2.
+- **Smoke tests:** same as PR 2.
+- **Rollback:** revert PR.
+
+### Step 3 — PR 4b: usePlayoffEditMatch hook cast removal
+- **Files:** `src/hooks/playoffs/usePlayoffEditMatch.ts`, plus tiny guard helpers in `src/services/brackets/read/`.
+- **Casts removed:** 3 (lines 95, 169, 185, 191 — last two share a single guard pair).
+- **Behavior:** unchanged. Fallback values preserved (`'pending'` for status, `'winners'` for match_type).
+- **Risk:** medium. Both UUID and BM-integer paths must keep working; pay attention to BYE-guard.
+- **Verification:** `npm run typecheck`, `npm run lint`, `npm run test:file -- src/hooks/playoffs/usePlayoffEditMatch.ts` if any tests cover this hook.
+- **Smoke tests:** open a legacy UUID match for edit; open a BM-integer match for edit; save scores in both.
+- **Rollback:** revert PR.
+
+### Step 4 — PR 5b: PlayoffDialogs teamsByDivision narrowing
+- **Files:** `src/components/playoffs/dialogs/PlayoffDialogs.tsx` and its parent page (one line).
+- **Casts removed:** 1 (`Record<string, any>` → real type).
+- **Behavior:** unchanged.
+- **Risk:** low. Compiler will flag callers that pass a different shape.
+- **Verification:** `npm run typecheck`.
+- **Smoke tests:** open team-division dialog.
+- **Rollback:** revert PR.
+
+### Step 5 — PR 6: Badge RPC result typing
+- **Files:** `src/services/BadgeProcessingService.ts`, `src/types/badges.ts`.
+- **Casts removed:** zero (today's pattern is `Promise<unknown>`, not casts). The win is **eleven Promise<unknown> returns become typed success/failure unions**.
+- **Behavior:** unchanged. Specifically: today nothing inspects RPC returns; after PR 6, nothing **mandatorily** inspects them either. The retry queue continues to trigger only on thrown errors.
+- **Risk:** medium-low. Risk is a future call site assuming `ok === true` and crashing if not — prevent by leaving callers as-is in this PR.
+- **Verification:** `npm run typecheck`, `npm run lint`, `npm test` (focused if any badge tests exist).
+- **Smoke tests:** complete a match → confirm badges process; verify match completion still triggers same number of RPC calls.
+- **Rollback:** revert PR.
+
+### Step 6 — PR 9: Auth boundary typing
+- **Files:** `src/services/auth/AuthService.ts`, `src/utils/errorHandler.ts` (small addition), `src/utils/nativeAuth.ts`, `src/hooks/auth/useAuthMethods.ts`.
+- **Casts removed:** 3 (`AuthService.ts:17`, `nativeAuth.ts:49`, `useAuthMethods.ts:21`).
+- **Behavior:** unchanged. Error message strings preserved.
+- **Risk:** medium. Auth failures are user-facing; wrong string mapping is visible.
+- **Verification:** `npm run typecheck`, `npm run lint`.
+- **Smoke tests:** web login (success + wrong password); web signup (success + weak-password warning); native login if a device/emulator is available; sign out.
+- **Rollback:** revert PR.
+
+### Step 7 — PR 10: Third-party containment (brackets-viewer)
+- **Files:** `src/types/brackets-viewer.d.ts`, possibly a new tiny `src/types/brackets-viewer-adapter.ts` containment helper.
+- **Casts removed:** the eight `any`/`any[]` fields move from a global declaration to a containment helper that the *one* call site uses. The rest of the app type-imports the safer shape.
+- **Behavior:** unchanged. The viewer keeps rendering the same data.
+- **Risk:** low-medium. This is the last PR for a reason — it depends on no app code still inlining `BracketsViewerData`-shaped values without going through the containment helper.
+- **Verification:** `npm run typecheck`, `npm run lint`, `npm run build`.
+- **Smoke tests:** open a playoff bracket page; verify the viewer renders single-elim and double-elim brackets correctly; click a match (calls `onMatchClick`); confirm "ready", "completed", and BYE matches all render.
+- **Rollback:** revert PR.
+
+---
+
+## J. Ranked Phase 3 findings — current state
+
+Ordering reflects **what's left**, not what existed when the plan was first written. Priority = Blast Radius + Runtime Risk + Ease of Replacement.
+
+| Rank | Cluster | Files | Pattern | Bucket | Blast | Risk | Ease | Score | Why this matters | Fix |
+|---:|---|---|---|---|---:|---:|---:|---:|---|---|
+| 1 | Create-bracket generation | `supabase/functions/create-bracket/index.ts:95,164,202,653` | `any[]`, `team1/team2: any`, `bracketResult: any` | Bracket graph generation any | 5 | 5 | 3 | **13** | Persists malformed match graph if drift occurs | PR 2 |
+| 2 | Create-bracket insert payloads | same file, lines 608/637/669 | structural insert objects | Persisted write-path any | 5 | 4 | 3 | **12** | Generator drift not caught at compile time | PR 3 |
+| 3 | Badge RPC envelope opacity | `BadgeProcessingService.ts:6–199` | `Promise<unknown>` × 11 | Badge RPC/result any | 4 | 5 | 4 | **13** | Failed RPCs invisible to callers | PR 6 |
+| 4 | Auth bridge cast | `AuthService.ts:17` | `as unknown as PostgrestError` | Auth SDK boundary any | 3 | 4 | 5 | **12** | Wrong error shape leaks into shared pipeline | PR 9 |
+| 5 | usePlayoffEditMatch casts | `usePlayoffEditMatch.ts:95,169,185,191` | `as PlayoffBracket`, `as <literal-union>` | Match score/update any | 4 | 3 | 4 | **11** | Score editor receives wrong shape if DB drifts | PR 4b |
+| 6 | brackets-viewer global `any[]` | `brackets-viewer.d.ts:12–17,32–33` | `any[]` × 6, `any` × 2 | Third-party containment any | 3 | 2 | 4 | **9** | App-wide weak typing of viewer data | PR 10 |
+| 7 | Native SDK response cast | `nativeAuth.ts:49` | `response as NativeGoogleLoginResult` | Auth SDK boundary any | 2 | 3 | 4 | **9** | Token extraction could break quietly | PR 9 |
+| 8 | Weak-password extraction | `useAuthMethods.ts:21` | `data as { weakPassword?: ... }` | Auth SDK boundary any | 2 | 2 | 5 | **9** | Misses signup hint if Supabase response shape drifts | PR 9 |
+| 9 | PlayoffDialogs teamsByDivision | `PlayoffDialogs.tsx:21` | `Record<string, any>` | Low-value local any | 2 | 2 | 5 | **9** | Weak prop bag; small blast radius | PR 5b |
+
+Rows from the original ranked table that no longer apply have been removed (badge retry parser, seed service cast, optimistic rollback state — all already typed).
+
+---
+
+## K. Regression risks (explicit)
+
+Per-PR risks are listed in section O. Cross-cutting risks to watch:
+
+- **Bracket creation writes malformed match graph.** Mitigation: PR 2/3 are type-only and never touch the generator algorithm. Reviewers must verify nullable fields stay nullable.
+- **Double-elimination loser feed breaks.** Mitigation: `match_type` literal union must include `'losers'` and `'finals'`. Smoke-test a double-elim bracket.
+- **BYE handling changes accidentally.** Mitigation: `team1_id`/`team2_id`/`team1_seed`/`team2_seed` remain nullable. Smoke-test a 5-team single-elim bracket.
+- **Playoff match score saves but badge side effects fail silently.** Risk **decreases** with PR 6 because the return becomes inspectable. We still don't change the swallow-and-continue behavior.
+- **Failed badge retries replay wrong payloads.** PR 7 is already shipped; nothing in Phase 3 touches it.
+- **Old retry queue payloads crash parsing.** Same — PR 7 done; quarantine path is in place.
+- **Optimistic seed update displays success but rollback wrong.** Phase 3 doesn't touch seed mutations; behavior is preserved.
+- **Legacy UUID playoff match edit breaks.** PR 4b risk. Mitigation: keep `Number.isInteger(...)` branch detection unchanged; smoke-test legacy match.
+- **BM-integer match edit breaks.** Same — keep the BM branch intact; smoke-test.
+- **Match status/result mapping narrows incorrectly.** Mitigation: status/match-type guards in PR 4b preserve current `|| 'pending'` and `|| 'winners'` fallbacks.
+- **Native login token extraction breaks.** Mitigation: PR 9 keeps `extractIdToken` tolerant of both nested and flat token bags.
+- **Weak-password details disappear.** Mitigation: keep the `weakPassword` field surfaced on `signUp` return.
+- **Auth errors swallowed or mislabeled.** Mitigation: new `handleAuthError` must produce identical message text to current `toPgError + handleDatabaseError`.
+- **Brackets viewer rendering changes.** Mitigation: PR 10 is last; only changes type declaration, not viewer call site.
+
+---
+
+## L. Verification plan
+
+### Scripts actually available (verified in `package.json`)
+- `npm run dev`
+- `npm run build`
+- `npm run build:dev`
+- `npm run lint`
+- `npm run lint:fix`
+- `npm run preview`
+- `npm test`
+- `npm run test:watch`
+- `npm run typecheck` (= `tsc --noEmit`)
+- `npm run test:coverage` and variants
+
+### Tools NOT available locally
+- **`deno` is not installed in this repo or its CI image.** Edge function type-checking happens through the Supabase CLI workflow (if configured) or via GitHub Actions. Do not assume `deno check supabase/functions/create-bracket/index.ts` works on a contributor's machine.
+
+### Minimum verification matrix for each Phase 3 PR
+1. `npm run typecheck`
+2. `npm run lint`
+3. Focused tests via `npm run test:file -- <path>` when present
+4. `npm run build` for PR 10 (third-party containment touches type declarations consumed across the app)
+5. For PR 2 / PR 3: rely on the Supabase edge-function CI workflow to validate Deno-side types
+
+### Manual smoke tests (required for write-path PRs)
+- Create a single-elim bracket (8 teams).
+- Create a single-elim bracket with byes (5–7 teams).
+- Create a double-elim bracket (8 teams).
+- Confirm BYE matches present with null team IDs.
+- Confirm loser bracket feeds reference correct winners-bracket sources.
+- Confirm grand finals R1 and R2 (reset match) both inserted.
+- Edit a legacy UUID playoff match score.
+- Edit a brackets-manager (integer) match score.
+- Complete a match → confirm badge RPCs fire (network panel) → confirm UI updates.
+- Open team-division dialog → confirm display unchanged.
+- Web login (success + wrong password).
+- Web signup (success + weak-password warning).
+- Native login if device/emulator available.
+- Bracket viewer renders single-elim, double-elim, and a match with BYEs.
+- Click a match in the viewer → handler fires with correct ID.
+
+---
+
+## M. Safe-to-ignore / contain (Phase 3 scope)
+
+These can stay as they are. Document but do not aggressively fix.
+
+1. **`SupabaseSqlStorage.ts:39` — `p as DataTypes['participant'] & { position?: number }`.** Canonical "library DTO with an app-specific optional field" pattern. Acceptable. Leave it; no helper extraction needed.
+2. **`as const` literal narrowings throughout `matchDatabaseUtils.ts` and `usePlayoffMatchUpdate.ts`.** These are tightening, not loosening — they are *safer* than not having them.
+3. **Storybook shims.** Out of scope.
+4. **Icon registry broad component typing.** Out of scope.
+5. **Recharts payload casts (already contained by Phase 2).** Do not revisit.
+6. **Test-only `any` outside the business-critical flows.** Out of scope.
+7. **`usePlayoffEditMatch.ts:272 — error as Error` in catch.** Defensive narrowing; behavior change to replace.
+
+For each: document in PR comment, do not refactor.
+
+---
+
+## N. Non-goals
+
+- No source implementation outside the explicit PR scopes above.
+- No strict mode enablement.
+- No broad eslint unsafe-any rollout.
+- No database migrations, schema changes, or RLS changes.
+- No bracket algorithm rewrite, loser-feed change, BYE behavior change, grand-finals reset change.
+- No badge award logic change.
+- No badge retry parser rework (already done).
+- No seed mutation behavior change (already typed).
+- No optimistic rollback rewrite (already typed).
+- No auth behavior change.
+- No mass UI cleanup.
+- No third-party type purity campaign.
+
+---
+
+## O. Final Phase 3 roadmap
+
+### 1) Top remaining Phase 3 targets (descending priority on current state)
+1. `supabase/functions/create-bracket/index.ts` — generator `any` removal (PR 2).
+2. `src/services/BadgeProcessingService.ts` — typed RPC result unions (PR 6).
+3. `supabase/functions/create-bracket/index.ts` — typed insert payloads (PR 3).
+4. `src/services/auth/AuthService.ts` + auth boundary trio (PR 9).
+5. `src/hooks/playoffs/usePlayoffEditMatch.ts` — hook cast removal (PR 4b).
+6. `src/types/brackets-viewer.d.ts` — third-party containment (PR 10).
+7. `src/components/playoffs/dialogs/PlayoffDialogs.tsx` — `teamsByDivision` narrowing (PR 5b).
+
+Rows 8–10 from the original Top 10 have been retired: badge retry parser, seed service, optimistic rollback — all already clean.
+
+### 2) Top 5 safest quick wins
+1. PR 5b — `teamsByDivision` narrowing (one line + one parent file).
+2. PR 9 G2 — `weakPassword` narrowing in `useAuthMethods.ts:21` (one inline guard).
+3. PR 9 G1 — replace `toPgError` bridge with a proper `handleAuthError` helper.
+4. PR 4b status/match-type guards.
+5. PR 6 wrapping `Promise<unknown>` → `BadgeRpcResult` without changing call sites.
+
+### 3) Top 5 dangerous areas
+1. Create-bracket generator algorithm — touching generator code while ostensibly only typing it is the #1 way to break Phase 3.
+2. Double-elim loser-feed wiring — `match_type` union must include `'losers'` and `'finals'`.
+3. Badge retry / processing partial-failure semantics — must preserve "process each badge independently, swallow individual errors."
+4. Legacy UUID vs BM-integer branch detection in `usePlayoffEditMatch.ts` — a wrong narrowing on `matchId` parsing breaks one of the two edit paths.
+5. Auth error message text — users see these strings; the new helper must produce identical output.
+
+### 4) Suggested implementation order — 1 week
+- Day 1: PR 5b (teamsByDivision) + PR 9 G2 (weakPassword). Two tiny low-risk PRs to warm up.
+- Day 2: PR 9 G1 + G3 (auth bridge + native parser).
+- Day 3: PR 4b (usePlayoffEditMatch casts).
+- Day 4: PR 6 (badge RPC result typing).
+- Day 5: PR 2 (create-bracket generator DTOs) — biggest one, allow a full day.
+
+### 5) Suggested implementation order — 2 weeks
+- Week 1 above.
+- Week 2:
+  - Day 6: PR 3 (create-bracket insert payloads).
+  - Day 7: PR 10 (brackets-viewer containment).
+  - Days 8–10: review backlog, regression smoke tests, document any deferred items as Phase 4 candidates.
+
+### 6) Prerequisites from Phase 1/2 that must be complete before implementation
+- Phase 1 read-model types (`LegacyPlayoffMatchWithGames`, `BracketManagerMatchWithStage`, `BracketMatchReadService` typed returns) — **done.**
+- Phase 2 shared abstractions (`TeamSeedUpdateInput/Result`, `BulkTeamSeedUpdateResult`, badge retry discriminated union, recharts containment, error utilities) — **done.**
+- `handleDatabaseError` and `ensureFound` utilities — **stable.**
+- `src/types/phase3.ts` re-export hub from PR 1 — **in place.**
+
+---
+
+## P. Safe PR breakdown for Phase 3 implementation (current state)
+
+Rules: one purpose per PR; independently reviewable; independently rollback-safe; no mixing of type-contract work with behavior changes; no DB/RLS changes.
+
+### PR 2 — Create-bracket generator DTO typing
+- **Status:** outstanding.
+- **Files:** `supabase/functions/create-bracket/index.ts`; new `supabase/functions/create-bracket/types.ts`.
+- **Casts removed:** lines 95, 164, 202, 653.
+- **Contracts introduced:** `BracketFormat`, `SeedTeam`, `SeedingPair`, `GeneratedMatchType`, `GeneratedMatchStatus`, `GeneratedBracketMatch`, `SingleElimGenerationResult`, `DoubleElimGenerationResult`, `GeneratedBracketResult`.
+- **Behavior changes:** none.
+- **Why safe:** algorithm untouched; emitted match objects field-for-field identical; nullable fields preserved.
+- **Regression risks:** see §K row 1–3.
+- **Verification:** `npm run typecheck`, `npm run lint`, Supabase edge-function CI workflow.
+- **Smoke tests:** single-elim, single-elim with byes, double-elim.
+- **Rollback:** revert.
+- **Risk:** Medium-High. **Value:** High. **Independent:** Yes. **Depends on:** PR 1 (done).
+
+### PR 3 — Create-bracket insert payload typing
+- **Status:** outstanding. Depends on PR 2.
+- **Files:** `supabase/functions/create-bracket/index.ts`; extends `supabase/functions/create-bracket/types.ts`.
+- **Contracts introduced:** `BracketInsertPayload`, `ParticipantInsertPayload`, `PlayoffMatchInsertPayload`.
+- **Behavior changes:** none.
+- **Why safe:** column lists unchanged; values unchanged.
+- **Regression risks:** field-rename drift between PR 2 and PR 3.
+- **Verification:** `npm run typecheck`, edge-fn CI.
+- **Smoke tests:** persisted match graph integrity after bracket creation.
+- **Rollback:** revert.
+- **Risk:** Medium. **Value:** High. **Independent:** No (depends on PR 2).
+
+### PR 4b — usePlayoffEditMatch hook cast removal
+- **Status:** outstanding (small remainder of original PR 4).
+- **Files:** `src/hooks/playoffs/usePlayoffEditMatch.ts`; small guard helpers in `src/services/brackets/read/`.
+- **Casts removed:** lines 95, 169, 185, 191.
+- **Contracts introduced:** `parseMatchType`, `parseLegacyMatchStatus`, `buildEditorBracketForMatch`.
+- **Behavior changes:** none. Fallbacks preserved.
+- **Why safe:** wraps existing inline expressions; legacy/BM branch detection untouched.
+- **Regression risks:** see §K legacy/BM edit rows.
+- **Verification:** `npm run typecheck`, `npm run lint`, focused hook test.
+- **Smoke tests:** edit a legacy match; edit a BM match.
+- **Rollback:** revert.
+- **Risk:** Medium. **Value:** Medium. **Independent:** Yes. **Depends on:** PR 1 (done).
+
+### PR 5b — PlayoffDialogs `teamsByDivision` narrowing
+- **Status:** outstanding (small remainder of original PR 5).
+- **Files:** `src/components/playoffs/dialogs/PlayoffDialogs.tsx` + parent page.
+- **Casts removed:** line 21 `Record<string, any>`.
+- **Behavior changes:** none.
+- **Why safe:** TypeScript catches every consumer that passes the wrong shape.
+- **Verification:** `npm run typecheck`.
+- **Smoke tests:** team-division dialog open/close.
+- **Rollback:** revert.
+- **Risk:** Low. **Value:** Low-Medium. **Independent:** Yes.
+
+### PR 6 — Badge RPC result typing
+- **Status:** outstanding.
+- **Files:** `src/services/BadgeProcessingService.ts`, `src/types/badges.ts`.
+- **Contracts introduced:** `BadgeRpcSuccess`, `BadgeRpcFailure`, `BadgeRpcResult`, internal `wrapRpc` helper.
+- **Behavior changes:** none. Callers do not start to inspect results in this PR.
+- **Why safe:** swallow-and-continue semantics preserved; retry queueing unchanged.
+- **Regression risks:** see §K badge side-effect rows.
+- **Verification:** `npm run typecheck`, `npm run lint`, focused badge tests if present.
+- **Smoke tests:** complete a match; verify badge RPCs fire and UI updates.
+- **Rollback:** revert.
+- **Risk:** Medium. **Value:** High. **Independent:** Yes.
+
+### PR 9 — Auth/native SDK boundary typing
+- **Status:** outstanding.
+- **Files:** `src/services/auth/AuthService.ts`, `src/utils/errorHandler.ts` (new helper), `src/utils/nativeAuth.ts`, `src/hooks/auth/useAuthMethods.ts`.
+- **Casts removed:** `AuthService.ts:17`, `nativeAuth.ts:49`, `useAuthMethods.ts:21`.
+- **Contracts introduced:** `handleAuthError` helper; `parseNativeGoogleLoginResult` guard.
+- **Behavior changes:** none. Error message text preserved by behavioral test of `handleAuthError` against `toPgError + handleDatabaseError`.
+- **Regression risks:** see §K auth rows.
+- **Verification:** `npm run typecheck`, `npm run lint`.
+- **Smoke tests:** web login success + fail; web signup success + weak-password; native login if available; sign out.
+- **Rollback:** revert.
+- **Risk:** Medium. **Value:** Medium-High. **Independent:** Yes.
+
+### PR 10 — Third-party brackets-viewer containment
+- **Status:** outstanding. Last in sequence.
+- **Files:** `src/types/brackets-viewer.d.ts`; possibly a small adapter helper file.
+- **Casts removed/contained:** `any[]` × 6 and `any` × 2 in the global declaration.
+- **Contracts introduced:** containment helper exposing safer shapes to the rest of the app.
+- **Behavior changes:** none.
+- **Why safe:** viewer call site unchanged; only the type declaration narrows.
+- **Regression risks:** see §K viewer row.
+- **Verification:** `npm run typecheck`, `npm run lint`, `npm run build`.
+- **Smoke tests:** open playoff bracket; render single-elim, double-elim, BYE; click match.
+- **Rollback:** revert.
+- **Risk:** Low-Medium. **Value:** Medium. **Independent:** Yes.
+
+### PR ordering with risk / value / dependency
+
+| PR | Risk | Value | Review focus | Independent? | Depends on |
 |---:|---|---|---|---|---|
-| 1 | Low | High | prerequisite correctness and scope lock | Yes | None |
-| 2 | High | High | bracket generation shape parity and nullability | Yes | 1 |
-| 3 | Medium | High | insert payload field parity and null handling | Yes | 2 |
-| 4 | Medium | High | legacy vs BM domain split correctness | Yes | 1 |
-| 5 | Medium | High | score update contracts and callback paths | Yes | 4 |
-| 6 | Medium | High | RPC result unions without behavior drift | Yes | 1 |
-| 7 | Medium | High | retry parser tolerance + quarantine behavior | Yes | 6 |
-| 8 | Medium | High | optimistic rollback truth and batch partial failures | Yes | 1 |
-| 9 | Medium | Medium-High | native token parse + auth error/weak-password details | Yes | 1 |
-| 10 | Low-Medium | Medium | strict boundary containment only | Yes | 2,3,4,5,6,7,8,9 |
+| 5b | Low | Low-Medium | Prop callers match new shape | Yes | — |
+| 9 | Medium | Medium-High | Error message parity | Yes | — |
+| 4b | Medium | Medium | Legacy vs BM branch parity, fallbacks | Yes | — |
+| 6 | Medium | High | Swallow-and-continue semantics | Yes | — |
+| 2 | Medium-High | High | Nullable preservation, literal unions | Yes | — |
+| 3 | Medium | High | Field parity with PR 2 | No | PR 2 |
+| 10 | Low-Medium | Medium | Viewer render parity | Yes | (does not block others) |
+
+**Recommended landing order:** 5b → 9 → 4b → 6 → 2 → 3 → 10. Two trivial PRs first to validate the verification pipeline; the riskier edge function changes ride on a warmed-up review process.
 
 **The safest implementation approach is small PRs in this order, not one large unsafe typing sweep.**
 
 ---
 
-## Final required output
+## Q. Behavior preservation playbook (per PR)
 
-### 1. Top 10 Phase 3 targets in descending order
-1. Create-bracket generation `any` removal.
-2. Create-bracket insert payload typing.
-3. Match edit read-model type split (legacy UUID vs BM integer).
-4. Match score update input/result contracts.
-5. Badge RPC result contracts.
-6. Badge retry parser discriminated unions + quarantine.
-7. Seed batch/single mutation result typing.
-8. Optimistic rollback/cache snapshot typing.
-9. Auth service boundary error/result typing.
-10. Third-party cast containment cleanup.
+Concrete invariants reviewers must check before merging each PR.
 
-### 2. Top 5 safest quick wins
-1. `PlayoffDialogs` `teamsByDivision` contract tightening.
-2. Auth error bridge cast removal.
-3. Retry params operation-specific validation.
-4. Score update contract aliases for hook/editor.
-5. Team seed service cast removal.
+### PR 2 — Generator typing
+- [ ] `team1_id`, `team2_id`, `team1_seed`, `team2_seed`, `next_win_match_id`, `next_lose_match_id` remain `... | null`.
+- [ ] `match_type` literal union is exactly `'winners' | 'losers' | 'finals'` — no additions, no removals.
+- [ ] `best_of` stays `number`.
+- [ ] `status` is `'pending'` at generation time.
+- [ ] No new logic branches added — only annotations.
+- [ ] Manual diff of the emitted `matches` array vs pre-PR for a single-elim 8-team run shows zero differences.
 
-### 3. Top 5 dangerous areas where bad types could corrupt data or hide real bugs
-1. Edge bracket generation and graph wiring.
-2. Double-elim loser feed and grand finals reset path.
-3. Badge retry queue replay with malformed payloads.
-4. Optimistic seed rollback cache desync.
-5. Native token extraction and auth error labeling.
+### PR 3 — Insert payloads
+- [ ] Insert payload type fields match `playoff_matches` columns exactly (no rename, no addition, no drop).
+- [ ] `participantRecords` shape matches `participants` table.
+- [ ] `brackets` insert column list (line 617 select) unchanged.
+- [ ] No `select('*')` introduced.
 
-### 4. Suggested implementation order for 1 week
-PRs 1–5.
+### PR 4b — Hook cast removal
+- [ ] `Number.isInteger(...)` branch (line 48) unchanged.
+- [ ] BYE-guard `if (!opponent1_id || !opponent2_id)` (lines 67–75) unchanged.
+- [ ] Status fallback `|| 'pending'` preserved.
+- [ ] Match-type fallback `|| 'winners'` preserved.
+- [ ] `setEditingMatch(...)` argument shape unchanged.
 
-### 5. Suggested implementation order for 2 weeks
-PRs 1–10 in recommended sequence.
+### PR 5b — teamsByDivision
+- [ ] Dialog open/close behavior unchanged.
+- [ ] Parent page passes the new shape (compiler-enforced).
 
-### 6. Prerequisites from Phase 1/2 that must be complete before implementation
-- Stable shared playoff domain contracts.
-- Stable seed input/result contracts.
-- Stable error utility patterns.
-- Stable third-party containment boundaries.
+### PR 6 — Badge RPC envelope
+- [ ] `matchDatabaseUtils.ts` does NOT change call sites to inspect `result.ok` (out of scope).
+- [ ] Retry queueing branch unchanged.
+- [ ] Each individual badge RPC continues to run independently of others.
 
-### 7. Safe PR breakdown for Phase 3 implementation
-See “Safe PR breakdown for Phase 3 implementation” section above (PR 1–PR 10).
+### PR 9 — Auth boundary
+- [ ] `handleAuthError` produces identical thrown-error class and message text as today's `toPgError → handleDatabaseError` chain (verify by unit comparison in PR description).
+- [ ] `extractIdToken` still accepts nested `result.idToken` and flat `idToken`.
+- [ ] `signUp` return still exposes `weakPassword`.
+- [ ] `nativeAuth` returns `{ success: false, error }` on parse failure (same envelope as today).
+
+### PR 10 — Viewer containment
+- [ ] Viewer `render()` call site unchanged.
+- [ ] `setParticipantImages` call site unchanged.
+- [ ] `onMatchClick` receives the same shape it does today.
+- [ ] `customRoundName` receives the same shape it does today.
+
+---
 
 **Ready for implementation only after this Phase 3 plan and PR breakdown are reviewed.**
