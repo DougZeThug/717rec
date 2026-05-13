@@ -203,13 +203,17 @@ export class SupabaseSqlStorage implements CrudInterface {
         typeof filter === 'number' || typeof filter === 'string'
           ? filter
           : (filter as { id?: Id }).id;
-      const { data: currentMatch } = await client
+      const { data: currentMatch, error: fetchError } = await client
         .from('match')
         .select(
           'id, opponent1_id, opponent2_id, opponent1_result, opponent2_result, round_id, group_id, number, status'
         )
         .eq('id', matchId as number)
-        .single();
+        .maybeSingle();
+
+      if (fetchError) {
+        handleDatabaseError(fetchError, 'Failed to fetch match for defensive merge');
+      }
 
       // Apply defensive merge
       transformedValues = mergeOpponentSlots(
