@@ -147,6 +147,7 @@ export function generateScheduleGreedyWithTracking(
       tonightPairs,
       newPairs,
       teamMatchCounts,
+      forbiddenPairs,
       maxTierGap,
       byeStrategy,
       relaxationLevel,

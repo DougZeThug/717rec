@@ -19,6 +19,7 @@ export interface OddScheduleArgs {
   tonightPairs: Set<string>;
   newPairs: Set<string>;
   teamMatchCounts: Map<string, number>;
+  forbiddenPairs?: Set<string> | undefined;
   maxTierGap: number;
   byeStrategy: ByeStrategy;
   relaxationLevel: RelaxationLevel;
@@ -37,12 +38,13 @@ export function scheduleOdd(args: OddScheduleArgs): ScheduledMatch[] {
     tonightPairs,
     newPairs,
     teamMatchCounts,
+    forbiddenPairs,
     maxTierGap,
     byeStrategy,
-    relaxationLevel,
     perTeamRematchAllowed,
     diagnostics,
   } = args;
+  let { relaxationLevel } = args;
 
   // ============ ODD TEAM COUNT ============
   scheduleLog(
@@ -50,11 +52,11 @@ export function scheduleOdd(args: OddScheduleArgs): ScheduledMatch[] {
   );
 
   // Select Bye1 for S1
-  const bye1 = pickBye(sortedTeams, byeStrategy, playedSet, maxTierGap, new Set(), relaxationLevel);
+  let bye1 = pickBye(sortedTeams, byeStrategy, playedSet, maxTierGap, new Set(), relaxationLevel);
   scheduleLog(`Selected Bye1: ${bye1.name} (sits out ${slot1})`);
 
   // Generate S1 pairings (excluding Bye1)
-  const s1Matches = generateSlotPairings(
+  let s1Matches = generateSlotPairings(
     sortedTeams,
     slot1,
     playedSet,
@@ -112,7 +114,7 @@ export function scheduleOdd(args: OddScheduleArgs): ScheduledMatch[] {
   }
 
   // Generate S2 pairings (excluding Bye2)
-  const s2Matches = generateSlotPairings(
+  let s2Matches = generateSlotPairings(
     sortedTeams,
     slot2,
     playedSet,
@@ -134,8 +136,107 @@ export function scheduleOdd(args: OddScheduleArgs): ScheduledMatch[] {
     maxTierGap
   );
 
-  // Check if we need repair pass for odd teams
   const expectedMatchesPerSlot = Math.floor((teams.length - 1) / 2);
+
+  // Progressive relaxation retry: regenerate slot pairings (and re-pick byes)
+  // at increasing relaxation levels when either slot is short. Mirrors
+  // scheduleEven's retry loop so the orchestrator pre-check doesn't strand
+  // odd-team schedules at a too-strict level.
+  while (
+    (s1Matches.length < expectedMatchesPerSlot || s2Matches.length < expectedMatchesPerSlot) &&
+    relaxationLevel < 3
+  ) {
+    relaxationLevel = (relaxationLevel + 1) as RelaxationLevel;
+    diagnostics.relaxationApplied = relaxationLevel;
+    if (relaxationLevel === 1) diagnostics.constraintsRelaxed.push('tier_constraints');
+    if (relaxationLevel === 2) diagnostics.constraintsRelaxed.push('season_rematches');
+
+    scheduleLog(
+      `Odd: only ${s1Matches.length}+${s2Matches.length}/${expectedMatchesPerSlot * 2} slot matches. ` +
+        `Retrying with relaxation level ${relaxationLevel}`
+    );
+
+    // Reset shared state, re-seeding tonightPairs from forbiddenPairs
+    tonightPairs.clear();
+    forbiddenPairs?.forEach((p) => tonightPairs.add(p));
+    newPairs.clear();
+    teamMatchCounts.clear();
+
+    // Re-pick byes at the new relaxation level (bye selection itself depends on it)
+    bye1 = pickBye(sortedTeams, byeStrategy, playedSet, maxTierGap, new Set(), relaxationLevel);
+
+    bye2 = null;
+    const excludeRetry = new Set([bye1.id]);
+    for (let attempt = 0; attempt < sortedTeams.length && !bye2; attempt++) {
+      const candidate = pickBye(
+        sortedTeams,
+        byeStrategy,
+        playedSet,
+        maxTierGap,
+        excludeRetry,
+        relaxationLevel
+      );
+      if (canPlay(bye1, candidate, playedSet, tonightPairs, maxTierGap, relaxationLevel)) {
+        bye2 = candidate;
+      } else {
+        excludeRetry.add(candidate.id);
+      }
+    }
+    if (!bye2) {
+      bye2 =
+        sortedTeams.find(
+          (t) => t.id !== bye1.id && canPlay(bye1, t, playedSet, tonightPairs, maxTierGap, 3)
+        ) ||
+        sortedTeams.find((t) => t.id !== bye1.id) ||
+        sortedTeams[0];
+    }
+
+    s1Matches = generateSlotPairings(
+      sortedTeams,
+      slot1,
+      playedSet,
+      tonightPairs,
+      teamMatchCounts,
+      maxTierGap,
+      bye1.id,
+      newPairs,
+      relaxationLevel,
+      perTeamRematchAllowed
+    );
+    diagnostics.rematchesRepaired += rematchRepairPass(
+      s1Matches,
+      slot1,
+      sortedTeams,
+      playedSet,
+      tonightPairs,
+      newPairs,
+      maxTierGap
+    );
+
+    s2Matches = generateSlotPairings(
+      sortedTeams,
+      slot2,
+      playedSet,
+      tonightPairs,
+      teamMatchCounts,
+      maxTierGap,
+      bye2.id,
+      newPairs,
+      relaxationLevel,
+      perTeamRematchAllowed
+    );
+    diagnostics.rematchesRepaired += rematchRepairPass(
+      s2Matches,
+      slot2,
+      sortedTeams,
+      playedSet,
+      tonightPairs,
+      newPairs,
+      maxTierGap
+    );
+  }
+
+  // Final safety net: repair pass for any still-unmatched teams
   if (s1Matches.length < expectedMatchesPerSlot || s2Matches.length < expectedMatchesPerSlot) {
     diagnostics.repairAttempted = true;
 
