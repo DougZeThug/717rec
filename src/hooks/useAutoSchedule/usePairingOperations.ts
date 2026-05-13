@@ -344,7 +344,7 @@ export const usePairingOperations = (
         return null;
       }
     },
-    [toast, qualityMetrics, teamBlockMap, generatorBlockMap, allTeams]
+    [toast, qualityMetrics, teamBlockMap, generatorBlockMap, allTeams, generationDate]
   );
 
   return {
