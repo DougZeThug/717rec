@@ -105,10 +105,15 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
 
       const selectedTeams = teams
         .filter((team) => data.teams.includes(team.id))
-        .map((team) => ({
-          ...team,
-          seed: data.teamSeeds?.[team.id] ?? team.seed ?? 0,
-        }));
+        .map((team) => {
+          const manualSeed = data.teamSeeds?.[team.id];
+          // Only honor a real, user-provided seed. team.seed from the DB is
+          // intentionally ignored so bracket-creator can rank by power_score
+          // when no manual override exists.
+          const seed =
+            typeof manualSeed === 'number' && manualSeed > 0 ? manualSeed : undefined;
+          return { ...team, seed };
+        });
 
       if (selectedTeams.length < 2) {
         const error = 'At least 2 teams are required for a bracket';
@@ -136,10 +141,11 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       const bracket = await createBracketMutation.mutateAsync({
         name: data.title,
         format: internalFormat,
-        teams: selectedTeams.map((team, index) => ({
+        teams: selectedTeams.map((team) => ({
           id: team.id,
           name: team.name,
-          seed: team.seed || index + 1,
+          // undefined when no manual override → bracket-creator sorts by power_score
+          seed: team.seed,
         })),
         divisionId: data.divisionId,
         grandFinalType: data.grandFinalType || 'simple',
