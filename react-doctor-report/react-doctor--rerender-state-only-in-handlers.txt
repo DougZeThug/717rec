@@ -1,0 +1,20 @@
+Rule: react-doctor/rerender-state-only-in-handlers
+Severity: warning
+Category: Performance
+Count: 10
+
+useState "retries" is updated but never read in the component's return — use useRef so updates don't trigger re-renders
+
+Suggestion: Replace useState with useRef when the value is only mutated and never read in render — `ref.current = ...` updates without re-rendering the component
+
+Files:
+  src/pages/ProfileSetup.tsx:24
+  src/pages/Contact.tsx:51
+  src/components/teams/TeamDetailsStickyNav.tsx:48
+  src/components/auth/LoginRequired.tsx:21
+  src/components/auth/ProtectedAdminRoute.tsx:17
+  src/components/admin/hero-cards/HeroCardsTab.tsx:15
+  src/components/history/editing/AddDivisionButton.tsx:17
+  src/components/home/BlindDrawSignupForm.tsx:28
+  src/components/ui/theme/ThemeToggle.tsx:24
+  src/components/playoffs/PlayoffPageContent.tsx:34

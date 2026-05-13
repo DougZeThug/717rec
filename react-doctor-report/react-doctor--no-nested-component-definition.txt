@@ -1,0 +1,16 @@
+Rule: react-doctor/no-nested-component-definition
+Severity: error
+Category: Correctness
+Count: 6
+
+Component "SortButton" defined inside "HeadToHeadRecords" — creates new instance every render, destroying state
+
+Suggestion: Move to a separate file or to module scope above the parent component
+
+Files:
+  src/components/stats/HeadToHeadRecords.tsx:89
+  src/components/stats/WinLossBarChart.tsx:33
+  src/components/stats/PowerScoreChart.tsx:53
+  src/components/stats/desktop/DivisionRankingsTable.tsx:53
+  src/components/teams/MatchCard.tsx:39
+  src/components/home/MatchCard.tsx:19

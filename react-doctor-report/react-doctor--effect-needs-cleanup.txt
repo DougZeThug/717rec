@@ -1,0 +1,16 @@
+Rule: react-doctor/effect-needs-cleanup
+Severity: error
+Category: State & Effects
+Count: 6
+
+useEffect schedules `setTimeout(...)` but never returns a cleanup — leaks the registration on every re-run and on unmount. Return a cleanup function that calls clearTimeout(...)
+
+Suggestion: Return a cleanup function that releases the subscription / timer: `return () => target.removeEventListener(name, handler)` for listeners, `return () => clearInterval(id)` / `clearTimeout(id)` for timers, or `return unsubscribe` if the subscribe call already returned one
+
+Files:
+  src/components/playoffs/viewer/useBracketsViewerRenderer.ts:100
+  src/hooks/message-board/useMessageRealtime.ts:27
+  src/hooks/message-board/useMessageReactions.ts:62
+  src/components/stats/StatsCharts.tsx:46
+  src/hooks/matches/useMatchComments.ts:38
+  src/hooks/matches/useMatchReactions.ts:70

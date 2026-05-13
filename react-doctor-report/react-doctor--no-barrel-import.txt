@@ -1,0 +1,14 @@
+Rule: react-doctor/no-barrel-import
+Severity: warning
+Category: Bundle Size
+Count: 4
+
+Import from barrel/index file — import directly from the source module for better tree-shaking
+
+Suggestion: Import from the direct path: `import { Button } from './components/Button'` instead of `./components`
+
+Files:
+  src/utils/autoSchedule/dualBlock/__tests__/index.test.ts:3
+  src/types/autoSchedule.ts:1
+  src/hooks/auth/__tests__/useAuth.test.ts:7
+  src/types/match.ts:3

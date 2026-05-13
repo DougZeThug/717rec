@@ -1,0 +1,21 @@
+Rule: react-doctor/no-effect-event-handler
+Severity: warning
+Category: State & Effects
+Count: 11
+
+useEffect simulating an event handler — move logic to an actual event handler instead
+
+Suggestion: Move the conditional logic into onClick, onChange, or onSubmit handlers directly
+
+Files:
+  src/components/playoffs/admin/EditMatchParticipantsDialog.tsx:51
+  src/components/hero/ParticipationHeroCard.tsx:46
+  src/components/playoffs/BracketView.tsx:101
+  src/components/history/DivisionPanel.tsx:41
+  src/components/admin/blind-draw/BlindDrawSignupsTab.tsx:39
+  src/components/admin/seasons/SeasonArchivalDialog.tsx:136
+  src/components/ui/form.tsx:108
+  src/components/ui/form.tsx:155
+  src/components/playoffs/match-score-editor/useMatchEditorState.ts:34
+  src/components/playoffs/celebration/ChampionDisplay.tsx:28
+  src/components/message-board/MessageItem.tsx:91

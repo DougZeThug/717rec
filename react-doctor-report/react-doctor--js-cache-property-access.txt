@@ -1,0 +1,15 @@
+Rule: react-doctor/js-cache-property-access
+Severity: warning
+Category: Performance
+Count: 5
+
+e.team1.id is read 5 times inside this loop — hoist into a const at the top of the loop body
+
+Suggestion: Hoist the deep member access into a const at the top of the loop body: `const { x, y } = obj.deeply.nested`
+
+Files:
+  src/utils/autoSchedule/blossom/repair.ts:147
+  src/utils/autoSchedule/blossom/repair.ts:148
+  src/utils/autoSchedule/blossom/repair.ts:184
+  src/hooks/scheduling/utils/standardPairing.ts:65
+  src/hooks/scheduling/utils/standardPairing.ts:65

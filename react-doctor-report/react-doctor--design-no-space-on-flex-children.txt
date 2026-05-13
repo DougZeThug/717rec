@@ -1,0 +1,68 @@
+Rule: react-doctor/design-no-space-on-flex-children
+Severity: warning
+Category: Architecture
+Count: 58
+
+space-x-2 on a flex/grid parent — use gap-x-2 instead. Per-sibling margins phantom-gap on conditional render and don't mirror in RTL
+
+Suggestion: Use `gap-*` on the flex/grid parent. `space-x-*` / `space-y-*` produce phantom gaps when a sibling is conditionally rendered, lose vertical spacing on wrapped lines, and don't mirror in RTL
+
+Files:
+  src/components/playoffs/form/bracket-teams/components/SeedOverrideControls.tsx:90
+  src/components/playoffs/admin/PlayoffMatchList.tsx:119
+  src/components/playoffs/admin/PlayoffMatchList.tsx:238
+  src/components/layout/navbar/NavBrand.tsx:7
+  src/components/layout/Navbar.tsx:53
+  src/components/hero/EventHeroCard.tsx:150
+  src/components/hero/EventHeroCard.tsx:198
+  src/components/navigation/DesktopNav.tsx:58
+  src/components/stats/rank/TeamCell.tsx:29
+  src/components/stats/rank/TeamCell.tsx:32
+  src/components/stats/career/CareerRankingsMobileView.tsx:119
+  src/components/stats/CompactStandings.tsx:91
+  src/components/stats/CompactStandings.tsx:102
+  src/components/stats/CompactStandings.tsx:116
+  src/components/stats/CompactStandings.tsx:208
+  src/components/stats/HeadToHeadRecords.tsx:157
+  src/components/stats/HeadToHeadRecords.tsx:250
+  src/components/stats/HeadToHeadRecords.tsx:288
+  src/components/stats/HeadToHeadRecords.tsx:307
+  src/components/teams/TeamAnalysis.tsx:147
+  src/components/teams/TeamAnalysis.tsx:161
+  src/pages/MessageBoard.tsx:65
+  src/components/stats/RankingsMobileView.tsx:208
+  src/components/playoffs/form/BracketFormActions.tsx:23
+  src/components/playoffs/form/BracketFormGrandFinal.tsx:28
+  src/components/playoffs/form/BracketFormGrandFinal.tsx:30
+  src/components/playoffs/form/BracketFormGrandFinal.tsx:41
+  src/components/teams/TeamTrend.tsx:67
+  src/components/stats/OpponentHistoryModal.tsx:111
+  src/components/stats/OpponentHistoryModal.tsx:119
+  src/components/admin/mass-score-entry/components/MatchStatusIndicator.tsx:18
+  src/components/admin/mass-score-entry/components/CompletionCheckbox.tsx:22
+  src/components/teams/TeamListSkeleton.tsx:24
+  src/components/teams/MatchCard.tsx:63
+  src/components/admin/requests/RequestsTab.tsx:66
+  src/components/admin/seasons/SeasonManagementTab.tsx:44
+  src/components/admin/seasons/SeasonManagementTab.tsx:59
+  src/components/admin/seasons/SeasonManagementTab.tsx:72
+  src/components/message-board/MessageFeed.tsx:104
+  src/components/schedule/MatchStatusToggle.tsx:13
+  src/components/schedule/MatchFormRHF.tsx:228
+  src/components/playoffs/match-score-editor/QuickScoreEditor/QuickScoreEditor.tsx:36
+  src/components/schedule/MatchCardSkeleton.tsx:10
+  src/components/admin/batch-matches/ThursdayDatePicker.tsx:44
+  src/components/admin/batch-matches/AutoScheduleSection.tsx:74
+  src/components/playoffs/match-score-editor/MatchScoreEditor/components/MatchScoreActions.tsx:49
+  src/components/playoffs/PlayoffPageContent.tsx:77
+  src/components/message-board/message-item/MessageEditForm.tsx:83
+  src/components/admin/auto-schedule/DateSettingsPanel.tsx:93
+  src/components/admin/auto-schedule/DateSettingsPanel.tsx:105
+  src/components/admin/auto-schedule/DateSettingsPanel.tsx:118
+  src/components/admin/auto-schedule/ManualTeamAssignment.tsx:152
+  src/components/admin/batch-matches/auto-schedule/TeamLoadingStep.tsx:63
+  src/components/admin/teams/BulkLogoUpdateTab.tsx:89
+  src/components/admin/teams/BulkLogoUpdateTab.tsx:98
+  src/components/admin/teams/BulkLogoUpdateTab.tsx:107
+  src/components/admin/teams/BulkLogoUpdateTab.tsx:116
+  src/components/admin/teams/TeamManagementStatsCards.tsx:22

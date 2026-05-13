@@ -1,0 +1,15 @@
+Rule: react-doctor/no-many-boolean-props
+Severity: warning
+Category: Architecture
+Count: 5
+
+Component "SeasonAccordionExpandedContent" takes 6 boolean-like props (isLoading, isEditMode, isSaving…) — consider compound components or explicit variants instead of stacking flags
+
+Suggestion: Split into compound components or named variants: `<Button.Primary />`, `<DialogConfirm />` instead of stacking `isPrimary`, `isConfirm` flags
+
+Files:
+  src/components/history/SeasonAccordion.tsx:333
+  src/components/schedule/MatchFormDialog.tsx:28
+  src/components/admin/auto-schedule/ScheduleWorkflowTabs.tsx:47
+  src/components/message-board/message-item/MessageControls.tsx:26
+  src/components/admin/auto-schedule/tabs/MatchesTab.tsx:46

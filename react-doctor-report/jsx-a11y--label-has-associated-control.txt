@@ -1,0 +1,26 @@
+Rule: jsx-a11y/label-has-associated-control
+Severity: warning
+Category: Accessibility
+Count: 14
+
+A form label must be associated with a control.
+
+Suggestion: Either give the label a `htmlFor` attribute with the id of the associated control, or wrap the label around the control.
+
+Docs: https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/label-has-associated-control.html
+
+Files:
+  src/components/admin/auto-schedule/EditableMatchCard.tsx:92
+  src/components/admin/auto-schedule/EditableMatchCard.tsx:146
+  src/components/admin/auto-schedule/EditableMatchCard.tsx:190
+  src/components/admin/mass-score-entry/MatchRow.tsx:149
+  src/components/admin/blind-draw/BlindDrawSignupsTab.tsx:64
+  src/components/timeslots/TimeslotAssignment.tsx:203
+  src/components/admin/batch-matches/MatchPairsList.tsx:64
+  src/components/admin/batch-matches/MatchPairsList.tsx:111
+  src/components/admin/batch-matches/MatchPairsList.tsx:153
+  src/components/playoffs/SeasonSelector.tsx:26
+  src/components/admin/auto-schedule/ManualTeamAssignment.tsx:121
+  src/components/admin/batch-matches/MatchRow.tsx:69
+  src/components/admin/batch-matches/MatchRow.tsx:96
+  src/components/admin/batch-matches/MatchRow.tsx:121

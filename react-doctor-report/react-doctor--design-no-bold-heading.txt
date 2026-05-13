@@ -1,0 +1,27 @@
+Rule: react-doctor/design-no-bold-heading
+Severity: warning
+Category: Architecture
+Count: 17
+
+font-bold on <h4> crushes counter shapes at display sizes — use font-semibold (600) or font-medium (500)
+
+Suggestion: Use `font-semibold` (600) or `font-medium` (500) on headings — 700+ crushes letter counter shapes at display sizes
+
+Files:
+  src/components/playoffs/ChampionDisplay.tsx:82
+  src/components/compare/TeamComparisonView.tsx:35
+  src/components/ErrorBoundary.tsx:61
+  src/pages/Timeslots.tsx:137
+  src/pages/Contact.tsx:107
+  src/pages/Contact.tsx:137
+  src/pages/AdminDashboard.tsx:58
+  src/pages/TeamDetails.tsx:98
+  src/pages/Compare.tsx:79
+  src/pages/Help.tsx:37
+  src/components/teams/TeamMembershipPage.tsx:14
+  src/components/stats/StatsHeader.tsx:21
+  src/components/admin/help/GettingStartedTab.tsx:149
+  src/components/RouteErrorBoundary.tsx:63
+  src/components/playoffs/celebration/ChampionDisplay.tsx:83
+  src/components/playoffs/celebration/ChampionDisplay.tsx:108
+  src/components/playoffs/embeds/ChallongeFallback.tsx:27

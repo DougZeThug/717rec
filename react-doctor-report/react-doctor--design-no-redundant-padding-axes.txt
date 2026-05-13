@@ -1,0 +1,19 @@
+Rule: react-doctor/design-no-redundant-padding-axes
+Severity: warning
+Category: Architecture
+Count: 9
+
+px-4 py-4 → use the shorthand p-4
+
+Suggestion: Collapse `px-N py-N` to `p-N` when both axes match. Keep them split only when one axis varies at a breakpoint (`py-2 md:py-3`)
+
+Files:
+  src/components/navigation/DesktopNav.tsx:56
+  src/components/stats/RankingTableRow.tsx:100
+  src/components/stats/RankingTableRow.tsx:111
+  src/components/stats/RankingTableRow.tsx:173
+  src/components/stats/RankingTableRow.tsx:181
+  src/components/stats/RankingTableRow.tsx:205
+  src/components/stats/RankingTableRow.tsx:221
+  src/components/stats/RankingTableRow.tsx:229
+  src/components/history/HistoricalStandingsTable.tsx:209

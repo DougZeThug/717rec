@@ -1,0 +1,23 @@
+Rule: react-doctor/no-generic-handler-names
+Severity: warning
+Category: Architecture
+Count: 13
+
+Non-descriptive handler name "handleClick" — name should describe what it does, not when it runs
+
+Suggestion: Rename to describe the action: e.g. `handleSubmit` → `saveUserProfile`, `handleClick` → `toggleSidebar`
+
+Files:
+  src/components/transitions/TransitionLink.tsx:51
+  src/components/navigation/RouterLink.tsx:29
+  src/components/admin/mass-score-entry/components/ScoreButton.tsx:72
+  src/components/admin/hero-cards/HeroCardForm.tsx:150
+  src/components/admin/hero-cards/HeroCardForm.tsx:151
+  src/components/admin/hero-cards/HeroCardForm.tsx:152
+  src/components/admin/hero-cards/HeroCardForm.tsx:153
+  src/components/admin/hero-cards/HeroCardForm.tsx:155
+  src/components/admin/hero-cards/HeroCardForm.tsx:158
+  src/components/admin/hero-cards/HeroCardForm.tsx:162
+  src/components/message-board/MessageBoardFAB.tsx:29
+  src/components/ui/animated-icon-button.tsx:37
+  src/components/ui/action-button.tsx:93

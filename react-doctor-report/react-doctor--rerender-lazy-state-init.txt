@@ -1,0 +1,12 @@
+Rule: react-doctor/rerender-lazy-state-init
+Severity: warning
+Category: Performance
+Count: 2
+
+useState(getUpcomingThursday()) calls initializer on every render — use useState(() => getUpcomingThursday()) for lazy initialization
+
+Suggestion: Wrap in an arrow function so it only runs once: `useState(() => expensiveComputation())`
+
+Files:
+  src/pages/Schedule.tsx:45
+  src/components/admin/batch-matches/useBatchMatchForm.ts:27

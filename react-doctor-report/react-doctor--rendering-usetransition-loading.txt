@@ -1,0 +1,17 @@
+Rule: react-doctor/rendering-usetransition-loading
+Severity: warning
+Category: Performance
+Count: 7
+
+useState for "isLoading" — if this guards a state transition (not an async fetch), consider useTransition instead
+
+Suggestion: Replace with `const [isPending, startTransition] = useTransition()` — avoids a re-render for the loading state
+
+Files:
+  src/hooks/useHiddenTeams.ts:14
+  src/hooks/useAutoSchedule/useTeamOperations.ts:19
+  src/hooks/useTeamMembership.ts:19
+  src/hooks/useTeamRankings.ts:14
+  src/hooks/useTeamScheduleLoader.ts:14
+  src/hooks/useSeasonStats.ts:21
+  src/components/teams/TeamEditSection.tsx:18

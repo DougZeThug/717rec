@@ -1,0 +1,43 @@
+Rule: react-doctor/async-await-in-loop
+Severity: warning
+Category: Performance
+Count: 33
+
+await inside a for-loop runs the calls sequentially — for independent operations, collect them and use `await Promise.all(items.map(...))` to run them concurrently
+
+Suggestion: Collect the items and use `await Promise.all(items.map(...))` to run independent operations concurrently
+
+Files:
+  supabase/functions/create-bracket/index.ts:560
+  supabase/functions/create-bracket/index.ts:699
+  supabase/functions/create-bracket/index.ts:699
+  supabase/functions/create-bracket/index.ts:736
+  supabase/functions/create-bracket/index.ts:736
+  supabase/functions/create-bracket/index.ts:779
+  supabase/functions/create-bracket/index.ts:779
+  supabase/functions/create-bracket/index.ts:825
+  supabase/functions/create-bracket/index.ts:825
+  src/components/playoffs/form/bracket-teams/utils/mutationErrorHandling.ts:130
+  src/components/playoffs/form/bracket-teams/hooks/useMutationStateManager.ts:124
+  src/utils/autoSchedule/teamLoaderUtils.ts:183
+  src/services/teamSeasonStats/updates.ts:68
+  src/services/teamSeasonStats/updates.ts:28
+  src/utils/autoSchedule/validation.ts:107
+  src/hooks/playoffs/usePlayoffActions.ts:78
+  src/services/brackets/manager/services/BracketCreationService.ts:121
+  src/services/brackets/manager/services/normalization/LosersRoundNormalizationService.ts:43
+  src/services/brackets/manager/services/normalization/MatchPropagationRepairService.ts:47
+  src/services/brackets/manager/services/normalization/MatchPropagationRepairService.ts:77
+  src/services/brackets/manager/services/BracketAdmin/lifecycle.ts:35
+  src/services/brackets/manager/services/BracketUpdateService.ts:297
+  src/services/brackets/manager/services/BracketUpdateService.ts:374
+  src/services/brackets/manager/services/BracketSeedingService.ts:94
+  src/hooks/career/computeAllTeamsTotals.ts:182
+  src/hooks/auth/__tests__/useAuth.test.ts:212
+  src/services/FailedBadgeOperationsService.ts:236
+  src/hooks/matches/utils/matchDatabaseUtils.ts:157
+  src/components/admin/mass-score-entry/hooks/useMatchSubmission.ts:66
+  src/components/admin/mass-score-entry/hooks/useScoreSubmission.ts:78
+  src/components/admin/mass-score-entry/useScoreEntryData.ts:168
+  src/hooks/scheduling/utils/standardPairing.ts:52
+  src/utils/autoScheduleUtils.ts:156

@@ -1,0 +1,15 @@
+Rule: jsx-a11y/role-has-required-aria-props
+Severity: error
+Category: Accessibility
+Count: 3
+
+`combobox` role is missing required aria props `aria-controls`.
+
+Suggestion: Add missing aria props `aria-controls` to the element with `combobox` role.
+
+Docs: https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/role-has-required-aria-props.html
+
+Files:
+  src/components/hero/RequestHeroCard.tsx:129
+  src/components/hero/ParticipationHeroCard.tsx:103
+  src/components/ui/multi-select.tsx:55

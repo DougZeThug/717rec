@@ -1,0 +1,14 @@
+Rule: react/no-unknown-property
+Severity: warning
+Category: Correctness
+Count: 2
+
+Unknown property found
+
+Suggestion: Remove unknown property
+
+Docs: https://oxc.rs/docs/guide/usage/linter/rules/react/no-unknown-property.html
+
+Files:
+  src/components/ui/command.tsx:42
+  src/components/playoffs/embeds/ChallongeFallback.tsx:113

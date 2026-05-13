@@ -1,0 +1,11 @@
+Rule: react-doctor/rendering-hoist-jsx
+Severity: warning
+Category: Performance
+Count: 1
+
+Static JSX "emptyContent" inside a component — hoist to module scope so it isn't recreated each render
+
+Suggestion: Move the static JSX to module scope: `const ICON = <svg>...</svg>` outside the component so it isn't recreated each render
+
+Files:
+  src/components/teams/TeamTotals.tsx:71

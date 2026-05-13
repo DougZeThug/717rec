@@ -1,0 +1,13 @@
+Rule: react/no-children-prop
+Severity: warning
+Category: Correctness
+Count: 1
+
+Avoid passing children using a prop.
+
+Suggestion: The canonical way to pass children in React is to use JSX elements
+
+Docs: https://oxc.rs/docs/guide/usage/linter/rules/react/no-children-prop.html
+
+Files:
+  src/components/ui/charts/ChartStyle.tsx:83

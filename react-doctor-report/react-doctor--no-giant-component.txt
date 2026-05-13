@@ -1,0 +1,15 @@
+Rule: react-doctor/no-giant-component
+Severity: warning
+Category: Architecture
+Count: 5
+
+Component "RequestHeroCard" is 309 lines — consider breaking it into smaller focused components
+
+Suggestion: Extract logical sections into focused components: `<UserHeader />`, `<UserActions />`, etc.
+
+Files:
+  src/components/hero/RequestHeroCard.tsx:47
+  src/components/stats/HeadToHeadRecords.tsx:37
+  src/components/teams/StatBreakdown.tsx:46
+  src/components/teams/TeamTotals.tsx:28
+  src/components/timeslots/TimeslotAssignment.tsx:45

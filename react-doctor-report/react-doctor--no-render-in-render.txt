@@ -1,0 +1,19 @@
+Rule: react-doctor/no-render-in-render
+Severity: warning
+Category: Architecture
+Count: 9
+
+Inline render function "renderTeamSelect()" — extract to a separate component for proper reconciliation
+
+Suggestion: Extract to a named component: `const ListItem = ({ item }) => <div>{item.name}</div>`
+
+Files:
+  src/components/playoffs/admin/EditMatchParticipantsDialog.tsx:124
+  src/components/playoffs/admin/EditMatchParticipantsDialog.tsx:125
+  src/pages/Auth.tsx:80
+  src/components/stats/HeadToHeadRecords.tsx:345
+  src/components/stats/HeadToHeadRecords.tsx:368
+  src/components/stats/desktop/DivisionRankingsTable.tsx:74
+  src/components/stats/desktop/DivisionRankingsTable.tsx:129
+  src/components/schedule/ScheduleContent.tsx:221
+  src/components/schedule/ScheduleContent.tsx:225

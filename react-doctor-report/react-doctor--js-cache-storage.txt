@@ -1,0 +1,14 @@
+Rule: react-doctor/js-cache-storage
+Severity: warning
+Category: Performance
+Count: 4
+
+localStorage.getItem("previousRankings") called multiple times — cache the result in a variable
+
+Suggestion: Cache repeated `localStorage`/`sessionStorage` reads in a local variable — each access serializes/deserializes
+
+Files:
+  src/utils/rankingUtils.ts:143
+  src/utils/rankingUtils.ts:152
+  src/hooks/rankings/useRankings.ts:48
+  src/components/stats/__tests__/RankingsTable.test.tsx:187

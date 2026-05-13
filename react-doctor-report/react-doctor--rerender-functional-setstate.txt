@@ -1,0 +1,19 @@
+Rule: react-doctor/rerender-functional-setstate
+Severity: warning
+Category: Performance
+Count: 9
+
+setMatches([...matches, ...]) — use functional update `setMatches(prev => [...prev, ...])` to avoid stale closures
+
+Suggestion: Use the callback form: `setState(prev => prev + 1)` to always read the latest value
+
+Files:
+  src/hooks/useMatchCreation.ts:63
+  src/components/teams/TeamForm.tsx:63
+  src/components/teams/TeamAnalysisEditForm.tsx:33
+  src/components/teams/TeamAnalysisEditForm.tsx:34
+  src/components/teams/TeamEditSection.tsx:122
+  src/components/teams/TeamEditSection.tsx:132
+  src/components/admin/matches/BatchMatchForm.tsx:23
+  src/components/playoffs/match-score-editor/useMatchEditorState.ts:159
+  src/components/admin/batch-matches/useBatchMatchForm.ts:36

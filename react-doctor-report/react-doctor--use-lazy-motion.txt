@@ -1,0 +1,67 @@
+Rule: react-doctor/use-lazy-motion
+Severity: warning
+Category: Bundle Size
+Count: 57
+
+Import "m" with LazyMotion instead of "motion" — saves ~30kb in bundle size
+
+Suggestion: Use `import { LazyMotion, m } from "framer-motion"` with `domAnimation` features — saves ~30kb
+
+Files:
+  src/components/playoffs/form/bracket-teams/components/SortableTeamItem.tsx:3
+  src/components/layout/navbar/MobileMenu.tsx:1
+  src/components/hero/ChampionsHeroCard.tsx:2
+  src/components/hero/EventHeroCard.tsx:1
+  src/components/hero/StandardHeroCard.tsx:1
+  src/components/hero/AnnouncementHeroCard.tsx:1
+  src/components/hero/RequestHeroCard.tsx:2
+  src/components/hero/ParticipationHeroCard.tsx:2
+  src/components/hero/HeroCardBase.tsx:1
+  src/components/hero/EventDetails.tsx:1
+  src/components/navigation/AnimatedBreadcrumbs.tsx:1
+  src/components/stats/AnimatedRankNumber.tsx:1
+  src/pages/AdminDashboard.tsx:1
+  src/components/teams/TeamAnalysis.tsx:1
+  src/components/stats/RankingsMobileView.tsx:1
+  src/components/teams/list/TeamCardList.tsx:1
+  src/components/teams/TeamDetailsStickyNav.tsx:1
+  src/components/teams/TeamsContainer.tsx:1
+  src/components/teams/TeamsDivisionSection.tsx:1
+  src/components/stats/RankTrendIndicator.tsx:1
+  src/components/admin/mass-score-entry/components/ScoreInput.tsx:1
+  src/components/admin/mass-score-entry/components/SubmitButton.tsx:1
+  src/components/admin/mass-score-entry/components/MatchStatusSection.tsx:1
+  src/components/admin/mass-score-entry/components/ScoreButton.tsx:1
+  src/components/admin/mass-score-entry/components/DateMatchGroup.tsx:2
+  src/components/admin/mass-score-entry/components/TimeSlotMatchGroup.tsx:1
+  src/components/history/SeasonAccordion.tsx:2
+  src/components/history/editing/DraggableTeamRow.tsx:3
+  src/components/history/DivisionPanel.tsx:1
+  src/components/admin/dashboard/AdminSidebar.tsx:1
+  src/components/admin/hero-cards/HeroCardsList.tsx:1
+  src/components/admin/seasons/SeasonsList.tsx:1
+  src/components/admin/mass-score-entry/FilterBar.tsx:2
+  src/components/ui/success-flash.tsx:1
+  src/components/admin/mass-score-entry/MassScoreEntryTool.tsx:1
+  src/components/message-board/MessageBoardFAB.tsx:1
+  src/components/ui/animated-icon-button.tsx:1
+  src/components/ui/action-button.tsx:1
+  src/components/ui/inline-refresh-indicator.tsx:1
+  src/components/ui/animated-chart-wrapper.tsx:1
+  src/components/home/TeamCard.tsx:1
+  src/components/ui/staggered-content.tsx:1
+  src/components/ui/power-score-gauge.tsx:1
+  src/components/schedule/SwipeableDateGroups.tsx:2
+  src/components/ui/summary-card.tsx:1
+  src/components/ui/empty-state.tsx:1
+  src/components/ui/score-stepper.tsx:1
+  src/components/ui/saved-badge.tsx:1
+  src/components/ui/entity-card.tsx:1
+  src/components/admin/MassScoreEntryTool.tsx:2
+  src/components/home/CallToAction.tsx:1
+  src/components/playoffs/match-score-editor/MatchScoreEditor/components/GameScoreRow.tsx:1
+  src/components/admin/batch-matches/AutoScheduleSection.tsx:1
+  src/components/admin/batch-matches/MatchPairsSection.tsx:1
+  src/components/admin/batch-matches/MatchRow.tsx:1
+  src/components/admin/teams/TeamTableDesktop.tsx:1
+  src/components/admin/teams/TeamListMobile.tsx:1

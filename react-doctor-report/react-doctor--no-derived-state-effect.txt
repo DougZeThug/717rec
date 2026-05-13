@@ -1,0 +1,13 @@
+Rule: react-doctor/no-derived-state-effect
+Severity: warning
+Category: State & Effects
+Count: 3
+
+Derived state in useEffect — compute during render instead
+
+Suggestion: For derived state, compute inline: `const x = fn(dep)`. For state resets on prop change, use a key prop: `<Component key={prop} />`. See https://react.dev/learn/you-might-not-need-an-effect
+
+Files:
+  src/hooks/useMatchManagement.ts:12
+  src/components/schedule/timeslot-grouping/useTimeslotGrouping.ts:30
+  src/components/playoffs/embeds/ChallongeFallback.tsx:80

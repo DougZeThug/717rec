@@ -1,0 +1,13 @@
+Rule: jsx-a11y/no-redundant-roles
+Severity: warning
+Category: Accessibility
+Count: 1
+
+The `nav` element has an implicit role of `navigation`. Defining this explicitly is redundant and should be avoided.
+
+Suggestion: Remove the redundant role `navigation` from the element `nav`.
+
+Docs: https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/no-redundant-roles.html
+
+Files:
+  src/components/ui/pagination.tsx:9

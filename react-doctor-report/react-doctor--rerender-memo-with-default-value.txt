@@ -1,0 +1,27 @@
+Rule: react-doctor/rerender-memo-with-default-value
+Severity: warning
+Category: Performance
+Count: 17
+
+Default prop value [] creates a new array reference every render — extract to a module-level constant
+
+Suggestion: Move to module scope: `const EMPTY_ITEMS: Item[] = []` then use as the default value
+
+Files:
+  src/components/playoffs/form/bracket-teams/components/BracketFormTeamsContainer.tsx:25
+  src/components/teams/TeamHeader.tsx:17
+  src/components/admin/mass-score-entry/components/TimeSlotMatchGroup.tsx:33
+  src/components/admin/mass-score-entry/components/TimeSlotMatchGroup.tsx:34
+  src/components/admin/mass-score-entry/MatchesTable.tsx:32
+  src/components/admin/mass-score-entry/MatchesTable.tsx:33
+  src/components/ui/empty-state.tsx:39
+  src/components/admin/batch-matches/auto-schedule/WarningDisplay.tsx:17
+  src/components/admin/batch-matches/auto-schedule/WarningDisplay.tsx:18
+  src/components/admin/batch-matches/auto-schedule/TimeBlockHeader.tsx:16
+  src/components/admin/batch-matches/auto-schedule/SchedulePreview.tsx:20
+  src/components/admin/batch-matches/auto-schedule/TimeBlockTeamsList.tsx:23
+  src/components/admin/batch-matches/auto-schedule/TimeBlockTeamsList.tsx:25
+  src/components/admin/batch-matches/auto-schedule/InteractiveSchedulePreview.tsx:34
+  src/components/admin/auto-schedule/tabs/MatchesTab.tsx:59
+  src/components/admin/auto-schedule/tabs/TeamsTab.tsx:30
+  src/components/admin/batch-matches/auto-schedule/TeamLoadingStep.tsx:31

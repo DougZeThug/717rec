@@ -1,0 +1,54 @@
+Rule: react-doctor/no-array-index-as-key
+Severity: warning
+Category: Correctness
+Count: 44
+
+Array index "i" used as key — causes bugs when list is reordered or filtered
+
+Suggestion: Use a stable unique identifier: `key={item.id}` or `key={item.slug}` — index keys break on reorder/filter
+
+Files:
+  src/components/playoffs/BracketList.tsx:34
+  src/components/hero/ChampionsHeroCard.tsx:224
+  src/components/stats/StatsCharts.tsx:135
+  src/components/stats/WinLossTooltip.tsx:22
+  src/components/teams/TeamForm.tsx:228
+  src/components/stats/career/AllTeamsCareerPowerScoreChart.tsx:90
+  src/components/teams/PlayerList.tsx:26
+  src/components/teams/TeamAnalysisEditForm.tsx:86
+  src/components/teams/TeamAnalysisEditForm.tsx:121
+  src/components/teams/TeamAnalysis.tsx:83
+  src/components/teams/TeamAnalysis.tsx:107
+  src/components/teams/TeamAdvancedStatsSection.tsx:41
+  src/components/teams/list/TeamCardList.tsx:182
+  src/components/playoffs/SeedingUpdateDialog.tsx:244
+  src/components/teams/TeamTotals.tsx:40
+  src/components/teams/TeamTotals.tsx:59
+  src/components/teams/TeamTotals.tsx:319
+  src/components/teams/TeamTrend.tsx:72
+  src/components/stats/PowerScoreChart.tsx:124
+  src/components/history/SeasonAccordionSkeleton.tsx:13
+  src/components/teams/TeamListSkeleton.tsx:19
+  src/components/teams/TeamListSkeleton.tsx:32
+  src/components/teams/TeamListSkeleton.tsx:54
+  src/components/admin/hero-cards/HeroCardsList.tsx:100
+  src/components/admin/blind-draw/SignupsListSkeleton.tsx:25
+  src/components/admin/help/GettingStartedTab.tsx:220
+  src/components/admin/seasons/SeasonsList.tsx:25
+  src/components/admin/mass-score-entry/MassScoreEntryTool.tsx:85
+  src/components/ui/staggered-content.tsx:74
+  src/components/home/PendingScoresCard.tsx:42
+  src/components/schedule/SwipeableDateGroups.tsx:90
+  src/components/insights/DivisionStrengthChart.tsx:71
+  src/components/ui/empty-state.tsx:105
+  src/components/schedule/DateStrip.tsx:56
+  src/components/home/RecentMatchesSkeleton.tsx:48
+  src/components/admin/MassScoreEntryTool.tsx:139
+  src/components/home/CallToAction.tsx:143
+  src/components/ui/shimmer-skeleton.tsx:42
+  src/components/ui/shimmer-skeleton.tsx:78
+  src/components/playoffs/match-score-editor/MatchScoreEditor/components/GameScoresList.tsx:30
+  src/components/playoffs/BracketCreationErrorBoundary.tsx:112
+  src/components/message-board/message-item/MessageContent.tsx:19
+  src/components/admin/auto-schedule/DiagnosticPanel.tsx:219
+  src/components/admin/auto-schedule/DualMatchWarningDisplay.tsx:101

@@ -1,0 +1,17 @@
+Rule: react-doctor/server-sequential-independent-await
+Severity: warning
+Category: Server
+Count: 7
+
+Sequential `await` without a data dependency on the previous result — wrap the independent calls in `Promise.all([...])` so they race instead of waterfalling
+
+Suggestion: Wrap independent awaits in `Promise.all([...])` so they race instead of waterfalling — second call doesn't depend on the first
+
+Files:
+  src/services/brackets/manager/__tests__/SupabaseSqlStorage.test.ts:170
+  src/services/brackets/manager/__tests__/SupabaseSqlStorage.test.ts:248
+  src/services/brackets/manager/__tests__/SupabaseSqlStorage.test.ts:328
+  src/services/matches/MatchWriteService.ts:281
+  src/services/SeasonService.ts:167
+  src/services/teams/TeamRequestService.ts:79
+  src/utils/career/__tests__/calculateCareerPowerScore.test.ts:90

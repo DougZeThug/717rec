@@ -1,0 +1,77 @@
+Rule: react-doctor/rendering-hydration-mismatch-time
+Severity: warning
+Category: Correctness
+Count: 67
+
+new Date() reachable from JSX renders differently on server vs client — wrap in useEffect+useState (client-only) or add suppressHydrationWarning to the parent if intentional
+
+Suggestion: Wrap dynamic time/random values in useEffect+useState (client-only) or add suppressHydrationWarning to the parent if intentional
+
+Files:
+  src/components/hero/RequestHeroCard.tsx:328
+  src/components/hero/RequestHeroCard.tsx:333
+  src/components/hero/RequestHeroCard.tsx:328
+  src/components/hero/RequestHeroCard.tsx:333
+  src/components/hero/RequestHeroCard.tsx:328
+  src/components/hero/RequestHeroCard.tsx:333
+  src/components/hero/RequestHeroCard.tsx:328
+  src/components/hero/RequestHeroCard.tsx:328
+  src/components/hero/RequestHeroCard.tsx:333
+  src/components/hero/ParticipationHeroCard.tsx:229
+  src/components/hero/ParticipationHeroCard.tsx:229
+  src/components/teams/TeamMembershipSection.tsx:91
+  src/components/teams/TeamMembershipSection.tsx:92
+  src/components/teams/TeamMembershipSection.tsx:91
+  src/components/teams/TeamMembershipSection.tsx:92
+  src/components/stats/HeadToHeadRecords.tsx:309
+  src/components/stats/HeadToHeadRecords.tsx:309
+  src/components/stats/HeadToHeadRecords.tsx:309
+  src/components/stats/HeadToHeadRecords.tsx:309
+  src/components/stats/H2HMobileCard.tsx:104
+  src/components/stats/H2HMobileCard.tsx:104
+  src/components/stats/OpponentHistoryModal.tsx:121
+  src/components/stats/OpponentHistoryModal.tsx:121
+  src/components/stats/OpponentHistoryModal.tsx:121
+  src/components/history/SeasonMetaBar.tsx:143
+  src/components/history/SeasonMetaBar.tsx:143
+  src/components/admin/participation/SeasonParticipationTab.tsx:263
+  src/components/admin/participation/SeasonParticipationTab.tsx:263
+  src/components/admin/participation/SeasonParticipationTab.tsx:263
+  src/components/admin/blind-draw/BlindDrawSignupsTab.tsx:204
+  src/components/admin/blind-draw/BlindDrawSignupsTab.tsx:208
+  src/components/admin/blind-draw/BlindDrawSignupsTab.tsx:204
+  src/components/admin/blind-draw/BlindDrawSignupsTab.tsx:208
+  src/components/admin/blind-draw/BlindDrawSignupsTab.tsx:204
+  src/components/admin/blind-draw/BlindDrawSignupsTab.tsx:208
+  src/components/admin/requests/RequestsTab.tsx:131
+  src/components/admin/requests/RequestsTab.tsx:167
+  src/components/admin/requests/RequestsTab.tsx:204
+  src/components/admin/requests/RequestsTab.tsx:131
+  src/components/admin/requests/RequestsTab.tsx:167
+  src/components/admin/requests/RequestsTab.tsx:204
+  src/components/admin/requests/RequestsTab.tsx:131
+  src/components/admin/requests/RequestsTab.tsx:167
+  src/components/admin/requests/RequestsTab.tsx:167
+  src/components/admin/requests/RequestsTab.tsx:204
+  src/components/admin/requests/RequestsTab.tsx:204
+  src/components/admin/matches/MatchApprovalItem.tsx:75
+  src/components/admin/seasons/SeasonsList.tsx:94
+  src/components/admin/seasons/SeasonsList.tsx:95
+  src/components/admin/seasons/SeasonsList.tsx:132
+  src/components/admin/seasons/SeasonsList.tsx:94
+  src/components/admin/seasons/SeasonsList.tsx:95
+  src/components/admin/seasons/SeasonsList.tsx:132
+  src/components/admin/seasons/SeasonManagementTab.tsx:52
+  src/components/admin/seasons/SeasonManagementTab.tsx:52
+  src/components/admin/scores/ScoreSubmissionsList.tsx:70
+  src/components/admin/scores/ScoreSubmissionsList.tsx:70
+  src/components/admin/scores/MatchScoreItem.tsx:127
+  src/components/timeslots/WeekTimeslotDisplay.tsx:66
+  src/components/timeslots/WeekTimeslotDisplay.tsx:66
+  src/components/playoffs/celebration/Confetti.tsx:76
+  src/components/playoffs/celebration/Confetti.tsx:83
+  src/components/admin/teams/TeamMembershipApprovalTab.tsx:140
+  src/components/admin/teams/TeamMembershipApprovalTab.tsx:140
+  src/components/admin/teams/TeamMembershipApprovalTab.tsx:140
+  src/components/message-board/message-item/MessageContent.tsx:43
+  src/components/message-board/message-item/MessageContent.tsx:43

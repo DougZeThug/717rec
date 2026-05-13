@@ -1,0 +1,25 @@
+Rule: react-doctor/js-index-maps
+Severity: warning
+Category: Performance
+Count: 15
+
+array.find() in a loop is O(n*m) — build a Map for O(1) lookups
+
+Suggestion: Build an index `Map` once outside the loop instead of `array.find(...)` inside it
+
+Files:
+  supabase/functions/create-bracket/index.ts:173
+  supabase/functions/create-bracket/index.ts:174
+  src/utils/autoSchedule/validationUtils.ts:41
+  src/utils/autoSchedule/validationUtils.ts:42
+  src/utils/autoSchedule/validationUtils.ts:66
+  src/utils/autoSchedule/validationUtils.ts:67
+  src/services/brackets/manager/services/BracketCreationService.ts:127
+  src/services/brackets/manager/services/BracketSeedingService.ts:99
+  src/utils/scheduling/greedy/feasibility.ts:41
+  src/utils/scheduling/greedy/feasibility.ts:62
+  src/utils/scheduling/greedy/scheduleOdd.ts:187
+  src/utils/scheduling/greedy/scheduleOdd.ts:190
+  src/components/history/hooks/useHistoryEditing.ts:273
+  src/hooks/scheduling/utils/dualBlockScheduler.ts:158
+  src/hooks/scheduling/utils/dualBlockScheduler.ts:159

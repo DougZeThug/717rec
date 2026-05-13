@@ -1,0 +1,21 @@
+Rule: react-doctor/js-set-map-lookups
+Severity: warning
+Category: Performance
+Count: 11
+
+array.includes() in a loop is O(n) per call — convert to a Set for O(1) lookups
+
+Suggestion: Use a `Set` or `Map` for repeated membership tests / keyed lookups — `Array.includes`/`find` is O(n) per call
+
+Files:
+  src/utils/autoSchedule/dualBlock/opponentUtils.ts:82
+  src/utils/autoSchedule/dualBlock/opponentUtils.ts:86
+  src/utils/autoSchedule/validationUtils.ts:63
+  src/services/brackets/manager/services/BracketCreationService.ts:129
+  src/services/brackets/manager/services/BracketSeedingService.ts:102
+  src/hooks/scheduling/utils/dualBlockScheduler.ts:101
+  src/hooks/scheduling/utils/dualBlockScheduler.ts:102
+  src/hooks/scheduling/utils/dualBlockScheduler.ts:103
+  src/hooks/scheduling/utils/dualBlockScheduler.ts:133
+  src/hooks/scheduling/utils/dualBlockScheduler.ts:172
+  src/hooks/scheduling/utils/dualBlockScheduler.ts:173

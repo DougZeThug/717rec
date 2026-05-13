@@ -1,0 +1,16 @@
+Rule: react-doctor/design-no-em-dash-in-jsx-text
+Severity: warning
+Category: Architecture
+Count: 6
+
+Em dash (—) in JSX text reads as model output — replace with comma, colon, semicolon, or parentheses
+
+Suggestion: Replace em dashes in JSX text with commas, colons, semicolons, periods, or parentheses — em dashes read as model-output filler
+
+Files:
+  src/components/playoffs/admin/EditMatchParticipantsDialog.tsx:98
+  src/components/stats/containers/StatsSummarySection.tsx:99
+  src/components/admin/hero-cards/form-sections/ChampionsEditor.tsx:95
+  src/components/admin/hero-cards/HeroCardsList.tsx:177
+  src/components/playoffs/PlayoffHeader.tsx:31
+  src/components/admin/auto-schedule/EditableMatchList.tsx:100

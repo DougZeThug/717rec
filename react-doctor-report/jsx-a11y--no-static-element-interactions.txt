@@ -1,0 +1,24 @@
+Rule: jsx-a11y/no-static-element-interactions
+Severity: warning
+Category: Accessibility
+Count: 12
+
+Static HTML elements with event handlers require a role.
+
+Suggestion: Add a role attribute to this element, or use a semantic HTML element instead.
+
+Docs: https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/no-static-element-interactions.html
+
+Files:
+  src/components/badges/TeamBadge.tsx:108
+  src/components/stats/HeadToHeadRecords.tsx:249
+  src/components/stats/FullRankings.tsx:90
+  src/components/playoffs/BracketViewport.tsx:109
+  src/components/teams/TeamsDivisionSection.tsx:53
+  src/components/stats/desktop/DivisionRankingsTable.tsx:124
+  src/components/history/DivisionPanel.tsx:71
+  src/components/admin/scores/MatchScoreItem.tsx:130
+  src/components/playoffs/match-card/PlayoffMatchCard.tsx:65
+  src/components/playoffs/TeamSelectionList.tsx:111
+  src/components/admin/batch-matches/auto-schedule/TimeBlockTeamsList.tsx:75
+  src/components/message-board/message-item/MessageControls.tsx:40

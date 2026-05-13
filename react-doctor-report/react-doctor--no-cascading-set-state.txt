@@ -1,0 +1,32 @@
+Rule: react-doctor/no-cascading-set-state
+Severity: warning
+Category: State & Effects
+Count: 22
+
+6 setState calls in a single useEffect — consider using useReducer or deriving state
+
+Suggestion: Combine into useReducer: `const [state, dispatch] = useReducer(reducer, initialState)`
+
+Files:
+  src/components/playoffs/viewer/useBracketsViewerRenderer.ts:100
+  src/components/playoffs/viewer/useBracketsViewerScript.ts:37
+  src/hooks/brackets/useBracketsManagerRealtime.ts:70
+  src/hooks/rankings/usePreviousRankings.ts:22
+  src/hooks/rankings/useRankings.ts:18
+  src/hooks/auth/index.ts:61
+  src/components/hero/EventHeroCard.tsx:67
+  src/components/hero/ParticipationHeroCard.tsx:46
+  src/hooks/useTeamRankings.ts:19
+  src/hooks/message-board/useMessageReactions.ts:43
+  src/components/stats/AnimatedRankNumber.tsx:40
+  src/hooks/matches/useMatchComments.ts:18
+  src/hooks/matches/useMatchReactions.ts:51
+  src/components/admin/mass-score-entry/hooks/useScoreEntryData.ts:57
+  src/components/stats/RankTrendIndicator.tsx:17
+  src/components/history/hooks/useHistoryEditing.ts:74
+  src/components/ui/form.tsx:108
+  src/components/ui/form.tsx:155
+  src/components/ui/saved-badge.tsx:31
+  src/components/schedule/MatchCountdown.tsx:18
+  src/components/schedule/MatchCard.tsx:73
+  src/components/playoffs/celebration/Confetti.tsx:29

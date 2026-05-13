@@ -1,0 +1,68 @@
+Rule: react-doctor/design-no-three-period-ellipsis
+Severity: warning
+Category: Architecture
+Count: 58
+
+Three-period ellipsis ("...") in JSX text — use the actual ellipsis character "…" (or `&hellip;`)
+
+Suggestion: Use the typographic ellipsis "…" (or `&hellip;`) instead of three periods — pairs with action-with-followup labels ("Rename…", "Loading…")
+
+Files:
+  src/components/playoffs/form/__tests__/BracketFormTeamsContainer.test.tsx:35
+  src/components/playoffs/admin/EditMatchParticipantsDialog.tsx:150
+  src/components/navigation/CommandPalette.tsx:88
+  src/components/navigation/CommandPalette.tsx:142
+  src/pages/Timeslots.tsx:37
+  src/pages/Contact.tsx:245
+  src/pages/AdminDashboard.tsx:29
+  src/components/teams/TeamMembershipSection.tsx:171
+  src/pages/__tests__/Schedule.test.tsx:62
+  src/components/teams/TeamForm.tsx:162
+  src/components/teams/TeamForm.tsx:255
+  src/pages/__tests__/Playoffs.test.tsx:21
+  src/pages/__tests__/MyTeam.test.tsx:12
+  src/pages/__tests__/History.test.tsx:35
+  src/pages/__tests__/MessageBoard.test.tsx:56
+  src/pages/__tests__/Insights.test.tsx:18
+  src/components/teams/TeamAnalysisEditForm.tsx:181
+  src/pages/__tests__/TeamDetails.test.tsx:39
+  src/pages/__tests__/Index.test.tsx:41
+  src/pages/__tests__/Index.test.tsx:44
+  src/pages/__tests__/Index.test.tsx:47
+  src/pages/__tests__/Index.test.tsx:50
+  src/pages/__tests__/TeamsPage.test.tsx:23
+  src/pages/__tests__/Help.test.tsx:46
+  src/components/playoffs/BracketForm.tsx:225
+  src/components/playoffs/BracketCreationDialog.tsx:254
+  src/components/playoffs/form/BracketFormActions.tsx:31
+  src/components/teams/TeamEditSection.tsx:163
+  src/components/auth/LoginRequired.tsx:38
+  src/components/auth/ProtectedAdminRoute.tsx:50
+  src/components/history/HistoryPageContent.tsx:22
+  src/components/admin/mass-score-entry/MatchRow.tsx:99
+  src/components/admin/EditScoresSection.tsx:82
+  src/components/admin/hero-cards/form-sections/FormActions.tsx:22
+  src/components/history/editing/EditModeToolbar.tsx:92
+  src/components/admin/timeslots/TimeslotsTab.tsx:165
+  src/components/admin/timeslots/TimeslotsTab.tsx:181
+  src/components/admin/hero-cards/HeroCardsList.tsx:263
+  src/components/admin/blind-draw/BlindDrawSignupsTab.tsx:262
+  src/components/admin/theme/ThemeManagementTab.tsx:44
+  src/components/admin/scores/MatchScoreItem.tsx:190
+  src/components/message-board/MessageFeed.tsx:106
+  src/components/home/LoadingState.tsx:13
+  src/components/matches/comments/MatchCommentItem.tsx:123
+  src/components/timeslots/TimeslotList.tsx:136
+  src/components/ui/saved-badge.tsx:73
+  src/components/admin/batch-matches/BatchMatchFormActions.tsx:31
+  src/components/admin/batch-matches/BatchMatchFormActions.tsx:58
+  src/components/playoffs/match-score-editor/MatchScoreEditor/components/MatchScoreActions.tsx:56
+  src/components/playoffs/DeleteBracketDialog.tsx:64
+  src/components/playoffs/TeamSelectionList.tsx:102
+  src/components/playoffs/PlayoffPageContent.tsx:80
+  src/components/message-board/message-item/MessageEditForm.tsx:101
+  src/components/admin/auto-schedule/DateSettingsPanel.tsx:149
+  src/components/admin/auto-schedule/DateSettingsPanel.tsx:167
+  src/components/admin/auto-schedule/tabs/MatchesTab.tsx:183
+  src/components/admin/teams/TeamLogoCard.tsx:105
+  src/components/admin/auto-schedule/tabs/ExportTab.tsx:99

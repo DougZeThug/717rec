@@ -1,0 +1,13 @@
+Rule: react-doctor/js-length-check-first
+Severity: warning
+Category: Performance
+Count: 3
+
+.every() over an array compared to another array — short-circuit with `a.length === b.length && a.every(...)` so unequal-length arrays exit immediately
+
+Suggestion: Short-circuit with `a.length === b.length && a.every((x, i) => x === b[i])` — unequal-length arrays exit immediately
+
+Files:
+  src/utils/imageUpload.ts:22
+  src/utils/imageUpload.ts:25
+  src/utils/imageUpload.ts:28

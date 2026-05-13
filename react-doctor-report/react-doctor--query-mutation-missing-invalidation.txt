@@ -1,0 +1,11 @@
+Rule: react-doctor/query-mutation-missing-invalidation
+Severity: warning
+Category: TanStack Query
+Count: 1
+
+useMutation without a cache update — stale data may remain after the mutation. Call queryClient.invalidateQueries / setQueryData / resetQueries / refetchQueries inside onSuccess (or trigger a router refresh)
+
+Suggestion: Add `onSuccess: () => queryClient.invalidateQueries({ queryKey: ['...'] })` so cached data stays in sync after the mutation
+
+Files:
+  src/components/playoffs/BracketCreationDialog.tsx:49

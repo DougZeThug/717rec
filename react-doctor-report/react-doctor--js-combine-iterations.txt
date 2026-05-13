@@ -1,0 +1,72 @@
+Rule: react-doctor/js-combine-iterations
+Severity: warning
+Category: Performance
+Count: 62
+
+.filter().filter() iterates the array twice — combine into a single loop with .reduce() or for...of
+
+Suggestion: Combine `.map().filter()` (or similar chains) into a single pass with `.reduce()` or a `for...of` loop to avoid iterating the array twice
+
+Files:
+  src/utils/scheduleUtils.ts:9
+  src/hooks/useLeaguePercentiles.ts:38
+  src/utils/autoSchedule/blossom/repair.ts:142
+  src/utils/autoSchedule/blossom/repair.ts:170
+  src/components/playoffs/form/bracket-teams/hooks/useOptimisticTeamMutations.ts:204
+  src/components/playoffs/form/bracket-teams/hooks/useOptimisticTeamMutations.ts:220
+  src/components/playoffs/viewer/useBracketsViewerRenderer.ts:178
+  src/hooks/useTeamTotals.ts:113
+  src/hooks/useTeamTotals.ts:117
+  src/hooks/useTeamTotals.ts:122
+  src/utils/autoSchedule/qualityAnalysis.ts:177
+  src/services/brackets/manager/services/BracketStandingsService.ts:71
+  src/components/compare/TeamCompareSelector.tsx:65
+  src/components/compare/TeamCompareSelector.tsx:96
+  src/hooks/career/computeAllTeamsTotals.ts:101
+  src/hooks/career/computeAllTeamsTotals.ts:105
+  src/hooks/career/computeAllTeamsTotals.ts:109
+  src/hooks/career/useTeamTotalsComputed.ts:106
+  src/hooks/career/useTeamTotalsComputed.ts:110
+  src/hooks/career/useTeamTotalsComputed.ts:115
+  src/services/brackets/viewer/BracketsViewerAdapter.ts:100
+  src/services/brackets/viewer/BracketsViewerAdapter.ts:173
+  src/services/brackets/viewer/bracketViewerUtils.ts:26
+  src/components/admin/auto-schedule/EditableMatchCard.tsx:113
+  src/components/admin/auto-schedule/EditableMatchCard.tsx:167
+  src/hooks/useThemeSettings.ts:17
+  src/components/stats/career/AllTeamsCareerPowerScoreChart.tsx:74
+  src/components/teams/TeamAdvancedStatsInsightsTab.tsx:62
+  src/utils/rankingUtils/calculateHeadToHead.ts:27
+  src/components/playoffs/BracketCreationDialog.tsx:106
+  src/hooks/matches/__tests__/queryCacheUtils.test.ts:42
+  src/hooks/matches/__tests__/queryCacheUtils.test.ts:55
+  src/hooks/matches/__tests__/queryCacheUtils.test.ts:67
+  src/services/rankings/RankingCareerService.ts:81
+  src/services/rankings/RankingCareerService.ts:201
+  src/services/rankings/RankingTrendsService.ts:73
+  src/services/rankings/RankingTrendsService.ts:192
+  src/components/admin/mass-score-entry/hooks/useScoreEntryData.ts:168
+  src/components/admin/mass-score-entry/hooks/useScoreEntryData.ts:169
+  src/components/admin/mass-score-entry/hooks/useScoreEntryData.ts:205
+  src/utils/teamDetailsUtils/headToHeadUtils.ts:22
+  src/utils/powerScore/getTrendingTeams.ts:26
+  src/services/teams/TeamMembershipService.ts:144
+  src/components/history/hooks/useHistoryEditing.ts:248
+  src/services/career/CareerBulkFetchService.ts:314
+  src/components/admin/hero-cards/form-sections/ChampionsEditor.tsx:26
+  src/components/admin/hero-cards/form-sections/ChampionsEditor.tsx:37
+  src/components/admin/hero-cards/form-sections/EventWinnersEditor.tsx:51
+  src/hooks/scheduling/utils/standardPairing.ts:80
+  src/hooks/scheduling/utils/dualBlockScheduler.ts:206
+  src/hooks/scheduling/utils/matchConversionUtils.ts:89
+  src/components/schedule/MatchFormRHF.tsx:124
+  src/components/schedule/MatchFormRHF.tsx:152
+  src/components/timeslots/TimeslotAssignment.tsx:295
+  src/components/schedule/TeamSelector.tsx:30
+  src/components/admin/batch-matches/MatchPairsList.tsx:85
+  src/components/admin/batch-matches/MatchPairsList.tsx:132
+  src/components/admin/batch-matches/auto-schedule/ScheduleMatchesPreview.tsx:67
+  src/components/admin/batch-matches/auto-schedule/InteractiveSchedulePreview.tsx:199
+  src/components/admin/auto-schedule/DiagnosticPanel.tsx:74
+  src/components/admin/auto-schedule/DiagnosticPanel.tsx:88
+  src/icons/iconRegistry.ts:182

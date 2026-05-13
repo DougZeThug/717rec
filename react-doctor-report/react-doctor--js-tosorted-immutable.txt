@@ -1,0 +1,39 @@
+Rule: react-doctor/js-tosorted-immutable
+Severity: warning
+Category: Performance
+Count: 29
+
+[...array].sort() — use array.toSorted() for immutable sorting (ES2023)
+
+Suggestion: Use `array.toSorted()` (ES2023) instead of `[...array].sort()` for immutable sorting without the spread allocation
+
+Files:
+  src/hooks/useLeagueInsights.ts:56
+  src/hooks/useLeagueInsights.ts:153
+  src/hooks/useLeagueInsights.ts:166
+  src/utils/rankingUtils.ts:15
+  src/components/playoffs/form/bracket-teams/utils/teamDataHelpers.ts:26
+  src/components/playoffs/admin/EditMatchParticipantsDialog.tsx:58
+  src/services/brackets/manager/services/BracketStandingsService.ts:35
+  src/services/brackets/manager/services/BracketCreationService.ts:54
+  src/services/brackets/manager/services/normalization/MatchPropagationRepairService.ts:44
+  src/services/brackets/manager/services/BracketSeedingService.ts:53
+  src/components/badges/TeamBadgeCollection.tsx:84
+  src/components/stats/LeagueLeaderboardCarousel.tsx:32
+  src/pages/Index.tsx:49
+  src/components/stats/career/CareerRankingsTable.tsx:35
+  src/components/stats/FullRankings.tsx:31
+  src/components/teams/TeamsByDivision.tsx:47
+  src/components/teams/TeamsByDivision.tsx:51
+  src/components/teams/TeamsContainer.tsx:53
+  src/components/teams/TeamsContainer.tsx:55
+  src/components/playoffs/SeedingUpdateDialog.tsx:159
+  src/utils/scheduling/greedy/swapRepair.ts:186
+  src/utils/scheduling/greedy/index.ts:58
+  src/components/stats/hooks/useChartData.ts:8
+  src/components/stats/hooks/useChartData.ts:24
+  src/services/teams/TeamCalculationService.ts:27
+  src/components/admin/mass-score-entry/hooks/useScoreEntryData.ts:65
+  src/utils/teamDetailsUtils/rivalryUtils.ts:37
+  src/components/history/DivisionPanel.tsx:50
+  src/components/timeslots/TimeslotList.tsx:44

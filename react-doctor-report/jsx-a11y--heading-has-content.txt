@@ -1,0 +1,14 @@
+Rule: jsx-a11y/heading-has-content
+Severity: warning
+Category: Accessibility
+Count: 2
+
+Headings must have content and the content must be accessible by a screen reader.
+
+Suggestion: Provide screen reader accessible content when using heading elements.
+
+Docs: https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/heading-has-content.html
+
+Files:
+  src/components/ui/card.tsx:74
+  src/components/ui/alert.tsx:34

@@ -1,0 +1,22 @@
+Rule: jsx-a11y/click-events-have-key-events
+Severity: warning
+Category: Accessibility
+Count: 10
+
+Enforce a clickable non-interactive element has at least one keyboard event listener.
+
+Suggestion: Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.
+
+Docs: https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/click-events-have-key-events.html
+
+Files:
+  src/components/badges/TeamBadge.tsx:108
+  src/components/stats/HeadToHeadRecords.tsx:249
+  src/components/stats/FullRankings.tsx:90
+  src/components/teams/TeamsDivisionSection.tsx:53
+  src/components/stats/desktop/DivisionRankingsTable.tsx:124
+  src/components/history/DivisionPanel.tsx:71
+  src/components/admin/scores/MatchScoreItem.tsx:130
+  src/components/playoffs/TeamSelectionList.tsx:111
+  src/components/admin/batch-matches/auto-schedule/TimeBlockTeamsList.tsx:75
+  src/components/message-board/message-item/MessageControls.tsx:40

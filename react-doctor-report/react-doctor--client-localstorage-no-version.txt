@@ -1,0 +1,15 @@
+Rule: react-doctor/client-localstorage-no-version
+Severity: warning
+Category: Correctness
+Count: 5
+
+localStorage.setItem("previousRankings", JSON.stringify(...)) — bake a version into the key (e.g. "previousRankings:v1") so a future schema change can ignore old data instead of crashing on it
+
+Suggestion: Bake a version into the storage key (e.g. "myKey:v1"); a future schema change can ignore old data instead of crashing on it
+
+Files:
+  src/utils/rankingUtils.ts:103
+  src/services/__tests__/FailedBadgeOperationsService.test.ts:64
+  src/hooks/__tests__/usePersistedState.test.ts:26
+  src/hooks/__tests__/usePersistedState.test.ts:65
+  src/components/stats/RankingsTable.tsx:89

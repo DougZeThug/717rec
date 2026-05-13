@@ -1,0 +1,20 @@
+Rule: react-doctor/no-derived-useState
+Severity: warning
+Category: State & Effects
+Count: 10
+
+useState initialized from prop "currentTeam1Id" — if this value should stay in sync with the prop, derive it during render instead
+
+Suggestion: Remove useState and compute the value inline: `const value = transform(propName)`
+
+Files:
+  src/components/playoffs/admin/EditMatchParticipantsDialog.tsx:45
+  src/components/playoffs/admin/EditMatchParticipantsDialog.tsx:46
+  src/components/teams/ReportCardLeaderboard.tsx:70
+  src/components/admin/mass-score-entry/components/DateMatchGroup.tsx:40
+  src/components/admin/mass-score-entry/components/TimeSlotMatchGroup.tsx:39
+  src/components/history/editing/EditableDivisionHeader.tsx:27
+  src/components/ui/CollapsibleSection.tsx:46
+  src/components/ui/saved-badge.tsx:29
+  src/components/schedule/TimeSlotMatchGroup.tsx:27
+  src/components/message-board/message-item/MessageEditForm.tsx:20
