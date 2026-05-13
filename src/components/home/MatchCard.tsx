@@ -14,38 +14,35 @@ interface MatchCardProps {
   formatTime: (dateString: string) => string;
 }
 
-const MatchCard: React.FC<MatchCardProps> = ({ match, team1, team2, formatDate, formatTime }) => {
-  // Always render logos as square
-  const SquareLogo = ({
-    src,
-    alt,
-    fallback,
-  }: {
-    src?: string | null;
-    alt: string;
-    fallback: string;
-  }) => (
-    <div className="w-10 h-10 flex items-center justify-center bg-gray-200">
-      {src ? (
-        <img
-          src={src}
-          alt={alt}
-          loading="lazy"
-          decoding="async"
-          className="w-10 h-10 object-contain rounded-none"
-          onError={(e) => {
-            imageErrorLog(alt, src);
-            (e.target as HTMLImageElement).src = FALLBACK_TEAM_IMAGE;
-          }}
-        />
-      ) : (
-        <div className="w-10 h-10 flex items-center justify-center bg-gray-200 text-gray-400">
-          <span className="text-xs">{fallback}</span>
-        </div>
-      )}
-    </div>
-  );
+// Module-scope component so React keeps a stable component identity across
+// renders of MatchCard (avoids unmount/remount on every parent render).
+const SquareLogo: React.FC<{
+  src?: string | null;
+  alt: string;
+  fallback: string;
+}> = ({ src, alt, fallback }) => (
+  <div className="w-10 h-10 flex items-center justify-center bg-gray-200">
+    {src ? (
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        decoding="async"
+        className="w-10 h-10 object-contain rounded-none"
+        onError={(e) => {
+          imageErrorLog(alt, src);
+          (e.target as HTMLImageElement).src = FALLBACK_TEAM_IMAGE;
+        }}
+      />
+    ) : (
+      <div className="w-10 h-10 flex items-center justify-center bg-gray-200 text-gray-400">
+        <span className="text-xs">{fallback}</span>
+      </div>
+    )}
+  </div>
+);
 
+const MatchCard: React.FC<MatchCardProps> = ({ match, team1, team2, formatDate, formatTime }) => {
   return (
     <Link to={`/schedule?matchId=${match.id}`} className="block">
       <div

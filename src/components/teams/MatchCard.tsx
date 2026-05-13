@@ -11,6 +11,31 @@ interface MatchCardProps {
   isPastMatch?: boolean;
 }
 
+// Module-scope component for stable identity across MatchCard renders.
+const SquareLogo: React.FC<{ src: string; alt: string; fallback: string }> = ({
+  src,
+  alt,
+  fallback,
+}) => (
+  <div className="w-10 h-10 flex items-center justify-center bg-white dark:bg-gray-800">
+    {src ? (
+      <img
+        src={src}
+        alt={alt}
+        className="w-10 h-10 object-contain rounded-none"
+        draggable={false}
+        onError={(e) => {
+          (e.target as HTMLImageElement).style.display = 'none';
+        }}
+      />
+    ) : (
+      <div className="w-10 h-10 flex items-center justify-center bg-gray-200 text-gray-400 text-xs rounded-none">
+        {fallback}
+      </div>
+    )}
+  </div>
+);
+
 const MatchCard: React.FC<MatchCardProps> = ({
   match,
   opponentId,
@@ -35,26 +60,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
   const hasGameScores = teamGameWins !== undefined && opponentGameWins !== undefined;
   const gameScoreDisplay = hasGameScores ? `${teamGameWins}-${opponentGameWins}` : '';
-
-  const SquareLogo = ({ src, alt, fallback }: { src: string; alt: string; fallback: string }) => (
-    <div className="w-10 h-10 flex items-center justify-center bg-white dark:bg-gray-800">
-      {src ? (
-        <img
-          src={src}
-          alt={alt}
-          className="w-10 h-10 object-contain rounded-none"
-          draggable={false}
-          onError={(e) => {
-            (e.target as HTMLImageElement).style.display = 'none';
-          }}
-        />
-      ) : (
-        <div className="w-10 h-10 flex items-center justify-center bg-gray-200 text-gray-400 text-xs rounded-none">
-          {fallback}
-        </div>
-      )}
-    </div>
-  );
 
   return (
     <Card className="mb-4">
