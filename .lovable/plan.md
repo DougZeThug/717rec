@@ -1,23 +1,50 @@
 ## Bug verified
 
-`usePairingOperations` persists `generatedPairings` to sessionStorage with no association to the date they were generated for. `useAutoScheduleState` separately persists `selectedDate`. Because `saveAutoScheduleState` merges partial updates, a date change leaves stale `generatedPairings` in storage. `handleApplySchedule` then writes those stale pairings to whatever `selectedDate` is current — silently scheduling matches on the wrong day.
+`src/utils/autoSchedule/blossom/generatePairings.ts` line 162 returns `findGuaranteedSolution(...)` from the catch block without validation. `findGuaranteedSolution`/`repairUnmatchedTeams` log a warning when teams still don't reach `targetMatchesPerTeam` but return the incomplete result anyway. Downstream, `src/hooks/scheduling/utils/standardPairing.ts` only flags teams with **zero** appearances as unmatched, so teams with 1/2 matches are silently treated as "matched" — the schedule looks fine to the user despite being incomplete.
 
-## Fix (single file: `src/hooks/useAutoSchedule/usePairingOperations.ts`)
+The primary blossom path (lines ~120–146) already calls `validatePairings` / `validatePairingsWithDetails` (both throw on incomplete results). The catch-block fallback is the only escape that doesn't.
 
-Track the generation date alongside the pairings and reject apply when it doesn't match the currently selected date. Persist the generation date so the staleness check survives reloads.
+## Fix
 
-1. Extend `PersistedAutoScheduleState` in `storage.ts` with an optional `generationDate: string | null` field, default `null`, validated as `value.generationDate === null || isString(value.generationDate)`. Treat the field as optional in the type guard (also accept `undefined` to stay backward-compatible with existing sessionStorage payloads).
-2. In `usePairingOperations`:
-   - Add `const [generationDate, setGenerationDate] = useState<Date | null>(() => persistedState.current?.generationDate ? new Date(persistedState.current.generationDate) : null);`
-   - In the persistence `useEffect`, also persist `generationDate: generationDate?.toISOString() ?? null`.
-   - In `handleGenerateClick`, after `setGeneratedPairings(result.pairings)` call `setGenerationDate(selectedDate)`.
-   - In `handleApplySchedule`, after the empty-pairings guard, compare `generationDate?.getTime()` to `selectedDate?.getTime()`. If they differ, show a destructive toast ("Schedule Stale — Pairings were generated for a different date. Please regenerate.") and return `null`.
-3. Return `generationDate` from the hook (optional — useful for UI hints) — leave existing return shape additive.
+Two files, minimal diffs.
+
+### 1. `src/utils/autoSchedule/blossom/generatePairings.ts`
+
+In the catch block, validate the fallback before returning so partial results surface as a generation failure (caller already shows a toast):
+
+```ts
+warnLog('Falling back to guaranteed matching solution...');
+const fallbackPairings = await findGuaranteedSolution(teams, config, targetMatchesPerTeam);
+validatePairingsWithDetails(teams, fallbackPairings, targetMatchesPerTeam, config);
+return fallbackPairings;
+```
+
+`validatePairingsWithDetails` is already imported. It throws with a detailed per-team message; the original error from blossom is already logged via `errorLog` two lines above, so context is preserved.
+
+### 2. `src/hooks/scheduling/utils/standardPairing.ts`
+
+Defense in depth: count appearances per team and flag any team with fewer than 2 matches (the blossom target) as unmatched, instead of only zero-match teams. Replace the current `pairedTeamIds` Set logic with:
+
+```ts
+const TARGET_MATCHES = 2;
+const matchCounts = new Map<string, number>();
+teamsInBlock.forEach((t) => matchCounts.set(t.id, 0));
+blockPairings.forEach((pair) => {
+  matchCounts.set(pair.team1.id, (matchCounts.get(pair.team1.id) ?? 0) + 1);
+  matchCounts.set(pair.team2.id, (matchCounts.get(pair.team2.id) ?? 0) + 1);
+});
+const blockUnmatchedTeams = teamsInBlock
+  .filter((team) => (matchCounts.get(team.id) ?? 0) < TARGET_MATCHES)
+  .map((team) => team.id);
+```
+
+Also `warnLog` when any team has 1 (partial) match so it's visible in logs.
 
 ## Verification
 
-- `npm run test:file -- src/hooks/useAutoSchedule/__tests__/usePairingOperations.test.ts`
-- Add a test mirroring the failing test in the report: persisted pairings + a different `selectedDate` → `handleApplySchedule` returns `null` and toast called with "Stale".
-- Manual: generate pairings on date A, switch to date B, click Apply → see toast, no matches written.
+- `npm run test:file -- src/utils/autoSchedule/blossom/__tests__/repair.test.ts`
+- `npm run test:file -- src/hooks/scheduling/utils/__tests__/standardPairing.test.ts` (if present)
+- Existing repair test asserts `<= 2` matches; no change needed there. The new behavior is "throw if any team has != 2".
+- Manual: with a tight 5-team standard-mode block that previously returned a partial schedule, generation should now fail loudly with "Generation Failed" toast plus detailed per-team analysis in the console.
 
-Risk: Low. Additive optional field with backward-compatible type guard; no changes to other consumers of the persisted state.
+Risk: Medium. Schedules that previously appeared "complete but partial" will now error visibly. That is the intended behavior per the bug report. Rollback: trivial (revert two hunks).
