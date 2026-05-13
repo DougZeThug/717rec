@@ -1,37 +1,23 @@
 ## Bug verified
 
-`src/services/bracket-creator.ts` inserts a `brackets` row at line 104, then calls `bracketManagerService.createBracket()` at line 143. If the second step throws, the `catch` at line 169 only logs and rethrows, leaving an orphaned `pending` bracket row that surfaces in the brackets list and renders as "may have been deleted".
+`usePairingOperations` persists `generatedPairings` to sessionStorage with no association to the date they were generated for. `useAutoScheduleState` separately persists `selectedDate`. Because `saveAutoScheduleState` merges partial updates, a date change leaves stale `generatedPairings` in storage. `handleApplySchedule` then writes those stale pairings to whatever `selectedDate` is current — silently scheduling matches on the wrong day.
 
-Participant inserts (line 135) intentionally don't throw, so they don't need rollback — only the bracket row does.
+## Fix (single file: `src/hooks/useAutoSchedule/usePairingOperations.ts`)
 
-## Fix
+Track the generation date alongside the pairings and reject apply when it doesn't match the currently selected date. Persist the generation date so the staleness check survives reloads.
 
-Single file: `src/services/bracket-creator.ts`.
-
-1. Hoist `let createdBracketId: string | null = null;` above the `try` block so the `catch` can see it.
-2. After the successful insert at line 118, set `createdBracketId = bracketData.id;`.
-3. In the `catch` block, before rethrowing, if `createdBracketId` is set, attempt cleanup:
-
-```ts
-if (createdBracketId) {
-  const { error: cleanupError } = await supabase
-    .from('brackets')
-    .delete()
-    .eq('id', createdBracketId);
-  if (cleanupError) {
-    errorLog('Failed to clean up orphaned bracket', { bracketId: createdBracketId, cleanupError });
-  } else {
-    successLog('Cleaned up orphaned bracket', `ID: ${createdBracketId}`);
-  }
-}
-```
-
-Cascading FK on `participants.bracket_id` (and any brackets-manager rows partially created) will remove dependent rows; if cascade isn't configured, the delete will fail and we log it without masking the original error. Original error is rethrown unchanged.
+1. Extend `PersistedAutoScheduleState` in `storage.ts` with an optional `generationDate: string | null` field, default `null`, validated as `value.generationDate === null || isString(value.generationDate)`. Treat the field as optional in the type guard (also accept `undefined` to stay backward-compatible with existing sessionStorage payloads).
+2. In `usePairingOperations`:
+   - Add `const [generationDate, setGenerationDate] = useState<Date | null>(() => persistedState.current?.generationDate ? new Date(persistedState.current.generationDate) : null);`
+   - In the persistence `useEffect`, also persist `generationDate: generationDate?.toISOString() ?? null`.
+   - In `handleGenerateClick`, after `setGeneratedPairings(result.pairings)` call `setGenerationDate(selectedDate)`.
+   - In `handleApplySchedule`, after the empty-pairings guard, compare `generationDate?.getTime()` to `selectedDate?.getTime()`. If they differ, show a destructive toast ("Schedule Stale — Pairings were generated for a different date. Please regenerate.") and return `null`.
+3. Return `generationDate` from the hook (optional — useful for UI hints) — leave existing return shape additive.
 
 ## Verification
 
-- Build passes.
-- Manual: temporarily force `bracketManagerService.createBracket` to throw, confirm the brackets row no longer appears in the overview.
-- Existing happy-path bracket creation unchanged (cleanup only runs in the catch).
+- `npm run test:file -- src/hooks/useAutoSchedule/__tests__/usePairingOperations.test.ts`
+- Add a test mirroring the failing test in the report: persisted pairings + a different `selectedDate` → `handleApplySchedule` returns `null` and toast called with "Stale".
+- Manual: generate pairings on date A, switch to date B, click Apply → see toast, no matches written.
 
-Risk: Low. Pure additive cleanup in failure path. Rollback: trivial.
+Risk: Low. Additive optional field with backward-compatible type guard; no changes to other consumers of the persisted state.
