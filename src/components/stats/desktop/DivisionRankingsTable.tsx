@@ -18,6 +18,43 @@ import { getSosColor } from '@/utils/colors';
 import HeadToHeadRecords from '../HeadToHeadRecords';
 import { SortOptions } from '../RankingsTable';
 
+// Module-scope sortable header for stable component identity across renders.
+const SortableHeader: React.FC<{
+  field: string;
+  children: React.ReactNode;
+  className?: string;
+  isWinterTheme: boolean;
+  sortOptions: SortOptions;
+  onSortChange: (field: string) => void;
+}> = ({ field, children, className, isWinterTheme, sortOptions, onSortChange }) => {
+  const indicator =
+    sortOptions.field === field ? (
+      sortOptions.direction === 'asc' ? (
+        <ArrowUp className="inline-block ml-1 h-4 w-4" />
+      ) : (
+        <ArrowDown className="inline-block ml-1 h-4 w-4" />
+      )
+    ) : null;
+
+  return (
+    <TableHead
+      className={cn(
+        'cursor-pointer text-sm font-medium font-mono',
+        isWinterTheme
+          ? 'hover:bg-white/10 text-card-foreground'
+          : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-white',
+        className
+      )}
+      onClick={() => onSortChange(field)}
+    >
+      <div className="flex items-center justify-center">
+        {children}
+        {indicator}
+      </div>
+    </TableHead>
+  );
+};
+
 interface DivisionRankingsTableProps {
   rankings: Ranking[];
   allRankings: Ranking[];
@@ -49,32 +86,6 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
         <ArrowDown className="inline-block ml-1 h-4 w-4" />
       )
     ) : null;
-
-  const SortableHeader = ({
-    field,
-    children,
-    className,
-  }: {
-    field: string;
-    children: React.ReactNode;
-    className?: string;
-  }) => (
-    <TableHead
-      className={cn(
-        'cursor-pointer text-sm font-medium font-mono',
-        isWinterTheme
-          ? 'hover:bg-white/10 text-card-foreground'
-          : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-white',
-        className
-      )}
-      onClick={() => onSortChange(field)}
-    >
-      <div className="flex items-center justify-center">
-        {children}
-        {renderSortIndicator(field)}
-      </div>
-    </TableHead>
-  );
 
   return (
     <div className="overflow-x-auto">
@@ -130,15 +141,47 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
                 </span>
               </div>
             </TableHead>
-            <SortableHeader field="wins">W-L</SortableHeader>
-            <SortableHeader field="winPercentage">Win %</SortableHeader>
-            <SortableHeader field="gamesWon" className="hidden md:table-cell">
+            <SortableHeader
+              field="wins"
+              isWinterTheme={isWinterTheme}
+              sortOptions={sortOptions}
+              onSortChange={onSortChange}
+            >
+              W-L
+            </SortableHeader>
+            <SortableHeader
+              field="winPercentage"
+              isWinterTheme={isWinterTheme}
+              sortOptions={sortOptions}
+              onSortChange={onSortChange}
+            >
+              Win %
+            </SortableHeader>
+            <SortableHeader
+              field="gamesWon"
+              className="hidden md:table-cell"
+              isWinterTheme={isWinterTheme}
+              sortOptions={sortOptions}
+              onSortChange={onSortChange}
+            >
               Games (W-L)
             </SortableHeader>
-            <SortableHeader field="gameWinPercentage" className="hidden lg:table-cell">
+            <SortableHeader
+              field="gameWinPercentage"
+              className="hidden lg:table-cell"
+              isWinterTheme={isWinterTheme}
+              sortOptions={sortOptions}
+              onSortChange={onSortChange}
+            >
               Game %
             </SortableHeader>
-            <SortableHeader field="sos" className="hidden lg:table-cell">
+            <SortableHeader
+              field="sos"
+              className="hidden lg:table-cell"
+              isWinterTheme={isWinterTheme}
+              sortOptions={sortOptions}
+              onSortChange={onSortChange}
+            >
               <div className="flex items-center gap-1 justify-center">
                 <span>SOS</span>
               </div>

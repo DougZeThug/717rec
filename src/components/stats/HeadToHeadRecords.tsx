@@ -34,6 +34,23 @@ interface HeadToHeadRecordsProps {
 type SortField = 'opponent_name' | 'win_pct' | 'matches_played' | 'wins' | 'game_wins';
 type SortDirection = 'asc' | 'desc';
 
+// Module-scope sort button so React keeps a stable component identity.
+const SortButton: React.FC<{
+  field: SortField;
+  onSort: (field: SortField) => void;
+  children: React.ReactNode;
+}> = ({ field, onSort, children }) => (
+  <Button
+    variant="ghost"
+    size="sm"
+    onClick={() => onSort(field)}
+    className="h-auto p-1 font-medium justify-start text-foreground hover:text-foreground hover:bg-muted/80"
+  >
+    {children}
+    <ArrowUpDown className="ml-1 h-3 w-3" />
+  </Button>
+);
+
 const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
   teamId,
   teamName = 'Team',
@@ -85,21 +102,6 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
   const handleTeamClick = (opponentId: string, opponentName: string) => {
     navigate(`/teams/${toTeamSlug(opponentName)}`);
   };
-
-  const SortButton: React.FC<{ field: SortField; children: React.ReactNode }> = ({
-    field,
-    children,
-  }) => (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={() => handleSort(field)}
-      className="h-auto p-1 font-medium justify-start text-foreground hover:text-foreground hover:bg-muted/80"
-    >
-      {children}
-      <ArrowUpDown className="ml-1 h-3 w-3" />
-    </Button>
-  );
 
   const rivalryBadgeConfig: Record<RivalryType, { label: string; className: string }> = {
     rival: {
@@ -220,19 +222,29 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
                 <thead>
                   <tr className="border-b">
                     <th className="text-left py-2">
-                      <SortButton field="opponent_name">Opponent</SortButton>
+                      <SortButton field="opponent_name" onSort={handleSort}>
+                        Opponent
+                      </SortButton>
                     </th>
                     <th className="text-center py-2">
-                      <SortButton field="wins">W-L</SortButton>
+                      <SortButton field="wins" onSort={handleSort}>
+                        W-L
+                      </SortButton>
                     </th>
                     <th className="text-center py-2">
-                      <SortButton field="win_pct">Win%</SortButton>
+                      <SortButton field="win_pct" onSort={handleSort}>
+                        Win%
+                      </SortButton>
                     </th>
                     <th className="text-center py-2">
-                      <SortButton field="matches_played">Matches</SortButton>
+                      <SortButton field="matches_played" onSort={handleSort}>
+                        Matches
+                      </SortButton>
                     </th>
                     <th className="text-center py-2">
-                      <SortButton field="game_wins">Game W-L</SortButton>
+                      <SortButton field="game_wins" onSort={handleSort}>
+                        Game W-L
+                      </SortButton>
                     </th>
                     <th className="text-left py-2">Last Played</th>
                     <th className="text-right py-2">Action</th>
