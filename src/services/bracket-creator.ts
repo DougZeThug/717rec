@@ -19,6 +19,8 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
 
   bracketLog('Starting bracket creation:', { name, format, teamCount: teams.length });
 
+  let createdBracketId: string | null = null;
+
   try {
     onProgress?.('Creating tournament and saving to database...');
 
@@ -119,6 +121,8 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
 
     if (bracketError) throw bracketError;
 
+    createdBracketId = bracketData.id;
+
     onProgress?.('Storing participants...');
 
     // Insert participants into the participants table
@@ -178,6 +182,22 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
     });
 
     failureLog('Bracket creation failed', error);
+
+    // Rollback: clean up orphaned bracket row if it was inserted
+    if (createdBracketId) {
+      const { error: cleanupError } = await supabase
+        .from('brackets')
+        .delete()
+        .eq('id', createdBracketId);
+      if (cleanupError) {
+        errorLog('Failed to clean up orphaned bracket', {
+          bracketId: createdBracketId,
+          cleanupError,
+        });
+      } else {
+        successLog('Cleaned up orphaned bracket', `ID: ${createdBracketId}`);
+      }
+    }
 
     // Preserve detailed error message if available
     const errorMessage =

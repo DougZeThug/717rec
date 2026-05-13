@@ -1,33 +1,37 @@
 ## Bug verified
 
-`src/services/brackets/manager/SupabaseSqlStorage.ts` lines 206–212: the defensive-merge pre-fetch destructures only `data` from a `.single()` call, silently dropping `error`. Any non-PGRST116 failure (timeout, RLS denial, transient connection error) yields `currentMatch = null`, which `mergeOpponentSlots(null, patch)` treats as "no protection" — the very condition the defensive merge exists to prevent.
+`src/services/bracket-creator.ts` inserts a `brackets` row at line 104, then calls `bracketManagerService.createBracket()` at line 143. If the second step throws, the `catch` at line 169 only logs and rethrows, leaving an orphaned `pending` bracket row that surfaces in the brackets list and renders as "may have been deleted".
 
-Also violates the project's core convention: use `.maybeSingle()` (memory: "Database API: Throw via `handleDatabaseError`. Use `.maybeSingle()` instead of `.single()`").
+Participant inserts (line 135) intentionally don't throw, so they don't need rollback — only the bracket row does.
 
 ## Fix
 
-Single file: `src/services/brackets/manager/SupabaseSqlStorage.ts`, lines 206–212.
+Single file: `src/services/bracket-creator.ts`.
+
+1. Hoist `let createdBracketId: string | null = null;` above the `try` block so the `catch` can see it.
+2. After the successful insert at line 118, set `createdBracketId = bracketData.id;`.
+3. In the `catch` block, before rethrowing, if `createdBracketId` is set, attempt cleanup:
 
 ```ts
-const { data: currentMatch, error: fetchError } = await client
-  .from('match')
-  .select(
-    'id, opponent1_id, opponent2_id, opponent1_result, opponent2_result, round_id, group_id, number, status'
-  )
-  .eq('id', matchId as number)
-  .maybeSingle();
-
-if (fetchError) {
-  handleDatabaseError(fetchError, 'Failed to fetch match for defensive merge');
+if (createdBracketId) {
+  const { error: cleanupError } = await supabase
+    .from('brackets')
+    .delete()
+    .eq('id', createdBracketId);
+  if (cleanupError) {
+    errorLog('Failed to clean up orphaned bracket', { bracketId: createdBracketId, cleanupError });
+  } else {
+    successLog('Cleaned up orphaned bracket', `ID: ${createdBracketId}`);
+  }
 }
 ```
 
-`handleDatabaseError` is already imported (line 5). `maybeSingle()` returns `{ data: null, error: null }` for genuine "no row" cases, preserving the existing intentional `currentMatch = null` path that `mergeOpponentSlots` handles. Real DB errors now throw instead of being swallowed.
+Cascading FK on `participants.bracket_id` (and any brackets-manager rows partially created) will remove dependent rows; if cascade isn't configured, the delete will fail and we log it without masking the original error. Original error is rethrown unchanged.
 
 ## Verification
 
-- Existing bracket update tests still pass: `npm run test:file -- src/services/brackets/manager/__tests__/SupabaseSqlStorage.test.ts` (if present), plus any `mergeOpponentSlots` tests.
-- Manual: edit a bracket match — works as before in the happy path.
-- Negative: no easy way to reproduce a transient DB error in dev; covered by behavior contract (errors now throw and surface to the bracket update flow's existing try/catch).
+- Build passes.
+- Manual: temporarily force `bracketManagerService.createBracket` to throw, confirm the brackets row no longer appears in the overview.
+- Existing happy-path bracket creation unchanged (cleanup only runs in the catch).
 
-Risk: Low. Single-line behavioral fix that aligns with the rest of the codebase. Rollback: trivial.
+Risk: Low. Pure additive cleanup in failure path. Rollback: trivial.
