@@ -66,16 +66,33 @@ export const scheduleStandardPairings = async (
       playedPairsSet.add(pairingKey);
     });
 
-    // Find unmatched teams
-    const pairedTeamIds = new Set<string>();
+    // Find unmatched teams. Blossom targets 2 matches per team; flag any team
+    // that didn't reach the target (not just zero-match teams) so partial
+    // schedules are surfaced instead of appearing complete.
+    const TARGET_MATCHES = 2;
+    const matchCounts = new Map<string, number>();
+    teamsInBlock.forEach((t) => matchCounts.set(t.id, 0));
     blockPairings.forEach((pair) => {
-      pairedTeamIds.add(pair.team1.id);
-      pairedTeamIds.add(pair.team2.id);
+      matchCounts.set(pair.team1.id, (matchCounts.get(pair.team1.id) ?? 0) + 1);
+      matchCounts.set(pair.team2.id, (matchCounts.get(pair.team2.id) ?? 0) + 1);
     });
 
     const blockUnmatchedTeams = teamsInBlock
-      .filter((team) => !pairedTeamIds.has(team.id))
+      .filter((team) => (matchCounts.get(team.id) ?? 0) < TARGET_MATCHES)
       .map((team) => team.id);
+
+    const partialTeams = teamsInBlock.filter((team) => {
+      const count = matchCounts.get(team.id) ?? 0;
+      return count > 0 && count < TARGET_MATCHES;
+    });
+    if (partialTeams.length > 0) {
+      warnLog(
+        `Block ${block} has ${partialTeams.length} team(s) with fewer than ${TARGET_MATCHES} matches: ` +
+          partialTeams
+            .map((t) => `${t.name} (${matchCounts.get(t.id) ?? 0}/${TARGET_MATCHES})`)
+            .join(', ')
+      );
+    }
 
     allUnmatchedTeamIds = [...allUnmatchedTeamIds, ...blockUnmatchedTeams];
   }
