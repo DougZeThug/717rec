@@ -280,16 +280,6 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
   const { isWinterTheme } = useSeasonalThemeBase();
   const { shouldVirtualize } = useVirtualization({ itemCount: teams.length, threshold: 30 });
 
-  if (teams.length === 0) {
-    return (
-      <InlineEmptyState
-        icon={Trophy}
-        message="No Standings Available"
-        description="Team standings will appear once match data is recorded for this season."
-      />
-    );
-  }
-
   const renderMobileRow = useCallback(
     (team: SeasonData, _index: number, style: CSSProperties) => (
       <MobileTeamRow key={team.team_id} team={team} style={style} isWinterTheme={isWinterTheme} />
@@ -303,6 +293,17 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
     ),
     [isWinterTheme]
   );
+
+  // Empty-state early return moved AFTER all hook calls (Rules of Hooks).
+  if (teams.length === 0) {
+    return (
+      <InlineEmptyState
+        icon={Trophy}
+        message="No Standings Available"
+        description="Team standings will appear once match data is recorded for this season."
+      />
+    );
+  }
 
   if (isMobile) {
     if (shouldVirtualize) {
