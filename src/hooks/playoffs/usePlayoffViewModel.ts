@@ -27,8 +27,20 @@ const groupBracketMatchesByType = (matches: PlayoffMatchWithTeams[]) => {
 export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel {
   playoffLog('usePlayoffViewModel called with bracketId:', bracketId);
 
+  // Normalize the input so child hooks always receive a valid value or null.
+  const safeBracketId =
+    bracketId && typeof bracketId === 'string' && bracketId.trim() !== '' ? bracketId : null;
+
+  // IMPORTANT: All hooks must be called unconditionally and in the same order on
+  // every render. Hoist them above any early returns to satisfy the Rules of Hooks.
+  // Each child hook already handles a null bracketId internally (no-op / null data).
+  const bracketQuery = usePlayoffBracketData(safeBracketId);
+  const matchesQuery = usePlayoffMatches(safeBracketId);
+  const teamsQuery = usePlayoffTeams();
+  const actions = usePlayoffActions();
+
   // Defensive: return safe defaults immediately if bracketId is invalid
-  if (!bracketId || (typeof bracketId === 'string' && bracketId.trim() === '')) {
+  if (!safeBracketId) {
     if (import.meta.env.DEV) {
       warnLog('usePlayoffViewModel: Returning safe defaults for invalid bracketId');
     }
@@ -50,12 +62,6 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
       },
     };
   }
-
-  // Use the focused hooks
-  const bracketQuery = usePlayoffBracketData(bracketId);
-  const matchesQuery = usePlayoffMatches(bracketId);
-  const teamsQuery = usePlayoffTeams();
-  const actions = usePlayoffActions();
 
   // CRITICAL: Normalize to stable defaults - never return undefined
   const safeMatches = Array.isArray(matchesQuery.data) ? matchesQuery.data : [];
