@@ -49,6 +49,8 @@ export class DoubleHeaderService {
       throw new BusinessLogicError(`Could not find pair config for: ${pair1Name} or ${pair2Name}`);
     }
 
+    DoubleHeaderService.assertPairsDoNotOverlap(pair1Config, pair2Config, slot1, slot2);
+
     const timeslotData: TimeslotInsert[] = [
       {
         match_date: formattedDate,
@@ -130,6 +132,8 @@ export class DoubleHeaderService {
       throw new BusinessLogicError(`Could not find pair config for: ${pair1Name} or ${pair2Name}`);
     }
 
+    DoubleHeaderService.assertPairsDoNotOverlap(pair1Config, pair2Config, slot1, slot2);
+
     const allTimeslotData: TimeslotInsert[] = [];
 
     teamIds.forEach((teamId) => {
@@ -186,5 +190,28 @@ export class DoubleHeaderService {
 
     if (error) handleDatabaseError(error, 'Failed to batch assign double header timeslots');
     return TimeslotTransformer.formatTimeslotResponse(data ?? []);
+  }
+
+  /**
+   * Reject overlapping back-to-back pairs (e.g. 7:00 PM expands to 7:00/7:30
+   * and 7:30 PM expands to 7:30/8:00 — the team would be booked twice at 7:30).
+   */
+  private static assertPairsDoNotOverlap(
+    pair1Config: { primary: string; secondary: string },
+    pair2Config: { primary: string; secondary: string },
+    slot1: string,
+    slot2: string
+  ): void {
+    const allSlots = [
+      pair1Config.primary,
+      pair1Config.secondary,
+      pair2Config.primary,
+      pair2Config.secondary,
+    ];
+    if (new Set(allSlots).size < 4) {
+      throw new ValidationError(
+        `Double header pairs cannot overlap. ${slot1} and ${slot2} would assign the team to the same timeslot twice.`
+      );
+    }
   }
 }

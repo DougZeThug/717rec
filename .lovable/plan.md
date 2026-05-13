@@ -1,51 +1,39 @@
 ## Bug verified
 
-Confirmed in `src/components/playoffs/BracketCreationDialog.tsx`:
-
-- Line 110: `seed: data.teamSeeds?.[team.id] ?? team.seed ?? 0` coerces NULL/undefined seeds to `0`.
-- Line 142: `seed: team.seed || index + 1` then turns that `0` into a positional seed.
-
-By the time `src/services/bracket-creator.ts` runs, every team has a positive integer `seed`, so the "BOTH have manual seeds" branch (line 52) is always taken and the `power_score`-based fallback (line 63) is dead code. Result: top seed goes to whatever the array's first team is (often alphabetical), not the highest `power_score`.
+`src/services/timeslots/DoubleHeaderService.ts` (both `assignDoubleHeader` and `batchAssignDoubleHeaders`) expands `slot1` and `slot2` into two back-to-back pairs without checking that the resulting 4 timeslots are distinct. Adjacent picks like `7:00 PM` (→ `7:00/7:30`) and `7:30 PM` (→ `7:30/8:00`) produce two rows for the same team at `7:30 PM` on the same date. There is no DB unique constraint on `(team_id, match_date, timeslot)`, so the corrupt rows persist.
 
 ## Fix
 
-Single file: `src/components/playoffs/BracketCreationDialog.tsx`. Stop fabricating seeds in the UI; pass `undefined` when no manual override exists so `bracket-creator.ts` can run its existing power_score sort.
+Single file: `src/services/timeslots/DoubleHeaderService.ts`. Add an overlap check immediately after both pair configs are resolved, in both methods. Throw the same `ValidationError` type already imported.
 
 ```ts
-const selectedTeams = teams
-  .filter((team) => data.teams.includes(team.id))
-  .map((team) => {
-    const manualSeed = data.teamSeeds?.[team.id];
-    return {
-      ...team,
-      // Only a real, user-provided seed counts. team.seed from DB is
-      // intentionally ignored here so power_score ranking can drive auto-seeds.
-      seed: typeof manualSeed === 'number' && manualSeed > 0 ? manualSeed : undefined,
-    };
-  });
+const allSlots = [
+  pair1Config.primary,
+  pair1Config.secondary,
+  pair2Config.primary,
+  pair2Config.secondary,
+];
+if (new Set(allSlots).size < 4) {
+  throw new ValidationError(
+    `Double header pairs cannot overlap. ${slot1} and ${slot2} would assign the team to the same timeslot twice.`
+  );
+}
 ```
 
-And in the mutation payload (replacing line 139–143):
+Apply the same check in `batchAssignDoubleHeaders` (it shares the same expansion logic before the per-team loop, so one check covers all teams).
 
-```ts
-teams: selectedTeams.map((team) => ({
-  id: team.id,
-  name: team.name,
-  seed: team.seed, // undefined when no manual override → bracket-creator sorts by power_score
-})),
-```
-
-`CreateBracketArgs.teams[].seed` is already `seed?: number` (line 11 of `bracket-creator.ts`), so passing `undefined` is type-safe and routes through the existing branch that sorts by `power_score` and assigns `index + 1` per the sorted order.
+Optionally extract the pair resolution + overlap validation into a private static helper `resolvePairs(slot1, slot2)` returning `{ pair1Config, pair2Config }` to avoid drift between the two methods. Low-risk small refactor; happy to keep inline if simpler.
 
 ## Out of scope
 
-- DB-stored `team.seed` is intentionally not used as an auto-seed source. If a league wants per-team default seeds, that's a separate feature (and would need a UI to make it visible).
-- Not touching `BracketFormTeamsContainer` ordering or `v_team_details` ORDER BY — `bracket-creator.ts` re-sorts by `power_score` regardless of input order once seeds are undefined.
+- No DB schema change. A unique index on `(team_id, match_date, timeslot)` would be a stronger fix but risks colliding with other legitimate flows (back-to-back already inserts a team into two slots — fine — but other scheduling code would need auditing). Leave for a follow-up.
+- UI prevention in the timeslot picker is a separate (additive) improvement; the service-layer guard is the correctness backstop.
 
 ## Verification
 
-- 8 teams, no manual seeds, varying power_score: created bracket's seed 1 = highest power_score team (was previously alphabetical first).
-- 8 teams, manual seed set on 2 teams via the seed editor: those two keep their manual seeds; the rest fill in by power_score order around them (current bracket-creator behavior, unchanged).
-- Type check passes (`seed?: number` accepts undefined).
+- Add unit test: `assignDoubleHeader(date, team, '7:00 PM', '7:30 PM')` rejects with `ValidationError`.
+- Add unit test: `batchAssignDoubleHeaders(date, [team1, team2], '7:00 PM', '7:30 PM')` rejects before any insert.
+- Existing happy-path tests (non-overlapping pairs) still pass.
+- `npm run test:file -- src/services/timeslots/__tests__/DoubleHeaderService.test.ts`
 
-Risk: Low. One file, one component. Rollback: trivial.
+Risk: Low. Pure validation guard added before any DB write. Rollback: trivial.
