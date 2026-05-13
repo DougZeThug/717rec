@@ -113,28 +113,6 @@ const BracketView: React.FC<BracketViewProps> = ({
     [onEditMatch]
   );
 
-  if (!bracketId || typeof bracketId !== 'string' || bracketId.trim() === '') {
-    errorLog('Invalid bracketId', { bracketId });
-    return (
-      <div className="p-8 text-center">
-        <div className="text-gray-500">
-          <p className="text-lg font-semibold mb-2">Invalid bracket ID</p>
-          <p className="text-sm">Cannot display bracket without a valid identifier.</p>
-        </div>
-      </div>
-    );
-  }
-
-  const isLoading = isLoadingBracketInfo || isLoadingLegacy;
-  const error = bracketInfoError || legacyError;
-
-  debugLog('Data fetching status:', {
-    isLoadingBracketInfo,
-    isLoadingLegacy,
-    hasLegacyBracket: !!legacyBracket,
-    bracketInfo: bracketInfo ? { id: bracketInfo.id } : null,
-  });
-
   const isJsonbBracket = bracketInfo?.uses_brackets_manager && bracketInfo?.bracket_data;
 
   const displayBracket = useMemo(() => {
@@ -156,6 +134,29 @@ const BracketView: React.FC<BracketViewProps> = ({
       errorLog('Manual retry failed:', retryError);
     }
   }, [refetchBracket, bracketId]);
+
+  // Invalid-bracket-id guard moved AFTER all hooks to comply with Rules of Hooks.
+  if (!bracketId || typeof bracketId !== 'string' || bracketId.trim() === '') {
+    errorLog('Invalid bracketId', { bracketId });
+    return (
+      <div className="p-8 text-center">
+        <div className="text-gray-500">
+          <p className="text-lg font-semibold mb-2">Invalid bracket ID</p>
+          <p className="text-sm">Cannot display bracket without a valid identifier.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const isLoading = isLoadingBracketInfo || isLoadingLegacy;
+  const error = bracketInfoError || legacyError;
+
+  debugLog('Data fetching status:', {
+    isLoadingBracketInfo,
+    isLoadingLegacy,
+    hasLegacyBracket: !!legacyBracket,
+    bracketInfo: bracketInfo ? { id: bracketInfo.id } : null,
+  });
 
   if (isLoading && !legacyBracket && !isJsonbBracket) {
     debugLog('Showing loading state');
