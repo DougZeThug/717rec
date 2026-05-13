@@ -1,35 +1,51 @@
 ## Bug verified
 
-`src/utils/scheduling/greedy/scheduleOdd.ts` accepts the orchestrator's pre-computed `relaxationLevel` and runs **one** pass of `generateSlotPairings` for S1 and S2. If either slot is short, it only invokes a single `attemptRepairPass` at hard-coded level `3`. There is no retry loop that progressively bumps `relaxationLevel` 0→1→2→3 the way `scheduleEven.ts` (lines 157–219) does.
+Confirmed in `src/components/playoffs/BracketCreationDialog.tsx`:
 
-Consequence: with 7 teams and `maxTierGap=1`, when the feasibility pre-check returns level 0 but greedy ordering dynamically exhausts valid opponents, S1/S2 produce fewer than `(N-1)/2` matches and the final total is 6 instead of 7. Tier constraints (relaxed at level 1) are never tried — the only escape is a level-3 repair on already-leftover unmatched teams, which is too late and skips the minimal-relaxation step.
+- Line 110: `seed: data.teamSeeds?.[team.id] ?? team.seed ?? 0` coerces NULL/undefined seeds to `0`.
+- Line 142: `seed: team.seed || index + 1` then turns that `0` into a positional seed.
+
+By the time `src/services/bracket-creator.ts` runs, every team has a positive integer `seed`, so the "BOTH have manual seeds" branch (line 52) is always taken and the `power_score`-based fallback (line 63) is dead code. Result: top seed goes to whatever the array's first team is (often alphabetical), not the highest `power_score`.
 
 ## Fix
 
-Mirror `scheduleEven`'s progressive relaxation in `scheduleOdd.ts`. Single file changed.
+Single file: `src/components/playoffs/BracketCreationDialog.tsx`. Stop fabricating seeds in the UI; pass `undefined` when no manual override exists so `bracket-creator.ts` can run its existing power_score sort.
 
-Steps inside `scheduleOdd`, after the initial S1+S2 generation (current lines 56–135):
+```ts
+const selectedTeams = teams
+  .filter((team) => data.teams.includes(team.id))
+  .map((team) => {
+    const manualSeed = data.teamSeeds?.[team.id];
+    return {
+      ...team,
+      // Only a real, user-provided seed counts. team.seed from DB is
+      // intentionally ignored here so power_score ranking can drive auto-seeds.
+      seed: typeof manualSeed === 'number' && manualSeed > 0 ? manualSeed : undefined,
+    };
+  });
+```
 
-1. Compute `expectedPerSlot = Math.floor((teams.length - 1) / 2)`.
-2. While `(s1Matches.length < expectedPerSlot || s2Matches.length < expectedPerSlot) && relaxationLevel < 3`:
-   - Bump `relaxationLevel` by 1; record `diagnostics.relaxationApplied` and push `'tier_constraints'` (lvl 1) / `'season_rematches'` (lvl 2) into `diagnostics.constraintsRelaxed`.
-   - Reset state the same way `scheduleEven` does: `tonightPairs.clear()` then re-seed from `forbiddenPairs`, `newPairs.clear()`, `teamMatchCounts.clear()`.
-   - Re-pick `bye1` (and `bye2` via the existing canPlay loop) at the new relaxation level — bye selection itself depends on `relaxationLevel`, so reusing the level-0 byes would defeat the retry.
-   - Re-run `generateSlotPairings` for S1 (excluding `bye1.id`) and S2 (excluding `bye2.id`) at the new level, followed by `rematchRepairPass` for each (same call shape as the initial pass).
-3. Keep the existing repair-pass block (lines 137–177) as the final safety net for any still-unmatched teams.
-4. Leave the S3 `bye1 vs bye2` construction and validation/logging untouched.
+And in the mutation payload (replacing line 139–143):
 
-`forbiddenPairs` is not currently in `OddScheduleArgs`. Add it (optional `Set<string> | undefined`) and pass it through from `index.ts` so the retry loop can correctly re-seed `tonightPairs` — same as `scheduleEven` does.
+```ts
+teams: selectedTeams.map((team) => ({
+  id: team.id,
+  name: team.name,
+  seed: team.seed, // undefined when no manual override → bracket-creator sorts by power_score
+})),
+```
 
-## Files
+`CreateBracketArgs.teams[].seed` is already `seed?: number` (line 11 of `bracket-creator.ts`), so passing `undefined` is type-safe and routes through the existing branch that sorts by `power_score` and assigns `index + 1` per the sorted order.
 
-- `src/utils/scheduling/greedy/scheduleOdd.ts` — add retry loop, accept `forbiddenPairs`.
-- `src/utils/scheduling/greedy/index.ts` — pass `forbiddenPairs` into `scheduleOdd({...})`.
+## Out of scope
+
+- DB-stored `team.seed` is intentionally not used as an auto-seed source. If a league wants per-team default seeds, that's a separate feature (and would need a UI to make it visible).
+- Not touching `BracketFormTeamsContainer` ordering or `v_team_details` ORDER BY — `bracket-creator.ts` re-sorts by `power_score` regardless of input order once seeds are undefined.
 
 ## Verification
 
-- `npm run test:file -- src/utils/scheduling/greedy/__tests__/scheduleOdd.test.ts`
-- Add a focused regression test: 7 teams across 3 tiers with `maxTierGap=1` that previously returned 6 matches; assert `matches.length === 7` and `diagnostics.constraintsRelaxed` includes `'tier_constraints'`.
-- Full suite: `npm test` to confirm no other scheduler tests regress.
+- 8 teams, no manual seeds, varying power_score: created bracket's seed 1 = highest power_score team (was previously alphabetical first).
+- 8 teams, manual seed set on 2 teams via the seed editor: those two keep their manual seeds; the rest fill in by power_score order around them (current bracket-creator behavior, unchanged).
+- Type check passes (`seed?: number` accepts undefined).
 
-Risk: Low — additive retry, existing single-pass behavior is preserved when the first pass already produces a complete schedule. Rollback: revert the two files.
+Risk: Low. One file, one component. Rollback: trivial.
