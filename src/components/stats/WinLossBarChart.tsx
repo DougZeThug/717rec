@@ -21,6 +21,42 @@ interface BarChartProps {
   isMobile: boolean;
 }
 
+// Module-scope X axis tick. Recharts injects x/y/payload; the rest are passed
+// in via the element form `tick={<CustomXAxisTick ... />}`.
+const CustomXAxisTick: React.FC<{
+  x?: number;
+  y?: number;
+  payload?: { value: unknown };
+  isDark?: boolean;
+  isMobile?: boolean;
+  maxLabelLength?: number;
+}> = ({ x, y, payload, isDark, isMobile, maxLabelLength = 10 }) => {
+  if (!payload || typeof payload.value === 'undefined') return null;
+  const label = typeof payload.value === 'string' ? payload.value : String(payload.value);
+  const truncated = truncateLabel(label, maxLabelLength);
+
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <title>{label}</title>
+      <text
+        y={0}
+        x={0}
+        dy={14}
+        textAnchor="end"
+        fill={isDark ? '#e5e7eb' : '#334155'}
+        fontSize={isMobile ? 10 : 11}
+        fontFamily="'Inter', sans-serif"
+        transform={`rotate(-24)`}
+        style={{
+          cursor: label.length > maxLabelLength ? 'pointer' : undefined,
+        }}
+      >
+        {truncated}
+      </text>
+    </g>
+  );
+};
+
 const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
@@ -29,38 +65,6 @@ const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
   const barColorWin = '#10b981';
   const barColorLoss = '#ef4444';
   const maxLabelLength = isMobile ? 7 : 12;
-
-  const CustomXAxisTick = (props: {
-    x?: number;
-    y?: number;
-    payload?: { value: unknown };
-  }) => {
-    const { x, y, payload } = props;
-    if (!payload || typeof payload.value === 'undefined') return null;
-    const label = typeof payload.value === 'string' ? payload.value : String(payload.value);
-    const truncated = truncateLabel(label, maxLabelLength);
-
-    return (
-      <g transform={`translate(${x},${y})`}>
-        <title>{label}</title>
-        <text
-          y={0}
-          x={0}
-          dy={14}
-          textAnchor="end"
-          fill={isDark ? '#e5e7eb' : '#334155'}
-          fontSize={isMobile ? 10 : 11}
-          fontFamily="'Inter', sans-serif"
-          transform={`rotate(-24)`}
-          style={{
-            cursor: label.length > maxLabelLength ? 'pointer' : undefined,
-          }}
-        >
-          {truncated}
-        </text>
-      </g>
-    );
-  };
 
   chartLog('WinLossBarChart rendering with data length:', data?.length);
 
@@ -106,7 +110,13 @@ const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
             height={isMobile ? 30 : 34}
             tickLine={false}
             axisLine={{ stroke: chartGridColor }}
-            tick={<CustomXAxisTick />}
+            tick={
+              <CustomXAxisTick
+                isDark={isDark}
+                isMobile={isMobile}
+                maxLabelLength={maxLabelLength}
+              />
+            }
             padding={{ left: 6, right: 6 }}
           />
           <YAxis

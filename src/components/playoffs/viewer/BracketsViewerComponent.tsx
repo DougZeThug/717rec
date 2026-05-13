@@ -22,16 +22,6 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
   teams,
   onMatchClick,
 }) => {
-  // Guard: Require valid bracket with ID
-  if (!bracket || !bracket.id) {
-    errorLog('BracketsViewerComponent: Invalid bracket prop');
-    return (
-      <div className="text-center p-8 text-red-500">
-        <p>Cannot render bracket: Invalid data</p>
-      </div>
-    );
-  }
-
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [refreshCounter, setRefreshCounter] = useState(0);
@@ -57,7 +47,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
       }
 
       // Handle brackets-manager brackets
-      if (bracket.uses_brackets_manager) {
+      if (bracket?.uses_brackets_manager) {
         bracketLog('Opening brackets-manager match editor for match:', match.id);
         setSelectedBMMatchId(match.id);
         setIsBMEditorOpen(true);
@@ -75,7 +65,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
         }
       }
     },
-    [onMatchClick, bracket.uses_brackets_manager]
+    [onMatchClick, bracket?.uses_brackets_manager]
   );
 
   // Render the bracket visualization
@@ -91,6 +81,17 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
     refreshCounter,
     onMatchClicked: handleMatchClicked,
   });
+
+  // Guard: Require valid bracket with ID — moved AFTER all hooks to comply with
+  // the Rules of Hooks (hooks must always be called in the same order).
+  if (!bracket || !bracket.id) {
+    errorLog('BracketsViewerComponent: Invalid bracket prop');
+    return (
+      <div className="text-center p-8 text-red-500">
+        <p>Cannot render bracket: Invalid data</p>
+      </div>
+    );
+  }
 
   if (!bracket || !teams.length) {
     return (

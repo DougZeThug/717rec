@@ -145,6 +145,16 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     hasToastedInvalidDivision.current = false;
   }, [validDivisionId]);
 
+  // Seed change handler - hoisted above all early returns to comply with Rules of Hooks.
+  const handleSeedChange = React.useCallback(
+    (teamId: string, seed: number | null) => {
+      if (onSeedChange) {
+        onSeedChange(teamId, seed);
+      }
+    },
+    [onSeedChange]
+  );
+
   // Loading state
   if (isLoading) {
     return <TeamSelectionLoading />;
@@ -164,16 +174,6 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
   if (!Array.isArray(filteredTeams) || filteredTeams.length === 0) {
     return <TeamSelectionEmpty />;
   }
-
-  // Seed change handler - forward to parent if provided
-  const handleSeedChange = React.useCallback(
-    (teamId: string, seed: number | null) => {
-      if (onSeedChange) {
-        onSeedChange(teamId, seed);
-      }
-    },
-    [onSeedChange]
-  );
 
   // Main form with teams available
   return (
