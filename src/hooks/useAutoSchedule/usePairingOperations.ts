@@ -39,6 +39,11 @@ export const usePairingOperations = (
     () => persistedState.current?.unmatchedTeamIds || []
   );
   const [qualityMetrics, setQualityMetrics] = useState<MatchQualityMetrics | null>(null);
+  const [generationDate, setGenerationDate] = useState<Date | null>(() =>
+    persistedState.current?.generationDate
+      ? new Date(persistedState.current.generationDate)
+      : null
+  );
 
   const {
     isGenerating,
@@ -53,9 +58,10 @@ export const usePairingOperations = (
       saveAutoScheduleState({
         generatedPairings,
         unmatchedTeamIds,
+        generationDate: generationDate ? generationDate.toISOString() : null,
       });
     }
-  }, [generatedPairings, unmatchedTeamIds]);
+  }, [generatedPairings, unmatchedTeamIds, generationDate]);
 
   /**
    * Generate match pairings with enhanced quality analysis
@@ -158,6 +164,7 @@ export const usePairingOperations = (
           setGeneratedPairings(result.pairings);
           setUnmatchedTeamIds(result.unmatchedTeamIds);
           setQualityMetrics(metrics);
+          setGenerationDate(selectedDate);
 
           scheduleLog(
             `Pairing generation complete: ${metrics.totalMatches} matches, ${result.unmatchedTeamIds.length} unmatched, quality: ${metrics.qualityRating}`
@@ -218,6 +225,21 @@ export const usePairingOperations = (
         toast({
           title: 'Error',
           description: 'No generated schedule to apply. Please generate a schedule first.',
+          variant: 'destructive',
+        });
+        return null;
+      }
+
+      // Reject stale pairings generated for a different date
+      if (
+        generationDate &&
+        selectedDate &&
+        generationDate.getTime() !== selectedDate.getTime()
+      ) {
+        toast({
+          title: 'Schedule Stale',
+          description:
+            'Pairings were generated for a different date. Please regenerate before applying.',
           variant: 'destructive',
         });
         return null;
@@ -322,7 +344,7 @@ export const usePairingOperations = (
         return null;
       }
     },
-    [toast, qualityMetrics, teamBlockMap, generatorBlockMap, allTeams]
+    [toast, qualityMetrics, teamBlockMap, generatorBlockMap, allTeams, generationDate]
   );
 
   return {
@@ -330,6 +352,7 @@ export const usePairingOperations = (
     generatedPairings,
     unmatchedTeamIds,
     qualityMetrics,
+    generationDate,
     handleGenerateClick,
     handleApplySchedule,
   };
