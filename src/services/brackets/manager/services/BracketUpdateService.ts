@@ -335,6 +335,14 @@ export class BracketUpdateService {
 
         bracketLog('Match updated successfully in SQL tables');
         successLog('Match updated successfully', String(matchId));
+
+        // ⭐ Detect bracket completion and persist brackets.state = 'completed'.
+        // Without this write, useBracketCompletion's realtime subscription never fires
+        // and playoff_team_records is never populated. We swallow errors so a failure
+        // here cannot break the match update itself.
+        if (stage?.tournament_id) {
+          await this.markBracketCompleteIfDone(stage.tournament_id);
+        }
       } catch (error) {
         failureLog('Failed to update match', error);
         errorLog(`FULL ERROR DETAILS for Match ${matchId}:`, error);
@@ -344,5 +352,54 @@ export class BracketUpdateService {
         );
       }
     });
+  }
+
+  /**
+   * Check whether every playable match in the tournament is finished and, if so,
+   * flip brackets.state to 'completed'. The .neq guard prevents redundant UPDATEs
+   * (and the resulting duplicate realtime events). Errors are logged, never thrown.
+   *
+   * "Playable" = both opponents present. Reset matches in double-elimination that
+   * were not needed (WB champion won the championship) never get a second opponent
+   * and are correctly skipped by this filter.
+   */
+  private async markBracketCompleteIfDone(tournamentId: string): Promise<void> {
+    try {
+      const stages = await this.storage.select('stage', { tournament_id: tournamentId });
+      if (!stages) return;
+      const stagesArray = (Array.isArray(stages) ? stages : [stages]) as StorageStage[];
+
+      const allMatches: StorageMatch[] = [];
+      for (const s of stagesArray) {
+        const m = await this.storage.select('match', { stage_id: s.id });
+        if (!m) continue;
+        const arr = (Array.isArray(m) ? m : [m]) as StorageMatch[];
+        allMatches.push(...arr);
+      }
+
+      if (allMatches.length === 0) return;
+
+      const playable = allMatches.filter((m) => !!m.opponent1?.id && !!m.opponent2?.id);
+      if (playable.length === 0) return;
+
+      // brackets-manager status: 4 = Completed, 5 = Archived (also done)
+      const allDone = playable.every((m) => m.status === 4 || m.status === 5);
+      if (!allDone) return;
+
+      const { error } = await supabase
+        .from('brackets')
+        .update({ state: 'completed' })
+        .eq('id', tournamentId)
+        .neq('state', 'completed');
+
+      if (error) {
+        errorLog('Failed to mark bracket as completed', error);
+        return;
+      }
+
+      bracketLog(`🏁 Bracket ${tournamentId} marked as completed`);
+    } catch (err) {
+      errorLog('markBracketCompleteIfDone failed', err);
+    }
   }
 }
