@@ -14,7 +14,15 @@ import {
  */
 export const parseMetadata = (metadataStr: string): Record<string, unknown> => {
   try {
-    return JSON.parse(metadataStr);
+    const parsed = JSON.parse(metadataStr);
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      errorLog(
+        'Metadata must be a JSON object, got:',
+        Array.isArray(parsed) ? 'array' : typeof parsed
+      );
+      return {};
+    }
+    return parsed as Record<string, unknown>;
   } catch (e) {
     errorLog('Failed to parse metadata JSON:', e);
     return {};
