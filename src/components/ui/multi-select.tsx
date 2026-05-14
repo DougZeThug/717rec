@@ -34,6 +34,7 @@ export function MultiSelect({
   className,
 }: MultiSelectProps) {
   const [open, setOpen] = React.useState(false);
+  const listboxId = React.useId();
 
   const handleSelect = (value: string) => {
     const newSelected = selected.includes(value)
@@ -54,6 +55,7 @@ export function MultiSelect({
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          aria-controls={listboxId}
           className={cn('w-full justify-between', className)}
         >
           <div className="flex gap-1 flex-wrap">
@@ -73,7 +75,7 @@ export function MultiSelect({
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
+      <PopoverContent id={listboxId} className="w-full p-0" align="start">
         <Command>
           <CommandInput placeholder="Search teams..." />
           <CommandList>
