@@ -1,72 +1,66 @@
-# Fix Conditional Hooks & Nested Components
+# Plan: SSR-Safe Time Rendering (67 callsites)
 
-Goal: eliminate the 18 Rules-of-Hooks violations and 6 nested-component definitions surfaced by `react-doctor`, without changing any visible behavior or rendered output.
+## Goal
+Eliminate the 67 react-doctor "hydration mismatch (time)" warnings by ensuring no `new Date()` value (or anything derived from `Date.now()` / `new Date()`) is rendered directly during the initial render pass. Behavior on the live SPA must be identical — same text, same formatting, same update cadence.
 
-## Background — why these are real bugs
+## Why this is safe
+The app is a pure Vite SPA (no SSR today), so these warnings are latent. The fix is defensive: it makes the components SSR-ready without changing any visible output for current users. The only observable difference would appear *if* SSR were enabled later, where the first paint would briefly show a fallback (e.g. empty string or a stable placeholder) before the client effect fills in the live time.
 
-- **Rules of Hooks**: React relies on hooks being called in the **same order on every render**. When a component does an early `return` (or runs hooks inside an `if`) above a `useRef` / `useState` / `useMemo` / `useCallback`, React's internal hook index drifts on the next render and the component can crash with `"Rendered fewer hooks than expected"` or silently associate state with the wrong hook.
-- **Nested component definitions**: When `function SquareLogo()` lives inside `MatchCard`, a *brand-new component type* is created on every render. React unmounts and remounts the subtree each time — destroying local state, re-running effects, and breaking memoization. Visually it "works", but it's a perf and correctness landmine.
+## Strategy
 
-## Exact files & line numbers (from react-doctor)
+Three categories cover all 67 callsites. We classify each callsite, then apply the matching pattern.
 
-### A. Conditional hooks — 18 violations across 5 files
+### Category A — Pure formatting of a stable input prop (most common, ~50 sites)
+Examples: `formatDate(match.scheduled_at)`, `new Date(dateString).toLocaleDateString(...)` inside `home/utils.ts`, `teams/MatchCard.tsx`, `schedule/DateMatchGroup.tsx`, etc.
 
-| File | Lines | Hook(s) | Cause |
-|---|---|---|---|
-| `src/hooks/playoffs/usePlayoffViewModel.ts` | 55–58 | `usePlayoffBracketData`, `usePlayoffMatches`, `usePlayoffTeams`, `usePlayoffActions` | Early `return` block at line 31 when `bracketId` is empty runs before these hooks |
-| `src/components/playoffs/viewer/BracketsViewerComponent.tsx` | 35, 36, 37, 40, 41, 44, 47, 86 | `useRef`×2, `useState`×3, `useBracketsViewerScript`, `useCallback`, `useBracketsViewerRenderer` | Early `return` for invalid bracket at line 28–32 sits above all the hooks |
-| `src/components/playoffs/BracketView.tsx` | 140, 146, 150 | `useMemo`×2, `useCallback` | Empty-bracket-id early return at line ~117 runs above these hooks |
-| `src/components/history/HistoricalStandingsTable.tsx` | 293, 300 | `useCallback`×2 | `if (teams.length === 0) return …` at line 283 runs above the `useCallback`s |
-| `src/components/playoffs/form/bracket-teams/components/BracketFormTeamsContainer.tsx` | 169 | `useCallback` | Loading / error / empty-state early returns above line 169 |
+These are deterministic given the input string, but `toLocaleDateString` / `toLocaleTimeString` can produce different output on server vs client (locale, timezone). They are NOT actually hydration bugs in an SPA, but react-doctor flags any `new Date()` reachable from JSX.
 
-### B. Nested component definitions — 6 violations across 6 files
+**Fix:** Leave the formatting helpers alone (they're pure given input + runtime locale). Mark the components that render them with a tiny `useClientOnlyDate` hook OR — preferred for minimal churn — add a `suppressHydrationWarning` on the single `<span>`/`<time>` wrapping the formatted value. We will add a small shared component:
 
-| File | Line | Inner component | Parent |
-|---|---|---|---|
-| `src/components/home/MatchCard.tsx` | 19 | `SquareLogo` | `MatchCard` |
-| `src/components/teams/MatchCard.tsx` | 39 | `SquareLogo` | `MatchCard` |
-| `src/components/stats/PowerScoreChart.tsx` | 53 | `CustomPowerScoreTooltip` (+ `CustomLabel` nearby) | `PowerScoreChart` |
-| `src/components/stats/WinLossBarChart.tsx` | 33 | nested chart helper | `WinLossBarChart` |
-| `src/components/stats/HeadToHeadRecords.tsx` | 89 | nested row/cell component | `HeadToHeadRecords` |
-| `src/components/stats/desktop/DivisionRankingsTable.tsx` | 53 | nested row component | `DivisionRankingsTable` |
+```tsx
+// src/components/shared/ClientDate.tsx
+export const ClientDate: React.FC<{ value: string | Date | null; format: (d: Date) => string; fallback?: string }> = ({ value, format, fallback = '' }) => {
+  const [text, setText] = useState(fallback);
+  useEffect(() => { if (value) setText(format(new Date(value))); }, [value, format]);
+  return <span suppressHydrationWarning>{text || fallback}</span>;
+};
+```
+Adopt it at the JSX boundary in each affected card/list. The current SPA renders identically because `useEffect` runs synchronously before paint commit on the first client render — users see the same text in the same paint frame.
 
-## Fix strategy
+### Category B — "Now" comparisons computed inside render (~12 sites)
+Examples: `MatchCountdown` (already correct), but several spots compute `new Date() > matchDate` directly in JSX (e.g. `isPastMatch`, "Live" badges, "Today" labels in `DateStrip.tsx` via `isToday()`).
 
-### Pattern 1 — Hoist hooks above early returns
+**Fix:** Move the comparison into `useState` seeded with a stable default (`false` / `null`), compute the real value in `useEffect`, optionally refresh on an interval if the component already does so. For `isToday`-style labels that don't change during a session, a one-shot `useEffect` is enough.
 
-Move every hook call to the top of the component/hook body, then perform the early-return *after* all hooks. Where the early return needs to skip work that the hook would do, push the guard *into* the hook call:
+### Category C — `useMemo(() => [...dates], [])` with empty deps (~5 sites)
+Example: `DateStrip.tsx` builds a 14-day window from `new Date()` inside `useMemo`. Renders during SSR would differ from client.
 
-- React Query hooks → use the `enabled` option (e.g. `useQuery({ ..., enabled: Boolean(bracketId) })`) so the query no-ops without skipping the hook itself.
-- `useMemo` / `useCallback` → harmless to call unconditionally; just guard the body with the same condition that the early return used.
-- `useState` / `useRef` → always safe to call unconditionally.
+**Fix:** Initialize the array via `useState(() => buildDates())` inside `useEffect` on mount, with a stable empty/loading skeleton on first render. For DateStrip specifically, we render the same skeleton width to avoid CLS.
 
-Per-file actions:
+## Execution order
 
-1. **`usePlayoffViewModel.ts`** — call `usePlayoffBracketData`, `usePlayoffMatches`, `usePlayoffTeams`, `usePlayoffActions` first; pass a "disabled" sentinel (or rely on existing `enabled` flags) when `bracketId` is empty; then return the safe-defaults object. Verify each child hook either already accepts `null` or add an `enabled: !!bracketId` flag in its underlying `useQuery`.
-2. **`BracketsViewerComponent.tsx`** — move the `if (!bracket || !bracket.id)` check to *after* all `useRef`/`useState`/`useCallback`/`useBracketsViewerScript`/`useBracketsViewerRenderer` calls. The renderer hook already no-ops on missing data; if not, pass a guard flag.
-3. **`BracketView.tsx`** — move the invalid-bracket-id early return below the `useMemo`/`useCallback` block (around line 117 → after line 158).
-4. **`HistoricalStandingsTable.tsx`** — move the `teams.length === 0` empty-state return below the two `useCallback`s.
-5. **`BracketFormTeamsContainer.tsx`** — hoist the `handleSeedChange` `useCallback` to the top of the component, above the loading/error/empty-state returns.
+1. **Inventory** — re-run `npx react-doctor@latest` and dump the 67 file:line pairs to a temp list. Bucket each into A/B/C.
+2. **Add shared primitive** — create `src/components/shared/ClientDate.tsx` and `src/hooks/useClientNow.ts` (returns `Date | null`, updates per `intervalMs`).
+3. **Apply Category A** in batches by folder: `components/home/`, `components/teams/`, `components/schedule/`, `components/playoffs/`, `components/stats/`, `components/history/`, `components/admin/`. One PR-sized commit per folder so diffs stay reviewable.
+4. **Apply Category B** — convert "now-derived" booleans to state-driven values.
+5. **Apply Category C** — convert date-window `useMemo`s to mount-time `useState`.
+6. **Verify** after each folder:
+   - `npm run test:file` for any colocated `__tests__` (Index, History, Playoffs, MyTeam, TeamDetails, Timeslots are the relevant suites).
+   - Visual spot-check on `/`, `/schedule`, `/playoffs`, `/teams/:id`, `/history` at mobile viewport.
+7. **Final scan** — re-run react-doctor; expect hydration-time count to drop to 0. Confirm no new Rules-of-Hooks regressions were introduced.
 
-### Pattern 2 — Extract nested components
+## Out of scope
+- The 22 cascading-setState warnings.
+- The 6 `useEffect` cleanup leaks.
+- The 1,355 architecture/Tailwind shorthand items.
+- The 726 dead-code findings.
+- Enabling SSR — this plan only makes the code SSR-*ready*.
 
-For each nested component, move the definition to **module scope** in the same file (or, if it's reused, a sibling file). Replace closure variables with explicit props.
+## Risk & rollback
+Risk is minimal because every change is additive (wrapper component or extra `useState`). If any visual regression appears (e.g. a card briefly showing empty date on first paint), we revert that single file — the shared primitive and other folders remain intact. No DB, service, or business-logic files are touched.
 
-- `home/MatchCard.tsx` & `teams/MatchCard.tsx`: lift `SquareLogo` to module scope; it already only uses props (`src`, `alt`, `fallback`).
-- `stats/PowerScoreChart.tsx` (and the same pattern for `WinLossBarChart`, `HeadToHeadRecords`, `DivisionRankingsTable`): lift the recharts `CustomTooltip` / `CustomLabel` / row component to module scope. Where they currently close over values like `colors` or `isMobile`, accept them as props and pass them in via the recharts `content={<MyTooltip colors={colors} />}` form (recharts merges its own `active`/`payload` props automatically) or via a stable `useCallback` factory that returns JSX.
-
-## Safety / verification
-
-- Pure refactor — no behavior changes, no prop changes at the call sites of these components.
-- After each file, run targeted tests:
-  - `npm run test:file -- src/components/playoffs/viewer` (and the rest)
-  - `npm run test:file -- src/pages/__tests__/Playoffs.test.tsx`
-  - `npm run test:file -- src/pages/__tests__/History.test.tsx`
-  - `npm run test:file -- src/pages/__tests__/Index.test.tsx` (covers `home/MatchCard`)
-- Final verification: `npx react-doctor@latest` should report **0** Rules-of-Hooks and **0** nested-component-definition violations.
-- Manual smoke check in preview: `/playoffs`, `/history`, `/stats`, `/teams/<slug>`, and the home page recent-matches list.
-
-## Out of scope (intentionally not touched)
-
-- The 67 hydration `new Date()` warnings, 22 cascading-setState warnings, the 1,355 architecture/Tailwind-shorthand items, and the 726 dead-code findings. Those are separate cleanups.
-- `useEffect` cleanup leaks (6 of them) — important but a different bug class; can be a follow-up plan if you want.
+## Deliverable shape
+- 1 new file: `src/components/shared/ClientDate.tsx`
+- 1 new file: `src/hooks/useClientNow.ts`
+- ~30–40 component edits, each touching only the JSX that renders a date and (where needed) the small block of state/effect that feeds it.
+- 0 changes to services, hooks that fetch data, types, or tests' expected output.

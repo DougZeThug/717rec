@@ -5,6 +5,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingState } from '@/components/ui/loading-state';
 import { useWeekTimeslotsByTeam } from '@/hooks/useWeekTimeslotsByTeam';
+import { formatWithPattern } from '@/utils/formatDateSafe';
 
 interface WeekTimeslotDisplayProps {
   teamId: string;
@@ -62,8 +63,8 @@ const WeekTimeslotDisplay: React.FC<WeekTimeslotDisplayProps> = ({
             <Clock className="h-4 w-4 text-blue-500" />
             <div>
               <p className="font-medium">{timeslot.timeslot}</p>
-              <p className="text-xs text-muted-foreground">
-                {format(new Date(timeslot.match_date), 'EEE, MMM d')}
+              <p className="text-xs text-muted-foreground" suppressHydrationWarning>
+                {formatWithPattern(timeslot.match_date, 'EEE, MMM d')}
               </p>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { formatWithPattern } from '@/utils/formatDateSafe';
 import { motion } from 'framer-motion';
 import { Check, ChevronDown, Loader2, Users, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -226,7 +226,7 @@ const ParticipationHeroCard: React.FC = () => {
                 </span>
               </div>
               <span className="text-sm opacity-70">
-                Saved {format(new Date(existingParticipation.updated_at), 'MMM d, h:mm a')}
+                Saved {formatWithPattern(existingParticipation.updated_at, 'MMM d, h:mm a')}
               </span>
             </div>
             <Button

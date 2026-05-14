@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { formatWithPattern } from '@/utils/formatDateSafe';
 import { Trophy, X } from 'lucide-react';
 import React from 'react';
 
@@ -101,7 +101,7 @@ const H2HMobileCard: React.FC<H2HMobileCardProps> = ({ record, onCardClick }) =>
           {record.last_played_at && (
             <>
               {' · Last: '}
-              {format(new Date(record.last_played_at), 'MMM d, yyyy')}
+              {formatWithPattern(record.last_played_at, 'MMM d, yyyy')}
             </>
           )}
         </div>

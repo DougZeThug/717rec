@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { FALLBACK_TEAM_IMAGE } from '@/constants/images';
 import { Match, Team } from '@/types';
+import { toLocalDateString } from '@/utils/formatDateSafe';
 
 interface MatchApprovalItemProps {
   match: Match;
@@ -71,8 +72,8 @@ const MatchApprovalItem = ({
             <span>{team2?.name || 'Team 2'}</span>
           </div>
         </div>
-        <div className="text-sm text-muted-foreground">
-          {new Date(match.date).toLocaleDateString()}
+        <div className="text-sm text-muted-foreground" suppressHydrationWarning>
+          {toLocalDateString(match.date)}
         </div>
       </CollapsibleTrigger>
       <CollapsibleContent>

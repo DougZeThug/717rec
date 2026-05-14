@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { formatWithPattern } from '@/utils/formatDateSafe';
 import { Check, Clock, Inbox, Loader2, X } from 'lucide-react';
 import React, { useState } from 'react';
 
@@ -127,8 +127,8 @@ const RequestsTab: React.FC = () => {
                         {REQUEST_STATUS_LABELS[request.status]}
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      Submitted {format(new Date(request.created_at), "MMM d, yyyy 'at' h:mm a")}
+                    <p className="text-sm text-muted-foreground" suppressHydrationWarning>
+                      Submitted {formatWithPattern(request.created_at, "MMM d, yyyy 'at' h:mm a")}
                       {request.submitted_by_name && ` by ${request.submitted_by_name}`}
                     </p>
                   </div>
@@ -163,8 +163,8 @@ const RequestsTab: React.FC = () => {
                   {request.match_date && (
                     <div>
                       <span className="text-muted-foreground">Date:</span>{' '}
-                      <span className="font-medium">
-                        {format(new Date(request.match_date), 'MMM d, yyyy')}
+                      <span className="font-medium" suppressHydrationWarning>
+                        {formatWithPattern(request.match_date, 'MMM d, yyyy')}
                       </span>
                     </div>
                   )}
@@ -200,8 +200,8 @@ const RequestsTab: React.FC = () => {
 
                 {/* Processed info */}
                 {request.processed_at && (
-                  <p className="text-xs text-muted-foreground">
-                    Processed {format(new Date(request.processed_at), "MMM d, yyyy 'at' h:mm a")}
+                  <p className="text-xs text-muted-foreground" suppressHydrationWarning>
+                    Processed {formatWithPattern(request.processed_at, "MMM d, yyyy 'at' h:mm a")}
                   </p>
                 )}
               </div>

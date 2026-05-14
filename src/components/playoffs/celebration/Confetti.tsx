@@ -69,7 +69,7 @@ const Confetti: React.FC = () => {
         />
       ))}
 
-      <style>
+      <style suppressHydrationWarning>
         {`
           @keyframes fall {
             0% {

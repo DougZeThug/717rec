@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Season } from '@/types/season';
+import { toLocalDateString } from '@/utils/formatDateSafe';
 
 import SeasonFinalizePlayoffsDialog from './SeasonFinalizePlayoffsDialog';
 
@@ -91,8 +92,8 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
                 <div>
                   <CardTitle className="text-lg">{season.name}</CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    {new Date(season.start_date).toLocaleDateString()} -
-                    {season.end_date ? new Date(season.end_date).toLocaleDateString() : 'Ongoing'}
+                    {toLocalDateString(season.start_date)} -
+                    {season.end_date ? toLocalDateString(season.end_date) : 'Ongoing'}
                   </p>
                 </div>
               </div>
@@ -129,7 +130,7 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div>
                 <span className="font-medium">Created:</span>{' '}
-                {new Date(season.created_at).toLocaleDateString()}
+                {toLocalDateString(season.created_at)}
               </div>
               {season.is_archived && (
                 <div>

@@ -2,6 +2,7 @@ import { AlertTriangle, CheckCircle, Clock, Loader2, Users, XCircle } from 'luci
 import React from 'react';
 
 import { TeamLogo } from '@/components/shared/TeamLogo';
+import { toLocalDateString } from '@/utils/formatDateSafe';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -137,7 +138,7 @@ const TeamMembershipApprovalTab: React.FC = () => {
                   </div>
                   <Badge variant="outline">
                     <Clock className="w-3 h-3 mr-1" />
-                    {new Date(membership.joined_at).toLocaleDateString()}
+                    {toLocalDateString(membership.joined_at)}
                   </Badge>
                 </div>
               </CardHeader>
