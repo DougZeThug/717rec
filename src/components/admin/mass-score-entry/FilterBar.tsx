@@ -52,7 +52,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
               mode="single"
               selected={filters.date}
               onSelect={onDateChange}
-              initialFocus
+              autoFocus
               className="p-3 pointer-events-auto"
             />
           </PopoverContent>

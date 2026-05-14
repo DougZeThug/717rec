@@ -62,7 +62,7 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
                   mode="single"
                   selected={selectedDate}
                   onSelect={handleDateSelect}
-                  initialFocus
+                  autoFocus
                   className="p-3 pointer-events-auto"
                 />
               </PopoverContent>
