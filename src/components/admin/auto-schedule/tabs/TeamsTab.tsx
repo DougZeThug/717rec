@@ -20,6 +20,8 @@ interface TeamsTabProps {
   originalTimeBlockTeams?: TimeBlockTeamsMap; // Store original loaded teams
 }
 
+const EMPTY_TIME_BLOCK_TEAMS: TimeBlockTeamsMap = {};
+
 const TeamsTab: React.FC<TeamsTabProps> = ({
   timeBlockTeams,
   selectedDate,
@@ -27,7 +29,7 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
   oddBlocks,
   totalTeams,
   onManualTeamAssign,
-  originalTimeBlockTeams = {},
+  originalTimeBlockTeams = EMPTY_TIME_BLOCK_TEAMS,
 }) => {
   const [activeTab, setActiveTab] = useState<string>('auto');
   const [isEditMode, setIsEditMode] = useState(false);

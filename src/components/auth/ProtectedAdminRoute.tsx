@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Navigate, useLocation } from 'react-router';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,7 +14,7 @@ const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({ children }) =
   const { user, authInitialized, profile } = useAuth();
   const { isAdminAccessGranted, isLoading } = useAdminAccess();
   const location = useLocation();
-  const [hasShownDeniedToast, setHasShownDeniedToast] = useState(false);
+  const hasShownDeniedToastRef = useRef(false);
 
   // Log state changes for debugging
   useEffect(() => {
@@ -29,16 +29,22 @@ const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({ children }) =
 
   // Show toast once when access is denied (after all loading completes)
   useEffect(() => {
-    if (!isLoading && authInitialized && user && !isAdminAccessGranted && !hasShownDeniedToast) {
+    if (
+      !isLoading &&
+      authInitialized &&
+      user &&
+      !isAdminAccessGranted &&
+      !hasShownDeniedToastRef.current
+    ) {
       authLog(`Admin access DENIED for ${user.email}`);
       toast({
         title: 'Access Denied',
         description: 'You do not have admin privileges',
         variant: 'destructive',
       });
-      setHasShownDeniedToast(true);
+      hasShownDeniedToastRef.current = true;
     }
-  }, [isLoading, authInitialized, user, isAdminAccessGranted, hasShownDeniedToast]);
+  }, [isLoading, authInitialized, user, isAdminAccessGranted]);
 
   // Still loading auth or profile
   if (!authInitialized || isLoading) {

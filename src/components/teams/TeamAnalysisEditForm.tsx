@@ -30,8 +30,8 @@ export const TeamAnalysisEditForm: React.FC<TeamAnalysisEditFormProps> = ({
   const [trends, setTrends] = useState(analysis?.trends || '');
   const [rivalryInsights, setRivalryInsights] = useState(analysis?.rivalry_insights || '');
 
-  const handleAddStrength = () => setStrengths([...strengths, '']);
-  const handleAddWeakness = () => setWeaknesses([...weaknesses, '']);
+  const handleAddStrength = () => setStrengths((prev) => [...prev, '']);
+  const handleAddWeakness = () => setWeaknesses((prev) => [...prev, '']);
 
   const handleRemoveStrength = (index: number) => {
     setStrengths(strengths.filter((_, i) => i !== index));

@@ -18,11 +18,13 @@ interface TimeBlockTeamsListProps {
   onDeselectAll?: () => void;
 }
 
+const EMPTY_STRING_ARRAY: string[] = [];
+
 export const TimeBlockTeamsList: React.FC<TimeBlockTeamsListProps> = ({
   teams,
-  unmatchedTeamIds = [],
+  unmatchedTeamIds = EMPTY_STRING_ARRAY,
   isInteractive = false,
-  selectedTeamIds = [],
+  selectedTeamIds = EMPTY_STRING_ARRAY,
   onTeamToggle,
   onSelectAll,
   onDeselectAll,

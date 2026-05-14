@@ -20,8 +20,8 @@ const BatchMatchForm = ({ teams, onSubmit, onCancel }: BatchMatchFormProps) => {
   ]);
 
   const addMatch = () => {
-    setMatches([
-      ...matches,
+    setMatches((prev) => [
+      ...prev,
       {
         id: Date.now().toString(),
         team1Id: null,

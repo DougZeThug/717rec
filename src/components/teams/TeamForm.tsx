@@ -60,7 +60,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
   const { isSubmitting } = form.formState;
 
   const handleAddPlayer = () => {
-    setPlayerNames([...playerNames, '']);
+    setPlayerNames((prev) => [...prev, '']);
   };
 
   const handlePlayerChange = (index: number, value: string) => {

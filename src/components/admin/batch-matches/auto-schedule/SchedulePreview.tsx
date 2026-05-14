@@ -14,10 +14,12 @@ interface SchedulePreviewProps {
   unmatchedTeamIds?: string[];
 }
 
+const EMPTY_UNMATCHED: string[] = [];
+
 const SchedulePreview: React.FC<SchedulePreviewProps> = ({
   timeBlockTeams,
   date,
-  unmatchedTeamIds = [],
+  unmatchedTeamIds = EMPTY_UNMATCHED,
 }) => {
   // Check if we have teams loaded
   const hasTeams = Object.values(timeBlockTeams).some((teams) => teams?.length > 0);

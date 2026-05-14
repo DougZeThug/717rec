@@ -14,7 +14,13 @@ interface TeamHeaderProps {
   pastMatches?: Match[];
 }
 
-const TeamHeader = ({ team, winPercentage: _winPercentage, pastMatches = [] }: TeamHeaderProps) => {
+const EMPTY_PAST_MATCHES: Match[] = [];
+
+const TeamHeader = ({
+  team,
+  winPercentage: _winPercentage,
+  pastMatches = EMPTY_PAST_MATCHES,
+}: TeamHeaderProps) => {
   return (
     <div className="flex flex-col items-center mb-0 md:mb-4">
       <div className="mb-0.5 md:mb-4">

@@ -23,12 +23,14 @@ interface TeamLoadingStepProps {
   onGenerateSchedule: () => Promise<void>;
 }
 
+const EMPTY_UNMATCHED: string[] = [];
+
 export const TeamLoadingStep: React.FC<TeamLoadingStepProps> = ({
   isLoading,
   selectedDate,
   timeBlockTeams,
   totalTeams,
-  unmatchedTeamIds = [],
+  unmatchedTeamIds = EMPTY_UNMATCHED,
   oddBlocks,
   onLoadTeams,
   onGenerateSchedule,

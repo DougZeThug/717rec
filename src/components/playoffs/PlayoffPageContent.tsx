@@ -31,7 +31,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
 }) => {
   // Enhanced refresh state management
   const [isRefreshing, setIsRefreshing] = React.useState(false);
-  const [_lastRefreshTime, setLastRefreshTime] = React.useState<Date | null>(null);
+  const lastRefreshTimeRef = React.useRef<Date | null>(null);
 
   // Enhanced refresh handler with optimistic updates
   const handleRefreshClick = useCallback(async () => {
@@ -41,7 +41,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
 
     try {
       await onRefreshData();
-      setLastRefreshTime(new Date());
+      lastRefreshTimeRef.current = new Date();
     } catch (error) {
       warnLog('Failed to refresh data:', error);
       // Show user-friendly error without throwing

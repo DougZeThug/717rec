@@ -11,11 +11,14 @@ interface WarningDisplayProps {
   onSuggestionClick?: (blockId: string) => void;
 }
 
+const EMPTY_INSUFFICIENT_BLOCKS: string[] = [];
+const EMPTY_UNMATCHED_DETAILS: NonNullable<WarningDisplayProps['unmatchedTeamDetails']> = [];
+
 export const WarningDisplay: React.FC<WarningDisplayProps> = ({
   oddBlocks = 0,
   unmatchedTeams = 0,
-  insufficientBlocks = [],
-  unmatchedTeamDetails = [],
+  insufficientBlocks = EMPTY_INSUFFICIENT_BLOCKS,
+  unmatchedTeamDetails = EMPTY_UNMATCHED_DETAILS,
   onSuggestionClick: _onSuggestionClick,
 }) => {
   if (oddBlocks === 0 && unmatchedTeams === 0 && insufficientBlocks.length === 0) {
