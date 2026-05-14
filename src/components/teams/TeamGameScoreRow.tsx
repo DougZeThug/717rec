@@ -61,7 +61,7 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({
     <div className="flex flex-col w-full py-2">
       {/* Match date display */}
       {matchDate && (
-        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 px-2">{matchDate}</div>
+        <div className="text-xs text-muted-foreground dark:text-muted-foreground mb-1 px-2">{matchDate}</div>
       )}
 
       <div

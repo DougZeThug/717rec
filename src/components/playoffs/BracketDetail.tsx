@@ -90,11 +90,11 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
             </CardTitle>
             <CardDescription className="flex items-center gap-2">
               <span className="font-medium">{bracket.division} Division</span>
-              <span className="text-gray-400">•</span>
+              <span className="text-muted-foreground">•</span>
               <span>{bracket.format}</span>
               {bracket.state && (
                 <>
-                  <span className="text-gray-400">•</span>
+                  <span className="text-muted-foreground">•</span>
                   <span
                     className={cn(
                       'px-2 py-0.5 rounded-full text-xs font-medium',

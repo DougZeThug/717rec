@@ -19,7 +19,7 @@ const TeamCard: React.FC<Props> = ({ team, selected, onToggle, disabled = false 
         ? 'bg-cornhole-green/20 border border-cornhole-green'
         : disabled
           ? 'opacity-50 cursor-not-allowed'
-          : 'hover:bg-gray-100'
+          : 'hover:bg-accent'
     }`}
   >
     <div className="mr-3 flex items-center justify-center size-8 bg-blue-100 rounded-full text-xs font-bold text-blue-800">
@@ -34,12 +34,12 @@ const TeamCard: React.FC<Props> = ({ team, selected, onToggle, disabled = false 
     </div>
     <div className="flex-1">
       <div className="font-medium text-left">{team.name || 'Unnamed Team'}</div>
-      <div className="text-xs text-gray-500">
+      <div className="text-xs text-muted-foreground">
         Power:{' '}
         {team.power_score && team.power_score > 0 ? (team.power_score * 100).toFixed(1) : 'TBD'}
       </div>
     </div>
-    <span className="ml-auto text-xs text-gray-500">
+    <span className="ml-auto text-xs text-muted-foreground">
       {team.wins || 0}-{team.losses || 0}
     </span>
   </button>

@@ -18,7 +18,7 @@ const TeamsDisplayModeToggle: React.FC<TeamsDisplayModeToggleProps> = ({
       type="single"
       value={displayMode}
       onValueChange={(value) => value && onDisplayModeChange(value as 'all' | 'grouped')}
-      className="bg-gradient-to-br from-gray-100 to-blue-50/50 dark:from-gray-800/80 dark:to-gray-900 dark:border dark:border-gray-700 p-0.5 rounded-md shadow-sm"
+      className="bg-gradient-to-br from-gray-100 to-blue-50/50 dark:from-gray-800/80 dark:to-gray-900 dark:border dark:border-border p-0.5 rounded-md shadow-sm"
     >
       <ToggleGroupItem
         value="all"

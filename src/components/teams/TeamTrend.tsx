@@ -21,7 +21,7 @@ const TeamTrend: React.FC<TeamTrendProps> = ({ recentMatches, teamId, limit = 5 
     .slice(0, limit);
 
   if (sortedMatches.length === 0) {
-    return <div className="text-sm text-gray-500">No recent matches</div>;
+    return <div className="text-sm text-muted-foreground">No recent matches</div>;
   }
 
   // Calculate current streak

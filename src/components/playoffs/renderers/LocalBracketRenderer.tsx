@@ -19,7 +19,7 @@ export const LocalBracketRenderer: React.FC<LocalBracketRendererProps> = ({
   if (!bracket) {
     return (
       <div className="text-center p-8">
-        <p className="text-lg font-medium text-gray-700">No bracket data available</p>
+        <p className="text-lg font-medium text-foreground">No bracket data available</p>
       </div>
     );
   }

@@ -74,7 +74,7 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
     if (season.is_active) {
       return <Calendar className="size-4 text-green-500" />;
     } else if (season.is_archived) {
-      return <Archive className="size-4 text-gray-500" />;
+      return <Archive className="size-4 text-muted-foreground" />;
     } else {
       return <Calendar className="size-4 text-blue-500" />;
     }

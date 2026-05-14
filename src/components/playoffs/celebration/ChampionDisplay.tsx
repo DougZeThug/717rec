@@ -86,7 +86,7 @@ const ChampionDisplay: React.FC<ChampionDisplayProps> = ({
 
           <div className="my-4 flex flex-col items-center">
             {champion.logoUrl || champion.imageUrl ? (
-              <div className="size-24 rounded-full overflow-hidden bg-white dark:bg-gray-800 p-2 border-2 border-amber-300 dark:border-amber-700 shadow-md mb-4">
+              <div className="size-24 rounded-full overflow-hidden bg-background dark:bg-card p-2 border-2 border-amber-300 dark:border-amber-700 shadow-md mb-4">
                 <img
                   src={champion.logoUrl || champion.imageUrl}
                   alt={champion.name}

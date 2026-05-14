@@ -329,7 +329,7 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
                     onOpenChange={setIsAdvancedOpen}
                     className="col-span-1 md:col-span-2"
                   >
-                    <CollapsibleTrigger className="flex items-center justify-center w-full py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">
+                    <CollapsibleTrigger className="flex items-center justify-center w-full py-2 text-sm font-medium text-muted-foreground dark:text-muted-foreground hover:bg-accent dark:hover:bg-gray-800 rounded-md transition-colors">
                       {isAdvancedOpen ? 'Hide Detailed Stats' : 'Show Detailed Stats'}
                     </CollapsibleTrigger>
                     <CollapsibleContent className="pt-2">

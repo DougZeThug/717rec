@@ -75,7 +75,7 @@ const TeamRow: React.FC<TeamRowProps> = ({
           )}
         </div>
       ) : (
-        <span className="text-gray-400 italic text-sm">TBD</span>
+        <span className="text-muted-foreground italic text-sm">TBD</span>
       )}
     </div>
   );

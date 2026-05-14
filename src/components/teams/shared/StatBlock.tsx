@@ -79,7 +79,7 @@ export const StatBlock: React.FC<StatBlockProps> = ({
       <div className={`${baseClasses} flex items-center justify-between ${className}`}>
         <div className="flex items-center gap-1.5 sm:gap-2">
           {icon && (
-            <span className="text-gray-600 dark:text-gray-300 [&>svg]:w-3.5 [&>svg]:h-3.5 sm:[&>svg]:w-[18px] sm:[&>svg]:h-[18px]">
+            <span className="text-muted-foreground dark:text-muted-foreground [&>svg]:w-3.5 [&>svg]:h-3.5 sm:[&>svg]:w-[18px] sm:[&>svg]:h-[18px]">
               {icon}
             </span>
           )}
@@ -94,7 +94,7 @@ export const StatBlock: React.FC<StatBlockProps> = ({
     <div className={`${baseClasses} flex flex-col ${className}`}>
       <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-1.5">
         {icon && (
-          <span className="text-gray-600 dark:text-gray-300 [&>svg]:w-3.5 [&>svg]:h-3.5 sm:[&>svg]:w-[18px] sm:[&>svg]:h-[18px]">
+          <span className="text-muted-foreground dark:text-muted-foreground [&>svg]:w-3.5 [&>svg]:h-3.5 sm:[&>svg]:w-[18px] sm:[&>svg]:h-[18px]">
             {icon}
           </span>
         )}

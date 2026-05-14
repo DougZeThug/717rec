@@ -56,7 +56,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
           }}
         />
       ) : (
-        <div className="flex items-center justify-center text-gray-400 dark:text-gray-600 size-full">
+        <div className="flex items-center justify-center text-muted-foreground dark:text-gray-600 size-full">
           <span className="text-xs">{fallbackText || teamName.substring(0, 2)}</span>
         </div>
       )}

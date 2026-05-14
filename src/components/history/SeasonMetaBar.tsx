@@ -140,7 +140,7 @@ const SeasonMetaBar: React.FC<SeasonMetaBarProps> = ({ season, seasonData }) => 
             isWinterTheme ? 'border-white/10' : 'border-gray-200 dark:border-slate-600'
           )}
         >
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-xs text-muted-foreground dark:text-muted-foreground">
             Season completed on {toLocalDateString(season.end_date)}
           </p>
         </div>

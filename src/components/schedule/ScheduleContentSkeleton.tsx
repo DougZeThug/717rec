@@ -33,7 +33,7 @@ const ScheduleContentSkeleton: React.FC<ScheduleContentSkeletonProps> = ({ activ
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value={activeTab} className="mt-6 dark:bg-gray-900">
+      <TabsContent value={activeTab} className="mt-6 dark:bg-background">
         <div className="space-y-4">
           <DateMatchGroupSkeleton matchCount={3} />
           <DateMatchGroupSkeleton matchCount={2} />

@@ -32,12 +32,12 @@ export const TeamCell: React.FC<TeamCellProps> = ({
               <div className="flex items-center space-x-1">
                 <span className="font-medium">{teamName}</span>
                 {isExpanded ? (
-                  <ChevronUp size={16} className="text-gray-500" />
+                  <ChevronUp size={16} className="text-muted-foreground" />
                 ) : (
-                  <ChevronDown size={16} className="text-gray-500" />
+                  <ChevronDown size={16} className="text-muted-foreground" />
                 )}
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-muted-foreground">
                 Games: {gameWins ?? 0}–{gameLosses ?? 0}
               </div>
             </div>

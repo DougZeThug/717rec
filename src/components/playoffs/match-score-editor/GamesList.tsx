@@ -34,13 +34,13 @@ const GamesList: React.FC<GamesListProps> = ({ games, team1Id: _team1Id, team2Id
                 {game.team1Score}
               </span>
 
-              <span className="mx-1 text-gray-400">-</span>
+              <span className="mx-1 text-muted-foreground">-</span>
 
               <span className={cn('tabular-nums', game.winner === 'team2Id' ? 'font-bold' : '')}>
                 {game.team2Score}
               </span>
 
-              <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700">
+              <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-muted dark:bg-gray-700">
                 {game.winner === 'team1Id'
                   ? 'Team 1 won'
                   : game.winner === 'team2Id'

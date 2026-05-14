@@ -71,7 +71,7 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
 
       {Object.entries(pairings).map(([block, blockPairings]) => (
         <Card key={block} className="overflow-hidden">
-          <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2 flex items-center justify-between">
+          <div className="bg-muted dark:bg-card px-4 py-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Clock className="size-4 text-muted-foreground" />
               <span className="font-medium">{block} Block</span>
@@ -104,7 +104,7 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
                               ) : (
                                 <CheckCircle className="size-4 text-green-500" />
                               )}
-                              <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800">
+                              <span className="text-xs px-2 py-1 rounded-full bg-muted dark:bg-card">
                                 Score: {pairing.compatibilityScore.toFixed(1)}/10
                               </span>
                             </div>

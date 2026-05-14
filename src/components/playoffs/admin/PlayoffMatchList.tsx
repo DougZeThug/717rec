@@ -212,7 +212,7 @@ const PlayoffMatchList: React.FC<PlayoffMatchListProps> = ({
                               )}
                             </div>
 
-                            <div className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-center min-w-[60px]">
+                            <div className="px-2 py-1 rounded bg-muted dark:bg-card text-center min-w-[60px]">
                               {match.team1GameWins !== undefined &&
                               match.team2GameWins !== undefined ? (
                                 <span className="font-mono">

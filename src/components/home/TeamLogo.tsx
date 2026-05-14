@@ -26,7 +26,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({ imageUrl, teamName }) => {
           }}
         />
       ) : (
-        <div className="text-gray-400 text-center">
+        <div className="text-muted-foreground text-center">
           <span>No Logo Available</span>
         </div>
       )}

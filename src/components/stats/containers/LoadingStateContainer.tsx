@@ -21,7 +21,7 @@ const LoadingStateContainer = () => {
               {Array.from({ length: 5 }).map((_, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-3 p-2 border-b border-gray-100 dark:border-gray-800"
+                  className="flex items-center gap-3 p-2 border-b border-gray-100 dark:border-border"
                 >
                   <Skeleton className="size-5" />
                   <Skeleton className="size-8 rounded-full" />

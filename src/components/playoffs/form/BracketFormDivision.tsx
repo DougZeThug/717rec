@@ -100,7 +100,7 @@ export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({
           <FormItem>
             <FormLabel>Division</FormLabel>
             <FormControl>
-              <div className="p-2 text-sm text-gray-500 border rounded">
+              <div className="p-2 text-sm text-muted-foreground border rounded">
                 No divisions available. Please create divisions first.
               </div>
             </FormControl>

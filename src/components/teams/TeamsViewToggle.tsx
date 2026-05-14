@@ -15,7 +15,7 @@ const TeamsViewToggle: React.FC<TeamsViewToggleProps> = ({ viewMode, onViewModeC
       type="single"
       value={viewMode}
       onValueChange={(value) => value && onViewModeChange(value as 'grid' | 'list')}
-      className="bg-gradient-to-br from-gray-100 to-blue-50/50 dark:from-gray-800/80 dark:to-gray-900 dark:border dark:border-gray-700 p-0.5 rounded-md shadow-sm"
+      className="bg-gradient-to-br from-gray-100 to-blue-50/50 dark:from-gray-800/80 dark:to-gray-900 dark:border dark:border-border p-0.5 rounded-md shadow-sm"
     >
       <ToggleGroupItem
         value="grid"

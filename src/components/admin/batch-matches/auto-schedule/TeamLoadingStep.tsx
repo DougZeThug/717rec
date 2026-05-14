@@ -88,7 +88,7 @@ export const TeamLoadingStep: React.FC<TeamLoadingStepProps> = ({
       {hasTeamsLoaded && (
         <div className="pl-8 mb-4">
           {totalTeams > 0 && (
-            <div className="mb-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-md border">
+            <div className="mb-3 p-3 bg-muted dark:bg-background rounded-md border">
               <h5 className="font-medium mb-1 text-sm">Team Distribution</h5>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>

@@ -82,7 +82,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-9 -mt-1 text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10"
+                  className="size-9 -mt-1 text-muted-foreground dark:text-muted-foreground hover:text-gray-900 dark:hover:text-white hover:bg-accent dark:hover:bg-white/10"
                 >
                   <MoreHorizontal size={18} />
                   <span className="sr-only">Open menu</span>
@@ -184,7 +184,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
                 return <PlayerChip key={key} playerName={player} />;
               })
             ) : (
-              <span className="text-xs text-gray-500 dark:text-gray-400">No players</span>
+              <span className="text-xs text-muted-foreground dark:text-muted-foreground">No players</span>
             )}
           </div>
         </div>

@@ -78,7 +78,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
         <Loader2 className="size-8 text-cornhole-navy animate-spin" />
         <div className="text-center">
           <p className="font-medium">Loading tournament data...</p>
-          <p className="text-sm text-gray-500 mt-1">This may take a moment</p>
+          <p className="text-sm text-muted-foreground mt-1">This may take a moment</p>
         </div>
         {onRefreshData && (
           <Button

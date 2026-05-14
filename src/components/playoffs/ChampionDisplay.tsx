@@ -80,7 +80,7 @@ const ChampionDisplay: React.FC<ChampionDisplayProps> = ({ championId, teams }) 
           </div>
           <div className="text-left">
             <h4 className="font-bold text-lg">{champion.name}</h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground dark:text-muted-foreground">
               {champion.divisionName || 'Division Winner'}
             </p>
           </div>

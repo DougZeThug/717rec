@@ -22,7 +22,7 @@ const PendingMatchesList = ({
   onMarkAsTie,
 }: PendingMatchesListProps) => {
   if (matches.length === 0) {
-    return <div className="p-4 bg-slate-50 rounded-md">No pending matches to approve.</div>;
+    return <div className="p-4 bg-muted rounded-md">No pending matches to approve.</div>;
   }
 
   return (

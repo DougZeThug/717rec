@@ -16,7 +16,7 @@ const TeamDisplay: React.FC<TeamDisplayProps> = ({
   return (
     <div className="flex justify-center">
       {team?.imageUrl || team?.logoUrl ? (
-        <div className="size-16 rounded-full overflow-hidden bg-gray-100">
+        <div className="size-16 rounded-full overflow-hidden bg-muted">
           <img
             src={team.imageUrl || team.logoUrl}
             alt={team.name}

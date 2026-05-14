@@ -41,7 +41,7 @@ const SchedulePreview: React.FC<SchedulePreviewProps> = ({
 
       {Object.entries(timeBlockTeams).map(([block, teams]) => (
         <Card key={block} className="overflow-hidden">
-          <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2 flex items-center justify-between">
+          <div className="bg-muted dark:bg-card px-4 py-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Clock className="size-4 text-muted-foreground" />
               <span className="font-medium">{block} Block</span>

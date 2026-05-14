@@ -178,7 +178,7 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
 
           {/* Status Display */}
           {totalTeams > 0 && (
-            <div className="bg-slate-100 dark:bg-slate-800 rounded-md p-2 text-sm">
+            <div className="bg-muted dark:bg-card rounded-md p-2 text-sm">
               <p>
                 Date: <span className="font-medium">{formattedDate}</span>
               </p>

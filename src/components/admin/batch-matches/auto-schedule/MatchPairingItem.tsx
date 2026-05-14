@@ -55,7 +55,7 @@ export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
                 )}
                 <span
                   className={`text-xs px-2 py-1 rounded-full ${
-                    isWinterTheme ? 'bg-[hsl(222,30%,20%)]' : 'bg-gray-100 dark:bg-gray-800'
+                    isWinterTheme ? 'bg-[hsl(222,30%,20%)]' : 'bg-muted dark:bg-card'
                   }`}
                 >
                   Score: {pairing.compatibilityScore.toFixed(1)}/10

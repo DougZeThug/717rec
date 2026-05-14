@@ -17,7 +17,7 @@ const SquareLogo: React.FC<{ src: string; alt: string; fallback: string }> = ({
   alt,
   fallback,
 }) => (
-  <div className="size-10 flex items-center justify-center bg-white dark:bg-gray-800">
+  <div className="size-10 flex items-center justify-center bg-background dark:bg-card">
     {src ? (
       <img
         src={src}
@@ -29,7 +29,7 @@ const SquareLogo: React.FC<{ src: string; alt: string; fallback: string }> = ({
         }}
       />
     ) : (
-      <div className="size-10 flex items-center justify-center bg-gray-200 text-gray-400 text-xs rounded-none">
+      <div className="size-10 flex items-center justify-center bg-gray-200 text-muted-foreground text-xs rounded-none">
         {fallback}
       </div>
     )}

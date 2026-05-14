@@ -148,13 +148,13 @@ export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({
 
         <div className="grid grid-cols-3 gap-2 py-3">
           <div className="flex items-center gap-1">
-            <Medal className="size-4 text-slate-400" />
+            <Medal className="size-4 text-muted-foreground" />
             <span className="font-semibold">{t1?.runner_ups || 0}</span>
           </div>
           <div className="text-center text-sm text-muted-foreground">Runner-ups</div>
           <div className="flex items-center justify-end gap-1">
             <span className="font-semibold">{t2?.runner_ups || 0}</span>
-            <Medal className="size-4 text-slate-400" />
+            <Medal className="size-4 text-muted-foreground" />
           </div>
         </div>
       </div>

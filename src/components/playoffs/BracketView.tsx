@@ -140,7 +140,7 @@ const BracketView: React.FC<BracketViewProps> = ({
     errorLog('Invalid bracketId', { bracketId });
     return (
       <div className="p-8 text-center">
-        <div className="text-gray-500">
+        <div className="text-muted-foreground">
           <p className="text-lg font-semibold mb-2">Invalid bracket ID</p>
           <p className="text-sm">Cannot display bracket without a valid identifier.</p>
         </div>
@@ -201,13 +201,13 @@ const BracketView: React.FC<BracketViewProps> = ({
     return (
       <div className="text-center p-8 space-y-3">
         <div className="space-y-2">
-          <p className="text-lg font-medium text-gray-700">No bracket selected</p>
-          <p className="text-sm text-gray-500">
+          <p className="text-lg font-medium text-foreground">No bracket selected</p>
+          <p className="text-sm text-muted-foreground">
             Choose a bracket from the list above to view matches
           </p>
         </div>
         {bracketId && (
-          <div className="bg-gray-50 rounded-lg p-3 text-xs text-gray-500">
+          <div className="bg-muted rounded-lg p-3 text-xs text-muted-foreground">
             <p>Attempted to load bracket: {bracketId}</p>
             <p className="mt-1">
               The bracket may have been deleted or you may not have access to it.
@@ -265,7 +265,7 @@ const BracketView: React.FC<BracketViewProps> = ({
             onMatchClick={handleMatchClick}
           />
         ) : (
-          <div className="text-center p-8 text-gray-500">
+          <div className="text-center p-8 text-muted-foreground">
             <p>Invalid bracket data</p>
           </div>
         )}

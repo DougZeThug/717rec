@@ -54,7 +54,7 @@ export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) 
           defaultIcon={Medal}
           winterGlyph="frozen-trophy"
           size={20}
-          className="text-gray-400"
+          className="text-muted-foreground"
         />
       );
     if (placement === 3)

@@ -145,7 +145,7 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
                 </div>
               </div>
               <DialogTitle className="text-lg font-semibold">{config.name}</DialogTitle>
-              <DialogDescription className="text-sm text-gray-600 mt-2">
+              <DialogDescription className="text-sm text-muted-foreground mt-2">
                 {getEnhancedDescription()}
               </DialogDescription>
             </DialogHeader>

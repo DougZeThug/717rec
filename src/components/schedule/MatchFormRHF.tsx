@@ -237,7 +237,7 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
 
         {/* Score Section (conditionally rendered) */}
         {isCompleted && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded-md bg-gray-50">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded-md bg-muted">
             <FormField
               control={form.control}
               name="team1Score"

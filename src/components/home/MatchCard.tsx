@@ -35,7 +35,7 @@ const SquareLogo: React.FC<{
         }}
       />
     ) : (
-      <div className="size-10 flex items-center justify-center bg-gray-200 text-gray-400">
+      <div className="size-10 flex items-center justify-center bg-gray-200 text-muted-foreground">
         <span className="text-xs">{fallback}</span>
       </div>
     )}
@@ -62,7 +62,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, team1, team2, formatDate, 
               <SquareLogo src={team2?.imageUrl} alt={team2.name} fallback="No Logo" />
             </div>
           </div>
-          <div className="flex justify-between text-sm text-gray-600 mt-4">
+          <div className="flex justify-between text-sm text-muted-foreground mt-4">
             <div>
               <p>
                 <strong>Date:</strong> {formatDate(match.date!)}

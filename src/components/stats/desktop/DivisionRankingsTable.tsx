@@ -216,7 +216,7 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
                   <TableCell className="font-mono font-semibold text-lg">
                     {overallIndex + 1}
                     {!showUnified && ranking.divisionRank && (
-                      <span className="ml-1 text-xs text-gray-500 dark:text-gray-400 font-inter">
+                      <span className="ml-1 text-xs text-muted-foreground dark:text-muted-foreground font-inter">
                         ({ranking.divisionRank})
                       </span>
                     )}
@@ -225,7 +225,7 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
                     <div className="flex items-center gap-3 min-w-0">
                       {/** Logo as square with consistent sizing */}
                       {ranking.imageUrl || ranking.logoUrl ? (
-                        <div className="size-8 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                        <div className="size-8 rounded-md overflow-hidden bg-muted dark:bg-card flex items-center justify-center flex-shrink-0">
                           <img
                             src={ranking.imageUrl || ranking.logoUrl}
                             alt={ranking.teamName}
@@ -234,7 +234,7 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
                           />
                         </div>
                       ) : (
-                        <div className="size-8 rounded-md bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-400 text-xs flex-shrink-0">
+                        <div className="size-8 rounded-md bg-muted dark:bg-gray-700 flex items-center justify-center text-muted-foreground text-xs flex-shrink-0">
                           N/A
                         </div>
                       )}
