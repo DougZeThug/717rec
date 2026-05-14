@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Archive, Calendar, Edit, Trophy } from 'lucide-react';
 import React, { useState } from 'react';
 
@@ -100,7 +100,7 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
               <div className="flex items-center gap-2">
                 {getStatusBadge(season)}
                 {season.playoffs_active && (
-                  <motion.div whileTap={{ scale: 0.95 }}>
+                  <m.div whileTap={{ scale: 0.95 }}>
                     <Button
                       variant="outline"
                       size="sm"
@@ -110,9 +110,9 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
                       <Trophy className="h-3 w-3" />
                       Finalize Playoffs
                     </Button>
-                  </motion.div>
+                  </m.div>
                 )}
-                <motion.div whileTap={{ scale: 0.95 }}>
+                <m.div whileTap={{ scale: 0.95 }}>
                   <Button
                     variant="outline"
                     size="sm"
@@ -122,7 +122,7 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
                     <Edit className="h-3 w-3" />
                     Edit
                   </Button>
-                </motion.div>
+                </m.div>
               </div>
             </div>
           </CardHeader>

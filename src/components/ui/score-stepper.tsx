@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { Minus, Plus } from 'lucide-react';
 import React, { useState } from 'react';
 
@@ -151,7 +151,7 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
           )}
         >
           <AnimatePresence mode="popLayout" initial={false}>
-            <motion.span
+            <m.span
               key={value}
               initial={{
                 y: direction === 'up' ? 20 : -20,
@@ -174,7 +174,7 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
               className={cn(isAnimating && 'text-primary')}
             >
               {value}
-            </motion.span>
+            </m.span>
           </AnimatePresence>
         </div>
 
@@ -200,13 +200,13 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
 
       {/* Winner Indicator */}
       {showWinnerIndicator && isWinning && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           className="mt-1 text-xs font-medium text-green-600 dark:text-green-400"
         >
           Leading
-        </motion.div>
+        </m.div>
       )}
     </div>
   );

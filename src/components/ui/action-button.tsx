@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { Check, Loader2, LucideIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
@@ -102,7 +102,7 @@ export const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProp
         <span className="flex items-center gap-2">
           <AnimatePresence mode="wait">
             {isLoading ? (
-              <motion.span
+              <m.span
                 key="loader"
                 variants={iconVariants}
                 initial="initial"
@@ -111,9 +111,9 @@ export const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProp
                 transition={{ duration: 0.15 }}
               >
                 <Loader2 className="h-4 w-4 animate-spin" />
-              </motion.span>
+              </m.span>
             ) : isSuccess ? (
-              <motion.span
+              <m.span
                 key="check"
                 variants={iconVariants}
                 initial="initial"
@@ -122,9 +122,9 @@ export const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProp
                 transition={{ duration: 0.15, type: 'spring', stiffness: 500 }}
               >
                 <Check className="h-4 w-4 text-green-500" />
-              </motion.span>
+              </m.span>
             ) : Icon ? (
-              <motion.span
+              <m.span
                 key="icon"
                 variants={iconVariants}
                 initial="initial"
@@ -133,7 +133,7 @@ export const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProp
                 transition={{ duration: 0.15 }}
               >
                 <Icon className="h-4 w-4" />
-              </motion.span>
+              </m.span>
             ) : null}
           </AnimatePresence>
 

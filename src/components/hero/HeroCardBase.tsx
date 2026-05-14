@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import React from 'react';
 
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
@@ -59,7 +59,7 @@ const HeroCardBase: React.FC<HeroCardBaseProps> = ({
         animate: { opacity: 1, y: 0 },
       };
 
-  const MotionTag = as === 'section' ? motion.section : motion.div;
+  const MotionTag = as === 'section' ? m.section : m.div;
 
   return (
     <MotionTag {...motionProps} className={shellClasses}>

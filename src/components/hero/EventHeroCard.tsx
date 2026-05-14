@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Calendar, Shuffle, Users } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
@@ -97,7 +97,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
   }, [startTimeStr]);
 
   return (
-    <motion.div
+    <m.div
       whileHover={{ scale: 1.01, y: -2 }}
       whileTap={{ scale: 0.99 }}
       transition={{ duration: 0.2 }}
@@ -149,23 +149,23 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
             {/* Left Column - Header, Date, Countdown (desktop) */}
             <div className="flex flex-col items-center text-center space-y-3 md:w-1/3 md:flex-shrink-0">
               <div className="flex items-center gap-2">
-                <motion.div
+                <m.div
                   initial={{ rotate: -10, opacity: 0 }}
                   animate={{ rotate: 0, opacity: 1 }}
                   transition={{ duration: 0.4 }}
                 >
                   <Shuffle className="h-6 w-6 md:h-8 md:w-8" />
-                </motion.div>
+                </m.div>
                 <h2 className="text-xl md:text-2xl font-bebas uppercase tracking-wide">
                   {card.title}
                 </h2>
-                <motion.div
+                <m.div
                   initial={{ rotate: 10, opacity: 0 }}
                   animate={{ rotate: 0, opacity: 1 }}
                   transition={{ duration: 0.4 }}
                 >
                   <Shuffle className="h-6 w-6 md:h-8 md:w-8" />
-                </motion.div>
+                </m.div>
               </div>
 
               {(isActiveEvent || card.subtitle) && (
@@ -255,7 +255,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
           </div>
         </CardContent>
       </Card>
-    </motion.div>
+    </m.div>
   );
 };
 

@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { LucideIcon } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React from 'react';
@@ -37,7 +37,7 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
     : 'bg-card border-border';
 
   return (
-    <motion.div
+    <m.div
       custom={index}
       initial="hidden"
       animate="visible"
@@ -60,7 +60,7 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
           )}
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 };
 

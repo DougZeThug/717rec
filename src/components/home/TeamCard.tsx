@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useTheme } from 'next-themes';
 import React from 'react';
 import { Link } from 'react-router';
@@ -29,7 +29,7 @@ const TeamCard: React.FC<TeamCardProps> = ({
   const delayClass = delay ? `animation-delay-${delay * 100}` : '';
 
   return (
-    <motion.div
+    <m.div
       className={cn(
         'overflow-hidden rounded-xl shadow-md',
         'border border-border/50',
@@ -108,7 +108,7 @@ const TeamCard: React.FC<TeamCardProps> = ({
           <TeamStats team={team} isWinter={isWinter} />
         </div>
       </Link>
-    </motion.div>
+    </m.div>
   );
 };
 

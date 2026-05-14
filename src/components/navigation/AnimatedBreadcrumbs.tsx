@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ChevronRight, Home } from 'lucide-react';
 import React from 'react';
 import { Link, useLocation } from 'react-router';
@@ -64,7 +64,7 @@ export const AnimatedBreadcrumbs: React.FC<AnimatedBreadcrumbsProps> = ({
     <nav aria-label="Breadcrumb" className={cn('mb-4', className)}>
       <ol className="flex items-center flex-wrap gap-1 text-sm">
         {items.map((item, index) => (
-          <motion.li
+          <m.li
             key={item.label + index}
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
@@ -94,7 +94,7 @@ export const AnimatedBreadcrumbs: React.FC<AnimatedBreadcrumbsProps> = ({
                 {item.label}
               </span>
             )}
-          </motion.li>
+          </m.li>
         ))}
       </ol>
     </nav>

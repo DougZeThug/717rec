@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import React from 'react';
 import { useInView } from 'react-intersection-observer';
 
@@ -21,7 +21,7 @@ export const AnimatedChartWrapper: React.FC<AnimatedChartWrapperProps> = ({
   });
 
   return (
-    <motion.div
+    <m.div
       ref={ref}
       initial={{ opacity: 0, y: 20, scale: 0.95 }}
       animate={inView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 20, scale: 0.95 }}
@@ -33,7 +33,7 @@ export const AnimatedChartWrapper: React.FC<AnimatedChartWrapperProps> = ({
       className={cn('w-full h-full', className)}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 };
 

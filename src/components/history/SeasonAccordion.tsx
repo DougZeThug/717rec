@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { ChevronDown, Crown, Pencil, RefreshCw, TrendingUp, Trophy } from 'lucide-react';
 import React, { useState } from 'react';
 
@@ -490,7 +490,7 @@ const SeasonAccordion: React.FC<{ season: Season }> = ({ season }) => {
       </button>
       <AnimatePresence>
         {isExpanded && (
-          <motion.div
+          <m.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -512,7 +512,7 @@ const SeasonAccordion: React.FC<{ season: Season }> = ({ season }) => {
               isAdminAccessGranted={isAdminAccessGranted}
               isWinterTheme={isWinterTheme}
             />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

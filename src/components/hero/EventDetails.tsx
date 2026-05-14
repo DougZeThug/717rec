@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Clock, DollarSign, Trophy } from 'lucide-react';
 import React from 'react';
 
@@ -44,7 +44,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 w-full">
-      <motion.div whileHover={{ scale: 1.03 }} className={tileClasses}>
+      <m.div whileHover={{ scale: 1.03 }} className={tileClasses}>
         <Clock
           className={cn(
             'h-4 w-4 md:h-5 md:w-5',
@@ -55,9 +55,9 @@ const EventDetails: React.FC<EventDetailsProps> = ({
         <span className="text-base md:text-lg font-bebas tabular-nums">
           {formatTime(checkInTimeStr)}
         </span>
-      </motion.div>
+      </m.div>
 
-      <motion.div whileHover={{ scale: 1.03 }} className={tileClasses}>
+      <m.div whileHover={{ scale: 1.03 }} className={tileClasses}>
         <Clock
           className={cn(
             'h-4 w-4 md:h-5 md:w-5',
@@ -68,9 +68,9 @@ const EventDetails: React.FC<EventDetailsProps> = ({
         <span className="text-base md:text-lg font-bebas tabular-nums">
           {formatTime(startTimeStr)}
         </span>
-      </motion.div>
+      </m.div>
 
-      <motion.div whileHover={{ scale: 1.03 }} className={tileClasses}>
+      <m.div whileHover={{ scale: 1.03 }} className={tileClasses}>
         <DollarSign
           className={cn(
             'h-4 w-4 md:h-5 md:w-5',
@@ -79,9 +79,9 @@ const EventDetails: React.FC<EventDetailsProps> = ({
         />
         <span className={labelClasses}>Buy-in</span>
         <span className="text-base md:text-lg font-bebas">{buyIn}</span>
-      </motion.div>
+      </m.div>
 
-      <motion.div whileHover={{ scale: 1.03 }} className={tileClasses}>
+      <m.div whileHover={{ scale: 1.03 }} className={tileClasses}>
         <SeasonalIcon
           defaultIcon={Trophy}
           winterGlyph="frozen-trophy"
@@ -93,7 +93,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({
         />
         <span className={labelClasses}>Payouts</span>
         <span className="text-base md:text-lg font-bebas">{payouts}</span>
-      </motion.div>
+      </m.div>
     </div>
   );
 };

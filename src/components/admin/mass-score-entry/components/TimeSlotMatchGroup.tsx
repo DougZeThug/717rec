@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
@@ -76,7 +76,7 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
         />
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.2 }}
@@ -123,7 +123,7 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
               </div>
             );
           })}
-        </motion.div>
+        </m.div>
       </CollapsibleContent>
     </Collapsible>
   );

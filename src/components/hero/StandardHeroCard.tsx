@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router';
@@ -42,13 +42,13 @@ const StandardHeroCard: React.FC<StandardHeroCardProps> = ({ card }) => {
   );
 
   const cardWrapper = (children: React.ReactNode) => (
-    <motion.div
+    <m.div
       whileHover={{ scale: 1.02, y: -1 }}
       whileTap={{ scale: 0.98 }}
       transition={{ duration: 0.15 }}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 
   if (card.cta_url) {

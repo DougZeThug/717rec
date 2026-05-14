@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Edit, ExternalLink, MoreHorizontal, Trash2, Trophy, X } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router';
@@ -35,7 +35,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
   const sosColor = getSosColor(team.sos);
 
   return (
-    <motion.div
+    <m.div
       className={cn(
         'team-list-card border rounded-xl overflow-hidden h-full font-inter shadow-sm',
         isWinterTheme
@@ -189,6 +189,6 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
           </div>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 };

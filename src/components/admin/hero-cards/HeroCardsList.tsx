@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Copy, Edit, GripVertical, Loader2, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 
@@ -192,29 +192,29 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
                   <div className="flex justify-end gap-1">
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <motion.div whileTap={{ scale: 0.9 }}>
+                        <m.div whileTap={{ scale: 0.9 }}>
                           <Button variant="ghost" size="icon" onClick={() => onEdit(card)}>
                             <Edit className="h-4 w-4" />
                           </Button>
-                        </motion.div>
+                        </m.div>
                       </TooltipTrigger>
                       <TooltipContent>Edit card</TooltipContent>
                     </Tooltip>
 
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <motion.div whileTap={{ scale: 0.9 }}>
+                        <m.div whileTap={{ scale: 0.9 }}>
                           <Button variant="ghost" size="icon" onClick={() => handleDuplicate(card)}>
                             <Copy className="h-4 w-4" />
                           </Button>
-                        </motion.div>
+                        </m.div>
                       </TooltipTrigger>
                       <TooltipContent>Duplicate card</TooltipContent>
                     </Tooltip>
 
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <motion.div whileTap={{ scale: 0.9 }}>
+                        <m.div whileTap={{ scale: 0.9 }}>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -224,7 +224,7 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
-                        </motion.div>
+                        </m.div>
                       </TooltipTrigger>
                       <TooltipContent>Delete card</TooltipContent>
                     </Tooltip>

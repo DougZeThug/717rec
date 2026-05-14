@@ -1,4 +1,4 @@
-import { HTMLMotionProps, motion } from 'framer-motion';
+import { HTMLMotionProps, m } from 'framer-motion';
 import React from 'react';
 
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
@@ -34,7 +34,7 @@ export const EntityCard: React.FC<EntityCardProps> = ({
   const { isWinterTheme } = useSeasonalTheme();
 
   return (
-    <motion.div
+    <m.div
       className={cn(
         'rounded-lg border shadow-sm h-full',
         isWinterTheme
@@ -49,7 +49,7 @@ export const EntityCard: React.FC<EntityCardProps> = ({
       {...motionProps}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 };
 

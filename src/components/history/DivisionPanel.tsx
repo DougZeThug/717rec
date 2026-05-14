@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
@@ -107,7 +107,7 @@ const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) =>
 
       <AnimatePresence>
         {isExpanded && (
-          <motion.div
+          <m.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -117,7 +117,7 @@ const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) =>
             <div className="pt-2">
               <HistoricalStandingsTable teams={sortedTeams} />
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

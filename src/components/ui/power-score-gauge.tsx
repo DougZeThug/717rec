@@ -1,4 +1,4 @@
-import { motion, useSpring } from 'framer-motion';
+import { m, useSpring } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -70,7 +70,7 @@ export const PowerScoreGauge: React.FC<PowerScoreGaugeProps> = ({
         />
 
         {/* Progress circle */}
-        <motion.circle
+        <m.circle
           cx={config.width / 2}
           cy={config.width / 2}
           r={radius}

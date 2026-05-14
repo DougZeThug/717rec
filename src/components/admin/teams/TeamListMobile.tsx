@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Edit, Users } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -74,7 +74,7 @@ const TeamMobileCard = ({ team, divisions, actions }: TeamMobileCardProps) => (
         <TeamAvatar team={team} />
         <span className="font-medium text-sm truncate">{team.name}</span>
       </div>
-      <motion.div whileTap={{ scale: 0.9 }}>
+      <m.div whileTap={{ scale: 0.9 }}>
         <Button
           variant="outline"
           size="sm"
@@ -83,7 +83,7 @@ const TeamMobileCard = ({ team, divisions, actions }: TeamMobileCardProps) => (
         >
           <Edit className="h-3 w-3" />
         </Button>
-      </motion.div>
+      </m.div>
     </div>
     <TeamDivisionSelect team={team} divisions={divisions} actions={actions} />
   </div>

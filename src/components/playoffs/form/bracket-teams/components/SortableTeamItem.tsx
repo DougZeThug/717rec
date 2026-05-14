@@ -1,6 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { GripVertical, Users } from 'lucide-react';
 import React from 'react';
 
@@ -39,7 +39,7 @@ export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
   };
 
   return (
-    <motion.div
+    <m.div
       ref={setNodeRef}
       style={style}
       layout
@@ -123,7 +123,7 @@ export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
           {hasConflict && <span className="text-xs text-destructive font-medium">Duplicate</span>}
         </div>
       )}
-    </motion.div>
+    </m.div>
   );
 };
 

@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Loader2, Save } from 'lucide-react';
 import React from 'react';
 
@@ -18,7 +18,7 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
   editedMatchCount = 0,
 }) => {
   return (
-    <motion.div whileTap={{ scale: 0.97 }}>
+    <m.div whileTap={{ scale: 0.97 }}>
       <Button
         onClick={onClick} // Wired to onClick prop
         disabled={disabled}
@@ -29,7 +29,7 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
           ? 'Processing...'
           : `Submit ${editedMatchCount ? `(${editedMatchCount})` : 'All'} Changes`}
       </Button>
-    </motion.div>
+    </m.div>
   );
 };
 

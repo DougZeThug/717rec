@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Wand2 } from 'lucide-react';
 import React from 'react';
 
@@ -49,7 +49,7 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
   } = useAutoScheduleSection({ selectedDate, setMatchPairs });
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: 'auto' }}
       exit={{ opacity: 0, height: 0 }}
@@ -112,6 +112,6 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
           Open Full Auto Schedule
         </Button>
       </div>
-    </motion.div>
+    </m.div>
   );
 };

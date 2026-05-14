@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
 
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
@@ -54,7 +54,7 @@ export const AnimatedRankNumber: React.FC<AnimatedRankNumberProps> = ({
   return (
     <div className="relative">
       <AnimatePresence mode="wait">
-        <motion.div
+        <m.div
           key={rank}
           initial={{ scale: 0.8, opacity: 0, y: -10 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -73,13 +73,13 @@ export const AnimatedRankNumber: React.FC<AnimatedRankNumberProps> = ({
           )}
         >
           {rank}
-        </motion.div>
+        </m.div>
       </AnimatePresence>
 
       {/* Flash overlay */}
       <AnimatePresence>
         {flashColor && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0.8, scale: 1 }}
             animate={{ opacity: 0, scale: 1.5 }}
             exit={{ opacity: 0 }}

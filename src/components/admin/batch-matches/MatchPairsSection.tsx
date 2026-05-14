@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Users } from 'lucide-react';
 import React from 'react';
 
@@ -41,7 +41,7 @@ export const MatchPairsSection: React.FC<MatchPairsSectionProps> = ({
       <p className="text-sm text-muted-foreground mb-3">
         Create team vs team pairings and assign timeslots
       </p>
-      <motion.div
+      <m.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
@@ -53,7 +53,7 @@ export const MatchPairsSection: React.FC<MatchPairsSectionProps> = ({
           onUpdate={updateMatchPair}
           onRemove={removeMatchPair}
         />
-      </motion.div>
+      </m.div>
     </>
   );
 };
