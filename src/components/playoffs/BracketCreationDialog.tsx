@@ -50,6 +50,10 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
     mutationFn: createBracket,
     onSuccess: (bracket) => {
       bracketLog('Bracket created successfully:', bracket);
+      // Keep cached bracket/playoff data in sync after the mutation.
+      queryClient.invalidateQueries({ queryKey: ['brackets'] });
+      queryClient.invalidateQueries({ queryKey: ['playoff-data'] });
+      queryClient.invalidateQueries({ queryKey: ['playoff-matches'] });
     },
     onError: (error) => {
       errorLog('Failed to create bracket:', error);
