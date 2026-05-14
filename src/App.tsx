@@ -261,7 +261,7 @@ const App = () => {
     <ErrorBoundary>
       <HelmetProvider>
         <QueryClientProvider client={queryClient}>
-          <LazyMotion features={domAnimation} strict>
+          <LazyMotion features={domAnimation}>
             <TooltipProvider>
               <Toaster />
               <BrowserRouter>
