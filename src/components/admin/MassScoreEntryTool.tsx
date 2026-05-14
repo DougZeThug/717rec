@@ -134,9 +134,9 @@ const MassScoreEntryTool: React.FC = () => {
               transition={{ duration: 0.2 }}
               className="flex flex-wrap gap-2 mt-3"
             >
-              {filterTags.map((tag, index) => (
+              {filterTags.map((tag) => (
                 <div
-                  key={index}
+                  key={`${tag.label}-${tag.value}`}
                   className="text-xs px-2 py-1 rounded-full bg-primary/10 flex items-center gap-1"
                 >
                   <span className="font-medium">{tag.label}:</span>

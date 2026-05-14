@@ -21,8 +21,8 @@ const SignupsListSkeleton: React.FC = () => {
           </tr>
         </thead>
         <tbody className="divide-y">
-          {[1, 2, 3, 4, 5].map((index) => (
-            <tr key={index}>
+          {['signup-skel-1', 'signup-skel-2', 'signup-skel-3', 'signup-skel-4', 'signup-skel-5'].map((rowKey) => (
+            <tr key={rowKey}>
               <td className="px-2 sm:px-4 py-2">
                 <ShimmerSkeleton className="h-4 w-4" />
               </td>

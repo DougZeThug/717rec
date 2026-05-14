@@ -216,8 +216,8 @@ const GettingStartedTab: React.FC = () => {
         </CardHeader>
         <CardContent>
           <ul className="space-y-2">
-            {tips.map((tip, index) => (
-              <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground">
+            {tips.map((tip) => (
+              <li key={tip} className="flex items-start gap-2 text-sm text-muted-foreground">
                 <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
                 {tip}
               </li>

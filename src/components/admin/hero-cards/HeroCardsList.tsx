@@ -96,8 +96,8 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
   if (isLoading) {
     return (
       <div className="space-y-2">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="h-16 bg-muted animate-pulse rounded" />
+        {['hero-skel-1', 'hero-skel-2', 'hero-skel-3'].map((sk) => (
+          <div key={sk} className="h-16 bg-muted animate-pulse rounded" />
         ))}
       </div>
     );

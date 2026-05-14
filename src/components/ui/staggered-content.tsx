@@ -71,7 +71,11 @@ export const AutoStagger: React.FC<{
     <div className={className}>
       {childArray.map((child, index) => (
         <motion.div
-          key={index}
+          key={
+            React.isValidElement(child) && child.key != null
+              ? String(child.key)
+              : `stagger-${index}`
+          }
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{
