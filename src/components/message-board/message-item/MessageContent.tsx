@@ -1,4 +1,4 @@
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceFrom } from '@/utils/formatDateSafe';
 import { useTheme } from 'next-themes';
 import React from 'react';
 
@@ -40,7 +40,7 @@ const MessageContent: React.FC<MessageContentProps> = ({ content, isEdited, upda
               </span>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="text-xs">
-              Edited {formatDistanceToNow(new Date(updatedAt), { addSuffix: true })}
+              Edited {formatDistanceFrom(updatedAt, { addSuffix: true })}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
