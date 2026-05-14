@@ -70,7 +70,7 @@ function transform(src) {
   let i = 0;
   while (i < src.length) {
     const ch = src[i];
-    if (ch === '"' || ch === "'" || ch === '`') {
+    if (ch === '"' || ch === '`') {
       const quote = ch;
       let j = i + 1;
       let buf = '';
