@@ -107,8 +107,19 @@ function walk(dir, files = []) {
       if (['node_modules','dist','.git','__tests__'].includes(e.name)) continue;
       walk(p, files);
     } else if (/\.(tsx?|jsx?)$/.test(e.name)) {
-      // Skip design-system documentation files
-      if (p.includes('design-system/semanticColors') || p.includes('design-system/gradients')) continue;
+      // Skip files that intentionally encode brand color palettes
+      const skip = [
+        'design-system/semanticColors',
+        'design-system/gradients',
+        'design-system/blueAmber',
+        'design-system/divisions',
+        'utils/colors/',
+        'utils/charts/',
+        'utils/badgeConfig',
+        'utils/divisionColors',
+        'styles/bracket-styles',
+      ];
+      if (skip.some((s) => p.replace(/\\/g,'/').includes(s))) continue;
       files.push(p);
     }
   }
