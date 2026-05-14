@@ -23,6 +23,36 @@ import { Team } from '@/types';
 
 const NONE_VALUE = '__none__';
 
+interface TeamSelectProps {
+  id: string;
+  label: string;
+  value: string | null;
+  onChange: (v: string | null) => void;
+  teams: Team[];
+}
+
+const TeamSelect: React.FC<TeamSelectProps> = ({ id, label, value, onChange, teams }) => (
+  <div className="space-y-2">
+    <Label htmlFor={id}>{label}</Label>
+    <Select
+      value={value ?? NONE_VALUE}
+      onValueChange={(v) => onChange(v === NONE_VALUE ? null : v)}
+    >
+      <SelectTrigger id={id}>
+        <SelectValue placeholder="Select team" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={NONE_VALUE}>— Empty (BYE) —</SelectItem>
+        {teams.map((team) => (
+          <SelectItem key={team.id} value={team.id}>
+            {team.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </div>
+);
+
 interface EditMatchParticipantsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -79,33 +109,6 @@ const EditMatchParticipantsDialog: React.FC<EditMatchParticipantsDialogProps> = 
   const noChange = team1Id === currentTeam1Id && team2Id === currentTeam2Id;
   const bothSame = team1Id !== null && team2Id !== null && team1Id === team2Id;
 
-  const renderTeamSelect = (
-    id: string,
-    label: string,
-    value: string | null,
-    onChange: (v: string | null) => void
-  ) => (
-    <div className="space-y-2">
-      <Label htmlFor={id}>{label}</Label>
-      <Select
-        value={value ?? NONE_VALUE}
-        onValueChange={(v) => onChange(v === NONE_VALUE ? null : v)}
-      >
-        <SelectTrigger id={id}>
-          <SelectValue placeholder="Select team" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value={NONE_VALUE}>— Empty (BYE) —</SelectItem>
-          {sortedTeams.map((team) => (
-            <SelectItem key={team.id} value={team.id}>
-              {team.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  );
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -121,8 +124,20 @@ const EditMatchParticipantsDialog: React.FC<EditMatchParticipantsDialogProps> = 
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          {renderTeamSelect('edit-match-opp1', 'Opponent 1', team1Id, setTeam1Id)}
-          {renderTeamSelect('edit-match-opp2', 'Opponent 2', team2Id, setTeam2Id)}
+          <TeamSelect
+            id="edit-match-opp1"
+            label="Opponent 1"
+            value={team1Id}
+            onChange={setTeam1Id}
+            teams={sortedTeams}
+          />
+          <TeamSelect
+            id="edit-match-opp2"
+            label="Opponent 2"
+            value={team2Id}
+            onChange={setTeam2Id}
+            teams={sortedTeams}
+          />
 
           <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200">
             <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />

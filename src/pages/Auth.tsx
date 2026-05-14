@@ -16,6 +16,39 @@ interface LocationState {
   returnTo?: string;
 }
 
+interface AuthFooterProps {
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+}
+
+const AuthFooter: React.FC<AuthFooterProps> = ({ activeTab, setActiveTab }) => (
+  <p className="py-1">
+    {activeTab === 'login' ? (
+      <>
+        Don't have an account?{' '}
+        <button
+          type="button"
+          className="text-primary hover:underline py-2 px-1 -my-2"
+          onClick={() => setActiveTab('signup')}
+        >
+          Sign up
+        </button>
+      </>
+    ) : (
+      <>
+        Already have an account?{' '}
+        <button
+          type="button"
+          className="text-primary hover:underline py-2 px-1 -my-2"
+          onClick={() => setActiveTab('login')}
+        >
+          Login
+        </button>
+      </>
+    )}
+  </p>
+);
+
 const Auth = () => {
   const { user, authInitialized } = useAuth();
   const navigate = useNavigate();
@@ -46,38 +79,9 @@ const Auth = () => {
     }
   }, [user, navigate, returnTo, authInitialized]);
 
-  // Footer content with tab switching
-  const renderFooter = () => (
-    <p className="py-1">
-      {activeTab === 'login' ? (
-        <>
-          Don't have an account?{' '}
-          <button
-            type="button"
-            className="text-primary hover:underline py-2 px-1 -my-2"
-            onClick={() => setActiveTab('signup')}
-          >
-            Sign up
-          </button>
-        </>
-      ) : (
-        <>
-          Already have an account?{' '}
-          <button
-            type="button"
-            className="text-primary hover:underline py-2 px-1 -my-2"
-            onClick={() => setActiveTab('login')}
-          >
-            Login
-          </button>
-        </>
-      )}
-    </p>
-  );
-
   return (
     <PageLayout compact={true}>
-      <AuthContainer footer={renderFooter()}>
+      <AuthContainer footer={<AuthFooter activeTab={activeTab} setActiveTab={setActiveTab} />}>
         <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login">Login</TabsTrigger>
