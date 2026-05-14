@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { formatWithPattern } from '@/utils/formatDateSafe';
 import { ArrowUpDown, Calendar, Download, Search, Swords, Trophy, X } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
@@ -318,7 +318,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
                         {record.last_played_at ? (
                           <div className="flex items-center space-x-1">
                             <Calendar className="w-3 h-3" />
-                            <span suppressHydrationWarning>{format(new Date(record.last_played_at), 'MMM d, yyyy')}</span>
+                            <span>{formatWithPattern(record.last_played_at, 'MMM d, yyyy')}</span>
                           </div>
                         ) : (
                           '-'
