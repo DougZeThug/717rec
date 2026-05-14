@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import React, { useCallback, useMemo } from 'react';
 
 import { TeamDeleteDialog } from '@/components/teams/TeamDeleteDialog';
@@ -77,7 +77,7 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode, 
     <div>
       <AnimatePresence mode="wait">
         {teamToEdit && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
@@ -88,11 +88,11 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode, 
               onSubmit={handleUpdateTeam}
               onCancel={() => setTeamToEdit(null)}
             />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
       <AnimatePresence mode="wait">
-        <motion.div
+        <m.div
           key={`${displayMode}-${sortMode}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -118,7 +118,7 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode, 
               viewMode={viewMode}
             />
           )}
-        </motion.div>
+        </m.div>
       </AnimatePresence>
       <TeamDeleteDialog
         isOpen={!!deleteTeamId}

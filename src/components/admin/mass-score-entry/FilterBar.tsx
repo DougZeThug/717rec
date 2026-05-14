@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { CalendarIcon, Info, X } from 'lucide-react';
 import React from 'react';
 
@@ -97,7 +97,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
       )}
 
       {hasActiveFilters ? (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="self-start"
@@ -111,7 +111,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
             <X className="h-3 w-3" />
             Clear All Filters
           </Button>
-        </motion.div>
+        </m.div>
       ) : (
         <div className="h-6" /> // Spacer to keep layout consistent
       )}

@@ -20,6 +20,8 @@ export default defineConfig(({ mode }) => ({
           'vendor-supabase': ['@supabase/supabase-js'],
           // Separate Sentry into its own chunk so it doesn't block main bundle
           'vendor-sentry': ['@sentry/react'],
+          // Recharts is ~90 KB gzipped — isolate so it loads only with chart routes
+          'vendor-recharts': ['recharts'],
         },
       },
     },

@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { AlertCircle, Edit, FileText, Swords, Target, TrendingUp, Trophy } from 'lucide-react';
 import React, { useState } from 'react';
 
@@ -45,7 +45,7 @@ const AnalysisContent = ({
   onEdit: () => void;
   isAdmin: boolean;
 }) => (
-  <motion.div
+  <m.div
     className="space-y-4 p-4"
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
@@ -82,7 +82,7 @@ const AnalysisContent = ({
               const occurrence = analysis.strengths!.slice(0, i).filter((s) => s === strength).length;
               const key = occurrence === 0 ? `strength:${strength}` : `strength:${strength}#${occurrence}`;
               return (
-              <motion.li
+              <m.li
                 key={key}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -91,7 +91,7 @@ const AnalysisContent = ({
               >
                 <span className="text-green-500 mt-0.5">✓</span>
                 <span>{strength}</span>
-              </motion.li>
+              </m.li>
               );
             })}
           </ul>
@@ -110,7 +110,7 @@ const AnalysisContent = ({
               const occurrence = analysis.weaknesses!.slice(0, i).filter((w) => w === weakness).length;
               const key = occurrence === 0 ? `weakness:${weakness}` : `weakness:${weakness}#${occurrence}`;
               return (
-              <motion.li
+              <m.li
                 key={key}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -119,7 +119,7 @@ const AnalysisContent = ({
               >
                 <span className="text-amber-500 mt-0.5">→</span>
                 <span>{weakness}</span>
-              </motion.li>
+              </m.li>
               );
             })}
           </ul>
@@ -148,7 +148,7 @@ const AnalysisContent = ({
         <p className="text-sm text-muted-foreground">{analysis.rivalry_insights}</p>
       </div>
     )}
-  </motion.div>
+  </m.div>
 );
 
 const EmptyState = ({ onEdit, isAdmin }: { onEdit: () => void; isAdmin: boolean }) => (

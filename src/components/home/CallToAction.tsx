@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -82,7 +82,7 @@ const CallToAction = () => {
       />
 
       <div className="max-w-5xl mx-auto text-center">
-        <motion.h2
+        <m.h2
           className={cn(
             'text-xl md:text-3xl font-semibold mb-3 bg-clip-text text-transparent',
             shouldApplyWinter
@@ -98,8 +98,8 @@ const CallToAction = () => {
           key={`heading-${currentMessageIndex}`}
         >
           {currentMessage.heading}
-        </motion.h2>
-        <motion.p
+        </m.h2>
+        <m.p
           className={cn(
             'text-base md:text-lg mb-5 max-w-2xl mx-auto',
             shouldApplyWinter ? 'text-cyan-100/80' : 'text-gray-700 dark:text-gray-300'
@@ -110,8 +110,8 @@ const CallToAction = () => {
           key={`subheading-${currentMessageIndex}`}
         >
           {currentMessage.subheading}
-        </motion.p>
-        <motion.div
+        </m.p>
+        <m.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.3 }}
@@ -134,7 +134,7 @@ const CallToAction = () => {
           >
             <a href={currentMessage.buttonLink}>{currentMessage.buttonText}</a>
           </Button>
-        </motion.div>
+        </m.div>
 
         {/* Navigation dots */}
         <div className="flex justify-center gap-0 mt-5">

@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ExternalLink, LucideIcon } from 'lucide-react';
 import React from 'react';
 
@@ -44,14 +44,14 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   iconClassName,
 }) => {
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
       className={cn('flex flex-col items-center justify-center py-12 px-4 text-center', className)}
     >
       {/* Animated icon container with subtle pulse */}
-      <motion.div
+      <m.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.3, delay: 0.1 }}
@@ -70,31 +70,31 @@ const EmptyState: React.FC<EmptyStateProps> = ({
         >
           <Icon className="w-10 h-10 text-muted-foreground" />
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Title */}
-      <motion.h3
+      <m.h3
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.2 }}
         className="text-xl font-bebas tracking-wide text-foreground mb-2"
       >
         {title}
-      </motion.h3>
+      </m.h3>
 
       {/* Description */}
-      <motion.p
+      <m.p
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.3 }}
         className="text-muted-foreground max-w-sm mb-6 font-inter"
       >
         {description}
-      </motion.p>
+      </m.p>
 
       {/* Action buttons */}
       {actions.length > 0 && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.4 }}
@@ -114,12 +114,12 @@ const EmptyState: React.FC<EmptyStateProps> = ({
               </Button>
             );
           })}
-        </motion.div>
+        </m.div>
       )}
 
       {/* Secondary link */}
       {secondaryLink && (
-        <motion.a
+        <m.a
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: 0.5 }}
@@ -130,9 +130,9 @@ const EmptyState: React.FC<EmptyStateProps> = ({
         >
           {secondaryLink.label}
           {secondaryLink.external && <ExternalLink className="w-3 h-3" />}
-        </motion.a>
+        </m.a>
       )}
-    </motion.div>
+    </m.div>
   );
 };
 

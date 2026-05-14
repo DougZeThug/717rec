@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -19,7 +19,7 @@ export const SuccessFlash: React.FC<SuccessFlashProps> = ({ show, children, clas
       {children}
       <AnimatePresence>
         {show && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0.8, scale: 1 }}
             animate={{
               opacity: 0,

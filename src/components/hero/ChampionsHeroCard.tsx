@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Crown, Trophy } from 'lucide-react';
 import React from 'react';
 
@@ -30,7 +30,7 @@ const ChampionCardCompact = React.forwardRef<
   }
 >(({ team, division, isWinter }, ref) => {
   return (
-    <motion.div
+    <m.div
       ref={ref}
       whileTap={{ scale: 0.97 }}
       className={cn(
@@ -93,7 +93,7 @@ const ChampionCardCompact = React.forwardRef<
       >
         {team.name}
       </p>
-    </motion.div>
+    </m.div>
   );
 });
 ChampionCardCompact.displayName = 'ChampionCardCompact';

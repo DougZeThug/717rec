@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { BarChart3, Clock, Swords, TrendingUp } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -110,7 +110,7 @@ export const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ clas
   if (!isVisible) return null;
 
   return (
-    <motion.div
+    <m.div
       ref={navRef}
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
@@ -152,7 +152,7 @@ export const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ clas
           })}
         </nav>
       </div>
-    </motion.div>
+    </m.div>
   );
 };
 

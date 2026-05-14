@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Clock, Users, X } from 'lucide-react';
 import React from 'react';
 
@@ -55,7 +55,7 @@ const MatchRow: React.FC<MatchRowProps> = ({ pair, teams, onUpdate, onRemove }) 
   const showPreview = pair.team1Id && pair.team2Id && pair.timeslot;
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
@@ -169,7 +169,7 @@ const MatchRow: React.FC<MatchRowProps> = ({ pair, teams, onUpdate, onRemove }) 
           </p>
         </div>
       )}
-    </motion.div>
+    </m.div>
   );
 };
 

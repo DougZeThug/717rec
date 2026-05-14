@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Edit, Users } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -93,7 +93,7 @@ const TeamTableRowItem = ({ team, divisions, actions }: TeamTableRowProps) => (
       <TeamDivisionCell team={team} divisions={divisions} actions={actions} />
     </TableCell>
     <TableCell>
-      <motion.div whileTap={{ scale: 0.9 }}>
+      <m.div whileTap={{ scale: 0.9 }}>
         <Button
           variant="outline"
           size="sm"
@@ -102,7 +102,7 @@ const TeamTableRowItem = ({ team, divisions, actions }: TeamTableRowProps) => (
         >
           <Edit className="h-3 w-3" />
         </Button>
-      </motion.div>
+      </m.div>
     </TableCell>
   </TableRow>
 );

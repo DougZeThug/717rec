@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -67,7 +67,7 @@ const ScoreButton = ({
   );
 
   return (
-    <motion.button
+    <m.button
       type="button"
       onClick={handleClick}
       disabled={disabled}
@@ -94,7 +94,7 @@ const ScoreButton = ({
       aria-pressed={selected}
     >
       {option.label}
-    </motion.button>
+    </m.button>
   );
 };
 

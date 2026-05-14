@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { AlertCircle, Check, Loader2 } from 'lucide-react';
 import React from 'react';
 
@@ -54,7 +54,7 @@ export const SavedBadge: React.FC<SavedBadgeProps> = ({
   return (
     <AnimatePresence mode="wait">
       {visible && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.9, y: -4 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: -4 }}
@@ -85,7 +85,7 @@ export const SavedBadge: React.FC<SavedBadgeProps> = ({
               <span>Error</span>
             </>
           )}
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

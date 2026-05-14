@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ChevronRight, Sparkles, Star, Trophy } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router';
@@ -23,7 +23,7 @@ const AnnouncementHeroCard: React.FC<AnnouncementHeroCardProps> = ({ card }) => 
   const { shouldApplyWinter } = useSeasonalTheme();
 
   const content = (
-    <motion.div
+    <m.div
       whileHover={{ scale: 1.02, y: -2 }}
       whileTap={{ scale: 0.98 }}
       transition={{ duration: 0.2 }}
@@ -64,13 +64,13 @@ const AnnouncementHeroCard: React.FC<AnnouncementHeroCardProps> = ({ card }) => 
           )}
         >
           {Icon && (
-            <motion.div
+            <m.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.3 }}
             >
               <Icon className="w-6 h-6" />
-            </motion.div>
+            </m.div>
           )}
 
           <div className="text-center">
@@ -92,7 +92,7 @@ const AnnouncementHeroCard: React.FC<AnnouncementHeroCardProps> = ({ card }) => 
           )}
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 
   if (card.cta_url) {

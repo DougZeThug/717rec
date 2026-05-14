@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import {
   Calendar,
   CalendarClock,
@@ -149,7 +149,7 @@ const AdminSidebar: React.FC = () => {
   return (
     <div className="flex gap-6 min-h-[600px]">
       {/* Sidebar */}
-      <motion.aside
+      <m.aside
         initial={false}
         animate={isCollapsed ? sidebarAnimateProps.collapsed : sidebarAnimateProps.expanded}
         transition={sidebarTransition}
@@ -161,14 +161,14 @@ const AdminSidebar: React.FC = () => {
         {/* Header with collapse toggle */}
         <div className="flex items-center justify-between p-3 border-b border-border">
           {!isCollapsed && (
-            <motion.span
+            <m.span
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="font-semibold text-sm"
             >
               Admin Menu
-            </motion.span>
+            </m.span>
           )}
           <Button
             variant="ghost"
@@ -188,7 +188,7 @@ const AdminSidebar: React.FC = () => {
         {/* Search */}
         <AnimatePresence>
           {!isCollapsed && (
-            <motion.div {...searchAnimateProps} className="p-3 border-b border-border">
+            <m.div {...searchAnimateProps} className="p-3 border-b border-border">
               <div className="relative">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -198,7 +198,7 @@ const AdminSidebar: React.FC = () => {
                   className="pl-8 h-8 text-sm"
                 />
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 
@@ -222,9 +222,9 @@ const AdminSidebar: React.FC = () => {
                 <AnimatePresence>
                   {!isCollapsed && (
                     <>
-                      <motion.span {...labelAnimateProps} className="truncate flex-1 text-left">
+                      <m.span {...labelAnimateProps} className="truncate flex-1 text-left">
                         {item.label}
-                      </motion.span>
+                      </m.span>
                       {item.id === 'requests' &&
                         pendingRequestsCount !== undefined &&
                         pendingRequestsCount > 0 && (
@@ -242,7 +242,7 @@ const AdminSidebar: React.FC = () => {
             ))}
           </nav>
         </ScrollArea>
-      </motion.aside>
+      </m.aside>
 
       {/* Content area - render only active tab to improve performance */}
       <div className="flex-1 min-w-0">{ActiveComponent && <ActiveComponent />}</div>

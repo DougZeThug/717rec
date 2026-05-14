@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -27,7 +27,7 @@ export const StaggerItem: React.FC<StaggerItemProps> = ({
   className,
 }) => {
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{
@@ -38,7 +38,7 @@ export const StaggerItem: React.FC<StaggerItemProps> = ({
       className={className}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 };
 
@@ -70,7 +70,7 @@ export const AutoStagger: React.FC<{
   return (
     <div className={className}>
       {childArray.map((child, index) => (
-        <motion.div
+        <m.div
           key={
             React.isValidElement(child) && child.key != null
               ? String(child.key)
@@ -85,7 +85,7 @@ export const AutoStagger: React.FC<{
           }}
         >
           {child}
-        </motion.div>
+        </m.div>
       ))}
     </div>
   );

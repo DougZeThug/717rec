@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { MessageSquare } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React from 'react';
@@ -17,7 +17,7 @@ const MessageBoardFAB: React.FC = () => {
   };
 
   return (
-    <motion.div
+    <m.div
       className="fixed bottom-[76px] right-4 z-40"
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
@@ -41,7 +41,7 @@ const MessageBoardFAB: React.FC = () => {
       >
         <MessageSquare className="h-5 w-5" />
       </Button>
-    </motion.div>
+    </m.div>
   );
 };
 

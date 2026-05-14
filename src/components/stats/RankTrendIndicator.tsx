@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
@@ -41,7 +41,7 @@ const RankTrendIndicator: React.FC<RankTrendIndicatorProps> = ({ rankChange }) =
   } else if (rankChange > 0) {
     // Positive change means team moved up in rankings
     return (
-      <motion.div
+      <m.div
         className={cn(
           'flex items-center text-green-600 dark:text-green-400 relative',
           showFlash && 'animate-pulse'
@@ -52,7 +52,7 @@ const RankTrendIndicator: React.FC<RankTrendIndicatorProps> = ({ rankChange }) =
       >
         <AnimatePresence>
           {showFlash && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0.6, scale: 1 }}
               animate={{ opacity: 0, scale: 2 }}
               exit={{ opacity: 0 }}
@@ -63,12 +63,12 @@ const RankTrendIndicator: React.FC<RankTrendIndicatorProps> = ({ rankChange }) =
         </AnimatePresence>
         <TrendingUp size={ICON_SIZES.sm} strokeWidth={ICON_STROKE.normal} />
         <span className="ml-0.5 text-xs font-medium">+{rankChange}</span>
-      </motion.div>
+      </m.div>
     );
   } else {
     // Negative change means team moved down in rankings
     return (
-      <motion.div
+      <m.div
         className={cn(
           'flex items-center text-red-600 dark:text-red-400 relative',
           showFlash && 'animate-pulse'
@@ -79,7 +79,7 @@ const RankTrendIndicator: React.FC<RankTrendIndicatorProps> = ({ rankChange }) =
       >
         <AnimatePresence>
           {showFlash && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0.6, scale: 1 }}
               animate={{ opacity: 0, scale: 2 }}
               exit={{ opacity: 0 }}
@@ -90,7 +90,7 @@ const RankTrendIndicator: React.FC<RankTrendIndicatorProps> = ({ rankChange }) =
         </AnimatePresence>
         <TrendingDown size={ICON_SIZES.sm} strokeWidth={ICON_STROKE.normal} />
         <span className="ml-0.5 text-xs font-medium">{rankChange}</span>
-      </motion.div>
+      </m.div>
     );
   }
 };

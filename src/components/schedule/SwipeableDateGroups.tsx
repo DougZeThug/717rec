@@ -1,5 +1,5 @@
 import { isSameDay, isToday } from 'date-fns';
-import { AnimatePresence, motion, PanInfo } from 'framer-motion';
+import { AnimatePresence, m, PanInfo } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { useEffect } from 'react';
 
@@ -126,7 +126,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
 
         <div className="overflow-hidden touch-pan-y">
           <AnimatePresence mode="wait" initial={false}>
-            <motion.div
+            <m.div
               key={safeIndex}
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
@@ -148,7 +148,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
                 onEditMatch={onEditMatch}
                 onDeleteMatch={onDeleteMatch}
               />
-            </motion.div>
+            </m.div>
           </AnimatePresence>
         </div>
 

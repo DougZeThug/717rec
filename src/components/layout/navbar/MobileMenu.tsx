@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
@@ -45,19 +45,19 @@ const MobileMenu: React.FC<MobileMenuProps> = React.memo(({ navItems: _navItems 
           aria-label={isOpen ? 'Close menu' : 'Open menu'}
           style={{ width: '44px', height: '44px' }}
         >
-          <motion.div
+          <m.div
             layout={false}
             animate={{ rotate: isOpen ? 90 : 0 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
           >
             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </motion.div>
+          </m.div>
         </Button>
       </div>
 
       <AnimatePresence>
         {isOpen && (
-          <motion.div
+          <m.div
             className="md:hidden pt-2 pb-3 space-y-1 overflow-hidden"
             initial={{ opacity: 0, maxHeight: 0 }}
             animate={{ opacity: 1, maxHeight: '500px' }}
@@ -65,7 +65,7 @@ const MobileMenu: React.FC<MobileMenuProps> = React.memo(({ navItems: _navItems 
             transition={{ duration: 0.2, ease: 'easeOut' }}
           >
             <NavLinks isMobile={true} onLinkClick={handleLinkClose} />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
@@ -65,7 +65,7 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
         />
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.2 }}
@@ -93,7 +93,7 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
               No matches found for this date.
             </div>
           )}
-        </motion.div>
+        </m.div>
       </CollapsibleContent>
     </Collapsible>
   );

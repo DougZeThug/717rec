@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { MinusCircle } from 'lucide-react';
 import React from 'react';
 
@@ -28,7 +28,7 @@ const GameScoreRow: React.FC<GameScoreRowProps> = ({
   canRemove,
 }) => {
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
@@ -92,7 +92,7 @@ const GameScoreRow: React.FC<GameScoreRowProps> = ({
         icon={<MinusCircle className="h-4 w-4 text-destructive" />}
         className="flex-none h-8 w-8 rounded-lg"
       />
-    </motion.div>
+    </m.div>
   );
 };
 

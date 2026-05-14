@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import React, { useEffect, useRef } from 'react';
 
@@ -79,7 +79,7 @@ export const TeamsDivisionSection: React.FC<TeamsDivisionSectionProps> = ({
 
       <AnimatePresence>
         {isExpanded && (
-          <motion.div
+          <m.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -95,7 +95,7 @@ export const TeamsDivisionSection: React.FC<TeamsDivisionSectionProps> = ({
                 viewMode={viewMode}
               />
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

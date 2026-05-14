@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ClipboardCheck } from 'lucide-react';
 import React, { useMemo } from 'react';
 
@@ -74,7 +74,7 @@ const MassScoreEntryTool: React.FC = () => {
           />
 
           {hasActiveFilters && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
@@ -89,7 +89,7 @@ const MassScoreEntryTool: React.FC = () => {
                   <span>{tag.value}</span>
                 </div>
               ))}
-            </motion.div>
+            </m.div>
           )}
         </CardHeader>
 

@@ -1,5 +1,5 @@
 import { formatWithPattern } from '@/utils/formatDateSafe';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Check, ChevronDown, Loader2, Users, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
@@ -153,7 +153,7 @@ const ParticipationHeroCard: React.FC = () => {
 
         {/* Status selection - only show when team is selected */}
         {selectedTeamId && isEditing && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             className="space-y-3"
@@ -203,12 +203,12 @@ const ParticipationHeroCard: React.FC = () => {
               {submitMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Submit
             </Button>
-          </motion.div>
+          </m.div>
         )}
 
         {/* Saved status display */}
         {selectedTeamId && !isEditing && existingParticipation && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+          <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
             <div
               className={cn(
                 'flex items-center justify-between p-4 rounded-lg',
@@ -238,7 +238,7 @@ const ParticipationHeroCard: React.FC = () => {
             >
               Change response
             </Button>
-          </motion.div>
+          </m.div>
         )}
 
         {/* Loading state for participation */}

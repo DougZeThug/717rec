@@ -82,6 +82,11 @@ vi.mock('framer-motion', () => ({
       <div {...rest}>{children}</div>
     ),
   },
+  m: {
+    div: ({ children, ...rest }: React.HTMLAttributes<HTMLDivElement>) => (
+      <div {...rest}>{children}</div>
+    ),
+  },
 }));
 
 import MassScoreEntryTool from '../MassScoreEntryTool';

@@ -1,5 +1,5 @@
 import { formatWithPattern } from '@/utils/formatDateSafe';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import {
   AlertTriangle,
   Calendar,
@@ -180,7 +180,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
 
         {/* Request type selection */}
         {selectedTeamId && !showHistory && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             className="space-y-3"
@@ -205,13 +205,13 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
                 </button>
               ))}
             </div>
-          </motion.div>
+          </m.div>
         )}
 
         {/* Request details form */}
         <AnimatePresence>
           {selectedTeamId && selectedType && !showHistory && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
@@ -282,14 +282,14 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
                 )}
                 Submit Request
               </Button>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 
         {/* Request history */}
         <AnimatePresence>
           {selectedTeamId && showHistory && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
@@ -348,7 +348,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
               >
                 Back to form
               </Button>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </div>

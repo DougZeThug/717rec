@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { LucideIcon } from 'lucide-react';
 import React, { useState } from 'react';
 
@@ -31,7 +31,7 @@ export const AnimatedIconButton = React.forwardRef<HTMLButtonElement, AnimatedIc
     };
 
     return (
-      <motion.div whileTap={{ scale: 0.9 }} transition={{ duration: 0.1 }}>
+      <m.div whileTap={{ scale: 0.9 }} transition={{ duration: 0.1 }}>
         <Button
           ref={ref}
           onClick={handleClick}
@@ -44,7 +44,7 @@ export const AnimatedIconButton = React.forwardRef<HTMLButtonElement, AnimatedIc
         >
           <Icon className={cn('h-4 w-4', iconClassName)} />
         </Button>
-      </motion.div>
+      </m.div>
     );
   }
 );

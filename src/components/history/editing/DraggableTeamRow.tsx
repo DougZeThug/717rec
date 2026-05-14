@@ -1,6 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Crown, GripVertical, Medal, Users } from 'lucide-react';
 import React from 'react';
 
@@ -37,7 +37,7 @@ export const DraggableTeamRow: React.FC<DraggableTeamRowProps> = ({ team, rank }
       : '0';
 
   return (
-    <motion.div
+    <m.div
       ref={setNodeRef}
       style={style}
       initial={{ opacity: 0, y: 10 }}
@@ -111,7 +111,7 @@ export const DraggableTeamRow: React.FC<DraggableTeamRowProps> = ({ team, rank }
         {team.match_wins}-{team.match_losses}
         <span className="ml-1 text-xs">({winPct}%)</span>
       </div>
-    </motion.div>
+    </m.div>
   );
 };
 

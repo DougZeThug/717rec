@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { RefreshCw } from 'lucide-react';
 import React from 'react';
 
@@ -22,7 +22,7 @@ export const InlineRefreshIndicator: React.FC<InlineRefreshIndicatorProps> = ({
   return (
     <AnimatePresence>
       {isRefetching && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, x: -8 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -8 }}
@@ -34,7 +34,7 @@ export const InlineRefreshIndicator: React.FC<InlineRefreshIndicatorProps> = ({
         >
           <RefreshCw className="h-3 w-3 animate-spin" />
           <span>{label}</span>
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );
@@ -51,7 +51,7 @@ export const HeaderRefreshIndicator: React.FC<InlineRefreshIndicatorProps> = ({
   return (
     <AnimatePresence>
       {isRefetching && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
@@ -64,7 +64,7 @@ export const HeaderRefreshIndicator: React.FC<InlineRefreshIndicatorProps> = ({
         >
           <RefreshCw className="h-3.5 w-3.5 animate-spin" />
           <span>{label}</span>
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

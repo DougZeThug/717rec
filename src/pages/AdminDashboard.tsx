@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -49,7 +49,7 @@ const AdminDashboard = () => {
   }
 
   return (
-    <motion.div
+    <m.div
       className="container mx-auto py-4 md:py-8 px-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -57,7 +57,7 @@ const AdminDashboard = () => {
     >
       <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-8">Admin Dashboard</h1>
       <AdminSidebar />
-    </motion.div>
+    </m.div>
   );
 };
 
