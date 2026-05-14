@@ -200,11 +200,11 @@ const BlindDrawSignupsTab: React.FC = () => {
                         <div className="font-medium text-sm">
                           {signup.first_name} {signup.last_initial}.
                         </div>
-                        <div className="text-xs text-muted-foreground sm:hidden">
+                        <div className="text-xs text-muted-foreground sm:hidden" suppressHydrationWarning>
                           {format(new Date(signup.created_at), 'MMM d, h:mm a')}
                         </div>
                       </td>
-                      <td className="px-2 sm:px-4 py-2 text-sm text-muted-foreground hidden sm:table-cell">
+                      <td className="px-2 sm:px-4 py-2 text-sm text-muted-foreground hidden sm:table-cell" suppressHydrationWarning>
                         {format(new Date(signup.created_at), 'MMM d, h:mm a')}
                       </td>
                       <td className="px-2 sm:px-4 py-2 text-right">
