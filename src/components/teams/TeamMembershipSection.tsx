@@ -86,7 +86,7 @@ const TeamMembershipSection: React.FC = () => {
                       </Badge>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground" suppressHydrationWarning>
                     {membership.is_approved && membership.approved_at
                       ? `Approved ${new Date(membership.approved_at).toLocaleDateString()}`
                       : `Requested ${new Date(membership.joined_at).toLocaleDateString()}`}
