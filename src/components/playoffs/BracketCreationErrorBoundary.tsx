@@ -108,8 +108,8 @@ export class BracketCreationErrorBoundary extends React.Component<
               <div>
                 <p className="font-medium">Suggested fixes:</p>
                 <ul className="list-disc list-inside space-y-1 text-sm">
-                  {suggestions.map((suggestion, index) => (
-                    <li key={index}>{suggestion}</li>
+                  {suggestions.map((suggestion) => (
+                    <li key={suggestion}>{suggestion}</li>
                   ))}
                 </ul>
               </div>

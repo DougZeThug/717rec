@@ -44,8 +44,8 @@ const RecentMatchesSkeleton: React.FC = () => {
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         staggerDelay={0.08}
       >
-        {[0, 1, 2].map((index) => (
-          <MatchCardSkeleton key={index} />
+        {['recent-skel-1', 'recent-skel-2', 'recent-skel-3'].map((skKey) => (
+          <MatchCardSkeleton key={skKey} />
         ))}
       </AutoStagger>
     </section>

@@ -39,7 +39,7 @@ const ShimmerSkeleton = React.forwardRef<HTMLDivElement, ShimmerSkeletonProps>(
 
     const skeletons = Array.from({ length: count }, (_, i) => (
       <div
-        key={i}
+        key={`shimmer-${i}`}
         ref={i === 0 ? ref : undefined}
         className={cn(
           'relative overflow-hidden bg-muted',
@@ -75,7 +75,7 @@ const TextSkeleton: React.FC<{
     <div className={cn('space-y-2', className)}>
       {Array.from({ length: lines }, (_, i) => (
         <ShimmerSkeleton
-          key={i}
+          key={`text-line-${i}`}
           variant="input"
           className="h-4"
           style={{

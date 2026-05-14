@@ -138,9 +138,9 @@ const CallToAction = () => {
 
         {/* Navigation dots */}
         <div className="flex justify-center gap-0 mt-5">
-          {ctaMessages.map((_, index) => (
+          {ctaMessages.map((message, index) => (
             <button
-              key={index}
+              key={message.heading ?? `cta-dot-${index}`}
               onClick={() => setCurrentMessageIndex(index)}
               className="p-2 flex items-center justify-center"
               aria-label={`Go to message ${index + 1}`}

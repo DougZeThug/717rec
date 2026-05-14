@@ -178,9 +178,11 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
 
           <div className="flex flex-wrap gap-1.5 mt-auto">
             {team.players && team.players.length > 0 ? (
-              team.players.map((player, index) => (
-                <PlayerChip key={`${player}-${index}`} playerName={player} />
-              ))
+              team.players.map((player, index) => {
+                const occurrence = team.players!.slice(0, index).filter((p) => p === player).length;
+                const key = occurrence === 0 ? player : `${player}#${occurrence}`;
+                return <PlayerChip key={key} playerName={player} />;
+              })
             ) : (
               <span className="text-xs text-gray-500 dark:text-gray-400">No players</span>
             )}

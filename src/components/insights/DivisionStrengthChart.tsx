@@ -67,8 +67,11 @@ const DivisionStrengthChart: React.FC<DivisionStrengthChartProps> = ({ divisions
           />
           <Tooltip content={<CustomTooltip />} />
           <Bar dataKey="avgPowerScore" radius={[0, 4, 4, 0]} maxBarSize={32}>
-            {divisions.map((_, index) => (
-              <Cell key={index} fill={DIVISION_COLORS[index % DIVISION_COLORS.length]} />
+            {divisions.map((division, index) => (
+              <Cell
+                key={division.division ?? `division-cell-${index}`}
+                fill={DIVISION_COLORS[index % DIVISION_COLORS.length]}
+              />
             ))}
           </Bar>
         </BarChart>

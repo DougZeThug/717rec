@@ -220,8 +220,8 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
       <section className={cn(plainSectionClasses, 'animate-pulse')}>
         <div className="h-6 bg-white/20 rounded mb-4 w-48"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4">
+          {['champ-1', 'champ-2', 'champ-3', 'champ-4'].map((k) => (
+            <div key={k} className="bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4">
               <div className="h-3 bg-white/20 rounded w-24 mb-2"></div>
               <div className="flex items-center gap-3">
                 <div className="h-20 w-20 bg-white/20 rounded-lg"></div>

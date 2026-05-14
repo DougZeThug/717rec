@@ -80,7 +80,7 @@ const AnalysisContent = ({
           <ul className="space-y-1.5">
             {analysis.strengths.map((strength, i) => (
               <motion.li
-                key={i}
+                key={`strength-${i}-${strength}`}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.1 }}
@@ -104,7 +104,7 @@ const AnalysisContent = ({
           <ul className="space-y-1.5">
             {analysis.weaknesses.map((weakness, i) => (
               <motion.li
-                key={i}
+                key={`weakness-${i}-${weakness}`}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 + i * 0.1 }}

@@ -240,8 +240,11 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
         <div className="bg-muted/50 p-4 rounded-lg">
           <h3 className="text-sm font-medium mb-2">First Round Matchup Preview:</h3>
           <div className="space-y-1 text-sm">
-            {generateFirstRoundPreview().map((matchup, idx) => (
-              <div key={idx} className="flex justify-between items-center py-1">
+            {generateFirstRoundPreview().map((matchup) => (
+              <div
+                key={`${matchup.seed1}-vs-${matchup.seed2}`}
+                className="flex justify-between items-center py-1"
+              >
                 <span className="flex-1">
                   #{matchup.seed1} {matchup.team1}
                 </span>

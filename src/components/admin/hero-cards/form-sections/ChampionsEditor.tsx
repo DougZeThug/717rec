@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Trophy } from 'lucide-react';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import { Label } from '@/components/ui/label';
 import {
@@ -45,20 +45,30 @@ export const ChampionsEditor: React.FC<FormSectionProps> = ({ formData, onChange
     enabled: divisions.length > 0,
   });
 
-  // Auto-clean stale division keys from previous seasons
+  // Auto-clean stale division keys from previous seasons.
+  // Use refs to read latest formData/onChange without re-running on every parent
+  // state update — avoids the lift-state-via-callback anti-pattern by only
+  // reacting to changes in the validated division list.
+  const formDataRef = useRef(formData);
+  const onChangeRef = useRef(onChange);
   useEffect(() => {
-    if (formData.card_type !== 'champions' || visibleDivisions.length === 0) return;
+    formDataRef.current = formData;
+    onChangeRef.current = onChange;
+  });
+  useEffect(() => {
+    const currentFormData = formDataRef.current;
+    if (currentFormData.card_type !== 'champions' || visibleDivisions.length === 0) return;
     const validNames = new Set(visibleDivisions.map((d) => d.display_division));
-    const currentChampions =
-      parseHeroCardMetadata(parseMetadata(formData.metadata), 'champions').champions || {};
+    const currentMeta = parseHeroCardMetadata(parseMetadata(currentFormData.metadata), 'champions');
+    const currentChampions = currentMeta.champions || {};
     const staleKeys = Object.keys(currentChampions).filter((k) => !validNames.has(k));
     if (staleKeys.length > 0) {
       const cleaned: Record<string, string> = { ...currentChampions };
       staleKeys.forEach((k) => delete cleaned[k]);
-      const newMeta = { ...parseHeroCardMetadata(parseMetadata(formData.metadata), 'champions'), champions: cleaned };
-      onChange('metadata', JSON.stringify(newMeta, null, 2));
+      const newMeta = { ...currentMeta, champions: cleaned };
+      onChangeRef.current('metadata', JSON.stringify(newMeta, null, 2));
     }
-  }, [visibleDivisions, formData.card_type, formData.metadata, onChange]);
+  }, [visibleDivisions]);
 
   if (formData.card_type !== 'champions') return null;
 

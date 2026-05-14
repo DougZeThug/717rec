@@ -55,6 +55,18 @@ const SortableHeader: React.FC<{
   );
 };
 
+const SortIndicator: React.FC<{
+  field: string;
+  sortOptions: SortOptions;
+}> = ({ field, sortOptions }) => {
+  if (sortOptions.field !== field) return null;
+  return sortOptions.direction === 'asc' ? (
+    <ArrowUp className="inline-block ml-1 h-4 w-4" />
+  ) : (
+    <ArrowDown className="inline-block ml-1 h-4 w-4" />
+  );
+};
+
 interface DivisionRankingsTableProps {
   rankings: Ranking[];
   allRankings: Ranking[];
@@ -77,15 +89,6 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
   isLight,
 }) => {
   const { isWinterTheme } = useSeasonalTheme();
-
-  const renderSortIndicator = (field: string) =>
-    sortOptions.field === field ? (
-      sortOptions.direction === 'asc' ? (
-        <ArrowUp className="inline-block ml-1 h-4 w-4" />
-      ) : (
-        <ArrowDown className="inline-block ml-1 h-4 w-4" />
-      )
-    ) : null;
 
   return (
     <div className="overflow-x-auto">
@@ -137,7 +140,7 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
                   className="cursor-pointer flex items-center"
                 >
                   <span className="mr-1 font-mono">Power Score</span>{' '}
-                  {renderSortIndicator('powerScore')}
+                  <SortIndicator field="powerScore" sortOptions={sortOptions} />
                 </span>
               </div>
             </TableHead>

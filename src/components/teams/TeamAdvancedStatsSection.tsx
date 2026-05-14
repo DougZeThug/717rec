@@ -37,8 +37,8 @@ const TeamAdvancedStatsSection: React.FC<TeamAdvancedStatsSectionProps> = ({ tea
       >
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-muted rounded w-full"></div>
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-12 bg-muted rounded w-full"></div>
+          {['adv-stats-row-1', 'adv-stats-row-2', 'adv-stats-row-3'].map((k) => (
+            <div key={k} className="h-12 bg-muted rounded w-full"></div>
           ))}
         </div>
       </CollapsibleSection>

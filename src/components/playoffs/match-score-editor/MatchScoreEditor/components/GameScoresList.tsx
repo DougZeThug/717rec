@@ -27,7 +27,7 @@ const GameScoresList: React.FC<GamesScoresListProps> = ({
     <div>
       {games.map((game, index) => (
         <div
-          key={index}
+          key={`game-${index + 1}`}
           className={animations.fadeIn}
           style={{ animationDelay: `${(index + 1) * 0.1}s` }}
         >

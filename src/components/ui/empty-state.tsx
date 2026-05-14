@@ -100,11 +100,11 @@ const EmptyState: React.FC<EmptyStateProps> = ({
           transition={{ duration: 0.3, delay: 0.4 }}
           className="flex flex-wrap gap-3 justify-center"
         >
-          {actions.map((action, index) => {
+          {actions.map((action) => {
             const ActionIcon = action.icon;
             return (
               <Button
-                key={index}
+                key={action.label}
                 variant={action.variant || 'default'}
                 onClick={action.onClick}
                 className="min-w-[120px]"

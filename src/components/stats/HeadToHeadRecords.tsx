@@ -126,7 +126,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
     },
   };
 
-  const renderContent = () => {
+  const content = (() => {
     if (isLoading) {
       return <LoadingState variant="section" message="Loading records..." />;
     }
@@ -349,12 +349,12 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
         )}
       </>
     );
-  };
+  })();
 
   if (standalone) {
     return (
       <>
-        {renderContent()}
+        {content}
         {selectedOpponent && (
           <OpponentHistoryModal
             isOpen={!!selectedOpponent}
@@ -377,7 +377,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
         defaultOpen={false}
         headingId="h2h-heading"
       >
-        {renderContent()}
+        {content}
       </CollapsibleSection>
 
       {selectedOpponent && (

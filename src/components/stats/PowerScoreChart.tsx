@@ -131,7 +131,7 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
           >
             {displayData.map((entry, index) => (
               <Cell
-                key={`cell-${index}`}
+                key={`cell-${entry.id ?? entry.name ?? index}`}
                 fill={index === 0 ? colors.powerScore.highlight : colors.powerScore.bar}
               />
             ))}

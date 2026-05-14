@@ -37,9 +37,9 @@ const PendingScoresCard = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {[...Array(3)].map((_, i) => (
+            {['pending-skel-1', 'pending-skel-2', 'pending-skel-3'].map((sk) => (
               <div
-                key={i}
+                key={sk}
                 className={cn(
                   'flex items-center justify-between p-3 rounded-lg border animate-pulse',
                   shouldApplyWinter && 'border-cyan-500/20'

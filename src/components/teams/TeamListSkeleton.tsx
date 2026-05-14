@@ -9,14 +9,14 @@ interface TeamListSkeletonProps {
 }
 
 export const TeamListSkeleton: React.FC<TeamListSkeletonProps> = ({ viewMode }) => {
-  const skeletonCount = 3;
-  const skeletons = Array.from({ length: skeletonCount }, (_, i) => i);
+  const skeletons = ['team-skel-1', 'team-skel-2', 'team-skel-3'];
+  const innerSkeletons = ['team-stat-1', 'team-stat-2', 'team-stat-3', 'team-stat-4'];
 
   if (viewMode === 'list') {
     return (
       <AutoStagger className="space-y-4" staggerDelay={0.08}>
-        {skeletons.map((index) => (
-          <Card key={index} className="overflow-hidden">
+        {skeletons.map((skKey) => (
+          <Card key={skKey} className="overflow-hidden">
             <div className="flex flex-col md:flex-row">
               <div className="w-full md:w-[150px] h-[150px] bg-muted/50 flex items-center justify-center">
                 <AvatarSkeleton size="lg" />
@@ -28,8 +28,8 @@ export const TeamListSkeleton: React.FC<TeamListSkeletonProps> = ({ viewMode }) 
                 </div>
                 <ShimmerSkeleton variant="input" className="h-5 w-1/4" />
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {[0, 1, 2, 3].map((i) => (
-                    <div key={i} className="bg-muted/30 p-2 rounded-input space-y-2">
+                  {innerSkeletons.map((innerKey) => (
+                    <div key={`${skKey}-${innerKey}`} className="bg-muted/30 p-2 rounded-input space-y-2">
                       <ShimmerSkeleton variant="input" className="h-4 w-1/2" />
                       <ShimmerSkeleton variant="input" className="h-4 w-2/3" />
                     </div>
@@ -50,8 +50,8 @@ export const TeamListSkeleton: React.FC<TeamListSkeletonProps> = ({ viewMode }) 
       className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
       staggerDelay={0.08}
     >
-      {skeletons.map((index) => (
-        <Card key={index} className="overflow-hidden h-[220px] flex flex-col">
+      {skeletons.map((skKey) => (
+        <Card key={skKey} className="overflow-hidden h-[220px] flex flex-col">
           <ShimmerSkeleton variant="card" className="h-24 w-full rounded-none" />
           <div className="p-4 space-y-4 flex-grow">
             <div className="flex justify-between">

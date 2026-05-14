@@ -22,8 +22,8 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
   if (isLoading) {
     return (
       <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <Card key={i}>
+        {['season-skel-1', 'season-skel-2', 'season-skel-3'].map((skKey) => (
+          <Card key={skKey}>
             <CardContent className="p-6">
               <Skeleton className="h-6 w-1/4 mb-2" />
               <Skeleton className="h-4 w-1/2 mb-4" />

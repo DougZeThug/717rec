@@ -65,11 +65,11 @@ const TeamTrend: React.FC<TeamTrendProps> = ({ recentMatches, teamId, limit = 5 
       <div className="flex items-center">
         <span className="text-sm font-medium mr-2">Recent Matches:</span>
         <div className="flex space-x-1">
-          {sortedMatches.map((match, index) => {
+          {sortedMatches.map((match) => {
             const isWin = match.winnerId === teamId;
             return (
               <div
-                key={index}
+                key={match.id ?? `${match.date}-${match.winnerId}`}
                 className={`w-6 h-6 flex items-center justify-center text-xs font-bold rounded-full ${
                   isWin ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                 }`}

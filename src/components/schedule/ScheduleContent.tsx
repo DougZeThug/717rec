@@ -106,7 +106,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
   // For empty state
   const isEmptyState = groupedMatches.length === 0;
 
-  const renderMatchGroups = (showSwipeable: boolean) => {
+  const matchGroupsContent = (() => {
     if (isEmptyState) {
       if (activeTab === 'upcoming') {
         return (
@@ -148,7 +148,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
       );
     }
 
-    if (showSwipeable && isMobile) {
+    if (isMobile) {
       return (
         <SwipeableDateGroups
           groupedMatches={groupedMatches}
@@ -176,7 +176,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
         ))}
       </div>
     );
-  };
+  })();
 
   return (
     <WinterSection showIcicles lightIcicles>
@@ -218,11 +218,11 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
         </TabsContent>
 
         <TabsContent value="upcoming" className="mt-3">
-          {renderMatchGroups(true)}
+          {matchGroupsContent}
         </TabsContent>
 
         <TabsContent value="completed" className="mt-3">
-          {renderMatchGroups(true)}
+          {matchGroupsContent}
         </TabsContent>
       </Tabs>
     </WinterSection>

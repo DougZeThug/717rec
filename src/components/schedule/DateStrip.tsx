@@ -46,14 +46,14 @@ const DateStrip: React.FC<DateStripProps> = ({ selectedDate, onDateSelect, match
   return (
     <ScrollArea className="w-full whitespace-nowrap">
       <div className="flex gap-1 py-1 px-0.5">
-        {dates.map((date, index) => {
+        {dates.map((date) => {
           const isSelected = isSameDay(date, selectedDate);
           const isTodayDate = isToday(date);
           const hasMatches = hasMatchesOnDate(date);
 
           return (
             <button
-              key={index}
+              key={date.toISOString()}
               ref={isSelected ? selectedRef : null}
               onClick={() => onDateSelect(date)}
               className={cn(
