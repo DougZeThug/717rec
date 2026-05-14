@@ -156,11 +156,11 @@ export const useMatchEditorState = ({ matchId, onClose, onSaved }: UseMatchEdito
 
       onSaved?.();
 
-      setByeEligible({
-        ...byeEligible,
+      setByeEligible((prev) => ({
+        ...prev,
         currentStatus: result.status,
         statusName: result.statusName,
-      });
+      }));
     } catch (err) {
       errorLog('Error toggling BYE status:', err);
       toast({

@@ -33,8 +33,8 @@ export const useBatchMatchForm = (_teams: Team[]) => {
   const queryClient = useQueryClient();
 
   const addMatchPair = () => {
-    setMatchPairs([
-      ...matchPairs,
+    setMatchPairs((prev) => [
+      ...prev,
       {
         id: Date.now().toString(),
         team1Id: null,

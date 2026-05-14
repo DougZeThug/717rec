@@ -60,7 +60,7 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
         timeSlot: matchData.timeSlot, // Preserve the timeSlot for UI purposes
       };
 
-      setMatches([...matches, newMatch]);
+      setMatches((prev) => [...prev, newMatch]);
       setIsFormOpen(false);
 
       toast({

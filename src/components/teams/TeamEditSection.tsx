@@ -119,7 +119,7 @@ const TeamEditSection: React.FC = () => {
               <Input
                 id="team-name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                 placeholder="Enter team name"
               />
             </div>
@@ -129,7 +129,7 @@ const TeamEditSection: React.FC = () => {
               <Input
                 id="team-image"
                 value={formData.image_url}
-                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                onChange={(e) => setFormData((prev) => ({ ...prev, image_url: e.target.value }))}
                 placeholder="https://example.com/team-logo.png"
               />
               <p className="text-xs text-muted-foreground">
