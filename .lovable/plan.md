@@ -1,93 +1,121 @@
-# React Doctor Report & Fix Plan
+# Phase 4 — Codebase Hygiene
 
-## Snapshot
-**Total findings: 2,552** (6 errors, 2,546 warnings)
+Three sub-phases, ordered by risk (lowest first). Each is a separate commit/PR so we can verify and roll back independently.
 
-Down from prior runs — Rules-of-Hooks, nested components, hydration `new Date()`, and effect cleanups were already cleared in earlier turns.
+---
 
-## The 6 Errors (must-fix, high-confidence real bugs)
+## 4A — `design-no-redundant-size-axes` (805 sites) — LOWEST RISK
 
-| # | Rule | File | Issue |
-|---|------|------|-------|
-| 1 | `no-mutable-in-deps` | `src/App.tsx:82` | `location.pathname` in `useEffect` deps — mutable global, won't trigger re-runs reliably. Use `useLocation()` from react-router. |
-| 2 | `no-mutable-in-deps` | `src/components/navigation/AnimatedBreadcrumbs.tsx:57` | Same pattern. |
-| 3 | `no-mutable-in-deps` | `src/pages/NotFound.tsx:14` | Same pattern. |
-| 4 | `role-has-required-aria-props` | `src/components/hero/RequestHeroCard.tsx:129` | `role="combobox"` missing `aria-controls`. |
-| 5 | `role-has-required-aria-props` | `src/components/hero/ParticipationHeroCard.tsx:103` | Same. |
-| 6 | `role-has-required-aria-props` | `src/components/ui/multi-select.tsx:55` | Same. |
+Pure mechanical codemod: `w-N h-N` (and `w-[X] h-[X]`) → `size-N`. Zero behavior change since Tailwind's `size-*` expands to `width` + `height`.
 
-## High-Value Warning Buckets
+**Approach**
+1. Write a Node AST-aware regex script (`tools/codemods/size-axes.mjs`) that:
+   - Matches `className` attributes / `cn()` arg strings
+   - Finds adjacent `w-X` and `h-X` pairs where X is identical (numeric, fraction, arbitrary value, or `full`/`screen`/`auto`/`px`)
+   - Replaces both with `size-X`, preserving order of remaining classes
+   - Skips when `w-` and `h-` use different values, or when one has a responsive/state prefix the other doesn't (e.g. `md:w-4 h-4`)
+2. Dry-run, print a diff summary by directory, then apply.
+3. Spot-check 10 random changes visually in preview.
 
-### Real-bug-shaped (~80 items)
-| Rule | Count | What it means |
-|------|------:|---------------|
-| `no-cascading-set-state` | 22 | `setState` inside a render path triggers re-render loops. Move to handlers/effects. |
-| `no-array-index-as-key` | 44 | Index keys break reconciliation when lists reorder. Use stable IDs. |
-| `no-derived-useState` / `no-derived-state-effect` | 13 | State that mirrors props — derive in render or use `useMemo`. |
-| `rerender-memo-with-default-value` | 17 | Inline `={}`/`=[]` defaults break memo equality. Hoist to module constants. |
-| `rerender-state-only-in-handlers` | 10 | State only read in handlers — convert to `useRef`. |
-| `rerender-functional-setstate` | 9 | `setX(x+1)` race risk → use `setX(prev => prev+1)`. |
-| `no-render-in-render` | 8 | Component called as function instead of JSX. |
-| `no-effect-event-handler` | 11 | Event-handler logic stuck in `useEffect`. |
-| `no-prop-callback-in-effect` | 1 | Calling a prop callback from an effect → use Effect Event pattern. |
-| `query-mutation-missing-invalidation` | 1 | A TanStack mutation forgets `queryClient.invalidateQueries`. |
+**Verify**: `npm test`, `npx tsc --noEmit`, visual scan of TeamDetails, Standings, Admin Dashboard, Playoffs.
 
-### React 19 readiness
-| Rule | Count |
-|------|------:|
-| `no-react19-deprecated-apis` | 152 |
-| `use-lazy-motion` | 57 (framer-motion bundle hit) |
-| `prefer-dynamic-import` | 16 |
+**Expected delta**: ~805 warnings → 0; bundle slightly smaller (shorter class strings).
 
-### A11y (small, easy wins)
-| Rule | Count |
-|------|------:|
-| `label-has-associated-control` | 14 |
-| `no-static-element-interactions` | 12 |
-| `click-events-have-key-events` | 10 |
-| `heading-has-content` / `no-redundant-roles` / `no-autofocus` / `no-vague-button-label` | 5 combined |
+---
 
-### Design-system hygiene (large, mostly cosmetic)
-- `design-no-redundant-size-axes` (805) — e.g. `w-4 h-4` → `size-4`.
-- `design-no-default-tailwind-palette` (213) — replace `bg-blue-500` etc. with semantic tokens (already a Core memory rule).
-- `design-no-space-on-flex-children` (58), `design-no-three-period-ellipsis` (58 — use `…`), `design-no-bold-heading` (17), `design-no-em-dash-in-jsx-text` (6), `no-gradient-text` (6), `design-no-redundant-padding-axes` (9).
+## 4B — `design-no-default-tailwind-palette` (213 sites) — MEDIUM RISK
 
-### Codebase / module hygiene
-- `exports` (294), `files` (198), `types` (187), `duplicates` (47), `no-barrel-import` (4) — mostly file/folder/export shape suggestions.
+Replace bare `gray-*` / `slate-*` / `zinc-*` with semantic tokens. Risk is dark mode regressions and losing intentional brand contrast.
 
-### JS micro-perf (low priority)
-- `js-combine-iterations` (62), `js-tosorted-immutable` (29), `async-await-in-loop` (33), `js-index-maps` (15), `js-set-map-lookups` (11), `js-flatmap-filter` (6), `js-cache-*` (10), `js-min-max-loop` (5), `js-length-check-first` (3).
+**Mapping** (already documented in `src/styles/design-system/semanticColors.ts`):
+- `bg-white`, `bg-gray-50/100`, `bg-slate-50/100` → `bg-background` / `bg-muted`
+- `bg-gray-800/900`, `bg-slate-800/900` → `bg-card` / `bg-background`
+- `text-gray-900/800/700` → `text-foreground`
+- `text-gray-400/500/600` → `text-muted-foreground`
+- `border-gray-200/300` → `border-border`
+- Drop paired `dark:` variants once semantic token is in place
 
-## Recommended Fix Plan (prioritized)
+**Approach**
+1. Generate a per-file report from react-doctor output, grouped by directory.
+2. Hand-review (not codemod) directory-by-directory in this order, smallest blast radius first:
+   - `src/components/ui/` (shared primitives — biggest leverage, but already mostly tokenized; expect few hits)
+   - `src/components/admin/` (internal, easier to QA)
+   - `src/components/hero/`, `src/components/home/`
+   - `src/components/teams/`, `src/components/stats/`, `src/components/playoffs/`
+   - `src/components/history/`, `src/components/schedule/`, remaining
+3. **Preserve** (per memory + semanticColors.ts):
+   - Division colors (amber/blue/green - these are NOT gray/slate)
+   - Status colors (green/red/amber for win/loss/warn)
+   - `cornhole-*` brand tokens
+   - Anywhere a designer chose a specific gray for contrast against a colored bg (case-by-case)
+4. Toggle dark/light after each directory; smoke-test affected pages.
 
-I'd tackle this in 4 phases. Each phase is independently shippable.
+**Verify per batch**: visual diff in dev preview at light + dark, `npm test`.
 
-### Phase 1 — Errors (6 items, ~30 min)
-1. **Mutable deps (3 files):** replace `location.pathname` references in deps with `useLocation().pathname` from `react-router-dom` (already used elsewhere in the app). Behavior preserved — effect now actually re-runs on route changes (this may be a latent navigation bug we just fix).
-2. **Combobox aria (3 files):** add `aria-controls={listboxId}` and a stable `id` on the listbox `<ul>` / popover content. Pure a11y addition, no behavior change.
+**Expected delta**: ~213 → ~20-40 (intentional preserved cases).
 
-Verify: rerun `react-doctor` → 0 errors.
+---
 
-### Phase 2 — Real bugs in warnings (~80 items, batched)
-Order: `no-cascading-set-state` → `no-array-index-as-key` → `rerender-memo-with-default-value` → `no-derived-useState` → `no-render-in-render` → the singleton `query-mutation-missing-invalidation`.
+## 4C — `knip/files` (198) + `knip/exports` (136) + `knip/types` (81) — HIGHEST RISK
 
-Approach per file: read, fix, run that file's colocated test (or a parent integration test) before moving on. No business-logic changes.
+Knip flags items it can't statically resolve. Common false positives:
+- Files loaded via `React.lazy(() => import('...'))` with template strings or computed paths
+- Test-only utilities imported only from `__tests__/`
+- Storybook stories (if any)
+- Edge functions referenced from `supabase/config.toml`
+- Type-only re-exports through barrel `index.ts` files
+- Symbols referenced via string in routes / config
 
-### Phase 3 — A11y sweep (~50 items)
-Mechanical: add `htmlFor` ↔ `id`, add `role="button"` + `tabIndex={0}` + keydown handler for clickable divs, replace empty `<h*>` shells, remove redundant roles. One PR per folder (`admin/`, `stats/`, etc.).
+**Approach** (one PR per category, audit-then-delete)
 
-### Phase 4 — Design-token & micro-perf cleanup (large, optional)
-- **Codemod**: `w-N h-N` → `size-N` (805 hits) — safe, automated regex.
-- **Codemod**: `...` → `…` (58 hits).
-- **Manual**: replace default tailwind palette colors with semantic tokens (213) — already mandated by Core memory; do this folder-by-folder.
-- Defer `js-*` micro-perf and `exports/files/types/duplicates` reshaping unless something is actually slow or hard to navigate.
+### 4C.1 — `knip/types` (81) — safest
+Unused type aliases/interfaces. Low blast radius.
+1. Run `npx knip --include types --reporter json > /tmp/knip-types.json`.
+2. For each: grep the codebase for the name (incl. `as TypeName`, generic args). If zero hits outside the declaration, delete.
+3. Batch delete in groups of ~20 with `tsc --noEmit` between batches.
 
-### Out of scope for now
-- React 19 deprecation churn (152) — wait until we actually upgrade React.
-- `use-lazy-motion` / `prefer-dynamic-import` — schedule with the next perf pass; touches every framer-motion import.
+### 4C.2 — `knip/exports` (136) — medium
+Exports never imported. Could be: dead, public-API-by-convention, or barrel re-exports knip can't trace.
+1. Same grep-verify pattern.
+2. For barrel files (`index.ts`), check whether the *re-exported source* is imported elsewhere — if so, the barrel export is dead but the source isn't.
+3. **Confirm with user before deleting** anything in:
+   - `src/services/` (public service API surface)
+   - `src/types/` (consumer-facing types)
+   - `src/hooks/` (used across many pages)
+4. Convert remaining safe deletions to `export` removal (keep symbol if used internally) or full removal.
 
-## Verification strategy
-- After each phase: `npx react-doctor@latest` and confirm the targeted bucket dropped to 0.
-- Run `npm test` after Phases 1 & 2; spot-check preview for Phase 3.
+### 4C.3 — `knip/files` (198) — riskiest
+Whole files knip thinks are orphaned.
+1. Generate the list, then **for each file** check:
+   - `rg "from ['\"].*<basename>['\"]"` across `src/`, `tests/`, `supabase/`
+   - Search for dynamic imports referencing the path
+   - Check `vite.config.ts`, `vitest.config.ts`, `index.html`, `supabase/config.toml`
+2. Group into 3 buckets:
+   - **Confirmed dead** (no references anywhere) → delete
+   - **Test fixtures / dev tools** → move to `tools/` or delete if obsolete
+   - **False positive** (dynamic import, config reference) → add to knip ignore list
+3. **Present user with a categorized list before bulk deletion**, in directory batches:
+   - Old/superseded admin components
+   - Unused service helpers
+   - Stale design-system experiments
+   - Orphaned hooks
+4. Delete in batches of 10–20 files per commit; run full test suite + build after each.
 
-If you approve, I'd recommend starting with **Phase 1 only** in the next turn — it's the 6 hard errors and is a clean, low-risk diff.
+**Verify each batch**: `npm test`, `npx tsc --noEmit`, build succeeds, click through key routes (Home, Teams, Standings, Playoffs, Admin).
+
+---
+
+## Execution order recommendation
+
+1. **4A first** (codemod, low risk, big visible win)
+2. **4B in directory batches** (visible improvement, design-system aligned)
+3. **4C.1 → 4C.2 → 4C.3** last (audit-heavy; pause for your approval on each batch of file deletes)
+
+After all three: re-run react-doctor to confirm the score moves and report deltas.
+
+## Out of scope (intentionally deferred)
+
+- `js-combine-iterations` (62) — perf only, no functional issue
+- `design-no-three-period-ellipsis` (58) — cosmetic
+- `no-cascading-set-state` (22) — already triaged as mostly false positives
+- `js-tosorted-immutable`, `no-react19-deprecated-apis` — low count, low value

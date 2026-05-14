@@ -28,12 +28,12 @@ export const AdvancedSettingsSection: React.FC<AdvancedSettingsSectionProps> = (
           className="flex items-center justify-between w-full bg-muted/50 rounded-lg border p-4 hover:bg-muted transition-colors"
         >
           <div className="flex items-center gap-2">
-            <Settings className="h-4 w-4 text-muted-foreground" />
+            <Settings className="size-4 text-muted-foreground" />
             <span className="font-medium text-sm">Advanced Settings</span>
           </div>
           <ChevronDown
             className={cn(
-              'h-4 w-4 text-muted-foreground transition-transform',
+              'size-4 text-muted-foreground transition-transform',
               isOpen && 'rotate-180'
             )}
           />

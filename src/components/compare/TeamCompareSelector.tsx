@@ -23,7 +23,7 @@ interface TeamCompareSelectorProps {
 
 const TeamOption: React.FC<{ team: Team }> = ({ team }) => (
   <div className="flex items-center gap-2">
-    <Avatar className="h-6 w-6">
+    <Avatar className="size-6">
       <AvatarImage src={team.logoUrl || undefined} alt={team.name} />
       <AvatarFallback className="text-xs bg-muted">
         {team.name.substring(0, 2).toUpperCase()}
@@ -81,7 +81,7 @@ export const TeamCompareSelector: React.FC<TeamCompareSelectorProps> = ({
         disabled={!team1 && !team2}
         className="shrink-0"
       >
-        <ArrowLeftRight className="h-4 w-4" />
+        <ArrowLeftRight className="size-4" />
       </Button>
 
       {/* Team 2 Selector */}

@@ -145,7 +145,7 @@ const ChampionsSummaryCard: React.FC<ChampionsSummaryCardProps> = ({
         isWinterTheme ? 'text-amber-300/80' : 'text-amber-600 dark:text-amber-400'
       )}
     >
-      <Crown className="w-3 h-3 inline mr-1 -mt-0.5" />
+      <Crown className="size-3 inline mr-1 -mt-0.5" />
       Champions
     </p>
     {championTeams.length > 0 ? (
@@ -212,7 +212,7 @@ const HighlightsSummaryCard: React.FC<HighlightsSummaryCardProps> = ({
         isWinterTheme ? 'text-white/60' : 'text-muted-foreground'
       )}
     >
-      <TrendingUp className="w-3 h-3 inline mr-1 -mt-0.5" />
+      <TrendingUp className="size-3 inline mr-1 -mt-0.5" />
       Highlights
     </p>
     {highlights ? (
@@ -356,7 +356,7 @@ const SeasonAccordionExpandedContent: React.FC<SeasonAccordionExpandedContentPro
     ) : error ? (
       <div className="text-center py-8">
         <div className="text-red-600 dark:text-red-400 mb-4">
-          <Trophy className="w-8 h-8 mx-auto mb-2" />
+          <Trophy className="size-8 mx-auto mb-2" />
           <p className="font-medium">Failed to load season data</p>
           <p className="text-sm text-muted-foreground mb-4">{error.message}</p>
           <Button
@@ -366,14 +366,14 @@ const SeasonAccordionExpandedContent: React.FC<SeasonAccordionExpandedContentPro
             size="sm"
             className="gap-2"
           >
-            <RefreshCw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`size-4 ${isRefetching ? 'animate-spin' : ''}`} />
             {isRefetching ? 'Retrying...' : 'Try Again'}
           </Button>
         </div>
       </div>
     ) : season.is_active && (!seasonData || seasonData.length === 0) ? (
       <div className="text-center py-8 text-muted-foreground">
-        <Trophy className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+        <Trophy className="size-8 mx-auto mb-2 text-muted-foreground" />
         <p>Season in progress – check back later</p>
       </div>
     ) : isEditMode ? (
@@ -402,7 +402,7 @@ const SeasonAccordionExpandedContent: React.FC<SeasonAccordionExpandedContentPro
               onClick={() => setIsEditMode(true)}
               className="gap-2"
             >
-              <Pencil className="w-4 h-4" />
+              <Pencil className="size-4" />
               Edit Divisions
             </Button>
           </div>
@@ -483,7 +483,7 @@ const SeasonAccordion: React.FC<{ season: Season }> = ({ season }) => {
         Full Season Recap
         <ChevronDown
           className={cn(
-            'w-3.5 h-3.5 transition-transform duration-200',
+            'size-3.5 transition-transform duration-200',
             isExpanded && 'rotate-180'
           )}
         />

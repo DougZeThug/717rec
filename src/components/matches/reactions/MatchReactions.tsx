@@ -38,7 +38,7 @@ const MatchReactions: React.FC<MatchReactionsProps> = ({ matchId }) => {
   if (isLoading) {
     return (
       <div className="flex items-center gap-1 h-6">
-        <div className="w-6 h-6 bg-muted/20 rounded-full animate-pulse"></div>
+        <div className="size-6 bg-muted/20 rounded-full animate-pulse"></div>
       </div>
     );
   }
@@ -67,7 +67,7 @@ const MatchReactions: React.FC<MatchReactionsProps> = ({ matchId }) => {
             className="py-0 h-6 px-1.5 gap-1 text-xs border"
             aria-label="Add reaction"
           >
-            <SmilePlus className="h-3.5 w-3.5" />
+            <SmilePlus className="size-3.5" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0 border-none shadow-md" align="start" sideOffset={5}>

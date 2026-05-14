@@ -41,11 +41,11 @@ const TeamManagementTabList = ({ pendingMembershipCount }: { pendingMembershipCo
     <TabsTrigger value="manage">Manage Teams</TabsTrigger>
     <TabsTrigger value="create">Create Team</TabsTrigger>
     <TabsTrigger value="logos" className="gap-1.5">
-      <Image className="h-3.5 w-3.5" />
+      <Image className="size-3.5" />
       Update Logos
     </TabsTrigger>
     <TabsTrigger value="approvals" className="gap-1.5">
-      <UserCheck className="h-3.5 w-3.5" />
+      <UserCheck className="size-3.5" />
       Member Approvals
       {pendingMembershipCount > 0 && (
         <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-xs">
@@ -101,7 +101,7 @@ const CreateTeamContent = ({ handleTeamSubmit }: Pick<TabsProps, 'handleTeamSubm
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Plus className="h-5 w-5" />
+          <Plus className="size-5" />
           Create New Team
         </CardTitle>
       </CardHeader>
@@ -239,7 +239,7 @@ const TeamManagementTab = () => {
   if (isLoadingTeams || isLoadingDivisions) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full size-8 border-b-2 border-primary"></div>
       </div>
     );
   }

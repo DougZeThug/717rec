@@ -102,7 +102,7 @@ const MessageFeed: React.FC<MessageFeedProps> = React.memo(
                 >
                   {loadingMore ? (
                     <div className="flex items-center space-x-2">
-                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                      <Loader2 className="size-5 animate-spin text-muted-foreground" />
                       <span className="text-sm text-muted-foreground">
                         Loading more messages...
                       </span>

@@ -47,15 +47,15 @@ export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
             <TooltipTrigger asChild>
               <div className="flex items-center gap-1">
                 {pairing.hasPlayedBefore ? (
-                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                  <AlertTriangle className="size-4 text-amber-500" />
                 ) : pairing.compatibilityScore < 5 ? (
-                  <Info className="h-4 w-4 text-amber-500" />
+                  <Info className="size-4 text-amber-500" />
                 ) : (
-                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <CheckCircle className="size-4 text-green-500" />
                 )}
                 <span
                   className={`text-xs px-2 py-1 rounded-full ${
-                    isWinterTheme ? 'bg-[hsl(222,30%,20%)]' : 'bg-gray-100 dark:bg-gray-800'
+                    isWinterTheme ? 'bg-[hsl(222,30%,20%)]' : 'bg-muted dark:bg-card'
                   }`}
                 >
                   Score: {pairing.compatibilityScore.toFixed(1)}/10
@@ -81,7 +81,7 @@ export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
           <TeamLogo
             imageUrl={pairing.team1.imageUrl || pairing.team1.logoUrl}
             teamName={pairing.team1.name}
-            className="h-6 w-6 flex-shrink-0"
+            className="size-6 flex-shrink-0"
           />
           <span className="text-sm truncate font-medium">{pairing.team1.name}</span>
         </div>
@@ -94,7 +94,7 @@ export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
           <TeamLogo
             imageUrl={pairing.team2.imageUrl || pairing.team2.logoUrl}
             teamName={pairing.team2.name}
-            className="h-6 w-6 flex-shrink-0"
+            className="size-6 flex-shrink-0"
           />
         </div>
       </div>

@@ -86,7 +86,7 @@ const ParticipationHeroCard: React.FC = () => {
     >
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
-        <Users className="w-5 h-5" />
+        <Users className="size-5" />
         <h3 className="font-bebas text-xl md:text-2xl uppercase tracking-wide">
           Confirm your team for {season.name}
         </h3>
@@ -111,13 +111,13 @@ const ParticipationHeroCard: React.FC = () => {
                 disabled={teamsLoading}
               >
                 {teamsLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="size-4 animate-spin" />
                 ) : selectedTeam ? (
                   selectedTeam.name
                 ) : (
                   'Choose a team...'
                 )}
-                <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                <ChevronDown className="ml-2 size-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent id={teamListboxId} className="w-[300px] p-0" align="start">
@@ -137,7 +137,7 @@ const ParticipationHeroCard: React.FC = () => {
                       >
                         <Check
                           className={cn(
-                            'mr-2 h-4 w-4',
+                            'mr-2 size-4',
                             selectedTeamId === team.id ? 'opacity-100' : 'opacity-0'
                           )}
                         />
@@ -175,7 +175,7 @@ const ParticipationHeroCard: React.FC = () => {
                 )}
               >
                 <RadioGroupItem value="PLAYING" id="playing" className="sr-only" />
-                <Check className="w-5 h-5" />
+                <Check className="size-5" />
                 <span className="font-semibold">Playing</span>
               </Label>
               <Label
@@ -189,7 +189,7 @@ const ParticipationHeroCard: React.FC = () => {
                 )}
               >
                 <RadioGroupItem value="NOT_PLAYING" id="not-playing" className="sr-only" />
-                <X className="w-5 h-5" />
+                <X className="size-5" />
                 <span className="font-semibold">Not Playing</span>
               </Label>
             </RadioGroup>
@@ -200,7 +200,7 @@ const ParticipationHeroCard: React.FC = () => {
               disabled={!selectedStatus || submitMutation.isPending}
               className="w-full bg-white/20 hover:bg-white/30 text-inherit border border-white/20"
             >
-              {submitMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              {submitMutation.isPending ? <Loader2 className="size-4 animate-spin mr-2" /> : null}
               Submit
             </Button>
           </m.div>
@@ -219,9 +219,9 @@ const ParticipationHeroCard: React.FC = () => {
             >
               <div className="flex items-center gap-2">
                 {existingParticipation.status === 'PLAYING' ? (
-                  <Check className="w-5 h-5 text-green-400" />
+                  <Check className="size-5 text-green-400" />
                 ) : (
-                  <X className="w-5 h-5 text-red-400" />
+                  <X className="size-5 text-red-400" />
                 )}
                 <span className="font-semibold">
                   {existingParticipation.status === 'PLAYING' ? 'Playing' : 'Not Playing'}
@@ -244,7 +244,7 @@ const ParticipationHeroCard: React.FC = () => {
         {/* Loading state for participation */}
         {selectedTeamId && participationLoading && (
           <div className="flex items-center justify-center p-4">
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <Loader2 className="size-5 animate-spin" />
           </div>
         )}
       </div>

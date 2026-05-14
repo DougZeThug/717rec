@@ -93,7 +93,7 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings, myTeamId }) => {
                 )}
                 <ChevronDown
                   className={cn(
-                    'h-5 w-5 transition-transform',
+                    'size-5 transition-transform',
                     isWinterTheme ? 'text-[hsl(var(--muted-foreground))]' : '',
                     isOpen && 'rotate-180'
                   )}

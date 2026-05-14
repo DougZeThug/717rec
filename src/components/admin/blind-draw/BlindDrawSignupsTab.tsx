@@ -55,7 +55,7 @@ const BlindDrawSettingsCard: React.FC = () => {
     <Card>
       <CardHeader className="pb-3 px-3 sm:px-6">
         <CardTitle className="flex items-center gap-2 text-lg">
-          <Settings className="h-5 w-5 text-muted-foreground" />
+          <Settings className="size-5 text-muted-foreground" />
           Settings
         </CardTitle>
       </CardHeader>
@@ -80,10 +80,10 @@ const BlindDrawSettingsCard: React.FC = () => {
               className="shrink-0"
             >
               {updateSettings.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin" />
               ) : (
                 <>
-                  <Save className="h-4 w-4 mr-1" />
+                  <Save className="size-4 mr-1" />
                   Save
                 </>
               )}
@@ -113,7 +113,7 @@ const BlindDrawSignupsTab: React.FC = () => {
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center gap-2 text-destructive">
-            <AlertCircle className="h-5 w-5" />
+            <AlertCircle className="size-5" />
             <span>Failed to load signups. Make sure you have admin access.</span>
           </div>
         </CardContent>
@@ -129,11 +129,11 @@ const BlindDrawSignupsTab: React.FC = () => {
         <CardHeader className="pb-3 px-3 sm:px-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-              <Shuffle className="h-5 w-5 text-primary" />
+              <Shuffle className="size-5 text-primary" />
               Blind Draw Signups
             </CardTitle>
             <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full w-fit">
-              <Users className="h-4 w-4 text-primary" />
+              <Users className="size-4 text-primary" />
               <span className="font-semibold text-primary text-sm">
                 {signups?.length || 0} signed up
               </span>
@@ -146,7 +146,7 @@ const BlindDrawSignupsTab: React.FC = () => {
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive" size="sm">
-                    <Trash2 className="h-4 w-4 mr-1" />
+                    <Trash2 className="size-4 mr-1" />
                     Clear All
                   </Button>
                 </AlertDialogTrigger>
@@ -218,7 +218,7 @@ const BlindDrawSignupsTab: React.FC = () => {
                           disabled={deleteSignup.isPending}
                           title="Remove signup"
                           size="sm"
-                          className="h-8 w-8 p-0"
+                          className="size-8 p-0"
                         />
                       </td>
                     </tr>
@@ -228,7 +228,7 @@ const BlindDrawSignupsTab: React.FC = () => {
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
-              <Users className="h-12 w-12 mx-auto mb-2 opacity-30" />
+              <Users className="size-12 mx-auto mb-2 opacity-30" />
               <p>No signups yet</p>
             </div>
           )}
@@ -259,7 +259,7 @@ const BlindDrawSignupsTab: React.FC = () => {
             >
               {deleteSignup.isPending ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="size-4 mr-2 animate-spin" />
                   Removing...
                 </>
               ) : (

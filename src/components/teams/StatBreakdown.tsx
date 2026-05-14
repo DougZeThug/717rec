@@ -95,7 +95,7 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
       >
         <CollapsibleTrigger className="flex items-center justify-between w-full p-3 md:p-4 hover:bg-accent/50 transition-colors">
           <div className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-blue-500" aria-hidden="true" />
+            <BarChart3 className="size-4 md:size-5 text-blue-500" aria-hidden="true" />
             <h2
               id="stats-heading"
               className="font-bebas text-lg md:text-xl tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent heading-winter"
@@ -106,7 +106,7 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
           </div>
           <ChevronDown
             className={cn(
-              'h-5 w-5 text-muted-foreground transition-transform duration-200',
+              'size-5 text-muted-foreground transition-transform duration-200',
               isOpen && 'rotate-180'
             )}
           />
@@ -329,7 +329,7 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
                     onOpenChange={setIsAdvancedOpen}
                     className="col-span-1 md:col-span-2"
                   >
-                    <CollapsibleTrigger className="flex items-center justify-center w-full py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">
+                    <CollapsibleTrigger className="flex items-center justify-center w-full py-2 text-sm font-medium text-muted-foreground dark:text-muted-foreground hover:bg-accent dark:hover:bg-gray-800 rounded-md transition-colors">
                       {isAdvancedOpen ? 'Hide Detailed Stats' : 'Show Detailed Stats'}
                     </CollapsibleTrigger>
                     <CollapsibleContent className="pt-2">

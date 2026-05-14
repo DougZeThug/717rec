@@ -36,7 +36,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           size="sm"
           className="absolute right-0 top-0 h-full px-3"
         >
-          <Search className="h-4 w-4" />
+          <Search className="size-4" />
           <span className="sr-only">Search</span>
         </Button>
       </form>
@@ -49,7 +49,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         className="flex-shrink-0"
         aria-label="Refresh messages"
       >
-        <RefreshCw className={cn('h-4 w-4', isRefreshing && 'animate-spin')} />
+        <RefreshCw className={cn('size-4', isRefreshing && 'animate-spin')} />
       </Button>
     </div>
   );

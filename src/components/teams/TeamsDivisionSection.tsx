@@ -70,7 +70,7 @@ export const TeamsDivisionSection: React.FC<TeamsDivisionSectionProps> = ({
         <Button
           variant="ghost"
           size="sm"
-          className="p-1 h-7 w-7 sm:h-8 sm:w-8 transition-transform duration-300"
+          className="p-1 size-7 sm:size-8 transition-transform duration-300"
           style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
         >
           <ChevronDown size={18} />

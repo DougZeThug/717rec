@@ -18,7 +18,7 @@ export const HelpAdminCTA: React.FC = () => {
           </div>
           <Link to="/admin">
             <Button>
-              <Settings className="h-4 w-4 mr-2" />
+              <Settings className="size-4 mr-2" />
               Admin Dashboard
             </Button>
           </Link>

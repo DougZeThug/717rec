@@ -41,9 +41,9 @@ const FilterBar: React.FC<FilterBarProps> = ({
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              className="w-full justify-start min-h-[44px] transition-all duration-200 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:text-gray-200"
+              className="w-full justify-start min-h-[44px] transition-all duration-200 dark:bg-card dark:border-border dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:text-foreground"
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
+              <CalendarIcon className="mr-2 size-4" />
               {filters.date ? format(filters.date, 'MMM d, yyyy') : 'Filter by Date'}
             </Button>
           </PopoverTrigger>
@@ -62,7 +62,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
           value={filters.bracketId || undefined}
           onValueChange={(value) => onBracketChange(value === 'all' ? undefined : value)}
         >
-          <SelectTrigger className="w-full min-h-[44px] dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:text-gray-200">
+          <SelectTrigger className="w-full min-h-[44px] dark:bg-card dark:border-border dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:text-foreground">
             <SelectValue placeholder="Filter by Bracket" />
           </SelectTrigger>
           <SelectContent>
@@ -82,7 +82,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex items-center">
-                  <Info className="h-3 w-3 mr-1" />
+                  <Info className="size-3 mr-1" />
                   <span>Showing matches for the entire session (including evening games)</span>
                 </div>
               </TooltipTrigger>
@@ -106,9 +106,9 @@ const FilterBar: React.FC<FilterBarProps> = ({
             variant="ghost"
             onClick={onClearFilters}
             size="sm"
-            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors duration-200 dark:text-gray-400 dark:hover:text-gray-200"
+            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors duration-200 dark:text-muted-foreground dark:hover:text-gray-200"
           >
-            <X className="h-3 w-3" />
+            <X className="size-3" />
             Clear All Filters
           </Button>
         </m.div>

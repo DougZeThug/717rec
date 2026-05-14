@@ -30,7 +30,7 @@ const MatchScoresList = ({
   onDeleteMatch,
 }: MatchScoresListProps) => {
   if (matches.length === 0) {
-    return <div className="p-4 bg-slate-50 rounded-md">All matches have scores submitted.</div>;
+    return <div className="p-4 bg-muted rounded-md">All matches have scores submitted.</div>;
   }
 
   return (

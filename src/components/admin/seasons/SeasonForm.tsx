@@ -93,7 +93,7 @@ const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
         <div className="flex items-center justify-between">
           <CardTitle>{isEditing ? 'Edit Season' : 'Create New Season'}</CardTitle>
           <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="h-4 w-4" />
+            <X className="size-4" />
           </Button>
         </div>
       </CardHeader>
@@ -146,23 +146,23 @@ const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
 
             <div className="flex justify-end gap-2 pt-4">
               <Button type="button" variant="outline" onClick={onClose}>
-                <X className="h-4 w-4 mr-2" />
+                <X className="size-4 mr-2" />
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="size-4 mr-2 animate-spin" />
                     {isEditing ? 'Updating...' : 'Creating...'}
                   </>
                 ) : isEditing ? (
                   <>
-                    <Save className="h-4 w-4 mr-2" />
+                    <Save className="size-4 mr-2" />
                     Update Season
                   </>
                 ) : (
                   <>
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className="size-4 mr-2" />
                     Create Season
                   </>
                 )}

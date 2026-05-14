@@ -45,7 +45,7 @@ class BracketErrorBoundary extends Component<Props, State> {
       return (
         <div className="space-y-4">
           <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
+            <AlertCircle className="size-4" />
             <AlertDescription>
               <div className="space-y-2">
                 <p className="font-semibold">Bracket Rendering Error</p>
@@ -63,7 +63,7 @@ class BracketErrorBoundary extends Component<Props, State> {
               onClick={this.handleRetry}
               className="flex items-center gap-2"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className="size-4" />
               Try Again
             </Button>
           </div>

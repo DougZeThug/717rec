@@ -25,7 +25,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
       className={cn(
         // Remove: 'rounded-full overflow-hidden'
         'bg-gray-100 dark:bg-gray-800 flex items-center justify-center',
-        'w-10 h-10', // enforce fixed size always for logo
+        'size-10', // enforce fixed size always for logo
         className
       )}
       tabIndex={clickable ? 0 : undefined}
@@ -38,13 +38,13 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
           alt={teamName}
           loading="lazy"
           decoding="async"
-          className="w-10 h-10 object-contain rounded-none"
+          className="size-10 object-contain rounded-none"
           onError={(e) => {
             (e.target as HTMLImageElement).style.display = 'none';
           }}
         />
       ) : (
-        <div className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 text-xs">
+        <div className="size-10 flex items-center justify-center bg-muted dark:bg-card text-muted-foreground dark:text-gray-600 text-xs">
           {teamName.substring(0, 2)}
         </div>
       )}
@@ -53,7 +53,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
 
   if (clickable && teamId) {
     return (
-      <Link to={`/teams/${toTeamSlug(teamName)}`} className="block w-10 h-10">
+      <Link to={`/teams/${toTeamSlug(teamName)}`} className="block size-10">
         {logoContent}
       </Link>
     );

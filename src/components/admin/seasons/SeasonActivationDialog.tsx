@@ -80,7 +80,7 @@ const SeasonActivationDialog: React.FC<SeasonActivationDialogProps> = ({
 
         {hasActiveSeason && (
           <Alert>
-            <AlertTriangle className="h-4 w-4" />
+            <AlertTriangle className="size-4" />
             <AlertDescription>
               <strong>Warning:</strong> The current active season "{activeSeason?.name}" will be
               automatically deactivated. All new matches and activities will be associated with "

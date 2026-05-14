@@ -44,7 +44,7 @@ export function ToggleButtonGroup<T extends string>({
                   : 'hover:bg-muted-foreground/10'
               )}
             >
-              {Icon && <Icon className="h-4 w-4" />}
+              {Icon && <Icon className="size-4" />}
               {option.label}
             </button>
           );
@@ -72,7 +72,7 @@ export function ToggleButtonGroup<T extends string>({
                 : 'bg-muted/50 text-muted-foreground hover:bg-muted'
             )}
           >
-            {Icon && <Icon className="h-4 w-4" />}
+            {Icon && <Icon className="size-4" />}
             {option.label}
           </button>
         );

@@ -165,9 +165,9 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
 
         return (
           <Card key={block} className="overflow-hidden">
-            <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2 flex items-center justify-between">
+            <div className="bg-muted dark:bg-card px-4 py-2 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
+                <Clock className="size-4 text-muted-foreground" />
                 <span className="font-medium">{block} Block</span>
               </div>
               <div className="flex items-center gap-2">
@@ -189,13 +189,13 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
                       }}
                       className="h-6 px-2"
                     >
-                      <Trash2 className="h-3 w-3 mr-1" />
+                      <Trash2 className="size-3 mr-1" />
                       Remove ({selectedForBlock.length})
                     </Button>
 
                     <Select value={moveToBlock} onValueChange={setMoveToBlock}>
                       <SelectTrigger className="h-6 w-24 text-xs">
-                        <Move className="h-3 w-3" />
+                        <Move className="size-3" />
                       </SelectTrigger>
                       <SelectContent>
                         {availableBlocks
@@ -254,7 +254,7 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
                     }}
                     className="text-xs"
                   >
-                    <Trash2 className="h-3 w-3 mr-1" />
+                    <Trash2 className="size-3 mr-1" />
                     Clear All Teams
                   </Button>
                 </div>

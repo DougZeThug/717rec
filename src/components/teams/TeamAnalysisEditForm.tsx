@@ -108,7 +108,7 @@ export const TeamAnalysisEditForm: React.FC<TeamAnalysisEditFormProps> = ({
                   size="icon"
                   onClick={() => handleRemoveStrength(index)}
                 >
-                  <X className="h-4 w-4" />
+                  <X className="size-4" />
                 </Button>
               )}
             </div>
@@ -120,7 +120,7 @@ export const TeamAnalysisEditForm: React.FC<TeamAnalysisEditFormProps> = ({
             onClick={handleAddStrength}
             className="mt-2"
           >
-            <Plus className="h-4 w-4 mr-1" /> Add Strength
+            <Plus className="size-4 mr-1" /> Add Strength
           </Button>
         </div>
       </div>
@@ -143,7 +143,7 @@ export const TeamAnalysisEditForm: React.FC<TeamAnalysisEditFormProps> = ({
                   size="icon"
                   onClick={() => handleRemoveWeakness(index)}
                 >
-                  <X className="h-4 w-4" />
+                  <X className="size-4" />
                 </Button>
               )}
             </div>
@@ -155,7 +155,7 @@ export const TeamAnalysisEditForm: React.FC<TeamAnalysisEditFormProps> = ({
             onClick={handleAddWeakness}
             className="mt-2"
           >
-            <Plus className="h-4 w-4 mr-1" /> Add Area to Improve
+            <Plus className="size-4 mr-1" /> Add Area to Improve
           </Button>
         </div>
       </div>
@@ -190,11 +190,11 @@ export const TeamAnalysisEditForm: React.FC<TeamAnalysisEditFormProps> = ({
         <Button type="submit" disabled={isSaving}>
           {isSaving ? (
             <>
-              <Loader2 className="h-4 w-4 mr-1 animate-spin" /> Saving...
+              <Loader2 className="size-4 mr-1 animate-spin" /> Saving...
             </>
           ) : (
             <>
-              <Save className="h-4 w-4 mr-1" /> Save Analysis
+              <Save className="size-4 mr-1" /> Save Analysis
             </>
           )}
         </Button>

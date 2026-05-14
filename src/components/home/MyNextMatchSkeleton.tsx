@@ -10,7 +10,7 @@ const MyNextMatchSkeleton: React.FC = () => {
         {/* Header skeleton */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Skeleton className="h-4 w-4 rounded-full" />
+            <Skeleton className="size-4 rounded-full" />
             <Skeleton className="h-4 w-28" />
           </div>
           <Skeleton className="h-5 w-16 rounded-full" />
@@ -20,9 +20,9 @@ const MyNextMatchSkeleton: React.FC = () => {
         <div className="flex items-center gap-4 md:gap-6">
           {/* Team logos */}
           <div className="flex items-center gap-3">
-            <Skeleton className="h-12 w-12 rounded-full" />
+            <Skeleton className="size-12 rounded-full" />
             <Skeleton className="h-4 w-8" />
-            <Skeleton className="h-12 w-12 rounded-full" />
+            <Skeleton className="size-12 rounded-full" />
           </div>
 
           {/* Team names */}

@@ -41,11 +41,11 @@ const TeamAvatar = ({ team }: { team: Team }) =>
     <img
       src={team.logoUrl || team.imageUrl}
       alt={team.name}
-      className="h-6 w-6 rounded-full object-cover shrink-0"
+      className="size-6 rounded-full object-cover shrink-0"
     />
   ) : (
-    <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center shrink-0">
-      <Users className="h-3 w-3 text-muted-foreground" />
+    <div className="size-6 rounded-full bg-muted flex items-center justify-center shrink-0">
+      <Users className="size-3 text-muted-foreground" />
     </div>
   );
 
@@ -100,7 +100,7 @@ const TeamTableRowItem = ({ team, divisions, actions }: TeamTableRowProps) => (
           aria-label={`Edit ${team.name}`}
           onClick={() => actions.onEdit(team)}
         >
-          <Edit className="h-3 w-3" />
+          <Edit className="size-3" />
         </Button>
       </m.div>
     </TableCell>

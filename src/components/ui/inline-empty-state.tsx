@@ -24,8 +24,8 @@ const InlineEmptyState: React.FC<InlineEmptyStateProps> = ({
     <div
       className={cn('flex flex-col items-center justify-center py-8 px-4 text-center', className)}
     >
-      <div className="flex items-center justify-center w-12 h-12 rounded-full bg-muted/50 border border-border/50 mb-3">
-        <Icon className="w-6 h-6 text-muted-foreground" />
+      <div className="flex items-center justify-center size-12 rounded-full bg-muted/50 border border-border/50 mb-3">
+        <Icon className="size-6 text-muted-foreground" />
       </div>
       <p className="text-sm font-medium text-muted-foreground">{message}</p>
       {description && (

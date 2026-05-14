@@ -39,7 +39,7 @@ const DualMatchWarningDisplay: React.FC<DualMatchWarningDisplayProps> = ({
             : 'border-green-300 dark:border-green-800 bg-green-50 dark:bg-green-900/20'
         }`}
       >
-        <Info className="h-4 w-4 text-green-500" />
+        <Info className="size-4 text-green-500" />
         <AlertTitle>Optimal Dual Match Schedule</AlertTitle>
         <AlertDescription>
           All teams have matches in both time blocks with different opponents.
@@ -63,9 +63,9 @@ const DualMatchWarningDisplay: React.FC<DualMatchWarningDisplayProps> = ({
   return (
     <Alert className={`mt-4 ${getAlertClasses()}`}>
       {hasDuplicates ? (
-        <AlertTriangle className="h-4 w-4 text-amber-500" />
+        <AlertTriangle className="size-4 text-amber-500" />
       ) : (
-        <Info className="h-4 w-4 text-blue-500" />
+        <Info className="size-4 text-blue-500" />
       )}
 
       <AlertTitle>

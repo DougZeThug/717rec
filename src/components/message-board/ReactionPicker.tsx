@@ -30,7 +30,7 @@ const ReactionPickerSection: React.FC<{
           key={emoji}
           variant="ghost"
           size="xs"
-          className="h-8 w-8 p-0 hover:bg-accent/50"
+          className="size-8 p-0 hover:bg-accent/50"
           onClick={() => onSelect(emoji)}
         >
           <span className="text-lg">{emoji}</span>
@@ -48,8 +48,8 @@ const ReactionPicker: React.FC<ReactionPickerProps> = ({ onSelect, onClose }) =>
       <div className="flex justify-between items-center">
         <div className="text-sm font-medium">Add reaction</div>
         {onClose && (
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full" onClick={onClose}>
-            <X className="h-4 w-4" />
+          <Button variant="ghost" size="sm" className="size-8 p-0 rounded-full" onClick={onClose}>
+            <X className="size-4" />
           </Button>
         )}
       </div>

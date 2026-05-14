@@ -178,9 +178,9 @@ const AdminSidebar: React.FC = () => {
             aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {isCollapsed ? (
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="size-4" />
             ) : (
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="size-4" />
             )}
           </Button>
         </div>
@@ -190,7 +190,7 @@ const AdminSidebar: React.FC = () => {
           {!isCollapsed && (
             <m.div {...searchAnimateProps} className="p-3 border-b border-border">
               <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
                   placeholder="Search..."
                   value={searchQuery}
@@ -218,7 +218,7 @@ const AdminSidebar: React.FC = () => {
                     : 'text-muted-foreground'
                 )}
               >
-                <item.icon className="h-5 w-5 shrink-0" />
+                <item.icon className="size-5 shrink-0" />
                 <AnimatePresence>
                   {!isCollapsed && (
                     <>

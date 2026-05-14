@@ -29,7 +29,7 @@ const MessageBoardFAB: React.FC = () => {
         onClick={handleClick}
         size="icon"
         className={cn(
-          'rounded-full w-12 h-12 shadow-lg',
+          'rounded-full size-12 shadow-lg',
           'bg-gradient-to-br from-blue-500 via-blue-600 to-amber-500',
           'hover:from-blue-400 hover:via-blue-500 hover:to-amber-400 text-white',
           'dark:from-blue-600 dark:via-blue-700 dark:to-amber-600',
@@ -39,7 +39,7 @@ const MessageBoardFAB: React.FC = () => {
         )}
         aria-label="Message Board"
       >
-        <MessageSquare className="h-5 w-5" />
+        <MessageSquare className="size-5" />
       </Button>
     </m.div>
   );

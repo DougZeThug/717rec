@@ -33,11 +33,11 @@ const FilterToggleButton: React.FC<FilterToggleButtonProps> = ({
       aria-label={_isActive ? 'Hide filters' : 'Show filters'}
       aria-expanded={_isActive}
     >
-      <Filter className="h-4 w-4" />
+      <Filter className="size-4" />
       {hasActiveFilters && (
         <span
           className={cn(
-            'absolute -top-1 -right-1 rounded-full w-4 h-4 text-[10px] flex items-center justify-center bg-white text-blue-600'
+            'absolute -top-1 -right-1 rounded-full size-4 text-[10px] flex items-center justify-center bg-white text-blue-600'
           )}
         >
           {Object.values(filterOptions).filter(Boolean).length}

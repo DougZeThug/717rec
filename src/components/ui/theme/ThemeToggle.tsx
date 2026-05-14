@@ -61,9 +61,9 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
       );
     }
     if (resolvedTheme === 'dark' || theme === 'dark') {
-      return <Moon className="h-5 w-5" />;
+      return <Moon className="size-5" />;
     }
-    return <Sun className="h-5 w-5" />;
+    return <Sun className="size-5" />;
   };
 
   const getButtonClasses = () => {

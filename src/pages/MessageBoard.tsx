@@ -63,7 +63,7 @@ const MessageBoard: React.FC = () => {
             <PageHeader
               title={
                 <div className="flex items-center space-x-2">
-                  <MessageSquare className="h-6 w-6 text-primary" />
+                  <MessageSquare className="size-6 text-primary" />
                   <span>Message Board</span>
                 </div>
               }

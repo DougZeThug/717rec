@@ -16,15 +16,15 @@ const TeamDisplay: React.FC<TeamDisplayProps> = ({
   return (
     <div className="flex justify-center">
       {team?.imageUrl || team?.logoUrl ? (
-        <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-100">
+        <div className="size-16 rounded-full overflow-hidden bg-muted">
           <img
             src={team.imageUrl || team.logoUrl}
             alt={team.name}
-            className="w-full h-full object-cover"
+            className="size-full object-cover"
           />
         </div>
       ) : (
-        <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
+        <div className="size-16 rounded-full bg-blue-100 flex items-center justify-center">
           <span className="text-blue-600 font-bold text-lg">{fallbackLabel}</span>
         </div>
       )}

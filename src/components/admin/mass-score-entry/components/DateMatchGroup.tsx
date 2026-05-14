@@ -59,7 +59,7 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
         <span>{formattedDate}</span>
         <ChevronDown
           className={cn(
-            'h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200',
+            'size-4 shrink-0 text-muted-foreground transition-transform duration-200',
             isOpen && 'rotate-180'
           )}
         />

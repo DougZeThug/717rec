@@ -50,7 +50,7 @@ const MobileMenu: React.FC<MobileMenuProps> = React.memo(({ navItems: _navItems 
             animate={{ rotate: isOpen ? 90 : 0 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
           >
-            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {isOpen ? <X className="size-6" /> : <Menu className="size-6" />}
           </m.div>
         </Button>
       </div>

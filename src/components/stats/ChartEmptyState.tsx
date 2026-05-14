@@ -20,7 +20,7 @@ const ChartEmptyState: React.FC<ChartEmptyStateProps> = ({
         className
       )}
     >
-      <BarChart3 className="h-8 w-8 text-muted-foreground/40" />
+      <BarChart3 className="size-8 text-muted-foreground/40" />
       <p className="text-sm text-muted-foreground/60 font-inter">{message}</p>
     </div>
   );

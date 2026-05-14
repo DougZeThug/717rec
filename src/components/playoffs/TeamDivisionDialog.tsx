@@ -50,7 +50,7 @@ const TeamDivisionDialog: React.FC<TeamDivisionDialogProps> = ({
         <div className="max-h-[60vh] overflow-y-auto pr-2">
           {teamsLoading ? (
             <div className="flex justify-center py-8">
-              <Loader2 className="w-8 h-8 animate-spin text-cornhole-navy" />
+              <Loader2 className="size-8 animate-spin text-cornhole-navy" />
             </div>
           ) : (
             <div className="space-y-6">
@@ -63,17 +63,17 @@ const TeamDivisionDialog: React.FC<TeamDivisionDialogProps> = ({
                         <CardContent className="p-3">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                              <div className="w-10 h-10 rounded-full overflow-hidden bg-muted mr-2">
+                              <div className="size-10 rounded-full overflow-hidden bg-muted mr-2">
                                 {team.logoUrl ? (
                                   <img
                                     src={team.logoUrl}
                                     alt={team.name}
                                     loading="lazy"
                                     decoding="async"
-                                    className="w-full h-full object-contain"
+                                    className="size-full object-contain"
                                   />
                                 ) : (
-                                  <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground text-xs">
+                                  <div className="size-full flex items-center justify-center bg-muted text-muted-foreground text-xs">
                                     No Logo
                                   </div>
                                 )}
@@ -115,17 +115,17 @@ const TeamDivisionDialog: React.FC<TeamDivisionDialogProps> = ({
                         <CardContent className="p-3">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                              <div className="w-10 h-10 rounded-full overflow-hidden bg-muted mr-2">
+                              <div className="size-10 rounded-full overflow-hidden bg-muted mr-2">
                                 {team.logoUrl ? (
                                   <img
                                     src={team.logoUrl}
                                     alt={team.name}
                                     loading="lazy"
                                     decoding="async"
-                                    className="w-full h-full object-contain"
+                                    className="size-full object-contain"
                                   />
                                 ) : (
-                                  <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground text-xs">
+                                  <div className="size-full flex items-center justify-center bg-muted text-muted-foreground text-xs">
                                     No Logo
                                   </div>
                                 )}

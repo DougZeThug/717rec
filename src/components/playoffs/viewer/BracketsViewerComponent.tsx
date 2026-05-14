@@ -117,7 +117,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
   return (
     <>
       <div
-        className="w-full h-full min-h-[350px] overflow-x-auto overflow-y-visible bg-background"
+        className="size-full min-h-[350px] overflow-x-auto overflow-y-visible bg-background"
         role="region"
         aria-label={`Playoff Bracket: ${bracket?.name || 'Tournament'}`}
       >

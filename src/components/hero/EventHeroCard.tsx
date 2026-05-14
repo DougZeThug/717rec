@@ -124,13 +124,13 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-4 right-8">
             <Shuffle
-              className={cn('h-24 w-24', shouldApplyWinter ? 'text-cyan-300/30' : 'text-white/30')}
+              className={cn('size-24', shouldApplyWinter ? 'text-cyan-300/30' : 'text-white/30')}
             />
           </div>
           <div className="absolute bottom-4 left-8">
             <Shuffle
               className={cn(
-                'h-16 w-16 rotate-45',
+                'size-16 rotate-45',
                 shouldApplyWinter ? 'text-cyan-300/20' : 'text-white/20'
               )}
             />
@@ -154,7 +154,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
                   animate={{ rotate: 0, opacity: 1 }}
                   transition={{ duration: 0.4 }}
                 >
-                  <Shuffle className="h-6 w-6 md:h-8 md:w-8" />
+                  <Shuffle className="size-6 md:size-8" />
                 </m.div>
                 <h2 className="text-xl md:text-2xl font-bebas uppercase tracking-wide">
                   {card.title}
@@ -164,7 +164,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
                   animate={{ rotate: 0, opacity: 1 }}
                   transition={{ duration: 0.4 }}
                 >
-                  <Shuffle className="h-6 w-6 md:h-8 md:w-8" />
+                  <Shuffle className="size-6 md:size-8" />
                 </m.div>
               </div>
 
@@ -175,7 +175,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
                     shouldApplyWinter ? 'bg-cyan-500/20' : 'bg-white/20'
                   )}
                 >
-                  <Calendar className="h-4 w-4" />
+                  <Calendar className="size-4" />
                   <span className="font-inter font-semibold text-sm">
                     {isActiveEvent
                       ? card.subtitle || formatDate(checkInTimeStr, '')
@@ -239,7 +239,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
                     >
                       <Users
                         className={cn(
-                          'h-4 w-4',
+                          'size-4',
                           shouldApplyWinter ? 'text-cyan-300' : 'text-emerald-300'
                         )}
                       />

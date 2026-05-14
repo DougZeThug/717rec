@@ -141,7 +141,7 @@ const TimeslotsTab = () => {
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" className="w-[240px] pl-3 text-left font-normal">
-                <CalendarIcon className="mr-2 h-4 w-4" />
+                <CalendarIcon className="mr-2 size-4" />
                 {format(selectedDate, 'PPP')}
               </Button>
             </PopoverTrigger>

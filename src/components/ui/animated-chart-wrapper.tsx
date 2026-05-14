@@ -30,7 +30,7 @@ export const AnimatedChartWrapper: React.FC<AnimatedChartWrapperProps> = ({
         delay,
         ease: [0.25, 0.46, 0.45, 0.94],
       }}
-      className={cn('w-full h-full', className)}
+      className={cn('size-full', className)}
     >
       {children}
     </m.div>

@@ -18,7 +18,7 @@ const ScoreSubmissionsList = ({ submissions, onApprove, onReject }: ScoreSubmiss
     return (
       <Card>
         <CardContent className="p-8 text-center">
-          <Clock className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <Clock className="size-12 mx-auto mb-4 text-muted-foreground" />
           <p className="text-muted-foreground">No pending score submissions to review.</p>
         </CardContent>
       </Card>
@@ -33,7 +33,7 @@ const ScoreSubmissionsList = ({ submissions, onApprove, onReject }: ScoreSubmiss
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">Score Submission</CardTitle>
               <Badge variant="secondary" className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
+                <Clock className="size-3" />
                 Pending Review
               </Badge>
             </div>
@@ -41,14 +41,14 @@ const ScoreSubmissionsList = ({ submissions, onApprove, onReject }: ScoreSubmiss
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-muted-foreground" />
+                <User className="size-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">Submitter:</span>
                 <span className="font-medium">{submission.submitter_name}</span>
               </div>
 
               {submission.submitter_team && (
                 <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <Users className="size-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">Team:</span>
                   <span className="font-medium">{submission.submitter_team}</span>
                 </div>
@@ -57,7 +57,7 @@ const ScoreSubmissionsList = ({ submissions, onApprove, onReject }: ScoreSubmiss
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                <MessageSquare className="size-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">Message:</span>
               </div>
               <div className="bg-muted/50 p-3 rounded-md">
@@ -77,11 +77,11 @@ const ScoreSubmissionsList = ({ submissions, onApprove, onReject }: ScoreSubmiss
                   onClick={() => onReject(submission.id)}
                   className="text-destructive hover:text-destructive"
                 >
-                  <XCircle className="h-4 w-4 mr-1" />
+                  <XCircle className="size-4 mr-1" />
                   Reject
                 </Button>
                 <Button size="sm" onClick={() => onApprove(submission.id)}>
-                  <CheckCircle className="h-4 w-4 mr-1" />
+                  <CheckCircle className="size-4 mr-1" />
                   Approve
                 </Button>
               </div>

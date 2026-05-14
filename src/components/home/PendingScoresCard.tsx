@@ -24,7 +24,7 @@ const PendingScoresCard = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock
-              className={cn('h-5 w-5', shouldApplyWinter ? 'text-cyan-400' : 'text-primary')}
+              className={cn('size-5', shouldApplyWinter ? 'text-cyan-400' : 'text-primary')}
             />
             Pending Scores
             {shouldApplyWinter && WINTER_ICONS_ENABLED && (
@@ -47,7 +47,7 @@ const PendingScoresCard = () => {
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-8 h-8 bg-muted rounded" />
+                    <div className="size-8 bg-muted rounded" />
                     <div className="min-w-0">
                       <div className="w-20 h-4 bg-muted rounded" />
                     </div>
@@ -59,7 +59,7 @@ const PendingScoresCard = () => {
                     <div className="min-w-0">
                       <div className="w-20 h-4 bg-muted rounded" />
                     </div>
-                    <div className="w-8 h-8 bg-muted rounded" />
+                    <div className="size-8 bg-muted rounded" />
                   </div>
                 </div>
                 <div className="w-20 h-8 bg-muted rounded" />
@@ -77,7 +77,7 @@ const PendingScoresCard = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock
-              className={cn('h-5 w-5', shouldApplyWinter ? 'text-cyan-400' : 'text-primary')}
+              className={cn('size-5', shouldApplyWinter ? 'text-cyan-400' : 'text-primary')}
             />
             Pending Scores
             {shouldApplyWinter && WINTER_ICONS_ENABLED && (
@@ -111,7 +111,7 @@ const PendingScoresCard = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock
-              className={cn('h-5 w-5', shouldApplyWinter ? 'text-cyan-400' : 'text-primary')}
+              className={cn('size-5', shouldApplyWinter ? 'text-cyan-400' : 'text-primary')}
             />
             Pending Scores
             {shouldApplyWinter && WINTER_ICONS_ENABLED && (
@@ -137,17 +137,17 @@ const PendingScoresCard = () => {
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   {/* Team 1 */}
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-8 h-8 flex-shrink-0">
+                    <div className="size-8 flex-shrink-0">
                       {match.team1_logo ? (
                         <img
                           src={match.team1_logo}
                           alt={`${match.team1_name} logo`}
-                          className="w-8 h-8 object-cover"
+                          className="size-8 object-cover"
                         />
                       ) : (
                         <div
                           className={cn(
-                            'w-8 h-8 flex items-center justify-center text-xs font-medium',
+                            'size-8 flex items-center justify-center text-xs font-medium',
                             shouldApplyWinter
                               ? 'bg-slate-700 text-cyan-300'
                               : 'bg-muted text-muted-foreground'
@@ -193,17 +193,17 @@ const PendingScoresCard = () => {
                         {match.team2_name}
                       </p>
                     </div>
-                    <div className="w-8 h-8 flex-shrink-0">
+                    <div className="size-8 flex-shrink-0">
                       {match.team2_logo ? (
                         <img
                           src={match.team2_logo}
                           alt={`${match.team2_name} logo`}
-                          className="w-8 h-8 object-cover"
+                          className="size-8 object-cover"
                         />
                       ) : (
                         <div
                           className={cn(
-                            'w-8 h-8 flex items-center justify-center text-xs font-medium',
+                            'size-8 flex items-center justify-center text-xs font-medium',
                             shouldApplyWinter
                               ? 'bg-slate-700 text-cyan-300'
                               : 'bg-muted text-muted-foreground'

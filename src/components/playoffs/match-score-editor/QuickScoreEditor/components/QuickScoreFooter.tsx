@@ -14,7 +14,7 @@ const QuickScoreFooter: React.FC<QuickScoreFooterProps> = ({ onCancel, isSubmitt
   return (
     <DialogFooter className={animations.fadeIn} style={{ animationDelay: '0.5s' }}>
       <Button variant="ghost" onClick={onCancel} disabled={isSubmitting}>
-        <X className="mr-1 h-4 w-4" />
+        <X className="mr-1 size-4" />
         Cancel
       </Button>
     </DialogFooter>

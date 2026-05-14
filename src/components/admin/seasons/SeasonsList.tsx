@@ -42,7 +42,7 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
     return (
       <Card>
         <CardContent className="p-6 text-center">
-          <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <Calendar className="size-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-medium mb-2">No seasons found</h3>
           <p className="text-muted-foreground">Create your first season to get started.</p>
         </CardContent>
@@ -72,11 +72,11 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
 
   const getStatusIcon = (season: Season) => {
     if (season.is_active) {
-      return <Calendar className="h-4 w-4 text-green-500" />;
+      return <Calendar className="size-4 text-green-500" />;
     } else if (season.is_archived) {
-      return <Archive className="h-4 w-4 text-gray-500" />;
+      return <Archive className="size-4 text-muted-foreground" />;
     } else {
-      return <Calendar className="h-4 w-4 text-blue-500" />;
+      return <Calendar className="size-4 text-blue-500" />;
     }
   };
 
@@ -107,7 +107,7 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
                       onClick={() => setFinalizingSeason(season)}
                       className="flex items-center gap-1"
                     >
-                      <Trophy className="h-3 w-3" />
+                      <Trophy className="size-3" />
                       Finalize Playoffs
                     </Button>
                   </m.div>
@@ -119,7 +119,7 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
                     onClick={() => onEditSeason(season)}
                     className="flex items-center gap-1"
                   >
-                    <Edit className="h-3 w-3" />
+                    <Edit className="size-3" />
                     Edit
                   </Button>
                 </m.div>

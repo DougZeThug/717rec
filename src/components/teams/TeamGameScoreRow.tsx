@@ -61,7 +61,7 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({
     <div className="flex flex-col w-full py-2">
       {/* Match date display */}
       {matchDate && (
-        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 px-2">{matchDate}</div>
+        <div className="text-xs text-muted-foreground dark:text-muted-foreground mb-1 px-2">{matchDate}</div>
       )}
 
       <div
@@ -70,7 +70,7 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({
         {/* Home - Left side */}
         <div className="flex items-center min-w-0 gap-x-2 flex-1">
           <TransitionLink to={`/teams/${toTeamSlug(homeName)}`} className="shrink-0">
-            <Avatar className="h-7 w-7 md:h-8 md:w-8">
+            <Avatar className="size-7 md:size-8">
               <AvatarImage src={homeLogo} alt={homeName} />
               <AvatarFallback>{homeName.charAt(0)}</AvatarFallback>
             </Avatar>
@@ -120,7 +120,7 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({
             </span>
           </TransitionLink>
           <TransitionLink to={`/teams/${toTeamSlug(awayName)}`} className="shrink-0">
-            <Avatar className="h-7 w-7 md:h-8 md:w-8">
+            <Avatar className="size-7 md:size-8">
               <AvatarImage src={awayLogo} alt={awayName} />
               <AvatarFallback>{awayName.charAt(0)}</AvatarFallback>
             </Avatar>

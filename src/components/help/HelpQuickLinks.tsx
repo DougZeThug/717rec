@@ -15,25 +15,25 @@ export const HelpQuickLinks: React.FC = () => {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Link to="/teams">
             <Button variant="outline" className="w-full justify-start">
-              <Users className="h-4 w-4 mr-2" />
+              <Users className="size-4 mr-2" />
               Teams
             </Button>
           </Link>
           <Link to="/schedule">
             <Button variant="outline" className="w-full justify-start">
-              <Calendar className="h-4 w-4 mr-2" />
+              <Calendar className="size-4 mr-2" />
               Schedule
             </Button>
           </Link>
           <Link to="/stats">
             <Button variant="outline" className="w-full justify-start">
-              <BarChart3 className="h-4 w-4 mr-2" />
+              <BarChart3 className="size-4 mr-2" />
               Standings
             </Button>
           </Link>
           <Link to="/playoffs">
             <Button variant="outline" className="w-full justify-start">
-              <Trophy className="h-4 w-4 mr-2" />
+              <Trophy className="size-4 mr-2" />
               Playoffs
             </Button>
           </Link>

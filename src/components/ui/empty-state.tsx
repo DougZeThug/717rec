@@ -63,12 +63,12 @@ const EmptyState: React.FC<EmptyStateProps> = ({
         {/* Icon circle */}
         <div
           className={cn(
-            'relative flex items-center justify-center w-20 h-20 rounded-full',
+            'relative flex items-center justify-center size-20 rounded-full',
             'bg-muted/50 border border-border/50',
             iconClassName
           )}
         >
-          <Icon className="w-10 h-10 text-muted-foreground" />
+          <Icon className="size-10 text-muted-foreground" />
         </div>
       </m.div>
 
@@ -109,7 +109,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
                 onClick={action.onClick}
                 className="min-w-[120px]"
               >
-                {ActionIcon && <ActionIcon className="w-4 h-4 mr-2" />}
+                {ActionIcon && <ActionIcon className="size-4 mr-2" />}
                 {action.label}
               </Button>
             );
@@ -129,7 +129,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
           className="mt-4 text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
         >
           {secondaryLink.label}
-          {secondaryLink.external && <ExternalLink className="w-3 h-3" />}
+          {secondaryLink.external && <ExternalLink className="size-3" />}
         </m.a>
       )}
     </m.div>

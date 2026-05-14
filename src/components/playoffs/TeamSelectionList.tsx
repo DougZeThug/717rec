@@ -117,7 +117,7 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
                   }`}
                   onClick={() => handleToggle(team.id)}
                 >
-                  <div className="mr-3 flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full text-xs font-bold text-blue-800">
+                  <div className="mr-3 flex items-center justify-center size-6 bg-blue-100 rounded-full text-xs font-bold text-blue-800">
                     {team.seed}
                   </div>
                   <div className="mr-2">

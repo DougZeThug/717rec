@@ -88,9 +88,9 @@ export const EventWinnersEditor: React.FC<FormSectionProps> = ({ formData, onCha
                 variant="ghost"
                 size="sm"
                 onClick={() => removeWeek(weekIndex)}
-                className="text-destructive hover:text-destructive h-8 w-8 p-0"
+                className="text-destructive hover:text-destructive size-8 p-0"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="size-4" />
               </Button>
             </div>
 
@@ -110,9 +110,9 @@ export const EventWinnersEditor: React.FC<FormSectionProps> = ({ formData, onCha
                   variant="ghost"
                   size="sm"
                   onClick={() => removeWinner(weekIndex, winnerIndex)}
-                  className="text-destructive hover:text-destructive h-8 w-8 p-0 shrink-0"
+                  className="text-destructive hover:text-destructive size-8 p-0 shrink-0"
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <Trash2 className="size-3" />
                 </Button>
               </div>
             ))}
@@ -124,13 +124,13 @@ export const EventWinnersEditor: React.FC<FormSectionProps> = ({ formData, onCha
               onClick={() => addWinner(weekIndex)}
               className="w-full h-7 text-xs"
             >
-              <Plus className="h-3 w-3 mr-1" /> Add Place
+              <Plus className="size-3 mr-1" /> Add Place
             </Button>
           </div>
         ))}
 
         <Button type="button" variant="outline" size="sm" onClick={addWeek} className="w-full">
-          <Plus className="h-4 w-4 mr-1" /> Add Week
+          <Plus className="size-4 mr-1" /> Add Week
         </Button>
       </div>
     </div>

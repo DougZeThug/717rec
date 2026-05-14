@@ -21,21 +21,21 @@ const SquareLogo: React.FC<{
   alt: string;
   fallback: string;
 }> = ({ src, alt, fallback }) => (
-  <div className="w-10 h-10 flex items-center justify-center bg-gray-200">
+  <div className="size-10 flex items-center justify-center bg-gray-200">
     {src ? (
       <img
         src={src}
         alt={alt}
         loading="lazy"
         decoding="async"
-        className="w-10 h-10 object-contain rounded-none"
+        className="size-10 object-contain rounded-none"
         onError={(e) => {
           imageErrorLog(alt, src);
           (e.target as HTMLImageElement).src = FALLBACK_TEAM_IMAGE;
         }}
       />
     ) : (
-      <div className="w-10 h-10 flex items-center justify-center bg-gray-200 text-gray-400">
+      <div className="size-10 flex items-center justify-center bg-gray-200 text-muted-foreground">
         <span className="text-xs">{fallback}</span>
       </div>
     )}
@@ -62,7 +62,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, team1, team2, formatDate, 
               <SquareLogo src={team2?.imageUrl} alt={team2.name} fallback="No Logo" />
             </div>
           </div>
-          <div className="flex justify-between text-sm text-gray-600 mt-4">
+          <div className="flex justify-between text-sm text-muted-foreground mt-4">
             <div>
               <p>
                 <strong>Date:</strong> {formatDate(match.date!)}

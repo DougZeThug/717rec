@@ -28,7 +28,7 @@ export const MatchPairsSection: React.FC<MatchPairsSectionProps> = ({
     <>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Users className="h-4 w-4 text-muted-foreground" />
+          <Users className="size-4 text-muted-foreground" />
           <span className="font-medium">Match Pairings</span>
         </div>
 

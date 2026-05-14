@@ -149,9 +149,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
                 {field.value.length >= 3 && !isCheckingUsername && (
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                     {usernameAvailable === true ? (
-                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      <CheckCircle2 className="size-5 text-green-500" />
                     ) : usernameAvailable === false ? (
-                      <AlertCircle className="h-5 w-5 text-destructive" />
+                      <AlertCircle className="size-5 text-destructive" />
                     ) : null}
                   </div>
                 )}

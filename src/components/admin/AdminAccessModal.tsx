@@ -41,7 +41,7 @@ export const AdminAccessModal: React.FC<AdminAccessModalProps> = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center">
-            <LockIcon className="h-5 w-5 mr-2" />
+            <LockIcon className="size-5 mr-2" />
             Access Restricted
           </DialogTitle>
           <DialogDescription>

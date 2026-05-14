@@ -32,7 +32,7 @@ const PlayoffCell = ({ season }: { season: SeasonBreakdown }) => {
   return (
     <div className="flex items-center justify-center gap-1">
       {season.isChampion && <Trophy size={14} className="text-yellow-500" />}
-      {season.isRunnerUp && <Award size={14} className="text-slate-400" />}
+      {season.isRunnerUp && <Award size={14} className="text-muted-foreground" />}
       <span
         className={cn(
           'font-mono text-sm font-medium',

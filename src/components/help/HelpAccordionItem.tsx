@@ -20,7 +20,7 @@ export const HelpAccordionItem: React.FC<HelpAccordionItemProps> = ({
       <AccordionTrigger className="hover:no-underline">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-primary/10">
-            <Icon className="h-5 w-5 text-primary" />
+            <Icon className="size-5 text-primary" />
           </div>
           <span className="font-semibold">{title}</span>
         </div>

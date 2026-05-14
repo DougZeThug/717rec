@@ -87,8 +87,8 @@ const MobileTeamRow: React.FC<{
       >
         {/* Header row: badge + logo + name + record */}
         <div className="flex items-center gap-2">
-          {team.champion && <Crown className="w-4 h-4 text-yellow-500 flex-shrink-0" />}
-          {team.runner_up && <Medal className="w-4 h-4 text-gray-500 flex-shrink-0" />}
+          {team.champion && <Crown className="size-4 text-yellow-500 flex-shrink-0" />}
+          {team.runner_up && <Medal className="size-4 text-muted-foreground flex-shrink-0" />}
           <TeamLogo
             imageUrl={team.team_image_url || team.team_logo_url}
             teamName={team.team_name}
@@ -208,8 +208,8 @@ const DesktopTeamRow: React.FC<{
       </div>
       <div className="py-2 px-2 flex-1 min-w-[120px]">
         <div className="flex items-center gap-2">
-          {team.champion && <Crown className="w-4 h-4 text-yellow-500 flex-shrink-0" />}
-          {team.runner_up && <Medal className="w-4 h-4 text-gray-500 flex-shrink-0" />}
+          {team.champion && <Crown className="size-4 text-yellow-500 flex-shrink-0" />}
+          {team.runner_up && <Medal className="size-4 text-muted-foreground flex-shrink-0" />}
           <TeamLogo
             imageUrl={team.team_image_url || team.team_logo_url}
             teamName={team.team_name}

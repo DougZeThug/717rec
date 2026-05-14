@@ -60,7 +60,7 @@ const ChampionCardCompact = React.forwardRef<
               width={56}
               height={56}
               loading="lazy"
-              className="h-14 w-14 rounded-lg object-cover"
+              className="size-14 rounded-lg object-cover"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
               }}
@@ -68,11 +68,11 @@ const ChampionCardCompact = React.forwardRef<
           ) : (
             <div
               className={cn(
-                'h-14 w-14 rounded-lg flex items-center justify-center',
+                'size-14 rounded-lg flex items-center justify-center',
                 isWinter ? 'bg-amber-900/30' : 'bg-white/20'
               )}
             >
-              <Trophy className={cn('w-6 h-6', isWinter ? 'text-amber-300/70' : 'text-white/70')} />
+              <Trophy className={cn('size-6', isWinter ? 'text-amber-300/70' : 'text-white/70')} />
             </div>
           )}
         </div>
@@ -82,7 +82,7 @@ const ChampionCardCompact = React.forwardRef<
             isWinter ? 'bg-amber-500/40' : 'bg-white/30'
           )}
         >
-          <Crown className={cn('w-2.5 h-2.5', isWinter ? 'text-amber-200' : 'text-white')} />
+          <Crown className={cn('size-2.5', isWinter ? 'text-amber-200' : 'text-white')} />
         </div>
       </div>
       <p
@@ -128,7 +128,7 @@ const ChampionDisplay = React.forwardRef<
               width={80}
               height={80}
               loading="lazy"
-              className="h-20 w-20 rounded-lg object-cover"
+              className="size-20 rounded-lg object-cover"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
               }}
@@ -136,12 +136,12 @@ const ChampionDisplay = React.forwardRef<
           ) : (
             <div
               className={cn(
-                'h-20 w-20 rounded-lg flex items-center justify-center',
+                'size-20 rounded-lg flex items-center justify-center',
                 isWinter ? 'bg-amber-900/30' : 'bg-white/20'
               )}
             >
               <Trophy
-                className={cn('w-10 h-10', isWinter ? 'text-amber-300/70' : 'text-white/70')}
+                className={cn('size-10', isWinter ? 'text-amber-300/70' : 'text-white/70')}
               />
             </div>
           )}
@@ -152,7 +152,7 @@ const ChampionDisplay = React.forwardRef<
             isWinter ? 'bg-amber-500/40' : 'bg-white/30'
           )}
         >
-          <Crown className={cn('w-3 h-3', isWinter ? 'text-amber-200' : 'text-white')} />
+          <Crown className={cn('size-3', isWinter ? 'text-amber-200' : 'text-white')} />
         </div>
       </div>
 
@@ -224,7 +224,7 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
             <div key={k} className="bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4">
               <div className="h-3 bg-white/20 rounded w-24 mb-2"></div>
               <div className="flex items-center gap-3">
-                <div className="h-20 w-20 bg-white/20 rounded-lg"></div>
+                <div className="size-20 bg-white/20 rounded-lg"></div>
                 <div className="space-y-1">
                   <div className="h-3 bg-white/20 rounded w-16"></div>
                   <div className="h-4 bg-white/20 rounded w-24"></div>
@@ -246,7 +246,7 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
             shouldApplyWinter ? 'text-amber-50' : 'text-white'
           )}
         >
-          <Trophy className="w-6 h-6" />
+          <Trophy className="size-6" />
           Champions - Error Loading
         </h2>
         <p className={shouldApplyWinter ? 'text-amber-200/80' : 'text-white/80'}>
@@ -278,7 +278,7 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
     >
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
-        <Trophy className={cn('w-6 h-6', shouldApplyWinter ? 'text-amber-200' : 'text-white')} />
+        <Trophy className={cn('size-6', shouldApplyWinter ? 'text-amber-200' : 'text-white')} />
         <h2
           className={cn(
             'text-xl md:text-2xl font-bebas uppercase tracking-wide',

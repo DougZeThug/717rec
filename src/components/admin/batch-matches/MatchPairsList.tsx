@@ -73,7 +73,7 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({ pairs, teams, onUpdate,
                         <TeamLogo
                           imageUrl={getTeamById(pair.team1Id)?.imageUrl || ''}
                           teamName={getTeamById(pair.team1Id)?.name || ''}
-                          className="h-4 w-4"
+                          className="size-4"
                         />
                         <span>{getTeamById(pair.team1Id)?.name}</span>
                       </div>
@@ -90,7 +90,7 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({ pairs, teams, onUpdate,
                             <TeamLogo
                               imageUrl={team.imageUrl || ''}
                               teamName={team.name}
-                              className="h-4 w-4"
+                              className="size-4"
                             />
                             <span>{team.name}</span>
                           </div>
@@ -120,7 +120,7 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({ pairs, teams, onUpdate,
                         <TeamLogo
                           imageUrl={getTeamById(pair.team2Id)?.imageUrl || ''}
                           teamName={getTeamById(pair.team2Id)?.name || ''}
-                          className="h-4 w-4"
+                          className="size-4"
                         />
                         <span>{getTeamById(pair.team2Id)?.name}</span>
                       </div>
@@ -137,7 +137,7 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({ pairs, teams, onUpdate,
                             <TeamLogo
                               imageUrl={team.imageUrl || ''}
                               teamName={team.name}
-                              className="h-4 w-4"
+                              className="size-4"
                             />
                             <span>{team.name}</span>
                           </div>

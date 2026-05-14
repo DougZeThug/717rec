@@ -53,7 +53,7 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: 'auto' }}
       exit={{ opacity: 0, height: 0 }}
-      className="bg-slate-50 dark:bg-slate-900 p-4 rounded-md border"
+      className="bg-muted dark:bg-background p-4 rounded-md border"
     >
       <ScheduleHeader totalTeams={totalTeams} oddBlocks={oddBlocks} />
 
@@ -108,7 +108,7 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
           onClick={() => (window.location.href = '#auto-schedule')}
           className="flex items-center gap-1"
         >
-          <Wand2 className="h-3.5 w-3.5" />
+          <Wand2 className="size-3.5" />
           Open Full Auto Schedule
         </Button>
       </div>

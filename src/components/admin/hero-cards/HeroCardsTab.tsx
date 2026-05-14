@@ -37,11 +37,11 @@ const HeroCardsTab: React.FC = () => {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
-          <Image className="h-5 w-5" />
+          <Image className="size-5" />
           Hero Cards
         </CardTitle>
         <Button onClick={handleCreate} size="sm">
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="size-4 mr-2" />
           Create Card
         </Button>
       </CardHeader>

@@ -27,7 +27,7 @@ interface SeasonArchivalDialogProps {
 const ArchivalDialogHeader: React.FC<{ seasonName?: string }> = ({ seasonName }) => (
   <AlertDialogHeader>
     <AlertDialogTitle className="flex items-center gap-2">
-      <Trophy className="h-5 w-5 text-yellow-500" />
+      <Trophy className="size-5 text-yellow-500" />
       Archive Season: {seasonName}
     </AlertDialogTitle>
     <AlertDialogDescription>
@@ -90,7 +90,7 @@ const FullArchivalWarning: React.FC = () => (
 
 const ArchivalAlert: React.FC<{ partial: boolean }> = ({ partial }) => (
   <Alert>
-    <AlertTriangle className="h-4 w-4" />
+    <AlertTriangle className="size-4" />
     <AlertDescription>
       {partial ? <PartialArchivalWarning /> : <FullArchivalWarning />}
     </AlertDescription>

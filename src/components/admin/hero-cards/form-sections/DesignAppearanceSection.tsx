@@ -126,7 +126,7 @@ export const DesignAppearanceSection: React.FC<FormSectionProps> = ({ formData, 
 
             {isUploading ? (
               <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-                <Loader2 className="mb-3 h-10 w-10 animate-spin text-primary" />
+                <Loader2 className="mb-3 size-10 animate-spin text-primary" />
                 <p className="text-sm font-medium">Uploading…</p>
                 <Progress value={undefined} className="mt-3 w-48" />
               </div>
@@ -144,7 +144,7 @@ export const DesignAppearanceSection: React.FC<FormSectionProps> = ({ formData, 
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-                <Upload className="mb-2 h-10 w-10" />
+                <Upload className="mb-2 size-10" />
                 <p className="text-sm font-medium">
                   {formData.image_url && imgError
                     ? 'Could not load image — try uploading again'

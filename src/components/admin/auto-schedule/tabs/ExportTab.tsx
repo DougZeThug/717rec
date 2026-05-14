@@ -40,7 +40,7 @@ const ExportTab: React.FC<ExportTabProps> = ({
               variant="default"
               className="border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20"
             >
-              <AlertCircle className="h-4 w-4 text-amber-600" />
+              <AlertCircle className="size-4 text-amber-600" />
               <AlertDescription className="text-amber-900 dark:text-amber-100">
                 You have unsaved edits to the schedule. Make sure to save before leaving!
               </AlertDescription>
@@ -96,12 +96,12 @@ const ExportTab: React.FC<ExportTabProps> = ({
             <Button onClick={onSaveSchedule} disabled={isSaving} className="w-full">
               {isSaving ? (
                 <>
-                  <Database className="mr-2 h-4 w-4 animate-pulse" />
+                  <Database className="mr-2 size-4 animate-pulse" />
                   Saving to Database...
                 </>
               ) : (
                 <>
-                  <Save className="mr-2 h-4 w-4" />
+                  <Save className="mr-2 size-4" />
                   Save Schedule to Database
                 </>
               )}

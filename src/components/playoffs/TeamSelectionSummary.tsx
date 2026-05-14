@@ -7,7 +7,7 @@ interface Props {
 }
 
 const TeamSelectionSummary: React.FC<Props> = ({ count, max, minTeams = 2 }) => (
-  <div className="text-xs text-gray-500">
+  <div className="text-xs text-muted-foreground">
     Selected: {count} teams
     {max && ` (max: ${max})`}
     <br />

@@ -82,7 +82,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-9 w-9 -mt-1 text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10"
+                  className="size-9 -mt-1 text-muted-foreground dark:text-muted-foreground hover:text-gray-900 dark:hover:text-white hover:bg-accent dark:hover:bg-white/10"
                 >
                   <MoreHorizontal size={18} />
                   <span className="sr-only">Open menu</span>
@@ -91,7 +91,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
               <DropdownMenuContent align="end" className="w-[200px]">
                 {isAdminAccessGranted && onEdit && (
                   <DropdownMenuItem onClick={() => onEdit(team)} className="cursor-pointer">
-                    <Edit className="mr-2 h-4 w-4" /> Edit
+                    <Edit className="mr-2 size-4" /> Edit
                   </DropdownMenuItem>
                 )}
                 {isAdminAccessGranted && onDelete && (
@@ -99,12 +99,12 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
                     onClick={() => onDelete(team.id)}
                     className="text-destructive focus:text-destructive cursor-pointer"
                   >
-                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                    <Trash2 className="mr-2 size-4" /> Delete
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem asChild>
                   <Link to={`/teams/${toTeamSlug(team.name)}`}>
-                    <ExternalLink className="mr-2 h-4 w-4" /> View Details
+                    <ExternalLink className="mr-2 size-4" /> View Details
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -184,7 +184,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
                 return <PlayerChip key={key} playerName={player} />;
               })
             ) : (
-              <span className="text-xs text-gray-500 dark:text-gray-400">No players</span>
+              <span className="text-xs text-muted-foreground dark:text-muted-foreground">No players</span>
             )}
           </div>
         </div>

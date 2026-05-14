@@ -57,7 +57,7 @@ export const TimeBlockTeamsList: React.FC<TimeBlockTeamsListProps> = ({
                 onDeselectAll?.();
               }
             }}
-            className="h-4 w-4"
+            className="size-4"
           />
           <span className="text-sm text-muted-foreground">
             {allSelected ? 'Deselect All' : someSelected ? 'Select All' : 'Select All'}
@@ -94,14 +94,14 @@ export const TimeBlockTeamsList: React.FC<TimeBlockTeamsListProps> = ({
                 <Checkbox
                   checked={isSelected}
                   onCheckedChange={() => onTeamToggle?.(team.id)}
-                  className="h-4 w-4"
+                  className="size-4"
                   onClick={(e) => e.stopPropagation()}
                 />
               )}
               <TeamLogo
                 imageUrl={team.imageUrl || team.logoUrl}
                 teamName={team.name}
-                className="h-6 w-6"
+                className="size-6"
               />
               <div className="flex-1 min-w-0">
                 <span className="text-sm truncate block">{team.name}</span>

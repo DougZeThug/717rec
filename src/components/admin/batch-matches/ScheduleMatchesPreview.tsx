@@ -71,9 +71,9 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
 
       {Object.entries(pairings).map(([block, blockPairings]) => (
         <Card key={block} className="overflow-hidden">
-          <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2 flex items-center justify-between">
+          <div className="bg-muted dark:bg-card px-4 py-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
+              <Clock className="size-4 text-muted-foreground" />
               <span className="font-medium">{block} Block</span>
               <span className="text-xs text-muted-foreground">
                 ({TIME_BLOCKS[block]?.main}, {TIME_BLOCKS[block]?.secondary})
@@ -98,13 +98,13 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
                           <TooltipTrigger asChild>
                             <div className="flex items-center gap-1">
                               {pairing.hasPlayedBefore ? (
-                                <AlertTriangle className="h-4 w-4 text-amber-500" />
+                                <AlertTriangle className="size-4 text-amber-500" />
                               ) : pairing.compatibilityScore < 5 ? (
-                                <Info className="h-4 w-4 text-amber-500" />
+                                <Info className="size-4 text-amber-500" />
                               ) : (
-                                <CheckCircle className="h-4 w-4 text-green-500" />
+                                <CheckCircle className="size-4 text-green-500" />
                               )}
-                              <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800">
+                              <span className="text-xs px-2 py-1 rounded-full bg-muted dark:bg-card">
                                 Score: {pairing.compatibilityScore.toFixed(1)}/10
                               </span>
                             </div>
@@ -128,7 +128,7 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
                         <TeamLogo
                           imageUrl={pairing.team1.logoUrl}
                           teamName={pairing.team1.name}
-                          className="h-6 w-6"
+                          className="size-6"
                         />
                         <span className="text-sm truncate font-medium">{pairing.team1.name}</span>
                       </div>
@@ -141,7 +141,7 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
                         <TeamLogo
                           imageUrl={pairing.team2.logoUrl}
                           teamName={pairing.team2.name}
-                          className="h-6 w-6"
+                          className="size-6"
                         />
                       </div>
                     </div>

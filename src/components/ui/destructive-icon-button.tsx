@@ -39,7 +39,7 @@ const DestructiveIconButton: React.FC<DestructiveIconButtonProps> = ({
         className
       )}
     >
-      {icon || <Trash2 className="h-4 w-4 text-destructive" />}
+      {icon || <Trash2 className="size-4 text-destructive" />}
     </Button>
   );
 };

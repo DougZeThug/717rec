@@ -69,9 +69,9 @@ export function MultiSelect({
           </div>
           <div className="flex items-center gap-2">
             {selected.length > 0 && (
-              <X className="h-4 w-4 shrink-0 opacity-50 hover:opacity-100" onClick={handleClear} />
+              <X className="size-4 shrink-0 opacity-50 hover:opacity-100" onClick={handleClear} />
             )}
-            <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
+            <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
           </div>
         </Button>
       </PopoverTrigger>
@@ -89,7 +89,7 @@ export function MultiSelect({
                 >
                   <Check
                     className={cn(
-                      'mr-2 h-4 w-4',
+                      'mr-2 size-4',
                       selected.includes(option.value) ? 'opacity-100' : 'opacity-0'
                     )}
                   />

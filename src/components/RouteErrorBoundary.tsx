@@ -55,7 +55,7 @@ export class RouteErrorBoundary extends Component<Props, State> {
           <div className="max-w-md w-full text-center space-y-6">
             <div className="flex justify-center">
               <div className="p-4 bg-destructive/10 rounded-full">
-                <AlertTriangle className="h-10 w-10 text-destructive" />
+                <AlertTriangle className="size-10 text-destructive" />
               </div>
             </div>
 
@@ -78,15 +78,15 @@ export class RouteErrorBoundary extends Component<Props, State> {
 
             <div className="flex flex-col sm:flex-row gap-2 justify-center">
               <Button onClick={this.handleRetry} variant="default" size="sm">
-                <RefreshCw className="mr-2 h-4 w-4" />
+                <RefreshCw className="mr-2 size-4" />
                 Try Again
               </Button>
               <Button onClick={this.handleGoBack} variant="outline" size="sm">
-                <ArrowLeft className="mr-2 h-4 w-4" />
+                <ArrowLeft className="mr-2 size-4" />
                 Go Back
               </Button>
               <Button onClick={this.handleGoHome} variant="ghost" size="sm">
-                <Home className="mr-2 h-4 w-4" />
+                <Home className="mr-2 size-4" />
                 Home
               </Button>
             </div>

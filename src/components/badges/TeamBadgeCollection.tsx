@@ -51,7 +51,7 @@ const TeamBadgeCollection: React.FC<TeamBadgeCollectionProps> = ({
           <Skeleton
             key={i}
             className={cn(
-              size === 'sm' ? 'w-5 h-5' : size === 'md' ? 'w-6 h-6' : 'w-8 h-8',
+              size === 'sm' ? 'size-5' : size === 'md' ? 'size-6' : 'size-8',
               'rounded-lg'
             )}
           />
@@ -71,7 +71,7 @@ const TeamBadgeCollection: React.FC<TeamBadgeCollectionProps> = ({
     }
     return (
       <div className="text-center py-6">
-        <Trophy className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+        <Trophy className="size-8 mx-auto text-muted-foreground/50 mb-2" />
         <p className="text-sm text-muted-foreground">No achievements yet</p>
         <p className="text-xs text-muted-foreground/70 mt-1">
           Keep competing to earn badges and trophies!
@@ -112,7 +112,7 @@ const TeamBadgeCollection: React.FC<TeamBadgeCollectionProps> = ({
         <div
           className={cn(
             'flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs font-medium',
-            size === 'sm' ? 'w-5 h-5' : size === 'md' ? 'w-6 h-6' : 'w-8 h-8'
+            size === 'sm' ? 'size-5' : size === 'md' ? 'size-6' : 'size-8'
           )}
         >
           +{hiddenCount}

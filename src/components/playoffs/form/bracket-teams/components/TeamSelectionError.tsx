@@ -22,7 +22,7 @@ export const TeamSelectionError: React.FC<TeamSelectionErrorProps> = ({
     <Card className="border-destructive/50">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-destructive">
-          <AlertCircle className="w-5 h-5" />
+          <AlertCircle className="size-5" />
           Error Loading Teams
         </CardTitle>
       </CardHeader>
@@ -33,7 +33,7 @@ export const TeamSelectionError: React.FC<TeamSelectionErrorProps> = ({
 
         {onRetry && (
           <Button onClick={onRetry} variant="outline" size="sm">
-            <RefreshCw className="w-4 h-4 mr-2" />
+            <RefreshCw className="size-4 mr-2" />
             Retry
           </Button>
         )}

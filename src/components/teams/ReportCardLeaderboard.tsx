@@ -74,7 +74,7 @@ const ReportCardLeaderboard: React.FC<ReportCardLeaderboardProps> = ({ teamId, i
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-          <ListOrdered className="h-3.5 w-3.5" />
+          <ListOrdered className="size-3.5" />
           View All GPAs
         </Button>
       </DialogTrigger>

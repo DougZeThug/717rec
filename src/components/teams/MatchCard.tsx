@@ -17,19 +17,19 @@ const SquareLogo: React.FC<{ src: string; alt: string; fallback: string }> = ({
   alt,
   fallback,
 }) => (
-  <div className="w-10 h-10 flex items-center justify-center bg-white dark:bg-gray-800">
+  <div className="size-10 flex items-center justify-center bg-background dark:bg-card">
     {src ? (
       <img
         src={src}
         alt={alt}
-        className="w-10 h-10 object-contain rounded-none"
+        className="size-10 object-contain rounded-none"
         draggable={false}
         onError={(e) => {
           (e.target as HTMLImageElement).style.display = 'none';
         }}
       />
     ) : (
-      <div className="w-10 h-10 flex items-center justify-center bg-gray-200 text-gray-400 text-xs rounded-none">
+      <div className="size-10 flex items-center justify-center bg-gray-200 text-muted-foreground text-xs rounded-none">
         {fallback}
       </div>
     )}

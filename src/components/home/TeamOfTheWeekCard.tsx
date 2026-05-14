@@ -120,7 +120,7 @@ const TeamOfTheWeekCard: React.FC<TeamOfTheWeekCardProps> = ({ trend, weekNumber
             {/* Power Score Delta */}
             <div className="flex flex-col items-end gap-1">
               <div className="flex items-center gap-1.5">
-                <TrendingUp className="h-4 w-4 text-emerald-500" />
+                <TrendingUp className="size-4 text-emerald-500" />
                 <span className="text-lg md:text-xl font-bold tabular-nums text-emerald-500">
                   +{trend.delta.toFixed(1)}
                 </span>
@@ -142,7 +142,7 @@ const TeamOfTheWeekCard: React.FC<TeamOfTheWeekCardProps> = ({ trend, weekNumber
             {/* Arrow */}
             <ChevronRight
               className={cn(
-                'h-5 w-5 group-hover:translate-x-1 transition-all duration-200 hidden md:block',
+                'size-5 group-hover:translate-x-1 transition-all duration-200 hidden md:block',
                 shouldApplyWinter
                   ? 'text-cyan-400/50 group-hover:text-cyan-400'
                   : 'text-muted-foreground/50 group-hover:text-amber-500'

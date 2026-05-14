@@ -80,13 +80,13 @@ const TeamEditSection: React.FC = () => {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Edit className="h-5 w-5" />
+          <Edit className="size-5" />
           Team Management
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <Alert>
-          <AlertCircle className="h-4 w-4" />
+          <AlertCircle className="size-4" />
           <AlertDescription>
             You have editing privileges for this team. Changes will be applied immediately.
           </AlertDescription>
@@ -108,7 +108,7 @@ const TeamEditSection: React.FC = () => {
             </div>
 
             <Button onClick={handleEditClick} className="w-full">
-              <Edit className="w-4 h-4 mr-2" />
+              <Edit className="size-4 mr-2" />
               Edit Team Details
             </Button>
           </div>

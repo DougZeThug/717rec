@@ -17,7 +17,7 @@ const SeasonAccordionSkeleton: React.FC = () => {
           <div className="rounded-lg border bg-card p-4 space-y-3">
             {[`${sk}-row-1`, `${sk}-row-2`, `${sk}-row-3`, `${sk}-row-4`].map((rk) => (
               <div key={rk} className="flex items-center gap-3">
-                <ShimmerSkeleton circle className="w-8 h-8" />
+                <ShimmerSkeleton circle className="size-8" />
                 <ShimmerSkeleton className="h-4 w-32 flex-1" />
                 <ShimmerSkeleton className="h-4 w-16" />
               </div>

@@ -45,7 +45,7 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
       className={cn('p-4 rounded-xl border shadow-sm', gradientClass, className)}
     >
       <div className="flex items-center gap-3">
-        <div className={cn('flex items-center justify-center rounded-full w-10 h-10', iconBgColor)}>
+        <div className={cn('flex items-center justify-center rounded-full size-10', iconBgColor)}>
           <Icon size={22} className={iconColor} />
         </div>
         <div className="flex-1 min-w-0">

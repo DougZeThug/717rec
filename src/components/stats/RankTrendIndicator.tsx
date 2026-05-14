@@ -27,15 +27,15 @@ const RankTrendIndicator: React.FC<RankTrendIndicatorProps> = ({ rankChange }) =
   if (rankChange === undefined || rankChange === null) {
     return (
       <div className="flex items-center">
-        <Minus size={ICON_SIZES.sm} strokeWidth={ICON_STROKE.normal} className="text-gray-400" />
-        <span className="text-gray-400 ml-0.5 text-xs">-</span>
+        <Minus size={ICON_SIZES.sm} strokeWidth={ICON_STROKE.normal} className="text-muted-foreground" />
+        <span className="text-muted-foreground ml-0.5 text-xs">-</span>
       </div>
     );
   } else if (rankChange === 0) {
     return (
       <div className="flex items-center">
-        <Minus size={ICON_SIZES.sm} strokeWidth={ICON_STROKE.normal} className="text-gray-500" />
-        <span className="text-gray-500 ml-0.5 text-xs font-medium">0</span>
+        <Minus size={ICON_SIZES.sm} strokeWidth={ICON_STROKE.normal} className="text-muted-foreground" />
+        <span className="text-muted-foreground ml-0.5 text-xs font-medium">0</span>
       </div>
     );
   } else if (rankChange > 0) {

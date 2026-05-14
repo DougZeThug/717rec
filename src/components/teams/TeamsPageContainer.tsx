@@ -63,7 +63,7 @@ const TeamsPageContainer: React.FC = () => {
               <span className="text-foreground font-medium">
                 {sortMode === 'rank' ? 'Rank' : 'A-Z'}
               </span>
-              <ChevronDown className="h-3 w-3" />
+              <ChevronDown className="size-3" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
               <DropdownMenuItem onClick={() => setSortMode('rank')}>Rank</DropdownMenuItem>
@@ -77,7 +77,7 @@ const TeamsPageContainer: React.FC = () => {
               <span className="text-foreground font-medium">
                 {displayMode === 'grouped' ? 'By Division' : 'All'}
               </span>
-              <ChevronDown className="h-3 w-3" />
+              <ChevronDown className="size-3" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
               <DropdownMenuItem onClick={() => setDisplayMode('grouped')}>
@@ -93,7 +93,7 @@ const TeamsPageContainer: React.FC = () => {
               <span className="text-foreground font-medium">
                 {viewMode === 'grid' ? 'Grid' : 'List'}
               </span>
-              <ChevronDown className="h-3 w-3" />
+              <ChevronDown className="size-3" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
               <DropdownMenuItem onClick={() => setViewMode('grid')}>Grid</DropdownMenuItem>

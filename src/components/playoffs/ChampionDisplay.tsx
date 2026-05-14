@@ -66,12 +66,12 @@ const ChampionDisplay: React.FC<ChampionDisplayProps> = ({ championId, teams }) 
               : 'bg-gray-800/50 border border-amber-900/30'
           )}
         >
-          <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200">
+          <div className="size-12 rounded-full overflow-hidden bg-gray-200">
             {(champion.imageUrl || champion.logoUrl) && (
               <img
                 src={champion.imageUrl || champion.logoUrl}
                 alt={champion.name}
-                className="w-full h-full object-contain"
+                className="size-full object-contain"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = FALLBACK_TEAM_IMAGE;
                 }}
@@ -80,7 +80,7 @@ const ChampionDisplay: React.FC<ChampionDisplayProps> = ({ championId, teams }) 
           </div>
           <div className="text-left">
             <h4 className="font-bold text-lg">{champion.name}</h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground dark:text-muted-foreground">
               {champion.divisionName || 'Division Winner'}
             </p>
           </div>

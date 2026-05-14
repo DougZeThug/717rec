@@ -74,13 +74,13 @@ const MatchCommentItem: React.FC<MatchCommentItemProps> = ({ comment, onDelete }
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 rounded-full"
+                  className="size-8 p-0 rounded-full"
                   disabled={isDeleting}
                 >
                   {isDeleting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="size-4 animate-spin" />
                   ) : (
-                    <MoreHorizontal className="h-4 w-4" />
+                    <MoreHorizontal className="size-4" />
                   )}
                   <span className="sr-only">{isDeleting ? 'Deleting...' : 'Open menu'}</span>
                 </Button>
@@ -91,7 +91,7 @@ const MatchCommentItem: React.FC<MatchCommentItemProps> = ({ comment, onDelete }
                   disabled={isDeleting}
                   className="text-destructive focus:text-destructive cursor-pointer"
                 >
-                  <Trash className="h-4 w-4 mr-2" />
+                  <Trash className="size-4 mr-2" />
                   Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -120,7 +120,7 @@ const MatchCommentItem: React.FC<MatchCommentItemProps> = ({ comment, onDelete }
             >
               {isDeleting ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="size-4 mr-2 animate-spin" />
                   Deleting...
                 </>
               ) : (

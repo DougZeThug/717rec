@@ -91,7 +91,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
             <div className="flex items-center space-x-2">
               <div
                 className={cn(
-                  'w-7 h-7 flex items-center justify-center rounded-full font-mono',
+                  'size-7 flex items-center justify-center rounded-full font-mono',
                   'shadow-inner',
                   getRankStyles(index)
                 )}
@@ -101,11 +101,11 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
               <div className="flex flex-col">
                 <div className="flex items-center space-x-2">
                   {team.imageUrl && (
-                    <div className="w-8 h-8 flex items-center justify-center bg-muted rounded-md overflow-hidden border border-border">
+                    <div className="size-8 flex items-center justify-center bg-muted rounded-md overflow-hidden border border-border">
                       <img
                         src={team.imageUrl}
                         alt={team.teamName}
-                        className="w-8 h-8 rounded-none object-contain"
+                        className="size-8 rounded-none object-contain"
                       />
                     </div>
                   )}
@@ -200,18 +200,18 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
               onKeyDown={(e) => handleRowKeyDown(e, team.teamName)}
             >
               <TableCell className={cn(getRankStyles(index), 'font-mono text-lg')}>
-                <div className="w-8 h-8 flex items-center justify-center rounded-full">
+                <div className="size-8 flex items-center justify-center rounded-full">
                   {index + 1}
                 </div>
               </TableCell>
               <TableCell>
                 <div className="flex items-center space-x-3 min-w-0">
                   {team.imageUrl && (
-                    <div className="w-8 h-8 rounded-md overflow-hidden bg-muted flex items-center justify-center flex-shrink-0 border border-border">
+                    <div className="size-8 rounded-md overflow-hidden bg-muted flex items-center justify-center flex-shrink-0 border border-border">
                       <img
                         src={team.imageUrl}
                         alt={team.teamName}
-                        className="w-full h-full object-contain"
+                        className="size-full object-contain"
                       />
                     </div>
                   )}

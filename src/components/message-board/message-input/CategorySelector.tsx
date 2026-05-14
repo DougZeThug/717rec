@@ -25,7 +25,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
 
   return (
     <div className="flex items-center gap-1">
-      <Tag className="h-4 w-4 text-muted-foreground" />
+      <Tag className="size-4 text-muted-foreground" />
       <Select value={value} onValueChange={(value) => onChange(value as MessageCategory)}>
         <SelectTrigger className="h-8 w-[140px] text-xs">
           <SelectValue placeholder="Select category" />

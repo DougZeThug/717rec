@@ -21,9 +21,9 @@ const LeagueHistoryBar: React.FC = () => {
       <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
 
       <div className="relative flex items-center justify-center gap-3 px-6 py-4 text-white">
-        <History className="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
+        <History className="size-5 transition-transform duration-200 group-hover:scale-110" />
         <span className="font-semibold text-lg">League History</span>
-        <ChevronRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" />
+        <ChevronRight className="size-5 transition-transform duration-200 group-hover:translate-x-1" />
       </div>
     </Link>
   );

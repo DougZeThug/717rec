@@ -80,7 +80,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
               : 'text-muted-foreground/50 cursor-not-allowed'
           )}
         >
-          <ChevronLeft className="w-5 h-5" />
+          <ChevronLeft className="size-5" />
           <span className="hidden sm:inline">Previous</span>
         </button>
 
@@ -90,13 +90,13 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
               key={group.date.toISOString()}
               onClick={() => onIndexChange(idx)}
               className={cn(
-                'w-2 h-2 rounded-full transition-all min-w-[20px] min-h-[20px] flex items-center justify-center',
+                'size-2 rounded-full transition-all min-w-[20px] min-h-[20px] flex items-center justify-center',
                 idx === safeIndex
                   ? 'bg-primary scale-125'
                   : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
               )}
             >
-              <span className="w-2 h-2 rounded-full" />
+              <span className="size-2 rounded-full" />
             </button>
           ))}
         </div>
@@ -113,7 +113,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
           )}
         >
           <span className="hidden sm:inline">Next</span>
-          <ChevronRight className="w-5 h-5" />
+          <ChevronRight className="size-5" />
         </button>
       </div>
 

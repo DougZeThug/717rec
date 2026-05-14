@@ -64,7 +64,7 @@ export const TeamLoadingStep: React.FC<TeamLoadingStepProps> = ({
   return (
     <div className="flex flex-col space-y-4">
       <div className="flex items-center mb-2">
-        <div className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs mr-2">
+        <div className="bg-primary text-primary-foreground rounded-full size-6 flex items-center justify-center text-xs mr-2">
           1
         </div>
         <h4 className="font-medium">Load Available Teams</h4>
@@ -88,7 +88,7 @@ export const TeamLoadingStep: React.FC<TeamLoadingStepProps> = ({
       {hasTeamsLoaded && (
         <div className="pl-8 mb-4">
           {totalTeams > 0 && (
-            <div className="mb-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-md border">
+            <div className="mb-3 p-3 bg-muted dark:bg-background rounded-md border">
               <h5 className="font-medium mb-1 text-sm">Team Distribution</h5>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
@@ -132,7 +132,7 @@ export const TeamLoadingStep: React.FC<TeamLoadingStepProps> = ({
               disabled={isLoading || totalTeams === 0 || !canGenerate}
               className="flex items-center"
             >
-              Generate Match Pairings <ChevronRight className="ml-1 h-4 w-4" />
+              Generate Match Pairings <ChevronRight className="ml-1 size-4" />
             </Button>
           </div>
         </div>

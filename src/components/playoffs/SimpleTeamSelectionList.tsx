@@ -31,7 +31,7 @@ const SimpleTeamSelectionList: React.FC<Props> = ({ teams, selected, onToggle, m
         })}
       </div>
     ) : (
-      <p className="text-center py-4 text-gray-500">No teams available</p>
+      <p className="text-center py-4 text-muted-foreground">No teams available</p>
     )}
   </div>
 );

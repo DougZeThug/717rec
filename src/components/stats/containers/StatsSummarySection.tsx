@@ -80,7 +80,7 @@ const StatsSummarySection = ({ rankings, scrollToFullRankings }: StatsSummarySec
                   </CardDescription>
                 )}
               </div>
-              <ChevronDown className={cn('h-5 w-5 transition-transform', isOpen && 'rotate-180')} />
+              <ChevronDown className={cn('size-5 transition-transform', isOpen && 'rotate-180')} />
             </div>
           </CardHeader>
         </CollapsibleTrigger>
@@ -109,7 +109,7 @@ const StatsSummarySection = ({ rankings, scrollToFullRankings }: StatsSummarySec
                 className="flex items-center gap-2 rounded-lg px-4 py-2 font-inter font-medium shadow-sm"
               >
                 View Full Standings
-                <ArrowDown className="h-4 w-4" />
+                <ArrowDown className="size-4" />
               </Button>
             </div>
           </CardContent>

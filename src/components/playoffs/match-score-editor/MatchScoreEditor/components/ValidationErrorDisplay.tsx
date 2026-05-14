@@ -19,7 +19,7 @@ const ValidationErrorDisplay: React.FC<ValidationErrorDisplayProps> = ({ error }
       )}
       style={{ animationDelay: '0.3s' }}
     >
-      <AlertCircle className="h-4 w-4 mt-0.5 mr-2 flex-shrink-0" />
+      <AlertCircle className="size-4 mt-0.5 mr-2 flex-shrink-0" />
       <span>{error}</span>
     </div>
   );

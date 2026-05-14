@@ -111,7 +111,7 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
                   : 'Teams can only be swapped on unplayed matches'
               }
             >
-              <ArrowLeftRight className="mr-1 h-4 w-4" />
+              <ArrowLeftRight className="mr-1 size-4" />
               Edit teams
             </Button>
           )}
@@ -122,7 +122,7 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
             Cancel
           </Button>
           <Button onClick={onSave} disabled={isSaving}>
-            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSaving && <Loader2 className="mr-2 size-4 animate-spin" />}
             Save Changes
           </Button>
         </div>

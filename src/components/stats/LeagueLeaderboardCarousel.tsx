@@ -66,7 +66,7 @@ const LeagueLeaderboardCarousel: React.FC<LeagueLeaderboardCarouselProps> = ({ r
                   {/* Rank badge */}
                   <div
                     className={cn(
-                      'absolute -top-2 -left-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold',
+                      'absolute -top-2 -left-1 size-5 rounded-full flex items-center justify-center text-[10px] font-bold',
                       BADGE_STYLES[idx]
                     )}
                   >

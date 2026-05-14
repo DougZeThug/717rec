@@ -13,7 +13,7 @@ export const PowerScoreInfo = () => {
       <Popover>
         <PopoverTrigger asChild>
           <Info
-            className="h-4 w-4 text-muted-foreground cursor-pointer"
+            className="size-4 text-muted-foreground cursor-pointer"
             role="button"
             aria-label="Power Score information"
           />
@@ -32,7 +32,7 @@ export const PowerScoreInfo = () => {
       <Tooltip>
         <TooltipTrigger asChild>
           <Info
-            className="h-4 w-4 text-muted-foreground cursor-help"
+            className="size-4 text-muted-foreground cursor-help"
             role="button"
             aria-label="Power Score information"
           />

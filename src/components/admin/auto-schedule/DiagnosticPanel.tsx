@@ -125,15 +125,15 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
         <CardHeader className="pb-3">
           <CollapsibleTrigger className="flex items-center justify-between w-full hover:opacity-80 transition-opacity">
             <div className="flex items-center gap-2">
-              <Database className="h-4 w-4 text-muted-foreground" />
+              <Database className="size-4 text-muted-foreground" />
               <CardTitle className="text-sm font-mono">🔍 Diagnostic Panel</CardTitle>
               {analysis.isValid ? (
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <CheckCircle2 className="size-4 text-green-500" />
               ) : (
-                <AlertCircle className="h-4 w-4 text-destructive" />
+                <AlertCircle className="size-4 text-destructive" />
               )}
             </div>
-            <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`size-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
           </CollapsibleTrigger>
           <CardDescription className="text-xs">
             Team-to-block assignments and validation status
@@ -158,7 +158,7 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
             {/* Invalid Assignments (3+ blocks) */}
             {analysis.hasInvalidAssignments && (
               <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
+                <AlertCircle className="size-4" />
                 <AlertDescription className="text-xs font-mono">
                   <strong>Critical Error:</strong> {analysis.invalidTeams.length} team(s) assigned
                   to 3+ blocks (max is 2 for double headers)
@@ -174,7 +174,7 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
             {/* Double Header Info */}
             {analysis.hasDoubleHeaders && (
               <Alert>
-                <CheckCircle2 className="h-4 w-4 text-amber-500" />
+                <CheckCircle2 className="size-4 text-amber-500" />
                 <AlertDescription className="text-xs font-mono">
                   <strong>Double Headers:</strong> {analysis.doubleHeaderTeams.length} team(s)
                   scheduled for 2 back-to-back pairs (4 matches total)
@@ -209,7 +209,7 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
             {analysis.teamAssignments.length > 0 && (
               <Collapsible>
                 <CollapsibleTrigger className="flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:opacity-80">
-                  <ChevronDown className="h-3 w-3" />
+                  <ChevronDown className="size-3" />
                   Team Assignments ({analysis.teamAssignments.length})
                 </CollapsibleTrigger>
                 <CollapsibleContent>

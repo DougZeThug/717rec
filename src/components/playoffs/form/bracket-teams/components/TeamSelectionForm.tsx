@@ -103,10 +103,10 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
             <img
               src={team.logoUrl}
               alt={`${team.name} logo`}
-              className="w-6 h-6 object-contain flex-shrink-0"
+              className="size-6 object-contain flex-shrink-0"
             />
           ) : (
-            <Users className="w-4 h-4 flex-shrink-0" />
+            <Users className="size-4 flex-shrink-0" />
           )}
           <span className="font-medium truncate flex-1 min-w-0">{team.name || 'Unnamed Team'}</span>
         </div>
@@ -124,7 +124,7 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
 
         {team.powerScore && (
           <div className="flex items-center gap-1 text-xs opacity-75 flex-shrink-0">
-            <Zap className="w-3 h-3" />
+            <Zap className="size-3" />
             <span>{Math.round(team.powerScore)}</span>
           </div>
         )}
@@ -155,11 +155,11 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
         <div className="flex items-center justify-between">
           <TabsList className="grid w-full grid-cols-2 max-w-md">
             <TabsTrigger value="select" className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
+              <Users className="size-4" />
               Select Teams
             </TabsTrigger>
             <TabsTrigger value="seeds" className="flex items-center gap-2">
-              <Settings className="w-4 h-4" />
+              <Settings className="size-4" />
               Manage Seeds
               {formStateManager.hasUnsavedChanges && (
                 <Badge variant="outline" className="ml-1 text-xs">
@@ -178,7 +178,7 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
                 onClick={formStateManager.cancelAllChanges}
                 className="flex items-center gap-2"
               >
-                <X className="w-4 h-4" />
+                <X className="size-4" />
                 Cancel
               </Button>
               <Button
@@ -188,7 +188,7 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
                 disabled={!formStateManager.canSave}
                 className="flex items-center gap-2"
               >
-                <Save className="w-4 h-4" />
+                <Save className="size-4" />
                 Save Changes
               </Button>
             </div>
@@ -211,7 +211,7 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
 
               <div className="flex items-center justify-between text-sm">
                 <div className={`flex items-center gap-2 ${statusDisplay.color}`}>
-                  {StatusIcon && <StatusIcon className="w-4 h-4" />}
+                  {StatusIcon && <StatusIcon className="size-4" />}
                   <span>{safeFormState.statusMessage}</span>
                 </div>
 

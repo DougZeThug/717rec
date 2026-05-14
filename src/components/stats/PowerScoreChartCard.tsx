@@ -50,7 +50,7 @@ const PowerScoreChartCard: React.FC<PowerScoreChartCardProps> = ({ data }) => {
             Top {isMobile ? '5' : '8'} Power Scores
           </CardTitle>
           {!isMobile && (
-            <CardDescription className="text-sm text-gray-600 dark:text-gray-300 font-inter">
+            <CardDescription className="text-sm text-muted-foreground dark:text-muted-foreground font-inter">
               Elite team performance ranking
             </CardDescription>
           )}

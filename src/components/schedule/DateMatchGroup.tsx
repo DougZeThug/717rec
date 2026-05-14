@@ -63,7 +63,7 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
         <span>{formattedDate}</span>
         <ChevronDown
           className={cn(
-            'h-4 w-4 transition-transform duration-200',
+            'size-4 transition-transform duration-200',
             isOpen ? 'transform rotate-180' : ''
           )}
         />
@@ -85,7 +85,7 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
             <div className="col-span-full py-8 text-center">
               <CalendarX
                 className={cn(
-                  'mx-auto h-12 w-12 mb-2',
+                  'mx-auto size-12 mb-2',
                   isLight ? 'text-gray-400' : 'text-gray-500'
                 )}
               />

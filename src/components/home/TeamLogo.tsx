@@ -10,7 +10,7 @@ interface TeamLogoProps {
 
 export const TeamLogo: React.FC<TeamLogoProps> = ({ imageUrl, teamName }) => {
   return (
-    <div className="h-full w-full flex items-center justify-center">
+    <div className="size-full flex items-center justify-center">
       {imageUrl ? (
         <img
           src={imageUrl}
@@ -26,7 +26,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({ imageUrl, teamName }) => {
           }}
         />
       ) : (
-        <div className="text-gray-400 text-center">
+        <div className="text-muted-foreground text-center">
           <span>No Logo Available</span>
         </div>
       )}

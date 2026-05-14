@@ -14,7 +14,7 @@ const PlayerList = ({ players }: PlayerListProps) => {
     <CollapsibleSection title="Roster" icon={Users} iconColor="text-blue-500" defaultOpen={true}>
       {!players?.length ? (
         <div className="text-center py-6">
-          <Users className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+          <Users className="size-8 mx-auto text-muted-foreground/50 mb-2" />
           <p className="text-sm text-muted-foreground">No players registered</p>
           <p className="text-xs text-muted-foreground/70 mt-1">
             Player information will appear once added

@@ -24,11 +24,11 @@ export const PlayerChip: React.FC<PlayerChipProps> = ({
 
   return (
     <div
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 
-        text-gray-800 dark:text-gray-200 text-xs hover:bg-gray-200 dark:hover:bg-gray-700 
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted dark:bg-card 
+        text-foreground dark:text-foreground text-xs hover:bg-gray-200 dark:hover:bg-gray-700 
         transition-all hover:scale-105 cursor-default ${className}`}
     >
-      <Avatar className="h-4 w-4">
+      <Avatar className="size-4">
         {avatarUrl && <img src={avatarUrl} alt={playerName} loading="lazy" decoding="async" />}
         <AvatarFallback className="text-[8px] bg-gray-300 dark:bg-gray-700">
           {getInitials(playerName)}

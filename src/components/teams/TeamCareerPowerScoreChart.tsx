@@ -187,21 +187,21 @@ const TeamCareerPowerScoreChart = ({
       <div className="flex flex-wrap gap-4 mt-4 text-xs text-muted-foreground">
         <div className="flex items-center gap-1">
           <div
-            className="w-3 h-3 rounded-full"
+            className="size-3 rounded-full"
             style={{ backgroundColor: getDivisionHexColor('Competitive', isDark) }}
           />
           <span>Competitive</span>
         </div>
         <div className="flex items-center gap-1">
           <div
-            className="w-3 h-3 rounded-full"
+            className="size-3 rounded-full"
             style={{ backgroundColor: getDivisionHexColor('Intermediate', isDark) }}
           />
           <span>Intermediate</span>
         </div>
         <div className="flex items-center gap-1">
           <div
-            className="w-3 h-3 rounded-full"
+            className="size-3 rounded-full"
             style={{ backgroundColor: getDivisionHexColor('Recreational', isDark) }}
           />
           <span>Recreational</span>

@@ -41,7 +41,7 @@ const TeamMembershipSection: React.FC = () => {
   if (isFetching) {
     return (
       <div className="flex justify-center py-4">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <Loader2 className="size-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -77,12 +77,12 @@ const TeamMembershipSection: React.FC = () => {
                     <p className="font-medium">{membership.team?.name}</p>
                     {membership.is_approved ? (
                       <Badge variant="default" className="bg-green-600">
-                        <CheckCircle className="w-3 h-3 mr-1" />
+                        <CheckCircle className="size-3 mr-1" />
                         Approved
                       </Badge>
                     ) : (
                       <Badge variant="secondary" className="bg-yellow-600">
-                        <Clock className="w-3 h-3 mr-1" />
+                        <Clock className="size-3 mr-1" />
                         Pending Approval
                       </Badge>
                     )}
@@ -94,7 +94,7 @@ const TeamMembershipSection: React.FC = () => {
                   </p>
                   {membership.is_approved && (
                     <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                      <Edit className="w-3 h-3 inline mr-1" />
+                      <Edit className="size-3 inline mr-1" />
                       You can edit team details
                     </p>
                   )}
@@ -104,7 +104,7 @@ const TeamMembershipSection: React.FC = () => {
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="outline" size="sm" className="text-destructive">
-                    <LogOut className="w-4 h-4 mr-2" />
+                    <LogOut className="size-4 mr-2" />
                     Leave Team
                   </Button>
                 </AlertDialogTrigger>
@@ -169,7 +169,7 @@ const TeamMembershipSection: React.FC = () => {
           >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting Request...
+                <Loader2 className="mr-2 size-4 animate-spin" /> Submitting Request...
               </>
             ) : (
               'Request to Join Team'

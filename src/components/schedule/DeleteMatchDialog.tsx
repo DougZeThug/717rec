@@ -41,7 +41,7 @@ const DeleteMatchDialog: React.FC<DeleteMatchDialogProps> = ({
             className="bg-destructive hover:bg-destructive/90"
             disabled={isDeleting}
           >
-            {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isDeleting && <Loader2 className="mr-2 size-4 animate-spin" />}
             {isDeleting ? 'Deleting...' : 'Delete'}
           </AlertDialogAction>
         </AlertDialogFooter>

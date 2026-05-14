@@ -104,7 +104,7 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
                     onClick={handleResetToOriginal}
                     className="flex items-center gap-2"
                   >
-                    <RotateCcw className="h-4 w-4" />
+                    <RotateCcw className="size-4" />
                     Reset to Auto-Loaded
                   </Button>
                 )}
@@ -117,12 +117,12 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
                 >
                   {isEditMode ? (
                     <>
-                      <Eye className="h-4 w-4" />
+                      <Eye className="size-4" />
                       View Mode
                     </>
                   ) : (
                     <>
-                      <Edit3 className="h-4 w-4" />
+                      <Edit3 className="size-4" />
                       Edit Teams
                     </>
                   )}

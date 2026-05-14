@@ -65,7 +65,7 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
     >
       {/* Header */}
       <div className="px-4 py-3 flex items-center gap-2.5 border-b border-border/50">
-        <Trophy className={cn('h-5 w-5 shrink-0', getDivisionTextColor(division))} />
+        <Trophy className={cn('size-5 shrink-0', getDivisionTextColor(division))} />
         <h3 className={cn('font-semibold text-base', getDivisionTextColor(division))}>
           {division} Division
         </h3>
@@ -128,8 +128,8 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-5 text-center">
-            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center mb-2.5">
-              <Trophy className={cn('h-5 w-5', getDivisionTextColor(division))} />
+            <div className="size-10 rounded-full bg-muted flex items-center justify-center mb-2.5">
+              <Trophy className={cn('size-5', getDivisionTextColor(division))} />
             </div>
             <p className="text-sm text-muted-foreground mb-3">No brackets yet for this division</p>
             {onCreateBracket && (
@@ -142,7 +142,7 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
                   onCreateBracket();
                 }}
               >
-                <Plus className="h-3.5 w-3.5" /> Create Bracket
+                <Plus className="size-3.5" /> Create Bracket
               </Button>
             )}
           </div>

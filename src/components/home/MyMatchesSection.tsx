@@ -68,7 +68,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
           <div className="flex items-center gap-1">
             <Calendar
               className={cn(
-                'h-3 w-3',
+                'size-3',
                 shouldApplyWinter ? 'text-cyan-400/70' : 'text-muted-foreground'
               )}
             />
@@ -94,7 +94,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
               <div className="flex items-center gap-1">
                 <Clock
                   className={cn(
-                    'h-3 w-3',
+                    'size-3',
                     shouldApplyWinter ? 'text-cyan-400/70' : 'text-muted-foreground'
                   )}
                 />
@@ -246,7 +246,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
               <div className="flex items-center gap-1">
                 <Calendar
                   className={cn(
-                    'h-3 w-3',
+                    'size-3',
                     shouldApplyWinter ? 'text-cyan-400/70' : 'text-muted-foreground'
                   )}
                 />
@@ -263,7 +263,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
                 <div className="flex items-center gap-1">
                   <Clock
                     className={cn(
-                      'h-3 w-3',
+                      'size-3',
                       shouldApplyWinter ? 'text-cyan-400/70' : 'text-muted-foreground'
                     )}
                   />
@@ -280,7 +280,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
             </div>
             <ChevronRight
               className={cn(
-                'h-5 w-5 group-hover:translate-x-1 transition-all duration-200',
+                'size-5 group-hover:translate-x-1 transition-all duration-200',
                 shouldApplyWinter
                   ? 'text-cyan-400/50 group-hover:text-cyan-400'
                   : 'text-muted-foreground/50 group-hover:text-primary'
@@ -291,7 +291,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
           {/* Arrow only on mobile */}
           <ChevronRight
             className={cn(
-              'h-5 w-5 group-hover:translate-x-1 transition-all duration-200 md:hidden flex-shrink-0',
+              'size-5 group-hover:translate-x-1 transition-all duration-200 md:hidden flex-shrink-0',
               shouldApplyWinter
                 ? 'text-cyan-400/50 group-hover:text-cyan-400'
                 : 'text-muted-foreground/50 group-hover:text-primary'
@@ -386,7 +386,7 @@ const MyMatchesSection: React.FC<MyMatchesSectionProps> = ({
             )}
           >
             See full schedule
-            <ChevronRight className="h-3 w-3" />
+            <ChevronRight className="size-3" />
           </Link>
         </div>
       </CardContent>

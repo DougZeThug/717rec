@@ -79,11 +79,11 @@ export const AddDivisionButton: React.FC<AddDivisionButtonProps> = ({
             />
             {error && <p className="text-destructive text-xs mt-1">{error}</p>}
           </div>
-          <Button variant="default" size="icon" className="h-9 w-9" onClick={handleSave}>
-            <Check className="h-4 w-4" />
+          <Button variant="default" size="icon" className="size-9" onClick={handleSave}>
+            <Check className="size-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={handleCancel}>
-            <X className="h-4 w-4" />
+          <Button variant="ghost" size="icon" className="size-9" onClick={handleCancel}>
+            <X className="size-4" />
           </Button>
         </div>
       </div>
@@ -100,7 +100,7 @@ export const AddDivisionButton: React.FC<AddDivisionButtonProps> = ({
       )}
       onClick={handleStartAdd}
     >
-      <Plus className="h-5 w-5 mr-2" />
+      <Plus className="size-5 mr-2" />
       Add Division
     </Button>
   );

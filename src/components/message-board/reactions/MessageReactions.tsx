@@ -42,7 +42,7 @@ const MessageReactions: React.FC<MessageReactionsProps> = ({
   if (isLoading) {
     return (
       <div className="flex items-center gap-1 mt-2 h-6">
-        <div className="w-6 h-6 bg-muted/20 rounded-full animate-pulse"></div>
+        <div className="size-6 bg-muted/20 rounded-full animate-pulse"></div>
       </div>
     );
   }

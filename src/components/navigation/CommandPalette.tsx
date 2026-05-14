@@ -80,11 +80,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         variant="outline"
         onClick={() => setOpen(true)}
         className={cn(
-          'relative h-9 w-9 p-0 xl:h-10 xl:w-60 xl:justify-start xl:px-3 xl:py-2',
+          'relative size-9 p-0 xl:h-10 xl:w-60 xl:justify-start xl:px-3 xl:py-2',
           'text-muted-foreground'
         )}
       >
-        <Search className="h-4 w-4 xl:mr-2" />
+        <Search className="size-4 xl:mr-2" />
         <span className="hidden xl:inline-flex">Search...</span>
         <kbd className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 xl:flex">
           <span className="text-xs">⌘</span>K
@@ -105,7 +105,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 onSelect={() => handleSelect(action.path)}
                 className="cursor-pointer"
               >
-                <action.icon className="mr-2 h-4 w-4" />
+                <action.icon className="mr-2 size-4" />
                 <span>{action.name}</span>
               </CommandItem>
             ))}
@@ -123,7 +123,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                   onSelect={() => handleSelect(`/teams/${toTeamSlug(team.name)}`)}
                   className="cursor-pointer"
                 >
-                  <User className="mr-2 h-4 w-4" />
+                  <User className="mr-2 size-4" />
                   <span>{team.name}</span>
                   {team.divisionName && (
                     <span className="ml-auto text-xs text-muted-foreground">
@@ -138,7 +138,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                   onSelect={() => handleSelect('/teams')}
                   className="cursor-pointer text-muted-foreground"
                 >
-                  <Users className="mr-2 h-4 w-4" />
+                  <Users className="mr-2 size-4" />
                   <span>View all {teams.length} teams...</span>
                 </CommandItem>
               )}

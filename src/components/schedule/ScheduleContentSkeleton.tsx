@@ -18,7 +18,7 @@ const ScheduleContentSkeleton: React.FC<ScheduleContentSkeletonProps> = ({ activ
           className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 px-2 md:px-6"
         >
           <div className="flex items-center justify-center">
-            <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
+            <Calendar className="size-4 mr-2 flex-shrink-0" />
             <span className="text-sm md:text-base md:whitespace-nowrap">Upcoming Matches</span>
           </div>
         </TabsTrigger>
@@ -27,13 +27,13 @@ const ScheduleContentSkeleton: React.FC<ScheduleContentSkeletonProps> = ({ activ
           className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 px-2 md:px-6"
         >
           <div className="flex items-center justify-center">
-            <CheckCircle className="h-4 w-4 mr-2 flex-shrink-0" />
+            <CheckCircle className="size-4 mr-2 flex-shrink-0" />
             <span className="text-sm md:text-base md:whitespace-nowrap">Completed Matches</span>
           </div>
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value={activeTab} className="mt-6 dark:bg-gray-900">
+      <TabsContent value={activeTab} className="mt-6 dark:bg-background">
         <div className="space-y-4">
           <DateMatchGroupSkeleton matchCount={3} />
           <DateMatchGroupSkeleton matchCount={2} />

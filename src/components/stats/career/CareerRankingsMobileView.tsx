@@ -137,9 +137,9 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
                   {field.label}
                   {sortOptions.field === field.id &&
                     (sortOptions.direction === 'asc' ? (
-                      <ArrowUp className="ml-1 h-3 w-3" />
+                      <ArrowUp className="ml-1 size-3" />
                     ) : (
-                      <ArrowDown className="ml-1 h-3 w-3" />
+                      <ArrowDown className="ml-1 size-3" />
                     ))}
                 </Button>
               ))}

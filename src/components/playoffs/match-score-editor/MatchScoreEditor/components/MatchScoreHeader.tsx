@@ -17,7 +17,7 @@ const MatchScoreHeader: React.FC<MatchScoreHeaderProps> = ({ team1, team2, match
       <div className="text-lg font-semibold">
         {team1?.name || 'TBD'} vs {team2?.name || 'TBD'}
       </div>
-      <div className="text-sm text-gray-500">
+      <div className="text-sm text-muted-foreground">
         {matchType} Round {round}
       </div>
     </div>

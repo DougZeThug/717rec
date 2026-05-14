@@ -37,7 +37,7 @@ const Footer = () => {
               height={40}
               loading="lazy"
               decoding="async"
-              className="h-10 w-10"
+              className="size-10"
               style={{ width: '40px', height: '40px' }}
             />
           </div>

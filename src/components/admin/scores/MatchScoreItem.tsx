@@ -84,19 +84,19 @@ const MatchScoreItem = ({
       <CollapsibleTrigger className="flex items-center justify-between w-full p-4 text-left hover:bg-secondary">
         <div className="flex items-center">
           {isOpen ? (
-            <ChevronDown className="h-4 w-4 mr-2" />
+            <ChevronDown className="size-4 mr-2" />
           ) : (
-            <ChevronRight className="h-4 w-4 mr-2" />
+            <ChevronRight className="size-4 mr-2" />
           )}
           <div className="flex items-center">
-            <div className="w-6 h-6 rounded overflow-hidden bg-muted mr-2">
+            <div className="size-6 rounded overflow-hidden bg-muted mr-2">
               {teams[match.team1Id]?.imageUrl && (
                 <img
                   src={teams[match.team1Id].imageUrl}
                   alt=""
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-full object-contain"
+                  className="size-full object-contain"
                   onError={(e) => {
                     imageErrorLog(teams[match.team1Id].name, teams[match.team1Id].imageUrl);
                     (e.target as HTMLImageElement).src = FALLBACK_TEAM_IMAGE;
@@ -105,14 +105,14 @@ const MatchScoreItem = ({
               )}
             </div>
             <span>{teams[match.team1Id]?.name || 'Team 1'} vs</span>
-            <div className="w-6 h-6 rounded overflow-hidden bg-muted mx-2">
+            <div className="size-6 rounded overflow-hidden bg-muted mx-2">
               {teams[match.team2Id]?.imageUrl && (
                 <img
                   src={teams[match.team2Id].imageUrl}
                   alt=""
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-full object-contain"
+                  className="size-full object-contain"
                   onError={(e) => {
                     imageErrorLog(teams[match.team2Id].name, teams[match.team2Id].imageUrl);
                     (e.target as HTMLImageElement).src = FALLBACK_TEAM_IMAGE;
@@ -132,7 +132,7 @@ const MatchScoreItem = ({
               <DestructiveIconButton
                 onClick={() => onDelete(match.id)}
                 title="Delete match"
-                icon={<Trash2 className="h-4 w-4 text-destructive" />}
+                icon={<Trash2 className="size-4 text-destructive" />}
               />
             </div>
           )}
@@ -180,7 +180,7 @@ const MatchScoreItem = ({
 
           {validationError && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm flex items-start">
-              <AlertCircle className="h-4 w-4 mt-0.5 mr-2 flex-shrink-0" />
+              <AlertCircle className="size-4 mt-0.5 mr-2 flex-shrink-0" />
               <span>{validationError}</span>
             </div>
           )}
@@ -188,7 +188,7 @@ const MatchScoreItem = ({
           <Button onClick={handleSubmit} disabled={isSubmitting || !!validationError}>
             {isSubmitting ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 size-4 animate-spin" />
                 Submitting...
               </>
             ) : (

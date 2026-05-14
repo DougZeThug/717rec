@@ -60,7 +60,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
     return (
       <Card className="mb-8">
         <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+          <Loader2 className="size-8 animate-spin text-blue-500" />
         </CardContent>
       </Card>
     );
@@ -90,11 +90,11 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
             </CardTitle>
             <CardDescription className="flex items-center gap-2">
               <span className="font-medium">{bracket.division} Division</span>
-              <span className="text-gray-400">•</span>
+              <span className="text-muted-foreground">•</span>
               <span>{bracket.format}</span>
               {bracket.state && (
                 <>
-                  <span className="text-gray-400">•</span>
+                  <span className="text-muted-foreground">•</span>
                   <span
                     className={cn(
                       'px-2 py-0.5 rounded-full text-xs font-medium',
@@ -120,7 +120,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
                 onClick={() => setSeedingDialogOpen(true)}
                 disabled={bracket.state === 'completed'}
               >
-                <ListOrdered className="h-4 w-4 mr-2" /> Update Seeding
+                <ListOrdered className="size-4 mr-2" /> Update Seeding
               </Button>
 
               <Button
@@ -129,7 +129,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
                 className="hidden md:flex"
                 onClick={onEditBracket}
               >
-                <Edit className="h-4 w-4 mr-2" /> Edit Bracket
+                <Edit className="size-4 mr-2" /> Edit Bracket
               </Button>
 
               {onDeleteBracket && (
@@ -139,7 +139,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
                   className="hidden md:flex"
                   onClick={() => onDeleteBracket(bracketId, bracket.name || '')}
                 >
-                  <Trash className="h-4 w-4 mr-2" /> Delete
+                  <Trash className="size-4 mr-2" /> Delete
                 </Button>
               )}
             </div>
@@ -149,7 +149,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
       <CardContent className="p-0 overflow-x-auto">
         {bracketLoading ? (
           <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-cornhole-navy" />
+            <Loader2 className="size-8 animate-spin text-cornhole-navy" />
           </div>
         ) : (
           <>

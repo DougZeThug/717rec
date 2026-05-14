@@ -28,7 +28,7 @@ export const HeadToHeadSection: React.FC<HeadToHeadSectionProps> = ({
   if (isFirstMeeting) {
     return (
       <div className="rounded-lg border border-border bg-card p-6 text-center">
-        <Swords className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
+        <Swords className="size-8 mx-auto mb-3 text-muted-foreground" />
         <h3 className="font-semibold text-lg mb-1">First Meeting</h3>
         <p className="text-sm text-muted-foreground">These teams have never played each other</p>
       </div>
@@ -50,7 +50,7 @@ export const HeadToHeadSection: React.FC<HeadToHeadSectionProps> = ({
   return (
     <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
       <div className="flex items-center justify-center gap-2 mb-4">
-        <Swords className="h-5 w-5 text-primary" />
+        <Swords className="size-5 text-primary" />
         <h3 className="font-semibold text-lg">Head-to-Head</h3>
       </div>
 
@@ -101,7 +101,7 @@ export const HeadToHeadSection: React.FC<HeadToHeadSectionProps> = ({
       {/* Last Played */}
       {lastPlayed && (
         <div className="flex items-center justify-center gap-2 pt-3 border-t border-border text-sm text-muted-foreground">
-          <Calendar className="h-4 w-4" />
+          <Calendar className="size-4" />
           <span>Last played: {format(new Date(lastPlayed), 'MMM d, yyyy')}</span>
         </div>
       )}

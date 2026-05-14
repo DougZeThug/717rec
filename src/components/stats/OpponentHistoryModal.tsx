@@ -117,11 +117,11 @@ export const OpponentHistoryModal: React.FC<OpponentHistoryModalProps> = ({
                               {match.team1_name} vs {match.team2_name}
                             </div>
                             <div className="text-sm text-muted-foreground flex items-center space-x-2">
-                              <Calendar className="w-3 h-3" />
+                              <Calendar className="size-3" />
                               <span>{formatWithPattern(match.date, 'MMM d, yyyy')}</span>
                               {match.location && (
                                 <>
-                                  <MapPin className="w-3 h-3" />
+                                  <MapPin className="size-3" />
                                   <span>{match.location}</span>
                                 </>
                               )}

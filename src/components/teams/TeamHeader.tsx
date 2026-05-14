@@ -29,7 +29,7 @@ const TeamHeader = ({
           teamName={team?.name}
           size="lg"
           rounded={false}
-          className="w-28 h-28 md:w-52 md:h-52"
+          className="size-28 md:size-52"
         />
       </div>
       <div className="text-center">

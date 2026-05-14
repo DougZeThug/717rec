@@ -47,7 +47,7 @@ const SortButton: React.FC<{
     className="h-auto p-1 font-medium justify-start text-foreground hover:text-foreground hover:bg-muted/80"
   >
     {children}
-    <ArrowUpDown className="ml-1 h-3 w-3" />
+    <ArrowUpDown className="ml-1 size-3" />
   </Button>
 );
 
@@ -140,7 +140,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
     if (!hasRecords) {
       return (
         <div className="text-center py-8">
-          <Swords className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+          <Swords className="size-10 mx-auto text-muted-foreground/40 mb-3" />
           <p className="text-sm font-medium text-muted-foreground">No head-to-head records yet</p>
           <p className="text-xs text-muted-foreground/70 mt-1">
             Records will appear after playing against other teams
@@ -158,7 +158,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
         {/* Search + controls bar */}
         <div className="flex items-center space-x-2 mb-4">
           <div className="relative flex-1">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-2 top-2.5 size-4 text-muted-foreground" />
             <Input
               placeholder="Search opponents..."
               value={searchTerm}
@@ -193,7 +193,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
             onClick={() => exportHeadToHeadToCSV(filteredRecords, teamName)}
             className="flex-shrink-0"
           >
-            <Download className="h-4 w-4 mr-1" />
+            <Download className="size-4 mr-1" />
             <span className="hidden sm:inline">Export CSV</span>
             <span className="sm:hidden">CSV</span>
           </Button>
@@ -268,10 +268,10 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
                                 <img
                                   src={record.opponent_image_url}
                                   alt={`${record.opponent_name} logo`}
-                                  className="w-8 h-8 rounded-sm object-cover flex-shrink-0"
+                                  className="size-8 rounded-sm object-cover flex-shrink-0"
                                 />
                               ) : (
-                                <div className="w-8 h-8 rounded-sm bg-muted flex items-center justify-center flex-shrink-0">
+                                <div className="size-8 rounded-sm bg-muted flex items-center justify-center flex-shrink-0">
                                   <span className="text-xs font-medium text-muted-foreground">
                                     {record.opponent_name.charAt(0).toUpperCase()}
                                   </span>
@@ -298,10 +298,10 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
                       </td>
                       <td className="text-center">
                         <div className="flex items-center justify-center space-x-1">
-                          <Trophy className="w-3 h-3 text-emerald-500" />
+                          <Trophy className="size-3 text-emerald-500" />
                           <span className="text-emerald-600 font-medium">{record.wins}</span>
                           <span>-</span>
-                          <X className="w-3 h-3 text-rose-500" />
+                          <X className="size-3 text-rose-500" />
                           <span className="text-rose-600 font-medium">{record.losses}</span>
                         </div>
                       </td>
@@ -317,7 +317,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
                       <td className="text-left text-sm text-muted-foreground">
                         {record.last_played_at ? (
                           <div className="flex items-center space-x-1">
-                            <Calendar className="w-3 h-3" />
+                            <Calendar className="size-3" />
                             <span>{formatWithPattern(record.last_played_at, 'MMM d, yyyy')}</span>
                           </div>
                         ) : (

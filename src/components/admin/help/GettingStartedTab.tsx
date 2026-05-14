@@ -154,7 +154,7 @@ const GettingStartedTab: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-primary" />
+            <CheckCircle2 className="size-5 text-primary" />
             League Setup Workflow
           </CardTitle>
         </CardHeader>
@@ -162,12 +162,12 @@ const GettingStartedTab: React.FC = () => {
           <div className="space-y-4">
             {workflowSteps.map((item, index) => (
               <div key={item.step} className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="flex-shrink-0 size-8 rounded-full bg-primary/10 flex items-center justify-center">
                   <span className="text-sm font-semibold text-primary">{item.step}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <item.icon className="h-4 w-4 text-muted-foreground" />
+                    <item.icon className="size-4 text-muted-foreground" />
                     <span className="font-medium">{item.title}</span>
                     <Badge variant="outline" className="text-xs">
                       {item.tab}
@@ -176,7 +176,7 @@ const GettingStartedTab: React.FC = () => {
                   <p className="text-sm text-muted-foreground mt-0.5">{item.description}</p>
                 </div>
                 {index < workflowSteps.length - 1 && (
-                  <ArrowRight className="h-4 w-4 text-muted-foreground/50 flex-shrink-0 mt-2" />
+                  <ArrowRight className="size-4 text-muted-foreground/50 flex-shrink-0 mt-2" />
                 )}
               </div>
             ))}
@@ -194,7 +194,7 @@ const GettingStartedTab: React.FC = () => {
             {tabDescriptions.map((tab) => (
               <div key={tab.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
                 <div className="p-2 rounded-md bg-background">
-                  <tab.icon className="h-4 w-4 text-primary" />
+                  <tab.icon className="size-4 text-primary" />
                 </div>
                 <div className="min-w-0">
                   <p className="font-medium text-sm">{tab.label}</p>
@@ -210,7 +210,7 @@ const GettingStartedTab: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <Lightbulb className="h-5 w-5 text-amber-500" />
+            <Lightbulb className="size-5 text-amber-500" />
             Pro Tips
           </CardTitle>
         </CardHeader>
@@ -218,7 +218,7 @@ const GettingStartedTab: React.FC = () => {
           <ul className="space-y-2">
             {tips.map((tip) => (
               <li key={tip} className="flex items-start gap-2 text-sm text-muted-foreground">
-                <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                <CheckCircle2 className="size-4 text-green-500 mt-0.5 flex-shrink-0" />
                 {tip}
               </li>
             ))}

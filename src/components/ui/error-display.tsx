@@ -48,14 +48,14 @@ export function ErrorDisplay({
         role="alert"
         aria-live="assertive"
       >
-        <AlertCircle className="h-10 w-10 text-destructive" aria-hidden="true" />
+        <AlertCircle className="size-10 text-destructive" aria-hidden="true" />
         <div className="text-center">
           {context && <p className="text-sm text-muted-foreground mb-1">{context}</p>}
           <p className="text-destructive font-medium">{error}</p>
         </div>
         {onRetry && (
           <Button variant="outline" size="sm" onClick={onRetry} className="gap-2">
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="size-4" />
             Try again
           </Button>
         )}
@@ -70,7 +70,7 @@ export function ErrorDisplay({
       role="alert"
       aria-live="assertive"
     >
-      <AlertCircle className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
+      <AlertCircle className="size-4 flex-shrink-0" aria-hidden="true" />
       <AlertDescription className="flex-1 flex items-center justify-between gap-2">
         <span>
           {context && <span className="font-medium">{context}: </span>}
@@ -83,7 +83,7 @@ export function ErrorDisplay({
             onClick={onRetry}
             className="h-auto p-1 text-destructive-foreground hover:text-destructive-foreground/80"
           >
-            <RefreshCw className="h-3 w-3 mr-1" />
+            <RefreshCw className="size-3 mr-1" />
             Retry
           </Button>
         )}

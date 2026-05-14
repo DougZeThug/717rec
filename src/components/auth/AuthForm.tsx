@@ -38,7 +38,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-4 mt-4">
       {authError && (
         <Alert variant="destructive" className="mb-4">
-          <AlertCircle className="h-4 w-4" />
+          <AlertCircle className="size-4" />
           <AlertDescription>{authError}</AlertDescription>
         </Alert>
       )}
@@ -74,7 +74,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
       <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isSubmitting ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="mr-2 size-4 animate-spin" />
             {loadingText}
           </>
         ) : (

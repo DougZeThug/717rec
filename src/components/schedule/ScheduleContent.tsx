@@ -188,7 +188,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
               className="flex-1 md:flex-grow-0 data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-amber-600 dark:data-[state=active]:border-amber-400 px-2 md:px-6 min-h-[44px] transition-all"
             >
               <div className="flex items-center justify-center">
-                <Clock className="h-4 w-4 mr-1 flex-shrink-0" />
+                <Clock className="size-4 mr-1 flex-shrink-0" />
                 <span className="text-sm md:text-base md:whitespace-nowrap">Timeslots</span>
               </div>
             </TabsTrigger>
@@ -197,7 +197,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
               className="flex-1 md:flex-grow-0 data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 px-2 md:px-6 min-h-[44px] transition-all"
             >
               <div className="flex items-center justify-center">
-                <Calendar className="h-4 w-4 mr-1 flex-shrink-0" />
+                <Calendar className="size-4 mr-1 flex-shrink-0" />
                 <span className="text-sm md:text-base md:whitespace-nowrap">Upcoming</span>
               </div>
             </TabsTrigger>
@@ -206,7 +206,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
               className="flex-1 md:flex-grow-0 data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-emerald-600 dark:data-[state=active]:border-emerald-400 px-2 md:px-6 min-h-[44px] transition-all"
             >
               <div className="flex items-center justify-center">
-                <CheckCircle className="h-4 w-4 mr-1 flex-shrink-0" />
+                <CheckCircle className="size-4 mr-1 flex-shrink-0" />
                 <span className="text-sm md:text-base md:whitespace-nowrap">Completed</span>
               </div>
             </TabsTrigger>

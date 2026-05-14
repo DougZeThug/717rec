@@ -32,12 +32,12 @@ export const ChallongeFallback: React.FC = () => {
         <Button variant="outline" size="sm" onClick={toggleAll} className="flex items-center gap-2">
           {allExpanded ? (
             <>
-              <Minimize className="h-4 w-4" />
+              <Minimize className="size-4" />
               Collapse All
             </>
           ) : (
             <>
-              <Expand className="h-4 w-4" />
+              <Expand className="size-4" />
               Expand All
             </>
           )}
@@ -95,9 +95,9 @@ const ChallongeEmbedWithToggle: React.FC<{
             </span>
           )}
           {isOpen ? (
-            <ChevronUp className="h-5 w-5 text-muted-foreground transition-transform duration-200" />
+            <ChevronUp className="size-5 text-muted-foreground transition-transform duration-200" />
           ) : (
-            <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform duration-200" />
+            <ChevronDown className="size-5 text-muted-foreground transition-transform duration-200" />
           )}
         </div>
       </button>
