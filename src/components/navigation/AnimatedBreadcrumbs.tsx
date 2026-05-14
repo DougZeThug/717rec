@@ -31,12 +31,13 @@ export const AnimatedBreadcrumbs: React.FC<AnimatedBreadcrumbsProps> = ({
   className,
 }) => {
   const location = useLocation();
+  const pathname = location.pathname;
 
   // Generate breadcrumbs from current path if not provided
   const items = React.useMemo(() => {
     if (propItems) return propItems;
 
-    const pathSegments = location.pathname.split('/').filter(Boolean);
+    const pathSegments = pathname.split('/').filter(Boolean);
     const breadcrumbs: BreadcrumbItem[] = [{ label: 'Home', href: '/' }];
 
     let currentPath = '';
@@ -54,7 +55,7 @@ export const AnimatedBreadcrumbs: React.FC<AnimatedBreadcrumbsProps> = ({
     });
 
     return breadcrumbs;
-  }, [location.pathname, propItems]);
+  }, [pathname, propItems]);
 
   // Don't show breadcrumbs on home page
   if (items.length <= 1) return null;

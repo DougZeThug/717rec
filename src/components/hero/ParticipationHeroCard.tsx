@@ -29,6 +29,7 @@ import HeroCardBase from './HeroCardBase';
 const ParticipationHeroCard: React.FC = () => {
   const { teams, isLoading: teamsLoading } = useTeamsArray({ includeHidden: true });
   const { data: season, isLoading: seasonLoading } = useConfirmationSeason();
+  const teamListboxId = React.useId();
 
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<ParticipationStatus | ''>('');
@@ -102,6 +103,7 @@ const ParticipationHeroCard: React.FC = () => {
                 variant="outline"
                 role="combobox"
                 aria-expanded={teamSearchOpen}
+                aria-controls={teamListboxId}
                 className={cn(
                   'w-full justify-between bg-background/20 border-white/20 hover:bg-background/30',
                   'text-inherit hover:text-inherit'
@@ -118,7 +120,7 @@ const ParticipationHeroCard: React.FC = () => {
                 <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[300px] p-0" align="start">
+            <PopoverContent id={teamListboxId} className="w-[300px] p-0" align="start">
               <Command>
                 <CommandInput placeholder="Search teams..." />
                 <CommandList>

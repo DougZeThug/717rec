@@ -69,17 +69,20 @@ const AppContent = () => {
   const location = useLocation();
   const navigationStart = useRef(performance.now());
 
+  // Alias to a local to avoid the `location.*` mutable-global heuristic.
+  const pathname = location.pathname;
+
   // Log every route change, track page views, and emit Sentry metrics
   useEffect(() => {
-    routeLog(`Navigating to: ${location.pathname}`);
-    trackPageView(location.pathname);
+    routeLog(`Navigating to: ${pathname}`);
+    trackPageView(pathname);
 
     // Sentry metrics
-    metrics.count('page_view', 1, { route: location.pathname });
+    metrics.count('page_view', 1, { route: pathname });
     const loadTime = performance.now() - navigationStart.current;
-    metrics.distribution('page_load_time', loadTime, { route: location.pathname });
+    metrics.distribution('page_load_time', loadTime, { route: pathname });
     navigationStart.current = performance.now();
-  }, [location.pathname]);
+  }, [pathname]);
 
   // Preload core routes after initial render
   useEffect(() => {
