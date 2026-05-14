@@ -78,9 +78,12 @@ const AnalysisContent = ({
             <h4 className="font-semibold text-sm uppercase tracking-wide">Strengths</h4>
           </div>
           <ul className="space-y-1.5">
-            {analysis.strengths.map((strength, i) => (
+            {analysis.strengths.map((strength, i) => {
+              const occurrence = analysis.strengths!.slice(0, i).filter((s) => s === strength).length;
+              const key = occurrence === 0 ? `strength:${strength}` : `strength:${strength}#${occurrence}`;
+              return (
               <motion.li
-                key={`strength-${i}-${strength}`}
+                key={key}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.1 }}
@@ -89,7 +92,8 @@ const AnalysisContent = ({
                 <span className="text-green-500 mt-0.5">✓</span>
                 <span>{strength}</span>
               </motion.li>
-            ))}
+              );
+            })}
           </ul>
         </div>
       )}
@@ -102,9 +106,12 @@ const AnalysisContent = ({
             <h4 className="font-semibold text-sm uppercase tracking-wide">Areas to Improve</h4>
           </div>
           <ul className="space-y-1.5">
-            {analysis.weaknesses.map((weakness, i) => (
+            {analysis.weaknesses.map((weakness, i) => {
+              const occurrence = analysis.weaknesses!.slice(0, i).filter((w) => w === weakness).length;
+              const key = occurrence === 0 ? `weakness:${weakness}` : `weakness:${weakness}#${occurrence}`;
+              return (
               <motion.li
-                key={`weakness-${i}-${weakness}`}
+                key={key}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 + i * 0.1 }}
@@ -113,7 +120,8 @@ const AnalysisContent = ({
                 <span className="text-amber-500 mt-0.5">→</span>
                 <span>{weakness}</span>
               </motion.li>
-            ))}
+              );
+            })}
           </ul>
         </div>
       )}
