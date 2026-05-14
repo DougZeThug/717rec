@@ -61,7 +61,9 @@ function transform(src) {
   let count = 0;
   while (i < src.length) {
     const ch = src[i];
-    if (ch === '"' || ch === "'" || ch === '`') {
+    // Only scan double-quoted and template strings — JSX text often contains
+    // apostrophes (don't, you're) which would otherwise confuse the scanner.
+    if (ch === '"' || ch === '`') {
       // Find matching close, accounting for escapes (template literals can have ${...} but we treat content as-is for class matching)
       const quote = ch;
       let j = i + 1;
