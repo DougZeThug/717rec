@@ -66,6 +66,7 @@ export const useMessageRealtime = (
       .subscribe();
 
     return () => {
+      channel.unsubscribe();
       supabase.removeChannel(channel);
     };
   }, []); // Empty deps - callbacks are accessed via ref
