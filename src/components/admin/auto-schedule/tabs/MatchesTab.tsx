@@ -43,6 +43,8 @@ interface MatchesTabProps {
   hasUnsavedEdits?: boolean;
 }
 
+const EMPTY_EDITABLE_MATCHES: AutoScheduleMatch[] = [];
+
 const MatchesTab: React.FC<MatchesTabProps> = ({
   selectedDate,
   timeBlockTeams,
@@ -56,7 +58,7 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
   isSaving = false,
   isEditMode = false,
   onToggleEditMode,
-  editableMatches = [],
+  editableMatches = EMPTY_EDITABLE_MATCHES,
   validation,
   onUpdateMatchTeam,
   onUpdateMatchTimeslot,
