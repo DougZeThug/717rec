@@ -46,6 +46,9 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
   const [playerNames, setPlayerNames] = useState<string[]>(team?.players || ['']);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Stable per-row IDs kept in sync with playerNames so React keys remain
+  // stable across reorders/removals (avoids array-index-as-key bugs).
+  const playerIdsRef = useRef<string[]>(playerNames.map(() => crypto.randomUUID()));
   const { toast } = useToast();
   const { divisions, isLoading: isDivisionsLoading } = useDivisions();
 
@@ -60,6 +63,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
   const { isSubmitting } = form.formState;
 
   const handleAddPlayer = () => {
+    playerIdsRef.current = [...playerIdsRef.current, crypto.randomUUID()];
     setPlayerNames((prev) => [...prev, '']);
   };
 
@@ -70,6 +74,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
   };
 
   const handleRemovePlayer = (index: number) => {
+    playerIdsRef.current = playerIdsRef.current.filter((_, i) => i !== index);
     setPlayerNames(playerNames.filter((_, i) => i !== index));
   };
 
@@ -225,7 +230,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
           <div className="space-y-2">
             <FormLabel>Players</FormLabel>
             {playerNames.map((playerName, index) => (
-              <div key={`player-row-${index}`} className="flex gap-2 mt-2">
+              <div key={playerIdsRef.current[index]} className="flex gap-2 mt-2">
                 <Input
                   value={playerName}
                   onChange={(e) => handlePlayerChange(index, e.target.value)}

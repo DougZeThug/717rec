@@ -16,14 +16,19 @@ const MessageContent: React.FC<MessageContentProps> = ({ content, isEdited, upda
   const isDark = resolvedTheme === 'dark';
 
   const lines = content.split('\n');
-  const formattedText = lines.map((line, i) => (
-    // Lines have no inherent identity; combine the rendered text with its
-    // position so keys remain unique even when adjacent lines repeat.
-    <React.Fragment key={`line-${i}-${line}`}>
-      {line}
-      {i < lines.length - 1 && <br />}
-    </React.Fragment>
-  ));
+  const formattedText = lines.map((line, i) => {
+    // Lines have no inherent identity; disambiguate identical lines by
+    // counting prior occurrences so React keys stay stable without using
+    // the raw array index.
+    const occurrence = lines.slice(0, i).filter((l) => l === line).length;
+    const key = occurrence === 0 ? `line:${line}` : `line:${line}#${occurrence}`;
+    return (
+      <React.Fragment key={key}>
+        {line}
+        {i < lines.length - 1 && <br />}
+      </React.Fragment>
+    );
+  });
 
   return (
     <div className="text-sm mt-1">
