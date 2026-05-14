@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSeasons } from '@/hooks/useSeasons';
 import { Season } from '@/types/season';
+import { toLocalDateString } from '@/utils/formatDateSafe';
 
 import SeasonActions from './SeasonActions';
 import SeasonForm from './SeasonForm';
@@ -49,7 +50,7 @@ const SeasonManagementTab = () => {
               <div className="text-2xl font-bold">{activeSeason ? activeSeason.name : 'None'}</div>
               {activeSeason && (
                 <p className="text-xs text-muted-foreground">
-                  Started {new Date(activeSeason.start_date).toLocaleDateString()}
+                  Started {toLocalDateString(activeSeason.start_date)}
                 </p>
               )}
             </CardContent>
