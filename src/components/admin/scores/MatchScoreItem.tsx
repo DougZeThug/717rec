@@ -123,7 +123,7 @@ const MatchScoreItem = ({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-muted-foreground" suppressHydrationWarning>
             {new Date(match.date || '').toLocaleDateString()}
           </span>
           {onDelete && (
