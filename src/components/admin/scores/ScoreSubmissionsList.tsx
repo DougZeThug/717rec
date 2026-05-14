@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { formatWithPattern } from '@/utils/formatDateSafe';
 import { CheckCircle, Clock, MessageSquare, User, Users, XCircle } from 'lucide-react';
 import React from 'react';
 
@@ -67,7 +67,7 @@ const ScoreSubmissionsList = ({ submissions, onApprove, onReject }: ScoreSubmiss
 
             <div className="flex items-center justify-between pt-4 border-t">
               <span className="text-xs text-muted-foreground">
-                Submitted {format(new Date(submission.created_at), "MMM d, yyyy 'at' h:mm a")}
+                Submitted {formatWithPattern(submission.created_at, "MMM d, yyyy 'at' h:mm a")}
               </span>
 
               <div className="flex gap-2">
