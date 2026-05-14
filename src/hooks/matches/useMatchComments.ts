@@ -68,6 +68,7 @@ export const useMatchComments = (matchId: string) => {
       .subscribe();
 
     return () => {
+      channel.unsubscribe();
       supabase.removeChannel(channel);
     };
   }, [matchId]);
