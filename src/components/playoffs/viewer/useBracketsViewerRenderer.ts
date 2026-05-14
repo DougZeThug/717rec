@@ -103,6 +103,7 @@ export const useBracketsViewerRenderer = ({
     }
 
     let cancelled = false;
+    let cleanupTimer: ReturnType<typeof setTimeout> | null = null;
 
     const renderBracket = async () => {
       try {
@@ -243,7 +244,7 @@ export const useBracketsViewerRenderer = ({
         }
 
         // Post-render cleanup
-        setTimeout(() => {
+        cleanupTimer = setTimeout(() => {
           if (cancelled) return;
           const el = containerRef.current;
           if (!el) return;
@@ -269,6 +270,7 @@ export const useBracketsViewerRenderer = ({
 
     return () => {
       cancelled = true;
+      if (cleanupTimer) clearTimeout(cleanupTimer);
       setIsInitialized(false);
     };
   }, [
