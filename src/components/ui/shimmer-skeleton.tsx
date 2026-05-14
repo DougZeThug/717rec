@@ -37,9 +37,14 @@ const ShimmerSkeleton = React.forwardRef<HTMLDivElement, ShimmerSkeletonProps>(
 
     const radiusClass = circle ? 'rounded-full' : variantClasses[variant];
 
-    const skeletons = Array.from({ length: count }, (_, i) => (
+    // Stable ids per count avoid using array index as React key.
+    const skeletonIds = React.useMemo(
+      () => Array.from({ length: count }, () => crypto.randomUUID()),
+      [count]
+    );
+    const skeletons = skeletonIds.map((id, i) => (
       <div
-        key={`shimmer-${i}`}
+        key={id}
         ref={i === 0 ? ref : undefined}
         className={cn(
           'relative overflow-hidden bg-muted',
@@ -71,11 +76,15 @@ const TextSkeleton: React.FC<{
   className?: string;
   lastLineWidth?: string;
 }> = ({ lines = 3, className, lastLineWidth = '60%' }) => {
+  const lineIds = React.useMemo(
+    () => Array.from({ length: lines }, () => crypto.randomUUID()),
+    [lines]
+  );
   return (
     <div className={cn('space-y-2', className)}>
-      {Array.from({ length: lines }, (_, i) => (
+      {lineIds.map((id, i) => (
         <ShimmerSkeleton
-          key={`text-line-${i}`}
+          key={id}
           variant="input"
           className="h-4"
           style={{
