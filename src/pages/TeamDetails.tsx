@@ -1,5 +1,5 @@
 import { ArrowLeft, BarChart3, GraduationCap, Swords, TrendingUp, Trophy } from 'lucide-react';
-import { useMemo } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 
 import TeamBadgeCollection from '@/components/badges/TeamBadgeCollection';
@@ -10,11 +10,9 @@ import PlayerList from '@/components/teams/PlayerList';
 import RivalryHighlights from '@/components/teams/RivalryHighlights';
 import StatBreakdown from '@/components/teams/StatBreakdown';
 import TeamAdvancedStatsSection from '@/components/teams/TeamAdvancedStatsSection';
-import TeamCareerPowerScoreChart from '@/components/teams/TeamCareerPowerScoreChart';
 import TeamDetailsStickyNav from '@/components/teams/TeamDetailsStickyNav';
 import TeamHeader from '@/components/teams/TeamHeader';
 import TeamPerformanceCards from '@/components/teams/TeamPerformanceCards';
-import TeamReportCard from '@/components/teams/TeamReportCard';
 import TeamTotals from '@/components/teams/TeamTotals';
 import { Button } from '@/components/ui/button';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
@@ -26,6 +24,14 @@ import { useTeamRankings } from '@/hooks/useTeamRankings';
 import { teamLog } from '@/utils/logger';
 import { calculateClutchRecord } from '@/utils/teamDetailsUtils/matchOutcomeUtils';
 import { calculateSweepRate } from '@/utils/teamDetailsUtils/sweepRateUtils';
+
+// Recharts-backed components — lazy-loaded so the recharts vendor chunk
+// only downloads when the user opens these collapsible sections.
+const TeamReportCard = lazy(() => import('@/components/teams/TeamReportCard'));
+const TeamCareerPowerScoreChart = lazy(
+  () => import('@/components/teams/TeamCareerPowerScoreChart')
+);
+const ChartFallback = () => <Skeleton className="h-48 w-full" />;
 
 const TeamDetails = () => {
   const { teamId: teamParam } = useParams<{ teamId: string }>();
@@ -199,7 +205,9 @@ const TeamDetails = () => {
                   <GraduationCap size={16} className="text-violet-500" />
                   Report Card
                 </h3>
-                <TeamReportCard teamId={teamId} standalone />
+                <Suspense fallback={<ChartFallback />}>
+                  <TeamReportCard teamId={teamId} standalone />
+                </Suspense>
               </div>
             )}
           </CollapsibleSection>
@@ -250,7 +258,9 @@ const TeamDetails = () => {
             {teamId && <TeamTotals teamId={teamId} standalone />}
             {teamId && (
               <div className="mt-4">
-                <TeamCareerPowerScoreChart teamId={teamId} standalone />
+                <Suspense fallback={<ChartFallback />}>
+                  <TeamCareerPowerScoreChart teamId={teamId} standalone />
+                </Suspense>
               </div>
             )}
             {teamId && (
