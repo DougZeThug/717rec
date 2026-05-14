@@ -12,6 +12,11 @@ vi.mock('framer-motion', () => ({
       <div {...props}>{children}</div>
     ),
   },
+  m: {
+    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+      <div {...props}>{children}</div>
+    ),
+  },
 }));
 
 vi.mock('@/hooks/useSeasonalTheme', () => ({

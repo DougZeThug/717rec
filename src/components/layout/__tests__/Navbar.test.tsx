@@ -12,6 +12,11 @@ vi.mock('framer-motion', () => ({
       const { layout: _layout, ...rest } = props;
       return <div {...rest}>{children}</div>;
     },
+  m: {
+    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement> & { layout?: boolean }) => {
+      const { layout: _layout, ...rest } = props;
+      return <div {...rest}>{children}</div>;
+    },
   },
 }));
 
