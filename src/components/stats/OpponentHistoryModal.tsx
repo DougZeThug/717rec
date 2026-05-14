@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { formatWithPattern } from '@/utils/formatDateSafe';
 import { Calendar, MapPin } from 'lucide-react';
 import React from 'react';
 
@@ -118,7 +118,7 @@ export const OpponentHistoryModal: React.FC<OpponentHistoryModalProps> = ({
                             </div>
                             <div className="text-sm text-muted-foreground flex items-center space-x-2">
                               <Calendar className="w-3 h-3" />
-                              <span>{format(new Date(match.date), 'MMM d, yyyy')}</span>
+                              <span>{formatWithPattern(match.date, 'MMM d, yyyy')}</span>
                               {match.location && (
                                 <>
                                   <MapPin className="w-3 h-3" />
