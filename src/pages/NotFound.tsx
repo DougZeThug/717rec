@@ -8,10 +8,11 @@ import { routeLog } from '@/utils/logger';
 const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const pathname = location.pathname;
 
   useEffect(() => {
-    routeLog('404 Error: User attempted to access non-existent route:', location.pathname);
-  }, [location.pathname]);
+    routeLog('404 Error: User attempted to access non-existent route:', pathname);
+  }, [pathname]);
 
   return (
     <div className="min-h-[70vh] flex items-center justify-center bg-background">
