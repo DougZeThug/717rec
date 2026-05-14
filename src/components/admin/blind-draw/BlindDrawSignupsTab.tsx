@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+import { formatWithPattern } from '@/utils/formatDateSafe';
 import { AlertCircle, Loader2, Save, Settings, Shuffle, Trash2, Users } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
@@ -201,11 +202,11 @@ const BlindDrawSignupsTab: React.FC = () => {
                           {signup.first_name} {signup.last_initial}.
                         </div>
                         <div className="text-xs text-muted-foreground sm:hidden" suppressHydrationWarning>
-                          {format(new Date(signup.created_at), 'MMM d, h:mm a')}
+                          {formatWithPattern(signup.created_at, 'MMM d, h:mm a')}
                         </div>
                       </td>
                       <td className="px-2 sm:px-4 py-2 text-sm text-muted-foreground hidden sm:table-cell" suppressHydrationWarning>
-                        {format(new Date(signup.created_at), 'MMM d, h:mm a')}
+                        {formatWithPattern(signup.created_at, 'MMM d, h:mm a')}
                       </td>
                       <td className="px-2 sm:px-4 py-2 text-right">
                         <DestructiveIconButton
