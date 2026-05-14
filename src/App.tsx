@@ -1,4 +1,5 @@
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { domAnimation, LazyMotion } from 'framer-motion';
 import React, { lazy, Suspense, useEffect, useRef } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
@@ -260,14 +261,16 @@ const App = () => {
     <ErrorBoundary>
       <HelmetProvider>
         <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <Toaster />
-            <BrowserRouter>
-              <AuthProvider>
-                <AppContent />
-              </AuthProvider>
-            </BrowserRouter>
-          </TooltipProvider>
+          <LazyMotion features={domAnimation} strict>
+            <TooltipProvider>
+              <Toaster />
+              <BrowserRouter>
+                <AuthProvider>
+                  <AppContent />
+                </AuthProvider>
+              </BrowserRouter>
+            </TooltipProvider>
+          </LazyMotion>
         </QueryClientProvider>
       </HelmetProvider>
     </ErrorBoundary>
