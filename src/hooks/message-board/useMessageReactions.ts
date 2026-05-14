@@ -96,6 +96,7 @@ export const useMessageReactions = (messageId: string) => {
       .subscribe();
 
     return () => {
+      channel.unsubscribe();
       supabase.removeChannel(channel);
     };
   }, [messageId]);
