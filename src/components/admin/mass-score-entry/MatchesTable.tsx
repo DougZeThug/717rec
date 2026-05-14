@@ -9,6 +9,9 @@ import DateMatchGroup from './components/DateMatchGroup';
 import MatchesTableSkeleton from './MatchesTableSkeleton';
 import { MatchWithTeams } from './types';
 
+const EMPTY_FAILED_MATCHES: string[] = [];
+const EMPTY_ERROR_MESSAGES: Record<string, string> = {};
+
 interface MatchesTableProps {
   matches: MatchWithTeams[];
   loading: boolean;
@@ -29,8 +32,8 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
   onGameWinsChange,
   onMarkCompleted,
   submitting = false,
-  failedMatches = [],
-  errorMessages = {},
+  failedMatches = EMPTY_FAILED_MATCHES,
+  errorMessages = EMPTY_ERROR_MESSAGES,
   onClearError,
   onDeleteMatch,
 }) => {

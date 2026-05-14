@@ -9,6 +9,9 @@ import { scoreLog } from '@/utils/logger';
 import MatchRow from '../MatchRow';
 import { MatchWithTeams } from '../types';
 
+const EMPTY_FAILED_MATCHES: string[] = [];
+const EMPTY_ERROR_MESSAGES: Record<string, string> = {};
+
 interface TimeSlotMatchGroupProps {
   timeSlot: string;
   matches: MatchWithTeams[];
@@ -30,8 +33,8 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
   onGameWinsChange,
   onMarkCompleted,
   submitting = false,
-  failedMatches = [],
-  errorMessages = {},
+  failedMatches = EMPTY_FAILED_MATCHES,
+  errorMessages = EMPTY_ERROR_MESSAGES,
   onClearError,
   defaultOpen = false,
   onDeleteMatch,
