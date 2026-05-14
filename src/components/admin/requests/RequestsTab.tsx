@@ -127,7 +127,7 @@ const RequestsTab: React.FC = () => {
                         {REQUEST_STATUS_LABELS[request.status]}
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground" suppressHydrationWarning>
                       Submitted {format(new Date(request.created_at), "MMM d, yyyy 'at' h:mm a")}
                       {request.submitted_by_name && ` by ${request.submitted_by_name}`}
                     </p>
@@ -163,7 +163,7 @@ const RequestsTab: React.FC = () => {
                   {request.match_date && (
                     <div>
                       <span className="text-muted-foreground">Date:</span>{' '}
-                      <span className="font-medium">
+                      <span className="font-medium" suppressHydrationWarning>
                         {format(new Date(request.match_date), 'MMM d, yyyy')}
                       </span>
                     </div>
@@ -200,7 +200,7 @@ const RequestsTab: React.FC = () => {
 
                 {/* Processed info */}
                 {request.processed_at && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground" suppressHydrationWarning>
                     Processed {format(new Date(request.processed_at), "MMM d, yyyy 'at' h:mm a")}
                   </p>
                 )}
