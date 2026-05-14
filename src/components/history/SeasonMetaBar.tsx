@@ -3,6 +3,7 @@ import React from 'react';
 
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
+import { toLocalDateString } from '@/utils/formatDateSafe';
 
 interface Season {
   id: string;
@@ -140,7 +141,7 @@ const SeasonMetaBar: React.FC<SeasonMetaBarProps> = ({ season, seasonData }) => 
           )}
         >
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            Season completed on {new Date(season.end_date).toLocaleDateString()}
+            Season completed on {toLocalDateString(season.end_date)}
           </p>
         </div>
       )}
