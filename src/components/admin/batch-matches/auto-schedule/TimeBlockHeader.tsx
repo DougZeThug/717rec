@@ -10,10 +10,12 @@ interface TimeBlockHeaderProps {
   timeslots?: string[];
 }
 
+const EMPTY_TIMESLOTS: string[] = [];
+
 export const TimeBlockHeader: React.FC<TimeBlockHeaderProps> = ({
   blockName,
   teamCount,
-  timeslots = [],
+  timeslots = EMPTY_TIMESLOTS,
 }) => {
   const { isWinterTheme } = useSeasonalThemeBase();
 

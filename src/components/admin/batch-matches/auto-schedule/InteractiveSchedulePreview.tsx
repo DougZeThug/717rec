@@ -28,10 +28,12 @@ interface InteractiveSchedulePreviewProps {
   onTeamUpdate?: (updatedTeams: TimeBlockTeamsMap) => void;
 }
 
+const EMPTY_UNMATCHED: string[] = [];
+
 const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
   timeBlockTeams,
   date,
-  unmatchedTeamIds = [],
+  unmatchedTeamIds = EMPTY_UNMATCHED,
   isEditMode = false,
   onTeamUpdate,
 }) => {

@@ -13,6 +13,8 @@ import { TeamSelectionError } from './TeamSelectionError';
 import { TeamSelectionForm } from './TeamSelectionForm';
 import { TeamSelectionLoading } from './TeamSelectionLoading';
 
+const EMPTY_DIVISIONS: BracketFormTeamsContainerProps['divisions'] = [];
+
 /**
  * Main container component for bracket team selection
  * Phase 4: Type-safe with runtime guards and zero `as any` casts
@@ -22,7 +24,7 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
   teams: teamsProp,
   maxTeams,
   minTeams = 2,
-  divisions = [],
+  divisions = EMPTY_DIVISIONS,
   onChange,
   onSeedChange,
 }) => {

@@ -28,6 +28,8 @@ interface EmptyStateProps {
   iconClassName?: string;
 }
 
+const EMPTY_ACTIONS: EmptyStateAction[] = [];
+
 /**
  * Reusable illustrated empty state component with animated entrance
  * Provides consistent empty states across the app with actionable CTAs
@@ -36,7 +38,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   icon: Icon,
   title,
   description,
-  actions = [],
+  actions = EMPTY_ACTIONS,
   secondaryLink,
   className,
   iconClassName,
