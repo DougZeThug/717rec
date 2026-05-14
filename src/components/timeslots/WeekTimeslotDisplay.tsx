@@ -62,7 +62,7 @@ const WeekTimeslotDisplay: React.FC<WeekTimeslotDisplayProps> = ({
             <Clock className="h-4 w-4 text-blue-500" />
             <div>
               <p className="font-medium">{timeslot.timeslot}</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground" suppressHydrationWarning>
                 {format(new Date(timeslot.match_date), 'EEE, MMM d')}
               </p>
             </div>
