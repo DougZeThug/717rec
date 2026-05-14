@@ -324,12 +324,12 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
                           </Badge>
                         </div>
                         {request.match_date && (
-                          <span className="text-xs opacity-70">
+                          <span className="text-xs opacity-70" suppressHydrationWarning>
                             {format(new Date(request.match_date), 'MMM d, yyyy')}
                           </span>
                         )}
                       </div>
-                      <span className="text-xs opacity-50">
+                      <span className="text-xs opacity-50" suppressHydrationWarning>
                         {format(new Date(request.created_at), 'MMM d')}
                       </span>
                     </div>
