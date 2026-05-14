@@ -83,7 +83,7 @@ export const TeamAnalysisEditForm: React.FC<TeamAnalysisEditFormProps> = ({
         <Label>Strengths</Label>
         <div className="space-y-2">
           {strengths.map((strength, index) => (
-            <div key={index} className="flex gap-2">
+            <div key={`strength-row-${index}`} className="flex gap-2">
               <Input
                 value={strength}
                 onChange={(e) => handleStrengthChange(index, e.target.value)}
@@ -118,7 +118,7 @@ export const TeamAnalysisEditForm: React.FC<TeamAnalysisEditFormProps> = ({
         <Label>Areas to Improve</Label>
         <div className="space-y-2">
           {weaknesses.map((weakness, index) => (
-            <div key={index} className="flex gap-2">
+            <div key={`weakness-row-${index}`} className="flex gap-2">
               <Input
                 value={weakness}
                 onChange={(e) => handleWeaknessChange(index, e.target.value)}

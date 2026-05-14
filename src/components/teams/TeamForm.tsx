@@ -225,7 +225,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
           <div className="space-y-2">
             <FormLabel>Players</FormLabel>
             {playerNames.map((playerName, index) => (
-              <div key={index} className="flex gap-2 mt-2">
+              <div key={`player-row-${index}`} className="flex gap-2 mt-2">
                 <Input
                   value={playerName}
                   onChange={(e) => handlePlayerChange(index, e.target.value)}
