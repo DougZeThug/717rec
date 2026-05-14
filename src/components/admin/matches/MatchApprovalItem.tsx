@@ -71,7 +71,7 @@ const MatchApprovalItem = ({
             <span>{team2?.name || 'Team 2'}</span>
           </div>
         </div>
-        <div className="text-sm text-muted-foreground">
+        <div className="text-sm text-muted-foreground" suppressHydrationWarning>
           {new Date(match.date).toLocaleDateString()}
         </div>
       </CollapsibleTrigger>
