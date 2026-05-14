@@ -88,4 +88,3 @@ export const AlgorithmSettings: React.FC<AlgorithmSettingsProps> = ({
     </Accordion>
   );
 };
-'

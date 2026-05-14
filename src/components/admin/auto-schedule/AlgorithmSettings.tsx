@@ -81,4 +81,3 @@ const AlgorithmSettings: React.FC<AlgorithmSettingsProps> = ({
 };
 
 export default AlgorithmSettings;
-'

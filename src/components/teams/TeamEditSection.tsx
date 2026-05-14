@@ -183,4 +183,3 @@ const TeamEditSection: React.FC = () => {
 };
 
 export default TeamEditSection;
-'
