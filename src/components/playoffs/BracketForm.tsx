@@ -173,7 +173,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
         {/* Team Selection */}
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Users className="w-4 h-4" />
+            <Users className="size-4" />
             <label className="text-sm font-medium leading-none">
               Select Teams ({selectedTeamCount}/{maxTeams})
             </label>
@@ -195,7 +195,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
           selectedTeamCount >= minTeams &&
           selectedTeamCount <= maxTeams && (
             <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
-              <Users className="w-4 h-4" />
+              <Users className="size-4" />
               <span>
                 Ready to create bracket with {selectedTeamCount} teams
                 {!isPowerOf2(selectedTeamCount) ? ' (BYEs will be added)' : ''}
@@ -222,7 +222,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
           >
             {isSubmitting ? (
               <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                <div className="size-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                 Creating Bracket...
               </>
             ) : (

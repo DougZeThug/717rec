@@ -38,7 +38,7 @@ const ViewToggle = ({ view, onViewChange }: ViewToggleProps) => {
               : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
         )}
       >
-        <Grid2x2 className="h-4 w-4 mr-1.5" />
+        <Grid2x2 className="size-4 mr-1.5" />
         Division
       </ToggleGroupItem>
       <ToggleGroupItem
@@ -55,7 +55,7 @@ const ViewToggle = ({ view, onViewChange }: ViewToggleProps) => {
               : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
         )}
       >
-        <List className="h-4 w-4 mr-1.5" />
+        <List className="size-4 mr-1.5" />
         All
       </ToggleGroupItem>
     </ToggleGroup>

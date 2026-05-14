@@ -66,7 +66,7 @@ export const AnimatedRankNumber: React.FC<AnimatedRankNumberProps> = ({
             duration: 0.3,
           }}
           className={cn(
-            'w-7 h-7 flex items-center justify-center rounded-full text-sm font-medium',
+            'size-7 flex items-center justify-center rounded-full text-sm font-medium',
             getRankStyles(rank),
             flashColor === 'green' && 'ring-2 ring-green-500 ring-offset-1',
             flashColor === 'red' && 'ring-2 ring-red-500 ring-offset-1'

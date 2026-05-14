@@ -211,13 +211,13 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
                   <img
                     src={imageUrl}
                     alt="Team preview"
-                    className="h-20 w-20 object-cover rounded"
+                    className="size-20 object-cover rounded"
                   />
                   <Button
                     type="button"
                     variant="destructive"
                     size="icon"
-                    className="absolute -top-2 -right-2 h-8 w-8 rounded-full p-0"
+                    className="absolute -top-2 -right-2 size-8 rounded-full p-0"
                     onClick={handleRemoveImage}
                   >
                     <X size={16} />
@@ -244,30 +244,30 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
               </div>
             ))}
             <Button type="button" variant="outline" onClick={handleAddPlayer} className="mt-2">
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="size-4 mr-2" />
               Add Player
             </Button>
           </div>
 
           <div className="flex justify-end gap-2 mt-4">
             <Button type="button" variant="outline" onClick={onCancel}>
-              <X className="h-4 w-4 mr-2" />
+              <X className="size-4 mr-2" />
               Cancel
             </Button>
             <Button type="submit" disabled={isUploading || isSubmitting}>
               {isUploading ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="size-4 mr-2 animate-spin" />
                   Uploading...
                 </>
               ) : team ? (
                 <>
-                  <Save className="h-4 w-4 mr-2" />
+                  <Save className="size-4 mr-2" />
                   Update Team
                 </>
               ) : (
                 <>
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="size-4 mr-2" />
                   Create Team
                 </>
               )}

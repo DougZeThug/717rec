@@ -155,12 +155,12 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
             >
               {isEditMode ? (
                 <>
-                  <Eye className="mr-2 h-4 w-4" />
+                  <Eye className="mr-2 size-4" />
                   Preview Mode
                 </>
               ) : (
                 <>
-                  <Edit className="mr-2 h-4 w-4" />
+                  <Edit className="mr-2 size-4" />
                   Edit Mode
                 </>
               )}
@@ -169,7 +169,7 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
 
           {isEditMode && hasUnsavedEdits && onResetEdits && (
             <Button variant="ghost" size="sm" onClick={onResetEdits}>
-              <RotateCcw className="mr-2 h-4 w-4" />
+              <RotateCcw className="mr-2 size-4" />
               Reset
             </Button>
           )}
@@ -182,12 +182,12 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
             >
               {isSaving ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 size-4 animate-spin" />
                   Saving...
                 </>
               ) : (
                 <>
-                  <Save className="mr-2 h-4 w-4" />
+                  <Save className="mr-2 size-4" />
                   Save Matches
                 </>
               )}

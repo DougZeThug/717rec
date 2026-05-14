@@ -55,7 +55,7 @@ const AnalysisContent = ({
     {isAdmin && (
       <div className="flex justify-end">
         <Button variant="ghost" size="sm" onClick={onEdit} className="text-xs h-7">
-          <Edit className="h-3 w-3 mr-1" />
+          <Edit className="size-3 mr-1" />
           Edit
         </Button>
       </div>
@@ -74,7 +74,7 @@ const AnalysisContent = ({
       {analysis.strengths && analysis.strengths.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Trophy className="h-4 w-4 text-green-500" />
+            <Trophy className="size-4 text-green-500" />
             <h4 className="font-semibold text-sm uppercase tracking-wide">Strengths</h4>
           </div>
           <ul className="space-y-1.5">
@@ -102,7 +102,7 @@ const AnalysisContent = ({
       {analysis.weaknesses && analysis.weaknesses.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Target className="h-4 w-4 text-amber-500" />
+            <Target className="size-4 text-amber-500" />
             <h4 className="font-semibold text-sm uppercase tracking-wide">Areas to Improve</h4>
           </div>
           <ul className="space-y-1.5">
@@ -131,7 +131,7 @@ const AnalysisContent = ({
     {analysis.trends && (
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <TrendingUp className="h-4 w-4 text-blue-500" />
+          <TrendingUp className="size-4 text-blue-500" />
           <h4 className="font-semibold text-sm uppercase tracking-wide">Current Form</h4>
         </div>
         <p className="text-sm text-muted-foreground">{analysis.trends}</p>
@@ -142,7 +142,7 @@ const AnalysisContent = ({
     {analysis.rivalry_insights && (
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <Swords className="h-4 w-4 text-purple-500" />
+          <Swords className="size-4 text-purple-500" />
           <h4 className="font-semibold text-sm uppercase tracking-wide">Rivalry Insights</h4>
         </div>
         <p className="text-sm text-muted-foreground">{analysis.rivalry_insights}</p>
@@ -153,13 +153,13 @@ const AnalysisContent = ({
 
 const EmptyState = ({ onEdit, isAdmin }: { onEdit: () => void; isAdmin: boolean }) => (
   <div className="p-6 flex flex-col items-center justify-center text-center space-y-3">
-    <FileText className="h-10 w-10 text-muted-foreground/40" />
+    <FileText className="size-10 text-muted-foreground/40" />
     <div>
       <p className="text-sm text-muted-foreground">No analysis available for this team yet.</p>
     </div>
     {isAdmin && (
       <Button variant="outline" size="sm" onClick={onEdit}>
-        <Edit className="h-4 w-4 mr-1" /> Add Analysis
+        <Edit className="size-4 mr-1" /> Add Analysis
       </Button>
     )}
   </div>
@@ -167,7 +167,7 @@ const EmptyState = ({ onEdit, isAdmin }: { onEdit: () => void; isAdmin: boolean 
 
 const ErrorState = ({ error }: { error: Error }) => (
   <div className="p-4 flex flex-col items-center justify-center text-center space-y-3">
-    <AlertCircle className="h-8 w-8 text-destructive/60" />
+    <AlertCircle className="size-8 text-destructive/60" />
     <div>
       <p className="text-sm font-medium text-destructive">Failed to load analysis</p>
       <p className="text-xs text-muted-foreground mt-1">{error.message}</p>

@@ -14,7 +14,7 @@ const ErrorAlert: React.FC<ErrorAlertProps> = ({ failedMatches, message, onClear
   if (message) {
     return (
       <Alert variant="destructive" className="mb-4">
-        <AlertCircle className="h-4 w-4" />
+        <AlertCircle className="size-4" />
         <AlertDescription className="flex items-center justify-between">
           <span>{message}</span>
           {onClear && (
@@ -32,7 +32,7 @@ const ErrorAlert: React.FC<ErrorAlertProps> = ({ failedMatches, message, onClear
 
   return (
     <Alert variant="destructive" className="mb-4">
-      <AlertCircle className="h-4 w-4" />
+      <AlertCircle className="size-4" />
       <AlertDescription>
         {failedMatches.length} {failedMatches.length === 1 ? 'match' : 'matches'} failed to update.
         Please correct the errors and resubmit.

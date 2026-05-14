@@ -51,10 +51,10 @@ const AnnouncementHeroCard: React.FC<AnnouncementHeroCardProps> = ({ card }) => 
 
         {/* Decorative elements - static */}
         <div className="absolute top-2 left-4 opacity-30">
-          {Icon && <Icon className="w-8 h-8" />}
+          {Icon && <Icon className="size-8" />}
         </div>
         <div className="absolute bottom-2 right-4 opacity-30">
-          {Icon && <Icon className="w-8 h-8" />}
+          {Icon && <Icon className="size-8" />}
         </div>
 
         <div
@@ -69,7 +69,7 @@ const AnnouncementHeroCard: React.FC<AnnouncementHeroCardProps> = ({ card }) => 
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.3 }}
             >
-              <Icon className="w-6 h-6" />
+              <Icon className="size-6" />
             </m.div>
           )}
 
@@ -88,7 +88,7 @@ const AnnouncementHeroCard: React.FC<AnnouncementHeroCardProps> = ({ card }) => 
           </div>
 
           {card.cta_url && (
-            <ChevronRight className="w-6 h-6 transition-transform group-hover:translate-x-1" />
+            <ChevronRight className="size-6 transition-transform group-hover:translate-x-1" />
           )}
         </div>
       </div>

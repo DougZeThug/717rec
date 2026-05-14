@@ -8,7 +8,7 @@ interface PlayoffLoadingViewProps {
 export const PlayoffLoadingView: React.FC<PlayoffLoadingViewProps> = ({ label = 'Loading...' }) => {
   return (
     <div className="flex flex-col items-center justify-center py-8">
-      <Loader2 className="w-8 h-8 text-cornhole-navy animate-spin mb-2" />
+      <Loader2 className="size-8 text-cornhole-navy animate-spin mb-2" />
       <p>{label}</p>
     </div>
   );

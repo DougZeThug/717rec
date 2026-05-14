@@ -23,7 +23,7 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({ filterOptions, onFilterCh
     <div className="flex flex-wrap gap-1 mt-1">
       {filterOptions.category && (
         <Badge variant="outline" className="flex items-center gap-1 text-xs">
-          <Tag className="h-3 w-3" />
+          <Tag className="size-3" />
           {filterOptions.category}
           <button
             type="button"
@@ -31,7 +31,7 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({ filterOptions, onFilterCh
             className="ml-0.5 p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-primary"
             aria-label="Remove category filter"
           >
-            <X className="h-3 w-3" />
+            <X className="size-3" />
           </button>
         </Badge>
       )}
@@ -44,7 +44,7 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({ filterOptions, onFilterCh
             className="ml-0.5 p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-primary"
             aria-label="Remove team filter"
           >
-            <X className="h-3 w-3" />
+            <X className="size-3" />
           </button>
         </Badge>
       )}
@@ -57,7 +57,7 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({ filterOptions, onFilterCh
             className="ml-0.5 p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-primary"
             aria-label="Remove search filter"
           >
-            <X className="h-3 w-3" />
+            <X className="size-3" />
           </button>
         </Badge>
       )}

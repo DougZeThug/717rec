@@ -26,7 +26,7 @@ const DateMatchGroupSkeleton: React.FC<DateMatchGroupSkeletonProps> = ({ matchCo
         )}
       >
         <Skeleton className={cn('h-4 w-36', isLight ? 'bg-gray-200' : 'bg-gray-700')} />
-        <Skeleton className={cn('h-4 w-4', isLight ? 'bg-gray-200' : 'bg-gray-700')} />
+        <Skeleton className={cn('size-4', isLight ? 'bg-gray-200' : 'bg-gray-700')} />
       </CollapsibleTrigger>
       <CollapsibleContent>
         <div className="p-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">

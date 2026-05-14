@@ -18,7 +18,7 @@ const HistoryPageContent: React.FC = () => {
       <Card>
         <CardContent className="flex items-center justify-center h-64">
           <div className="flex items-center gap-2">
-            <Loader2 className="h-6 w-6 animate-spin" />
+            <Loader2 className="size-6 animate-spin" />
             <span>Loading historical data...</span>
           </div>
         </CardContent>
@@ -31,7 +31,7 @@ const HistoryPageContent: React.FC = () => {
       <Card>
         <CardContent className="pt-6">
           <div className="text-center py-8">
-            <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <AlertTriangle className="size-12 text-destructive mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">Failed to load season history</h3>
             <p className="text-muted-foreground">
               {error instanceof Error

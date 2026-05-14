@@ -135,7 +135,7 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
               >
                 <TableCell>
                   <div className="flex items-center gap-1">
-                    <GripVertical className="h-4 w-4 text-muted-foreground/50" />
+                    <GripVertical className="size-4 text-muted-foreground/50" />
                     <span className="font-mono text-sm">{card.sort_order}</span>
                   </div>
                 </TableCell>
@@ -143,7 +143,7 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
                   <Tooltip>
                     <TooltipTrigger>
                       <div
-                        className="w-8 h-8 rounded-md border shadow-sm"
+                        className="size-8 rounded-md border shadow-sm"
                         style={{ background: getColorPreview(card.background_color) }}
                       />
                     </TooltipTrigger>
@@ -194,7 +194,7 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
                       <TooltipTrigger asChild>
                         <m.div whileTap={{ scale: 0.9 }}>
                           <Button variant="ghost" size="icon" onClick={() => onEdit(card)}>
-                            <Edit className="h-4 w-4" />
+                            <Edit className="size-4" />
                           </Button>
                         </m.div>
                       </TooltipTrigger>
@@ -205,7 +205,7 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
                       <TooltipTrigger asChild>
                         <m.div whileTap={{ scale: 0.9 }}>
                           <Button variant="ghost" size="icon" onClick={() => handleDuplicate(card)}>
-                            <Copy className="h-4 w-4" />
+                            <Copy className="size-4" />
                           </Button>
                         </m.div>
                       </TooltipTrigger>
@@ -222,7 +222,7 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
                             disabled={isDeleting}
                             className="text-destructive hover:text-destructive"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="size-4" />
                           </Button>
                         </m.div>
                       </TooltipTrigger>
@@ -260,7 +260,7 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
             >
               {isDeleting ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="size-4 mr-2 animate-spin" />
                   Deleting...
                 </>
               ) : (

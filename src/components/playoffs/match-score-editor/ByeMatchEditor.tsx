@@ -111,7 +111,7 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
           disabled={isSaving || (byeEligible && byeEligible.currentStatus !== 2)}
           className="w-full sm:w-auto"
         >
-          {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isSaving && <Loader2 className="mr-2 size-4 animate-spin" />}
           Award Win
         </Button>
       </div>
@@ -145,7 +145,7 @@ const ByeStatusControl: React.FC<{
                 className="border-blue-600 text-blue-600 hover:bg-blue-50 w-full sm:w-auto text-xs sm:text-sm"
               >
                 {isTogglingStatus ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 size-4 animate-spin" />
                 ) : (
                   <span className="mr-2">🔄</span>
                 )}
@@ -159,7 +159,7 @@ const ByeStatusControl: React.FC<{
                 className="border-red-600 text-red-600 hover:bg-red-50 w-full sm:w-auto text-xs sm:text-sm"
               >
                 {isTogglingStatus ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 size-4 animate-spin" />
                 ) : (
                   <span className="mr-2">⚠️</span>
                 )}
@@ -175,7 +175,7 @@ const ByeStatusControl: React.FC<{
               className="border-green-600 text-green-600 hover:bg-green-50 w-full sm:w-auto text-xs sm:text-sm"
             >
               {isTogglingStatus ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 size-4 animate-spin" />
               ) : (
                 <span className="mr-2">🔓</span>
               )}
@@ -190,7 +190,7 @@ const ByeStatusControl: React.FC<{
               className="border-amber-600 text-amber-600 hover:bg-amber-50 w-full sm:w-auto text-xs sm:text-sm"
             >
               {isTogglingStatus ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 size-4 animate-spin" />
               ) : (
                 <span className="mr-2">🔒</span>
               )}
@@ -225,3 +225,4 @@ const ByeStatusControl: React.FC<{
     </div>
   );
 };
+'

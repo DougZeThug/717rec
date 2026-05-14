@@ -23,7 +23,7 @@ export const ScheduleGenerationStep: React.FC<ScheduleGenerationStepProps> = ({
   return (
     <div>
       <div className="flex items-center mb-2">
-        <div className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs mr-2">
+        <div className="bg-primary text-primary-foreground rounded-full size-6 flex items-center justify-center text-xs mr-2">
           2
         </div>
         <h4 className="font-medium">Review Generated Matches</h4>

@@ -28,7 +28,7 @@ const CareerRankingsSection: React.FC = () => {
       <Card className="mb-4">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5" />
+            <Trophy className="size-5" />
             Career Statistics
           </CardTitle>
           <CardDescription>Error loading career statistics: {error.message}</CardDescription>
@@ -66,7 +66,7 @@ const CareerRankingsSection: React.FC = () => {
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Trophy className={cn('text-amber-500', isMobile ? 'h-4 w-4' : 'h-5 w-5')} />
+                <Trophy className={cn('text-amber-500', isMobile ? 'size-4' : 'size-5')} />
                 <div>
                   <CardTitle
                     className={cn(
@@ -109,12 +109,12 @@ const CareerRankingsSection: React.FC = () => {
                     )}
                     title="Export to CSV"
                   >
-                    <Download className="h-4 w-4" />
+                    <Download className="size-4" />
                     <span className="sr-only sm:not-sr-only">Export</span>
                   </Button>
                 )}
                 <ChevronDown
-                  className={cn('h-5 w-5 transition-transform', isOpen && 'rotate-180')}
+                  className={cn('size-5 transition-transform', isOpen && 'rotate-180')}
                 />
               </div>
             </div>

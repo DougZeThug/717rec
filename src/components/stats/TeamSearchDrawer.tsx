@@ -40,7 +40,7 @@ const TeamSearchDrawer: React.FC<TeamSearchDrawerProps> = ({
       <DrawerContent className="max-h-[85vh]">
         <DrawerHeader className="pb-2">
           <DrawerTitle className="flex items-center gap-2">
-            <Search className="h-5 w-5" />
+            <Search className="size-5" />
             Find Your Team
           </DrawerTitle>
         </DrawerHeader>
@@ -75,7 +75,7 @@ const TeamSearchDrawer: React.FC<TeamSearchDrawerProps> = ({
                       isWinterTheme ? 'border border-frost-border/30' : 'border border-border/50'
                     )}
                   >
-                    <div className="flex-shrink-0 w-8 h-8">
+                    <div className="flex-shrink-0 size-8">
                       <TeamLogo
                         imageUrl={ranking.logoUrl || ranking.imageUrl}
                         teamName={ranking.teamName}
@@ -91,7 +91,7 @@ const TeamSearchDrawer: React.FC<TeamSearchDrawerProps> = ({
                     </div>
 
                     <div className="flex items-center gap-1 text-sm">
-                      <Trophy className="h-3.5 w-3.5 text-amber-500" />
+                      <Trophy className="size-3.5 text-amber-500" />
                       <span className="font-medium">#{globalRank}</span>
                     </div>
                   </button>

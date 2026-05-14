@@ -42,7 +42,7 @@ const GameScoreRow: React.FC<GameScoreRowProps> = ({
       {/* Game Number Badge */}
       <div
         className={cn(
-          'flex-none w-8 h-8 flex items-center justify-center',
+          'flex-none size-8 flex items-center justify-center',
           'bg-primary/10 text-primary rounded-lg',
           'text-sm font-bold'
         )}
@@ -89,8 +89,8 @@ const GameScoreRow: React.FC<GameScoreRowProps> = ({
         onClick={() => onRemoveGame(index)}
         disabled={!canRemove}
         title={`Remove game ${index + 1}`}
-        icon={<MinusCircle className="h-4 w-4 text-destructive" />}
-        className="flex-none h-8 w-8 rounded-lg"
+        icon={<MinusCircle className="size-4 text-destructive" />}
+        className="flex-none size-8 rounded-lg"
       />
     </m.div>
   );

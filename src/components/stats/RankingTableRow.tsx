@@ -158,11 +158,11 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
               variant="ghost"
               size="sm"
               className={cn(
-                'h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity',
+                'size-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity',
                 isWinterTheme ? 'hover:bg-frost-primary/10' : ''
               )}
             >
-              <Scale className="h-4 w-4" />
+              <Scale className="size-4" />
             </Button>
           </Link>
         </div>

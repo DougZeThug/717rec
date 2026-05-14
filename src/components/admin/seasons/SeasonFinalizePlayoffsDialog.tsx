@@ -35,7 +35,7 @@ const StepsList: React.FC = () => (
 const DialogHeader: React.FC<{ seasonName: string }> = ({ seasonName }) => (
   <AlertDialogHeader>
     <AlertDialogTitle className="flex items-center gap-2">
-      <Trophy className="h-5 w-5 text-yellow-500" />
+      <Trophy className="size-5 text-yellow-500" />
       Finalize Playoffs: {seasonName}
     </AlertDialogTitle>
     <AlertDialogDescription>
@@ -47,7 +47,7 @@ const DialogHeader: React.FC<{ seasonName: string }> = ({ seasonName }) => (
 
 const DialogBody: React.FC = () => (
   <Alert>
-    <Trophy className="h-4 w-4" />
+    <Trophy className="size-4" />
     <AlertDescription>
       <strong>This will:</strong>
       <StepsList />

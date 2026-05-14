@@ -16,7 +16,7 @@ const WeeklyRecapSkeleton: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <ClipboardList className="h-4 w-4 text-violet-500/50" />
+            <ClipboardList className="size-4 text-violet-500/50" />
             <span className="text-xs font-semibold uppercase tracking-wider text-violet-600/50 dark:text-violet-400/50">
               Weekly Recap
             </span>
@@ -27,12 +27,12 @@ const WeeklyRecapSkeleton: React.FC = () => {
         {/* Row skeletons */}
         <div className="space-y-3">
           <div className="flex items-center gap-3">
-            <Skeleton className="h-8 w-8 rounded-full flex-shrink-0" />
+            <Skeleton className="size-8 rounded-full flex-shrink-0" />
             <Skeleton className="h-4 w-48" />
             <Skeleton className="h-5 w-14 ml-auto" />
           </div>
           <div className="flex items-center gap-3">
-            <Skeleton className="h-8 w-8 rounded-full flex-shrink-0" />
+            <Skeleton className="size-8 rounded-full flex-shrink-0" />
             <Skeleton className="h-4 w-36" />
             <Skeleton className="h-5 w-10 ml-auto" />
           </div>

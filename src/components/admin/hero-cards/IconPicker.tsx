@@ -29,20 +29,20 @@ export const IconPicker = ({ value, onChange }: IconPickerProps) => {
             title={iconOption.description}
           >
             {/* Icon or placeholder */}
-            <div className="relative h-6 w-6 flex items-center justify-center">
+            <div className="relative size-6 flex items-center justify-center">
               {IconComponent ? (
                 <IconComponent
-                  className={cn('h-5 w-5', isSelected ? 'text-primary' : 'text-muted-foreground')}
+                  className={cn('size-5', isSelected ? 'text-primary' : 'text-muted-foreground')}
                 />
               ) : (
                 <CircleOff
-                  className={cn('h-5 w-5', isSelected ? 'text-primary' : 'text-muted-foreground')}
+                  className={cn('size-5', isSelected ? 'text-primary' : 'text-muted-foreground')}
                 />
               )}
 
               {isSelected && (
                 <div className="absolute -top-1 -right-1">
-                  <Check className="h-3 w-3 text-primary" />
+                  <Check className="size-3 text-primary" />
                 </div>
               )}
             </div>

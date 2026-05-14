@@ -26,7 +26,7 @@ const AlgorithmSettings: React.FC<AlgorithmSettingsProps> = ({
     <AccordionItem value="settings">
       <AccordionTrigger className="text-sm">
         <span className="flex items-center">
-          <Settings2 className="h-4 w-4 mr-2" /> Algorithm Settings
+          <Settings2 className="size-4 mr-2" /> Algorithm Settings
         </span>
       </AccordionTrigger>
       <AccordionContent>
@@ -81,3 +81,4 @@ const AlgorithmSettings: React.FC<AlgorithmSettingsProps> = ({
 };
 
 export default AlgorithmSettings;
+'

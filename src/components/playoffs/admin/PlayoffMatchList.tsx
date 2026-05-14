@@ -242,7 +242,7 @@ const PlayoffMatchList: React.FC<PlayoffMatchListProps> = ({
                             onClick={() => onEditMatch(match.id, false)}
                             disabled={!match.team1Id || !match.team2Id}
                           >
-                            <Edit className="h-4 w-4 mr-1" />
+                            <Edit className="size-4 mr-1" />
                             Edit
                           </Button>
 
@@ -252,7 +252,7 @@ const PlayoffMatchList: React.FC<PlayoffMatchListProps> = ({
                             onClick={() => onEditMatch(match.id, true)}
                             disabled={!match.team1Id || !match.team2Id}
                           >
-                            <RefreshCcw className="h-4 w-4 mr-1" />
+                            <RefreshCcw className="size-4 mr-1" />
                             Quick
                           </Button>
 
@@ -268,7 +268,7 @@ const PlayoffMatchList: React.FC<PlayoffMatchListProps> = ({
                                   : 'Change which teams are in this matchup'
                               }
                             >
-                              <ArrowLeftRight className="h-4 w-4 mr-1" />
+                              <ArrowLeftRight className="size-4 mr-1" />
                               Teams
                             </Button>
                           )}

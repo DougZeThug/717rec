@@ -16,7 +16,7 @@ const ParityStat: React.FC<{
   icon: React.ElementType;
 }> = ({ label, value, description, icon: Icon }) => (
   <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-    <div className="flex items-center justify-center rounded-full w-8 h-8 bg-primary/10 shrink-0">
+    <div className="flex items-center justify-center rounded-full size-8 bg-primary/10 shrink-0">
       <Icon size={16} className="text-primary" />
     </div>
     <div>

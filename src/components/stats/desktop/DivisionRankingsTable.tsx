@@ -30,9 +30,9 @@ const SortableHeader: React.FC<{
   const indicator =
     sortOptions.field === field ? (
       sortOptions.direction === 'asc' ? (
-        <ArrowUp className="inline-block ml-1 h-4 w-4" />
+        <ArrowUp className="inline-block ml-1 size-4" />
       ) : (
-        <ArrowDown className="inline-block ml-1 h-4 w-4" />
+        <ArrowDown className="inline-block ml-1 size-4" />
       )
     ) : null;
 
@@ -61,9 +61,9 @@ const SortIndicator: React.FC<{
 }> = ({ field, sortOptions }) => {
   if (sortOptions.field !== field) return null;
   return sortOptions.direction === 'asc' ? (
-    <ArrowUp className="inline-block ml-1 h-4 w-4" />
+    <ArrowUp className="inline-block ml-1 size-4" />
   ) : (
-    <ArrowDown className="inline-block ml-1 h-4 w-4" />
+    <ArrowDown className="inline-block ml-1 size-4" />
   );
 };
 
@@ -225,16 +225,16 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
                     <div className="flex items-center gap-3 min-w-0">
                       {/** Logo as square with consistent sizing */}
                       {ranking.imageUrl || ranking.logoUrl ? (
-                        <div className="w-8 h-8 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                        <div className="size-8 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
                           <img
                             src={ranking.imageUrl || ranking.logoUrl}
                             alt={ranking.teamName}
-                            className="w-full h-full object-contain"
+                            className="size-full object-contain"
                             style={{ minWidth: '2rem', minHeight: '2rem' }}
                           />
                         </div>
                       ) : (
-                        <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-400 text-xs flex-shrink-0">
+                        <div className="size-8 rounded-md bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-400 text-xs flex-shrink-0">
                           N/A
                         </div>
                       )}

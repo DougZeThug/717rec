@@ -18,7 +18,7 @@ export function BracketFormGrandFinal({ form }: { form: any }) {
       render={({ field }) => (
         <FormItem className="space-y-3">
           <div className="flex items-center gap-2">
-            <Trophy className="w-4 h-4" />
+            <Trophy className="size-4" />
             <FormLabel>Grand Final Format</FormLabel>
           </div>
           <FormControl>

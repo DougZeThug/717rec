@@ -22,18 +22,18 @@ export const BracketFormActions: React.FC<BracketFormActionsProps> = ({
   return (
     <div className="flex justify-end space-x-2 pt-4">
       <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-        <X className="w-4 h-4 mr-2" />
+        <X className="size-4 mr-2" />
         Cancel
       </Button>
       <Button type="submit" disabled={isSubmitting || !isFormValid} className="min-w-[120px]">
         {isSubmitting ? (
           <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            <Loader2 className="size-4 mr-2 animate-spin" />
             Creating...
           </>
         ) : (
           <>
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="size-4 mr-2" />
             Create Bracket
           </>
         )}

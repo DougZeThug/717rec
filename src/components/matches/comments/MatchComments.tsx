@@ -46,7 +46,7 @@ const MatchComments: React.FC<MatchCommentsProps> = ({ matchId }) => {
               size="sm"
               className="p-0 h-auto font-normal hover:bg-transparent hover:underline flex items-center gap-1 text-muted-foreground hover:text-foreground"
             >
-              <MessageSquare className="h-4 w-4" />
+              <MessageSquare className="size-4" />
               <span className="text-sm">
                 {commentCount} Comment{commentCount !== 1 ? 's' : ''}
               </span>

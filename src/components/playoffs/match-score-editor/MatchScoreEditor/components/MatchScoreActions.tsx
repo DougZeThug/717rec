@@ -34,7 +34,7 @@ const MatchScoreActions: React.FC<MatchScoreActionsProps> = ({
           onClick={onAddGame}
           disabled={!canAddGames}
         >
-          <PlusCircle className="h-4 w-4 mr-1" />
+          <PlusCircle className="size-4 mr-1" />
           Add Game
         </Button>
 
@@ -48,7 +48,7 @@ const MatchScoreActions: React.FC<MatchScoreActionsProps> = ({
 
       <div className="flex justify-end space-x-2 pt-2 border-t">
         <Button variant="outline" onClick={onCancel} disabled={isSubmitting}>
-          <X className="h-4 w-4 mr-1" />
+          <X className="size-4 mr-1" />
           Cancel
         </Button>
         <Button onClick={onSave} disabled={isSubmitting || hasValidationError}>
@@ -56,7 +56,7 @@ const MatchScoreActions: React.FC<MatchScoreActionsProps> = ({
             <>Saving...</>
           ) : (
             <>
-              <Save className="h-4 w-4 mr-1" />
+              <Save className="size-4 mr-1" />
               Save Scores
             </>
           )}

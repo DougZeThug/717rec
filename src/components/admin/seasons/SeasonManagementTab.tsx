@@ -44,7 +44,7 @@ const SeasonManagementTab = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Active Season</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <Calendar className="size-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{activeSeason ? activeSeason.name : 'None'}</div>
@@ -59,7 +59,7 @@ const SeasonManagementTab = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Seasons</CardTitle>
-              <Trophy className="h-4 w-4 text-muted-foreground" />
+              <Trophy className="size-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{seasons?.length || 0}</div>
@@ -72,7 +72,7 @@ const SeasonManagementTab = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Inactive Seasons</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <Calendar className="size-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{inactiveSeasons?.length || 0}</div>
@@ -84,7 +84,7 @@ const SeasonManagementTab = () => {
         {/* Action Buttons */}
         <div className="flex justify-between items-center">
           <Button onClick={handleCreateSeason} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
+            <Plus className="size-4" />
             Create New Season
           </Button>
           {activeSeason && <SeasonActions season={activeSeason} />}

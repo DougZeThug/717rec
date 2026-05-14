@@ -72,7 +72,7 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
       <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
         <div className="flex items-center justify-center gap-2 text-white">
           <div className="bg-green-500/30 rounded-full p-1">
-            <Check className="h-5 w-5 text-green-300" />
+            <Check className="size-5 text-green-300" />
           </div>
           <span className="font-semibold">{confirmationMessage}</span>
         </div>
@@ -83,7 +83,7 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
   return (
     <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
       <div className="flex items-center gap-2 mb-2">
-        <UserPlus className="h-4 w-4 text-white" />
+        <UserPlus className="size-4 text-white" />
         <span className="text-white font-semibold text-sm">Sign Up</span>
       </div>
 
@@ -124,7 +124,7 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
           disabled={addSignup.isPending}
           className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30 h-11 text-base"
         >
-          {addSignup.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Sign Up'}
+          {addSignup.isPending ? <Loader2 className="size-4 animate-spin" /> : 'Sign Up'}
         </Button>
       </form>
     </div>

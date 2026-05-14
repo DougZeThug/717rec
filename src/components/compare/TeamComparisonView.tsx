@@ -25,7 +25,7 @@ const TeamHeader: React.FC<{ team: TeamComparisonSide; align: 'left' | 'right' }
   align,
 }) => (
   <div className={`flex items-center gap-3 ${align === 'right' ? 'flex-row-reverse' : ''}`}>
-    <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-border">
+    <Avatar className="size-12 sm:size-16 border-2 border-border">
       <AvatarImage src={team.logoUrl || undefined} alt={team.name} />
       <AvatarFallback className="text-lg font-bold bg-muted">
         {team.name.substring(0, 2).toUpperCase()}
@@ -136,25 +136,25 @@ export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({
 
         <div className="grid grid-cols-3 gap-2 py-3 border-b border-border/50">
           <div className="flex items-center gap-1">
-            <Trophy className="h-4 w-4 text-yellow-500" />
+            <Trophy className="size-4 text-yellow-500" />
             <span className="font-semibold">{t1?.championships || 0}</span>
           </div>
           <div className="text-center text-sm text-muted-foreground">Championships</div>
           <div className="flex items-center justify-end gap-1">
             <span className="font-semibold">{t2?.championships || 0}</span>
-            <Trophy className="h-4 w-4 text-yellow-500" />
+            <Trophy className="size-4 text-yellow-500" />
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-2 py-3">
           <div className="flex items-center gap-1">
-            <Medal className="h-4 w-4 text-slate-400" />
+            <Medal className="size-4 text-slate-400" />
             <span className="font-semibold">{t1?.runner_ups || 0}</span>
           </div>
           <div className="text-center text-sm text-muted-foreground">Runner-ups</div>
           <div className="flex items-center justify-end gap-1">
             <span className="font-semibold">{t2?.runner_ups || 0}</span>
-            <Medal className="h-4 w-4 text-slate-400" />
+            <Medal className="size-4 text-slate-400" />
           </div>
         </div>
       </div>

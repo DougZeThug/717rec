@@ -191,7 +191,7 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
 
         {!canUpdate && (
           <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
+            <AlertTriangle className="size-4" />
             <AlertDescription>
               Cannot update seeding after matches have started. This bracket is currently{' '}
               {bracketState.replace('_', ' ')}.
@@ -262,7 +262,7 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={!canUpdate || isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
             Update Seeding
           </Button>
         </DialogFooter>

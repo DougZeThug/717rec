@@ -208,7 +208,7 @@ const MyNextMatchCard: React.FC<MyNextMatchCardProps> = ({
                 <div className="flex items-center gap-1.5">
                   <Calendar
                     className={cn(
-                      'h-3.5 w-3.5',
+                      'size-3.5',
                       shouldApplyWinter ? 'text-cyan-400/70' : 'text-muted-foreground'
                     )}
                   />
@@ -225,7 +225,7 @@ const MyNextMatchCard: React.FC<MyNextMatchCardProps> = ({
                   <div className="flex items-center gap-1.5">
                     <Clock
                       className={cn(
-                        'h-3.5 w-3.5',
+                        'size-3.5',
                         shouldApplyWinter ? 'text-cyan-400/70' : 'text-muted-foreground'
                       )}
                     />
@@ -245,7 +245,7 @@ const MyNextMatchCard: React.FC<MyNextMatchCardProps> = ({
             {/* Arrow */}
             <ChevronRight
               className={cn(
-                'h-5 w-5 group-hover:translate-x-1 transition-all duration-200 flex-shrink-0',
+                'size-5 group-hover:translate-x-1 transition-all duration-200 flex-shrink-0',
                 shouldApplyWinter
                   ? 'text-cyan-400/50 group-hover:text-cyan-400'
                   : 'text-muted-foreground/50 group-hover:text-primary'
@@ -267,7 +267,7 @@ const MyNextMatchCard: React.FC<MyNextMatchCardProps> = ({
               )}
             >
               See full schedule
-              <ChevronRight className="h-3 w-3" />
+              <ChevronRight className="size-3" />
             </Link>
           </div>
         )}

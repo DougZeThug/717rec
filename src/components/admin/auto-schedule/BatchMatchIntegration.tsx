@@ -36,7 +36,7 @@ const BatchMatchIntegration = ({
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <FileText className="h-4 w-4" /> Export to Batch Matches
+          <FileText className="size-4" /> Export to Batch Matches
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -49,7 +49,7 @@ const BatchMatchIntegration = ({
 
           <Button onClick={onExport} className="w-full flex items-center justify-center">
             {matchCount > 0 ? 'View in Batch Matches Tab' : 'Export to Batch Matches'}
-            <ArrowRight className="ml-2 h-4 w-4" />
+            <ArrowRight className="ml-2 size-4" />
           </Button>
         </div>
       </CardContent>

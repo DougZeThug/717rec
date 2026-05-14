@@ -65,7 +65,7 @@ const RequestsTab: React.FC = () => {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <CardTitle className="flex items-center gap-2">
-          <Inbox className="h-5 w-5" />
+          <Inbox className="size-5" />
           Team Requests
           {pendingCount !== undefined && pendingCount > 0 && (
             <Badge variant="destructive" className="ml-2">
@@ -91,7 +91,7 @@ const RequestsTab: React.FC = () => {
       <CardContent>
         {isLoading ? (
           <div className="flex justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <Loader2 className="size-6 animate-spin text-muted-foreground" />
           </div>
         ) : requests && requests.length > 0 ? (
           <div className="space-y-3">
@@ -142,7 +142,7 @@ const RequestsTab: React.FC = () => {
                         className="text-green-600 hover:text-green-700 hover:bg-green-50"
                         onClick={() => openActionDialog(request.id, 'approve')}
                       >
-                        <Check className="h-4 w-4 mr-1" />
+                        <Check className="size-4 mr-1" />
                         Approve
                       </Button>
                       <Button
@@ -151,7 +151,7 @@ const RequestsTab: React.FC = () => {
                         className="text-red-600 hover:text-red-700 hover:bg-red-50"
                         onClick={() => openActionDialog(request.id, 'deny')}
                       >
-                        <X className="h-4 w-4 mr-1" />
+                        <X className="size-4 mr-1" />
                         Deny
                       </Button>
                     </div>
@@ -209,7 +209,7 @@ const RequestsTab: React.FC = () => {
           </div>
         ) : (
           <div className="text-center py-8 text-muted-foreground">
-            <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
+            <Clock className="size-12 mx-auto mb-3 opacity-50" />
             <p>No requests found</p>
             {statusFilter !== 'ALL' && <p className="text-sm mt-1">Try changing the filter</p>}
           </div>
@@ -246,7 +246,7 @@ const RequestsTab: React.FC = () => {
               disabled={updateMutation.isPending}
               variant={actionType === 'approve' ? 'default' : 'destructive'}
             >
-              {updateMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              {updateMutation.isPending && <Loader2 className="size-4 animate-spin mr-2" />}
               {actionType === 'approve' ? 'Approve' : 'Deny'}
             </Button>
           </DialogFooter>

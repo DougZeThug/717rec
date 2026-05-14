@@ -41,7 +41,7 @@ export const ColorPresetPicker = ({
               >
                 {isSelected && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                    <Check className="h-5 w-5 text-white drop-shadow-md" />
+                    <Check className="size-5 text-white drop-shadow-md" />
                   </div>
                 )}
               </div>

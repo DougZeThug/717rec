@@ -15,7 +15,7 @@ export const DateSelectionSection: React.FC<DateSelectionSectionProps> = ({
   return (
     <div className="w-full">
       <div className="mb-2 flex items-center gap-2">
-        <Calendar className="h-4 w-4 text-muted-foreground" />
+        <Calendar className="size-4 text-muted-foreground" />
         <span className="font-medium">Select Match Date</span>
       </div>
       <ThursdayDatePicker selected={selectedDate} onSelect={setSelectedDate} />

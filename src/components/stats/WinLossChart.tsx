@@ -37,7 +37,7 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
   );
 
   return (
-    <div className={cn('w-full h-full', animations.fadeIn, 'animation-delay-200')}>
+    <div className={cn('size-full', animations.fadeIn, 'animation-delay-200')}>
       <WinLossBarChart data={sortedData} isMobile={isMobile} />
     </div>
   );

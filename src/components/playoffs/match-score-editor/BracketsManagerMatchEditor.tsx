@@ -47,7 +47,7 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent>
           <div className="flex items-center justify-center p-8">
-            <Loader2 className="h-8 w-8 animate-spin" />
+            <Loader2 className="size-8 animate-spin" />
           </div>
         </DialogContent>
       </Dialog>

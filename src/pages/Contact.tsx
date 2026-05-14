@@ -101,7 +101,7 @@ export default function Contact() {
               <CardContent className="pt-12 pb-8 text-center">
                 <div className="flex justify-center mb-6">
                   <div className="p-4 bg-primary/10 rounded-full">
-                    <CheckCircle className="h-12 w-12 text-primary" />
+                    <CheckCircle className="size-12 text-primary" />
                   </div>
                 </div>
                 <h1 className="text-2xl font-bold mb-2">Message Sent!</h1>
@@ -143,24 +143,24 @@ export default function Contact() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Mail className="h-5 w-5" />
+                <Mail className="size-5" />
                 Send us a message
               </CardTitle>
               <CardDescription>
                 Fill out the form below and we'll get back to you as soon as possible.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  {/* Honeypot field - hidden from real users; bots auto-fill it */}
-                  <input
-                    type="text"
-                    tabIndex={-1}
-                    autoComplete="off"
-                    aria-hidden="true"
-                    className="absolute left-[-9999px] h-0 w-0 opacity-0"
-                    {...form.register('website')}
+ </CardDescription>
+ </CardHeader>
+ <CardContent>
+ <Form {...form}>
+ <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+ {/* Honeypot field - hidden from real users; bots auto-fill it */}
+ <input
+ type="text"
+ tabIndex={-1}
+ autoComplete="off"
+ aria-hidden="true"
+ className="absolute left-[-9999px] size-0 opacity-0"
+ {...form.register('website')}
                   />
                   <div className="grid gap-4 sm:grid-cols-2">
                     <FormField
@@ -266,3 +266,4 @@ export default function Contact() {
     </PageLayout>
   );
 }
+'

@@ -75,11 +75,11 @@ const EditableMatchList: React.FC<EditableMatchListProps> = ({
           }
         >
           {!validation.isValid ? (
-            <AlertCircle className="h-4 w-4" />
+            <AlertCircle className="size-4" />
           ) : validation.warnings.length > 0 ? (
-            <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <AlertTriangle className="size-4 text-amber-600 dark:text-amber-400" />
           ) : (
-            <CheckCircle className="h-4 w-4" />
+            <CheckCircle className="size-4" />
           )}
           <AlertDescription>
             {!validation.isValid ? (

@@ -70,7 +70,7 @@ const TeamLogoCard: React.FC<TeamLogoCardProps> = ({ team, onUpdate }) => {
     <Card className={`transition-all duration-300 ${justUpdated ? 'ring-2 ring-green-500' : ''}`}>
       <CardContent className="p-4 flex flex-col items-center gap-3">
         {/* Logo Preview */}
-        <div className="w-20 h-20 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+        <div className="size-20 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
           <TeamLogo imageUrl={team.imageUrl} teamName={team.name} size="lg" />
         </div>
 
@@ -102,17 +102,17 @@ const TeamLogoCard: React.FC<TeamLogoCardProps> = ({ team, onUpdate }) => {
         >
           {isUploading ? (
             <>
-              <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
+              <Loader2 className="size-3 mr-1.5 animate-spin" />
               Uploading...
             </>
           ) : justUpdated ? (
             <>
-              <Check className="h-3 w-3 mr-1.5" />
+              <Check className="size-3 mr-1.5" />
               Updated!
             </>
           ) : (
             <>
-              <Upload className="h-3 w-3 mr-1.5" />
+              <Upload className="size-3 mr-1.5" />
               {status === 'missing' ? 'Add Logo' : 'Update Logo'}
             </>
           )}

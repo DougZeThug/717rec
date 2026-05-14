@@ -88,7 +88,7 @@ const MessageEditForm: React.FC<MessageEditFormProps> = ({
           onClick={onCancel}
           disabled={isProcessing || isSaving}
         >
-          <X className="h-4 w-4 mr-1" />
+          <X className="size-4 mr-1" />
           Cancel
         </Button>
         <Button
@@ -98,12 +98,12 @@ const MessageEditForm: React.FC<MessageEditFormProps> = ({
         >
           {isSaving ? (
             <>
-              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+              <Loader2 className="size-4 mr-1 animate-spin" />
               Saving...
             </>
           ) : (
             <>
-              <Check className="h-4 w-4 mr-1" />
+              <Check className="size-4 mr-1" />
               Save
             </>
           )}

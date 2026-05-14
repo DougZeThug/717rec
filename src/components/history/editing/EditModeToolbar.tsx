@@ -39,12 +39,12 @@ export const EditModeToolbar: React.FC<EditModeToolbarProps> = ({
         >
           {hasChanges ? (
             <>
-              <AlertCircle className="h-4 w-4" />
+              <AlertCircle className="size-4" />
               {changeCount} unsaved change{changeCount !== 1 ? 's' : ''}
             </>
           ) : (
             <>
-              <Save className="h-4 w-4" />
+              <Save className="size-4" />
               No changes
             </>
           )}
@@ -64,7 +64,7 @@ export const EditModeToolbar: React.FC<EditModeToolbarProps> = ({
             disabled={isSaving}
             className="flex-1 sm:flex-none"
           >
-            <RotateCcw className="h-4 w-4 mr-2" />
+            <RotateCcw className="size-4 mr-2" />
             Reset
           </Button>
         )}
@@ -76,7 +76,7 @@ export const EditModeToolbar: React.FC<EditModeToolbarProps> = ({
           disabled={isSaving}
           className="flex-1 sm:flex-none"
         >
-          <X className="h-4 w-4 mr-2" />
+          <X className="size-4 mr-2" />
           Cancel
         </Button>
 
@@ -89,12 +89,12 @@ export const EditModeToolbar: React.FC<EditModeToolbarProps> = ({
         >
           {isSaving ? (
             <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <Loader2 className="size-4 mr-2 animate-spin" />
               Saving...
             </>
           ) : (
             <>
-              <Save className="h-4 w-4 mr-2" />
+              <Save className="size-4 mr-2" />
               Save Changes
             </>
           )}

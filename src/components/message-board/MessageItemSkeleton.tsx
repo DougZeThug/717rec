@@ -19,7 +19,7 @@ const MessageItemSkeleton: React.FC<MessageItemSkeletonProps> = ({ className }) 
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             {/* Avatar */}
-            <Skeleton className="h-8 w-8 rounded-full" />
+            <Skeleton className="size-8 rounded-full" />
             {/* Username */}
             <Skeleton className="h-4 w-24" />
             {/* Team badge */}

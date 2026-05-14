@@ -104,7 +104,7 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
                   </CardDescription>
                 )}
               </div>
-              <ChevronDown className={cn('h-5 w-5 transition-transform', isOpen && 'rotate-180')} />
+              <ChevronDown className={cn('size-5 transition-transform', isOpen && 'rotate-180')} />
             </div>
           </CardHeader>
         </CollapsibleTrigger>

@@ -13,7 +13,7 @@ const StatsLoadingState: React.FC = () => {
         <StaggeredContent>
           <StaggerItem priority="high">
             <div className="flex items-center justify-center gap-4 mb-8">
-              <BarChart3 className="h-8 w-8 text-muted-foreground animate-pulse" />
+              <BarChart3 className="size-8 text-muted-foreground animate-pulse" />
               <ShimmerSkeleton variant="input" className="h-8 w-48" />
             </div>
           </StaggerItem>

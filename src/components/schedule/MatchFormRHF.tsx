@@ -296,7 +296,7 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
 
         <div className="flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onCancel}>
-            <X className="h-4 w-4 mr-2" />
+            <X className="size-4 mr-2" />
             Cancel
           </Button>
           <Button
@@ -308,12 +308,12 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
           >
             {match ? (
               <>
-                <Save className="h-4 w-4 mr-2" />
+                <Save className="size-4 mr-2" />
                 Update Match
               </>
             ) : (
               <>
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="size-4 mr-2" />
                 Create Match
               </>
             )}

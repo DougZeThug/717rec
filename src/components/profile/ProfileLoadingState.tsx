@@ -15,7 +15,7 @@ const ProfileLoadingState: React.FC<ProfileLoadingStateProps> = ({
   return (
     <Card className="w-full max-w-md">
       <CardContent className="flex flex-col items-center justify-center py-12">
-        <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+        <Loader2 className="size-12 animate-spin text-primary mb-4" />
         <p className="text-lg font-medium">{message}</p>
         <p className="text-sm text-muted-foreground mt-2">{subMessage}</p>
       </CardContent>

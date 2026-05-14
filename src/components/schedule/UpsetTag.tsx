@@ -25,7 +25,7 @@ export const UpsetTag: React.FC<UpsetTagProps> = ({ className }) => {
       )}
       title="The underdog won this match!"
     >
-      <Zap className="h-3 w-3" />
+      <Zap className="size-3" />
       <span>Upset</span>
     </div>
   );

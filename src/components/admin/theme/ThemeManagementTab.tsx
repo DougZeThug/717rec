@@ -66,7 +66,7 @@ const ThemeManagementTab: React.FC = () => {
               <div className="flex items-center gap-3">
                 <Icon
                   className={cn(
-                    'h-5 w-5',
+                    'size-5',
                     setting.theme_key === 'winter-frozen' && 'text-cyan-500'
                   )}
                 />

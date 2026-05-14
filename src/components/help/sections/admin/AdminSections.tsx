@@ -12,7 +12,7 @@ export const AdminSections: React.FC = () => {
     <>
       <div className="pt-4 pb-2">
         <h2 className="text-xl font-semibold flex items-center gap-2">
-          <Settings className="h-5 w-5" />
+          <Settings className="size-5" />
           Admin Guide
         </h2>
         <p className="text-sm text-muted-foreground mt-1">League management tools and workflows</p>

@@ -30,8 +30,8 @@ const buttonVariants = cva(
         xs: 'h-8 min-h-[44px] px-2 text-xs',
         sm: 'h-9 min-h-[44px] px-3',
         lg: 'h-11 min-h-11 px-8',
-        icon: 'h-10 w-10 min-h-[44px] min-w-[44px]',
-        'icon-sm': 'h-8 w-8 min-h-[44px] min-w-[44px]', // Small icon but large touch target
+        icon: 'size-10 min-h-[44px] min-w-[44px]',
+        'icon-sm': 'size-8 min-h-[44px] min-w-[44px]', // Small icon but large touch target
       },
     },
     defaultVariants: {

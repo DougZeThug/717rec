@@ -27,7 +27,7 @@ export const WarningDisplay: React.FC<WarningDisplayProps> = ({
 
   return (
     <Alert className="mt-4 border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20">
-      <AlertTriangle className="h-4 w-4 text-amber-500" />
+      <AlertTriangle className="size-4 text-amber-500" />
       <AlertTitle>
         {unmatchedTeams > 0 ? 'Some teams will be unmatched' : 'Odd number of teams detected'}
       </AlertTitle>

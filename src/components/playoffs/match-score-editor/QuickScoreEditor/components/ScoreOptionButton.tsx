@@ -44,7 +44,7 @@ const ScoreOptionButton: React.FC<ScoreOptionButtonProps> = ({
       {option.label}
       <Check
         className={cn(
-          'ml-1 h-4 w-4',
+          'ml-1 size-4',
           selectedOption === option.label ? 'text-white' : 'text-green-500'
         )}
       />

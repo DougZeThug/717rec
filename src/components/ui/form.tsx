@@ -175,7 +175,7 @@ const FormMessage = React.forwardRef<
       )}
       {...props}
     >
-      <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
+      <AlertCircle className="size-3.5 flex-shrink-0" aria-hidden="true" />
       <span>{body}</span>
     </p>
   );

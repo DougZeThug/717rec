@@ -54,7 +54,7 @@ const TeamAdvancedStatsSection: React.FC<TeamAdvancedStatsSectionProps> = ({ tea
         defaultOpen={false}
       >
         <div className="text-center py-8">
-          <BarChart3 className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+          <BarChart3 className="size-10 mx-auto text-muted-foreground/40 mb-3" />
           <p className="text-sm font-medium text-muted-foreground">No advanced stats available</p>
           <p className="text-xs text-muted-foreground/70 mt-1">
             Stats will appear after completing seasons

@@ -8,7 +8,7 @@ const NavBrand: React.FC = React.memo(() => {
       <img
         src="/lovable-uploads/faa54084-d274-43b9-9862-5544b188b4ca.png"
         alt="717Rec League Logo"
-        className="h-8 w-8 object-contain"
+        className="size-8 object-contain"
       />
       <span className="text-xl font-bebas tracking-wider">717Rec</span>
     </RouterLink>

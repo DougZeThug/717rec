@@ -30,16 +30,16 @@ export const TimeslotGroupHeader = ({
     )}
   >
     <div className="flex items-center gap-2">
-      {isByeWeek && <Calendar className="h-4 w-4" />}
+      {isByeWeek && <Calendar className="size-4" />}
       {isByeWeek ? 'BYE WEEK' : timeslot}
       <Badge variant="outline" className="bg-white/10 text-white ml-2">
         {teamCount} {teamCount === 1 ? 'team' : 'teams'}
       </Badge>
     </div>
     {expanded ? (
-      <ChevronDown className="h-4 w-4 text-white/80" />
+      <ChevronDown className="size-4 text-white/80" />
     ) : (
-      <ChevronRight className="h-4 w-4 text-white/80" />
+      <ChevronRight className="size-4 text-white/80" />
     )}
   </div>
 );

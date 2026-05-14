@@ -99,7 +99,7 @@ export class BracketCreationErrorBoundary extends React.Component<
 
       return (
         <Alert variant="destructive" className="m-4">
-          <AlertCircle className="h-4 w-4" />
+          <AlertCircle className="size-4" />
           <AlertTitle>Bracket Creation Error</AlertTitle>
           <AlertDescription className="space-y-3">
             <p>{errorMessage}</p>
@@ -122,7 +122,7 @@ export class BracketCreationErrorBoundary extends React.Component<
                 onClick={this.handleReset}
                 className="flex items-center gap-2"
               >
-                <RefreshCw className="h-4 w-4" />
+                <RefreshCw className="size-4" />
                 Try Again
               </Button>
 
@@ -135,7 +135,7 @@ export class BracketCreationErrorBoundary extends React.Component<
                   }
                   className="flex items-center gap-2"
                 >
-                  <Bug className="h-4 w-4" />
+                  <Bug className="size-4" />
                   Debug Info
                 </Button>
               )}

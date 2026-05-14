@@ -77,7 +77,7 @@ export const AnimatedBreadcrumbs: React.FC<AnimatedBreadcrumbsProps> = ({
             }}
             className="flex items-center"
           >
-            {index > 0 && <ChevronRight className="h-4 w-4 mx-1 text-muted-foreground" />}
+            {index > 0 && <ChevronRight className="size-4 mx-1 text-muted-foreground" />}
             {item.href ? (
               <Link
                 to={item.href}
@@ -86,7 +86,7 @@ export const AnimatedBreadcrumbs: React.FC<AnimatedBreadcrumbsProps> = ({
                   'hover:underline underline-offset-4'
                 )}
               >
-                {index === 0 && <Home className="h-3.5 w-3.5" />}
+                {index === 0 && <Home className="size-3.5" />}
                 <span>{item.label}</span>
               </Link>
             ) : (

@@ -62,14 +62,14 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-full justify-between text-left font-normal">
                   <span className="flex items-center">
-                    <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <CalendarIcon className="mr-2 size-4 text-muted-foreground" />
                     {selectedDate ? (
                       format(selectedDate, 'PPP')
                     ) : (
                       <span className="text-muted-foreground">Select a date</span>
                     )}
                   </span>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <ChevronRight className="size-4 text-muted-foreground" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -146,12 +146,12 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
             >
               {isLoading ? (
                 <>
-                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  <RefreshCw className="mr-2 size-4 animate-spin" />
                   Loading...
                 </>
               ) : (
                 <>
-                  <RefreshCw className="mr-2 h-4 w-4" />
+                  <RefreshCw className="mr-2 size-4" />
                   Load Teams
                 </>
               )}
@@ -164,13 +164,13 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
             >
               {isGenerating ? (
                 <>
-                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  <RefreshCw className="mr-2 size-4 animate-spin" />
                   Generating...
                 </>
               ) : (
                 <>
                   Generate Schedule
-                  <ChevronRight className="ml-2 h-4 w-4" />
+                  <ChevronRight className="ml-2 size-4" />
                 </>
               )}
             </Button>

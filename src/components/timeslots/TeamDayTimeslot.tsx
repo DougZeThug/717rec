@@ -32,7 +32,7 @@ const TeamDayTimeslot: React.FC<TeamDayTimeslotProps> = ({
 
   return (
     <Badge variant="outline" className="flex items-center gap-1 bg-gray-50">
-      <Clock className="h-3 w-3 text-cornhole-navy" />
+      <Clock className="size-3 text-cornhole-navy" />
       <span className="text-xs">{teamTimeslot.timeslot}</span>
     </Badge>
   );

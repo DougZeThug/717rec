@@ -51,7 +51,7 @@ export const ThursdayDatePicker = ({ selected, onSelect }: ThursdayDatePickerPro
               !selected && 'text-muted-foreground'
             )}
           >
-            <CalendarIcon className="mr-2 h-4 w-4" />
+            <CalendarIcon className="mr-2 size-4" />
             {selected ? (
               <span>
                 {format(selected, 'PPP')}

@@ -43,7 +43,7 @@ const TopPerformersSection: React.FC<TopPerformersSectionProps> = ({ performers 
               <img
                 src={performer.logoUrl}
                 alt=""
-                className="w-10 h-10 rounded-full object-cover shrink-0"
+                className="size-10 rounded-full object-cover shrink-0"
               />
             )}
             <div className="flex-1 min-w-0">

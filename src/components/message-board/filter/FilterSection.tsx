@@ -78,7 +78,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
 
         {/* Clear Filters button */}
         <Button variant="ghost" size="sm" onClick={onClearFilters} className="ml-auto">
-          <X className="h-3.5 w-3.5 mr-1" />
+          <X className="size-3.5 mr-1" />
           Clear filters
         </Button>
       </div>

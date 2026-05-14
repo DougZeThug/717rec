@@ -99,7 +99,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <Send className="w-5 h-5" />
+          <Send className="size-5" />
           <h3 className="font-bebas text-xl md:text-2xl uppercase tracking-wide">
             {card.title || 'Submit a Request'}
           </h3>
@@ -111,7 +111,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
             onClick={() => setShowHistory(!showHistory)}
             className="text-inherit hover:bg-white/10"
           >
-            <History className="w-4 h-4 mr-1" />
+            <History className="size-4 mr-1" />
             History
           </Button>
         )}
@@ -137,13 +137,13 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
                 disabled={teamsLoading}
               >
                 {teamsLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="size-4 animate-spin" />
                 ) : selectedTeam ? (
                   selectedTeam.name
                 ) : (
                   'Choose a team...'
                 )}
-                <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                <ChevronDown className="ml-2 size-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent id={teamListboxId} className="w-[300px] p-0" align="start">
@@ -164,7 +164,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
                       >
                         <Check
                           className={cn(
-                            'mr-2 h-4 w-4',
+                            'mr-2 size-4',
                             selectedTeamId === team.id ? 'opacity-100' : 'opacity-0'
                           )}
                         />
@@ -199,7 +199,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
                       : 'bg-background/10 border-white/20 hover:bg-background/20'
                   )}
                 >
-                  <Icon className="w-6 h-6" />
+                  <Icon className="size-6" />
                   <span className="font-semibold text-sm">{REQUEST_TYPE_LABELS[type]}</span>
                   <span className="text-xs opacity-70">{description}</span>
                 </button>
@@ -276,9 +276,9 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
                 className="w-full bg-white/20 hover:bg-white/30 text-inherit border border-white/20"
               >
                 {submitMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  <Loader2 className="size-4 animate-spin mr-2" />
                 ) : (
-                  <Send className="h-4 w-4 mr-2" />
+                  <Send className="size-4 mr-2" />
                 )}
                 Submit Request
               </Button>
@@ -298,7 +298,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
               <Label className="text-sm font-medium opacity-90">Recent Requests</Label>
               {requestsLoading ? (
                 <div className="flex justify-center p-4">
-                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <Loader2 className="size-5 animate-spin" />
                 </div>
               ) : teamRequests && teamRequests.length > 0 ? (
                 <div className="space-y-2">

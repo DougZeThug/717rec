@@ -20,7 +20,7 @@ const MatchesTableSkeleton: React.FC = () => {
             )}
           >
             <ShimmerSkeleton className="h-4 w-36" />
-            <ShimmerSkeleton className="h-4 w-4" />
+            <ShimmerSkeleton className="size-4" />
           </CollapsibleTrigger>
           <CollapsibleContent>
             <div className="p-4 space-y-3">

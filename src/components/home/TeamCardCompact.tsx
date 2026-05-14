@@ -43,7 +43,7 @@ const TeamCardCompact: React.FC<TeamCardCompactProps> = ({ team, rank, isWinter 
       </div>
 
       {/* Logo */}
-      <div className="w-14 h-14 relative flex items-center justify-center mb-2 [&_img]:max-h-12 [&_img]:max-w-12">
+      <div className="size-14 relative flex items-center justify-center mb-2 [&_img]:max-h-12 [&_img]:max-w-12">
         <TeamLogo imageUrl={team.imageUrl} teamName={team.name} />
       </div>
 

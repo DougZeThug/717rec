@@ -146,26 +146,26 @@ export const BracketTouchControls: React.FC<BracketTouchControlsProps> = ({
           size="sm"
           onClick={handleZoomIn}
           disabled={touchState.scale >= 3}
-          className="h-10 w-10 min-h-[44px] min-w-[44px] p-0"
+          className="size-10 min-h-[44px] min-w-[44px] p-0"
         >
-          <ZoomIn className="h-5 w-5" />
+          <ZoomIn className="size-5" />
         </Button>
         <Button
           variant="secondary"
           size="sm"
           onClick={handleZoomOut}
           disabled={touchState.scale <= 0.5}
-          className="h-10 w-10 min-h-[44px] min-w-[44px] p-0"
+          className="size-10 min-h-[44px] min-w-[44px] p-0"
         >
-          <ZoomOut className="h-5 w-5" />
+          <ZoomOut className="size-5" />
         </Button>
         <Button
           variant="secondary"
           size="sm"
           onClick={handleReset}
-          className="h-10 w-10 min-h-[44px] min-w-[44px] p-0"
+          className="size-10 min-h-[44px] min-w-[44px] p-0"
         >
-          <RotateCcw className="h-5 w-5" />
+          <RotateCcw className="size-5" />
         </Button>
       </div>
 
@@ -179,7 +179,7 @@ export const BracketTouchControls: React.FC<BracketTouchControlsProps> = ({
       {/* Touch hint */}
       {touchState.scale === 1 && (
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 bg-background/90 backdrop-blur-sm rounded-md px-3 py-1 text-xs text-muted-foreground">
-          <Move className="inline h-3 w-3 mr-1" />
+          <Move className="inline size-3 mr-1" />
           Pinch to zoom, drag to pan
         </div>
       )}

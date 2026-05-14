@@ -54,11 +54,11 @@ const ChampionCard: React.FC<ChampionCardProps> = ({ team }) => {
     >
       {/* Confetti background pattern */}
       <div className="absolute inset-0 opacity-10 dark:opacity-5">
-        <div className="absolute top-2 left-4 w-2 h-2 bg-yellow-400 rounded-full"></div>
-        <div className="absolute top-8 right-8 w-1 h-1 bg-amber-500 rounded-full"></div>
-        <div className="absolute bottom-4 left-8 w-1.5 h-1.5 bg-yellow-500 rounded-full"></div>
-        <div className="absolute bottom-8 right-4 w-1 h-1 bg-amber-400 rounded-full"></div>
-        <div className="absolute top-12 left-1/2 w-1 h-1 bg-yellow-600 rounded-full"></div>
+        <div className="absolute top-2 left-4 size-2 bg-yellow-400 rounded-full"></div>
+        <div className="absolute top-8 right-8 size-1 bg-amber-500 rounded-full"></div>
+        <div className="absolute bottom-4 left-8 size-1.5 bg-yellow-500 rounded-full"></div>
+        <div className="absolute bottom-8 right-4 size-1 bg-amber-400 rounded-full"></div>
+        <div className="absolute top-12 left-1/2 size-1 bg-yellow-600 rounded-full"></div>
       </div>
 
       <div className="relative flex items-center gap-4">
@@ -75,7 +75,7 @@ const ChampionCard: React.FC<ChampionCardProps> = ({ team }) => {
               <img
                 src={team.team_image_url || team.team_logo_url || ''}
                 alt={`${team.team_name} logo`}
-                className="h-16 w-16 rounded-lg object-contain"
+                className="size-16 rounded-lg object-contain"
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}
@@ -83,22 +83,22 @@ const ChampionCard: React.FC<ChampionCardProps> = ({ team }) => {
             ) : (
               <div
                 className={cn(
-                  'h-16 w-16 rounded-lg flex items-center justify-center',
+                  'size-16 rounded-lg flex items-center justify-center',
                   isWinterTheme ? 'bg-slate-700/80' : 'bg-gray-100 dark:bg-gray-800'
                 )}
               >
-                <Trophy className="w-8 h-8 text-yellow-500" />
+                <Trophy className="size-8 text-yellow-500" />
               </div>
             )}
           </div>
           <div className="absolute -top-1 -right-1 bg-yellow-500 rounded-full p-1">
-            <Crown className="w-4 h-4 text-white" />
+            <Crown className="size-4 text-white" />
           </div>
         </div>
 
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <Trophy className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+            <Trophy className="size-5 text-yellow-600 dark:text-yellow-400" />
             <span
               className={cn(
                 'text-sm font-medium uppercase tracking-wide',

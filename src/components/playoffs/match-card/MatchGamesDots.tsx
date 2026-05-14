@@ -27,7 +27,7 @@ const GameResultDot: React.FC<GameResultDotProps> = ({
   return (
     <div
       className={cn(
-        'w-3 h-3 rounded-full',
+        'size-3 rounded-full',
         team1WonGame
           ? isTeam1Winner
             ? 'bg-green-500'

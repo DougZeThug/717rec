@@ -178,7 +178,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
                 className="w-full text-xs"
                 onClick={(e) => e.stopPropagation()}
               >
-                <Scale className="h-3 w-3 mr-1" />
+                <Scale className="size-3 mr-1" />
                 Compare Team
               </Button>
             </Link>

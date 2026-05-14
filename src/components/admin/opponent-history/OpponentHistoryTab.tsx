@@ -65,7 +65,7 @@ const OpponentHistoryTab: React.FC = () => {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <Loader2 className="size-8 animate-spin text-muted-foreground" />
         </CardContent>
       </Card>
     );
@@ -86,7 +86,7 @@ const OpponentHistoryTab: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Users2 className="h-5 w-5" />
+            <Users2 className="size-5" />
             Matchups
           </CardTitle>
         </CardHeader>
@@ -101,7 +101,7 @@ const OpponentHistoryTab: React.FC = () => {
     <Card>
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2">
-          <Users2 className="h-5 w-5" />
+          <Users2 className="size-5" />
           Matchups - {data.seasonName}
         </CardTitle>
         <CardDescription>
@@ -112,7 +112,7 @@ const OpponentHistoryTab: React.FC = () => {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               placeholder="Search teams..."
               value={searchTerm}
@@ -140,9 +140,9 @@ const OpponentHistoryTab: React.FC = () => {
             disabled={!data || isExporting}
           >
             {isExporting ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <Loader2 className="size-4 mr-2 animate-spin" />
             ) : (
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="size-4 mr-2" />
             )}
             Export to Excel
           </Button>

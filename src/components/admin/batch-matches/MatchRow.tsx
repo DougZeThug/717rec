@@ -65,7 +65,7 @@ const MatchRow: React.FC<MatchRowProps> = ({ pair, teams, onUpdate, onRemove }) 
       <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
         <div className="sm:col-span-5 space-y-1">
           <div className="flex items-center gap-1 mb-1">
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="size-4 text-muted-foreground" />
             <label className="text-sm font-medium">Team 1</label>
           </div>
           <Select
@@ -92,7 +92,7 @@ const MatchRow: React.FC<MatchRowProps> = ({ pair, teams, onUpdate, onRemove }) 
 
         <div className="sm:col-span-5 space-y-1">
           <div className="flex items-center gap-1 mb-1">
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="size-4 text-muted-foreground" />
             <label className="text-sm font-medium">Team 2</label>
           </div>
           <Select
@@ -117,7 +117,7 @@ const MatchRow: React.FC<MatchRowProps> = ({ pair, teams, onUpdate, onRemove }) 
       <div className="flex items-end gap-2">
         <div className="flex-1 space-y-1">
           <div className="flex items-center gap-1 mb-1">
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <Clock className="size-4 text-muted-foreground" />
             <label className="text-sm font-medium">Match Time</label>
           </div>
           <Select
@@ -156,7 +156,7 @@ const MatchRow: React.FC<MatchRowProps> = ({ pair, teams, onUpdate, onRemove }) 
           onClick={onRemove}
           className="shrink-0 hover:bg-destructive/10 hover:text-destructive transition-colors duration-200"
         >
-          <X className="h-4 w-4" />
+          <X className="size-4" />
         </Button>
       </div>
 

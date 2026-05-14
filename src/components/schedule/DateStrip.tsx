@@ -84,7 +84,7 @@ const DateStrip: React.FC<DateStripProps> = ({ selectedDate, onDateSelect, match
               {hasMatches && (
                 <div
                   className={cn(
-                    'w-1.5 h-1.5 rounded-full mt-0.5',
+                    'size-1.5 rounded-full mt-0.5',
                     isSelected ? 'bg-primary-foreground' : 'bg-orange-500'
                   )}
                 />

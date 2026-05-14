@@ -9,7 +9,7 @@ const LoadingState = () => {
       aria-live="polite"
     >
       <div className="flex flex-col items-center">
-        <Loader2 className="h-10 w-10 text-cornhole-navy animate-spin mb-4" aria-hidden="true" />
+        <Loader2 className="size-10 text-cornhole-navy animate-spin mb-4" aria-hidden="true" />
         <p className="text-lg">Loading team data...</p>
       </div>
     </div>

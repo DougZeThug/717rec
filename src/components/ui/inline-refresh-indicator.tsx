@@ -32,7 +32,7 @@ export const InlineRefreshIndicator: React.FC<InlineRefreshIndicatorProps> = ({
             className
           )}
         >
-          <RefreshCw className="h-3 w-3 animate-spin" />
+          <RefreshCw className="size-3 animate-spin" />
           <span>{label}</span>
         </m.div>
       )}
@@ -62,7 +62,7 @@ export const HeaderRefreshIndicator: React.FC<InlineRefreshIndicatorProps> = ({
             className
           )}
         >
-          <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+          <RefreshCw className="size-3.5 animate-spin" />
           <span>{label}</span>
         </m.div>
       )}

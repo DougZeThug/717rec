@@ -75,7 +75,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
   if (displayLoading && !allBracketsData.length && !isRefreshing) {
     return (
       <div className="flex flex-col items-center space-y-4">
-        <Loader2 className="w-8 h-8 text-cornhole-navy animate-spin" />
+        <Loader2 className="size-8 text-cornhole-navy animate-spin" />
         <div className="text-center">
           <p className="font-medium">Loading tournament data...</p>
           <p className="text-sm text-gray-500 mt-1">This may take a moment</p>
@@ -88,7 +88,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
             disabled={isRefreshing}
             className="flex items-center gap-2 mt-4"
           >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`size-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             Force Refresh
           </Button>
         )}
@@ -111,7 +111,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
             disabled={isRefreshing}
             className="flex items-center gap-2"
           >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`size-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
           </Button>
         </div>
@@ -124,7 +124,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
           <EmptyBracketState onCreateBracket={onCreateBracket} />
         ) : (
           <div className="text-center py-12 bg-card rounded-lg border">
-            <Trophy className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <Trophy className="size-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-xl font-semibold text-foreground mb-2">No Brackets Available</h3>
             <p className="text-muted-foreground mb-4">
               Brackets will appear here once they are created.
@@ -140,7 +140,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
       {/* Info message if data loaded but no divisions have brackets */}
       {!displayLoading && allBracketsData.length > 0 && divisionsWithBrackets.length === 0 && (
         <Alert>
-          <AlertCircle className="h-4 w-4" />
+          <AlertCircle className="size-4" />
           <AlertDescription>
             Brackets exist but are not assigned to any division. Please assign brackets to divisions
             to see them here.

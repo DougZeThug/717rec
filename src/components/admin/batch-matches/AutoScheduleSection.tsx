@@ -108,7 +108,7 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
           onClick={() => (window.location.href = '#auto-schedule')}
           className="flex items-center gap-1"
         >
-          <Wand2 className="h-3.5 w-3.5" />
+          <Wand2 className="size-3.5" />
           Open Full Auto Schedule
         </Button>
       </div>

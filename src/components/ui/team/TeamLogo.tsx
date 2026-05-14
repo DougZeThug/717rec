@@ -27,9 +27,9 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
   fallbackText,
 }) => {
   const sizeClasses = {
-    sm: 'w-8 h-8 min-w-8 min-h-8',
-    md: 'w-10 h-10 min-w-10 min-h-10',
-    lg: 'w-36 h-36 min-w-36 min-h-36',
+    sm: 'size-8 min-w-8 min-h-8',
+    md: 'size-10 min-w-10 min-h-10',
+    lg: 'size-36 min-w-36 min-h-36',
   };
 
   const containerClasses = cn(
@@ -49,14 +49,14 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
         <img
           src={imageUrl}
           alt={teamName}
-          className={cn('w-full h-full object-contain', rounded ? 'rounded-full' : 'rounded-none')}
+          className={cn('size-full object-contain', rounded ? 'rounded-full' : 'rounded-none')}
           onError={(e) => {
             imageErrorLog(teamName, imageUrl);
             (e.target as HTMLImageElement).style.display = 'none';
           }}
         />
       ) : (
-        <div className="flex items-center justify-center text-gray-400 dark:text-gray-600 w-full h-full">
+        <div className="flex items-center justify-center text-gray-400 dark:text-gray-600 size-full">
           <span className="text-xs">{fallbackText || teamName.substring(0, 2)}</span>
         </div>
       )}

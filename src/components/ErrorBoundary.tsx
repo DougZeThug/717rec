@@ -53,7 +53,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <div className="max-w-md w-full text-center space-y-6">
             <div className="flex justify-center">
               <div className="p-4 bg-destructive/10 rounded-full">
-                <AlertTriangle className="h-12 w-12 text-destructive" />
+                <AlertTriangle className="size-12 text-destructive" />
               </div>
             </div>
 
@@ -90,3 +90,4 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
+'

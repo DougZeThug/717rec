@@ -137,7 +137,7 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
     <div className="space-y-3">
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         <Input
           placeholder="Search admin sections..."
           value={searchQuery}
@@ -149,7 +149,7 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
             onClick={() => setSearchQuery('')}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
           >
-            <X className="h-4 w-4" />
+            <X className="size-4" />
           </button>
         )}
       </div>
@@ -166,7 +166,7 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
             onClick={() => handleTabSelect('scores')}
             className="flex-1 h-10"
           >
-            <ListChecks className="h-4 w-4 mr-2" />
+            <ListChecks className="size-4 mr-2" />
             Scores
           </Button>
           <Button
@@ -175,7 +175,7 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
             onClick={() => handleTabSelect('timeslots')}
             className="flex-1 h-10"
           >
-            <Timer className="h-4 w-4 mr-2" />
+            <Timer className="size-4 mr-2" />
             Timeslots
           </Button>
         </div>
@@ -199,7 +199,7 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
                     : 'text-foreground'
                 )}
               >
-                <item.icon className="h-4 w-4 shrink-0" />
+                <item.icon className="size-4 shrink-0" />
                 <span className="flex-1 text-left">{item.label}</span>
                 {item.id === 'requests' && pendingRequestsCount > 0 && (
                   <Badge variant="destructive" className="text-xs">
@@ -223,7 +223,7 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
                   onClick={() => toggleGroup(group.id)}
                   className="w-full flex items-center gap-3 px-3 py-2.5 bg-muted/30 rounded-t-lg"
                 >
-                  <GroupIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <GroupIcon className="size-4 shrink-0 text-muted-foreground" />
                   <span className="flex-1 text-left font-medium text-sm">{group.label}</span>
                   {groupBadge > 0 && (
                     <Badge variant="destructive" className="text-xs">
@@ -232,7 +232,7 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
                   )}
                   <ChevronDown
                     className={cn(
-                      'h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200',
+                      'size-4 shrink-0 text-muted-foreground transition-transform duration-200',
                       openGroups.has(group.id) && 'rotate-180'
                     )}
                   />
@@ -257,7 +257,7 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
                               : 'text-muted-foreground'
                           )}
                         >
-                          <TabIcon className="h-4 w-4 shrink-0" />
+                          <TabIcon className="size-4 shrink-0" />
                           <span className="flex-1 text-left">{tab.label}</span>
                           {tabId === 'requests' && pendingRequestsCount > 0 && (
                             <Badge variant="destructive" className="text-xs">

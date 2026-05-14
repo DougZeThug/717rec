@@ -83,7 +83,7 @@ const MatchRow = ({ match, teams, onUpdate, onRemove }: MatchRowProps) => {
         </Select>
 
         <Button variant="ghost" size="icon" onClick={onRemove} className="shrink-0">
-          <X className="h-4 w-4" />
+          <X className="size-4" />
         </Button>
       </div>
     </div>

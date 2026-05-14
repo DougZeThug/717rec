@@ -32,15 +32,15 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const sizeClasses = {
-    sm: isMobile ? 'w-8 h-8 text-xs' : 'w-6 h-6 text-xs',
-    md: isMobile ? 'w-10 h-10 text-sm' : 'w-8 h-8 text-sm',
-    lg: isMobile ? 'w-12 h-12 text-base' : 'w-10 h-10 text-base',
+    sm: isMobile ? 'size-8 text-xs' : 'size-6 text-xs',
+    md: isMobile ? 'size-10 text-sm' : 'size-8 text-sm',
+    lg: isMobile ? 'size-12 text-base' : 'size-10 text-base',
   };
 
   const iconSizes = {
-    sm: isMobile ? 'w-4 h-4' : 'w-3 h-3',
-    md: isMobile ? 'w-5 h-5' : 'w-4 h-4',
-    lg: isMobile ? 'w-6 h-6' : 'w-5 h-5',
+    sm: isMobile ? 'size-4' : 'size-3',
+    md: isMobile ? 'size-5' : 'size-4',
+    lg: isMobile ? 'size-6' : 'size-5',
   };
 
   // Format championship badge description with season context
@@ -138,10 +138,10 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
                   className={cn(
                     'relative inline-flex items-center justify-center rounded-full',
                     `bg-gradient-to-br ${config.gradient}`,
-                    'w-16 h-16 shadow-lg border-2 border-white'
+                    'size-16 shadow-lg border-2 border-white'
                   )}
                 >
-                  <IconComponent className="text-white w-8 h-8" />
+                  <IconComponent className="text-white size-8" />
                 </div>
               </div>
               <DialogTitle className="text-lg font-semibold">{config.name}</DialogTitle>

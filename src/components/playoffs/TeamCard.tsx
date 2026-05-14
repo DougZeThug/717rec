@@ -22,7 +22,7 @@ const TeamCard: React.FC<Props> = ({ team, selected, onToggle, disabled = false 
           : 'hover:bg-gray-100'
     }`}
   >
-    <div className="mr-3 flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full text-xs font-bold text-blue-800">
+    <div className="mr-3 flex items-center justify-center size-8 bg-blue-100 rounded-full text-xs font-bold text-blue-800">
       {team.seed}
     </div>
     <div className="mr-2">

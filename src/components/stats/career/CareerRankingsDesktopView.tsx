@@ -33,9 +33,9 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
   const getSortIcon = (field: string) => {
     if (sortOptions.field !== field) return null;
     return sortOptions.direction === 'desc' ? (
-      <ArrowDown className="inline h-4 w-4 ml-1" />
+      <ArrowDown className="inline size-4 ml-1" />
     ) : (
-      <ArrowUp className="inline h-4 w-4 ml-1" />
+      <ArrowUp className="inline size-4 ml-1" />
     );
   };
 
@@ -120,7 +120,7 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
                     <img
                       src={ranking.imageUrl}
                       alt={`${ranking.teamName} logo`}
-                      className="w-8 h-8 rounded object-cover"
+                      className="size-8 rounded object-cover"
                     />
                   )}
                   <span className="font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">

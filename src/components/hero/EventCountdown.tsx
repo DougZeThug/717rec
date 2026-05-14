@@ -25,7 +25,7 @@ const EventCountdown: React.FC<EventCountdownProps> = ({
           shouldApplyWinter ? 'text-cyan-200/90' : 'text-white/90'
         )}
       >
-        <Timer className={cn('h-3 w-3', shouldApplyWinter ? 'text-cyan-300' : 'text-green-300')} />
+        <Timer className={cn('size-3', shouldApplyWinter ? 'text-cyan-300' : 'text-green-300')} />
         <span>{text}</span>
       </div>
       <Progress

@@ -13,7 +13,7 @@ const FinalStandingsSkeleton: React.FC = () => {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Trophy className="h-5 w-5 text-muted-foreground animate-pulse" />
+          <Trophy className="size-5 text-muted-foreground animate-pulse" />
           <ShimmerSkeleton className="h-5 w-32" />
         </CardTitle>
       </CardHeader>
@@ -28,7 +28,7 @@ const FinalStandingsSkeleton: React.FC = () => {
                 {/* Placement number */}
                 <ShimmerSkeleton className="w-8 h-6" />
                 {/* Placement icon */}
-                <ShimmerSkeleton circle className="w-5 h-5" />
+                <ShimmerSkeleton circle className="size-5" />
                 {/* Team avatar and name */}
                 <div className="flex items-center gap-2">
                   <AvatarSkeleton size="sm" />

@@ -129,7 +129,7 @@ const PowerScoreTrendsCard: React.FC = () => {
             <LoadingState variant="section" message="Loading trends..." />
           ) : viewMode === 'weekly' && !hasWeeklyData ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              <Calendar className="h-8 w-8 text-muted-foreground mb-2" />
+              <Calendar className="size-8 text-muted-foreground mb-2" />
               <div className="text-muted-foreground text-sm">
                 {weeklyData?.hasData
                   ? 'Need at least 2 weeks of snapshots to show trends.'
@@ -161,7 +161,7 @@ const PowerScoreTrendsCard: React.FC = () => {
                       alt={trend.teamName}
                       loading="lazy"
                       decoding="async"
-                      className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                      className="size-8 rounded-full object-cover flex-shrink-0"
                     />
                   )}
 

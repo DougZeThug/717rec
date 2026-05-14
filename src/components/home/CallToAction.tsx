@@ -70,13 +70,13 @@ const CallToAction = () => {
       {/* Animated gradient orbs in the background */}
       <div
         className={cn(
-          'absolute top-0 right-0 w-40 h-40 rounded-full blur-3xl -z-10',
+          'absolute top-0 right-0 size-40 rounded-full blur-3xl -z-10',
           shouldApplyWinter ? 'bg-cyan-500/5' : 'bg-blue-500/5'
         )}
       />
       <div
         className={cn(
-          'absolute bottom-0 left-0 w-60 h-60 rounded-full blur-3xl -z-10',
+          'absolute bottom-0 left-0 size-60 rounded-full blur-3xl -z-10',
           shouldApplyWinter ? 'bg-violet-500/5' : 'bg-orange-500/5'
         )}
       />
@@ -147,7 +147,7 @@ const CallToAction = () => {
             >
               <span
                 className={cn(
-                  'block w-2 h-2 rounded-full transition-all duration-300',
+                  'block size-2 rounded-full transition-all duration-300',
                   index === currentMessageIndex
                     ? shouldApplyWinter
                       ? 'bg-cyan-400 w-6'

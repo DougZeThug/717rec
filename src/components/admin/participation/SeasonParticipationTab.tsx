@@ -115,7 +115,7 @@ const SeasonParticipationTab: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div className="flex items-center gap-2">
-          <Users className="h-5 w-5 text-primary" />
+          <Users className="size-5 text-primary" />
           <h2 className="text-xl font-semibold">Season Participation</h2>
         </div>
 
@@ -149,7 +149,7 @@ const SeasonParticipationTab: React.FC = () => {
 
           {/* Export */}
           <Button variant="outline" size="sm" onClick={handleExportCsv}>
-            <Download className="h-4 w-4 mr-2" />
+            <Download className="size-4 mr-2" />
             Export CSV
           </Button>
         </div>
@@ -163,7 +163,7 @@ const SeasonParticipationTab: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Check className="h-5 w-5 text-green-500" />
+              <Check className="size-5 text-green-500" />
               <span className="text-2xl font-bold">{counts.playing}</span>
             </div>
           </CardContent>
@@ -175,7 +175,7 @@ const SeasonParticipationTab: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <X className="h-5 w-5 text-red-500" />
+              <X className="size-5 text-red-500" />
               <span className="text-2xl font-bold">{counts.notPlaying}</span>
             </div>
           </CardContent>
@@ -187,7 +187,7 @@ const SeasonParticipationTab: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <HelpCircle className="h-5 w-5 text-yellow-500" />
+              <HelpCircle className="size-5 text-yellow-500" />
               <span className="text-2xl font-bold">{counts.noResponse}</span>
             </div>
           </CardContent>
@@ -199,7 +199,7 @@ const SeasonParticipationTab: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
+              <Users className="size-5 text-primary" />
               <span className="text-2xl font-bold">{counts.total}</span>
             </div>
           </CardContent>
@@ -211,7 +211,7 @@ const SeasonParticipationTab: React.FC = () => {
         <CardContent className="p-0">
           {isLoading ? (
             <div className="flex items-center justify-center h-48">
-              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+              <div className="animate-spin size-8 border-4 border-primary border-t-transparent rounded-full" />
             </div>
           ) : (
             <Table>
@@ -250,9 +250,9 @@ const SeasonParticipationTab: React.FC = () => {
                               'bg-yellow-500/10 text-yellow-600 border-yellow-500/30'
                           )}
                         >
-                          {team.status === 'PLAYING' && <Check className="h-3 w-3 mr-1" />}
-                          {team.status === 'NOT_PLAYING' && <X className="h-3 w-3 mr-1" />}
-                          {team.status === 'NO_RESPONSE' && <HelpCircle className="h-3 w-3 mr-1" />}
+                          {team.status === 'PLAYING' && <Check className="size-3 mr-1" />}
+                          {team.status === 'NOT_PLAYING' && <X className="size-3 mr-1" />}
+                          {team.status === 'NO_RESPONSE' && <HelpCircle className="size-3 mr-1" />}
                           {team.status === 'PLAYING'
                             ? 'Playing'
                             : team.status === 'NOT_PLAYING'

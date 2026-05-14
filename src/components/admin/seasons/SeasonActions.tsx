@@ -28,7 +28,7 @@ const SeasonActions: React.FC<SeasonActionsProps> = ({ season }) => {
         onClick={() => setShowArchivalDialog(true)}
         className="flex items-center gap-1"
       >
-        <Archive className="h-3 w-3" />
+        <Archive className="size-3" />
         Archive Season
       </Button>
 

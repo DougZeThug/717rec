@@ -110,7 +110,7 @@ export const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProp
                 exit="exit"
                 transition={{ duration: 0.15 }}
               >
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin" />
               </m.span>
             ) : isSuccess ? (
               <m.span
@@ -121,7 +121,7 @@ export const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProp
                 exit="exit"
                 transition={{ duration: 0.15, type: 'spring', stiffness: 500 }}
               >
-                <Check className="h-4 w-4 text-green-500" />
+                <Check className="size-4 text-green-500" />
               </m.span>
             ) : Icon ? (
               <m.span
@@ -132,7 +132,7 @@ export const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProp
                 exit="exit"
                 transition={{ duration: 0.15 }}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="size-4" />
               </m.span>
             ) : null}
           </AnimatePresence>

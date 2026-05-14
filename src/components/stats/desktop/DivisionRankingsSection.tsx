@@ -52,9 +52,9 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
   const getSortIndicator = (field: string) => {
     if (sortOptions.field !== field) return null;
     return sortOptions.direction === 'asc' ? (
-      <ChevronUp className="inline h-4 w-4" />
+      <ChevronUp className="inline size-4" />
     ) : (
-      <ChevronDown className="inline h-4 w-4" />
+      <ChevronDown className="inline size-4" />
     );
   };
 

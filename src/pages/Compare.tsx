@@ -75,7 +75,7 @@ const Compare: React.FC = () => {
       <div className="container mx-auto px-4 py-6 max-w-3xl">
         {/* Header */}
         <div className="flex items-center justify-center gap-3 mb-6">
-          <Scale className="h-7 w-7 text-primary" />
+          <Scale className="size-7 text-primary" />
           <h1 className="text-2xl sm:text-3xl font-bold">Team Comparison</h1>
         </div>
 
@@ -94,7 +94,7 @@ const Compare: React.FC = () => {
         {/* Comparison Content */}
         {!team1 && !team2 && (
           <div className="text-center py-16">
-            <Scale className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
+            <Scale className="size-16 mx-auto mb-4 text-muted-foreground/50" />
             <h2 className="text-xl font-semibold mb-2">Select Teams to Compare</h2>
             <p className="text-muted-foreground">
               Choose two teams from the dropdowns above to see a detailed comparison

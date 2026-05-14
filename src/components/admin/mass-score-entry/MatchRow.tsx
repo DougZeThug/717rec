@@ -95,13 +95,13 @@ const MatchRow: React.FC<MatchRowProps> = ({
         {/* Submission Status Indicator */}
         {isSubmitting && (
           <div className="flex items-center gap-2 text-sm text-primary">
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="size-4 animate-spin" />
             <span>Submitting...</span>
           </div>
         )}
         {hasError && !isSubmitting && (
           <div className="flex items-center gap-2 text-sm text-destructive">
-            <AlertCircle className="h-4 w-4" />
+            <AlertCircle className="size-4" />
             <span>Submission failed - please retry</span>
           </div>
         )}
@@ -114,14 +114,14 @@ const MatchRow: React.FC<MatchRowProps> = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
+                className="size-7 text-muted-foreground hover:text-destructive shrink-0"
                 onClick={() => {
                   const realId = match.id.split('-index-')[0];
                   onDelete(realId);
                 }}
                 disabled={isSubmitting}
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="size-4" />
               </Button>
             )}
           </div>

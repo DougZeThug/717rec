@@ -147,7 +147,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
           'border border-gray-200 dark:border-gray-700'
         )}
       >
-        <Calendar className="h-8 w-8 mx-auto mb-2 text-gray-400 dark:text-gray-500" />
+        <Calendar className="size-8 mx-auto mb-2 text-gray-400 dark:text-gray-500" />
         <p className="text-gray-500 dark:text-gray-400">No timeslots scheduled for this date.</p>
       </div>
     );

@@ -97,7 +97,7 @@ export const MatchStatusBadge: React.FC<MatchStatusBadgeProps> = ({ status }) =>
     <div className="flex flex-col gap-1.5 rounded-md border border-border bg-muted/40 p-3">
       <div className="flex flex-wrap items-center gap-2">
         <Badge variant={variant} className="gap-1">
-          <Icon className="h-3 w-3" />
+          <Icon className="size-3" />
           {label}
         </Badge>
         <span

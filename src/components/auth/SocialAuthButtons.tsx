@@ -37,9 +37,9 @@ const SocialAuthButtons: React.FC<SocialAuthButtonsProps> = ({
           disabled={isSubmitting}
         >
           {isSubmitting ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="mr-2 size-4 animate-spin" />
           ) : (
-            <Globe className="mr-2 h-5 w-5" />
+            <Globe className="mr-2 size-5" />
           )}
           Google
         </Button>
@@ -55,9 +55,9 @@ const SocialAuthButtons: React.FC<SocialAuthButtonsProps> = ({
             aria-label="Google Login"
           >
             {isSubmitting ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 size-4 animate-spin" />
             ) : (
-              <Smartphone className="mr-2 h-5 w-5" />
+              <Smartphone className="mr-2 size-5" />
             )}
             Google (Native)
           </Button>

@@ -94,7 +94,7 @@ export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) 
                       alt={record.teams.name}
                       loading="lazy"
                       decoding="async"
-                      className="w-8 h-8 rounded-full object-cover"
+                      className="size-8 rounded-full object-cover"
                     />
                   )}
                   <span className="font-medium">{record.teams.name}</span>

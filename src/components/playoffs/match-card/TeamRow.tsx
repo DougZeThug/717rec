@@ -35,7 +35,7 @@ const TeamRow: React.FC<TeamRowProps> = ({
         <div className="flex items-center w-full">
           <div
             className={cn(
-              'flex-none w-6 h-6 flex items-center justify-center mr-2 rounded-full',
+              'flex-none size-6 flex items-center justify-center mr-2 rounded-full',
               'bg-gray-200 dark:bg-gray-700 text-xs font-bold',
               matchType === 'winners' && 'bg-blue-100 dark:bg-blue-900/30'
             )}
@@ -45,11 +45,11 @@ const TeamRow: React.FC<TeamRowProps> = ({
 
           <div className="flex-1 min-w-0 flex items-center">
             {team.imageUrl || team.logoUrl ? (
-              <div className="w-5 h-5 rounded-full overflow-hidden bg-gray-200 mr-2">
+              <div className="size-5 rounded-full overflow-hidden bg-gray-200 mr-2">
                 <img
                   src={team.imageUrl || team.logoUrl}
                   alt={team.name}
-                  className="w-full h-full object-contain"
+                  className="size-full object-contain"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
@@ -71,7 +71,7 @@ const TeamRow: React.FC<TeamRowProps> = ({
           )}
 
           {isWinner && (
-            <CheckCircle className="flex-none ml-1 h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+            <CheckCircle className="flex-none ml-1 size-3.5 text-green-600 dark:text-green-400" />
           )}
         </div>
       ) : (

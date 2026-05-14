@@ -76,7 +76,7 @@ const BulkLogoUpdateTab: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full size-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -87,7 +87,7 @@ const BulkLogoUpdateTab: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4 flex items-center space-x-3">
-            <Image className="h-8 w-8 text-primary" />
+            <Image className="size-8 text-primary" />
             <div>
               <p className="text-2xl font-bold">{stats.total}</p>
               <p className="text-sm text-muted-foreground">Total Teams</p>
@@ -96,7 +96,7 @@ const BulkLogoUpdateTab: React.FC = () => {
         </Card>
         <Card>
           <CardContent className="p-4 flex items-center space-x-3">
-            <CheckCircle className="h-8 w-8 text-green-500" />
+            <CheckCircle className="size-8 text-green-500" />
             <div>
               <p className="text-2xl font-bold">{stats.optimized}</p>
               <p className="text-sm text-muted-foreground">Optimized</p>
@@ -105,7 +105,7 @@ const BulkLogoUpdateTab: React.FC = () => {
         </Card>
         <Card>
           <CardContent className="p-4 flex items-center space-x-3">
-            <AlertCircle className="h-8 w-8 text-yellow-500" />
+            <AlertCircle className="size-8 text-yellow-500" />
             <div>
               <p className="text-2xl font-bold">{stats.legacy}</p>
               <p className="text-sm text-muted-foreground">Needs Update</p>
@@ -114,7 +114,7 @@ const BulkLogoUpdateTab: React.FC = () => {
         </Card>
         <Card>
           <CardContent className="p-4 flex items-center space-x-3">
-            <XCircle className="h-8 w-8 text-red-500" />
+            <XCircle className="size-8 text-red-500" />
             <div>
               <p className="text-2xl font-bold">{stats.missing}</p>
               <p className="text-sm text-muted-foreground">Missing Logo</p>
@@ -140,7 +140,7 @@ const BulkLogoUpdateTab: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Image className="h-5 w-5" />
+            <Image className="size-5" />
             Bulk Logo Update
           </CardTitle>
         </CardHeader>
@@ -148,7 +148,7 @@ const BulkLogoUpdateTab: React.FC = () => {
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground size-4" />
               <Input
                 placeholder="Search teams..."
                 value={searchTerm}

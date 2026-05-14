@@ -55,7 +55,7 @@ export const SeedInputField: React.FC<SeedInputFieldProps> = ({
           placeholder="#"
         />
         {hasConflict && (
-          <AlertCircle className="absolute -right-1 -top-1 w-4 h-4 text-destructive" />
+          <AlertCircle className="absolute -right-1 -top-1 size-4 text-destructive" />
         )}
       </div>
 

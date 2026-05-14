@@ -39,17 +39,17 @@ const MatchApprovalItem = ({
       <CollapsibleTrigger className="flex items-center justify-between w-full p-4 text-left hover:bg-secondary">
         <div className="flex items-center">
           {isOpen ? (
-            <ChevronDown className="h-4 w-4 mr-2" />
+            <ChevronDown className="size-4 mr-2" />
           ) : (
-            <ChevronRight className="h-4 w-4 mr-2" />
+            <ChevronRight className="size-4 mr-2" />
           )}
           <div className="flex items-center">
-            <div className="w-6 h-6 overflow-hidden bg-muted mr-2">
+            <div className="size-6 overflow-hidden bg-muted mr-2">
               {team1Image && (
                 <img
                   src={team1Image}
                   alt=""
-                  className="w-full h-full object-contain"
+                  className="size-full object-contain"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = FALLBACK_TEAM_IMAGE;
                   }}
@@ -57,12 +57,12 @@ const MatchApprovalItem = ({
               )}
             </div>
             <span>{team1?.name || 'Team 1'} vs</span>
-            <div className="w-6 h-6 overflow-hidden bg-muted mx-2">
+            <div className="size-6 overflow-hidden bg-muted mx-2">
               {team2Image && (
                 <img
                   src={team2Image}
                   alt=""
-                  className="w-full h-full object-contain"
+                  className="size-full object-contain"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = FALLBACK_TEAM_IMAGE;
                   }}
@@ -101,7 +101,7 @@ const MatchApprovalItem = ({
                 variant="outline"
                 className="flex items-center gap-2"
               >
-                <CheckCircle className="h-4 w-4" />
+                <CheckCircle className="size-4" />
                 {teams[match.team1Id]?.name || 'Team 1'} Wins
               </Button>
 
@@ -110,7 +110,7 @@ const MatchApprovalItem = ({
                 variant="outline"
                 className="flex items-center gap-2"
               >
-                <CheckCircle className="h-4 w-4" />
+                <CheckCircle className="size-4" />
                 {teams[match.team2Id]?.name || 'Team 2'} Wins
               </Button>
             </div>

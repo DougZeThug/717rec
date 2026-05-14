@@ -33,17 +33,17 @@ const TeamManagementStatsCards = ({ teamStats }: TeamManagementStatsCardsProps) 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <StatCard
-        icon={<Users className="h-8 w-8 text-primary" />}
+        icon={<Users className="size-8 text-primary" />}
         value={teamStats.total}
         label="Total Teams"
       />
       <StatCard
-        icon={<Settings className="h-8 w-8 text-green-600" />}
+        icon={<Settings className="size-8 text-green-600" />}
         value={teamStats.withDivisions}
         label="Assigned to Divisions"
       />
       <StatCard
-        icon={<Edit className="h-8 w-8 text-orange-600" />}
+        icon={<Edit className="size-8 text-orange-600" />}
         value={teamStats.unassigned}
         label="Unassigned"
       />

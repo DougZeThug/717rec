@@ -28,7 +28,7 @@ const LeagueInsightsContainer: React.FC = () => {
   if (!overview) {
     return (
       <div className="text-center py-16">
-        <Lightbulb className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
+        <Lightbulb className="mx-auto size-12 text-muted-foreground/50 mb-4" />
         <h2 className="text-xl font-semibold text-foreground mb-2">No Data Yet</h2>
         <p className="text-muted-foreground">
           League insights will appear once teams have played some matches.

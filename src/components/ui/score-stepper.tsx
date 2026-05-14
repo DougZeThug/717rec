@@ -58,24 +58,24 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
   const sizeClasses = {
     sm: {
       container: 'gap-1',
-      button: 'h-8 w-8',
+      button: 'size-8',
       score: 'text-xl min-w-[3rem]',
       label: 'text-xs',
-      logo: 'w-4 h-4',
+      logo: 'size-4',
     },
     md: {
       container: 'gap-2',
-      button: 'h-10 w-10',
+      button: 'size-10',
       score: 'text-2xl min-w-[4rem]',
       label: 'text-sm',
-      logo: 'w-5 h-5',
+      logo: 'size-5',
     },
     lg: {
       container: 'gap-3',
-      button: 'h-12 w-12',
+      button: 'size-12',
       score: 'text-3xl min-w-[5rem]',
       label: 'text-base',
-      logo: 'w-6 h-6',
+      logo: 'size-6',
     },
   };
 
@@ -105,7 +105,7 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
               <img
                 src={teamLogo}
                 alt={teamName || 'Team'}
-                className="w-full h-full object-contain"
+                className="size-full object-contain"
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}
@@ -140,7 +140,7 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
           )}
           aria-label="Decrease score"
         >
-          <Minus className="h-4 w-4" />
+          <Minus className="size-4" />
         </Button>
 
         {/* Score Display */}
@@ -194,7 +194,7 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
           )}
           aria-label="Increase score"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="size-4" />
         </Button>
       </div>
 

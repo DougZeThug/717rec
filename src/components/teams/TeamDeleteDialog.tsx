@@ -42,7 +42,7 @@ export const TeamDeleteDialog: React.FC<TeamDeleteDialogProps> = ({
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90 flex items-center gap-2"
             disabled={isDeleting}
           >
-            {isDeleting && <Loader2 className="h-4 w-4 animate-spin" />}
+            {isDeleting && <Loader2 className="size-4 animate-spin" />}
             {isDeleting ? 'Deleting...' : 'Delete'}
           </AlertDialogAction>
         </AlertDialogFooter>

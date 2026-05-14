@@ -47,7 +47,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({
       <m.div whileHover={{ scale: 1.03 }} className={tileClasses}>
         <Clock
           className={cn(
-            'h-4 w-4 md:h-5 md:w-5',
+            'size-4 md:size-5',
             shouldApplyWinter ? 'text-cyan-300' : 'text-yellow-300'
           )}
         />
@@ -60,7 +60,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({
       <m.div whileHover={{ scale: 1.03 }} className={tileClasses}>
         <Clock
           className={cn(
-            'h-4 w-4 md:h-5 md:w-5',
+            'size-4 md:size-5',
             shouldApplyWinter ? 'text-emerald-300' : 'text-green-300'
           )}
         />
@@ -73,7 +73,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({
       <m.div whileHover={{ scale: 1.03 }} className={tileClasses}>
         <DollarSign
           className={cn(
-            'h-4 w-4 md:h-5 md:w-5',
+            'size-4 md:size-5',
             shouldApplyWinter ? 'text-emerald-300' : 'text-emerald-300'
           )}
         />
@@ -87,7 +87,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({
           winterGlyph="frozen-trophy"
           size={20}
           className={cn(
-            'h-4 w-4 md:h-5 md:w-5',
+            'size-4 md:size-5',
             shouldApplyWinter ? 'text-amber-300' : 'text-amber-300'
           )}
         />

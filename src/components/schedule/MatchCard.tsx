@@ -240,7 +240,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
                       className="p-1.5 rounded-full transition-all duration-200 bg-muted hover:bg-muted/80 active:scale-95"
                       aria-label="Edit match"
                     >
-                      <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                      <Pencil className="size-3.5 text-muted-foreground" />
                     </button>
                   )}
                   {onDelete && (
@@ -258,7 +258,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
                     >
                       <Trash2
                         className={cn(
-                          'h-3.5 w-3.5',
+                          'size-3.5',
                           isCompleted ? 'text-destructive' : 'text-muted-foreground'
                         )}
                       />

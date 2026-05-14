@@ -98,7 +98,7 @@ const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) =>
         <Button
           variant="ghost"
           size="sm"
-          className="p-1 h-6 w-6 md:h-8 md:w-8 transition-transform duration-300"
+          className="p-1 size-6 md:size-8 transition-transform duration-300"
           style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
         >
           <ChevronDown size={20} />

@@ -92,19 +92,19 @@ export const ScoreSubmissionModal: React.FC<ScoreSubmissionModalProps> = ({
                 <img
                   src={match.team1_logo}
                   alt={`${match.team1_name} logo`}
-                  className="w-6 h-6 rounded-full object-cover"
+                  className="size-6 rounded-full object-cover"
                 />
               )}
               <span className="font-medium text-sm">{match.team1_name}</span>
             </div>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="size-4 text-muted-foreground" />
             <div className="flex items-center gap-2">
               <span className="font-medium text-sm">{match.team2_name}</span>
               {match.team2_logo && (
                 <img
                   src={match.team2_logo}
                   alt={`${match.team2_name} logo`}
-                  className="w-6 h-6 rounded-full object-cover"
+                  className="size-6 rounded-full object-cover"
                 />
               )}
             </div>

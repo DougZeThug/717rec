@@ -20,7 +20,7 @@ export const DragOverlayItem: React.FC<DragOverlayItemProps> = ({ name, seed, lo
     >
       {/* Drag Handle */}
       <div className="p-1 -m-1">
-        <GripVertical className="w-4 h-4 text-primary" />
+        <GripVertical className="size-4 text-primary" />
       </div>
 
       {/* Seed Badge */}
@@ -36,18 +36,18 @@ export const DragOverlayItem: React.FC<DragOverlayItemProps> = ({ name, seed, lo
       {/* Team Info */}
       <div className="flex items-center gap-2 flex-1 min-w-0">
         {logoUrl ? (
-          <div className="w-6 h-6 rounded-full overflow-hidden bg-muted flex-shrink-0">
+          <div className="size-6 rounded-full overflow-hidden bg-muted flex-shrink-0">
             <img
               src={logoUrl}
               alt={`${name} logo`}
               loading="lazy"
               decoding="async"
-              className="w-full h-full object-contain"
+              className="size-full object-contain"
             />
           </div>
         ) : (
-          <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-            <Users className="w-3.5 h-3.5 text-muted-foreground" />
+          <div className="size-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+            <Users className="size-3.5 text-muted-foreground" />
           </div>
         )}
         <span className="font-semibold">{name}</span>

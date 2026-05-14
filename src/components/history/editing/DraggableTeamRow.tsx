@@ -60,7 +60,7 @@ export const DraggableTeamRow: React.FC<DraggableTeamRowProps> = ({ team, rank }
         className="touch-none p-2 -m-1 rounded-md hover:bg-muted-foreground/20 active:bg-primary/20 transition-colors cursor-grab active:cursor-grabbing"
         aria-label="Drag to reorder"
       >
-        <GripVertical className="w-5 h-5 text-muted-foreground" />
+        <GripVertical className="size-5 text-muted-foreground" />
       </div>
 
       {/* Rank Badge */}
@@ -75,9 +75,9 @@ export const DraggableTeamRow: React.FC<DraggableTeamRowProps> = ({ team, rank }
         )}
       >
         {team.champion ? (
-          <Crown className="w-4 h-4" />
+          <Crown className="size-4" />
         ) : team.runner_up ? (
-          <Medal className="w-4 h-4" />
+          <Medal className="size-4" />
         ) : (
           `#${rank}`
         )}
@@ -86,21 +86,21 @@ export const DraggableTeamRow: React.FC<DraggableTeamRowProps> = ({ team, rank }
       {/* Team Info */}
       <div className="flex items-center gap-2 flex-1 min-w-0">
         {team.team_image_url || team.team_logo_url ? (
-          <div className="w-7 h-7 rounded-full overflow-hidden bg-muted flex-shrink-0">
+          <div className="size-7 rounded-full overflow-hidden bg-muted flex-shrink-0">
             <img
               src={team.team_image_url || team.team_logo_url || ''}
               alt={`${team.team_name} logo`}
               loading="lazy"
               decoding="async"
-              className="w-full h-full object-contain"
+              className="size-full object-contain"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
               }}
             />
           </div>
         ) : (
-          <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-            <Users className="w-4 h-4 text-muted-foreground" />
+          <div className="size-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+            <Users className="size-4 text-muted-foreground" />
           </div>
         )}
         <span className="font-medium truncate">{team.team_name}</span>

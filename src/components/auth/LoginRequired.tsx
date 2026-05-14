@@ -34,7 +34,7 @@ const LoginRequired: React.FC<LoginRequiredProps> = ({
   if (isLoading || (!authInitialized && showLoading)) {
     return (
       <div className="border rounded-md p-8 flex flex-col items-center justify-center text-center gap-4 bg-muted/50">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Loader2 className="size-8 animate-spin text-muted-foreground" />
         <p className="text-muted-foreground">Checking authentication...</p>
       </div>
     );

@@ -39,7 +39,7 @@ const MatchStatusSection: React.FC<MatchStatusSectionProps> = ({
           animate={{ opacity: 1, scale: 1 }}
           className="flex items-center text-green-600 dark:text-green-400"
         >
-          <Check className="h-3 w-3 mr-1" />
+          <Check className="size-3 mr-1" />
           <span className="text-sm">Complete</span>
         </m.div>
       ) : null}

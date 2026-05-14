@@ -49,7 +49,7 @@ const TeamMembershipApprovalTab: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center py-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <Loader2 className="size-8 animate-spin" />
       </div>
     );
   }
@@ -59,7 +59,7 @@ const TeamMembershipApprovalTab: React.FC = () => {
       <Card>
         <CardContent className="pt-6">
           <div className="text-center py-8">
-            <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <AlertTriangle className="size-12 text-destructive mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">Failed to load memberships</h3>
             <p className="text-muted-foreground">
               {error instanceof Error
@@ -75,7 +75,7 @@ const TeamMembershipApprovalTab: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
-        <Users className="h-5 w-5" />
+        <Users className="size-5" />
         <h2 className="text-xl font-semibold">Team Membership Approvals</h2>
         <Badge variant="secondary">{pendingMemberships.length} pending</Badge>
       </div>
@@ -84,7 +84,7 @@ const TeamMembershipApprovalTab: React.FC = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-8">
-              <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+              <CheckCircle className="size-12 text-green-500 mx-auto mb-4" />
               <h3 className="text-lg font-medium mb-2">All caught up!</h3>
               <p className="text-muted-foreground">
                 No pending team membership requests at this time.
@@ -100,14 +100,14 @@ const TeamMembershipApprovalTab: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                      <div className="size-8 bg-muted rounded-full flex items-center justify-center">
                         {membership.user.avatar_url ? (
                           <img
                             src={membership.user.avatar_url}
                             alt="User"
                             loading="lazy"
                             decoding="async"
-                            className="w-8 h-8 rounded-full"
+                            className="size-8 rounded-full"
                           />
                         ) : (
                           <span className="text-sm font-medium">
@@ -137,7 +137,7 @@ const TeamMembershipApprovalTab: React.FC = () => {
                     </div>
                   </div>
                   <Badge variant="outline">
-                    <Clock className="w-3 h-3 mr-1" />
+                    <Clock className="size-3 mr-1" />
                     {toLocalDateString(membership.joined_at)}
                   </Badge>
                 </div>
@@ -151,10 +151,10 @@ const TeamMembershipApprovalTab: React.FC = () => {
                     size="sm"
                   >
                     {processingId === membership.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="size-4 animate-spin" />
                     ) : (
                       <>
-                        <CheckCircle className="w-4 h-4 mr-1" />
+                        <CheckCircle className="size-4 mr-1" />
                         Approve
                       </>
                     )}
@@ -168,7 +168,7 @@ const TeamMembershipApprovalTab: React.FC = () => {
                         className="text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
                         disabled={processingId === membership.id}
                       >
-                        <XCircle className="w-4 h-4 mr-1" />
+                        <XCircle className="size-4 mr-1" />
                         Reject
                       </Button>
                     </AlertDialogTrigger>

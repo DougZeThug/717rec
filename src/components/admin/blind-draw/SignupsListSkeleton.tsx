@@ -24,7 +24,7 @@ const SignupsListSkeleton: React.FC = () => {
           {['signup-skel-1', 'signup-skel-2', 'signup-skel-3', 'signup-skel-4', 'signup-skel-5'].map((rowKey) => (
             <tr key={rowKey}>
               <td className="px-2 sm:px-4 py-2">
-                <ShimmerSkeleton className="h-4 w-4" />
+                <ShimmerSkeleton className="size-4" />
               </td>
               <td className="px-2 sm:px-4 py-2">
                 <ShimmerSkeleton className="h-4 w-24" />
@@ -33,7 +33,7 @@ const SignupsListSkeleton: React.FC = () => {
                 <ShimmerSkeleton className="h-4 w-28" />
               </td>
               <td className="px-2 sm:px-4 py-2 text-right">
-                <ShimmerSkeleton circle className="h-8 w-8 ml-auto" />
+                <ShimmerSkeleton circle className="size-8 ml-auto" />
               </td>
             </tr>
           ))}

@@ -52,9 +52,9 @@ const TeamTrend: React.FC<TeamTrendProps> = ({ recentMatches, teamId, limit = 5 
         <span className="text-sm font-medium mr-2">Current Streak:</span>
         <div className={`flex items-center ${isWinStreak ? 'text-green-500' : 'text-red-500'}`}>
           {isWinStreak ? (
-            <TrendingUp className="h-4 w-4 mr-1" />
+            <TrendingUp className="size-4 mr-1" />
           ) : (
-            <TrendingDown className="h-4 w-4 mr-1" />
+            <TrendingDown className="size-4 mr-1" />
           )}
           <span className="font-medium">
             {currentStreak > 0 ? `${isWinStreak ? 'W' : 'L'}${currentStreak}` : 'None'}
@@ -70,9 +70,9 @@ const TeamTrend: React.FC<TeamTrendProps> = ({ recentMatches, teamId, limit = 5 
             return (
               <div
                 key={match.id ?? `${match.date}-${match.winnerId}`}
-                className={`w-6 h-6 flex items-center justify-center text-xs font-bold rounded-full ${
-                  isWin ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }`}
+                className={`size-6 flex items-center justify-center text-xs font-bold rounded-full ${
+ isWin ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+ }`}
               >
                 {isWin ? 'W' : 'L'}
               </div>

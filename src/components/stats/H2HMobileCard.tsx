@@ -82,10 +82,10 @@ const H2HMobileCard: React.FC<H2HMobileCardProps> = ({ record, onCardClick }) =>
         {/* Row 2: W-L and Win% */}
         <div className="flex items-center gap-2 mt-0.5">
           <div className="flex items-center gap-1 text-xs">
-            <Trophy className="w-3 h-3 text-emerald-500" />
+            <Trophy className="size-3 text-emerald-500" />
             <span className="text-emerald-600 font-medium">{record.wins}W</span>
             <span className="text-muted-foreground">-</span>
-            <X className="w-3 h-3 text-rose-500" />
+            <X className="size-3 text-rose-500" />
             <span className="text-rose-600 font-medium">{record.losses}L</span>
           </div>
           <Badge

@@ -79,7 +79,7 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
           className="mb-3 flex items-center gap-2 text-sm text-amber-700 dark:text-amber-300"
           title="These teams have already played each other this season"
         >
-          <RotateCcw className="h-4 w-4" />
+          <RotateCcw className="size-4" />
           <span>{warningMessage ?? 'Rematch — these teams have already played'}</span>
         </div>
       )}
@@ -101,7 +101,7 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
                       <TeamLogo
                         imageUrl={team1.imageUrl || ''}
                         teamName={team1.name}
-                        className="h-4 w-4 shrink-0"
+                        className="size-4 shrink-0"
                       />
                       <span className="truncate">{team1.name}</span>
                     </div>
@@ -118,7 +118,7 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
                           <TeamLogo
                             imageUrl={team.imageUrl || ''}
                             teamName={team.name}
-                            className="h-4 w-4"
+                            className="size-4"
                           />
                           <span>{team.name}</span>
                         </div>
@@ -138,7 +138,7 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
             className="self-center sm:mt-5 shrink-0"
             title="Swap teams"
           >
-            <ArrowLeftRight className="h-4 w-4 rotate-90 sm:rotate-0" />
+            <ArrowLeftRight className="size-4 rotate-90 sm:rotate-0" />
           </Button>
 
           {/* Team 2 */}
@@ -155,7 +155,7 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
                       <TeamLogo
                         imageUrl={team2.imageUrl || ''}
                         teamName={team2.name}
-                        className="h-4 w-4 shrink-0"
+                        className="size-4 shrink-0"
                       />
                       <span className="truncate">{team2.name}</span>
                     </div>
@@ -172,7 +172,7 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
                           <TeamLogo
                             imageUrl={team.imageUrl || ''}
                             teamName={team.name}
-                            className="h-4 w-4"
+                            className="size-4"
                           />
                           <span>{team.name}</span>
                         </div>

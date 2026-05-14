@@ -27,7 +27,7 @@ const TeamPerformanceCards: React.FC<TeamPerformanceCardsProps> = ({
       {/* Power Score Card */}
       <div className="rounded-xl border border-border bg-card p-3 flex flex-col items-center gap-1">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium uppercase tracking-wider">
-          <Gauge className="h-3.5 w-3.5" />
+          <Gauge className="size-3.5" />
           Power Score
         </div>
         <PowerScoreDisplay
@@ -45,7 +45,7 @@ const TeamPerformanceCards: React.FC<TeamPerformanceCardsProps> = ({
       {/* Ranking Card */}
       <div className="rounded-xl border border-border bg-card p-3 flex flex-col items-center gap-1">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium uppercase tracking-wider">
-          <Trophy className="h-3.5 w-3.5" />
+          <Trophy className="size-3.5" />
           Ranking
         </div>
         <div className="flex items-center gap-2 mt-1">

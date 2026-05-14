@@ -83,7 +83,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 -mt-1 -mr-1 text-muted-foreground hover:text-foreground hover:bg-muted"
+                  className="size-8 -mt-1 -mr-1 text-muted-foreground hover:text-foreground hover:bg-muted"
                 >
                   <MoreHorizontal size={16} />
                   <span className="sr-only">Open menu</span>
@@ -92,7 +92,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
               <DropdownMenuContent align="end" className="w-[160px]">
                 {isAdminAccessGranted && onEdit && (
                   <DropdownMenuItem onClick={() => onEdit(team)} className="cursor-pointer">
-                    <Edit className="mr-2 h-4 w-4" /> Edit
+                    <Edit className="mr-2 size-4" /> Edit
                   </DropdownMenuItem>
                 )}
                 {isAdminAccessGranted && onDelete && (
@@ -100,12 +100,12 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
                     onClick={() => onDelete(team.id)}
                     className="text-destructive focus:text-destructive cursor-pointer"
                   >
-                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                    <Trash2 className="mr-2 size-4" /> Delete
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem asChild>
                   <Link to={`/teams/${toTeamSlug(team.name)}`}>
-                    <ExternalLink className="mr-2 h-4 w-4" /> View Details
+                    <ExternalLink className="mr-2 size-4" /> View Details
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>

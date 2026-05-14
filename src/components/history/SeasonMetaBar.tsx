@@ -72,13 +72,13 @@ const SeasonMetaBar: React.FC<SeasonMetaBarProps> = ({ season, seasonData }) => 
           isWinterTheme ? 'text-white/80' : 'text-gray-700 dark:text-gray-300'
         )}
       >
-        <Award className="w-4 h-4" />
+        <Award className="size-4" />
         Season Awards
       </h5>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
         <div className="flex items-center gap-2">
-          <Target className="w-4 h-4 text-blue-500" />
+          <Target className="size-4 text-blue-500" />
           <div>
             <p className={isWinterTheme ? 'text-white/60' : 'text-gray-600 dark:text-gray-400'}>
               Most Wins
@@ -95,7 +95,7 @@ const SeasonMetaBar: React.FC<SeasonMetaBarProps> = ({ season, seasonData }) => 
         </div>
 
         <div className="flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-green-500" />
+          <TrendingUp className="size-4 text-green-500" />
           <div>
             <p className={isWinterTheme ? 'text-white/60' : 'text-gray-600 dark:text-gray-400'}>
               Highest Power Score
@@ -116,7 +116,7 @@ const SeasonMetaBar: React.FC<SeasonMetaBarProps> = ({ season, seasonData }) => 
         </div>
 
         <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-purple-500" />
+          <Calendar className="size-4 text-purple-500" />
           <div>
             <p className={isWinterTheme ? 'text-white/60' : 'text-gray-600 dark:text-gray-400'}>
               Most Game Wins

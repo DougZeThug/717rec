@@ -163,7 +163,7 @@ const BracketView: React.FC<BracketViewProps> = ({
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-center space-y-4 w-full max-w-xs">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
+          <Loader2 className="size-8 animate-spin mx-auto text-primary" />
           <div className="space-y-2">
             <p className="font-medium text-foreground">{loadingProgress.label}</p>
             <Progress value={loadingProgress.percent} className="h-2" />
@@ -179,7 +179,7 @@ const BracketView: React.FC<BracketViewProps> = ({
     return (
       <div className="space-y-4">
         <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
+          <AlertCircle className="size-4" />
           <AlertDescription>
             <div className="space-y-2">
               <p>Failed to load bracket: {error.message}</p>
@@ -247,7 +247,7 @@ const BracketView: React.FC<BracketViewProps> = ({
   const showStandings = displayBracket.state === 'completed';
 
   return (
-    <div className="w-full h-full min-h-[400px] md:min-h-[600px] space-y-4">
+    <div className="size-full min-h-[400px] md:min-h-[600px] space-y-4">
       <FinalStandings bracketId={bracketId!} show={showStandings} />
 
       <BracketErrorBoundary bracketId={bracketId}>

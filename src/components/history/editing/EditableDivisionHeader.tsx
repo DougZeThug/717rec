@@ -85,11 +85,11 @@ export const EditableDivisionHeader: React.FC<EditableDivisionHeaderProps> = ({
             />
             {error && <p className="text-destructive text-xs mt-1">{error}</p>}
           </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleSaveEdit}>
-            <Check className="h-4 w-4 text-green-600" />
+          <Button variant="ghost" size="icon" className="size-8" onClick={handleSaveEdit}>
+            <Check className="size-4 text-green-600" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleCancelEdit}>
-            <X className="h-4 w-4 text-muted-foreground" />
+          <Button variant="ghost" size="icon" className="size-8" onClick={handleCancelEdit}>
+            <X className="size-4 text-muted-foreground" />
           </Button>
         </div>
       ) : (
@@ -103,8 +103,8 @@ export const EditableDivisionHeader: React.FC<EditableDivisionHeaderProps> = ({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleStartEdit}>
-                    <Pencil className="h-4 w-4 text-muted-foreground" />
+                  <Button variant="ghost" size="icon" className="size-8" onClick={handleStartEdit}>
+                    <Pencil className="size-4 text-muted-foreground" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Rename division</TooltipContent>
@@ -117,13 +117,13 @@ export const EditableDivisionHeader: React.FC<EditableDivisionHeaderProps> = ({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8"
+                    className="size-8"
                     onClick={onRemove}
                     disabled={!canRemove}
                   >
                     <Trash2
                       className={cn(
-                        'h-4 w-4',
+                        'size-4',
                         canRemove
                           ? 'text-destructive hover:text-destructive'
                           : 'text-muted-foreground/50'

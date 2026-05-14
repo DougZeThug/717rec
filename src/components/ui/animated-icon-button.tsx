@@ -42,7 +42,7 @@ export const AnimatedIconButton = React.forwardRef<HTMLButtonElement, AnimatedIc
           )}
           {...props}
         >
-          <Icon className={cn('h-4 w-4', iconClassName)} />
+          <Icon className={cn('size-4', iconClassName)} />
         </Button>
       </m.div>
     );

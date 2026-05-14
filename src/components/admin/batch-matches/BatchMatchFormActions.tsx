@@ -28,12 +28,12 @@ const BatchMatchFormActions = ({
       >
         {isAutoAssigning ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="mr-2 size-4 animate-spin" />
             Assigning...
           </>
         ) : (
           <>
-            <Clock className="mr-2 h-4 w-4" />
+            <Clock className="mr-2 size-4" />
             Auto Assign Timeslots
           </>
         )}
@@ -45,7 +45,7 @@ const BatchMatchFormActions = ({
           variant="outline"
           className="w-full transition-all duration-200 hover:bg-opacity-90 shadow-sm active:scale-[0.98]"
         >
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="mr-2 size-4" />
           Add Another Match
         </Button>
         <Button
@@ -55,12 +55,12 @@ const BatchMatchFormActions = ({
         >
           {isSubmitting ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 size-4 animate-spin" />
               Creating...
             </>
           ) : (
             <>
-              <CalendarCheck className="mr-2 h-4 w-4" />
+              <CalendarCheck className="mr-2 size-4" />
               Create Matches
             </>
           )}

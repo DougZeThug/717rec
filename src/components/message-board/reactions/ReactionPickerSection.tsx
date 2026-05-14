@@ -21,7 +21,7 @@ const ReactionPickerSection: React.FC<ReactionPickerSectionProps> = ({
           key={emoji}
           variant="ghost"
           size="xs"
-          className="h-8 w-8 p-0 hover:bg-accent/50"
+          className="size-8 p-0 hover:bg-accent/50"
           onClick={() => onSelect(emoji)}
         >
           <span className="text-lg">{emoji}</span>

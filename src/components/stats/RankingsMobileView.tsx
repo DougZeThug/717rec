@@ -226,9 +226,9 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                   {field.label}
                   {sortOptions.field === field.id &&
                     (sortOptions.direction === 'asc' ? (
-                      <ArrowUp className="ml-1 h-3 w-3" />
+                      <ArrowUp className="ml-1 size-3" />
                     ) : (
-                      <ArrowDown className="ml-1 h-3 w-3" />
+                      <ArrowDown className="ml-1 size-3" />
                     ))}
                 </Button>
               ))}
@@ -316,7 +316,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
           onClick={handleFindMyTeam}
           aria-label={myTeamId ? 'Scroll to my team' : 'Search for a team'}
         >
-          {myTeamId ? <User className="h-4 w-4" /> : <Search className="h-4 w-4" />}
+          {myTeamId ? <User className="size-4" /> : <Search className="size-4" />}
         </Button>
       )}
 

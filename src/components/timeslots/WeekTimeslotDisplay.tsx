@@ -60,7 +60,7 @@ const WeekTimeslotDisplay: React.FC<WeekTimeslotDisplayProps> = ({
       <CardContent className="pt-0">
         {timeslots.map((timeslot) => (
           <div key={timeslot.id} className="flex items-center gap-2 mb-2">
-            <Clock className="h-4 w-4 text-blue-500" />
+            <Clock className="size-4 text-blue-500" />
             <div>
               <p className="font-medium">{timeslot.timeslot}</p>
               <p className="text-xs text-muted-foreground" suppressHydrationWarning>

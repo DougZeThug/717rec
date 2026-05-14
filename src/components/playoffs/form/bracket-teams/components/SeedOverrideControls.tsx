@@ -83,7 +83,7 @@ export const SeedOverrideControls: React.FC<SeedOverrideControlsProps> = ({
           <div className="flex items-center gap-4">
             {hasConflicts && (
               <Badge variant="destructive" className="flex items-center gap-1">
-                <AlertCircle className="w-3 h-3" />
+                <AlertCircle className="size-3" />
                 {validation.conflicts.length} conflicts
               </Badge>
             )}
@@ -115,7 +115,7 @@ export const SeedOverrideControls: React.FC<SeedOverrideControlsProps> = ({
                     onClick={actions.cancelChanges}
                     disabled={isUpdating}
                   >
-                    <X className="w-4 h-4 mr-1" />
+                    <X className="size-4 mr-1" />
                     Cancel
                   </Button>
                   <Button
@@ -124,7 +124,7 @@ export const SeedOverrideControls: React.FC<SeedOverrideControlsProps> = ({
                     onClick={handleSaveChanges}
                     disabled={isUpdating || hasConflicts}
                   >
-                    <Save className="w-4 h-4 mr-1" />
+                    <Save className="size-4 mr-1" />
                     Save Changes
                   </Button>
                 </>
@@ -135,7 +135,7 @@ export const SeedOverrideControls: React.FC<SeedOverrideControlsProps> = ({
                 onClick={handleResetToAutomatic}
                 disabled={isUpdating}
               >
-                <RefreshCw className="w-4 h-4 mr-1" />
+                <RefreshCw className="size-4 mr-1" />
                 Reset to Auto
               </Button>
             </div>

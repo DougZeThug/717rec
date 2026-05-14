@@ -86,7 +86,7 @@ const TeamDivisionTable: React.FC<TeamDivisionTableProps> = ({ divisions, teams,
   if (teams.length === 0) {
     return (
       <Alert variant="warning" className="my-4">
-        <AlertCircle className="h-4 w-4" />
+        <AlertCircle className="size-4" />
         <AlertTitle>No Teams Available</AlertTitle>
         <AlertDescription>
           No teams have been added to the system. Add some teams first.
@@ -130,7 +130,7 @@ const TeamDivisionTable: React.FC<TeamDivisionTableProps> = ({ divisions, teams,
                       <TeamLogo
                         imageUrl={team.logoUrl || team.imageUrl}
                         teamName={team.name}
-                        className="h-6 w-6"
+                        className="size-6"
                       />
                       <span className="font-medium">{team.name}</span>
                     </TableCell>

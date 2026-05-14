@@ -23,8 +23,8 @@ const LoadingStateContainer = () => {
                   key={idx}
                   className="flex items-center gap-3 p-2 border-b border-gray-100 dark:border-gray-800"
                 >
-                  <Skeleton className="h-5 w-5" />
-                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <Skeleton className="size-5" />
+                  <Skeleton className="size-8 rounded-full" />
                   <Skeleton className="h-4 w-40" />
                   <div className="ml-auto flex gap-4">
                     <Skeleton className="h-4 w-12" />

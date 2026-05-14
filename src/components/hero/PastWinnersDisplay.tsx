@@ -34,7 +34,7 @@ const PastWinnersDisplay: React.FC<PastWinnersDisplayProps> = ({
           defaultIcon={Medal}
           winterGlyph="frozen-trophy"
           size={16}
-          className={cn('h-4 w-4', shouldApplyWinter ? 'text-amber-300' : 'text-amber-300')}
+          className={cn('size-4', shouldApplyWinter ? 'text-amber-300' : 'text-amber-300')}
         />
         <span className="font-bebas uppercase tracking-wide text-sm">Past Winners</span>
       </div>

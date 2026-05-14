@@ -114,7 +114,7 @@ const EditMatchParticipantsDialog: React.FC<EditMatchParticipantsDialogProps> = 
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <ArrowLeftRight className="h-5 w-5" />
+            <ArrowLeftRight className="size-5" />
             Edit Matchup Teams
           </DialogTitle>
           <DialogDescription>
@@ -140,7 +140,7 @@ const EditMatchParticipantsDialog: React.FC<EditMatchParticipantsDialogProps> = 
           />
 
           <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200">
-            <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+            <AlertTriangle className="mt-0.5 size-4 flex-shrink-0" />
             <p>
               This updates only this match. Downstream matches will populate automatically as this
               match is played. If the swapped team also appears in another upcoming match, you may
@@ -162,7 +162,7 @@ const EditMatchParticipantsDialog: React.FC<EditMatchParticipantsDialogProps> = 
           <Button onClick={handleSave} disabled={isSaving || noChange || bothSame}>
             {isSaving ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 size-4 animate-spin" />
                 Saving...
               </>
             ) : (

@@ -69,19 +69,19 @@ export const SavedBadge: React.FC<SavedBadgeProps> = ({
         >
           {displayStatus === 'saving' && (
             <>
-              <Loader2 className="h-3 w-3 animate-spin" />
+              <Loader2 className="size-3 animate-spin" />
               <span>Saving...</span>
             </>
           )}
           {displayStatus === 'saved' && (
             <>
-              <Check className="h-3 w-3" />
+              <Check className="size-3" />
               <span>Saved</span>
             </>
           )}
           {displayStatus === 'error' && (
             <>
-              <AlertCircle className="h-3 w-3" />
+              <AlertCircle className="size-3" />
               <span>Error</span>
             </>
           )}

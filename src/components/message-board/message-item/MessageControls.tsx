@@ -50,7 +50,7 @@ const MessageControls: React.FC<MessageControlsProps> = ({
               setShowOptions(false);
             }}
           >
-            <Pencil className="h-4 w-4 text-primary hover:text-primary/80 cursor-pointer" />
+            <Pencil className="size-4 text-primary hover:text-primary/80 cursor-pointer" />
           </button>
 
           {/* Delete option */}
@@ -62,7 +62,7 @@ const MessageControls: React.FC<MessageControlsProps> = ({
               setShowOptions(false);
             }}
           >
-            <Trash2 className="h-4 w-4 text-destructive hover:text-destructive/80 cursor-pointer" />
+            <Trash2 className="size-4 text-destructive hover:text-destructive/80 cursor-pointer" />
           </button>
         </div>
       )}

@@ -21,21 +21,21 @@ const SquareLogo: React.FC<{
   alt: string;
   fallback: string;
 }> = ({ src, alt, fallback }) => (
-  <div className="w-10 h-10 flex items-center justify-center bg-gray-200">
+  <div className="size-10 flex items-center justify-center bg-gray-200">
     {src ? (
       <img
         src={src}
         alt={alt}
         loading="lazy"
         decoding="async"
-        className="w-10 h-10 object-contain rounded-none"
+        className="size-10 object-contain rounded-none"
         onError={(e) => {
           imageErrorLog(alt, src);
           (e.target as HTMLImageElement).src = FALLBACK_TEAM_IMAGE;
         }}
       />
     ) : (
-      <div className="w-10 h-10 flex items-center justify-center bg-gray-200 text-gray-400">
+      <div className="size-10 flex items-center justify-center bg-gray-200 text-gray-400">
         <span className="text-xs">{fallback}</span>
       </div>
     )}

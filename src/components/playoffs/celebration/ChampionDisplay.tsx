@@ -64,18 +64,18 @@ const ChampionDisplay: React.FC<ChampionDisplayProps> = ({
       >
         <div className="flex flex-col items-center text-center">
           <div className="relative mb-4">
-            <div className="absolute -top-1 -left-1 w-full h-full flex items-center justify-center">
+            <div className="absolute -top-1 -left-1 size-full flex items-center justify-center">
               <SeasonalIcon
                 defaultIcon={Star}
                 winterGlyph="winter-star"
-                className="h-24 w-24 text-amber-300 dark:text-amber-500 opacity-30"
+                className="size-24 text-amber-300 dark:text-amber-500 opacity-30"
                 strokeWidth={1}
               />
             </div>
             <SeasonalIcon
               defaultIcon={Trophy}
               winterGlyph="frozen-trophy"
-              className="h-16 w-16 text-amber-500 dark:text-amber-400"
+              className="size-16 text-amber-500 dark:text-amber-400"
               strokeWidth={1.5}
             />
           </div>
@@ -86,21 +86,21 @@ const ChampionDisplay: React.FC<ChampionDisplayProps> = ({
 
           <div className="my-4 flex flex-col items-center">
             {champion.logoUrl || champion.imageUrl ? (
-              <div className="w-24 h-24 rounded-full overflow-hidden bg-white dark:bg-gray-800 p-2 border-2 border-amber-300 dark:border-amber-700 shadow-md mb-4">
+              <div className="size-24 rounded-full overflow-hidden bg-white dark:bg-gray-800 p-2 border-2 border-amber-300 dark:border-amber-700 shadow-md mb-4">
                 <img
                   src={champion.logoUrl || champion.imageUrl}
                   alt={champion.name}
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-full object-contain"
+                  className="size-full object-contain"
                 />
               </div>
             ) : (
-              <div className="w-24 h-24 rounded-full bg-amber-100 dark:bg-amber-800 flex items-center justify-center border-2 border-amber-300 dark:border-amber-700 shadow-md mb-4">
+              <div className="size-24 rounded-full bg-amber-100 dark:bg-amber-800 flex items-center justify-center border-2 border-amber-300 dark:border-amber-700 shadow-md mb-4">
                 <SeasonalIcon
                   defaultIcon={Award}
                   winterGlyph="frozen-trophy"
-                  className="h-12 w-12 text-amber-500 dark:text-amber-300"
+                  className="size-12 text-amber-500 dark:text-amber-300"
                 />
               </div>
             )}

@@ -70,9 +70,9 @@ export const MatchPrediction: React.FC<MatchPredictionProps> = ({
         <span className="text-[10px] text-muted-foreground">{expectedText}</span>
         <ConfidenceBadge level={confidence} />
         {isExpanded ? (
-          <ChevronUp className="h-2.5 w-2.5 text-muted-foreground" />
+          <ChevronUp className="size-2.5 text-muted-foreground" />
         ) : (
-          <ChevronDown className="h-2.5 w-2.5 text-muted-foreground" />
+          <ChevronDown className="size-2.5 text-muted-foreground" />
         )}
       </button>
 

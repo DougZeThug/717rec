@@ -12,7 +12,7 @@ const AdminSectionWrapper = ({ title, icon: Icon, emoji, children }: AdminSectio
   return (
     <div className="px-4 py-6 max-w-[1200px] mx-auto w-full">
       <div className="flex items-center gap-2 mb-6">
-        {Icon && <Icon className="h-6 w-6 text-muted-foreground" />}
+        {Icon && <Icon className="size-6 text-muted-foreground" />}
         {emoji && <span className="text-xl">{emoji}</span>}
         <h2 className="text-2xl font-semibold">{title}</h2>
       </div>

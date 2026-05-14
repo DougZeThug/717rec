@@ -70,7 +70,7 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
         </div>
         <ChevronDown
           className={cn(
-            'h-4 w-4 transition-transform duration-200',
+            'size-4 transition-transform duration-200',
             isOpen ? 'transform rotate-180' : ''
           )}
         />

@@ -29,7 +29,7 @@ export const TeamImage: React.FC<TeamImageProps> = ({
   };
 
   return (
-    <div className="w-full h-full flex items-center justify-center">
+    <div className="size-full flex items-center justify-center">
       {!imageUrl ? (
         <div className="flex items-center justify-center h-full text-gray-400 text-xs">
           No Team Image

@@ -31,7 +31,7 @@ const SchedulePreview: React.FC<SchedulePreviewProps> = ({ timeBlockTeams, date 
         <Card key={block} className="overflow-hidden">
           <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
+              <Clock className="size-4 text-muted-foreground" />
               <span className="font-medium">{block} Block</span>
             </div>
             <Badge variant={teams.length % 2 === 0 ? 'outline' : 'destructive'} className="text-xs">
@@ -43,7 +43,7 @@ const SchedulePreview: React.FC<SchedulePreviewProps> = ({ timeBlockTeams, date 
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                 {teams.map((team) => (
                   <div key={team.id} className="flex items-center gap-2 p-2 border rounded-md">
-                    <TeamLogo imageUrl={team.logoUrl} teamName={team.name} className="h-6 w-6" />
+                    <TeamLogo imageUrl={team.logoUrl} teamName={team.name} className="size-6" />
                     <span className="text-sm truncate">{team.name}</span>
                   </div>
                 ))}
