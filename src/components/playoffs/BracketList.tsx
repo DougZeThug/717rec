@@ -30,8 +30,8 @@ const BracketList: React.FC<BracketListProps> = ({
   if (isLoading) {
     return (
       <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-40 w-full rounded-xl" />
+        {['bracket-skel-1', 'bracket-skel-2', 'bracket-skel-3'].map((sk) => (
+          <Skeleton key={sk} className="h-40 w-full rounded-xl" />
         ))}
       </div>
     );

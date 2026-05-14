@@ -214,9 +214,9 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <div className="mt-2 max-h-64 overflow-y-auto space-y-1">
-                    {analysis.teamAssignments.map((assignment, index) => (
+                    {analysis.teamAssignments.map((assignment) => (
                       <div
-                        key={`${assignment.teamId}-${index}`}
+                        key={`${assignment.teamId}-${assignment.timeBlock ?? assignment.timeslot ?? assignment.matchId ?? assignment.teamName}`}
                         className={`flex items-center justify-between p-2 rounded text-xs font-mono ${
                           assignment.isInvalid
                             ? 'bg-destructive/10 border border-destructive'

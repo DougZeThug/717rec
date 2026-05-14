@@ -36,8 +36,8 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
       return (
         <div className="animate-pulse">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="space-y-2">
+            {['totals-skel-1', 'totals-skel-2', 'totals-skel-3', 'totals-skel-4'].map((sk) => (
+              <div key={sk} className="space-y-2">
                 <div className="h-4 bg-muted rounded w-20"></div>
                 <div className="h-6 bg-muted rounded w-16"></div>
               </div>
@@ -55,8 +55,8 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
       >
         <div className="animate-pulse">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="space-y-2">
+            {['totals-cs-skel-1', 'totals-cs-skel-2', 'totals-cs-skel-3', 'totals-cs-skel-4'].map((sk) => (
+              <div key={sk} className="space-y-2">
                 <div className="h-4 bg-muted rounded w-20"></div>
                 <div className="h-6 bg-muted rounded w-16"></div>
               </div>
@@ -314,9 +314,9 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
             Recent Playoff Finishes
           </span>
           <div className="flex flex-wrap gap-2">
-            {totals.playoff_finishes.slice(0, 8).map((finish, index) => (
+            {totals.playoff_finishes.slice(0, 8).map((finish) => (
               <div
-                key={index}
+                key={`${finish.season_id ?? finish.division_name}-${finish.rank}`}
                 className="px-3 py-1.5 rounded-full text-sm font-medium bg-muted text-muted-foreground"
               >
                 #{finish.rank} <span className="text-xs opacity-70">({finish.division_name})</span>

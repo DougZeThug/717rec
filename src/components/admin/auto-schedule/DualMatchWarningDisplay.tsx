@@ -97,8 +97,8 @@ const DualMatchWarningDisplay: React.FC<DualMatchWarningDisplayProps> = ({
           <div className="mt-2">
             <p className="font-medium">Warnings:</p>
             <ul className="list-disc pl-5 text-sm">
-              {validation.warnings.map((warning, i) => (
-                <li key={i}>{warning}</li>
+              {validation.warnings.map((warning) => (
+                <li key={warning}>{warning}</li>
               ))}
             </ul>
           </div>
