@@ -259,7 +259,7 @@ const SeasonParticipationTab: React.FC = () => {
                               : 'No Response'}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
+                      <TableCell className="text-muted-foreground" suppressHydrationWarning>
                         {team.updatedAt ? format(new Date(team.updatedAt), 'MMM d, h:mm a') : '-'}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
