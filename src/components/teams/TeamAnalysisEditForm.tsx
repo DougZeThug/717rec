@@ -1,5 +1,5 @@
 import { Loader2, Plus, Save, X } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,17 +27,29 @@ export const TeamAnalysisEditForm: React.FC<TeamAnalysisEditFormProps> = ({
   const [weaknesses, setWeaknesses] = useState<string[]>(
     analysis?.weaknesses?.length ? analysis.weaknesses : ['']
   );
+  // Stable per-row IDs kept in sync with strengths/weaknesses so React
+  // keys remain stable across removals (avoids array-index-as-key bugs).
+  const strengthIdsRef = useRef<string[]>(strengths.map(() => crypto.randomUUID()));
+  const weaknessIdsRef = useRef<string[]>(weaknesses.map(() => crypto.randomUUID()));
   const [trends, setTrends] = useState(analysis?.trends || '');
   const [rivalryInsights, setRivalryInsights] = useState(analysis?.rivalry_insights || '');
 
-  const handleAddStrength = () => setStrengths((prev) => [...prev, '']);
-  const handleAddWeakness = () => setWeaknesses((prev) => [...prev, '']);
+  const handleAddStrength = () => {
+    strengthIdsRef.current = [...strengthIdsRef.current, crypto.randomUUID()];
+    setStrengths((prev) => [...prev, '']);
+  };
+  const handleAddWeakness = () => {
+    weaknessIdsRef.current = [...weaknessIdsRef.current, crypto.randomUUID()];
+    setWeaknesses((prev) => [...prev, '']);
+  };
 
   const handleRemoveStrength = (index: number) => {
+    strengthIdsRef.current = strengthIdsRef.current.filter((_, i) => i !== index);
     setStrengths(strengths.filter((_, i) => i !== index));
   };
 
   const handleRemoveWeakness = (index: number) => {
+    weaknessIdsRef.current = weaknessIdsRef.current.filter((_, i) => i !== index);
     setWeaknesses(weaknesses.filter((_, i) => i !== index));
   };
 
@@ -83,7 +95,7 @@ export const TeamAnalysisEditForm: React.FC<TeamAnalysisEditFormProps> = ({
         <Label>Strengths</Label>
         <div className="space-y-2">
           {strengths.map((strength, index) => (
-            <div key={`strength-row-${index}`} className="flex gap-2">
+            <div key={strengthIdsRef.current[index]} className="flex gap-2">
               <Input
                 value={strength}
                 onChange={(e) => handleStrengthChange(index, e.target.value)}
@@ -118,7 +130,7 @@ export const TeamAnalysisEditForm: React.FC<TeamAnalysisEditFormProps> = ({
         <Label>Areas to Improve</Label>
         <div className="space-y-2">
           {weaknesses.map((weakness, index) => (
-            <div key={`weakness-row-${index}`} className="flex gap-2">
+            <div key={weaknessIdsRef.current[index]} className="flex gap-2">
               <Input
                 value={weakness}
                 onChange={(e) => handleWeaknessChange(index, e.target.value)}
