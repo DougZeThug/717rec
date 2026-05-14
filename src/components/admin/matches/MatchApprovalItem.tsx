@@ -72,7 +72,7 @@ const MatchApprovalItem = ({
           </div>
         </div>
         <div className="text-sm text-muted-foreground" suppressHydrationWarning>
-          {new Date(match.date).toLocaleDateString()}
+          {toLocalDateString(match.date)}
         </div>
       </CollapsibleTrigger>
       <CollapsibleContent>
