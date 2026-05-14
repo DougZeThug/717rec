@@ -22,9 +22,14 @@ const PlayerList = ({ players }: PlayerListProps) => {
         </div>
       ) : (
         <div className="flex flex-wrap gap-2">
-          {players.map((player, index) => (
-            <PlayerChip key={`${player}-${index}`} playerName={player} />
-          ))}
+          {players.map((player, index) => {
+            // Use the player name when unique, otherwise disambiguate by occurrence
+            // index against earlier identical names so React keys stay stable when
+            // unrelated entries change.
+            const occurrence = players.slice(0, index).filter((p) => p === player).length;
+            const key = occurrence === 0 ? player : `${player}#${occurrence}`;
+            return <PlayerChip key={key} playerName={player} />;
+          })}
         </div>
       )}
     </CollapsibleSection>

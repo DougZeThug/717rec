@@ -15,10 +15,13 @@ const MessageContent: React.FC<MessageContentProps> = ({ content, isEdited, upda
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
 
-  const formattedText = content.split('\n').map((line, i) => (
-    <React.Fragment key={i}>
+  const lines = content.split('\n');
+  const formattedText = lines.map((line, i) => (
+    // Lines have no inherent identity; combine the rendered text with its
+    // position so keys remain unique even when adjacent lines repeat.
+    <React.Fragment key={`line-${i}-${line}`}>
       {line}
-      {i < content.split('\n').length - 1 && <br />}
+      {i < lines.length - 1 && <br />}
     </React.Fragment>
   ));
 

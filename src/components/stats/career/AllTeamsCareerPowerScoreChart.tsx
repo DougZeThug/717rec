@@ -83,11 +83,11 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
   return (
     <div className="bg-card border border-border rounded-lg p-3 shadow-lg max-h-64 overflow-y-auto">
       <p className="font-semibold text-sm mb-2">{seasonName}</p>
-      {visibleTeams.map((entry, index: number) => {
+      {visibleTeams.map((entry) => {
         const teamId = String(entry.dataKey ?? '').replace('team_', '');
         const team = teamsData?.find((t: TeamCareerData) => t.teamId === teamId);
         return (
-          <p key={index} className="text-xs">
+          <p key={String(entry.dataKey ?? teamId)} className="text-xs">
             <Link
               to={`/teams/${toTeamSlug(team?.teamName || teamId)}`}
               className="hover:underline transition-colors"

@@ -85,9 +85,9 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
         </button>
 
         <div className="flex items-center gap-2">
-          {groupedMatches.map((_, idx) => (
+          {groupedMatches.map((group, idx) => (
             <button
-              key={idx}
+              key={group.date.toISOString()}
               onClick={() => onIndexChange(idx)}
               className={cn(
                 'w-2 h-2 rounded-full transition-all min-w-[20px] min-h-[20px] flex items-center justify-center',
