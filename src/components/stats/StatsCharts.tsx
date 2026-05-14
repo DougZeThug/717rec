@@ -47,6 +47,9 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
     if (!emblaApi) return;
     emblaApi.on('select', onSelect);
     onSelect();
+    return () => {
+      emblaApi.off('select', onSelect);
+    };
   }, [emblaApi, onSelect]);
 
   const chartLabels = ['Win-Loss', 'Power Score', 'Trends'];
