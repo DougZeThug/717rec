@@ -318,7 +318,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
                         {record.last_played_at ? (
                           <div className="flex items-center space-x-1">
                             <Calendar className="w-3 h-3" />
-                            <span>{format(new Date(record.last_played_at), 'MMM d, yyyy')}</span>
+                            <span suppressHydrationWarning>{format(new Date(record.last_played_at), 'MMM d, yyyy')}</span>
                           </div>
                         ) : (
                           '-'
