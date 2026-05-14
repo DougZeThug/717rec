@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+import { formatWithPattern } from '@/utils/formatDateSafe';
 import { Check, Download, HelpCircle, Users, X } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
@@ -260,7 +261,7 @@ const SeasonParticipationTab: React.FC = () => {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground" suppressHydrationWarning>
-                        {team.updatedAt ? format(new Date(team.updatedAt), 'MMM d, h:mm a') : '-'}
+                        {formatWithPattern(team.updatedAt, 'MMM d, h:mm a', '-')}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {team.submittedBy ?? '-'}
