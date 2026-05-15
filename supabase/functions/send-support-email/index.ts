@@ -5,10 +5,29 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// Explicit CORS allowlist. Browsers enforce this; server-to-server callers are
+// unaffected since they don't send Origin. Keep this list in sync with the
+// app's published / preview / dev URLs.
+const ALLOWED_ORIGINS = new Set<string>([
+  'https://717rec.app',
+  'https://717rec.lovable.app',
+  'https://id-preview--71485458-eece-4db2-a818-0dbc3e38e42e.lovable.app',
+  'http://localhost:3000',
+  'http://localhost:5173',
+]);
+
+function buildCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get('origin') ?? '';
+  const headers: Record<string, string> = {
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    Vary: 'Origin',
+  };
+  if (ALLOWED_ORIGINS.has(origin)) {
+    headers['Access-Control-Allow-Origin'] = origin;
+  }
+  return headers;
+}
 
 interface SupportRequest {
   name: string;
@@ -77,6 +96,8 @@ function countUrls(text: string): number {
 }
 
 serve(async (req: Request) => {
+  const corsHeaders = buildCorsHeaders(req);
+
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
