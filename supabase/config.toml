@@ -19,17 +19,11 @@ enable_confirmations = false
 [db]
 port = 54322
 
-[functions.create-bracket]
-verify_jwt = true
-
 [functions.capture-power-snapshots]
 verify_jwt = false
 
 [functions.send-support-email]
 verify_jwt = false
-
-[functions.update_team_stats]
-verify_jwt = true
 
 [storage]
 enabled = true
