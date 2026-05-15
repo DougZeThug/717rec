@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { requireAdmin } from '../_shared/auth.ts';
 
 // Edge function logger with prefix
 const log = (...args: unknown[]) => console.log('[BRACKET]', ...args);
@@ -410,36 +411,10 @@ serve(async (req) => {
 
     log('[ENV] All required environment variables are configured');
 
-    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: {
-        headers: { Authorization: req.headers.get('Authorization')! },
-      },
-    });
-
-    // Get the current user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabaseClient.auth.getUser();
-    if (userError || !user) {
-      throw new Error('Authentication required');
-    }
-
-    log('[AUTH] User authenticated:', user.id);
-
-    // Verify admin status
-    const { data: profile, error: profileError } = await supabaseClient
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', user.id)
-      .single();
-
-    if (profileError || !profile?.is_admin) {
-      errorLog('[AUTH] Admin check failed:', profileError);
-      throw new Error('Admin access required');
-    }
-
-    log('[AUTH] Admin access verified for user:', user.id);
+    const auth = await requireAdmin(req, corsHeaders);
+    if (!auth.ok) return auth.response;
+    const supabaseClient = auth.ctx.supabase;
+    log('[AUTH] Admin access verified for user:', auth.ctx.userId);
 
     const payload: CreateBracketPayload = await req.json();
 
