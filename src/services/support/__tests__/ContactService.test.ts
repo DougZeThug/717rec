@@ -9,6 +9,7 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 import { contactSchema, submitContactRequest } from '../ContactService';
+import { DatabaseError } from '@/types/errors';
 
 describe('ContactService honeypot', () => {
   beforeEach(() => {
@@ -67,6 +68,72 @@ describe('ContactService honeypot', () => {
 
     expect(invokeMock).toHaveBeenCalledWith('send-support-email', {
       body: expect.objectContaining({ website: '' }),
+    });
+  });
+
+  it('schema rejects an invalid email', () => {
+    const result = contactSchema.safeParse({
+      name: 'Alice',
+      email: 'not-an-email',
+      subject: 'general_question',
+      message: 'Hello there from a real user.',
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const emailIssue = result.error.issues.find((i) => i.path[0] === 'email');
+      expect(emailIssue).toBeDefined();
+    }
+  });
+
+  it('throws DatabaseError when the edge function returns rate-limit (429)', async () => {
+    invokeMock.mockResolvedValueOnce({
+      data: null,
+      error: { status: 429, message: 'Too many requests. Please try again later.' },
+    });
+
+    await expect(
+      submitContactRequest({
+        name: 'Alice',
+        email: 'alice@example.com',
+        subject: 'other',
+        message: 'a real message here',
+      })
+    ).rejects.toMatchObject({
+      message: expect.stringContaining('Too many requests'),
+    });
+  });
+
+  it('throws DatabaseError when the edge function rejects an invalid email', async () => {
+    invokeMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'Invalid email' },
+    });
+
+    await expect(
+      submitContactRequest({
+        name: 'Alice',
+        email: 'alice@example.com',
+        subject: 'other',
+        message: 'a real message here',
+      })
+    ).rejects.toBeInstanceOf(DatabaseError);
+  });
+
+  it('throws DatabaseError when the edge function returns a generic 400', async () => {
+    invokeMock.mockResolvedValueOnce({
+      data: null,
+      error: { status: 400, message: 'All fields are required' },
+    });
+
+    await expect(
+      submitContactRequest({
+        name: 'Alice',
+        email: 'alice@example.com',
+        subject: 'other',
+        message: 'a real message here',
+      })
+    ).rejects.toMatchObject({
+      message: expect.stringContaining('All fields are required'),
     });
   });
 });
