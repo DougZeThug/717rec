@@ -2292,6 +2292,27 @@ export type Database = {
           },
         ]
       }
+      rate_limit_events: {
+        Row: {
+          created_at: string
+          endpoint: string
+          id: string
+          ip_hash: string
+        }
+        Insert: {
+          created_at?: string
+          endpoint: string
+          id?: string
+          ip_hash: string
+        }
+        Update: {
+          created_at?: string
+          endpoint?: string
+          id?: string
+          ip_hash?: string
+        }
+        Relationships: []
+      }
       round: {
         Row: {
           group_id: number
@@ -4274,6 +4295,15 @@ export type Database = {
           streak_count: number
           streak_type: string
         }[]
+      }
+      check_rate_limit: {
+        Args: {
+          _endpoint: string
+          _ip_hash: string
+          _max_hits: number
+          _window_seconds: number
+        }
+        Returns: boolean
       }
       cleanup_orphaned_team_season_stat: {
         Args: { p_season_id: string; p_team_id: string }
