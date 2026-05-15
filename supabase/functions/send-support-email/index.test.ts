@@ -1,4 +1,14 @@
 import 'https://deno.land/std@0.224.0/dotenv/load.ts';
+
+// Provide required env BEFORE importing the function under test so
+// createClient() inside handleRequest() doesn't throw.
+Deno.env.set('SUPABASE_URL', Deno.env.get('SUPABASE_URL') ?? 'http://localhost');
+Deno.env.set(
+  'SUPABASE_SERVICE_ROLE_KEY',
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? 'test-service-key'
+);
+Deno.env.delete('RESEND_API_KEY'); // skip Resend branch in tests
+
 import {
   assertEquals,
   assertExists,
