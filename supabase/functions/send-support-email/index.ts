@@ -15,9 +15,6 @@ export function setRateLimiter(fn: RateLimitFn | null): void {
   rateLimiterImpl = fn ?? defaultCheckRateLimit;
 }
 
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 
 // Explicit CORS allowlist. Browsers enforce this; server-to-server callers are
 // unaffected since they don't send Origin. Keep this list in sync with the
@@ -123,6 +120,9 @@ async function handleRequest(req: Request): Promise<Response> {
   const ip = getClientIp(req);
   const ipHash = await hashIp(ip);
 
+  const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
+  const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+  const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   // Durable, cross-isolate rate limit (per endpoint + hashed IP).
