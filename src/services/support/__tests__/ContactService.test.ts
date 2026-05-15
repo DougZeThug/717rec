@@ -88,7 +88,7 @@ describe('ContactService honeypot', () => {
   it('throws DatabaseError when the edge function returns rate-limit (429)', async () => {
     invokeMock.mockResolvedValueOnce({
       data: null,
-      error: { status: 429, message: 'Too many requests. Please try again later.' },
+      error: new Error('Too many requests. Please try again later.'),
     });
 
     await expect(
@@ -106,7 +106,7 @@ describe('ContactService honeypot', () => {
   it('throws DatabaseError when the edge function rejects an invalid email', async () => {
     invokeMock.mockResolvedValueOnce({
       data: null,
-      error: { message: 'Invalid email' },
+      error: new Error('Invalid email'),
     });
 
     await expect(
@@ -122,7 +122,7 @@ describe('ContactService honeypot', () => {
   it('throws DatabaseError when the edge function returns a generic 400', async () => {
     invokeMock.mockResolvedValueOnce({
       data: null,
-      error: { status: 400, message: 'All fields are required' },
+      error: new Error('All fields are required'),
     });
 
     await expect(
