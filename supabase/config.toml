@@ -25,8 +25,11 @@ verify_jwt = true
 [functions.capture-power-snapshots]
 verify_jwt = false
 
-[functions.analyze-team]
+[functions.send-support-email]
 verify_jwt = false
+
+[functions.update_team_stats]
+verify_jwt = true
 
 [storage]
 enabled = true
