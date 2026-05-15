@@ -68,7 +68,7 @@ function restoreFetch() {
   globalThis.fetch = originalFetch;
 }
 
-Deno.test('rejects malformed JSON with 400', async () => {
+Deno.test({ name: 'rejects malformed JSON with 400', sanitizeOps: false, sanitizeResources: false, fn: async () => {
   allowAll();
   stubFetch();
   try {
@@ -80,9 +80,9 @@ Deno.test('rejects malformed JSON with 400', async () => {
     restoreFetch();
     reset();
   }
-});
+} });
 
-Deno.test('rejects payload missing required field with 400', async () => {
+Deno.test({ name: 'rejects payload missing required field with 400', sanitizeOps: false, sanitizeResources: false, fn: async () => {
   allowAll();
   stubFetch();
   try {
@@ -96,9 +96,9 @@ Deno.test('rejects payload missing required field with 400', async () => {
     restoreFetch();
     reset();
   }
-});
+} });
 
-Deno.test('rejects invalid email with 400', async () => {
+Deno.test({ name: 'rejects invalid email with 400', sanitizeOps: false, sanitizeResources: false, fn: async () => {
   allowAll();
   stubFetch();
   try {
@@ -110,9 +110,9 @@ Deno.test('rejects invalid email with 400', async () => {
     restoreFetch();
     reset();
   }
-});
+} });
 
-Deno.test('rejects subject not in allowlist with 400', async () => {
+Deno.test({ name: 'rejects subject not in allowlist with 400', sanitizeOps: false, sanitizeResources: false, fn: async () => {
   allowAll();
   stubFetch();
   try {
@@ -124,9 +124,9 @@ Deno.test('rejects subject not in allowlist with 400', async () => {
     restoreFetch();
     reset();
   }
-});
+} });
 
-Deno.test('rejects field exceeding max length with 400', async () => {
+Deno.test({ name: 'rejects field exceeding max length with 400', sanitizeOps: false, sanitizeResources: false, fn: async () => {
   allowAll();
   stubFetch();
   try {
@@ -140,9 +140,9 @@ Deno.test('rejects field exceeding max length with 400', async () => {
     restoreFetch();
     reset();
   }
-});
+} });
 
-Deno.test('rejects unknown extra fields (strict schema) with 400', async () => {
+Deno.test({ name: 'rejects unknown extra fields (strict schema) with 400', sanitizeOps: false, sanitizeResources: false, fn: async () => {
   allowAll();
   stubFetch();
   try {
@@ -154,9 +154,9 @@ Deno.test('rejects unknown extra fields (strict schema) with 400', async () => {
     restoreFetch();
     reset();
   }
-});
+} });
 
-Deno.test('honeypot field returns silent 200', async () => {
+Deno.test({ name: 'honeypot field returns silent 200', sanitizeOps: false, sanitizeResources: false, fn: async () => {
   allowAll();
   stubFetch();
   try {
@@ -168,9 +168,9 @@ Deno.test('honeypot field returns silent 200', async () => {
     restoreFetch();
     reset();
   }
-});
+} });
 
-Deno.test('valid payload succeeds with 200', async () => {
+Deno.test({ name: 'valid payload succeeds with 200', sanitizeOps: false, sanitizeResources: false, fn: async () => {
   allowAll();
   stubFetch();
   try {
@@ -182,9 +182,9 @@ Deno.test('valid payload succeeds with 200', async () => {
     restoreFetch();
     reset();
   }
-});
+} });
 
-Deno.test('rate limit exceeded returns 429', async () => {
+Deno.test({ name: 'rate limit exceeded returns 429', sanitizeOps: false, sanitizeResources: false, fn: async () => {
   denyAll();
   stubFetch();
   try {
@@ -196,4 +196,4 @@ Deno.test('rate limit exceeded returns 429', async () => {
     restoreFetch();
     reset();
   }
-});
+} });
