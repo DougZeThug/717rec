@@ -2,7 +2,18 @@ import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { z } from 'https://esm.sh/zod@3.23.8';
 
-import { checkRateLimit, hashIp } from '../_shared/rateLimit.ts';
+import {
+  checkRateLimit as defaultCheckRateLimit,
+  hashIp,
+} from '../_shared/rateLimit.ts';
+
+type RateLimitFn = typeof defaultCheckRateLimit;
+
+// Test seam — overridable from tests via setRateLimiter().
+let rateLimiterImpl: RateLimitFn = defaultCheckRateLimit;
+export function setRateLimiter(fn: RateLimitFn | null): void {
+  rateLimiterImpl = fn ?? defaultCheckRateLimit;
+}
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
@@ -115,7 +126,7 @@ async function handleRequest(req: Request): Promise<Response> {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   // Durable, cross-isolate rate limit (per endpoint + hashed IP).
-  const rl = await checkRateLimit(supabase, {
+  const rl = await rateLimiterImpl(supabase, {
     endpoint: ENDPOINT_KEY,
     ipHash,
     windowSeconds: RATE_LIMIT_WINDOW_SECONDS,
