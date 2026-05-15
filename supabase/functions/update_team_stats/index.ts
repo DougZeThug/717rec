@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
+import { requireAdmin } from '../_shared/auth.ts';
 
 // Edge function logger with prefix
 const log = (...args: unknown[]) => console.log('[TEAM_STATS]', ...args);
@@ -17,38 +17,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Create Supabase client using the runtime auth from the request
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
-    );
-
-    // Verify authentication
-    const {
-      data: { user },
-      error: userError,
-    } = await supabaseClient.auth.getUser();
-    if (userError || !user) {
-      return new Response(JSON.stringify({ error: 'Authentication required' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Verify admin status
-    const { data: profile, error: profileError } = await supabaseClient
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', user.id)
-      .single();
-
-    if (profileError || !profile?.is_admin) {
-      return new Response(JSON.stringify({ error: 'Admin access required' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    const auth = await requireAdmin(req, corsHeaders);
+    if (!auth.ok) return auth.response;
+    const supabaseClient = auth.ctx.supabase;
 
     // Get request body
     const { matchId } = await req.json();
