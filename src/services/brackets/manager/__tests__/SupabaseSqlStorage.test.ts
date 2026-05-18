@@ -203,10 +203,10 @@ describe('SupabaseSqlStorage', () => {
   });
 
   it('update supports id filter and object filter branches', async () => {
-    const eqForPrefetch = vi.fn().mockReturnThis();
-    const single = vi
+    const maybeSingle = vi
       .fn()
       .mockResolvedValue({ data: { id: 42, opponent1_id: 99, opponent2_id: 77 } });
+    const eqForPrefetch = vi.fn(() => ({ maybeSingle }));
 
     const eqUpdateId = vi.fn().mockResolvedValue({ error: null });
     const eqUpdateObject = vi
@@ -226,7 +226,7 @@ describe('SupabaseSqlStorage', () => {
     mockFrom.mockImplementation((table: string) => {
       if (table === 'match') {
         return {
-          select: vi.fn(() => ({ eq: eqForPrefetch, single })),
+          select: vi.fn(() => ({ eq: eqForPrefetch })),
           update,
         };
       }
@@ -259,7 +259,7 @@ describe('SupabaseSqlStorage', () => {
   });
 
   it('update defensive merge prevents null overwrite when existing slot is populated', async () => {
-    const single = vi.fn().mockResolvedValue({
+    const maybeSingle = vi.fn().mockResolvedValue({
       data: { id: 77, opponent1_id: 1001, opponent2_id: null },
       error: null,
     });
@@ -269,7 +269,7 @@ describe('SupabaseSqlStorage', () => {
     }));
 
     mockFrom.mockReturnValue({
-      select: vi.fn(() => ({ eq: vi.fn(() => ({ single })) })),
+      select: vi.fn(() => ({ eq: vi.fn(() => ({ maybeSingle })) })),
       update,
     });
 

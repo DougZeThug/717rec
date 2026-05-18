@@ -20,9 +20,9 @@ describe('parseMetadata', () => {
     expect(result).toEqual({ key: 'value', count: 3 });
   });
 
-  it('parses a valid JSON array string', () => {
+  it('returns empty object for a JSON array string (must be an object)', () => {
     const result = parseMetadata('[1,2,3]');
-    expect(result).toEqual([1, 2, 3]);
+    expect(result).toEqual({});
   });
 
   it('returns empty object for invalid JSON', () => {
