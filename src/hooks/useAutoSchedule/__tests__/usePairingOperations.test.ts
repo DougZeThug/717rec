@@ -218,6 +218,7 @@ describe('usePairingOperations', () => {
       expect(mockSaveAutoScheduleState).toHaveBeenCalledWith({
         generatedPairings: pairings,
         unmatchedTeamIds: ['99'],
+        generationDate: selectedDate.toISOString(),
       });
     });
 

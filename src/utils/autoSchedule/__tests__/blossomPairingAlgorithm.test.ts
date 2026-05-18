@@ -27,11 +27,11 @@ describe('generatePairingsWithBlossom', () => {
     expect(result).toEqual([]);
   });
 
-  it('2-team pairing: produces pairings containing both teams', async () => {
-    const t1 = createMockTeam({ id: 't1', name: 'T1' });
-    const t2 = createMockTeam({ id: 't2', name: 'T2' });
+  it('small group pairing: produces pairings containing the supplied teams', async () => {
+    // Blossom requires 2 matches per team, which needs >=3 teams to be feasible.
+    const teams = ['t1', 't2', 't3', 't4'].map((id) => createMockTeam({ id, name: id }));
 
-    const result = await generatePairingsWithBlossom([t1, t2], baseConfig);
+    const result = await generatePairingsWithBlossom(teams, baseConfig);
 
     expect(result.length).toBeGreaterThan(0);
     const ids = result.flatMap((p) => [p.team1.id, p.team2.id]);
@@ -125,7 +125,8 @@ describe('generatePairingsWithBlossom', () => {
   });
 
   it('each pairing has required shape properties', async () => {
-    const teams = ['t1', 't2'].map((id) => createMockTeam({ id, name: id }));
+    // Blossom requires 2 matches per team, so use 4 teams for feasibility.
+    const teams = ['t1', 't2', 't3', 't4'].map((id) => createMockTeam({ id, name: id }));
 
     const result = await generatePairingsWithBlossom(teams, baseConfig);
 
