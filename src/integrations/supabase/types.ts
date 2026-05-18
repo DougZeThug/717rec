@@ -4511,6 +4511,12 @@ export type Database = {
         }
         Returns: Json
       }
+      seasons_rls_drift: {
+        Args: never
+        Returns: {
+          issue: string
+        }[]
+      }
       snapshot_current_season: { Args: never; Returns: undefined }
       update_team_stats:
         | { Args: never; Returns: undefined }
