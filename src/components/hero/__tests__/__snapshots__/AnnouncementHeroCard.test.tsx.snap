@@ -18,7 +18,7 @@ exports[`AnnouncementHeroCard > matches snapshot without CTA link 1`] = `
       >
         <svg
           aria-hidden="true"
-          class="lucide lucide-trophy w-8 h-8"
+          class="lucide lucide-trophy size-8"
           fill="none"
           height="24"
           stroke="currentColor"
@@ -54,7 +54,7 @@ exports[`AnnouncementHeroCard > matches snapshot without CTA link 1`] = `
       >
         <svg
           aria-hidden="true"
-          class="lucide lucide-trophy w-8 h-8"
+          class="lucide lucide-trophy size-8"
           fill="none"
           height="24"
           stroke="currentColor"
@@ -95,7 +95,7 @@ exports[`AnnouncementHeroCard > matches snapshot without CTA link 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="lucide lucide-trophy w-6 h-6"
+            class="lucide lucide-trophy size-6"
             fill="none"
             height="24"
             stroke="currentColor"

@@ -29,7 +29,7 @@ exports[`Help sections > matches snapshot for quick links section 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="lucide lucide-users h-4 w-4 mr-2"
+              class="lucide lucide-users size-4 mr-2"
               fill="none"
               height="24"
               stroke="currentColor"
@@ -67,7 +67,7 @@ exports[`Help sections > matches snapshot for quick links section 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="lucide lucide-calendar h-4 w-4 mr-2"
+              class="lucide lucide-calendar size-4 mr-2"
               fill="none"
               height="24"
               stroke="currentColor"
@@ -107,7 +107,7 @@ exports[`Help sections > matches snapshot for quick links section 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="lucide lucide-chart-column h-4 w-4 mr-2"
+              class="lucide lucide-chart-column size-4 mr-2"
               fill="none"
               height="24"
               stroke="currentColor"
@@ -143,7 +143,7 @@ exports[`Help sections > matches snapshot for quick links section 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="lucide lucide-trophy h-4 w-4 mr-2"
+              class="lucide lucide-trophy size-4 mr-2"
               fill="none"
               height="24"
               stroke="currentColor"

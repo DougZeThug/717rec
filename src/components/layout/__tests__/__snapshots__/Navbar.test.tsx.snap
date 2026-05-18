@@ -27,7 +27,7 @@ exports[`Navbar > matches snapshot in closed state 1`] = `
           >
             <img
               alt="717Rec League Logo"
-              class="h-8 w-8 object-contain"
+              class="size-8 object-contain"
               src="/lovable-uploads/faa54084-d274-43b9-9862-5544b188b4ca.png"
             />
             <span
@@ -384,7 +384,7 @@ exports[`Navbar > matches snapshot in closed state 1`] = `
             </div>
             <button
               aria-label="Open menu"
-              class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-input text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation hover:bg-accent hover:text-accent-foreground h-10 w-10 text-white min-h-11 min-w-11"
+              class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-input text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation hover:bg-accent hover:text-accent-foreground size-10 text-white min-h-11 min-w-11"
               style="width: 44px; height: 44px;"
             >
               <div
@@ -393,7 +393,7 @@ exports[`Navbar > matches snapshot in closed state 1`] = `
               >
                 <svg
                   aria-hidden="true"
-                  class="lucide lucide-menu h-6 w-6"
+                  class="lucide lucide-menu size-6"
                   fill="none"
                   height="24"
                   stroke="currentColor"
