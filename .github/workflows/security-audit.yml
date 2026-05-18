@@ -38,3 +38,29 @@ jobs:
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           npm audit 2>&1 | head -100 >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  committed-env-files:
+    name: No committed local env files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Fail if local env files are tracked
+        run: |
+          # Block per-environment / per-developer env files from being committed.
+          # Allowed: .env.example (placeholder template) and the repo-level .env
+          # used by the Lovable preview build (publishable keys only — RLS-gated).
+          # Disallowed: anything that looks like a local or environment-specific
+          # override, which is where service-role keys and personal values tend
+          # to leak in.
+          offenders=$(git ls-files \
+            | grep -E '(^|/)\.env\.(local|development|production|test)(\.[A-Za-z0-9_.-]+)?$' \
+            | grep -vE '(^|/)\.env\.example$' || true)
+          if [ -n "$offenders" ]; then
+            echo "::error::Local environment files must not be committed. See docs/SECRETS.md."
+            echo "Offending files:"
+            echo "$offenders"
+            exit 1
+          fi
+          echo "OK — no local .env files are tracked."

@@ -1,5 +1,14 @@
 # Secrets & Environment Variables
 
+## Publishable vs service-role key (plain English)
+
+Supabase gives you two kinds of API keys. Knowing which is which keeps the app safe:
+
+- **Publishable key** (a.k.a. `anon` key, `VITE_SUPABASE_PUBLISHABLE_KEY`) — safe to ship in the browser. It can only do what Row Level Security (RLS) policies allow. This is the key in `.env.example`.
+- **Service-role key** — bypasses RLS entirely. Treat it like a root password. It must **never** appear in any `VITE_*` variable, any frontend `.env`, the git repo, or the browser bundle. It lives only in Supabase Edge Function runtime secrets / Lovable Cloud secrets.
+
+Rule of thumb: if the key name starts with `VITE_`, it ends up in the public JS bundle. Only put publishable values there.
+
 ## Env vars used
 
 | Variable | Purpose | Public? |
@@ -50,3 +59,15 @@ Rotate immediately if ever exposed.
 - Never commit `.env` to git. (`.gitignore` should list `.env` and `.env.local`.)
 - Never put service-role keys, DB passwords, or webhook secrets in client code or `VITE_*` variables — they would ship to the browser.
 - Use Edge Functions + runtime secrets for anything sensitive.
+
+## If you accidentally commit a secret
+
+Assume the secret is compromised the moment it lands in git history — even a force-push doesn't fully erase it (forks, clones, CI logs, mirrors).
+
+1. **Rotate first, scrub second.** Go to the source (Supabase Dashboard, the relevant Lovable runtime secret, etc.) and reset the key immediately. See "Rotation" above for service-role and anon key steps.
+2. **Update every consumer** of that key (Edge Functions, GitHub Secrets, Lovable Cloud, local `.env` files).
+3. **Remove the secret from the repo** in a follow-up commit, and consider rewriting history (`git filter-repo` or BFG) only after rotation is done.
+4. **Tell the team** so no one keeps using the old value locally.
+5. **Check CI logs** — secrets that were printed in workflow output also need to be considered leaked.
+
+If the leaked value was the publishable/anon key, rotation is usually optional (it's public by design), but still scrub the file and update `.gitignore` so it doesn't happen again.
