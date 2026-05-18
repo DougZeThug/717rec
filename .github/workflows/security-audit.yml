@@ -48,10 +48,14 @@ jobs:
 
       - name: Fail if local env files are tracked
         run: |
-          # Allowed: .env.example (placeholder template only).
-          # Disallowed: any other .env / .env.<name> file committed to the repo.
+          # Block per-environment / per-developer env files from being committed.
+          # Allowed: .env.example (placeholder template) and the repo-level .env
+          # used by the Lovable preview build (publishable keys only — RLS-gated).
+          # Disallowed: anything that looks like a local or environment-specific
+          # override, which is where service-role keys and personal values tend
+          # to leak in.
           offenders=$(git ls-files \
-            | grep -E '(^|/)\.env(\.[A-Za-z0-9_.-]+)?$' \
+            | grep -E '(^|/)\.env\.(local|development|production|test)(\.[A-Za-z0-9_.-]+)?$' \
             | grep -vE '(^|/)\.env\.example$' || true)
           if [ -n "$offenders" ]; then
             echo "::error::Local environment files must not be committed. See docs/SECRETS.md."
