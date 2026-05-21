@@ -1,6 +1,6 @@
-import { Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 
+import ContactInboxSection from '@/components/admin/contact/ContactInboxSection';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,7 @@ import { useNotificationsRealtime } from '@/hooks/notifications/useNotifications
 import { toast } from '@/hooks/useToast';
 import type { NotificationRow } from '@/services/notifications/NotificationService';
 import { formatNotificationDate } from '@/utils/formatNotificationDate';
+import { Trash2 } from 'lucide-react';
 
 const NotificationsAdmin: React.FC = () => {
   useNotificationsRealtime();
@@ -69,6 +70,8 @@ const NotificationsAdmin: React.FC = () => {
   return (
     <div className="container mx-auto max-w-3xl px-4 py-8">
       <h1 className="mb-6 text-2xl font-bold text-foreground">Admin Notifications</h1>
+
+      <ContactInboxSection />
 
       <Card className="mb-8">
         <CardHeader>
