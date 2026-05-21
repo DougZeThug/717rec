@@ -258,6 +258,63 @@ export type Database = {
           },
         ]
       }
+      contact_requests: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          id: string
+          is_verified: boolean
+          message: string
+          players: string | null
+          request_type: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          submitter_contact: string
+          submitter_name: string
+          submitter_team: string | null
+          team_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          is_verified?: boolean
+          message: string
+          players?: string | null
+          request_type: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          submitter_contact: string
+          submitter_name: string
+          submitter_team?: string | null
+          team_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          is_verified?: boolean
+          message?: string
+          players?: string | null
+          request_type?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          submitter_contact?: string
+          submitter_name?: string
+          submitter_team?: string | null
+          team_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       debug_match_updates: {
         Row: {
           id: string
