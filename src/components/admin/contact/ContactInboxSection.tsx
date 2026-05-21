@@ -16,7 +16,7 @@ import { formatNotificationDate } from '@/utils/formatNotificationDate';
 
 const TYPE_LABELS: Record<string, { label: string; cls: string }> = {
   timeslot: {
-    label: 'Timeslot',
+    label: 'Timeslot Request',
     cls: 'bg-blue-500/10 text-blue-600 dark:text-blue-300 border-blue-500/30',
   },
   score: {

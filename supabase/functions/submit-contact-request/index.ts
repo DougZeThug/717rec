@@ -32,7 +32,7 @@ const PayloadSchema = z
     request_type: z.enum(REQUEST_TYPES),
     submitter_name: z.string().trim().min(1).max(120),
     submitter_team: z.string().trim().max(120).optional().nullable(),
-    submitter_contact: z.string().trim().min(3).max(255),
+    submitter_contact: z.string().trim().max(255).optional(),
     players: z.string().trim().max(1000).optional().nullable(),
     message: z.string().trim().min(1).max(2000),
     website: z.string().max(500).optional(), // honeypot
