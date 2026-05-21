@@ -1,4 +1,3 @@
-import { formatDistanceToNow } from 'date-fns';
 import { Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 
@@ -16,6 +15,7 @@ import { useNotificationsQuery } from '@/hooks/notifications/useNotificationsQue
 import { useNotificationsRealtime } from '@/hooks/notifications/useNotificationsRealtime';
 import { toast } from '@/hooks/useToast';
 import type { NotificationRow } from '@/services/notifications/NotificationService';
+import { formatNotificationDate } from '@/utils/formatNotificationDate';
 
 const NotificationsAdmin: React.FC = () => {
   useNotificationsRealtime();
@@ -115,21 +115,16 @@ const NotificationsAdmin: React.FC = () => {
         <div className="flex flex-col gap-2">
           {notifications.map((n) => {
             const isExpired = n.expires_at && Date.parse(n.expires_at) < Date.now();
-            const rel = (() => {
-              try {
-                return formatDistanceToNow(new Date(n.created_at), { addSuffix: true });
-              } catch {
-                return '';
-              }
-            })();
+            const posted = formatNotificationDate(n.created_at);
+            const expires = n.expires_at ? formatNotificationDate(n.expires_at) : null;
             return (
               <div
                 key={n.id}
                 className="flex items-start gap-3 rounded-md border border-border bg-card p-3"
               >
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <h3 className="truncate text-sm font-semibold text-foreground">
+                  <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
+                    <h3 className="text-sm font-semibold text-foreground sm:truncate">
                       {n.title}
                       {isExpired && (
                         <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase text-muted-foreground">
@@ -137,11 +132,23 @@ const NotificationsAdmin: React.FC = () => {
                         </span>
                       )}
                     </h3>
-                    <span className="shrink-0 text-xs text-muted-foreground">{rel}</span>
+                    <time
+                      dateTime={posted.iso}
+                      title={posted.iso}
+                      className="flex shrink-0 flex-col text-right text-[11px] leading-tight text-muted-foreground sm:items-end"
+                    >
+                      <span className="font-medium text-foreground/80 tabular-nums">{posted.absolute}</span>
+                      {posted.relative && <span>{posted.relative}</span>}
+                    </time>
                   </div>
                   <p className="mt-1 whitespace-pre-wrap break-words text-sm text-muted-foreground">
                     {n.body}
                   </p>
+                  {expires && (
+                    <p className="mt-1 text-[11px] text-muted-foreground">
+                      Expires <span className="tabular-nums">{expires.absolute}</span>
+                    </p>
+                  )}
                 </div>
                 <div className="flex shrink-0 gap-1">
                   <Button type="button" variant="ghost" size="sm" onClick={() => startEdit(n)}>
