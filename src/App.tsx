@@ -36,6 +36,7 @@ const Playoffs = lazy(() => import('./pages/Playoffs'));
 const History = lazy(() => import('./pages/History'));
 const Timeslots = lazy(() => import('./pages/Timeslots'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const NotificationsAdmin = lazy(() => import('./pages/admin/NotificationsAdmin'));
 const Auth = lazy(() => import('./pages/Auth'));
 const ProfileSetup = lazy(() => import('./pages/ProfileSetup'));
 const MessageBoard = lazy(() => import('./pages/MessageBoard'));
@@ -176,6 +177,16 @@ const AppContent = () => {
                     <ProtectedAdminRoute>
                       <RouteErrorBoundary routeName="Admin Dashboard">
                         <AdminDashboard />
+                      </RouteErrorBoundary>
+                    </ProtectedAdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/notifications"
+                  element={
+                    <ProtectedAdminRoute>
+                      <RouteErrorBoundary routeName="Admin Notifications">
+                        <NotificationsAdmin />
                       </RouteErrorBoundary>
                     </ProtectedAdminRoute>
                   }
