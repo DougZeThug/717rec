@@ -26,7 +26,7 @@ interface RequestTypeOption {
 }
 
 const REQUEST_TYPES: RequestTypeOption[] = [
-  { value: 'timeslot', label: 'Timeslot change', helper: 'Reschedule or swap a match time.' },
+  { value: 'timeslot', label: 'Timeslot Request', helper: 'Reschedule or swap a match time.' },
   { value: 'score', label: 'Score update / correction', helper: 'Report or fix a match score.' },
   {
     value: 'join_league',
@@ -73,10 +73,10 @@ const ContactPanel: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !contact.trim() || !message.trim()) {
+    if (!name.trim() || !message.trim()) {
       toast({
         title: 'Missing info',
-        description: 'Name, contact, and message are required.',
+        description: 'Name and message are required.',
         variant: 'destructive',
       });
       return;
