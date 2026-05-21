@@ -24,7 +24,7 @@ import { useWeeklyRecap } from '@/hooks/useWeeklyRecap';
 // Lazy load components that use framer-motion to defer vendor-motion chunk and improve TTI
 const HeroCard = lazy(() => import('@/components/hero/HeroCard'));
 const ParticipationHeroCard = lazy(() => import('@/components/hero/ParticipationHeroCard'));
-const CallToAction = lazy(() => import('@/components/home/CallToAction'));
+const ContactPanel = lazy(() => import('@/components/home/ContactPanel'));
 const TopTeams = lazy(() => import('@/components/home/TopTeams'));
 
 const Index: React.FC = () => {
@@ -157,7 +157,7 @@ const Index: React.FC = () => {
 
         <PageTransition animation="fadeIn" delay="long">
           <Suspense fallback={<div className="h-32" />}>
-            <CallToAction />
+            <ContactPanel />
           </Suspense>
         </PageTransition>
       </div>
