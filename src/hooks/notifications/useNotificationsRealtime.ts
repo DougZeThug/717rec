@@ -10,7 +10,7 @@ export function useNotificationsRealtime(): void {
 
   useEffect(() => {
     const channel = supabase
-      .channel('admin-notifications-realtime')
+      .channel(`admin-notifications-realtime-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'admin_notifications' },
@@ -21,7 +21,6 @@ export function useNotificationsRealtime(): void {
       .subscribe();
 
     return () => {
-      channel.unsubscribe();
       supabase.removeChannel(channel);
     };
   }, [qc]);
