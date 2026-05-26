@@ -316,7 +316,7 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
           <div className="flex flex-wrap gap-2">
             {totals.playoff_finishes.slice(0, 8).map((finish) => (
               <div
-                key={`${finish.season_id ?? finish.division_name}-${finish.rank}`}
+                key={`${finish.season_name}-${finish.division_name}-${finish.rank}`}
                 className="px-3 py-1.5 rounded-full text-sm font-medium bg-muted text-muted-foreground"
               >
                 #{finish.rank} <span className="text-xs opacity-70">({finish.division_name})</span>
