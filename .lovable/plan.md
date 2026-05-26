@@ -1,18 +1,19 @@
-## Bug: TeamForm data corruption when switching teams without unmounting
+## Fix Playoff Finish React Key Collision in TeamTotals
 
 ### Problem
-`TeamForm` initializes `useState`, `useRef`, and React Hook Form `defaultValues` from the `team` prop only on mount. In `TeamsContainer`, switching `teamToEdit` from Team A to Team B keeps `TeamEditForm` mounted (truthy conditional), so the component re-renders with new props but stale internal state.
+`TeamTotals` renders playoff finish chips with a React key that uses `finish.season_id`, but `PlayoffFinish` only has `rank`, `season_name`, and `division_name`. Since `season_id` is always `undefined`, the key falls back to `${division_name}-${rank}`, which collides when a team has the same rank in the same division across multiple seasons. This causes React duplicate-key warnings and potential reconciliation bugs.
 
-**Impact:** Team A's data is submitted under Team B's ID, causing data corruption.
+### Changes
 
-### Fix
-1. **TeamsContainer.tsx** — Add `key={teamToEdit.id}` to the `<TeamEditForm>` element. This forces React to unmount/remount the form when the team changes, ensuring fresh state.
-2. **TeamActionsForms.test.tsx** — Add a test that renders `TeamEditForm` with Team A, then re-renders with Team B (same component instance, new props), and asserts the form reflects Team B's values and submits Team B's data.
+1. **Fix the key in `src/components/teams/TeamTotals.tsx`**
+   - Line 319: change `key={\`${finish.season_id ?? finish.division_name}-${finish.rank}\`}` to `key={\`${finish.season_name}-${finish.division_name}-${finish.rank}\`}`
+   - This guarantees uniqueness because `season_name` is present on the type and each season has a distinct name.
+
+2. **Add regression test in `src/components/teams/__tests__/TeamTotals.playoffFinishes.test.tsx`**
+   - Render `TeamTotals` with two playoff finishes that have the same `division_name` and `rank` but different `season_name`
+   - Assert that no duplicate-key console warning is emitted
+   - Verify both chips render correctly
 
 ### Verification
-- Run existing test suite: `npm run test:file -- src/components/teams/__tests__/TeamActionsForms.test.tsx`
-- New test should pass, confirming the `key` prop prevents stale state.
-
-### Files changed
-- `src/components/teams/TeamsContainer.tsx` (1-line addition)
-- `src/components/teams/__tests__/TeamActionsForms.test.tsx` (new test case)
+- Run the new test with `npm run test:file -- src/components/teams/__tests__/TeamTotals.playoffFinishes.test.tsx`
+- Confirm it passes after the fix (and would fail before it)
