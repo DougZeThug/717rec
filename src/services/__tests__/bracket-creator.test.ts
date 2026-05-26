@@ -11,7 +11,7 @@ vi.mock('@/integrations/supabase/client', () => ({
   supabase: { from: (table: string) => mockFrom(table) },
 }));
 
-const mockManagerCreate = vi.fn(() => Promise.resolve(undefined));
+const mockManagerCreate = vi.fn(() => Promise.resolve());
 
 vi.mock('@/services/brackets/manager', () => ({
   bracketManagerService: {
