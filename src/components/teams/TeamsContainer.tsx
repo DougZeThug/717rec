@@ -84,6 +84,7 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode, 
             transition={{ duration: 0.3 }}
           >
             <TeamEditForm
+              key={teamToEdit.id}
               team={teamToEdit}
               onSubmit={handleUpdateTeam}
               onCancel={() => setTeamToEdit(null)}
