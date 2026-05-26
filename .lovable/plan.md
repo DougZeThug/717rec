@@ -1,59 +1,71 @@
 
-# P0 — Secret hygiene guardrails
+# P1 — Local Supabase CI verification
 
-## What's already in place (no action needed)
+Turn the existing (but manual-only) Supabase artifacts into an enforced CI gate so migration risk is verified, not hoped for.
 
-- `.gitignore` already ignores `.env`, `.env.local`, `.env.*.local`, `.env.development`, `.env.production`, `.env.test` (allowlist `.env.example`).
-- `.github/workflows/security-audit.yml` already has a `committed-env-files` job that fails CI if any per-env file is tracked.
-- `README.md` already documents env setup and points to `docs/SECRETS.md`.
-- `docs/SECRETS.md` already explains publishable vs service-role keys, where secrets live, and rotation.
+## What exists today
 
-The only real gap is **automated secret content scanning** — nothing today greps commits for AWS keys, Supabase service-role JWTs, Stripe keys, etc.
+- 296 migrations under `supabase/migrations/` — currently only validated when Lovable applies them to the real project.
+- `supabase/tests/seasons_rls.sql` — `psql`-driven smoke script. Manual only.
+- `supabase/functions/send-support-email/index.test.ts` — one Deno test. Not run in CI.
+- Three edge functions: `capture-power-snapshots`, `send-support-email`, `submit-contact-request`.
+- No `supabase db lint`, no `supabase db reset`, no Deno test job in any workflow.
 
-## Change set (one small PR)
+## Change set (one focused PR)
 
-1. **New workflow `.github/workflows/secret-scan.yml`** — runs Gitleaks on PRs, pushes to `main`, and weekly cron.
-   - Uses `gitleaks/gitleaks-action@v2` pinned to a SHA.
-   - Full history scan on push/schedule; diff-only scan on PRs for speed.
-   - Fails the job on any finding; uploads SARIF artifact for review.
-   - Needs no secrets beyond `GITHUB_TOKEN` (no Gitleaks license required for public-action use).
+Add **one new workflow** `.github/workflows/supabase-ci.yml` with three jobs that run on PRs touching `supabase/**` and on push to `main` (and a weekly cron):
 
-2. **New `.gitleaks.toml`** at repo root — extends default ruleset and adds:
-   - Allowlist for `.env.example`, `docs/SECRETS.md`, and `supabase/migrations/**` (migrations contain anon JWT references in comments).
-   - Custom rule: flag any value matching the Supabase `service_role` JWT signature shape.
-   - Custom rule: flag any `VITE_*` variable assigned a value that decodes as a service-role JWT (defense against accidental misuse).
+### Job 1 — `db-lint`
+- Install Supabase CLI (`supabase/setup-cli@v1`, pinned major).
+- `supabase db lint --level warning` against `supabase/migrations/`.
+- Fails on lint errors; warnings surfaced in step summary.
 
-3. **README update (small)** — add a one-line note under the existing "Environment setup" paragraph:
-   - "Every PR runs Gitleaks; commits containing API keys or service-role JWTs will fail CI. See `docs/SECRETS.md` if a secret is ever committed."
+### Job 2 — `db-apply-and-smoke`
+- Spins up a local Postgres via the official `postgres:15` service container (lighter than full `supabase start`, sufficient for migration apply + SQL smoke tests).
+- Concatenates and applies every file in `supabase/migrations/*.sql` in lexical order via `psql`.
+  - Skips Supabase-managed bootstrap (auth schema) by pre-creating minimal stubs (`auth.uid()` returning null, `auth.users` empty table, `extensions` schema with `uuid-ossp` + `pgcrypto`). Stubs live in a new `supabase/tests/_bootstrap.sql`.
+- Runs every `supabase/tests/*.sql` smoke script with `psql -v ON_ERROR_STOP=1`.
+- Fails CI if any migration errors or any smoke script raises.
 
-4. **`docs/SECRETS.md` append** — short new "Automated scanning" section explaining what Gitleaks blocks, how to triage a false positive (add to `.gitleaks.toml` allowlist with justification), and the existing remediation steps if a real secret leaks.
+### Job 3 — `edge-function-tests`
+- Sets up Deno (`denoland/setup-deno@v1`).
+- Runs `deno test --allow-net --allow-env --allow-read supabase/functions/` so every `*_test.ts` / `*.test.ts` is picked up (currently 1 test, future-proof for more).
+- `.env.example` values are exported as `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` so tests that use the dotenv loader pattern run offline against safe placeholders. Tests that need real network are skipped via an env guard the existing test already respects, or via a new `SUPABASE_CI=1` env check we add only if needed.
 
-## Files changed
+## New files
 
-- `.github/workflows/secret-scan.yml` (new)
-- `.gitleaks.toml` (new)
-- `README.md` (one paragraph)
-- `docs/SECRETS.md` (one section)
+- `.github/workflows/supabase-ci.yml` — three jobs above.
+- `supabase/tests/_bootstrap.sql` — minimal `auth` / `extensions` stubs so migrations apply against a vanilla Postgres. Comments explain it is CI-only and not loaded by Supabase.
+- `supabase/tests/migrations_apply.sql` — tiny driver that `\i`'s the bootstrap then verifies a handful of expected tables exist (`teams`, `matches`, `seasons`, `profiles`, `user_roles`-equivalent). Acts as a sanity check that the apply step actually ran every migration.
+- `docs/SUPABASE_CI.md` — short doc explaining what each job does, how to reproduce locally, and the policy for adding new SQL smoke tests.
 
-## Not in scope
+## Files updated
 
-- No app code, services, hooks, or UI changes.
-- No changes to `.gitignore` (already comprehensive).
-- No changes to the existing `committed-env-files` job (it stays as a fast belt-and-suspenders check).
-- No pre-commit hook installation — optional follow-up; keeps this PR CI-only and zero-install for contributors.
+- `supabase/tests/README.md` — note that smoke scripts now run in CI; add the "add a new test" checklist.
+
+## Explicitly not in scope
+
+- No changes to migrations themselves.
+- No changes to edge function runtime code.
+- No frontend, services, hooks, or business logic.
+- No `supabase start` (full stack) — too slow and brittle for PR CI; Postgres-only is enough for lint + apply + smoke.
+- No pgTAP rewrite of existing tests; they stay as plain `psql` scripts.
+- No mandatory tests for edge functions that need real Supabase creds — those stay skipped under the CI guard.
+
+## Risk and mitigations
+
+- **Migrations referencing Supabase-only objects** (auth schema, storage schema, vault) will need stubs. Bootstrap file covers `auth.uid()`, `auth.users`, `auth.role()`, `storage.objects`, `storage.buckets`. If an unexpected dependency surfaces during the first CI run, I'll extend the bootstrap rather than skip the job.
+- **Long migration list (296 files)** may take a couple minutes to apply. Acceptable for a job that runs only when `supabase/**` changes.
+- **False-positive lint warnings** — start with `--level warning` reporting only; promote to `error` in a follow-up once the baseline is clean.
 
 ## Validation
 
-- Push the branch; confirm the new `Secret Scan` job runs green on a clean tree.
-- Add a throwaway commit with a fake AWS key locally, confirm Gitleaks fails the job, then drop the commit before opening the PR.
-- Existing `npm run lint`, `npm test`, and `npm run build` are unaffected.
-
-## Risk
-
-Low. Workflow-only additions plus two docs paragraphs. Worst case: a noisy false positive blocks a PR, fixed by an allowlist entry in `.gitleaks.toml`.
+- Open the PR; confirm `supabase-ci` runs and all three jobs pass.
+- Manually break a migration (locally) to confirm `db-apply-and-smoke` actually fails the job — then revert.
+- Existing workflows (`test.yml`, `coverage-threshold.yml`, `security-audit.yml`, `secret-scan.yml`) are untouched.
 
 ## Suggested PR
 
-**Title:** Add Gitleaks secret scanning to CI
+**Title:** Add Supabase CI: db lint, migration apply, SQL smoke, edge function tests
 
-**Description:** Adds a Gitleaks workflow that scans every PR, push to `main`, and weekly cron for committed secrets (API keys, Supabase service-role JWTs, etc.). Complements the existing `committed-env-files` check and `.gitignore` rules. Documents the scan in README and `docs/SECRETS.md`. No app or schema changes.
+**Description:** Wires the existing `supabase db lint`, migration apply, `supabase/tests/*.sql` smoke scripts, and Deno edge-function tests into GitHub Actions so migration risk is verified on every PR that touches `supabase/**`. Adds a minimal `_bootstrap.sql` so migrations apply against a vanilla Postgres service container. No migration, edge function, or app code changes.
