@@ -1,41 +1,59 @@
-# Dependabot Dependency Updates — Plan
 
-## Context
-Two Dependabot PRs are being applied together: one for production dependencies and one for dev dependencies. All bumps are patch or minor versions — no major version jumps.
+# P0 — Secret hygiene guardrails
 
-## Packages to Update
+## What's already in place (no action needed)
 
-### Production dependencies
-| Package | From | To |
-|---------|------|-----|
-| @hookform/resolvers | ^5.2.2 | ^5.4.0 |
-| @supabase/supabase-js | ^2.105.4 | ^2.106.1 |
-| @tanstack/react-query | 5.100.10 | 5.100.14 |
-| @vitest/eslint-plugin | ^1.6.17 | ^1.6.18 |
-| date-fns | ^4.1.0 | ^4.3.0 |
-| framer-motion | ^12.38.0 | ^12.40.0 |
-| react-hook-form | 7.76.0 | 7.76.1 |
-| react-resizable-panels | 4.11.1 | 4.11.2 |
+- `.gitignore` already ignores `.env`, `.env.local`, `.env.*.local`, `.env.development`, `.env.production`, `.env.test` (allowlist `.env.example`).
+- `.github/workflows/security-audit.yml` already has a `committed-env-files` job that fails CI if any per-env file is tracked.
+- `README.md` already documents env setup and points to `docs/SECRETS.md`.
+- `docs/SECRETS.md` already explains publishable vs service-role keys, where secrets live, and rotation.
 
-### Dev dependencies
-| Package | From | To |
-|---------|------|-----|
-| @types/node | ^25.8.0 | ^25.9.1 |
-| vitest | 4.1.6 | 4.1.7 |
-| @vitest/coverage-v8 | 4.1.6 | 4.1.7 |
-| postcss | ^8.5.14 | ^8.5.15 |
+The only real gap is **automated secret content scanning** — nothing today greps commits for AWS keys, Supabase service-role JWTs, Stripe keys, etc.
 
-## Steps
+## Change set (one small PR)
 
-1. **Update package.json** — Update all 12 version strings to match the target versions.
-2. **Install dependencies** — Run `npm install` (`.npmrc` has `legacy-peer-deps=true`) to update `package-lock.json`.
-3. **Run test suite** — Execute `npm test` to confirm no regressions.
-4. **Verify build** — Run `npm run build` to ensure the production build still compiles cleanly.
+1. **New workflow `.github/workflows/secret-scan.yml`** — runs Gitleaks on PRs, pushes to `main`, and weekly cron.
+   - Uses `gitleaks/gitleaks-action@v2` pinned to a SHA.
+   - Full history scan on push/schedule; diff-only scan on PRs for speed.
+   - Fails the job on any finding; uploads SARIF artifact for review.
+   - Needs no secrets beyond `GITHUB_TOKEN` (no Gitleaks license required for public-action use).
 
-## Risk Assessment
-- All changes are patch/minor bumps — breaking changes are highly unlikely.
-- `framer-motion`, `react-hook-form`, and `@tanstack/react-query` are heavily used in the UI; tests will surface any issues.
-- `vitest` bump affects the test runner and coverage reporter; test execution will validate this.
+2. **New `.gitleaks.toml`** at repo root — extends default ruleset and adds:
+   - Allowlist for `.env.example`, `docs/SECRETS.md`, and `supabase/migrations/**` (migrations contain anon JWT references in comments).
+   - Custom rule: flag any value matching the Supabase `service_role` JWT signature shape.
+   - Custom rule: flag any `VITE_*` variable assigned a value that decodes as a service-role JWT (defense against accidental misuse).
 
-## Rollback
-If tests or build fail, revert `package.json` and `package-lock.json`, then re-install to return to the prior state.
+3. **README update (small)** — add a one-line note under the existing "Environment setup" paragraph:
+   - "Every PR runs Gitleaks; commits containing API keys or service-role JWTs will fail CI. See `docs/SECRETS.md` if a secret is ever committed."
+
+4. **`docs/SECRETS.md` append** — short new "Automated scanning" section explaining what Gitleaks blocks, how to triage a false positive (add to `.gitleaks.toml` allowlist with justification), and the existing remediation steps if a real secret leaks.
+
+## Files changed
+
+- `.github/workflows/secret-scan.yml` (new)
+- `.gitleaks.toml` (new)
+- `README.md` (one paragraph)
+- `docs/SECRETS.md` (one section)
+
+## Not in scope
+
+- No app code, services, hooks, or UI changes.
+- No changes to `.gitignore` (already comprehensive).
+- No changes to the existing `committed-env-files` job (it stays as a fast belt-and-suspenders check).
+- No pre-commit hook installation — optional follow-up; keeps this PR CI-only and zero-install for contributors.
+
+## Validation
+
+- Push the branch; confirm the new `Secret Scan` job runs green on a clean tree.
+- Add a throwaway commit with a fake AWS key locally, confirm Gitleaks fails the job, then drop the commit before opening the PR.
+- Existing `npm run lint`, `npm test`, and `npm run build` are unaffected.
+
+## Risk
+
+Low. Workflow-only additions plus two docs paragraphs. Worst case: a noisy false positive blocks a PR, fixed by an allowlist entry in `.gitleaks.toml`.
+
+## Suggested PR
+
+**Title:** Add Gitleaks secret scanning to CI
+
+**Description:** Adds a Gitleaks workflow that scans every PR, push to `main`, and weekly cron for committed secrets (API keys, Supabase service-role JWTs, etc.). Complements the existing `committed-env-files` check and `.gitignore` rules. Documents the scan in README and `docs/SECRETS.md`. No app or schema changes.

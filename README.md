@@ -40,6 +40,8 @@ npm run dev
 
 Copy `.env.example` to `.env` and fill in the values from your Supabase project (Dashboard → Project Settings → API). All variables prefixed with `VITE_` are publishable/browser-safe — access control is enforced by Supabase Row Level Security. **Never** put a `service_role` key in a `VITE_*` variable or any frontend `.env` file. See [`docs/SECRETS.md`](docs/SECRETS.md) for the full guide and what to do if a secret is accidentally committed.
 
+Every pull request runs [Gitleaks](https://github.com/gitleaks/gitleaks) (see `.github/workflows/secret-scan.yml`). Commits that contain API keys or Supabase `service_role` JWTs will fail CI; tune `.gitleaks.toml` if you hit a false positive.
+
 **Edit a file directly in GitHub**
 
 - Navigate to the desired file(s).

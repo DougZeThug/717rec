@@ -71,3 +71,15 @@ Assume the secret is compromised the moment it lands in git history — even a f
 5. **Check CI logs** — secrets that were printed in workflow output also need to be considered leaked.
 
 If the leaked value was the publishable/anon key, rotation is usually optional (it's public by design), but still scrub the file and update `.gitignore` so it doesn't happen again.
+
+## Automated scanning
+
+Two CI guardrails protect the repo from accidental secret commits:
+
+1. **`committed-env-files`** (in `.github/workflows/security-audit.yml`) fails the build if any per-environment `.env` file (e.g. `.env.local`, `.env.production`) is tracked by git. `.env.example` and the repo-level `.env` (publishable values only) are allowed.
+2. **`secret-scan`** (in `.github/workflows/secret-scan.yml`) runs [Gitleaks](https://github.com/gitleaks/gitleaks) against every PR, every push to `main`, and a weekly cron. The ruleset (`.gitleaks.toml`) extends Gitleaks' defaults and adds a custom detector for Supabase `service_role` JWTs.
+
+### Triaging a Gitleaks finding
+
+- **Real secret?** Follow "If you accidentally commit a secret" above — rotate first, scrub second.
+- **False positive?** Add a narrow entry to `.gitleaks.toml` under `[allowlist]` (prefer `paths` for fixture files, `regexes` for specific known-safe value shapes) and include a comment explaining why it is safe. Do not disable the rule globally.
