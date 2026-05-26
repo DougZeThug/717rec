@@ -10,7 +10,7 @@ import {
   TeamPairingMap,
   TimeBlockTeamsMap,
 } from '@/types';
-import { validateScheduleDate } from '@/utils/autoSchedule/dateUtils';
+import { normalizeScheduleDate, validateScheduleDate } from '@/utils/autoSchedule/dateUtils';
 import {
   calculateComprehensiveQualityMetrics,
   logQualityAnalysis,
@@ -230,11 +230,11 @@ export const usePairingOperations = (
         return null;
       }
 
-      // Reject stale pairings generated for a different date
+      // Reject stale pairings generated for a different calendar day
       if (
         generationDate &&
         selectedDate &&
-        generationDate.getTime() !== selectedDate.getTime()
+        normalizeScheduleDate(generationDate) !== normalizeScheduleDate(selectedDate)
       ) {
         toast({
           title: 'Schedule Stale',
