@@ -1,0 +1,119 @@
+name: Supabase CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/**'
+      - '.github/workflows/supabase-ci.yml'
+  pull_request:
+    paths:
+      - 'supabase/**'
+      - '.github/workflows/supabase-ci.yml'
+  schedule:
+    - cron: '0 6 * * 1' # Mondays 06:00 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: supabase-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  db-lint:
+    name: supabase db lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Lint migrations
+        run: |
+          # `supabase db lint` requires a running DB; use `--linked`-free local run.
+          # We run it against the migrations directory via a temporary local DB.
+          supabase init --force --workdir . >/dev/null || true
+          # Best-effort lint. Surfaces warnings/errors from migration SQL.
+          supabase db lint --level warning --schema public || {
+            echo "::warning::supabase db lint reported issues (see log)";
+            exit 1;
+          }
+
+  db-apply-and-smoke:
+    name: Apply migrations + SQL smoke tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install psql client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Apply Supabase bootstrap stubs
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/_bootstrap.sql
+      - name: Apply all migrations in order
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          for f in $(ls supabase/migrations/*.sql | sort); do
+            echo "::group::Applying $f"
+            psql -v ON_ERROR_STOP=1 -f "$f"
+            echo "::endgroup::"
+          done
+      - name: Run SQL smoke tests
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          ran=0
+          for f in supabase/tests/*.sql; do
+            base=$(basename "$f")
+            # Skip bootstrap helper (already applied above)
+            [[ "$base" == _*.sql ]] && continue
+            echo "::group::Smoke test $f"
+            psql -v ON_ERROR_STOP=1 -f "$f"
+            echo "::endgroup::"
+            ran=$((ran + 1))
+          done
+          echo "Ran $ran smoke test(s)."
+
+  edge-function-tests:
+    name: Edge function Deno tests
+    runs-on: ubuntu-latest
+    env:
+      # Safe placeholders so dotenv-style test loaders don't crash.
+      # Tests that need real network must guard themselves.
+      VITE_SUPABASE_URL: https://placeholder.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: placeholder-anon-key
+      SUPABASE_CI: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+      - name: Run Deno tests
+        run: |
+          if compgen -G "supabase/functions/**/*_test.ts" > /dev/null || \
+             compgen -G "supabase/functions/**/*.test.ts" > /dev/null; then
+            deno test \
+              --allow-net --allow-env --allow-read \
+              --no-check \
+              supabase/functions/
+          else
+            echo "No edge function tests found; skipping."
+          fi
