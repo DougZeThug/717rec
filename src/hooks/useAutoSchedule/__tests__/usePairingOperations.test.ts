@@ -36,6 +36,14 @@ vi.mock('@/hooks/useToast', () => ({
 
 vi.mock('@/utils/autoSchedule/dateUtils', () => ({
   validateScheduleDate: (...args: unknown[]) => mockValidateScheduleDate(...args),
+  normalizeScheduleDate: (date: Date | string | null) => {
+    if (!date) return '';
+    const d = date instanceof Date ? date : new Date(date);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  },
 }));
 
 vi.mock('@/utils/autoSchedule/qualityAnalysis', () => ({
@@ -382,5 +390,97 @@ describe('usePairingOperations', () => {
       setMatchQualityMetrics
     );
     expect(withoutEditable).not.toBeNull();
+  });
+
+  describe('stale pairing date comparison', () => {
+    const setupWithGenerationDate = async (generationDate: Date) => {
+      const pairings = buildPairings();
+      mockGenerateMatchPairings.mockResolvedValue({ pairings, unmatchedTeamIds: [] });
+      const { result } = renderHook(() => usePairingOperations(vi.fn()));
+
+      await act(async () => {
+        await result.current.handleGenerateClick(
+          generationDate,
+          { Early: [buildTeam('1'), buildTeam('2'), buildTeam('3'), buildTeam('4')] },
+          false,
+          false,
+          false,
+          vi.fn()
+        );
+      });
+
+      return { result, pairings };
+    };
+
+    it('applies when generation and selected dates are the same calendar day but different times', async () => {
+      const generationDate = new Date(2026, 3, 20, 10, 30, 0, 0);
+      const { result, pairings } = await setupWithGenerationDate(generationDate);
+
+      // Calendar reselects same day at midnight (what react-day-picker returns)
+      const reselectedDate = new Date(2026, 3, 20, 0, 0, 0, 0);
+
+      const setGeneratedMatches = vi.fn();
+      const setMatchQualityMetrics = vi.fn();
+
+      const applied = result.current.handleApplySchedule(
+        pairings,
+        reselectedDate,
+        false,
+        setGeneratedMatches,
+        setMatchQualityMetrics
+      );
+
+      expect(applied).not.toBeNull();
+      expect(setGeneratedMatches).toHaveBeenCalled();
+      expect(mockToast).not.toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Schedule Stale' })
+      );
+    });
+
+    it('rejects as stale when generation and selected dates are different calendar days', async () => {
+      const generationDate = new Date(2026, 3, 20, 10, 30, 0, 0);
+      const { result, pairings } = await setupWithGenerationDate(generationDate);
+
+      const differentDay = new Date(2026, 3, 21, 10, 30, 0, 0);
+
+      const setGeneratedMatches = vi.fn();
+      const setMatchQualityMetrics = vi.fn();
+
+      const applied = result.current.handleApplySchedule(
+        pairings,
+        differentDay,
+        false,
+        setGeneratedMatches,
+        setMatchQualityMetrics
+      );
+
+      expect(applied).toBeNull();
+      expect(setGeneratedMatches).not.toHaveBeenCalled();
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Schedule Stale', variant: 'destructive' })
+      );
+    });
+
+    it('applies when generation and selected dates are identical timestamps', async () => {
+      const generationDate = new Date(2026, 3, 20, 10, 30, 0, 0);
+      const { result, pairings } = await setupWithGenerationDate(generationDate);
+
+      const setGeneratedMatches = vi.fn();
+      const setMatchQualityMetrics = vi.fn();
+
+      const applied = result.current.handleApplySchedule(
+        pairings,
+        new Date(generationDate.getTime()),
+        false,
+        setGeneratedMatches,
+        setMatchQualityMetrics
+      );
+
+      expect(applied).not.toBeNull();
+      expect(setGeneratedMatches).toHaveBeenCalled();
+      expect(mockToast).not.toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Schedule Stale' })
+      );
+    });
   });
 });
