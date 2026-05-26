@@ -1,19 +1,41 @@
-## Fix Playoff Finish React Key Collision in TeamTotals
+# Dependabot Dependency Updates — Plan
 
-### Problem
-`TeamTotals` renders playoff finish chips with a React key that uses `finish.season_id`, but `PlayoffFinish` only has `rank`, `season_name`, and `division_name`. Since `season_id` is always `undefined`, the key falls back to `${division_name}-${rank}`, which collides when a team has the same rank in the same division across multiple seasons. This causes React duplicate-key warnings and potential reconciliation bugs.
+## Context
+Two Dependabot PRs are being applied together: one for production dependencies and one for dev dependencies. All bumps are patch or minor versions — no major version jumps.
 
-### Changes
+## Packages to Update
 
-1. **Fix the key in `src/components/teams/TeamTotals.tsx`**
-   - Line 319: change `key={\`${finish.season_id ?? finish.division_name}-${finish.rank}\`}` to `key={\`${finish.season_name}-${finish.division_name}-${finish.rank}\`}`
-   - This guarantees uniqueness because `season_name` is present on the type and each season has a distinct name.
+### Production dependencies
+| Package | From | To |
+|---------|------|-----|
+| @hookform/resolvers | ^5.2.2 | ^5.4.0 |
+| @supabase/supabase-js | ^2.105.4 | ^2.106.1 |
+| @tanstack/react-query | 5.100.10 | 5.100.14 |
+| @vitest/eslint-plugin | ^1.6.17 | ^1.6.18 |
+| date-fns | ^4.1.0 | ^4.3.0 |
+| framer-motion | ^12.38.0 | ^12.40.0 |
+| react-hook-form | 7.76.0 | 7.76.1 |
+| react-resizable-panels | 4.11.1 | 4.11.2 |
 
-2. **Add regression test in `src/components/teams/__tests__/TeamTotals.playoffFinishes.test.tsx`**
-   - Render `TeamTotals` with two playoff finishes that have the same `division_name` and `rank` but different `season_name`
-   - Assert that no duplicate-key console warning is emitted
-   - Verify both chips render correctly
+### Dev dependencies
+| Package | From | To |
+|---------|------|-----|
+| @types/node | ^25.8.0 | ^25.9.1 |
+| vitest | 4.1.6 | 4.1.7 |
+| @vitest/coverage-v8 | 4.1.6 | 4.1.7 |
+| postcss | ^8.5.14 | ^8.5.15 |
 
-### Verification
-- Run the new test with `npm run test:file -- src/components/teams/__tests__/TeamTotals.playoffFinishes.test.tsx`
-- Confirm it passes after the fix (and would fail before it)
+## Steps
+
+1. **Update package.json** — Update all 12 version strings to match the target versions.
+2. **Install dependencies** — Run `npm install` (`.npmrc` has `legacy-peer-deps=true`) to update `package-lock.json`.
+3. **Run test suite** — Execute `npm test` to confirm no regressions.
+4. **Verify build** — Run `npm run build` to ensure the production build still compiles cleanly.
+
+## Risk Assessment
+- All changes are patch/minor bumps — breaking changes are highly unlikely.
+- `framer-motion`, `react-hook-form`, and `@tanstack/react-query` are heavily used in the UI; tests will surface any issues.
+- `vitest` bump affects the test runner and coverage reporter; test execution will validate this.
+
+## Rollback
+If tests or build fail, revert `package.json` and `package-lock.json`, then re-install to return to the prior state.
