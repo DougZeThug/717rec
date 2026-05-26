@@ -1,26 +1,26 @@
 ## Problem
-The `handleApplySchedule` function in `usePairingOperations.ts` rejects valid schedules when the generation date and selected date are the same calendar day but have different time components (e.g., generated at 10:30 AM, reselected via Calendar at midnight). The stale check uses millisecond-precision `getTime()` comparison instead of day-level comparison.
+The `MessageContent` component builds React keys from raw line text plus an occurrence counter using `#` as a delimiter. Since `#` can appear in user content, two different lines can generate the same key. Example:
+- `"hello"` (first occurrence) → key `line:hello`
+- `"hello#1"` (first occurrence) → key `line:hello#1`
+- `"hello"` (second occurrence) → key `line:hello#1` ← COLLISION
 
-## Root Cause
-- `selectedDate` is initialized with `new Date()` (includes current time)
-- `react-day-picker` Calendar returns dates normalized to midnight (00:00:00.000)
-- `generationDate` keeps the original time from when pairings were generated
-- `getTime()` comparison treats same-day, different-time as "different"
+## Fix
+Change the key delimiter to a sequence that cannot collide with content: `::occurrence:`.
 
-## Fix (1 line change + 1 import)
-1. Import `normalizeScheduleDate` from `@/utils/autoSchedule/dateUtils` (already exists in codebase)
-2. Replace `generationDate.getTime() !== selectedDate.getTime()` with `normalizeScheduleDate(generationDate) !== normalizeScheduleDate(selectedDate)`
+## Files to change
 
-This compares dates at the calendar-day level (YYYY-MM-DD strings), matching the existing normalization pattern used elsewhere in the auto-scheduler.
+### 1. `src/components/message-board/message-item/MessageContent.tsx`
+Replace line 24:
+```
+const key = occurrence === 0 ? `line:${line}` : `line:${line}#${occurrence}`;
+```
+with:
+```
+const key = occurrence === 0 ? `line:${line}` : `line:${line}::occurrence:${occurrence}`;
+```
 
-## Tests to Add
-In `src/hooks/useAutoSchedule/__tests__/usePairingOperations.test.ts`:
-- Update the `dateUtils` mock to include `normalizeScheduleDate`
-- Add test: same calendar day, different times → should apply successfully (proves fix)
-- Add test: different calendar days → should reject as stale
-- Add test: identical timestamps → should apply successfully (regression guard)
+### 2. `src/components/message-board/__tests__/MessageContent.key-collision.test.tsx` (new)
+Add a test that renders `hello\nhello#1\nhello` and asserts zero console warnings about duplicate keys.
 
 ## Verification
-- Run unit tests for `usePairingOperations.test.ts`
-- All existing tests should continue passing
-- New tests should pass, confirming the bug is fixed
+Run `npm run test:file -- src/components/message-board/__tests__/MessageContent.key-collision.test.tsx`
