@@ -96,8 +96,11 @@ function installSupabase({
 
 /** The team list passed to the brackets-manager library = the final seeded order. */
 const seededTeams = (): Array<{ id: string; name: string; seed: number }> =>
-  (mockManagerCreate.mock.calls[0][0] as { teams: Array<{ id: string; name: string; seed: number }> })
-    .teams;
+  (
+    mockManagerCreate.mock.calls[0][0] as {
+      teams: Array<{ id: string; name: string; seed: number }>;
+    }
+  ).teams;
 
 const baseOptions = {
   name: 'Spring Playoffs',
