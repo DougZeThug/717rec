@@ -74,7 +74,8 @@ describe('Team destructive/edit actions', () => {
       losses: 0,
     } as Team;
 
-    const submit = vi.fn<() => Promise<void>>().mockResolvedValue();
+    const submit =
+      vi.fn<(data: Omit<Team, 'id' | 'created_at'>) => Promise<void>>().mockResolvedValue();
 
     // Simulate TeamsContainer using key={team.id} to force remount on switch.
     const { rerender } = render(
@@ -89,7 +90,7 @@ describe('Team destructive/edit actions', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /update team/i }));
     await waitFor(() => expect(submit).toHaveBeenCalled());
-    const submitted = submit.mock.calls[0][0] as { name: string; players: string[] };
+    const submitted = submit.mock.calls[0][0];
     expect(submitted.name).toBe('Team Bravo');
     expect(submitted.players).toEqual(['Charlie', 'Dave', 'Eve']);
   });
