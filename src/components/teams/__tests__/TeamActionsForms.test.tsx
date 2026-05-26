@@ -57,4 +57,41 @@ describe('Team destructive/edit actions', () => {
       )
     );
   });
+
+  it('resets form state when switching to a different team via key prop', async () => {
+    const teamA: Team = {
+      id: 'team-a',
+      name: 'Team Alpha',
+      players: ['Alice', 'Bob'],
+      wins: 0,
+      losses: 0,
+    } as Team;
+    const teamB: Team = {
+      id: 'team-b',
+      name: 'Team Bravo',
+      players: ['Charlie', 'Dave', 'Eve'],
+      wins: 0,
+      losses: 0,
+    } as Team;
+
+    const submit =
+      vi.fn<(data: Omit<Team, 'id' | 'created_at'>) => Promise<void>>().mockResolvedValue();
+
+    // Simulate TeamsContainer using key={team.id} to force remount on switch.
+    const { rerender } = render(
+      <TeamEditForm key={teamA.id} team={teamA} onSubmit={submit} onCancel={vi.fn()} />
+    );
+    expect(screen.getByPlaceholderText(/enter team name/i)).toHaveValue('Team Alpha');
+
+    rerender(
+      <TeamEditForm key={teamB.id} team={teamB} onSubmit={submit} onCancel={vi.fn()} />
+    );
+    expect(screen.getByPlaceholderText(/enter team name/i)).toHaveValue('Team Bravo');
+
+    await userEvent.click(screen.getByRole('button', { name: /update team/i }));
+    await waitFor(() => expect(submit).toHaveBeenCalled());
+    const submitted = submit.mock.calls[0][0];
+    expect(submitted.name).toBe('Team Bravo');
+    expect(submitted.players).toEqual(['Charlie', 'Dave', 'Eve']);
+  });
 });
