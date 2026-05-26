@@ -45,12 +45,12 @@ export const TeamAnalysisEditForm: React.FC<TeamAnalysisEditFormProps> = ({
 
   const handleRemoveStrength = (index: number) => {
     strengthIdsRef.current = strengthIdsRef.current.filter((_, i) => i !== index);
-    setStrengths(strengths.filter((_, i) => i !== index));
+    setStrengths((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleRemoveWeakness = (index: number) => {
     weaknessIdsRef.current = weaknessIdsRef.current.filter((_, i) => i !== index);
-    setWeaknesses(weaknesses.filter((_, i) => i !== index));
+    setWeaknesses((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleStrengthChange = (index: number, value: string) => {
