@@ -1,0 +1,38 @@
+# Gitleaks config — extends the default ruleset with project-specific
+# allowlists and a Supabase service-role JWT detector.
+#
+# Docs: https://github.com/gitleaks/gitleaks#configuration
+
+title = "717rec gitleaks config"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "supabase-service-role-jwt"
+description = "Supabase service_role JWT (bypasses RLS — must never be committed)"
+# Match a JWT whose payload contains "role":"service_role". Base64url of that
+# substring is stable: "InJvbGUiOiJzZXJ2aWNlX3JvbGUi".
+regex = '''eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*InJvbGUiOiJzZXJ2aWNlX3JvbGUi[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+'''
+tags = ["supabase", "jwt", "critical"]
+
+[allowlist]
+description = "Paths and patterns that are safe by design"
+paths = [
+  '''\.env\.example$''',
+  '''^docs/SECRETS\.md$''',
+  '''^docs/RLS_NOTES\.md$''',
+  # Migrations and generated Supabase types reference the publishable anon JWT
+  # (which is safe by design) in comments and example payloads.
+  '''^supabase/migrations/''',
+  '''^src/integrations/supabase/types\.ts$''',
+  # Lockfiles legitimately contain long hashes that trigger generic detectors.
+  '''^package-lock\.json$''',
+  '''^bun\.lockb$''',
+]
+# Anon/publishable Supabase keys are safe to ship publicly. Allowlist any JWT
+# whose payload says role=anon so the generic JWT rule doesn't flag them.
+regexes = [
+  '''eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*Iong[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+''',
+  '''eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*InJvbGUiOiJhbm9uIg[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+''',
+]
