@@ -70,14 +70,14 @@ Do not use `pnpm` or `yarn` — neither is installed.
 
 ## Current baseline
 
-Last measured: 2026-04-30.
+Last measured: 2026-05-26.
 
 | Metric     | Covered |
 | ---------- | ------- |
-| Lines      | 40.56%  |
-| Statements | 39.98%  |
-| Functions  | 31.23%  |
-| Branches   | 30.77%  |
+| Lines      | 43.34%  |
+| Statements | 42.59%  |
+| Functions  | 35.25%  |
+| Branches   | 34.04%  |
 
 The overall number is low because most React components and UI pages are not
 yet under test. The logic-heavy areas (utils, scheduling, rankings, career
@@ -90,32 +90,42 @@ Full baseline output is saved to `coverage-baseline.txt` at the repo root.
 Vitest coverage thresholds are now enforced in CI and locally via
 `npm run test:coverage` (fast gate) or `npm run test:coverage:full` (deep local diagnostics).
 
-### Stage 1 (active now): no regression at the global level
+### Stage 2 (active now): no regression at the global level
 
-Global thresholds in `vitest.config.ts` are pinned to the current baseline:
+Global thresholds in `vitest.config.ts` are pinned a few points below the
+current baseline:
 
-- Lines: **27.27%**
-- Statements: **26.96%**
-- Functions: **21.12%**
-- Branches: **19.98%**
+- Lines: **40%**
+- Statements: **39%**
+- Functions: **32%**
+- Branches: **31%**
 
 If a PR drops any global metric below those numbers, the coverage job fails.
 
-### Stage 1 (active now): conservative folder thresholds
+### Stage 2 (active now): folder thresholds
 
-To start building area-level enforcement without blocking normal work, these
-initial floor values are intentionally conservative:
+These floors sit a few points below current measured coverage for each area, so
+they catch regressions without blocking normal work:
 
-- `src/services/**`: 45% lines / 45% statements / 40% functions / 35% branches
-- `src/hooks/**`: 15% lines / 15% statements / 15% functions / 12% branches
-- `src/utils/**`: 50% lines / 50% statements / 45% functions / 40% branches
+- `src/services/**`: 70% lines / 68% statements / 68% functions / 55% branches
+- `src/hooks/**`: 33% lines / 32% statements / 27% functions / 24% branches
+- `src/utils/**`: 64% lines / 63% statements / 62% functions / 52% branches
 
 These values are below current measured coverage for those areas and are meant
 as a floor, not a final target.
 
-### Stage 2 (next): tighten by domain
+### Stage 2 ratchet history
 
-We will increment thresholds over time, focusing on:
+- **2026-05-26**: First Stage-2 ratchet. Global gates raised from
+  27.27/26.96/21.12/19.98 to 40/39/32/31; folder floors raised for services
+  (45→70 lines), hooks (15→33 lines), and utils (50→64 lines). Added a
+  regression suite for the playoff bracket-seeding algorithm
+  (`src/services/__tests__/bracket-creator.test.ts`). The other named domains
+  (scheduling, timeslots, blind draw) were already covered by existing suites.
+
+### Stage 3 (next): tighten by domain
+
+We will keep incrementing thresholds over time, focusing on:
 
 1. `src/services/**`
 2. `src/hooks/**`
@@ -154,9 +164,9 @@ over time; anything already above target is just "keep it green".
 
 | Area                               | Lines today | Target | Notes                                        |
 | ---------------------------------- | ----------- | ------ | -------------------------------------------- |
-| `src/services/**`                  | 56%         | 70%    | Data access layer — trending up              |
+| `src/services/**`                  | 74%         | 70%    | Data access layer — on target                |
 | `src/services/auth`                | 100%        | 70%    | On target                                    |
-| `src/hooks/**`                     | 22%         | 60%    | React Query hooks wrapping services          |
+| `src/hooks/**`                     | 37%         | 60%    | React Query hooks wrapping services          |
 | `src/hooks/matches`                | 21%         | 60%    | Coverage spread across many small hooks      |
 | `src/utils/**` (aggregate)         | 69%         | 85%    | Strong gains from logic-heavy utility tests  |
 | `src/utils/career`                 | 89%         | 85%    | On target                                    |
