@@ -5,13 +5,13 @@ import { BusinessLogicError } from '@/types/errors';
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
 const mockFrom = vi.fn();
-const deleteEq = vi.fn(() => Promise.resolve({ error: null }));
+const deleteEq = vi.fn((..._args: unknown[]) => Promise.resolve({ error: null }));
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: { from: (table: string) => mockFrom(table) },
 }));
 
-const mockManagerCreate = vi.fn(() => Promise.resolve());
+const mockManagerCreate = vi.fn((..._args: unknown[]) => Promise.resolve());
 
 vi.mock('@/services/brackets/manager', () => ({
   bracketManagerService: {
@@ -97,7 +97,7 @@ function installSupabase({
 /** The team list passed to the brackets-manager library = the final seeded order. */
 const seededTeams = (): Array<{ id: string; name: string; seed: number }> =>
   (
-    mockManagerCreate.mock.calls[0][0] as {
+    (mockManagerCreate.mock.calls[0] as unknown[])[0] as {
       teams: Array<{ id: string; name: string; seed: number }>;
     }
   ).teams;
