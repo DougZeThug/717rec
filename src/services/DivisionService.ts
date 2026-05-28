@@ -56,7 +56,11 @@ export const DivisionService = {
     id: string,
     patch: Partial<DivisionInput>
   ) => {
-    const payload: Record<string, unknown> = {};
+    const payload: {
+      name?: string;
+      display_division?: string;
+      division_weight?: number;
+    } = {};
     if (patch.name !== undefined) payload.name = patch.name.trim();
     if (patch.display_division !== undefined) payload.display_division = patch.display_division;
     if (patch.division_weight !== undefined) payload.division_weight = patch.division_weight;
