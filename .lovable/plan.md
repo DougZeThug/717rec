@@ -1,71 +1,60 @@
+# Optimize Supabase CI Workflow for Faster PR Checks
 
-# P1 — Local Supabase CI verification
+## Current State
 
-Turn the existing (but manual-only) Supabase artifacts into an enforced CI gate so migration risk is verified, not hoped for.
+The `.github/workflows/supabase-ci.yml` has three jobs that run on PRs touching `supabase/**`:
 
-## What exists today
+- `db-lint` — downloads Supabase CLI each run
+- `db-apply-and-smoke` — installs `postgresql-client` via apt (already present on runner), then spawns 296 individual `psql` processes to apply migrations one-by-one
+- `edge-function-tests` — downloads Deno + re-fetches `deno.land/std`, `esm.sh/@supabase/supabase-js`, `esm.sh/zod` on every run
 
-- 296 migrations under `supabase/migrations/` — currently only validated when Lovable applies them to the real project.
-- `supabase/tests/seasons_rls.sql` — `psql`-driven smoke script. Manual only.
-- `supabase/functions/send-support-email/index.test.ts` — one Deno test. Not run in CI.
-- Three edge functions: `capture-power-snapshots`, `send-support-email`, `submit-contact-request`.
-- No `supabase db lint`, no `supabase db reset`, no Deno test job in any workflow.
+## Planned Changes
 
-## Change set (one focused PR)
+### 1. Cache Deno dependencies (edge-function-tests job)
 
-Add **one new workflow** `.github/workflows/supabase-ci.yml` with three jobs that run on PRs touching `supabase/**` and on push to `main` (and a weekly cron):
+Set `DENO_DIR: ~/.cache/deno` and add an `actions/cache@v4` step keyed on a hash of all edge function source files (`supabase/functions/**/*.ts`). This caches downloaded `deno.land/std` and `esm.sh` modules across runs.
 
-### Job 1 — `db-lint`
-- Install Supabase CLI (`supabase/setup-cli@v1`, pinned major).
-- `supabase db lint --level warning` against `supabase/migrations/`.
-- Fails on lint errors; warnings surfaced in step summary.
+### 2. Cache Supabase CLI (db-lint job)
 
-### Job 2 — `db-apply-and-smoke`
-- Spins up a local Postgres via the official `postgres:15` service container (lighter than full `supabase start`, sufficient for migration apply + SQL smoke tests).
-- Concatenates and applies every file in `supabase/migrations/*.sql` in lexical order via `psql`.
-  - Skips Supabase-managed bootstrap (auth schema) by pre-creating minimal stubs (`auth.uid()` returning null, `auth.users` empty table, `extensions` schema with `uuid-ossp` + `pgcrypto`). Stubs live in a new `supabase/tests/_bootstrap.sql`.
-- Runs every `supabase/tests/*.sql` smoke script with `psql -v ON_ERROR_STOP=1`.
-- Fails CI if any migration errors or any smoke script raises.
+Add `actions/cache@v4` for `~/.supabase` (or the CLI binary path) keyed on runner OS + a static version key. Avoids re-downloading the CLI on every run.
 
-### Job 3 — `edge-function-tests`
-- Sets up Deno (`denoland/setup-deno@v1`).
-- Runs `deno test --allow-net --allow-env --allow-read supabase/functions/` so every `*_test.ts` / `*.test.ts` is picked up (currently 1 test, future-proof for more).
-- `.env.example` values are exported as `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` so tests that use the dotenv loader pattern run offline against safe placeholders. Tests that need real network are skipped via an env guard the existing test already respects, or via a new `SUPABASE_CI=1` env check we add only if needed.
+### 3. Remove redundant apt-get install (db-apply-and-smoke job)
 
-## New files
+`psql` is preinstalled on `ubuntu-latest` at `/bin/psql` — remove the `sudo apt-get update && sudo apt-get install -y postgresql-client` step entirely.
 
-- `.github/workflows/supabase-ci.yml` — three jobs above.
-- `supabase/tests/_bootstrap.sql` — minimal `auth` / `extensions` stubs so migrations apply against a vanilla Postgres. Comments explain it is CI-only and not loaded by Supabase.
-- `supabase/tests/migrations_apply.sql` — tiny driver that `\i`'s the bootstrap then verifies a handful of expected tables exist (`teams`, `matches`, `seasons`, `profiles`, `user_roles`-equivalent). Acts as a sanity check that the apply step actually ran every migration.
-- `docs/SUPABASE_CI.md` — short doc explaining what each job does, how to reproduce locally, and the policy for adding new SQL smoke tests.
+### 4. Batch migration application (db-apply-and-smoke job)
 
-## Files updated
+Instead of running `psql` 296 times (one per migration file), concatenate all migration files with `-- FILE: <path>` markers into a single temporary SQL file, then run `psql` once. Errors still surface with file attribution from the markers. This eliminates ~295 process spawns.
 
-- `supabase/tests/README.md` — note that smoke scripts now run in CI; add the "add a new test" checklist.
+### 5. Batch smoke tests (db-apply-and-smoke job)
 
-## Explicitly not in scope
+After bootstrap, concatenate all non-underscore SQL test files and run through a single `psql` invocation (keeping `ON_ERROR_STOP`). This is safe because each test is an independent `DO $$ ... $$` block.
 
-- No changes to migrations themselves.
-- No changes to edge function runtime code.
-- No frontend, services, hooks, or business logic.
-- No `supabase start` (full stack) — too slow and brittle for PR CI; Postgres-only is enough for lint + apply + smoke.
-- No pgTAP rewrite of existing tests; they stay as plain `psql` scripts.
-- No mandatory tests for edge functions that need real Supabase creds — those stay skipped under the CI guard.
+### 6. Verify db-lint behavior
 
-## Risk and mitigations
+The `db-lint` job does `supabase init --force` followed by `supabase db lint --level warning --schema public`. Confirm whether this actually lints migrations or needs adjustment (it may need `supabase db start` or a different flag). If the current invocation is ineffective, fix it.
 
-- **Migrations referencing Supabase-only objects** (auth schema, storage schema, vault) will need stubs. Bootstrap file covers `auth.uid()`, `auth.users`, `auth.role()`, `storage.objects`, `storage.buckets`. If an unexpected dependency surfaces during the first CI run, I'll extend the bootstrap rather than skip the job.
-- **Long migration list (296 files)** may take a couple minutes to apply. Acceptable for a job that runs only when `supabase/**` changes.
-- **False-positive lint warnings** — start with `--level warning` reporting only; promote to `error` in a follow-up once the baseline is clean.
+## What stays the same
 
-## Validation
+- Job parallelism (all three jobs still run concurrently)
+- Postgres service container setup
+- Smoke test assertions and logic
+- Edge function test commands and env vars
+- Workflow triggers (`paths`, `branches`, `cron`)
 
-- Open the PR; confirm `supabase-ci` runs and all three jobs pass.
-- Manually break a migration (locally) to confirm `db-apply-and-smoke` actually fails the job — then revert.
-- Existing workflows (`test.yml`, `coverage-threshold.yml`, `security-audit.yml`, `secret-scan.yml`) are untouched.
+## Expected impact
 
-## Suggested PR
+- Deno tests: ~15-30s saved per run after cache warm-up
+- db-apply-and-smoke: ~30-60s saved (removing apt + batching 296 psql calls)
+- db-lint: ~10-20s saved after CLI cache warm-up
+- Overall PR check time should drop meaningfully on cached runs.
 
-**Title:** Add Supabase CI: db lint, migration apply, SQL smoke, edge function tests
+## Files to modify
 
-**Description:** Wires the existing `supabase db lint`, migration apply, `supabase/tests/*.sql` smoke scripts, and Deno edge-function tests into GitHub Actions so migration risk is verified on every PR that touches `supabase/**`. Adds a minimal `_bootstrap.sql` so migrations apply against a vanilla Postgres service container. No migration, edge function, or app code changes.
+- `.github/workflows/supabase-ci.yml` — all optimizations above
+
+## Not in scope
+
+- No changes to migrations, edge functions, or app code
+- No changes to other workflows
+- No changes to test logic or assertions
