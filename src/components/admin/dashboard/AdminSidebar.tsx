@@ -15,6 +15,7 @@ import {
   Shuffle,
   Sparkles,
   Timer,
+  Trophy,
   Users,
   Users2,
 } from 'lucide-react';
@@ -23,6 +24,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import AutoScheduleTab from '@/components/admin/auto-schedule/AutoScheduleTab';
 import BatchMatchCreationTab from '@/components/admin/batch-matches/BatchMatchCreationTab';
 import BlindDrawSignupsTab from '@/components/admin/blind-draw/BlindDrawSignupsTab';
+import DivisionsTab from '@/components/admin/divisions/DivisionsTab';
 import GettingStartedTab from '@/components/admin/help/GettingStartedTab';
 import HeroCardsTab from '@/components/admin/hero-cards/HeroCardsTab';
 import OpponentHistoryTab from '@/components/admin/opponent-history/OpponentHistoryTab';
@@ -76,6 +78,7 @@ const adminMenuItems: AdminMenuItem[] = [
   },
   { id: 'requests', label: 'Requests', icon: Inbox, Component: RequestsTab },
   { id: 'teams', label: 'Teams', icon: Users, Component: TeamManagementTab },
+  { id: 'divisions', label: 'Divisions', icon: Trophy, Component: DivisionsTab },
   { id: 'pending-matches', label: 'Pending', icon: Clock, Component: PendingMatchesSection },
   { id: 'hero-cards', label: 'Hero', icon: LayoutGrid, Component: HeroCardsTab },
   { id: 'themes', label: 'Themes', icon: Palette, Component: ThemeManagementTab },
