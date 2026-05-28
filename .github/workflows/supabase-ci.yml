@@ -24,6 +24,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Cache Supabase CLI
+        id: cache-supabase-cli
+        uses: actions/cache@v4
+        with:
+          path: ~/.supabase-cli
+          key: supabase-cli-${{ runner.os }}-latest-v1
       - uses: supabase/setup-cli@v1
         with:
           version: latest
@@ -63,33 +69,37 @@ jobs:
       PGDATABASE: postgres
     steps:
       - uses: actions/checkout@v4
-      - name: Install psql client
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client
-      - name: Apply Supabase bootstrap stubs
-        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/_bootstrap.sql
-      - name: Apply all migrations in order
+      # psql is preinstalled on ubuntu-latest runners; no apt install needed.
+      - name: Apply bootstrap + all migrations (single psql invocation)
+        run: |
+          set -euo pipefail
+          combined=$(mktemp)
+          {
+            echo "\\echo '== bootstrap =='"
+            cat supabase/tests/_bootstrap.sql
+            for f in $(ls supabase/migrations/*.sql | sort); do
+              echo "\\echo '== migration: $f =='"
+              cat "$f"
+            done
+          } > "$combined"
+          psql -v ON_ERROR_STOP=1 -f "$combined"
+      - name: Run SQL smoke tests (single psql invocation)
         run: |
           set -euo pipefail
           shopt -s nullglob
-          for f in $(ls supabase/migrations/*.sql | sort); do
-            echo "::group::Applying $f"
-            psql -v ON_ERROR_STOP=1 -f "$f"
-            echo "::endgroup::"
-          done
-      - name: Run SQL smoke tests
-        run: |
-          set -euo pipefail
-          shopt -s nullglob
+          combined=$(mktemp)
           ran=0
           for f in supabase/tests/*.sql; do
             base=$(basename "$f")
-            # Skip bootstrap helper (already applied above)
             [[ "$base" == _*.sql ]] && continue
-            echo "::group::Smoke test $f"
-            psql -v ON_ERROR_STOP=1 -f "$f"
-            echo "::endgroup::"
+            echo "\\echo '== smoke: $f =='" >> "$combined"
+            cat "$f" >> "$combined"
+            echo "" >> "$combined"
             ran=$((ran + 1))
           done
+          if [ "$ran" -gt 0 ]; then
+            psql -v ON_ERROR_STOP=1 -f "$combined"
+          fi
           echo "Ran $ran smoke test(s)."
 
   edge-function-tests:
@@ -101,11 +111,19 @@ jobs:
       VITE_SUPABASE_URL: https://placeholder.supabase.co
       VITE_SUPABASE_PUBLISHABLE_KEY: placeholder-anon-key
       SUPABASE_CI: '1'
+      DENO_DIR: ~/.cache/deno
     steps:
       - uses: actions/checkout@v4
       - uses: denoland/setup-deno@v1
         with:
           deno-version: v1.x
+      - name: Cache Deno dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/deno
+          key: deno-${{ runner.os }}-${{ hashFiles('supabase/functions/**/*.ts') }}
+          restore-keys: |
+            deno-${{ runner.os }}-
       - name: Run Deno tests
         run: |
           if compgen -G "supabase/functions/**/*_test.ts" > /dev/null || \
