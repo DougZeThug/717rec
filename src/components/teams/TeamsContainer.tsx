@@ -78,13 +78,13 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode, 
       <AnimatePresence mode="wait">
         {teamToEdit && (
           <m.div
+            key={teamToEdit.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
             <TeamEditForm
-              key={teamToEdit.id}
               team={teamToEdit}
               onSubmit={handleUpdateTeam}
               onCancel={() => setTeamToEdit(null)}
