@@ -1,5 +1,6 @@
 import { Ranking } from '@/types';
 import { errorLog, warnLog } from '@/utils/logger';
+import { getTierFromDivision } from '@/utils/autoSchedule/blossom/tierUtils';
 
 // Ranking utilities - now handles NULL power scores for teams with no matches
 // The power score calculation is handled in v_team_details using the 40/45/15 formula:
@@ -55,7 +56,17 @@ export const sortRankings = (
 
     const numA = Number(valueA);
     const numB = Number(valueB);
-    return direction === 'asc' ? numA - numB : numB - numA;
+    const primary = direction === 'asc' ? numA - numB : numB - numA;
+    if (primary !== 0) return primary;
+
+    // Tiebreaker for power score: higher division ranks first
+    // (Competitive=1, Intermediate=2, Recreational=3 — lower tier number wins)
+    if (sortField === 'powerScore') {
+      const tierA = getTierFromDivision(a.divisionName);
+      const tierB = getTierFromDivision(b.divisionName);
+      if (tierA !== tierB) return tierA - tierB;
+    }
+    return 0;
   });
 };
 
