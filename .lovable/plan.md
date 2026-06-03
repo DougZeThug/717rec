@@ -1,22 +1,19 @@
 ## Problem
 
-`ContactInboxSection` is only rendered inside `/admin/notifications`, but that route has no navigation link anywhere in the app. Admins cannot discover the contact inbox without knowing the URL.
+`formatWithPattern` and `toLocalDateString` use `new Date(value)` on date-only strings like `'2026-05-14'`, which JavaScript parses as UTC midnight. In US timezones (negative UTC offset), formatting that instant in local time shifts the displayed day back by one (e.g., "Thu, May 14" → "Wed, May 13").
 
 ## Fix
 
-Add `ContactInboxSection` as a new tab in the admin dashboard sidebar so it is discoverable alongside other admin features.
+In `src/utils/formatDateSafe.ts`, detect date-only `YYYY-MM-DD` strings and parse them as local-time dates instead of UTC.
 
-### Files to change
+- Add a small helper `parseSafe(value)` that:
+  - For strings matching `/^\d{4}-\d{2}-\d{2}$/`, constructs `new Date(year, month - 1, day)` (local midnight).
+  - For other strings, uses `parseISO(value)` from `date-fns` (preserves correct behavior for full ISO timestamps with offsets).
+  - For numbers/Dates, uses `new Date(value)`.
+- Use this helper in `formatWithPattern`, `toLocalDateString`, and `formatDistanceFrom` so all three behave consistently.
 
-1. **src/components/admin/dashboard/AdminSidebar.tsx**
-   - Import `ContactInboxSection`
-   - Add a new menu item to `adminMenuItems` array: `{ id: 'contact-inbox', label: 'Inbox', icon: Inbox, Component: ContactInboxSection }`
+Existing callers are unaffected because correctly-offset ISO timestamps still parse the same way.
 
-2. **src/components/admin/dashboard/AdminMobileNav.tsx**
-   - Add `{ id: 'contact-inbox', label: 'Inbox', icon: Inbox }` to the `adminMenuItems` array
-   - Add `'contact-inbox'` to the appropriate `tabGroups` entry (Teams & Players group, alongside `requests`)
+## Verification
 
-### What stays the same
-
-- The `/admin/notifications` route and `NotificationsAdmin` page remain untouched.
-- No other admin tabs or routes are affected.
+Run the failing tests in `src/utils/__tests__/formatDateSafe.test.ts` and confirm they pass in both `America/New_York` and `America/Los_Angeles`.

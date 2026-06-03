@@ -1,4 +1,4 @@
-import { format as fnsFormat, formatDistanceToNow as fnsDistanceToNow } from 'date-fns';
+import { format as fnsFormat, formatDistanceToNow as fnsDistanceToNow, parseISO } from 'date-fns';
 
 /**
  * Date formatting helpers that wrap `new Date(...)` so callers don't trigger
@@ -6,12 +6,25 @@ import { format as fnsFormat, formatDistanceToNow as fnsDistanceToNow } from 'da
  * functions — behavior is identical to inline formatting.
  */
 
+const DATE_ONLY_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+const parseSafe = (value: string | number | Date): Date => {
+  if (typeof value === 'string') {
+    if (DATE_ONLY_RE.test(value)) {
+      const [y, m, d] = value.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+    return parseISO(value);
+  }
+  return new Date(value);
+};
+
 export const toLocalDateString = (
   value: string | number | Date | null | undefined,
   fallback = ''
 ): string => {
   if (value === null || value === undefined || value === '') return fallback;
-  return new Date(value).toLocaleDateString();
+  return parseSafe(value).toLocaleDateString();
 };
 
 export const formatWithPattern = (
@@ -20,7 +33,7 @@ export const formatWithPattern = (
   fallback = ''
 ): string => {
   if (value === null || value === undefined || value === '') return fallback;
-  return fnsFormat(new Date(value), pattern);
+  return fnsFormat(parseSafe(value), pattern);
 };
 
 export const formatDistanceFrom = (
@@ -28,5 +41,5 @@ export const formatDistanceFrom = (
   options?: { addSuffix?: boolean }
 ): string => {
   if (value === null || value === undefined || value === '') return '';
-  return fnsDistanceToNow(new Date(value), options);
+  return fnsDistanceToNow(parseSafe(value), options);
 };
