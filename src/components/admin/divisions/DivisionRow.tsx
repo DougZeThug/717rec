@@ -47,6 +47,7 @@ interface Props {
 
 const DivisionRow: React.FC<Props> = ({ division, layout }) => {
   const { updateDivision, deleteDivision } = useDivisionMutations();
+  const isHidden = division.display_division === 'Hidden';
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [name, setName] = useState(division.name);
@@ -144,6 +145,8 @@ const DivisionRow: React.FC<Props> = ({ division, layout }) => {
         size="sm"
         variant="outline"
         onClick={() => setEditing(true)}
+        disabled={isHidden}
+        title={isHidden ? 'Hidden divisions cannot be edited' : undefined}
         className="flex-1 md:flex-none"
       >
         <Pencil className="size-4 mr-1" />
@@ -153,6 +156,8 @@ const DivisionRow: React.FC<Props> = ({ division, layout }) => {
         size="sm"
         variant="ghost"
         onClick={() => setConfirmDelete(true)}
+        disabled={isHidden}
+        title={isHidden ? 'Hidden divisions cannot be deleted' : undefined}
         className="text-destructive hover:text-destructive flex-1 md:flex-none"
       >
         <Trash2 className="size-4" />
