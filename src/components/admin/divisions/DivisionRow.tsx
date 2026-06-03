@@ -280,7 +280,7 @@ const DeleteConfirm: React.FC<DeleteConfirmProps> = ({
       <AlertDialogHeader>
         <AlertDialogTitle>Delete division "{name}"?</AlertDialogTitle>
         <AlertDialogDescription>
-          This cannot be undone. Divisions currently assigned to any team cannot be deleted.
+          This cannot be undone. Divisions currently assigned to any team or bracket cannot be deleted.
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
