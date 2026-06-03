@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { Ranking } from '@/types';
 
 import { sortAndUpdateRankings } from '../sortAndUpdateRankings';
+import { sortRankings } from '@/utils/rankingUtils';
 
 const ranking = (teamId: string, powerScore: number | null, previousRank?: number): Ranking =>
   ({
@@ -57,5 +58,28 @@ describe('sortAndUpdateRankings', () => {
 
   it('handles empty rankings array', () => {
     expect(sortAndUpdateRankings([], {})).toEqual([]);
+  });
+
+  it('uses division tier when displayed power scores tie after rounding', () => {
+    const result = sortRankings(
+      [
+        {
+          ...ranking('smooth', 60.44),
+          teamName: 'Smooth Sliders',
+          divisionName: 'Intermediate',
+          winPercentage: 0.667,
+        },
+        {
+          ...ranking('cheesers', 60.41),
+          teamName: 'Pepperoni Cheesers',
+          divisionName: 'Competitive',
+          winPercentage: 0.417,
+        },
+      ],
+      'powerScore',
+      'desc'
+    );
+
+    expect(result.map((r) => r.teamId)).toEqual(['cheesers', 'smooth']);
   });
 });

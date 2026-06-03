@@ -36,7 +36,11 @@ import { useRankingsData } from '@/hooks/rankings/useRankingsData';
 import { useTeams } from '@/hooks/useTeams';
 import { saveRankingsToStorage } from '@/utils/rankingUtils';
 
-const makeTeam = (id: string, powerScore: number | null = 80) =>
+const makeTeam = (
+  id: string,
+  powerScore: number | null = 80,
+  overrides: Partial<Team> = {}
+) =>
   ({
     id,
     name: `Team ${id}`,
@@ -52,6 +56,7 @@ const makeTeam = (id: string, powerScore: number | null = 80) =>
     imageUrl: null,
     logoUrl: null,
     close_match_losses: 0,
+    ...overrides,
   }) as unknown as Team;
 
 describe('useTeamRankings', () => {
@@ -114,6 +119,32 @@ describe('useTeamRankings', () => {
     const { result } = renderHook(() => useTeamRankings(customTeams));
     await waitFor(() => expect(result.current.rankings.length).toBe(1));
     expect(result.current.rankings[0].teamId).toBe('custom-1');
+  });
+
+  it('uses division before win percentage when displayed power scores tie', async () => {
+    (useTeams as ReturnType<typeof vi.fn>).mockReturnValue({
+      teams: [
+        makeTeam('smooth', 60.44, {
+          name: 'Smooth Sliders',
+          divisionName: 'Intermediate',
+          win_percentage: 0.667,
+        }),
+        makeTeam('cheesers', 60.41, {
+          name: 'Pepperoni Cheesers',
+          divisionName: 'Competitive',
+          win_percentage: 0.417,
+        }),
+      ],
+      isLoading: false,
+    });
+
+    const { result } = renderHook(() => useTeamRankings());
+    await waitFor(() => expect(result.current.rankings.length).toBe(2));
+
+    expect(result.current.rankings.map((ranking) => ranking.teamId)).toEqual([
+      'cheesers',
+      'smooth',
+    ]);
   });
 
 

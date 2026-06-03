@@ -6,6 +6,11 @@ import { getTierFromDivision } from '@/utils/autoSchedule/blossom/tierUtils';
 import { saveRankingsToStorage, updateRankChanges } from '@/utils/rankingUtils';
 import { calculateStreak } from '@/utils/rankingUtils/calculateStreak';
 
+const getDisplayedPowerScore = (powerScore: number | null | undefined): number | null => {
+  if (powerScore === null || powerScore === undefined) return null;
+  return Math.round(powerScore * 10) / 10;
+};
+
 import { usePreviousRankings } from './rankings/usePreviousRankings';
 import { useRankingsData } from './rankings/useRankingsData';
 import { useTeams } from './useTeams';
@@ -85,9 +90,11 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
         const sortedRankings = calculatedRankings.sort((a, b) => {
           const aOriginalPowerScore = powerScoreMap.get(a.teamId);
           const bOriginalPowerScore = powerScoreMap.get(b.teamId);
+          const aDisplayedPowerScore = getDisplayedPowerScore(aOriginalPowerScore);
+          const bDisplayedPowerScore = getDisplayedPowerScore(bOriginalPowerScore);
 
           // Handle NULL values - put them at the end
-          if (aOriginalPowerScore === null && bOriginalPowerScore === null) {
+          if (aDisplayedPowerScore === null && bDisplayedPowerScore === null) {
             // Both NULL: division tier first, then win %, then name
             const tierA = getTierFromDivision(a.divisionName);
             const tierB = getTierFromDivision(b.divisionName);
@@ -97,12 +104,13 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
             }
             return (a.teamName || '').localeCompare(b.teamName || '');
           }
-          if (aOriginalPowerScore === null) return 1; // a goes to end
-          if (bOriginalPowerScore === null) return -1; // b goes to end
+          if (aDisplayedPowerScore === null) return 1; // a goes to end
+          if (bDisplayedPowerScore === null) return -1; // b goes to end
 
-          // Both have power scores, sort normally (descending)
-          if (bOriginalPowerScore !== aOriginalPowerScore) {
-            return bOriginalPowerScore - aOriginalPowerScore;
+          // Both have visible power scores, sort by the same 1-decimal value shown in the UI.
+          // If the displayed scores tie, division tier becomes the primary tiebreaker.
+          if (bDisplayedPowerScore !== aDisplayedPowerScore) {
+            return bDisplayedPowerScore - aDisplayedPowerScore;
           }
           // Tiebreakers (in order): higher division, then win %, then name.
           // Division MUST beat win % so a higher-division team ranks above a
