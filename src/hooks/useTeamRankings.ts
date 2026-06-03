@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { Match, Ranking, Team } from '@/types';
 import { debugLog, errorLog } from '@/utils/logger';
+import { getTierFromDivision } from '@/utils/autoSchedule/blossom/tierUtils';
 import { saveRankingsToStorage, updateRankChanges } from '@/utils/rankingUtils';
 import { calculateStreak } from '@/utils/rankingUtils/calculateStreak';
 
@@ -91,6 +92,10 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
             if (b.winPercentage !== a.winPercentage) {
               return b.winPercentage - a.winPercentage;
             }
+            // Higher division wins tiebreak
+            const tierA = getTierFromDivision(a.divisionName);
+            const tierB = getTierFromDivision(b.divisionName);
+            if (tierA !== tierB) return tierA - tierB;
             // Tertiary sort by name
             return (a.teamName || '').localeCompare(b.teamName || '');
           }
@@ -101,6 +106,10 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
           if (bOriginalPowerScore !== aOriginalPowerScore) {
             return bOriginalPowerScore - aOriginalPowerScore;
           }
+          // Tiebreaker: higher division (Competitive > Intermediate > Recreational) ranks first
+          const tierA = getTierFromDivision(a.divisionName);
+          const tierB = getTierFromDivision(b.divisionName);
+          if (tierA !== tierB) return tierA - tierB;
           // Secondary sort by win percentage
           if (b.winPercentage !== a.winPercentage) {
             return b.winPercentage - a.winPercentage;
