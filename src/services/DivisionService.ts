@@ -78,15 +78,28 @@ export const DivisionService = {
 
   deleteDivision: async (id: string) => {
     // Block deletion if any teams reference this division.
-    const { count, error: countError } = await supabase
+    const { count: teamCount, error: teamCountError } = await supabase
       .from('teams')
       .select('id', { count: 'exact', head: true })
       .eq('division_id', id);
 
-    if (countError) handleDatabaseError(countError, 'Failed to check division usage');
-    if ((count ?? 0) > 0) {
+    if (teamCountError) handleDatabaseError(teamCountError, 'Failed to check division usage');
+    if ((teamCount ?? 0) > 0) {
       throw new BusinessLogicError(
-        `Division is in use by ${count} team${count === 1 ? '' : 's'} and cannot be deleted.`
+        `Division is in use by ${teamCount} team${teamCount === 1 ? '' : 's'} and cannot be deleted.`
+      );
+    }
+
+    // Block deletion if any brackets reference this division.
+    const { count: bracketCount, error: bracketCountError } = await supabase
+      .from('brackets')
+      .select('id', { count: 'exact', head: true })
+      .eq('division_id', id);
+
+    if (bracketCountError) handleDatabaseError(bracketCountError, 'Failed to check division usage');
+    if ((bracketCount ?? 0) > 0) {
+      throw new BusinessLogicError(
+        `Division is in use by ${bracketCount} bracket${bracketCount === 1 ? '' : 's'} and cannot be deleted.`
       );
     }
 
