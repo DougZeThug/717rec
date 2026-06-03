@@ -63,24 +63,29 @@ const DivisionRow: React.FC<Props> = ({ division, layout }) => {
     setEditing(false);
   };
 
-  const save = async () => {
+  const save = () => {
     const trimmed = name.trim();
     const numericWeight = Number(weight);
     if (!trimmed || !Number.isFinite(numericWeight) || numericWeight <= 0) return;
-    await updateDivision.mutateAsync({
-      id: division.id,
-      patch: {
-        name: trimmed,
-        display_division: display,
-        division_weight: numericWeight,
+    updateDivision.mutate(
+      {
+        id: division.id,
+        patch: {
+          name: trimmed,
+          display_division: display,
+          division_weight: numericWeight,
+        },
       },
-    });
-    setEditing(false);
+      {
+        onSuccess: () => setEditing(false),
+      }
+    );
   };
 
-  const onDelete = async () => {
-    await deleteDivision.mutateAsync(division.id);
-    setConfirmDelete(false);
+  const onDelete = () => {
+    deleteDivision.mutate(division.id, {
+      onSuccess: () => setConfirmDelete(false),
+    });
   };
 
   const displayClass = getDivisionStyles(division.display_division, 'text');

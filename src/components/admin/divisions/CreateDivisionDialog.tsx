@@ -41,7 +41,7 @@ const CreateDivisionDialog: React.FC<Props> = ({ open, onOpenChange }) => {
     setError(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     const trimmed = name.trim();
@@ -50,13 +50,19 @@ const CreateDivisionDialog: React.FC<Props> = ({ open, onOpenChange }) => {
     if (!Number.isFinite(numericWeight) || numericWeight <= 0) {
       return setError('Weight must be a positive number');
     }
-    await createDivision.mutateAsync({
-      name: trimmed,
-      display_division: displayDivision,
-      division_weight: numericWeight,
-    });
-    reset();
-    onOpenChange(false);
+    createDivision.mutate(
+      {
+        name: trimmed,
+        display_division: displayDivision,
+        division_weight: numericWeight,
+      },
+      {
+        onSuccess: () => {
+          reset();
+          onOpenChange(false);
+        },
+      }
+    );
   };
 
   return (
