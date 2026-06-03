@@ -7,6 +7,7 @@ import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { Ranking } from '@/types';
 import { formatPowerScore, getPowerScoreColor } from '@/utils/colors';
+import { sortRankings } from '@/utils/rankingUtils';
 import { toTeamSlug } from '@/utils/teamSlug';
 
 interface LeagueLeaderboardCarouselProps {
@@ -29,7 +30,7 @@ const LeagueLeaderboardCarousel: React.FC<LeagueLeaderboardCarouselProps> = ({ r
   const { isWinterTheme } = useSeasonalTheme();
 
   const top3 = useMemo(
-    () => [...rankings].sort((a, b) => b.powerScore - a.powerScore).slice(0, 3),
+    () => sortRankings(rankings, 'powerScore', 'desc').slice(0, 3),
     [rankings]
   );
 

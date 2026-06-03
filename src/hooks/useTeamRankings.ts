@@ -88,15 +88,13 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
 
           // Handle NULL values - put them at the end
           if (aOriginalPowerScore === null && bOriginalPowerScore === null) {
-            // Both are NULL, sort by win percentage as secondary
-            if (b.winPercentage !== a.winPercentage) {
-              return b.winPercentage - a.winPercentage;
-            }
-            // Higher division wins tiebreak
+            // Both NULL: division tier first, then win %, then name
             const tierA = getTierFromDivision(a.divisionName);
             const tierB = getTierFromDivision(b.divisionName);
             if (tierA !== tierB) return tierA - tierB;
-            // Tertiary sort by name
+            if (b.winPercentage !== a.winPercentage) {
+              return b.winPercentage - a.winPercentage;
+            }
             return (a.teamName || '').localeCompare(b.teamName || '');
           }
           if (aOriginalPowerScore === null) return 1; // a goes to end
@@ -106,15 +104,15 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
           if (bOriginalPowerScore !== aOriginalPowerScore) {
             return bOriginalPowerScore - aOriginalPowerScore;
           }
-          // Tiebreaker: higher division (Competitive > Intermediate > Recreational) ranks first
+          // Tiebreakers (in order): higher division, then win %, then name.
+          // Division MUST beat win % so a higher-division team ranks above a
+          // lower-division team even when the latter has a better record.
           const tierA = getTierFromDivision(a.divisionName);
           const tierB = getTierFromDivision(b.divisionName);
           if (tierA !== tierB) return tierA - tierB;
-          // Secondary sort by win percentage
           if (b.winPercentage !== a.winPercentage) {
             return b.winPercentage - a.winPercentage;
           }
-          // Tertiary sort by name
           return (a.teamName || '').localeCompare(b.teamName || '');
         });
 

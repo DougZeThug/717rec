@@ -9,6 +9,7 @@ import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { gradients } from '@/styles/design-system';
 import { Ranking } from '@/types';
+import { sortRankings } from '@/utils/rankingUtils';
 
 import RankingsTable from './RankingsTable';
 import ViewToggle from './ViewToggle';
@@ -26,9 +27,10 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings, myTeamId }) => {
   const isLight = resolvedTheme === 'light';
   const isMobile = useIsMobile();
 
-  // Sort rankings by power score for the unified view - memoized to prevent recreating array
+  // Sort rankings by power score for the unified view using the shared sorter so
+  // tiebreakers (division tier, then win %, then name) are applied consistently.
   const sortedRankings = useMemo(
-    () => (view === 'all' ? [...rankings].sort((a, b) => b.powerScore - a.powerScore) : rankings),
+    () => (view === 'all' ? sortRankings(rankings, 'powerScore', 'desc') : rankings),
     [rankings, view]
   );
 
