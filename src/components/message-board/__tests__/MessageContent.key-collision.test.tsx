@@ -18,8 +18,8 @@ describe('MessageContent key generation', () => {
     consoleErrorSpy.mockRestore();
   });
 
-  it('does not produce duplicate React keys when content contains the # delimiter', () => {
-    const content = 'hello\nhello#1\nhello';
+  it('does not produce duplicate React keys when content contains the ::occurrence: delimiter', () => {
+    const content = 'hello::occurrence:1\nhello\nhello';
 
     render(<MessageContent content={content} />);
 

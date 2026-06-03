@@ -21,8 +21,7 @@ const MessageContent: React.FC<MessageContentProps> = ({ content, isEdited, upda
     // counting prior occurrences so React keys stay stable without using
     // the raw array index.
     const occurrence = lines.slice(0, i).filter((l) => l === line).length;
-    const key =
-      occurrence === 0 ? `line:${line}` : `line:${line}::occurrence:${occurrence}`;
+    const key = JSON.stringify(['line', line, occurrence]);
     return (
       <React.Fragment key={key}>
         {line}
