@@ -10,6 +10,7 @@ import {
   Inbox,
   LayoutGrid,
   ListChecks,
+  Mail,
   Palette,
   Search,
   Shuffle,
@@ -24,6 +25,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import AutoScheduleTab from '@/components/admin/auto-schedule/AutoScheduleTab';
 import BatchMatchCreationTab from '@/components/admin/batch-matches/BatchMatchCreationTab';
 import BlindDrawSignupsTab from '@/components/admin/blind-draw/BlindDrawSignupsTab';
+import ContactInboxSection from '@/components/admin/contact/ContactInboxSection';
 import DivisionsTab from '@/components/admin/divisions/DivisionsTab';
 import GettingStartedTab from '@/components/admin/help/GettingStartedTab';
 import HeroCardsTab from '@/components/admin/hero-cards/HeroCardsTab';
@@ -77,6 +79,7 @@ const adminMenuItems: AdminMenuItem[] = [
     Component: SeasonParticipationTab,
   },
   { id: 'requests', label: 'Requests', icon: Inbox, Component: RequestsTab },
+  { id: 'contact-inbox', label: 'Contact Inbox', icon: Mail, Component: ContactInboxSection },
   { id: 'teams', label: 'Teams', icon: Users, Component: TeamManagementTab },
   { id: 'divisions', label: 'Divisions', icon: Trophy, Component: DivisionsTab },
   { id: 'pending-matches', label: 'Pending', icon: Clock, Component: PendingMatchesSection },
