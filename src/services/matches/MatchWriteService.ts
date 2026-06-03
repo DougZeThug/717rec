@@ -260,8 +260,18 @@ export interface ScoreSubmissionInsertData {
 }
 
 export const createScoreSubmission = async (data: ScoreSubmissionInsertData) => {
-  const { error } = await supabase.from('score_submissions').insert(data);
+  const { data: result, error } = await supabase.functions.invoke('submit-score-report', {
+    body: {
+      match_id: data.match_id,
+      submitter_name: data.submitter_name,
+      submitter_team: data.submitter_team,
+      message: data.message,
+    },
+  });
   if (error) handleDatabaseError(error, 'Failed to create score submission');
+  if (result && typeof result === 'object' && 'error' in result) {
+    throw new Error((result as { error: string }).error || 'Failed to create score submission');
+  }
   return true;
 };
 
