@@ -1,19 +1,19 @@
-## Problem
+Update 7 npm packages to their latest patch/minor versions.
 
-`formatWithPattern` and `toLocalDateString` use `new Date(value)` on date-only strings like `'2026-05-14'`, which JavaScript parses as UTC midnight. In US timezones (negative UTC offset), formatting that instant in local time shifts the displayed day back by one (e.g., "Thu, May 14" → "Wed, May 13").
+### Packages to update
+| Package | Current | Target |
+|---------|---------|--------|
+| @sentry/react | 10.53.1 | 10.55.0 |
+| @vitest/eslint-plugin | 1.6.18 | 1.6.19 |
+| date-fns | 4.3.0 | 4.4.0 |
+| lucide-react | 1.16.0 | 1.17.0 |
+| react-hook-form | 7.76.1 | 7.77.0 |
+| react-router | 7.15.1 | 7.16.0 |
+| react-router-dom | 7.15.1 | 7.16.0 |
 
-## Fix
+### Plan
+1. Update version strings in `package.json` for all 7 packages.
+2. Run `npm install` to update the lockfile.
+3. Run a quick smoke test (`npm run build` and `npm test`) to verify nothing breaks.
 
-In `src/utils/formatDateSafe.ts`, detect date-only `YYYY-MM-DD` strings and parse them as local-time dates instead of UTC.
-
-- Add a small helper `parseSafe(value)` that:
-  - For strings matching `/^\d{4}-\d{2}-\d{2}$/`, constructs `new Date(year, month - 1, day)` (local midnight).
-  - For other strings, uses `parseISO(value)` from `date-fns` (preserves correct behavior for full ISO timestamps with offsets).
-  - For numbers/Dates, uses `new Date(value)`.
-- Use this helper in `formatWithPattern`, `toLocalDateString`, and `formatDistanceFrom` so all three behave consistently.
-
-Existing callers are unaffected because correctly-offset ISO timestamps still parse the same way.
-
-## Verification
-
-Run the failing tests in `src/utils/__tests__/formatDateSafe.test.ts` and confirm they pass in both `America/New_York` and `America/Los_Angeles`.
+These are all patch/minor bumps with no known breaking changes in our codebase.
