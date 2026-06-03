@@ -59,12 +59,20 @@ export const sortRankings = (
     const primary = direction === 'asc' ? numA - numB : numB - numA;
     if (primary !== 0) return primary;
 
-    // Tiebreaker for power score: higher division ranks first
-    // (Competitive=1, Intermediate=2, Recreational=3 — lower tier number wins)
+    // Tiebreakers for power score, in priority order:
+    //   1) Higher division ranks first (Competitive=1 > Intermediate=2 > Recreational=3)
+    //   2) Higher win percentage
+    //   3) Team name (alphabetical)
     if (sortField === 'powerScore') {
       const tierA = getTierFromDivision(a.divisionName);
       const tierB = getTierFromDivision(b.divisionName);
       if (tierA !== tierB) return tierA - tierB;
+
+      const winA = a.winPercentage || 0;
+      const winB = b.winPercentage || 0;
+      if (winA !== winB) return winB - winA;
+
+      return (a.teamName || '').localeCompare(b.teamName || '');
     }
     return 0;
   });
