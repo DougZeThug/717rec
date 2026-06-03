@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -48,6 +49,7 @@ export function useMarkContactRequestResolved() {
     mutationFn: ({ id, userId }: { id: string; userId: string | null }) =>
       ContactRequestService.markResolved(id, userId),
     onSuccess: () => qc.invalidateQueries({ queryKey: CONTACT_REQUESTS_QUERY_KEY }),
+    onError: () => toast.error('Failed to mark contact request as resolved'),
   });
 }
 
@@ -56,6 +58,7 @@ export function useReopenContactRequest() {
   return useMutation({
     mutationFn: (id: string) => ContactRequestService.reopen(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: CONTACT_REQUESTS_QUERY_KEY }),
+    onError: () => toast.error('Failed to reopen contact request'),
   });
 }
 
@@ -64,5 +67,6 @@ export function useDeleteContactRequest() {
   return useMutation({
     mutationFn: (id: string) => ContactRequestService.remove(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: CONTACT_REQUESTS_QUERY_KEY }),
+    onError: () => toast.error('Failed to delete contact request'),
   });
 }
