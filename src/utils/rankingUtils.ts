@@ -2,6 +2,11 @@ import { Ranking } from '@/types';
 import { errorLog, warnLog } from '@/utils/logger';
 import { getTierFromDivision } from '@/utils/autoSchedule/blossom/tierUtils';
 
+const getDisplayedPowerScore = (powerScore: number | null | undefined): number | null => {
+  if (powerScore === null || powerScore === undefined) return null;
+  return Math.round(powerScore * 10) / 10;
+};
+
 // Ranking utilities - now handles NULL power scores for teams with no matches
 // The power score calculation is handled in v_team_details using the 40/45/15 formula:
 // - 40% Weighted Match Win % = (wins × opponent_weights) / total_matches
@@ -19,8 +24,8 @@ export const sortRankings = (
 
     switch (sortField) {
       case 'powerScore':
-        valueA = a.powerScore;
-        valueB = b.powerScore;
+        valueA = getDisplayedPowerScore(a.powerScore);
+        valueB = getDisplayedPowerScore(b.powerScore);
         break;
       case 'winPercentage':
         valueA = a.winPercentage || 0;
