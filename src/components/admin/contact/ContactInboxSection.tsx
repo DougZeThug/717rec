@@ -123,12 +123,16 @@ const ContactInboxSection: React.FC = () => {
                     )}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {href ? (
-                      <a className="hover:underline" href={href}>
-                        {r.submitter_contact}
-                      </a>
+                    {r.submitter_contact ? (
+                      href ? (
+                        <a className="hover:underline" href={href}>
+                          {r.submitter_contact}
+                        </a>
+                      ) : (
+                        r.submitter_contact
+                      )
                     ) : (
-                      r.submitter_contact
+                      <span className="italic">No contact provided</span>
                     )}
                   </div>
 
