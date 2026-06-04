@@ -1,18 +1,24 @@
 ## Problem
-Toggling the Challonge fallback on in admin doesn't show anything on `/playoffs`. The fallback is only rendered in `PlayoffPageContent.tsx`, but that component is dead code — the actual page renders `PlayoffPageLayout` → `PlayoffViewSelector` → `PlayoffView` / `AdminView`, none of which include `<ChallongeFallback />`.
+The `ChallongeFallback` embeds render below the `PlayoffViewSelector` (which contains the bracket manager brackets) on the Playoffs page. The user wants the Challonge fallback brackets to appear **above** the bracket manager brackets.
 
 ## Fix
+In `src/components/playoffs/layout/PlayoffPageLayout.tsx`, move the `ChallongeFallback` block to render **before** `<PlayoffViewSelector>` instead of after it.
 
-1. **`src/components/playoffs/layout/PlayoffPageLayout.tsx`** — render `<ChallongeFallback />` above `PlayoffViewSelector`, gated by `useChallongeFallbackConfig()` data:
-   - Only render when `config?.enabled === true`.
-   - Only when no bracket detail is open (`!data.selectedBracketId`) so it doesn't show inside a bracket page.
-   - Skip during initial loading (`!data.isLoading`).
+### Current order in JSX:
+1. `PlayoffHeader`
+2. `SeasonSelector`
+3. `PlayoffViewSelector` (bracket manager brackets)
+4. `ChallongeFallback` (Challonge embeds) ← **move this up**
+5. `RealtimeIndicator`
 
-2. **Remove dead-code fallback render** in `src/components/playoffs/PlayoffPageContent.tsx` (component is unused by the live page; leaving the duplicate render risks divergence). Confirm it has no other consumers before removing the import.
+### Target order:
+1. `PlayoffHeader`
+2. `SeasonSelector`
+3. `ChallongeFallback` (Challonge embeds) ← **here**
+4. `PlayoffViewSelector` (bracket manager brackets)
+5. `RealtimeIndicator`
 
-3. **Test update** — extend `src/components/playoffs/embeds/__tests__/ChallongeFallback.test.tsx` or add a small layout test verifying the fallback appears when `enabled=true` and is hidden when `enabled=false`/loading.
+### Files changed
+- `src/components/playoffs/layout/PlayoffPageLayout.tsx` — relocate the conditional `ChallongeFallback` render block.
 
-## Out of scope
-- No DB / RLS changes.
-- No styling changes to the fallback itself.
-- Other security findings on the More panel.
+No other files or logic changes needed.

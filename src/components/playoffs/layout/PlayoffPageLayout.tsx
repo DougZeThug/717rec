@@ -80,6 +80,12 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
           />
         </div>
 
+        {showChallongeFallback && (
+          <div className="mb-8">
+            <ChallongeFallback />
+          </div>
+        )}
+
         <PlayoffViewSelector
           view={selectedView}
           bracketDialogOpen={view.bracketDialogOpen}
@@ -88,12 +94,6 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
           onDeleteBracket={view.handleDeleteBracket}
           data={data}
         />
-
-        {showChallongeFallback && (
-          <div className="mt-8">
-            <ChallongeFallback />
-          </div>
-        )}
 
         {/* Realtime indicator */}
         <RealtimeIndicator enabled={!!realtimeEnabled && !!data.selectedBracketId} />
