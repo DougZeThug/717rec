@@ -3,8 +3,10 @@ import React, { useCallback, useMemo } from 'react';
 
 import DivisionBracketsCard from '@/components/playoffs/DivisionBracketsCard';
 import EmptyBracketState from '@/components/playoffs/EmptyBracketState';
+import { ChallongeFallback } from '@/components/playoffs/embeds/ChallongeFallback';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { useChallongeFallbackConfig } from '@/hooks/useChallongeFallback';
 import { warnLog } from '@/utils/logger';
 import { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
@@ -32,6 +34,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
   // Enhanced refresh state management
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const lastRefreshTimeRef = React.useRef<Date | null>(null);
+  const { data: challongeConfig } = useChallongeFallbackConfig();
 
   // Enhanced refresh handler with optimistic updates
   const handleRefreshClick = useCallback(async () => {
@@ -98,8 +101,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
 
   return (
     <div className="space-y-8">
-      {/* Challonge fallback hidden - using brackets-viewer now */}
-      {/* <ChallongeFallback /> */}
+      {challongeConfig?.enabled && <ChallongeFallback />}
 
       {/* Refresh Button */}
       {onRefreshData && allBracketsData.length > 0 && (

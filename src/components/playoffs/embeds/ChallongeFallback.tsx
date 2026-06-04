@@ -2,16 +2,17 @@ import { ChevronDown, ChevronUp, Expand, Minimize } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-
-const brackets = [
-  { slug: '5hy558bb', title: 'Competitive' },
-  { slug: 'd8uwweii', title: 'Intermediate 1' },
-  { slug: '1a2md5x5', title: 'Intermediate 2' },
-  { slug: '9eg7l6f', title: 'Recreational' },
-];
+import {
+  useChallongeFallbackBrackets,
+  useChallongeFallbackConfig,
+} from '@/hooks/useChallongeFallback';
 
 export const ChallongeFallback: React.FC = () => {
+  const { data: config } = useChallongeFallbackConfig();
+  const { data: brackets } = useChallongeFallbackBrackets();
   const [allExpanded, setAllExpanded] = useState(false);
+
+  if (!brackets || brackets.length === 0) return null;
 
   const toggleAll = () => {
     setAllExpanded(!allExpanded);
@@ -24,10 +25,12 @@ export const ChallongeFallback: React.FC = () => {
     <section className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">2025 Summer 2 Playoffs</h2>
-          <p className="text-muted-foreground">
-            Live tournament brackets - click any bracket to view details
-          </p>
+          <h2 className="text-2xl font-bold text-foreground mb-2">
+            {config?.header_title ?? 'Playoffs'}
+          </h2>
+          {config?.header_subtitle && (
+            <p className="text-muted-foreground">{config.header_subtitle}</p>
+          )}
         </div>
         <Button variant="outline" size="sm" onClick={toggleAll} className="flex items-center gap-2">
           {allExpanded ? (
@@ -45,9 +48,9 @@ export const ChallongeFallback: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-4">
-        {brackets.map(({ slug, title }) => (
+        {brackets.map(({ id, slug, title }) => (
           <ChallongeEmbedWithToggle
-            key={slug}
+            key={id}
             slug={slug}
             title={title}
             forceExpanded={allExpanded}
