@@ -258,6 +258,60 @@ export type Database = {
           },
         ]
       }
+      challonge_fallback_brackets: {
+        Row: {
+          created_at: string
+          id: string
+          slug: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          slug: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          slug?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      challonge_fallback_config: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          header_subtitle: string
+          header_title: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          header_subtitle?: string
+          header_title?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          header_subtitle?: string
+          header_title?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contact_requests: {
         Row: {
           admin_notes: string | null
