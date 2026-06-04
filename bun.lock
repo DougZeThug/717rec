@@ -56,6 +56,7 @@
         "date-fns": "^4.4.0",
         "edmonds-blossom": "^1.0.0",
         "embla-carousel-react": "^8.6.0",
+        "events": "^3.3.0",
         "exceljs": "^4.4.0",
         "framer-motion": "^12.40.0",
         "input-otp": "^1.4.2",
@@ -880,6 +881,8 @@
     "esutils": ["esutils@2.0.3", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/esutils/-/esutils-2.0.3.tgz", {}, ""],
 
     "eventemitter3": ["eventemitter3@5.0.1", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/eventemitter3/-/eventemitter3-5.0.1.tgz", {}, ""],
+
+    "events": ["events@3.3.0", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/events/-/events-3.3.0.tgz", {}, "sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q=="],
 
     "exceljs": ["exceljs@4.4.0", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/exceljs/-/exceljs-4.4.0.tgz", { "dependencies": { "archiver": "^5.0.0", "dayjs": "^1.8.34", "fast-csv": "^4.3.1", "jszip": "^3.10.1", "readable-stream": "^3.6.0", "saxes": "^5.0.1", "tmp": "^0.2.0", "unzipper": "^0.10.11", "uuid": "^8.3.0" } }, ""],
 
