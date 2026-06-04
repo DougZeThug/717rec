@@ -1,23 +1,18 @@
-## Goal
-Resolve the `score_submissions_no_insert_policy` scanner finding. The intended flow is correct (admins review submissions; anonymous/authenticated direct inserts are blocked), so the fix is documentation + finding management, not new policies.
+## Problem
+Toggling the Challonge fallback on in admin doesn't show anything on `/playoffs`. The fallback is only rendered in `PlayoffPageContent.tsx`, but that component is dead code — the actual page renders `PlayoffPageLayout` → `PlayoffViewSelector` → `PlayoffView` / `AdminView`, none of which include `<ChallongeFallback />`.
 
-## Background
-- `score_submissions` has SELECT (authenticated) and UPDATE (admins) policies, and INSERT was deliberately revoked from `anon` and `authenticated` in migration `20260603195133_…`.
-- All new submissions flow through the `submit-score-report` edge function, which validates input and inserts with the service role (bypassing RLS, which is the intended pattern).
-- Admins approve/reject submissions via the existing UPDATE policy; on approval, scores are applied to the match.
+## Fix
 
-## Plan
+1. **`src/components/playoffs/layout/PlayoffPageLayout.tsx`** — render `<ChallongeFallback />` above `PlayoffViewSelector`, gated by `useChallongeFallbackConfig()` data:
+   - Only render when `config?.enabled === true`.
+   - Only when no bracket detail is open (`!data.selectedBracketId`) so it doesn't show inside a bracket page.
+   - Skip during initial loading (`!data.isLoading`).
 
-1. **Migration: add a `COMMENT ON TABLE` to `public.score_submissions`** describing the access model:
-   - Inserts only via `submit-score-report` edge function (service role).
-   - No direct INSERT policy is intentional.
-   - Admins review/apply via UPDATE policy.
+2. **Remove dead-code fallback render** in `src/components/playoffs/PlayoffPageContent.tsx` (component is unused by the live page; leaving the duplicate render risks divergence). Confirm it has no other consumers before removing the import.
 
-2. **Update `mem://security/security-memory`** with a short note: `score_submissions` has no INSERT policy by design — submissions go through the `submit-score-report` edge function with service role. Future scans should not flag this.
+3. **Test update** — extend `src/components/playoffs/embeds/__tests__/ChallongeFallback.test.tsx` or add a small layout test verifying the fallback appears when `enabled=true` and is hidden when `enabled=false`/loading.
 
-3. **Mark the scanner finding as fixed** (`supabase_lov` / `score_submissions_no_insert_policy`) with an explanation pointing to the table comment and edge function.
-
-## What I will NOT change
-- No new RLS INSERT policy (would weaken the current model).
-- No edge function or client changes.
-- No other findings on the More panel (those are separate items).
+## Out of scope
+- No DB / RLS changes.
+- No styling changes to the fallback itself.
+- Other security findings on the More panel.
