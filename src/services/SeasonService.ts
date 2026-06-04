@@ -164,6 +164,10 @@ export const SeasonService = {
       data: { user },
     } = await supabase.auth.getUser();
 
+    if (!user) {
+      throw new Error('You must be signed in to submit season participation.');
+    }
+
     const { data, error } = await supabase
       .from('season_team_participation')
       .upsert(
@@ -171,7 +175,7 @@ export const SeasonService = {
           season_id: seasonId,
           team_id: teamId,
           status,
-          submitted_by: user?.id ?? null,
+          submitted_by: user.id,
           submitted_by_name: submittedByName ?? null,
           updated_at: new Date().toISOString(),
         },
