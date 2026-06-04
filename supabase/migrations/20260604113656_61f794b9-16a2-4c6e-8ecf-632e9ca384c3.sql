@@ -1,0 +1,2 @@
+COMMENT ON TABLE public.score_submissions IS
+'Score submission requests pending admin review. INSERTs are intentionally restricted: anon and authenticated roles have INSERT revoked and no INSERT RLS policy exists. All new submissions must flow through the submit-score-report edge function, which validates input and inserts using the service role. Admins approve or reject submissions via the UPDATE policy (current_user_is_admin()).';
