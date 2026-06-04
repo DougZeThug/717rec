@@ -1,10 +1,12 @@
 import React from 'react';
 
 import PlayoffDialogs from '@/components/playoffs/dialogs/PlayoffDialogs';
+import { ChallongeFallback } from '@/components/playoffs/embeds/ChallongeFallback';
 import RealtimeIndicator from '@/components/playoffs/indicators/RealtimeIndicator';
 import PlayoffHeader from '@/components/playoffs/PlayoffHeader';
 import SeasonSelector from '@/components/playoffs/SeasonSelector';
 import { useBracketsManagerRealtime } from '@/hooks/brackets/useBracketsManagerRealtime';
+import { useChallongeFallbackConfig } from '@/hooks/useChallongeFallback';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import type { AsyncVoidCallback } from '@/types/callbacks';
@@ -30,6 +32,10 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
 
   // Subscribe to real-time updates for the match table (brackets-manager)
   const { realtimeEnabled } = useBracketsManagerRealtime(data.selectedBracketId, stageId);
+
+  const { data: challongeConfig } = useChallongeFallbackConfig();
+  const showChallongeFallback =
+    !data.isLoading && !data.selectedBracketId && challongeConfig?.enabled === true;
 
   // Create a wrapper function that includes refetchBrackets with all 7 parameters
   const handleSaveMatchScore = React.useCallback(
@@ -82,6 +88,12 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
           onDeleteBracket={view.handleDeleteBracket}
           data={data}
         />
+
+        {showChallongeFallback && (
+          <div className="mt-8">
+            <ChallongeFallback />
+          </div>
+        )}
 
         {/* Realtime indicator */}
         <RealtimeIndicator enabled={!!realtimeEnabled && !!data.selectedBracketId} />
