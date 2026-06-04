@@ -78,6 +78,7 @@
     "date-fns": "^4.4.0",
     "edmonds-blossom": "^1.0.0",
     "embla-carousel-react": "^8.6.0",
+    "events": "^3.3.0",
     "exceljs": "^4.4.0",
     "framer-motion": "^12.40.0",
     "input-otp": "^1.4.2",
