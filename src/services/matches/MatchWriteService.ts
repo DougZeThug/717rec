@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
+import { BusinessLogicError } from '@/types/errors';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
-import { warnLog } from '@/utils/logger';
 
 /**
  * Service layer for match write operations
@@ -94,11 +94,10 @@ export interface MatchInsertInput {
 
 /**
  * Create a single match, fetching the active season internally.
- * Active season errors are swallowed (non-fatal) per original hook behavior.
- * @throws raw Supabase error if insert fails
+ * @throws {DatabaseError} When database operations fail
+ * @throws {BusinessLogicError} When no active season exists
  */
 export const createMatch = async (insertInput: MatchInsertInput) => {
-  // Fetch active season (swallow error per original hook behavior)
   const { data: activeSeason, error: seasonError } = await supabase
     .from('seasons')
     .select('id')
@@ -106,7 +105,11 @@ export const createMatch = async (insertInput: MatchInsertInput) => {
     .maybeSingle();
 
   if (seasonError) {
-    warnLog('Error fetching active season:', seasonError);
+    handleDatabaseError(seasonError, 'Failed to fetch active season');
+  }
+
+  if (!activeSeason) {
+    throw new BusinessLogicError('No active season found. Cannot create match.');
   }
 
   const { data, error } = await supabase
@@ -124,7 +127,7 @@ export const createMatch = async (insertInput: MatchInsertInput) => {
       team1_game_wins: insertInput.team1_game_wins,
       team2_game_wins: insertInput.team2_game_wins,
       round_number: 0,
-      season_id: activeSeason?.id || null,
+      season_id: activeSeason.id,
     })
     .select()
     .single();
