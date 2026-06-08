@@ -214,6 +214,21 @@ export const upsertTeamSeasonStats = async (): Promise<void> => {
   }
 };
 
+/**
+ * Atomically delete a match and reverse its stats in a single transaction.
+ * Uses the delete_match_with_stats_reversal Postgres function so a stats
+ * failure rolls back the delete, preventing orphaned wins/losses.
+ * @throws {DatabaseError} When the RPC call fails
+ */
+export const deleteMatchWithStatsReversal = async (matchId: string): Promise<void> => {
+  const { error } = await supabase.rpc('delete_match_with_stats_reversal', {
+    p_match_id: matchId,
+  });
+  if (error) {
+    handleDatabaseError(error, 'Failed to delete match');
+  }
+};
+
 // ---------------------------------------------------------------------------
 // Functions added for Batch 11 refactor — moved from useAutoScheduleSave
 // ---------------------------------------------------------------------------

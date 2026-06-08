@@ -1,12 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useToast } from '@/hooks/useToast';
-import { deleteMatch, upsertTeamSeasonStats } from '@/services/matches/MatchWriteService';
+import { deleteMatchWithStatsReversal } from '@/services/matches/MatchWriteService';
 import { Match, Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 
 import { invalidateAllDataQueries } from './utils/queryInvalidation';
-import { reverseTeamStats } from './utils/statReversalUtils';
 
 interface UseMatchDeleteProps {
   matches: Match[];
@@ -37,30 +36,8 @@ export const useMatchDelete = ({
         throw new Error('Match not found');
       }
 
-      // Delete the match FIRST to ensure stats are only modified after successful deletion
-      await deleteMatch(deleteMatchId);
-
-      // If match was completed, reverse the team stats AFTER successful deletion
-      if (matchToDelete.iscompleted && matchToDelete.winnerId && matchToDelete.loserId) {
-        const winnerGameWins =
-          matchToDelete.winnerId === matchToDelete.team1Id
-            ? matchToDelete.team1_game_wins || 0
-            : matchToDelete.team2_game_wins || 0;
-        const loserGameWins =
-          matchToDelete.loserId === matchToDelete.team1Id
-            ? matchToDelete.team1_game_wins || 0
-            : matchToDelete.team2_game_wins || 0;
-
-        await reverseTeamStats(
-          matchToDelete.winnerId,
-          matchToDelete.loserId,
-          winnerGameWins,
-          loserGameWins
-        );
-      }
-
-      // Refresh team_season_stats after deletion and reversal
-      await upsertTeamSeasonStats();
+      // Atomic delete + stats reversal + season stat refresh in a single transaction.
+      await deleteMatchWithStatsReversal(deleteMatchId);
 
       // Update the matches state
       const updatedMatches = matches.filter((match) => match.id !== deleteMatchId);

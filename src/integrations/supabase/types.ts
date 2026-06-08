@@ -4451,6 +4451,10 @@ export type Database = {
         Returns: undefined
       }
       current_user_is_admin: { Args: never; Returns: boolean }
+      delete_match_with_stats_reversal: {
+        Args: { p_match_id: string }
+        Returns: Json
+      }
       finalize_playoffs: {
         Args: {
           p_champion_team_id?: string
