@@ -1,21 +1,16 @@
-# Fix: Clear persisted team state on load failure
-
 ## Problem
+`submitTeamRequest` destructures `{ data: season }` from the `seasons` query inside a `Promise.all`, discarding the `error` field. Real database failures (timeouts, permissions, etc.) are silently ignored, the request is inserted with a missing `season_id`, and the UI shows a success toast.
 
-When `handleLoadTeams` in `useTeamOperations.ts` fails, the hook clears in-memory React state (`timeBlockTeams`, `originalTimeBlockTeams`, `pairedTimeBlockTeams`) but does **not** clear the matching data in `sessionStorage`. Because the persistence `useEffect` only writes when there is non-empty team data, the empty state is never saved back — leaving stale teams from a previous date in storage.
+## Files to Change
+- `src/services/teams/TeamRequestService.ts` — fix error handling in `submitTeamRequest`
+- `src/services/teams/__tests__/TeamRequestService.test.ts` — add test for season query failure
 
-On a subsequent page reload, those stale teams get restored while the selected date may be different, creating a silent mismatch that lets users create matches for the wrong date.
+## Changes
 
-## Fix
+1. **TeamRequestService.ts**: Stop destructuring the seasons result. Instead, capture the full result object, switch `.single()` to `.maybeSingle()`, and explicitly call `handleDatabaseError` if `seasonResult.error` is present. If there is no active season (`seasonResult.data` is null), `season_id` should still be set to `null` and the insert should proceed — only real database errors should throw.
 
-In `src/hooks/useAutoSchedule/useTeamOperations.ts`, in the `catch` block of `handleLoadTeams`:
-
-1. Add `useToast` import.
-2. After clearing React state, also call `saveAutoScheduleState({ timeBlockTeams: {}, originalTimeBlockTeams: {}, teamBlockMap: {} })` to clear the persisted copy.
-3. Show a toast notification so the user knows the load failed.
-
-## Files changed
-- `src/hooks/useAutoSchedule/useTeamOperations.ts` — add `useToast` import, clear sessionStorage, and show toast in the error handler.
+2. **Test file**: Add a new test case that mocks the seasons query to return a real database error and asserts that `submitTeamRequest` rejects with `DatabaseError`.
 
 ## Verification
-- Simulate a team-load failure (e.g., by blocking the network request) and confirm that refreshing the page does not restore stale team data.
+- Run `npm run test:file -- src/services/teams/__tests__/TeamRequestService.test.ts` and confirm all tests pass, including the new one.
+- Ensure existing behavior is preserved: when no active season exists (zero rows), the request still submits successfully with `season_id: null`.

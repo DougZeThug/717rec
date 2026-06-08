@@ -184,13 +184,36 @@ describe('submitTeamRequest', () => {
       if (table === 'seasons') {
         return {
           select: () => ({
-            eq: () => ({ single: () => Promise.resolve({ data: { id: 's-1' }, error: null }) }),
+            eq: () => ({ maybeSingle: () => Promise.resolve({ data: { id: 's-1' }, error: null }) }),
           }),
         };
       }
       return {
         insert: () => ({
           select: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }),
+        }),
+      };
+    });
+    await expect(
+      submitTeamRequest({ team_id: 'team-1', request_type: 'reschedule' })
+    ).rejects.toThrow(DatabaseError);
+  });
+
+  it('throws DatabaseError when season query fails', async () => {
+    mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'user-1' } } });
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'seasons') {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () => Promise.resolve({ data: null, error: pgError('connection timeout') }),
+            }),
+          }),
+        };
+      }
+      return {
+        insert: () => ({
+          select: () => ({ single: () => Promise.resolve({ data: makeRequest(), error: null }) }),
         }),
       };
     });
