@@ -1,24 +1,21 @@
+# Fix: Clear persisted team state on load failure
+
 ## Problem
-The `ChallongeFallback` embeds render below the `PlayoffViewSelector` (which contains the bracket manager brackets) on the Playoffs page. The user wants the Challonge fallback brackets to appear **above** the bracket manager brackets.
+
+When `handleLoadTeams` in `useTeamOperations.ts` fails, the hook clears in-memory React state (`timeBlockTeams`, `originalTimeBlockTeams`, `pairedTimeBlockTeams`) but does **not** clear the matching data in `sessionStorage`. Because the persistence `useEffect` only writes when there is non-empty team data, the empty state is never saved back — leaving stale teams from a previous date in storage.
+
+On a subsequent page reload, those stale teams get restored while the selected date may be different, creating a silent mismatch that lets users create matches for the wrong date.
 
 ## Fix
-In `src/components/playoffs/layout/PlayoffPageLayout.tsx`, move the `ChallongeFallback` block to render **before** `<PlayoffViewSelector>` instead of after it.
 
-### Current order in JSX:
-1. `PlayoffHeader`
-2. `SeasonSelector`
-3. `PlayoffViewSelector` (bracket manager brackets)
-4. `ChallongeFallback` (Challonge embeds) ← **move this up**
-5. `RealtimeIndicator`
+In `src/hooks/useAutoSchedule/useTeamOperations.ts`, in the `catch` block of `handleLoadTeams`:
 
-### Target order:
-1. `PlayoffHeader`
-2. `SeasonSelector`
-3. `ChallongeFallback` (Challonge embeds) ← **here**
-4. `PlayoffViewSelector` (bracket manager brackets)
-5. `RealtimeIndicator`
+1. Add `useToast` import.
+2. After clearing React state, also call `saveAutoScheduleState({ timeBlockTeams: {}, originalTimeBlockTeams: {}, teamBlockMap: {} })` to clear the persisted copy.
+3. Show a toast notification so the user knows the load failed.
 
-### Files changed
-- `src/components/playoffs/layout/PlayoffPageLayout.tsx` — relocate the conditional `ChallongeFallback` render block.
+## Files changed
+- `src/hooks/useAutoSchedule/useTeamOperations.ts` — add `useToast` import, clear sessionStorage, and show toast in the error handler.
 
-No other files or logic changes needed.
+## Verification
+- Simulate a team-load failure (e.g., by blocking the network request) and confirm that refreshing the page does not restore stale team data.
