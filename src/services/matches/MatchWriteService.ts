@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
+import { BusinessLogicError } from '@/types/errors';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
-import { warnLog } from '@/utils/logger';
 
 /**
  * Service layer for match write operations
