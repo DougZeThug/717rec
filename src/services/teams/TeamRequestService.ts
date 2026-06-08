@@ -70,17 +70,21 @@ export const submitTeamRequest = async (request: {
     {
       data: { user },
     },
-    { data: season },
+    seasonResult,
   ] = await Promise.all([
     supabase.auth.getUser(),
-    supabase.from('seasons').select('id').eq('is_active', true).single(),
+    supabase.from('seasons').select('id').eq('is_active', true).maybeSingle(),
   ]);
+
+  if (seasonResult.error) {
+    handleDatabaseError(seasonResult.error, 'Failed to fetch active season');
+  }
 
   const { data, error } = await supabase
     .from('team_requests')
     .insert({
       ...request,
-      season_id: season?.id,
+      season_id: seasonResult.data?.id ?? null,
       submitted_by: user?.id ?? null,
       status: 'PENDING',
     })
