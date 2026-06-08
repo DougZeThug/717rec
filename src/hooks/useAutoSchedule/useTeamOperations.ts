@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Team } from '@/types';
 import { DualBlockConfig, PairedTimeBlockTeamsMap, TimeBlockTeamsMap } from '@/types/autoSchedule';
+import { useToast } from '@/hooks/useToast';
 import { normalizeScheduleDate, validateScheduleDate } from '@/utils/autoSchedule/dateUtils';
 import { validateBackToBackPairAssignments } from '@/utils/autoSchedule/edgeCaseUtils';
 import {
@@ -17,6 +18,7 @@ export const useTeamOperations = () => {
   const persistedState = useRef(loadAutoScheduleState());
 
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   // Initialize from persisted state if available
   const [timeBlockTeams, setTimeBlockTeams] = useState<TimeBlockTeamsMap>(
@@ -155,6 +157,17 @@ export const useTeamOperations = () => {
         setTimeBlockTeams({});
         setOriginalTimeBlockTeams({});
         setPairedTimeBlockTeams({});
+        // Clear persisted team data to prevent stale state on reload
+        saveAutoScheduleState({
+          timeBlockTeams: {},
+          originalTimeBlockTeams: {},
+          teamBlockMap: {},
+        });
+        toast({
+          title: 'Failed to Load Teams',
+          description: 'Could not load teams for the selected date. Please try again.',
+          variant: 'destructive',
+        });
         return {};
       } finally {
         setIsLoading(false);
