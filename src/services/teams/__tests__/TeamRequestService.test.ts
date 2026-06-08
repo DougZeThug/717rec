@@ -162,7 +162,7 @@ describe('submitTeamRequest', () => {
       if (table === 'seasons') {
         return {
           select: () => ({
-            eq: () => ({ single: () => Promise.resolve({ data: { id: 's-1' }, error: null }) }),
+            eq: () => ({ maybeSingle: () => Promise.resolve({ data: { id: 's-1' }, error: null }) }),
           }),
         };
       }
