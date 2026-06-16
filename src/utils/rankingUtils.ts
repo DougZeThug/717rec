@@ -50,8 +50,13 @@ export const sortRankings = (
 
     // Handle NULL values for power score - put them at the end regardless of direction
     if (sortField === 'powerScore') {
-      if (valueA === null) return 1; // NULL values go to the end
-      if (valueB === null) return -1; // NULL values go to the end
+      if (valueA === null && valueB === null) {
+        // Fall through to tiebreakers below — do not return 0
+      } else if (valueA === null) {
+        return 1; // NULL values go to the end
+      } else if (valueB === null) {
+        return -1; // NULL values go to the end
+      }
     }
 
     if (typeof valueA === 'string' && typeof valueB === 'string') {
