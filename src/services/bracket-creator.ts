@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { bracketManagerService } from '@/services/brackets/manager';
 import type { BracketRecord } from '@/types/bracketRecord';
 import { BusinessLogicError } from '@/types/errors';
+import { getTierFromDivision } from '@/utils/autoSchedule/blossom/tierUtils';
 import { bracketLog, errorLog, failureLog, successLog, warnLog } from '@/utils/logger';
 
 export interface BracketCreationOptions {
@@ -13,6 +14,14 @@ export interface BracketCreationOptions {
   grandFinalType?: 'simple' | 'double';
   seasonId?: string | null;
 }
+
+// Round to 1 decimal place to match the displayed power score the user sees in
+// the standings UI. Sorting on the displayed value (instead of the raw value)
+// keeps bracket seeding consistent with `useTeamRankings`.
+const getDisplayedPowerScore = (powerScore: number | null | undefined): number | null => {
+  if (powerScore === null || powerScore === undefined) return null;
+  return Math.round(powerScore * 10) / 10;
+};
 
 export async function createBracket(options: BracketCreationOptions): Promise<BracketRecord> {
   const { name, format, divisionId, teams, onProgress, grandFinalType, seasonId } = options;
@@ -27,7 +36,7 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
     // Fetch complete team data with power scores for proper seeding
     const { data: fullTeamData, error: teamError } = await supabase
       .from('v_team_details')
-      .select('team_id, name, power_score, wins, losses')
+      .select('team_id, name, power_score, wins, losses, divisionname')
       .in(
         'team_id',
         teams.map((t) => t.id)
@@ -47,6 +56,7 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
           power_score: fullData?.power_score || null,
           wins: fullData?.wins || 0,
           losses: fullData?.losses || 0,
+          divisionName: fullData?.divisionname || 'Unassigned',
         };
       })
       .sort((a, b) => {
@@ -61,32 +71,30 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
         // If only B has a manual seed, it goes first
         if (b.seed !== null && b.seed !== undefined) return 1;
 
-        // Neither has manual seed - use existing power ranking logic
-        const aPowerScore = a.power_score;
-        const bPowerScore = b.power_score;
+        // Neither has manual seed — mirror useTeamRankings exactly:
+        //   1. Compare displayed (rounded) power scores; NULLs sink to the end.
+        //   2. Division tier (higher division wins) — MUST come before win %.
+        //   3. Win percentage desc.
+        //   4. Team name asc.
+        const aDisplayed = getDisplayedPowerScore(a.power_score);
+        const bDisplayed = getDisplayedPowerScore(b.power_score);
 
-        // Handle NULL power scores - put them at the end
-        if (aPowerScore === null && bPowerScore === null) {
-          // Both null, sort by win percentage
-          const aWinPct = a.wins && a.wins + a.losses > 0 ? a.wins / (a.wins + a.losses) : 0;
-          const bWinPct = b.wins && b.wins + b.losses > 0 ? b.wins / (b.wins + b.losses) : 0;
+        const aWinPct = a.wins && a.wins + a.losses > 0 ? a.wins / (a.wins + a.losses) : 0;
+        const bWinPct = b.wins && b.wins + b.losses > 0 ? b.wins / (b.wins + b.losses) : 0;
+        const tierA = getTierFromDivision(a.divisionName);
+        const tierB = getTierFromDivision(b.divisionName);
+
+        if (aDisplayed === null && bDisplayed === null) {
+          if (tierA !== tierB) return tierA - tierB;
           if (aWinPct !== bWinPct) return bWinPct - aWinPct;
           return a.name.localeCompare(b.name);
         }
-        if (aPowerScore === null) return 1;
-        if (bPowerScore === null) return -1;
+        if (aDisplayed === null) return 1;
+        if (bDisplayed === null) return -1;
 
-        // Both have power scores, sort by power score desc
-        if (aPowerScore !== bPowerScore) {
-          return bPowerScore - aPowerScore;
-        }
-
-        // Power scores equal, sort by win percentage desc
-        const aWinPct = a.wins && a.wins + a.losses > 0 ? a.wins / (a.wins + a.losses) : 0;
-        const bWinPct = b.wins && b.wins + b.losses > 0 ? b.wins / (b.wins + b.losses) : 0;
+        if (aDisplayed !== bDisplayed) return bDisplayed - aDisplayed;
+        if (tierA !== tierB) return tierA - tierB;
         if (aWinPct !== bWinPct) return bWinPct - aWinPct;
-
-        // Win percentages equal, sort by name asc
         return a.name.localeCompare(b.name);
       })
       .map((team, index) => {
