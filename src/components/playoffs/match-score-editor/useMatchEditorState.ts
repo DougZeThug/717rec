@@ -138,7 +138,7 @@ export const useMatchEditorState = ({ matchId, onClose, onSaved }: UseMatchEdito
     try {
       setIsTogglingStatus(true);
 
-      const makeReady = byeEligible.currentStatus !== 2;
+      const makeReady = byeEligible.currentStatus !== 2 && byeEligible.currentStatus !== 4;
 
       const result = await bracketManagerService.adminToggleByeReady(
         matchId,
