@@ -1,9 +1,9 @@
 import { Monitor, Moon, Sun } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
+import { toast } from '@/hooks/useToast';
 import { useThemeSettings, useUpdateThemeSetting } from '@/hooks/useThemeSettings';
 import { SnowflakeSparkle } from '@/icons';
 import { cn } from '@/lib/utils';
@@ -23,7 +23,7 @@ const ThemeManagementTab: React.FC = () => {
     // Prevent disabling all themes
     const enabledCount = settings?.filter((s) => s.is_enabled).length ?? 0;
     if (currentEnabled && enabledCount <= 1) {
-      toast.error('At least one theme must remain enabled');
+      toast({ title: 'At least one theme must remain enabled', variant: 'destructive' });
       return;
     }
 
@@ -31,10 +31,10 @@ const ThemeManagementTab: React.FC = () => {
       { themeKey, isEnabled: !currentEnabled },
       {
         onSuccess: () => {
-          toast.success(`Theme ${!currentEnabled ? 'enabled' : 'disabled'}`);
+          toast({ title: `Theme ${!currentEnabled ? 'enabled' : 'disabled'}` });
         },
         onError: () => {
-          toast.error('Failed to update theme setting');
+          toast({ title: 'Failed to update theme setting', variant: 'destructive' });
         },
       }
     );

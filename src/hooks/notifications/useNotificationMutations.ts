@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 
+import { toast } from '@/hooks/useToast';
 import {
   type CreateNotificationInput,
   NotificationService,
@@ -31,6 +31,6 @@ export function useDeleteNotification() {
   return useMutation({
     mutationFn: (id: string) => NotificationService.deleteNotification(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY }),
-    onError: () => toast.error('Failed to delete notification'),
+    onError: () => toast({ title: 'Failed to delete notification', variant: 'destructive' }),
   });
 }
