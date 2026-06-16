@@ -2,8 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { toast } from '@/hooks/useToast';
 import { DivisionInput, DivisionService } from '@/services/DivisionService';
-import { clearDivisionWeightsCache } from '@/utils/rankingUtils/divisionWeightsCache';
 import { getUIErrorMessage } from '@/utils/errorHandler';
+import { clearDivisionWeightsCache } from '@/utils/rankingUtils/divisionWeightsCache';
 
 const invalidate = (qc: ReturnType<typeof useQueryClient>) => {
   clearDivisionWeightsCache();
