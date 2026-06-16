@@ -1,5 +1,7 @@
-import { Loader2, Plus, Trash2, Trophy } from 'lucide-react';
+import { AlertCircle, Loader2, Plus, Trash2, Trophy } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,8 +27,18 @@ const toDraft = (rows: ChallongeFallbackBracket[]): DraftRow[] =>
   rows.map((r) => ({ id: r.id, title: r.title, slug: r.slug, sort_order: r.sort_order }));
 
 const ChallongeFallbackSection: React.FC = () => {
-  const { data: config, isLoading: configLoading } = useChallongeFallbackConfig();
-  const { data: brackets, isLoading: bracketsLoading } = useChallongeFallbackBrackets();
+  const {
+    data: config,
+    isLoading: configLoading,
+    isError: configIsError,
+    error: configError,
+  } = useChallongeFallbackConfig();
+  const {
+    data: brackets,
+    isLoading: bracketsLoading,
+    isError: bracketsIsError,
+    error: bracketsError,
+  } = useChallongeFallbackBrackets();
   const { updateConfig, createBracket, updateBracket, deleteBracket, isMutating } =
     useChallongeFallbackMutations();
 
@@ -105,6 +117,26 @@ const ChallongeFallbackSection: React.FC = () => {
       <Card>
         <CardContent className="flex items-center justify-center py-10 text-muted-foreground">
           <Loader2 className="size-5 animate-spin mr-2" /> Loading Challonge settings…
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (configIsError || bracketsIsError) {
+    const errorMessage =
+      configError instanceof Error
+        ? configError.message
+        : bracketsError instanceof Error
+          ? bracketsError.message
+          : 'Failed to load Challonge settings';
+
+    return (
+      <Card>
+        <CardContent className="py-10">
+          <Alert variant="destructive">
+            <AlertCircle className="size-4" />
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
     );

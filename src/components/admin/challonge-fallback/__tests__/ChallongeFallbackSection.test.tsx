@@ -18,8 +18,18 @@ type Bracket = {
 };
 
 const hookMocks = vi.hoisted(() => ({
-  config: { data: null as Config | null, isLoading: false },
-  brackets: { data: [] as Bracket[], isLoading: false },
+  config: {
+    data: null as Config | null,
+    isLoading: false,
+    isError: false,
+    error: null as Error | null,
+  },
+  brackets: {
+    data: [] as Bracket[],
+    isLoading: false,
+    isError: false,
+    error: null as Error | null,
+  },
   mutations: {
     updateConfig: vi.fn().mockResolvedValue(undefined),
     createBracket: vi.fn().mockResolvedValue(undefined),
@@ -50,10 +60,14 @@ const resetMocks = () => {
       header_subtitle: 'Live brackets',
     },
     isLoading: false,
+    isError: false,
+    error: null,
   };
   hookMocks.brackets = {
     data: [{ id: 'b-1', title: 'Competitive', slug: 'abc123', sort_order: 0 }],
     isLoading: false,
+    isError: false,
+    error: null,
   };
   hookMocks.mutations.updateConfig.mockClear();
   hookMocks.mutations.createBracket.mockClear();
@@ -67,10 +81,41 @@ describe('ChallongeFallbackSection', () => {
   });
 
   it('shows a loading state when queries are loading', () => {
-    hookMocks.config = { data: null, isLoading: true };
-    hookMocks.brackets = { data: [], isLoading: true };
+    hookMocks.config = { data: null, isLoading: true, isError: false, error: null };
+    hookMocks.brackets = { data: [], isLoading: true, isError: false, error: null };
     render(<ChallongeFallbackSection />);
     expect(screen.getByText(/loading challonge settings/i)).toBeInTheDocument();
+  });
+
+  it('shows an error state when config query fails', () => {
+    hookMocks.config = {
+      data: null,
+      isLoading: false,
+      isError: true,
+      error: new Error('Database connection failed'),
+    };
+    hookMocks.brackets = { data: [], isLoading: false, isError: false, error: null };
+    render(<ChallongeFallbackSection />);
+    expect(screen.getByText(/database connection failed/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/section title/i)).not.toBeInTheDocument();
+  });
+
+  it('shows an error state when brackets query fails', () => {
+    hookMocks.config = {
+      data: null,
+      isLoading: false,
+      isError: false,
+      error: null,
+    };
+    hookMocks.brackets = {
+      data: [],
+      isLoading: false,
+      isError: true,
+      error: new Error('Permission denied'),
+    };
+    render(<ChallongeFallbackSection />);
+    expect(screen.getByText(/permission denied/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/section title/i)).not.toBeInTheDocument();
   });
 
   it('hydrates the form from config and brackets', () => {
