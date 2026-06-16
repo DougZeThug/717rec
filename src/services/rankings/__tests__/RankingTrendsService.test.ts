@@ -103,8 +103,8 @@ describe('fetchPowerScoreTrends', () => {
   });
 
   it('returns [] when there is no previous season', async () => {
-    queueResult('seasons', { data: { id: 's1' }, error: null }); // active season
-    queueResult('seasons', { data: [{ id: 's1', start_date: '2025-01-01' }], error: null }); // only 1 season
+    queueResult('seasons', { data: { id: 's1', start_date: '2025-01-01' }, error: null }); // active season
+    queueResult('seasons', { data: null, error: null }); // no previous season
 
     const result = await fetchPowerScoreTrends();
 
