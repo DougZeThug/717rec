@@ -47,6 +47,7 @@ const makeChain = (result: Result) => {
     select: () => chain,
     order: () => chain,
     eq: () => chain,
+    lt: () => chain,
     in: () => chain,
     neq: () => chain,
     not: () => chain,
