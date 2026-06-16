@@ -1,21 +1,30 @@
-## Plan: Apply Dependabot dependency updates
+## Plan: Apply Dependabot dependency updates (round 2)
 
 ### Risk review
 
-All 39 updates are low-risk patch/minor bumps:
-- **Radix UI packages** (~36 of them): mostly patch bumps (e.g. `1.2.12 → 1.2.13`). A handful are minor bumps (`react-context-menu 2.2.16 → 2.3.0`, `react-radio-group 1.3.8 → 1.4.0`, `react-select 2.2.6 → 2.3.0`, `react-slider 1.3.6 → 1.4.0`, `react-switch 1.2.6 → 1.3.0`). Radix follows semver strictly; minor bumps add props but don't break existing APIs.
-- **@capacitor/core** `8.3.4 → 8.4.0`: minor bump within the same major. No breaking changes expected.
+All 12 updates are patch or minor bumps within the same major. No known breaking changes:
 
-No known breaking changes for any of these versions.
+- **@sentry/react** 10.56.0 → 10.57.0 (patch within v10)
+- **@supabase/supabase-js** 2.106.2 → 2.108.1 (patch within v2)
+- **@tanstack/react-query** 5.100.14 → 5.101.0 (minor within v5; additive only)
+- **@vitest/eslint-plugin** 1.6.19 → 1.6.20 (patch)
+- **lucide-react** 1.17.0 → 1.18.0 (minor; icon additions)
+- **react-hook-form** 7.77.0 → 7.79.0 (patch within v7)
+- **react-is** 19.2.6 → 19.2.7 (patch)
+- **react-router / react-router-dom** 7.16.0 → 7.17.0 (minor within v7)
+- **@tailwindcss/typography** 0.5.19 → 0.5.20 (patch)
+- **@vitest/coverage-v8** 4.1.7 → 4.1.8 (patch — already aligned with vitest 4.1.x)
+- **prettier** 3.8.3 → 3.8.4 (patch; formatting unchanged)
+
+Note: `@tanstack/react-query` is currently pinned to an exact version (`5.100.14`), so it needs an explicit version bump in `package.json`.
 
 ### Steps
 
-1. Update `package.json` with the new versions listed in the Dependabot PR (all 39 packages).
-2. Run `npm install` to refresh `package-lock.json` (`.npmrc` has `legacy-peer-deps=true`, so peer-dep issues won't block install).
-3. Run the typecheck/build (handled automatically by the harness) to confirm nothing fails to compile.
-4. Run `npm test` to confirm the full vitest suite still passes — important because we have Radix-heavy components (Select, Tabs, Tooltip, etc.) covered by tests and we already maintain jsdom polyfills for Radix.
-5. Spot-check the preview UI for any visual regression in commonly-used Radix surfaces (dropdowns, dialogs, selects, tabs).
+1. Update the 12 version entries in `package.json`.
+2. Run `npm install --legacy-peer-deps` to refresh `package-lock.json`.
+3. Run `npm test` to confirm the full vitest suite still passes.
+4. Build runs automatically via the harness.
 
 ### Rollback
 
-If tests or build fail, revert `package.json` + `package-lock.json` to the pre-update state and investigate the offending package individually.
+If anything fails, revert `package.json` + `package-lock.json` and bisect the offending package.
