@@ -122,6 +122,26 @@ const ChallongeFallbackSection: React.FC = () => {
     );
   }
 
+  if (configIsError || bracketsIsError) {
+    const errorMessage =
+      configError instanceof Error
+        ? configError.message
+        : bracketsError instanceof Error
+          ? bracketsError.message
+          : 'Failed to load Challonge settings';
+
+    return (
+      <Card>
+        <CardContent className="py-10">
+          <Alert variant="destructive">
+            <AlertCircle className="size-4" />
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
