@@ -99,12 +99,21 @@ describe('BracketUpdateService', () => {
     };
 
     const setupByeSuccess = () => {
-      (mockStorage.select as ReturnType<typeof vi.fn>).mockImplementation((table: string) => {
-        if (table === 'match') return Promise.resolve(byeMatch);
-        if (table === 'stage') return Promise.resolve(stage);
-        if (table === 'round') return Promise.resolve([round]);
-        return Promise.resolve(null);
-      });
+      (mockStorage.select as ReturnType<typeof vi.fn>).mockImplementation(
+        (table: string, query?: unknown) => {
+          if (table === 'match') {
+            // Initial match fetch by ID (number) vs later filter by criteria (object)
+            if (typeof query === 'number' || typeof query === 'string') {
+              return Promise.resolve(byeMatch);
+            }
+            // Filter queries (e.g., { stage_id, group_id }) → return empty array
+            return Promise.resolve([]);
+          }
+          if (table === 'stage') return Promise.resolve(stage);
+          if (table === 'round') return Promise.resolve([round]);
+          return Promise.resolve(null);
+        }
+      );
 
       // No next round → propagation skipped
     };
