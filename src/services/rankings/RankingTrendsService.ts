@@ -14,7 +14,7 @@ export async function fetchPowerScoreTrends(
   // Get current active season
   const { data: activeSeason } = await supabase
     .from('seasons')
-    .select('id')
+    .select('id, start_date')
     .eq('is_active', true)
     .single();
 
@@ -22,14 +22,16 @@ export async function fetchPowerScoreTrends(
     return [];
   }
 
-  // Get all seasons ordered by date to find previous season
-  const { data: allSeasons } = await supabase
+  // Find the actual previous season (chronologically before the active one)
+  const { data: previousSeason } = await supabase
     .from('seasons')
-    .select('id, start_date')
+    .select('id')
+    .lt('start_date', activeSeason.start_date)
     .order('start_date', { ascending: false })
-    .limit(2);
+    .limit(1)
+    .maybeSingle();
 
-  const previousSeasonId = allSeasons && allSeasons.length > 1 ? allSeasons[1].id : null;
+  const previousSeasonId = previousSeason?.id ?? null;
 
   if (!previousSeasonId) {
     return [];

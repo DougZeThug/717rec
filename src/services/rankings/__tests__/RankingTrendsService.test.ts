@@ -47,6 +47,7 @@ const makeChain = (result: Result) => {
     select: () => chain,
     order: () => chain,
     eq: () => chain,
+    lt: () => chain,
     in: () => chain,
     neq: () => chain,
     not: () => chain,
@@ -102,8 +103,8 @@ describe('fetchPowerScoreTrends', () => {
   });
 
   it('returns [] when there is no previous season', async () => {
-    queueResult('seasons', { data: { id: 's1' }, error: null }); // active season
-    queueResult('seasons', { data: [{ id: 's1', start_date: '2025-01-01' }], error: null }); // only 1 season
+    queueResult('seasons', { data: { id: 's1', start_date: '2025-01-01' }, error: null }); // active season
+    queueResult('seasons', { data: null, error: null }); // no previous season
 
     const result = await fetchPowerScoreTrends();
 
@@ -111,12 +112,9 @@ describe('fetchPowerScoreTrends', () => {
   });
 
   it('returns [] when current season query has an error', async () => {
-    queueResult('seasons', { data: { id: 's1' }, error: null });
+    queueResult('seasons', { data: { id: 's1', start_date: '2025-01-01' }, error: null });
     queueResult('seasons', {
-      data: [
-        { id: 's2', start_date: '2025-01-01' },
-        { id: 's1', start_date: '2024-01-01' },
-      ],
+      data: { id: 's1', start_date: '2024-01-01' },
       error: null,
     });
     queueResult('v_team_details', { data: null, error: pgError('current fetch failed') });
@@ -128,12 +126,9 @@ describe('fetchPowerScoreTrends', () => {
   });
 
   it('returns [] when previous season query has an error', async () => {
-    queueResult('seasons', { data: { id: 's1' }, error: null });
+    queueResult('seasons', { data: { id: 's2', start_date: '2025-01-01' }, error: null });
     queueResult('seasons', {
-      data: [
-        { id: 's2', start_date: '2025-01-01' },
-        { id: 's1', start_date: '2024-01-01' },
-      ],
+      data: { id: 's1', start_date: '2024-01-01' },
       error: null,
     });
     queueResult('v_team_details', { data: [], error: null });
@@ -146,12 +141,9 @@ describe('fetchPowerScoreTrends', () => {
   });
 
   it('returns trend rows on full success', async () => {
-    queueResult('seasons', { data: { id: 's2' }, error: null });
+    queueResult('seasons', { data: { id: 's2', start_date: '2025-01-01' }, error: null });
     queueResult('seasons', {
-      data: [
-        { id: 's2', start_date: '2025-01-01' },
-        { id: 's1', start_date: '2024-01-01' },
-      ],
+      data: { id: 's1', start_date: '2024-01-01' },
       error: null,
     });
     queueResult('v_team_details', {
@@ -184,12 +176,9 @@ describe('fetchPowerScoreTrends', () => {
   });
 
   it('respects the limit parameter', async () => {
-    queueResult('seasons', { data: { id: 's2' }, error: null });
+    queueResult('seasons', { data: { id: 's2', start_date: '2025-01-01' }, error: null });
     queueResult('seasons', {
-      data: [
-        { id: 's2', start_date: '2025-01-01' },
-        { id: 's1', start_date: '2024-01-01' },
-      ],
+      data: { id: 's1', start_date: '2024-01-01' },
       error: null,
     });
     queueResult('v_team_details', {
