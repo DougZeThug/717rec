@@ -123,6 +123,32 @@ export const insertPlayoffGames = async (
 };
 
 /**
+ * Atomically replace all playoff_games rows for a match.
+ *
+ * Wraps DELETE + INSERT in a single SECURITY DEFINER Postgres function so a
+ * failed insert no longer leaves the match with an empty game list. Prefer
+ * this over calling `deletePlayoffGames` + `insertPlayoffGames` separately.
+ */
+export const replacePlayoffGames = async (
+  matchId: string,
+  games: Array<{
+    game_number: number;
+    team1_score: number;
+    team2_score: number;
+    winner_id: string | null;
+  }>
+): Promise<void> => {
+  const { error } = await supabase.rpc('replace_playoff_games', {
+    p_match_id: matchId,
+    p_games: games,
+  });
+
+  if (error) {
+    handleDatabaseError(error, 'Failed to replace playoff games');
+  }
+};
+
+/**
  * Update a single team's seed value
  * Used by useOptimisticTeamMutations hook
  */

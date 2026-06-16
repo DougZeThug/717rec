@@ -4715,6 +4715,10 @@ export type Database = {
         Args: { p_team1_id: string; p_team2_id: string }
         Returns: Json
       }
+      replace_playoff_games: {
+        Args: { p_games: Json; p_match_id: string }
+        Returns: undefined
+      }
       reset_division_seeds: {
         Args: { p_division_id: string }
         Returns: undefined

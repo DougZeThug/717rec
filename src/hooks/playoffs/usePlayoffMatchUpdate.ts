@@ -9,8 +9,7 @@ import {
   fetchPlayoffMatchTeams,
 } from '@/services/brackets/BracketReadService';
 import {
-  deletePlayoffGames,
-  insertPlayoffGames,
+  replacePlayoffGames,
   updatePlayoffMatchScores,
 } from '@/services/brackets/BracketWriteService';
 import { bracketManagerService } from '@/services/brackets/manager';
@@ -156,14 +155,11 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
 
         // Save games
         if (games && games.length > 0) {
-          await deletePlayoffGames(matchId);
-
           const gameInserts = games.map((game, index) => {
             const gameWinnerId =
               game.team1Score > game.team2Score ? matchData.team1_id : matchData.team2_id;
 
             return {
-              match_id: matchId,
               game_number: index + 1,
               team1_score: game.team1Score,
               team2_score: game.team2Score,
@@ -171,7 +167,9 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
             };
           });
 
-          await insertPlayoffGames(gameInserts);
+          // Atomic replace via RPC — DELETE + INSERT happen in one transaction,
+          // so a failed insert no longer wipes out the match's game history.
+          await replacePlayoffGames(matchId, gameInserts);
         }
 
         // Invalidate all match-related queries to ensure fresh data
