@@ -57,13 +57,20 @@ export const useMatchSubmission = () => {
       });
 
       // Update team records if match is completed
-      await updateTeamStats(
+      const statsSuccess = await updateTeamStats(
         team1Win ? team1_id : team2_id,
         team1Win ? team2_id : team1_id,
         [data],
         team1Win ? parsedTeam1GameWins : parsedTeam2GameWins,
         team1Win ? parsedTeam2GameWins : parsedTeam1GameWins
       );
+
+      // If the team records failed to update, stop here and report failure.
+      // updateTeamStats already showed a "Partial Update"/"Validation Error"
+      // toast, so we must not show a success toast or tell callers it worked.
+      if (!statsSuccess) {
+        return false;
+      }
 
       // Invalidate all relevant query caches
       await invalidateMatchRelatedQueries(queryClient);

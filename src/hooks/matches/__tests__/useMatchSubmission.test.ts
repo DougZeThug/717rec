@@ -18,9 +18,13 @@ vi.mock('@/hooks/useToast', () => ({
   }),
 }));
 
+const { mockUpdateTeamStats } = vi.hoisted(() => ({
+  mockUpdateTeamStats: vi.fn(),
+}));
+
 vi.mock('../useTeamRecordUpdate', () => ({
   useTeamRecordUpdate: () => ({
-    updateTeamStats: vi.fn().mockResolvedValue(true),
+    updateTeamStats: mockUpdateTeamStats,
   }),
 }));
 
@@ -61,6 +65,8 @@ const createWrapper = () => {
 describe('useMatchSubmission', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default: team stats update succeeds (matches existing tests' assumptions)
+    mockUpdateTeamStats.mockResolvedValue(true);
   });
 
   it('returns handleSubmitScore function', () => {
@@ -170,6 +176,31 @@ describe('useMatchSubmission', () => {
     });
 
     expect(success).toBe(false);
+  });
+
+  it('returns false and skips success path when team stats update fails', async () => {
+    const mockResult = {
+      data: { id: 'match-1' },
+      team1_id: 'team-1',
+      team2_id: 'team-2',
+      team1Win: true,
+    };
+    vi.mocked(updateMatchScore).mockResolvedValue(mockResult as unknown as UpdateMatchScoreResult);
+    // Simulate a team-records update failure (e.g. RPC/DB error converted to false)
+    mockUpdateTeamStats.mockResolvedValueOnce(false);
+
+    const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
+
+    const success = await result.current.handleSubmitScore({
+      matchId: 'match-1',
+      team1Score: 2,
+      team2Score: 1,
+    });
+
+    // Must report failure so callers (e.g. Mass Score Entry) don't mark it submitted
+    expect(success).toBe(false);
+    // Should short-circuit before invalidating caches / showing the success toast
+    expect(invalidateMatchRelatedQueries).not.toHaveBeenCalled();
   });
 
   it('parses game wins as integers', async () => {
