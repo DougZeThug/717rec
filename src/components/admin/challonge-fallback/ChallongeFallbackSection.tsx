@@ -27,8 +27,18 @@ const toDraft = (rows: ChallongeFallbackBracket[]): DraftRow[] =>
   rows.map((r) => ({ id: r.id, title: r.title, slug: r.slug, sort_order: r.sort_order }));
 
 const ChallongeFallbackSection: React.FC = () => {
-  const { data: config, isLoading: configLoading } = useChallongeFallbackConfig();
-  const { data: brackets, isLoading: bracketsLoading } = useChallongeFallbackBrackets();
+  const {
+    data: config,
+    isLoading: configLoading,
+    isError: configIsError,
+    error: configError,
+  } = useChallongeFallbackConfig();
+  const {
+    data: brackets,
+    isLoading: bracketsLoading,
+    isError: bracketsIsError,
+    error: bracketsError,
+  } = useChallongeFallbackBrackets();
   const { updateConfig, createBracket, updateBracket, deleteBracket, isMutating } =
     useChallongeFallbackMutations();
 
