@@ -1,5 +1,7 @@
-import { Loader2, Plus, Trash2, Trophy } from 'lucide-react';
+import { AlertCircle, Loader2, Plus, Trash2, Trophy } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
