@@ -56,7 +56,16 @@ const ChallongeFallbackSection: React.FC = () => {
   }, [config]);
 
   useEffect(() => {
-    if (brackets) setDrafts(toDraft(brackets));
+    if (brackets) {
+      setDrafts((prevDrafts) => {
+        const unsavedRows = prevDrafts.filter(
+          (row) =>
+            row.isNew && !brackets.some((b) => b.title === row.title && b.slug === row.slug)
+        );
+        const savedDrafts = toDraft(brackets);
+        return [...savedDrafts, ...unsavedRows];
+      });
+    }
   }, [brackets]);
 
   const handleSaveConfig = async () => {
