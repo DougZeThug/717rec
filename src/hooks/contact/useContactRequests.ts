@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { toast } from 'sonner';
 
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/useToast';
 import {
   ContactRequestService,
   type ContactRequestRow,
@@ -49,7 +49,8 @@ export function useMarkContactRequestResolved() {
     mutationFn: ({ id, userId }: { id: string; userId: string | null }) =>
       ContactRequestService.markResolved(id, userId),
     onSuccess: () => qc.invalidateQueries({ queryKey: CONTACT_REQUESTS_QUERY_KEY }),
-    onError: () => toast.error('Failed to mark contact request as resolved'),
+    onError: () =>
+      toast({ title: 'Failed to mark contact request as resolved', variant: 'destructive' }),
   });
 }
 
@@ -58,7 +59,8 @@ export function useReopenContactRequest() {
   return useMutation({
     mutationFn: (id: string) => ContactRequestService.reopen(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: CONTACT_REQUESTS_QUERY_KEY }),
-    onError: () => toast.error('Failed to reopen contact request'),
+    onError: () =>
+      toast({ title: 'Failed to reopen contact request', variant: 'destructive' }),
   });
 }
 
@@ -67,6 +69,7 @@ export function useDeleteContactRequest() {
   return useMutation({
     mutationFn: (id: string) => ContactRequestService.remove(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: CONTACT_REQUESTS_QUERY_KEY }),
-    onError: () => toast.error('Failed to delete contact request'),
+    onError: () =>
+      toast({ title: 'Failed to delete contact request', variant: 'destructive' }),
   });
 }
