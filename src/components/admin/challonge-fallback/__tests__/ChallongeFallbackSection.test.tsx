@@ -60,10 +60,14 @@ const resetMocks = () => {
       header_subtitle: 'Live brackets',
     },
     isLoading: false,
+    isError: false,
+    error: null,
   };
   hookMocks.brackets = {
     data: [{ id: 'b-1', title: 'Competitive', slug: 'abc123', sort_order: 0 }],
     isLoading: false,
+    isError: false,
+    error: null,
   };
   hookMocks.mutations.updateConfig.mockClear();
   hookMocks.mutations.createBracket.mockClear();
