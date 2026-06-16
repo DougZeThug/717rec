@@ -209,4 +209,69 @@ describe('ChallongeFallbackSection', () => {
     // silence unused import
     void within;
   });
+
+  it('preserves unsaved new rows when brackets data refetches (regression)', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<ChallongeFallbackSection />);
+
+    // Add two new unsaved rows and type unique data into each
+    await user.click(screen.getByRole('button', { name: /add bracket/i }));
+    await user.click(screen.getByRole('button', { name: /add bracket/i }));
+
+    const titleInputs = screen.getAllByPlaceholderText('Competitive');
+    const slugInputs = screen.getAllByPlaceholderText('5hy558bb');
+    await user.type(titleInputs[titleInputs.length - 2], 'Pending One');
+    await user.type(slugInputs[slugInputs.length - 2], 'pend1');
+    await user.type(titleInputs[titleInputs.length - 1], 'Pending Two');
+    await user.type(slugInputs[slugInputs.length - 1], 'pend2');
+
+    // Simulate a refetch of brackets (e.g. after another save) returning fresh server data
+    hookMocks.brackets = {
+      data: [
+        { id: 'b-1', title: 'Competitive', slug: 'abc123', sort_order: 0 },
+        { id: 'b-2', title: 'Recreational', slug: 'rec999', sort_order: 1 },
+      ],
+      isLoading: false,
+      isError: false,
+      error: null,
+    };
+    rerender(<ChallongeFallbackSection />);
+
+    // Saved rows reflect server state
+    expect(screen.getByDisplayValue('Competitive')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Recreational')).toBeInTheDocument();
+    // Unsaved rows are preserved with their typed data
+    expect(screen.getByDisplayValue('Pending One')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('pend1')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Pending Two')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('pend2')).toBeInTheDocument();
+  });
+
+  it('drops a new row once its data appears in the refetched server brackets', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<ChallongeFallbackSection />);
+
+    await user.click(screen.getByRole('button', { name: /add bracket/i }));
+    const titleInputs = screen.getAllByPlaceholderText('Competitive');
+    const slugInputs = screen.getAllByPlaceholderText('5hy558bb');
+    await user.type(titleInputs[titleInputs.length - 1], 'Intermediate');
+    await user.type(slugInputs[slugInputs.length - 1], 'def456');
+
+    // Server now includes the just-created bracket — local isNew row should be replaced
+    hookMocks.brackets = {
+      data: [
+        { id: 'b-1', title: 'Competitive', slug: 'abc123', sort_order: 0 },
+        { id: 'b-2', title: 'Intermediate', slug: 'def456', sort_order: 1 },
+      ],
+      isLoading: false,
+      isError: false,
+      error: null,
+    };
+    rerender(<ChallongeFallbackSection />);
+
+    // Only two rows, no duplicate Intermediate entry
+    expect(screen.getAllByDisplayValue('Intermediate')).toHaveLength(1);
+    expect(screen.getAllByDisplayValue('def456')).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: /remove bracket/i })).toHaveLength(2);
+  });
 });
