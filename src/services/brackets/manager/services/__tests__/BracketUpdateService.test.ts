@@ -66,7 +66,7 @@ describe('BracketUpdateService', () => {
     service = new BracketUpdateService(
       mockStorage,
       mockManager as unknown as import('brackets-manager').BracketsManager,
-      mockNormalizationService as unknown as import('./BracketNormalizationService').BracketNormalizationService
+      mockNormalizationService as unknown as import('../BracketNormalizationService').BracketNormalizationService
     );
   });
 
