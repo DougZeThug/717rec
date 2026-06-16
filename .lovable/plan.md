@@ -1,31 +1,27 @@
 ## Problem
-`useMatchDelete.handleDeleteMatch` runs `deleteMatch` then `reverseTeamStats` as two separate client-side calls. If the delete succeeds and the stats reversal fails, the match is gone but `teams.wins/losses` remain inflated, corrupting standings.
+Three files import `toast` from `sonner`, but sonner's `<Toaster />` is not mounted anywhere in the app — only the shadcn/ui Toaster is mounted in `src/App.tsx`. As a result these toasts silently never render:
 
-## Fix Strategy
-Create a single Postgres RPC `delete_match_with_stats_reversal(p_match_id uuid)` that, inside one transaction:
-1. Verifies admin access (matches existing `approve_match_result` pattern).
-2. Locks and reads the match row (`team1_id`, `team2_id`, `winner_id`, `loser_id`, `team1_game_wins`, `team2_game_wins`, `iscompleted`).
-3. Deletes the match.
-4. If `iscompleted = true` and winner/loser are set, applies the same `GREATEST(0, ...)` stat reversal inline (same logic as existing `reverse_team_stats` function) to `teams.wins/losses/game_wins/game_losses`.
-5. Calls `upsert_team_season_stats()` to refresh season stats.
-6. Returns a JSON summary.
+- `src/hooks/contact/useContactRequests.ts` (3 `toast.error` calls)
+- `src/hooks/notifications/useNotificationMutations.ts` (1 `toast.error` call)
+- `src/components/admin/theme/ThemeManagementTab.tsx` (1 `toast.error` validation + success/error in mutation)
 
-Because it all runs in one transaction, a failure rolls back the delete — no more orphaned stats.
+## Fix
+Migrate all five sonner call sites to the already-mounted shadcn/ui toast system via `@/hooks/use-toast` (the existing app standard, used in 76+ files). No new dependency is mounted; no Toaster is added.
 
-## Files
+For each file:
+1. Replace `import { toast } from 'sonner'` with `import { useToast } from '@/hooks/use-toast'`.
+2. Inside the hook/component, call `const { toast } = useToast();`.
+3. Rewrite calls:
+   - `toast.error('msg')` → `toast({ title: 'msg', variant: 'destructive' })`
+   - `toast.success('msg')` → `toast({ title: 'msg' })`
 
-1. **New migration** — define `public.delete_match_with_stats_reversal(p_match_id uuid)` as `SECURITY DEFINER`, `search_path = pg_catalog, public`. Mirror admin guard and `RAISE EXCEPTION` patterns from `approve_match_result`. Grant execute to `authenticated` (the existing pattern relies on admin guard inside the function).
-
-2. **`src/services/matches/MatchWriteService.ts`** — add `deleteMatchWithStatsReversal(matchId)` that wraps the RPC and uses `handleDatabaseError`. Keep the old `deleteMatch` / `reverseTeamStats` exports for non-completed flows and tests.
-
-3. **`src/hooks/matches/updates/useMatchDelete.ts`** — replace the sequential `deleteMatch` + `reverseTeamStats` + `upsertTeamSeasonStats` calls with a single `await deleteMatchWithStatsReversal(deleteMatchId)`. Keep UI flow (toast, state update, query invalidation) the same. Remove unused imports.
-
-4. **Tests** — update or add a unit test in `src/hooks/matches/updates/__tests__/` (if present) to assert the hook calls the new RPC wrapper once. Keep tests narrow.
+Because `useToast` is a hook, in `useContactRequests.ts` and `useNotificationMutations.ts` it must be called at the top of each custom hook (e.g. `useMarkContactRequestResolved`) and captured in a `toast` const used inside `onError`/`onSuccess`.
 
 ## Verification
-- Run `npm run test:file -- src/hooks/matches/updates/...` for any affected tests.
-- Manually verify in preview: deleting a completed match still updates standings; the operation is now atomic.
+- Run targeted tests: `npm run test:file -- src/hooks/contact` and `src/hooks/notifications` if present, plus any ThemeManagementTab tests.
+- `npx tsc --noEmit` for type safety.
+- Manually trigger one error path (e.g., delete a contact request while offline) and confirm a destructive toast renders.
 
-## Out of Scope
-- Other call sites of `reverseTeamStats` (edit-match flows) — they have their own ordering and are not part of this bug.
-- Changing the `reverse_team_stats` SQL function itself.
+## Out of scope
+- Re-adding sonner's `<Toaster />` (alternative considered, rejected to keep a single toast system).
+- Refactoring the 76+ existing shadcn toast call sites.
