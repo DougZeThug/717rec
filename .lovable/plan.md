@@ -1,30 +1,40 @@
-## Plan: Apply Dependabot dependency updates (round 2)
+## Goal
+Fix the `validateMatchScores` function so it correctly rejects impossible match scores where the winner has more wins than mathematically possible in a best-of format.
 
-### Risk review
+## Problem
+`validateMatchScores` currently accepts scores like 3-0 in a best-of-3 because it only checks `team1Wins >= minWinsRequired || team2Wins >= minWinsRequired`. In a best-of-3, the match ends as soon as a team reaches 2 wins, so 3-0 is impossible. The same bug affects best-of-5 scores like 4-0 or 4-1.
 
-All 12 updates are patch or minor bumps within the same major. No known breaking changes:
+Other parts of the codebase (`matchValidationUtils.ts`, `ScoreParser.ts`) already enforce the correct rule: the winner must have exactly the minimum wins needed, and the loser must have fewer.
 
-- **@sentry/react** 10.56.0 → 10.57.0 (patch within v10)
-- **@supabase/supabase-js** 2.106.2 → 2.108.1 (patch within v2)
-- **@tanstack/react-query** 5.100.14 → 5.101.0 (minor within v5; additive only)
-- **@vitest/eslint-plugin** 1.6.19 → 1.6.20 (patch)
-- **lucide-react** 1.17.0 → 1.18.0 (minor; icon additions)
-- **react-hook-form** 7.77.0 → 7.79.0 (patch within v7)
-- **react-is** 19.2.6 → 19.2.7 (patch)
-- **react-router / react-router-dom** 7.16.0 → 7.17.0 (minor within v7)
-- **@tailwindcss/typography** 0.5.19 → 0.5.20 (patch)
-- **@vitest/coverage-v8** 4.1.7 → 4.1.8 (patch — already aligned with vitest 4.1.x)
-- **prettier** 3.8.3 → 3.8.4 (patch; formatting unchanged)
+## Changes
 
-Note: `@tanstack/react-query` is currently pinned to an exact version (`5.100.14`), so it needs an explicit version bump in `package.json`.
+### 1. Fix `scoreUtils.ts`
+File: `src/components/playoffs/match-score-editor/MatchScoreEditor/utils/scoreUtils.ts`
 
-### Steps
+Replace the permissive completion check on line 55 with a stricter check that mirrors the rule used in `matchValidationUtils.ts`:
 
-1. Update the 12 version entries in `package.json`.
-2. Run `npm install --legacy-peer-deps` to refresh `package-lock.json`.
-3. Run `npm test` to confirm the full vitest suite still passes.
-4. Build runs automatically via the harness.
+- If team1 is the winner: `team1Wins === minWinsRequired && team2Wins < minWinsRequired`
+- If team2 is the winner: `team2Wins === minWinsRequired && team1Wins < minWinsRequired`
+- Reject everything else with an appropriate error message.
 
-### Rollback
+### 2. Add unit tests
+File: `src/components/playoffs/match-score-editor/MatchScoreEditor/utils/__tests__/scoreUtils.test.ts`
 
-If anything fails, revert `package.json` + `package-lock.json` and bisect the offending package.
+Cover:
+- Valid completed scores (e.g., 2-0, 2-1 in BO3; 3-0, 3-1, 3-2 in BO5)
+- Invalid excess-winner scores (3-0 in BO3; 4-0, 4-1 in BO5)
+- Both teams reaching minWinsRequired (still rejected)
+- Tied games with non-zero scores (still rejected)
+- Empty / zero scores (still allowed)
+- Total games exceeding bestOf (still rejected)
+- Incomplete scores where no team has reached minWinsRequired (still rejected)
+
+## Verification
+- Run the new unit test file: `npm run test:file -- src/components/playoffs/match-score-editor/MatchScoreEditor/utils/__tests__/scoreUtils.test.ts`
+- Run TypeScript check: `npx tsc --noEmit`
+- Optionally run the full test suite: `npm test`
+
+## Notes
+- No database changes required.
+- No UI changes required.
+- This is a pure validation logic fix and test addition.

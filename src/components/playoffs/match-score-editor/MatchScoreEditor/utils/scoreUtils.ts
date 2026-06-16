@@ -51,15 +51,31 @@ export const validateMatchScores = (games: GameData[], bestOf: number): Validati
     };
   }
 
-  // Check for valid match completion
-  if (team1Wins >= minWinsRequired || team2Wins >= minWinsRequired) {
-    return { isValid: true, errorMessage: null };
+  // Check for valid match completion.
+  // The winner must have EXACTLY minWinsRequired wins (the match ends as
+  // soon as a team reaches that threshold), and the loser must have fewer.
+  const team1HasEnoughWins = team1Wins >= minWinsRequired;
+  const team2HasEnoughWins = team2Wins >= minWinsRequired;
+
+  if (!team1HasEnoughWins && !team2HasEnoughWins) {
+    return {
+      isValid: false,
+      errorMessage: `Incomplete score: a team must win at least ${minWinsRequired} games`,
+    };
   }
 
-  return {
-    isValid: false,
-    errorMessage: `Incomplete score: a team must win at least ${minWinsRequired} games`,
-  };
+  const validCompletion = team1HasEnoughWins
+    ? team1Wins === minWinsRequired && team2Wins < minWinsRequired
+    : team2Wins === minWinsRequired && team1Wins < minWinsRequired;
+
+  if (!validCompletion) {
+    return {
+      isValid: false,
+      errorMessage: `Invalid score combination for best of ${bestOf}`,
+    };
+  }
+
+  return { isValid: true, errorMessage: null };
 };
 
 /**
