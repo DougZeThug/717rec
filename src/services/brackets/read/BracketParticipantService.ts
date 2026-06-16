@@ -25,7 +25,7 @@ export const validateSeeds = async (divisionId: string) => {
 export const fetchBracketParticipants = async (bracketId: string) => {
   const { data, error } = await supabase
     .from('participant')
-    .select('id, name, position')
+    .select('id, name, position, team_id')
     .eq('tournament_id', bracketId)
     .order('position', { ascending: true });
 
