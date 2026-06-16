@@ -83,7 +83,7 @@ export class BracketUpdateService {
 
           // Mark the BYE match as completed via direct SQL
           const winnerIsOpp1 = !!currentMatch.opponent1?.id;
-          await supabase
+          const { error: byeUpdateError } = await supabase
             .from('match')
             .update({
               status: 4, // Completed
@@ -93,6 +93,14 @@ export class BracketUpdateService {
               opponent2_result: !winnerIsOpp1 ? 'win' : null,
             })
             .eq('id', matchId);
+
+          if (byeUpdateError) {
+            errorLog(`Failed to update BYE match ${matchId}:`, byeUpdateError);
+            throw new BusinessLogicError(
+              `Failed to update BYE match: ${byeUpdateError.message}`,
+              byeUpdateError
+            );
+          }
 
           bracketLog(`✅ BYE match ${matchId} marked completed. Winner: ${winnerId}`);
 
@@ -176,7 +184,21 @@ export class BracketUpdateService {
                       updateFields.status = otherSlotFilled ? 2 : nextMatch.status;
                     }
 
-                    await supabase.from('match').update(updateFields).eq('id', nextMatch.id);
+                    const { error: propagateError } = await supabase
+                      .from('match')
+                      .update(updateFields)
+                      .eq('id', nextMatch.id);
+
+                    if (propagateError) {
+                      errorLog(
+                        `Failed to propagate winner ${winnerId} to match ${nextMatch.id}:`,
+                        propagateError
+                      );
+                      throw new BusinessLogicError(
+                        `Failed to propagate BYE winner: ${propagateError.message}`,
+                        propagateError
+                      );
+                    }
 
                     bracketLog(
                       `✅ Winner ${winnerId} placed in ${targetSlot} of match ${nextMatch.id}`
