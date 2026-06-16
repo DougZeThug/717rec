@@ -40,6 +40,7 @@ interface Participant {
   id: number;
   name: string;
   position: number | null;
+  team_id?: string | null;
 }
 
 interface SeedingUpdateDialogProps {
@@ -89,7 +90,7 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
       .filter((p) => p.name !== null)
       .sort((a, b) => (a.position || 0) - (b.position || 0))
       .map((p, idx) => ({
-        id: String(p.id),
+        id: p.team_id ?? String(p.id),
         name: p.name,
         seed: p.position || idx + 1,
       }));
