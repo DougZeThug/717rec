@@ -81,10 +81,41 @@ describe('ChallongeFallbackSection', () => {
   });
 
   it('shows a loading state when queries are loading', () => {
-    hookMocks.config = { data: null, isLoading: true };
-    hookMocks.brackets = { data: [], isLoading: true };
+    hookMocks.config = { data: null, isLoading: true, isError: false, error: null };
+    hookMocks.brackets = { data: [], isLoading: true, isError: false, error: null };
     render(<ChallongeFallbackSection />);
     expect(screen.getByText(/loading challonge settings/i)).toBeInTheDocument();
+  });
+
+  it('shows an error state when config query fails', () => {
+    hookMocks.config = {
+      data: null,
+      isLoading: false,
+      isError: true,
+      error: new Error('Database connection failed'),
+    };
+    hookMocks.brackets = { data: [], isLoading: false, isError: false, error: null };
+    render(<ChallongeFallbackSection />);
+    expect(screen.getByText(/database connection failed/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/section title/i)).not.toBeInTheDocument();
+  });
+
+  it('shows an error state when brackets query fails', () => {
+    hookMocks.config = {
+      data: null,
+      isLoading: false,
+      isError: false,
+      error: null,
+    };
+    hookMocks.brackets = {
+      data: [],
+      isLoading: false,
+      isError: true,
+      error: new Error('Permission denied'),
+    };
+    render(<ChallongeFallbackSection />);
+    expect(screen.getByText(/permission denied/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/section title/i)).not.toBeInTheDocument();
   });
 
   it('hydrates the form from config and brackets', () => {
