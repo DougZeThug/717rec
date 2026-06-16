@@ -2,6 +2,7 @@ import { BracketsManager } from 'brackets-manager';
 
 import { supabase } from '@/integrations/supabase/client';
 import { BusinessLogicError, NotFoundError } from '@/types/errors';
+import { handleDatabaseError } from '@/utils/errorHandler';
 import { bracketLog, failureLog, successLog } from '@/utils/logger';
 
 import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
@@ -91,19 +92,22 @@ export class BracketSeedingService {
         for (const participant of participantArray) {
           if (participant.name === null) {
             // BYE slot — clear team_id and keep a valid position
-            await supabase
+            const { error: byeError } = await supabase
               .from('participant')
               .update({ position: null, team_id: null })
               .eq('id', participant.id);
+            if (byeError) handleDatabaseError(byeError, 'Failed to clear BYE participant');
           } else {
             const team = teamsBySeed.find((t) => t.name === participant.name);
             if (team) {
               // Use 1-based index in the seed-ordered array as the bracket slot position
               const slotPosition = teamsBySeed.indexOf(team) + 1;
-              await supabase
+              const { error: teamError } = await supabase
                 .from('participant')
                 .update({ position: slotPosition, team_id: team.id })
                 .eq('id', participant.id);
+              if (teamError)
+                handleDatabaseError(teamError, 'Failed to sync participant to team');
             }
           }
         }
