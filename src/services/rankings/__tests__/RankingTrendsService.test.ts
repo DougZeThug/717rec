@@ -176,12 +176,9 @@ describe('fetchPowerScoreTrends', () => {
   });
 
   it('respects the limit parameter', async () => {
-    queueResult('seasons', { data: { id: 's2' }, error: null });
+    queueResult('seasons', { data: { id: 's2', start_date: '2025-01-01' }, error: null });
     queueResult('seasons', {
-      data: [
-        { id: 's2', start_date: '2025-01-01' },
-        { id: 's1', start_date: '2024-01-01' },
-      ],
+      data: { id: 's1', start_date: '2024-01-01' },
       error: null,
     });
     queueResult('v_team_details', {
