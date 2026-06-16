@@ -37,7 +37,37 @@ export const resolveTeamToParticipantId: ResolveTeamToParticipantIdFn = async (
     .select('id')
     .single();
 
-  if (insertError) handleDatabaseError(insertError, 'Failed to create participant for team');
+  if (insertError) {
+    // A concurrent request may have just inserted the participant row
+    // (protected by participant_tournament_team_unique_idx). Recover by
+    // reading the existing row instead of failing the admin edit.
+    if ((insertError as { code?: string }).code === '23505') {
+      bracketLog(
+        `Concurrent participant insert detected for team ${teamId} — fetching existing row`
+      );
+      const { data: existingRow, error: fetchError } = await supabase
+        .from('participant')
+        .select('id')
+        .eq('tournament_id', tournamentId)
+        .eq('team_id', teamId)
+        .maybeSingle();
+      if (fetchError)
+        handleDatabaseError(fetchError, 'Failed to fetch existing participant after race');
+      if (!existingRow)
+        throw new Error(
+          'Failed to resolve participant after unique-violation race: no row found'
+        );
+      const existingId = (existingRow as { id: number }).id;
+      participants.push({
+        id: existingId,
+        tournament_id: tournamentId,
+        name: team.name,
+        team_id: teamId,
+      });
+      return existingId;
+    }
+    handleDatabaseError(insertError, 'Failed to create participant for team');
+  }
   if (!inserted) throw new Error('Failed to create participant for team: insert returned no row');
 
   const newId = (inserted as { id: number }).id;
