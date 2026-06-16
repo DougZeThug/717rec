@@ -18,8 +18,18 @@ type Bracket = {
 };
 
 const hookMocks = vi.hoisted(() => ({
-  config: { data: null as Config | null, isLoading: false },
-  brackets: { data: [] as Bracket[], isLoading: false },
+  config: {
+    data: null as Config | null,
+    isLoading: false,
+    isError: false,
+    error: null as Error | null,
+  },
+  brackets: {
+    data: [] as Bracket[],
+    isLoading: false,
+    isError: false,
+    error: null as Error | null,
+  },
   mutations: {
     updateConfig: vi.fn().mockResolvedValue(undefined),
     createBracket: vi.fn().mockResolvedValue(undefined),
