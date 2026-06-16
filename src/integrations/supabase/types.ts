@@ -2511,6 +2511,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_verified: boolean
           match_id: string
           message: string
           reviewed_at: string | null
@@ -2518,10 +2519,13 @@ export type Database = {
           status: string
           submitter_name: string
           submitter_team: string | null
+          team_id: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string
           id?: string
+          is_verified?: boolean
           match_id: string
           message: string
           reviewed_at?: string | null
@@ -2529,10 +2533,13 @@ export type Database = {
           status?: string
           submitter_name: string
           submitter_team?: string | null
+          team_id?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string
           id?: string
+          is_verified?: boolean
           match_id?: string
           message?: string
           reviewed_at?: string | null
@@ -2540,6 +2547,8 @@ export type Database = {
           status?: string
           submitter_name?: string
           submitter_team?: string | null
+          team_id?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -2554,6 +2563,69 @@ export type Database = {
             columns: ["match_id"]
             isOneToOne: false
             referencedRelation: "v_pending_matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "score_submissions_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "score_submissions_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_pending_matches"
+            referencedColumns: ["team1_id"]
+          },
+          {
+            foreignKeyName: "score_submissions_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_pending_matches"
+            referencedColumns: ["team2_id"]
+          },
+          {
+            foreignKeyName: "score_submissions_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "score_submissions_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details_with_season"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "score_submissions_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_game_totals"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "score_submissions_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "score_submissions_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_strength_of_schedule"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "score_submissions_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_visible_teams"
             referencedColumns: ["id"]
           },
         ]
