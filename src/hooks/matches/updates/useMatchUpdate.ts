@@ -133,6 +133,8 @@ export const useMatchUpdate = ({
           oldWinnerGameWins,
           oldLoserGameWins
         );
+
+        await upsertTeamSeasonStats();
       }
 
       // Case 2: Match is (still or newly) completed and stats need updating
