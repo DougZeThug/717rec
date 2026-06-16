@@ -112,12 +112,9 @@ describe('fetchPowerScoreTrends', () => {
   });
 
   it('returns [] when current season query has an error', async () => {
-    queueResult('seasons', { data: { id: 's1' }, error: null });
+    queueResult('seasons', { data: { id: 's1', start_date: '2025-01-01' }, error: null });
     queueResult('seasons', {
-      data: [
-        { id: 's2', start_date: '2025-01-01' },
-        { id: 's1', start_date: '2024-01-01' },
-      ],
+      data: { id: 's1', start_date: '2024-01-01' },
       error: null,
     });
     queueResult('v_team_details', { data: null, error: pgError('current fetch failed') });
@@ -129,12 +126,9 @@ describe('fetchPowerScoreTrends', () => {
   });
 
   it('returns [] when previous season query has an error', async () => {
-    queueResult('seasons', { data: { id: 's1' }, error: null });
+    queueResult('seasons', { data: { id: 's2', start_date: '2025-01-01' }, error: null });
     queueResult('seasons', {
-      data: [
-        { id: 's2', start_date: '2025-01-01' },
-        { id: 's1', start_date: '2024-01-01' },
-      ],
+      data: { id: 's1', start_date: '2024-01-01' },
       error: null,
     });
     queueResult('v_team_details', { data: [], error: null });
