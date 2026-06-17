@@ -1,5 +1,5 @@
 import { InMemoryDatabase } from 'brackets-memory-db';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { LoadingState } from '@/components/ui/loading-state';
 import { bracketLog, errorLog, warnLog } from '@/utils/logger';
@@ -13,6 +13,13 @@ interface BracketsViewerComponentProps {
   bracket: PlayoffBracket & { bracket_data?: InMemoryDatabase['data'] };
   teams: PlayoffTeam[];
   onMatchClick?: (matchId: string) => void;
+  /**
+   * External signal that should trigger a re-render of the viewer (e.g. a
+   * realtime `lastUpdate` timestamp). When this value changes, the viewer
+   * re-runs its SQL transform so newly populated opponent slots (Grand
+   * Final, etc.) appear without requiring a page refresh.
+   */
+  refreshSignal?: number | string | null;
 }
 
 const CONTAINER_ID = 'brackets-viewer-container';
@@ -21,6 +28,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
   bracket,
   teams,
   onMatchClick,
+  refreshSignal,
 }) => {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -32,6 +40,14 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
 
   // Load brackets-viewer script and CSS
   const { isReady: isScriptReady, error: scriptError } = useBracketsViewerScript();
+
+  // Bump the internal refresh counter whenever the external refresh signal
+  // changes. This is what surfaces realtime `match` table updates into the
+  // viewer render cycle.
+  useEffect(() => {
+    if (refreshSignal === undefined || refreshSignal === null) return;
+    setRefreshCounter((c) => c + 1);
+  }, [refreshSignal]);
 
   // Match click handler - routes to BM editor or legacy handler
   const handleMatchClicked = useCallback(
