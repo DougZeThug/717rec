@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Edit, ListOrdered, Loader2, Trash } from 'lucide-react';
+import { Edit, ListOrdered, Loader2, RefreshCw, Trash } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React, { useState } from 'react';
 
@@ -8,8 +8,12 @@ import ChampionDisplay from '@/components/playoffs/ChampionDisplay';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
+import { useRecalculateStandings } from '@/hooks/useRecalculateStandings';
 import { cn } from '@/lib/utils';
-import { fetchBracketParticipants } from '@/services/brackets/BracketReadService';
+import {
+  fetchBracketParticipants,
+  fetchFinalStandings,
+} from '@/services/brackets/BracketReadService';
 import { blueAmber } from '@/styles/design-system';
 import { PlayoffBracket, Team } from '@/utils/playoffs/playoffTypes';
 
@@ -45,6 +49,17 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
     queryFn: () => fetchBracketParticipants(bracketId),
     enabled: !!bracketId,
   });
+
+  // Check whether final standings already exist; if not and the bracket is
+  // completed, admins can trigger a manual recalculation.
+  const isCompleted = bracket?.state === 'completed';
+  const { data: existingStandings } = useQuery({
+    queryKey: ['final-standings', bracketId],
+    queryFn: () => fetchFinalStandings(bracketId),
+    enabled: !!bracketId && isCompleted,
+  });
+  const standingsMissing = isCompleted && (!existingStandings || existingStandings.length === 0);
+  const { recalculate, isRecalculating } = useRecalculateStandings(bracketId);
 
   // Get the division color class based on division name
   const getDivisionColorClass = (division: string) => {
@@ -113,6 +128,23 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
           </div>
           {isAdminAccessGranted && (
             <div className="flex gap-2">
+              {standingsMissing && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="hidden md:flex"
+                  onClick={() => void recalculate()}
+                  disabled={isRecalculating}
+                >
+                  {isRecalculating ? (
+                    <Loader2 className="size-4 mr-2 animate-spin" />
+                  ) : (
+                    <RefreshCw className="size-4 mr-2" />
+                  )}
+                  Recalculate Standings
+                </Button>
+              )}
+
               <Button
                 variant="outline"
                 size="sm"
