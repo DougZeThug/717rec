@@ -1,62 +1,44 @@
-## Heads up: No "Intermediate Spring 2026" bracket exists yet
-Same situation as Competitive — I'll create the bracket row first, then insert 17 matches, then write the final standings.
+## Status: Not finalized
 
-**Question:** which Intermediate division should I attach it to?
-- `Intermediate Low` (435745f7…) — used by Winter 1 2026
-- `Intermediate` (5ac90b5c…) — used by Winter 2 2026 ← my default guess
-- `Intermediate High` (03614803…)
+The Recreational Spring 2026 bracket (`3457c81c-516d-47c8-859d-cb2bdcc3ddf8`) already has all 15 matches entered with scores and winners, but it's missing three things:
 
-Reply with the division if it isn't the default, otherwise I'll use `Intermediate`.
+1. Most match rows are still `status='pending'` instead of `completed`
+2. The bracket's `wb_champion_id` is `NULL`
+3. `playoff_team_records` has 0 final standings rows
 
-## Match list to verify (all Bo3, status `completed`)
+## Match results I'll verify
 
-### Winners Bracket
-| Round | Teams | Score | Winner |
-|---|---|---|---|
-| R1 | (8) Sweat Bandits vs (9) On a Mission | 2–1 | Sweat Bandits |
-| R1 | (7) Massive Sacks vs (10) The Undigestibles | 1–2 | The Undigestibles |
-| R2 | (1) Smooth Sliders vs (8) Sweat Bandits | 2–0 | Smooth Sliders |
-| R2 | (4) Bag Assassins vs (5) Happy Valley Hole Hunters | 0–2 | Happy Valley |
-| R2 | (2) Tom & Tom vs (10) The Undigestibles | 2–1 | Tom & Tom |
-| R2 | (3) The Triple Nipple vs (6) D.Bags @ Marion | 2–1 | Triple Nipple |
-| R3 QF | (1) Smooth Sliders vs (5) Happy Valley | 2–0 | Smooth Sliders |
-| R3 QF | (2) Tom & Tom vs (3) Triple Nipple | 2–0 | Tom & Tom |
-| SF | (1) Smooth Sliders vs (2) Tom & Tom | 2–0 | Smooth Sliders |
+All 15 matches are already in the DB with these scores (I'll just flip them to `completed`). 6-team double elim:
 
-### Losers Bracket
-| Round | Teams | Score | Winner |
-|---|---|---|---|
-| LR1 | (6) D.Bags @ Marion vs (9) On a Mission | 2–0 | D.Bags |
-| LR1 | (4) Bag Assassins vs (7) Massive Sacks | 2–0 | Bag Assassins |
-| LR2 | (10) The Undigestibles vs (6) D.Bags | 0–2 | D.Bags |
-| LR2 | (8) Sweat Bandits vs (4) Bag Assassins | 2–1 | Sweat Bandits |
-| LR3 | (5) Happy Valley vs (6) D.Bags | 2–0 | Happy Valley |
-| LR3 | (3) Triple Nipple vs (8) Sweat Bandits | 2–0 | Triple Nipple |
-| LR4 | (5) Happy Valley vs (3) Triple Nipple | 1–2 | Triple Nipple |
-| LR5 | (2) Tom & Tom vs (3) Triple Nipple | 0–2 | Triple Nipple |
+**Winners Bracket**
+- R1: Here for Fireball — bye; Double Trouble def. Corn Kitties 2–1; Sour Patch Kids — bye; Cornholy Trinity def. Smacked 2–1
+- R2: Here for Fireball def. Double Trouble 2–1; Cornholy Trinity def. Sour Patch Kids 2–1
+- SF: Cornholy Trinity def. Here for Fireball 2–0
 
-### Grand Finals
-| Round | Teams | Score | Winner |
-|---|---|---|---|
-| GF | (1) Smooth Sliders vs (3) Triple Nipple | 0–2 | Triple Nipple |
-| GF Reset | (3) Triple Nipple vs (1) Smooth Sliders | 2–0 | Triple Nipple |
+**Losers Bracket**
+- R1: Corn Kitties — bye; Smacked — bye
+- R2: Sour Patch Kids def. Corn Kitties 2–0; Double Trouble def. Smacked 2–1
+- R3: Sour Patch Kids def. Double Trouble 2–1
+- R4: Here for Fireball def. Sour Patch Kids 2–0
 
-**Total: 17 matches.**
+**Grand Finals**
+- GF: Here for Fireball def. Cornholy Trinity 2–0
+- GF Reset: Cornholy Trinity def. Here for Fireball 2–0
 
 ## Final standings I'll write to `playoff_team_records`
-| Place | Team | W–L |
-|---|---|---|
-| 1 | The Triple Nipple | 6–1 |
-| 2 | Smooth Sliders | 3–2 |
-| 3 | Tom & Tom | 2–2 |
-| 4 | Happy Valley Hole Hunters | 2–2 |
-| 5 | D.Bags @ Marion | 2–2 |
-| 6 | Sweat Bandits | 2–2 |
-| 7 | The Undigestibles | 1–2 |
-| 8 | Bag Assassins | 1–2 |
-| 9 | Massive Sacks | 0–2 |
-| 10 | On a Mission | 0–2 |
 
-(Note: 3rd-place tie between Tom & Tom and Happy Valley both at 2–2 — image shows Tom & Tom as 3rd, so they get placement 3 and Happy Valley placement 4. Same for the 5/6 and 7/8 pairs — I'll order by latest round survived as shown above.)
+| Place | Team | W–L | Games |
+|---|---|---|---|
+| 1 | The Cornholy Trinity | 4–1 | 8–4 |
+| 2 | Here for Fireball | 3–2 | 6–4 |
+| 3 | Sour Patch Kids | 2–2 | 5–5 |
+| 4 | Double Trouble | 2–2 | 6–5 |
+| 5 | Corn Kitties | 0–2 | 1–4 |
+| 6 | Smacked | 0–2 | 2–4 |
 
-Reply **"go"** (and division if not `Intermediate`) and I'll create the bracket + insert all 17 matches + write the standings.
+## SQL actions
+1. `UPDATE playoff_matches SET status='completed' WHERE bracket_id=… AND winner_id IS NOT NULL`
+2. `UPDATE brackets SET wb_champion_id='<Cornholy Trinity id>', state='completed' WHERE id=…`
+3. `INSERT INTO playoff_team_records` (6 rows above)
+
+Reply **"go"** and I'll execute. Flag any score/placement to change first (e.g. if 5th/6th between Corn Kitties and Smacked should swap).
