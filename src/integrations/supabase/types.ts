@@ -1584,6 +1584,7 @@ export type Database = {
       }
       playoff_matches: {
         Row: {
+          admin_note: string | null
           best_of: number | null
           bracket_id: string | null
           created_at: string | null
@@ -1606,6 +1607,7 @@ export type Database = {
           winner_id: string | null
         }
         Insert: {
+          admin_note?: string | null
           best_of?: number | null
           bracket_id?: string | null
           created_at?: string | null
@@ -1628,6 +1630,7 @@ export type Database = {
           winner_id?: string | null
         }
         Update: {
+          admin_note?: string | null
           best_of?: number | null
           bracket_id?: string | null
           created_at?: string | null

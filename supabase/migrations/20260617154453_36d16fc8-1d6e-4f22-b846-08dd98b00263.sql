@@ -1,0 +1,1 @@
+ALTER TABLE public.playoff_matches ADD COLUMN IF NOT EXISTS admin_note TEXT;
