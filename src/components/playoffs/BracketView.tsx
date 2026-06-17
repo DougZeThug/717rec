@@ -94,7 +94,7 @@ const BracketView: React.FC<BracketViewProps> = ({
   useBracketCompletion(bracketId || undefined);
 
   // Add realtime subscription for brackets-manager brackets (auto-fetches stageId if needed)
-  const { realtimeEnabled } = useBracketsManagerRealtime(
+  const { realtimeEnabled, lastUpdate } = useBracketsManagerRealtime(
     bracketInfo?.uses_brackets_manager ? bracketId : null
   );
 
@@ -263,6 +263,7 @@ const BracketView: React.FC<BracketViewProps> = ({
                 : displayTeams
             }
             onMatchClick={handleMatchClick}
+            refreshSignal={lastUpdate ? lastUpdate.getTime() : null}
           />
         ) : (
           <div className="text-center p-8 text-muted-foreground">
