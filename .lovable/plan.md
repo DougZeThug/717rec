@@ -1,40 +1,62 @@
-## Goal
-Insert 16 rows into `playoff_matches` for bracket **Competitive Spring 2026** (`43fca940-1e6e-450e-9992-b05e7c61ec6b`) so team stats update correctly. All matches Best of 3, status `completed`.
+## Heads up: No "Intermediate Spring 2026" bracket exists yet
+Same situation as Competitive — I'll create the bracket row first, then insert 17 matches, then write the final standings.
 
-Please verify the scores below before I run the inserts.
+**Question:** which Intermediate division should I attach it to?
+- `Intermediate Low` (435745f7…) — used by Winter 1 2026
+- `Intermediate` (5ac90b5c…) — used by Winter 2 2026 ← my default guess
+- `Intermediate High` (03614803…)
+
+Reply with the division if it isn't the default, otherwise I'll use `Intermediate`.
+
+## Match list to verify (all Bo3, status `completed`)
 
 ### Winners Bracket
-| # | Round | Match | Seed | Team | Score | Winner |
-|---|---|---|---|---|---|---|
-| 1 | WB R1 | Play-in | 8 Pepperoni Cheesers vs 9 Bumbleweed | 1–2 | Bumbleweed |
-| 2 | WB R2 | M5 | 1 Degeneration X vs 9 Bumbleweed | 2–0 | Degeneration X |
-| 3 | WB R2 | M2 | 4 Cuzzo's Clinic vs 5 Cornelius Bag | 2–0 | Cuzzo's Clinic |
-| 4 | WB R2 | M3 | 2 Seize the Maize vs 7 3 Amigos | 0–2 | 3 Amigos |
-| 5 | WB R2 | M4 | 3 Hole Violators vs 6 Hole Burners | 2–1 | Hole Violators |
-| 6 | WB R3 | M10 | 1 Degeneration X vs 4 Cuzzo's Clinic | 0–2 | Cuzzo's Clinic |
-| 7 | WB R3 | M9 | 7 3 Amigos vs 3 Hole Violators | 2–0 | 3 Amigos |
-| 8 | WB SF | M14 | 4 Cuzzo's Clinic vs 7 3 Amigos | 2–1 | Cuzzo's Clinic |
+| Round | Teams | Score | Winner |
+|---|---|---|---|
+| R1 | (8) Sweat Bandits vs (9) On a Mission | 2–1 | Sweat Bandits |
+| R1 | (7) Massive Sacks vs (10) The Undigestibles | 1–2 | The Undigestibles |
+| R2 | (1) Smooth Sliders vs (8) Sweat Bandits | 2–0 | Smooth Sliders |
+| R2 | (4) Bag Assassins vs (5) Happy Valley Hole Hunters | 0–2 | Happy Valley |
+| R2 | (2) Tom & Tom vs (10) The Undigestibles | 2–1 | Tom & Tom |
+| R2 | (3) The Triple Nipple vs (6) D.Bags @ Marion | 2–1 | Triple Nipple |
+| R3 QF | (1) Smooth Sliders vs (5) Happy Valley | 2–0 | Smooth Sliders |
+| R3 QF | (2) Tom & Tom vs (3) Triple Nipple | 2–0 | Tom & Tom |
+| SF | (1) Smooth Sliders vs (2) Tom & Tom | 2–0 | Smooth Sliders |
 
 ### Losers Bracket
-| # | Round | Match | Teams | Score | Winner |
-|---|---|---|---|---|---|
-| 9  | LB R1 | M6  | 6 Hole Burners vs 8 Pepperoni Cheesers | 1–2 | Pepperoni Cheesers |
-| 10 | LB R2 | M8  | 2 Seize the Maize vs 8 Pepperoni Cheesers | 2–0 | Seize the Maize |
-| 11 | LB R2 | M7  | 5 Cornelius Bag vs 9 Bumbleweed | 0–2 | Bumbleweed |
-| 12 | LB R3 | M12 | 1 Degeneration X vs 2 Seize the Maize | 2–0 | Degeneration X |
-| 13 | LB R3 | M11 | 3 Hole Violators vs 9 Bumbleweed | 2–0 | Hole Violators |
-| 14 | LB R4 | M13 | 1 Degeneration X vs 3 Hole Violators | 2–0 | Degeneration X |
-| 15 | LB R5 | M15 | 7 3 Amigos vs 1 Degeneration X | 2–0 | 3 Amigos |
+| Round | Teams | Score | Winner |
+|---|---|---|---|
+| LR1 | (6) D.Bags @ Marion vs (9) On a Mission | 2–0 | D.Bags |
+| LR1 | (4) Bag Assassins vs (7) Massive Sacks | 2–0 | Bag Assassins |
+| LR2 | (10) The Undigestibles vs (6) D.Bags | 0–2 | D.Bags |
+| LR2 | (8) Sweat Bandits vs (4) Bag Assassins | 2–1 | Sweat Bandits |
+| LR3 | (5) Happy Valley vs (6) D.Bags | 2–0 | Happy Valley |
+| LR3 | (3) Triple Nipple vs (8) Sweat Bandits | 2–0 | Triple Nipple |
+| LR4 | (5) Happy Valley vs (3) Triple Nipple | 1–2 | Triple Nipple |
+| LR5 | (2) Tom & Tom vs (3) Triple Nipple | 0–2 | Triple Nipple |
 
-### Grand Final
-| # | Round | Teams | Score | Winner |
-|---|---|---|---|---|
-| 16 | GF | 4 Cuzzo's Clinic vs 7 3 Amigos | 2–0 | Cuzzo's Clinic |
+### Grand Finals
+| Round | Teams | Score | Winner |
+|---|---|---|---|
+| GF | (1) Smooth Sliders vs (3) Triple Nipple | 0–2 | Triple Nipple |
+| GF Reset | (3) Triple Nipple vs (1) Smooth Sliders | 2–0 | Triple Nipple |
 
-### Implied team records (bracket only, matches the standings already saved)
-- Cuzzo's 4–0, 3 Amigos 3–2, Degeneration X 3–2, Hole Violators 2–2, Seize the Maize 1–2, Bumbleweed 1–2 (wait — Bumbleweed actually goes 2–2: won play-in + LB R2, lost WB R2 + LB R3), Pepperoni Cheesers 1–2, Cornelius Bag 0–1, Hole Burners 0–2.
+**Total: 17 matches.**
 
-⚠️ **Discrepancy to confirm:** The standings I previously inserted list Bumbleweed as **1–2**, but the bracket above shows Bumbleweed at **2–2** (won play-in over Pepperoni, won LB R2 over Cornelius, lost WB R2 to Degen X, lost LB R3 to Hole Violators). Similarly Pepperoni shows as **1–2** (lost play-in, won LB R1, lost LB R2). Want me to also correct `playoff_team_records` W/L to match the bracket?
+## Final standings I'll write to `playoff_team_records`
+| Place | Team | W–L |
+|---|---|---|
+| 1 | The Triple Nipple | 6–1 |
+| 2 | Smooth Sliders | 3–2 |
+| 3 | Tom & Tom | 2–2 |
+| 4 | Happy Valley Hole Hunters | 2–2 |
+| 5 | D.Bags @ Marion | 2–2 |
+| 6 | Sweat Bandits | 2–2 |
+| 7 | The Undigestibles | 1–2 |
+| 8 | Bag Assassins | 1–2 |
+| 9 | Massive Sacks | 0–2 |
+| 10 | On a Mission | 0–2 |
 
-### Approve to proceed
-Reply "looks good" (or note corrections) and I'll insert the 16 `playoff_matches` rows and, if you confirm, fix the W/L counts in `playoff_team_records`.
+(Note: 3rd-place tie between Tom & Tom and Happy Valley both at 2–2 — image shows Tom & Tom as 3rd, so they get placement 3 and Happy Valley placement 4. Same for the 5/6 and 7/8 pairs — I'll order by latest round survived as shown above.)
+
+Reply **"go"** (and division if not `Intermediate`) and I'll create the bracket + insert all 17 matches + write the standings.
