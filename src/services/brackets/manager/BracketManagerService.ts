@@ -219,7 +219,9 @@ export class BracketManagerService {
    * - Returns early with error log if no participants found
    * - Uses upsert with conflict resolution on team_id, bracket_id
    */
-  async calculateFinalStandings(bracketId: string): Promise<void> {
+  async calculateFinalStandings(
+    bracketId: string
+  ): ReturnType<typeof this.standingsService.calculateFinalStandings> {
     return this.standingsService.calculateFinalStandings(bracketId);
   }
 
