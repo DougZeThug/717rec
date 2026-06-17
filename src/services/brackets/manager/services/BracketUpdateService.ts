@@ -300,8 +300,10 @@ export class BracketUpdateService {
               errorMessage.includes('Match not found') ||
               errorMessage.includes('Position is undefined')
             ) {
-              bracketLog(`⚠️ Non-fatal propagation error for Match ${matchId}: ${errorMessage}`);
-              bracketLog(`Match data was saved successfully. Continuing to normalization steps...`);
+              errorLog(
+                `⚠️ Tolerated propagation error for Match ${matchId} — relying on normalization safety nets`,
+                { matchId, message: errorMessage }
+              );
             } else {
               throw propagationError;
             }
