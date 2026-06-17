@@ -38,18 +38,28 @@ export function useBracketCompletion(bracketId: string | undefined) {
           // If bracket just completed, calculate final standings
           if (bracket.state === 'completed' && bracket.uses_brackets_manager) {
             try {
-              await bracketManagerService.calculateFinalStandings(bracketId);
+              const result = await bracketManagerService.calculateFinalStandings(bracketId);
 
-              toast({
-                title: 'Tournament Complete!',
-                description: 'Final standings have been calculated.',
-              });
+              if (result.written) {
+                toast({
+                  title: 'Tournament Complete!',
+                  description: 'Final standings have been calculated.',
+                });
+              } else if (result.reason === 'incomplete-matches') {
+                toast({
+                  title: 'Standings Pending',
+                  description:
+                    'Final standings will be calculated once all matches are complete.',
+                });
+              }
+              // 'calculation-error' / 'no-stages' / 'no-records' are logged
+              // server-side; no user-facing toast to avoid noise.
             } catch (error) {
               errorLog('Failed to calculate final standings:', error);
               toast({
-                title: 'Standings Calculation Failed',
-                description: 'Could not calculate final placements. Please refresh.',
-                variant: 'destructive',
+                title: 'Standings Pending',
+                description:
+                  'Final standings could not be calculated yet. They will retry automatically.',
               });
             }
           }
