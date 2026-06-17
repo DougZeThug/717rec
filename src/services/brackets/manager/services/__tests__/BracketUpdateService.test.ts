@@ -38,6 +38,9 @@ describe('BracketUpdateService', () => {
     normalizeLosersR1: ReturnType<typeof vi.fn>;
     normalizeGrandFinalPopulation: ReturnType<typeof vi.fn>;
     propagateCompletedMatches: ReturnType<typeof vi.fn>;
+    isWbFinalRound: ReturnType<typeof vi.fn>;
+    isLbFinalRound: ReturnType<typeof vi.fn>;
+    repairGrandFinalWithRetries: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
@@ -61,6 +64,9 @@ describe('BracketUpdateService', () => {
       normalizeLosersR1: vi.fn().mockResolvedValue(undefined),
       normalizeGrandFinalPopulation: vi.fn().mockResolvedValue(undefined),
       propagateCompletedMatches: vi.fn().mockResolvedValue(undefined),
+      isWbFinalRound: vi.fn().mockResolvedValue(false),
+      isLbFinalRound: vi.fn().mockResolvedValue(false),
+      repairGrandFinalWithRetries: vi.fn().mockResolvedValue(undefined),
     };
 
     service = new BracketUpdateService(
