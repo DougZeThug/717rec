@@ -252,4 +252,99 @@ describe('BracketUpdateService', () => {
       ).resolves.toBeUndefined();
     });
   });
+
+  describe('GF auto-repair trigger', () => {
+    const stage = {
+      id: 10,
+      tournament_id: 'tourney-1',
+      name: 'Stage',
+      type: 'double_elimination',
+      number: 1,
+      settings: {},
+    };
+
+    const setupNormalMatch = (overrides: { status: number; round_id: number }) => {
+      const match = {
+        id: 42,
+        stage_id: 10,
+        group_id: 1,
+        round_id: overrides.round_id,
+        number: 1,
+        status: overrides.status,
+        opponent1: { id: 11, position: 1 },
+        opponent2: { id: 12, position: 2 },
+      };
+
+      (mockStorage.select as ReturnType<typeof vi.fn>).mockImplementation(
+        (table: string, query?: unknown) => {
+          if (table === 'match') {
+            if (typeof query === 'number' || typeof query === 'string') return Promise.resolve(match);
+            return Promise.resolve([]);
+          }
+          if (table === 'stage') return Promise.resolve(stage);
+          return Promise.resolve(null);
+        }
+      );
+
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table !== 'match') return {};
+        return {
+          update: () => ({ eq: () => Promise.resolve({ data: null, error: null }) }),
+          select: () => ({ eq: () => ({ eq: () => Promise.resolve({ data: [], error: null }) }) }),
+        };
+      });
+    };
+
+    it('runs repairGrandFinalWithRetries when WB Final completes', async () => {
+      setupNormalMatch({ status: 4, round_id: 500 });
+      mockManager.update.match.mockResolvedValue(undefined);
+      mockNormalizationService.isWbFinalRound.mockResolvedValue(true);
+
+      await service.updateMatch({
+        matchId: 42,
+        scores: {
+          opponent1: { score: 21, result: 'win' },
+          opponent2: { score: 19, result: 'loss' },
+        },
+      });
+
+      expect(mockNormalizationService.isWbFinalRound).toHaveBeenCalledWith(500, 10);
+      expect(mockNormalizationService.repairGrandFinalWithRetries).toHaveBeenCalledWith(10);
+    });
+
+    it('runs repairGrandFinalWithRetries when LB Final completes', async () => {
+      setupNormalMatch({ status: 4, round_id: 700 });
+      mockManager.update.match.mockResolvedValue(undefined);
+      mockNormalizationService.isWbFinalRound.mockResolvedValue(false);
+      mockNormalizationService.isLbFinalRound.mockResolvedValue(true);
+
+      await service.updateMatch({
+        matchId: 42,
+        scores: {
+          opponent1: { score: 12, result: 'loss' },
+          opponent2: { score: 21, result: 'win' },
+        },
+      });
+
+      expect(mockNormalizationService.isLbFinalRound).toHaveBeenCalledWith(700, 10);
+      expect(mockNormalizationService.repairGrandFinalWithRetries).toHaveBeenCalledWith(10);
+    });
+
+    it('does not run GF repair for unrelated rounds', async () => {
+      setupNormalMatch({ status: 4, round_id: 300 });
+      mockManager.update.match.mockResolvedValue(undefined);
+      mockNormalizationService.isWbFinalRound.mockResolvedValue(false);
+      mockNormalizationService.isLbFinalRound.mockResolvedValue(false);
+
+      await service.updateMatch({
+        matchId: 42,
+        scores: {
+          opponent1: { score: 21, result: 'win' },
+          opponent2: { score: 12, result: 'loss' },
+        },
+      });
+
+      expect(mockNormalizationService.repairGrandFinalWithRetries).not.toHaveBeenCalled();
+    });
+  });
 });
