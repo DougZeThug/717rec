@@ -4,6 +4,17 @@ import type { SupabaseSqlStorage } from '../../SupabaseSqlStorage';
 import type { StorageMatch } from '../../types/BracketServiceTypes';
 import { LbStructureService } from './LbStructureService';
 
+/** brackets-manager status: 4 = Completed. */
+const STATUS_COMPLETED = 4;
+const STATUS_READY = 2;
+
+function pickWinnerId(match: StorageMatch | null | undefined): number | null {
+  if (!match) return null;
+  if (match.opponent1?.result === 'win' && match.opponent1?.id != null) return match.opponent1.id;
+  if (match.opponent2?.result === 'win' && match.opponent2?.id != null) return match.opponent2.id;
+  return null;
+}
+
 export class GrandFinalNormalizationService {
   constructor(
     private storage: SupabaseSqlStorage,
@@ -21,6 +32,23 @@ export class GrandFinalNormalizationService {
       return matchesArray[0] || null;
     } catch (error) {
       errorLog('Error finding LB Final match:', error);
+      return null;
+    }
+  }
+
+  async findWBFinalMatch(stageId: number): Promise<StorageMatch | null> {
+    try {
+      const wbFinalRound = await this.lbStructureService.findWbFinalRound(stageId);
+      if (!wbFinalRound) return null;
+
+      const matches = await this.storage.select('match', { round_id: wbFinalRound.id });
+      const matchesArray = (Array.isArray(matches) ? matches : [matches]) as StorageMatch[];
+
+      // WB Final is the last match in the WB final round.
+      const sorted = [...matchesArray].sort((a, b) => (a.number ?? 0) - (b.number ?? 0));
+      return sorted[sorted.length - 1] || null;
+    } catch (error) {
+      errorLog('Error finding WB Final match:', error);
       return null;
     }
   }
@@ -52,35 +80,65 @@ export class GrandFinalNormalizationService {
         return;
       }
 
-      if (gfMatch.opponent2?.id) return;
+      // Determine the desired contents of each slot independently. The WB winner
+      // belongs in opponent1; the LB winner in opponent2. Either side may be
+      // empty if brackets-manager failed to propagate.
+      const needsOpp1 = !gfMatch.opponent1?.id;
+      const needsOpp2 = !gfMatch.opponent2?.id;
+      if (!needsOpp1 && !needsOpp2) return;
 
-      bracketLog('🔧 GF opponent2 missing, checking LB Final...');
-      const lbFinalMatch = await this.findLBFinalMatch(stageId);
+      const update: {
+        opponent1?: { id: number; position: undefined };
+        opponent2?: { id: number; position: undefined };
+        status?: number;
+      } = {};
 
-      if (lbFinalMatch?.status !== 4) return;
-
-      const winnerId =
-        lbFinalMatch.opponent1?.result === 'win'
-          ? lbFinalMatch.opponent1?.id
-          : lbFinalMatch.opponent2?.id;
-
-      if (!winnerId) return;
-
-      bracketLog('✅ [NORMALIZE GF] Populating opponent2 from LB Final winner', {
-        gfMatchId: gfMatch.id,
-        lbWinnerId: winnerId,
-      });
-
-      await this.storage.update(
-        'match',
-        { id: gfMatch.id },
-        {
-          opponent2: { id: winnerId, position: undefined },
-          status: gfMatch.status,
+      if (needsOpp1) {
+        const wbFinalMatch = await this.findWBFinalMatch(stageId);
+        if (wbFinalMatch?.status === STATUS_COMPLETED) {
+          const wbWinnerId = pickWinnerId(wbFinalMatch);
+          if (wbWinnerId) {
+            update.opponent1 = { id: wbWinnerId, position: undefined };
+            bracketLog('✅ [NORMALIZE GF] Populating opponent1 from WB Final winner', {
+              gfMatchId: gfMatch.id,
+              wbWinnerId,
+            });
+          }
         }
-      );
+      }
 
-      successLog('Grand Final normalized', `Populated opponent2 with LB winner ${winnerId}`);
+      if (needsOpp2) {
+        const lbFinalMatch = await this.findLBFinalMatch(stageId);
+        if (lbFinalMatch?.status === STATUS_COMPLETED) {
+          const lbWinnerId = pickWinnerId(lbFinalMatch);
+          if (lbWinnerId) {
+            update.opponent2 = { id: lbWinnerId, position: undefined };
+            bracketLog('✅ [NORMALIZE GF] Populating opponent2 from LB Final winner', {
+              gfMatchId: gfMatch.id,
+              lbWinnerId,
+            });
+          }
+        }
+      }
+
+      if (!update.opponent1 && !update.opponent2) return;
+
+      // After the write, will both slots be populated? If so, flip a still-locked
+      // GF match up to Ready so admins can enter the score.
+      const willHaveOpp1 = !!(update.opponent1?.id ?? gfMatch.opponent1?.id);
+      const willHaveOpp2 = !!(update.opponent2?.id ?? gfMatch.opponent2?.id);
+      if (willHaveOpp1 && willHaveOpp2 && (gfMatch.status ?? 0) <= 1) {
+        update.status = STATUS_READY;
+      } else {
+        update.status = gfMatch.status;
+      }
+
+      await this.storage.update('match', { id: gfMatch.id }, update);
+
+      successLog(
+        'Grand Final normalized',
+        `Populated [${update.opponent1 ? 'opp1' : ''}${update.opponent1 && update.opponent2 ? '+' : ''}${update.opponent2 ? 'opp2' : ''}] on GF match ${gfMatch.id}`
+      );
     } catch (error) {
       errorLog('Error normalizing Grand Final:', error);
     }
