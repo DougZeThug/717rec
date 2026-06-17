@@ -48,6 +48,21 @@ export class BracketNormalizationService {
     return this.grandFinalNormalizationService.normalizeGrandFinalPopulation(stageId);
   }
 
+  repairGrandFinalWithRetries(
+    stageId: number,
+    opts?: { attempts?: number; delayMs?: number }
+  ): Promise<void> {
+    return this.grandFinalNormalizationService.repairGrandFinalWithRetries(stageId, opts);
+  }
+
+  isWbFinalRound(roundId: number, stageId: number): Promise<boolean> {
+    return this.lbStructureService.isWbFinalRound(roundId, stageId);
+  }
+
+  isLbFinalRound(roundId: number, stageId: number): Promise<boolean> {
+    return this.lbStructureService.isLbFinalRound(roundId, stageId);
+  }
+
   normalizeLosersR1(stageId: number): Promise<void> {
     return this.losersRoundNormalizationService.normalizeLosersR1(stageId);
   }

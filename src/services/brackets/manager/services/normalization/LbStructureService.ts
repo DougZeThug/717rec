@@ -65,4 +65,14 @@ export class LbStructureService {
     const maxRoundNumber = Math.max(...wbRounds.map((round) => round.number));
     return wbRounds.find((round) => round.number === maxRoundNumber) || null;
   }
+
+  async isWbFinalRound(roundId: number, stageId: number): Promise<boolean> {
+    const wbFinal = await this.findWbFinalRound(stageId);
+    return !!wbFinal && wbFinal.id === roundId;
+  }
+
+  async isLbFinalRound(roundId: number, stageId: number): Promise<boolean> {
+    const lbFinal = await this.findLbFinalRound(stageId);
+    return !!lbFinal && lbFinal.id === roundId;
+  }
 }

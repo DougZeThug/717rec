@@ -53,6 +53,63 @@ export class GrandFinalNormalizationService {
     }
   }
 
+  /**
+   * Re-read the GF round 1 match and report whether both opponent slots are
+   * populated. Returns false if anything goes wrong so the caller retries.
+   */
+  private async isGrandFinalFullyPopulated(stageId: number): Promise<boolean> {
+    try {
+      const gfGroup = await this.lbStructureService.findGfGroup(stageId);
+      if (!gfGroup) return true; // No GF group → nothing to repair.
+
+      const gfRounds = await this.lbStructureService.findGroupRounds(gfGroup.id);
+      const gfRound1 = gfRounds.find((round) => round.number === 1);
+      if (!gfRound1) return true;
+
+      const gfMatches = await this.storage.select('match', { round_id: gfRound1.id });
+      const arr = (Array.isArray(gfMatches) ? gfMatches : [gfMatches]) as StorageMatch[];
+      const gfMatch = arr[0];
+      if (!gfMatch) return true;
+
+      return !!gfMatch.opponent1?.id && !!gfMatch.opponent2?.id;
+    } catch (error) {
+      errorLog('isGrandFinalFullyPopulated check failed:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Idempotent best-effort repair of the Grand Final. Runs
+   * `normalizeGrandFinalPopulation` and, if a slot is still missing, waits
+   * briefly and retries. Designed to be invoked immediately after the WB or
+   * LB Final completes so the GF becomes playable without admin intervention.
+   */
+  async repairGrandFinalWithRetries(
+    stageId: number,
+    opts: { attempts?: number; delayMs?: number } = {}
+  ): Promise<void> {
+    const attempts = Math.max(1, opts.attempts ?? 3);
+    const delayMs = Math.max(0, opts.delayMs ?? 150);
+
+    for (let i = 0; i < attempts; i += 1) {
+      if (await this.isGrandFinalFullyPopulated(stageId)) {
+        if (i > 0) bracketLog(`✅ [REPAIR GF] populated after ${i} retr${i === 1 ? 'y' : 'ies'}`);
+        return;
+      }
+
+      bracketLog(`🔧 [REPAIR GF] attempt ${i + 1}/${attempts}`, { stageId });
+      await this.normalizeGrandFinalPopulation(stageId);
+
+      if (i < attempts - 1) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
+
+    if (!(await this.isGrandFinalFullyPopulated(stageId))) {
+      bracketLog('⚠️ [REPAIR GF] GF still incomplete after retries', { stageId });
+    }
+  }
+
   async normalizeGrandFinalPopulation(stageId: number): Promise<void> {
     try {
       bracketLog('🔍 Checking Grand Final population...', { stageId });

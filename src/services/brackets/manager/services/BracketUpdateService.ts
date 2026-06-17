@@ -339,6 +339,32 @@ export class BracketUpdateService {
           opponent2: updatedMatch.opponent2,
         });
 
+        // ⭐ If this update completed the WB Final or LB Final, immediately
+        // run a retrying GF repair so the Grand Final populates without
+        // requiring an admin to click "Recalculate Standings". Idempotent.
+        try {
+          if (updatedMatch.status === 4 && updatedMatch.round_id != null) {
+            const isWbFinal = await this.normalizationService.isWbFinalRound(
+              Number(updatedMatch.round_id),
+              stageId
+            );
+            const isLbFinal = isWbFinal
+              ? false
+              : await this.normalizationService.isLbFinalRound(
+                  Number(updatedMatch.round_id),
+                  stageId
+                );
+            if (isWbFinal || isLbFinal) {
+              bracketLog(
+                `🏁 ${isWbFinal ? 'WB' : 'LB'} Final completed (Match ${matchId}) — running GF repair`
+              );
+              await this.normalizationService.repairGrandFinalWithRetries(stageId);
+            }
+          }
+        } catch (gfRepairError) {
+          errorLog('Post-final GF repair failed (non-fatal):', gfRepairError);
+        }
+
         // Log all LB matches to see propagation
         const allMatches = (await this.storage.select('match', {
           stage_id: updatedMatch.stage_id,

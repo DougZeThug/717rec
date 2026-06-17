@@ -303,6 +303,98 @@ describe('BracketNormalizationService', () => {
     });
   });
 
+  describe('repairGrandFinalWithRetries', () => {
+    it('returns immediately when GF is already populated', async () => {
+      const storage = createStorageDouble();
+      storage.select
+        // 1st pass: isGrandFinalFullyPopulated → gfGroup, gfRounds, gfMatch (both filled)
+        .mockResolvedValueOnce([{ id: 30, number: 3 }])
+        .mockResolvedValueOnce([{ id: 32, number: 1 }])
+        .mockResolvedValueOnce([{ id: 70, status: 2, opponent1: { id: 5 }, opponent2: { id: 8 } }]);
+
+      const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
+      await service.repairGrandFinalWithRetries(101, { attempts: 3, delayMs: 0 });
+
+      // Only the populated-check happened — no normalization writes.
+      expect(storage.update).not.toHaveBeenCalled();
+    });
+
+    it('retries normalization until both slots are populated', async () => {
+      const storage = createStorageDouble();
+      // Attempt 1 populated-check → both empty.
+      storage.select
+        .mockResolvedValueOnce([{ id: 30, number: 3 }])
+        .mockResolvedValueOnce([{ id: 32, number: 1 }])
+        .mockResolvedValueOnce([{ id: 70, status: 0, opponent1: null, opponent2: null }])
+        // Attempt 1 normalizeGrandFinalPopulation: gfGroup, gfRounds, gfMatch, WB lookup (no WB final yet)
+        .mockResolvedValueOnce([{ id: 30, number: 3 }])
+        .mockResolvedValueOnce([{ id: 32, number: 1 }])
+        .mockResolvedValueOnce([{ id: 70, status: 0, opponent1: null, opponent2: null }])
+        .mockResolvedValueOnce([{ id: 5, number: 1 }])
+        .mockResolvedValueOnce([{ id: 51, number: 1 }])
+        .mockResolvedValueOnce([
+          { id: 99, number: 1, status: 1, opponent1: null, opponent2: null },
+        ])
+        // LB lookup (no LB final yet)
+        .mockResolvedValueOnce([{ id: 20, number: 2 }])
+        .mockResolvedValueOnce([{ id: 21, number: 2 }])
+        .mockResolvedValueOnce([
+          { id: 200, number: 1, status: 1, opponent1: null, opponent2: null },
+        ])
+        // Attempt 2 populated-check → still empty
+        .mockResolvedValueOnce([{ id: 30, number: 3 }])
+        .mockResolvedValueOnce([{ id: 32, number: 1 }])
+        .mockResolvedValueOnce([{ id: 70, status: 0, opponent1: null, opponent2: null }])
+        // Attempt 2 normalizeGrandFinalPopulation: now WB & LB finals are complete
+        .mockResolvedValueOnce([{ id: 30, number: 3 }])
+        .mockResolvedValueOnce([{ id: 32, number: 1 }])
+        .mockResolvedValueOnce([{ id: 70, status: 0, opponent1: null, opponent2: null }])
+        .mockResolvedValueOnce([{ id: 5, number: 1 }])
+        .mockResolvedValueOnce([{ id: 51, number: 1 }])
+        .mockResolvedValueOnce([
+          {
+            id: 99,
+            number: 1,
+            status: 4,
+            opponent1: { id: 7, result: 'win' },
+            opponent2: { id: 8, result: 'loss' },
+          },
+        ])
+        .mockResolvedValueOnce([{ id: 20, number: 2 }])
+        .mockResolvedValueOnce([{ id: 21, number: 2 }])
+        .mockResolvedValueOnce([
+          {
+            id: 200,
+            number: 1,
+            status: 4,
+            opponent1: { id: 11, result: 'win' },
+            opponent2: { id: 12, result: 'loss' },
+          },
+        ])
+        // Attempt 3 populated-check → now sees the write applied (both filled)
+        .mockResolvedValueOnce([{ id: 30, number: 3 }])
+        .mockResolvedValueOnce([{ id: 32, number: 1 }])
+        .mockResolvedValueOnce([
+          { id: 70, status: 2, opponent1: { id: 7 }, opponent2: { id: 11 } },
+        ]);
+
+      const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
+      await service.repairGrandFinalWithRetries(101, { attempts: 3, delayMs: 0 });
+
+      // Two normalize passes wrote to the GF match.
+      expect(storage.update).toHaveBeenCalledTimes(1);
+      expect(storage.update).toHaveBeenCalledWith(
+        'match',
+        { id: 70 },
+        expect.objectContaining({
+          opponent1: { id: 7, position: undefined },
+          opponent2: { id: 11, position: undefined },
+          status: 2,
+        })
+      );
+    });
+  });
+
   describe('normalizeLosersR1', () => {
     it('returns early when LB group is absent', async () => {
       const storage = createStorageDouble();
