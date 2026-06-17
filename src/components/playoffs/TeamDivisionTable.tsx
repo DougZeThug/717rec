@@ -1,5 +1,5 @@
 import { AlertCircle } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -24,12 +24,6 @@ interface TeamDivisionTableProps {
 
 const TeamDivisionTable: React.FC<TeamDivisionTableProps> = ({ divisions, teams, isLoading }) => {
   const [activeTab, setActiveTab] = useState<string>('all');
-
-  useEffect(() => {
-    if (divisions.length > 0) {
-      setActiveTab('all');
-    }
-  }, [divisions]);
 
   const teamsByDivision = React.useMemo(() => {
     const grouped: Record<string, Team[]> = {
@@ -74,6 +68,12 @@ const TeamDivisionTable: React.FC<TeamDivisionTableProps> = ({ divisions, teams,
     return options;
   }, [divisions, teamsByDivision]);
 
+  // Show the selected tab if it still exists; otherwise fall back to "all".
+  // Deriving this (instead of resetting state in an effect when `divisions`
+  // changes) keeps a valid selection across data reloads and never points at a
+  // tab that was removed.
+  const effectiveTab = tabOptions.includes(activeTab) ? activeTab : 'all';
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -97,7 +97,7 @@ const TeamDivisionTable: React.FC<TeamDivisionTableProps> = ({ divisions, teams,
 
   return (
     <div className="space-y-4">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={effectiveTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-2 md:flex md:flex-wrap">
           {tabOptions.map((division) => (
             <TabsTrigger key={division} value={division} className="capitalize">
