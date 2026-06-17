@@ -7,6 +7,20 @@ import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
 import type { StorageParticipant, StorageStage } from '../types/BracketServiceTypes';
 
 /**
+ * Result of a final-standings calculation attempt.
+ * - `written`: records were upserted into playoff_team_records
+ * - `reason`: when not written, why we bailed out (so the caller can show
+ *   an appropriate toast instead of a destructive error)
+ */
+export interface FinalStandingsResult {
+  written: boolean;
+  reason?: 'no-stages' | 'incomplete-matches' | 'calculation-error' | 'no-records';
+}
+
+/** brackets-manager match status: 4 = Completed, 5 = Archived. Anything lower is unresolved. */
+const MATCH_STATUS_COMPLETED = 4;
+
+/**
  * Service for calculating and managing bracket standings
  */
 export class BracketStandingsService {
@@ -17,8 +31,13 @@ export class BracketStandingsService {
 
   /**
    * Calculate and store final standings for a completed bracket
+   *
+   * Returns a result describing whether records were written. Never throws
+   * for "expected" failure modes (incomplete matches, brackets-manager
+   * lookup errors) — those are logged and surfaced via the returned
+   * `reason`. Only re-throws on unexpected infrastructure failures.
    */
-  async calculateFinalStandings(bracketId: string): Promise<void> {
+  async calculateFinalStandings(bracketId: string): Promise<FinalStandingsResult> {
     bracketLog('Calculating final standings from SQL tables:', { bracketId });
 
     try {
@@ -27,15 +46,67 @@ export class BracketStandingsService {
 
       if (!stages || (Array.isArray(stages) && stages.length === 0)) {
         warnLog('No stages found for bracket:', bracketId);
-        return;
+        return { written: false, reason: 'no-stages' };
       }
 
       const stagesArray = (Array.isArray(stages) ? stages : [stages]) as StorageStage[];
       // Use the final stage (highest number) for tournament standings
       const stage = [...stagesArray].sort((a, b) => b.number - a.number)[0];
 
-      // Get final standings from brackets-manager
-      const finalStandings = await this.manager.get.finalStandings(stage.id);
+      // Pre-check: if any match in this stage is still unresolved (status < 4),
+      // the bracket isn't really done and brackets-manager will throw obscure
+      // "Participant not found" errors while walking the losers bracket. Bail
+      // cleanly so the caller can show a friendly message.
+      const { data: stageMatches, error: stageMatchesError } = await supabase
+        .from('match')
+        .select('id, number, group_id, round_id, status, opponent1_id, opponent2_id')
+        .eq('stage_id', stage.id);
+
+      if (stageMatchesError) {
+        errorLog('Failed to load stage matches for completion check:', stageMatchesError);
+        // Fall through; brackets-manager may still succeed.
+      } else {
+        const unresolved = (stageMatches ?? []).filter(
+          (m) => (m.status ?? 0) < MATCH_STATUS_COMPLETED
+        );
+        if (unresolved.length > 0) {
+          warnLog('Skipping final standings: bracket has unresolved matches', {
+            bracketId,
+            stageId: stage.id,
+            unresolvedMatches: unresolved.map((m) => ({
+              id: m.id,
+              number: m.number,
+              group_id: m.group_id,
+              round_id: m.round_id,
+              status: m.status,
+              opponent1_id: m.opponent1_id,
+              opponent2_id: m.opponent2_id,
+            })),
+          });
+          return { written: false, reason: 'incomplete-matches' };
+        }
+      }
+
+      // Get final standings from brackets-manager.
+      // This can throw "Participant not found" when the bracket has dangling
+      // opponent references (e.g. a BYE slot the library couldn't resolve).
+      // Swallow those — they aren't actionable for the user.
+      interface FinalStanding {
+        id: number;
+        name: string;
+        rank: number;
+      }
+      let finalStandings: FinalStanding[];
+      try {
+        finalStandings = (await this.manager.get.finalStandings(stage.id)) as FinalStanding[];
+      } catch (calcError) {
+        errorLog('brackets-manager.finalStandings threw — skipping standings write', {
+          bracketId,
+          stageId: stage.id,
+          error: calcError instanceof Error ? calcError.message : String(calcError),
+        });
+        return { written: false, reason: 'calculation-error' };
+      }
 
       bracketLog('Final standings calculated:', {
         stageId: stage.id,
@@ -49,7 +120,7 @@ export class BracketStandingsService {
 
       if (!participants) {
         errorLog('No participants found for bracket:', bracketId);
-        return;
+        return { written: false, reason: 'no-records' };
       }
 
       const participantArray = (
@@ -63,12 +134,7 @@ export class BracketStandingsService {
       });
 
       // Update playoff_team_records
-      interface FinalStanding {
-        id: number;
-        name: string;
-        rank: number;
-      }
-      const recordUpdates = (finalStandings as FinalStanding[])
+      const recordUpdates = finalStandings
         .map((standing) => {
           const participant = participantMap.get(standing.id);
           return {
@@ -90,7 +156,10 @@ export class BracketStandingsService {
         }
 
         successLog('Final standings updated in playoff_team_records', bracketId);
+        return { written: true };
       }
+
+      return { written: false, reason: 'no-records' };
     } catch (error) {
       failureLog('Failed to calculate final standings', error);
       throw new Error(

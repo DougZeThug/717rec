@@ -1,40 +1,50 @@
-## Goal
-Fix the `validateMatchScores` function so it correctly rejects impossible match scores where the winner has more wins than mathematically possible in a best-of format.
+## What's happening
 
-## Problem
-`validateMatchScores` currently accepts scores like 3-0 in a best-of-3 because it only checks `team1Wins >= minWinsRequired || team2Wins >= minWinsRequired`. In a best-of-3, the match ends as soon as a team reaches 2 wins, so 3-0 is impossible. The same bug affects best-of-5 scores like 4-0 or 4-1.
+The bracket `3457c81c-...` was flipped to `state='completed'`, which triggered `BracketStandingsService.calculateFinalStandings`. That in turn calls `brackets-manager`'s `doubleEliminationStandings`, which walks the losers bracket and throws **"Participant not found"**.
 
-Other parts of the codebase (`matchValidationUtils.ts`, `ScoreParser.ts`) already enforce the correct rule: the winner must have exactly the minimum wins needed, and the loser must have fewer.
+I dumped the match table for that bracket. All opponent IDs (1401–1406) resolve to real participants — so the helper isn't failing on a missing row. The real culprit is **match 2623** in the losers bracket (group 334, round 1161, number 2):
 
-## Changes
+- `opponent1_id = 1406`, `opponent2_id = NULL`
+- `status = 4` (ready/running, **not** completed — every other match is status 5)
 
-### 1. Fix `scoreUtils.ts`
-File: `src/components/playoffs/match-score-editor/MatchScoreEditor/utils/scoreUtils.ts`
+`doubleEliminationStandings` assumes every losers-bracket round has a defined loser to read. When it hits this still-pending slot it calls the helper that throws "Participant not found". So the bracket was marked complete prematurely (likely off the grand final), while a losers-bracket match was still unresolved.
 
-Replace the permissive completion check on line 55 with a stricter check that mirrors the rule used in `matchValidationUtils.ts`:
+The current code then re-throws as a destructive toast: *"Standings Calculation Failed — Could not calculate final placements."* No partial data is written (good), but the user sees a scary error and has no way forward.
 
-- If team1 is the winner: `team1Wins === minWinsRequired && team2Wins < minWinsRequired`
-- If team2 is the winner: `team2Wins === minWinsRequired && team1Wins < minWinsRequired`
-- Reject everything else with an appropriate error message.
+## The plan
 
-### 2. Add unit tests
-File: `src/components/playoffs/match-score-editor/MatchScoreEditor/utils/__tests__/scoreUtils.test.ts`
+### 1. Make the standings calculation defensive (code fix)
 
-Cover:
-- Valid completed scores (e.g., 2-0, 2-1 in BO3; 3-0, 3-1, 3-2 in BO5)
-- Invalid excess-winner scores (3-0 in BO3; 4-0, 4-1 in BO5)
-- Both teams reaching minWinsRequired (still rejected)
-- Tied games with non-zero scores (still rejected)
-- Empty / zero scores (still allowed)
-- Total games exceeding bestOf (still rejected)
-- Incomplete scores where no team has reached minWinsRequired (still rejected)
+In `src/services/brackets/manager/services/BracketStandingsService.ts`:
 
-## Verification
-- Run the new unit test file: `npm run test:file -- src/components/playoffs/match-score-editor/MatchScoreEditor/utils/__tests__/scoreUtils.test.ts`
-- Run TypeScript check: `npx tsc --noEmit`
-- Optionally run the full test suite: `npm test`
+- **Pre-check before calling `manager.get.finalStandings`**: query `match` rows for the chosen stage and find any with `status < 5` (not archived/completed) OR with a null opponent that isn't a real BYE. If found, log them and **return early without throwing** — there's nothing to compute yet.
+- **Wrap `manager.get.finalStandings` in its own try/catch**: if it still throws (e.g. "Participant not found"), log the offending stage + the suspect matches we found, and return early instead of re-throwing. We never want a half-finished bracket to surface a destructive toast.
 
-## Notes
-- No database changes required.
-- No UI changes required.
-- This is a pure validation logic fix and test addition.
+In `src/hooks/useBracketCompletion.ts`:
+
+- Replace the "Standings Calculation Failed" destructive toast with a quieter info toast (or remove it entirely) when the service returns without writing records. The success toast still fires when records are actually upserted.
+
+### 2. One-off data repair for this bracket (separate step, after code lands)
+
+Once the code is safe, we still need to decide what to do with bracket `3457c81c-...`:
+
+- **Option A**: flip `brackets.state` back to `in_progress` so the admin can finish match 2623, then completion re-fires naturally.
+- **Option B**: if match 2623 should be a BYE for 1406, mark it `status = 5` with `opponent1_result = 'win'` so the losers bracket resolves.
+
+I'd recommend **A** unless you confirm 2623 is supposed to be a BYE.
+
+### 3. Verification
+
+- Add a unit test in `src/services/brackets/manager/services/__tests__/BracketStandingsService.test.ts` covering: (a) stage with an incomplete match → returns early, no upsert, no throw; (b) `finalStandings` throwing → swallowed with log, no upsert, no throw; (c) happy path still upserts as today.
+- Run `npm run test:file -- src/services/brackets/manager/services/__tests__/BracketStandingsService.test.ts`.
+
+## Files touched
+
+- `src/services/brackets/manager/services/BracketStandingsService.ts` — add pre-check + inner try/catch around `finalStandings`.
+- `src/hooks/useBracketCompletion.ts` — soften the failure toast.
+- `src/services/brackets/manager/services/__tests__/BracketStandingsService.test.ts` — new tests.
+
+## Questions before I implement
+
+1. For bracket `3457c81c-...`, do you want me to revert it to `in_progress` (recommended) or treat match 2623 as a BYE win for "Smacked"?
+2. Should the "still has unfinished matches" case be totally silent, or show a small info toast like *"Standings will be calculated when all matches are complete"*?
