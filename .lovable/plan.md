@@ -1,62 +1,43 @@
-## Step 5 — One-off data fix for Intermediate Spring 2026 Grand Final
+## Goal
+Make the Grand Final visually show newly populated teams when the `match` table changes, including changes made by SQL/admin repair and future automatic GF repair.
 
-### What I found in the database
+## What I found
+- Supabase now has the correct Grand Final row:
+  - `match.id = 2659`
+  - `opponent1 = Smooth Sliders`
+  - `opponent2 = The Triple Nipple`
+  - `status = 2` / Ready
+- The bracket viewer is still showing `-` because the rendered viewer is not being forced to reload/re-render when opponent IDs change in the `match` table.
+- There is also a render-skip fingerprint that only compares match IDs and scores/results, so opponent changes can be treated as “no change.”
 
-I queried the affected bracket directly. The Grand Final row already has both team IDs stored, but the row's `status` is `1` (Locked) instead of `2` (Ready). The bracket UI (brackets-manager renderer) treats Locked matches as "not yet populated" and renders them as `-` / `-`, which is exactly what your screenshot shows. So the row looks populated to the DB but blank to the UI.
+## Plan
+1. **Wire live match updates into the bracket viewer**
+   - Use the existing realtime hook’s `lastUpdate` value in `BracketView`.
+   - Pass it down to `BracketsViewerComponent` as a refresh signal.
+   - When the `match` table updates, the viewer will run its SQL transform again.
 
-Flipping `status` from `1` → `2` makes the renderer display the team names AND makes the match playable/editable. One row, one update.
+2. **Fix the viewer’s “same data” check**
+   - Update the bracket viewer fingerprint to include:
+     - `opponent1.id`
+     - `opponent2.id`
+     - `status`
+     - scores/results
+   - This prevents the viewer from skipping a render when teams populate but scores are still blank.
 
-- **Bracket:** "Intermediate Spring 2026" (`bracket id = 0beb6968-3424-42b1-bd4c-6941386bea51`, `stage_id = 118`)
-- **WB Final** (group 1, round 4, match `id = 2644`): Smooth Sliders (participant `1407`) beat Tom & Tom 2–0 → `status = 4` ✅
-- **LB Final** (group 2, round 6, match `id = 2658`): The Triple Nipple (participant `1409`) beat Tom & Tom 2–0 → `status = 4` ✅
-- **Grand Final – round 1** (group 3, round 1, match `id = 2659`): `opponent1_id = 1407` (Smooth Sliders), `opponent2_id = 1409` (The Triple Nipple), `status = 1` (Locked) → renders blank ❌
-- **Grand Final – reset** (group 3, round 2, match `id = 2660`): empty, `status = 0` — correct; only populates if Triple Nipple wins GF round 1.
+3. **Keep the change small and safe**
+   - Only touch the playoff bracket viewer path.
+   - No schema changes.
+   - No new SQL.
+   - No changes to bracket advancement logic.
 
-### SQL snippet to run from the admin SQL editor
+4. **Add/update focused tests**
+   - Confirm realtime match updates pass a refresh signal into the viewer.
+   - Confirm the viewer refresh signal changes the rendered container key / render cycle.
+   - Confirm opponent-ID changes are included in the fingerprint behavior where practical.
 
-```sql
--- Intermediate Spring 2026 — unlock the Grand Final so names show and it becomes playable.
--- Match 2659 = Grand Final round 1 (stage 118, group 338, round 1177)
--- opponent1 = 1407 (Smooth Sliders, WB Final winner)
--- opponent2 = 1409 (The Triple Nipple, LB Final winner)
--- status: 1 (Locked) -> 2 (Ready)
-
-UPDATE public.match
-SET
-  opponent1_id = 1407,
-  opponent2_id = 1409,
-  status       = 2
-WHERE id = 2659
-  AND stage_id = 118
-  AND group_id = 338
-  AND round_id = 1177;
-
--- Verify (expect status=2 and both opponent IDs set)
-SELECT id, group_id, round_id, status, opponent1_id, opponent2_id
-FROM public.match
-WHERE id = 2659;
-```
-
-Re-running is safe: opponent IDs already match the values being set, so the statement is idempotent.
-
-### How to verify after running
-
-1. Hard-refresh the Intermediate Spring 2026 playoff bracket page.
-2. The Grand Final card should now show **Smooth Sliders** vs **The Triple Nipple** (instead of `-` / `-`) and be editable/scorable.
-3. The reset match below it stays empty until/unless The Triple Nipple wins GF round 1.
-
-### Why the UI was blank (so you can spot this pattern next time)
-
-In brackets-manager, match `status` controls rendering as well as gating:
-- `0` = Locked (no opponents yet) — renders blank
-- `1` = Waiting (opponents known but at least one upstream not final) — also renders blank/placeholder
-- `2` = Ready — opponents shown, match playable
-- `3` = Running, `4` = Completed, `5` = Archived
-
-The auto-repair code shipped in the previous steps writes `status = 2` whenever both GF slots get filled. This one row predates that fix, hence the manual nudge.
-
-### Scope / safety notes
-
-- Touches exactly one row in `public.match`. No standings, teams, or other brackets are affected.
-- Not a migration — this is data, not schema. Run it from the admin SQL editor.
-- Run only after the code fix is live so the stuck state doesn't recur for future brackets.
+## How you’ll verify
+After the fix ships:
+1. Open the Intermediate Spring 2026 bracket.
+2. Hard refresh once if the old viewer is already open.
+3. The Grand Final should show Smooth Sliders vs The Triple Nipple instead of `-` / `-`.
+4. Future WB/LB Final completions should update the GF visually without needing Recalculate Standings.

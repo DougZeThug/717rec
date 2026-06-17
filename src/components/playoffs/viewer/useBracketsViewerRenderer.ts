@@ -24,13 +24,18 @@ type BracketsViewerMatchClick = {
 /** Fingerprint function to detect identical match data and skip redundant renders. */
 const fingerprint = (matches: any[]): string => {
   const ids = matches.map((x) => x.id).join(',');
-  const scores = matches
+  // Include opponent IDs and status so newly populated slots (e.g. a Grand
+  // Final that just received its WB/LB finalists) are not treated as
+  // identical to the previous "TBD" render.
+  const slots = matches
     .map(
       (x) =>
-        `${x.opponent1?.score ?? '-'}:${x.opponent1?.result ?? ''}|${x.opponent2?.score ?? '-'}:${x.opponent2?.result ?? ''}`
+        `${x.opponent1?.id ?? 'n'}#${x.opponent1?.score ?? '-'}:${x.opponent1?.result ?? ''}|` +
+        `${x.opponent2?.id ?? 'n'}#${x.opponent2?.score ?? '-'}:${x.opponent2?.result ?? ''}|` +
+        `s=${x.status ?? ''}`
     )
     .join(',');
-  return `${matches.length}:${ids}:${scores}`;
+  return `${matches.length}:${ids}:${slots}`;
 };
 
 /** Custom round name formatter for brackets-viewer. */
