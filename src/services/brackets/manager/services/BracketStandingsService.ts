@@ -5,6 +5,7 @@ import { bracketLog, errorLog, failureLog, successLog, warnLog } from '@/utils/l
 
 import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
 import type { StorageParticipant, StorageStage } from '../types/BracketServiceTypes';
+import type { BracketNormalizationService } from './BracketNormalizationService';
 
 /**
  * Result of a final-standings calculation attempt.
@@ -26,7 +27,8 @@ const MATCH_STATUS_COMPLETED = 4;
 export class BracketStandingsService {
   constructor(
     private storage: SupabaseSqlStorage,
-    private manager: BracketsManager
+    private manager: BracketsManager,
+    private normalizationService?: BracketNormalizationService
   ) {}
 
   /**
@@ -52,6 +54,19 @@ export class BracketStandingsService {
       const stagesArray = (Array.isArray(stages) ? stages : [stages]) as StorageStage[];
       // Use the final stage (highest number) for tournament standings
       const stage = [...stagesArray].sort((a, b) => b.number - a.number)[0];
+
+      // Best-effort self-heal: walk any stuck WB/LB winners into the Grand Final
+      // and backfill GF opponent slots before checking for incomplete matches.
+      // This lets the "Recalculate Standings" button repair a bracket whose GF
+      // never received its winners due to a silent brackets-manager failure.
+      if (this.normalizationService) {
+        try {
+          await this.normalizationService.propagateCompletedMatches(stage.id);
+          await this.normalizationService.normalizeGrandFinalPopulation(stage.id);
+        } catch (healError) {
+          warnLog('Pre-standings self-heal failed (continuing):', healError);
+        }
+      }
 
       // Pre-check: if any match in this stage is still unresolved (status < 4),
       // the bracket isn't really done and brackets-manager will throw obscure
