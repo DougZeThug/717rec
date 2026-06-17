@@ -38,17 +38,106 @@ export class MatchPropagationRepairService {
       bracketLog('🔍 propagateCompletedMatches — scanning LB for stuck winners...', { stageId });
 
       const lbGroup = await this.lbStructureService.findLbGroup(stageId);
-      if (!lbGroup) return;
+      if (lbGroup) {
+        const rounds = await this.lbStructureService.findGroupRounds(lbGroup.id);
+        const sortedRounds = [...rounds].sort((a, b) => a.number - b.number);
 
-      const rounds = await this.lbStructureService.findGroupRounds(lbGroup.id);
-      const sortedRounds = [...rounds].sort((a, b) => a.number - b.number);
-
-      for (let i = 0; i < sortedRounds.length - 1; i += 1) {
-        await this.propagateRoundWinners(sortedRounds[i], sortedRounds[i + 1]);
+        for (let i = 0; i < sortedRounds.length - 1; i += 1) {
+          await this.propagateRoundWinners(sortedRounds[i], sortedRounds[i + 1]);
+        }
       }
+
+      // Cross-group propagation into the Grand Final group.
+      await this.propagateIntoGrandFinal(stageId);
     } catch (error) {
       errorLog('Error in propagateCompletedMatches:', error);
     }
+  }
+
+  /**
+   * Propagate WB Final winner → GF round 1 opponent1 (target slot found by empty
+   * scan), LB Final winner → GF round 1 opponent2, and GF round 1 winner → GF
+   * round 2 if a reset match exists. Mirrors the round-walker but operates on
+   * single cross-group edges so it works even when brackets-manager silently
+   * fails to advance the WB/LB Final winners.
+   */
+  private async propagateIntoGrandFinal(stageId: number): Promise<void> {
+    const gfGroup = await this.lbStructureService.findGfGroup(stageId);
+    if (!gfGroup) return;
+
+    const gfRounds = await this.lbStructureService.findGroupRounds(gfGroup.id);
+    const gfRound1 = gfRounds.find((r) => r.number === 1);
+    if (!gfRound1) return;
+
+    const wbFinalRound = await this.lbStructureService.findWbFinalRound(stageId);
+    if (wbFinalRound) {
+      await this.propagateFinalToGf(wbFinalRound, gfRound1);
+    }
+
+    const lbFinalRound = await this.lbStructureService.findLbFinalRound(stageId);
+    if (lbFinalRound) {
+      await this.propagateFinalToGf(lbFinalRound, gfRound1);
+    }
+
+    // Reset / double grand final
+    const gfRound2 = gfRounds.find((r) => r.number === 2);
+    if (gfRound2) {
+      await this.propagateRoundWinners(gfRound1, gfRound2);
+    }
+  }
+
+  private async propagateFinalToGf(finalRound: StorageRound, gfRound1: StorageRound): Promise<void> {
+    const finalMatches = await this.storage.select('match', { round_id: finalRound.id });
+    const arr = (Array.isArray(finalMatches) ? finalMatches : [finalMatches]) as StorageMatch[];
+    if (!arr.length) return;
+
+    // For both WB and LB finals there is exactly one match per round in
+    // brackets-manager's structure. Take the last by number for safety.
+    const sorted = [...arr].sort((a, b) => (a.number ?? 0) - (b.number ?? 0));
+    const finalMatch = sorted[sorted.length - 1];
+    if (finalMatch.status !== 4) return;
+
+    const winnerId =
+      finalMatch.opponent1?.result === 'win'
+        ? finalMatch.opponent1?.id
+        : finalMatch.opponent2?.result === 'win'
+          ? finalMatch.opponent2?.id
+          : null;
+    if (!winnerId) return;
+
+    const gfMatch = await getNextMatch(gfRound1.id, 1);
+    if (!gfMatch) return;
+    if (gfMatch.opponent1_id === winnerId || gfMatch.opponent2_id === winnerId) return;
+
+    const targetSlot = !gfMatch.opponent1_id
+      ? 'opponent1'
+      : !gfMatch.opponent2_id
+        ? 'opponent2'
+        : null;
+    if (!targetSlot) {
+      bracketLog(
+        `⚠️ [PROPAGATE→GF] Both GF slots occupied — skipping winner ${winnerId}`
+      );
+      return;
+    }
+
+    const updateFields: { opponent1_id?: number; opponent2_id?: number; status?: number } = {};
+    if (targetSlot === 'opponent1') {
+      updateFields.opponent1_id = winnerId;
+    } else {
+      updateFields.opponent2_id = winnerId;
+    }
+
+    const otherSlotFilled =
+      targetSlot === 'opponent1' ? Boolean(gfMatch.opponent2_id) : Boolean(gfMatch.opponent1_id);
+    if (gfMatch.status <= 1 && otherSlotFilled) {
+      updateFields.status = 2;
+    }
+
+    bracketLog(
+      `🔧 [PROPAGATE→GF] Winner ${winnerId} → GF round ${gfRound1.number} ${targetSlot}`
+    );
+    await supabase.from('match').update(updateFields).eq('id', gfMatch.id);
   }
 
   private async propagateRoundWinners(round: StorageRound, nextRound: StorageRound): Promise<void> {
