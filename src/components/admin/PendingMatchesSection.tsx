@@ -1,5 +1,3 @@
-import React from 'react';
-
 import ScoreSubmissionsList from '@/components/admin/scores/ScoreSubmissionsList';
 import { LoadingState } from '@/components/ui/loading-state';
 import { useScoreSubmissions } from '@/hooks/useScoreSubmissions';
