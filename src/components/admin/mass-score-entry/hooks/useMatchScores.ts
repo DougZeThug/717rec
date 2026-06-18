@@ -83,20 +83,9 @@ export const useMatchScores = (
     });
   };
 
-  const validationErrors = matches.reduce(
-    (acc, match, index) => {
-      if (match.isEdited && !match.isValid) {
-        acc[index] = 'Invalid score values';
-      }
-      return acc;
-    },
-    {} as Record<number, string>
-  );
-
   return {
     handleScoreChange,
     handleGameWinsChange,
     handleMarkCompleted,
-    validationErrors,
   };
 };
