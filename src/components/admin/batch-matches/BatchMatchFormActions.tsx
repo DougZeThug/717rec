@@ -1,5 +1,4 @@
 import { CalendarCheck, Clock, Loader2, Plus } from 'lucide-react';
-import React from 'react';
 
 import { Button } from '@/components/ui/button';
 
