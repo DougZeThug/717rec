@@ -5,9 +5,19 @@ import { BracketStandingsService } from '../src/services/brackets/manager/servic
 // Mock dependencies
 vi.mock('../src/integrations/supabase/client', () => ({
   supabase: {
-    from: vi.fn(() => ({
-      upsert: vi.fn().mockResolvedValue({ error: null }),
-    })),
+    from: vi.fn((table: string) => {
+      if (table === 'match') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+          }),
+        };
+      }
+      if (table === 'playoff_team_records') {
+        return { upsert: vi.fn().mockResolvedValue({ error: null }) };
+      }
+      return {};
+    }),
   },
 }));
 
