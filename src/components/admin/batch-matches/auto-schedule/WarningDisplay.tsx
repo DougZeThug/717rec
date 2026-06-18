@@ -8,7 +8,6 @@ interface WarningDisplayProps {
   unmatchedTeams?: number;
   insufficientBlocks?: string[];
   unmatchedTeamDetails?: Array<{ timeBlock: string; team: { id: string; name: string } }>;
-  onSuggestionClick?: (blockId: string) => void;
 }
 
 const EMPTY_INSUFFICIENT_BLOCKS: string[] = [];
@@ -19,7 +18,6 @@ export const WarningDisplay: React.FC<WarningDisplayProps> = ({
   unmatchedTeams = 0,
   insufficientBlocks = EMPTY_INSUFFICIENT_BLOCKS,
   unmatchedTeamDetails = EMPTY_UNMATCHED_DETAILS,
-  onSuggestionClick: _onSuggestionClick,
 }) => {
   if (oddBlocks === 0 && unmatchedTeams === 0 && insufficientBlocks.length === 0) {
     return null;
