@@ -391,7 +391,9 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
 
       mockSupabaseFrom.upsert.mockResolvedValue({ data: {}, error: null });
 
-      await expect(service.calculateFinalStandings(bracketId)).resolves.toBeUndefined();
+      await expect(service.calculateFinalStandings(bracketId)).resolves.toEqual({
+        written: true,
+      });
 
       // Verify upsert was called with correct data
       expect(mockSupabaseFrom.upsert).toHaveBeenCalledWith(
@@ -417,7 +419,10 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
       getStorageMock().select.mockResolvedValue([]);
 
       // Should not throw, just return early
-      await expect(service.calculateFinalStandings(bracketId)).resolves.toBeUndefined();
+      await expect(service.calculateFinalStandings(bracketId)).resolves.toEqual({
+        written: false,
+        reason: 'no-stages',
+      });
     });
 
     it('should throw error when upsert fails', async () => {
