@@ -38,8 +38,10 @@ export function useContactRequests(enabled = true) {
 }
 
 export function useSubmitContactRequest() {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (input: SubmitContactRequestInput) => ContactRequestService.submit(input),
+    onSuccess: () => qc.invalidateQueries({ queryKey: CONTACT_REQUESTS_QUERY_KEY }),
   });
 }
 
