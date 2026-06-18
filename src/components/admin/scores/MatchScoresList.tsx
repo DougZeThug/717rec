@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { LiveRegion } from '@/components/ui/live-region';
 import { Match, Team } from '@/types';
