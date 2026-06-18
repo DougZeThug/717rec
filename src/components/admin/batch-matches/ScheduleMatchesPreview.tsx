@@ -20,10 +20,7 @@ interface ScheduleMatchesPreviewProps {
   date: Date | null;
 }
 
-const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
-  pairings,
-  date,
-}) => {
+const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({ pairings, date }) => {
   // Check if we have any pairings
   const hasPairings = Object.values(pairings).some((blockPairings) => blockPairings?.length > 0);
 
