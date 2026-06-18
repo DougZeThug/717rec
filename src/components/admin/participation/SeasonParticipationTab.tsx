@@ -63,7 +63,6 @@ const SeasonParticipationTab: React.FC = () => {
       const participation = participationMap.get(team.id);
       return {
         ...team,
-        participation,
         status: participation?.status ?? ('NO_RESPONSE' as const),
         updatedAt: participation?.updated_at,
         submittedBy: participation?.submitted_by_name,
