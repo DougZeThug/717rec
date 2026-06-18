@@ -11,7 +11,6 @@ interface ScoreButtonProps {
   isSelected: boolean;
   onClick: () => void;
   disabled?: boolean;
-  isCompleted?: boolean;
   matchId?: string; // Added for debugging
   matchDate?: string; // Added for debugging
 }
@@ -21,7 +20,6 @@ const ScoreButton = ({
   isSelected,
   onClick,
   disabled = false,
-  isCompleted = false,
   matchId = 'unknown', // Default value for debugging
   matchDate = 'unknown', // Default value for debugging
 }: ScoreButtonProps) => {
@@ -36,7 +34,6 @@ const ScoreButton = ({
         gameWins: `${option.team1GameWins}-${option.team2GameWins}`,
         isSelected: Boolean(isSelected),
         wasSelected: isSelected,
-        isCompleted,
         label: option.label,
         timeOfClick: new Date().toISOString(),
       });
@@ -76,10 +73,7 @@ const ScoreButton = ({
         'rounded-md w-full min-h-[44px] h-auto py-2.5 px-1 border transition-colors duration-200 text-sm font-medium',
         selected
           ? 'bg-primary text-primary-foreground border-primary'
-          : isCompleted
-            ? 'bg-muted hover:bg-muted/80 border-muted-foreground/20'
-            : 'bg-background hover:bg-muted border-input',
-        isCompleted && !selected && 'opacity-60',
+          : 'bg-background hover:bg-muted border-input',
         disabled && 'opacity-50 cursor-not-allowed'
       )}
       data-testid={`score-button-${option.label}`}
