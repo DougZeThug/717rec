@@ -1,5 +1,4 @@
 import { useTeamRecordUpdate } from '@/hooks/matches/useTeamRecordUpdate';
-import { useToast } from '@/hooks/useToast';
 import { errorLog } from '@/utils/logger';
 
 import { MatchWithTeams } from '../types';
@@ -7,7 +6,6 @@ import { determineWinnerLoser, updateMatchInDatabase } from './matchUpdateCore';
 
 export const useMatchUpdateService = () => {
   const { updateTeamStats } = useTeamRecordUpdate();
-  const { toast: _toast } = useToast();
 
   const updateMatch = async (match: MatchWithTeams): Promise<boolean> => {
     try {
