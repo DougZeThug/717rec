@@ -98,7 +98,9 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
     // Setup mock Supabase client with proper chaining
     // The .update().eq() pattern must return a chainable object that eventually resolves
     mockSupabaseFrom = {
-      select: vi.fn().mockResolvedValue({ data: [], error: null }),
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+      }),
       insert: createInsertMock(),
       update: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
