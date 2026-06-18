@@ -126,6 +126,7 @@ const RivalryCard: React.FC<RivalryCardProps> = ({
   onClick,
 }) => (
   <button
+    type="button"
     onClick={onClick}
     className={cn(
       'flex items-center gap-3 p-3 rounded-lg border transition-colors text-left w-full',

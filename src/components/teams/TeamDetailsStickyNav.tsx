@@ -132,6 +132,7 @@ export const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ clas
             const isActive = activeSection === id;
             return (
               <button
+                type="button"
                 key={id}
                 onClick={() => scrollToSection(id)}
                 aria-label={ariaLabel}

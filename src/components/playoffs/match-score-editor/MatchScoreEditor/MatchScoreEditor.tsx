@@ -130,6 +130,7 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({ match, teams, onSav
 
         <div className="flex flex-col sm:flex-row gap-2 justify-end pt-3 md:pt-4 border-t">
           <button
+            type="button"
             onClick={onCancel}
             disabled={isSubmitting}
             className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent transition-colors w-full sm:w-auto"
@@ -137,6 +138,7 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({ match, teams, onSav
             Cancel
           </button>
           <button
+            type="button"
             onClick={handleByeForfeit}
             disabled={isSubmitting}
             className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 w-full sm:w-auto"

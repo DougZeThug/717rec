@@ -34,6 +34,7 @@ export function ToggleButtonGroup<T extends string>({
 
           return (
             <button
+              type="button"
               key={option.value}
               onClick={() => onChange(option.value)}
               className={cn(
@@ -62,6 +63,7 @@ export function ToggleButtonGroup<T extends string>({
 
         return (
           <button
+            type="button"
             key={option.value}
             onClick={() => onChange(option.value)}
             className={cn(

@@ -236,6 +236,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
                 <div className="flex justify-end gap-2 pt-2">
                   {onEdit && !isCompleted && (
                     <button
+                      type="button"
                       onClick={() => onEdit(match)}
                       className="p-1.5 rounded-full transition-all duration-200 bg-muted hover:bg-muted/80 active:scale-95"
                       aria-label="Edit match"
@@ -245,6 +246,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
                   )}
                   {onDelete && (
                     <button
+                      type="button"
                       onClick={() => onDelete(match.id)}
                       className={cn(
                         'p-1.5 rounded-full transition-all duration-200 active:scale-95',

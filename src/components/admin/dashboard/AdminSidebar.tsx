@@ -213,6 +213,7 @@ const AdminSidebar: React.FC = () => {
           <nav className="p-2 space-y-1">
             {filteredItems.map((item) => (
               <button
+                type="button"
                 key={item.id}
                 onClick={() => handleTabChange(item.id)}
                 className={cn(

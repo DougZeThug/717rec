@@ -67,6 +67,7 @@ const TeamSearchDrawer: React.FC<TeamSearchDrawerProps> = ({
 
                 return (
                   <button
+                    type="button"
                     key={ranking.teamId}
                     onClick={() => handleTeamClick(ranking.teamId)}
                     className={cn(

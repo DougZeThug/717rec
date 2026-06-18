@@ -135,6 +135,7 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
                   <div className="flex justify-center gap-2 mt-3">
                     {chartLabels.map((label, index) => (
                       <button
+                        type="button"
                         key={label}
                         onClick={() => emblaApi?.scrollTo(index)}
                         className={cn(

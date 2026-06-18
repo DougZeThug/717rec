@@ -51,6 +51,7 @@ const H2HMobileCard: React.FC<H2HMobileCardProps> = ({ record, onCardClick }) =>
 
   return (
     <button
+      type="button"
       onClick={() => record.opponent_id && onCardClick(record.opponent_id, record.opponent_name)}
       className={cn(
         'flex items-center gap-3 p-3 rounded-lg border border-l-4 transition-colors text-left w-full',

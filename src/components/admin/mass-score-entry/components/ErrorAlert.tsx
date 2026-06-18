@@ -18,7 +18,7 @@ const ErrorAlert: React.FC<ErrorAlertProps> = ({ failedMatches, message, onClear
         <AlertDescription className="flex items-center justify-between">
           <span>{message}</span>
           {onClear && (
-            <button onClick={onClear} className="text-xs underline hover:text-foreground/80">
+            <button type="button" onClick={onClear} className="text-xs underline hover:text-foreground/80">
               Dismiss
             </button>
           )}

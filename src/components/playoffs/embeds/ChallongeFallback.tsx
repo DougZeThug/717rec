@@ -87,6 +87,7 @@ const ChallongeEmbedWithToggle: React.FC<{
   return (
     <div className="rounded-2xl shadow-lg overflow-hidden bg-card">
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="w-full p-4 text-left bg-muted border-b border-border hover:bg-muted/80 transition-colors duration-200 flex items-center justify-between group"
       >

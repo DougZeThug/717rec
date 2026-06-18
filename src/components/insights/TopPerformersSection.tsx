@@ -31,6 +31,7 @@ const TopPerformersSection: React.FC<TopPerformersSectionProps> = ({ performers 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {performers.map((performer) => (
           <button
+            type="button"
             key={performer.category}
             onClick={() => navigate(`/teams/${performer.teamId}`)}
             className={cn(
