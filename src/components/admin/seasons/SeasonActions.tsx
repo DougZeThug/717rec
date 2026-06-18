@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Season } from '@/types/season';
 
-import SeasonActivationDialog from './SeasonActivationDialog';
 import SeasonArchivalDialog from './SeasonArchivalDialog';
 
 interface SeasonActionsProps {
@@ -13,7 +12,6 @@ interface SeasonActionsProps {
 }
 
 const SeasonActions: React.FC<SeasonActionsProps> = ({ season }) => {
-  const [showActivationDialog, setShowActivationDialog] = useState(false);
   const [showArchivalDialog, setShowArchivalDialog] = useState(false);
 
   return (
@@ -31,12 +29,6 @@ const SeasonActions: React.FC<SeasonActionsProps> = ({ season }) => {
         <Archive className="size-3" />
         Archive Season
       </Button>
-
-      <SeasonActivationDialog
-        isOpen={showActivationDialog}
-        onClose={() => setShowActivationDialog(false)}
-        season={season}
-      />
 
       <SeasonArchivalDialog
         isOpen={showArchivalDialog}
