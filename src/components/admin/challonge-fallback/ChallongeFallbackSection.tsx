@@ -60,7 +60,10 @@ const ChallongeFallbackSection: React.FC = () => {
       setDrafts((prevDrafts) => {
         const unsavedRows = prevDrafts.filter(
           (row) =>
-            row.isNew && !brackets.some((b) => b.title === row.title && b.slug === row.slug)
+            row.isNew &&
+            !brackets.some(
+              (b) => b.title === row.title.trim() && b.slug === row.slug.trim()
+            )
         );
         const savedDrafts = toDraft(brackets);
         return [...savedDrafts, ...unsavedRows];
