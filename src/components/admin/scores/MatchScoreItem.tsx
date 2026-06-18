@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { FALLBACK_TEAM_IMAGE } from '@/constants/images';
 import { validateGameScore } from '@/hooks/matches/utils/matchValidationUtils';
 import { Match, Team } from '@/types';
-import { toLocalDateString } from '@/utils/formatDateSafe';
 import { imageErrorLog } from '@/utils/logger';
 
 interface MatchScoreItemProps {
