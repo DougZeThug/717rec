@@ -17,7 +17,7 @@ export async function adminToggleByeReady(
 
   try {
     const check = await isLosersByeMatch(deps, matchId);
-    const isCompletedMatch = check.meta?.status === 4;
+    const isCompletedMatch = check.ok && check.meta?.status === 4;
 
     if (isCompletedMatch && !makeReady) {
       if (!clearDownstream) {
