@@ -1,6 +1,5 @@
 import { formatWithPattern } from '@/utils/formatDateSafe';
 import { CheckCircle, Clock, MessageSquare, User, Users, XCircle } from 'lucide-react';
-import React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
