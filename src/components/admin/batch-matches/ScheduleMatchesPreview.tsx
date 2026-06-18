@@ -18,15 +18,11 @@ interface TeamPairing {
 interface ScheduleMatchesPreviewProps {
   pairings: Record<string, TeamPairing[]>;
   date: Date | null;
-  isGenerating: boolean;
-  onApplyPairings?: (pairings: Record<string, TeamPairing[]>) => void;
 }
 
 const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
   pairings,
   date,
-  isGenerating: _isGenerating,
-  onApplyPairings: _onApplyPairings,
 }) => {
   // Check if we have any pairings
   const hasPairings = Object.values(pairings).some((blockPairings) => blockPairings?.length > 0);
