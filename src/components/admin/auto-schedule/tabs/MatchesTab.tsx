@@ -75,14 +75,11 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
   // Calculate dual block metrics if in dual match mode and we have pairings
   const dualBlockMetrics = useMemo(() => {
     if (dualMatchMode && hasPairings) {
-      // Get the first two blocks in generatedPairings - typically Early and Late
-      const blocks = Object.keys(generatedPairings);
-      if (blocks.length >= 2) {
-        const primaryBlockPairings = generatedPairings[blocks[0]] || [];
-        const secondaryBlockPairings = generatedPairings[blocks[1]] || [];
-
-        return calculateDualBlockMetrics(primaryBlockPairings, secondaryBlockPairings);
-      }
+      // Aggregate across ALL time blocks (not just the first two) so teams
+      // scheduled in 3+ blocks are counted correctly. A team is considered
+      // to "have matches in multiple time blocks" only when its pairings
+      // span distinct block ids.
+      return calculateDualBlockMetrics(generatedPairings);
     }
     return null;
   }, [dualMatchMode, generatedPairings, hasPairings]);
@@ -90,12 +87,14 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
   // Validate dual block schedule
   const dualBlockValidation = useMemo(() => {
     if (dualMatchMode && hasPairings) {
+      // Validate across every block. validateDualBlockSchedule treats its
+      // two args symmetrically (concatenates them), so we put the first
+      // block in arg 1 and flatten the rest into arg 2.
       const blocks = Object.keys(generatedPairings);
-      if (blocks.length >= 2) {
-        const primaryBlockPairings = generatedPairings[blocks[0]] || [];
-        const secondaryBlockPairings = generatedPairings[blocks[1]] || [];
-
-        return validateDualBlockSchedule(primaryBlockPairings, secondaryBlockPairings);
+      if (blocks.length >= 1) {
+        const primary = generatedPairings[blocks[0]] || [];
+        const rest = blocks.slice(1).flatMap((b) => generatedPairings[b] || []);
+        return validateDualBlockSchedule(primary, rest);
       }
     }
     return null;
