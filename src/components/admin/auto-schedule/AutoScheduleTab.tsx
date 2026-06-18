@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 import { useAutoSchedule } from '@/hooks/useAutoSchedule/index';
 import { TimeBlockTeamsMap } from '@/types/autoSchedule';
