@@ -90,7 +90,6 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
         disabled={isSubmitting}
         onComplete={handleAutoComplete}
         matchId={match.id}
-        isCompleted={match.iscompleted}
         matchDate={match.date?.toString()}
         team1Name={match.team1?.name}
         team2Name={match.team2?.name}
