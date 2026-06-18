@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
 import { MatchWithTeams } from '../../types';
-import { validateMatchScores } from '../../utils/matchValidation';
 
 export const useMatchesState = () => {
   const [matches, setMatches] = useState<MatchWithTeams[]>([]);
@@ -26,37 +25,6 @@ export const useMatchesState = () => {
     }
   };
 
-  // This is for the original style (team1/team2 toggle)
-  const handleScoreChange = (index: number, team: 'team1' | 'team2', value: string) => {
-    const scoreValue = value === '' ? null : parseInt(value, 10);
-
-    setMatches((prev) => {
-      const match = prev[index];
-      const newMatches = [...prev];
-      const updatedScore =
-        team === 'team1' ? { team1Score: scoreValue } : { team2Score: scoreValue };
-      const merged = { ...match, ...updatedScore };
-      newMatches[index] = {
-        ...merged,
-        isEdited: true,
-        isValid: validateMatchScores(merged.team1Score, merged.team2Score),
-      };
-      return newMatches;
-    });
-  };
-
-  const handleMarkCompleted = (index: number, checked: boolean) => {
-    setMatches((prev) => {
-      const newMatches = [...prev];
-      newMatches[index] = {
-        ...prev[index],
-        iscompleted: checked,
-        isEdited: true,
-      };
-      return newMatches;
-    });
-  };
-
   return {
     matches,
     setMatches: setMatchesWithSnapshot,
@@ -66,7 +34,5 @@ export const useMatchesState = () => {
     setLoading,
     submitting,
     setSubmitting,
-    handleScoreChange,
-    handleMarkCompleted,
   };
 };
