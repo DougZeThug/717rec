@@ -40,8 +40,39 @@ describe('calculateDualBlockMetrics', () => {
 
     const result = calculateDualBlockMetrics(primary, secondary);
 
-    // t1 appears in both → matchCount=2 → teamsWithBothMatches=1
+    // t1 appears in both distinct blocks → teamsWithBothMatches=1
     expect(result.teamsWithBothMatches).toBe(1);
+  });
+
+  it('does NOT count a team as both-blocks when both matches are in the same block (double header)', () => {
+    // t1 plays two different opponents inside the SAME block.
+    // matchCount=2 but blocks.size=1 → should count as single-match team,
+    // not as a team with matches in both time blocks.
+    const primary = [
+      createMockTeamPairing({ team1: t1, team2: t2 }),
+      createMockTeamPairing({ team1: t1, team2: t3 }),
+    ];
+    const secondary: ReturnType<typeof createMockTeamPairing>[] = [];
+
+    const result = calculateDualBlockMetrics(primary, secondary);
+
+    expect(result.teamsWithBothMatches).toBe(0);
+    // t1 (1 block), t2 (1 block), t3 (1 block) → all single-match
+    expect(result.teamsWithSingleMatch).toBe(3);
+  });
+
+  it('aggregates across 3+ blocks when given a pairings-by-block record', () => {
+    // t1 plays in three different blocks → counted as both-blocks (2+).
+    const pairingsByBlock = {
+      early: [createMockTeamPairing({ team1: t1, team2: t2 })],
+      mid: [createMockTeamPairing({ team1: t1, team2: t3 })],
+      late: [createMockTeamPairing({ team1: t1, team2: t4 })],
+    };
+
+    const result = calculateDualBlockMetrics(pairingsByBlock);
+
+    expect(result.teamsWithBothMatches).toBe(1); // only t1 spans multiple blocks
+    expect(result.teamsWithSingleMatch).toBe(3); // t2, t3, t4 each appear once
   });
 
   it('detects duplicate opponents when same pairing appears in both blocks', () => {
