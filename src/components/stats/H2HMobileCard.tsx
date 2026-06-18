@@ -1,4 +1,3 @@
-import { formatWithPattern } from '@/utils/formatDateSafe';
 import { Trophy, X } from 'lucide-react';
 import React from 'react';
 
@@ -6,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { TeamLogo } from '@/components/ui/team/TeamLogo';
 import { cn } from '@/lib/utils';
 import type { HeadToHeadRecord } from '@/types/headToHead';
+import { formatWithPattern } from '@/utils/formatDateSafe';
 import { getRivalryType, type RivalryType } from '@/utils/teamDetailsUtils/rivalryUtils';
 
 interface H2HMobileCardProps {
@@ -44,6 +44,56 @@ const rivalryBadgeConfig: Record<RivalryType, { label: string; className: string
   },
 };
 
+interface H2HCardDetailsProps {
+  record: HeadToHeadRecord;
+  badge: { label: string; className: string } | null;
+}
+
+const H2HCardDetails: React.FC<H2HCardDetailsProps> = ({ record, badge }) => (
+  <div className="min-w-0 flex-1">
+    {/* Row 1: Name + rivalry badge */}
+    <div className="flex items-center gap-2">
+      <span className="font-medium text-sm truncate">{record.opponent_name}</span>
+      {badge && (
+        <span
+          className={cn(
+            'text-[10px] font-semibold px-1.5 py-0.5 rounded border whitespace-nowrap flex-shrink-0',
+            badge.className
+          )}
+        >
+          {badge.label}
+        </span>
+      )}
+    </div>
+    {/* Row 2: W-L and Win% */}
+    <div className="flex items-center gap-2 mt-0.5">
+      <div className="flex items-center gap-1 text-xs">
+        <Trophy className="size-3 text-emerald-500" />
+        <span className="text-emerald-600 font-medium">{record.wins}W</span>
+        <span className="text-muted-foreground">-</span>
+        <X className="size-3 text-rose-500" />
+        <span className="text-rose-600 font-medium">{record.losses}L</span>
+      </div>
+      <Badge
+        variant={record.win_pct >= 50 ? 'default' : 'secondary'}
+        className="text-[10px] px-1.5 py-0"
+      >
+        {Number(record.win_pct).toFixed(1)}%
+      </Badge>
+    </div>
+    {/* Row 3: Game W-L and last played */}
+    <div className="text-[11px] text-muted-foreground mt-0.5">
+      Games: {record.game_wins}-{record.game_losses}
+      {record.last_played_at && (
+        <>
+          {' · Last: '}
+          {formatWithPattern(record.last_played_at, 'MMM d, yyyy')}
+        </>
+      )}
+    </div>
+  </div>
+);
+
 const H2HMobileCard: React.FC<H2HMobileCardProps> = ({ record, onCardClick }) => {
   const rivalryType = getRivalryType(record);
   const badge = rivalryType ? rivalryBadgeConfig[rivalryType] : null;
@@ -65,48 +115,7 @@ const H2HMobileCard: React.FC<H2HMobileCardProps> = ({ record, onCardClick }) =>
         teamId={record.opponent_id}
         size="sm"
       />
-      <div className="min-w-0 flex-1">
-        {/* Row 1: Name + rivalry badge */}
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-sm truncate">{record.opponent_name}</span>
-          {badge && (
-            <span
-              className={cn(
-                'text-[10px] font-semibold px-1.5 py-0.5 rounded border whitespace-nowrap flex-shrink-0',
-                badge.className
-              )}
-            >
-              {badge.label}
-            </span>
-          )}
-        </div>
-        {/* Row 2: W-L and Win% */}
-        <div className="flex items-center gap-2 mt-0.5">
-          <div className="flex items-center gap-1 text-xs">
-            <Trophy className="size-3 text-emerald-500" />
-            <span className="text-emerald-600 font-medium">{record.wins}W</span>
-            <span className="text-muted-foreground">-</span>
-            <X className="size-3 text-rose-500" />
-            <span className="text-rose-600 font-medium">{record.losses}L</span>
-          </div>
-          <Badge
-            variant={record.win_pct >= 50 ? 'default' : 'secondary'}
-            className="text-[10px] px-1.5 py-0"
-          >
-            {Number(record.win_pct).toFixed(1)}%
-          </Badge>
-        </div>
-        {/* Row 3: Game W-L and last played */}
-        <div className="text-[11px] text-muted-foreground mt-0.5">
-          Games: {record.game_wins}-{record.game_losses}
-          {record.last_played_at && (
-            <>
-              {' · Last: '}
-              {formatWithPattern(record.last_played_at, 'MMM d, yyyy')}
-            </>
-          )}
-        </div>
-      </div>
+      <H2HCardDetails record={record} badge={badge} />
     </button>
   );
 };
