@@ -60,7 +60,7 @@ export const TimeBlockTeamsList: React.FC<TimeBlockTeamsListProps> = ({
             className="size-4"
           />
           <span className="text-sm text-muted-foreground">
-            {allSelected ? 'Deselect All' : someSelected ? 'Select All' : 'Select All'}
+            {allSelected ? 'Deselect All' : 'Select All'}
             {someSelected &&
               !allSelected &&
               ` (${selectedTeamIds.filter((id) => teams.some((team) => team.id === id)).length}/${teams.length})`}
