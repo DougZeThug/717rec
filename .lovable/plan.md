@@ -1,63 +1,56 @@
-## What's actually happening
+## Problem
 
-The message "10 out of 26 teams have matches in both time blocks. 16 team(s) only play in one time block." is **misleading** — it's not measuring what its wording suggests, and in your schedule it's also being computed from incomplete data.
+Three tests fail with errors like:
+- `supabase.from(...).select(...).eq is not a function`
+- `supabase.from(...).select is not a function`
 
-### Bug #1 — only the first two time blocks are inspected
+The new `BracketStandingsService` pre-check added a `supabase.from('match').select(...).eq('stage_id', ...)` query. Two older test files have Supabase mocks that don't support that chain:
 
-In `src/components/admin/auto-schedule/tabs/MatchesTab.tsx` (lines 76–88), the dual-match metrics are calculated like this:
+1. `tests/bracketManagerPhase0.test.ts` — `select` is `mockResolvedValue(...)`, so `.eq()` doesn't exist on its return value.
+2. `tests/repro_bracket_standings.test.ts` — mocked `from()` only returns an `upsert`, no `select` at all.
+
+The newer, well-structured `src/services/brackets/manager/services/__tests__/BracketStandingsService.test.ts` already handles this correctly (it branches by table name) and passes.
+
+## Fix
+
+Only test-file changes — no production code touched.
+
+### 1. `tests/bracketManagerPhase0.test.ts`
+Replace the `select: vi.fn().mockResolvedValue(...)` line with a chainable that supports `.eq(...)` resolving to `{ data: [], error: null }`:
 
 ```ts
-const blocks = Object.keys(generatedPairings);
-const primaryBlockPairings   = generatedPairings[blocks[0]] || [];
-const secondaryBlockPairings = generatedPairings[blocks[1]] || [];
-return calculateDualBlockMetrics(primaryBlockPairings, secondaryBlockPairings);
+select: vi.fn().mockReturnValue({
+  eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+}),
 ```
 
-It hard-codes `blocks[0]` and `blocks[1]` — meant for the simple "Early 6:30 / Late 7:00" case. If your schedule has **more than two time blocks** (e.g., 6:30, 7:00, 7:30, …), all pairings in blocks[2]+ are silently ignored when computing the metric. Teams whose two matches happen to live in those ignored blocks get counted as having only one match, which is exactly the "16 teams only play in one time block" you're seeing.
+This keeps existing await-on-select behavior working for callers that don't chain (they get the chain object back, but the only failing tests are the standings ones).
 
-The same truncation happens for `validateDualBlockSchedule` right below it (lines 91–102).
+### 2. `tests/repro_bracket_standings.test.ts`
+Update the `supabase.from` mock to branch by table name, mirroring the pattern in the newer service test:
 
-### Bug #2 — the metric counts "matches scheduled" not "matches across both blocks"
+```ts
+supabase: {
+  from: vi.fn((table: string) => {
+    if (table === 'match') {
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+        }),
+      };
+    }
+    if (table === 'playoff_team_records') {
+      return { upsert: vi.fn().mockResolvedValue({ error: null }) };
+    }
+    return {};
+  }),
+},
+```
 
-`calculateDualBlockMetrics` in `src/utils/autoSchedule/dualBlock/metricsUtils.ts` defines:
+## Verify
 
-- `teamsWithBothMatches` = teams whose total `matchCount === 2`
-- `teamsWithSingleMatch` = teams whose total `matchCount === 1`
-
-It never checks **which** block each pairing belongs to. So a team playing twice inside the same time block (a double-header within one block) would still be reported as "has matches in both time blocks", and a team playing in 3 blocks would be reported as neither. The UI label and warning copy don't match what the number actually represents.
-
-## Plan to fix
-
-Two small, focused changes — UI/presentation only, no scheduler logic touched.
-
-### 1. Aggregate metrics across all blocks, not just the first two
-
-`src/components/admin/auto-schedule/tabs/MatchesTab.tsx`
-
-- Replace the `blocks[0]` / `blocks[1]` slice with all pairings flattened across every block, OR pass the full `generatedPairings` map into the metrics/validation helpers.
-- Simplest, lowest-risk option: keep the existing two-argument signature, but pass `primary = generatedPairings[blocks[0]]` and `secondary = pairings from every other block concatenated`. This restores the intended semantics (one "anchor" block vs. everything else) without changing any helper.
-- Same change applied to the `dualBlockValidation` memo right below.
-
-### 2. Track block membership properly inside the metric
-
-`src/utils/autoSchedule/dualBlock/metricsUtils.ts`
-
-- In `processBlockPairing`, also record **which block** each team appeared in (e.g., a `Set<string>` of block IDs per team).
-- Recompute:
-  - `teamsWithBothMatches` → teams whose recorded block set has size ≥ 2
-  - `teamsWithSingleMatch` → teams whose recorded block set has size === 1
-- Existing fields (`teamsWithDuplicateOpponents`, `averageCompatibilityScore`, `crossBlockCompatibility`, `blockBalanceScore`, `overallQualityScore`) keep their current formulas.
-- Update the existing unit tests in `src/utils/autoSchedule/dualBlock/__tests__/metricsUtils.test.ts` that assert on `matchCount === 2` semantics so they reflect "appeared in N distinct blocks" semantics. Add one new test: a team that plays twice inside the **same** block should be counted as `teamsWithSingleMatch`, not `teamsWithBothMatches`.
-
-### 3. (Optional, cosmetic) Tighten the warning copy
-
-`src/components/admin/auto-schedule/DualMatchWarningDisplay.tsx` lines 83–88 — once the metric is accurate, the wording "have matches in both time blocks" / "only play in one time block" is correct. No copy change needed if steps 1 and 2 land. If you'd rather keep the metric as a pure "match count" check, we'd instead reword the alert to "have 2 matches scheduled" / "have only 1 match scheduled" and skip step 2.
-
-## How you'll verify
-
-1. Run the scheduler with your normal schedule — the alert should either disappear (turning into the green "Optimal Dual Match Schedule") or show numbers that actually match what you see in the match list.
-2. Updated unit tests for `calculateDualBlockMetrics` pass.
-
-## Question before I implement
-
-Do you want the metric to be **strictly "appeared in 2+ distinct time blocks"** (recommended — matches the current wording), or **"has 2 matches scheduled regardless of block"** (in which case I'll just reword the warning)?
+Run:
+```
+npx vitest run tests/bracketManagerPhase0.test.ts tests/repro_bracket_standings.test.ts
+```
+All three previously failing tests should pass, and no other tests should regress.
