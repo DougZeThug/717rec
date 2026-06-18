@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import MatchScoresList from '@/components/admin/scores/MatchScoresList';
 import DeleteMatchDialog from '@/components/schedule/DeleteMatchDialog';
