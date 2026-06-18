@@ -52,6 +52,11 @@ export interface TeamMatchCount {
    * IDs of the opponents the team has faced
    */
   opponents: string[];
+
+  /**
+   * Distinct time block identifiers in which the team appears
+   */
+  blocks: Set<string>;
 }
 
 /**
