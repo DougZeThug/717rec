@@ -15,8 +15,6 @@ interface AlgorithmSettingsProps {
   setAvoidRematches: (value: boolean) => void;
   prioritizeQuality: boolean;
   setPrioritizeQuality: (value: boolean) => void;
-  dualMatchMode?: boolean;
-  setDualMatchMode?: (value: boolean) => void;
 }
 
 export const AlgorithmSettings: React.FC<AlgorithmSettingsProps> = ({
@@ -24,8 +22,6 @@ export const AlgorithmSettings: React.FC<AlgorithmSettingsProps> = ({
   setAvoidRematches,
   prioritizeQuality,
   setPrioritizeQuality,
-  dualMatchMode,
-  setDualMatchMode,
 }) => {
   return (
     <Accordion type="single" collapsible className="mb-4">
@@ -37,22 +33,6 @@ export const AlgorithmSettings: React.FC<AlgorithmSettingsProps> = ({
         </AccordionTrigger>
         <AccordionContent>
           <div className="space-y-4 py-2">
-            {setDualMatchMode && (
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="dual-match-mode">Dual Match Mode</Label>
-                  <p className="text-[0.8rem] text-muted-foreground">
-                    Each team plays in two consecutive time blocks (6:30 & 7:00)
-                  </p>
-                </div>
-                <Switch
-                  id="dual-match-mode"
-                  checked={dualMatchMode}
-                  onCheckedChange={setDualMatchMode}
-                />
-              </div>
-            )}
-
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="avoid-rematches">Avoid Rematches</Label>
@@ -67,21 +47,19 @@ export const AlgorithmSettings: React.FC<AlgorithmSettingsProps> = ({
               />
             </div>
 
-            {!dualMatchMode && (
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="prioritize-quality">Prioritize Match Quality</Label>
-                  <p className="text-[0.8rem] text-muted-foreground">
-                    Match teams with similar skill levels (higher priority)
-                  </p>
-                </div>
-                <Switch
-                  id="prioritize-quality"
-                  checked={prioritizeQuality}
-                  onCheckedChange={setPrioritizeQuality}
-                />
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="prioritize-quality">Prioritize Match Quality</Label>
+                <p className="text-[0.8rem] text-muted-foreground">
+                  Match teams with similar skill levels (higher priority)
+                </p>
               </div>
-            )}
+              <Switch
+                id="prioritize-quality"
+                checked={prioritizeQuality}
+                onCheckedChange={setPrioritizeQuality}
+              />
+            </div>
           </div>
         </AccordionContent>
       </AccordionItem>
