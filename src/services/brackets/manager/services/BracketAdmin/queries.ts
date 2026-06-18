@@ -36,7 +36,12 @@ export async function collectDownstreamChain(
   });
 
   const trackedIds = new Set<number | string>();
-  const winnerId = currentMatch.opponent1?.id || currentMatch.opponent2?.id;
+  const winnerId =
+    currentMatch.opponent1?.result === 'win'
+      ? currentMatch.opponent1.id
+      : currentMatch.opponent2?.result === 'win'
+        ? currentMatch.opponent2?.id
+        : null;
   if (winnerId) trackedIds.add(winnerId);
   if (trackedIds.size === 0) return [];
 

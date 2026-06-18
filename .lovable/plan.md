@@ -1,26 +1,38 @@
-## Goal
+## Fix downstream-clear bugs when reopening completed bracket matches
 
-Bring the denormalized `playoff_team_records` rows for the 4 affected teams back in sync with the corrected `playoff_matches` data, so the Final Standings card on the Playoffs page shows the correct per-team W/L/GW/GL. Keep `placement` values as-is so the standings still reflect how far each team actually advanced on the court.
+Two small fixes in `src/services/brackets/manager/services/BracketAdmin/`:
 
-## Data update (insert tool, single SQL batch)
+### 1. `queries.ts` — `collectDownstreamChain`
+Replace the winner detection so it follows the actual winner instead of just the first available opponent:
 
-Bracket: Competitive Spring 2026 (`43fca940-1e6e-450e-9992-b05e7c61ec6b`).
+```ts
+const winnerId =
+  currentMatch.opponent1?.result === 'win'
+    ? currentMatch.opponent1.id
+    : currentMatch.opponent2?.result === 'win'
+      ? currentMatch.opponent2?.id
+      : null;
+if (winnerId) trackedIds.add(winnerId);
+```
 
-| Team | wins | losses | game_wins | game_losses | placement |
-|---|---|---|---|---|---|
-| Pepperoni Cheesers (`c9d6…`) | 2 | 2 | 4 | 4 | 8 (unchanged) |
-| Bumbleweed (`37bf…`) | 1 | 3 | 3 | 5 | 6 (unchanged) |
-| Hole Burners (`a882…`) | 1 | 2 | 3 | 4 | 9 (unchanged) |
-| Hole Violators (`f243…`) | 1 | 3 | 5 | 5 | 4 (unchanged) |
+### 2. `lifecycle.ts` — `adminToggleByeReady`
+Tighten the reopen guard so the BYE-specific downstream-clear path only runs for actual Losers Bracket BYE matches:
 
-Four `UPDATE` statements against `playoff_team_records`, scoped to the bracket id + each team id.
+```ts
+const isCompletedMatch = check.ok && check.meta?.status === 4;
+```
 
-## Verification
+This keeps `check.meta` available for the later `makeReady` and revert branches (they already handle `!check.ok`), but prevents non-BYE completed matches from reaching the buggy downstream logic.
 
-After the update I'll run a quick SELECT to confirm the four rows match the table above, then you can refresh the Playoffs page to spot-check the Final Standings card.
+### Verification
+Run the failing repro test:
 
-## Out of scope
+```
+npm run test:file -- src/services/brackets/manager/services/__tests__/guard-bypass-repro.test.ts
+```
 
-- No changes to `placement` values (Bumbleweed/Violators keep their higher slots since they actually played and lost those later games).
-- No changes to `team_season_stats.playoff_rank` (matches placements, also unchanged).
-- No code changes.
+It should now show match 50 cleared (not 51/42).
+
+### Scope
+- No UI changes, no schema changes, no behavior change for happy-path BYE reopen flows.
+- Only the wrong-winner traversal and the guard bypass are addressed.
