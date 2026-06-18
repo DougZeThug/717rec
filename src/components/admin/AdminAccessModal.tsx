@@ -14,13 +14,11 @@ import { useAuth } from '@/contexts/AuthContext';
 
 interface AdminAccessModalProps {
   isOpen: boolean;
-  onAccessGranted?: () => void;
   onRequestAccess?: () => void;
 }
 
 export const AdminAccessModal: React.FC<AdminAccessModalProps> = ({
   isOpen,
-  // onAccessGranted is available but unused
   onRequestAccess,
 }) => {
   const { user } = useAuth();
