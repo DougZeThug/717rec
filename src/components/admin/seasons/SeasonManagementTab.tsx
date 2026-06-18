@@ -1,5 +1,5 @@
 import { Calendar, Plus, Trophy } from 'lucide-react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import AdminSectionWrapper from '@/components/admin/AdminSectionWrapper';
 import { Button } from '@/components/ui/button';
