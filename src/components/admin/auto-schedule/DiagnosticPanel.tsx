@@ -99,7 +99,6 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
       });
 
     // Calculate validation status - only 3+ blocks is an error, 2 blocks is valid (double header)
-    const totalTeams = new Set(Object.keys(teamBlockMap)).size;
     const teamsWithAssignments = Object.keys(teamBlockMap).length;
     const hasInvalidAssignments = invalidTeams.length > 0;
     const isValid = !hasInvalidAssignments && teamsWithAssignments > 0;
@@ -109,7 +108,6 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
       doubleHeaderTeams,
       invalidTeams,
       blockStats,
-      totalTeams,
       teamsWithAssignments,
       isValid,
       hasInvalidAssignments,
