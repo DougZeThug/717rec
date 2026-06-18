@@ -77,7 +77,6 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
         }}
         onComplete={onComplete}
         disabled={disabled}
-        isCompleted={isCompleted}
         matchId={matchId}
         matchDate={matchDate}
       />

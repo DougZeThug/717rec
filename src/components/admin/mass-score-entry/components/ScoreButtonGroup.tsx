@@ -21,7 +21,6 @@ interface ScoreButtonGroupProps {
   disabled?: boolean;
   onComplete?: () => void;
   matchId?: string;
-  isCompleted?: boolean;
   matchDate?: string;
   team1Name?: string;
   team2Name?: string;
@@ -33,7 +32,6 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
   disabled = false,
   onComplete,
   matchId = 'unknown',
-  isCompleted: _isCompleted = false,
   matchDate,
   team1Name = 'Team 1',
   team2Name = 'Team 2',
