@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { Match, Team } from '@/types';
 
 import MatchApprovalItem from './MatchApprovalItem';
