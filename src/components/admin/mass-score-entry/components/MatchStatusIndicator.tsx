@@ -3,14 +3,12 @@ import React from 'react';
 
 interface MatchStatusIndicatorProps {
   isEdited?: boolean;
-  wasCompletedAndEdited?: boolean;
   isCompleted: boolean;
   isValid?: boolean;
 }
 
 const MatchStatusIndicator: React.FC<MatchStatusIndicatorProps> = ({
   isEdited = false,
-  wasCompletedAndEdited = false,
   isCompleted,
   isValid,
 }) => {
@@ -20,12 +18,6 @@ const MatchStatusIndicator: React.FC<MatchStatusIndicatorProps> = ({
         <span className="text-xs text-blue-500 flex items-center">
           <Edit className="size-3 mr-1" />
           Edited
-        </span>
-      )}
-      {wasCompletedAndEdited && (
-        <span className="text-xs text-amber-500 flex items-center">
-          <Edit className="size-3 mr-1" />
-          Rescored
         </span>
       )}
       {isCompleted && !isEdited && (
