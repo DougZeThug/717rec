@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { getHistoryDivisionOrder } from '@/utils/historyDivisionUtils';
 
@@ -70,8 +70,14 @@ export const useHistoryEditing = ({
   // Track custom divisions (ones that don't have any teams yet)
   const [customDivisions, setCustomDivisions] = useState<string[]>([]);
 
-  // Sync state when initialTeams changes (e.g., after save/refetch)
-  useEffect(() => {
+  // Sync editing state when the source data changes (e.g., after a save/refetch).
+  // Done during render via a previous-value comparison rather than in an effect,
+  // so the refreshed data shows on the first render instead of flashing the stale
+  // edit state for one frame. initialTeams is memoized by the caller, so its
+  // reference only changes when the underlying data actually changes.
+  const [prevInitialTeams, setPrevInitialTeams] = useState(initialTeams);
+  if (initialTeams !== prevInitialTeams) {
+    setPrevInitialTeams(initialTeams);
     const newTeams = initialTeams.map((t) => ({
       ...t,
       division_name: toEditableDivision(t.division_name),
@@ -79,7 +85,7 @@ export const useHistoryEditing = ({
     setOriginalTeams(newTeams);
     setTeams(newTeams);
     setCustomDivisions([]);
-  }, [initialTeams]);
+  }
 
   // Get all unique division names
   const divisions = useMemo(() => {
