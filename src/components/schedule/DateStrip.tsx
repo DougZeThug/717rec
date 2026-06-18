@@ -53,6 +53,7 @@ const DateStrip: React.FC<DateStripProps> = ({ selectedDate, onDateSelect, match
 
           return (
             <button
+              type="button"
               key={date.toISOString()}
               ref={isSelected ? selectedRef : null}
               onClick={() => onDateSelect(date)}

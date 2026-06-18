@@ -70,6 +70,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
       {/* Navigation indicators */}
       <div className="flex items-center justify-between mb-4">
         <button
+          type="button"
           onClick={() => canGoPrev && onIndexChange(activeIndex - 1)}
           disabled={!canGoPrev}
           className={cn(
@@ -87,6 +88,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
         <div className="flex items-center gap-2">
           {groupedMatches.map((group, idx) => (
             <button
+              type="button"
               key={group.date.toISOString()}
               onClick={() => onIndexChange(idx)}
               className={cn(
@@ -102,6 +104,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
         </div>
 
         <button
+          type="button"
           onClick={() => canGoNext && onIndexChange(activeIndex + 1)}
           disabled={!canGoNext}
           className={cn(

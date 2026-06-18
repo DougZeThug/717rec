@@ -12,6 +12,7 @@ interface Props {
 
 const TeamCard: React.FC<Props> = ({ team, selected, onToggle, disabled = false }) => (
   <button
+    type="button"
     onClick={() => !disabled && onToggle(team.id)}
     disabled={disabled}
     className={`flex items-center p-2 rounded cursor-pointer transition-colors w-full ${

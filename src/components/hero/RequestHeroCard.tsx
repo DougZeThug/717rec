@@ -189,6 +189,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {REQUEST_OPTIONS.map(({ type, icon: Icon, description }) => (
                 <button
+                  type="button"
                   key={type}
                   onClick={() => setSelectedType(type)}
                   className={cn(

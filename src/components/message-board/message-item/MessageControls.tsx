@@ -43,6 +43,7 @@ const MessageControls: React.FC<MessageControlsProps> = ({
         >
           {/* Edit option */}
           <button
+            type="button"
             className="p-1 rounded hover:bg-accent/30"
             onClick={(e) => {
               e.stopPropagation();
@@ -55,6 +56,7 @@ const MessageControls: React.FC<MessageControlsProps> = ({
 
           {/* Delete option */}
           <button
+            type="button"
             className="p-1 rounded hover:bg-accent/30"
             onClick={(e) => {
               e.stopPropagation();
