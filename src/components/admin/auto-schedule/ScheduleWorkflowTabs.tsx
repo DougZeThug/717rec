@@ -100,7 +100,6 @@ const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
               selectedDate={selectedDate}
               timeBlockTeams={timeBlockTeams}
               generatedPairings={generatedPairings}
-              unmatchedTeamIds={unmatchedTeamIds}
               isGenerating={isGenerating}
               matchQualityMetrics={matchQualityMetrics}
               dualMatchMode={dualMatchMode}

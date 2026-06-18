@@ -23,7 +23,6 @@ interface MatchesTabProps {
   selectedDate: Date | null;
   timeBlockTeams: TimeBlockTeamsMap;
   generatedPairings: TeamPairingMap;
-  unmatchedTeamIds: string[];
   isGenerating: boolean;
   matchQualityMetrics: MatchQualityMetrics | null;
   dualMatchMode?: boolean;
@@ -49,7 +48,6 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
   selectedDate,
   timeBlockTeams,
   generatedPairings,
-  unmatchedTeamIds: _unmatchedTeamIds,
   isGenerating,
   matchQualityMetrics,
   dualMatchMode,
