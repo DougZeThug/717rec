@@ -163,7 +163,6 @@ const MatchRow: React.FC<MatchRowProps> = ({
           </div>
           <MatchStatusSection
             isCompleted={match.iscompleted ?? false}
-            onCompletedChange={handleCompletedChange}
             isEdited={match.isEdited ?? false}
             isValid={match.isValid ?? false}
             disabled={isSubmitting}

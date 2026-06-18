@@ -2,13 +2,10 @@ import { m } from 'framer-motion';
 import { Check } from 'lucide-react';
 import React from 'react';
 
-import { scoreLog } from '@/utils/logger';
-
 import MatchStatusIndicator from './MatchStatusIndicator';
 
 interface MatchStatusSectionProps {
   isCompleted: boolean;
-  onCompletedChange: (checked: boolean) => void;
   isEdited: boolean;
   isValid: boolean;
   disabled: boolean;
@@ -16,21 +13,10 @@ interface MatchStatusSectionProps {
 
 const MatchStatusSection: React.FC<MatchStatusSectionProps> = ({
   isCompleted,
-  onCompletedChange,
   isEdited,
   isValid,
   disabled,
 }) => {
-  // Handle click on the status indicator
-  const _handleStatusClick = () => {
-    if (!disabled) {
-      scoreLog(
-        `MatchStatusSection: Label clicked, toggling from ${isCompleted} to ${!isCompleted}`
-      );
-      onCompletedChange(!isCompleted);
-    }
-  };
-
   return (
     <div className="flex items-center gap-2">
       {isCompleted ? (
