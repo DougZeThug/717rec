@@ -74,7 +74,6 @@ const BatchMatchFormContainer = () => {
       {showAutoSchedule && (
         <AutoScheduleSection
           selectedDate={selectedDate}
-          matchPairs={matchPairs}
           setMatchPairs={setMatchPairs}
         />
       )}

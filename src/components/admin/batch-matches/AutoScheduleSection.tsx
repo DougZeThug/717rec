@@ -15,13 +15,11 @@ import { MatchPair } from './MatchPairsList';
 
 interface AutoScheduleSectionProps {
   selectedDate: Date | null;
-  matchPairs: MatchPair[];
   setMatchPairs: React.Dispatch<React.SetStateAction<MatchPair[]>>;
 }
 
 export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
   selectedDate,
-  matchPairs: _matchPairs,
   setMatchPairs,
 }) => {
   const {
