@@ -30,6 +30,18 @@ import {
 } from './form-utils';
 import { MatchFormProps, MatchFormValues } from './types';
 
+// Set up time slots with consistent formatting
+const timeSlots = [
+  '6:30 PM',
+  '7:00 PM',
+  '7:30 PM',
+  '8:00 PM',
+  '8:30 PM',
+  '9:00 PM',
+  '9:30 PM',
+  '10:00 PM',
+];
+
 const MatchFormRHF: React.FC<MatchFormProps> = ({
   match,
   teams,
@@ -38,18 +50,6 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
   isUpdating = false,
   isCreating = false,
 }) => {
-  // Set up time slots with consistent formatting
-  const timeSlots = [
-    '6:30 PM',
-    '7:00 PM',
-    '7:30 PM',
-    '8:00 PM',
-    '8:30 PM',
-    '9:00 PM',
-    '9:30 PM',
-    '10:00 PM',
-  ];
-
   // Initialize form with default values or existing match data
   const form = useForm<MatchFormValues>({
     defaultValues: match

@@ -20,6 +20,24 @@ interface LoadingStateProps {
   variant?: LoadingVariant;
 }
 
+const sizeClasses = {
+  sm: 'size-4',
+  md: 'size-8',
+  lg: 'size-12',
+};
+
+const containerClasses = {
+  page: 'min-h-screen flex items-center justify-center',
+  section: 'py-8 flex items-center justify-center',
+  inline: 'py-2 flex items-center justify-center gap-2',
+};
+
+const textSizeClasses = {
+  sm: 'text-sm',
+  md: 'text-base',
+  lg: 'text-lg',
+};
+
 export const LoadingState: React.FC<LoadingStateProps> = ({
   message = 'Loading...',
   className = '',
@@ -32,24 +50,6 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
 
   // Auto-determine size based on variant if not explicitly set
   const effectiveSize = size ?? (effectiveVariant === 'inline' ? 'sm' : 'md');
-
-  const sizeClasses = {
-    sm: 'size-4',
-    md: 'size-8',
-    lg: 'size-12',
-  };
-
-  const containerClasses = {
-    page: 'min-h-screen flex items-center justify-center',
-    section: 'py-8 flex items-center justify-center',
-    inline: 'py-2 flex items-center justify-center gap-2',
-  };
-
-  const textSizeClasses = {
-    sm: 'text-sm',
-    md: 'text-base',
-    lg: 'text-lg',
-  };
 
   // Inline variant uses horizontal layout
   if (effectiveVariant === 'inline') {

@@ -2,14 +2,14 @@ import { errorLog, scoreLog } from '@/utils/logger';
 
 import { MatchWithTeams } from '../types';
 
+const validateMatchScores = (score1?: number | null, score2?: number | null): boolean => {
+  return score1 !== undefined && score1 !== null && score2 !== undefined && score2 !== null;
+};
+
 export const useMatchScores = (
   matches: MatchWithTeams[],
   setMatches: (updater: MatchWithTeams[] | ((prev: MatchWithTeams[]) => MatchWithTeams[])) => void
 ) => {
-  const validateMatchScores = (score1?: number | null, score2?: number | null): boolean => {
-    return score1 !== undefined && score1 !== null && score2 !== undefined && score2 !== null;
-  };
-
   const handleScoreChange = (index: number, team1Score: number, team2Score: number) => {
     scoreLog(`handleScoreChange for match at index ${index}`, { team1Score, team2Score });
 

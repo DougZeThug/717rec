@@ -10,6 +10,24 @@ import { TargetEntitySelector, TargetTypeSelector } from '../TargetSelector';
 import { SectionHeader } from './SectionHeader';
 import { FormSectionProps } from './types';
 
+const toDatetimeLocal = (iso: string | undefined): string => {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    // Format as YYYY-MM-DDTHH:MM in local time
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  } catch {
+    return '';
+  }
+};
+
+const fromDatetimeLocal = (val: string): string => {
+  if (!val) return '';
+  return new Date(val).toISOString();
+};
+
 export const TargetingDisplaySection: React.FC<FormSectionProps> = ({ formData, onChange }) => {
   const isEvent = formData.card_type === 'event';
 
@@ -23,24 +41,6 @@ export const TargetingDisplaySection: React.FC<FormSectionProps> = ({ formData, 
       m[key] = value;
     }
     onChange('metadata', JSON.stringify(m, null, 2));
-  };
-
-  const toDatetimeLocal = (iso: string | undefined): string => {
-    if (!iso) return '';
-    try {
-      const d = new Date(iso);
-      if (isNaN(d.getTime())) return '';
-      // Format as YYYY-MM-DDTHH:MM in local time
-      const pad = (n: number) => n.toString().padStart(2, '0');
-      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    } catch {
-      return '';
-    }
-  };
-
-  const fromDatetimeLocal = (val: string): string => {
-    if (!val) return '';
-    return new Date(val).toISOString();
   };
 
   return (

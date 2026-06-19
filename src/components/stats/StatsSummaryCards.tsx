@@ -12,6 +12,29 @@ interface StatsSummaryCardsProps {
   theme?: string;
 }
 
+// Color coding for highlight values
+const getValueClass = (type: string, value: number) => {
+  if (type === 'power') {
+    if (value >= 75) return 'text-green-600 dark:text-green-500';
+    if (value >= 60) return 'text-blue-500 dark:text-blue-400';
+    if (value >= 40) return 'text-orange-500 dark:text-orange-400';
+    return 'text-red-500 dark:text-red-400';
+  }
+  if (type === 'sos') {
+    if (value >= 0.75) return 'text-green-600 dark:text-green-500';
+    if (value >= 0.6) return 'text-blue-500 dark:text-blue-400';
+    if (value >= 0.4) return 'text-orange-500 dark:text-orange-400';
+    return 'text-red-500 dark:text-red-400';
+  }
+  if (type === 'percentage') {
+    if (value >= 75) return 'text-green-600 dark:text-green-500';
+    if (value >= 60) return 'text-blue-500 dark:text-blue-400';
+    if (value >= 40) return 'text-orange-500 dark:text-orange-400';
+    return 'text-red-500 dark:text-red-400';
+  }
+  return '';
+};
+
 const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
   const getHighestWinPercentage = () => {
     if (!rankings || rankings.length === 0) return { percentage: 0, teamName: 'No teams' };
@@ -64,29 +87,6 @@ const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
   const highestWinPercentage = getHighestWinPercentage();
   const highestSOS = getHighestSOS();
   const highestPowerScore = getHighestPowerScore();
-
-  // Color coding for highlight values
-  const getValueClass = (type: string, value: number) => {
-    if (type === 'power') {
-      if (value >= 75) return 'text-green-600 dark:text-green-500';
-      if (value >= 60) return 'text-blue-500 dark:text-blue-400';
-      if (value >= 40) return 'text-orange-500 dark:text-orange-400';
-      return 'text-red-500 dark:text-red-400';
-    }
-    if (type === 'sos') {
-      if (value >= 0.75) return 'text-green-600 dark:text-green-500';
-      if (value >= 0.6) return 'text-blue-500 dark:text-blue-400';
-      if (value >= 0.4) return 'text-orange-500 dark:text-orange-400';
-      return 'text-red-500 dark:text-red-400';
-    }
-    if (type === 'percentage') {
-      if (value >= 75) return 'text-green-600 dark:text-green-500';
-      if (value >= 60) return 'text-blue-500 dark:text-blue-400';
-      if (value >= 40) return 'text-orange-500 dark:text-orange-400';
-      return 'text-red-500 dark:text-red-400';
-    }
-    return '';
-  };
 
   return (
     <div className={cn('w-full mb-3 md:mb-4', listStyles.grid.stats)}>

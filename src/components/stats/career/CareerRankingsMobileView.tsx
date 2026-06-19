@@ -23,6 +23,16 @@ interface CareerRankingsMobileViewProps {
   onSortChange: (field: string) => void;
 }
 
+const formatPercentage = (value: number) => `${(value * 100).toFixed(1)}%`;
+
+const gameWinPercentageColorClass = (pct: number) => {
+  const val = pct * 100;
+  if (val >= 75) return 'text-green-600 dark:text-green-500';
+  if (val >= 60) return 'text-blue-600 dark:text-blue-500';
+  if (val >= 40) return 'text-orange-500 dark:text-orange-400';
+  return 'text-red-600 dark:text-red-500';
+};
+
 const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
   rankings,
   sortOptions,
@@ -39,16 +49,6 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
     const isDetailed = value === 'detailed';
     setDetailedView(isDetailed);
     localStorage.setItem('careerRankingsDetailedView', String(isDetailed));
-  };
-
-  const formatPercentage = (value: number) => `${(value * 100).toFixed(1)}%`;
-
-  const gameWinPercentageColorClass = (pct: number) => {
-    const val = pct * 100;
-    if (val >= 75) return 'text-green-600 dark:text-green-500';
-    if (val >= 60) return 'text-blue-600 dark:text-blue-500';
-    if (val >= 40) return 'text-orange-500 dark:text-orange-400';
-    return 'text-red-600 dark:text-red-500';
   };
 
   const sortableFields = useMemo(

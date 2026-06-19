@@ -41,15 +41,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
   opponentId,
   isPastMatch: _isPastMatch = false,
 }) => {
-  const _formatDate = (dateStr: string | null) => {
-    if (!dateStr) return 'No date';
-    try {
-      return new Date(dateStr).toLocaleDateString();
-    } catch (_e) {
-      return 'Invalid date';
-    }
-  };
-
   const opponent = match.team1Id === opponentId ? match.team1Details : match.team2Details;
   const opponentName = opponent?.name || 'Unknown Team';
   const opponentImage = opponent?.image_url || opponent?.logo_url;

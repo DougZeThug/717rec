@@ -4,6 +4,30 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/useToast';
 import { authLog, warnLog } from '@/utils/logger';
 
+// DEPRECATED: This function is no longer needed and always returns false
+const checkAdminAccess = (_inputCode: string) => {
+  warnLog('checkAdminAccess is deprecated and insecure. Admin status is now checked server-side.');
+  return false;
+};
+
+// Function to request admin access (can be used in future for admin request feature)
+const requestAdminAccess = () => {
+  toast({
+    title: 'Admin Access Request',
+    description: 'Please contact an administrator to grant you admin privileges.',
+  });
+};
+
+// SECURITY: Admin access can only be revoked by updating the database
+const revokeAdminAccess = () => {
+  warnLog('Admin access cannot be revoked client-side for security. Contact an administrator.');
+  toast({
+    title: 'Security Notice',
+    description: 'Admin access can only be modified by existing administrators.',
+    variant: 'destructive',
+  });
+};
+
 export const useAdminAccess = () => {
   const { user, profile, authInitialized, isProfileLoading } = useAuth();
 
@@ -21,32 +45,6 @@ export const useAdminAccess = () => {
       isAdmin: isAdminAccessGranted,
     });
   }, [authInitialized, user?.id, user?.email, profile, isAdminAccessGranted]);
-
-  // DEPRECATED: This function is no longer needed and always returns false
-  const checkAdminAccess = (_inputCode: string) => {
-    warnLog(
-      'checkAdminAccess is deprecated and insecure. Admin status is now checked server-side.'
-    );
-    return false;
-  };
-
-  // Function to request admin access (can be used in future for admin request feature)
-  const requestAdminAccess = () => {
-    toast({
-      title: 'Admin Access Request',
-      description: 'Please contact an administrator to grant you admin privileges.',
-    });
-  };
-
-  // SECURITY: Admin access can only be revoked by updating the database
-  const revokeAdminAccess = () => {
-    warnLog('Admin access cannot be revoked client-side for security. Contact an administrator.');
-    toast({
-      title: 'Security Notice',
-      description: 'Admin access can only be modified by existing administrators.',
-      variant: 'destructive',
-    });
-  };
 
   return {
     isAdminAccessGranted,

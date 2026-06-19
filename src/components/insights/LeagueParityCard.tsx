@@ -27,22 +27,22 @@ const ParityStat: React.FC<{
   </div>
 );
 
+const getParityLabel = (index: number) => {
+  if (index >= 80) return 'Very High';
+  if (index >= 60) return 'High';
+  if (index >= 40) return 'Moderate';
+  if (index >= 20) return 'Low';
+  return 'Very Low';
+};
+
+const getParityColor = (index: number) => {
+  if (index >= 80) return 'text-emerald-600 dark:text-emerald-400';
+  if (index >= 60) return 'text-blue-600 dark:text-blue-400';
+  if (index >= 40) return 'text-amber-600 dark:text-amber-400';
+  return 'text-red-600 dark:text-red-400';
+};
+
 const LeagueParityCard: React.FC<LeagueParityCardProps> = ({ parity, totalTeams }) => {
-  const getParityLabel = (index: number) => {
-    if (index >= 80) return 'Very High';
-    if (index >= 60) return 'High';
-    if (index >= 40) return 'Moderate';
-    if (index >= 20) return 'Low';
-    return 'Very Low';
-  };
-
-  const getParityColor = (index: number) => {
-    if (index >= 80) return 'text-emerald-600 dark:text-emerald-400';
-    if (index >= 60) return 'text-blue-600 dark:text-blue-400';
-    if (index >= 40) return 'text-amber-600 dark:text-amber-400';
-    return 'text-red-600 dark:text-red-400';
-  };
-
   return (
     <div className="border rounded-lg bg-card shadow-sm p-4">
       <h3 className="font-bebas text-lg tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent mb-4">

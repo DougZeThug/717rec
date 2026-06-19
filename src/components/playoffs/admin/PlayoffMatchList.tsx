@@ -24,6 +24,33 @@ interface PlayoffMatchListProps {
   matchTypeFilter?: string;
 }
 
+// Format match status
+const getStatusBadge = (match: PlayoffMatch) => {
+  if (!match.team1Id || !match.team2Id) {
+    return <Badge variant="outline">Pending Teams</Badge>;
+  } else if (match.winnerId) {
+    return <Badge variant="recreational">Complete</Badge>;
+  } else {
+    return <Badge variant="secondary">Ready</Badge>;
+  }
+};
+
+// Get match type display name
+const getMatchTypeDisplay = (type: string) => {
+  switch (type) {
+    case 'winners':
+      return 'Winners Bracket';
+    case 'losers':
+      return 'Losers Bracket';
+    case 'finals':
+      return 'Finals';
+    case 'play-in':
+      return 'Play-in';
+    default:
+      return type;
+  }
+};
+
 const PlayoffMatchList: React.FC<PlayoffMatchListProps> = ({
   matches,
   teams,
@@ -82,33 +109,6 @@ const PlayoffMatchList: React.FC<PlayoffMatchListProps> = ({
     if (teamId.startsWith('play-in-')) return `Winner of Play-in ${teamId.split('-')[2]}`;
     const team = teams.find((t) => t.id === teamId);
     return team?.name || 'Unknown Team';
-  };
-
-  // Format match status
-  const getStatusBadge = (match: PlayoffMatch) => {
-    if (!match.team1Id || !match.team2Id) {
-      return <Badge variant="outline">Pending Teams</Badge>;
-    } else if (match.winnerId) {
-      return <Badge variant="recreational">Complete</Badge>;
-    } else {
-      return <Badge variant="secondary">Ready</Badge>;
-    }
-  };
-
-  // Get match type display name
-  const getMatchTypeDisplay = (type: string) => {
-    switch (type) {
-      case 'winners':
-        return 'Winners Bracket';
-      case 'losers':
-        return 'Losers Bracket';
-      case 'finals':
-        return 'Finals';
-      case 'play-in':
-        return 'Play-in';
-      default:
-        return type;
-    }
   };
 
   return (

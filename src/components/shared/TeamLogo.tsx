@@ -16,6 +16,13 @@ export interface TeamLogoProps {
   fallbackText?: string;
 }
 
+const sizeClasses = {
+  xs: 'size-5 min-w-5 min-h-5',
+  sm: 'size-8 min-w-8 min-h-8',
+  md: 'size-10 min-w-10 min-h-10',
+  lg: 'size-36 min-w-36 min-h-36',
+};
+
 export const TeamLogo: React.FC<TeamLogoProps> = ({
   imageUrl,
   teamName,
@@ -26,13 +33,6 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
   className,
   fallbackText,
 }) => {
-  const sizeClasses = {
-    xs: 'size-5 min-w-5 min-h-5',
-    sm: 'size-8 min-w-8 min-h-8',
-    md: 'size-10 min-w-10 min-h-10',
-    lg: 'size-36 min-w-36 min-h-36',
-  };
-
   const containerClasses = cn(
     'flex items-center justify-center bg-gray-100 dark:bg-gray-800',
     rounded && 'rounded-full overflow-hidden',

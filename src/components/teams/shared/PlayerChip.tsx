@@ -8,20 +8,20 @@ interface PlayerChipProps {
   className?: string;
 }
 
+// Get first letter of first and last name for avatar
+const getInitials = (name: string): string => {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+  }
+  return (name[0] || '?').toUpperCase();
+};
+
 export const PlayerChip: React.FC<PlayerChipProps> = ({
   playerName,
   avatarUrl,
   className = '',
 }) => {
-  // Get first letter of first and last name for avatar
-  const getInitials = (name: string): string => {
-    const parts = name.trim().split(/\s+/);
-    if (parts.length >= 2) {
-      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-    }
-    return (name[0] || '?').toUpperCase();
-  };
-
   return (
     <div
       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted dark:bg-card 

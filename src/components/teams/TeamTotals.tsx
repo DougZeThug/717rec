@@ -25,6 +25,23 @@ interface TeamTotalsProps {
   standalone?: boolean;
 }
 
+// Calculate win percentage for division records
+const getWinPct = (wins: number, losses: number): string => {
+  const total = wins + losses;
+  if (total === 0) return '-';
+  return ((wins / total) * 100).toFixed(0) + '%';
+};
+
+const getWinPctColor = (wins: number, losses: number): string => {
+  const total = wins + losses;
+  if (total === 0) return 'text-muted-foreground';
+  const pct = (wins / total) * 100;
+  if (pct >= 60) return 'text-emerald-500';
+  if (pct >= 50) return 'text-blue-500';
+  if (pct >= 40) return 'text-yellow-500';
+  return 'text-red-500';
+};
+
 const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) => {
   const { totals, isLoading } = useTeamTotals(teamId);
   const { getTeamPercentiles } = useLeaguePercentiles();
@@ -55,12 +72,14 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
       >
         <div className="animate-pulse">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {['totals-cs-skel-1', 'totals-cs-skel-2', 'totals-cs-skel-3', 'totals-cs-skel-4'].map((sk) => (
-              <div key={sk} className="space-y-2">
-                <div className="h-4 bg-muted rounded w-20"></div>
-                <div className="h-6 bg-muted rounded w-16"></div>
-              </div>
-            ))}
+            {['totals-cs-skel-1', 'totals-cs-skel-2', 'totals-cs-skel-3', 'totals-cs-skel-4'].map(
+              (sk) => (
+                <div key={sk} className="space-y-2">
+                  <div className="h-4 bg-muted rounded w-20"></div>
+                  <div className="h-6 bg-muted rounded w-16"></div>
+                </div>
+              )
+            )}
           </div>
         </div>
       </CollapsibleSection>
@@ -89,23 +108,6 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
       </CollapsibleSection>
     );
   }
-
-  // Calculate win percentage for division records
-  const getWinPct = (wins: number, losses: number): string => {
-    const total = wins + losses;
-    if (total === 0) return '-';
-    return ((wins / total) * 100).toFixed(0) + '%';
-  };
-
-  const getWinPctColor = (wins: number, losses: number): string => {
-    const total = wins + losses;
-    if (total === 0) return 'text-muted-foreground';
-    const pct = (wins / total) * 100;
-    if (pct >= 60) return 'text-emerald-500';
-    if (pct >= 50) return 'text-blue-500';
-    if (pct >= 40) return 'text-yellow-500';
-    return 'text-red-500';
-  };
 
   const hasDivisionRecords =
     totals.division_records &&

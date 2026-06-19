@@ -14,6 +14,37 @@ interface FinalStandingsProps {
   show?: boolean;
 }
 
+const getPlacementIcon = (placement: number) => {
+  if (placement === 1)
+    return (
+      <SeasonalIcon
+        defaultIcon={Trophy}
+        winterGlyph="frozen-trophy"
+        size={20}
+        className="text-yellow-500"
+      />
+    );
+  if (placement === 2)
+    return (
+      <SeasonalIcon
+        defaultIcon={Medal}
+        winterGlyph="frozen-trophy"
+        size={20}
+        className="text-muted-foreground"
+      />
+    );
+  if (placement === 3)
+    return (
+      <SeasonalIcon
+        defaultIcon={Award}
+        winterGlyph="frozen-trophy"
+        size={20}
+        className="text-amber-600"
+      />
+    );
+  return null;
+};
+
 export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) {
   const renderCount = useRef(0);
 
@@ -37,37 +68,6 @@ export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) 
   if (!show) return null;
   if (isLoading) return <FinalStandingsSkeleton />;
   if (!standings || standings.length === 0) return null;
-
-  const getPlacementIcon = (placement: number) => {
-    if (placement === 1)
-      return (
-        <SeasonalIcon
-          defaultIcon={Trophy}
-          winterGlyph="frozen-trophy"
-          size={20}
-          className="text-yellow-500"
-        />
-      );
-    if (placement === 2)
-      return (
-        <SeasonalIcon
-          defaultIcon={Medal}
-          winterGlyph="frozen-trophy"
-          size={20}
-          className="text-muted-foreground"
-        />
-      );
-    if (placement === 3)
-      return (
-        <SeasonalIcon
-          defaultIcon={Award}
-          winterGlyph="frozen-trophy"
-          size={20}
-          className="text-amber-600"
-        />
-      );
-    return null;
-  };
 
   return (
     <Card>

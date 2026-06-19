@@ -91,6 +91,10 @@ interface AdminMobileNavProps {
   pendingRequestsCount?: number;
 }
 
+const getTabItem = (tabId: string): AdminMenuItem | undefined => {
+  return adminMenuItems.find((item) => item.id === tabId);
+};
+
 const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
   activeTab,
   onTabChange,
@@ -112,10 +116,6 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
       else next.add(groupId);
       return next;
     });
-  };
-
-  const getTabItem = (tabId: string): AdminMenuItem | undefined => {
-    return adminMenuItems.find((item) => item.id === tabId);
   };
 
   const getGroupBadgeCount = (group: TabGroup): number => {

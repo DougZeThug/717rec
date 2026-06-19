@@ -23,6 +23,12 @@ const variantClasses: Record<SkeletonVariant, string> = {
   pill: 'rounded-pill',
 };
 
+const sizes = {
+  sm: 'size-8',
+  md: 'size-10',
+  lg: 'size-16',
+};
+
 /**
  * Enhanced skeleton component with shimmer animation
  * Uses design system radius tokens for consistency
@@ -103,12 +109,6 @@ const AvatarSkeleton: React.FC<{
   size?: 'sm' | 'md' | 'lg';
   className?: string;
 }> = ({ size = 'md', className }) => {
-  const sizes = {
-    sm: 'size-8',
-    md: 'size-10',
-    lg: 'size-16',
-  };
-
   return <ShimmerSkeleton circle className={cn(sizes[size], className)} />;
 };
 

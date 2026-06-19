@@ -11,6 +11,14 @@ import { HeroCard } from '@/types/heroCard';
 
 import HeroCardBase from './HeroCardBase';
 
+const getDivisionPriority = (name: string): number => {
+  const lower = name.toLowerCase();
+  if (lower.includes('competitive')) return 1;
+  if (lower.includes('intermediate')) return 2;
+  if (lower.includes('recreational')) return 3;
+  return 99;
+};
+
 interface ChampionsHeroCardProps {
   card: HeroCard;
 }
@@ -140,9 +148,7 @@ const ChampionDisplay = React.forwardRef<
                 isWinter ? 'bg-amber-900/30' : 'bg-white/20'
               )}
             >
-              <Trophy
-                className={cn('size-10', isWinter ? 'text-amber-300/70' : 'text-white/70')}
-              />
+              <Trophy className={cn('size-10', isWinter ? 'text-amber-300/70' : 'text-white/70')} />
             </div>
           )}
         </div>
@@ -255,14 +261,6 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
       </section>
     );
   }
-
-  const getDivisionPriority = (name: string): number => {
-    const lower = name.toLowerCase();
-    if (lower.includes('competitive')) return 1;
-    if (lower.includes('intermediate')) return 2;
-    if (lower.includes('recreational')) return 3;
-    return 99;
-  };
 
   const divisionOrder = Object.keys(championsMap).sort((a, b) => {
     return getDivisionPriority(a) - getDivisionPriority(b);

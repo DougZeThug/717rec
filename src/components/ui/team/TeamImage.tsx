@@ -18,6 +18,23 @@ export interface TeamImageProps {
   onError?: (e: React.SyntheticEvent<HTMLImageElement, Event>) => void;
 }
 
+const sizeClasses = {
+  xs: 'size-6 min-w-6 min-h-6',
+  sm: 'size-8 min-w-8 min-h-8',
+  md: 'size-10 min-w-10 min-h-10',
+  lg: 'size-16 min-w-16 min-h-16',
+  xl: 'size-36 min-w-36 min-h-36',
+};
+
+// Touch-friendly size classes for interactive elements
+const touchSizeClasses = {
+  xs: 'size-10', // Minimum 40px for touch
+  sm: 'size-11', // Slightly larger
+  md: 'size-12', // 48px is good for touch targets
+  lg: 'size-16',
+  xl: 'size-36',
+};
+
 export const TeamImage: React.FC<TeamImageProps> = ({
   imageUrl,
   teamName,
@@ -30,23 +47,6 @@ export const TeamImage: React.FC<TeamImageProps> = ({
   alt,
   onError,
 }) => {
-  const sizeClasses = {
-    xs: 'size-6 min-w-6 min-h-6',
-    sm: 'size-8 min-w-8 min-h-8',
-    md: 'size-10 min-w-10 min-h-10',
-    lg: 'size-16 min-w-16 min-h-16',
-    xl: 'size-36 min-w-36 min-h-36',
-  };
-
-  // Touch-friendly size classes for interactive elements
-  const touchSizeClasses = {
-    xs: 'size-10', // Minimum 40px for touch
-    sm: 'size-11', // Slightly larger
-    md: 'size-12', // 48px is good for touch targets
-    lg: 'size-16',
-    xl: 'size-36',
-  };
-
   // Use touch-friendly sizes if clickable, otherwise use standard sizes
   const finalSizeClasses = clickable ? touchSizeClasses[size] : sizeClasses[size];
 

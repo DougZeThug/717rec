@@ -1,4 +1,3 @@
-import { formatWithPattern } from '@/utils/formatDateSafe';
 import { ArrowUpDown, Calendar, Download, Search, Swords, Trophy, X } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
@@ -19,6 +18,7 @@ import { useHeadToHead } from '@/hooks/useHeadToHead';
 import { useIsMobile } from '@/hooks/useMobile';
 import { cn } from '@/lib/utils';
 import { exportHeadToHeadToCSV } from '@/utils/exportUtils';
+import { formatWithPattern } from '@/utils/formatDateSafe';
 import { getRivalryType, type RivalryType } from '@/utils/teamDetailsUtils/rivalryUtils';
 import { toTeamSlug } from '@/utils/teamSlug';
 
@@ -50,6 +50,29 @@ const SortButton: React.FC<{
     <ArrowUpDown className="ml-1 size-3" />
   </Button>
 );
+
+const rivalryBadgeConfig: Record<RivalryType, { label: string; className: string }> = {
+  rival: {
+    label: 'Rival',
+    className: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30',
+  },
+  dominated: {
+    label: 'Dominated',
+    className: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
+  },
+  favorite: {
+    label: 'Favorite',
+    className: 'bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/30',
+  },
+  nemesis: {
+    label: 'Nemesis',
+    className: 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30',
+  },
+  tough_matchup: {
+    label: 'Tough Matchup',
+    className: 'bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30',
+  },
+};
 
 const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
   teamId,
@@ -101,29 +124,6 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
 
   const handleTeamClick = (opponentId: string, opponentName: string) => {
     navigate(`/teams/${toTeamSlug(opponentName)}`);
-  };
-
-  const rivalryBadgeConfig: Record<RivalryType, { label: string; className: string }> = {
-    rival: {
-      label: 'Rival',
-      className: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30',
-    },
-    dominated: {
-      label: 'Dominated',
-      className: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
-    },
-    favorite: {
-      label: 'Favorite',
-      className: 'bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/30',
-    },
-    nemesis: {
-      label: 'Nemesis',
-      className: 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30',
-    },
-    tough_matchup: {
-      label: 'Tough Matchup',
-      className: 'bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30',
-    },
   };
 
   const content = (() => {

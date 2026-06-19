@@ -27,6 +27,13 @@ interface ActionButtonProps extends Omit<ButtonProps, 'children'> {
  *   Submit Score
  * </ActionButton>
  */
+// Icon animation variants
+const iconVariants = {
+  initial: { opacity: 0, scale: 0.5, rotate: -90 },
+  animate: { opacity: 1, scale: 1, rotate: 0 },
+  exit: { opacity: 0, scale: 0.5, rotate: 90 },
+};
+
 export const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(
   (
     {
@@ -79,13 +86,6 @@ export const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProp
 
     const isLoading = state === 'loading';
     const isSuccess = state === 'success';
-
-    // Icon animation variants
-    const iconVariants = {
-      initial: { opacity: 0, scale: 0.5, rotate: -90 },
-      animate: { opacity: 1, scale: 1, rotate: 0 },
-      exit: { opacity: 0, scale: 0.5, rotate: 90 },
-    };
 
     return (
       <Button
