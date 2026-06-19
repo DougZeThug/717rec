@@ -13,9 +13,8 @@ const validateScores = (team1Score: number, team2Score: number): boolean => {
 const validateGameWins = (team1GameWins: number, team2GameWins: number): boolean => {
   // Game wins must be non-negative integers and cannot be tied (except 0-0)
   if (team1GameWins < 0 || team2GameWins < 0) return false;
-  if (team1GameWins === team2GameWins && team1GameWins !== 0) return false;
 
-  return true;
+  return !(team1GameWins === team2GameWins && team1GameWins !== 0);
 };
 
 const validateMatch = (match: {

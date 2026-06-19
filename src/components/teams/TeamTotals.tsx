@@ -29,7 +29,7 @@ interface TeamTotalsProps {
 const getWinPct = (wins: number, losses: number): string => {
   const total = wins + losses;
   if (total === 0) return '-';
-  return ((wins / total) * 100).toFixed(0) + '%';
+  return `${((wins / total) * 100).toFixed(0)}%`;
 };
 
 const getWinPctColor = (wins: number, losses: number): string => {

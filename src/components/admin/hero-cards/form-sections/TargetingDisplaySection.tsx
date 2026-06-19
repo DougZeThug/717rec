@@ -13,11 +13,11 @@ import { FormSectionProps } from './types';
 const toDatetimeLocal = (iso: string | undefined): string => {
   if (!iso) return '';
   try {
-    const d = new Date(iso);
-    if (isNaN(d.getTime())) return '';
+    const date = new Date(iso);
+    if (isNaN(date.getTime())) return '';
     // Format as YYYY-MM-DDTHH:MM in local time
     const pad = (n: number) => n.toString().padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
   } catch {
     return '';
   }
