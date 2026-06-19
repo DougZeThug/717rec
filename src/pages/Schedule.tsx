@@ -42,7 +42,7 @@ const getUpcomingThursday = () => {
 const Schedule = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const [selectedDate, setSelectedDate] = useState<Date>(getUpcomingThursday());
+  const [selectedDate, setSelectedDate] = useState<Date>(() => getUpcomingThursday());
 
   // Log date for debugging
   useEffect(() => {

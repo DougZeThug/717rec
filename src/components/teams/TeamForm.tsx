@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useDivisions } from '@/hooks/useDivisions';
+import { useLazyRef } from '@/hooks/useLazyRef';
 import { useToast } from '@/hooks/useToast';
 import { Team } from '@/types';
 import { uploadTeamImage } from '@/utils/imageUpload';
@@ -48,7 +49,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   // Stable per-row IDs kept in sync with playerNames so React keys remain
   // stable across reorders/removals (avoids array-index-as-key bugs).
-  const playerIdsRef = useRef<string[]>(playerNames.map(() => crypto.randomUUID()));
+  const playerIdsRef = useLazyRef<string[]>(() => playerNames.map(() => crypto.randomUUID()));
   const { toast } = useToast();
   const { divisions, isLoading: isDivisionsLoading } = useDivisions();
 

@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Team } from '@/types';
 import { DualBlockConfig, PairedTimeBlockTeamsMap, TimeBlockTeamsMap } from '@/types/autoSchedule';
+import { useLazyRef } from '@/hooks/useLazyRef';
 import { useToast } from '@/hooks/useToast';
 import { normalizeScheduleDate, validateScheduleDate } from '@/utils/autoSchedule/dateUtils';
 import { validateBackToBackPairAssignments } from '@/utils/autoSchedule/edgeCaseUtils';
@@ -15,7 +16,7 @@ import { loadAutoScheduleState, saveAutoScheduleState } from './storage';
 
 export const useTeamOperations = () => {
   // Load persisted state on mount
-  const persistedState = useRef(loadAutoScheduleState());
+  const persistedState = useLazyRef(() => loadAutoScheduleState());
 
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();

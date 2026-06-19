@@ -1,6 +1,6 @@
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { domAnimation, LazyMotion } from 'framer-motion';
-import React, { lazy, Suspense, useEffect, useRef } from 'react';
+import React, { lazy, Suspense, useEffect } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
 
@@ -9,6 +9,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { NavigationProvider } from '@/contexts/NavigationContext';
+import { useLazyRef } from '@/hooks/useLazyRef';
 import { initAnalytics, trackPageView } from '@/utils/analytics';
 import { errorLog, routeLog } from '@/utils/logger';
 import { preloadCoreRoutes } from '@/utils/routePrefetch';
@@ -69,7 +70,7 @@ const queryClient = new QueryClient({
 
 const AppContent = () => {
   const location = useLocation();
-  const navigationStart = useRef(performance.now());
+  const navigationStartRef = useLazyRef(() => performance.now());
 
   // Alias to a local to avoid the `location.*` mutable-global heuristic.
   const pathname = location.pathname;
@@ -81,10 +82,10 @@ const AppContent = () => {
 
     // Sentry metrics
     metrics.count('page_view', 1, { route: pathname });
-    const loadTime = performance.now() - navigationStart.current;
+    const loadTime = performance.now() - navigationStartRef.current;
     metrics.distribution('page_load_time', loadTime, { route: pathname });
-    navigationStart.current = performance.now();
-  }, [pathname]);
+    navigationStartRef.current = performance.now();
+  }, [pathname, navigationStartRef]);
 
   // Preload core routes after initial render
   useEffect(() => {

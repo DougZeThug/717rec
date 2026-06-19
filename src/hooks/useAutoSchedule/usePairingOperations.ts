@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { usePairingGenerator } from '@/hooks/scheduling/usePairingGenerator';
+import { useLazyRef } from '@/hooks/useLazyRef';
 import { useToast } from '@/hooks/useToast';
 import {
   AlgorithmConfig,
@@ -30,7 +31,7 @@ export const usePairingOperations = (
   allTeams?: Team[]
 ) => {
   // Load persisted state on mount
-  const persistedState = useRef(loadAutoScheduleState());
+  const persistedState = useLazyRef(() => loadAutoScheduleState());
 
   const [generatedPairings, setGeneratedPairings] = useState<TeamPairingMap>(
     () => persistedState.current?.generatedPairings || {}
