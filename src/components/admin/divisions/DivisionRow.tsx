@@ -51,7 +51,7 @@ const DivisionRow: React.FC<Props> = ({ division, layout }) => {
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [name, setName] = useState(division.name);
-  const [display, setDisplay] = useState<DisplayDivision>(
+  const [display, setDisplay] = useState<DisplayDivision>(() =>
     normalizeDisplay(division.display_division)
   );
   const [weight, setWeight] = useState(String(division.division_weight ?? 0));

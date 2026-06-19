@@ -24,7 +24,7 @@ function getNextThursday(): Date {
 }
 
 export const useBatchMatchForm = (_teams: Team[]) => {
-  const [selectedDate, setSelectedDate] = useState<Date | null>(getNextThursday());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(() => getNextThursday());
   const [matchPairs, setMatchPairs] = useState<MatchPair[]>([
     { id: '1', team1Id: null, team2Id: null, timeslot: null },
   ]);

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useLazyRef } from '@/hooks/useLazyRef';
 import { AutoScheduleMatch } from '@/types/autoSchedule';
 import { scheduleLog } from '@/utils/logger';
 
@@ -8,7 +9,7 @@ import { UseAutoScheduleState } from './types';
 
 export const useAutoScheduleState = () => {
   // Load persisted state on mount
-  const persistedState = useRef(loadAutoScheduleState());
+  const persistedState = useLazyRef(() => loadAutoScheduleState());
   const isInitialized = useRef(false);
 
   // Tab state - initialize from persisted or defaults

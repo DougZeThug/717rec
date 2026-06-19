@@ -1,10 +1,11 @@
 import { AnimatePresence, m } from 'framer-motion';
 import { ArrowDown, ArrowUp, Bolt, Scale, Search, User } from 'lucide-react';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useLazyRef } from '@/hooks/useLazyRef';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { useAllTeamBadges } from '@/hooks/useTeamBadges';
 import { cn } from '@/lib/utils';
@@ -84,7 +85,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
   });
   const [searchOpen, setSearchOpen] = useState(false);
   const [highlightedTeamId, setHighlightedTeamId] = useState<string | null>(null);
-  const teamRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const teamRefs = useLazyRef<Map<string, HTMLDivElement>>(() => new Map());
 
   useEffect(() => {
     debugLog(
@@ -118,6 +119,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
       setHighlightedTeamId(teamId);
       setTimeout(() => setHighlightedTeamId(null), 2000);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- teamRefs is a stable ref from useLazyRef
   }, []);
 
   const handleFindMyTeam = useCallback(() => {

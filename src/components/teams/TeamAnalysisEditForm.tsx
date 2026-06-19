@@ -1,10 +1,11 @@
 import { Loader2, Plus, Save, X } from 'lucide-react';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useLazyRef } from '@/hooks/useLazyRef';
 import { TeamAnalysis, TeamAnalysisInput } from '@/hooks/useTeamAnalysis';
 
 interface TeamAnalysisEditFormProps {
@@ -29,8 +30,8 @@ export const TeamAnalysisEditForm: React.FC<TeamAnalysisEditFormProps> = ({
   );
   // Stable per-row IDs kept in sync with strengths/weaknesses so React
   // keys remain stable across removals (avoids array-index-as-key bugs).
-  const strengthIdsRef = useRef<string[]>(strengths.map(() => crypto.randomUUID()));
-  const weaknessIdsRef = useRef<string[]>(weaknesses.map(() => crypto.randomUUID()));
+  const strengthIdsRef = useLazyRef<string[]>(() => strengths.map(() => crypto.randomUUID()));
+  const weaknessIdsRef = useLazyRef<string[]>(() => weaknesses.map(() => crypto.randomUUID()));
   const [trends, setTrends] = useState(analysis?.trends || '');
   const [rivalryInsights, setRivalryInsights] = useState(analysis?.rivalry_insights || '');
 
