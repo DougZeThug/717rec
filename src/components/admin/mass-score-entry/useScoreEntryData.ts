@@ -8,6 +8,11 @@ import { errorLog } from '@/utils/logger';
 
 import { FilterState, MatchWithTeams } from './types';
 
+// Helper to validate scores
+const validateMatchScores = (score1?: number | null, score2?: number | null): boolean => {
+  return Number.isInteger(score1) && Number.isInteger(score2);
+};
+
 export const useScoreEntryData = () => {
   const [matches, setMatches] = useState<MatchWithTeams[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -98,11 +103,6 @@ export const useScoreEntryData = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Helper to validate scores
-  const validateMatchScores = (score1?: number | null, score2?: number | null): boolean => {
-    return Number.isInteger(score1) && Number.isInteger(score2);
   };
 
   // Handler for score changes

@@ -8,10 +8,10 @@ interface TeamListSkeletonProps {
   viewMode: 'grid' | 'list';
 }
 
-export const TeamListSkeleton: React.FC<TeamListSkeletonProps> = ({ viewMode }) => {
-  const skeletons = ['team-skel-1', 'team-skel-2', 'team-skel-3'];
-  const innerSkeletons = ['team-stat-1', 'team-stat-2', 'team-stat-3', 'team-stat-4'];
+const skeletons = ['team-skel-1', 'team-skel-2', 'team-skel-3'];
+const innerSkeletons = ['team-stat-1', 'team-stat-2', 'team-stat-3', 'team-stat-4'];
 
+export const TeamListSkeleton: React.FC<TeamListSkeletonProps> = ({ viewMode }) => {
   if (viewMode === 'list') {
     return (
       <AutoStagger className="space-y-4" staggerDelay={0.08}>
@@ -29,7 +29,10 @@ export const TeamListSkeleton: React.FC<TeamListSkeletonProps> = ({ viewMode }) 
                 <ShimmerSkeleton variant="input" className="h-5 w-1/4" />
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   {innerSkeletons.map((innerKey) => (
-                    <div key={`${skKey}-${innerKey}`} className="bg-muted/30 p-2 rounded-input space-y-2">
+                    <div
+                      key={`${skKey}-${innerKey}`}
+                      className="bg-muted/30 p-2 rounded-input space-y-2"
+                    >
                       <ShimmerSkeleton variant="input" className="h-4 w-1/2" />
                       <ShimmerSkeleton variant="input" className="h-4 w-2/3" />
                     </div>

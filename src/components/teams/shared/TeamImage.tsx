@@ -10,6 +10,12 @@ interface TeamImageProps {
   onError?: (e: React.SyntheticEvent<HTMLImageElement, Event>) => void;
 }
 
+const sizeClasses = {
+  sm: 'max-h-20',
+  md: 'max-h-28',
+  lg: 'max-h-36',
+};
+
 export const TeamImage: React.FC<TeamImageProps> = ({
   imageUrl,
   teamName,
@@ -17,12 +23,6 @@ export const TeamImage: React.FC<TeamImageProps> = ({
   size = 'md',
   onError,
 }) => {
-  const sizeClasses = {
-    sm: 'max-h-20',
-    md: 'max-h-28',
-    lg: 'max-h-36',
-  };
-
   const defaultOnError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     imageErrorLog(teamName, imageUrl);
     (e.target as HTMLImageElement).style.display = 'none';

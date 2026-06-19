@@ -20,6 +20,12 @@ interface TouchState {
   startY: number;
 }
 
+const getTouchDistance = (touch1: React.Touch, touch2: React.Touch): number => {
+  const dx = touch1.clientX - touch2.clientX;
+  const dy = touch1.clientY - touch2.clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+};
+
 export const BracketTouchControls: React.FC<BracketTouchControlsProps> = ({
   children,
   className = '',
@@ -41,12 +47,6 @@ export const BracketTouchControls: React.FC<BracketTouchControlsProps> = ({
   if (!responsive.isMobile) {
     return <div className={className}>{children}</div>;
   }
-
-  const getTouchDistance = (touch1: React.Touch, touch2: React.Touch): number => {
-    const dx = touch1.clientX - touch2.clientX;
-    const dy = touch1.clientY - touch2.clientY;
-    return Math.sqrt(dx * dx + dy * dy);
-  };
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 2) {

@@ -21,30 +21,30 @@ interface MatchRowProps {
   onRemove: () => void;
 }
 
+// Format time properly for display
+const formatTimeForDisplay = (time: string | null) => {
+  if (!time) return '';
+
+  // If time is already in 12-hour format (e.g., "6:30 PM"), return as is
+  if (time.includes('AM') || time.includes('PM')) {
+    return time;
+  }
+
+  // If time is in 24-hour format (e.g., "18:30"), convert to 12-hour
+  try {
+    const [hours, minutes] = time.split(':');
+    const hour = parseInt(hours, 10);
+    const suffix = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    return `${hour12}:${minutes} ${suffix}`;
+  } catch (_e) {
+    return time; // Return original if parsing fails
+  }
+};
+
 const MatchRow: React.FC<MatchRowProps> = ({ pair, teams, onUpdate, onRemove }) => {
   // Only filter out the current team1Id when populating team2 dropdown
   const availableTeamsForTeam2 = teams.filter((team) => team.id !== pair.team1Id);
-
-  // Format time properly for display
-  const formatTimeForDisplay = (time: string | null) => {
-    if (!time) return '';
-
-    // If time is already in 12-hour format (e.g., "6:30 PM"), return as is
-    if (time.includes('AM') || time.includes('PM')) {
-      return time;
-    }
-
-    // If time is in 24-hour format (e.g., "18:30"), convert to 12-hour
-    try {
-      const [hours, minutes] = time.split(':');
-      const hour = parseInt(hours, 10);
-      const suffix = hour >= 12 ? 'PM' : 'AM';
-      const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-      return `${hour12}:${minutes} ${suffix}`;
-    } catch (_e) {
-      return time; // Return original if parsing fails
-    }
-  };
 
   const team1Name =
     (pair.team1Id && teams.find((t) => t.id === pair.team1Id)?.name) || 'Select Team 1';

@@ -3,6 +3,16 @@ import { createTeamApi, deleteTeamApi, updateTeamApi } from '@/services/TeamServ
 import { Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 
+const deleteTeam = async (teamId: string) => {
+  try {
+    await deleteTeamApi(teamId);
+    return true;
+  } catch (error) {
+    errorLog('Error deleting team:', error);
+    throw error;
+  }
+};
+
 export function useTeamMutations() {
   const { toast } = useToast();
 
@@ -50,16 +60,6 @@ export function useTeamMutations() {
         description: errorMessage,
         variant: 'destructive',
       });
-      throw error;
-    }
-  };
-
-  const deleteTeam = async (teamId: string) => {
-    try {
-      await deleteTeamApi(teamId);
-      return true;
-    } catch (error) {
-      errorLog('Error deleting team:', error);
       throw error;
     }
   };

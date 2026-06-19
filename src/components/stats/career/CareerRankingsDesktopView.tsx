@@ -25,6 +25,10 @@ interface CareerRankingsDesktopViewProps {
   onSortChange: (field: string) => void;
 }
 
+const formatPercentage = (value: number) => {
+  return `${(value * 100).toFixed(1)}%`;
+};
+
 const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
   rankings,
   sortOptions,
@@ -37,10 +41,6 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
     ) : (
       <ArrowUp className="inline size-4 ml-1" />
     );
-  };
-
-  const formatPercentage = (value: number) => {
-    return `${(value * 100).toFixed(1)}%`;
   };
 
   return (

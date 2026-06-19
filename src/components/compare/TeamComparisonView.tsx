@@ -42,6 +42,9 @@ const TeamHeader: React.FC<{ team: TeamComparisonSide; align: 'left' | 'right' }
   </div>
 );
 
+const formatRecord = (wins: number, losses: number) => `${wins}-${losses}`;
+const formatPct = (value: number) => `${value.toFixed(1)}%`;
+
 export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({
   team1,
   team2,
@@ -51,9 +54,6 @@ export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({
   const t2 = team2.totals;
   const p1 = team1.percentiles;
   const p2 = team2.percentiles;
-
-  const formatRecord = (wins: number, losses: number) => `${wins}-${losses}`;
-  const formatPct = (value: number) => `${value.toFixed(1)}%`;
 
   return (
     <div className="space-y-6">

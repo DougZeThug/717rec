@@ -24,19 +24,19 @@ interface ReportCardLeaderboardProps {
   initialMode: ReportCardMode;
 }
 
+const getGpaColor = (gpa: number) => {
+  if (gpa >= 3.5) return 'text-emerald-600 dark:text-emerald-400';
+  if (gpa >= 3.0) return 'text-blue-600 dark:text-blue-400';
+  if (gpa >= 2.0) return 'text-amber-600 dark:text-amber-400';
+  if (gpa >= 1.0) return 'text-orange-600 dark:text-orange-400';
+  return 'text-red-600 dark:text-red-400';
+};
+
 const LeaderboardRow: React.FC<{
   entry: LeaderboardEntry;
   rank: number;
   isCurrentTeam: boolean;
 }> = ({ entry, rank, isCurrentTeam }) => {
-  const getGpaColor = (gpa: number) => {
-    if (gpa >= 3.5) return 'text-emerald-600 dark:text-emerald-400';
-    if (gpa >= 3.0) return 'text-blue-600 dark:text-blue-400';
-    if (gpa >= 2.0) return 'text-amber-600 dark:text-amber-400';
-    if (gpa >= 1.0) return 'text-orange-600 dark:text-orange-400';
-    return 'text-red-600 dark:text-red-400';
-  };
-
   return (
     <div
       className={cn(

@@ -19,6 +19,13 @@ const MIN_SCALE = 0.1;
 const MAX_SCALE = 3;
 const SCALE_STEP = 0.2;
 
+// Touch helpers
+const getTouchDistance = (touch1: React.Touch, touch2: React.Touch): number => {
+  const dx = touch1.clientX - touch2.clientX;
+  const dy = touch1.clientY - touch2.clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+};
+
 /**
  * Hook that manages pan/zoom/pinch controls for the bracket viewport.
  * Returns state, refs, and event handlers for the viewport container.
@@ -84,13 +91,6 @@ export const useViewportControls = () => {
       return () => clearTimeout(timer);
     }
   }, [autoFit, isInitialized]);
-
-  // Touch helpers
-  const getTouchDistance = (touch1: React.Touch, touch2: React.Touch): number => {
-    const dx = touch1.clientX - touch2.clientX;
-    const dy = touch1.clientY - touch2.clientY;
-    return Math.sqrt(dx * dx + dy * dy);
-  };
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 2) {

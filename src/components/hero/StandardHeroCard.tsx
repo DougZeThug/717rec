@@ -12,6 +12,16 @@ interface StandardHeroCardProps {
   card: HeroCard;
 }
 
+const cardWrapper = (children: React.ReactNode) => (
+  <m.div
+    whileHover={{ scale: 1.02, y: -1 }}
+    whileTap={{ scale: 0.98 }}
+    transition={{ duration: 0.15 }}
+  >
+    {children}
+  </m.div>
+);
+
 const StandardHeroCard: React.FC<StandardHeroCardProps> = ({ card }) => {
   const Icon = card.icon_name ? HERO_ICON_MAP[card.icon_name] : null;
   const { shouldApplyWinter } = useSeasonalTheme();
@@ -39,16 +49,6 @@ const StandardHeroCard: React.FC<StandardHeroCardProps> = ({ card }) => {
           card.text_color,
           'border-t-[3px] border-t-blue-500 dark:border-t-blue-400'
         )
-  );
-
-  const cardWrapper = (children: React.ReactNode) => (
-    <m.div
-      whileHover={{ scale: 1.02, y: -1 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.15 }}
-    >
-      {children}
-    </m.div>
   );
 
   if (card.cta_url) {

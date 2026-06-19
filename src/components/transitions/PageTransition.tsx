@@ -14,6 +14,13 @@ interface PageTransitionProps {
   immediate?: boolean;
 }
 
+const delayClass = {
+  none: '',
+  short: 'animation-delay-100',
+  medium: 'animation-delay-200',
+  long: 'animation-delay-300',
+};
+
 export const PageTransition: React.FC<PageTransitionProps> = ({
   children,
   delay = 'none',
@@ -26,13 +33,6 @@ export const PageTransition: React.FC<PageTransitionProps> = ({
   useEffect(() => {
     routeLog(`Route changed to ${location.pathname}`);
   }, [location]);
-
-  const delayClass = {
-    none: '',
-    short: 'animation-delay-100',
-    medium: 'animation-delay-200',
-    long: 'animation-delay-300',
-  };
 
   const animationClass = animations[animation];
 

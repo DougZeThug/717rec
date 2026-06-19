@@ -8,19 +8,19 @@ interface DivisionRecordCardProps {
   record: { wins: number; losses: number; gameWins: number; gameLosses: number };
 }
 
+const icons = {
+  competitive: <Shield size={14} className="text-red-500" />,
+  intermediate: <Users size={14} className="text-blue-500" />,
+  recreational: <Star size={14} className="text-green-500" />,
+};
+
+const labels = {
+  competitive: 'vs Competitive',
+  intermediate: 'vs Intermediate',
+  recreational: 'vs Recreational',
+};
+
 export const DivisionRecordCard = ({ tier, record }: DivisionRecordCardProps) => {
-  const icons = {
-    competitive: <Shield size={14} className="text-red-500" />,
-    intermediate: <Users size={14} className="text-blue-500" />,
-    recreational: <Star size={14} className="text-green-500" />,
-  };
-
-  const labels = {
-    competitive: 'vs Competitive',
-    intermediate: 'vs Intermediate',
-    recreational: 'vs Recreational',
-  };
-
   const total = record.wins + record.losses;
   const winPct = total > 0 ? (record.wins / total) * 100 : 0;
 

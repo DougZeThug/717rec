@@ -20,6 +20,43 @@ interface ScoreStepperProps {
   isWinning?: boolean;
 }
 
+const sizeClasses = {
+  sm: {
+    container: 'gap-1',
+    button: 'size-8',
+    score: 'text-xl min-w-[3rem]',
+    label: 'text-xs',
+    logo: 'size-4',
+  },
+  md: {
+    container: 'gap-2',
+    button: 'size-10',
+    score: 'text-2xl min-w-[4rem]',
+    label: 'text-sm',
+    logo: 'size-5',
+  },
+  lg: {
+    container: 'gap-3',
+    button: 'size-12',
+    score: 'text-3xl min-w-[5rem]',
+    label: 'text-base',
+    logo: 'size-6',
+  },
+};
+
+const accentClasses = {
+  blue: {
+    button: 'hover:bg-blue-100 hover:text-blue-600 active:bg-blue-200 dark:hover:bg-blue-900/30',
+    ring: 'focus-visible:ring-blue-500',
+    winning: 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20',
+  },
+  red: {
+    button: 'hover:bg-red-100 hover:text-red-600 active:bg-red-200 dark:hover:bg-red-900/30',
+    ring: 'focus-visible:ring-red-500',
+    winning: 'ring-2 ring-red-500 bg-red-50 dark:bg-red-900/20',
+  },
+};
+
 export const ScoreStepper: React.FC<ScoreStepperProps> = ({
   value,
   onChange,
@@ -53,43 +90,6 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
       onChange(value - 1);
       setTimeout(() => setIsAnimating(false), 150);
     }
-  };
-
-  const sizeClasses = {
-    sm: {
-      container: 'gap-1',
-      button: 'size-8',
-      score: 'text-xl min-w-[3rem]',
-      label: 'text-xs',
-      logo: 'size-4',
-    },
-    md: {
-      container: 'gap-2',
-      button: 'size-10',
-      score: 'text-2xl min-w-[4rem]',
-      label: 'text-sm',
-      logo: 'size-5',
-    },
-    lg: {
-      container: 'gap-3',
-      button: 'size-12',
-      score: 'text-3xl min-w-[5rem]',
-      label: 'text-base',
-      logo: 'size-6',
-    },
-  };
-
-  const accentClasses = {
-    blue: {
-      button: 'hover:bg-blue-100 hover:text-blue-600 active:bg-blue-200 dark:hover:bg-blue-900/30',
-      ring: 'focus-visible:ring-blue-500',
-      winning: 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20',
-    },
-    red: {
-      button: 'hover:bg-red-100 hover:text-red-600 active:bg-red-200 dark:hover:bg-red-900/30',
-      ring: 'focus-visible:ring-red-500',
-      winning: 'ring-2 ring-red-500 bg-red-50 dark:bg-red-900/20',
-    },
   };
 
   const sizes = sizeClasses[size];

@@ -12,6 +12,20 @@ interface RankingsData {
 // Minimum time (in hours) before updating historical rankings
 const HISTORY_UPDATE_THRESHOLD_HOURS = 12;
 
+// Helper to determine if historical data should be updated based on timestamp
+const shouldUpdateHistoricalData = (timestamp: string): boolean => {
+  if (!timestamp) return true;
+
+  const lastUpdate = new Date(timestamp).getTime();
+  const now = new Date().getTime();
+  const hoursSinceUpdate = (now - lastUpdate) / (1000 * 60 * 60);
+
+  debugLog(`Hours since last historical update: ${hoursSinceUpdate.toFixed(2)}`);
+
+  // Only update if sufficient time has passed
+  return hoursSinceUpdate > HISTORY_UPDATE_THRESHOLD_HOURS;
+};
+
 export const usePreviousRankings = (): {
   previousRankings: Record<string, number>;
   lastUpdated: string | null;
@@ -95,20 +109,6 @@ export const usePreviousRankings = (): {
 
     loadRankings();
   }, []);
-
-  // Helper to determine if historical data should be updated based on timestamp
-  const shouldUpdateHistoricalData = (timestamp: string): boolean => {
-    if (!timestamp) return true;
-
-    const lastUpdate = new Date(timestamp).getTime();
-    const now = new Date().getTime();
-    const hoursSinceUpdate = (now - lastUpdate) / (1000 * 60 * 60);
-
-    debugLog(`Hours since last historical update: ${hoursSinceUpdate.toFixed(2)}`);
-
-    // Only update if sufficient time has passed
-    return hoursSinceUpdate > HISTORY_UPDATE_THRESHOLD_HOURS;
-  };
 
   return { previousRankings: previousRankings ?? {}, lastUpdated };
 };

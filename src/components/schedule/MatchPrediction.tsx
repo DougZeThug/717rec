@@ -92,13 +92,13 @@ export const MatchPrediction: React.FC<MatchPredictionProps> = ({
   );
 };
 
-const ConfidenceBadge: React.FC<{ level: ConfidenceLevel }> = ({ level }) => {
-  const colorClasses = {
-    Low: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-    Medium: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    High: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-  };
+const colorClasses = {
+  Low: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  Medium: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  High: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+};
 
+const ConfidenceBadge: React.FC<{ level: ConfidenceLevel }> = ({ level }) => {
   return (
     <span
       className={cn('text-[9px] font-semibold px-1.5 py-0.5 rounded-full', colorClasses[level])}

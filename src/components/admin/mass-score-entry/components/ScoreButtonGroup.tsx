@@ -27,6 +27,9 @@ interface ScoreButtonGroupProps {
   team2Name?: string;
 }
 
+// Abbreviate team name to first ~10 chars
+const abbreviate = (name: string) => (name.length > 12 ? `${name.slice(0, 10)}…` : name);
+
 const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
   value,
   onChange,
@@ -83,9 +86,6 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
       onComplete();
     }
   };
-
-  // Abbreviate team name to first ~10 chars
-  const abbreviate = (name: string) => (name.length > 12 ? name.slice(0, 10) + '…' : name);
 
   return (
     <div className="space-y-1">

@@ -5,42 +5,42 @@ import { TimeslotService } from '@/services/timeslots/TimeslotService';
 import { TeamTimeslot } from '@/types';
 import { errorLog, scheduleLog } from '@/utils/logger';
 
+// Fetch timeslots for a specific date
+const fetchTimeslotsByDate = async (date: Date | null) => {
+  if (!date) {
+    return [];
+  }
+
+  try {
+    // Format date as YYYY-MM-DD for database queries
+    const formattedDate = format(date, 'yyyy-MM-dd');
+
+    const data = await TimeslotService.fetchTimeslotsForDate(formattedDate);
+
+    // Map the data to match the TeamTimeslot type
+    const formattedData: TeamTimeslot[] =
+      data?.map((item) => ({
+        ...item,
+        is_double_header: item.is_double_header || false,
+        teams: item.teams
+          ? {
+              id: item.teams.id,
+              name: item.teams.name,
+              logo_url: item.teams.logo_url,
+              divisionName: null,
+            }
+          : undefined,
+      })) || [];
+
+    return formattedData;
+  } catch (error) {
+    errorLog('Error fetching timeslots:', error);
+    throw error;
+  }
+};
+
 export const useTimeslotOperations = () => {
   const { toast } = useToast();
-
-  // Fetch timeslots for a specific date
-  const fetchTimeslotsByDate = async (date: Date | null) => {
-    if (!date) {
-      return [];
-    }
-
-    try {
-      // Format date as YYYY-MM-DD for database queries
-      const formattedDate = format(date, 'yyyy-MM-dd');
-
-      const data = await TimeslotService.fetchTimeslotsForDate(formattedDate);
-
-      // Map the data to match the TeamTimeslot type
-      const formattedData: TeamTimeslot[] =
-        data?.map((item) => ({
-          ...item,
-          is_double_header: item.is_double_header || false,
-          teams: item.teams
-            ? {
-                id: item.teams.id,
-                name: item.teams.name,
-                logo_url: item.teams.logo_url,
-                divisionName: null,
-              }
-            : undefined,
-        })) || [];
-
-      return formattedData;
-    } catch (error) {
-      errorLog('Error fetching timeslots:', error);
-      throw error;
-    }
-  };
 
   // Add a new timeslot assignment
   const addTimeslot = async (date: Date, teamId: string, timeslot: string) => {

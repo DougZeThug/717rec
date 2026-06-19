@@ -21,6 +21,8 @@ interface StatsChartsProps {
   chartLimit: number;
 }
 
+const chartLabels = ['Win-Loss', 'Power Score', 'Trends'];
+
 const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
   const isMobile = useIsMobile();
   const { resolvedTheme } = useTheme();
@@ -51,8 +53,6 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
       emblaApi.off('select', onSelect);
     };
   }, [emblaApi, onSelect]);
-
-  const chartLabels = ['Win-Loss', 'Power Score', 'Trends'];
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-4">

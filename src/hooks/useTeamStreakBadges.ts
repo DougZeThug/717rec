@@ -12,10 +12,10 @@ export const useTeamStreak = (teamId: string) => {
   });
 };
 
-export const useAwardStreakBadges = () => {
-  const awardBadges = async (teamId: string) => {
-    return await BadgeProcessingService.awardStreakBadges(teamId);
-  };
+const awardBadges = async (teamId: string) => {
+  return await BadgeProcessingService.awardStreakBadges(teamId);
+};
 
+export const useAwardStreakBadges = () => {
   return { awardBadges };
 };

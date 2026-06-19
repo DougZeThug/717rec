@@ -14,11 +14,11 @@ interface ThursdayDatePickerProps {
   onSelect: (date: Date | null) => void;
 }
 
-export const ThursdayDatePicker = ({ selected, onSelect }: ThursdayDatePickerProps) => {
-  const isThursday = (date: Date) => {
-    return date.getDay() === 4; // 4 represents Thursday (0 = Sunday, 1 = Monday, etc.)
-  };
+const isThursday = (date: Date) => {
+  return date.getDay() === 4; // 4 represents Thursday (0 = Sunday, 1 = Monday, etc.)
+};
 
+export const ThursdayDatePicker = ({ selected, onSelect }: ThursdayDatePickerProps) => {
   // Enhanced handler to ensure consistent date handling
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) {

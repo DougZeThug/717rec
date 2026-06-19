@@ -17,6 +17,12 @@ interface TeamsContainerProps {
   sortMode: SortMode;
 }
 
+// Updated to work with display divisions
+const getDivisionName = (displayDivision: string | undefined): string => {
+  if (!displayDivision) return 'Unassigned Division';
+  return `${displayDivision} Division`;
+};
+
 const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode, sortMode }) => {
   const {
     teams,
@@ -66,12 +72,6 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode, 
   }, [teamsByDisplayDivision, sortTeams]);
 
   const sortedAllTeams = useMemo(() => sortTeams(uniqueTeams), [uniqueTeams, sortTeams]);
-
-  // Updated to work with display divisions
-  const getDivisionName = (displayDivision: string | undefined): string => {
-    if (!displayDivision) return 'Unassigned Division';
-    return `${displayDivision} Division`;
-  };
 
   return (
     <div>

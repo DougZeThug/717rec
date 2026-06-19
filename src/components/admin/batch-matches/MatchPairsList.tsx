@@ -25,6 +25,20 @@ interface MatchPairsListProps {
   onRemove: (id: string) => void;
 }
 
+const timeSlotOptions = [
+  '5:00 PM',
+  '5:30 PM',
+  '6:00 PM',
+  '6:30 PM',
+  '7:00 PM',
+  '7:30 PM',
+  '8:00 PM',
+  '8:30 PM',
+  '9:00 PM',
+  '9:30 PM',
+  '10:00 PM',
+];
+
 const MatchPairsList: React.FC<MatchPairsListProps> = ({ pairs, teams, onUpdate, onRemove }) => {
   if (pairs.length === 0) {
     return (
@@ -39,20 +53,6 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({ pairs, teams, onUpdate,
     if (!id) return null;
     return teams.find((t) => t.id === id) || null;
   };
-
-  const timeSlotOptions = [
-    '5:00 PM',
-    '5:30 PM',
-    '6:00 PM',
-    '6:30 PM',
-    '7:00 PM',
-    '7:30 PM',
-    '8:00 PM',
-    '8:30 PM',
-    '9:00 PM',
-    '9:30 PM',
-    '10:00 PM',
-  ];
 
   return (
     <div className="space-y-3">

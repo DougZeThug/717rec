@@ -13,6 +13,14 @@ interface TeamRowProps {
   matchType: string;
 }
 
+const getTeamRowClasses = (isWinner: boolean) =>
+  cn(
+    'flex items-center p-2 rounded-md',
+    isWinner
+      ? 'bg-green-50 border-l-4 border-green-500 dark:bg-green-900/20 dark:border-green-500'
+      : 'bg-gray-50 dark:bg-gray-800/40'
+  );
+
 const TeamRow: React.FC<TeamRowProps> = ({
   team,
   teamId: _teamId,
@@ -21,14 +29,6 @@ const TeamRow: React.FC<TeamRowProps> = ({
   isWinner,
   matchType,
 }) => {
-  const getTeamRowClasses = (isWinner: boolean) =>
-    cn(
-      'flex items-center p-2 rounded-md',
-      isWinner
-        ? 'bg-green-50 border-l-4 border-green-500 dark:bg-green-900/20 dark:border-green-500'
-        : 'bg-gray-50 dark:bg-gray-800/40'
-    );
-
   return (
     <div className={getTeamRowClasses(isWinner)}>
       {team ? (

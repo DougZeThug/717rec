@@ -31,6 +31,29 @@ interface RankingsMobileViewProps {
   onViewChange?: (view: 'division' | 'all') => void;
 }
 
+const sortableFields = [
+  {
+    id: 'powerScore',
+    label: (
+      <>
+        <Bolt size={16} className="inline-block mr-1" />
+        Power
+      </>
+    ),
+  },
+  { id: 'winPercentage', label: 'Win %' },
+  {
+    id: 'sos',
+    label: (
+      <>
+        <Scale size={15} className="inline-block mr-1" />
+        SOS
+      </>
+    ),
+  },
+  { id: 'wins', label: 'Wins' },
+];
+
 const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
   rankings,
   expandedTeam,
@@ -112,29 +135,6 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
     },
     [scrollToTeam]
   );
-
-  const sortableFields = [
-    {
-      id: 'powerScore',
-      label: (
-        <>
-          <Bolt size={16} className="inline-block mr-1" />
-          Power
-        </>
-      ),
-    },
-    { id: 'winPercentage', label: 'Win %' },
-    {
-      id: 'sos',
-      label: (
-        <>
-          <Scale size={15} className="inline-block mr-1" />
-          SOS
-        </>
-      ),
-    },
-    { id: 'wins', label: 'Wins' },
-  ];
 
   const toggleViewMode = (value: string) => {
     if (!value) return;

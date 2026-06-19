@@ -15,32 +15,32 @@ import { useScheduleTabs } from '@/hooks/useScheduleTabs';
 import { normalizeDate } from '@/utils/dateNormalization';
 import { scheduleLog } from '@/utils/logger';
 
+// Get upcoming Thursday (or today if it's Thursday)
+const getUpcomingThursday = () => {
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0 = Sunday, 4 = Thursday
+
+  let targetDate: Date;
+  if (dayOfWeek === 4) {
+    // Today is Thursday
+    targetDate = today;
+  } else {
+    // Calculate days until next Thursday
+    const daysUntilThursday =
+      dayOfWeek < 4
+        ? 4 - dayOfWeek // This week's Thursday
+        : 7 - dayOfWeek + 4; // Next week's Thursday
+
+    targetDate = new Date(today);
+    targetDate.setDate(today.getDate() + daysUntilThursday);
+  }
+
+  // Normalize to midnight local time to prevent time-of-day inconsistencies
+  return new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+};
+
 const Schedule = () => {
   const [searchTerm, setSearchTerm] = useState('');
-
-  // Get upcoming Thursday (or today if it's Thursday)
-  const getUpcomingThursday = () => {
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // 0 = Sunday, 4 = Thursday
-
-    let targetDate: Date;
-    if (dayOfWeek === 4) {
-      // Today is Thursday
-      targetDate = today;
-    } else {
-      // Calculate days until next Thursday
-      const daysUntilThursday =
-        dayOfWeek < 4
-          ? 4 - dayOfWeek // This week's Thursday
-          : 7 - dayOfWeek + 4; // Next week's Thursday
-
-      targetDate = new Date(today);
-      targetDate.setDate(today.getDate() + daysUntilThursday);
-    }
-
-    // Normalize to midnight local time to prevent time-of-day inconsistencies
-    return new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
-  };
 
   const [selectedDate, setSelectedDate] = useState<Date>(getUpcomingThursday());
 

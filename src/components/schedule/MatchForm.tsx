@@ -9,6 +9,18 @@ import ScoreSection from './ScoreSection';
 import TeamSelector from './TeamSelector';
 import { MatchFormProps } from './types';
 
+// Set up time slots with consistent formatting
+const timeSlots = [
+  '6:30 PM',
+  '7:00 PM',
+  '7:30 PM',
+  '8:00 PM',
+  '8:30 PM',
+  '9:00 PM',
+  '9:30 PM',
+  '10:00 PM',
+];
+
 const MatchForm: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCancel }) => {
   const [team1Id, setTeam1Id] = useState(match?.team1Id || '');
   const [team2Id, setTeam2Id] = useState(match?.team2Id || '');
@@ -19,18 +31,6 @@ const MatchForm: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCancel 
   const [isCompleted, setIsCompleted] = useState(match?.iscompleted || false);
   const [team1Score, setTeam1Score] = useState<number | undefined>(match?.team1Score);
   const [team2Score, setTeam2Score] = useState<number | undefined>(match?.team2Score);
-
-  // Set up time slots with consistent formatting
-  const timeSlots = [
-    '6:30 PM',
-    '7:00 PM',
-    '7:30 PM',
-    '8:00 PM',
-    '8:30 PM',
-    '9:00 PM',
-    '9:30 PM',
-    '10:00 PM',
-  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

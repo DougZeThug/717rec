@@ -20,6 +20,9 @@ interface TopTeamsProps {
   teams: Team[];
 }
 
+// Reserve minimum height to prevent layout shift during loading
+const sectionStyle = { minHeight: '280px' };
+
 const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
   const { shouldApplyWinter } = useSeasonalTheme();
   const { data: allBadges } = useAllTeamBadges();
@@ -47,9 +50,6 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
         ),
     '' // Animation handled by parent PageTransition to avoid double animation CLS
   );
-
-  // Reserve minimum height to prevent layout shift during loading
-  const sectionStyle = { minHeight: '280px' };
 
   if (topTenTeams.length === 0) {
     return (

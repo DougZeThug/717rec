@@ -17,6 +17,36 @@ interface SeasonsListProps {
   onEditSeason: (season: Season) => void;
 }
 
+const getStatusBadge = (season: Season) => {
+  if (season.is_active) {
+    return (
+      <Badge variant="default" className="bg-green-500">
+        Active
+      </Badge>
+    );
+  } else if (season.playoffs_active) {
+    return (
+      <Badge variant="default" className="bg-yellow-500">
+        Playoffs In Progress
+      </Badge>
+    );
+  } else if (season.is_archived) {
+    return <Badge variant="secondary">Archived</Badge>;
+  } else {
+    return <Badge variant="outline">Inactive</Badge>;
+  }
+};
+
+const getStatusIcon = (season: Season) => {
+  if (season.is_active) {
+    return <Calendar className="size-4 text-green-500" />;
+  } else if (season.is_archived) {
+    return <Archive className="size-4 text-muted-foreground" />;
+  } else {
+    return <Calendar className="size-4 text-blue-500" />;
+  }
+};
+
 const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSeason }) => {
   const [finalizingSeason, setFinalizingSeason] = useState<Season | null>(null);
   if (isLoading) {
@@ -49,36 +79,6 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
       </Card>
     );
   }
-
-  const getStatusBadge = (season: Season) => {
-    if (season.is_active) {
-      return (
-        <Badge variant="default" className="bg-green-500">
-          Active
-        </Badge>
-      );
-    } else if (season.playoffs_active) {
-      return (
-        <Badge variant="default" className="bg-yellow-500">
-          Playoffs In Progress
-        </Badge>
-      );
-    } else if (season.is_archived) {
-      return <Badge variant="secondary">Archived</Badge>;
-    } else {
-      return <Badge variant="outline">Inactive</Badge>;
-    }
-  };
-
-  const getStatusIcon = (season: Season) => {
-    if (season.is_active) {
-      return <Calendar className="size-4 text-green-500" />;
-    } else if (season.is_archived) {
-      return <Archive className="size-4 text-muted-foreground" />;
-    } else {
-      return <Calendar className="size-4 text-blue-500" />;
-    }
-  };
 
   return (
     <div className="space-y-4">
@@ -129,8 +129,7 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div>
-                <span className="font-medium">Created:</span>{' '}
-                {toLocalDateString(season.created_at)}
+                <span className="font-medium">Created:</span> {toLocalDateString(season.created_at)}
               </div>
               {season.is_archived && (
                 <div>

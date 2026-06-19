@@ -1,14 +1,16 @@
 import { Medal, Plus, Trash2 } from 'lucide-react';
 import React from 'react';
 
-import { EventWeekWinners } from '@/types/heroCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { parseMetadata, parseHeroCardMetadata } from '@/utils/parseMetadata';
+import { EventWeekWinners } from '@/types/heroCard';
+import { parseHeroCardMetadata, parseMetadata } from '@/utils/parseMetadata';
 
 import { SectionHeader } from './SectionHeader';
 import { FormSectionProps } from './types';
+
+const placeLabels = ['🥇 1st', '🥈 2nd', '🥉 3rd'];
 
 export const EventWinnersEditor: React.FC<FormSectionProps> = ({ formData, onChange }) => {
   if (formData.card_type !== 'event') return null;
@@ -62,8 +64,6 @@ export const EventWinnersEditor: React.FC<FormSectionProps> = ({ formData, onCha
     updated[weekIndex] = { ...updated[weekIndex], winners: newWinners };
     updateWinners(updated);
   };
-
-  const placeLabels = ['🥇 1st', '🥈 2nd', '🥉 3rd'];
 
   return (
     <div className="bg-card rounded-lg border p-4">
