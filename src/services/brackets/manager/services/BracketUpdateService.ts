@@ -419,13 +419,12 @@ export class BracketUpdateService {
       if (!stages) return;
       const stagesArray = (Array.isArray(stages) ? stages : [stages]) as StorageStage[];
 
-      const allMatches: StorageMatch[] = [];
-      for (const s of stagesArray) {
-        const m = await this.storage.select('match', { stage_id: s.id });
-        if (!m) continue;
-        const arr = (Array.isArray(m) ? m : [m]) as StorageMatch[];
-        allMatches.push(...arr);
-      }
+      const matchResults = await Promise.all(
+        stagesArray.map((s) => this.storage.select('match', { stage_id: s.id }))
+      );
+      const allMatches: StorageMatch[] = matchResults.flatMap((m) =>
+        !m ? [] : ((Array.isArray(m) ? m : [m]) as StorageMatch[])
+      );
 
       if (allMatches.length === 0) return;
 

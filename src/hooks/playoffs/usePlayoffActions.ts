@@ -31,9 +31,11 @@ export const usePlayoffActions = () => {
       });
 
       // Invalidate all related queries
-      await queryClient.invalidateQueries({ queryKey: ['brackets'] });
-      await queryClient.invalidateQueries({ queryKey: ['playoff-matches'] });
-      await invalidateMatchRelatedQueries(queryClient);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['brackets'] }),
+        queryClient.invalidateQueries({ queryKey: ['playoff-matches'] }),
+        invalidateMatchRelatedQueries(queryClient),
+      ]);
     } catch (error) {
       const errorMessage = getUIErrorMessage(error, 'Failed to delete bracket');
       logError(error, 'deleteBracket', { bracketId, bracketName });
