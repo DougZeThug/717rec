@@ -1,17 +1,19 @@
 import { Lightbulb } from 'lucide-react';
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 
 import { SectionHeader } from '@/components/ui/CollapsibleSection';
 import LoadingState from '@/components/ui/loading-state';
+import { Skeleton } from '@/components/ui/skeleton';
 import WinterSection from '@/components/winter/WinterSection';
 import { useLeagueInsights } from '@/hooks/useLeagueInsights';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 
-import DivisionStrengthChart from './DivisionStrengthChart';
 import LeagueOverviewCards from './LeagueOverviewCards';
 import LeagueParityCard from './LeagueParityCard';
 import TopPerformersSection from './TopPerformersSection';
+
+const DivisionStrengthChart = lazy(() => import('./DivisionStrengthChart'));
 
 const LeagueInsightsContainer: React.FC = () => {
   const { overview, divisionStrength, parity, topPerformers, isLoading } = useLeagueInsights();
@@ -59,7 +61,9 @@ const LeagueInsightsContainer: React.FC = () => {
 
         {/* Charts row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <DivisionStrengthChart divisions={divisionStrength} />
+          <Suspense fallback={<Skeleton className="h-[320px] w-full rounded-lg" />}>
+            <DivisionStrengthChart divisions={divisionStrength} />
+          </Suspense>
           {parity && <LeagueParityCard parity={parity} totalTeams={overview.totalTeams} />}
         </div>
 

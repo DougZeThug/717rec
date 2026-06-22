@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
 import { ChartDataItem } from '@/types/chart';
 import { chartLog } from '@/utils/logger';
 
 import { useSortedWinLossData } from './hooks/useSortedWinLossData';
-import WinLossBarChart from './WinLossBarChart';
+
+const WinLossBarChart = lazy(() => import('./WinLossBarChart'));
 
 interface WinLossChartProps {
   data: ChartDataItem[];
@@ -38,7 +40,9 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
 
   return (
     <div className={cn('size-full', animations.fadeIn, 'animation-delay-200')}>
-      <WinLossBarChart data={sortedData} isMobile={isMobile} />
+      <Suspense fallback={<Skeleton className="h-[220px] w-full rounded-xl" />}>
+        <WinLossBarChart data={sortedData} isMobile={isMobile} />
+      </Suspense>
     </div>
   );
 };

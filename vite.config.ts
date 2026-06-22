@@ -20,8 +20,11 @@ export default defineConfig(({ mode }) => ({
           'vendor-supabase': ['@supabase/supabase-js'],
           // Separate Sentry into its own chunk so it doesn't block main bundle
           'vendor-sentry': ['@sentry/react'],
-          // Recharts is ~90 KB gzipped — isolate so it loads only with chart routes
-          'vendor-recharts': ['recharts'],
+          // NOTE: recharts is intentionally NOT pinned to a manualChunk. The chart
+          // components are lazy-loaded via React.lazy, so Rollup keeps recharts in
+          // on-demand chunks. Forcing it into a named manualChunk turns it into a
+          // static (eager) import of every page that references a chart, which
+          // defeats the lazy-loading and loads ~160 KB gzipped up front.
         },
       },
     },
