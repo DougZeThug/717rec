@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { MemoryRouter } from 'react-router';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import Schedule from '../Schedule';
 
@@ -103,8 +103,11 @@ const createTestQueryClient = () =>
     },
   });
 
+const testQueryClients: QueryClient[] = [];
+
 const renderPage = () => {
   const queryClient = createTestQueryClient();
+  testQueryClients.push(queryClient);
   return render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter>
@@ -122,6 +125,16 @@ const baseScheduleData = {
 };
 
 describe('Schedule page', () => {
+  afterEach(() => {
+    cleanup();
+    for (const queryClient of testQueryClients) {
+      queryClient.clear();
+    }
+    testQueryClients.length = 0;
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -184,6 +197,12 @@ describe('Schedule page', () => {
 
   it('shows an error state when schedule loading throws', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const preventExpectedJsdomError = (event: ErrorEvent) => {
+      if (event.error?.message === 'TEST_INTENTIONAL: Schedule hook failure') {
+        event.preventDefault();
+      }
+    };
+
     try {
       mockUseScheduleData.mockImplementation(() => {
         // Intentionally unique test-only message for easier debug output attribution.
@@ -191,6 +210,8 @@ describe('Schedule page', () => {
       });
 
       const queryClient = createTestQueryClient();
+      testQueryClients.push(queryClient);
+      window.addEventListener('error', preventExpectedJsdomError);
       render(
         <QueryClientProvider client={queryClient}>
           <MemoryRouter>
@@ -204,6 +225,7 @@ describe('Schedule page', () => {
       expect(screen.getByText('Schedule error')).toBeInTheDocument();
       expect(mockUseScheduleData).toHaveBeenCalled();
     } finally {
+      window.removeEventListener('error', preventExpectedJsdomError);
       errorSpy.mockRestore();
     }
   });
