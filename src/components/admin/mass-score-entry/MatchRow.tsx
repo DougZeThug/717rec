@@ -147,12 +147,13 @@ const MatchRow: React.FC<MatchRowProps> = ({
         <div className="flex items-center justify-between pt-2">
           <div className="flex items-center gap-2">
             <label
+              htmlFor={`mark-complete-${match.id}`}
               className="text-sm font-medium cursor-pointer"
-              onClick={() => handleCompletedChange(!match.iscompleted)}
             >
               Mark as Complete
             </label>
             <Switch
+              id={`mark-complete-${match.id}`}
               checked={match.iscompleted}
               onCheckedChange={handleCompletedChange}
               disabled={isSubmitting}

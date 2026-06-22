@@ -195,6 +195,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
               onChange={handleImageUpload}
               className="hidden"
               disabled={isUploading}
+              aria-label="Upload team image"
             />
             <div className="flex items-center gap-2">
               <Button

@@ -17,7 +17,7 @@ import { getChampionshipColor, getRunnerUpColor } from '@/utils/colors/champions
 import { getWinPercentageColor } from '@/utils/colors/winPercentageColors';
 import { toTeamSlug } from '@/utils/teamSlug';
 
-import { CareerSortOptions } from './CareerRankingsTable';
+import { CareerSortOptions } from './types';
 
 interface CareerRankingsDesktopViewProps {
   rankings: CareerRanking[];

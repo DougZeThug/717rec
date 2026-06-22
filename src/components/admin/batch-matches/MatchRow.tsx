@@ -66,13 +66,15 @@ const MatchRow: React.FC<MatchRowProps> = ({ pair, teams, onUpdate, onRemove }) 
         <div className="sm:col-span-5 space-y-1">
           <div className="flex items-center gap-1 mb-1">
             <Users className="size-4 text-muted-foreground" />
-            <label className="text-sm font-medium">Team 1</label>
+            <label htmlFor={`match-team1-${pair.id}`} className="text-sm font-medium">
+              Team 1
+            </label>
           </div>
           <Select
             value={pair.team1Id || ''}
             onValueChange={(value) => onUpdate({ team1Id: value })}
           >
-            <SelectTrigger className="w-full min-h-[44px]">
+            <SelectTrigger id={`match-team1-${pair.id}`} className="w-full min-h-[44px]">
               <SelectValue placeholder="Select Team 1" />
             </SelectTrigger>
             <SelectContent>
@@ -93,13 +95,15 @@ const MatchRow: React.FC<MatchRowProps> = ({ pair, teams, onUpdate, onRemove }) 
         <div className="sm:col-span-5 space-y-1">
           <div className="flex items-center gap-1 mb-1">
             <Users className="size-4 text-muted-foreground" />
-            <label className="text-sm font-medium">Team 2</label>
+            <label htmlFor={`match-team2-${pair.id}`} className="text-sm font-medium">
+              Team 2
+            </label>
           </div>
           <Select
             value={pair.team2Id || ''}
             onValueChange={(value) => onUpdate({ team2Id: value })}
           >
-            <SelectTrigger className="w-full min-h-[44px]">
+            <SelectTrigger id={`match-team2-${pair.id}`} className="w-full min-h-[44px]">
               <SelectValue placeholder="Select Team 2" />
             </SelectTrigger>
             <SelectContent>
@@ -118,13 +122,15 @@ const MatchRow: React.FC<MatchRowProps> = ({ pair, teams, onUpdate, onRemove }) 
         <div className="flex-1 space-y-1">
           <div className="flex items-center gap-1 mb-1">
             <Clock className="size-4 text-muted-foreground" />
-            <label className="text-sm font-medium">Match Time</label>
+            <label htmlFor={`match-time-${pair.id}`} className="text-sm font-medium">
+              Match Time
+            </label>
           </div>
           <Select
             value={pair.timeslot || ''}
             onValueChange={(value) => onUpdate({ timeslot: value })}
           >
-            <SelectTrigger className="flex-1 min-h-[44px]">
+            <SelectTrigger id={`match-time-${pair.id}`} className="flex-1 min-h-[44px]">
               <SelectValue placeholder="Select Time" />
             </SelectTrigger>
             <SelectContent>

@@ -5,7 +5,7 @@ import { Ranking } from '@/types';
 import { sortHistoryDivisions } from '@/utils/historyDivisionUtils';
 
 import DivisionRankingsSection from './desktop/DivisionRankingsSection';
-import { SortOptions } from './RankingsTable';
+import { SortOptions } from './types';
 
 // Split table display by division or unified table
 interface RankingsDesktopViewProps {

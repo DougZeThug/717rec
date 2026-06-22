@@ -61,9 +61,11 @@ export const useMatchEditorState = ({ matchId, onClose, onSaved }: UseMatchEdito
   }, [matchData, matchId]);
 
   const invalidateQueries = async () => {
-    await queryClient.invalidateQueries({ queryKey: ['brackets-manager-match', matchId] });
-    await queryClient.invalidateQueries({ queryKey: ['brackets'] });
-    await queryClient.invalidateQueries({ queryKey: ['playoff-matches'] });
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['brackets-manager-match', matchId] }),
+      queryClient.invalidateQueries({ queryKey: ['brackets'] }),
+      queryClient.invalidateQueries({ queryKey: ['playoff-matches'] }),
+    ]);
   };
 
   const handleSave = async () => {

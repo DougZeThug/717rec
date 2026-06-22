@@ -61,12 +61,15 @@ const BlindDrawSettingsCard: React.FC = () => {
       </CardHeader>
       <CardContent className="px-3 sm:px-6">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Signup Confirmation Message</label>
+          <label htmlFor="signup-confirmation-message" className="text-sm font-medium">
+            Signup Confirmation Message
+          </label>
           <p className="text-xs text-muted-foreground">
             Shown to players after they sign up (toast + inline text)
           </p>
           <div className="flex gap-2">
             <Input
+              id="signup-confirmation-message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="You're signed up! See you there!"
@@ -187,7 +190,10 @@ const BlindDrawSignupsTab: React.FC = () => {
                     <th className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium hidden sm:table-cell">
                       Signed Up
                     </th>
-                    <th className="text-right px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium w-12"></th>
+                    <th
+                      aria-label="Actions"
+                      className="text-right px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium w-12"
+                    />
                   </tr>
                 </thead>
                 <tbody className="divide-y">

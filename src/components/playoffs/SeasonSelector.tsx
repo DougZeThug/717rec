@@ -23,9 +23,14 @@ const SeasonSelector: React.FC<SeasonSelectorProps> = ({ selectedSeasonId, onSea
 
   return (
     <div className="flex items-center gap-3">
-      <label className="text-sm font-medium text-muted-foreground whitespace-nowrap">Season:</label>
+      <label
+        htmlFor="season-selector"
+        className="text-sm font-medium text-muted-foreground whitespace-nowrap"
+      >
+        Season:
+      </label>
       <Select value={selectedSeasonId ?? undefined} onValueChange={onSeasonChange}>
-        <SelectTrigger className="w-[220px] bg-card border-border">
+        <SelectTrigger id="season-selector" className="w-[220px] bg-card border-border">
           <SelectValue placeholder="Select season" />
         </SelectTrigger>
         <SelectContent>

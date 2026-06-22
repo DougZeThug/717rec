@@ -16,8 +16,8 @@ import { debugLog } from '@/utils/logger';
 
 import LeagueLeaderboardCarousel from './LeagueLeaderboardCarousel';
 import RankingCard from './RankingCard';
-import { SortOptions } from './RankingsTable';
 import TeamSearchDrawer from './TeamSearchDrawer';
+import { SortOptions } from './types';
 import ViewToggle from './ViewToggle';
 
 interface RankingsMobileViewProps {

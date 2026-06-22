@@ -17,7 +17,10 @@ const SignupsListSkeleton: React.FC = () => {
             <th className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium hidden sm:table-cell">
               Signed Up
             </th>
-            <th className="text-right px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium w-12"></th>
+            <th
+              aria-label="Actions"
+              className="text-right px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium w-12"
+            />
           </tr>
         </thead>
         <tbody className="divide-y">

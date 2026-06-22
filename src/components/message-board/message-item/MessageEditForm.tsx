@@ -68,6 +68,7 @@ const MessageEditForm: React.FC<MessageEditFormProps> = ({
           value={editedContent}
           onChange={(e) => setEditedContent(e.target.value)}
           onKeyDown={handleKeyDown}
+          aria-label="Edit message"
           className={cn(
             'w-full min-h-[80px] p-2 border rounded-md focus:outline-none focus:ring-1',
             'focus:ring-primary/40 resize-none text-sm'

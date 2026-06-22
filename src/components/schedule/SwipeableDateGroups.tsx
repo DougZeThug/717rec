@@ -1,4 +1,4 @@
-import { isSameDay, isToday } from 'date-fns';
+import { format, isSameDay, isToday } from 'date-fns';
 import { AnimatePresence, m, PanInfo } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { useEffect } from 'react';
@@ -91,6 +91,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
               type="button"
               key={group.date.toISOString()}
               onClick={() => onIndexChange(idx)}
+              aria-label={`Go to ${format(group.date, 'EEE, MMM d')}`}
               className={cn(
                 'size-2 rounded-full transition-all min-w-[20px] min-h-[20px] flex items-center justify-center',
                 idx === safeIndex
