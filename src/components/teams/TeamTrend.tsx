@@ -71,8 +71,8 @@ const TeamTrend: React.FC<TeamTrendProps> = ({ recentMatches, teamId, limit = 5 
               <div
                 key={match.id ?? `${match.date}-${match.winnerId}`}
                 className={`size-6 flex items-center justify-center text-xs font-bold rounded-full ${
- isWin ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
- }`}
+                  isWin ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}
               >
                 {isWin ? 'W' : 'L'}
               </div>

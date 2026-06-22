@@ -1,4 +1,5 @@
 import React from 'react';
+import type { TooltipContentProps } from 'recharts';
 import {
   Bar,
   BarChart,
@@ -9,7 +10,6 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import type { TooltipContentProps } from 'recharts';
 
 import { DivisionStrength } from '@/hooks/useLeagueInsights';
 import { useChartColors } from '@/utils/charts/chartStyleUtils';
@@ -22,7 +22,13 @@ const DIVISION_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', 
 
 type DivisionTooltipPayload = TooltipContentProps<number, string>['payload'];
 
-const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: DivisionTooltipPayload }) => {
+const CustomTooltip = ({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: DivisionTooltipPayload;
+}) => {
   if (!active || !payload || !payload.length) return null;
   const data = payload[0].payload as DivisionStrength;
   return (

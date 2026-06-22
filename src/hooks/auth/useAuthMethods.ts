@@ -14,7 +14,6 @@ import { loginWithGoogleNative as nativeGoogleLogin } from '@/utils/nativeAuth';
 
 import { HandleAuthErrorFn } from './utils/authErrorHandler';
 
-
 const extractWeakPasswordReasons = (
   data: Awaited<ReturnType<typeof signUpWithEmail>>
 ): WeakPasswordReasons | null => {

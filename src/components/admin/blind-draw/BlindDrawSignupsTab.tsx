@@ -1,4 +1,3 @@
-import { formatWithPattern } from '@/utils/formatDateSafe';
 import { AlertCircle, Loader2, Save, Settings, Shuffle, Trash2, Users } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
@@ -23,6 +22,7 @@ import {
   useClearBlindDrawSignups,
   useDeleteBlindDrawSignup,
 } from '@/hooks/useBlindDrawSignups';
+import { formatWithPattern } from '@/utils/formatDateSafe';
 
 import SignupsListSkeleton from './SignupsListSkeleton';
 
@@ -200,11 +200,17 @@ const BlindDrawSignupsTab: React.FC = () => {
                         <div className="font-medium text-sm">
                           {signup.first_name} {signup.last_initial}.
                         </div>
-                        <div className="text-xs text-muted-foreground sm:hidden" suppressHydrationWarning>
+                        <div
+                          className="text-xs text-muted-foreground sm:hidden"
+                          suppressHydrationWarning
+                        >
                           {formatWithPattern(signup.created_at, 'MMM d, h:mm a')}
                         </div>
                       </td>
-                      <td className="px-2 sm:px-4 py-2 text-sm text-muted-foreground hidden sm:table-cell" suppressHydrationWarning>
+                      <td
+                        className="px-2 sm:px-4 py-2 text-sm text-muted-foreground hidden sm:table-cell"
+                        suppressHydrationWarning
+                      >
                         {formatWithPattern(signup.created_at, 'MMM d, h:mm a')}
                       </td>
                       <td className="px-2 sm:px-4 py-2 text-right">

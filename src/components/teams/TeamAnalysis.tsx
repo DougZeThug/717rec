@@ -79,19 +79,22 @@ const AnalysisContent = ({
           </div>
           <ul className="space-y-1.5">
             {analysis.strengths.map((strength, i) => {
-              const occurrence = analysis.strengths!.slice(0, i).filter((s) => s === strength).length;
-              const key = occurrence === 0 ? `strength:${strength}` : `strength:${strength}#${occurrence}`;
+              const occurrence = analysis
+                .strengths!.slice(0, i)
+                .filter((s) => s === strength).length;
+              const key =
+                occurrence === 0 ? `strength:${strength}` : `strength:${strength}#${occurrence}`;
               return (
-              <m.li
-                key={key}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className="flex items-start gap-2 text-sm"
-              >
-                <span className="text-green-500 mt-0.5">✓</span>
-                <span>{strength}</span>
-              </m.li>
+                <m.li
+                  key={key}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="flex items-start gap-2 text-sm"
+                >
+                  <span className="text-green-500 mt-0.5">✓</span>
+                  <span>{strength}</span>
+                </m.li>
               );
             })}
           </ul>
@@ -107,19 +110,22 @@ const AnalysisContent = ({
           </div>
           <ul className="space-y-1.5">
             {analysis.weaknesses.map((weakness, i) => {
-              const occurrence = analysis.weaknesses!.slice(0, i).filter((w) => w === weakness).length;
-              const key = occurrence === 0 ? `weakness:${weakness}` : `weakness:${weakness}#${occurrence}`;
+              const occurrence = analysis
+                .weaknesses!.slice(0, i)
+                .filter((w) => w === weakness).length;
+              const key =
+                occurrence === 0 ? `weakness:${weakness}` : `weakness:${weakness}#${occurrence}`;
               return (
-              <m.li
-                key={key}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + i * 0.1 }}
-                className="flex items-start gap-2 text-sm"
-              >
-                <span className="text-amber-500 mt-0.5">→</span>
-                <span>{weakness}</span>
-              </m.li>
+                <m.li
+                  key={key}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + i * 0.1 }}
+                  className="flex items-start gap-2 text-sm"
+                >
+                  <span className="text-amber-500 mt-0.5">→</span>
+                  <span>{weakness}</span>
+                </m.li>
               );
             })}
           </ul>

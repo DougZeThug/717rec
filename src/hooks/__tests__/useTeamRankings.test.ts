@@ -36,11 +36,7 @@ import { useRankingsData } from '@/hooks/rankings/useRankingsData';
 import { useTeams } from '@/hooks/useTeams';
 import { saveRankingsToStorage } from '@/utils/rankingUtils';
 
-const makeTeam = (
-  id: string,
-  powerScore: number | null = 80,
-  overrides: Partial<Team> = {}
-) =>
+const makeTeam = (id: string, powerScore: number | null = 80, overrides: Partial<Team> = {}) =>
   ({
     id,
     name: `Team ${id}`,
@@ -146,7 +142,6 @@ describe('useTeamRankings', () => {
       'smooth',
     ]);
   });
-
 
   it('persists computed rankings when teams are available', async () => {
     (useTeams as ReturnType<typeof vi.fn>).mockReturnValue({

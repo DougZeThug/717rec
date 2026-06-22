@@ -2,7 +2,6 @@ import { CheckCircle, Clock, Edit, Loader2, LogOut, Users } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { TeamLogo } from '@/components/shared/TeamLogo';
-import { toLocalDateString } from '@/utils/formatDateSafe';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,6 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useTeamMembership } from '@/hooks/useTeamMembership';
+import { toLocalDateString } from '@/utils/formatDateSafe';
 
 const TeamMembershipSection: React.FC = () => {
   const { membership, availableTeams, isLoading, isFetching, joinTeam, leaveTeam } =

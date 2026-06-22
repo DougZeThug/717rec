@@ -29,10 +29,7 @@ const BADGE_STYLES = [
 const LeagueLeaderboardCarousel: React.FC<LeagueLeaderboardCarouselProps> = ({ rankings }) => {
   const { isWinterTheme } = useSeasonalTheme();
 
-  const top3 = useMemo(
-    () => sortRankings(rankings, 'powerScore', 'desc').slice(0, 3),
-    [rankings]
-  );
+  const top3 = useMemo(() => sortRankings(rankings, 'powerScore', 'desc').slice(0, 3), [rankings]);
 
   if (top3.length === 0) return null;
 

@@ -23,9 +23,7 @@ const PendingScoresCard = () => {
       <Card className={cardClasses}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Clock
-              className={cn('size-5', shouldApplyWinter ? 'text-cyan-400' : 'text-primary')}
-            />
+            <Clock className={cn('size-5', shouldApplyWinter ? 'text-cyan-400' : 'text-primary')} />
             Pending Scores
             {shouldApplyWinter && WINTER_ICONS_ENABLED && (
               <SnowflakeSparkle size={12} className="text-cyan-400/60" />
@@ -76,9 +74,7 @@ const PendingScoresCard = () => {
       <Card className={cardClasses}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Clock
-              className={cn('size-5', shouldApplyWinter ? 'text-cyan-400' : 'text-primary')}
-            />
+            <Clock className={cn('size-5', shouldApplyWinter ? 'text-cyan-400' : 'text-primary')} />
             Pending Scores
             {shouldApplyWinter && WINTER_ICONS_ENABLED && (
               <SnowflakeSparkle size={12} className="text-cyan-400/60" />
@@ -110,9 +106,7 @@ const PendingScoresCard = () => {
       <Card className={cardClasses}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Clock
-              className={cn('size-5', shouldApplyWinter ? 'text-cyan-400' : 'text-primary')}
-            />
+            <Clock className={cn('size-5', shouldApplyWinter ? 'text-cyan-400' : 'text-primary')} />
             Pending Scores
             {shouldApplyWinter && WINTER_ICONS_ENABLED && (
               <SnowflakeSparkle size={12} className="text-cyan-400/60" />

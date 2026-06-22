@@ -184,7 +184,9 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
                 return <PlayerChip key={key} playerName={player} />;
               })
             ) : (
-              <span className="text-xs text-muted-foreground dark:text-muted-foreground">No players</span>
+              <span className="text-xs text-muted-foreground dark:text-muted-foreground">
+                No players
+              </span>
             )}
           </div>
         </div>

@@ -2,7 +2,6 @@ import { AlertTriangle, CheckCircle, Clock, Loader2, Users, XCircle } from 'luci
 import React from 'react';
 
 import { TeamLogo } from '@/components/shared/TeamLogo';
-import { toLocalDateString } from '@/utils/formatDateSafe';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { usePendingMemberships } from '@/hooks/usePendingMemberships';
 import { useToast } from '@/hooks/useToast';
+import { toLocalDateString } from '@/utils/formatDateSafe';
 import { errorLog } from '@/utils/logger';
 
 const TeamMembershipApprovalTab: React.FC = () => {

@@ -30,7 +30,6 @@ export interface AuthContextType {
   clearAuthError: () => void;
 }
 
-
 export type NativeGoogleLoginResult = {
   result?:
     | { idToken?: string; serverAuthCode?: string }

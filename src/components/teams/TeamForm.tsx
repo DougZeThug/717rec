@@ -209,11 +209,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
               </Button>
               {imageUrl && (
                 <div className="relative">
-                  <img
-                    src={imageUrl}
-                    alt="Team preview"
-                    className="size-20 object-cover rounded"
-                  />
+                  <img src={imageUrl} alt="Team preview" className="size-20 object-cover rounded" />
                   <Button
                     type="button"
                     variant="destructive"

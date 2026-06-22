@@ -45,14 +45,18 @@ describe('NotificationService.fetchNotifications', () => {
 
   it('returns [] when data is null', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ order: () => ({ limit: () => Promise.resolve({ data: null, error: null }) }) }),
+      select: () => ({
+        order: () => ({ limit: () => Promise.resolve({ data: null, error: null }) }),
+      }),
     });
     expect(await NotificationService.fetchNotifications()).toEqual([]);
   });
 
   it('throws DatabaseError when the query fails', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ order: () => ({ limit: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+      select: () => ({
+        order: () => ({ limit: () => Promise.resolve({ data: null, error: pgError() }) }),
+      }),
     });
     await expect(NotificationService.fetchNotifications()).rejects.toBeInstanceOf(DatabaseError);
   });
@@ -91,7 +95,9 @@ describe('NotificationService.createNotification', () => {
 
   it('throws NotFoundError when insert returns no row', async () => {
     mockFrom.mockReturnValue({
-      insert: () => ({ select: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }) }),
+      insert: () => ({
+        select: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
+      }),
     });
     await expect(
       NotificationService.createNotification({ title: 'T', body: 'B', createdBy: null })
@@ -100,7 +106,9 @@ describe('NotificationService.createNotification', () => {
 
   it('throws DatabaseError when insert errors', async () => {
     mockFrom.mockReturnValue({
-      insert: () => ({ select: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: pgError() }) }) }),
+      insert: () => ({
+        select: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: pgError() }) }),
+      }),
     });
     await expect(
       NotificationService.createNotification({ title: 'T', body: 'B', createdBy: null })
@@ -127,7 +135,9 @@ describe('NotificationService.updateNotification', () => {
   it('throws NotFoundError when no row returned', async () => {
     mockFrom.mockReturnValue({
       update: () => ({
-        eq: () => ({ select: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }) }),
+        eq: () => ({
+          select: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
+        }),
       }),
     });
     await expect(
@@ -152,6 +162,8 @@ describe('NotificationService.deleteNotification', () => {
     mockFrom.mockReturnValue({
       delete: () => ({ eq: () => Promise.resolve({ data: null, error: pgError() }) }),
     });
-    await expect(NotificationService.deleteNotification('n1')).rejects.toBeInstanceOf(DatabaseError);
+    await expect(NotificationService.deleteNotification('n1')).rejects.toBeInstanceOf(
+      DatabaseError
+    );
   });
 });

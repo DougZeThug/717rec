@@ -148,19 +148,19 @@ export default function Contact() {
               </CardTitle>
               <CardDescription>
                 Fill out the form below and we'll get back to you as soon as possible.
- </CardDescription>
- </CardHeader>
- <CardContent>
- <Form {...form}>
- <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
- {/* Honeypot field - hidden from real users; bots auto-fill it */}
- <input
- type="text"
- tabIndex={-1}
- autoComplete="off"
- aria-hidden="true"
- className="absolute left-[-9999px] size-0 opacity-0"
- {...form.register('website')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  {/* Honeypot field - hidden from real users; bots auto-fill it */}
+                  <input
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden="true"
+                    className="absolute left-[-9999px] size-0 opacity-0"
+                    {...form.register('website')}
                   />
                   <div className="grid gap-4 sm:grid-cols-2">
                     <FormField

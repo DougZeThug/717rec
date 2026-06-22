@@ -119,7 +119,7 @@ describe('ChallongeFallbackService.updateConfig', () => {
       }),
     });
     await expect(
-      ChallongeFallbackService.updateConfig({ id: 'cfg-1', enabled: false }),
+      ChallongeFallbackService.updateConfig({ id: 'cfg-1', enabled: false })
     ).rejects.toThrow(DatabaseError);
   });
 });
@@ -190,7 +190,7 @@ describe('ChallongeFallbackService.createBracket', () => {
       }),
     });
     await expect(
-      ChallongeFallbackService.createBracket({ title: 't', slug: 's', sort_order: 0 }),
+      ChallongeFallbackService.createBracket({ title: 't', slug: 's', sort_order: 0 })
     ).rejects.toThrow(DatabaseError);
   });
 });
@@ -224,7 +224,7 @@ describe('ChallongeFallbackService.updateBracket', () => {
       }),
     });
     await expect(ChallongeFallbackService.updateBracket({ id: 'b-1', title: 'X' })).rejects.toThrow(
-      DatabaseError,
+      DatabaseError
     );
   });
 });

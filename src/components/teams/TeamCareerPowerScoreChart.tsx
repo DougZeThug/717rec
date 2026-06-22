@@ -1,5 +1,6 @@
 import { TrendingUp } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import type { TooltipContentProps } from 'recharts';
 import {
   CartesianGrid,
   Line,
@@ -9,7 +10,6 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import type { TooltipContentProps } from 'recharts';
 import type { Props as DotProps } from 'recharts/types/shape/Dot';
 
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';

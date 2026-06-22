@@ -165,9 +165,7 @@ const ContactPanel: React.FC = () => {
                   ))}
                 </SelectContent>
               </Select>
-              {activeHelper && (
-                <p className="mt-1 text-xs text-muted-foreground">{activeHelper}</p>
-              )}
+              {activeHelper && <p className="mt-1 text-xs text-muted-foreground">{activeHelper}</p>}
             </div>
 
             <div>
@@ -257,11 +255,7 @@ const ContactPanel: React.FC = () => {
                 Signed in — submission marked verified.
               </span>
             )}
-            <Button
-              type="submit"
-              disabled={submit.isPending}
-              className="gap-2"
-            >
+            <Button type="submit" disabled={submit.isPending} className="gap-2">
               <Send className="size-4" />
               {submit.isPending ? 'Sending…' : 'Send message'}
             </Button>

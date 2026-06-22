@@ -44,7 +44,6 @@ export const invalidateMatchRelatedQueries = async (queryClient: QueryClient) =>
 
   await Promise.all(promises);
   cacheLog('Query cache invalidation complete for:', queriesToInvalidate.join(', '));
-
 };
 
 export const batchInvalidateQueries = async (queryClient: QueryClient, keys: string[]) => {

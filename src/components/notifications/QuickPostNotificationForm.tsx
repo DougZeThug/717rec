@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/useToast';
 import { useCreateNotification } from '@/hooks/notifications/useNotificationMutations';
+import { toast } from '@/hooks/useToast';
 
 const QuickPostNotificationForm: React.FC = () => {
   const { user } = useAuth();

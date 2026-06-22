@@ -1,6 +1,6 @@
 import { Ranking } from '@/types';
-import { errorLog, warnLog } from '@/utils/logger';
 import { getTierFromDivision } from '@/utils/autoSchedule/blossom/tierUtils';
+import { errorLog, warnLog } from '@/utils/logger';
 
 const getDisplayedPowerScore = (powerScore: number | null | undefined): number | null => {
   if (powerScore === null || powerScore === undefined) return null;

@@ -96,7 +96,7 @@ const isMatchQualityMetrics = (value: unknown): value is MatchQualityMetrics => 
 };
 
 export const isPersistedAutoScheduleState = (
-  value: unknown,
+  value: unknown
 ): value is PersistedAutoScheduleState => {
   if (!isObject(value)) return false;
 
@@ -135,7 +135,7 @@ export function loadAutoScheduleState(): PersistedAutoScheduleState | null {
     if (!result.ok) {
       warnLog(
         'Failed to load auto-schedule state from sessionStorage due to invalid persisted shape:',
-        result.error,
+        result.error
       );
       return null;
     }

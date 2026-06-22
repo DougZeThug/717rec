@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
-import { calculateTotalScore, validateMatchScores, canAddMoreGames } from '../scoreUtils';
+import { describe, expect, it } from 'vitest';
+
 import type { GameData } from '../../types';
+import { calculateTotalScore, canAddMoreGames, validateMatchScores } from '../scoreUtils';
 
 const game = (a: number, b: number): GameData => ({ team1Score: a, team2Score: b });
 
@@ -24,9 +25,10 @@ describe('validateMatchScores', () => {
     });
 
     it('accepts 2-1', () => {
-      expect(
-        validateMatchScores([...team1Wins(2), ...team2Wins(1)], 3)
-      ).toEqual({ isValid: true, errorMessage: null });
+      expect(validateMatchScores([...team1Wins(2), ...team2Wins(1)], 3)).toEqual({
+        isValid: true,
+        errorMessage: null,
+      });
     });
 
     it('rejects 3-0 (winner exceeds minWins)', () => {
@@ -60,12 +62,8 @@ describe('validateMatchScores', () => {
   describe('best of 5', () => {
     it('accepts 3-0, 3-1, 3-2', () => {
       expect(validateMatchScores(team1Wins(3), 5).isValid).toBe(true);
-      expect(
-        validateMatchScores([...team1Wins(3), ...team2Wins(1)], 5).isValid
-      ).toBe(true);
-      expect(
-        validateMatchScores([...team1Wins(3), ...team2Wins(2)], 5).isValid
-      ).toBe(true);
+      expect(validateMatchScores([...team1Wins(3), ...team2Wins(1)], 5).isValid).toBe(true);
+      expect(validateMatchScores([...team1Wins(3), ...team2Wins(2)], 5).isValid).toBe(true);
     });
 
     it('rejects 4-0 (winner exceeds minWins)', () => {

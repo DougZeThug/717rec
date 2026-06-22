@@ -3,9 +3,9 @@ import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { useNotificationsRealtime } from '@/hooks/notifications/useNotificationsRealtime';
 import { useUnreadNotifications } from '@/hooks/notifications/useUnreadNotifications';
+import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { cn } from '@/lib/utils';
 
 import NotificationList from './NotificationList';
@@ -55,9 +55,7 @@ const NotificationBell: React.FC<Props> = ({ className }) => {
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
             {notifications.length > 0 && (
-              <span className="text-xs text-muted-foreground">
-                {notifications.length} recent
-              </span>
+              <span className="text-xs text-muted-foreground">{notifications.length} recent</span>
             )}
           </div>
           {isAdminAccessGranted && <QuickPostNotificationForm />}

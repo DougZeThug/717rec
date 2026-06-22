@@ -86,7 +86,10 @@ export class MatchPropagationRepairService {
     }
   }
 
-  private async propagateFinalToGf(finalRound: StorageRound, gfRound1: StorageRound): Promise<void> {
+  private async propagateFinalToGf(
+    finalRound: StorageRound,
+    gfRound1: StorageRound
+  ): Promise<void> {
     const finalMatches = await this.storage.select('match', { round_id: finalRound.id });
     const arr = (Array.isArray(finalMatches) ? finalMatches : [finalMatches]) as StorageMatch[];
     if (!arr.length) return;
@@ -115,9 +118,7 @@ export class MatchPropagationRepairService {
         ? 'opponent2'
         : null;
     if (!targetSlot) {
-      bracketLog(
-        `⚠️ [PROPAGATE→GF] Both GF slots occupied — skipping winner ${winnerId}`
-      );
+      bracketLog(`⚠️ [PROPAGATE→GF] Both GF slots occupied — skipping winner ${winnerId}`);
       return;
     }
 
@@ -134,9 +135,7 @@ export class MatchPropagationRepairService {
       updateFields.status = 2;
     }
 
-    bracketLog(
-      `🔧 [PROPAGATE→GF] Winner ${winnerId} → GF round ${gfRound1.number} ${targetSlot}`
-    );
+    bracketLog(`🔧 [PROPAGATE→GF] Winner ${winnerId} → GF round ${gfRound1.number} ${targetSlot}`);
     await supabase.from('match').update(updateFields).eq('id', gfMatch.id);
   }
 

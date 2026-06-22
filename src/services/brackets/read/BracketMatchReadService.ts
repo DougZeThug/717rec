@@ -1,13 +1,11 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 import {
-  transformDatabasePlayoffMatchesWithTeams,
   type PlayoffMatchWithTeams,
+  transformDatabasePlayoffMatchesWithTeams,
 } from '@/utils/matchTransformers';
-import type {
-  BracketManagerMatchWithStage,
-  LegacyPlayoffMatchWithGames,
-} from './types';
+
+import type { BracketManagerMatchWithStage, LegacyPlayoffMatchWithGames } from './types';
 
 /**
  * Fetch playoff matches for a bracket with team data
@@ -95,7 +93,11 @@ export const fetchPlayoffMatchWithBracket = async (
  */
 export const fetchBmMatchData = async (
   matchId: number
-): Promise<{ opponent1_id: number | null; opponent2_id: number | null; stage_id: number } | null> => {
+): Promise<{
+  opponent1_id: number | null;
+  opponent2_id: number | null;
+  stage_id: number;
+} | null> => {
   const { data, error } = await supabase
     .from('match')
     .select('opponent1_id, opponent2_id, stage_id')

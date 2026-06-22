@@ -47,7 +47,9 @@ const MatchGamesDots: React.FC<MatchGamesDotsProps> = ({ games, team1Id, team2Id
 
   return (
     <div className="mt-2 pt-2 border-t border-border dark:border-border">
-      <div className="text-xs font-medium mb-1 text-muted-foreground dark:text-muted-foreground">Games</div>
+      <div className="text-xs font-medium mb-1 text-muted-foreground dark:text-muted-foreground">
+        Games
+      </div>
       <div className="flex justify-center gap-1">
         {games.map((game, index) => (
           <GameResultDot

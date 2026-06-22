@@ -17,8 +17,9 @@ const extractIdToken = (result: NativeGoogleLoginResult): string | undefined => 
     return payload.serverAuthCode;
   }
 
-  const tokenValue = (payload as { accessToken?: unknown; token?: unknown }).accessToken
-    ?? (payload as { accessToken?: unknown; token?: unknown }).token;
+  const tokenValue =
+    (payload as { accessToken?: unknown; token?: unknown }).accessToken ??
+    (payload as { accessToken?: unknown; token?: unknown }).token;
 
   return typeof tokenValue === 'string' ? tokenValue : undefined;
 };

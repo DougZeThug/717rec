@@ -2,6 +2,7 @@ import { ChevronDown } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router';
+import type { TooltipContentProps } from 'recharts';
 import {
   CartesianGrid,
   Line,
@@ -11,7 +12,6 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import type { TooltipContentProps } from 'recharts';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';

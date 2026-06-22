@@ -178,7 +178,9 @@ export const TimeslotMatchRow = ({
             {teamTimeslot.teams.name}
           </Link>
         ) : (
-          <span className="text-muted-foreground dark:text-muted-foreground truncate">Unknown Team</span>
+          <span className="text-muted-foreground dark:text-muted-foreground truncate">
+            Unknown Team
+          </span>
         )}
       </div>
     </div>

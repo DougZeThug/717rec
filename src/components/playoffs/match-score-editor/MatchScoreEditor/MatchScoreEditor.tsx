@@ -86,9 +86,7 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({ match, teams, onSav
       // state so users can add empty game rows, but a 0-0 save would persist
       // a "completed" match with no winner and break bracket progression.
       if (team1Wins === 0 && team2Wins === 0) {
-        setValidationError(
-          'Cannot save a match with no winner. Enter game scores before saving.'
-        );
+        setValidationError('Cannot save a match with no winner. Enter game scores before saving.');
         setIsSubmitting(false);
         return;
       }

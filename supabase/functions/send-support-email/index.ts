@@ -2,10 +2,7 @@ import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { z } from 'https://esm.sh/zod@3.23.8';
 
-import {
-  checkRateLimit as defaultCheckRateLimit,
-  hashIp,
-} from '../_shared/rateLimit.ts';
+import { checkRateLimit as defaultCheckRateLimit, hashIp } from '../_shared/rateLimit.ts';
 
 type RateLimitFn = typeof defaultCheckRateLimit;
 
@@ -14,7 +11,6 @@ let rateLimiterImpl: RateLimitFn = defaultCheckRateLimit;
 export function setRateLimiter(fn: RateLimitFn | null): void {
   rateLimiterImpl = fn ?? defaultCheckRateLimit;
 }
-
 
 // Explicit CORS allowlist. Browsers enforce this; server-to-server callers are
 // unaffected since they don't send Origin. Keep this list in sync with the
@@ -95,11 +91,7 @@ function countUrls(text: string): number {
   return matches ? matches.length : 0;
 }
 
-function jsonResponse(
-  body: unknown,
-  status: number,
-  cors: Record<string, string>
-): Response {
+function jsonResponse(body: unknown, status: number, cors: Record<string, string>): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: { ...cors, 'Content-Type': 'application/json' },
@@ -137,11 +129,7 @@ async function handleRequest(req: Request): Promise<Response> {
   }
   if (!rl.allowed) {
     console.warn('[Support] Rate limit exceeded for ip_hash:', ipHash);
-    return jsonResponse(
-      { error: 'Too many requests. Please try again later.' },
-      429,
-      corsHeaders
-    );
+    return jsonResponse({ error: 'Too many requests. Please try again later.' }, 429, corsHeaders);
   }
 
   // Parse JSON body defensively.
@@ -166,11 +154,7 @@ async function handleRequest(req: Request): Promise<Response> {
   // Honeypot: bots fill hidden fields. Silently succeed without sending email.
   if (payload.website && payload.website.trim().length > 0) {
     console.log('[Support] Honeypot triggered for ip_hash:', ipHash);
-    return jsonResponse(
-      { success: true, message: 'Message sent successfully' },
-      200,
-      corsHeaders
-    );
+    return jsonResponse({ success: true, message: 'Message sent successfully' }, 200, corsHeaders);
   }
 
   // Spam signature: too many URLs in message.
@@ -248,11 +232,7 @@ async function handleRequest(req: Request): Promise<Response> {
   const resendData = (await resendResponse.json()) as { id?: string };
   console.log('[Support] Email sent successfully:', resendData.id);
 
-  return jsonResponse(
-    { success: true, message: 'Message sent successfully' },
-    200,
-    corsHeaders
-  );
+  return jsonResponse({ success: true, message: 'Message sent successfully' }, 200, corsHeaders);
 }
 
 export { handleRequest };

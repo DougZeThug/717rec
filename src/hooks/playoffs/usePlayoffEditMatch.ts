@@ -5,11 +5,11 @@ import {
   fetchBmMatchWithStage,
   fetchPlayoffMatchWithBracket,
 } from '@/services/brackets/BracketReadService';
+import type { AsyncVoidCallback } from '@/types/callbacks';
 import type {
   Phase3BracketManagerMatchWithStage as BracketManagerMatchWithStage,
   Phase3LegacyPlayoffMatchWithGames as LegacyPlayoffMatchWithGames,
 } from '@/types/phase3';
-import type { AsyncVoidCallback } from '@/types/callbacks';
 import { errorLog, playoffLog } from '@/utils/logger';
 import type { PlayoffBracket, PlayoffMatch } from '@/utils/playoffs/playoffTypes';
 

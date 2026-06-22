@@ -1,5 +1,13 @@
-import type { BracketManagerMatchWithStage, LegacyPlayoffMatchWithGames } from '@/services/brackets/read/types';
-import type { BadgeOperationParams, BadgeOperationType, FailedBadgeOperation } from '@/services/FailedBadgeOperationsService';
+import type {
+  BracketManagerMatchWithStage,
+  LegacyPlayoffMatchWithGames,
+} from '@/services/brackets/read/types';
+import type {
+  BadgeOperationParams,
+  BadgeOperationType,
+  FailedBadgeOperation,
+} from '@/services/FailedBadgeOperationsService';
+import type { NativeGoogleLoginResult } from '@/types/auth';
 import type { BadgeRpcJsonResult, TeamStreakRpcResult } from '@/types/badges';
 import type {
   BulkTeamSeedUpdateResult,
@@ -7,7 +15,6 @@ import type {
   TeamSeedUpdateInput,
   TeamSeedUpdateResult,
 } from '@/types/seeding';
-import type { NativeGoogleLoginResult } from '@/types/auth';
 
 /**
  * Phase 3 prerequisite alignment types.

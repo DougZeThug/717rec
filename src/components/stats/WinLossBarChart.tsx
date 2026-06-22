@@ -1,6 +1,7 @@
 import { useTheme } from 'next-themes';
 import React from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+
 import { chartLog } from '@/utils/logger';
 
 import ChartEmptyState from './ChartEmptyState';
@@ -69,7 +70,10 @@ const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
   chartLog('WinLossBarChart rendering with data length:', data?.length);
 
   const hasData =
-    data && Array.isArray(data) && data.length > 0 && data.some((d) => (d.wins || 0) + (d.losses || 0) > 0);
+    data &&
+    Array.isArray(data) &&
+    data.length > 0 &&
+    data.some((d) => (d.wins || 0) + (d.losses || 0) > 0);
 
   if (!hasData) {
     return <ChartEmptyState message="Records available after matches" />;
