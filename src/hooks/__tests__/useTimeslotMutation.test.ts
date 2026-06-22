@@ -118,7 +118,7 @@ describe('useTimeslotMutation', () => {
 
     const pending = result.current.addTimeslot(TEST_DATE, 'team-1', '18:00');
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
-    await act(async () => {
+    await act(() => {
       deferred.resolve([sampleSlot('slot-1')]);
     });
 
@@ -140,7 +140,7 @@ describe('useTimeslotMutation', () => {
     const pending = result.current.addTimeslot(TEST_DATE, 'team-1', '18:00');
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
     const rejection = expect(pending).rejects.toThrow('add failed');
-    await act(async () => {
+    await act(() => {
       deferred.reject(new Error('add failed'));
     });
 
@@ -160,7 +160,7 @@ describe('useTimeslotMutation', () => {
 
     const pending = result.current.deleteTimeslot('slot-1');
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
-    await act(async () => {
+    await act(() => {
       deferred.resolve();
     });
 
@@ -178,7 +178,7 @@ describe('useTimeslotMutation', () => {
     const pending = result.current.deleteTimeslot('slot-1');
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
     const rejection = expect(pending).rejects.toThrow('delete failed');
-    await act(async () => {
+    await act(() => {
       deferred.reject(new Error('delete failed'));
     });
 
@@ -217,7 +217,7 @@ describe('useTimeslotMutation', () => {
 
     const pending = result.current.batchAssignTimeslots(TEST_DATE, ['team-1', 'team-2'], '18:00');
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
-    await act(async () => {
+    await act(() => {
       deferred.resolve([sampleSlot('slot-1'), sampleSlot('slot-2')]);
     });
 
@@ -238,7 +238,7 @@ describe('useTimeslotMutation', () => {
     const pending = result.current.batchAssignTimeslots(TEST_DATE, ['team-1'], '18:00');
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
     const rejection = expect(pending).rejects.toThrow('batch failed');
-    await act(async () => {
+    await act(() => {
       deferred.reject(new Error('batch failed'));
     });
 
@@ -305,7 +305,7 @@ describe('useTimeslotMutation', () => {
       '19:00'
     );
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
-    await act(async () => {
+    await act(() => {
       deferred.resolve([sampleSlot('slot-1'), sampleSlot('slot-2')]);
     });
 
@@ -330,7 +330,7 @@ describe('useTimeslotMutation', () => {
     );
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
     const rejection = expect(pending).rejects.toThrow('double header failed');
-    await act(async () => {
+    await act(() => {
       deferred.reject(new Error('double header failed'));
     });
 
@@ -350,7 +350,7 @@ describe('useTimeslotMutation', () => {
     assignByeWeekMock.mockReturnValueOnce(successDeferred.promise);
     const successPending = result.current.assignByeWeek(TEST_DATE, 'team-1');
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
-    await act(async () => {
+    await act(() => {
       successDeferred.resolve(sampleSlot('bye-1'));
     });
 
@@ -366,7 +366,7 @@ describe('useTimeslotMutation', () => {
     const errorPending = result.current.assignByeWeek(TEST_DATE, 'team-2');
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
     const errorRejection = expect(errorPending).rejects.toThrow('bye failed');
-    await act(async () => {
+    await act(() => {
       errorDeferred.reject(new Error('bye failed'));
     });
 
@@ -386,7 +386,7 @@ describe('useTimeslotMutation', () => {
     batchAssignByeWeeksMock.mockReturnValueOnce(successDeferred.promise);
     const successPending = result.current.batchAssignByeWeeks(TEST_DATE, ['team-1', 'team-2']);
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
-    await act(async () => {
+    await act(() => {
       successDeferred.resolve([sampleSlot('bye-1'), sampleSlot('bye-2')]);
     });
 
@@ -402,7 +402,7 @@ describe('useTimeslotMutation', () => {
     const errorPending = result.current.batchAssignByeWeeks(TEST_DATE, ['team-3']);
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
     const errorRejection = expect(errorPending).rejects.toThrow('batch bye failed');
-    await act(async () => {
+    await act(() => {
       errorDeferred.reject(new Error('batch bye failed'));
     });
 
@@ -434,7 +434,7 @@ describe('useTimeslotMutation', () => {
     const errorPending = result.current.removeByeWeek('bye-2');
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
     const errorRejection = expect(errorPending).rejects.toThrow('remove bye failed');
-    await act(async () => {
+    await act(() => {
       errorDeferred.reject(new Error('remove bye failed'));
     });
 
