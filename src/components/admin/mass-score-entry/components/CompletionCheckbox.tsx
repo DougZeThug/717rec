@@ -15,8 +15,8 @@ const CompletionCheckbox: React.FC<CompletionCheckboxProps> = ({
   onCheckedChange,
   disabled = false,
 }) => {
-  // Generate an ID if not provided
-  const checkboxId = id || `completion-checkbox-${Math.random().toString(36).substring(2, 11)}`;
+  const generatedId = React.useId();
+  const checkboxId = id || `completion-checkbox-${generatedId}`;
 
   return (
     <div className="flex items-center space-x-2">

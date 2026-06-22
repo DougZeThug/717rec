@@ -18,7 +18,13 @@ import { toast } from '@/hooks/useToast';
 import type { NotificationRow } from '@/services/notifications/NotificationService';
 import { formatNotificationDate } from '@/utils/formatNotificationDate';
 
-const NotificationsAdmin: React.FC = () => {
+const getCurrentTimeMs = () => Date.now();
+
+const NotificationsAdmin: React.FC<{ currentTimeMs?: number }> = ({
+  currentTimeMs: suppliedTimeMs,
+}) => {
+  const [mountedTimeMs] = useState(() => getCurrentTimeMs());
+  const currentTimeMs = suppliedTimeMs ?? mountedTimeMs;
   useNotificationsRealtime();
   const { user } = useAuth();
   const { data: notifications = [], isLoading } = useNotificationsQuery(100);
@@ -117,7 +123,7 @@ const NotificationsAdmin: React.FC = () => {
       ) : (
         <div className="flex flex-col gap-2">
           {notifications.map((n) => {
-            const isExpired = n.expires_at && Date.parse(n.expires_at) < Date.now();
+            const isExpired = n.expires_at && Date.parse(n.expires_at) < currentTimeMs;
             const posted = formatNotificationDate(n.created_at);
             const expires = n.expires_at ? formatNotificationDate(n.expires_at) : null;
             return (
