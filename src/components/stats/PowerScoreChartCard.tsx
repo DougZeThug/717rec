@@ -1,14 +1,15 @@
 import { useTheme } from 'next-themes';
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 
 import AnimatedChartWrapper from '@/components/ui/animated-chart-wrapper';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/useMobile';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
 import { PowerScoreDataItem } from '@/types/chart';
 
-import PowerScoreChart from './PowerScoreChart';
+const PowerScoreChart = lazy(() => import('./PowerScoreChart'));
 
 interface PowerScoreChartCardProps {
   data: PowerScoreDataItem[];
@@ -56,7 +57,9 @@ const PowerScoreChartCard: React.FC<PowerScoreChartCardProps> = ({ data }) => {
           )}
         </CardHeader>
         <CardContent className={isMobile ? 'p-2 pt-1' : 'p-4 pt-2'}>
-          <PowerScoreChart data={data} />
+          <Suspense fallback={<Skeleton className="h-[240px] w-full rounded-xl" />}>
+            <PowerScoreChart data={data} />
+          </Suspense>
         </CardContent>
       </Card>
     </AnimatedChartWrapper>
