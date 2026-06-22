@@ -8,8 +8,8 @@ import { cn } from '@/lib/utils';
 import { Ranking } from '@/types';
 import { debugLog } from '@/utils/logger';
 
-import { SortOptions } from '../RankingsTable';
 import RankingTableRow from '../RankingTableRow';
+import { SortOptions } from '../types';
 
 interface DivisionRankingsSectionProps {
   divisionName: string;

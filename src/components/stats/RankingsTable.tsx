@@ -6,6 +6,7 @@ import { sortRankings } from '@/utils/rankingUtils';
 
 import RankingsDesktopView from './RankingsDesktopView';
 import RankingsMobileView from './RankingsMobileView';
+import { SortDirection, SortOptions } from './types';
 
 interface RankingsTableProps {
   rankings: Ranking[];
@@ -13,12 +14,6 @@ interface RankingsTableProps {
   myTeamId?: string | null;
   view?: 'division' | 'all';
   onViewChange?: (view: 'division' | 'all') => void;
-}
-
-export type SortDirection = 'asc' | 'desc';
-export interface SortOptions {
-  field: string;
-  direction: SortDirection;
 }
 
 const RankingsTable: React.FC<RankingsTableProps> = ({

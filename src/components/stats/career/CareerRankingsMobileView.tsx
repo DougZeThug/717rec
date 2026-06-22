@@ -15,7 +15,7 @@ import { getWinPercentageColor } from '@/utils/colors/winPercentageColors';
 import { formatPowerScore } from '@/utils/powerScore/formatPowerScore';
 import { toTeamSlug } from '@/utils/teamSlug';
 
-import { CareerSortOptions } from './CareerRankingsTable';
+import { CareerSortOptions } from './types';
 
 interface CareerRankingsMobileViewProps {
   rankings: CareerRanking[];

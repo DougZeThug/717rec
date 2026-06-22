@@ -5,15 +5,10 @@ import { CareerRanking } from '@/types/career';
 
 import CareerRankingsDesktopView from './CareerRankingsDesktopView';
 import CareerRankingsMobileView from './CareerRankingsMobileView';
+import { CareerSortOptions } from './types';
 
 interface CareerRankingsTableProps {
   rankings: CareerRanking[];
-}
-
-export type CareerSortDirection = 'asc' | 'desc';
-export interface CareerSortOptions {
-  field: string;
-  direction: CareerSortDirection;
 }
 
 const CareerRankingsTable: React.FC<CareerRankingsTableProps> = ({ rankings }) => {

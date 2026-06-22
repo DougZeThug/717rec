@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { warnLog } from '@/utils/logger';
 
-import { ChartConfig } from './ChartContainer';
+import type { ChartConfigMap as ChartConfig } from './types';
 
 const THEMES = { light: '', dark: '.dark' } as const;
 

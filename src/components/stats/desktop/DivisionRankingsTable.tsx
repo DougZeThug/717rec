@@ -16,7 +16,7 @@ import { getPowerScoreColor } from '@/utils/colors';
 import { getSosColor } from '@/utils/colors';
 
 import HeadToHeadRecords from '../HeadToHeadRecords';
-import { SortOptions } from '../RankingsTable';
+import { SortOptions } from '../types';
 
 // Module-scope sortable header for stable component identity across renders.
 const SortableHeader: React.FC<{
