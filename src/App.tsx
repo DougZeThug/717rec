@@ -46,6 +46,7 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Compare = lazy(() => import('./pages/Compare'));
 const Insights = lazy(() => import('./pages/Insights'));
+const PlayoffBracketE2EProof = lazy(() => import('./components/playoffs/PlayoffBracketE2EProof'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -154,6 +155,16 @@ const AppContent = () => {
                     </RouteErrorBoundary>
                   }
                 />
+                {import.meta.env.DEV && (
+                  <Route
+                    path="/playoffs/e2e-bracket-proof"
+                    element={
+                      <RouteErrorBoundary routeName="Playoff Bracket E2E Proof">
+                        <PlayoffBracketE2EProof />
+                      </RouteErrorBoundary>
+                    }
+                  />
+                )}
                 <Route
                   path="/history"
                   element={
