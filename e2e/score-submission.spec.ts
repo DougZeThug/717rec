@@ -70,7 +70,7 @@ test.describe('score submission workflow', () => {
     await page.getByRole('button', { name: 'Submit Report' }).click();
 
     await expect(page.getByRole('dialog', { name: 'Report Match Score' })).toBeHidden();
-    await expect(page.getByText('Score Submitted')).toBeVisible();
+    await expect(page.getByText('Score Submitted', { exact: true })).toBeVisible();
     expect(submittedPayload).toEqual({
       match_id: pendingMatch.id,
       submitter_name: 'Playwright Reporter',

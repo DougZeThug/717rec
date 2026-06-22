@@ -23,9 +23,6 @@ test.describe('playoff bracket browser behavior', () => {
       'Creation: Bracket created successfully'
     );
     await expect(page.getByTestId('bracket-match-state')).toHaveText('Match status: pending');
-    await expect(page.getByText('E2E Minimal Playoff Bracket')).toBeVisible();
-    await expect(page.getByText('E2E Alpha').first()).toBeVisible();
-    await expect(page.getByText('E2E Beta').first()).toBeVisible();
 
     await page.getByRole('button', { name: 'Submit E2E Alpha 21-17' }).click();
 

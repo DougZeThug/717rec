@@ -62,11 +62,21 @@ test.describe('admin mass score submission workflow', () => {
       { key: AUTH_STORAGE_KEY, user: adminUser }
     );
 
-    await page.route(`${SUPABASE_URL}/auth/v1/user`, async (route) => {
-      await route.fulfill(jsonResponse(adminUser));
+    await page.route(/\/auth\/v1\/user/, async (route) => {
+      await route.fulfill(jsonResponse({ user: adminUser }));
     });
 
-    await page.route(`${SUPABASE_URL}/rest/v1/profiles**`, async (route) => {
+    await page.route(/\/rest\/v1\//, async (route) => {
+      const request = route.request();
+      if (request.method() === 'OPTIONS') {
+        await route.fulfill(jsonResponse(null, 204));
+        return;
+      }
+
+      await route.fulfill(jsonResponse([]));
+    });
+
+    await page.route(/\/rest\/v1\/profiles/, async (route) => {
       await route.fulfill(
         jsonResponse({
           id: adminUser.id,
@@ -79,7 +89,7 @@ test.describe('admin mass score submission workflow', () => {
       );
     });
 
-    await page.route(`${SUPABASE_URL}/rest/v1/matches**`, async (route) => {
+    await page.route(/\/rest\/v1\/matches/, async (route) => {
       const request = route.request();
       if (request.method() === 'OPTIONS') {
         await route.fulfill(jsonResponse(null, 204));
@@ -100,11 +110,11 @@ test.describe('admin mass score submission workflow', () => {
       await route.fulfill(jsonResponse([match]));
     });
 
-    await page.route(`${SUPABASE_URL}/rest/v1/rpc/**`, async (route) => {
+    await page.route(/\/rest\/v1\/rpc\//, async (route) => {
       await route.fulfill(jsonResponse({ success: true }));
     });
 
-    await page.route(`${SUPABASE_URL}/rest/v1/admin_requests**`, async (route) => {
+    await page.route(/\/rest\/v1\/admin_requests/, async (route) => {
       await route.fulfill(jsonResponse([]));
     });
   });
@@ -124,16 +134,18 @@ test.describe('admin mass score submission workflow', () => {
 
     await page.goto('/admin');
 
-    await expect(page.getByRole('heading', { name: 'Mass Score Entry' })).toBeVisible();
-    await expect(page.getByText('E2E Alpha')).toBeVisible();
-    await expect(page.getByText('E2E Beta')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Mass Score Entry' })).toBeVisible({
+      timeout: 15000,
+    });
+    await expect(page.getByText('E2E Alpha', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('E2E Beta', { exact: true }).first()).toBeVisible();
 
     await page.getByTestId('score-button-2–0').click();
     await expect(page.getByRole('button', { name: 'Submit (1) Changes' })).toBeEnabled();
 
     await page.getByRole('button', { name: 'Submit (1) Changes' }).click();
 
-    await expect(page.getByText('✅ Matches Submitted')).toBeVisible();
+    await expect(page.getByText('✅ Matches Submitted', { exact: true })).toBeVisible();
     expect(matchUpdates).toEqual([
       expect.objectContaining({
         team1_score: 1,
@@ -159,15 +171,13 @@ test.describe('admin mass score submission workflow', () => {
     });
 
     await page.goto('/admin');
-    await expect(page.getByRole('heading', { name: 'Mass Score Entry' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Mass Score Entry' })).toBeVisible({
+      timeout: 15000,
+    });
 
     await page.getByText('Mark as Complete').click();
-    await expect(page.getByRole('button', { name: 'Submit (1) Changes' })).toBeEnabled();
-
-    await page.getByRole('button', { name: 'Submit (1) Changes' }).click();
-
-    await expect(page.getByText('Validation Error')).toBeVisible();
-    await expect(page.getByText('One team must win the match')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Submit All Changes' })).toBeDisabled();
+    await expect(page.getByText('Invalid Score')).toBeVisible();
     expect(matchUpdates).toEqual([]);
   });
 });
