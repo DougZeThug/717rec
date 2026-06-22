@@ -75,9 +75,7 @@ export const useMatchScores = (
         ...match,
         iscompleted: checked,
         isEdited: true,
-        isValid: checked
-          ? validateMatchScores(match.team1Score, match.team2Score)
-          : match.isValid,
+        isValid: checked ? validateMatchScores(match.team1Score, match.team2Score) : match.isValid,
       };
       return newMatches;
     });

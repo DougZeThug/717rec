@@ -1,5 +1,4 @@
 import { updateTeamWinLossRecord } from '@/services/teams/TeamUpdateService';
-import { handleDatabaseError } from '@/utils/errorHandler';
 import { dbLog } from '@/utils/logger';
 
 interface UpdateTeamRecordParams {
