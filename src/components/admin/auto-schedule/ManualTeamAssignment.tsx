@@ -44,7 +44,7 @@ const ManualTeamAssignment: React.FC<ManualTeamAssignmentProps> = ({
   };
 
   // Handle manual assignment of teams to time block
-  const handleAssignTeams = async () => {
+  const handleAssignTeams = () => {
     if (!selectedDate) {
       toast({
         title: 'Date Required',
