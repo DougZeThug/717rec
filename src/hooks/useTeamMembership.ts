@@ -8,7 +8,6 @@ import {
   fetchTeamMembership,
   joinTeamMembership,
   leaveTeamMembership,
-  type TeamMembershipRecord,
 } from '@/services/teams/TeamFetchService';
 import { Team } from '@/types';
 import { errorLog } from '@/utils/logger';
@@ -24,7 +23,7 @@ export function useTeamMembership() {
     error: membershipError,
   } = useQuery({
     queryKey: ['team-membership', user?.id],
-    queryFn: () => fetchTeamMembership(user!.id),
+    queryFn: () => (user ? fetchTeamMembership(user.id) : Promise.resolve(null)),
     enabled: !!user,
     staleTime: 5 * 60 * 1000,
   });

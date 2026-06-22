@@ -9,7 +9,7 @@ export const useTeamSeasonBreakdown = (teamId: string | undefined) => {
     error,
   } = useQuery({
     queryKey: ['team-season-breakdown', teamId],
-    queryFn: () => fetchTeamSeasonBreakdown(teamId!),
+    queryFn: () => (teamId ? fetchTeamSeasonBreakdown(teamId) : Promise.resolve(null)),
     enabled: !!teamId,
     staleTime: 5 * 60 * 1000,
   });

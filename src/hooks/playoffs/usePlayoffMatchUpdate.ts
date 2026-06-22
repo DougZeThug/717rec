@@ -143,12 +143,15 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
 
         const winnerId = team1GameWins > team2GameWins ? matchData.team1_id : matchData.team2_id;
         const loserId = team1GameWins > team2GameWins ? matchData.team2_id : matchData.team1_id;
+        if (!winnerId || !loserId) {
+          throw new Error('Cannot complete playoff match without both teams assigned');
+        }
 
         await updatePlayoffMatchScores(matchId, {
           team1_score: team1Score,
           team2_score: team2Score,
-          winner_id: winnerId!,
-          loser_id: loserId!,
+          winner_id: winnerId,
+          loser_id: loserId,
           status: 'completed',
           updated_at: new Date().toISOString(),
         });

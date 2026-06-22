@@ -43,6 +43,8 @@ const SquareLogo: React.FC<{
 );
 
 const MatchCard: React.FC<MatchCardProps> = ({ match, team1, team2, formatDate, formatTime }) => {
+  const matchDate = match.date;
+
   return (
     <Link to={`/schedule?matchId=${match.id}`} className="block">
       <div
@@ -65,10 +67,10 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, team1, team2, formatDate, 
           <div className="flex justify-between text-sm text-muted-foreground mt-4">
             <div>
               <p>
-                <strong>Date:</strong> {formatDate(match.date!)}
+                <strong>Date:</strong> {matchDate ? formatDate(matchDate) : 'TBD'}
               </p>
               <p>
-                <strong>Time:</strong> {formatTime(match.date!)}
+                <strong>Time:</strong> {matchDate ? formatTime(matchDate) : 'TBD'}
               </p>
             </div>
             <div className="text-right">

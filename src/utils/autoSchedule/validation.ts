@@ -133,16 +133,12 @@ export function findTeamConflicts(matches: AutoScheduleMatch[]): TeamConflict[] 
     [match.team1Id, match.team2Id].forEach((teamId) => {
       if (!teamId) return;
 
-      if (!teamTimeslots.has(teamId)) {
-        teamTimeslots.set(teamId, new Map());
-      }
+      const teamSlots = teamTimeslots.get(teamId) ?? new Map<string, string[]>();
+      const matchIds = teamSlots.get(timeslot) ?? [];
 
-      const teamSlots = teamTimeslots.get(teamId)!;
-      if (!teamSlots.has(timeslot)) {
-        teamSlots.set(timeslot, []);
-      }
-
-      teamSlots.get(timeslot)!.push(match.id);
+      matchIds.push(match.id);
+      teamSlots.set(timeslot, matchIds);
+      teamTimeslots.set(teamId, teamSlots);
     });
   });
 

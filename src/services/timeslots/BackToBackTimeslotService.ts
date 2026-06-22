@@ -84,13 +84,14 @@ export class BackToBackTimeslotService {
       .single();
 
     if (fetchError) handleDatabaseError(fetchError, 'Failed to fetch timeslot');
+    if (!timeslot) throw new ValidationError(`Timeslot not found: ${id}`);
 
-    if (timeslot!.is_back_to_back) {
+    if (timeslot.is_back_to_back) {
       const { error } = await supabase
         .from('team_timeslots')
         .delete()
-        .eq('team_id', timeslot!.team_id)
-        .eq('match_date', timeslot!.match_date)
+        .eq('team_id', timeslot.team_id)
+        .eq('match_date', timeslot.match_date)
         .eq('is_back_to_back', true);
 
       if (error) handleDatabaseError(error, 'Failed to delete back-to-back timeslots');

@@ -32,11 +32,25 @@ export function runBlossomMatching(teams: Team[], edges: Edge[], round: number):
   const minWeight = Math.min(...edges.map((e) => e.weight));
   const offset = minWeight < 1 ? Math.abs(minWeight) + 1 : 0;
 
-  const edgeList: number[][] = edges.map((edge) => {
-    const index1 = teamIndexMap.get(edge.team1.id)!;
-    const index2 = teamIndexMap.get(edge.team2.id)!;
-    return [index1, index2, edge.weight + offset];
-  });
+  const edgeList: number[][] = [];
+  for (const edge of edges) {
+    const index1 = teamIndexMap.get(edge.team1.id);
+    const index2 = teamIndexMap.get(edge.team2.id);
+
+    if (index1 === undefined || index2 === undefined) {
+      warnLog(
+        `Skipping edge with unknown team in round ${round}: ${edge.team1.id} vs ${edge.team2.id}`
+      );
+      continue;
+    }
+
+    edgeList.push([index1, index2, edge.weight + offset]);
+  }
+
+  if (edgeList.length === 0) {
+    warnLog(`No valid mapped edges for round ${round}`);
+    return [];
+  }
 
   try {
     // Run Blossom algorithm with edge list format

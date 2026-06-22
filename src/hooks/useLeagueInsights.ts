@@ -99,8 +99,9 @@ export function useLeagueInsights(): LeagueInsightsData {
     const divisionMap = new Map<string, Ranking[]>();
     for (const r of activeTeams) {
       const div = r.divisionName || 'Unassigned';
-      if (!divisionMap.has(div)) divisionMap.set(div, []);
-      divisionMap.get(div)!.push(r);
+      const divisionRankings = divisionMap.get(div) ?? [];
+      divisionRankings.push(r);
+      divisionMap.set(div, divisionRankings);
     }
 
     const divisionStrength: DivisionStrength[] = Array.from(divisionMap.entries())
