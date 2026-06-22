@@ -33,7 +33,8 @@ describe('SeasonParticipationTab', () => {
       </MemoryRouter>
     );
 
-    expect(mockUseSeasonParticipations).toHaveBeenLastCalledWith(undefined);
+    expect(mockUseSeasonParticipations.mock.lastCall).toHaveLength(1);
+    expect(mockUseSeasonParticipations.mock.lastCall?.[0]).toBeUndefined();
 
     seasons = [
       { id: 'season-old', name: 'Old Season', is_active: false },
