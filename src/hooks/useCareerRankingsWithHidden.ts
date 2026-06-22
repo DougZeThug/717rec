@@ -14,7 +14,7 @@ export function useCareerRankingsWithHidden() {
     error: teamsError,
   } = useTeamsQuery({ includeHidden: true });
 
-  const careerQuery = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['careerRankings', teams?.map((t) => t.id)],
     queryFn: async (): Promise<CareerRanking[]> => {
       if (!teams) return [];
@@ -89,7 +89,5 @@ export function useCareerRankingsWithHidden() {
     staleTime: 1000 * 60 * 10, // 10 minutes - career data is extremely static
   });
 
-  return {
-    ...careerQuery,
-  };
+  return { data, isLoading, error };
 }
