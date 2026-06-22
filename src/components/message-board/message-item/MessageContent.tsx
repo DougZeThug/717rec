@@ -1,9 +1,9 @@
-import { formatDistanceFrom } from '@/utils/formatDateSafe';
 import { useTheme } from 'next-themes';
 import React from 'react';
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { formatDistanceFrom } from '@/utils/formatDateSafe';
 
 interface MessageContentProps {
   content: string;

@@ -1,13 +1,13 @@
-import { errorLog } from '@/utils/logger';
 import { ValidationError } from '@/types/errors';
 import {
+  ChampionsHeroCardMetadata,
+  EventHeroCardMetadata,
   EventWeekWinners,
   HeroCardMetadata,
   HeroCardMetadataByType,
   HeroCardType,
-  ChampionsHeroCardMetadata,
-  EventHeroCardMetadata,
 } from '@/types/heroCard';
+import { errorLog } from '@/utils/logger';
 
 /**
  * Safely parse a JSON metadata string, returning an empty object on failure.
@@ -71,7 +71,8 @@ const parseEventMetadata = (input: Record<string, unknown>): EventHeroCardMetada
   }
   if (
     input.past_winners !== undefined &&
-    (!Array.isArray(input.past_winners) || input.past_winners.some((week) => !isEventWeekWinners(week)))
+    (!Array.isArray(input.past_winners) ||
+      input.past_winners.some((week) => !isEventWeekWinners(week)))
   ) {
     throw new ValidationError(
       'Invalid hero card metadata: past_winners must be a list of week winner entries'
@@ -83,7 +84,7 @@ const parseEventMetadata = (input: Record<string, unknown>): EventHeroCardMetada
 
 export function parseHeroCardMetadata<T extends HeroCardType>(
   input: unknown,
-  cardType: T,
+  cardType: T
 ): HeroCardMetadataByType[T];
 export function parseHeroCardMetadata(input: unknown, cardType: HeroCardType): HeroCardMetadata;
 export function parseHeroCardMetadata(input: unknown, cardType: HeroCardType): HeroCardMetadata {

@@ -106,8 +106,7 @@ export class BracketSeedingService {
                 .from('participant')
                 .update({ position: slotPosition, team_id: team.id })
                 .eq('id', participant.id);
-              if (teamError)
-                handleDatabaseError(teamError, 'Failed to sync participant to team');
+              if (teamError) handleDatabaseError(teamError, 'Failed to sync participant to team');
             }
           }
         }

@@ -205,11 +205,7 @@ const DivisionRow: React.FC<Props> = ({ division, layout }) => {
       <tr className="border-b border-border">
         <td className="py-3 px-3 align-middle">
           {editing ? (
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="h-9"
-            />
+            <Input value={name} onChange={(e) => setName(e.target.value)} className="h-9" />
           ) : (
             <span className="font-medium">{division.name}</span>
           )}
@@ -280,7 +276,8 @@ const DeleteConfirm: React.FC<DeleteConfirmProps> = ({
       <AlertDialogHeader>
         <AlertDialogTitle>Delete division "{name}"?</AlertDialogTitle>
         <AlertDialogDescription>
-          This cannot be undone. Divisions currently assigned to any team or bracket cannot be deleted.
+          This cannot be undone. Divisions currently assigned to any team or bracket cannot be
+          deleted.
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>

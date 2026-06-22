@@ -41,9 +41,7 @@ export const usePairingOperations = (
   );
   const [qualityMetrics, setQualityMetrics] = useState<MatchQualityMetrics | null>(null);
   const [generationDate, setGenerationDate] = useState<Date | null>(() =>
-    persistedState.current?.generationDate
-      ? new Date(persistedState.current.generationDate)
-      : null
+    persistedState.current?.generationDate ? new Date(persistedState.current.generationDate) : null
   );
 
   const {

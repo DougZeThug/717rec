@@ -13,7 +13,9 @@ export interface FormattedNotificationDate {
  * Absolute time is rendered in EST to match the rest of the app
  * (see mem://architecture/event-date-timezone-handling-est).
  */
-export const formatNotificationDate = (iso: string | null | undefined): FormattedNotificationDate => {
+export const formatNotificationDate = (
+  iso: string | null | undefined
+): FormattedNotificationDate => {
   if (!iso) return { absolute: '', relative: '', iso: '' };
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return { absolute: '', relative: '', iso };

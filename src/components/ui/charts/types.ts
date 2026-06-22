@@ -6,9 +6,7 @@ type ChartValueType = number | string | ReadonlyArray<number | string>;
 export type ChartPayloadItem<
   TValue extends ChartValueType = ChartValueType,
   TName extends string = string,
-> = NonNullable<
-  TooltipContentProps<TValue, TName>['payload']
->[number];
+> = NonNullable<TooltipContentProps<TValue, TName>['payload']>[number];
 
 export type ChartConfigMap = {
   [k: string]: {

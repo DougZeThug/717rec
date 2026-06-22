@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/select';
 import { useDivisions } from '@/hooks/useDivisions';
 import { HeroCardService } from '@/services/HeroCardService';
-import { parseMetadata, parseHeroCardMetadata } from '@/utils/parseMetadata';
+import { parseHeroCardMetadata, parseMetadata } from '@/utils/parseMetadata';
 
 import { SectionHeader } from './SectionHeader';
 import { FormSectionProps } from './types';

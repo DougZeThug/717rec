@@ -3,8 +3,8 @@ import React from 'react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { toast } from '@/hooks/useToast';
 import { useThemeSettings, useUpdateThemeSetting } from '@/hooks/useThemeSettings';
+import { toast } from '@/hooks/useToast';
 import { SnowflakeSparkle } from '@/icons';
 import { cn } from '@/lib/utils';
 
@@ -65,10 +65,7 @@ const ThemeManagementTab: React.FC = () => {
             >
               <div className="flex items-center gap-3">
                 <Icon
-                  className={cn(
-                    'size-5',
-                    setting.theme_key === 'winter-frozen' && 'text-cyan-500'
-                  )}
+                  className={cn('size-5', setting.theme_key === 'winter-frozen' && 'text-cyan-500')}
                 />
                 <div>
                   <p className="font-medium text-sm">{setting.label}</p>

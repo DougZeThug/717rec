@@ -1,11 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/useToast';
+import { supabase } from '@/integrations/supabase/client';
 import {
-  ContactRequestService,
   type ContactRequestRow,
+  ContactRequestService,
   type SubmitContactRequestInput,
 } from '@/services/contact/ContactRequestService';
 
@@ -18,10 +18,8 @@ export function useContactRequests(enabled = true) {
     if (!enabled) return;
     const channel = supabase
       .channel(`contact-requests-realtime-${Math.random().toString(36).slice(2)}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'contact_requests' },
-        () => qc.invalidateQueries({ queryKey: CONTACT_REQUESTS_QUERY_KEY })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_requests' }, () =>
+        qc.invalidateQueries({ queryKey: CONTACT_REQUESTS_QUERY_KEY })
       )
       .subscribe();
     return () => {
@@ -61,8 +59,7 @@ export function useReopenContactRequest() {
   return useMutation({
     mutationFn: (id: string) => ContactRequestService.reopen(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: CONTACT_REQUESTS_QUERY_KEY }),
-    onError: () =>
-      toast({ title: 'Failed to reopen contact request', variant: 'destructive' }),
+    onError: () => toast({ title: 'Failed to reopen contact request', variant: 'destructive' }),
   });
 }
 
@@ -71,7 +68,6 @@ export function useDeleteContactRequest() {
   return useMutation({
     mutationFn: (id: string) => ContactRequestService.remove(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: CONTACT_REQUESTS_QUERY_KEY }),
-    onError: () =>
-      toast({ title: 'Failed to delete contact request', variant: 'destructive' }),
+    onError: () => toast({ title: 'Failed to delete contact request', variant: 'destructive' }),
   });
 }

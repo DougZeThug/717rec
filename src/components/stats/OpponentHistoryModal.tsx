@@ -1,4 +1,3 @@
-import { formatWithPattern } from '@/utils/formatDateSafe';
 import { Calendar, MapPin } from 'lucide-react';
 import React from 'react';
 
@@ -7,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { LoadingState } from '@/components/ui/loading-state';
 import { useOpponentHistory } from '@/hooks/useHeadToHead';
+import { formatWithPattern } from '@/utils/formatDateSafe';
 
 interface OpponentHistoryModalProps {
   isOpen: boolean;

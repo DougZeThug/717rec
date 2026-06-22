@@ -1,4 +1,3 @@
-import { formatWithPattern } from '@/utils/formatDateSafe';
 import { m } from 'framer-motion';
 import { Check, ChevronDown, Loader2, Users, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -23,6 +22,7 @@ import {
   useTeamParticipation,
 } from '@/hooks/useSeasonParticipation';
 import { cn } from '@/lib/utils';
+import { formatWithPattern } from '@/utils/formatDateSafe';
 
 import HeroCardBase from './HeroCardBase';
 

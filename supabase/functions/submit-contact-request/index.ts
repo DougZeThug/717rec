@@ -131,9 +131,7 @@ async function handleRequest(req: Request): Promise<Response> {
           .eq('id', user_id)
           .maybeSingle();
         verifiedName =
-          (profile?.full_name as string | null) ||
-          (profile?.username as string | null) ||
-          null;
+          (profile?.full_name as string | null) || (profile?.username as string | null) || null;
 
         const { data: membership } = await supabase
           .from('team_memberships')

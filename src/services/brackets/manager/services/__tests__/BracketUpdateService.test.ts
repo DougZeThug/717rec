@@ -27,8 +27,8 @@ vi.mock('../../MatchUpdateQueue', () => ({
 
 // ─── Import service under test (after mocks) ────────────────────────────────
 
-import { BracketUpdateService } from '../BracketUpdateService';
 import type { SupabaseSqlStorage } from '../../SupabaseSqlStorage';
+import { BracketUpdateService } from '../BracketUpdateService';
 
 describe('BracketUpdateService', () => {
   let service: BracketUpdateService;
@@ -164,12 +164,14 @@ describe('BracketUpdateService', () => {
     it('throws BusinessLogicError when BYE winner propagation update fails', async () => {
       const nextRound = { id: 101, stage_id: 10, group_id: 1, number: 2 };
 
-      (mockStorage.select as ReturnType<typeof vi.fn>).mockImplementation((table: string, _query?: unknown) => {
-        if (table === 'match') return Promise.resolve(byeMatch);
-        if (table === 'stage') return Promise.resolve(stage);
-        if (table === 'round') return Promise.resolve([round, nextRound]);
-        return Promise.resolve(null);
-      });
+      (mockStorage.select as ReturnType<typeof vi.fn>).mockImplementation(
+        (table: string, _query?: unknown) => {
+          if (table === 'match') return Promise.resolve(byeMatch);
+          if (table === 'stage') return Promise.resolve(stage);
+          if (table === 'round') return Promise.resolve([round, nextRound]);
+          return Promise.resolve(null);
+        }
+      );
 
       let supabaseUpdateCallCount = 0;
       mockSupabaseFrom.mockImplementation((table: string) => {
@@ -278,7 +280,8 @@ describe('BracketUpdateService', () => {
       (mockStorage.select as ReturnType<typeof vi.fn>).mockImplementation(
         (table: string, query?: unknown) => {
           if (table === 'match') {
-            if (typeof query === 'number' || typeof query === 'string') return Promise.resolve(match);
+            if (typeof query === 'number' || typeof query === 'string')
+              return Promise.resolve(match);
             return Promise.resolve([]);
           }
           if (table === 'stage') return Promise.resolve(stage);

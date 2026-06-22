@@ -52,10 +52,7 @@ export const DivisionService = {
     return data;
   },
 
-  updateDivision: async (
-    id: string,
-    patch: Partial<DivisionInput>
-  ) => {
+  updateDivision: async (id: string, patch: Partial<DivisionInput>) => {
     const payload: {
       name?: string;
       display_division?: string;

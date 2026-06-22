@@ -1,8 +1,8 @@
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 import { HeroCard } from '@/types/heroCard';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { parseHeroCardMetadata } from '@/utils/parseMetadata';
-import type { Json } from '@/integrations/supabase/types';
 
 const HERO_CARD_SELECT =
   'id, slug, title, subtitle, body, cta_label, cta_url, background_color, text_color, accent_color, image_url, icon_name, is_visible, sort_order, target_type, target_id, card_type, metadata, created_at, updated_at';

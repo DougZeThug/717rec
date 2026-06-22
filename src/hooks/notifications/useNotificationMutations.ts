@@ -1,11 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { toast } from '@/hooks/useToast';
+import type { TablesUpdate } from '@/integrations/supabase/types';
 import {
   type CreateNotificationInput,
   NotificationService,
 } from '@/services/notifications/NotificationService';
-import type { TablesUpdate } from '@/integrations/supabase/types';
 
 import { NOTIFICATIONS_QUERY_KEY } from './useNotificationsQuery';
 

@@ -84,10 +84,7 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
           ) : (
             <div className="col-span-full py-8 text-center">
               <CalendarX
-                className={cn(
-                  'mx-auto size-12 mb-2',
-                  isLight ? 'text-gray-400' : 'text-gray-500'
-                )}
+                className={cn('mx-auto size-12 mb-2', isLight ? 'text-gray-400' : 'text-gray-500')}
               />
               <p className={isLight ? 'text-gray-500' : 'text-gray-400'}>
                 No matches scheduled for this date.

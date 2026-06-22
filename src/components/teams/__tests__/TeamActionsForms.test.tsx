@@ -74,8 +74,9 @@ describe('Team destructive/edit actions', () => {
       losses: 0,
     } as Team;
 
-    const submit =
-      vi.fn<(data: Omit<Team, 'id' | 'created_at'>) => Promise<void>>().mockResolvedValue();
+    const submit = vi
+      .fn<(data: Omit<Team, 'id' | 'created_at'>) => Promise<void>>()
+      .mockResolvedValue();
 
     // Simulate TeamsContainer using key={team.id} to force remount on switch.
     const { rerender } = render(
@@ -83,9 +84,7 @@ describe('Team destructive/edit actions', () => {
     );
     expect(screen.getByPlaceholderText(/enter team name/i)).toHaveValue('Team Alpha');
 
-    rerender(
-      <TeamEditForm key={teamB.id} team={teamB} onSubmit={submit} onCancel={vi.fn()} />
-    );
+    rerender(<TeamEditForm key={teamB.id} team={teamB} onSubmit={submit} onCancel={vi.fn()} />);
     expect(screen.getByPlaceholderText(/enter team name/i)).toHaveValue('Team Bravo');
 
     await userEvent.click(screen.getByRole('button', { name: /update team/i }));

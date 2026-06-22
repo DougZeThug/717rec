@@ -2,10 +2,10 @@ import { Trash2 } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
-import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { useDeleteNotification } from '@/hooks/notifications/useNotificationMutations';
-import type { NotificationRow } from '@/services/notifications/NotificationService';
+import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { cn } from '@/lib/utils';
+import type { NotificationRow } from '@/services/notifications/NotificationService';
 import { formatNotificationDate } from '@/utils/formatNotificationDate';
 
 interface Props {
@@ -17,8 +17,7 @@ const NotificationItem: React.FC<Props> = ({ notification, lastSeenAt }) => {
   const { isAdminAccessGranted } = useAdminAccess();
   const del = useDeleteNotification();
 
-  const isUnread =
-    (Date.parse(notification.created_at) || 0) > (Date.parse(lastSeenAt) || 0);
+  const isUnread = (Date.parse(notification.created_at) || 0) > (Date.parse(lastSeenAt) || 0);
 
   const { absolute, relative, iso } = formatNotificationDate(notification.created_at);
 
@@ -33,7 +32,9 @@ const NotificationItem: React.FC<Props> = ({ notification, lastSeenAt }) => {
       />
       <div className="min-w-0 flex-1">
         <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
-          <h4 className="text-sm font-semibold text-foreground sm:truncate">{notification.title}</h4>
+          <h4 className="text-sm font-semibold text-foreground sm:truncate">
+            {notification.title}
+          </h4>
           <time
             dateTime={iso}
             title={iso}

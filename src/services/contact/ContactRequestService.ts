@@ -4,12 +4,7 @@ import { handleDatabaseError } from '@/utils/errorHandler';
 
 export type ContactRequestRow = Tables<'contact_requests'>;
 
-export type ContactRequestType =
-  | 'timeslot'
-  | 'score'
-  | 'join_league'
-  | 'general'
-  | 'other';
+export type ContactRequestType = 'timeslot' | 'score' | 'join_league' | 'general' | 'other';
 
 export interface SubmitContactRequestInput {
   request_type: ContactRequestType;

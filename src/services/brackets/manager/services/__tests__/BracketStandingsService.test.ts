@@ -41,16 +41,14 @@ function makeService(opts: {
   const storage = {
     select: vi.fn().mockImplementation(async (table: string) => {
       if (table === 'stage') return opts.stages ?? [{ id: 10, number: 1 }];
-      if (table === 'participant')
-        return opts.participants ?? [{ id: 101, team_id: 'team-a' }];
+      if (table === 'participant') return opts.participants ?? [{ id: 101, team_id: 'team-a' }];
       return [];
     }),
   };
   const manager = {
     get: {
       finalStandings:
-        opts.finalStandings ??
-        vi.fn().mockResolvedValue([{ id: 101, name: 'Team A', rank: 1 }]),
+        opts.finalStandings ?? vi.fn().mockResolvedValue([{ id: 101, name: 'Team A', rank: 1 }]),
     },
   };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -67,7 +65,15 @@ describe('BracketStandingsService.calculateFinalStandings', () => {
   it('returns incomplete-matches without throwing or writing when matches are unresolved', async () => {
     stageMatchesResult.data = [
       { id: 1, number: 1, group_id: 1, round_id: 1, status: 5, opponent1_id: 1, opponent2_id: 2 },
-      { id: 2, number: 2, group_id: 2, round_id: 1, status: 2, opponent1_id: 1, opponent2_id: null },
+      {
+        id: 2,
+        number: 2,
+        group_id: 2,
+        round_id: 1,
+        status: 2,
+        opponent1_id: 1,
+        opponent2_id: null,
+      },
     ];
     const finalStandings = vi.fn();
     const service = makeService({ finalStandings: finalStandings as never });
@@ -112,9 +118,7 @@ describe('BracketStandingsService.calculateFinalStandings', () => {
     stageMatchesResult.data = [
       { id: 1, number: 1, group_id: 1, round_id: 1, status: 5, opponent1_id: 1, opponent2_id: 2 },
     ];
-    const finalStandings = vi
-      .fn()
-      .mockResolvedValue([{ id: 101, name: 'Team A', rank: 1 }]);
+    const finalStandings = vi.fn().mockResolvedValue([{ id: 101, name: 'Team A', rank: 1 }]);
     const service = makeService({
       stages: [
         { id: 10, number: 1 },

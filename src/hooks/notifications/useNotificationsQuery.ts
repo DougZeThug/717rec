@@ -1,6 +1,9 @@
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 
-import { NotificationService, type NotificationRow } from '@/services/notifications/NotificationService';
+import {
+  type NotificationRow,
+  NotificationService,
+} from '@/services/notifications/NotificationService';
 
 export const NOTIFICATIONS_QUERY_KEY = ['notifications'] as const;
 

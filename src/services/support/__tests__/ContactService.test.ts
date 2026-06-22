@@ -8,8 +8,9 @@ vi.mock('@/integrations/supabase/client', () => ({
   },
 }));
 
-import { contactSchema, submitContactRequest } from '../ContactService';
 import { DatabaseError } from '@/types/errors';
+
+import { contactSchema, submitContactRequest } from '../ContactService';
 
 describe('ContactService honeypot', () => {
   beforeEach(() => {

@@ -1,5 +1,4 @@
 import { format } from 'date-fns';
-import { formatWithPattern } from '@/utils/formatDateSafe';
 import { Check, Download, HelpCircle, Users, X } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
@@ -25,6 +24,7 @@ import { useSeasonParticipations } from '@/hooks/useSeasonParticipation';
 import { useSeasons } from '@/hooks/useSeasons';
 import { useTeams } from '@/hooks/useTeams';
 import { cn } from '@/lib/utils';
+import { formatWithPattern } from '@/utils/formatDateSafe';
 
 type StatusFilter = 'all' | 'PLAYING' | 'NOT_PLAYING' | 'NO_RESPONSE';
 

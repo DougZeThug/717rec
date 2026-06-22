@@ -54,9 +54,7 @@ export const resolveTeamToParticipantId: ResolveTeamToParticipantIdFn = async (
       if (fetchError)
         handleDatabaseError(fetchError, 'Failed to fetch existing participant after race');
       if (!existingRow)
-        throw new Error(
-          'Failed to resolve participant after unique-violation race: no row found'
-        );
+        throw new Error('Failed to resolve participant after unique-violation race: no row found');
       const existingId = (existingRow as { id: number }).id;
       participants.push({
         id: existingId,

@@ -52,10 +52,7 @@ const ContactInboxSection: React.FC = () => {
   const reopen = useReopenContactRequest();
   const remove = useDeleteContactRequest();
 
-  const newCount = useMemo(
-    () => requests.filter((r) => r.status === 'new').length,
-    [requests]
-  );
+  const newCount = useMemo(() => requests.filter((r) => r.status === 'new').length, [requests]);
 
   return (
     <Card className="mb-8">
@@ -163,9 +160,7 @@ const ContactInboxSection: React.FC = () => {
                         type="button"
                         size="sm"
                         variant="secondary"
-                        onClick={() =>
-                          markResolved.mutate({ id: r.id, userId: user?.id ?? null })
-                        }
+                        onClick={() => markResolved.mutate({ id: r.id, userId: user?.id ?? null })}
                         disabled={markResolved.isPending}
                       >
                         <CheckCircle2 className="mr-1 size-3.5" /> Mark resolved

@@ -58,14 +58,14 @@ describe('parseHeroCardMetadata', () => {
   });
 
   it('throws on invalid champions map shape', () => {
-    expect(() =>
-      parseHeroCardMetadata({ champions: { East: 42 } }, 'champions')
-    ).toThrow(ValidationError);
+    expect(() => parseHeroCardMetadata({ champions: { East: 42 } }, 'champions')).toThrow(
+      ValidationError
+    );
   });
 
   it('throws on invalid event winners shape', () => {
-    expect(() =>
-      parseHeroCardMetadata({ past_winners: [{ week: '1' }] }, 'event')
-    ).toThrow(ValidationError);
+    expect(() => parseHeroCardMetadata({ past_winners: [{ week: '1' }] }, 'event')).toThrow(
+      ValidationError
+    );
   });
 });

@@ -162,7 +162,9 @@ describe('submitTeamRequest', () => {
       if (table === 'seasons') {
         return {
           select: () => ({
-            eq: () => ({ maybeSingle: () => Promise.resolve({ data: { id: 's-1' }, error: null }) }),
+            eq: () => ({
+              maybeSingle: () => Promise.resolve({ data: { id: 's-1' }, error: null }),
+            }),
           }),
         };
       }
@@ -184,7 +186,9 @@ describe('submitTeamRequest', () => {
       if (table === 'seasons') {
         return {
           select: () => ({
-            eq: () => ({ maybeSingle: () => Promise.resolve({ data: { id: 's-1' }, error: null }) }),
+            eq: () => ({
+              maybeSingle: () => Promise.resolve({ data: { id: 's-1' }, error: null }),
+            }),
           }),
         };
       }
@@ -206,7 +210,8 @@ describe('submitTeamRequest', () => {
         return {
           select: () => ({
             eq: () => ({
-              maybeSingle: () => Promise.resolve({ data: null, error: pgError('connection timeout') }),
+              maybeSingle: () =>
+                Promise.resolve({ data: null, error: pgError('connection timeout') }),
             }),
           }),
         };

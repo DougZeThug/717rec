@@ -76,11 +76,7 @@ const MatchCommentForm: React.FC<MatchCommentFormProps> = ({
           variant="ghost"
           className="mt-1 mr-1 size-8 rounded-full p-0 text-primary"
         >
-          {isSubmitting ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <Send className="size-4" />
-          )}
+          {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
           <span className="sr-only">{isSubmitting ? 'Sending...' : 'Send comment'}</span>
         </Button>
       </div>

@@ -2,7 +2,6 @@ import { AlertCircle, Loader2, Plus, Trash2, Trophy } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -61,9 +60,7 @@ const ChallongeFallbackSection: React.FC = () => {
         const unsavedRows = prevDrafts.filter(
           (row) =>
             row.isNew &&
-            !brackets.some(
-              (b) => b.title === row.title.trim() && b.slug === row.slug.trim()
-            )
+            !brackets.some((b) => b.title === row.title.trim() && b.slug === row.slug.trim())
         );
         const savedDrafts = toDraft(brackets);
         return [...savedDrafts, ...unsavedRows];

@@ -483,10 +483,7 @@ const SeasonAccordion: React.FC<{ season: Season }> = ({ season }) => {
       >
         Full Season Recap
         <ChevronDown
-          className={cn(
-            'size-3.5 transition-transform duration-200',
-            isExpanded && 'rotate-180'
-          )}
+          className={cn('size-3.5 transition-transform duration-200', isExpanded && 'rotate-180')}
         />
       </button>
       <AnimatePresence>

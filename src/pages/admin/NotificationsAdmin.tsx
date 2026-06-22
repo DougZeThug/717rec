@@ -1,3 +1,4 @@
+import { Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 
 import ContactInboxSection from '@/components/admin/contact/ContactInboxSection';
@@ -16,7 +17,6 @@ import { useNotificationsRealtime } from '@/hooks/notifications/useNotifications
 import { toast } from '@/hooks/useToast';
 import type { NotificationRow } from '@/services/notifications/NotificationService';
 import { formatNotificationDate } from '@/utils/formatNotificationDate';
-import { Trash2 } from 'lucide-react';
 
 const NotificationsAdmin: React.FC = () => {
   useNotificationsRealtime();
@@ -140,7 +140,9 @@ const NotificationsAdmin: React.FC = () => {
                       title={posted.iso}
                       className="flex shrink-0 flex-col text-right text-[11px] leading-tight text-muted-foreground sm:items-end"
                     >
-                      <span className="font-medium text-foreground/80 tabular-nums">{posted.absolute}</span>
+                      <span className="font-medium text-foreground/80 tabular-nums">
+                        {posted.absolute}
+                      </span>
                       {posted.relative && <span>{posted.relative}</span>}
                     </time>
                   </div>

@@ -332,9 +332,7 @@ describe('BracketNormalizationService', () => {
         .mockResolvedValueOnce([{ id: 70, status: 0, opponent1: null, opponent2: null }])
         .mockResolvedValueOnce([{ id: 5, number: 1 }])
         .mockResolvedValueOnce([{ id: 51, number: 1 }])
-        .mockResolvedValueOnce([
-          { id: 99, number: 1, status: 1, opponent1: null, opponent2: null },
-        ])
+        .mockResolvedValueOnce([{ id: 99, number: 1, status: 1, opponent1: null, opponent2: null }])
         // LB lookup (no LB final yet)
         .mockResolvedValueOnce([{ id: 20, number: 2 }])
         .mockResolvedValueOnce([{ id: 21, number: 2 }])

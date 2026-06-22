@@ -239,10 +239,10 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
                       <span className="text-xs font-medium truncate flex-1">{team.name}</span>
                       <div
                         className={`size-4 shrink-0 rounded-sm border flex items-center justify-center ${
- isSelected
- ? 'border-primary bg-primary text-primary-foreground'
- : 'border-primary'
- }`}
+                          isSelected
+                            ? 'border-primary bg-primary text-primary-foreground'
+                            : 'border-primary'
+                        }`}
                       >
                         {isSelected && <Check className="size-3" />}
                       </div>

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 
 import { Match, Ranking, Team } from '@/types';
-import { debugLog, errorLog } from '@/utils/logger';
 import { getTierFromDivision } from '@/utils/autoSchedule/blossom/tierUtils';
+import { debugLog, errorLog } from '@/utils/logger';
 import { saveRankingsToStorage, updateRankChanges } from '@/utils/rankingUtils';
 import { calculateStreak } from '@/utils/rankingUtils/calculateStreak';
 

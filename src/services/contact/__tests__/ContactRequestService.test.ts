@@ -97,7 +97,9 @@ describe('ContactRequestService.fetchAll', () => {
 
   it('returns [] when data is null without an error', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ order: () => ({ limit: () => Promise.resolve({ data: null, error: null }) }) }),
+      select: () => ({
+        order: () => ({ limit: () => Promise.resolve({ data: null, error: null }) }),
+      }),
     });
     const result = await ContactRequestService.fetchAll();
     expect(result).toEqual([]);

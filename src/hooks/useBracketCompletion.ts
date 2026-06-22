@@ -48,8 +48,7 @@ export function useBracketCompletion(bracketId: string | undefined) {
               } else if (result.reason === 'incomplete-matches') {
                 toast({
                   title: 'Standings Pending',
-                  description:
-                    'Final standings will be calculated once all matches are complete.',
+                  description: 'Final standings will be calculated once all matches are complete.',
                 });
               }
               // 'calculation-error' / 'no-stages' / 'no-records' are logged

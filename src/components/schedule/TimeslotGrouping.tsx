@@ -65,7 +65,9 @@ const ByeWeekDesktopRow = ({ teamTimeslot, teamIndex, isWinterTheme }: ByeWeekDe
             {teamTimeslot.teams.name}
           </Link>
         ) : (
-          <span className="text-muted-foreground dark:text-muted-foreground truncate">Unknown Team</span>
+          <span className="text-muted-foreground dark:text-muted-foreground truncate">
+            Unknown Team
+          </span>
         )}
         <span
           className={cn(
@@ -148,7 +150,9 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
         )}
       >
         <Calendar className="size-8 mx-auto mb-2 text-muted-foreground dark:text-gray-500" />
-        <p className="text-muted-foreground dark:text-muted-foreground">No timeslots scheduled for this date.</p>
+        <p className="text-muted-foreground dark:text-muted-foreground">
+          No timeslots scheduled for this date.
+        </p>
       </div>
     );
   }

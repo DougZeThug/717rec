@@ -114,8 +114,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
           // Only honor a real, user-provided seed. team.seed from the DB is
           // intentionally ignored so bracket-creator can rank by power_score
           // when no manual override exists.
-          const seed =
-            typeof manualSeed === 'number' && manualSeed > 0 ? manualSeed : undefined;
+          const seed = typeof manualSeed === 'number' && manualSeed > 0 ? manualSeed : undefined;
           return { ...team, seed };
         });
 

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useHeroCardMutations } from '@/hooks/useHeroCards';
 import { HeroCard, HeroCardFormData, HeroCardTargetType, HeroCardType } from '@/types/heroCard';
-import { parseMetadata, parseHeroCardMetadata } from '@/utils/parseMetadata';
+import { parseHeroCardMetadata, parseMetadata } from '@/utils/parseMetadata';
 
 import {
   AdvancedSettingsSection,
@@ -108,7 +108,10 @@ const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
   };
 
   // Build preview card object
-  const previewMetadata = parseHeroCardMetadata(parseMetadata(formData.metadata), formData.card_type);
+  const previewMetadata = parseHeroCardMetadata(
+    parseMetadata(formData.metadata),
+    formData.card_type
+  );
 
   const previewCard: HeroCard = {
     id: card?.id || 'preview',

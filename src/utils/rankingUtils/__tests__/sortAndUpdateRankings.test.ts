@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import type { Ranking } from '@/types';
+import { sortRankings } from '@/utils/rankingUtils';
 
 import { sortAndUpdateRankings } from '../sortAndUpdateRankings';
-import { sortRankings } from '@/utils/rankingUtils';
 
 const ranking = (teamId: string, powerScore: number | null, previousRank?: number): Ranking =>
   ({

@@ -50,7 +50,9 @@ export const ChallongeFallbackService = {
     return data ?? [];
   },
 
-  createBracket: async (input: ChallongeFallbackBracketInput): Promise<ChallongeFallbackBracket> => {
+  createBracket: async (
+    input: ChallongeFallbackBracketInput
+  ): Promise<ChallongeFallbackBracket> => {
     const { data, error } = await supabase
       .from('challonge_fallback_brackets')
       .insert(input)
@@ -61,7 +63,7 @@ export const ChallongeFallbackService = {
   },
 
   updateBracket: async (
-    input: { id: string } & Partial<ChallongeFallbackBracketInput>,
+    input: { id: string } & Partial<ChallongeFallbackBracketInput>
   ): Promise<ChallongeFallbackBracket> => {
     const { id, ...patch } = input;
     const { data, error } = await supabase
