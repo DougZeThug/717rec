@@ -26,6 +26,33 @@ After `test:coverage:full`, open `coverage/index.html` in a browser to see
 per-file percentages with line-by-line highlighting.
 
 
+## End-to-end tests (Playwright)
+
+E2E specs live in `e2e/` (separate from Vitest, which only picks up
+`__tests__/` and `tests/` folders). A single smoke spec at
+`e2e/smoke.spec.ts` loads the app and verifies the main shell and primary
+navigation render.
+
+```bash
+npm run e2e:install   # one-time: install Chromium + OS deps for Playwright
+npm run e2e           # run the smoke suite (auto-starts `npm run dev` on :8080)
+npm run e2e:ui        # interactive UI mode for authoring/debugging
+npm run e2e:report    # open the last HTML report
+```
+
+Playwright reuses an already-running dev server locally; in CI it starts its
+own. Artifacts (HTML report, traces, screenshots) are written to
+`playwright-report/` and `test-results/` and are gitignored.
+
+### CI status: non-blocking
+
+The `E2E (smoke)` GitHub Actions workflow runs on every PR but is configured
+with `continue-on-error: true`, so failures do **not** block merges while the
+suite stabilizes. To make it a required gate, remove `continue-on-error: true`
+from `.github/workflows/e2e.yml` and add the check to the branch protection
+rules.
+
+
 ## Coverage troubleshooting (hangs/timeouts)
 
 If coverage appears to hang in CI/Codex, start with the dedicated triage command first:
