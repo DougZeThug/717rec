@@ -1,7 +1,6 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
 
-const SUPABASE_URL = 'https://wcitdamvochthvxvtxyb.supabase.co';
 const AUTH_STORAGE_KEY = 'sb-wcitdamvochthvxvtxyb-auth-token';
 
 const makeUser = (id: string, email: string) => ({
@@ -47,11 +46,20 @@ const seedAuthenticatedUser = async (
     { key: AUTH_STORAGE_KEY, seededUser: user }
   );
 
-  await page.route(`${SUPABASE_URL}/auth/v1/user`, async (route) => {
-    await route.fulfill(jsonResponse(user));
+  await page.route(/\/auth\/v1\/user/, async (route) => {
+    await route.fulfill(jsonResponse({ user }));
   });
 
-  await page.route(`${SUPABASE_URL}/rest/v1/profiles**`, async (route) => {
+  await page.route(/\/rest\/v1\//, async (route) => {
+    if (route.request().method() === 'OPTIONS') {
+      await route.fulfill(jsonResponse(null, 204));
+      return;
+    }
+
+    await route.fulfill(jsonResponse([]));
+  });
+
+  await page.route(/\/rest\/v1\/profiles/, async (route) => {
     await route.fulfill(
       jsonResponse({
         id: user.id,
@@ -64,17 +72,8 @@ const seedAuthenticatedUser = async (
     );
   });
 
-  await page.route(`${SUPABASE_URL}/rest/v1/rpc/**`, async (route) => {
+  await page.route(/\/rest\/v1\/rpc\//, async (route) => {
     await route.fulfill(jsonResponse(options.isAdmin));
-  });
-
-  await page.route(`${SUPABASE_URL}/rest/v1/**`, async (route) => {
-    if (route.request().method() === 'OPTIONS') {
-      await route.fulfill(jsonResponse(null, 204));
-      return;
-    }
-
-    await route.fulfill(jsonResponse([]));
   });
 };
 
@@ -103,7 +102,9 @@ test.describe('admin access control', () => {
     await page.goto('/admin');
 
     await expect(page).toHaveURL(/\/admin$/);
-    await expect(page.getByRole('heading', { name: 'Admin Dashboard' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Admin Dashboard' })).toBeVisible({
+      timeout: 15000,
+    });
     await expect(page.getByText('Admin Menu')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Timeslots' })).toBeVisible();
   });

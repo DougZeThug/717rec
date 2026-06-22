@@ -1,10 +1,7 @@
 import { errorLog, scoreLog } from '@/utils/logger';
 
 import { MatchWithTeams } from '../types';
-
-const validateMatchScores = (score1?: number | null, score2?: number | null): boolean => {
-  return score1 !== undefined && score1 !== null && score2 !== undefined && score2 !== null;
-};
+import { validateMatchScores } from '../utils/matchValidation';
 
 export const useMatchScores = (
   matches: MatchWithTeams[],
@@ -78,6 +75,9 @@ export const useMatchScores = (
         ...match,
         iscompleted: checked,
         isEdited: true,
+        isValid: checked
+          ? validateMatchScores(match.team1Score, match.team2Score)
+          : match.isValid,
       };
       return newMatches;
     });

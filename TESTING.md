@@ -34,14 +34,34 @@ E2E specs live in `e2e/` (separate from Vitest, which only picks up
 navigation render.
 
 ```bash
+npm ci                # install the exact npm dependencies from package-lock.json
 npm run e2e:install   # one-time: install Chromium + OS deps for Playwright
 npm run e2e           # run the smoke suite (auto-starts `npm run dev` on :8080)
 npm run e2e:ui        # interactive UI mode for authoring/debugging
 npm run e2e:report    # open the last HTML report
 ```
 
-Playwright reuses an already-running dev server locally; in CI it starts its
-own. Artifacts (HTML report, traces, screenshots) are written to
+Local E2E setup checklist:
+
+1. Run `npm ci` from the repo root. Do not use pnpm or yarn; this repo's
+   lockfile and scripts are npm-based.
+2. Run `npm run e2e:install` before the first E2E run and after Playwright
+   version bumps. The script installs Playwright's pinned Chromium build plus
+   required Linux packages via `playwright install --with-deps chromium`.
+3. If browser installation fails behind a corporate proxy or sandbox allowlist,
+   allow access to the Playwright browser CDN or configure an approved
+   `PLAYWRIGHT_DOWNLOAD_HOST`, then rerun `npm run e2e:install`. As a local-only
+   escape hatch for locked-down sandboxes, install an approved Chrome/Chromium
+   binary and run E2E with
+   `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/path/to/chrome npm run e2e`; do not
+   use that override in CI unless the workflow also installs that exact browser
+   first.
+4. Run `npm run e2e`. Playwright reuses an already-running dev server locally;
+   otherwise it auto-starts `npm run dev` on port 8080.
+
+In CI, `.github/workflows/e2e.yml` runs `npm ci`, then `npm run e2e:install`,
+and only then `npm run e2e`, so browser installation is validated before tests
+start. Artifacts (HTML report, traces, screenshots) are written to
 `playwright-report/` and `test-results/` and are gitignored.
 
 ### CI status: non-blocking
