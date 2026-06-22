@@ -39,15 +39,9 @@ const SeasonParticipationTab: React.FC = () => {
     return activeSeason?.id ?? seasons[0]?.id ?? '';
   }, [seasons]);
 
-  const [selectedSeasonId, setSelectedSeasonId] = useState<string>(defaultSeasonId);
+  const [selectedSeasonOverride, setSelectedSeasonOverride] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-
-  // Update selected season when seasons load
-  React.useEffect(() => {
-    if (defaultSeasonId && !selectedSeasonId) {
-      setSelectedSeasonId(defaultSeasonId);
-    }
-  }, [defaultSeasonId, selectedSeasonId]);
+  const selectedSeasonId = selectedSeasonOverride || defaultSeasonId;
 
   const { data: participations, isLoading: participationsLoading } = useSeasonParticipations(
     selectedSeasonId || undefined
@@ -121,7 +115,7 @@ const SeasonParticipationTab: React.FC = () => {
 
         <div className="flex flex-wrap gap-3">
           {/* Season selector */}
-          <Select value={selectedSeasonId} onValueChange={setSelectedSeasonId}>
+          <Select value={selectedSeasonId} onValueChange={setSelectedSeasonOverride}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Select season" />
             </SelectTrigger>

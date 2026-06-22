@@ -1,5 +1,5 @@
 import { CheckCircle2, Send } from 'lucide-react';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,23 +49,16 @@ const ContactPanel: React.FC = () => {
   const verifiedTeam = membership?.team?.name ?? '';
 
   const [requestType, setRequestType] = useState<ContactRequestType>('general');
-  const [name, setName] = useState('');
-  const [team, setTeam] = useState('');
-  const [contact, setContact] = useState('');
+  const [nameDraft, setNameDraft] = useState<string | null>(null);
+  const [teamDraft, setTeamDraft] = useState<string | null>(null);
+  const [contactDraft, setContactDraft] = useState<string | null>(null);
   const [players, setPlayers] = useState('');
   const [message, setMessage] = useState('');
   const [website, setWebsite] = useState('');
 
-  // Auto-fill verified fields when signed-in user data resolves
-  useEffect(() => {
-    if (user && verifiedName) setName(verifiedName);
-  }, [user, verifiedName]);
-  useEffect(() => {
-    if (user && verifiedTeam) setTeam(verifiedTeam);
-  }, [user, verifiedTeam]);
-  useEffect(() => {
-    if (user?.email) setContact((prev) => prev || user.email || '');
-  }, [user]);
+  const name = nameDraft ?? (user ? verifiedName : '');
+  const team = teamDraft ?? (user ? verifiedTeam : '');
+  const contact = contactDraft ?? user?.email ?? '';
 
   const isJoin = requestType === 'join_league';
   const nameLocked = !!user && !!verifiedName;
@@ -103,9 +96,9 @@ const ContactPanel: React.FC = () => {
       setMessage('');
       setPlayers('');
       if (!user) {
-        setName('');
-        setTeam('');
-        setContact('');
+        setNameDraft(null);
+        setTeamDraft(null);
+        setContactDraft(null);
       }
       setRequestType('general');
     } catch (err) {
@@ -180,7 +173,7 @@ const ContactPanel: React.FC = () => {
               <Input
                 id="contact-name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => setNameDraft(e.target.value)}
                 readOnly={nameLocked}
                 maxLength={120}
                 placeholder="Jane Doe"
@@ -200,7 +193,7 @@ const ContactPanel: React.FC = () => {
               <Input
                 id="contact-team"
                 value={team}
-                onChange={(e) => setTeam(e.target.value)}
+                onChange={(e) => setTeamDraft(e.target.value)}
                 readOnly={teamLocked}
                 maxLength={120}
                 placeholder={isJoin ? 'Bag Boys' : 'Your team (optional)'}
@@ -213,7 +206,7 @@ const ContactPanel: React.FC = () => {
               <Input
                 id="contact-contact"
                 value={contact}
-                onChange={(e) => setContact(e.target.value)}
+                onChange={(e) => setContactDraft(e.target.value)}
                 maxLength={255}
                 placeholder="you@example.com or 717-555-1234"
                 className="mt-1"
