@@ -20,28 +20,30 @@ export const formatNotificationDate = (
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return { absolute: '', relative: '', iso };
 
-  let absolute = '';
-  try {
-    absolute = date.toLocaleString('en-US', {
-      timeZone: EST_TIME_ZONE,
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-      timeZoneName: 'short',
-    });
-  } catch {
-    absolute = date.toISOString();
-  }
+  const absolute = (() => {
+    try {
+      return date.toLocaleString('en-US', {
+        timeZone: EST_TIME_ZONE,
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        timeZoneName: 'short',
+      });
+    } catch {
+      return date.toISOString();
+    }
+  })();
 
-  let relative = '';
-  try {
-    relative = formatDistanceToNow(date, { addSuffix: true });
-  } catch {
-    relative = '';
-  }
+  const relative = (() => {
+    try {
+      return formatDistanceToNow(date, { addSuffix: true });
+    } catch {
+      return '';
+    }
+  })();
 
   return { absolute, relative, iso };
 };

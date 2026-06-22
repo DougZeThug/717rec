@@ -32,7 +32,10 @@ test.describe('app shell smoke', () => {
     }
 
     // Navigate to Teams and verify the route changes and main content renders
-    await page.getByRole('link', { name: /^Teams$/i }).first().click();
+    await page
+      .getByRole('link', { name: /^Teams$/i })
+      .first()
+      .click();
     await expect(page).toHaveURL(/\/teams\b/);
     await expect(page.locator('main, #main-content').first()).toBeVisible();
 

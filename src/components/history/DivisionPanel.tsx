@@ -44,8 +44,6 @@ const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) =>
     }
   }, [isMobile]);
 
-  const champion = teams.find((team) => team.champion);
-
   // Sort teams by playoff_rank (1st, 2nd, 3rd, etc.) with fallback to match wins
   const sortedTeams = [...teams].sort((a, b) => {
     // If both teams have playoff ranks, sort by playoff rank (lower is better)

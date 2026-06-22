@@ -72,8 +72,6 @@ const MobileTeamRow: React.FC<{
       ? (team.match_wins / (team.match_wins + team.match_losses)) * 100
       : 0;
 
-  const powerScore100 = team.power_score ? team.power_score * 100 : null;
-
   return (
     <div style={style} className="pb-2">
       <EntityCard

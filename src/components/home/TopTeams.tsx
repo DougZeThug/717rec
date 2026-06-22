@@ -9,7 +9,6 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { useAllTeamBadges } from '@/hooks/useTeamBadges';
 import { cn } from '@/lib/utils';
-import { animations } from '@/styles/design-system';
 import { Team } from '@/types';
 import { TeamBadgeEvent } from '@/types/badges';
 
