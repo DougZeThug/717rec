@@ -25,7 +25,7 @@ describe('useLazyRef', () => {
   });
 
   it('runs exactly once even when the initializer returns null', () => {
-    const init = vi.fn<[], null>(() => null);
+    const init = vi.fn<() => null>(() => null);
     const { result, rerender } = renderHook(() => useLazyRef(init));
 
     expect(result.current.current).toBeNull();
