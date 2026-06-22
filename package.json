@@ -24,7 +24,11 @@
     "test:coverage:update-baseline": "./tools/update-coverage-baseline.sh",
     "test:coverage:sync-docs": "node tools/sync-testing-baseline.mjs",
     "test:coverage:refresh-docs": "npm run test:coverage && npm run test:coverage:sync-docs",
-    "test:coverage:triage": "./tools/coverage-triage.sh"
+    "test:coverage:triage": "./tools/coverage-triage.sh",
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "e2e:install": "playwright install --with-deps chromium",
+    "e2e:report": "playwright show-report"
   },
   "dependencies": {
     "@capacitor/core": "^8.4.0",
