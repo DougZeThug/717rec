@@ -32,10 +32,9 @@ const EditableMatchList: React.FC<EditableMatchListProps> = ({
 
     matches.forEach((match) => {
       const timeslot = match.timeslot || 'No Timeslot';
-      if (!grouped.has(timeslot)) {
-        grouped.set(timeslot, []);
-      }
-      grouped.get(timeslot)!.push(match);
+      const timeslotMatches = grouped.get(timeslot) ?? [];
+      timeslotMatches.push(match);
+      grouped.set(timeslot, timeslotMatches);
     });
 
     // Sort timeslots

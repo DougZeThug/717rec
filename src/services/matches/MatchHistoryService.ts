@@ -206,15 +206,12 @@ export const fetchSeasonOpponentHistory = async (): Promise<SeasonOpponentData |
     if (!team1_id || !team2_id) return;
 
     // Initialize team maps if not exists
-    if (!teamOpponents.has(team1_id)) {
-      teamOpponents.set(team1_id, new Map());
-    }
-    if (!teamOpponents.has(team2_id)) {
-      teamOpponents.set(team2_id, new Map());
-    }
-
-    const team1Opponents = teamOpponents.get(team1_id)!;
-    const team2Opponents = teamOpponents.get(team2_id)!;
+    const team1Opponents =
+      teamOpponents.get(team1_id) ?? new Map<string, { wins: number; losses: number }>();
+    const team2Opponents =
+      teamOpponents.get(team2_id) ?? new Map<string, { wins: number; losses: number }>();
+    teamOpponents.set(team1_id, team1Opponents);
+    teamOpponents.set(team2_id, team2Opponents);
 
     // Get or initialize opponent records
     const team1Record = team1Opponents.get(team2_id) || { wins: 0, losses: 0 };

@@ -76,7 +76,7 @@ export const useMyNextMatch = (): MyNextMatchResult => {
     const myTeamLogo = membership.team?.logoUrl || membership.team?.imageUrl || null;
 
     const myTeam: TeamInfo = {
-      id: myTeamId!,
+      id: membership.team_id,
       name: myTeamName,
       logoUrl: myTeamLogo,
     };

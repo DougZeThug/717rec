@@ -44,118 +44,119 @@ const AnalysisContent = ({
   analysis: TeamAnalysisType;
   onEdit: () => void;
   isAdmin: boolean;
-}) => (
-  <m.div
-    className="space-y-4 p-4"
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.3 }}
-  >
-    {/* Header with edit button */}
-    {isAdmin && (
-      <div className="flex justify-end">
-        <Button variant="ghost" size="sm" onClick={onEdit} className="text-xs h-7">
-          <Edit className="size-3 mr-1" />
-          Edit
-        </Button>
-      </div>
-    )}
+}) => {
+  const strengths = analysis.strengths ?? [];
+  const weaknesses = analysis.weaknesses ?? [];
 
-    {/* Overall Assessment */}
-    {analysis.overall && (
-      <div className="bg-gradient-to-br from-primary/5 to-accent/10 rounded-lg p-4 border border-primary/20">
-        <p className="text-sm leading-relaxed">{analysis.overall}</p>
-      </div>
-    )}
-
-    {/* Strengths and Weaknesses Grid */}
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {/* Strengths */}
-      {analysis.strengths && analysis.strengths.length > 0 && (
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Trophy className="size-4 text-green-500" />
-            <h4 className="font-semibold text-sm uppercase tracking-wide">Strengths</h4>
-          </div>
-          <ul className="space-y-1.5">
-            {analysis.strengths.map((strength, i) => {
-              const occurrence = analysis
-                .strengths!.slice(0, i)
-                .filter((s) => s === strength).length;
-              const key =
-                occurrence === 0 ? `strength:${strength}` : `strength:${strength}#${occurrence}`;
-              return (
-                <m.li
-                  key={key}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="flex items-start gap-2 text-sm"
-                >
-                  <span className="text-green-500 mt-0.5">✓</span>
-                  <span>{strength}</span>
-                </m.li>
-              );
-            })}
-          </ul>
+  return (
+    <m.div
+      className="space-y-4 p-4"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Header with edit button */}
+      {isAdmin && (
+        <div className="flex justify-end">
+          <Button variant="ghost" size="sm" onClick={onEdit} className="text-xs h-7">
+            <Edit className="size-3 mr-1" />
+            Edit
+          </Button>
         </div>
       )}
 
-      {/* Weaknesses */}
-      {analysis.weaknesses && analysis.weaknesses.length > 0 && (
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Target className="size-4 text-amber-500" />
-            <h4 className="font-semibold text-sm uppercase tracking-wide">Areas to Improve</h4>
-          </div>
-          <ul className="space-y-1.5">
-            {analysis.weaknesses.map((weakness, i) => {
-              const occurrence = analysis
-                .weaknesses!.slice(0, i)
-                .filter((w) => w === weakness).length;
-              const key =
-                occurrence === 0 ? `weakness:${weakness}` : `weakness:${weakness}#${occurrence}`;
-              return (
-                <m.li
-                  key={key}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + i * 0.1 }}
-                  className="flex items-start gap-2 text-sm"
-                >
-                  <span className="text-amber-500 mt-0.5">→</span>
-                  <span>{weakness}</span>
-                </m.li>
-              );
-            })}
-          </ul>
+      {/* Overall Assessment */}
+      {analysis.overall && (
+        <div className="bg-gradient-to-br from-primary/5 to-accent/10 rounded-lg p-4 border border-primary/20">
+          <p className="text-sm leading-relaxed">{analysis.overall}</p>
         </div>
       )}
-    </div>
 
-    {/* Trends */}
-    {analysis.trends && (
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <TrendingUp className="size-4 text-blue-500" />
-          <h4 className="font-semibold text-sm uppercase tracking-wide">Current Form</h4>
-        </div>
-        <p className="text-sm text-muted-foreground">{analysis.trends}</p>
-      </div>
-    )}
+      {/* Strengths and Weaknesses Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Strengths */}
+        {strengths.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Trophy className="size-4 text-green-500" />
+              <h4 className="font-semibold text-sm uppercase tracking-wide">Strengths</h4>
+            </div>
+            <ul className="space-y-1.5">
+              {strengths.map((strength, i) => {
+                const occurrence = strengths.slice(0, i).filter((s) => s === strength).length;
+                const key =
+                  occurrence === 0 ? `strength:${strength}` : `strength:${strength}#${occurrence}`;
+                return (
+                  <m.li
+                    key={key}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="flex items-start gap-2 text-sm"
+                  >
+                    <span className="text-green-500 mt-0.5">✓</span>
+                    <span>{strength}</span>
+                  </m.li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
 
-    {/* Rivalry Insights */}
-    {analysis.rivalry_insights && (
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Swords className="size-4 text-purple-500" />
-          <h4 className="font-semibold text-sm uppercase tracking-wide">Rivalry Insights</h4>
-        </div>
-        <p className="text-sm text-muted-foreground">{analysis.rivalry_insights}</p>
+        {/* Weaknesses */}
+        {weaknesses.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Target className="size-4 text-amber-500" />
+              <h4 className="font-semibold text-sm uppercase tracking-wide">Areas to Improve</h4>
+            </div>
+            <ul className="space-y-1.5">
+              {weaknesses.map((weakness, i) => {
+                const occurrence = weaknesses.slice(0, i).filter((w) => w === weakness).length;
+                const key =
+                  occurrence === 0 ? `weakness:${weakness}` : `weakness:${weakness}#${occurrence}`;
+                return (
+                  <m.li
+                    key={key}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 + i * 0.1 }}
+                    className="flex items-start gap-2 text-sm"
+                  >
+                    <span className="text-amber-500 mt-0.5">→</span>
+                    <span>{weakness}</span>
+                  </m.li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
       </div>
-    )}
-  </m.div>
-);
+
+      {/* Trends */}
+      {analysis.trends && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="size-4 text-blue-500" />
+            <h4 className="font-semibold text-sm uppercase tracking-wide">Current Form</h4>
+          </div>
+          <p className="text-sm text-muted-foreground">{analysis.trends}</p>
+        </div>
+      )}
+
+      {/* Rivalry Insights */}
+      {analysis.rivalry_insights && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Swords className="size-4 text-purple-500" />
+            <h4 className="font-semibold text-sm uppercase tracking-wide">Rivalry Insights</h4>
+          </div>
+          <p className="text-sm text-muted-foreground">{analysis.rivalry_insights}</p>
+        </div>
+      )}
+    </m.div>
+  );
+};
 
 const EmptyState = ({ onEdit, isAdmin }: { onEdit: () => void; isAdmin: boolean }) => (
   <div className="p-6 flex flex-col items-center justify-center text-center space-y-3">
@@ -226,9 +227,9 @@ const TeamAnalysisComponent: React.FC<TeamAnalysisProps> = ({ teamId, teamName: 
             onCancel={() => setIsEditing(false)}
             isSaving={isSaving}
           />
-        ) : hasContent ? (
+        ) : hasContent && analysis ? (
           <AnalysisContent
-            analysis={analysis!}
+            analysis={analysis}
             onEdit={() => setIsEditing(true)}
             isAdmin={isAdminAccessGranted}
           />

@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { handleDatabaseError } from '@/utils/errorHandler';
+import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 
 export interface MatchComment {
   id: string;
@@ -42,7 +42,7 @@ export const MatchCommentsService = {
       .single();
 
     if (error) handleDatabaseError(error, 'Failed to add comment');
-    return data!;
+    return ensureFound(data, 'Match comment');
   },
 
   deleteComment: async (commentId: string, userId: string): Promise<void> => {

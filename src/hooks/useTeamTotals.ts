@@ -120,9 +120,9 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
   // Get playoff finishes (sorted by rank)
   const playoff_finishes: PlayoffFinish[] =
     seasonStats
-      ?.filter((stat) => stat.playoff_rank)
+      ?.filter((stat): stat is typeof stat & { playoff_rank: number } => stat.playoff_rank != null)
       .map((stat) => ({
-        rank: stat.playoff_rank!,
+        rank: stat.playoff_rank,
         season_name: stat.seasons?.name || 'Unknown Season',
         division_name: stat.division_name || 'Unknown',
       }))

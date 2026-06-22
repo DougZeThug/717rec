@@ -34,16 +34,14 @@ export function analyzeOpponentDiversity(pairings: TeamPairingMap): {
       totalPairings++;
 
       // Track team1's opponents
-      if (!teamOpponents.has(pairing.team1.id)) {
-        teamOpponents.set(pairing.team1.id, new Set());
-      }
-      teamOpponents.get(pairing.team1.id)!.add(pairing.team2.id);
+      const team1Opponents = teamOpponents.get(pairing.team1.id) ?? new Set<string>();
+      team1Opponents.add(pairing.team2.id);
+      teamOpponents.set(pairing.team1.id, team1Opponents);
 
       // Track team2's opponents
-      if (!teamOpponents.has(pairing.team2.id)) {
-        teamOpponents.set(pairing.team2.id, new Set());
-      }
-      teamOpponents.get(pairing.team2.id)!.add(pairing.team1.id);
+      const team2Opponents = teamOpponents.get(pairing.team2.id) ?? new Set<string>();
+      team2Opponents.add(pairing.team1.id);
+      teamOpponents.set(pairing.team2.id, team2Opponents);
     });
   });
 
@@ -143,24 +141,19 @@ export function analyzeCrossBlockDiversity(pairings: TeamPairingMap): number {
 
   // Group opponents by team and block
   Object.entries(pairings).forEach(([block, blockPairings]) => {
-    if (!teamOpponentsByBlock.has(block)) {
-      teamOpponentsByBlock.set(block, new Map());
-    }
-
-    const blockOpponents = teamOpponentsByBlock.get(block)!;
+    const blockOpponents = teamOpponentsByBlock.get(block) ?? new Map<string, Set<string>>();
+    teamOpponentsByBlock.set(block, blockOpponents);
 
     blockPairings.forEach((pairing) => {
       // Track team1's opponents in this block
-      if (!blockOpponents.has(pairing.team1.id)) {
-        blockOpponents.set(pairing.team1.id, new Set());
-      }
-      blockOpponents.get(pairing.team1.id)!.add(pairing.team2.id);
+      const team1Opponents = blockOpponents.get(pairing.team1.id) ?? new Set<string>();
+      team1Opponents.add(pairing.team2.id);
+      blockOpponents.set(pairing.team1.id, team1Opponents);
 
       // Track team2's opponents in this block
-      if (!blockOpponents.has(pairing.team2.id)) {
-        blockOpponents.set(pairing.team2.id, new Set());
-      }
-      blockOpponents.get(pairing.team2.id)!.add(pairing.team1.id);
+      const team2Opponents = blockOpponents.get(pairing.team2.id) ?? new Set<string>();
+      team2Opponents.add(pairing.team1.id);
+      blockOpponents.set(pairing.team2.id, team2Opponents);
     });
   });
 
