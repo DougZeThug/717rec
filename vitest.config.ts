@@ -58,13 +58,8 @@ export default defineConfig(({ mode }) => {
       ...(isFastCoverage
         ? {
             pool: 'forks' as const,
-            poolOptions: {
-              forks: {
-                singleFork: false,
-                maxForks: 4,
-                minForks: 1,
-              },
-            },
+            maxWorkers: 4,
+            minWorkers: 1,
             fileParallelism: true,
             isolate: true,
           }

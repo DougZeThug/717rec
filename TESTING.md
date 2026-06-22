@@ -97,14 +97,14 @@ Do not use `pnpm` or `yarn` — neither is installed.
 
 ## Current baseline
 
-Last measured: 2026-05-26.
+Last measured: 2026-06-22.
 
 | Metric     | Covered |
 | ---------- | ------- |
-| Lines      | 43.34%  |
-| Statements | 42.59%  |
-| Functions  | 35.25%  |
-| Branches   | 34.04%  |
+| Lines      | 44.53%  |
+| Statements | 43.76%  |
+| Functions  | 36.42%  |
+| Branches   | 35.07%  |
 
 The overall number is low because most React components and UI pages are not
 yet under test. The logic-heavy areas (utils, scheduling, rankings, career
