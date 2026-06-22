@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ByeWeekService } from '@/services/timeslots/ByeWeekService';
@@ -118,7 +118,9 @@ describe('useTimeslotMutation', () => {
 
     const pending = result.current.addTimeslot(TEST_DATE, 'team-1', '18:00');
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
-    deferred.resolve([sampleSlot('slot-1')]);
+    await act(() => {
+      deferred.resolve([sampleSlot('slot-1')]);
+    });
 
     await expect(pending).resolves.toEqual(sampleSlot('slot-1'));
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
@@ -137,9 +139,12 @@ describe('useTimeslotMutation', () => {
 
     const pending = result.current.addTimeslot(TEST_DATE, 'team-1', '18:00');
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
-    deferred.reject(new Error('add failed'));
+    const rejection = expect(pending).rejects.toThrow('add failed');
+    await act(() => {
+      deferred.reject(new Error('add failed'));
+    });
 
-    await expect(pending).rejects.toThrow('add failed');
+    await rejection;
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
     expect(toast).toHaveBeenCalledWith({
       title: 'Error',
@@ -155,7 +160,9 @@ describe('useTimeslotMutation', () => {
 
     const pending = result.current.deleteTimeslot('slot-1');
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
-    deferred.resolve();
+    await act(() => {
+      deferred.resolve();
+    });
 
     await expect(pending).resolves.toBe(true);
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
@@ -170,9 +177,12 @@ describe('useTimeslotMutation', () => {
 
     const pending = result.current.deleteTimeslot('slot-1');
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
-    deferred.reject(new Error('delete failed'));
+    const rejection = expect(pending).rejects.toThrow('delete failed');
+    await act(() => {
+      deferred.reject(new Error('delete failed'));
+    });
 
-    await expect(pending).rejects.toThrow('delete failed');
+    await rejection;
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
     expect(toast).toHaveBeenCalledWith({
       title: 'Error',
@@ -207,7 +217,9 @@ describe('useTimeslotMutation', () => {
 
     const pending = result.current.batchAssignTimeslots(TEST_DATE, ['team-1', 'team-2'], '18:00');
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
-    deferred.resolve([sampleSlot('slot-1'), sampleSlot('slot-2')]);
+    await act(() => {
+      deferred.resolve([sampleSlot('slot-1'), sampleSlot('slot-2')]);
+    });
 
     await expect(pending).resolves.toEqual([sampleSlot('slot-1'), sampleSlot('slot-2')]);
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
@@ -225,9 +237,12 @@ describe('useTimeslotMutation', () => {
 
     const pending = result.current.batchAssignTimeslots(TEST_DATE, ['team-1'], '18:00');
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
-    deferred.reject(new Error('batch failed'));
+    const rejection = expect(pending).rejects.toThrow('batch failed');
+    await act(() => {
+      deferred.reject(new Error('batch failed'));
+    });
 
-    await expect(pending).rejects.toThrow('batch failed');
+    await rejection;
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
     expect(toast).toHaveBeenCalledWith({
       title: 'Error',
@@ -290,7 +305,9 @@ describe('useTimeslotMutation', () => {
       '19:00'
     );
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
-    deferred.resolve([sampleSlot('slot-1'), sampleSlot('slot-2')]);
+    await act(() => {
+      deferred.resolve([sampleSlot('slot-1'), sampleSlot('slot-2')]);
+    });
 
     await expect(pending).resolves.toEqual([sampleSlot('slot-1'), sampleSlot('slot-2')]);
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
@@ -312,9 +329,12 @@ describe('useTimeslotMutation', () => {
       '19:00'
     );
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
-    deferred.reject(new Error('double header failed'));
+    const rejection = expect(pending).rejects.toThrow('double header failed');
+    await act(() => {
+      deferred.reject(new Error('double header failed'));
+    });
 
-    await expect(pending).rejects.toThrow('double header failed');
+    await rejection;
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
     expect(toast).toHaveBeenCalledWith({
       title: 'Error',
@@ -330,7 +350,9 @@ describe('useTimeslotMutation', () => {
     assignByeWeekMock.mockReturnValueOnce(successDeferred.promise);
     const successPending = result.current.assignByeWeek(TEST_DATE, 'team-1');
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
-    successDeferred.resolve(sampleSlot('bye-1'));
+    await act(() => {
+      successDeferred.resolve(sampleSlot('bye-1'));
+    });
 
     await expect(successPending).resolves.toEqual(sampleSlot('bye-1'));
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
@@ -343,9 +365,12 @@ describe('useTimeslotMutation', () => {
     assignByeWeekMock.mockReturnValueOnce(errorDeferred.promise);
     const errorPending = result.current.assignByeWeek(TEST_DATE, 'team-2');
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
-    errorDeferred.reject(new Error('bye failed'));
+    const errorRejection = expect(errorPending).rejects.toThrow('bye failed');
+    await act(() => {
+      errorDeferred.reject(new Error('bye failed'));
+    });
 
-    await expect(errorPending).rejects.toThrow('bye failed');
+    await errorRejection;
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
     expect(toast).toHaveBeenCalledWith({
       title: 'Error',
@@ -361,7 +386,9 @@ describe('useTimeslotMutation', () => {
     batchAssignByeWeeksMock.mockReturnValueOnce(successDeferred.promise);
     const successPending = result.current.batchAssignByeWeeks(TEST_DATE, ['team-1', 'team-2']);
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
-    successDeferred.resolve([sampleSlot('bye-1'), sampleSlot('bye-2')]);
+    await act(() => {
+      successDeferred.resolve([sampleSlot('bye-1'), sampleSlot('bye-2')]);
+    });
 
     await expect(successPending).resolves.toEqual([sampleSlot('bye-1'), sampleSlot('bye-2')]);
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
@@ -374,9 +401,12 @@ describe('useTimeslotMutation', () => {
     batchAssignByeWeeksMock.mockReturnValueOnce(errorDeferred.promise);
     const errorPending = result.current.batchAssignByeWeeks(TEST_DATE, ['team-3']);
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
-    errorDeferred.reject(new Error('batch bye failed'));
+    const errorRejection = expect(errorPending).rejects.toThrow('batch bye failed');
+    await act(() => {
+      errorDeferred.reject(new Error('batch bye failed'));
+    });
 
-    await expect(errorPending).rejects.toThrow('batch bye failed');
+    await errorRejection;
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
     expect(toast).toHaveBeenCalledWith({
       title: 'Error',
@@ -403,9 +433,12 @@ describe('useTimeslotMutation', () => {
     removeByeWeekMock.mockReturnValueOnce(errorDeferred.promise);
     const errorPending = result.current.removeByeWeek('bye-2');
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
-    errorDeferred.reject(new Error('remove bye failed'));
+    const errorRejection = expect(errorPending).rejects.toThrow('remove bye failed');
+    await act(() => {
+      errorDeferred.reject(new Error('remove bye failed'));
+    });
 
-    await expect(errorPending).rejects.toThrow('remove bye failed');
+    await errorRejection;
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
     expect(toast).toHaveBeenCalledWith({
       title: 'Error',
