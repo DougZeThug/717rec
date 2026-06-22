@@ -118,9 +118,11 @@ const ManualTeamAssignment: React.FC<ManualTeamAssignmentProps> = ({
       <CardContent className="space-y-4">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
-            <label className="text-sm font-medium mb-1 block">Time Block</label>
+            <label htmlFor="manual-time-block" className="text-sm font-medium mb-1 block">
+              Time Block
+            </label>
             <Select value={selectedTimeBlock} onValueChange={setSelectedTimeBlock}>
-              <SelectTrigger>
+              <SelectTrigger id="manual-time-block">
                 <SelectValue placeholder="Select time block" />
               </SelectTrigger>
               <SelectContent>

@@ -200,7 +200,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
       ) : (
         <div className="space-y-1.5">
           <div className="flex justify-between items-center">
-            <label className="block text-sm font-medium">Team Selection Grid</label>
+            <span className="block text-sm font-medium">Team Selection Grid</span>
             <Button type="button" variant="outline" size="sm" onClick={handleSelectAll}>
               {selectedTeamIds.length === availableTeams.length ? 'Deselect All' : 'Select All'}
             </Button>

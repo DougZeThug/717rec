@@ -122,6 +122,7 @@ export const DesignAppearanceSection: React.FC<FormSectionProps> = ({ formData, 
               accept="image/*"
               className="hidden"
               onChange={handleFileInputChange}
+              aria-label="Upload image"
             />
 
             {isUploading ? (

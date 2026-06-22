@@ -92,6 +92,7 @@ const TeamLogoCard: React.FC<TeamLogoCardProps> = ({ team, onUpdate }) => {
           accept="image/*"
           onChange={handleFileSelect}
           className="hidden"
+          aria-label="Upload team logo"
         />
         <Button
           variant={status === 'optimized' ? 'outline' : 'default'}

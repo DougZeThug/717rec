@@ -89,12 +89,17 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           {/* Team 1 */}
           <div className="flex-1 min-w-0">
-            <label className="text-xs text-muted-foreground mb-1 block">Team 1</label>
+            <label
+              htmlFor={`team1-${match.id}`}
+              className="text-xs text-muted-foreground mb-1 block"
+            >
+              Team 1
+            </label>
             <Select
               value={match.team1Id || ''}
               onValueChange={(value) => onUpdateTeam(match.id, 'team1', value)}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger id={`team1-${match.id}`} className="w-full">
                 <SelectValue placeholder="Select team">
                   {team1 && (
                     <div className="flex items-center gap-2">
@@ -143,12 +148,17 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
 
           {/* Team 2 */}
           <div className="flex-1 min-w-0">
-            <label className="text-xs text-muted-foreground mb-1 block">Team 2</label>
+            <label
+              htmlFor={`team2-${match.id}`}
+              className="text-xs text-muted-foreground mb-1 block"
+            >
+              Team 2
+            </label>
             <Select
               value={match.team2Id || ''}
               onValueChange={(value) => onUpdateTeam(match.id, 'team2', value)}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger id={`team2-${match.id}`} className="w-full">
                 <SelectValue placeholder="Select team">
                   {team2 && (
                     <div className="flex items-center gap-2">
@@ -187,12 +197,17 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
         {/* Timeslot and Actions */}
         <div className="flex items-end gap-3">
           <div className="flex-1">
-            <label className="text-xs text-muted-foreground mb-1 block">Timeslot</label>
+            <label
+              htmlFor={`timeslot-${match.id}`}
+              className="text-xs text-muted-foreground mb-1 block"
+            >
+              Timeslot
+            </label>
             <Select
               value={match.timeslot || ''}
               onValueChange={(value) => onUpdateTimeslot(match.id, value)}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger id={`timeslot-${match.id}`} className="w-full">
                 <SelectValue placeholder="Select time" />
               </SelectTrigger>
               <SelectContent>

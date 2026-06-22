@@ -61,6 +61,7 @@ const MatchCommentForm: React.FC<MatchCommentFormProps> = ({
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder={placeholder}
+          aria-label="Add a comment"
           rows={1}
           className={cn(
             'flex-1 py-2 px-3 resize-none outline-none bg-transparent',
