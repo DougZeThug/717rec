@@ -1,11 +1,13 @@
 import React from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import type { UseFormReturn } from 'react-hook-form';
 
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 
+import type { BracketFormValues } from './BracketFormSchema';
+
 interface BracketFormTitleProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<BracketFormValues>;
 }
 
 export const BracketFormTitle: React.FC<BracketFormTitleProps> = ({ form }) => {

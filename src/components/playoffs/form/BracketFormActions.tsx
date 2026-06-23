@@ -1,14 +1,16 @@
 import { Loader2, Plus, X } from 'lucide-react';
 import React from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import type { UseFormReturn } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
+
+import type { BracketFormValues } from './BracketFormSchema';
 
 interface BracketFormActionsProps {
   isSubmitting: boolean;
   teamsValid?: boolean;
   onCancel: () => void;
-  form: UseFormReturn<any>;
+  form: UseFormReturn<BracketFormValues>;
 }
 
 export const BracketFormActions: React.FC<BracketFormActionsProps> = ({

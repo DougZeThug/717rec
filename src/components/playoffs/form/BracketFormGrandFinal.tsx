@@ -1,9 +1,12 @@
 import { Trophy } from 'lucide-react';
+import type { UseFormReturn } from 'react-hook-form';
 
 import { FormControl, FormDescription, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
-export function BracketFormGrandFinal({ form }: { form: any }) {
+import type { BracketFormValues } from './BracketFormSchema';
+
+export function BracketFormGrandFinal({ form }: { form: UseFormReturn<BracketFormValues> }) {
   const format = form.watch('format');
 
   // Only show for Double Elimination

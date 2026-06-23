@@ -1,5 +1,5 @@
 import React from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import type { UseFormReturn } from 'react-hook-form';
 
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import {
@@ -11,8 +11,10 @@ import {
 } from '@/components/ui/select';
 import { errorLog } from '@/utils/logger';
 
+import type { BracketFormValues } from './BracketFormSchema';
+
 interface BracketFormDivisionProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<BracketFormValues>;
   divisions: { id: string; name: string; display_division?: string }[];
   onDivisionChange: (divisionId: string) => void;
 }
