@@ -4,6 +4,8 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Division } from '@/types';
+import type { Team } from '@/utils/playoffs/playoffTypes';
+import type { UseQueryResult } from '@tanstack/react-query';
 
 import { useBracketFormData } from '../useBracketFormData';
 
@@ -17,16 +19,33 @@ vi.mock('@/hooks/playoffs/useSeedValidation', () => ({
 }));
 
 import { usePlayoffTeams } from '@/hooks/playoffs/usePlayoffTeams';
-import { useSeedValidation } from '@/hooks/playoffs/useSeedValidation';
+import { useSeedValidation, type SeedValidationResult } from '@/hooks/playoffs/useSeedValidation';
 
 const mockUsePlayoffTeams = vi.mocked(usePlayoffTeams);
 const mockUseSeedValidation = vi.mocked(useSeedValidation);
 
-const defaultSeedValidationReturn = {
-  data: [],
-  isLoading: false,
-  error: null,
-} as any;
+type SeedValidationQuery = UseQueryResult<SeedValidationResult[], Error>;
+type PlayoffTeamsQuery = UseQueryResult<Team[], Error>;
+
+const asSeedValidationQuery = (
+  overrides: Partial<SeedValidationQuery>
+): SeedValidationQuery =>
+  ({
+    data: [],
+    isLoading: false,
+    error: null,
+    ...overrides,
+  }) as unknown as SeedValidationQuery;
+
+const asPlayoffTeamsQuery = (overrides: Partial<PlayoffTeamsQuery>): PlayoffTeamsQuery =>
+  ({
+    data: [],
+    isLoading: false,
+    error: null,
+    ...overrides,
+  }) as unknown as PlayoffTeamsQuery;
+
+const defaultSeedValidationReturn = asSeedValidationQuery({});
 
 describe('useBracketFormData', () => {
   let queryClient: QueryClient;
@@ -57,7 +76,7 @@ describe('useBracketFormData', () => {
     React.createElement(QueryClientProvider, { client: queryClient }, children);
 
   it('should return provided teams when teamsProp is given', async () => {
-    mockUsePlayoffTeams.mockReturnValue({ data: [], isLoading: false } as any);
+    mockUsePlayoffTeams.mockReturnValue(asPlayoffTeamsQuery({ data: [], isLoading: false }));
 
     const { result } = renderHook(() => useBracketFormData(mockDivisions, mockTeams), { wrapper });
 
@@ -88,7 +107,9 @@ describe('useBracketFormData', () => {
   });
 
   it('should fetch teams when teamsProp is not provided', async () => {
-    mockUsePlayoffTeams.mockReturnValue({ data: mockTeams, isLoading: false } as any);
+    mockUsePlayoffTeams.mockReturnValue(
+      asPlayoffTeamsQuery({ data: mockTeams as unknown as Team[], isLoading: false })
+    );
 
     const { result } = renderHook(() => useBracketFormData(mockDivisions, undefined), { wrapper });
 
@@ -107,7 +128,9 @@ describe('useBracketFormData', () => {
   });
 
   it('should handle loading state', async () => {
-    mockUsePlayoffTeams.mockReturnValue({ data: undefined, isLoading: true } as any);
+    mockUsePlayoffTeams.mockReturnValue(
+      asPlayoffTeamsQuery({ data: undefined, isLoading: true })
+    );
 
     const { result } = renderHook(() => useBracketFormData(mockDivisions, undefined), { wrapper });
 
@@ -116,7 +139,7 @@ describe('useBracketFormData', () => {
   });
 
   it('should handle error state when no teams are fetched', async () => {
-    mockUsePlayoffTeams.mockReturnValue({ data: [], isLoading: false } as any);
+    mockUsePlayoffTeams.mockReturnValue(asPlayoffTeamsQuery({ data: [], isLoading: false }));
 
     const { result } = renderHook(() => useBracketFormData(mockDivisions, undefined), { wrapper });
 
@@ -130,7 +153,7 @@ describe('useBracketFormData', () => {
   });
 
   it('should return empty teams array when no teams are available but maintain ready state', async () => {
-    mockUsePlayoffTeams.mockReturnValue({ data: [], isLoading: false } as any);
+    mockUsePlayoffTeams.mockReturnValue(asPlayoffTeamsQuery({ data: [], isLoading: false }));
 
     const { result } = renderHook(
       () => useBracketFormData(mockDivisions, []), // Provide empty array as teams prop
@@ -145,7 +168,7 @@ describe('useBracketFormData', () => {
   });
 
   it('should handle invalid team data gracefully', async () => {
-    mockUsePlayoffTeams.mockReturnValue({ data: [], isLoading: false } as any);
+    mockUsePlayoffTeams.mockReturnValue(asPlayoffTeamsQuery({ data: [], isLoading: false }));
 
     interface TestTeamData {
       id?: string;
