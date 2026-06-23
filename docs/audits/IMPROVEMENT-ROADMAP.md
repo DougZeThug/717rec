@@ -132,7 +132,7 @@ After each PR, the existing CI is your net — it runs lint, typecheck, build, u
 4. **Build:** `npm run build`.
 5. **App boot:** `npx vite preview --host 127.0.0.1 --port 4173` → expect HTTP 200. (Bind IPv4 in sandboxes without IPv6.)
 6. **Manual click-through** for any UI-touching PR.
-7. **E2E:** `npx playwright test` for the golden-path and per-flow specs.
+7. **E2E:** `npm run e2e:install` (first run / version bumps), then `npm run e2e` for the golden-path and per-flow specs.
 
 **Expected trajectory:** 74 → 77 (Phase 0) → 85 (Phase 1) → 92 (Phase 2) → 96 (Phase 3) → ~98–100 (Phase 4).
 
