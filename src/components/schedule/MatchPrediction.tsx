@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 import { cn } from '@/lib/utils';
 import type { ConfidenceLevel, PredictionResult } from '@/utils/predictions';
-import { formatBreakdown, formatProbability } from '@/utils/predictions';
+import { formatBreakdown } from '@/utils/predictions';
 
 interface MatchPredictionProps {
   prediction: PredictionResult;
@@ -66,7 +66,7 @@ export const MatchPrediction: React.FC<MatchPredictionProps> = ({
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-center gap-1.5 py-0.5 hover:bg-muted/30 rounded transition-colors"
         aria-expanded={isExpanded}
-        aria-label="Toggle prediction details"
+        aria-label={`Toggle prediction details for ${team1Name} vs ${team2Name}`}
       >
         <span className="text-[10px] text-muted-foreground">{expectedText}</span>
         <ConfidenceBadge level={confidence} />

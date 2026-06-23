@@ -84,7 +84,7 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
   };
 
   const handleDuplicate = async (card: HeroCard) => {
-    const { id, created_at, updated_at, ...rest } = card;
+    const { id: _id, created_at: _createdAt, updated_at: _updatedAt, ...rest } = card;
     await createCard({
       ...rest,
       slug: `${card.slug}-copy`,
