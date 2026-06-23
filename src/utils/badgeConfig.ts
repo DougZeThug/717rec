@@ -18,7 +18,6 @@ import {
 import type { WinterGlyphName } from '@/icons';
 import {
   BadgeConfig,
-  BadgeMetadata,
   BadgeType,
   ChampionshipBadgeMetadata,
   TeamBadgeEvent,
