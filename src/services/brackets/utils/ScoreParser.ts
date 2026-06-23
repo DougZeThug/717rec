@@ -98,11 +98,7 @@ export class ScoreParser {
     }
 
     // Check that total games doesn't exceed bestOf
-    if (totalGames > bestOf) {
-      return false;
-    }
-
-    return true;
+    return totalGames <= bestOf;
   }
 
   /**
