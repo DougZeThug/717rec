@@ -3,6 +3,18 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { supabase } from '@/integrations/supabase/client';
 import { BracketManagerService } from '@/services/brackets/manager/BracketManagerService';
 
+type StorageMock = {
+  select: ReturnType<typeof vi.fn>;
+  insert: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+  delete: ReturnType<typeof vi.fn>;
+  loadParticipantsForTournament: ReturnType<typeof vi.fn>;
+  clearParticipantCache: ReturnType<typeof vi.fn>;
+};
+type StorageFilter = number | string | Record<string, unknown> | undefined;
+type SupabaseFromMock = Record<string, ReturnType<typeof vi.fn>>;
+type GlobalWithStorage = typeof globalThis & { __storageMockInstance?: StorageMock };
+
 // Mock supabase client
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
@@ -57,7 +69,7 @@ vi.mock('@/services/brackets/manager/SupabaseSqlStorage', () => {
     clearParticipantCache = vi.fn();
 
     constructor() {
-      (globalThis as any).__storageMockInstance = this;
+      (globalThis as GlobalWithStorage).__storageMockInstance = this;
     }
   }
 
@@ -67,13 +79,17 @@ vi.mock('@/services/brackets/manager/SupabaseSqlStorage', () => {
 });
 
 // Helper to get storage mock instance
-const getStorageMock = () => (globalThis as any).__storageMockInstance;
+const getStorageMock = (): StorageMock => {
+  const storage = (globalThis as GlobalWithStorage).__storageMockInstance;
+  if (!storage) throw new Error('Storage mock not initialised');
+  return storage;
+};
 
 describe('Bracket Manager Schema Integration Tests', () => {
-  let mockSupabaseFrom: any;
+  let mockSupabaseFrom: SupabaseFromMock;
 
   // Helper to create chainable insert mock
-  const createInsertMock = (data: any[] = [{ id: 1 }]) => {
+  const createInsertMock = (data: Array<Record<string, unknown>> = [{ id: 1 }]) => {
     return vi.fn().mockReturnValue({
       select: vi.fn().mockResolvedValue({ data, error: null }),
     });
@@ -100,7 +116,7 @@ describe('Bracket Manager Schema Integration Tests', () => {
       single: vi.fn().mockReturnThis(),
       maybeSingle: vi.fn().mockReturnThis(),
     };
-    (supabase.from as any).mockReturnValue(mockSupabaseFrom);
+    (supabase.from as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockSupabaseFrom);
   });
 
   describe('Schema Verification - All Required Columns Present', () => {
@@ -303,7 +319,7 @@ describe('Bracket Manager Schema Integration Tests', () => {
 
       // THEN configure storage mock for THIS service instance
       // When filter is object (e.g., { stage_id: 1 }), return array for .map() calls
-      getStorageMock().select.mockImplementation((table: string, filter: any) => {
+      getStorageMock().select.mockImplementation((table: string, filter: StorageFilter) => {
         if (table === 'match' && filter === 1) {
           return Promise.resolve({
             id: 1,
@@ -348,7 +364,7 @@ describe('Bracket Manager Schema Integration Tests', () => {
       const service = new BracketManagerService();
 
       // THEN configure storage mock for THIS service instance
-      getStorageMock().select.mockImplementation((table: string, filter: any) => {
+      getStorageMock().select.mockImplementation((table: string, filter: StorageFilter) => {
         if (table === 'match' && filter === 1) {
           return Promise.resolve({
             id: 1,
