@@ -49,7 +49,7 @@ export function getHistoryDivisionOrder(divisionName: string): number {
 /**
  * Sorts division entries for proper display order in history
  */
-export function sortHistoryDivisions(divisions: [string, any[]][]): [string, any[]][] {
+export function sortHistoryDivisions<T>(divisions: [string, T[]][]): [string, T[]][] {
   return divisions.sort(([a], [b]) => {
     const orderA = getHistoryDivisionOrder(a);
     const orderB = getHistoryDivisionOrder(b);
