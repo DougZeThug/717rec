@@ -17,6 +17,7 @@ import {
 import { useHeadToHead } from '@/hooks/useHeadToHead';
 import { useIsMobile } from '@/hooks/useMobile';
 import { cn } from '@/lib/utils';
+import type { HeadToHeadRecord } from '@/types/headToHead';
 import { exportHeadToHeadToCSV } from '@/utils/exportUtils';
 import { formatWithPattern } from '@/utils/formatDateSafe';
 import { getRivalryType, type RivalryType } from '@/utils/teamDetailsUtils/rivalryUtils';
@@ -94,12 +95,12 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
     return displayRecords
       .filter((record) => record.opponent_name.toLowerCase().includes(searchTerm.toLowerCase()))
       .sort((a, b) => {
-        let aValue: any = a[sortField];
-        let bValue: any = b[sortField];
+        let aValue: HeadToHeadRecord[SortField] = a[sortField];
+        let bValue: HeadToHeadRecord[SortField] = b[sortField];
 
         if (sortField === 'opponent_name') {
-          aValue = aValue.toLowerCase();
-          bValue = bValue.toLowerCase();
+          aValue = (aValue as string).toLowerCase();
+          bValue = (bValue as string).toLowerCase();
         }
 
         if (sortDirection === 'asc') {

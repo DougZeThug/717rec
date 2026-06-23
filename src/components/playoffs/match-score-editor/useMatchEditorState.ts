@@ -3,8 +3,17 @@ import { useEffect, useState } from 'react';
 
 import { useBracketsManagerMatch } from '@/hooks/playoffs/useBracketsManagerMatch';
 import { useToast } from '@/hooks/useToast';
+import type { UpdateMatchOptions } from '@/services/brackets/manager';
 import { bracketManagerService } from '@/services/brackets/manager';
 import { errorLog, log } from '@/utils/logger';
+
+type MatchScores = UpdateMatchOptions['scores'];
+type MatchScore = MatchScores[keyof MatchScores];
+type ScoreDraft = {
+  key: string;
+  opponent1Score: number;
+  opponent2Score: number;
+};
 
 export interface ByeEligibility {
   canToggle: boolean;
@@ -24,19 +33,30 @@ export const useMatchEditorState = ({ matchId, onClose, onSaved }: UseMatchEdito
   const queryClient = useQueryClient();
   const { data: matchData, isLoading, error } = useBracketsManagerMatch(matchId);
 
-  const [opponent1Score, setOpponent1Score] = useState<number>(0);
-  const [opponent2Score, setOpponent2Score] = useState<number>(0);
+  const [scoreDraft, setScoreDraft] = useState<ScoreDraft | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
   const [byeEligible, setByeEligible] = useState<ByeEligibility | null>(null);
 
-  // Reset form when match data loads
-  useEffect(() => {
-    if (matchData) {
-      setOpponent1Score(matchData.opponent1?.score ?? 0);
-      setOpponent2Score(matchData.opponent2?.score ?? 0);
-    }
-  }, [matchData]);
+  const matchScoreKey = `${matchId ?? 'none'}:${matchData?.opponent1?.score ?? 0}:${
+    matchData?.opponent2?.score ?? 0
+  }`;
+  const opponent1Score =
+    scoreDraft?.key === matchScoreKey
+      ? scoreDraft.opponent1Score
+      : (matchData?.opponent1?.score ?? 0);
+  const opponent2Score =
+    scoreDraft?.key === matchScoreKey
+      ? scoreDraft.opponent2Score
+      : (matchData?.opponent2?.score ?? 0);
+
+  const setOpponent1Score = (score: number) => {
+    setScoreDraft({ key: matchScoreKey, opponent1Score: score, opponent2Score });
+  };
+
+  const setOpponent2Score = (score: number) => {
+    setScoreDraft({ key: matchScoreKey, opponent1Score, opponent2Score: score });
+  };
 
   // Check BYE eligibility when match loads
   useEffect(() => {
@@ -86,7 +106,7 @@ export const useMatchEditorState = ({ matchId, onClose, onSaved }: UseMatchEdito
       });
 
       if (isBye) {
-        const scores: any = {};
+        const scores: Partial<Record<keyof MatchScores, MatchScore>> = {};
 
         if (matchData.opponent1) {
           scores.opponent1 = { score: opponent1Score, result: 'win' as const };
@@ -94,7 +114,7 @@ export const useMatchEditorState = ({ matchId, onClose, onSaved }: UseMatchEdito
           scores.opponent2 = { score: opponent2Score, result: 'win' as const };
         }
 
-        await bracketManagerService.updateMatch({ matchId, scores });
+        await bracketManagerService.updateMatch({ matchId, scores: scores as MatchScores });
       } else {
         const scores: {
           opponent1: { score: number; result?: 'win' | 'loss' };
