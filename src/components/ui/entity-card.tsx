@@ -25,7 +25,7 @@ export interface EntityCardProps extends Omit<HTMLMotionProps<'div'>, 'children'
  */
 export const EntityCard: React.FC<EntityCardProps> = ({
   children,
-  division,
+  division: _division,
   isInteractive = true,
   withGradient = true,
   className,

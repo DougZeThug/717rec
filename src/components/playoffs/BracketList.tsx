@@ -1,7 +1,6 @@
 import { PlusCircle, Trophy } from 'lucide-react';
 import React from 'react';
 
-import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PlayoffBracket } from '@/types';
