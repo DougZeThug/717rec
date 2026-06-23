@@ -115,11 +115,11 @@ export function repairUnmatchedTeams(
  * Guaranteed matching solution that uses progressive constraint relaxation
  * and prioritizes teams with fewer options
  */
-export async function findGuaranteedSolution(
+export function findGuaranteedSolution(
   teams: Team[],
   config: TeamPairingConfig,
   targetMatchesPerTeam: number
-): Promise<TeamPairing[]> {
+): TeamPairing[] {
   scheduleLog('Using guaranteed matching solution with progressive constraint relaxation');
 
   const teamMatchCounts = new Map<string, number>();
