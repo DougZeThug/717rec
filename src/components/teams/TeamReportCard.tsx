@@ -184,7 +184,7 @@ const TeamReportCardContent: React.FC<{ teamId: string }> = ({ teamId }) => {
 };
 
 const TeamReportCard: React.FC<TeamReportCardProps> = ({ teamId, standalone = false }) => {
-  const [mode, setMode] = useState<ReportCardMode>('season');
+  const [mode] = useState<ReportCardMode>('season');
   const { grades } = useTeamReportCard(teamId, mode);
 
   if (standalone) {
