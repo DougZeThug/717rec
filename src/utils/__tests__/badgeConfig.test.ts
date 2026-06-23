@@ -36,7 +36,7 @@ describe('getBadgeConfig', () => {
       badge_type: 'intermediate_champion',
       season_id: null,
       awarded_at: new Date().toISOString(),
-      metadata: { division: 'Intermediate High' },
+      metadata: { division_name: 'Intermediate High' },
       is_active: true,
       created_at: new Date().toISOString(),
     };
