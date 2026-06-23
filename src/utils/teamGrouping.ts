@@ -1,5 +1,5 @@
 import { getDisplayDivision } from '@/styles/design-system/divisions';
-import { Team } from '@/types';
+import type { Division, Team } from '@/types';
 
 export function groupTeamsByDivision(teams: Team[]): Record<string, Team[]> {
   return teams.reduce<Record<string, Team[]>>((acc, team) => {
@@ -22,7 +22,7 @@ export function groupTeamsByDivision(teams: Team[]): Record<string, Team[]> {
  */
 export function groupTeamsByDisplayDivision(
   teams: Team[],
-  divisions: any[]
+  divisions: Division[]
 ): Record<string, Team[]> {
   return teams.reduce<Record<string, Team[]>>((acc, team) => {
     // Use divisionName from team which now contains display_division from v_team_details
