@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { fetchScheduleMatches } from '@/services/matches/MatchReadService';
 import { errorLog, scheduleLog } from '@/utils/logger';
-import { transformDatabaseMatches } from '@/utils/matchTransformers';
+import { transformDatabaseMatches, type RawMatchRow } from '@/utils/matchTransformers';
 
 export const useScheduleData = () => {
   const { data: matchesData, isLoading: matchesLoading } = useQuery({
@@ -18,7 +18,7 @@ export const useScheduleData = () => {
       }
 
       scheduleLog(
-        `Fetched ${data.length} matches (${data.filter((m: any) => m.iscompleted).length} completed)`
+        `Fetched ${data.length} matches (${data.filter((m: RawMatchRow) => m.iscompleted).length} completed)`
       );
 
       // Use centralized transformer with team details
