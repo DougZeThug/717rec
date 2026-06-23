@@ -278,7 +278,7 @@ export const getBadgeConfig = (
 
   // Enhanced color hierarchy for Intermediate division
   if (badgeType === 'intermediate_champion' && badge?.metadata) {
-    const metadata = badge.metadata as ChampionshipBadgeMetadata;
+    const metadata = badge.metadata as unknown as ChampionshipBadgeMetadata;
     const divisionName = metadata?.division_name || '';
 
     // Intermediate High gets cyan, Intermediate Low gets orange
@@ -303,7 +303,7 @@ export const getBadgeConfig = (
   }
 
   if (badgeType === 'intermediate_runner_up' && badge?.metadata) {
-    const metadata = badge.metadata as ChampionshipBadgeMetadata;
+    const metadata = badge.metadata as unknown as ChampionshipBadgeMetadata;
     const divisionName = metadata?.division_name || '';
 
     // Intermediate High Runner-up gets bright silver, Low gets standard silver
