@@ -107,7 +107,10 @@ describe('useTeamRecordUpdate', () => {
   });
 
   it('calls updateTeamRecords with correct parameters', async () => {
-    const mockTeams = [{ id: 'team-1' }, { id: 'team-2' }];
+    const mockTeams = [
+      { id: 'team-1', name: 'Team 1' },
+      { id: 'team-2', name: 'Team 2' },
+    ] as unknown as import('@/types').Team[];
 
     const { result } = renderHook(() => useTeamRecordUpdate());
 
