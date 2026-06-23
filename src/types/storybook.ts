@@ -7,8 +7,8 @@ import React from 'react';
 
 // Define a proper constraint for component types
 type ComponentType =
-  | React.ComponentType<any>
-  | React.JSXElementConstructor<any>
+  | React.ComponentType
+  | React.JSXElementConstructor<unknown>
   | keyof JSX.IntrinsicElements;
 
 export interface Meta<T extends ComponentType> {
