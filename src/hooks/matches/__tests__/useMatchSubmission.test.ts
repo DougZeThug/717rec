@@ -232,12 +232,14 @@ describe('useMatchSubmission', () => {
   });
 
   it('allows concurrent submissions for different match IDs', async () => {
-    vi.mocked(updateMatchScore).mockImplementation(async ({ matchId }) => ({
-      data: { id: matchId },
-      team1_id: 'team-1',
-      team2_id: 'team-2',
-      team1Win: true,
-    }));
+    vi.mocked(updateMatchScore).mockImplementation(({ matchId }) =>
+      Promise.resolve({
+        data: { id: matchId },
+        team1_id: 'team-1',
+        team2_id: 'team-2',
+        team1Win: true,
+      })
+    );
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
 
