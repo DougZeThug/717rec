@@ -66,7 +66,7 @@ export async function getTeamsByTimeBlock(date: Date, timeBlock: string): Promis
 
   // Extract team data and format it according to our Team type
   const teams: Team[] =
-    (timeslotData as TeamsByTimeslotRow[] | null)?.map((item) => {
+    (timeslotData as unknown as TeamsByTimeslotRow[] | null)?.map((item) => {
       const teamData = item.teams as TimeslotTeamJoin;
       return {
         id: teamData.id,

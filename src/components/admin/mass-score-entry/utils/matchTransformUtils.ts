@@ -21,9 +21,6 @@ type MassScoreDatabaseMatch = Omit<
 export const transformDatabaseMatchToMatchWithTeams = (
   match: MassScoreDatabaseMatch
 ): MatchWithTeams => {
-  // Use centralized transformer for base match fields
-  const baseMatch = transformDatabaseMatch(match);
-
   // Ensure game wins are properly parsed as numbers
   const team1GameWins =
     typeof match.team1_game_wins === 'number'
@@ -35,16 +32,27 @@ export const transformDatabaseMatchToMatchWithTeams = (
       ? match.team2_game_wins
       : parseInt(String(match.team2_game_wins || 0));
 
+  // Normalize game wins to the shape expected by the centralized transformer
+  const baseMatch = transformDatabaseMatch({
+    ...match,
+    team1_game_wins: team1GameWins,
+    team2_game_wins: team2GameWins,
+  } as DatabaseMatchTransformInput);
+
+  // The team join may arrive as a single object or an array; normalize to one object
+  const team1 = Array.isArray(match.team1) ? match.team1[0] : match.team1;
+  const team2 = Array.isArray(match.team2) ? match.team2[0] : match.team2;
+
   return {
     ...baseMatch,
     team1_game_wins: team1GameWins,
     team2_game_wins: team2GameWins,
-    team1: match.team1
+    team1: team1
       ? {
-          id: match.team1.id,
-          name: match.team1.name,
-          logoUrl: match.team1.image_url || match.team1.logo_url,
-          imageUrl: match.team1.image_url,
+          id: team1.id ?? '',
+          name: team1.name ?? '',
+          logoUrl: team1.image_url || team1.logo_url || undefined,
+          imageUrl: team1.image_url ?? undefined,
           players: [],
           wins: 0,
           losses: 0,
@@ -57,12 +65,12 @@ export const transformDatabaseMatchToMatchWithTeams = (
           game_win_percentage: 0,
         }
       : undefined,
-    team2: match.team2
+    team2: team2
       ? {
-          id: match.team2.id,
-          name: match.team2.name,
-          logoUrl: match.team2.image_url || match.team2.logo_url,
-          imageUrl: match.team2.image_url,
+          id: team2.id ?? '',
+          name: team2.name ?? '',
+          logoUrl: team2.image_url || team2.logo_url || undefined,
+          imageUrl: team2.image_url ?? undefined,
           players: [],
           wins: 0,
           losses: 0,
