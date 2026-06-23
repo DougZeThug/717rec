@@ -18,13 +18,13 @@ describe('Team Stats Updates', () => {
     vi.resetAllMocks();
 
     // Set up default mocks for supabase.rpc (mockResolvedValue handles multiple async calls)
-    (supabase.rpc as any).mockResolvedValue({
+    vi.mocked(supabase.rpc).mockResolvedValue({
       data: { success: true },
       error: null,
     });
 
     // Set up default mocks for supabase.from().select().in()
-    (supabase.from as any).mockReturnValue({
+    vi.mocked(supabase.from).mockReturnValue({
       select: vi.fn().mockReturnValue({
         in: vi.fn().mockReturnValue({
           data: [
@@ -81,7 +81,12 @@ describe('Team Stats Updates', () => {
 
   it('should handle string inputs by converting them to numbers', async () => {
     // Test case: string inputs instead of numbers
-    await applyMatchResult('winner-id', 'loser-id', '2' as any, '1' as any);
+    await applyMatchResult(
+      'winner-id',
+      'loser-id',
+      '2' as unknown as number,
+      '1' as unknown as number
+    );
 
     expect(supabase.rpc).toHaveBeenCalledWith('update_team_stats', {
       p_winner_id: 'winner-id',
@@ -93,7 +98,7 @@ describe('Team Stats Updates', () => {
 
   it('should handle errors from the RPC call', async () => {
     // Mock RPC to return an error
-    (supabase.rpc as any).mockReturnValue({
+    vi.mocked(supabase.rpc).mockReturnValue({
       data: null,
       error: { message: 'Test error' },
     });

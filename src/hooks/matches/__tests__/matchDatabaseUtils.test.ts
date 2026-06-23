@@ -43,6 +43,16 @@ import { BadgeProcessingService } from '@/services/BadgeProcessingService';
 import { fetchMatchTeamIds } from '@/services/matches/MatchReadService';
 import { updateMatch } from '@/services/matches/MatchWriteService';
 
+type UpdatedMatch = Awaited<ReturnType<typeof updateMatch>>;
+
+const makeUpdatedMatch = (overrides: Partial<UpdatedMatch> = {}): UpdatedMatch =>
+  ({
+    id: 'match-1',
+    team1_score: 2,
+    team2_score: 1,
+    ...overrides,
+  }) as UpdatedMatch;
+
 describe('updateMatchScore', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -50,11 +60,7 @@ describe('updateMatchScore', () => {
 
   it('successfully updates match score when team1 wins', async () => {
     vi.mocked(fetchMatchTeamIds).mockResolvedValue({ team1_id: 'team-1', team2_id: 'team-2' });
-    vi.mocked(updateMatch).mockResolvedValue({
-      id: 'match-1',
-      team1_score: 2,
-      team2_score: 1,
-    } as any);
+    vi.mocked(updateMatch).mockResolvedValue(makeUpdatedMatch());
 
     const params: UpdateMatchScoreParams = {
       matchId: 'match-1',
@@ -74,11 +80,7 @@ describe('updateMatchScore', () => {
 
   it('correctly determines team2 as winner', async () => {
     vi.mocked(fetchMatchTeamIds).mockResolvedValue({ team1_id: 'team-1', team2_id: 'team-2' });
-    vi.mocked(updateMatch).mockResolvedValue({
-      id: 'match-1',
-      team1_score: 1,
-      team2_score: 3,
-    } as any);
+    vi.mocked(updateMatch).mockResolvedValue(makeUpdatedMatch({ team1_score: 1, team2_score: 3 }));
 
     const params: UpdateMatchScoreParams = {
       matchId: 'match-1',
@@ -126,11 +128,7 @@ describe('updateMatchScore', () => {
 
   it('processes badges after successful update', async () => {
     vi.mocked(fetchMatchTeamIds).mockResolvedValue({ team1_id: 'team-1', team2_id: 'team-2' });
-    vi.mocked(updateMatch).mockResolvedValue({
-      id: 'match-1',
-      team1_score: 2,
-      team2_score: 1,
-    } as any);
+    vi.mocked(updateMatch).mockResolvedValue(makeUpdatedMatch());
 
     const params: UpdateMatchScoreParams = {
       matchId: 'match-1',
@@ -154,11 +152,7 @@ describe('updateMatchScore', () => {
     );
 
     vi.mocked(fetchMatchTeamIds).mockResolvedValue({ team1_id: 'team-1', team2_id: 'team-2' });
-    vi.mocked(updateMatch).mockResolvedValue({
-      id: 'match-1',
-      team1_score: 2,
-      team2_score: 1,
-    } as any);
+    vi.mocked(updateMatch).mockResolvedValue(makeUpdatedMatch());
 
     const params: UpdateMatchScoreParams = {
       matchId: 'match-1',

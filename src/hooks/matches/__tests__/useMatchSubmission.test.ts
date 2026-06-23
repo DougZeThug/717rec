@@ -49,8 +49,22 @@ vi.mock('@/utils/logger', () => ({
   errorLog: vi.fn(),
 }));
 
-import { updateMatchScore, type UpdateMatchScoreResult } from '../utils/matchDatabaseUtils';
+import {
+  updateMatchScore,
+  type UpdateMatchScoreParams,
+  type UpdateMatchScoreResult,
+} from '../utils/matchDatabaseUtils';
 import { invalidateMatchRelatedQueries } from '../utils/queryCacheUtils';
+
+const makeUpdateMatchScoreResult = (
+  overrides: Partial<UpdateMatchScoreResult> = {}
+): UpdateMatchScoreResult => ({
+  data: { id: 'match-1' } as UpdateMatchScoreResult['data'],
+  team1_id: 'team-1',
+  team2_id: 'team-2',
+  team1Win: true,
+  ...overrides,
+});
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -76,13 +90,11 @@ describe('useMatchSubmission', () => {
   });
 
   it('successfully submits match score', async () => {
-    const mockResult = {
-      data: { id: 'match-1', team1_score: 2, team2_score: 1 },
-      team1_id: 'team-1',
-      team2_id: 'team-2',
-      team1Win: true,
-    };
-    vi.mocked(updateMatchScore).mockResolvedValue(mockResult as unknown as UpdateMatchScoreResult);
+    vi.mocked(updateMatchScore).mockResolvedValue(
+      makeUpdateMatchScoreResult({
+        data: { id: 'match-1', team1_score: 2, team2_score: 1 } as UpdateMatchScoreResult['data'],
+      })
+    );
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
 
@@ -105,13 +117,7 @@ describe('useMatchSubmission', () => {
   });
 
   it('determines winner correctly when team1 wins', async () => {
-    const mockResult = {
-      data: { id: 'match-1' },
-      team1_id: 'team-1',
-      team2_id: 'team-2',
-      team1Win: true,
-    };
-    vi.mocked(updateMatchScore).mockResolvedValue(mockResult as unknown as UpdateMatchScoreResult);
+    vi.mocked(updateMatchScore).mockResolvedValue(makeUpdateMatchScoreResult({ team1Win: true }));
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
 
@@ -125,13 +131,7 @@ describe('useMatchSubmission', () => {
   });
 
   it('determines winner correctly when team2 wins', async () => {
-    const mockResult = {
-      data: { id: 'match-1' },
-      team1_id: 'team-1',
-      team2_id: 'team-2',
-      team1Win: false,
-    };
-    vi.mocked(updateMatchScore).mockResolvedValue(mockResult as unknown as UpdateMatchScoreResult);
+    vi.mocked(updateMatchScore).mockResolvedValue(makeUpdateMatchScoreResult({ team1Win: false }));
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
 
@@ -145,13 +145,7 @@ describe('useMatchSubmission', () => {
   });
 
   it('invalidates query cache after successful submission', async () => {
-    const mockResult = {
-      data: { id: 'match-1' },
-      team1_id: 'team-1',
-      team2_id: 'team-2',
-      team1Win: true,
-    };
-    vi.mocked(updateMatchScore).mockResolvedValue(mockResult as unknown as UpdateMatchScoreResult);
+    vi.mocked(updateMatchScore).mockResolvedValue(makeUpdateMatchScoreResult({ team1Win: true }));
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
 
@@ -179,13 +173,7 @@ describe('useMatchSubmission', () => {
   });
 
   it('returns false and skips success path when team stats update fails', async () => {
-    const mockResult = {
-      data: { id: 'match-1' },
-      team1_id: 'team-1',
-      team2_id: 'team-2',
-      team1Win: true,
-    };
-    vi.mocked(updateMatchScore).mockResolvedValue(mockResult as unknown as UpdateMatchScoreResult);
+    vi.mocked(updateMatchScore).mockResolvedValue(makeUpdateMatchScoreResult({ team1Win: true }));
     // Simulate a team-records update failure (e.g. RPC/DB error converted to false)
     mockUpdateTeamStats.mockResolvedValueOnce(false);
 
@@ -204,13 +192,7 @@ describe('useMatchSubmission', () => {
   });
 
   it('parses game wins as integers', async () => {
-    const mockResult = {
-      data: { id: 'match-1' },
-      team1_id: 'team-1',
-      team2_id: 'team-2',
-      team1Win: true,
-    };
-    vi.mocked(updateMatchScore).mockResolvedValue(mockResult as unknown as UpdateMatchScoreResult);
+    vi.mocked(updateMatchScore).mockResolvedValue(makeUpdateMatchScoreResult({ team1Win: true }));
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
 
@@ -218,9 +200,9 @@ describe('useMatchSubmission', () => {
       matchId: 'match-1',
       team1Score: 2,
       team2Score: 1,
-      team1GameWins: '3' as any,
-      team2GameWins: '1' as any,
-    });
+      team1GameWins: '3',
+      team2GameWins: '1',
+    } as unknown as UpdateMatchScoreParams);
 
     expect(updateMatchScore).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -231,13 +213,7 @@ describe('useMatchSubmission', () => {
   });
 
   it('defaults game wins to 0 when not provided', async () => {
-    const mockResult = {
-      data: { id: 'match-1' },
-      team1_id: 'team-1',
-      team2_id: 'team-2',
-      team1Win: true,
-    };
-    vi.mocked(updateMatchScore).mockResolvedValue(mockResult as unknown as UpdateMatchScoreResult);
+    vi.mocked(updateMatchScore).mockResolvedValue(makeUpdateMatchScoreResult({ team1Win: true }));
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
 
@@ -256,14 +232,13 @@ describe('useMatchSubmission', () => {
   });
 
   it('allows concurrent submissions for different match IDs', async () => {
-    vi.mocked(updateMatchScore).mockImplementation(
-      async ({ matchId }) =>
-        ({
-          data: { id: matchId },
-          team1_id: 'team-1',
-          team2_id: 'team-2',
-          team1Win: true,
-        }) as unknown as UpdateMatchScoreResult
+    vi.mocked(updateMatchScore).mockImplementation(({ matchId }) =>
+      Promise.resolve({
+        data: { id: matchId },
+        team1_id: 'team-1',
+        team2_id: 'team-2',
+        team1Win: true,
+      })
     );
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
@@ -279,12 +254,12 @@ describe('useMatchSubmission', () => {
   });
 
   it('blocks duplicate concurrent submissions for the same match ID', async () => {
-    let resolveFirst: (value: any) => void;
-    const pending = new Promise((resolve) => {
+    let resolveFirst: (value: UpdateMatchScoreResult) => void;
+    const pending = new Promise<UpdateMatchScoreResult>((resolve) => {
       resolveFirst = resolve;
     });
 
-    vi.mocked(updateMatchScore).mockImplementationOnce(() => pending as any);
+    vi.mocked(updateMatchScore).mockImplementationOnce(() => pending);
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
 
@@ -302,20 +277,16 @@ describe('useMatchSubmission', () => {
     expect(secondImmediate).toBe(false);
     expect(updateMatchScore).toHaveBeenCalledTimes(1);
 
-    resolveFirst!({
-      data: { id: 'same-match' },
-      team1_id: 'team-1',
-      team2_id: 'team-2',
-      team1Win: true,
-    });
+    resolveFirst!(
+      makeUpdateMatchScoreResult({
+        data: { id: 'same-match' } as UpdateMatchScoreResult['data'],
+      })
+    );
     await first;
 
-    vi.mocked(updateMatchScore).mockResolvedValueOnce({
-      data: { id: 'same-match' },
-      team1_id: 'team-1',
-      team2_id: 'team-2',
-      team1Win: true,
-    } as unknown as UpdateMatchScoreResult);
+    vi.mocked(updateMatchScore).mockResolvedValueOnce(
+      makeUpdateMatchScoreResult({ data: { id: 'same-match' } as UpdateMatchScoreResult['data'] })
+    );
 
     const third = await result.current.handleSubmitScore({
       matchId: 'same-match',
