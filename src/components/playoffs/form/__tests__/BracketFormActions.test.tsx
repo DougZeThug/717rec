@@ -5,13 +5,14 @@ import { UseFormReturn } from 'react-hook-form';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BracketFormActions } from '../BracketFormActions';
+import type { BracketFormValues } from '../BracketFormSchema';
 
 describe('BracketFormActions', () => {
   const mockOnCancel = vi.fn();
-  const mockForm: UseFormReturn<any> = {
+  const mockForm: UseFormReturn<BracketFormValues> = {
     formState: { isValid: true },
     // ... other form properties would be here in a real implementation
-  } as UseFormReturn<any>;
+  } as unknown as UseFormReturn<BracketFormValues>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -57,7 +58,7 @@ describe('BracketFormActions', () => {
   it('disables submit button when form is invalid', () => {
     const invalidForm = {
       formState: { isValid: false },
-    } as UseFormReturn<any>;
+    } as unknown as UseFormReturn<BracketFormValues>;
 
     render(
       <BracketFormActions
@@ -75,7 +76,7 @@ describe('BracketFormActions', () => {
   it('enables submit button when form and teams are valid', () => {
     const validForm = {
       formState: { isValid: true },
-    } as UseFormReturn<any>;
+    } as unknown as UseFormReturn<BracketFormValues>;
 
     render(
       <BracketFormActions
