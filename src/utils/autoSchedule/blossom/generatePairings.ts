@@ -159,7 +159,7 @@ export async function generatePairingsWithBlossom(
 
     // Fallback to relaxed solution with guaranteed matching
     warnLog('Falling back to guaranteed matching solution...');
-    const fallbackPairings = await findGuaranteedSolution(teams, config, targetMatchesPerTeam);
+    const fallbackPairings = findGuaranteedSolution(teams, config, targetMatchesPerTeam);
     // Validate the fallback before returning so partial results surface as a
     // generation failure instead of silently producing teams with < target matches.
     validatePairingsWithDetails(teams, fallbackPairings, targetMatchesPerTeam, config);

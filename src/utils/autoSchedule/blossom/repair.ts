@@ -63,15 +63,15 @@ export function repairUnmatchedTeams(
 
     // Find available partners for this team
     const availablePartners = teams.filter((partner) => {
-      if (partner.id === team.id) return false;
       const partnerMatches = teamMatchCounts.get(partner.id) || 0;
-      if (partnerMatches >= targetMatchesPerTeam) return false;
-
       const pairingKey = [team.id, partner.id].sort().join('-');
-      if (usedPairings.has(pairingKey)) return false;
-      if (!edgeMap.has(pairingKey)) return false;
 
-      return true;
+      return (
+        partner.id !== team.id &&
+        partnerMatches < targetMatchesPerTeam &&
+        !usedPairings.has(pairingKey) &&
+        edgeMap.has(pairingKey)
+      );
     });
 
     // Sort partners by compatibility score
@@ -115,11 +115,11 @@ export function repairUnmatchedTeams(
  * Guaranteed matching solution that uses progressive constraint relaxation
  * and prioritizes teams with fewer options
  */
-export async function findGuaranteedSolution(
+export function findGuaranteedSolution(
   teams: Team[],
   config: TeamPairingConfig,
   targetMatchesPerTeam: number
-): Promise<TeamPairing[]> {
+): TeamPairing[] {
   scheduleLog('Using guaranteed matching solution with progressive constraint relaxation');
 
   const teamMatchCounts = new Map<string, number>();
@@ -169,12 +169,14 @@ export async function findGuaranteedSolution(
       // Find available partners for this team
       const availablePartners = teams
         .filter((partner) => {
-          if (partner.id === team.id) return false;
-          if ((teamMatchCounts.get(partner.id) || 0) >= targetMatchesPerTeam) return false;
           const pairingKey = [team.id, partner.id].sort().join('-');
-          if (usedPairings.has(pairingKey)) return false;
-          if (!edgeMap.has(pairingKey)) return false;
-          return true;
+
+          return (
+            partner.id !== team.id &&
+            (teamMatchCounts.get(partner.id) || 0) < targetMatchesPerTeam &&
+            !usedPairings.has(pairingKey) &&
+            edgeMap.has(pairingKey)
+          );
         })
         .map((partner) => ({
           partner,
