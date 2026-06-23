@@ -1,5 +1,5 @@
 import { Users } from 'lucide-react';
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import TeamCard from '@/components/teams/TeamCard';
 import { TeamListSkeleton } from '@/components/teams/TeamListSkeleton';
@@ -34,6 +34,21 @@ export const TeamList: React.FC<TeamListProps> = ({
     return Array.from(uniqueTeamMap.values());
   }, [teams]);
 
+  const handleViewAllTeams = useCallback(() => {
+    window.location.reload();
+  }, []);
+
+  const emptyStateActions = useMemo(
+    () => [
+      {
+        label: 'View All Teams',
+        onClick: handleViewAllTeams,
+        variant: 'outline' as const,
+      },
+    ],
+    [handleViewAllTeams]
+  );
+
   if (isLoading) {
     return <TeamListSkeleton viewMode={viewMode} />;
   }
@@ -44,13 +59,7 @@ export const TeamList: React.FC<TeamListProps> = ({
         icon={Users}
         title="No Teams Found"
         description="No teams match your current filters. Try adjusting your search or add a new team to get started."
-        actions={[
-          {
-            label: 'View All Teams',
-            onClick: () => window.location.reload(),
-            variant: 'outline',
-          },
-        ]}
+        actions={emptyStateActions}
       />
     );
   }
@@ -67,8 +76,8 @@ export const TeamList: React.FC<TeamListProps> = ({
         <TeamCard
           key={team.id}
           team={team}
-          onDelete={(teamId) => onDelete(teamId)}
-          onEdit={(team) => onEdit(team)}
+          onDelete={onDelete}
+          onEdit={onEdit}
           viewMode={viewMode}
         />
       ))}

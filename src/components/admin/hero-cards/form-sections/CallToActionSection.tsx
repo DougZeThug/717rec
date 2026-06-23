@@ -1,5 +1,5 @@
 import { MousePointer } from 'lucide-react';
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +8,20 @@ import { SectionHeader } from './SectionHeader';
 import { FormSectionProps } from './types';
 
 export const CallToActionSection: React.FC<FormSectionProps> = ({ formData, onChange }) => {
+  const handleCtaLabelChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      onChange('cta_label', event.target.value);
+    },
+    [onChange]
+  );
+
+  const handleCtaUrlChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      onChange('cta_url', event.target.value);
+    },
+    [onChange]
+  );
+
   return (
     <div className="bg-card rounded-lg border p-4">
       <SectionHeader icon={MousePointer} title="Call to Action" />
@@ -18,7 +32,7 @@ export const CallToActionSection: React.FC<FormSectionProps> = ({ formData, onCh
           <Input
             id="cta_label"
             value={formData.cta_label}
-            onChange={(e) => onChange('cta_label', e.target.value)}
+            onChange={handleCtaLabelChange}
             placeholder="e.g., View Schedule, Learn More"
           />
           <p className="text-xs text-muted-foreground mt-1">
@@ -31,7 +45,7 @@ export const CallToActionSection: React.FC<FormSectionProps> = ({ formData, onCh
           <Input
             id="cta_url"
             value={formData.cta_url}
-            onChange={(e) => onChange('cta_url', e.target.value)}
+            onChange={handleCtaUrlChange}
             placeholder="e.g., /schedule or https://..."
           />
           <p className="text-xs text-muted-foreground mt-1">

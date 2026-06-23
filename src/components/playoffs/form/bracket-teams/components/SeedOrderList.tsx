@@ -17,7 +17,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { AnimatePresence } from 'framer-motion';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import { ProcessedTeam } from '../types';
 import { DragOverlayItem } from './DragOverlayItem';
@@ -30,6 +30,40 @@ interface SeedOrderListProps {
   onTeamReorder: (teams: ProcessedTeam[]) => void;
   onSeedChange: (teamId: string, seed: number | null) => void;
 }
+
+interface SeedOrderListItemProps {
+  team: ProcessedTeam;
+  isManualMode: boolean;
+  hasConflict: boolean;
+  onSeedChange: (teamId: string, seed: number | null) => void;
+}
+
+const SeedOrderListItem: React.FC<SeedOrderListItemProps> = ({
+  team,
+  isManualMode,
+  hasConflict,
+  onSeedChange,
+}) => {
+  const handleSeedChange = useCallback(
+    (seed: number | null) => {
+      onSeedChange(team.id, seed);
+    },
+    [onSeedChange, team.id]
+  );
+
+  return (
+    <SortableTeamItem
+      id={team.id}
+      name={team.name}
+      seed={team.seed ?? 0}
+      logoUrl={team.logoUrl}
+      disabled={!isManualMode}
+      showSeedInput={isManualMode}
+      hasConflict={hasConflict}
+      onSeedChange={handleSeedChange}
+    />
+  );
+};
 
 export const SeedOrderList: React.FC<SeedOrderListProps> = ({
   teams,
@@ -53,29 +87,34 @@ export const SeedOrderList: React.FC<SeedOrderListProps> = ({
 
   const activeTeam = useMemo(() => teams.find((t) => t.id === activeId), [teams, activeId]);
 
-  const handleDragStart = (event: DragStartEvent) => {
+  const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveId(String(event.active.id));
-  };
+  }, []);
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    setActiveId(null);
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      setActiveId(null);
 
-    if (!over || active.id === over.id) return;
+      if (!over || active.id === over.id) return;
 
-    const oldIndex = teams.findIndex((item) => item.id === active.id);
-    const newIndex = teams.findIndex((item) => item.id === over.id);
+      const oldIndex = teams.findIndex((item) => item.id === active.id);
+      const newIndex = teams.findIndex((item) => item.id === over.id);
 
-    const reordered = arrayMove(teams, oldIndex, newIndex);
+      const reordered = arrayMove(teams, oldIndex, newIndex);
 
-    // Reassign seeds based on new order
-    const updated = reordered.map((team, idx) => ({
-      ...team,
-      seed: idx + 1,
-    }));
+      // Reassign seeds based on new order
+      const updated = reordered.map((team, idx) => ({
+        ...team,
+        seed: idx + 1,
+      }));
 
-    onTeamReorder(updated);
-  };
+      onTeamReorder(updated);
+    },
+    [onTeamReorder, teams]
+  );
+
+  const modifiers = useMemo(() => [snapCenterToCursor], []);
 
   const teamIds = useMemo(() => teams.map((t) => t.id), [teams]);
 
@@ -83,7 +122,7 @@ export const SeedOrderList: React.FC<SeedOrderListProps> = ({
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
-      modifiers={[snapCenterToCursor]}
+      modifiers={modifiers}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
@@ -91,16 +130,12 @@ export const SeedOrderList: React.FC<SeedOrderListProps> = ({
         <div className="space-y-2">
           <AnimatePresence mode="popLayout">
             {teams.map((team) => (
-              <SortableTeamItem
+              <SeedOrderListItem
                 key={team.id}
-                id={team.id}
-                name={team.name}
-                seed={team.seed ?? 0}
-                logoUrl={team.logoUrl}
-                disabled={!isManualMode}
-                showSeedInput={isManualMode}
+                team={team}
+                isManualMode={isManualMode}
                 hasConflict={conflictTeamIds.has(team.id)}
-                onSeedChange={(seed) => onSeedChange(team.id, seed)}
+                onSeedChange={onSeedChange}
               />
             ))}
           </AnimatePresence>
