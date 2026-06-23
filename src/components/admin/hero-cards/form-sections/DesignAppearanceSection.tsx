@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/useToast';
+import { getErrorMessage } from '@/utils/errorHandler';
 import { uploadHeroCardImage } from '@/utils/imageUpload';
 
 import { ColorPresetPicker } from '../ColorPresetPicker';
@@ -50,10 +51,10 @@ export const DesignAppearanceSection: React.FC<FormSectionProps> = ({ formData, 
         const publicUrl = await uploadHeroCardImage(file);
         onChange('image_url', publicUrl);
         toast({ title: 'Uploaded!', description: 'Flyer image uploaded successfully.' });
-      } catch (err: any) {
+      } catch (err: unknown) {
         toast({
           title: 'Upload failed',
-          description: err?.message || 'Something went wrong.',
+          description: err instanceof Error ? getErrorMessage(err) : 'Something went wrong.',
           variant: 'destructive',
         });
       } finally {

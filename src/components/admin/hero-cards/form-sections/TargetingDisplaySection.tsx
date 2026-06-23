@@ -33,7 +33,7 @@ export const TargetingDisplaySection: React.FC<FormSectionProps> = ({ formData, 
 
   const metadata = parseMetadata(formData.metadata);
 
-  const updateMetadataField = (key: string, value: any) => {
+  const updateMetadataField = (key: string, value: unknown) => {
     const m = parseMetadata(formData.metadata);
     if (value === '' || value === null || value === undefined) {
       delete m[key];
