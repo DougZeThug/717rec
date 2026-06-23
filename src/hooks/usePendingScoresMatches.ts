@@ -97,13 +97,8 @@ export function usePendingScoresMatches() {
   });
 
   const submitScore = async (matchId: string, submission: ScoreSubmission): Promise<boolean> => {
-    try {
-      await submitMutation.mutateAsync({ matchId, submission });
-      return true;
-    } catch (error) {
-      // Error toast already shown by mutation's onError callback
-      throw error;
-    }
+    await submitMutation.mutateAsync({ matchId, submission });
+    return true;
   };
 
   return {
