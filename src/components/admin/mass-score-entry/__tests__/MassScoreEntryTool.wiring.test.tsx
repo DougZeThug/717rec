@@ -44,6 +44,8 @@ vi.mock('@/utils/logger', () => ({
   scoreLog: vi.fn(),
   errorLog: vi.fn(),
   filterLog: vi.fn(),
+  debugLog: vi.fn(),
+  validationLog: vi.fn(),
 }));
 
 vi.mock('@/components/admin/AdminSectionWrapper', () => ({

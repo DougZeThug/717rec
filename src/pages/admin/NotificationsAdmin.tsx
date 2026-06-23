@@ -1,5 +1,5 @@
 import { Trash2 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import ContactInboxSection from '@/components/admin/contact/ContactInboxSection';
 import { Button } from '@/components/ui/button';
@@ -18,10 +18,47 @@ import { toast } from '@/hooks/useToast';
 import type { NotificationRow } from '@/services/notifications/NotificationService';
 import { formatNotificationDate } from '@/utils/formatNotificationDate';
 
-const NotificationsAdmin: React.FC = () => {
+const getCurrentTimeMs = () => Date.now();
+const NOTIFICATION_CLOCK_FALLBACK_INTERVAL_MS = 60_000;
+const NOTIFICATION_EXPIRY_REFRESH_BUFFER_MS = 1_000;
+
+const NotificationsAdmin: React.FC<{ currentTimeMs?: number }> = ({
+  currentTimeMs: suppliedTimeMs,
+}) => {
+  const [liveTimeMs, setLiveTimeMs] = useState(() => getCurrentTimeMs());
+  const currentTimeMs = suppliedTimeMs ?? liveTimeMs;
   useNotificationsRealtime();
   const { user } = useAuth();
   const { data: notifications = [], isLoading } = useNotificationsQuery(100);
+
+  const nextExpiryRefreshDelayMs = useMemo(() => {
+    if (suppliedTimeMs !== undefined) return null;
+
+    const futureExpiryTimes = notifications
+      .map((n) => (n.expires_at ? Date.parse(n.expires_at) : Number.NaN))
+      .filter((expiresAt) => Number.isFinite(expiresAt) && expiresAt >= currentTimeMs);
+
+    if (futureExpiryTimes.length === 0) return NOTIFICATION_CLOCK_FALLBACK_INTERVAL_MS;
+
+    const nextExpiryTime = Math.min(...futureExpiryTimes);
+    return Math.max(
+      nextExpiryTime - currentTimeMs + NOTIFICATION_EXPIRY_REFRESH_BUFFER_MS,
+      NOTIFICATION_EXPIRY_REFRESH_BUFFER_MS
+    );
+  }, [currentTimeMs, notifications, suppliedTimeMs]);
+
+  useEffect(() => {
+    if (nextExpiryRefreshDelayMs === null) return undefined;
+
+    const timeout = window.setTimeout(() => {
+      setLiveTimeMs(getCurrentTimeMs());
+    }, nextExpiryRefreshDelayMs);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [nextExpiryRefreshDelayMs]);
+
   const create = useCreateNotification();
   const update = useUpdateNotification();
   const del = useDeleteNotification();
@@ -117,7 +154,7 @@ const NotificationsAdmin: React.FC = () => {
       ) : (
         <div className="flex flex-col gap-2">
           {notifications.map((n) => {
-            const isExpired = n.expires_at && Date.parse(n.expires_at) < Date.now();
+            const isExpired = n.expires_at && Date.parse(n.expires_at) < currentTimeMs;
             const posted = formatNotificationDate(n.created_at);
             const expires = n.expires_at ? formatNotificationDate(n.expires_at) : null;
             return (
