@@ -46,7 +46,7 @@ describe('useSeasonMutations.activateSeasonWithPartialArchive', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('invalidates the full set of related query keys on success', async () => {
-    (SeasonService.activateSeasonWithPartialArchive as any).mockResolvedValue({ id: 's-1' });
+    vi.mocked(SeasonService.activateSeasonWithPartialArchive).mockResolvedValue({ id: 's-1' });
     const { result, invalidateSpy } = setup();
 
     await result.current.activateSeasonWithPartialArchive.mutateAsync('s-1');
@@ -57,11 +57,11 @@ describe('useSeasonMutations.activateSeasonWithPartialArchive', () => {
       }
     });
     expect(SeasonService.activateSeasonWithPartialArchive).toHaveBeenCalled();
-    expect((SeasonService.activateSeasonWithPartialArchive as any).mock.calls[0][0]).toBe('s-1');
+    expect(vi.mocked(SeasonService.activateSeasonWithPartialArchive).mock.calls[0][0]).toBe('s-1');
   });
 
   it('surfaces service errors so callers can toast', async () => {
-    (SeasonService.activateSeasonWithPartialArchive as any).mockRejectedValue(new Error('boom'));
+    vi.mocked(SeasonService.activateSeasonWithPartialArchive).mockRejectedValue(new Error('boom'));
     const { result } = setup();
     await expect(
       result.current.activateSeasonWithPartialArchive.mutateAsync('s-1')
@@ -73,7 +73,7 @@ describe('useSeasonMutations.finalizePlayoffs', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('invalidates the full set of related query keys on success', async () => {
-    (SeasonService.finalizePlayoffs as any).mockResolvedValue({ id: 's-1', is_archived: true });
+    vi.mocked(SeasonService.finalizePlayoffs).mockResolvedValue({ id: 's-1', is_archived: true });
     const { result, invalidateSpy } = setup();
 
     await result.current.finalizePlayoffs.mutateAsync({
@@ -88,7 +88,7 @@ describe('useSeasonMutations.finalizePlayoffs', () => {
         expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: key });
       }
     });
-    expect((SeasonService.finalizePlayoffs as any).mock.calls[0][0]).toEqual({
+    expect(vi.mocked(SeasonService.finalizePlayoffs).mock.calls[0][0]).toEqual({
       seasonId: 's-1',
       championTeamId: null,
       runnerUpTeamId: null,
@@ -97,10 +97,10 @@ describe('useSeasonMutations.finalizePlayoffs', () => {
   });
 
   it('surfaces service errors so callers can toast', async () => {
-    (SeasonService.finalizePlayoffs as any).mockRejectedValue(new Error('nope'));
+    vi.mocked(SeasonService.finalizePlayoffs).mockRejectedValue(new Error('nope'));
     const { result } = setup();
-    await expect(
-      result.current.finalizePlayoffs.mutateAsync({ seasonId: 's-1' } as any)
-    ).rejects.toThrow('nope');
+    await expect(result.current.finalizePlayoffs.mutateAsync({ seasonId: 's-1' })).rejects.toThrow(
+      'nope'
+    );
   });
 });

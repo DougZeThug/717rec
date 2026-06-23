@@ -3,6 +3,8 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { Match } from '@/types';
+
 import { usePendingMatches } from '../usePendingMatches';
 
 // Mock dependencies
@@ -39,7 +41,7 @@ const createWrapper = () => {
 };
 
 describe('usePendingMatches', () => {
-  const mockMatch = {
+  const mockMatch: Match = {
     id: 'match-1',
     team1Id: 'team-1',
     team2Id: 'team-2',
@@ -51,8 +53,8 @@ describe('usePendingMatches', () => {
 
   beforeEach(() => {
     vi.resetAllMocks();
-    (approveMatchResult as any).mockResolvedValue(true);
-    (markMatchAsTie as any).mockResolvedValue(true);
+    vi.mocked(approveMatchResult).mockResolvedValue(true);
+    vi.mocked(markMatchAsTie).mockResolvedValue(true);
   });
 
   it('should call approveMatchResult with correct parameters for team 1 winner', async () => {
@@ -63,7 +65,7 @@ describe('usePendingMatches', () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     await act(async () => {
-      await result.current.handleApproveResult(mockMatch as any, 1);
+      await result.current.handleApproveResult(mockMatch, 1);
     });
 
     expect(approveMatchResult).toHaveBeenCalledWith(
@@ -83,7 +85,7 @@ describe('usePendingMatches', () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     await act(async () => {
-      await result.current.handleApproveResult(mockMatch as any, 2);
+      await result.current.handleApproveResult(mockMatch, 2);
     });
 
     expect(approveMatchResult).toHaveBeenCalledWith(
@@ -96,7 +98,7 @@ describe('usePendingMatches', () => {
   });
 
   it('should handle approveMatchResult failure gracefully', async () => {
-    (approveMatchResult as any).mockRejectedValue(new Error('RPC failed'));
+    vi.mocked(approveMatchResult).mockRejectedValue(new Error('RPC failed'));
 
     const { result } = renderHook(() => usePendingMatches(), {
       wrapper: createWrapper(),
@@ -106,7 +108,7 @@ describe('usePendingMatches', () => {
 
     await act(async () => {
       try {
-        await result.current.handleApproveResult(mockMatch as any, 1);
+        await result.current.handleApproveResult(mockMatch, 1);
       } catch {
         // Error is expected and handled by mutation
       }
