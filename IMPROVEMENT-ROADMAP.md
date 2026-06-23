@@ -26,7 +26,7 @@ It is based on a full read of the codebase (architecture, testing/CI, and code-q
 | Dependencies & build | 8/10 | All current (React 18.3, TS 6, Vite 7, TanStack Query 5, Supabase 2.1). Minor: `legacy-peer-deps=true` |
 | Error handling & observability | 9/10 | Typed error hierarchy, 4 error boundaries, Sentry, central logger |
 | Testing — services & utils | 8/10 | ~51% / ~52% coverage, meaningful edge-case tests, Supabase mocked well |
-| **Testing — components / hooks / flows** | **4/10** | Components ~11%, hooks ~22%, **only 2 integration tests, zero E2E** |
+| **Testing — components / hooks / flows** | **4/10** | Components ~11%, hooks ~22%, **only 2 integration tests; E2E suite now in place (non-blocking CI)** |
 | **Type safety** | **4/10** | `strict: false`, `noImplicitAny: false`, no `strictNullChecks` — verified in `tsconfig.app.json` |
 | Security & secrets | 7.5/10 | RLS-dependent (correct), no hardcoded secrets, but `.env` is tracked (public keys only) |
 | Maintainability | 7/10 | 6 files at/over the ~400-line guideline; ~34 production files use `any` |
@@ -42,7 +42,7 @@ It is based on a full read of the codebase (architecture, testing/CI, and code-q
 - `.env` **is** git-tracked but holds only `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID` — all public, browser-shipped keys. It's already in `.gitignore`; it just needs untracking. **Hygiene, not a leak.**
 - Largest non-generated files: `predictMatch.ts` (570), `SeasonAccordion.tsx` (522), `WeeklyRecapCard.tsx` (428), `BracketUpdateService.ts` (405), `qualityAnalysis.ts` (403), `BracketsViewerAdapter.ts` (402).
 - Production `any` footprint is modest: ~34 files (the rest were tests/type-defs).
-- Integration tests: `TeamsContainer.integration.test.tsx`, `HeroCardForm.integration.test.tsx`. No Playwright/Cypress.
+- Integration tests: `TeamsContainer.integration.test.tsx`, `HeroCardForm.integration.test.tsx`. E2E (Playwright): smoke, admin access control, mass score entry, score submission, playoff bracket.
 
 ---
 
@@ -52,7 +52,7 @@ Each item shows the estimated point gain. (The last 2–3 points toward 100 are 
 
 ### Tier 1 — High impact (foundational): **~+18 → ≈90**
 - **A. Turn on TypeScript strict mode (incremental).** `strictNullChecks` first, then full `strict`. **+8**
-- **B. Integration / E2E tests for the 4–5 critical user flows** (score submission, playoff bracket advance, team create/edit, auth + admin gating, auto-schedule). **+6**
+- **B. Expand E2E coverage for the remaining critical user flows** (team create/edit, auto-schedule) and promote to blocking CI gate. Existing E2E suite covers score submission, playoff bracket, admin gating, and smoke. **+4**
 - **C. Component tests on the highest-risk screens** (admin tools, score entry, brackets), lifting component coverage ~11% → ~35%. **+4**
 
 ### Tier 2 — Medium impact: **~+6 → ≈96**
@@ -63,7 +63,7 @@ Each item shows the estimated point gain. (The last 2–3 points toward 100 are 
 ### Tier 3 — Polish / lock-in: **~+4 → ≈98–100**
 - **G.** Input-validation guards on pure utils (`predictMatch`, scheduling) + document intentional null-returns. **+1**
 - **H.** Raise hook coverage toward ~50% and **bump the vitest thresholds** so gains can't regress. **+1**
-- **I.** Expand the E2E suite and promote it from a non-blocking job to a **required CI gate**. **+1**
+- **I.** Promote the E2E suite from a non-blocking job to a **required CI gate** and add remaining flow coverage (team create/edit, auto-schedule). **+1**
 - **J.** Add accessibility (axe), bundle-size budget, and Lighthouse checks to CI. **+1**
 
 ---
@@ -79,10 +79,10 @@ Ordering rationale: **quick wins → build the safety net → then make risky ch
   - *Verify:* `git ls-files | grep '\.env$'` returns nothing; `npm run build` still succeeds.
 
 ### Phase 1 — Build the safety net (testing) · several PRs · ≈84
-- **PR 1.1 — "test: add Playwright + first golden-path E2E (non-blocking CI)"** — install Playwright, one happy-path test (load app → Teams → Schedule), add a CI job that runs but does **not** block yet.
-- **PR 1.2 — "test: E2E for match score submission"**
-- **PR 1.3 — "test: E2E for playoff bracket creation & advancement"**
-- **PR 1.4 — "test: E2E for auth + admin gating"** (non-admin is blocked from `/admin`).
+- **PR 1.1 — "test: add Playwright + first golden-path E2E (non-blocking CI)"** — ✅ Done. Playwright installed, smoke spec + CI job running (non-blocking).
+- **PR 1.2 — "test: E2E for match score submission"** — ✅ Done.
+- **PR 1.3 — "test: E2E for playoff bracket creation & advancement"** — ✅ Done.
+- **PR 1.4 — "test: E2E for auth + admin gating"** — ✅ Done (non-admin is blocked from `/admin`).
 - **PR 1.5+ — "test: component tests for <screen>"** — one PR per high-risk area (admin score tools, bracket views, team forms). Reuse the existing Supabase mock at `tests/__mocks__/supabase.ts` and the Radix pointer-capture mocks from `CLAUDE.md`.
   - *Verify each:* `npm run test:file -- <path>` green; `npm run test:coverage` shows component % climbing.
 
@@ -125,11 +125,11 @@ After each PR, the existing CI is your net — it already runs lint, typecheck, 
 | Phase | Status | Score | PRs |
 |---|---|---|---|
 | 0 — Quick wins | ☐ Not started | → 74 | — |
-| 1 — Test safety-net | ☐ Not started | → 84 | — |
+| 1 — Test safety-net | 🔄 In progress (E2E done; component tests remaining) | → 84 | 1.1–1.4 ✅ |
 | 2 — TypeScript strict (incremental) | ☐ Not started | → 92 | — |
 | 3 — Tidy big files & types | ☐ Not started | → 96 | — |
 | 4 — Polish & lock-in | ☐ Not started | → ~98–100 | — |
 
 ---
 
-*Last updated: 2026-05-28*
+*Last updated: 2026-06-23*
