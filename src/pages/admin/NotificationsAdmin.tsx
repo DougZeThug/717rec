@@ -54,8 +54,11 @@ const NotificationsAdmin: React.FC<{ currentTimeMs?: number }> = ({
       setLiveTimeMs(getCurrentTimeMs());
     }, nextExpiryRefreshDelayMs);
 
-    return () => window.clearTimeout(timeout);
+    return () => {
+      window.clearTimeout(timeout);
+    };
   }, [nextExpiryRefreshDelayMs]);
+
   const create = useCreateNotification();
   const update = useUpdateNotification();
   const del = useDeleteNotification();
