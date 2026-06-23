@@ -54,10 +54,10 @@ export function createPlaceholderTeam(teamId: string, prefix: string = 'Team'): 
  */
 export function validateTeamData(teams: PlayoffTeam[]): {
   valid: PlayoffTeam[];
-  invalid: any[];
+  invalid: PlayoffTeam[];
 } {
   const valid: PlayoffTeam[] = [];
-  const invalid: any[] = [];
+  const invalid: PlayoffTeam[] = [];
 
   teams.forEach((team) => {
     if (team && typeof team === 'object' && team.id && team.name) {

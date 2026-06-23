@@ -7,7 +7,7 @@ interface LocalBracketRendererProps {
   bracket: PlayoffBracket;
   teams: PlayoffTeam[];
   onEditMatch?: (matchId: string) => void;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export const LocalBracketRenderer: React.FC<LocalBracketRendererProps> = ({
