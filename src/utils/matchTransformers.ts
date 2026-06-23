@@ -36,7 +36,7 @@ interface RawTeamJoinObject {
 
 type RawTeamJoin = RawTeamJoinObject | RawTeamJoinObject[] | null | undefined;
 
-interface RawMatchRow {
+export interface RawMatchRow {
   id: string;
   team1_id?: string | null;
   team2_id?: string | null;
