@@ -19,7 +19,7 @@ export interface OddScheduleArgs {
   tonightPairs: Set<string>;
   newPairs: Set<string>;
   teamMatchCounts: Map<string, number>;
-  forbiddenPairs?: Set<string> | undefined;
+  forbiddenPairs?: Set<string>;
   maxTierGap: number;
   byeStrategy: ByeStrategy;
   relaxationLevel: RelaxationLevel;
