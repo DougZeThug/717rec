@@ -1,3 +1,4 @@
+import type { UseQueryResult } from '@tanstack/react-query';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
@@ -5,7 +6,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Division } from '@/types';
 import type { Team } from '@/utils/playoffs/playoffTypes';
-import type { UseQueryResult } from '@tanstack/react-query';
 
 import { useBracketFormData } from '../useBracketFormData';
 
@@ -19,7 +19,7 @@ vi.mock('@/hooks/playoffs/useSeedValidation', () => ({
 }));
 
 import { usePlayoffTeams } from '@/hooks/playoffs/usePlayoffTeams';
-import { useSeedValidation, type SeedValidationResult } from '@/hooks/playoffs/useSeedValidation';
+import { type SeedValidationResult, useSeedValidation } from '@/hooks/playoffs/useSeedValidation';
 
 const mockUsePlayoffTeams = vi.mocked(usePlayoffTeams);
 const mockUseSeedValidation = vi.mocked(useSeedValidation);
@@ -27,9 +27,7 @@ const mockUseSeedValidation = vi.mocked(useSeedValidation);
 type SeedValidationQuery = UseQueryResult<SeedValidationResult[], Error>;
 type PlayoffTeamsQuery = UseQueryResult<Team[], Error>;
 
-const asSeedValidationQuery = (
-  overrides: Partial<SeedValidationQuery>
-): SeedValidationQuery =>
+const asSeedValidationQuery = (overrides: Partial<SeedValidationQuery>): SeedValidationQuery =>
   ({
     data: [],
     isLoading: false,
@@ -128,9 +126,7 @@ describe('useBracketFormData', () => {
   });
 
   it('should handle loading state', async () => {
-    mockUsePlayoffTeams.mockReturnValue(
-      asPlayoffTeamsQuery({ data: undefined, isLoading: true })
-    );
+    mockUsePlayoffTeams.mockReturnValue(asPlayoffTeamsQuery({ data: undefined, isLoading: true }));
 
     const { result } = renderHook(() => useBracketFormData(mockDivisions, undefined), { wrapper });
 

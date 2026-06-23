@@ -108,7 +108,10 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
     vi.clearAllMocks();
 
     // Helper to create chainable insert mock
-    createInsertMock = (data: Array<Record<string, unknown>> = [{ id: 1 }], error: unknown = null) => {
+    createInsertMock = (
+      data: Array<Record<string, unknown>> = [{ id: 1 }],
+      error: unknown = null
+    ) => {
       return vi.fn().mockReturnValue({
         select: vi.fn().mockResolvedValue({ data, error }),
       });
@@ -197,9 +200,11 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
       };
 
       // Mock create.stage to throw
-      const mockManager = (service as unknown as {
-        creationService: { manager: { create: { stage: ReturnType<typeof vi.fn> } } };
-      }).creationService.manager;
+      const mockManager = (
+        service as unknown as {
+          creationService: { manager: { create: { stage: ReturnType<typeof vi.fn> } } };
+        }
+      ).creationService.manager;
       mockManager.create.stage.mockRejectedValueOnce(new Error('Database connection failed'));
 
       await expect(service.createBracket(options)).rejects.toThrow('Bracket creation failed:');
@@ -382,9 +387,11 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
       });
 
       // Override the manager mock to simulate constraint error
-      (testService as unknown as {
-        manager: { update: { seeding: ReturnType<typeof vi.fn> } };
-      }).manager.update.seeding = vi
+      (
+        testService as unknown as {
+          manager: { update: { seeding: ReturnType<typeof vi.fn> } };
+        }
+      ).manager.update.seeding = vi
         .fn()
         .mockRejectedValue(new Error('Cannot impact existing results'));
 

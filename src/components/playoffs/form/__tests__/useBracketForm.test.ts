@@ -56,33 +56,32 @@ describe('useBracketForm', () => {
     const mockWatch = vi.fn() as unknown as UseFormWatch<BracketFormValues>;
 
     // Setup watch implementation with proper overloads
-    (mockWatch as unknown as ReturnType<typeof vi.fn>).mockImplementation((
-      nameOrCallback?: WatchArg,
-      _defaultValue?: unknown
-    ) => {
-      // Handle callback pattern: watch((values, { name, type }) => ...)
-      if (typeof nameOrCallback === 'function') {
-        // Return unsubscribe function for callback-based watching
-        return () => {};
+    (mockWatch as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (nameOrCallback?: WatchArg, _defaultValue?: unknown) => {
+        // Handle callback pattern: watch((values, { name, type }) => ...)
+        if (typeof nameOrCallback === 'function') {
+          // Return unsubscribe function for callback-based watching
+          return () => {};
+        }
+
+        // Handle field name pattern: watch('fieldName') or watch()
+        const defaultFormValues: BracketFormValues = {
+          title: '',
+          divisionId: '',
+          format: 'Single Elimination' as const,
+          teams: [],
+          grandFinalType: 'simple' as const,
+        };
+
+        if (nameOrCallback === undefined) {
+          // watch() without parameters returns current form values
+          return defaultFormValues;
+        }
+
+        // watch(fieldName) returns specific field value
+        return defaultFormValues[nameOrCallback as keyof BracketFormValues];
       }
-
-      // Handle field name pattern: watch('fieldName') or watch()
-      const defaultFormValues: BracketFormValues = {
-        title: '',
-        divisionId: '',
-        format: 'Single Elimination' as const,
-        teams: [],
-        grandFinalType: 'simple' as const,
-      };
-
-      if (nameOrCallback === undefined) {
-        // watch() without parameters returns current form values
-        return defaultFormValues;
-      }
-
-      // watch(fieldName) returns specific field value
-      return defaultFormValues[nameOrCallback as keyof BracketFormValues];
-    });
+    );
 
     const mockGetValues = vi.fn();
 
