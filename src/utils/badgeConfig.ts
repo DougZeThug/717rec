@@ -16,7 +16,13 @@ import {
 } from 'lucide-react';
 
 import type { WinterGlyphName } from '@/icons';
-import { BadgeConfig, BadgeMetadata, BadgeType, TeamBadgeEvent } from '@/types/badges';
+import {
+  BadgeConfig,
+  BadgeMetadata,
+  BadgeType,
+  ChampionshipBadgeMetadata,
+  TeamBadgeEvent,
+} from '@/types/badges';
 
 // Extended badge config with winter variant support
 export interface ExtendedBadgeConfig extends BadgeConfig {
