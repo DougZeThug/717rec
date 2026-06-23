@@ -31,7 +31,7 @@ describe('ContactPanel', () => {
     mockUser = null;
     mockMembership = null;
     mockMutateAsync.mockReset();
-    mockMutateAsync.mockResolvedValue();
+    mockMutateAsync.mockResolvedValue(undefined);
   });
 
   it('derives verified contact fields when signed-in data arrives after initial render', () => {
