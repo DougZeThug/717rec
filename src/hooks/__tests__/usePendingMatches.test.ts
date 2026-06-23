@@ -47,8 +47,8 @@ describe('usePendingMatches', () => {
     team2Id: 'team-2',
     team1_game_wins: 2,
     team2_game_wins: 1,
-    roundNumber: 1,
-    isCompleted: true,
+    round_number: 1,
+    iscompleted: true,
   };
 
   beforeEach(() => {
