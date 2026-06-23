@@ -70,7 +70,7 @@ const Confetti: React.FC = () => {
             animationDelay: `${piece.delay}s`,
             '--confetti-start-rotation': `${piece.rotation}deg`,
             '--confetti-end-rotation': `${piece.endRotation}deg`,
-          }}
+          } as React.CSSProperties}
         />
       ))}
 
