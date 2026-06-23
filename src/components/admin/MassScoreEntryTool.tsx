@@ -96,7 +96,7 @@ const MassScoreEntryTool: React.FC = () => {
 
   // Create filter tags for active filters
   const hasActiveFilters = filters.date || filters.bracketId;
-  const filterTags = [];
+  const filterTags: { label: string; value: string }[] = [];
 
   if (filters.date) {
     filterTags.push({
