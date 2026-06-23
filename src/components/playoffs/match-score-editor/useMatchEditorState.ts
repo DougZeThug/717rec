@@ -3,8 +3,12 @@ import { useEffect, useState } from 'react';
 
 import { useBracketsManagerMatch } from '@/hooks/playoffs/useBracketsManagerMatch';
 import { useToast } from '@/hooks/useToast';
+import type { UpdateMatchOptions } from '@/services/brackets/manager';
 import { bracketManagerService } from '@/services/brackets/manager';
 import { errorLog, log } from '@/utils/logger';
+
+type MatchScores = UpdateMatchOptions['scores'];
+type MatchScore = MatchScores[keyof MatchScores];
 
 export interface ByeEligibility {
   canToggle: boolean;
@@ -86,7 +90,7 @@ export const useMatchEditorState = ({ matchId, onClose, onSaved }: UseMatchEdito
       });
 
       if (isBye) {
-        const scores: any = {};
+        const scores: Partial<Record<keyof MatchScores, MatchScore>> = {};
 
         if (matchData.opponent1) {
           scores.opponent1 = { score: opponent1Score, result: 'win' as const };
@@ -94,7 +98,7 @@ export const useMatchEditorState = ({ matchId, onClose, onSaved }: UseMatchEdito
           scores.opponent2 = { score: opponent2Score, result: 'win' as const };
         }
 
-        await bracketManagerService.updateMatch({ matchId, scores });
+        await bracketManagerService.updateMatch({ matchId, scores: scores as MatchScores });
       } else {
         const scores: {
           opponent1: { score: number; result?: 'win' | 'loss' };
