@@ -1,28 +1,38 @@
-## Build errors found
+## Test failure
 
-Running `tsgo --noEmit` on `tsconfig.app.json` surfaces two failing files:
+Ran `npm test` — **1 failing test** out of 2317:
 
-### 1. `src/components/admin/mass-score-entry/utils/matchTransformUtils.ts`
+```
+FAIL src/utils/__tests__/badgeConfig.test.ts > getBadgeConfig > returns cyan variant for intermediate_champion with High division metadata
+AssertionError: expected 'Intermediate Champion' to be 'Intermediate High Champion'
+```
 
-Two distinct issues introduced by recent type tightening in `src/utils/matchTransformers.ts`:
+### Root cause
 
-- **`team1_game_wins` / `team2_game_wins` types** — `MassScoreDatabaseMatch` widens these to `number | string | null`, but `RawMatchRow` (the parameter type of `transformDatabaseMatch`) only accepts `number | null`. The cast at line 25 fails.
-- **`match.team1.id` / `.name` / `.image_url` / `.logo_url` access (lines 44–47, 62–65)** — `RawTeamJoin` is `RawTeamJoinObject | RawTeamJoinObject[] | null | undefined`. Direct property access on the union (array form) is rejected. Centralized `extractTeamDetails` exists in `matchTransformers.ts` but this file is doing the mapping inline.
+`getBadgeConfig` (in `src/utils/badgeConfig.ts`) reads `metadata.division_name` (matching the typed `ChampionshipBadgeMetadata` interface in `src/types/badges.ts`, which has `division_name: string`). The test fixture passes the wrong key:
 
-**Fix plan:**
-- Normalize game-wins to `number | null` before delegating to `transformDatabaseMatch` (parse the string/number once at the top, then pass the normalized value through). This removes the need for the widened type on the input shape.
-- Guard team join access by reducing the union to a single object: `const team1 = Array.isArray(match.team1) ? match.team1[0] : match.team1;` (same for team2), then read `team1?.id`, `team1?.name`, etc. This mirrors the pattern in `matchTransformers.extractTeamDetails`.
+```ts
+metadata: { division: 'Intermediate High' }   // ❌ should be division_name
+```
 
-### 2. `src/utils/autoScheduleUtils.ts` (line 69)
+So the lookup returns an empty string and the base config is returned instead of the cyan "Intermediate High Champion" variant.
 
-`TimeslotQueryService.fetchTeamsByTimeslot` returns Supabase's inferred row type, where the `teams:team_id(...)` join is reported as a `SelectQueryError<"column 'sos' does not exist on 'team_id'.">`. The current `as TeamsByTimeslotRow[]` cast is rejected because the source type doesn't overlap.
+This is a test-only bug; production code and the type contract are correct.
 
-**Fix plan:** Cast through `unknown` first — `(timeslotData as unknown as TeamsByTimeslotRow[] | null)` — to acknowledge the deliberate narrowing of the Supabase inference error. No runtime change; this only quiets the compiler. (The underlying Supabase join is valid at runtime; the error is purely an inference artifact from the embed alias `divisionName:divisions(name)` colliding with column inference.)
+### Fix
 
-### Verification
+Update `src/utils/__tests__/badgeConfig.test.ts` line 39: rename `division` → `division_name` so the fixture matches the `ChampionshipBadgeMetadata` shape. No `any` is introduced — the existing `TeamBadgeEvent` type accepts `Json` for `metadata`, so a plain object literal with the correct key compiles cleanly.
 
-After the edits, re-run `npx tsgo --noEmit -p tsconfig.app.json` and expect zero errors.
+```ts
+metadata: { division_name: 'Intermediate High' },
+```
 
-### Out of scope
+### Verify
 
-No runtime behavior changes, no schema changes, no test changes. Only the two source files above are touched.
+Re-run just the affected file:
+
+```
+npx vitest run src/utils/__tests__/badgeConfig.test.ts
+```
+
+Expect all 8 tests to pass, with the full suite back to 2317/2317.
