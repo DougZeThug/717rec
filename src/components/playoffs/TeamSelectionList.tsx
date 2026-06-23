@@ -7,7 +7,7 @@ import { Team } from '@/types';
 import { teamLog } from '@/utils/logger';
 
 interface TeamSelectionListProps {
-  teams?: Team[] | undefined;
+  teams?: Team[];
   selectedTeams: string[];
   selectedTeamIds?: string[];
   onTeamToggle: (teamId: string) => void;
