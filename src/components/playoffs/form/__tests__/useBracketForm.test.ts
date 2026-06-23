@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react';
-import { UseFormReturn, UseFormWatch } from 'react-hook-form';
+import type { FieldValues, UseFormReturn, UseFormWatch } from 'react-hook-form';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BracketFormValues } from '../BracketFormSchema';
@@ -17,7 +17,7 @@ const mockUseBracketFormState = vi.mocked(useBracketFormState);
 
 // Define proper interfaces for mock data
 interface MockFormState {
-  errors: Record<string, any>;
+  errors: Record<string, unknown>;
   isDirty: boolean;
   isValid: boolean;
   isSubmitting: boolean;
@@ -27,10 +27,10 @@ interface MockFormState {
   isValidating: boolean;
   isReady: boolean;
   submitCount: number;
-  touchedFields: Record<string, any>;
-  dirtyFields: Record<string, any>;
-  validatingFields: Record<string, any>;
-  defaultValues?: any;
+  touchedFields: Record<string, unknown>;
+  dirtyFields: Record<string, unknown>;
+  validatingFields: Record<string, unknown>;
+  defaultValues?: Partial<BracketFormValues>;
   disabled: boolean;
 }
 
@@ -40,7 +40,7 @@ interface ValidationResult {
 }
 
 interface MockBracketFormState {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<BracketFormValues>;
   isFormValid: boolean;
   validateForm: (data: unknown) => ValidationResult;
   handleSubmit: () => Promise<void>;
@@ -50,12 +50,16 @@ describe('useBracketForm', () => {
   const mockOnSubmit = vi.fn();
 
   // Create a complete UseFormReturn mock with proper React Hook Form patterns
-  const createMockForm = (): UseFormReturn<any> => {
+  type WatchArg = keyof BracketFormValues | ((values: BracketFormValues) => unknown) | undefined;
+  const createMockForm = (): UseFormReturn<BracketFormValues> => {
     // Create a proper mock watch function that matches UseFormWatch signature
     const mockWatch = vi.fn() as unknown as UseFormWatch<BracketFormValues>;
 
     // Setup watch implementation with proper overloads
-    (mockWatch as any).mockImplementation((nameOrCallback?: any, _defaultValue?: any) => {
+    (mockWatch as unknown as ReturnType<typeof vi.fn>).mockImplementation((
+      nameOrCallback?: WatchArg,
+      _defaultValue?: unknown
+    ) => {
       // Handle callback pattern: watch((values, { name, type }) => ...)
       if (typeof nameOrCallback === 'function') {
         // Return unsubscribe function for callback-based watching
@@ -128,7 +132,7 @@ describe('useBracketForm', () => {
       getValues: mockGetValues,
       reset: vi.fn(),
       handleSubmit: vi.fn(),
-      control: {} as UseFormReturn<any>['control'],
+      control: {} as UseFormReturn<BracketFormValues>['control'],
       register: vi.fn(),
       unregister: vi.fn(),
       formState: mockFormState,
@@ -141,7 +145,7 @@ describe('useBracketForm', () => {
       subscribe: vi.fn(),
       setValues: vi.fn(),
       resetDefaultValues: vi.fn(),
-    };
+    } as unknown as UseFormReturn<BracketFormValues>;
   };
 
   let mockForm: UseFormReturn<BracketFormValues>;
@@ -195,8 +199,8 @@ describe('useBracketForm', () => {
     };
 
     // Update the mock to return new values using proper mock implementation
-    const mockWatch = mockForm.watch as any;
-    mockWatch.mockImplementation((nameOrCallback?: any) => {
+    const mockWatch = mockForm.watch as unknown as ReturnType<typeof vi.fn>;
+    mockWatch.mockImplementation((nameOrCallback?: WatchArg) => {
       if (typeof nameOrCallback === 'function') {
         return () => {};
       }
@@ -242,8 +246,8 @@ describe('useBracketForm', () => {
       grandFinalType: 'double' as const,
     };
 
-    const mockWatch = mockForm.watch as any;
-    mockWatch.mockImplementation((nameOrCallback?: any) => {
+    const mockWatch = mockForm.watch as unknown as ReturnType<typeof vi.fn>;
+    mockWatch.mockImplementation((nameOrCallback?: WatchArg) => {
       if (typeof nameOrCallback === 'function') {
         return () => {};
       }
