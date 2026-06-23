@@ -21,7 +21,7 @@ describe('Team Stats Updates', () => {
     vi.mocked(supabase.rpc).mockResolvedValue({
       data: { success: true },
       error: null,
-    });
+    } as unknown as Awaited<ReturnType<typeof supabase.rpc>>);
 
     // Set up default mocks for supabase.from().select().in()
     vi.mocked(supabase.from).mockReturnValue({
@@ -48,7 +48,7 @@ describe('Team Stats Updates', () => {
           error: null,
         }),
       }),
-    });
+    } as unknown as ReturnType<typeof supabase.from>);
   });
 
   afterEach(() => {
@@ -101,7 +101,7 @@ describe('Team Stats Updates', () => {
     vi.mocked(supabase.rpc).mockReturnValue({
       data: null,
       error: { message: 'Test error' },
-    });
+    } as unknown as ReturnType<typeof supabase.rpc>);
 
     await expect(applyMatchResult('winner-id', 'loser-id', 2, 1)).rejects.toThrow(
       'Failed to update team stats via RPC: Test error'

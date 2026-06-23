@@ -46,7 +46,9 @@ describe('useSeasonMutations.activateSeasonWithPartialArchive', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('invalidates the full set of related query keys on success', async () => {
-    vi.mocked(SeasonService.activateSeasonWithPartialArchive).mockResolvedValue({ id: 's-1' });
+    vi.mocked(SeasonService.activateSeasonWithPartialArchive).mockResolvedValue({
+      id: 's-1',
+    } as Awaited<ReturnType<typeof SeasonService.activateSeasonWithPartialArchive>>);
     const { result, invalidateSpy } = setup();
 
     await result.current.activateSeasonWithPartialArchive.mutateAsync('s-1');
@@ -73,7 +75,10 @@ describe('useSeasonMutations.finalizePlayoffs', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('invalidates the full set of related query keys on success', async () => {
-    vi.mocked(SeasonService.finalizePlayoffs).mockResolvedValue({ id: 's-1', is_archived: true });
+    vi.mocked(SeasonService.finalizePlayoffs).mockResolvedValue({
+      id: 's-1',
+      is_archived: true,
+    } as Awaited<ReturnType<typeof SeasonService.finalizePlayoffs>>);
     const { result, invalidateSpy } = setup();
 
     await result.current.finalizePlayoffs.mutateAsync({
