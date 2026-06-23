@@ -183,9 +183,9 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
     errorLog('Bracket creation error - full context:', {
       error,
       errorType: error?.constructor?.name,
-      errorMessage: (error as any)?.message,
+      errorMessage: (error as { message?: unknown })?.message,
       isSupabaseError: error && typeof error === 'object' && 'code' in error,
-      supabaseCode: (error as any)?.code,
+      supabaseCode: (error as { code?: unknown })?.code,
       fullErrorString: JSON.stringify(error, null, 2),
     });
 
