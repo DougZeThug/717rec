@@ -62,15 +62,17 @@ const Confetti: React.FC = () => {
         <div
           key={piece.id}
           className={cn('absolute w-2 h-6 opacity-80', piece.color)}
-          style={{
-            left: `${piece.x}%`,
-            top: '-20px',
-            transform: `scale(${piece.size}) rotate(${piece.rotation}deg)`,
-            animation: `fall ${piece.animationDuration}s ease-in forwards`,
-            animationDelay: `${piece.delay}s`,
-            '--confetti-start-rotation': `${piece.rotation}deg`,
-            '--confetti-end-rotation': `${piece.endRotation}deg`,
-          } as React.CSSProperties}
+          style={
+            {
+              left: `${piece.x}%`,
+              top: '-20px',
+              transform: `scale(${piece.size}) rotate(${piece.rotation}deg)`,
+              animation: `fall ${piece.animationDuration}s ease-in forwards`,
+              animationDelay: `${piece.delay}s`,
+              '--confetti-start-rotation': `${piece.rotation}deg`,
+              '--confetti-end-rotation': `${piece.endRotation}deg`,
+            } as React.CSSProperties
+          }
         />
       ))}
 
