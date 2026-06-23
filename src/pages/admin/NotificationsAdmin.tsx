@@ -48,7 +48,7 @@ const NotificationsAdmin: React.FC<{ currentTimeMs?: number }> = ({
   }, [currentTimeMs, notifications, suppliedTimeMs]);
 
   useEffect(() => {
-    if (nextExpiryRefreshDelayMs === null) return;
+    if (nextExpiryRefreshDelayMs === null) return undefined;
 
     const timeout = window.setTimeout(() => {
       setLiveTimeMs(getCurrentTimeMs());
