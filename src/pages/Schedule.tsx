@@ -12,6 +12,7 @@ import { useMatchManagement } from '@/hooks/useMatchManagement';
 import { useMatchTimeslots } from '@/hooks/useMatchTimeslots';
 import { useScheduleData } from '@/hooks/useScheduleData';
 import { useScheduleTabs } from '@/hooks/useScheduleTabs';
+import { Match } from '@/types';
 import { normalizeDate } from '@/utils/dateNormalization';
 import { scheduleLog } from '@/utils/logger';
 
@@ -136,8 +137,10 @@ const Schedule = () => {
     });
   }, [activeTab, upcomingMatches, completedMatches, searchTerm]);
 
-  const handleCreateMatchAdapter = (matchData: any) => handleCreateMatch(matchData, teams || []);
-  const handleUpdateMatchAdapter = (matchData: any) => handleUpdateMatch(matchData, teams || []);
+  const handleCreateMatchAdapter = (matchData: Omit<Match, 'id'>) =>
+    handleCreateMatch(matchData, teams || []);
+  const handleUpdateMatchAdapter = (matchData: Omit<Match, 'id'>) =>
+    handleUpdateMatch(matchData, teams || []);
   const handleDeleteMatchAdapter = () => handleDeleteMatch(teams || []);
 
   // Only wait for matches - teams are lazy loaded for form
