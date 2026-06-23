@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import { Label } from '@/components/ui/label';
 import {
@@ -23,10 +23,17 @@ interface TargetTypeSelectorProps {
 }
 
 export const TargetTypeSelector: React.FC<TargetTypeSelectorProps> = ({ value, onChange }) => {
+  const handleValueChange = useCallback(
+    (nextValue: string) => {
+      onChange(nextValue as HeroCardTargetType);
+    },
+    [onChange]
+  );
+
   return (
     <div className="space-y-2">
       <Label>Who should see this card?</Label>
-      <Select value={value} onValueChange={(v) => onChange(v as HeroCardTargetType)}>
+      <Select value={value} onValueChange={handleValueChange}>
         <SelectTrigger>
           <SelectValue placeholder="Select target audience" />
         </SelectTrigger>

@@ -1,7 +1,7 @@
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { AnimatePresence } from 'framer-motion';
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -38,6 +38,17 @@ export const EditableDivisionPanel: React.FC<EditableDivisionPanelProps> = ({
 
   const isEmpty = teams.length === 0;
 
+  const handleRename = useCallback(
+    (newName: string) => {
+      onRenameDivision(divisionName, newName);
+    },
+    [divisionName, onRenameDivision]
+  );
+
+  const handleRemove = useCallback(() => {
+    onRemoveDivision(divisionName);
+  }, [divisionName, onRemoveDivision]);
+
   return (
     <div
       ref={setNodeRef}
@@ -52,8 +63,8 @@ export const EditableDivisionPanel: React.FC<EditableDivisionPanelProps> = ({
       <EditableDivisionHeader
         divisionName={divisionName}
         teamCount={teams.length}
-        onRename={(newName) => onRenameDivision(divisionName, newName)}
-        onRemove={() => onRemoveDivision(divisionName)}
+        onRename={handleRename}
+        onRemove={handleRemove}
         canRemove={isEmpty}
         existingDivisions={existingDivisions}
       />

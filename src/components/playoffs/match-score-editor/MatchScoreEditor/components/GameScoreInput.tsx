@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import { ScoreStepper } from '@/components/ui/score-stepper';
 import { Team } from '@/types';
@@ -22,9 +22,12 @@ const GameScoreInput: React.FC<GameScoreInputProps> = ({
   teamNumber,
   opponentScore = 0,
 }) => {
-  const handleScoreChange = (newScore: number) => {
-    onChange(index, teamNumber, newScore);
-  };
+  const handleScoreChange = useCallback(
+    (newScore: number) => {
+      onChange(index, teamNumber, newScore);
+    },
+    [index, onChange, teamNumber]
+  );
 
   return (
     <ScoreStepper

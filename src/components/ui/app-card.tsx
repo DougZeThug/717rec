@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Link } from 'react-router';
 
 import { useThemeConsistency } from '@/hooks/useThemeConsistency';
@@ -121,6 +121,16 @@ export const AppCard: React.FC<AppCardProps> = ({
     })
   );
 
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault();
+        onClick();
+      }
+    },
+    [onClick]
+  );
+
   // Render different elements based on props
   if (linkTo) {
     return (
@@ -129,13 +139,6 @@ export const AppCard: React.FC<AppCardProps> = ({
       </Link>
     );
   } else if (isClickable) {
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-      if (onClick && (e.key === 'Enter' || e.key === ' ')) {
-        e.preventDefault();
-        onClick();
-      }
-    };
-
     return (
       <Card
         className={cardStyles}
