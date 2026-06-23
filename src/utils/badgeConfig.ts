@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 import type { WinterGlyphName } from '@/icons';
-import { BadgeConfig, BadgeType, TeamBadgeEvent } from '@/types/badges';
+import { BadgeConfig, BadgeMetadata, BadgeType, TeamBadgeEvent } from '@/types/badges';
 
 // Extended badge config with winter variant support
 export interface ExtendedBadgeConfig extends BadgeConfig {
@@ -272,7 +272,7 @@ export const getBadgeConfig = (
 
   // Enhanced color hierarchy for Intermediate division
   if (badgeType === 'intermediate_champion' && badge?.metadata) {
-    const metadata = badge.metadata as any;
+    const metadata = badge.metadata as BadgeMetadata;
     const divisionName = metadata?.division || '';
 
     // Intermediate High gets cyan, Intermediate Low gets orange
@@ -297,7 +297,7 @@ export const getBadgeConfig = (
   }
 
   if (badgeType === 'intermediate_runner_up' && badge?.metadata) {
-    const metadata = badge.metadata as any;
+    const metadata = badge.metadata as BadgeMetadata;
     const divisionName = metadata?.division || '';
 
     // Intermediate High Runner-up gets bright silver, Low gets standard silver
