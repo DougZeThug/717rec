@@ -1,13 +1,25 @@
+## Problem
+
+DeepSource flags `importScripts` as undefined in `public/progressier.js`. The file is a **service worker** registered by Progressier, where `importScripts` is a valid global provided by the ServiceWorkerGlobalScope. The lint rule simply doesn't know that.
+
+This is a false positive — no runtime bug. The fix is to tell the linter the file runs in a service worker context.
+
 ## Fix
 
-In `src/components/admin/MassScoreEntryTool.tsx` line 99, `const filterTags = []` is inferred by TypeScript as `never[]`, so the subsequent `filterTags.push({ label, value })` calls fail with TS2345 ("not assignable to never").
+Add an ESLint environment hint at the top of `public/progressier.js` so DeepSource (which respects ESLint's `/* global */` and `/* eslint-env */` directives) recognizes `importScripts`:
 
-Change the declaration to give the array an explicit element type:
-
-```ts
-const filterTags: { label: string; value: string }[] = [];
+```js
+/* eslint-env serviceworker */
+importScripts("https://progressier.app/zSi8fMHT6esPjglbvDZn/sw.js");
 ```
 
-That's the only change needed for the two reported errors at lines 102 and 111. No behavior change, no other files touched.
+That single comment marks the file as a service worker, which exposes `importScripts`, `self`, `clients`, etc. as known globals. No behavior change.
 
-Note: the sibling file `src/components/admin/mass-score-entry/MassScoreEntryTool.tsx` already avoids this issue by building the array inside a `useMemo` where inference works correctly — no change needed there.
+## Files
+
+- `public/progressier.js` — add the `/* eslint-env serviceworker */` comment on line 1.
+
+## Verification
+
+- File still loads identically in the browser (comments are ignored at runtime).
+- DeepSource JS-0125 warning for `importScripts` clears on the next scan.
