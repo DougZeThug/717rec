@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 
+import type { Tables } from '@/integrations/supabase/types';
 import { TimeslotQueryService } from '@/services/timeslots/TimeslotQueryService';
 import { Team } from '@/types';
 import { errorLog } from '@/utils/logger';
@@ -20,6 +21,27 @@ export interface TimeBlock {
   main: string; // First match timeslot (e.g., "6:30 PM")
   secondary: string; // Second match timeslot (e.g., "7:00 PM")
 }
+
+type TimeslotTeamJoin = Pick<
+  Tables<'teams'>,
+  | 'id'
+  | 'name'
+  | 'logo_url'
+  | 'image_url'
+  | 'division_id'
+  | 'wins'
+  | 'losses'
+  | 'game_wins'
+  | 'game_losses'
+> & {
+  sos?: number | null;
+  power_score?: number | null;
+  divisionName?: Pick<Tables<'divisions'>, 'name'> | null;
+};
+
+type TeamsByTimeslotRow = Pick<Tables<'team_timeslots'>, 'team_id'> & {
+  teams: TimeslotTeamJoin | null;
+};
 
 /**
  * Map of time blocks with their corresponding timeslot pairs
@@ -44,8 +66,8 @@ export async function getTeamsByTimeBlock(date: Date, timeBlock: string): Promis
 
   // Extract team data and format it according to our Team type
   const teams: Team[] =
-    timeslotData?.map((item) => {
-      const teamData = item.teams as any;
+    (timeslotData as TeamsByTimeslotRow[] | null)?.map((item) => {
+      const teamData = item.teams as TimeslotTeamJoin;
       return {
         id: teamData.id,
         name: teamData.name,

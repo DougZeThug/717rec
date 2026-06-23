@@ -2,7 +2,25 @@ import { transformDatabaseMatch } from '@/utils/matchTransformers';
 
 import { MatchWithTeams } from '../types';
 
-export const transformDatabaseMatchToMatchWithTeams = (match: any): MatchWithTeams => {
+type DatabaseMatchTransformInput = Parameters<typeof transformDatabaseMatch>[0];
+type MatchTeamJoin =
+  NonNullable<DatabaseMatchTransformInput['team1']> extends Array<infer T>
+    ? T
+    : NonNullable<DatabaseMatchTransformInput['team1']>;
+
+type MassScoreDatabaseMatch = Omit<
+  DatabaseMatchTransformInput,
+  'team1_game_wins' | 'team2_game_wins' | 'team1' | 'team2'
+> & {
+  team1_game_wins?: number | string | null;
+  team2_game_wins?: number | string | null;
+  team1?: MatchTeamJoin | null;
+  team2?: MatchTeamJoin | null;
+};
+
+export const transformDatabaseMatchToMatchWithTeams = (
+  match: MassScoreDatabaseMatch
+): MatchWithTeams => {
   // Use centralized transformer for base match fields
   const baseMatch = transformDatabaseMatch(match);
 

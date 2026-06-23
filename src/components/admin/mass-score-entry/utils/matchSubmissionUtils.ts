@@ -1,6 +1,19 @@
 import { errorLog, matchLog, warnLog } from '@/utils/logger';
+import type { transformDatabaseMatch } from '@/utils/matchTransformers';
 
-export const validateMatchSubmission = (match: any) => {
+import { MatchWithTeams } from '../types';
+
+type DatabaseMatchTransformInput = Parameters<typeof transformDatabaseMatch>[0];
+type MatchSubmissionInput = (DatabaseMatchTransformInput | MatchWithTeams) & {
+  team1Id?: string | null;
+  team2Id?: string | null;
+  team1Score?: number | null;
+  team2Score?: number | null;
+  isEdited?: boolean;
+  isValid?: boolean;
+};
+
+export const validateMatchSubmission = (match: MatchSubmissionInput | null) => {
   matchLog('DIAGNOSTIC: Starting match validation:', {
     matchId: match?.id || 'unknown',
     date: match?.date,

@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 import { BusinessLogicError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
@@ -27,6 +28,24 @@ export interface CreateSeasonData {
 export interface UpdateSeasonData extends CreateSeasonData {
   id: string;
 }
+
+type SeasonStatsAccordionRow = Pick<
+  Tables<'team_season_stats'>,
+  | 'team_id'
+  | 'season_id'
+  | 'match_wins'
+  | 'match_losses'
+  | 'game_wins'
+  | 'game_losses'
+  | 'sos'
+  | 'power_score'
+  | 'champion'
+  | 'runner_up'
+  | 'division_name'
+  | 'playoff_rank'
+> & {
+  teams: Pick<Tables<'teams'>, 'name' | 'logo_url' | 'image_url'> | null;
+};
 
 // ─── Service ─────────────────────────────────────────────────────────────────
 
@@ -282,7 +301,7 @@ export const SeasonService = {
     }
 
     // Transform the data structure
-    const transformedData = (data || []).map((item: any) => ({
+    const transformedData = ((data || []) as SeasonStatsAccordionRow[]).map((item) => ({
       team_id: item.team_id,
       season_id: item.season_id,
       match_wins: item.match_wins,
