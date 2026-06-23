@@ -25,7 +25,7 @@ export const determineChampion = (matches: PlayoffMatch[]): string | null => {
 export const normalizeBracketState = (stateValue: string | null): BracketState => {
   if (!stateValue) return BRACKET_STATES.PENDING;
 
-  if (Object.values(BRACKET_STATES).includes(stateValue as any)) {
+  if ((Object.values(BRACKET_STATES) as string[]).includes(stateValue)) {
     return stateValue as BracketState;
   }
 
