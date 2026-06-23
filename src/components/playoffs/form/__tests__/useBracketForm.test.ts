@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react';
-import type { FieldValues, UseFormReturn, UseFormWatch } from 'react-hook-form';
+import type { UseFormReturn, UseFormWatch } from 'react-hook-form';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BracketFormValues } from '../BracketFormSchema';
