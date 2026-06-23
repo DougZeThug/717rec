@@ -70,7 +70,7 @@ const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
   );
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
-  const handleChange = (field: keyof HeroCardFormData, value: any) => {
+  const handleChange = <K extends keyof HeroCardFormData>(field: K, value: HeroCardFormData[K]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
