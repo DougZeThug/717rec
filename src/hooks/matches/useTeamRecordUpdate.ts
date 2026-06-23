@@ -1,5 +1,6 @@
 import { useTeamRecords } from '@/hooks/useTeamRecords';
 import { useToast } from '@/hooks/useToast';
+import type { Team } from '@/types';
 import { warnLog } from '@/utils/logger';
 
 import { useTeamStatsValidation } from './validation/useTeamStatsValidation';
@@ -12,7 +13,7 @@ export const useTeamRecordUpdate = () => {
   const updateTeamStats = async (
     winnerId: string,
     loserId: string,
-    teams: any[],
+    teams: Team[],
     winnerGameWins: number,
     loserGameWins: number
   ) => {
