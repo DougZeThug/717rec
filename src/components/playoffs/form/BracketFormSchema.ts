@@ -9,7 +9,7 @@ export const bracketFormSchema = z.object({
     .array(z.string())
     .min(2, 'At least 2 teams are required')
     .max(32, 'Maximum 32 teams allowed'),
-  grandFinalType: z.enum(['simple', 'double']).default('simple'),
+  grandFinalType: z.enum(['simple', 'double']),
   teamSeeds: z.record(z.string(), z.number()).optional(),
 });
 
