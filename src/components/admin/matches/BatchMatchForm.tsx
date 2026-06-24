@@ -7,9 +7,11 @@ import { ThursdayDatePicker } from '../batch-matches/ThursdayDatePicker';
 import MatchFormRow from './MatchFormRow';
 import { MatchPair } from './types';
 
+type BatchMatchSubmission = Array<MatchPair & { date: Date }>;
+
 interface BatchMatchFormProps {
   teams: Team[];
-  onSubmit: (matches: any[]) => void;
+  onSubmit: (matches: BatchMatchSubmission) => void;
   onCancel: () => void;
 }
 
