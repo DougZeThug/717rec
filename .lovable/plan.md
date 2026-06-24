@@ -1,23 +1,51 @@
-## Fix JS-0437: avoid using array index as React key
+## Goal
+Silence the DeepSource `JS-0002` "no console in browser code" warnings without changing runtime behavior. All current console calls are intentional — either in Node CLI scripts or in the project's logging/error-reporting wrappers — so the fix is configuration + targeted suppression comments, not removing the calls.
 
-Replace `key={index}` / `key={i}` / `key={idx}` with stable string keys across 11 files. All occurrences are either static skeleton placeholders, JSON-LD script tags, or trophy icon repetitions — none render dynamic, reorderable data — so the safest fix is to use a descriptive prefixed key (e.g. `key={\`skeleton-${i}\`}`) which satisfies the linter without changing runtime behavior.
+## Audit results
 
-### Files to update
+Files containing `console.*` (non-test, non-doc):
 
-1. `src/components/seo/SeoHead.tsx` — JSON-LD scripts: key by a stable schema identifier (e.g. `jsonLd['@type']` + index fallback) or `` `jsonld-${i}` ``.
-2. `src/components/teams/ReportCardLeaderboard.tsx` — skeleton list → `` `skeleton-${i}` ``.
-3. `src/components/teams/TeamReportCard.tsx` — skeleton list → `` `skeleton-${i}` ``.
-4. `src/components/stats/containers/LoadingStateContainer.tsx` (two spots) — `` `loading-row-${idx}` ``, `` `loading-card-${idx}` ``.
-5. `src/components/badges/TeamBadgeCollection.tsx` — `` `badge-placeholder-${i}` ``.
-6. `src/components/stats/career/CareerRankingsMobileView.tsx` — trophy spans → `` `trophy-${i}` ``.
-7. `src/components/stats/StatsLoadingState.tsx` — `` `card-skeleton-${i}` ``.
-8. `src/components/schedule/DateMatchGroupSkeleton.tsx` — `` `match-skeleton-${index}` ``.
-9. `src/components/message-board/MessageFeedSkeleton.tsx` — `` `message-skeleton-${index}` ``.
-10. `src/components/playoffs/form/bracket-teams/components/TeamSelectionLoading.tsx` — `` `team-skeleton-${i}` ``.
+1. **Node CLI scripts** (run with `node`, never bundled to the browser):
+   - `tools/codemods/palette-tokens.mjs` — flagged
+   - `tools/codemods/size-axes.mjs` — same pattern, will be flagged next scan
+2. **Browser-side wrappers where console is the whole point**:
+   - `src/utils/logger.ts` (4 calls — `log/error/warn/log/log`)
+   - `src/utils/sentry.ts` (5 calls — fallback when Sentry transport fails)
+   - `src/utils/analytics.ts` (4 calls — dev-mode tracing when GA is disabled)
+3. **JSDoc examples only** (not real code, but DeepSource sometimes still flags):
+   - `src/utils/performance.ts` line 7
+   - `src/services/brackets/manager/BracketManagerService.ts` lines 261/263/307/312
 
-### Verification
+## Changes
 
-- `npx eslint <changed files>` → 0 JS-0437 warnings.
-- Visual: no runtime change since lists are static-length placeholders or repeated icons.
+### 1. Tell DeepSource the `tools/` scripts are Node, not browser
+Update `.deepsource.toml` to add `nodejs` to the JS analyzer environment so CLI scripts under `tools/` stop being treated as browser code:
 
-No behavior changes, presentation only.
+```toml
+[[analyzers]]
+name = "javascript"
+enabled = true
+
+  [analyzers.meta]
+  plugins = ["react"]
+  environment = ["browser", "nodejs"]
+  dialect = "typescript"
+```
+
+This is the documented fix in the DeepSource message itself and clears all 5 flagged occurrences in `tools/codemods/palette-tokens.mjs` plus the equivalent ones in `size-axes.mjs`.
+
+### 2. Suppress intentional browser console calls with `skipcq`
+Add `// skipcq: JS-0002` to each console line in:
+- `src/utils/logger.ts` (the whole purpose of this file is to wrap console)
+- `src/utils/sentry.ts` (final fallback when the Sentry endpoint can't be reached — must surface in devtools)
+- `src/utils/analytics.ts` (dev-mode trace output when GA isn't configured)
+
+### 3. Suppress JSDoc-example console references
+Add `// skipcq: JS-0002` next to the `console.log` lines inside the JSDoc blocks of `src/utils/performance.ts` and `src/services/brackets/manager/BracketManagerService.ts` only if DeepSource flags them after the other fixes. (These are inside `/** ... */` comments and usually ignored, so this is a contingency, not a guaranteed edit.)
+
+## Out of scope
+- Removing or rewriting any logging behavior.
+- Test files, markdown docs, and `public/repro/double_elim_repro.html` (standalone repro page) — not part of the app bundle and not flagged.
+
+## Verification
+After build mode: re-run DeepSource (or wait for the next scan) and confirm `JS-0002` count drops to 0. No code paths change, so no runtime regression risk.
