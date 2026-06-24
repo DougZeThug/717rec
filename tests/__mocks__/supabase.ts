@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 
 // For tracking inserted values
-export let insertedRows: Record<string, Record<string, unknown>[]> = {};
+export const insertedRows: Record<string, Record<string, unknown>[]> = {};
 
 // Helper to check if string is a valid UUID
 export const isValidUUID = (str: string): boolean => {
@@ -11,7 +11,9 @@ export const isValidUUID = (str: string): boolean => {
 
 // Reset the insertedRows between tests
 export const resetInsertedRows = (): void => {
-  insertedRows = {};
+  Object.keys(insertedRows).forEach((tableName) => {
+    delete insertedRows[tableName];
+  });
 };
 
 // Define proper types for Supabase mock responses
