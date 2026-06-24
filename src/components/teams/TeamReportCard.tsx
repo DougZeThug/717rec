@@ -146,6 +146,7 @@ const TeamReportCardContent: React.FC<{ teamId: string }> = ({ teamId }) => {
         <Skeleton className="h-[260px] w-full rounded-lg" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {Array.from({ length: 6 }).map((_, i) => (
+            // eslint-disable-next-line react/no-array-index-key
             <Skeleton key={i} className="h-16 rounded-lg" />
           ))}
         </div>

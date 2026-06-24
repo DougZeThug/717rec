@@ -31,6 +31,7 @@ const DateMatchGroupSkeleton: React.FC<DateMatchGroupSkeletonProps> = ({ matchCo
       <CollapsibleContent>
         <div className="p-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: matchCount }).map((_, index) => (
+            // eslint-disable-next-line react/no-array-index-key
             <MatchCardSkeleton key={index} />
           ))}
         </div>

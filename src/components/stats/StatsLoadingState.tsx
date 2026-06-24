@@ -26,6 +26,7 @@ const StatsLoadingState: React.FC = () => {
               staggerDelay={0.06}
             >
               {Array.from({ length: 6 }).map((_, i) => (
+                // eslint-disable-next-line react/no-array-index-key
                 <CardSkeleton key={i} hasActions />
               ))}
             </AutoStagger>

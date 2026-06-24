@@ -18,6 +18,7 @@ const MessageFeedSkeleton: React.FC<MessageFeedSkeletonProps> = ({ count = 5 }) 
         <ScrollArea className={cn('h-[calc(100dvh-250px)]', 'lg:h-[calc(100dvh-280px)]')}>
           <div className="space-y-2 p-3">
             {Array.from({ length: count }).map((_, index) => (
+              // eslint-disable-next-line react/no-array-index-key
               <MessageItemSkeleton
                 key={index}
                 className={cn(

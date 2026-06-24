@@ -104,6 +104,7 @@ const ReportCardLeaderboard: React.FC<ReportCardLeaderboardProps> = ({ teamId, i
           {isLoading ? (
             <div className="space-y-2 p-1">
               {Array.from({ length: 8 }).map((_, i) => (
+                // eslint-disable-next-line react/no-array-index-key
                 <Skeleton key={i} className="h-10 rounded-lg" />
               ))}
             </div>
