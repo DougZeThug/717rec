@@ -49,7 +49,9 @@ export const SeedStatusBadge: React.FC<SeedStatusBadgeProps> = ({
         ${isPending ? 'border-dashed' : ''}
       `}
     >
-      <Icon className={`${size === 'sm' ? 'w-3 h-3' : 'w-4 h-4'}`} />
+      {React.createElement(Icon, {
+        className: size === 'sm' ? 'w-3 h-3' : 'w-4 h-4',
+      })}
       <span>#{seed}</span>
       {size !== 'sm' && isManual && !hasConflict && (
         <span className="text-xs opacity-75">Manual</span>
