@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { type MockInstance, vi } from 'vitest';
 
 /**
  * Shared Supabase mock factory.
@@ -112,7 +112,7 @@ export function createSupabaseMock(): SupabaseMock {
   let pendingResults: Map<string, MockResult> = new Map();
 
   // Spies for each chain method, keyed by method name.
-  const spies: Record<string, (...args: unknown[]) => unknown> = {};
+  const spies: Record<string, MockInstance<(...args: unknown[]) => unknown>> = {};
 
   const CHAIN_METHODS: ChainMethod[] = [
     'select',

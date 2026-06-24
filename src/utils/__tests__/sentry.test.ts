@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-type RequestIdleCallbackFn = (cb: () => void, opts?: { timeout?: number }) => number;
+type RequestIdleCallbackFn = (cb: IdleRequestCallback, opts?: { timeout?: number }) => number;
 type GlobalWithRequestIdle = typeof globalThis & { requestIdleCallback?: RequestIdleCallbackFn };
 type WindowWithRequestIdle = Window & { requestIdleCallback?: RequestIdleCallbackFn };
 
