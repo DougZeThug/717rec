@@ -15,7 +15,7 @@ export const initSentry = () => {
   }
 
   if (!SENTRY_DSN) {
-    console.warn('[Sentry] DSN not configured - error reporting disabled');
+    console.warn('[Sentry] DSN not configured - error reporting disabled'); // skipcq: JS-0002
     return;
   }
 
@@ -222,7 +222,7 @@ const addLazyIntegrations = () => {
  */
 export const captureError = (error: Error, context?: Record<string, unknown>) => {
   // Always log to console for debugging
-  console.error('[Error]:', error, context);
+  console.error('[Error]:', error, context); // skipcq: JS-0002
 
   if (!import.meta.env.PROD) {
     return;
@@ -234,7 +234,7 @@ export const captureError = (error: Error, context?: Record<string, unknown>) =>
     });
   } catch (sentryError) {
     // Sentry failed (likely CORS or network issue) - error is already logged above
-    console.warn('[Sentry] Failed to send error report (CORS/network issue):', sentryError);
+    console.warn('[Sentry] Failed to send error report (CORS/network issue):', sentryError); // skipcq: JS-0002
   }
 };
 
@@ -248,7 +248,7 @@ export const captureMessage = (
   extra?: Record<string, unknown>
 ) => {
   // Always log to console for debugging
-  console.log(`[${level}]:`, message);
+  console.log(`[${level}]:`, message); // skipcq: JS-0002
 
   if (!import.meta.env.PROD) {
     return;
@@ -261,7 +261,7 @@ export const captureMessage = (
     });
   } catch (sentryError) {
     // Sentry failed (likely CORS or network issue) - message is already logged above
-    console.warn('[Sentry] Failed to send message (CORS/network issue):', sentryError);
+    console.warn('[Sentry] Failed to send message (CORS/network issue):', sentryError); // skipcq: JS-0002
   }
 };
 

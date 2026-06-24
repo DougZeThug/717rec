@@ -6,7 +6,7 @@ enabled = true
 
   [analyzers.meta]
   plugins = ["react"]
-  environment = ["browser"]
+  environment = ["browser", "nodejs"]
   dialect = "typescript"
 
 [[analyzers]]

@@ -20,7 +20,7 @@ declare global {
  */
 export const initAnalytics = () => {
   if (!GA_MEASUREMENT_ID || !import.meta.env.PROD) {
-    console.log('[Analytics] Disabled - no measurement ID or dev mode');
+    console.log('[Analytics] Disabled - no measurement ID or dev mode'); // skipcq: JS-0002
     return;
   }
 
@@ -60,7 +60,7 @@ export const initAnalytics = () => {
  */
 export const trackPageView = (path: string, title?: string) => {
   if (!GA_MEASUREMENT_ID || !import.meta.env.PROD) {
-    console.log('[Analytics] Page view:', path, title);
+    console.log('[Analytics] Page view:', path, title); // skipcq: JS-0002
     return;
   }
 
@@ -78,7 +78,7 @@ export const trackEvent = (
   params?: Record<string, string | number | boolean>
 ) => {
   if (!GA_MEASUREMENT_ID || !import.meta.env.PROD) {
-    console.log('[Analytics] Event:', eventName, params);
+    console.log('[Analytics] Event:', eventName, params); // skipcq: JS-0002
     return;
   }
 
@@ -90,7 +90,7 @@ export const trackEvent = (
  */
 export const setAnalyticsUser = (userId: string | null) => {
   if (!GA_MEASUREMENT_ID || !import.meta.env.PROD) {
-    console.log('[Analytics] Set user:', userId);
+    console.log('[Analytics] Set user:', userId); // skipcq: JS-0002
     return;
   }
 
