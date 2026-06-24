@@ -61,8 +61,11 @@ export class BracketStandingsService {
       // never received its winners due to a silent brackets-manager failure.
       if (this.normalizationService) {
         try {
-          await this.normalizationService.propagateCompletedMatches(stage.id);
+          // Run normalization first so GF slots are populated with the canonical
+          // mapping (WB winner → opponent1, LB winner → opponent2) before the
+          // propagation repair pass walks any remaining stuck winners.
           await this.normalizationService.normalizeGrandFinalPopulation(stage.id);
+          await this.normalizationService.propagateCompletedMatches(stage.id);
         } catch (healError) {
           warnLog('Pre-standings self-heal failed (continuing):', healError);
         }
