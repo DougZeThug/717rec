@@ -303,9 +303,7 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
           <Button
             type="submit"
             className="bg-cornhole-navy hover:bg-cornhole-navy/90"
-            disabled={
-              !timeSlotValue || form.formState.isSubmitting || isUpdating || isCreating
-            }
+            disabled={!timeSlotValue || form.formState.isSubmitting || isUpdating || isCreating}
           >
             {match ? (
               <>

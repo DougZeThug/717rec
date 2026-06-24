@@ -174,9 +174,10 @@ export function usePlayoffPageData(): PlayoffPageData {
   useEffect(() => {
     if (processingError) {
       logError(processingError.cause, 'typesafeBracketsByDivision processing');
-      setError(processingError.message);
     }
   }, [processingError]);
+
+  const combinedError = error ?? processingError?.message ?? null;
 
   const isLoading = bracketsLoading || divisionsLoading || adminLoading;
 
@@ -309,7 +310,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     selectedBracketId,
     setSelectedBracketId,
     ready: !!selectedBracketId && !!selectedBracket && !selectedBracketLoading,
-    error,
+    error: combinedError,
     divisionsError: finalDivisionsError,
     bracketsError: finalBracketsError,
     divisions: Array.isArray(divisions) ? divisions : [],
