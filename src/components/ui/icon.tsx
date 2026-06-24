@@ -98,12 +98,15 @@ export const Icon: React.FC<IconProps> = ({
   const alignmentClass =
     opticalAlign && iconName in OPTICAL_ALIGN_MAP ? OPTICAL_ALIGN_MAP[iconName] : '';
 
-  return React.createElement(resolvedIcon, {
-    size: pixelSize,
-    strokeWidth,
-    className: cn(alignmentClass, 'transition-all duration-200', className),
-    ...props,
-  });
+  return React.createElement(
+    resolvedIcon as React.ComponentType<LucideProps>,
+    {
+      size: pixelSize,
+      strokeWidth,
+      className: cn(alignmentClass, 'transition-all duration-200', className),
+      ...props,
+    }
+  );
 };
 
 export default Icon;
