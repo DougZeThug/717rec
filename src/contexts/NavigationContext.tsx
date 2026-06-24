@@ -1,33 +1,9 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { routeLog } from '@/utils/logger';
 
-/** Route state passed during navigation */
-export interface RouteState {
-  isAppNavigating?: boolean;
-  [key: string]: unknown;
-}
-
-interface NavigationOptions {
-  state?: RouteState;
-  replace?: boolean;
-}
-
-interface NavigationContextType {
-  navigateWithTransition: (to: string, options?: NavigationOptions) => void;
-  isNavigating: boolean;
-}
-
-const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
-
-export const useNavigation = () => {
-  const context = useContext(NavigationContext);
-  if (!context) {
-    throw new Error('useNavigation must be used within a NavigationProvider');
-  }
-  return context;
-};
+import { NavigationContext, type NavigationOptions } from './navigation-context';
 
 interface NavigationProviderProps {
   children: React.ReactNode;
