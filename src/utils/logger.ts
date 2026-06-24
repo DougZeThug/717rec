@@ -12,12 +12,12 @@ import { captureError, captureMessage } from '@/utils/sentry';
 
 // Base logging functions
 export const log = (...args: unknown[]) => {
-  if (shouldLog('info')) console.log('[717REC]', ...args);
+  if (shouldLog('info')) console.log('[717REC]', ...args); // skipcq: JS-0002
 };
 
 export const errorLog = (...args: unknown[]) => {
   // Always log errors in dev mode
-  if (shouldLog('error')) console.error('[717REC ERROR]', ...args);
+  if (shouldLog('error')) console.error('[717REC ERROR]', ...args); // skipcq: JS-0002
 
   // In production, send to Sentry
   if (!isDev && args.length > 0) {
@@ -84,11 +84,11 @@ export const errorLog = (...args: unknown[]) => {
 };
 
 export const warnLog = (...args: unknown[]) => {
-  if (shouldLog('warn')) console.warn('[717REC WARN]', ...args);
+  if (shouldLog('warn')) console.warn('[717REC WARN]', ...args); // skipcq: JS-0002
 };
 
 export const debugLog = (...args: unknown[]) => {
-  if (shouldLog('debug')) console.log('[717REC DEBUG]', ...args);
+  if (shouldLog('debug')) console.log('[717REC DEBUG]', ...args); // skipcq: JS-0002
 };
 
 // ============================================
@@ -188,4 +188,5 @@ export const supabaseErrorLog = (operation: string, error: unknown) => {
 // ============================================
 
 export const diagnosticLog = (context: string, data: Record<string, unknown>) =>
+  // skipcq: JS-0002
   isDev && console.log(`[717REC DIAGNOSTIC] ${context}:`, data);
