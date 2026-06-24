@@ -71,12 +71,12 @@ export class MatchPropagationRepairService {
 
     const wbFinalRound = await this.lbStructureService.findWbFinalRound(stageId);
     if (wbFinalRound) {
-      await this.propagateFinalToGf(wbFinalRound, gfRound1);
+      await this.propagateFinalToGf(wbFinalRound, gfRound1, 'opponent1');
     }
 
     const lbFinalRound = await this.lbStructureService.findLbFinalRound(stageId);
     if (lbFinalRound) {
-      await this.propagateFinalToGf(lbFinalRound, gfRound1);
+      await this.propagateFinalToGf(lbFinalRound, gfRound1, 'opponent2');
     }
 
     // Reset / double grand final
@@ -88,7 +88,8 @@ export class MatchPropagationRepairService {
 
   private async propagateFinalToGf(
     finalRound: StorageRound,
-    gfRound1: StorageRound
+    gfRound1: StorageRound,
+    targetSlot: 'opponent1' | 'opponent2'
   ): Promise<void> {
     const finalMatches = await this.storage.select('match', { round_id: finalRound.id });
     const arr = (Array.isArray(finalMatches) ? finalMatches : [finalMatches]) as StorageMatch[];
@@ -112,13 +113,12 @@ export class MatchPropagationRepairService {
     if (!gfMatch) return;
     if (gfMatch.opponent1_id === winnerId || gfMatch.opponent2_id === winnerId) return;
 
-    const targetSlot = !gfMatch.opponent1_id
-      ? 'opponent1'
-      : !gfMatch.opponent2_id
-        ? 'opponent2'
-        : null;
-    if (!targetSlot) {
-      bracketLog(`⚠️ [PROPAGATE→GF] Both GF slots occupied — skipping winner ${winnerId}`);
+    const currentSlotId =
+      targetSlot === 'opponent1' ? gfMatch.opponent1_id : gfMatch.opponent2_id;
+    if (currentSlotId) {
+      bracketLog(
+        `⚠️ [PROPAGATE→GF] ${targetSlot} already filled (${currentSlotId}) — skipping winner ${winnerId}`
+      );
       return;
     }
 
