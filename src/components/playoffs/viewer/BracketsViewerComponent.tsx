@@ -63,7 +63,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
       // Handle brackets-manager brackets
       if (bracket?.uses_brackets_manager) {
         bracketLog('Opening brackets-manager match editor for match:', match.id);
-        setSelectedBMMatchId(match.id);
+        setSelectedBMMatchId(Number(match.id));
         setIsBMEditorOpen(true);
         return;
       }
@@ -71,7 +71,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
       // Handle legacy playoff_matches brackets
       // eslint-disable-next-line react-hooks/immutability -- stable ref is returned by the renderer hook below and read only from this click handler.
       if (getPlayoffMatchIdRef.current) {
-        const playoffMatchId = getPlayoffMatchIdRef.current(match.id);
+        const playoffMatchId = getPlayoffMatchIdRef.current(Number(match.id));
         if (playoffMatchId) {
           bracketLog('Calling onMatchClick with playoff match ID:', playoffMatchId);
           onMatchClick(playoffMatchId);
