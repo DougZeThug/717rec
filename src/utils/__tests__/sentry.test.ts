@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-type RequestIdleCallbackFn = (cb: () => void, opts?: { timeout?: number }) => number;
+type RequestIdleCallbackFn = (cb: IdleRequestCallback, opts?: { timeout?: number }) => number;
 type GlobalWithRequestIdle = typeof globalThis & { requestIdleCallback?: RequestIdleCallbackFn };
 type WindowWithRequestIdle = Window & { requestIdleCallback?: RequestIdleCallbackFn };
 
@@ -265,8 +265,8 @@ describe('sentry utils', () => {
     it('schedules lazy integrations via requestIdleCallback in PROD', async () => {
       const addIntegration = vi.fn();
       getClientMock.mockReturnValue({ addIntegration });
-      const requestIdleCallbackMock = vi.fn((cb: () => void) => {
-        cb();
+      const requestIdleCallbackMock = vi.fn((cb: IdleRequestCallback) => {
+        cb({ didTimeout: false, timeRemaining: () => 0 } as IdleDeadline);
         return 1;
       });
       runtimeGlobal.requestIdleCallback = requestIdleCallbackMock;
@@ -311,8 +311,8 @@ describe('sentry utils', () => {
 
     it('lazy integration adder is safe when getClient() returns null', async () => {
       getClientMock.mockReturnValue(null);
-      runtimeGlobal.requestIdleCallback = vi.fn((cb: () => void) => {
-        cb();
+      runtimeGlobal.requestIdleCallback = vi.fn((cb: IdleRequestCallback) => {
+        cb({ didTimeout: false, timeRemaining: () => 0 } as IdleDeadline);
         return 1;
       });
 
@@ -326,8 +326,8 @@ describe('sentry utils', () => {
       getClientMock.mockImplementation(() => {
         throw new Error('boom');
       });
-      runtimeGlobal.requestIdleCallback = vi.fn((cb: () => void) => {
-        cb();
+      runtimeGlobal.requestIdleCallback = vi.fn((cb: IdleRequestCallback) => {
+        cb({ didTimeout: false, timeRemaining: () => 0 } as IdleDeadline);
         return 1;
       });
 

@@ -168,7 +168,7 @@ export const useBracketData = (bracketId: string | null) => {
       } catch (error) {
         errorLog('CRITICAL ERROR in useBracketData:', {
           bracketId,
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
         });
         throw error;
       }

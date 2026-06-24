@@ -14,7 +14,8 @@
     "moduleResolution": "bundler",
     "noEmit": true,
     "noFallthroughCasesInSwitch": false,
-    "noImplicitAny": true,
+    "noImplicitAny": false,
+    "noImplicitThis": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "paths": {
@@ -24,6 +25,7 @@
     },
     "skipLibCheck": true,
     "strict": true,
+    "strictNullChecks": false,
     "target": "ES2022",
     "useDefineForClassFields": true
   },

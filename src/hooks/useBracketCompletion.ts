@@ -56,9 +56,10 @@ export function useBracketCompletion(bracketId: string | undefined) {
             } catch (error) {
               errorLog('Failed to calculate final standings:', error);
               toast({
-                title: 'Standings Pending',
+                title: 'Standings Calculation Failed',
                 description:
-                  'Final standings could not be calculated yet. They will retry automatically.',
+                  'Could not calculate final placements. Please contact an admin to recalculate.',
+                variant: 'destructive',
               });
             }
           }

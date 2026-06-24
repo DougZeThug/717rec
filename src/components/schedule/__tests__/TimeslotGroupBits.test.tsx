@@ -15,7 +15,7 @@ const base: TeamTimeslot = {
   is_double_header: false,
   pair_slot: null,
   match_sequence: 1,
-  teams: { id: 't1', name: '', divisionName: null },
+  teams: { id: 't1', name: '', divisionName: 'Rec' },
 };
 
 describe('TimeslotMatchRowMobile', () => {
@@ -25,10 +25,10 @@ describe('TimeslotMatchRowMobile', () => {
   });
 
   it('shows double-header badge on mobile rows', () => {
-    const ts = {
+    const ts: TeamTimeslot = {
       ...base,
       is_double_header: true,
-      teams: { ...(base.teams ?? {}), name: 'Team One' },
+      teams: { id: 't1', name: 'Team One', divisionName: 'Rec' },
     };
     const dhInfo = new Map([['t1', { slot1: '7:00 PM', slot2: '9:00 PM' }]]);
     render(

@@ -150,7 +150,10 @@ export async function editMatchParticipants(
       message: 'Match teams updated',
     };
   } catch (error) {
-    failureLog('Admin editMatchParticipants failed', error);
+    failureLog(
+      'Admin editMatchParticipants failed',
+      error instanceof Error ? error : String(error)
+    );
     if (error instanceof BusinessLogicError) throw error;
     throw new BusinessLogicError(
       `Failed to edit match participants: ${error instanceof Error ? error.message : 'Unknown error'}`,
