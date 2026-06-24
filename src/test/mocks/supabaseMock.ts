@@ -1,4 +1,4 @@
-import { type MockInstance, vi } from 'vitest';
+import { vi } from 'vitest';
 
 /**
  * Shared Supabase mock factory.
