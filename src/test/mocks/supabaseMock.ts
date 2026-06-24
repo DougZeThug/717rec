@@ -112,7 +112,7 @@ export function createSupabaseMock(): SupabaseMock {
   let pendingResults: Map<string, MockResult> = new Map();
 
   // Spies for each chain method, keyed by method name.
-  const spies: Record<string, MockInstance<(...args: unknown[]) => unknown>> = {};
+  const spies: Record<string, ReturnType<typeof vi.fn>> = {};
 
   const CHAIN_METHODS: ChainMethod[] = [
     'select',
