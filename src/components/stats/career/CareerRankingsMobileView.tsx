@@ -261,7 +261,7 @@ const CareerDetailedCard: React.FC<{
         {ranking.championships > 0 && (
           <div className="flex items-center gap-1 text-sm">
             {Array.from({ length: ranking.championships }).map((_, i) => (
-              // eslint-disable-next-line react/no-array-index-key
+              // skipcq: JS-0437
               <span key={i}>🏆</span>
             ))}
             {ranking.runnerUps > 0 && (

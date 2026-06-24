@@ -48,7 +48,7 @@ const TeamBadgeCollection: React.FC<TeamBadgeCollectionProps> = ({
         )}
       >
         {Array.from({ length: 3 }).map((_, i) => (
-          // eslint-disable-next-line react/no-array-index-key
+          // skipcq: JS-0437
           <Skeleton
             key={i}
             className={cn(

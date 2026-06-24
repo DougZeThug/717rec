@@ -32,7 +32,7 @@ const SeoHead: React.FC<SeoHeadProps> = ({ title, description, path, type = 'web
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       {ldArray.map((data, i) => (
-        // eslint-disable-next-line react/no-array-index-key
+        // skipcq: JS-0437
         <script key={i} type="application/ld+json">
           {JSON.stringify(data)}
         </script>
