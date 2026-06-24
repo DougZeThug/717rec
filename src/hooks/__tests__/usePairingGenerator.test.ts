@@ -4,7 +4,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useToast } from '@/hooks/useToast';
-import { PairingResult } from '@/types/autoSchedule';
+import { PairingResult, TimeBlockTeamsMap } from '@/types/autoSchedule';
 import { fetchSeasonHistoryForTeams } from '@/utils/autoSchedule/matchHistoryService';
 import { mockDate, mockPairings, mockTimeBlockTeams } from '@/utils/test/autoSchedule/mockData';
 
@@ -28,7 +28,11 @@ vi.mock('@/utils/autoSchedule/matchHistoryService', () => ({
 // Mock the pairing schedulers - must use vi.hoisted so the variable is defined when vi.mock factory runs
 const mockScheduleStandardPairings = vi.hoisted(() => vi.fn());
 vi.mock('../scheduling/utils/standardPairing', () => ({
-  scheduleStandardPairings: (...args: any[]) => mockScheduleStandardPairings(...args),
+  scheduleStandardPairings: (
+    timeBlockTeams: TimeBlockTeamsMap,
+    avoidRematches: boolean,
+    seasonId?: string
+  ) => mockScheduleStandardPairings(timeBlockTeams, avoidRematches, seasonId),
 }));
 
 vi.mock('../scheduling/utils/dualBlockScheduler', () => ({

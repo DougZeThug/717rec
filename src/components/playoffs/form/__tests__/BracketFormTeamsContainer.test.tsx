@@ -4,6 +4,21 @@ import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BracketFormTeamsContainer } from '../bracket-teams/components/BracketFormTeamsContainer';
+import type {
+  BracketFormStateResult,
+  ProcessedTeam,
+  SeedValidationState,
+} from '../bracket-teams/types';
+
+type MockTeamSelectionFormProps = {
+  teams: ProcessedTeam[];
+  formState: BracketFormStateResult;
+  maxTeams: number;
+  minTeams: number;
+  divisionId?: string;
+  seedValidation?: SeedValidationState;
+  onSeedChange?: (teamId: string, seed: number | null) => void;
+};
 
 // Mock individual hook files (component imports from individual files, not barrel)
 const mockUseBracketFormData = vi.hoisted(() => vi.fn());
@@ -24,7 +39,7 @@ vi.mock('../bracket-teams/hooks/useBracketFormValidation', () => ({
 
 // Mock individual child component files
 vi.mock('../bracket-teams/components/TeamSelectionError', () => ({
-  TeamSelectionError: ({ message }: any) => (
+  TeamSelectionError: ({ message }: { message: string }) => (
     <div data-testid="team-selection-error">
       <span>{message}</span>
     </div>
@@ -40,7 +55,7 @@ vi.mock('../bracket-teams/components/TeamSelectionEmpty', () => ({
 }));
 
 vi.mock('../bracket-teams/components/TeamSelectionForm', () => ({
-  TeamSelectionForm: ({ teams, formState }: any) => (
+  TeamSelectionForm: ({ teams, formState }: MockTeamSelectionFormProps) => (
     <div data-testid="team-selection-form">
       <span>Teams: {teams ? teams.length : 0}</span>
       <span>{formState?.statusMessage || 'Ready'}</span>

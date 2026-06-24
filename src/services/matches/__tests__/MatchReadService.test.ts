@@ -50,8 +50,16 @@ const makeMatch = (overrides = {}) => ({
  *
  * This mirrors the Supabase PostgREST query builder pattern.
  */
-const makeQueryChain = (result: { data: unknown; error: unknown | null }) => {
-  const chain: Record<string, unknown> & PromiseLike<unknown> = {
+type QueryResult = { data: unknown; error: unknown | null };
+type QueryChain = PromiseLike<QueryResult> & {
+  gte: (...args: unknown[]) => QueryChain;
+  lt: (...args: unknown[]) => QueryChain;
+  eq: (...args: unknown[]) => QueryChain;
+  catch: Promise<QueryResult>['catch'];
+};
+
+const makeQueryChain = (result: QueryResult): QueryChain => {
+  const chain: QueryChain = {
     gte: (...args: unknown[]) => {
       mockGte(...args);
       return chain;
@@ -64,9 +72,8 @@ const makeQueryChain = (result: { data: unknown; error: unknown | null }) => {
       mockEq(...args);
       return chain;
     },
-    then: ((onFulfilled?: any, onRejected?: any) =>
-      Promise.resolve(result).then(onFulfilled, onRejected)) as PromiseLike<unknown>['then'],
-    catch: (onRejected?: any) => Promise.resolve(result).catch(onRejected),
+    then: (onFulfilled, onRejected) => Promise.resolve(result).then(onFulfilled, onRejected),
+    catch: (onRejected) => Promise.resolve(result).catch(onRejected),
   };
   return chain;
 };

@@ -2,6 +2,10 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { BracketStandingsService } from '../src/services/brackets/manager/services/BracketStandingsService';
 
+type BracketStandingsServiceArgs = ConstructorParameters<typeof BracketStandingsService>;
+type StandingsStorage = Pick<BracketStandingsServiceArgs[0], 'select'>;
+type StandingsManager = Pick<BracketStandingsServiceArgs[1], 'get'>;
+
 // Mock dependencies
 vi.mock('../src/integrations/supabase/client', () => ({
   supabase: {
@@ -31,8 +35,8 @@ vi.mock('../src/utils/logger', () => ({
 
 describe('BracketStandingsService', () => {
   it('should use the LAST stage for final standings, not the first one', async () => {
-    const mockStorage = {
-      select: vi.fn().mockImplementation(async (table, _filter) => {
+    const mockStorage: StandingsStorage = {
+      select: vi.fn().mockImplementation(async (table: string) => {
         if (table === 'stage') {
           // Simulate a tournament with a Group Stage and a Playoff Stage
           return [
@@ -50,7 +54,7 @@ describe('BracketStandingsService', () => {
       }),
     };
 
-    const mockManager = {
+    const mockManager: StandingsManager = {
       get: {
         finalStandings: vi.fn().mockResolvedValue([
           { id: 101, rank: 1 },
@@ -59,7 +63,10 @@ describe('BracketStandingsService', () => {
       },
     };
 
-    const service = new BracketStandingsService(mockStorage as any, mockManager as any);
+    const service = new BracketStandingsService(
+      mockStorage as BracketStandingsServiceArgs[0],
+      mockManager as BracketStandingsServiceArgs[1]
+    );
     await service.calculateFinalStandings('bracket-123');
 
     // Currently it calls with 1 (the first stage), but it should call with 2 (the final stage)

@@ -2,6 +2,7 @@ import { screen } from '@testing-library/dom';
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
+import type { Team } from '@/types';
 import { mockTeams } from '@/utils/test/autoSchedule/mockData';
 
 import { TimeBlockTeamsList } from '../../auto-schedule/TimeBlockTeamsList';
@@ -28,13 +29,13 @@ describe('TimeBlockTeamsList', () => {
   });
 
   it('should handle teams with missing properties', () => {
-    const incompleteTeam = [
+    const incompleteTeam: Team[] = [
       {
         id: 'team5',
         name: 'Incomplete Team',
-        // Missing other properties
+        // Optional team properties are intentionally omitted.
       },
-    ] as any;
+    ];
 
     // Should render without errors
     render(<TimeBlockTeamsList teams={incompleteTeam} />);
