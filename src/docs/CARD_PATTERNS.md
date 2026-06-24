@@ -57,7 +57,7 @@ import { SummaryCard } from "@/components/ui/summary-card";
 ```tsx
 import { EntityCard } from "@/components/ui/entity-card";
 
-<EntityCard division={team.divisionName} isInteractive>
+<EntityCard isInteractive>
   {/* Team content */}
 </EntityCard>
 ```

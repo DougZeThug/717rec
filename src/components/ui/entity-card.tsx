@@ -20,7 +20,7 @@ export interface EntityCardProps extends Omit<HTMLMotionProps<'div'>, 'children'
  * Features:
  * - Motion animations for hover/tap
  * - Winter theme support
- * - Division-specific gradients (optional)
+ * - Blue-orange gradient support
  * - Consistent border radius and shadows
  */
 export const EntityCard: React.FC<EntityCardProps> = ({
