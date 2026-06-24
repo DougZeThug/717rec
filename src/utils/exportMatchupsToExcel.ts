@@ -13,7 +13,7 @@ const renderCell = (value: string | number, tag: 'td' | 'th' = 'td'): string =>
 const renderRow = (cells: Array<string | number>, tag: 'td' | 'th' = 'td'): string =>
   `<tr>${cells.map((cell) => renderCell(cell, tag)).join('')}</tr>`;
 
-export const exportMatchupsToExcel = async (data: SeasonOpponentData): Promise<void> => {
+export const exportMatchupsToExcel = (data: SeasonOpponentData): void => {
   const summaryRows = data.teams.map((team) =>
     renderRow([
       team.teamName,

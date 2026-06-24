@@ -34,7 +34,7 @@ const OpponentHistoryTab: React.FC = () => {
     setIsExporting(true);
     try {
       const { exportMatchupsToExcel } = await import('@/utils/exportMatchupsToExcel');
-      await exportMatchupsToExcel(data);
+      exportMatchupsToExcel(data);
     } finally {
       setIsExporting(false);
     }
