@@ -227,7 +227,7 @@ export const useBracketsViewerRenderer = ({
         });
 
         try {
-          window.bracketsViewer.render(viewerData as Parameters<typeof window.bracketsViewer.render>[0], {
+          window.bracketsViewer.render(viewerData as unknown as Parameters<typeof window.bracketsViewer.render>[0], {
             selector: `#${containerId}`,
             clear: true,
             participantOriginPlacement: 'before',
