@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 import { LoginRequired } from '@/components/auth';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { cn } from '@/lib/utils';
 
 interface MatchCommentFormProps {

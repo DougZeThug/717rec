@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { useTeamMembership } from '@/hooks/useTeamMembership';
 import { toast } from '@/hooks/useToast';
 import { MessageService } from '@/services/messages/MessageService';

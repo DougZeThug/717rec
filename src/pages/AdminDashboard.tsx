@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router';
 
 import { AdminAccessModal } from '@/components/admin/AdminAccessModal';
 import AdminSidebar from '@/components/admin/dashboard/AdminSidebar';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { toast } from '@/hooks/useToast';
 

@@ -8,7 +8,7 @@ import MessageFeed from '@/components/message-board/MessageFeed';
 import MessageFilterBar from '@/components/message-board/MessageFilterBar';
 import MessageInput from '@/components/message-board/MessageInput';
 import PageTransition from '@/components/transitions/PageTransition';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { useMessageBoard } from '@/hooks/useMessageBoard';
 import { toast } from '@/hooks/useToast';
 import { cn } from '@/lib/utils';

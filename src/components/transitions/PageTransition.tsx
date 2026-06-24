@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router';
 
-import { useNavigation } from '@/contexts/NavigationContext';
+import { useNavigation } from '@/contexts/navigation-context';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
 import { routeLog } from '@/utils/logger';

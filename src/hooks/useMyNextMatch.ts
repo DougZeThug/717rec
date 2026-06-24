@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { useTeamMatches } from '@/hooks/useTeamMatches';
 import { useTeamMembership } from '@/hooks/useTeamMembership';
 import { Match } from '@/types';

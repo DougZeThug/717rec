@@ -1,10 +1,9 @@
-import React, { createContext, useContext, useMemo } from 'react';
-import { useNavigate } from 'react-router';
+import React, { useMemo } from 'react';
 
 import { useAuth as useAuthHook } from '@/hooks/useAuth';
 import { AuthContextType } from '@/types/auth';
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import { AuthContext } from './auth-context';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const auth = useAuthHook();
@@ -45,27 +44,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-
-  return context;
-};
-
-export const useRequireAuth = () => {
-  const { user, isLoading, authInitialized } = useAuth();
-  const navigate = useNavigate();
-
-  React.useEffect(() => {
-    if (authInitialized && !isLoading && !user) {
-      navigate('/auth', { state: { returnTo: window.location.pathname } });
-    }
-  }, [user, isLoading, authInitialized, navigate]);
-
-  return { user, isLoading, authInitialized };
 };

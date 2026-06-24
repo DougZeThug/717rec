@@ -4,7 +4,7 @@ import { useTheme } from 'next-themes';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
-import { useNavigation } from '@/contexts/NavigationContext';
+import { useNavigation } from '@/contexts/navigation-context';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
 

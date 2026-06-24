@@ -1,3 +1,6 @@
+// ChartLegend is a direct Recharts.Legend alias required by the Recharts
+// API; co-locating it with ChartLegendContent matches the shadcn surface.
+/* eslint-disable react-refresh/only-export-components */
 import { useTheme } from 'next-themes';
 import * as React from 'react';
 import type { LegendPayload } from 'recharts';
@@ -5,7 +8,7 @@ import * as RechartsPrimitive from 'recharts';
 
 import { cn } from '@/lib/utils';
 
-import { useChart } from './ChartContainer';
+import { useChart } from './chart-context';
 import { getPayloadConfigFromPayload } from './utils/tooltipUtils';
 
 export const ChartLegend = RechartsPrimitive.Legend;

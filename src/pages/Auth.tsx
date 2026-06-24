@@ -6,7 +6,7 @@ import AuthForm from '@/components/auth/AuthForm';
 import SocialAuthButtons from '@/components/auth/SocialAuthButtons';
 import PageLayout from '@/components/layout/PageLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { useAuthForm } from '@/hooks/useAuthForm';
 import { useNativePlatform } from '@/hooks/useNativePlatform';
 import { sanitizeReturnTo } from '@/utils/auth/sanitizeReturnTo';

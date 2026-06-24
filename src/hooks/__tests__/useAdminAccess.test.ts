@@ -18,7 +18,7 @@ vi.mock('@/utils/logger', () => ({
   warnLog: vi.fn(),
 }));
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 
 const makeAuth = (overrides: Record<string, unknown> = {}) => ({
   user: { id: 'user-1', email: 'user@example.com' },
