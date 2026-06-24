@@ -12,7 +12,7 @@ export const isValidUUID = (str: string): boolean => {
 // Reset the insertedRows between tests
 export const resetInsertedRows = (): void => {
   Object.keys(insertedRows).forEach((tableName) => {
-    delete insertedRows[tableName];
+    insertedRows[tableName] = [];
   });
 };
 
