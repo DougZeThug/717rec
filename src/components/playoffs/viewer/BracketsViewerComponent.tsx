@@ -1,11 +1,12 @@
 import { InMemoryDatabase } from 'brackets-memory-db';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 
 import { LoadingState } from '@/components/ui/loading-state';
 import { bracketLog, errorLog, warnLog } from '@/utils/logger';
 import { PlayoffBracket, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 
 import { BracketsManagerMatchEditor } from '../match-score-editor/BracketsManagerMatchEditor';
+import type { BracketsViewerMatchClick } from './useBracketsViewerRenderer';
 import { useBracketsViewerRenderer } from './useBracketsViewerRenderer';
 import { useBracketsViewerScript } from './useBracketsViewerScript';
 
@@ -41,17 +42,14 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
   // Load brackets-viewer script and CSS
   const { isReady: isScriptReady, error: scriptError } = useBracketsViewerScript();
 
-  // Bump the internal refresh counter whenever the external refresh signal
-  // changes. This is what surfaces realtime `match` table updates into the
-  // viewer render cycle.
-  useEffect(() => {
-    if (refreshSignal === undefined || refreshSignal === null) return;
-    setRefreshCounter((c) => c + 1);
-  }, [refreshSignal]);
+  // Include the external refresh signal in the renderer key so realtime
+  // `match` table updates flow into the viewer without a synchronous effect
+  // state update. Internal editor saves still bump refreshCounter below.
+  const refreshKey = `${refreshCounter}:${refreshSignal ?? 'initial'}`;
 
   // Match click handler - routes to BM editor or legacy handler
   const handleMatchClicked = useCallback(
-    (match: any) => {
+    (match: BracketsViewerMatchClick) => {
       bracketLog('Match clicked', { matchId: match.id });
 
       if (!onMatchClick) return;
@@ -71,6 +69,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
       }
 
       // Handle legacy playoff_matches brackets
+      // eslint-disable-next-line react-hooks/immutability -- stable ref is returned by the renderer hook below and read only from this click handler.
       if (getPlayoffMatchIdRef.current) {
         const playoffMatchId = getPlayoffMatchIdRef.current(match.id);
         if (playoffMatchId) {
@@ -81,6 +80,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
         }
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- getPlayoffMatchIdRef is a stable ref from useBracketsViewerRenderer.
     [onMatchClick, bracket?.uses_brackets_manager]
   );
 
@@ -94,7 +94,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
     containerRef,
     containerId: CONTAINER_ID,
     isScriptReady,
-    refreshCounter,
+    refreshKey,
     onMatchClicked: handleMatchClicked,
   });
 
@@ -143,7 +143,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
           style={{ position: 'relative', height: '100%', minHeight: '350px' }}
         >
           <div
-            key={`${bracket.id}-${refreshCounter}`}
+            key={`${bracket.id}-${refreshKey}`}
             ref={containerRef}
             id={CONTAINER_ID}
             className="brackets-viewer p-4 md:p-8 font-bebas bg-background"

@@ -1,5 +1,15 @@
 // Type declarations for brackets-viewer.js
 
+import type {
+  Group,
+  Match,
+  MatchGame,
+  Participant,
+  ParticipantResult,
+  Round,
+  Stage,
+} from 'brackets-model';
+
 declare global {
   interface Window {
     bracketsViewer: {
@@ -9,12 +19,12 @@ declare global {
   }
 
   interface BracketsViewerData {
-    stages: any[];
-    groups?: any[];
-    rounds?: any[];
-    matches: any[];
-    matchGames: any[];
-    participants: any[];
+    stages: Stage[];
+    groups?: Group[];
+    rounds?: Round[];
+    matches: Match[];
+    matchGames: MatchGame[];
+    participants: Participant[];
   }
 
   interface BracketsViewerCustomRoundInfo {
@@ -29,8 +39,8 @@ declare global {
     group_id?: number | null;
     round_id?: number | null;
     number?: number | null;
-    opponent1?: any;
-    opponent2?: any;
+    opponent1?: ParticipantResult | null;
+    opponent2?: ParticipantResult | null;
   }
 
   interface BracketsViewerConfig {
