@@ -68,45 +68,42 @@ export const Icon: React.FC<IconProps> = ({
   const pixelSize = ICON_SIZES[size];
   const strokeWidth = ICON_STROKE[weight];
 
-  // Resolve the icon - either from direct prop or registry lookup
-  let ResolvedIcon: LucideIcon | React.FC<any> | undefined = icon;
+  // Resolve the icon - either from direct prop or registry lookup.
+  // Stored as a lowercase variable so the React Compiler doesn't treat the
+  // reassignment as creating a new component during render.
+  let resolvedIcon: LucideIcon | React.FC<React.SVGProps<SVGSVGElement>> | undefined = icon;
 
-  if (!ResolvedIcon && name) {
-    ResolvedIcon = getIcon(name);
+  if (!resolvedIcon && name) {
+    resolvedIcon = getIcon(name);
   }
 
   // Check for winter variant swap
-  if (useWinterVariant && isWinterTheme && WINTER_ICONS_ENABLED) {
-    // If using registry name, check for winter variant
-    if (name) {
-      const winterVariantName = getIconWinterVariant(name);
-      if (winterVariantName) {
-        const WinterGlyph = getWinterGlyph(winterVariantName);
-        if (WinterGlyph) {
-          ResolvedIcon = WinterGlyph;
-        }
+  if (useWinterVariant && isWinterTheme && WINTER_ICONS_ENABLED && name) {
+    const winterVariantName = getIconWinterVariant(name);
+    if (winterVariantName) {
+      const winterGlyph = getWinterGlyph(winterVariantName);
+      if (winterGlyph) {
+        resolvedIcon = winterGlyph;
       }
     }
   }
 
-  if (!ResolvedIcon) {
+  if (!resolvedIcon) {
     warnLog(`Icon: No icon found for name="${name}" or icon prop`);
     return null;
   }
 
   // Get optical alignment class if needed
-  const iconName = (ResolvedIcon as LucideIcon).displayName || '';
+  const iconName = (resolvedIcon as LucideIcon).displayName || '';
   const alignmentClass =
     opticalAlign && iconName in OPTICAL_ALIGN_MAP ? OPTICAL_ALIGN_MAP[iconName] : '';
 
-  return (
-    <ResolvedIcon
-      size={pixelSize}
-      strokeWidth={strokeWidth}
-      className={cn(alignmentClass, 'transition-all duration-200', className)}
-      {...props}
-    />
-  );
+  return React.createElement(resolvedIcon, {
+    size: pixelSize,
+    strokeWidth,
+    className: cn(alignmentClass, 'transition-all duration-200', className),
+    ...props,
+  });
 };
 
 export default Icon;
