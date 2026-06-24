@@ -1,4 +1,5 @@
 import { BracketsManager } from 'brackets-manager';
+import type { SeedOrdering } from 'brackets-model';
 
 import { supabase } from '@/integrations/supabase/client';
 import { BusinessLogicError } from '@/types/errors';
