@@ -212,7 +212,7 @@ export const useScoreEntryData = () => {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- initial mount fetch; deps would cause refetch loop
     fetchMatches();
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- initial mount fetch; deps would cause refetch loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- initial mount fetch; deps would cause refetch loop
   }, [filters.date, filters.bracketId]);
 
   return {
