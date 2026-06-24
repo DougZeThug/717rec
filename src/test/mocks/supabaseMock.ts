@@ -153,7 +153,7 @@ export function createSupabaseMock(): SupabaseMock {
 
     for (const method of CHAIN_METHODS) {
       chain[method] = (...args: unknown[]) => {
-        const spy = spies[method];
+        const spy = spies[method] as unknown as (...args: unknown[]) => unknown;
         spy(...args);
         return chain;
       };
