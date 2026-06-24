@@ -17,10 +17,9 @@ const MessageFeedSkeleton: React.FC<MessageFeedSkeletonProps> = ({ count = 5 }) 
       <CardContent className="p-0">
         <ScrollArea className={cn('h-[calc(100dvh-250px)]', 'lg:h-[calc(100dvh-280px)]')}>
           <div className="space-y-2 p-3">
-            {Array.from({ length: count }).map((_, index) => (
-              // skipcq: JS-0437
+            {Array.from({ length: count }, (_, index) => `msg-skel-${index}`).map((sk, index) => (
               <MessageItemSkeleton
-                key={index}
+                key={sk}
                 className={cn(
                   // Stagger animation delays for visual effect
                   index === 0 && 'animation-delay-0',

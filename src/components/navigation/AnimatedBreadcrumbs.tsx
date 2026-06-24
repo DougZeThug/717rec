@@ -65,7 +65,7 @@ export const AnimatedBreadcrumbs: React.FC<AnimatedBreadcrumbsProps> = ({
       <ol className="flex items-center flex-wrap gap-1 text-sm">
         {items.map((item, index) => (
           <m.li
-            key={item.label + index}
+            key={`${item.href ?? 'current'}-${item.label}`}
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{

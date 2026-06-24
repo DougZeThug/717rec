@@ -71,7 +71,7 @@ export const EventWinnersEditor: React.FC<FormSectionProps> = ({ formData, onCha
 
       <div className="space-y-4">
         {pastWinners.map((weekData, weekIndex) => (
-          <div key={weekIndex} className="border rounded-md p-3 space-y-2 bg-muted/30">
+          <div key={`week-${weekData.week}`} className="border rounded-md p-3 space-y-2 bg-muted/30">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Label className="text-xs">Week</Label>
@@ -95,7 +95,7 @@ export const EventWinnersEditor: React.FC<FormSectionProps> = ({ formData, onCha
             </div>
 
             {weekData.winners.map((winner, winnerIndex) => (
-              <div key={winnerIndex} className="flex items-center gap-2">
+              <div key={`week-${weekData.week}-place-${winner.place}`} className="flex items-center gap-2">
                 <span className="text-sm w-12 shrink-0">
                   {placeLabels[winnerIndex] || `#${winner.place}`}
                 </span>
