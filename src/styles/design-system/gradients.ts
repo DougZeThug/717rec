@@ -101,13 +101,13 @@ export const gradients = {
  */
 export const getGradient = (path: string): string => {
   const keys = path.split('.');
-  let result: any = gradients;
+  let result: unknown = gradients;
 
   for (const key of keys) {
-    if (!result[key]) {
+    if (typeof result !== 'object' || result === null || !(key in result)) {
       return gradients.card.default;
     }
-    result = result[key];
+    result = (result as Record<string, unknown>)[key];
   }
 
   return typeof result === 'string' ? result : gradients.card.default;

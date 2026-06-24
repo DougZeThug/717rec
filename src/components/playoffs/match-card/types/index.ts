@@ -30,8 +30,10 @@ export interface MatchStatusProps {
   winnerId?: string | null;
 }
 
+import type { PlayoffGame } from '@/types';
+
 export interface MatchGamesDotsProps {
-  games: any[];
+  games: PlayoffGame[];
   team1Id: string | null;
   team2Id: string | null;
   winnerId: string | null;
