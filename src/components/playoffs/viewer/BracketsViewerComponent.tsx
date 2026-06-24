@@ -6,6 +6,7 @@ import { bracketLog, errorLog, warnLog } from '@/utils/logger';
 import { PlayoffBracket, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 
 import { BracketsManagerMatchEditor } from '../match-score-editor/BracketsManagerMatchEditor';
+import type { BracketsViewerMatchClick } from './useBracketsViewerRenderer';
 import { useBracketsViewerRenderer } from './useBracketsViewerRenderer';
 import { useBracketsViewerScript } from './useBracketsViewerScript';
 
@@ -51,7 +52,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
 
   // Match click handler - routes to BM editor or legacy handler
   const handleMatchClicked = useCallback(
-    (match: any) => {
+    (match: BracketsViewerMatchClick) => {
       bracketLog('Match clicked', { matchId: match.id });
 
       if (!onMatchClick) return;

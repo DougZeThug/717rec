@@ -1,4 +1,5 @@
 import { InMemoryDatabase } from 'brackets-memory-db';
+import type { Match, ParticipantResult } from 'brackets-model';
 import { useEffect, useRef, useState } from 'react';
 
 import { BracketsViewerAdapter, ViewerDataWithMapping } from '@/services/brackets/viewer';
@@ -11,18 +12,16 @@ type BracketsViewerCustomRoundInfo = {
   roundCount: number;
 };
 
-type BracketsViewerMatchClick = {
-  id: number;
-  stage_id?: number | null;
-  group_id?: number | null;
-  round_id?: number | null;
-  number?: number | null;
-  opponent1?: any;
-  opponent2?: any;
-};
+export type BracketsViewerMatchClick = Pick<Match, 'id'> &
+  Partial<Pick<Match, 'stage_id' | 'group_id' | 'round_id' | 'number'>> & {
+    opponent1?: ParticipantResult | null;
+    opponent2?: ParticipantResult | null;
+  };
+
+type FingerprintMatch = Pick<Match, 'id' | 'status' | 'opponent1' | 'opponent2'>;
 
 /** Fingerprint function to detect identical match data and skip redundant renders. */
-const fingerprint = (matches: any[]): string => {
+const fingerprint = (matches: FingerprintMatch[]): string => {
   const ids = matches.map((x) => x.id).join(',');
   // Include opponent IDs and status so newly populated slots (e.g. a Grand
   // Final that just received its WB/LB finalists) are not treated as
