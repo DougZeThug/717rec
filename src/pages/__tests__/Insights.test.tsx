@@ -8,6 +8,10 @@ import Insights from '../Insights';
 
 const mockInsightsState = vi.fn();
 
+vi.mock('react-helmet-async', () => ({
+  Helmet: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 vi.mock('@/hooks/useScrollRestoration', () => ({ default: vi.fn() }));
 vi.mock('@/components/layout/PageLayout', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,

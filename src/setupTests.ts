@@ -1,10 +1,23 @@
 import '@testing-library/jest-dom';
 
-import { configure } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
+import { afterEach } from 'vitest';
 
 // Configure testing library
 configure({
   testIdAttribute: 'data-testid',
+});
+
+// React Testing Library already auto-runs cleanup() after each test because
+// `globals: true` is set in vitest.config.ts. We register it explicitly here
+// too so the guarantee is visible and survives any change to that setting.
+//
+// We deliberately do NOT add a global vi.useRealTimers() / vi.restoreAllMocks()
+// here: Vitest's per-file isolation already stops timer/mock state from leaking
+// between files, and a blanket reset would break files that intentionally set
+// fake timers or spies at file scope. Those files own their own teardown.
+afterEach(() => {
+  cleanup();
 });
 
 // This makes "screen" available in tests and ensures proper React 18+ testing

@@ -9,6 +9,10 @@ import History from '../History';
 const mockUseIsMobile = vi.fn();
 const mockHistoryState = vi.fn();
 
+vi.mock('react-helmet-async', () => ({
+  Helmet: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 vi.mock('@/hooks/useMobile', () => ({ useIsMobile: () => mockUseIsMobile() }));
 vi.mock('@/hooks/useScrollRestoration', () => ({ default: vi.fn() }));
 

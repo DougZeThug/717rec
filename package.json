@@ -16,6 +16,7 @@
     "test:coverage:serial": "env VITEST_LIGHT_COVERAGE=1 vitest run --coverage --maxWorkers=1",
     "test:coverage:full": "env VITEST_LOCAL_DIAGNOSTICS=1 vitest run --coverage",
     "test:watch": "vitest",
+    "test:debug": "timeout 10m vitest run --reporter=verbose --maxWorkers=1 --pool=forks --fileParallelism=false",
     "typecheck": "tsc --noEmit",
     "test:coverage:ci": "timeout 10m env CI=true VITEST_CI_COVERAGE=1 VITEST_FAST_COVERAGE=1 COVERAGE_CRITICAL_ONLY=1 vitest run --coverage",
     "test:coverage:deepsource": "env CI=true VITEST_DEEPSOURCE=1 VITEST_CI_COVERAGE=1 COVERAGE_CRITICAL_ONLY=1 timeout 15m vitest run --coverage --maxWorkers=1",
