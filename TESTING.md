@@ -117,14 +117,14 @@ Do not use `pnpm` or `yarn` — neither is installed.
 
 ## Current baseline
 
-Last measured: 2026-06-22.
+Last measured: 2026-06-24.
 
 | Metric     | Covered |
 | ---------- | ------- |
-| Lines      | 44.53%  |
-| Statements | 43.76%  |
-| Functions  | 36.42%  |
-| Branches   | 35.07%  |
+| Lines      | 44.77%  |
+| Statements | 43.98%  |
+| Functions  | 36.49%  |
+| Branches   | 35.45%  |
 
 The overall number is low because most React components and UI pages are not
 yet under test. The logic-heavy areas (utils, scheduling, rankings, career
@@ -142,10 +142,10 @@ Vitest coverage thresholds are now enforced in CI and locally via
 Global thresholds in `vitest.config.ts` are pinned a few points below the
 current baseline:
 
-- Lines: **40%**
-- Statements: **39%**
-- Functions: **32%**
-- Branches: **31%**
+- Lines: **42%**
+- Statements: **41%**
+- Functions: **34%**
+- Branches: **33%**
 
 If a PR drops any global metric below those numbers, the coverage job fails.
 
@@ -154,15 +154,19 @@ If a PR drops any global metric below those numbers, the coverage job fails.
 These floors sit a few points below current measured coverage for each area, so
 they catch regressions without blocking normal work:
 
-- `src/services/**`: 70% lines / 68% statements / 68% functions / 55% branches
-- `src/hooks/**`: 33% lines / 32% statements / 27% functions / 24% branches
-- `src/utils/**`: 64% lines / 63% statements / 62% functions / 52% branches
+- `src/services/**`: 72% lines / 71% statements / 72% functions / 58% branches
+- `src/hooks/**`: 36% lines / 36% statements / 29% functions / 27% branches
+- `src/utils/**`: 67% lines / 66% statements / 64% functions / 55% branches
 
 These values are below current measured coverage for those areas and are meant
 as a floor, not a final target.
 
 ### Stage 2 ratchet history
 
+- **2026-06-24**: Refreshed the baseline from the latest passing fast coverage run
+  (285 files / 2318 tests in 429.38s) and raised global plus high-risk folder
+  floors by a small margin. The new gates remain below measured coverage and
+  leave runtime stabilization work ahead of any larger Stage-3 ratchet.
 - **2026-05-26**: First Stage-2 ratchet. Global gates raised from
   27.27/26.96/21.12/19.98 to 40/39/32/31; folder floors raised for services
   (45→70 lines), hooks (15→33 lines), and utils (50→64 lines). Added a
@@ -185,7 +189,8 @@ description and an updated table in this file.
 
 - **PR author**: keep coverage at or above thresholds for touched code.
 - **Area owners/reviewers**: ratchet thresholds upward when an area improves and
-  stays stable.
+  stays stable; avoid additional threshold increases while the coverage runtime
+  is still being actively tuned or investigated.
 - **Maintainers**: keep `vitest.config.ts` thresholds and this policy in sync.
 - **Everyone**: never lower thresholds just to merge unrelated work. If a drop is
   unavoidable (e.g., broad refactor), call it out explicitly in the PR and
@@ -193,16 +198,18 @@ description and an updated table in this file.
 
 ### Baseline generation note
 
-To keep this baseline consistent across updates, run a single command from the
-repo root:
+To promote the latest passing coverage run to the repository baseline, run a
+single command from the repo root:
 
 ```bash
-npm run test:coverage:refresh-docs
+npm run test:coverage:update-baseline
 ```
 
-This command runs coverage, reads `coverage/coverage-summary.json`, and
-automatically updates the `## Current baseline` date + top-level metric rows in
-this file.
+This command runs the fast coverage gate, replaces `coverage-baseline.txt` only
+after that run succeeds, then reads `coverage/coverage-summary.json` and updates
+the `## Current baseline` date + top-level metric rows in this file. If you
+already have a fresh successful coverage run and only need to resync this doc,
+run `npm run test:coverage:sync-docs`.
 
 ## Coverage by area
 
