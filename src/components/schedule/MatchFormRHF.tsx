@@ -1,6 +1,6 @@
 import { Plus, Save, X } from 'lucide-react';
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -99,9 +99,10 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
     });
   };
 
-  const isCompleted = form.watch('isCompleted');
-  const team1Id = form.watch('team1Id');
-  const team2Id = form.watch('team2Id');
+  const isCompleted = useWatch({ control: form.control, name: 'isCompleted' });
+  const team1Id = useWatch({ control: form.control, name: 'team1Id' });
+  const team2Id = useWatch({ control: form.control, name: 'team2Id' });
+  const timeSlotValue = useWatch({ control: form.control, name: 'timeSlot' });
 
   return (
     <Form {...form}>
@@ -303,7 +304,7 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
             type="submit"
             className="bg-cornhole-navy hover:bg-cornhole-navy/90"
             disabled={
-              !form.watch('timeSlot') || form.formState.isSubmitting || isUpdating || isCreating
+              !timeSlotValue || form.formState.isSubmitting || isUpdating || isCreating
             }
           >
             {match ? (

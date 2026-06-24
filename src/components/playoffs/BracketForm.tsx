@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Users } from 'lucide-react';
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
@@ -53,9 +53,9 @@ const BracketForm: React.FC<BracketFormProps> = ({
     mode: 'onBlur',
   });
 
-  const { watch, setValue, trigger } = form;
-  const watchedDivisionId = watch('divisionId');
-  const watchedTitle = watch('title');
+  const { setValue, trigger } = form;
+  const watchedDivisionId = useWatch({ control: form.control, name: 'divisionId' });
+  const watchedTitle = useWatch({ control: form.control, name: 'title' });
 
   // Update teams field when selection changes and trigger validation
   React.useEffect(() => {

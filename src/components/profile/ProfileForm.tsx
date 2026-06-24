@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -48,7 +48,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   });
 
   const { isSubmitting } = form.formState;
-  const username = form.watch('username');
+  const username = useWatch({ control: form.control, name: 'username' });
 
   // Track the latest username being checked to ignore stale responses
   const latestCheckRef = useRef<string>('');
