@@ -13,13 +13,6 @@ import type {
   UpdateSeedingOptions,
 } from './types/BracketServiceTypes';
 
-// Re-export public types for consumers
-export type {
-  CreateBracketOptions,
-  UpdateMatchOptions,
-  UpdateSeedingOptions,
-} from './types/BracketServiceTypes';
-
 /**
  * Facade for bracket management operations
  *
