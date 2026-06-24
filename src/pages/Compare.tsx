@@ -32,7 +32,6 @@ const Compare: React.FC = () => {
     if (team2Id && !team2) {
       const found = teams.find((t) => t.id === team2Id);
       if (found) setTeam2(found);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- initial team load from URL params; deps would clobber user edits
     }
   }, [teams, searchParams]);
 

@@ -29,7 +29,6 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
     setMounted(true);
   }, []);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- enabledThemes stable within hook scope
   // Filter to only enabled themes, excluding 'system'
   const enabledThemes =
     enabledKeys.length > 0 ? themeOrder.filter((t) => enabledKeys.includes(t)) : ['light', 'dark'];
