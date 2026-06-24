@@ -29,4 +29,6 @@ fi
 mv "$TMP_FILE" "$BASELINE_FILE"
 trap - EXIT
 
-echo "Updated ${BASELINE_FILE} from successful coverage run."
+npm run test:coverage:sync-docs
+
+echo "Updated ${BASELINE_FILE} and TESTING.md from successful coverage run."

@@ -59,9 +59,9 @@ for (const [label, key] of METRICS) {
 }
 
 if (updatedBaseline === baselineBlock) {
-  throw new Error(`No baseline updates were applied in ${TESTING_DOC_PATH}`);
+  process.stdout.write(`${TESTING_DOC_PATH} baseline already matches ${COVERAGE_SUMMARY_PATH} (${isoDate}).\n`);
+} else {
+  await writeFile(TESTING_DOC_PATH, `${before}${updatedBaseline}${after}`, 'utf8');
+
+  process.stdout.write(`Updated ${TESTING_DOC_PATH} baseline from ${COVERAGE_SUMMARY_PATH} (${isoDate}).\n`);
 }
-
-await writeFile(TESTING_DOC_PATH, `${before}${updatedBaseline}${after}`, 'utf8');
-
-process.stdout.write(`Updated ${TESTING_DOC_PATH} baseline from ${COVERAGE_SUMMARY_PATH} (${isoDate}).\n`);
