@@ -162,7 +162,7 @@ export const useBracketsViewerRenderer = ({
         }
 
         // Prevent duplicate re-renders on identical data
-        const fp = fingerprint(m);
+        const fp = fingerprint(m as unknown as FingerprintMatch[]);
         if (lastFingerprintRef.current === fp) {
           bracketLog('No-op: identical fingerprint, skipping render');
           return;
@@ -227,7 +227,7 @@ export const useBracketsViewerRenderer = ({
         });
 
         try {
-          window.bracketsViewer.render(viewerData, {
+          window.bracketsViewer.render(viewerData as unknown as Parameters<typeof window.bracketsViewer.render>[0], {
             selector: `#${containerId}`,
             clear: true,
             participantOriginPlacement: 'before',
