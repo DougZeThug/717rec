@@ -227,17 +227,20 @@ export const useBracketsViewerRenderer = ({
         });
 
         try {
-          window.bracketsViewer.render(viewerData as unknown as Parameters<typeof window.bracketsViewer.render>[0], {
-            selector: `#${containerId}`,
-            clear: true,
-            participantOriginPlacement: 'before',
-            separatedChildCountLabel: true,
-            showSlotsOrigin: true,
-            showLowerBracketSlotsOrigin: true,
-            highlightParticipantOnHover: true,
-            onMatchClick: onMatchClicked,
-            customRoundName,
-          });
+          window.bracketsViewer.render(
+            viewerData as unknown as Parameters<typeof window.bracketsViewer.render>[0],
+            {
+              selector: `#${containerId}`,
+              clear: true,
+              participantOriginPlacement: 'before',
+              separatedChildCountLabel: true,
+              showSlotsOrigin: true,
+              showLowerBracketSlotsOrigin: true,
+              highlightParticipantOnHover: true,
+              onMatchClick: onMatchClicked,
+              customRoundName,
+            }
+          );
 
           bracketLog('brackets-viewer.render() completed successfully');
           window.dispatchEvent(new Event('resize'));
