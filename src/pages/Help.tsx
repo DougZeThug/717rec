@@ -1,9 +1,9 @@
 import { HelpCircle } from 'lucide-react';
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
 
 import { HelpAdminCTA } from '@/components/help/HelpAdminCTA';
 import { HelpQuickLinks } from '@/components/help/HelpQuickLinks';
+import SeoHead from '@/components/seo/SeoHead';
 import { AccessibilitySection } from '@/components/help/sections/AccessibilitySection';
 import { AdminSections } from '@/components/help/sections/admin/AdminSections';
 import { FAQSection } from '@/components/help/sections/FAQSection';
@@ -17,18 +17,56 @@ import { WelcomeSection } from '@/components/help/sections/WelcomeSection';
 import { Accordion } from '@/components/ui/accordion';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 
+const FAQ_JSON_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'How is the Power Score calculated?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Power Score combines win percentage (70%) and strength of schedule (30%) to create a balanced ranking metric.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'What does SOS (Strength of Schedule) mean?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: "SOS measures the average win percentage of all opponents you've faced. A higher SOS means you've played tougher competition.",
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How do playoff seeds work?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Seeds are typically based on regular season standings or power rankings. Higher seeds get favorable bracket positions.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: "Can I see my team's historical performance?",
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: "Yes! Visit the History page to view past seasons, or check your team's page for career statistics.",
+      },
+    },
+  ],
+};
+
 const Help: React.FC = () => {
   const { isAdminAccessGranted } = useAdminAccess();
 
   return (
     <>
-      <Helmet>
-        <title>Help & Getting Started | 717REC</title>
-        <meta
-          name="description"
-          content="Learn how to use 717REC - your guide to league management, standings, schedules, and playoffs."
-        />
-      </Helmet>
+      <SeoHead
+        title="Help & Getting Started | 717REC"
+        description="Learn how 717REC standings, schedules, playoffs, and power scores work."
+        path="/help"
+        jsonLd={FAQ_JSON_LD}
+      />
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
