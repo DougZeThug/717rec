@@ -5,24 +5,8 @@ import * as RechartsPrimitive from 'recharts';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 
+import { ChartContext, type ChartConfig } from './chart-context';
 import { ChartStyle } from './ChartStyle';
-import type { ChartConfigMap } from './types';
-
-export type ChartConfig = ChartConfigMap;
-
-type ChartContextProps = {
-  config: ChartConfig;
-};
-
-export const ChartContext = React.createContext<ChartContextProps | null>(null);
-
-export function useChart() {
-  const context = React.useContext(ChartContext);
-  if (!context) {
-    throw new Error('useChart must be used within a <ChartContainer />');
-  }
-  return context;
-}
 
 interface ChartContainerProps extends React.ComponentProps<'div'> {
   config: ChartConfig;
