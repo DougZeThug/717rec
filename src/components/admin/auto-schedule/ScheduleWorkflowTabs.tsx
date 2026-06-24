@@ -20,7 +20,7 @@ interface ScheduleWorkflowTabsProps {
   timeBlockTeams: TimeBlockTeamsMap;
   originalTimeBlockTeams: TimeBlockTeamsMap;
   generatedPairings: TeamPairingMap;
-  generatedMatches: any[] | null;
+  generatedMatches: AutoScheduleMatch[] | null;
   unmatchedTeamIds: string[];
   isGenerating: boolean;
   oddBlocks: number;
