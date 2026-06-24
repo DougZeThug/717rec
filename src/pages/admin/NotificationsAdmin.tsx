@@ -1,5 +1,5 @@
 import { Trash2 } from 'lucide-react';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import ContactInboxSection from '@/components/admin/contact/ContactInboxSection';
 import { Button } from '@/components/ui/button';
@@ -31,33 +31,34 @@ const NotificationsAdmin: React.FC<{ currentTimeMs?: number }> = ({
   const { user } = useAuth();
   const { data: notifications = [], isLoading } = useNotificationsQuery(100);
 
-  const nextExpiryRefreshDelayMs = useMemo(() => {
-    if (suppliedTimeMs !== undefined) return null;
+  useEffect(() => {
+    if (suppliedTimeMs !== undefined) return undefined;
+
+    // Refresh clock immediately so newly-arrived (already-expired) notifications
+    // get a correct expiry evaluation on this render cycle.
+    const now = getCurrentTimeMs();
+    setLiveTimeMs(now);
 
     const futureExpiryTimes = notifications
       .map((n) => (n.expires_at ? Date.parse(n.expires_at) : Number.NaN))
-      .filter((expiresAt) => Number.isFinite(expiresAt) && expiresAt >= currentTimeMs);
+      .filter((expiresAt) => Number.isFinite(expiresAt) && expiresAt >= now);
 
-    if (futureExpiryTimes.length === 0) return NOTIFICATION_CLOCK_FALLBACK_INTERVAL_MS;
-
-    const nextExpiryTime = Math.min(...futureExpiryTimes);
-    return Math.max(
-      nextExpiryTime - currentTimeMs + NOTIFICATION_EXPIRY_REFRESH_BUFFER_MS,
-      NOTIFICATION_EXPIRY_REFRESH_BUFFER_MS
-    );
-  }, [currentTimeMs, notifications, suppliedTimeMs]);
-
-  useEffect(() => {
-    if (nextExpiryRefreshDelayMs === null) return undefined;
+    const delay =
+      futureExpiryTimes.length === 0
+        ? NOTIFICATION_CLOCK_FALLBACK_INTERVAL_MS
+        : Math.max(
+            Math.min(...futureExpiryTimes) - now + NOTIFICATION_EXPIRY_REFRESH_BUFFER_MS,
+            NOTIFICATION_EXPIRY_REFRESH_BUFFER_MS
+          );
 
     const timeout = window.setTimeout(() => {
       setLiveTimeMs(getCurrentTimeMs());
-    }, nextExpiryRefreshDelayMs);
+    }, delay);
 
     return () => {
       window.clearTimeout(timeout);
     };
-  }, [nextExpiryRefreshDelayMs]);
+  }, [notifications, suppliedTimeMs]);
 
   const create = useCreateNotification();
   const update = useUpdateNotification();
