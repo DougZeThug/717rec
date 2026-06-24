@@ -3,7 +3,6 @@ import React from 'react';
 
 import { HelpAdminCTA } from '@/components/help/HelpAdminCTA';
 import { HelpQuickLinks } from '@/components/help/HelpQuickLinks';
-import SeoHead from '@/components/seo/SeoHead';
 import { AccessibilitySection } from '@/components/help/sections/AccessibilitySection';
 import { AdminSections } from '@/components/help/sections/admin/AdminSections';
 import { FAQSection } from '@/components/help/sections/FAQSection';
@@ -14,6 +13,7 @@ import { ScheduleSection } from '@/components/help/sections/ScheduleSection';
 import { StandingsSection } from '@/components/help/sections/StandingsSection';
 import { TeamsSection } from '@/components/help/sections/TeamsSection';
 import { WelcomeSection } from '@/components/help/sections/WelcomeSection';
+import SeoHead from '@/components/seo/SeoHead';
 import { Accordion } from '@/components/ui/accordion';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 

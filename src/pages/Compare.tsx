@@ -74,7 +74,10 @@ const Compare: React.FC = () => {
         />
         <link rel="canonical" href="https://717rec.app/compare" />
         <meta property="og:title" content="Team Comparison | 717REC" />
-        <meta property="og:description" content="Compare two 717REC cornhole teams side by side with detailed statistics and head-to-head records." />
+        <meta
+          property="og:description"
+          content="Compare two 717REC cornhole teams side by side with detailed statistics and head-to-head records."
+        />
         <meta property="og:url" content="https://717rec.app/compare" />
         <meta property="og:type" content="website" />
       </Helmet>

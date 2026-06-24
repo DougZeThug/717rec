@@ -15,7 +15,13 @@ const BASE_URL = 'https://717rec.app';
  * Per-route SEO head tags. Sets title, description, canonical, and OG/Twitter
  * tags pointing back at this page. Optionally injects JSON-LD structured data.
  */
-const SeoHead: React.FC<SeoHeadProps> = ({ title, description, path, type = 'website', jsonLd }) => {
+const SeoHead: React.FC<SeoHeadProps> = ({
+  title,
+  description,
+  path,
+  type = 'website',
+  jsonLd,
+}) => {
   const url = `${BASE_URL}${path}`;
   const ldArray = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 

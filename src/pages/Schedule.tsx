@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 
 import PageLayout from '@/components/layout/PageLayout';
-import SeoHead from '@/components/seo/SeoHead';
 import DeleteMatchDialog from '@/components/schedule/DeleteMatchDialog';
 import MatchFormDialog from '@/components/schedule/MatchFormDialog';
 import ScheduleContent from '@/components/schedule/ScheduleContent';
 import ScheduleContentSkeleton from '@/components/schedule/ScheduleContentSkeleton';
 import ScheduleHeader from '@/components/schedule/ScheduleHeader';
+import SeoHead from '@/components/seo/SeoHead';
 import { useTeamsQuery } from '@/hooks/teams';
 import { useMatchDates } from '@/hooks/useMatchDates';
 import { useMatchManagement } from '@/hooks/useMatchManagement';

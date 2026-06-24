@@ -128,10 +128,7 @@ export async function adminToggleByeReady(
       message: 'Match reverted to Waiting status. Status toggle is available again.',
     };
   } catch (error) {
-    failureLog(
-      'Admin BYE toggle failed',
-      error instanceof Error ? error : String(error)
-    );
+    failureLog('Admin BYE toggle failed', error instanceof Error ? error : String(error));
     throw new BusinessLogicError(
       `Failed to toggle BYE match status: ${error instanceof Error ? error.message : 'Unknown error'}`,
       error
