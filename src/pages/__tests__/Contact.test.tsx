@@ -75,8 +75,11 @@ vi.mock('@/components/ui/select', () => ({
 vi.mock('@/components/ui/form', () => ({
   Form: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   FormControl: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  FormField: ({ render }: { render: Function }) =>
-    render({ field: { value: '', onChange: vi.fn() } }),
+  FormField: ({
+    render,
+  }: {
+    render: (props: { field: { value: string; onChange: () => void } }) => React.ReactNode;
+  }) => render({ field: { value: '', onChange: vi.fn() } }),
   FormItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   FormLabel: ({ children }: { children: React.ReactNode }) => <label>{children}</label>,
   FormMessage: () => null,

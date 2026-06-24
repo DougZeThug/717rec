@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { fetchScheduleMatches } from '@/services/matches/MatchReadService';
 import { errorLog, scheduleLog } from '@/utils/logger';
-import { transformDatabaseMatches, type RawMatchRow } from '@/utils/matchTransformers';
+import { type RawMatchRow, transformDatabaseMatches } from '@/utils/matchTransformers';
 
 export const useScheduleData = () => {
   const { data: matchesData, isLoading: matchesLoading } = useQuery({

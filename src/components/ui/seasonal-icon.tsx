@@ -59,31 +59,27 @@ export const SeasonalIcon: React.FC<SeasonalIconProps> = ({
 
   // Determine which icon to render
   const shouldUseWinter = isWinterTheme && WINTER_ICONS_ENABLED && (winterGlyph || winterIcon);
+  const winterResolved = shouldUseWinter
+    ? winterGlyph
+      ? getWinterGlyph(winterGlyph)
+      : winterIcon
+    : undefined;
 
-  if (shouldUseWinter) {
-    // Get winter icon - either from glyph registry or direct component
-    const WinterIcon = winterGlyph ? getWinterGlyph(winterGlyph) : winterIcon;
+  const iconToRender = winterResolved ?? DefaultIcon;
 
-    if (WinterIcon) {
-      return (
-        <WinterIcon
-          size={size}
-          className={cn('transition-all duration-300', className)}
-          strokeWidth={strokeWidth}
-          color={color}
-        />
-      );
+  return React.createElement(
+    iconToRender as React.ComponentType<{
+      size?: number;
+      className?: string;
+      strokeWidth?: number;
+      color?: string;
+    }>,
+    {
+      size,
+      className: cn('transition-all duration-300', className),
+      strokeWidth,
+      color,
     }
-  }
-
-  // Render default icon
-  return (
-    <DefaultIcon
-      size={size}
-      className={cn('transition-all duration-300', className)}
-      strokeWidth={strokeWidth}
-      color={color}
-    />
   );
 };
 

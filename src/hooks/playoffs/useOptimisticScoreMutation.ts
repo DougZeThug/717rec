@@ -50,6 +50,52 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
   const rollbackTimeoutRef = useRef<NodeJS.Timeout>();
   const snapshotRef = useRef<CachedMatchSnapshot | null>(null);
 
+  // Rollback to previous state (declared before applyOptimisticUpdate so the
+  // setTimeout callback inside applyOptimisticUpdate can reference it).
+  const rollback = useCallback(() => {
+    if (!bracketId || !snapshotRef.current) return;
+
+    const snapshot = snapshotRef.current;
+    scoreLog('Rolling back score update', snapshot);
+
+    queryClient.setQueryData<BracketCacheData>(['bracket-data', bracketId], (oldData) => {
+      if (!oldData?.matches) return oldData;
+
+      return {
+        ...oldData,
+        matches: oldData.matches.map((match) => {
+          const isMatch = matchIdMatches(match.id, snapshot.matchId);
+          if (!isMatch) return match;
+
+          if ('opponent1_score' in match || 'opponent1_id' in match) {
+            return {
+              ...match,
+              opponent1_score: snapshot.team1Score,
+              opponent2_score: snapshot.team2Score,
+              status: snapshot.status === 'completed' ? 4 : 2,
+            };
+          } else {
+            return {
+              ...match,
+              team1Score: snapshot.team1Score,
+              team2Score: snapshot.team2Score,
+              team1_score: snapshot.team1Score,
+              team2_score: snapshot.team2Score,
+              winnerId: snapshot.winnerId,
+              winner_id: snapshot.winnerId,
+              status: snapshot.status,
+            };
+          }
+        }),
+      };
+    });
+
+    snapshotRef.current = null;
+
+    // Force refetch to ensure consistency
+    queryClient.invalidateQueries({ queryKey: ['bracket-data', bracketId] });
+  }, [bracketId, queryClient]);
+
   // Apply optimistic update to bracket-data cache
   const applyOptimisticUpdate = useCallback(
     (
@@ -137,53 +183,8 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
         });
       }, 15000); // 15 second timeout
     },
-    [bracketId, queryClient, toast]
+    [bracketId, queryClient, toast, rollback]
   );
-
-  // Rollback to previous state
-  const rollback = useCallback(() => {
-    if (!bracketId || !snapshotRef.current) return;
-
-    const snapshot = snapshotRef.current;
-    scoreLog('Rolling back score update', snapshot);
-
-    queryClient.setQueryData<BracketCacheData>(['bracket-data', bracketId], (oldData) => {
-      if (!oldData?.matches) return oldData;
-
-      return {
-        ...oldData,
-        matches: oldData.matches.map((match) => {
-          const isMatch = matchIdMatches(match.id, snapshot.matchId);
-          if (!isMatch) return match;
-
-          if ('opponent1_score' in match || 'opponent1_id' in match) {
-            return {
-              ...match,
-              opponent1_score: snapshot.team1Score,
-              opponent2_score: snapshot.team2Score,
-              status: snapshot.status === 'completed' ? 4 : 2,
-            };
-          } else {
-            return {
-              ...match,
-              team1Score: snapshot.team1Score,
-              team2Score: snapshot.team2Score,
-              team1_score: snapshot.team1Score,
-              team2_score: snapshot.team2Score,
-              winnerId: snapshot.winnerId,
-              winner_id: snapshot.winnerId,
-              status: snapshot.status,
-            };
-          }
-        }),
-      };
-    });
-
-    snapshotRef.current = null;
-
-    // Force refetch to ensure consistency
-    queryClient.invalidateQueries({ queryKey: ['bracket-data', bracketId] });
-  }, [bracketId, queryClient]);
 
   // Clear timeout on success
   const onSuccess = useCallback(() => {
