@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Replace `w-X` + `h-X` (matching prefix and value) within the same class string
 // with a single `size-X`. Operates on string literals (", ', `) inside the file —
 // classes commonly live inside className= and cn() calls.
