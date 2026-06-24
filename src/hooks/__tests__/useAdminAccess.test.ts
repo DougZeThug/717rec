@@ -5,7 +5,7 @@ import { useAdminAccess } from '../useAdminAccess';
 
 const mockToast = vi.fn();
 
-vi.mock('@/contexts/AuthContext', () => ({
+vi.mock('@/contexts/auth-context', () => ({
   useAuth: vi.fn(),
 }));
 

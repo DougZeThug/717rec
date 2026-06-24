@@ -14,7 +14,7 @@ const mockSignInWithGoogle = vi.fn();
 const mockSignInWithGoogleNative = vi.fn();
 const mockClearAuthError = vi.fn();
 
-vi.mock('@/contexts/AuthContext', () => ({
+vi.mock('@/contexts/auth-context', () => ({
   useAuth: () => mockUseAuth(),
 }));
 

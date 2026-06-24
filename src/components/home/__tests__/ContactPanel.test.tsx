@@ -8,7 +8,7 @@ let mockUser: { email?: string; user_metadata?: { full_name?: string; name?: str
   null;
 let mockMembership: { team?: { name: string } } | null = null;
 
-vi.mock('@/contexts/AuthContext', () => ({
+vi.mock('@/contexts/auth-context', () => ({
   useAuth: () => ({ user: mockUser }),
 }));
 

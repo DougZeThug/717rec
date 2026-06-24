@@ -5,7 +5,7 @@ import type { Match } from '@/types';
 
 import { useMyNextMatch } from '../useMyNextMatch';
 
-vi.mock('@/contexts/AuthContext', () => ({
+vi.mock('@/contexts/auth-context', () => ({
   useAuth: vi.fn(),
 }));
 

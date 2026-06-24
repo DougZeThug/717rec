@@ -6,7 +6,7 @@ import ProtectedAdminRoute from '../ProtectedAdminRoute';
 
 // Mock the auth context
 const mockUseAuth = vi.fn();
-vi.mock('@/contexts/AuthContext', () => ({
+vi.mock('@/contexts/auth-context', () => ({
   useAuth: () => mockUseAuth(),
 }));
 
