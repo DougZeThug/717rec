@@ -38,13 +38,13 @@ export {
   SidebarMenuAction,
   SidebarMenuBadge,
   SidebarMenuButton,
-  sidebarMenuButtonVariants,
   SidebarMenuItem,
   SidebarMenuSkeleton,
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from './sidebar-menu';
+export { sidebarMenuButtonVariants } from './sidebar-menu-variants';
 export { SidebarMobile } from './sidebar-mobile';
 
 // ---------------------------------------------------------------------------
