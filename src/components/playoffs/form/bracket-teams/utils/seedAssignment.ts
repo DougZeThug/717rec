@@ -10,25 +10,22 @@ interface SeedInputTeam {
   win_percentage?: number | null;
 }
 
-interface TeamWithSeed extends SeedInputTeam {
-  finalSeed: number;
-  [key: string]: any;
-}
+type TeamWithSeed<T extends SeedInputTeam = SeedInputTeam> = T & { finalSeed: number };
 
 /**
  * Assigns seeds to teams handling both manual overrides and automatic assignment
  * @param teams - Array of teams with potential manual seeds
  * @returns Array of teams with finalSeed assigned
  */
-export const assignMixedSeeds = (teams: SeedInputTeam[]): TeamWithSeed[] => {
+export const assignMixedSeeds = <T extends SeedInputTeam>(teams: T[]): TeamWithSeed<T>[] => {
   if (!teams || teams.length === 0) return [];
 
   // Separate teams with manual seeds from those without
-  const teamsWithManualSeeds: TeamWithSeed[] = [];
-  const teamsWithoutSeeds: TeamWithSeed[] = [];
+  const teamsWithManualSeeds: TeamWithSeed<T>[] = [];
+  const teamsWithoutSeeds: TeamWithSeed<T>[] = [];
 
   teams.forEach((team) => {
-    const teamWithSeed: TeamWithSeed = {
+    const teamWithSeed: TeamWithSeed<T> = {
       ...team,
       finalSeed: 0, // Will be set below
     };

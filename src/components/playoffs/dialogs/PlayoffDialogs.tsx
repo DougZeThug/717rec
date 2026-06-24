@@ -18,7 +18,7 @@ interface PlayoffDialogsProps {
   // Team division dialog
   teamDialogOpen: boolean;
   setTeamDialogOpen: (open: boolean) => void;
-  teamsByDivision: Record<string, any>;
+  teamsByDivision: Record<string, Team[]>;
   availableDivisions: string[];
   teamsLoading: boolean;
   onTeamDivisionChange: (teamId: string, divisionName: string) => Promise<void>;

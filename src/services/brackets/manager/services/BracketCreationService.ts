@@ -83,13 +83,22 @@ export class BracketCreationService {
       };
       const seedOrdering = ['inner_outer', ...(lbOrderings[bracketSize] || lbOrderings[16])];
 
-      const stageConfig = {
+      const stageConfig: {
+        name: string;
+        tournamentId: string;
+        type: typeof format;
+        seeding: typeof seeding;
+        settings: {
+          seedOrdering: SeedOrdering[];
+          grandFinal: 'simple' | 'double' | 'none';
+        };
+      } = {
         name: bracketId,
         tournamentId: bracketId,
         type: format,
         seeding,
         settings: {
-          seedOrdering: seedOrdering as any,
+          seedOrdering: seedOrdering as SeedOrdering[],
           grandFinal: (format === 'double_elimination'
             ? options.grandFinalType || 'simple'
             : 'none') as 'simple' | 'double' | 'none',

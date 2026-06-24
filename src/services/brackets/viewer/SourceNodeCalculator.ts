@@ -55,7 +55,7 @@ export function calculateSourceNodeIds(
 
   // Normalize all match IDs to strings for consistent comparisons
   for (const m of matches) {
-    if (typeof m.id !== 'string') (m as any).id = String(m.id);
+    if (typeof m.id !== 'string') (m as unknown as { id: string }).id = String(m.id);
   }
 
   // Build comprehensive indexes for O(1) lookups
@@ -283,11 +283,11 @@ export function calculateSourceNodeIds(
   for (const m of matches) {
     const s1 = m.opponent1?.source_node_id;
     const s2 = m.opponent2?.source_node_id;
-    if (s1 && !ids.has(String(s1) as any)) {
+    if (s1 && !ids.has(String(s1) as unknown as number)) {
       warnLog('Dangling source_node_id (o1)', m.id, '→', s1);
       dangling++;
     }
-    if (s2 && !ids.has(String(s2) as any)) {
+    if (s2 && !ids.has(String(s2) as unknown as number)) {
       warnLog('Dangling source_node_id (o2)', m.id, '→', s2);
       dangling++;
     }
