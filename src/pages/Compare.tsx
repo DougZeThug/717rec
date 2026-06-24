@@ -67,11 +67,16 @@ const Compare: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Team Comparison | Volleyball League</title>
+        <title>Team Comparison | 717REC Cornhole League</title>
         <meta
           name="description"
-          content="Compare two volleyball teams side by side with detailed statistics and head-to-head records"
+          content="Compare two 717REC cornhole teams side by side with detailed statistics and head-to-head records."
         />
+        <link rel="canonical" href="https://717rec.app/compare" />
+        <meta property="og:title" content="Team Comparison | 717REC" />
+        <meta property="og:description" content="Compare two 717REC cornhole teams side by side with detailed statistics and head-to-head records." />
+        <meta property="og:url" content="https://717rec.app/compare" />
+        <meta property="og:type" content="website" />
       </Helmet>
 
       <div className="container mx-auto px-4 py-6 max-w-3xl">

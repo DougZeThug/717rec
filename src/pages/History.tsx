@@ -4,6 +4,7 @@ import HistoryPageContent from '@/components/history/HistoryPageContent';
 import PageHeader from '@/components/layout/PageHeader';
 import PageLayout from '@/components/layout/PageLayout';
 import AnimatedBreadcrumbs from '@/components/navigation/AnimatedBreadcrumbs';
+import SeoHead from '@/components/seo/SeoHead';
 import PageTransition from '@/components/transitions/PageTransition';
 import { useIsMobile } from '@/hooks/useMobile';
 import useScrollRestoration from '@/hooks/useScrollRestoration';
@@ -18,6 +19,11 @@ const History: React.FC = () => {
       compact={isMobile}
       gradientVariant="blueOrange"
     >
+      <SeoHead
+        title="Season History | 717REC"
+        description="Past 717REC seasons, division champions, final standings, and historical playoff results."
+        path="/history"
+      />
       <PageTransition animation="fadeInSlideDown">
         <div className="container mx-auto px-4">
           <AnimatedBreadcrumbs className="mb-2" />

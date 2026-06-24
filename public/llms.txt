@@ -1,0 +1,22 @@
+# 717REC
+
+> Lancaster PA's premier recreational cornhole league — standings, schedules, team rankings, and playoff brackets.
+
+717REC organizes recreational cornhole competition across Competitive, Intermediate, and Recreational divisions. The site publishes weekly standings, match schedules, power-score rankings, head-to-head records, and live playoff brackets.
+
+## Pages
+
+- [Home](/): League overview and current season highlights.
+- [Teams](/teams): Roster of all teams across every division.
+- [Schedule](/schedule): Upcoming and recent match schedule.
+- [Standings](/stats): Current standings, power scores, and rankings.
+- [Playoffs](/playoffs): Live and historical playoff brackets.
+- [History](/history): Past seasons, champions, and final standings.
+- [Insights](/insights): League-wide stats, parity, and top performers.
+- [Compare](/compare): Side-by-side comparison of any two teams.
+- [Help](/help): How standings, schedules, playoffs, and power scores work.
+- [Contact](/contact): Reach the league administrators.
+
+## Optional
+
+- [Message Board](/message-board): Community discussion among league members.

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import PageLayout from '@/components/layout/PageLayout';
+import SeoHead from '@/components/seo/SeoHead';
 import DeleteMatchDialog from '@/components/schedule/DeleteMatchDialog';
 import MatchFormDialog from '@/components/schedule/MatchFormDialog';
 import ScheduleContent from '@/components/schedule/ScheduleContent';
@@ -148,6 +149,11 @@ const Schedule = () => {
 
   return (
     <PageLayout withBackground={true} gradientVariant="blueOrange">
+      <SeoHead
+        title="Schedule | 717REC Cornhole League"
+        description="Upcoming and recent 717REC cornhole matches, weekly timeslots, and matchups by date."
+        path="/schedule"
+      />
       <div className="max-w-7xl mx-auto font-inter">
         <ScheduleHeader
           searchTerm={searchTerm}
