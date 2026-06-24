@@ -1,11 +1,6 @@
 export * from '../sqlChecks';
 
-// Main facade and types
-export type {
-  CreateBracketOptions,
-  UpdateMatchOptions,
-  UpdateSeedingOptions,
-} from './BracketManagerService';
+// Main facade
 export { BracketManagerService, bracketManagerService } from './BracketManagerService';
 
 // Core infrastructure
