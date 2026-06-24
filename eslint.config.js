@@ -9,7 +9,15 @@ import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import vitest from '@vitest/eslint-plugin';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', '*.config.js', 'src/integrations/supabase/types.ts'] },
+  {
+    ignores: [
+      'dist',
+      'node_modules',
+      '*.config.js',
+      'public/**',
+      'src/integrations/supabase/types.ts',
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
