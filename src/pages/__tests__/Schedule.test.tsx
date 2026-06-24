@@ -27,6 +27,10 @@ const mockUseScheduleTabs = vi.fn();
 const mockUseTeamsQuery = vi.fn();
 const mockUseMatchManagement = vi.fn();
 
+vi.mock('react-helmet-async', () => ({
+  Helmet: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 vi.mock('@/hooks/useScheduleData', () => ({
   useScheduleData: () => mockUseScheduleData(),
 }));

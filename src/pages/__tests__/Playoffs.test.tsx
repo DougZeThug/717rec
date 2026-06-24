@@ -8,6 +8,10 @@ import Playoffs from '../Playoffs';
 
 const mockUsePlayoffPageData = vi.fn();
 
+vi.mock('react-helmet-async', () => ({
+  Helmet: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 vi.mock('@/components/playoffs/hooks/usePlayoffPageData', () => ({
   usePlayoffPageData: () => mockUsePlayoffPageData(),
 }));

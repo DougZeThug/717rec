@@ -9,6 +9,10 @@ import TeamsPage from '../TeamsPage';
 const mockTeamsState = vi.fn();
 const mockContainer = vi.fn();
 
+vi.mock('react-helmet-async', () => ({
+  Helmet: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 vi.mock('@/components/layout/PageLayout', () => ({
   default: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="teams-page-layout">{children}</div>
