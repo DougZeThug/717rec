@@ -38,6 +38,7 @@ const BlindDrawSettingsCard: React.FC = () => {
 
   useEffect(() => {
     if (settings) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
       setMessage(settings.signup_confirmation_message);
     }
   }, [settings]);

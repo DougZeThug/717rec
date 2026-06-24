@@ -48,6 +48,7 @@ const ChallongeFallbackSection: React.FC = () => {
 
   useEffect(() => {
     if (config) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
       setEnabled(config.enabled);
       setTitle(config.header_title);
       setSubtitle(config.header_subtitle);
@@ -56,6 +57,7 @@ const ChallongeFallbackSection: React.FC = () => {
 
   useEffect(() => {
     if (brackets) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
       setDrafts((prevDrafts) => {
         const unsavedRows = prevDrafts.filter(
           (row) =>

@@ -10,6 +10,7 @@ export const useMatchManagement = (initialMatches: Match[]) => {
 
   // Update matches when initialMatches changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
     setMatches(initialMatches);
   }, [initialMatches]);
 

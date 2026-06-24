@@ -72,6 +72,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
   useEffect(() => {
     if (match.team1Score !== undefined || match.team2Score !== undefined) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
       setScoreAnimation(true);
       const timer = setTimeout(() => setScoreAnimation(false), 1500);
       return () => clearTimeout(timer);

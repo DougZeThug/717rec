@@ -142,6 +142,7 @@ export const useBracketResponsive = (): BracketResponsiveConfig => {
     landscapeQuery.addEventListener?.('change', handleChange);
 
     // Detect if device supports touch (doesn't cause reflow)
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot touch capability detection on mount
     setIsTouch('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
     return () => {

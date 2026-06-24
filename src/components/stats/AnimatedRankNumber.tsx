@@ -41,6 +41,7 @@ export const AnimatedRankNumber: React.FC<AnimatedRankNumberProps> = ({
     if (previousRank && previousRank !== rank && showFlash) {
       // Rank improved (lower number = better rank)
       if (rank < previousRank) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- animation tick driven by requestAnimationFrame
         setFlashColor('green');
       } else if (rank > previousRank) {
         setFlashColor('red');

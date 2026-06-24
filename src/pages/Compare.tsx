@@ -26,6 +26,7 @@ const Compare: React.FC = () => {
 
     if (team1Id && !team1) {
       const found = teams.find((t) => t.id === team1Id);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
       if (found) setTeam1(found);
     }
     if (team2Id && !team2) {

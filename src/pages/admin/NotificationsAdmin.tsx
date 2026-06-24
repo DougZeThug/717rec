@@ -37,6 +37,7 @@ const NotificationsAdmin: React.FC<{ currentTimeMs?: number }> = ({
     // Refresh clock immediately so newly-arrived (already-expired) notifications
     // get a correct expiry evaluation on this render cycle.
     const now = getCurrentTimeMs();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
     setLiveTimeMs(now);
 
     const futureExpiryTimes = notifications

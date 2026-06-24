@@ -264,6 +264,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
 
   // Initialize on mount
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
     fetchInitialMessages();
   }, []);
 

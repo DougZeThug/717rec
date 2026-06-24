@@ -7,6 +7,7 @@ export const useNativePlatform = () => {
 
   // Check if we're on a native platform
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot platform detection on mount
     setIsNative(isNativePlatform());
   }, []);
 

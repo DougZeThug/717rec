@@ -67,6 +67,7 @@ export const useBracketDimensions = (
 
   useEffect(() => {
     const newDimensions = estimateBracketSize(matchCount, bracketFormat);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
     setDimensions(newDimensions);
   }, [matchCount, bracketFormat, estimateBracketSize]);
 

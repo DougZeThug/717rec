@@ -40,6 +40,7 @@ const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) =>
   // Collapse divisions on mobile after initial mount
   useEffect(() => {
     if (isMobile) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
       setIsExpanded(false);
     }
   }, [isMobile]);

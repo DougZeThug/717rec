@@ -69,6 +69,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     // resolves from cache first and gets selected before playoffSeason arrives.
     if (playoffSeason === undefined || activeSeason === undefined) return;
     if (playoffSeason) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
       setSelectedSeasonId(playoffSeason.id);
     } else if (activeSeason) {
       setSelectedSeasonId(activeSeason.id);
@@ -79,6 +80,7 @@ export function usePlayoffPageData(): PlayoffPageData {
   const bracketParam = searchParams.get('bracket') || null;
   useEffect(() => {
     if (bracketParam !== selectedBracketId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
       setSelectedBracketIdState(bracketParam);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

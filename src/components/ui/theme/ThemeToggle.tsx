@@ -25,6 +25,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   const { enabledKeys, isLoading } = useEnabledThemeKeys();
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot mount detection for SSR-safe icon swap
     setMounted(true);
   }, []);
 
