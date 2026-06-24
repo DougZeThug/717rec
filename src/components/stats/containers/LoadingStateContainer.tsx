@@ -18,7 +18,7 @@ const LoadingStateContainer = () => {
           </CardHeader>
           <CardContent className="p-4 pt-1 sm:pt-4">
             <div className="space-y-4">
-              {['ls-row-1','ls-row-2','ls-row-3','ls-row-4','ls-row-5'].map((sk) => (
+              {['ls-row-1', 'ls-row-2', 'ls-row-3', 'ls-row-4', 'ls-row-5'].map((sk) => (
                 <div
                   key={sk}
                   className="flex items-center gap-3 p-2 border-b border-gray-100 dark:border-border"
@@ -43,7 +43,7 @@ const LoadingStateContainer = () => {
         <div className="mb-5">
           <Skeleton className="h-6 w-48 mb-4" />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {['ls-card-1','ls-card-2','ls-card-3','ls-card-4'].map((sk) => (
+            {['ls-card-1', 'ls-card-2', 'ls-card-3', 'ls-card-4'].map((sk) => (
               <Card key={sk} className="bg-card">
                 <CardHeader className="p-4 pb-0">
                   <Skeleton className="h-5 w-24 mb-1" />

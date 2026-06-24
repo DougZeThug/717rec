@@ -113,8 +113,7 @@ export class MatchPropagationRepairService {
     if (!gfMatch) return;
     if (gfMatch.opponent1_id === winnerId || gfMatch.opponent2_id === winnerId) return;
 
-    const currentSlotId =
-      targetSlot === 'opponent1' ? gfMatch.opponent1_id : gfMatch.opponent2_id;
+    const currentSlotId = targetSlot === 'opponent1' ? gfMatch.opponent1_id : gfMatch.opponent2_id;
     if (currentSlotId) {
       bracketLog(
         `⚠️ [PROPAGATE→GF] ${targetSlot} already filled (${currentSlotId}) — skipping winner ${winnerId}`

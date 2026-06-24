@@ -394,10 +394,7 @@ export class BracketUpdateService {
           await this.markBracketCompleteIfDone(stage.tournament_id);
         }
       } catch (error) {
-        failureLog(
-          'Failed to update match',
-          error instanceof Error ? error : String(error)
-        );
+        failureLog('Failed to update match', error instanceof Error ? error : String(error));
         errorLog(`FULL ERROR DETAILS for Match ${matchId}:`, error);
         throw new BusinessLogicError(
           `Match update failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
