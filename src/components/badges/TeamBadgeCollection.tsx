@@ -47,10 +47,9 @@ const TeamBadgeCollection: React.FC<TeamBadgeCollectionProps> = ({
           className
         )}
       >
-        {Array.from({ length: 3 }).map((_, i) => (
-          // skipcq: JS-0437
+        {['badge-skel-1', 'badge-skel-2', 'badge-skel-3'].map((sk) => (
           <Skeleton
-            key={i}
+            key={sk}
             className={cn(
               size === 'sm' ? 'size-5' : size === 'md' ? 'size-6' : 'size-8',
               'rounded-lg'
