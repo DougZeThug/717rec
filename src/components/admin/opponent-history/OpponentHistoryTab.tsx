@@ -48,7 +48,7 @@ const OpponentHistoryTab: React.FC = () => {
       if (team.divisionName) divSet.add(team.divisionName);
     });
     return Array.from(divSet).sort();
-  }, [data?.teams]);
+  }, [data]);
 
   // Filter teams
   const filteredTeams = useMemo(() => {
@@ -59,7 +59,7 @@ const OpponentHistoryTab: React.FC = () => {
       const matchesDivision = divisionFilter === 'all' || team.divisionName === divisionFilter;
       return matchesSearch && matchesDivision;
     });
-  }, [data?.teams, searchTerm, divisionFilter]);
+  }, [data, searchTerm, divisionFilter]);
 
   if (isLoading) {
     return (
