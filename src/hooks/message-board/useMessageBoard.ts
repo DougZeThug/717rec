@@ -264,7 +264,9 @@ export const useMessageBoard = (): UseMessageBoardResult => {
 
   // Initialize on mount
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial fetch on mount only
     fetchInitialMessages();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- initial fetch on mount only
   }, []);
 
   return {

@@ -210,7 +210,9 @@ export const useScoreEntryData = () => {
 
   // Load data when filters change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial mount fetch; deps would cause refetch loop
     fetchMatches();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- initial mount fetch; deps would cause refetch loop
   }, [filters.date, filters.bracketId]);
 
   return {
