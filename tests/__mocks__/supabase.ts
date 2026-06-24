@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 
 // For tracking inserted values
-export let insertedRows: Record<string, unknown[]> = {};
+export const insertedRows: Record<string, Record<string, unknown>[]> = {};
 
 // Helper to check if string is a valid UUID
 export const isValidUUID = (str: string): boolean => {
@@ -11,7 +11,9 @@ export const isValidUUID = (str: string): boolean => {
 
 // Reset the insertedRows between tests
 export const resetInsertedRows = (): void => {
-  insertedRows = {};
+  Object.keys(insertedRows).forEach((tableName) => {
+    insertedRows[tableName] = [];
+  });
 };
 
 // Define proper types for Supabase mock responses
@@ -49,7 +51,9 @@ export const supabase = {
     }),
     insert: (data: unknown | unknown[]) => {
       // Track the inserted rows for verification
-      const rows = Array.isArray(data) ? data : [data];
+      const rows = (Array.isArray(data) ? data : [data]).map((row) =>
+        row && typeof row === 'object' ? (row as Record<string, unknown>) : { value: row }
+      );
 
       if (!insertedRows[tableName]) {
         insertedRows[tableName] = [];
@@ -62,7 +66,7 @@ export const supabase = {
 
       // Return chainable object to support .insert().select() pattern
       const result = {
-        data: rows.map((row: any, idx: number) => ({ ...row, id: idx + 1 })),
+        data: rows.map((row, idx) => ({ ...row, id: idx + 1 })),
         error: null,
       };
       return {

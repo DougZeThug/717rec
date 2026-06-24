@@ -3,7 +3,22 @@ import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BracketFormTeamsContainer } from '../bracket-teams/components/BracketFormTeamsContainer';
-import type { BracketFormTeamsContainerProps } from '../bracket-teams/types';
+import type {
+  BracketFormStateResult,
+  BracketFormTeamsContainerProps,
+  ProcessedTeam,
+  SeedValidationState,
+} from '../bracket-teams/types';
+
+type MockTeamSelectionFormProps = {
+  teams: ProcessedTeam[];
+  formState: BracketFormStateResult;
+  maxTeams: number;
+  minTeams: number;
+  divisionId?: string;
+  seedValidation?: SeedValidationState;
+  onSeedChange?: (teamId: string, seed: number | null) => void;
+};
 
 // Mock useBracketFormData to avoid needing a QueryClientProvider
 vi.mock('../bracket-teams/hooks/useBracketFormData', () => ({
@@ -24,7 +39,7 @@ vi.mock('../bracket-teams/hooks/useBracketFormData', () => ({
 const mockContainerComponent = vi.fn();
 
 vi.mock('../bracket-teams/components/TeamSelectionForm', () => ({
-  TeamSelectionForm: (props: any) => mockContainerComponent(props),
+  TeamSelectionForm: (props: MockTeamSelectionFormProps) => mockContainerComponent(props),
 }));
 
 describe('BracketFormTeamsContainer - Comprehensive Tests', () => {

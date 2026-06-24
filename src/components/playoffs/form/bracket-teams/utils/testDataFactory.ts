@@ -2,7 +2,7 @@
  * Test data factory functions for bracket form testing
  */
 
-import { DivisionMappingResult, ProcessedTeam, Ranking } from '../types';
+import { DivisionMappingResult, FormValidationResult, ProcessedTeam, Ranking } from '../types';
 
 /**
  * Creates mock processed team data for testing
@@ -109,7 +109,9 @@ export const createMockDivisionMapping = (
  * @param overrides - Optional overrides for validation state
  * @returns Mock validation state object
  */
-export const createMockValidationState = (overrides: any = {}) => ({
+export const createMockValidationState = (
+  overrides: Partial<FormValidationResult> = {}
+): FormValidationResult => ({
   isValid: true,
   isComplete: true,
   hasError: false,
