@@ -32,7 +32,8 @@ const SeoHead: React.FC<SeoHeadProps> = ({ title, description, path, type = 'web
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       {ldArray.map((data, i) => (
-        <script key={`jsonld-${i}`} type="application/ld+json">
+        // eslint-disable-next-line react/no-array-index-key
+        <script key={i} type="application/ld+json">
           {JSON.stringify(data)}
         </script>
       ))}
