@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { readFile, writeFile } from 'node:fs/promises';
 
 const COVERAGE_SUMMARY_PATH = 'coverage/coverage-summary.json';
