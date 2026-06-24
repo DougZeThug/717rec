@@ -1,27 +1,47 @@
-## Goal
-Clear the 10 remaining `@typescript-eslint/no-explicit-any` errors. Each is a small, type-only swap — no runtime behavior changes.
+# Fix `react-hooks/refs` errors (15 errors, 4 files)
 
-## Changes
+The lint rule "Cannot access refs during render" fires whenever a component reads or mutates `ref.current` while rendering. React Compiler treats this as unsafe because refs are meant for values that don't affect rendering — touching them during render can produce stale UI or skipped updates. We'll resolve each violation with the smallest safe change.
 
-1. **`src/components/playoffs/dialogs/PlayoffDialogs.tsx:21`** — `Record<string, any>` → `Record<string, Team[]>` (Team already imported).
+## Files and fixes
 
-2. **`src/components/playoffs/form/bracket-teams/utils/seedAssignment.ts:15`** — drop the `[key: string]: any` index signature on `TeamWithSeed`; nothing outside this file relies on extra keys (verify with a quick rg).
+### 1. `src/components/playoffs/BracketView.tsx`
+- **Issue:** `hookCallCount.current++` and `renderCount.current++` are executed in the render body (lines 36–37), and both are then read in a `log(...)` call (line 39). These are debug-only counters.
+- **Fix:** Move the increment + log into a `useEffect(() => { ... })` (no deps) so it runs after each commit. This preserves the debug signal without touching refs during render.
 
-3. **`src/components/playoffs/match-card/types/index.ts:34`** — `games: any[]` → `games: PlayoffGame[]` (import from `@/types`, same as `MatchGamesDots.tsx`).
+### 2. `src/components/playoffs/FinalStandings.tsx`
+- **Issue:** Same pattern — `renderCount.current++` followed by `log(...)` in the render body (lines 51–52).
+- **Fix:** Same pattern — wrap the increment and log in a `useEffect(() => { ... })`.
 
-4. **`src/services/brackets/manager/services/BracketCreationService.ts:92`** — `seedOrdering as any` → `seedOrdering as SeedOrdering[]` (import `SeedOrdering` from `brackets-model`).
+### 3. `src/hooks/teams/useTeamsQuery.ts` (`useTeamsArray`)
+- **Issue:** `teams: query.data ?? emptyRef.current` reads `ref.current` during render to return a stable empty array.
+- **Fix:** Replace the `useRef` with a module-level frozen constant:
+  ```ts
+  const EMPTY_TEAMS: readonly Team[] = Object.freeze([]);
+  // ...
+  teams: query.data ?? (EMPTY_TEAMS as Team[]),
+  ```
+  This is a single shared reference across renders/components, which is exactly what the original ref was emulating, and it avoids the rule entirely. Drop the now-unused `useRef` import if no other usage remains.
 
-5. **`src/services/brackets/viewer/SourceNodeCalculator.ts`**
-   - Line 58: `(m as any).id = String(m.id)` → `(m as unknown as { id: string }).id = String(m.id)`.
-   - Lines 286, 290: `ids.has(String(s1) as any)` → `ids.has(String(s1) as unknown as number)` (the Set's runtime contents are strings after the normalization on line 58; the cast preserves that without `any`).
-
-6. **`src/styles/design-system/gradients.ts:104`** — `let result: any = gradients` → `let result: unknown = gradients`, and inside the loop narrow with `if (typeof result !== 'object' || result === null || !(key in result)) return gradients.card.default;` then `result = (result as Record<string, unknown>)[key];`.
-
-7. **`src/utils/teamStatsUtils/parseTeamStats.ts:1`** — replace `team: any` with a local `interface TeamStatsInput { wins?: number | string | null; losses?: number | string | null; game_wins?: number | string | null; game_losses?: number | string | null; }`.
+### 4. `src/components/teams/TeamAnalysisEditForm.tsx`
+- **Issue:** `strengthIdsRef.current` / `weaknessIdsRef.current` are mutated in event handlers (fine) **and read during render** as React `key` props (lines 99 and the equivalent weakness block around line 154). They're also mutated outside `useEffect`. This is the classic "stable per-row IDs" pattern that should live in state, not in a ref.
+- **Fix:** Convert the two refs into `useState<string[]>` initialized with the same lazy initializer:
+  ```ts
+  const [strengthIds, setStrengthIds] = useState<string[]>(() =>
+    strengths.map(() => crypto.randomUUID())
+  );
+  const [weaknessIds, setWeaknessIds] = useState<string[]>(() =>
+    weaknesses.map(() => crypto.randomUUID())
+  );
+  ```
+  Update the four handlers (`handleAddStrength`, `handleAddWeakness`, `handleRemoveStrength`, `handleRemoveWeakness`) to call `setStrengthIds` / `setWeaknessIds` alongside the existing `setStrengths` / `setWeaknesses` updates, using functional updaters so add/remove stay in sync. Then read from `strengthIds[index]` / `weaknessIds[index]` in JSX. Drop the `useLazyRef` import if unused.
 
 ## Verification
-- `npx eslint .` → confirm `no-explicit-any` count is 0.
-- `npx tsgo --noEmit -p tsconfig.app.json` → no new type errors.
 
-## Notes
-These are the same files flagged in the previous pass; the earlier edits did not land in the working tree, so this re-applies them.
+1. Run `npx eslint src/components/playoffs/BracketView.tsx src/components/playoffs/FinalStandings.tsx src/hooks/teams/useTeamsQuery.ts src/components/teams/TeamAnalysisEditForm.tsx` — expect zero `react-hooks/refs` errors.
+2. Run `npx eslint .` — expect overall problem count to drop by 15 errors (52 → 37).
+3. Run `npm test -- --run` (or at minimum the affected test files) to confirm no regressions in TeamAnalysisEditForm / useTeamsQuery tests.
+4. Open the Playoffs route in the preview to confirm the bracket and final standings still render normally, then add/remove a strength row in the team-analysis editor to confirm keys stay stable.
+
+## Out of scope
+
+- All remaining lint problems (`set-state-in-effect`, `exhaustive-deps`, `only-export-components`, `incompatible-library`). We'll tackle those in follow-up batches once the refs bucket is green.
