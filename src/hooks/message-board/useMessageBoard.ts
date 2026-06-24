@@ -57,26 +57,6 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     });
   }, []);
 
-  // Debounced effect to refetch messages when filters change
-  useEffect(() => {
-    // Clear any pending debounce timer
-    if (filterDebounceRef.current) {
-      clearTimeout(filterDebounceRef.current);
-    }
-
-    // Set a new debounce timer
-    filterDebounceRef.current = setTimeout(() => {
-      fetchInitialMessages();
-    }, FILTER_DEBOUNCE_MS);
-
-    // Cleanup on filter change or unmount
-    return () => {
-      if (filterDebounceRef.current) {
-        clearTimeout(filterDebounceRef.current);
-      }
-    };
-  }, [filterOptions.category, filterOptions.teamId, filterOptions.searchQuery]);
-
   // Fetch initial messages
   const fetchInitialMessages = useCallback(async () => {
     try {
@@ -99,6 +79,27 @@ export const useMessageBoard = (): UseMessageBoardResult => {
       setIsLoading(false);
     }
   }, [fetchMessages, filterOptions]);
+
+  // Debounced effect to refetch messages when filters change
+  useEffect(() => {
+    // Clear any pending debounce timer
+    if (filterDebounceRef.current) {
+      clearTimeout(filterDebounceRef.current);
+    }
+
+    // Set a new debounce timer
+    filterDebounceRef.current = setTimeout(() => {
+      fetchInitialMessages();
+    }, FILTER_DEBOUNCE_MS);
+
+    // Cleanup on filter change or unmount
+    return () => {
+      if (filterDebounceRef.current) {
+        clearTimeout(filterDebounceRef.current);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- we intentionally only re-run when filter values change; fetchInitialMessages closes over them.
+  }, [filterOptions.category, filterOptions.teamId, filterOptions.searchQuery]);
 
   // Load more messages
   const loadMoreMessages = useCallback(async () => {
