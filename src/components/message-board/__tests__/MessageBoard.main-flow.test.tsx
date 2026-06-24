@@ -20,7 +20,7 @@ const mockToast = vi.fn();
 const mockUseInView = vi.fn();
 const mockUseMessageReactions = vi.fn();
 
-vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => mockUseAuth() }));
+vi.mock('@/contexts/auth-context', () => ({ useAuth: () => mockUseAuth() }));
 vi.mock('@/hooks/useAdminAccess', () => ({ useAdminAccess: () => mockUseAdminAccess() }));
 vi.mock('@/hooks/useTeams', () => ({ useTeams: () => mockUseTeams() }));
 vi.mock('@/hooks/useToast', () => ({ toast: (payload: unknown) => mockToast(payload) }));

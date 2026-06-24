@@ -8,7 +8,7 @@ import { Match, Team } from '@/types';
 import { WeeklyPowerScoreTrend } from '@/types/powerScoreSnapshot';
 
 const mockAuth = vi.hoisted(() => vi.fn());
-vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => mockAuth() }));
+vi.mock('@/contexts/auth-context', () => ({ useAuth: () => mockAuth() }));
 vi.mock('../MatchCard', () => ({ default: () => <div>real-match-card</div> }));
 
 import CallToAction from '../CallToAction';

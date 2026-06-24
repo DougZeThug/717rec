@@ -10,7 +10,7 @@ vi.mock('react-router', async () => {
 });
 
 const mockUseAuth = vi.fn();
-vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => mockUseAuth() }));
+vi.mock('@/contexts/auth-context', () => ({ useAuth: () => mockUseAuth() }));
 const mockUseAdminAccess = vi.fn();
 vi.mock('@/hooks/useAdminAccess', () => ({ useAdminAccess: () => mockUseAdminAccess() }));
 const mockToast = vi.fn();
