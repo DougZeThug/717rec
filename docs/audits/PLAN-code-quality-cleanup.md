@@ -113,7 +113,7 @@ files for another reason, replace its `any`s.** Hotspots, in order:
 5. `src/components/ui/charts/ChartLegend.tsx` — 6 `any`
 6. `src/components/stats/career/AllTeamsCareerPowerScoreChart.tsx` — 6 `any`
 
-Test-file `any`s (52 of the 203) are acceptable mocks — leave them.
+Test-file `any`s are low priority — they're acceptable mocks, but can be cleaned up opportunistically.
 
 ---
 
