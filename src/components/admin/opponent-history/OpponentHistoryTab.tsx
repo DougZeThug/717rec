@@ -22,7 +22,6 @@ import {
 } from '@/components/ui/table';
 import { useSeasonOpponentHistory } from '@/hooks/useSeasonOpponentHistory';
 import { cn } from '@/lib/utils';
-import { exportMatchupsToExcel } from '@/utils/exportMatchupsToExcel';
 
 const OpponentHistoryTab: React.FC = () => {
   const { data, isLoading, error } = useSeasonOpponentHistory();
@@ -34,6 +33,7 @@ const OpponentHistoryTab: React.FC = () => {
     if (!data) return;
     setIsExporting(true);
     try {
+      const { exportMatchupsToExcel } = await import('@/utils/exportMatchupsToExcel');
       await exportMatchupsToExcel(data);
     } finally {
       setIsExporting(false);
