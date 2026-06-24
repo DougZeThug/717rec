@@ -81,6 +81,7 @@ const ChallongeEmbedWithToggle: React.FC<{
   }, []);
 
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot mount flag
     setIsOpen(forceExpanded);
   }, [forceExpanded]);
 

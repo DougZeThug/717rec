@@ -59,6 +59,7 @@ export const useScheduleTabs = ({
 
     // Past dates → show completed matches
     if (selected < today) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- navigates tab when selected date changes (intentional)
       handleTabChange('completed');
       return;
     }

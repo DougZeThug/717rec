@@ -17,6 +17,7 @@ const RankTrendIndicator: React.FC<RankTrendIndicatorProps> = ({ rankChange }) =
   useEffect(() => {
     if (rankChange !== undefined && rankChange !== 0) {
       debugLog(`Rendering trend indicator with change: ${rankChange}`);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- animation tick driven by timer
       setShowFlash(true);
       const timer = setTimeout(() => setShowFlash(false), 1500);
       return () => clearTimeout(timer);

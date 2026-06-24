@@ -28,6 +28,7 @@ export const useTimeslotGrouping = (groupedTimeslots: Record<string, TeamTimeslo
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
     setExpandedTimeslots(buildInitialExpandedState(groupedTimeslots));
   }, [groupedTimeslots]);
 

@@ -107,6 +107,7 @@ const FormControl = React.forwardRef<
   // Trigger shake animation when error appears
   React.useEffect(() => {
     if (error) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- RHF field wiring (vendored shadcn)
       setShouldShake(true);
       const timer = setTimeout(() => setShouldShake(false), 500);
       return () => clearTimeout(timer);
@@ -154,6 +155,7 @@ const FormMessage = React.forwardRef<
   // Trigger shake animation when error appears
   React.useEffect(() => {
     if (body) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- RHF field wiring (vendored shadcn)
       setShouldShake(true);
       const timer = setTimeout(() => setShouldShake(false), 500);
       return () => clearTimeout(timer);

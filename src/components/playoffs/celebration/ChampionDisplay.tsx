@@ -27,6 +27,7 @@ const ChampionDisplay: React.FC<ChampionDisplayProps> = ({
 
   useEffect(() => {
     if (champion) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
       setShowAnimation(true);
 
       // Announce champion in toast

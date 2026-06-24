@@ -30,6 +30,7 @@ export const useAuthForm = ({ returnTo: _returnTo }: UseAuthFormProps) => {
 
   // Clear form errors when switching tabs
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
     setEmailError(null);
     setPasswordError(null);
     clearAuthError();

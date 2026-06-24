@@ -46,6 +46,7 @@ const ParticipationHeroCard: React.FC = () => {
   // Load existing participation when team is selected
   useEffect(() => {
     if (existingParticipation) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
       setSelectedStatus(existingParticipation.status);
       setIsEditing(false);
     } else {

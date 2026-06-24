@@ -30,6 +30,7 @@ export const SavedBadge: React.FC<SavedBadgeProps> = ({
 
   React.useEffect(() => {
     if (status === 'saving' || status === 'error') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- auto-clear timer for saved indicator
       setVisible(true);
       setDisplayStatus(status);
     } else if (status === 'saved') {

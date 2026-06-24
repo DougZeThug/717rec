@@ -37,6 +37,7 @@ export function useBracketsManagerRealtime(
   // Fetch stageId if not provided
   useEffect(() => {
     if (providedStageId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
       setStageId(providedStageId);
       return;
     }

@@ -80,6 +80,7 @@ const EditMatchParticipantsDialog: React.FC<EditMatchParticipantsDialogProps> = 
   // Re-sync selections whenever the dialog opens on a new match
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
       setTeam1Id(currentTeam1Id);
       setTeam2Id(currentTeam2Id);
     }

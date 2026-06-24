@@ -95,6 +95,7 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
         seed: p.position || idx + 1,
       }));
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
     setTeams(processedTeams);
   }, [currentParticipants]);
 
