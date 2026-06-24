@@ -76,7 +76,7 @@ interface UseBracketsViewerRendererOptions {
   containerRef: React.RefObject<HTMLDivElement | null>;
   containerId: string;
   isScriptReady: boolean;
-  refreshCounter: number;
+  refreshKey: number | string;
   onMatchClicked: (match: BracketsViewerMatchClick) => void;
 }
 
@@ -89,7 +89,7 @@ export const useBracketsViewerRenderer = ({
   containerRef,
   containerId,
   isScriptReady,
-  refreshCounter,
+  refreshKey,
   onMatchClicked,
 }: UseBracketsViewerRendererOptions) => {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -99,7 +99,7 @@ export const useBracketsViewerRenderer = ({
 
   useEffect(() => {
     lastFingerprintRef.current = null;
-  }, [refreshCounter]);
+  }, [refreshKey]);
 
   useEffect(() => {
     if (!isScriptReady || !containerRef.current || !bracket?.id) {
@@ -277,16 +277,7 @@ export const useBracketsViewerRenderer = ({
       if (cleanupTimer) clearTimeout(cleanupTimer);
       setIsInitialized(false);
     };
-  }, [
-    bracket?.id,
-    bracket?.uses_brackets_manager,
-    bracket?.bracket_data,
-    isScriptReady,
-    containerId,
-    onMatchClicked,
-    refreshCounter,
-    containerRef,
-  ]);
+  }, [bracket, isScriptReady, containerId, onMatchClicked, refreshKey, containerRef]);
 
   return { isInitialized, error, getPlayoffMatchIdRef };
 };
