@@ -254,7 +254,7 @@ describe('BracketNormalizationService', () => {
         { id: 70 },
         {
           opponent1: { id: 7, position: undefined },
-          status: 0,
+          status: 1,
         }
       );
     });
