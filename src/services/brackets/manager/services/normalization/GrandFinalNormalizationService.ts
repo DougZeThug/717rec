@@ -186,6 +186,8 @@ export class GrandFinalNormalizationService {
       const willHaveOpp2 = !!(update.opponent2?.id ?? gfMatch.opponent2?.id);
       if (willHaveOpp1 && willHaveOpp2 && (gfMatch.status ?? 0) <= 1) {
         update.status = STATUS_READY;
+      } else if ((willHaveOpp1 || willHaveOpp2) && (gfMatch.status ?? 0) <= 1) {
+        update.status = 1; // Waiting: one participant ready, awaiting the other
       } else {
         update.status = gfMatch.status;
       }
