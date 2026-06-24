@@ -42,8 +42,9 @@ export function analyzeGraphFeasibility(
     for (let j = i + 1; j < teams.length; j++) {
       const team1 = teams[i];
       const team2 = teams[j];
-      const team1Analysis = analysis.get(team1.id)!;
-      const team2Analysis = analysis.get(team2.id)!;
+      const team1Analysis = analysis.get(team1.id);
+      const team2Analysis = analysis.get(team2.id);
+      if (!team1Analysis || !team2Analysis) continue;
 
       team1Analysis.totalEdges++;
       team2Analysis.totalEdges++;

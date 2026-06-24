@@ -11,7 +11,7 @@ export const determineChampion = (matches: PlayoffMatch[]): string | null => {
   if (matches.length > 0) {
     const finalMatch = matches.find((m) => m.matchType === 'finals' && m.winnerId !== null);
     if (finalMatch) {
-      return finalMatch.winnerId!;
+      return finalMatch.winnerId;
     }
   }
   return null;

@@ -89,7 +89,8 @@ describe('ContactPanel', () => {
 
     // Verified badge should NOT appear on the name field because the displayed
     // value ("Typed Name") differs from the verified value ("Verified Name")
-    const nameLabel = screen.getByText('Your name').closest('label')!;
+    const nameLabel = screen.getByText('Your name').closest('label');
+    expect(nameLabel).not.toBeNull();
     const nameVerifiedBadge = within(nameLabel).queryByText('Verified');
     expect(nameVerifiedBadge).not.toBeInTheDocument();
   });

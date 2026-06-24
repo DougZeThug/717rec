@@ -68,8 +68,12 @@ export function calculateSourceNodeIds(
     const r = roundsById.get(m.round_id);
     if (!r) continue;
     const key = `${r.group_id}:${r.number}`;
-    if (!matchesByGroupRound.has(key)) matchesByGroupRound.set(key, []);
-    matchesByGroupRound.get(key)!.push(m);
+    let matchesForRound = matchesByGroupRound.get(key);
+    if (!matchesForRound) {
+      matchesForRound = [];
+      matchesByGroupRound.set(key, matchesForRound);
+    }
+    matchesForRound.push(m);
   }
 
   // Sort matches within each group+round by number (1-based indexing)

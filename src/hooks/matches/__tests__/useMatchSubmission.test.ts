@@ -253,7 +253,7 @@ describe('useMatchSubmission', () => {
   });
 
   it('blocks duplicate concurrent submissions for the same match ID', async () => {
-    let resolveFirst: (value: UpdateMatchScoreResult) => void;
+    let resolveFirst!: (value: UpdateMatchScoreResult) => void;
     const pending = new Promise<UpdateMatchScoreResult>((resolve) => {
       resolveFirst = resolve;
     });
@@ -276,7 +276,7 @@ describe('useMatchSubmission', () => {
     expect(secondImmediate).toBe(false);
     expect(updateMatchScore).toHaveBeenCalledTimes(1);
 
-    resolveFirst!(
+    resolveFirst(
       makeUpdateMatchScoreResult({
         data: { id: 'same-match' } as UpdateMatchScoreResult['data'],
       })

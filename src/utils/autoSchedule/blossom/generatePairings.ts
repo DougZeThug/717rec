@@ -45,9 +45,10 @@ export async function generatePairingsWithBlossom(
 
           // Build Set for O(1) lookup
           config.playedPairsSet = new Set<string>();
+          const playedPairs = config.playedPairsSet;
           historyPairs.forEach(([team1Id, team2Id]) => {
             const pairingKey = [team1Id, team2Id].sort().join('-');
-            config.playedPairsSet!.add(pairingKey);
+            playedPairs.add(pairingKey);
           });
 
           scheduleLog(`Loaded ${historyPairs.length} historical match pairs into memory`);

@@ -188,13 +188,16 @@ describe('greedyBackToBackScheduler', () => {
 
       expect(bye1Id).toBeDefined();
       expect(bye2Id).toBeDefined();
+      if (!bye1Id || !bye2Id) {
+        throw new Error('Expected both bye teams to be defined');
+      }
       expect(bye1Id).not.toBe(bye2Id);
 
       // S3 match should be Bye1 vs Bye2
       const s3Match = s3Matches[0];
       const s3TeamIds = new Set([s3Match.teamAId, s3Match.teamBId]);
-      expect(s3TeamIds.has(bye1Id!)).toBe(true);
-      expect(s3TeamIds.has(bye2Id!)).toBe(true);
+      expect(s3TeamIds.has(bye1Id)).toBe(true);
+      expect(s3TeamIds.has(bye2Id)).toBe(true);
 
       // Check every team has exactly 2 matches
       const teamMatchCounts = new Map<string, number>();

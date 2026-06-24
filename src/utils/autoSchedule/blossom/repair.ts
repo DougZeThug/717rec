@@ -178,17 +178,24 @@ export function findGuaranteedSolution(
             edgeMap.has(pairingKey)
           );
         })
-        .map((partner) => ({
-          partner,
-          edge: edgeMap.get([team.id, partner.id].sort().join('-'))!,
-          partnerOptions: edges.filter((e) => {
-            if (usedPairings.has(e.pairingKey)) return false;
-            const isPartner = e.team1.id === partner.id || e.team2.id === partner.id;
-            if (!isPartner) return false;
-            const otherId = e.team1.id === partner.id ? e.team2.id : e.team1.id;
-            return (teamMatchCounts.get(otherId) || 0) < targetMatchesPerTeam;
-          }).length,
-        }))
+        .flatMap((partner) => {
+          const edge = edgeMap.get([team.id, partner.id].sort().join('-'));
+          if (!edge) return [];
+
+          return [
+            {
+              partner,
+              edge,
+              partnerOptions: edges.filter((e) => {
+                if (usedPairings.has(e.pairingKey)) return false;
+                const isPartner = e.team1.id === partner.id || e.team2.id === partner.id;
+                if (!isPartner) return false;
+                const otherId = e.team1.id === partner.id ? e.team2.id : e.team1.id;
+                return (teamMatchCounts.get(otherId) || 0) < targetMatchesPerTeam;
+              }).length,
+            },
+          ];
+        })
         // Prioritize partners with fewer remaining options (help constrained teams first)
         // Then by edge weight (compatibility score)
         .sort((a, b) => {
