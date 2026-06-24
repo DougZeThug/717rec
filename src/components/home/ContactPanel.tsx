@@ -61,8 +61,8 @@ const ContactPanel: React.FC = () => {
   const contact = contactDraft ?? user?.email ?? '';
 
   const isJoin = requestType === 'join_league';
-  const nameLocked = !!user && !!verifiedName;
-  const teamLocked = !!user && !!verifiedTeam && !isJoin; // Join the league always lets them propose a new team name
+  const nameLocked = !!user && !!verifiedName && name === verifiedName;
+  const teamLocked = !!user && !!verifiedTeam && team === verifiedTeam && !isJoin; // Join the league always lets them propose a new team name
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

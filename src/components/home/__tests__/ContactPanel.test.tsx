@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -64,5 +64,33 @@ describe('ContactPanel', () => {
         message: 'Please update our score.',
       })
     );
+  });
+
+  it('preserves user-typed name when auth resolves and does not show Verified badge when value differs', async () => {
+    const { rerender } = render(<ContactPanel />);
+
+    // User types their name while user is null (auth loading/unsigned-in)
+    await userEvent.type(screen.getByLabelText(/your name/i), 'Typed Name');
+
+    const nameInput = screen.getByLabelText(/your name/i) as HTMLInputElement;
+    expect(nameInput.value).toBe('Typed Name');
+    expect(nameInput.readOnly).toBe(false);
+
+    // Auth resolves with a DIFFERENT verified name
+    mockUser = { email: 'user@test.com', user_metadata: { full_name: 'Verified Name' } };
+    mockMembership = { team: { name: 'Test Team' } };
+    rerender(<ContactPanel />);
+
+    // The input value is preserved (derived state pattern works)
+    expect(nameInput.value).toBe('Typed Name');
+
+    // Field should remain editable because the typed value differs from verifiedName
+    expect(nameInput.readOnly).toBe(false);
+
+    // Verified badge should NOT appear on the name field because the displayed
+    // value ("Typed Name") differs from the verified value ("Verified Name")
+    const nameLabel = screen.getByText('Your name').closest('label')!;
+    const nameVerifiedBadge = within(nameLabel).queryByText('Verified');
+    expect(nameVerifiedBadge).not.toBeInTheDocument();
   });
 });
