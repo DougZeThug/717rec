@@ -64,6 +64,8 @@ describe('ContactPanel', () => {
         message: 'Please update our score.',
       })
     );
+  });
+
   it('preserves user-typed name when auth resolves and does not show Verified badge when value differs', async () => {
     const { rerender } = render(<ContactPanel />);
 
