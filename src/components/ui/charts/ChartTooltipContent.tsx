@@ -4,7 +4,7 @@ import type { TooltipContentProps as RechartsTooltipContentProps } from 'rechart
 
 import { cn } from '@/lib/utils';
 
-import { useChart } from './ChartContainer';
+import { useChart } from './chart-context';
 import { getPayloadConfigFromPayload } from './utils/tooltipUtils';
 
 type TooltipPayload = NonNullable<

@@ -5,7 +5,7 @@ import * as RechartsPrimitive from 'recharts';
 
 import { cn } from '@/lib/utils';
 
-import { useChart } from './ChartContainer';
+import { useChart } from './chart-context';
 import { getPayloadConfigFromPayload } from './utils/tooltipUtils';
 
 export const ChartLegend = RechartsPrimitive.Legend;
