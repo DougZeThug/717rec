@@ -46,7 +46,7 @@ const TeamDetails = () => {
 
   const teamRankIndex = rankings?.findIndex((r) => r.teamId === teamId) ?? -1;
   const teamRank = teamRankIndex >= 0 ? teamRankIndex + 1 : undefined;
-  const teamRanking = teamRankIndex >= 0 ? rankings![teamRankIndex] : undefined;
+  const teamRanking = teamRankIndex >= 0 ? rankings?.[teamRankIndex] : undefined;
   const totalTeams = rankings?.length;
 
   const breadcrumbs = useMemo(

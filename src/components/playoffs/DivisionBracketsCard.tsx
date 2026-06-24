@@ -107,7 +107,7 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
                     <Button
                       size="sm"
                       className={cn('flex-1 text-xs h-8', getDivisionButtonClass(division))}
-                      onClick={() => handleViewBracket(bracket.id!)}
+                      onClick={() => bracket.id && handleViewBracket(bracket.id)}
                     >
                       View Live Bracket
                     </Button>
@@ -117,7 +117,7 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
                       size="sm"
                       variant="outline"
                       className="text-xs h-8 text-destructive hover:text-destructive"
-                      onClick={() => onDeleteBracket(bracket.id!, bracket.name!)}
+                      onClick={() => bracket.id && onDeleteBracket(bracket.id, bracket.name ?? '')}
                     >
                       Delete
                     </Button>

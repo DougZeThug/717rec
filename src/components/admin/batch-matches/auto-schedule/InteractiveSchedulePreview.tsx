@@ -136,9 +136,10 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
 
     // Clear selections for affected blocks
     if (confirmAction.blockKey) {
+      const blockKey = confirmAction.blockKey;
       setSelectedTeams((prev) => ({
         ...prev,
-        [confirmAction.blockKey!]: [],
+        [blockKey]: [],
       }));
     }
 
@@ -276,11 +277,11 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
             <AlertDialogTitle>Confirm Action</AlertDialogTitle>
             <AlertDialogDescription>
               {confirmAction?.type === 'remove' &&
-                `Remove ${selectedTeams[confirmAction.blockKey!]?.length || 0} selected team(s) from ${confirmAction.blockKey} block?`}
+                `Remove ${selectedTeams[confirmAction.blockKey ?? '']?.length || 0} selected team(s) from ${confirmAction.blockKey} block?`}
               {confirmAction?.type === 'clear' &&
                 `Clear all teams from ${confirmAction.blockKey} block?`}
               {confirmAction?.type === 'move' &&
-                `Move ${selectedTeams[confirmAction.blockKey!]?.length || 0} selected team(s) from ${confirmAction.blockKey} to ${confirmAction.targetBlock} block?`}
+                `Move ${selectedTeams[confirmAction.blockKey ?? '']?.length || 0} selected team(s) from ${confirmAction.blockKey} to ${confirmAction.targetBlock} block?`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -196,9 +196,9 @@ describe('HeadToHeadService.getOpponentHistory', () => {
     const result = await HeadToHeadService.getOpponentHistory('team-1', 'opponent-1');
 
     expect(result).not.toBeNull();
-    expect(result!.matches).toHaveLength(1);
-    expect(result!.summary.opponent_id).toBe('opponent-1');
-    expect(result!.summary.wins).toBe(2);
+    expect(result?.matches).toHaveLength(1);
+    expect(result?.summary.opponent_id).toBe('opponent-1');
+    expect(result?.summary.wins).toBe(2);
   });
 
   it('throws DatabaseError when match history RPC fails', async () => {
@@ -274,6 +274,6 @@ describe('HeadToHeadService.getOpponentHistory', () => {
     mockRpc.mockResolvedValueOnce({ data: null, error: null });
 
     const result = await HeadToHeadService.getOpponentHistory('team-1', 'opponent-1');
-    expect(result!.matches).toEqual([]);
+    expect(result?.matches).toEqual([]);
   });
 });

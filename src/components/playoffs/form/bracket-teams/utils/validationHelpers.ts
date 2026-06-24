@@ -79,13 +79,13 @@ export const validateBracketForm = (formData: {
   const errors: string[] = [];
 
   const titleValidation = validateBracketTitle(formData.title);
-  if (!titleValidation.isValid) {
-    errors.push(titleValidation.error!);
+  if (!titleValidation.isValid && titleValidation.error) {
+    errors.push(titleValidation.error);
   }
 
   const formatValidation = validateBracketFormat(formData.format);
-  if (!formatValidation.isValid) {
-    errors.push(formatValidation.error!);
+  if (!formatValidation.isValid && formatValidation.error) {
+    errors.push(formatValidation.error);
   }
 
   const minTeams = formData.minTeams || 2;

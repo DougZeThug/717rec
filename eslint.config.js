@@ -49,6 +49,7 @@ export default tseslint.config(
         },
       ],
       '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-non-null-assertion': 'warn',
 
       // Import Ordering - AUTO-FIXABLE
       'simple-import-sort/imports': 'error',
@@ -70,6 +71,7 @@ export default tseslint.config(
     },
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-non-null-assertion': 'warn',
       '@typescript-eslint/no-unused-vars': 'warn',
       'vitest/no-focused-tests': 'error',
       'vitest/no-disabled-tests': 'warn',

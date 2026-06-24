@@ -89,7 +89,10 @@ describe('fetchPowerScoreTrends', () => {
     resetQueues();
     mockFrom.mockImplementation((table: string) => {
       const q = queues[table];
-      const next = q && q.length > 0 ? q.shift()! : { data: null, error: null };
+      const next =
+        q && q.length > 0
+          ? (q.shift() ?? { data: null, error: null })
+          : { data: null, error: null };
       return makeChain(next);
     });
   });
@@ -237,7 +240,10 @@ describe('fetchWeeklyPowerScoreTrends', () => {
     resetQueues();
     mockFrom.mockImplementation((table: string) => {
       const q = queues[table];
-      const next = q && q.length > 0 ? q.shift()! : { data: null, error: null };
+      const next =
+        q && q.length > 0
+          ? (q.shift() ?? { data: null, error: null })
+          : { data: null, error: null };
       return makeChain(next);
     });
   });
