@@ -20,27 +20,12 @@ import {
   Users,
   Users2,
 } from 'lucide-react';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { lazy, Suspense, useCallback, useMemo, useState } from 'react';
 
-import AutoScheduleTab from '@/components/admin/auto-schedule/AutoScheduleTab';
-import BatchMatchCreationTab from '@/components/admin/batch-matches/BatchMatchCreationTab';
-import BlindDrawSignupsTab from '@/components/admin/blind-draw/BlindDrawSignupsTab';
-import ContactInboxSection from '@/components/admin/contact/ContactInboxSection';
-import DivisionsTab from '@/components/admin/divisions/DivisionsTab';
-import GettingStartedTab from '@/components/admin/help/GettingStartedTab';
-import HeroCardsTab from '@/components/admin/hero-cards/HeroCardsTab';
-import OpponentHistoryTab from '@/components/admin/opponent-history/OpponentHistoryTab';
-import SeasonParticipationTab from '@/components/admin/participation/SeasonParticipationTab';
-import PendingMatchesSection from '@/components/admin/PendingMatchesSection';
-import RequestsTab from '@/components/admin/requests/RequestsTab';
-import MassScoresTab from '@/components/admin/scores/MassScoresTab';
-import SeasonManagementTab from '@/components/admin/seasons/SeasonManagementTab';
-import TeamManagementTab from '@/components/admin/teams/TeamManagementTab';
-import ThemeManagementTab from '@/components/admin/theme/ThemeManagementTab';
-import TimeslotsTab from '@/components/admin/timeslots/TimeslotsTab';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import LoadingState from '@/components/ui/loading-state';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/useMobile';
 import { usePendingRequestsCount } from '@/hooks/useTeamRequests';
@@ -52,8 +37,31 @@ interface AdminMenuItem {
   id: string;
   label: string;
   icon: React.ElementType;
-  Component: React.ComponentType;
+  Component: React.LazyExoticComponent<React.ComponentType>;
 }
+
+const TimeslotsTab = lazy(() => import('@/components/admin/timeslots/TimeslotsTab'));
+const BatchMatchCreationTab = lazy(
+  () => import('@/components/admin/batch-matches/BatchMatchCreationTab')
+);
+const AutoScheduleTab = lazy(() => import('@/components/admin/auto-schedule/AutoScheduleTab'));
+const OpponentHistoryTab = lazy(
+  () => import('@/components/admin/opponent-history/OpponentHistoryTab')
+);
+const MassScoresTab = lazy(() => import('@/components/admin/scores/MassScoresTab'));
+const SeasonManagementTab = lazy(() => import('@/components/admin/seasons/SeasonManagementTab'));
+const SeasonParticipationTab = lazy(
+  () => import('@/components/admin/participation/SeasonParticipationTab')
+);
+const RequestsTab = lazy(() => import('@/components/admin/requests/RequestsTab'));
+const ContactInboxSection = lazy(() => import('@/components/admin/contact/ContactInboxSection'));
+const TeamManagementTab = lazy(() => import('@/components/admin/teams/TeamManagementTab'));
+const DivisionsTab = lazy(() => import('@/components/admin/divisions/DivisionsTab'));
+const PendingMatchesSection = lazy(() => import('@/components/admin/PendingMatchesSection'));
+const HeroCardsTab = lazy(() => import('@/components/admin/hero-cards/HeroCardsTab'));
+const ThemeManagementTab = lazy(() => import('@/components/admin/theme/ThemeManagementTab'));
+const BlindDrawSignupsTab = lazy(() => import('@/components/admin/blind-draw/BlindDrawSignupsTab'));
+const GettingStartedTab = lazy(() => import('@/components/admin/help/GettingStartedTab'));
 
 const adminMenuItems: AdminMenuItem[] = [
   { id: 'timeslots', label: 'Timeslots', icon: Timer, Component: TimeslotsTab },
@@ -144,7 +152,13 @@ const AdminSidebar: React.FC = () => {
         />
 
         {/* Content - render only active tab to avoid mounting all components */}
-        {ActiveComponent && <ActiveComponent />}
+        {ActiveComponent && (
+          <Suspense
+            fallback={<LoadingState variant="section" message="Loading admin section..." />}
+          >
+            <ActiveComponent />
+          </Suspense>
+        )}
       </div>
     );
   }
@@ -248,7 +262,15 @@ const AdminSidebar: React.FC = () => {
       </m.aside>
 
       {/* Content area - render only active tab to improve performance */}
-      <div className="flex-1 min-w-0">{ActiveComponent && <ActiveComponent />}</div>
+      <div className="flex-1 min-w-0">
+        {ActiveComponent && (
+          <Suspense
+            fallback={<LoadingState variant="section" message="Loading admin section..." />}
+          >
+            <ActiveComponent />
+          </Suspense>
+        )}
+      </div>
     </div>
   );
 };
