@@ -21,22 +21,24 @@ export const SeedStatusBadge: React.FC<SeedStatusBadgeProps> = ({
   onEdit,
   size = 'md',
 }) => {
-  const getVariant = () => {
-    if (hasConflict) return 'destructive';
-    if (isPending) return 'outline';
-    if (isManual) return 'default';
-    return 'secondary';
-  };
+  const variant: 'destructive' | 'outline' | 'default' | 'secondary' = hasConflict
+    ? 'destructive'
+    : isPending
+      ? 'outline'
+      : isManual
+        ? 'default'
+        : 'secondary';
 
-  const getIcon = () => {
-    if (hasConflict) return AlertCircle;
-    if (isPending) return Clock;
-    if (isManual) return Settings;
-    return Trophy;
-  };
-
-  const Icon = getIcon();
-  const variant = getVariant();
+  const iconClassName = size === 'sm' ? 'w-3 h-3' : 'w-4 h-4';
+  const iconNode = hasConflict ? (
+    <AlertCircle className={iconClassName} />
+  ) : isPending ? (
+    <Clock className={iconClassName} />
+  ) : isManual ? (
+    <Settings className={iconClassName} />
+  ) : (
+    <Trophy className={iconClassName} />
+  );
 
   const badge = (
     <Badge
@@ -49,9 +51,7 @@ export const SeedStatusBadge: React.FC<SeedStatusBadgeProps> = ({
         ${isPending ? 'border-dashed' : ''}
       `}
     >
-      {React.createElement(Icon, {
-        className: size === 'sm' ? 'w-3 h-3' : 'w-4 h-4',
-      })}
+      {iconNode}
       <span>#{seed}</span>
       {size !== 'sm' && isManual && !hasConflict && (
         <span className="text-xs opacity-75">Manual</span>
