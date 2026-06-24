@@ -65,6 +65,7 @@ const RE = new RegExp(`(^|[\\s"'\`])(${KEYS.map(escapeRe).join('|')})(?=[\\s"'\`
 
 function transform(src) {
   let count = 0;
+  const replaceFn = (m, lead, cls) => { count++; return lead + MAP.get(cls); };
   // Only process content inside string literals to be safe-ish
   let out = '';
   let i = 0;
@@ -81,7 +82,7 @@ function transform(src) {
         buf += cj;
         j++;
       }
-      const replaced = buf.replace(RE, (m, lead, cls) => { count++; return lead + MAP.get(cls); });
+      const replaced = buf.replace(RE, replaceFn);
       out += quote + replaced + quote;
       i = j + 1;
     } else if (ch === '/' && src[i+1] === '/') {
