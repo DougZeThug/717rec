@@ -50,22 +50,23 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
 
   const validDivisionId = React.useMemo(() => {
     if (!divisionId) return null;
-
-    if (!isDivisionIdValid(validDivisions, divisionId)) {
-      // Toast error once per component instance
-      if (!hasToastedInvalidDivision.current) {
-        toast({
-          variant: 'destructive',
-          title: 'Invalid Division',
-          description: 'The selected division is not valid. Showing all teams.',
-        });
-        hasToastedInvalidDivision.current = true;
-      }
-      return null;
-    }
-
+    if (!isDivisionIdValid(validDivisions, divisionId)) return null;
     return divisionId;
-  }, [divisionId, validDivisions, toast]);
+  }, [divisionId, validDivisions]);
+
+  const isInvalidDivisionSelection = !!divisionId && validDivisionId === null;
+
+  // Toast error once per invalid selection (side effect runs outside render)
+  React.useEffect(() => {
+    if (isInvalidDivisionSelection && !hasToastedInvalidDivision.current) {
+      toast({
+        variant: 'destructive',
+        title: 'Invalid Division',
+        description: 'The selected division is not valid. Showing all teams.',
+      });
+      hasToastedInvalidDivision.current = true;
+    }
+  }, [isInvalidDivisionSelection, toast]);
 
   // Always call useBracketFormData - pass validTeamsProp to short-circuit if provided
   const {
