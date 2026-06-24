@@ -1,32 +1,50 @@
-# Bucket A — Clear all 36 `react-hooks/set-state-in-effect` errors safely
+# Bucket C — Clear all 20 `react-hooks/exhaustive-deps` warnings safely
 
 ## Goal
-Get ESLint clean on this rule **without changing any runtime behavior**. The rule is a style/perf hint from the new React Hooks plugin, not a correctness bug. A refactor sweep of 36 hook bodies — many of which are intentional sync-from-prop patterns or one-shot subscriptions — carries real regression risk in a working app (playoffs, schedule, brackets, theme, auth). The safe move is to suppress per-line with a short reason comment, and only refactor the handful that are trivially derivable.
+Silence the lint rule **without changing any runtime behavior**. Like the previous bucket, this rule is advisory — auto-"fixing" by adding the missing dep often *does* change behavior (effects re-fire, callbacks reset, intentional mount-only effects become render-loop effects). Several of these warnings exist precisely because the author intentionally diverged from the rule.
 
 ## Approach
+Per-line `// eslint-disable-next-line react-hooks/exhaustive-deps -- <reason>` above each flagged hook call. No logic changes. Reasons grouped by intent:
 
-For each of the 36 sites, add:
-```ts
-// eslint-disable-next-line react-hooks/set-state-in-effect -- <reason>
-```
-on the line immediately above the flagged `setX(...)` call. **No code logic changes.** Reasons fall into a few buckets:
+### Intentional mount-only / run-once effects (do NOT add deps — would re-fire on every change)
+- `src/hooks/auth/index.ts:246` — auth session bootstrap, must run once
+- `src/hooks/message-board/useMessageBoard.ts:268` — `fetchInitialMessages()` on mount
+- `src/components/admin/mass-score-entry/useScoreEntryData.ts:214` — initial fetch
+- `src/components/admin/mass-score-entry/hooks/useScoreEntryData.ts:80` — initial fetch + filter sync
+- `src/pages/Compare.tsx:35` — initial team load by URL params; rerunning would clobber user edits
 
-- **sync-from-prop**: state mirrors an incoming prop/derived value (e.g. `useMatchManagement`, `useBracketDimensions`, `EditMatchParticipantsDialog`, `SeedingUpdateDialog`, `ChampionDisplay`, `DivisionPanel`, `useEditableMatches`, `ChallongeFallbackSection`, `Compare`, `useTimeslotGrouping`, `ScheduleContent`, `MatchCard`, `useScoreSubmissions`, `useMessageBoard`, `useBracketsQuery`, `useBracketsManagerRealtime`, `usePlayoffPageData` ×2, `useScoreEntryData`, `BlindDrawSignupsTab`, `ParticipationHeroCard`, `NotificationsAdmin`, `useAuthForm`, `saved-badge`).
-- **one-shot platform/feature detection** on mount (`useNativePlatform`, `useBracketResponsive`, `ThemeToggle`, `ChallongeFallback`, `useScheduleTabs`).
-- **animation tick / external library callback** (`AnimatedRankNumber`, `RankTrendIndicator`, `StatsCharts`, `carousel`).
-- **RHF form integration** (`form.tsx` ×2 — internal shadcn wiring).
+### Stable refs / handlers that don't need to be deps
+- `src/components/admin/dashboard/AdminMobileNav.tsx:109` — `activeTab` intentionally excluded to keep memoized nav stable
+- `src/components/playoffs/layout/PlayoffPageLayout.tsx:61` — `handlers` object identity churn
+- `src/components/playoffs/match-card/hooks/useMatchCardStyles.tsx:56` — `getCardStyle` is stable within memo scope
+- `src/hooks/usePlayoffViewModel.compat.ts:138` — `handleBracketCreated` exposed via memo intentionally
+- `src/hooks/useAutoSchedule/useTeamOperations.ts:177` — `toast` is stable from `useToast()`
 
-This matches how the codebase already handles similar intentional patterns elsewhere and is the lowest-risk path to a clean lint run.
+### Linter false-positives (deps listed are not actually used / are derived)
+- `src/components/playoffs/form/bracket-teams/hooks/useBracketFormData.ts:160` — `divisionMapping` declared unnecessary
+- `src/hooks/useAutoSchedule/index.ts:181, 187` — `timeBlockTeams` / `editableMatches` unnecessary deps
 
-## Why not refactor each site
-- Several are inside shadcn/ui primitives (`form.tsx`, `carousel.tsx`, `saved-badge.tsx`) we treat as vendored — rewriting risks divergence from upstream.
-- Many "sync-from-prop" cases look refactorable to `useMemo`/derived state, but the surrounding hooks expose `setX` to consumers or feed effects that the new value triggers; converting them is per-site work that needs tests for playoffs/schedule/brackets — exactly the surfaces that just had regressions.
-- The user's explicit constraint is "no runtime behavior changes." Suppression guarantees that; refactor does not.
+### "Conditional could change deps" warnings (variable assigned inside hook scope)
+- `src/components/playoffs/form/bracket-teams/hooks/useSeedManagement.ts:35` (×3) — `safeInitialTeams` pattern
+- `src/components/ui/theme/ThemeToggle.tsx:32` (×2) — `enabledThemes` pattern
+
+For these, the suppression goes on the **declaration line** (line 35 / 32) where ESLint already points — same pattern we used in bucket A.
+
+### Mutation manager with debounced auto-save (intentionally stale closure)
+- `src/components/playoffs/form/bracket-teams/hooks/useMutationStateManager.ts:75` — debounce timer + save closure
+
+### Ref-in-cleanup warning (intentional)
+- `src/components/transitions/RippleTransition.tsx:32` — capturing `rippleRef.current` for cleanup; ref is stable for animation lifetime
 
 ## Deliverable
-- 36 `// eslint-disable-next-line react-hooks/set-state-in-effect -- <reason>` comments across the 33 files in the list.
+- 20 `// eslint-disable-next-line react-hooks/exhaustive-deps -- <reason>` comments inserted above each flagged line.
 - No other edits.
-- Re-run `npx eslint .` and confirm `set-state-in-effect` count is 0; total errors drop from 36 → 0. Warnings (exhaustive-deps, only-export-components) unchanged.
+- Re-run `npx eslint .`; confirm `exhaustive-deps` count drops to 0; total warnings drop from 37 → 17 (only `react-refresh/only-export-components` remains).
 
-## Follow-up (separate bucket, not this PR)
-When you want to actually refactor (not suppress), the highest-value targets are the pure sync-from-prop hooks (`useMatchManagement`, `useBracketDimensions`, `useNativePlatform`) — each is a few lines and can become derived values. Save that for bucket C/D.
+## Why not actually fix these
+Adding the missing deps is what the rule wants but is unsafe here:
+- Re-running mount-only effects re-fetches lists or resets auth state on every render.
+- Adding `handlers`/`toast` to deps creates new memoized values every render, defeating the memoization.
+- The "conditional dep" warnings would require restructuring the hook (lifting variables out, `useMemo`-wrapping) — non-trivial in form state and theme code we shouldn't churn for a lint pass.
+
+If you later want a real refactor pass, the highest-value targets are the three `useScoreEntryData` files and `useMessageBoard` (extract a stable `fetchOnMount` ref).

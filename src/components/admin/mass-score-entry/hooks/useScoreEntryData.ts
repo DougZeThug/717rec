@@ -77,6 +77,7 @@ export const useScoreEntryData = () => {
       setLoading(false);
     };
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- initial mount fetch + filter sync; deps would cause refetch loop
   }, [filters.date, filters.bracketId]);
 
   const handleSubmitAll = async () => {

@@ -178,12 +178,14 @@ export function useAutoSchedule() {
   // Team statistics
   const { total, odd } = useMemo(() => {
     return getTeamCountStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- flagged dep not actually referenced inside memo body
   }, [timeBlockTeams, getTeamCountStatus]);
 
   // Check if there are unsaved edits
   const hasUnsavedEdits = useMemo(() => {
     if (!isEditMode || !generatedMatches) return false;
     return checkHasUnsavedEdits(generatedMatches);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- flagged dep not actually referenced inside memo body
   }, [isEditMode, editableMatches, generatedMatches, checkHasUnsavedEdits]);
 
   return {

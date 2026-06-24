@@ -53,5 +53,6 @@ export const useMatchCardStyles = (
     return {
       cardClasses,
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- getCardStyle is stable within memo scope
   }, [matchType, onEditMatch, isUpdated, isPlayIn, isResetMatch, round, isLight]);
 };

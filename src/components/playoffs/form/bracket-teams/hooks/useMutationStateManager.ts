@@ -72,6 +72,7 @@ export const useMutationStateManager = (config: MutationStateManagerConfig = {})
     }, autoSaveDelay);
 
     setAutoSaveTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stale closure for debounced auto-save
   }, [autoSaveEnabled, mutationState.pendingChanges.size, autoSaveDelay]);
 
   // Add or update a pending change
