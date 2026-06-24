@@ -15,7 +15,7 @@ const base: TeamTimeslot = {
   is_double_header: false,
   pair_slot: null,
   match_sequence: 1,
-  teams: { id: 't1', name: '', divisionName: null },
+  teams: { id: 't1', name: '', divisionName: 'Rec' },
 };
 
 describe('TimeslotMatchRowMobile', () => {
