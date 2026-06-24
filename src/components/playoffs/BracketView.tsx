@@ -33,12 +33,13 @@ const BracketView: React.FC<BracketViewProps> = ({
   const hookCallCount = useRef(0);
   const renderCount = useRef(0);
 
-  hookCallCount.current++;
-  renderCount.current++;
-
-  log(`BracketView hooks called: ${hookCallCount.current}, render: ${renderCount.current}`, {
-    bracketId,
-    hasLegacyBracket: !!legacyBracket,
+  useEffect(() => {
+    hookCallCount.current++;
+    renderCount.current++;
+    log(`BracketView hooks called: ${hookCallCount.current}, render: ${renderCount.current}`, {
+      bracketId,
+      hasLegacyBracket: !!legacyBracket,
+    });
   });
 
   bracketLog('BracketView rendering with props:', {
