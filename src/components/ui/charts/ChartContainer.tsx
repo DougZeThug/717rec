@@ -5,7 +5,7 @@ import * as RechartsPrimitive from 'recharts';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 
-import { ChartContext, type ChartConfig } from './chart-context';
+import { type ChartConfig, ChartContext } from './chart-context';
 import { ChartStyle } from './ChartStyle';
 
 interface ChartContainerProps extends React.ComponentProps<'div'> {

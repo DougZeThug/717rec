@@ -1,5 +1,5 @@
-export * from './ChartContainer';
 export type { ChartConfig } from './chart-context';
+export * from './ChartContainer';
 export * from './ChartLegend';
 export * from './ChartStyle';
 export * from './ChartTooltip';

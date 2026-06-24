@@ -10,8 +10,8 @@ import {
   SIDEBAR_KEYBOARD_SHORTCUT,
   SIDEBAR_WIDTH,
   SIDEBAR_WIDTH_ICON,
-  type SidebarContext as SidebarContextValue,
   SidebarContext,
+  type SidebarContext as SidebarContextValue,
 } from './sidebar-context';
 
 export const SidebarProvider = React.forwardRef<

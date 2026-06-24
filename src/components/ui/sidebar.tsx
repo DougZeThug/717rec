@@ -9,7 +9,6 @@ import { SidebarMobile } from './sidebar-mobile';
 // Re-export components so existing imports from '@/components/ui/sidebar' keep working.
 // Non-component exports (constants, contexts, hooks) live in their own modules
 // to satisfy react-refresh/only-export-components for this barrel file.
-export { SidebarProvider } from './sidebar-provider';
 export {
   SidebarContent,
   SidebarDesktop,
@@ -37,6 +36,7 @@ export {
   SidebarMenuSubItem,
 } from './sidebar-menu';
 export { SidebarMobile } from './sidebar-mobile';
+export { SidebarProvider } from './sidebar-provider';
 
 // ---------------------------------------------------------------------------
 // Sidebar — routes between the mobile drawer and the desktop panel.
