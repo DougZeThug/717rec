@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Replace bare gray-* / slate-* / zinc-* Tailwind classes with semantic tokens.
 // Conservative: only well-known mapped classes; skips arbitrary values, gradients,
 // border-color modifiers without a clear semantic equivalent, etc.
