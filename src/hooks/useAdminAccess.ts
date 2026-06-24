@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { toast } from '@/hooks/useToast';
 import { authLog, warnLog } from '@/utils/logger';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { useMessageReactions } from '@/hooks/message-board/useMessageReactions';
 import { toast } from '@/hooks/useToast';
 import { cn } from '@/lib/utils';

@@ -17,7 +17,7 @@ vi.mock('@/hooks/useTeamMatches', () => ({
   useTeamMatches: vi.fn(),
 }));
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { useTeamMatches } from '@/hooks/useTeamMatches';
 import { useTeamMembership } from '@/hooks/useTeamMembership';
 

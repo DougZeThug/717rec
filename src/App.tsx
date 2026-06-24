@@ -7,7 +7,7 @@ import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
 import LoadingState from '@/components/ui/loading-state';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthProvider } from '@/contexts/auth-context';
 import { NavigationProvider } from '@/contexts/NavigationContext';
 import { useLazyRef } from '@/hooks/useLazyRef';
 import { initAnalytics, trackPageView } from '@/utils/analytics';

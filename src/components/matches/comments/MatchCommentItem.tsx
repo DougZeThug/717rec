@@ -19,7 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { MatchComment } from '@/hooks/matches/useMatchComments';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { useMatchReactions } from '@/hooks/matches/useMatchReactions';
 import { toast } from '@/hooks/useToast';
 import { cn } from '@/lib/utils';
