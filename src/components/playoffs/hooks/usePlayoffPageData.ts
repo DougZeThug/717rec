@@ -134,8 +134,13 @@ export function usePlayoffPageData(): PlayoffPageData {
     error: bracketsDataError,
   } = usePlayoffData(isAdmin, selectedSeasonId);
 
-  // Memoize derived data transformations to prevent recalculation on every render
-  const typesafeBracketsByDivision = useMemo<Record<string, PlayoffBracket[]>>(() => {
+  // Memoize derived data transformations to prevent recalculation on every render.
+  // Capture any processing error in the memo's return value and surface it via
+  // an effect rather than calling setState during render.
+  const { typesafeBracketsByDivision, processingError } = useMemo<{
+    typesafeBracketsByDivision: Record<string, PlayoffBracket[]>;
+    processingError: { message: string; cause: unknown } | null;
+  }>(() => {
     const result: Record<string, PlayoffBracket[]> = {};
     try {
       if (bracketsByDivision) {
@@ -154,13 +159,25 @@ export function usePlayoffPageData(): PlayoffPageData {
           }
         });
       }
+      return { typesafeBracketsByDivision: result, processingError: null };
     } catch (err) {
-      const errorMessage = getUIErrorMessage(err, 'Failed to process bracket data');
-      logError(err, 'typesafeBracketsByDivision processing');
-      setError(errorMessage);
+      return {
+        typesafeBracketsByDivision: result,
+        processingError: {
+          message: getUIErrorMessage(err, 'Failed to process bracket data'),
+          cause: err,
+        },
+      };
     }
-    return result;
   }, [bracketsByDivision]);
+
+  useEffect(() => {
+    if (processingError) {
+      logError(processingError.cause, 'typesafeBracketsByDivision processing');
+    }
+  }, [processingError]);
+
+  const combinedError = error ?? processingError?.message ?? null;
 
   const isLoading = bracketsLoading || divisionsLoading || adminLoading;
 
@@ -293,7 +310,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     selectedBracketId,
     setSelectedBracketId,
     ready: !!selectedBracketId && !!selectedBracket && !selectedBracketLoading,
-    error,
+    error: combinedError,
     divisionsError: finalDivisionsError,
     bracketsError: finalBracketsError,
     divisions: Array.isArray(divisions) ? divisions : [],
