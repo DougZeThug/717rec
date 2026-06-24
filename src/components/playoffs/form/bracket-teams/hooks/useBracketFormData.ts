@@ -157,6 +157,7 @@ export const useBracketFormData = (
         processingError: error instanceof Error ? error.message : 'Failed to process team data',
       };
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- divisionMapping is unused inside memo body
   }, [teamsToProcess, divisionMapping, isDataReady]);
 
   // Prepare seed validation state

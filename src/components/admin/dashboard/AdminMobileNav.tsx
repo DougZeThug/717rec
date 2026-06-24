@@ -106,6 +106,7 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
   const initialOpen = useMemo(() => {
     const group = tabGroups.find((g) => g.tabs.includes(activeTab));
     return group ? new Set([group.id]) : new Set<string>();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- activeTab intentionally excluded to keep nav memo stable
   }, []);
   const [openGroups, setOpenGroups] = useState<Set<string>>(initialOpen);
 

@@ -29,6 +29,7 @@ export const RippleTransition: React.FC<RippleTransitionProps> = ({
       rippleRef.current.addEventListener('transitionend', handleTransitionEnd);
 
       return () => {
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- ref is stable for animation lifetime; capture intentional
         rippleRef.current?.removeEventListener('transitionend', handleTransitionEnd);
       };
     }

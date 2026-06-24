@@ -174,6 +174,7 @@ export const useTeamOperations = () => {
         setIsLoading(false);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- toast from useToast() is stable
     []
   );
 

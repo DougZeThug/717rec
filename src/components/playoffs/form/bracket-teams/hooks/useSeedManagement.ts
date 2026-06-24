@@ -32,6 +32,7 @@ export const useSeedManagement = (
   onSeedChange?: (teamId: string, seed: number | null) => void
 ): SeedManagementResult => {
   // Ensure we have valid arrays and objects to prevent React errors
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- safeInitialTeams stable within hook scope
   const safeInitialTeams = Array.isArray(initialTeams) ? initialTeams : [];
   const safeValidation = validation || {
     hasConflicts: false,

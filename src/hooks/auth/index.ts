@@ -243,6 +243,7 @@ export const useAuth = () => {
       isCancelled = true;
       subscription.unsubscribe();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- auth session bootstrap, must run once on mount
   }, []);
 
   return {

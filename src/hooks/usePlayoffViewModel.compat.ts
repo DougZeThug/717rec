@@ -135,6 +135,7 @@ export const usePlayoffData = (isAdmin: boolean = false, seasonId?: string | nul
       error: bracketsError,
       isLoading: bracketsLoading || divisionsLoading || teamsLoading,
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleBracketCreated exposed via memo intentionally
     [
       vm,
       divisions,

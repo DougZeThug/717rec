@@ -58,6 +58,7 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
         data.refetchBrackets
       );
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handlers object identity churns each render
     [handlers.handleSaveMatchScore, data.refetchBrackets]
   );
 
