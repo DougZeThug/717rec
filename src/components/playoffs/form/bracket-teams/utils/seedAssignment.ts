@@ -2,12 +2,15 @@
  * Utility functions for handling mixed seed assignment (manual + automatic)
  */
 
-interface TeamWithSeed {
+interface SeedInputTeam {
   id: string;
   name: string;
   seed?: number | null;
   power_score?: number | null;
   win_percentage?: number | null;
+}
+
+interface TeamWithSeed extends SeedInputTeam {
   finalSeed: number;
   [key: string]: any;
 }
@@ -17,7 +20,7 @@ interface TeamWithSeed {
  * @param teams - Array of teams with potential manual seeds
  * @returns Array of teams with finalSeed assigned
  */
-export const assignMixedSeeds = (teams: any[]): TeamWithSeed[] => {
+export const assignMixedSeeds = (teams: SeedInputTeam[]): TeamWithSeed[] => {
   if (!teams || teams.length === 0) return [];
 
   // Separate teams with manual seeds from those without
