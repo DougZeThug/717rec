@@ -26,6 +26,7 @@ const StatsLoadingState: React.FC = () => {
               staggerDelay={0.06}
             >
               {Array.from({ length: 6 }).map((_, i) => (
+                // skipcq: JS-0437
                 <CardSkeleton key={i} hasActions />
               ))}
             </AutoStagger>

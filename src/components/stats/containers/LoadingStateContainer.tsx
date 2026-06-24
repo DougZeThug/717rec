@@ -19,6 +19,7 @@ const LoadingStateContainer = () => {
           <CardContent className="p-4 pt-1 sm:pt-4">
             <div className="space-y-4">
               {Array.from({ length: 5 }).map((_, idx) => (
+                // skipcq: JS-0437
                 <div
                   key={idx}
                   className="flex items-center gap-3 p-2 border-b border-gray-100 dark:border-border"
@@ -44,6 +45,7 @@ const LoadingStateContainer = () => {
           <Skeleton className="h-6 w-48 mb-4" />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {Array.from({ length: 4 }).map((_, idx) => (
+              // skipcq: JS-0437
               <Card key={idx} className="bg-card">
                 <CardHeader className="p-4 pb-0">
                   <Skeleton className="h-5 w-24 mb-1" />

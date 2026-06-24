@@ -33,6 +33,7 @@ export const TeamSelectionLoading: React.FC = () => {
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {Array.from({ length: 6 }).map((_, i) => (
+              // skipcq: JS-0437
               <ShimmerSkeleton key={i} className="h-12 w-full" />
             ))}
           </div>

@@ -48,6 +48,7 @@ const TeamBadgeCollection: React.FC<TeamBadgeCollectionProps> = ({
         )}
       >
         {Array.from({ length: 3 }).map((_, i) => (
+          // skipcq: JS-0437
           <Skeleton
             key={i}
             className={cn(
