@@ -48,8 +48,10 @@ const getPlacementIcon = (placement: number) => {
 export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) {
   const renderCount = useRef(0);
 
-  renderCount.current++;
-  log(`🏆 FinalStandings render #${renderCount.current}`, { bracketId, show });
+  useEffect(() => {
+    renderCount.current++;
+    log(`🏆 FinalStandings render #${renderCount.current}`, { bracketId, show });
+  });
 
   // Track component lifecycle
   useEffect(() => {

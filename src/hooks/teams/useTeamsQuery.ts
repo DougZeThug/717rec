@@ -1,8 +1,12 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 
 import { fetchTeamsWithOptions, type TeamsQueryOptions } from '@/services/teams/TeamFetchService';
 import { Team } from '@/types';
+
+// Shared empty array reference to avoid creating a new [] on every render
+// (which would cause useEffect deps depending on this array to re-run forever).
+const EMPTY_TEAMS: readonly Team[] = Object.freeze([]);
 
 // Re-export for any consumers that import this type from here
 export type { TeamsQueryOptions };
@@ -74,13 +78,8 @@ export function useTeamsArray(options?: TeamsQueryOptions): {
 } {
   const query = useTeamsQuery(options);
 
-  // Stable empty-array reference: avoids creating a new [] on every render
-  // while query.data is undefined (during loading). A new [] on every render
-  // would cause any useEffect that depends on this array to re-run indefinitely.
-  const emptyRef = useRef<Team[]>([]);
-
   return {
-    teams: query.data ?? emptyRef.current,
+    teams: query.data ?? (EMPTY_TEAMS as Team[]),
     isLoading: query.isLoading,
     error: query.error,
     fetchTeams: query.refetch,

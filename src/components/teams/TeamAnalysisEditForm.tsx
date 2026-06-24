@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useLazyRef } from '@/hooks/useLazyRef';
 import { TeamAnalysis, TeamAnalysisInput } from '@/hooks/useTeamAnalysis';
 
 interface TeamAnalysisEditFormProps {
@@ -30,27 +29,31 @@ export const TeamAnalysisEditForm: React.FC<TeamAnalysisEditFormProps> = ({
   );
   // Stable per-row IDs kept in sync with strengths/weaknesses so React
   // keys remain stable across removals (avoids array-index-as-key bugs).
-  const strengthIdsRef = useLazyRef<string[]>(() => strengths.map(() => crypto.randomUUID()));
-  const weaknessIdsRef = useLazyRef<string[]>(() => weaknesses.map(() => crypto.randomUUID()));
+  const [strengthIds, setStrengthIds] = useState<string[]>(() =>
+    (analysis?.strengths?.length ? analysis.strengths : ['']).map(() => crypto.randomUUID())
+  );
+  const [weaknessIds, setWeaknessIds] = useState<string[]>(() =>
+    (analysis?.weaknesses?.length ? analysis.weaknesses : ['']).map(() => crypto.randomUUID())
+  );
   const [trends, setTrends] = useState(analysis?.trends || '');
   const [rivalryInsights, setRivalryInsights] = useState(analysis?.rivalry_insights || '');
 
   const handleAddStrength = () => {
-    strengthIdsRef.current = [...strengthIdsRef.current, crypto.randomUUID()];
+    setStrengthIds((prev) => [...prev, crypto.randomUUID()]);
     setStrengths((prev) => [...prev, '']);
   };
   const handleAddWeakness = () => {
-    weaknessIdsRef.current = [...weaknessIdsRef.current, crypto.randomUUID()];
+    setWeaknessIds((prev) => [...prev, crypto.randomUUID()]);
     setWeaknesses((prev) => [...prev, '']);
   };
 
   const handleRemoveStrength = (index: number) => {
-    strengthIdsRef.current = strengthIdsRef.current.filter((_, i) => i !== index);
+    setStrengthIds((prev) => prev.filter((_, i) => i !== index));
     setStrengths((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleRemoveWeakness = (index: number) => {
-    weaknessIdsRef.current = weaknessIdsRef.current.filter((_, i) => i !== index);
+    setWeaknessIds((prev) => prev.filter((_, i) => i !== index));
     setWeaknesses((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -96,7 +99,7 @@ export const TeamAnalysisEditForm: React.FC<TeamAnalysisEditFormProps> = ({
         <Label>Strengths</Label>
         <div className="space-y-2">
           {strengths.map((strength, index) => (
-            <div key={strengthIdsRef.current[index]} className="flex gap-2">
+            <div key={strengthIds[index]} className="flex gap-2">
               <Input
                 value={strength}
                 onChange={(e) => handleStrengthChange(index, e.target.value)}
@@ -131,7 +134,7 @@ export const TeamAnalysisEditForm: React.FC<TeamAnalysisEditFormProps> = ({
         <Label>Areas to Improve</Label>
         <div className="space-y-2">
           {weaknesses.map((weakness, index) => (
-            <div key={weaknessIdsRef.current[index]} className="flex gap-2">
+            <div key={weaknessIds[index]} className="flex gap-2">
               <Input
                 value={weakness}
                 onChange={(e) => handleWeaknessChange(index, e.target.value)}
