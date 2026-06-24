@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
 import { fetchScoreSubmissions as fetchScoreSubmissionsData } from '@/services/matches/MatchReadService';
@@ -22,11 +22,7 @@ export function useScoreSubmissions() {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchScoreSubmissions();
-  }, []);
-
-  const fetchScoreSubmissions = async () => {
+  const fetchScoreSubmissions = useCallback(async () => {
     try {
       setIsLoading(true);
       const data = await fetchScoreSubmissionsData();
@@ -41,7 +37,11 @@ export function useScoreSubmissions() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchScoreSubmissions();
+  }, [fetchScoreSubmissions]);
 
   const handleSubmissionAction = async (submissionId: string, status: 'approved' | 'rejected') => {
     try {
