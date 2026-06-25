@@ -12,7 +12,6 @@ import {
 import React, { useCallback, useMemo } from 'react';
 import { NavLink } from 'react-router';
 
-import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { cn } from '@/lib/utils';
 import { ICON_SIZES, ICON_STROKE } from '@/styles/icon-system';
 import { prefetchRoute } from '@/utils/routePrefetch';
@@ -23,7 +22,6 @@ interface NavLinksProps {
 }
 
 const NavLinks: React.FC<NavLinksProps> = React.memo(({ isMobile = false, onLinkClick }) => {
-  const { isAdminAccessGranted: _isAdminAccessGranted } = useAdminAccess();
   const activeClass = 'bg-white/20 dark:bg-slate-700 text-white dark:text-white';
   const baseClass = isMobile
     ? 'flex items-center w-full px-4 py-3 text-sm font-medium text-white hover:bg-white/10 rounded-md transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-cornhole-navy'
