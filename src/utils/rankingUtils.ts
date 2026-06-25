@@ -106,17 +106,25 @@ export const updateRankChanges = (rankings: Ranking[]): Ranking[] => {
 
 export const saveRankingsToStorage = async (
   rankings: Ranking[],
-  seasonId?: string
+  seasonId?: string,
+  options: { persistToDatabase?: boolean } = {}
 ): Promise<void> => {
-  // Import database service dynamically to avoid circular dependencies
-  const { saveRankingsToDatabase } = await import('@/services/rankings/RankingPersistenceService');
+  // Default to true to preserve existing behavior for callers that don't pass
+  // the option. Admin-gated callers (e.g. useTeamRankings) pass `false` for
+  // non-admins so we don't trip RLS on `ranking_snapshots`.
+  const { persistToDatabase = true } = options;
 
   try {
-    // Save to database for the specified season (or active season if not provided)
-    try {
-      await saveRankingsToDatabase(rankings, seasonId);
-    } catch (error) {
-      warnLog('Database save failed, falling back to localStorage:', error);
+    if (persistToDatabase) {
+      // Import database service dynamically to avoid circular dependencies
+      const { saveRankingsToDatabase } = await import(
+        '@/services/rankings/RankingPersistenceService'
+      );
+      try {
+        await saveRankingsToDatabase(rankings, seasonId);
+      } catch (error) {
+        warnLog('Database save failed, falling back to localStorage:', error);
+      }
     }
 
     // Also save to localStorage as a backup
