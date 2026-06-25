@@ -1,5 +1,5 @@
 import { m } from 'framer-motion';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
