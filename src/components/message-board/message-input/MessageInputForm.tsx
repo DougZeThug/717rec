@@ -1,10 +1,9 @@
 import { Send } from 'lucide-react';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { useAuth } from '@/contexts/auth-context';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { toast } from '@/hooks/useToast';
 import { cn } from '@/lib/utils';
@@ -25,8 +24,6 @@ const MessageInputForm: React.FC<MessageInputFormProps> = ({ onSend }) => {
   const [message, setMessage] = useState('');
   const [category, setCategory] = useState<MessageCategory>('General');
   const [isSending, setIsSending] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { user: _user } = useAuth();
   const { isAdminAccessGranted } = useAdminAccess();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -84,7 +81,6 @@ const MessageInputForm: React.FC<MessageInputFormProps> = ({ onSend }) => {
       <form onSubmit={handleSubmit} className="space-y-3">
         <div className="relative">
           <Textarea
-            ref={textareaRef}
             value={message}
             onChange={handleTextareaChange}
             placeholder="Type a message..."
