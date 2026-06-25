@@ -16,14 +16,12 @@ import { getBadgeConfig } from '@/utils/badgeConfig';
 interface TeamBadgeProps {
   badge: TeamBadgeEvent;
   size?: 'sm' | 'md' | 'lg';
-  showDescription?: boolean;
   className?: string;
 }
 
 export const TeamBadge: React.FC<TeamBadgeProps> = ({
   badge,
   size = 'md',
-  showDescription: _showDescription = false,
   className,
 }) => {
   const config = getBadgeConfig(badge.badge_type, badge);
