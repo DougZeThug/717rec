@@ -4,7 +4,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
 
 import { Button } from '@/components/ui/button';
-import { useAdminAccess } from '@/hooks/useAdminAccess';
 
 import NavActions from './NavActions';
 import NavLinks from './NavLinks';
@@ -15,7 +14,6 @@ interface MobileMenuProps {
 
 const MobileMenu: React.FC<MobileMenuProps> = React.memo(({ navItems: _navItems }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { isAdminAccessGranted: _isAdminAccessGranted } = useAdminAccess();
   const location = useLocation();
 
   // Close menu on route change
