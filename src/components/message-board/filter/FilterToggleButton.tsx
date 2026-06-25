@@ -1,5 +1,4 @@
 import { Filter } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -17,7 +16,6 @@ const FilterToggleButton: React.FC<FilterToggleButtonProps> = ({
   onClick,
   isActive: _isActive,
 }) => {
-  const { resolvedTheme: _resolvedTheme } = useTheme();
   // Check if any filters are active
   const hasActiveFilters =
     filterOptions.category !== null ||
