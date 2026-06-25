@@ -193,16 +193,11 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
   const { data, isLoading, error } = useQuery({
     queryKey: ['champions', championIds],
     queryFn: async () => {
-      if (championIds.length === 0) return { teams: [], divisionMap: {} };
+      if (championIds.length === 0) return { teams: [] };
 
       const teams = await HeroCardService.fetchChampionTeams(championIds);
 
-      const divisionMap: Record<string, string> = {};
-      Object.entries(championsMap).forEach(([division, teamId]) => {
-        divisionMap[teamId] = division;
-      });
-
-      return { teams, divisionMap };
+      return { teams };
     },
     enabled: championIds.length > 0,
   });
