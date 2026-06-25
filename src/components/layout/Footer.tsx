@@ -2,12 +2,10 @@ import { Mail } from 'lucide-react';
 import React from 'react';
 
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
-import { useThemeConsistency } from '@/hooks/useThemeConsistency';
 import { cn } from '@/lib/utils';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-  const { isDark: _isDark } = useThemeConsistency();
   const { isWinterTheme } = useSeasonalTheme();
 
   return (
