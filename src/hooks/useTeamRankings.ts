@@ -131,7 +131,11 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
 
         if (finalRankings.length > 0) {
           try {
-            await saveRankingsToStorage(finalRankings);
+            // Only admins are allowed to write ranking_snapshots (RLS). Non-admins
+            // still get a localStorage-only backup so trend arrows keep working.
+            await saveRankingsToStorage(finalRankings, undefined, {
+              persistToDatabase: isAdminAccessGranted,
+            });
           } catch (saveError) {
             errorLog('Failed to persist rankings snapshot:', saveError);
           }
