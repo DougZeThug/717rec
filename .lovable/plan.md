@@ -1,30 +1,25 @@
 ## Goal
-Eliminate the `JS-E1004` duplicate-export warnings flagged by DeepSource in two barrel files, without changing any runtime behavior or public import paths.
+Clear the Postgres collation version mismatch warning (glibc 2.39 → 2.40) without changing app behavior.
 
-## Findings
+## Approach
+Run a single Supabase migration with two statements:
 
-**1. `src/components/ui/charts/index.ts`**
-- `ChartTooltip.tsx` re-exports `ChartTooltipContent` (`export { ChartTooltipContent } from './ChartTooltipContent'`) so consumers can do `import { ChartTooltip, ChartTooltipContent } from '@/components/ui/charts'`.
-- The barrel then also does `export * from './ChartTooltip'` AND `export * from './ChartTooltipContent'`, exporting the same symbol twice.
+1. `REINDEX DATABASE CONCURRENTLY postgres` — rebuilds all indexes using the new collation rules. `CONCURRENTLY` = no table locks, safe for live traffic.
+2. `ALTER DATABASE postgres REFRESH COLLATION VERSION` — updates the recorded version 2.39 → 2.40 so the warning stops.
 
-**2. `src/services/brackets/manager/index.ts`**
-- `BracketManagerService.ts` re-exports `CreateBracketOptions`, `UpdateMatchOptions`, `UpdateSeedingOptions` from `./types/BracketServiceTypes`.
-- The barrel re-exports `BracketManagerService` (which surfaces those types) AND does `export type * from './types/BracketServiceTypes'`, exporting the same three type names twice.
+## Why this is safe
+- No schema, data, RLS, policies, functions, triggers, or grants change.
+- No frontend code changes; `types.ts` regeneration is unnecessary.
+- `CONCURRENTLY` avoids blocking queries while indexes rebuild.
+- The only possible behavior change is *correcting* any text index that silently drifted — a fix, not a regression. With English-only data (usernames, team names), observable change is extremely unlikely.
 
-Other barrels under `src/` were spot-checked — no further duplicate-named re-exports detected.
+## Caveats
+- `REINDEX … CONCURRENTLY` is slower (several minutes on your DB) but non-blocking.
+- If Supabase's migration runner rejects `ALTER DATABASE … REFRESH COLLATION VERSION` (the global rule only blocks settings changes, not this maintenance command, but tooling sometimes pattern-matches `ALTER DATABASE`), the fallback is to run that one line manually in the Supabase SQL Editor. The REINDEX is the part that actually matters; the REFRESH is just metadata.
 
-## Plan
+## Verification
+- Warning disappears from new Postgres logs.
+- App continues to load `/schedule`, standings, rankings normally.
 
-### Fix 1 — charts barrel
-In `src/components/ui/charts/index.ts`, drop the redundant `export * from './ChartTooltipContent'` line. `ChartTooltipContent` continues to be exported via `ChartTooltip.tsx`, so all existing imports keep working.
-
-### Fix 2 — bracket manager barrel
-In `src/services/brackets/manager/BracketManagerService.ts`, remove the inline `export type { CreateBracketOptions, UpdateMatchOptions, UpdateSeedingOptions }` block. The barrel's `export type * from './types/BracketServiceTypes'` already exposes them to consumers, and `BracketManagerService.ts` keeps its local `import type` for internal use.
-
-This keeps `BracketServiceTypes` as the single source of truth (matches the comment "Shared types (for consumers of specialized services)") and avoids breaking any consumer importing from either the barrel or from `BracketManagerService` directly — quick `rg` confirmed no code imports those option types directly from `BracketManagerService.ts`; they come via the barrel.
-
-### Verification
-- `npx tsgo --noEmit` to confirm clean TS build.
-- `npx eslint src/components/ui/charts src/services/brackets/manager` to confirm no new lint issues.
-
-No other files change. No runtime behavior change.
+## Rollback
+Not applicable — REINDEX produces logically identical indexes; there is nothing to undo.
