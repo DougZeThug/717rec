@@ -1,5 +1,4 @@
 import { m } from 'framer-motion';
-import { useTheme } from 'next-themes';
 import React from 'react';
 import { Link } from 'react-router';
 
@@ -25,7 +24,6 @@ const TeamCard: React.FC<TeamCardProps> = ({
   isWinter = false,
   prefetchedBadges,
 }) => {
-  const { theme: _theme } = useTheme();
   const delayClass = delay ? `animation-delay-${delay * 100}` : '';
 
   return (
