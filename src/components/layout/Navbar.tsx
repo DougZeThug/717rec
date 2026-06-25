@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
@@ -12,18 +12,6 @@ import NavLinks from './navbar/NavLinks';
 const Navbar: React.FC = React.memo(() => {
   // Use base theme hook - no location dependency
   const { isWinterTheme } = useSeasonalThemeBase();
-
-  // Memoize navItems to prevent recreating on each render
-  const navItems = useMemo(
-    () => [
-      { label: 'Home', href: '/' },
-      { label: 'Teams', href: '/teams' },
-      { label: 'Schedule', href: '/schedule' },
-      { label: 'Standings', href: '/stats' },
-      { label: 'Playoffs', href: '/playoffs' },
-    ],
-    []
-  );
 
   return (
     <>
@@ -58,7 +46,7 @@ const Navbar: React.FC = React.memo(() => {
             </div>
 
             {/* Mobile menu with hamburger */}
-            <MobileMenu navItems={navItems} />
+            <MobileMenu />
           </div>
         </div>
       </nav>

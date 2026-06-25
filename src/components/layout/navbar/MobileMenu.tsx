@@ -9,11 +9,7 @@ import { useAdminAccess } from '@/hooks/useAdminAccess';
 import NavActions from './NavActions';
 import NavLinks from './NavLinks';
 
-interface MobileMenuProps {
-  navItems: Array<{ label: string; href: string }>;
-}
-
-const MobileMenu: React.FC<MobileMenuProps> = React.memo(({ navItems: _navItems }) => {
+const MobileMenu: React.FC = React.memo(() => {
   const [isOpen, setIsOpen] = useState(false);
   const { isAdminAccessGranted: _isAdminAccessGranted } = useAdminAccess();
   const location = useLocation();
