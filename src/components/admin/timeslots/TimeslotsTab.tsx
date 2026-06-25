@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import TimeslotAssignment from '@/components/timeslots/TimeslotAssignment';
 import TimeslotList from '@/components/timeslots/TimeslotList';
