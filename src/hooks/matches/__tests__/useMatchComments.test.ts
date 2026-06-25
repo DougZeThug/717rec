@@ -85,13 +85,13 @@ describe('useMatchComments', () => {
     );
 
     const insertHandler = mockChannel.on.mock.calls[0][2];
-    await act(async () => {
+    act(() => {
       insertHandler({ new: { ...comment, id: 'comment-2', content: 'Rematch?' } });
     });
     expect(result.current.comments).toHaveLength(2);
 
     const deleteHandler = mockChannel.on.mock.calls[1][2];
-    await act(async () => {
+    act(() => {
       deleteHandler({ old: { id: 'comment-1' } });
     });
     expect(result.current.comments.map((c) => c.id)).toEqual(['comment-2']);
