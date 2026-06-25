@@ -1,6 +1,5 @@
 import { m } from 'framer-motion';
 import { MessageSquare } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,6 @@ import { animations } from '@/styles/design-system';
 
 const MessageBoardFAB: React.FC = () => {
   const { navigateWithTransition } = useNavigation();
-  const { resolvedTheme: _resolvedTheme } = useTheme();
 
   const handleClick = () => {
     navigateWithTransition('/message-board');
