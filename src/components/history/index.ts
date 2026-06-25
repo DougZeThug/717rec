@@ -1,4 +1,3 @@
-export { default as ChampionCard } from './ChampionCard';
 export { default as DivisionPanel } from './DivisionPanel';
 export { default as HistoricalStandingsTable } from './HistoricalStandingsTable';
 export { default as HistoryPageContent } from './HistoryPageContent';
