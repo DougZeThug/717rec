@@ -1,5 +1,4 @@
 import { Keyboard } from 'lucide-react';
-import React from 'react';
 
 import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Card, CardContent } from '@/components/ui/card';
