@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Ranking } from '@/types';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
+import { debugLog } from '@/utils/logger';
 
 /**
  * Get the current active season ID
@@ -54,6 +55,13 @@ export async function saveRankingsToDatabase(
   });
 
   if (error) {
+    // RLS rejects writes from non-admin users. That's expected — only admins
+    // are allowed to persist snapshots. Swallow it instead of throwing so we
+    // don't spam logs from every signed-in non-admin viewing the rankings.
+    if (error.code === '42501') {
+      debugLog('Skipping ranking snapshot upsert: user is not an admin.');
+      return;
+    }
     handleDatabaseError(error, 'Failed to save rankings to database');
   }
 }

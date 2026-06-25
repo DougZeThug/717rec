@@ -13,6 +13,7 @@ const getDisplayedPowerScore = (powerScore: number | null | undefined): number |
 
 import { usePreviousRankings } from './rankings/usePreviousRankings';
 import { useRankingsData } from './rankings/useRankingsData';
+import { useAdminAccess } from './useAdminAccess';
 import { useTeams } from './useTeams';
 
 export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | undefined) => {
@@ -21,6 +22,7 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
   const { previousRankings, lastUpdated } = usePreviousRankings();
   const { latestMatches, matchesLoading } = useRankingsData();
   const { teams: latestTeams, isLoading: teamsLoading } = useTeams();
+  const { isAdminAccessGranted } = useAdminAccess();
 
   useEffect(() => {
     debugLog(
@@ -129,7 +131,11 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
 
         if (finalRankings.length > 0) {
           try {
-            await saveRankingsToStorage(finalRankings);
+            // Only admins are allowed to write ranking_snapshots (RLS). Non-admins
+            // still get a localStorage-only backup so trend arrows keep working.
+            await saveRankingsToStorage(finalRankings, undefined, {
+              persistToDatabase: isAdminAccessGranted,
+            });
           } catch (saveError) {
             errorLog('Failed to persist rankings snapshot:', saveError);
           }
