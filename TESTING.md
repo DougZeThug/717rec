@@ -250,8 +250,8 @@ over time; anything already above target is just "keep it green".
 `RankingCurrentService`, `RankingTrendsService`.
 
 **Hooks:** `usePendingMatches`, `useTeamScheduleLoader`, `usePairingGenerator`,
-match-submission and team-record-update hooks, match query-cache utilities,
-team-stats util.
+`useMatchComments`, match-submission and team-record-update hooks,
+match query-cache utilities, team-stats util.
 
 **Utils:** ranking calculations (SOS, head-to-head, streaks, win %, power
 score), career stats (match stats, playoff stats, sweep rate, clutch rate,
