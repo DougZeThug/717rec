@@ -9,5 +9,4 @@ export interface TeamInfo {
 export interface MatchWithOpponent {
   match: Match;
   opponent: TeamInfo;
-  weekNumber: number | null;
 }

@@ -14,7 +14,6 @@ interface TeamInfo {
 interface MatchWithOpponent {
   match: Match;
   opponent: TeamInfo;
-  weekNumber: number | null;
 }
 
 interface MyNextMatchResult {
@@ -96,7 +95,6 @@ export const useMyNextMatch = (): MyNextMatchResult => {
       return {
         match,
         opponent,
-        weekNumber: match.round_number || null,
       };
     };
 
