@@ -67,9 +67,6 @@ function UpsetRow({ upset, winter }: UpsetRowProps) {
   );
 }
 
-function MobileUpsetRow({ upset, winter }: UpsetRowProps) {
-  return <UpsetMobileContent upset={upset} winter={winter} />;
-}
 function UpsetMobileContent({ upset, winter }: UpsetRowProps) {
   return (
     <div className="flex items-center justify-between gap-1.5">
@@ -129,7 +126,7 @@ function UpsetsSection({ upsets, winter }: { upsets: WeeklyUpset[]; winter: bool
           title="Top Upsets"
         >
           {upsets.map((upset) => (
-            <MobileUpsetRow key={upset.winnerId + upset.loserId} upset={upset} winter={winter} />
+            <UpsetMobileContent key={upset.winnerId + upset.loserId} upset={upset} winter={winter} />
           ))}
         </MobileSectionShell>
       </div>
