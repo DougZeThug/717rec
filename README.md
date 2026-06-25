@@ -76,6 +76,7 @@ For governed releases (versioning, tags, deployment checklist, rollback steps), 
 
 ```sh
 npm test
+npm run test:debug
 npm run test:coverage
 npm run test:coverage:serial
 npm run test:coverage:ci
