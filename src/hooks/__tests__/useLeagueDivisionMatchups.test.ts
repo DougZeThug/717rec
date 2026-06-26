@@ -29,10 +29,7 @@ describe('computeDivisionMatchups', () => {
       ],
       archivedMatches: [],
       playoffMatches: [],
-      teamSeasonDivisions: [
-        tsd('t1', 's1', 'Competitive'),
-        tsd('t2', 's1', 'Competitive'),
-      ],
+      teamSeasonDivisions: [tsd('t1', 's1', 'Competitive'), tsd('t2', 's1', 'Competitive')],
       brackets: [],
     });
     const cc = result.find((r) => r.tierA === 'competitive' && r.tierB === 'competitive');
@@ -49,10 +46,7 @@ describe('computeDivisionMatchups', () => {
       ],
       archivedMatches: [],
       playoffMatches: [],
-      teamSeasonDivisions: [
-        tsd('c1', 's1', 'Competitive'),
-        tsd('i1', 's1', 'Intermediate'),
-      ],
+      teamSeasonDivisions: [tsd('c1', 's1', 'Competitive'), tsd('i1', 's1', 'Intermediate')],
       brackets: [],
     });
     const ci = result.find((r) => r.tierA === 'competitive' && r.tierB === 'intermediate');
@@ -95,10 +89,7 @@ describe('computeDivisionMatchups', () => {
       matches: [{ winner_id: 't1', loser_id: 't2', season_id: 's1' }],
       archivedMatches: [],
       playoffMatches: [],
-      teamSeasonDivisions: [
-        tsd('t1', 's1', 'Hidden'),
-        tsd('t2', 's1', 'Competitive'),
-      ],
+      teamSeasonDivisions: [tsd('t1', 's1', 'Hidden'), tsd('t2', 's1', 'Competitive')],
       brackets: [],
     });
     expect(result.every((r) => r.winsA === 0 && r.winsB === 0)).toBe(true);

@@ -98,7 +98,8 @@ export const fetchLeagueDivisionMatchups = async (): Promise<LeagueDivisionMatch
         const { data, error } = await supabase
           .from('brackets')
           .select('id, divisions(display_division)');
-        if (error) handleDatabaseError(error, 'Failed to fetch brackets for league division matchups');
+        if (error)
+          handleDatabaseError(error, 'Failed to fetch brackets for league division matchups');
         return (data ?? []).map((row) => ({
           id: row.id as string,
           display_division:

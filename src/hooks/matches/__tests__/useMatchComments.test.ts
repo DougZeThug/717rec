@@ -3,20 +3,29 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useMatchComments } from '../useMatchComments';
 
-const { mockUser, mockToast, mockChannel, mockFetchComments, mockFetchAuthor, mockAddComment, mockDeleteComment } =
-  vi.hoisted(() => ({
-    mockUser: { current: null as null | { id: string; email?: string; user_metadata?: Record<string, string> } },
-    mockToast: vi.fn(),
-    mockChannel: {
-      on: vi.fn(),
-      subscribe: vi.fn(),
-      unsubscribe: vi.fn(),
-    },
-    mockFetchComments: vi.fn(),
-    mockFetchAuthor: vi.fn(),
-    mockAddComment: vi.fn(),
-    mockDeleteComment: vi.fn(),
-  }));
+const {
+  mockUser,
+  mockToast,
+  mockChannel,
+  mockFetchComments,
+  mockFetchAuthor,
+  mockAddComment,
+  mockDeleteComment,
+} = vi.hoisted(() => ({
+  mockUser: {
+    current: null as null | { id: string; email?: string; user_metadata?: Record<string, string> },
+  },
+  mockToast: vi.fn(),
+  mockChannel: {
+    on: vi.fn(),
+    subscribe: vi.fn(),
+    unsubscribe: vi.fn(),
+  },
+  mockFetchComments: vi.fn(),
+  mockFetchAuthor: vi.fn(),
+  mockAddComment: vi.fn(),
+  mockDeleteComment: vi.fn(),
+}));
 
 vi.mock('@/contexts/auth-context', () => ({
   useAuth: () => ({ user: mockUser.current }),

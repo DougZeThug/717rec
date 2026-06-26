@@ -17,6 +17,16 @@ vi.mock('@/hooks/useTeams', () => ({
   useTeams: vi.fn(),
 }));
 
+vi.mock('@/hooks/useAdminAccess', () => ({
+  useAdminAccess: vi.fn(() => ({
+    isAdminAccessGranted: false,
+    isLoading: false,
+    checkAdminAccess: vi.fn(),
+    requestAdminAccess: vi.fn(),
+    revokeAdminAccess: vi.fn(),
+  })),
+}));
+
 vi.mock('@/utils/logger', () => ({
   debugLog: vi.fn(),
   errorLog: vi.fn(),
@@ -157,7 +167,9 @@ describe('useTeamRankings', () => {
         expect.arrayContaining([
           expect.objectContaining({ teamId: 'persist-1' }),
           expect.objectContaining({ teamId: 'persist-2' }),
-        ])
+        ]),
+        undefined,
+        expect.objectContaining({ persistToDatabase: false })
       );
     });
   });
@@ -172,7 +184,9 @@ describe('useTeamRankings', () => {
 
     await waitFor(() => expect(saveRankingsToStorage).toHaveBeenCalledTimes(1));
     expect(saveRankingsToStorage).toHaveBeenCalledWith(
-      expect.arrayContaining([expect.objectContaining({ teamId: 'anon-1' })])
+      expect.arrayContaining([expect.objectContaining({ teamId: 'anon-1' })]),
+      undefined,
+      expect.objectContaining({ persistToDatabase: false })
     );
   });
 });
