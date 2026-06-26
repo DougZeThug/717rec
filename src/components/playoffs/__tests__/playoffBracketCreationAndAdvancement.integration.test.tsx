@@ -254,7 +254,7 @@ describe('playoff bracket creation and match advancement integration', () => {
       champion_id: null,
       grand_final_type: 'simple',
       uses_brackets_manager: true,
-    });
+    } as unknown as Awaited<ReturnType<typeof createBracket>>);
     vi.mocked(fetchBmMatchWithStage).mockResolvedValue({
       id: 101,
       opponent1_id: 'team-alpha',
@@ -272,7 +272,7 @@ describe('playoff bracket creation and match advancement integration', () => {
         type: 'single_elimination',
         number: 1,
       },
-    });
+    } as unknown as Awaited<ReturnType<typeof fetchBmMatchWithStage>>);
   });
 
   it('creates a bracket from the production form and advances the winner through score entry', async () => {
