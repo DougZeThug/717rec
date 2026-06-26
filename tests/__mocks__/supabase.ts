@@ -40,7 +40,7 @@ interface MockSupabaseTable {
 // Mock Supabase client
 export const supabase = {
   from: (tableName: string): MockSupabaseTable => ({
-    select: (_query?: string) => ({
+    select: ((_query?: string) => ({
       eq: (_column: string, _value: unknown) => ({
         single: () => Promise.resolve({ data: null, error: null }),
         then: (callback: (result: MockSupabaseResponse) => unknown) =>
@@ -48,8 +48,8 @@ export const supabase = {
       }),
       then: (callback: (result: MockSupabaseResponse) => unknown) =>
         Promise.resolve({ data: [], error: null }).then(callback),
-    }),
-    insert: (data: unknown | unknown[]) => {
+    })) as unknown as MockSupabaseTable['select'],
+    insert: ((data: unknown | unknown[]) => {
       // Track the inserted rows for verification
       const rows = (Array.isArray(data) ? data : [data]).map((row) =>
         row && typeof row === 'object' ? (row as Record<string, unknown>) : { value: row }
@@ -76,7 +76,7 @@ export const supabase = {
           Promise.resolve(result).then(resolve),
         catch: (reject: (reason: unknown) => unknown) => Promise.resolve(result).catch(reject),
       };
-    },
+    }) as unknown as MockSupabaseTable['insert'],
     update: (data: unknown) => ({
       eq: (_column: string, _value: unknown) => Promise.resolve({ data, error: null }),
       match: (_criteria: Record<string, unknown>) => Promise.resolve({ data, error: null }),
