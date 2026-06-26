@@ -36,7 +36,8 @@ describe('computeDivisionMatchups', () => {
       brackets: [],
     });
     const cc = result.find((r) => r.tierA === 'competitive' && r.tierB === 'competitive');
-    expect(cc).toEqual({ tierA: 'competitive', tierB: 'competitive', winsA: 1, winsB: 1 });
+    // 2 within-tier matches → each contributes one win and one loss to the tier.
+    expect(cc).toEqual({ tierA: 'competitive', tierB: 'competitive', winsA: 2, winsB: 2 });
   });
 
   it('orients cross-tier matchups so the higher tier is side A', () => {
@@ -115,6 +116,6 @@ describe('computeDivisionMatchups', () => {
       brackets: [{ id: 'b1', display_division: 'Recreational' }],
     });
     const rr = result.find((r) => r.tierA === 'recreational' && r.tierB === 'recreational');
-    expect(rr).toEqual({ tierA: 'recreational', tierB: 'recreational', winsA: 1, winsB: 1 });
+    expect(rr).toEqual({ tierA: 'recreational', tierB: 'recreational', winsA: 2, winsB: 2 });
   });
 });
