@@ -229,7 +229,7 @@ describe('bracket display and admin interaction views', () => {
       />
     );
 
-    expect(document.querySelectorAll('[class*=\"h-40\"]').length).toBeGreaterThan(0);
+    expect(document.querySelectorAll('[class*="h-40"]').length).toBeGreaterThan(0);
 
     rerender(
       <AdminView
