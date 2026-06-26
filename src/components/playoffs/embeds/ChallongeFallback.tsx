@@ -115,7 +115,6 @@ const ChallongeEmbedWithToggle: React.FC<{
             height="500"
             frameBorder="0"
             scrolling="auto"
-            allowTransparency
             title={`${title} Bracket`}
             sandbox="allow-scripts allow-popups"
             className="border-0 w-full min-w-full"
