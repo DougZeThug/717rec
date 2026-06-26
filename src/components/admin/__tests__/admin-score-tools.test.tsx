@@ -197,7 +197,7 @@ describe('admin score tooling component states', () => {
       matches: [makeMassMatch({ isEdited: true, isValid: true, iscompleted: true })],
     };
     renderWithClient(<MassScoreEntryTool />);
-    await userEvent.click(screen.getByRole('button', { name: /2–0/i }));
+    await userEvent.click(screen.getByRole('button', { name: /2–0/iu }));
     expect(mockHandleMassScoreChange).toHaveBeenCalledWith(0, 1, 0);
     expect(mockHandleGameWinsChange).toHaveBeenCalledWith(0, 2, 0);
     expect(mockHandleMarkCompleted).toHaveBeenCalledWith(0, true);
