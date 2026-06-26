@@ -148,7 +148,7 @@ function IntegrationHarness() {
           availableDivisions: [],
           typesafeBracketsByDivision: {},
           isLoading: false,
-        }}
+        } as unknown as React.ComponentProps<typeof AdminView>['data']}
       />
 
       {selectedBracketId && (
