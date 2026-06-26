@@ -78,9 +78,5 @@ export const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) 
     .join('\n');
 
   // SECURITY: Create style element using React.createElement instead of dangerouslySetInnerHTML
-  return React.createElement(
-    'style',
-    { key: `chart-style-${sanitizedId}` },
-    styles
-  );
+  return React.createElement('style', { key: `chart-style-${sanitizedId}` }, styles);
 };

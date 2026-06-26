@@ -126,9 +126,10 @@ vi.mock('@/components/playoffs/hooks/usePlayoffHandlers', () => ({
   usePlayoffHandlers: () => ({ handleEditMatch: mockHandleEditMatch }),
 }));
 
+import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
+
 import BracketView from '../../BracketView';
 import AdminView from '../AdminView';
-import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
 const teams = [
   { id: 'team-1', name: 'Alpha', seed: 1 },
