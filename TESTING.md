@@ -271,8 +271,10 @@ mass-score-entry, batch-matches auto-schedule warnings, history page,
 `SeasonActivationDialog` (the "keep playoffs active" branch),
 `SeasonFinalizePlayoffsDialog` (confirm / cancel / error paths).
 
-See `__tests__/` folders next to the source for unit tests and the root
-`tests/` folder for integration tests.
+See `__tests__/` folders next to the source for unit tests. Integration tests
+use the `.integration.test.ts(x)` naming convention and are placed in `__tests__/`
+folders alongside the components they test. The root `tests/` folder contains
+service-level tests for bracket management.
 
 ## What's intentionally excluded
 

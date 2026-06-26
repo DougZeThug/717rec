@@ -100,7 +100,7 @@ export const ExampleService = {
   ```
 - Also mock `scrollIntoView` if Radix components trigger it
 - **Unit tests**: `__tests__/` folder next to the source file
-- **Integration tests**: root `tests/` directory
+- **Integration tests**: `.integration.test.ts(x)` files in `__tests__/` folders, or root `tests/` for service-level tests
 - Rule of thumb: imports from one module → unit test. Touches multiple modules → integration test.
 
 </important>
