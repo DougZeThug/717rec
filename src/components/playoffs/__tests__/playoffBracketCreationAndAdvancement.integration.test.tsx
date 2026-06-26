@@ -179,7 +179,7 @@ function IntegrationHarness() {
         onBracketCreated={() => setSelectedBracketId('created-bracket-1')}
         seasonId="season-2026"
         editingMatch={editingMatch}
-        isQuickEdit={true}
+        isQuickEdit
         onCloseMatchEditor={() => setEditingMatch(null)}
         onSaveMatchScore={async (...args) => {
           const [matchId, team1Score, team2Score, games, team1GameWins, team2GameWins, refetch] =
@@ -226,13 +226,15 @@ describe('playoff bracket creation and match advancement integration', () => {
     HTMLElement.prototype.releasePointerCapture = vi.fn();
     HTMLElement.prototype.hasPointerCapture = vi.fn().mockReturnValue(false);
     HTMLElement.prototype.scrollIntoView = vi.fn();
-    globalThis.ResizeObserver =
-      globalThis.ResizeObserver ||
-      class ResizeObserver {
-        observe() {}
-        unobserve() {}
-        disconnect() {}
+    const ResizeObserverMock = vi.fn(function ResizeObserverMock() {
+      return {
+        observe: vi.fn(),
+        unobserve: vi.fn(),
+        disconnect: vi.fn(),
       };
+    });
+    globalThis.ResizeObserver =
+      globalThis.ResizeObserver || (ResizeObserverMock as unknown as typeof ResizeObserver);
   });
 
   beforeEach(() => {
