@@ -1,15 +1,33 @@
 import { expect, test } from '@playwright/test';
 
+const jsonResponse = (body: unknown, status = 200) => ({
+  status,
+  contentType: 'application/json',
+  headers: {
+    'access-control-allow-origin': '*',
+    'access-control-allow-headers': 'authorization, apikey, content-type, x-client-info, prefer',
+    'access-control-allow-methods': 'GET, POST, PATCH, OPTIONS',
+  },
+  body: JSON.stringify(body),
+});
+
 test.describe('playoff bracket browser behavior', () => {
-  test('creates a minimal bracket and advances a visible match', async ({ page }) => {
-    await page.route('**/rest/v1/brackets**', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify([]),
-      });
+  test.beforeEach(async ({ page }) => {
+    await page.route(/\/auth\/v1\//, async (route) => {
+      await route.fulfill(jsonResponse({ user: null }));
     });
 
+    await page.route(/\/rest\/v1\//, async (route) => {
+      if (route.request().method() === 'OPTIONS') {
+        await route.fulfill(jsonResponse(null, 204));
+        return;
+      }
+
+      await route.fulfill(jsonResponse([]));
+    });
+  });
+
+  test('creates a minimal bracket and advances a visible match', async ({ page }) => {
     await page.goto('/playoffs/e2e-bracket-proof');
 
     await expect(page.getByRole('heading', { name: 'Playoff Bracket E2E Proof' })).toBeVisible();

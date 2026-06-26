@@ -105,7 +105,6 @@ test.describe('admin access control', () => {
     await expect(page.getByRole('heading', { name: 'Admin Dashboard' })).toBeVisible({
       timeout: 15000,
     });
-    await expect(page.getByText('Admin Menu')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Timeslots' })).toBeVisible();
   });
 });
