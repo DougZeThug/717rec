@@ -126,6 +126,8 @@ vi.mock('@/components/playoffs/hooks/usePlayoffHandlers', () => ({
   usePlayoffHandlers: () => ({ handleEditMatch: mockHandleEditMatch }),
 }));
 
+import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
+
 import BracketView from '../../BracketView';
 import AdminView from '../AdminView';
 
@@ -134,25 +136,57 @@ const teams = [
   { id: 'team-2', name: 'Bravo', seed: 2 },
 ];
 
-const bracket = {
+const bracket: PlayoffBracket = {
   id: 'bracket-1',
   name: 'Rec Championship',
   division: 'Recreational',
   format: 'single_elimination',
   state: 'in_progress',
   champion: null,
-  matches: [{ id: 'match-1' }],
+  matches: [
+    {
+      id: 'match-1',
+      round: 1,
+      position: 1,
+      team1Id: 'team-1',
+      team2Id: 'team-2',
+      winnerId: null,
+      matchType: 'winners',
+      bestOf: 3,
+      bracket_id: 'bracket-1',
+      status: 'pending',
+    },
+  ],
 };
 
 const makeAdminData = (overrides = {}) => ({
-  ready: true,
+  profile: null,
+  isAdmin: true,
   selectedBracketId: null,
+  setSelectedBracketId: vi.fn(),
+  ready: true,
+  error: null,
+  divisionsError: null,
+  bracketsError: null,
+  divisions: [],
+  divisionsLoading: false,
+  availableDivisions: ['Recreational'],
+  allBrackets: [],
+  bracketsLoading: false,
+  teamsByDivision: {},
+  bracketsByDivision: {},
+  typesafeBracketsByDivision: { Recreational: [bracket] },
+  allBracketsData: [],
+  handleBracketCreated: vi.fn(),
+  handleTeamDivisionChange: vi.fn(),
+  refetchBrackets: vi.fn(),
   bracket: null,
   teams,
-  availableDivisions: ['Recreational'],
-  typesafeBracketsByDivision: { Recreational: [bracket] },
+  teamsLoading: false,
+  deleteBracket: vi.fn(),
   isLoading: false,
-  setSelectedBracketId: vi.fn(),
+  selectedSeasonId: null,
+  setSelectedSeasonId: vi.fn(),
   ...overrides,
 });
 
