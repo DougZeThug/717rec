@@ -108,7 +108,8 @@ describe('TeamForm', () => {
     await user.type(screen.getByPlaceholderText(/player 2 name/i), 'Noor');
     await user.upload(screen.getByLabelText(/upload team image/i), file);
 
-    await waitFor(() => expect(mockUploadTeamImage).toHaveBeenCalledWith(file, undefined));
+    await waitFor(() => expect(mockUploadTeamImage).toHaveBeenCalled());
+    expect(mockUploadTeamImage.mock.calls[0]?.[0]).toBe(file);
     await waitFor(() =>
       expect(screen.getByAltText(/team preview/i)).toHaveAttribute(
         'src',
