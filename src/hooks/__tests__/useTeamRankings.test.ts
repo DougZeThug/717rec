@@ -17,6 +17,16 @@ vi.mock('@/hooks/useTeams', () => ({
   useTeams: vi.fn(),
 }));
 
+vi.mock('@/hooks/useAdminAccess', () => ({
+  useAdminAccess: vi.fn(() => ({
+    isAdminAccessGranted: false,
+    isLoading: false,
+    checkAdminAccess: vi.fn(),
+    requestAdminAccess: vi.fn(),
+    revokeAdminAccess: vi.fn(),
+  })),
+}));
+
 vi.mock('@/utils/logger', () => ({
   debugLog: vi.fn(),
   errorLog: vi.fn(),
