@@ -59,7 +59,7 @@ It is based on a full read of the codebase (architecture, testing/CI, and code-q
 
 ### Facts verified directly (not just inferred)
 - `.env` **is** git-tracked but holds only `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID` — all public, browser-shipped keys. It's already in `.gitignore`; it just needs untracking. **Hygiene, not a leak.**
-- E2E now present: `e2e/{smoke,admin-access,admin-mass-score,score-submission,playoff-bracket}.spec.ts` (5 specs, non-blocking in CI). Integration tests still only 2 (`TeamsContainer`, `HeroCardForm`).
+- E2E now present: `e2e/{smoke,admin-access,admin-mass-score,score-submission,playoff-bracket}.spec.ts` (5 specs, non-blocking in CI). Integration tests now 3 (`TeamsContainer`, `HeroCardForm`, `playoffBracketCreationAndAdvancement`).
 - Build succeeds and the built app serves (HTTP 200) via `vite preview`. **Sandbox note:** the dev/preview server must bind IPv4 (`--host 127.0.0.1`); the config default `host: '::'` fails where IPv6 is unavailable.
 - Largest non-generated files remain over the ~400-line guideline (e.g. `predictMatch.ts`, `SeasonAccordion.tsx`, `WeeklyRecapCard.tsx`, `BracketUpdateService.ts`, `BracketsViewerAdapter.ts`).
 
@@ -101,7 +101,7 @@ Ordering rationale: **quick wins → build the safety net → then make risky ch
 ### Phase 1 — Strengthen the safety net (testing) · several PRs · ≈85
 - **PR 1.1 — harden the existing E2E specs** and ensure the CI job runs them (keep non-blocking for now).
 - **PR 1.2 — integration test for match score submission** (button → save → cache update). Reuse the Supabase mock and the Radix pointer-capture mocks from `CLAUDE.md`.
-- **PR 1.3 — integration test for playoff bracket creation & advancement.**
+- **PR 1.3 — integration test for playoff bracket creation & advancement** ✅ DONE.
 - **PR 1.4 — integration test for auth + admin gating** (non-admin blocked from `/admin`).
 - **PR 1.5+ — component tests per high-risk screen** (one PR each: admin score tools, bracket views, team forms, stats). *Verify each:* `npm run test:coverage` shows component % climbing.
 
@@ -143,7 +143,7 @@ After each PR, the existing CI is your net — it runs lint, typecheck, build, u
 | Phase | Status | Score | PRs |
 |---|---|---|---|
 | 0 — Make this branch green | ☐ Not started | → 77 | — |
-| 1 — Test safety-net | ◐ Partial (5 E2E specs landed; integration + component tests remain) | → 85 | — |
+| 1 — Test safety-net | ◐ Partial (5 E2E specs + 3 integration tests landed; component tests remain) | → 85 | — |
 | 2 — TypeScript strict (incremental) | ☐ Not started | → 92 | — |
 | 3 — Tidy big files & types | ☐ Not started | → 96 | — |
 | 4 — Polish & lock-in | ☐ Not started | → ~98–100 | — |
