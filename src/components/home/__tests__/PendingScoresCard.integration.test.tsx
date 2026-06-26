@@ -76,12 +76,12 @@ describe('PendingScoresCard score submission integration', () => {
     const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
 
     let scoreSubmitted = false;
-    mockCreateScoreSubmission.mockImplementation(async () => {
+    mockCreateScoreSubmission.mockImplementation(() => {
       scoreSubmitted = true;
-      return true;
+      return Promise.resolve(true);
     });
-    mockFetchPendingScoresMatches.mockImplementation(async () =>
-      scoreSubmitted ? [] : [pendingMatch]
+    mockFetchPendingScoresMatches.mockImplementation(() =>
+      Promise.resolve(scoreSubmitted ? [] : [pendingMatch])
     );
 
     queryClient.setQueryData(['matches', 'pending-scores'], [pendingMatch]);
