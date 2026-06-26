@@ -117,9 +117,8 @@ export const saveRankingsToStorage = async (
   try {
     if (persistToDatabase) {
       // Import database service dynamically to avoid circular dependencies
-      const { saveRankingsToDatabase } = await import(
-        '@/services/rankings/RankingPersistenceService'
-      );
+      const { saveRankingsToDatabase } =
+        await import('@/services/rankings/RankingPersistenceService');
       try {
         await saveRankingsToDatabase(rankings, seasonId);
       } catch (error) {

@@ -54,8 +54,8 @@ const DivisionMatchupsCard: React.FC = () => {
           Division Matchups
         </CardTitle>
         <p className="text-xs text-muted-foreground">
-          Combined head-to-head records between divisions, using each team's display division at
-          the time of the match.
+          Combined head-to-head records between divisions, using each team's display division at the
+          time of the match.
         </p>
       </CardHeader>
       <CardContent>

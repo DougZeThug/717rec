@@ -31,8 +31,9 @@ describe('match query cache utilities', () => {
     });
 
     expect(predicateCall).toBeDefined();
-    const predicate = (predicateCall?.[0] as unknown as { predicate: (query: { queryKey: unknown[] }) => boolean })
-      .predicate;
+    const predicate = (
+      predicateCall?.[0] as unknown as { predicate: (query: { queryKey: unknown[] }) => boolean }
+    ).predicate;
 
     expect(predicate({ queryKey: ['teams', 'season-1'] })).toBe(true);
     expect(predicate({ queryKey: ['team-details', 'team-1'] })).toBe(true);

@@ -9,10 +9,10 @@ import { useLeagueInsights } from '@/hooks/useLeagueInsights';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 
+import DivisionMatchupsCard from './DivisionMatchupsCard';
 import LeagueOverviewCards from './LeagueOverviewCards';
 import LeagueParityCard from './LeagueParityCard';
 import TopPerformersSection from './TopPerformersSection';
-import DivisionMatchupsCard from './DivisionMatchupsCard';
 
 const DivisionStrengthChart = lazy(() => import('./DivisionStrengthChart'));
 
