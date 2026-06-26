@@ -61,9 +61,11 @@ const DivisionMatchupsCard: React.FC = () => {
       <CardContent>
         {isLoading || !data ? (
           <div className="space-y-2">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-8 w-full" />
-            ))}
+            {['dm-skel-1', 'dm-skel-2', 'dm-skel-3', 'dm-skel-4', 'dm-skel-5', 'dm-skel-6'].map(
+              (key) => (
+                <Skeleton key={key} className="h-8 w-full" />
+              )
+            )}
           </div>
         ) : (
           <div className="flex flex-col">
