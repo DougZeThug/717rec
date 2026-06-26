@@ -8,7 +8,7 @@ const mockUseAuth = vi.fn();
 const mockUseAdminAccess = vi.fn();
 
 vi.mock('@/contexts/AuthContext', () => ({
-  AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('@/contexts/auth-context', () => ({
@@ -59,7 +59,7 @@ vi.mock('@/components/layout/Footer', () => ({
 }));
 
 vi.mock('@/components/transitions/PageTransition', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  default: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('@/pages/Index', () => ({
