@@ -53,8 +53,17 @@ export function computeDivisionMatchups(input: {
   for (const [a, b] of PAIRINGS) counts.set(pairKey(a, b), { winsA: 0, winsB: 0 });
 
   const recordMatchup = (winnerTier: DivisionTier, loserTier: DivisionTier) => {
-    // Orient so tierA is the higher (lower-ordinal) tier; ties are arbitrary.
-    const winnerFirst = TIER_ORDER[winnerTier] <= TIER_ORDER[loserTier];
+    if (winnerTier === loserTier) {
+      // Within a tier every match adds one win and one loss, so the two
+      // sides are intrinsically symmetric ("Competitive vs Competitive 112-112").
+      const bucket = counts.get(pairKey(winnerTier, loserTier));
+      if (!bucket) return;
+      bucket.winsA += 1;
+      bucket.winsB += 1;
+      return;
+    }
+    // Cross-tier: orient so tierA is the higher (lower-ordinal) tier.
+    const winnerFirst = TIER_ORDER[winnerTier] < TIER_ORDER[loserTier];
     const tierA = winnerFirst ? winnerTier : loserTier;
     const tierB = winnerFirst ? loserTier : winnerTier;
     const bucket = counts.get(pairKey(tierA, tierB));
