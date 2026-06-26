@@ -141,7 +141,20 @@ const bracket = {
   format: 'single_elimination',
   state: 'in_progress',
   champion: null,
-  matches: [{ id: 'match-1' }],
+  matches: [
+    {
+      id: 'match-1',
+      round: 1,
+      position: 1,
+      team1Id: 'team-1',
+      team2Id: 'team-2',
+      winnerId: null,
+      matchType: 'winners' as const,
+      bestOf: 3,
+      bracket_id: 'bracket-1',
+      status: 'pending' as const,
+    },
+  ],
 };
 
 const makeAdminData = (overrides = {}) => ({
