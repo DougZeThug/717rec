@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import LeagueOverviewCards from './LeagueOverviewCards';
 import LeagueParityCard from './LeagueParityCard';
 import TopPerformersSection from './TopPerformersSection';
+import DivisionMatchupsCard from './DivisionMatchupsCard';
 
 const DivisionStrengthChart = lazy(() => import('./DivisionStrengthChart'));
 
@@ -66,6 +67,9 @@ const LeagueInsightsContainer: React.FC = () => {
           </Suspense>
           {parity && <LeagueParityCard parity={parity} totalTeams={overview.totalTeams} />}
         </div>
+
+        {/* Division-vs-division aggregate records */}
+        <DivisionMatchupsCard />
 
         {/* Top performers */}
         <TopPerformersSection performers={topPerformers} />
