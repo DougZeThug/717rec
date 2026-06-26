@@ -62,8 +62,8 @@ Local E2E setup checklist:
 
 In CI, `.github/workflows/e2e.yml` runs `npm ci`, then `npm run e2e:install`,
 and only then `npm run e2e`, so browser installation is validated before tests
-start. Artifacts (HTML report, traces, screenshots) are written to
-`playwright-report/` and `test-results/` and are gitignored.
+start. Artifacts (HTML report, traces, screenshots, videos on failure) are
+written to `playwright-report/` and `test-results/` and are gitignored.
 
 ### CI status: non-blocking
 
