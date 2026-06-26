@@ -1,6 +1,36 @@
 import { expect, test } from '@playwright/test';
 
+const jsonResponse = (body: unknown, status = 200) => ({
+  status,
+  contentType: 'application/json',
+  headers: {
+    'access-control-allow-origin': '*',
+    'access-control-allow-headers': 'authorization, apikey, content-type, x-client-info, prefer',
+    'access-control-allow-methods': 'GET, POST, PATCH, OPTIONS',
+  },
+  body: JSON.stringify(body),
+});
+
 test.describe('app shell smoke', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.route(/\/auth\/v1\//, async (route) => {
+      await route.fulfill(jsonResponse({ user: null }));
+    });
+
+    await page.route(/\/rest\/v1\//, async (route) => {
+      if (route.request().method() === 'OPTIONS') {
+        await route.fulfill(jsonResponse(null, 204));
+        return;
+      }
+
+      await route.fulfill(jsonResponse([]));
+    });
+
+    await page.route(/\/functions\/v1\//, async (route) => {
+      await route.fulfill(jsonResponse({ ok: true }));
+    });
+  });
+
   test('loads home and navigates via primary nav', async ({ page }) => {
     const consoleErrors: string[] = [];
     page.on('console', (msg) => {

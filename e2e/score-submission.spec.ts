@@ -12,8 +12,36 @@ const pendingMatch = {
   location: 'E2E Court 1',
 };
 
+const jsonResponse = (body: unknown, status = 200) => ({
+  status,
+  contentType: 'application/json',
+  headers: {
+    'access-control-allow-origin': '*',
+    'access-control-allow-headers': 'authorization, apikey, content-type, x-client-info, prefer',
+    'access-control-allow-methods': 'GET, POST, PATCH, OPTIONS',
+  },
+  body: JSON.stringify(body),
+});
+
 test.describe('score submission workflow', () => {
   test.beforeEach(async ({ page }) => {
+    await page.route(/\/auth\/v1\//, async (route) => {
+      await route.fulfill(jsonResponse({ user: null }));
+    });
+
+    await page.route(/\/rest\/v1\//, async (route) => {
+      if (route.request().method() === 'OPTIONS') {
+        await route.fulfill(jsonResponse(null, 204));
+        return;
+      }
+
+      await route.fulfill(jsonResponse([]));
+    });
+
+    await page.route(/\/functions\/v1\//, async (route) => {
+      await route.fulfill(jsonResponse({ ok: true }));
+    });
+
     await page.route('**/rest/v1/v_pending_matches**', async (route) => {
       await route.fulfill({
         status: 200,
@@ -51,14 +79,13 @@ test.describe('score submission workflow', () => {
         body: JSON.stringify({ ok: true }),
       });
     });
-
     await page.goto('/');
 
     await expect(page.getByRole('heading', { name: 'Pending Scores' })).toBeVisible();
-    await expect(page.getByText('E2E Alpha')).toBeVisible();
-    await expect(page.getByText('E2E Beta')).toBeVisible();
+    await expect(page.getByText('E2E Alpha', { exact: true })).toBeVisible();
+    await expect(page.getByText('E2E Beta', { exact: true })).toBeVisible();
 
-    await page.getByRole('button', { name: 'Report' }).click();
+    await page.getByRole('button', { name: /^Report$/ }).click();
     await expect(page.getByRole('dialog', { name: 'Report Match Score' })).toBeVisible();
 
     await page.getByLabel(/Your Name/).fill('Playwright Reporter');
@@ -103,9 +130,8 @@ test.describe('score submission workflow', () => {
         body: JSON.stringify({ error: 'Invalid submissions should not reach the API' }),
       });
     });
-
     await page.goto('/');
-    await page.getByRole('button', { name: 'Report' }).click();
+    await page.getByRole('button', { name: /^Report$/ }).click();
 
     await page.getByRole('button', { name: 'Submit Report' }).click();
 
