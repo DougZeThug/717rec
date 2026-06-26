@@ -29,8 +29,7 @@ npx vitest run src/path/to/File.test.tsx
 
 ## Coverage
 
-See `TESTING.md`. Default fast gate is `npm run test:coverage`; serial
-fallback is `npm run test:coverage:serial`.
+See `TESTING.md`. Default fast gate is `npm run test:coverage`; serial fallback is `npm run test:coverage:serial`. For diagnosing a slow or stuck non-coverage run, use `npm run test:debug` (serial + verbose, 10-min cap).
 
 ## More project conventions
 
