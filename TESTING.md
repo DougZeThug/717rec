@@ -9,6 +9,7 @@ full testing guide.
 ```bash
 npm test              # run the full suite once
 npm run test:file -- <path>  # run a single test file (agent-safe; injects node_modules/.bin into PATH)
+npm run test:debug    # serial + verbose test run (10m timeout) for diagnosing slow or stuck test files
 npm run test:watch    # re-run on file changes (while you're coding)
 npm run test:coverage # fast gate: parallel forked workers + lightweight reporters (text + json-summary)
 npm run test:coverage:serial # slow single-worker fallback for diagnosing flaky parallel coverage runs
