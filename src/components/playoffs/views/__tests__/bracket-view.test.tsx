@@ -128,13 +128,14 @@ vi.mock('@/components/playoffs/hooks/usePlayoffHandlers', () => ({
 
 import BracketView from '../../BracketView';
 import AdminView from '../AdminView';
+import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
 const teams = [
   { id: 'team-1', name: 'Alpha', seed: 1 },
   { id: 'team-2', name: 'Bravo', seed: 2 },
 ];
 
-const bracket = {
+const bracket: PlayoffBracket = {
   id: 'bracket-1',
   name: 'Rec Championship',
   division: 'Recreational',
@@ -149,10 +150,10 @@ const bracket = {
       team1Id: 'team-1',
       team2Id: 'team-2',
       winnerId: null,
-      matchType: 'winners' as const,
+      matchType: 'winners',
       bestOf: 3,
       bracket_id: 'bracket-1',
-      status: 'pending' as const,
+      status: 'pending',
     },
   ],
 };
