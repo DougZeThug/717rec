@@ -26,6 +26,132 @@ interface TeamCardGridProps {
   onEdit?: (team: Team) => void;
 }
 
+// Badge variant derived from the (case-insensitive) division name.
+const divisionBadgeVariant = (divisionName: string) => {
+  const lower = divisionName.toLowerCase();
+  if (lower.includes('hidden')) return 'secondary';
+  if (lower.includes('competitive')) return 'competitive';
+  if (lower.includes('intermediate')) return 'intermediate';
+  return 'recreational';
+};
+
+const TeamCardTitle: React.FC<{ team: Team; isMobile: boolean }> = ({ team, isMobile }) => (
+  <Link to={`/teams/${toTeamSlug(team.name)}`} className="hover:underline flex-1 min-w-0">
+    <h3
+      className={cn(
+        'font-bebas font-normal uppercase tracking-wide truncate text-foreground',
+        isMobile ? 'text-sm' : 'text-base sm:text-lg'
+      )}
+      title={team.name}
+    >
+      {team.name}
+    </h3>
+  </Link>
+);
+
+interface TeamCardMenuProps {
+  team: Team;
+  onEdit?: (team: Team) => void;
+  onDelete?: (id: string) => void;
+  isAdminAccessGranted: boolean;
+}
+
+// Dropdown menu items (kept separate so the menu's JSX tree stays shallow).
+const TeamCardMenuActions: React.FC<TeamCardMenuProps> = ({
+  team,
+  onEdit,
+  onDelete,
+  isAdminAccessGranted,
+}) => (
+  <>
+    {isAdminAccessGranted && onEdit && (
+      <DropdownMenuItem onClick={() => onEdit(team)} className="cursor-pointer">
+        <Edit className="mr-2 size-4" /> Edit
+      </DropdownMenuItem>
+    )}
+    {isAdminAccessGranted && onDelete && (
+      <DropdownMenuItem
+        onClick={() => onDelete(team.id)}
+        className="text-destructive focus:text-destructive cursor-pointer"
+      >
+        <Trash2 className="mr-2 size-4" /> Delete
+      </DropdownMenuItem>
+    )}
+    <DropdownMenuItem asChild>
+      <Link to={`/teams/${toTeamSlug(team.name)}`}>
+        <ExternalLink className="mr-2 size-4" /> View Details
+      </Link>
+    </DropdownMenuItem>
+  </>
+);
+
+const TeamCardMenu: React.FC<TeamCardMenuProps> = (props) => (
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="size-8 -mt-1 -mr-1 text-muted-foreground hover:text-foreground hover:bg-muted"
+      >
+        <MoreHorizontal size={16} />
+        <span className="sr-only">Open menu</span>
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="end" className="w-[160px]">
+      <TeamCardMenuActions {...props} />
+    </DropdownMenuContent>
+  </DropdownMenu>
+);
+
+const TeamCardStats: React.FC<{ team: Team; isWinterTheme: boolean }> = ({
+  team,
+  isWinterTheme,
+}) => (
+  <>
+    {team.divisionName && (
+      <Badge
+        variant={divisionBadgeVariant(team.divisionName)}
+        className={cn(
+          'self-start mb-2 font-inter uppercase text-xs tracking-widest',
+          team.divisionName.toLowerCase().includes('hidden') &&
+            'bg-muted text-muted-foreground border-muted'
+        )}
+      >
+        {team.divisionName}
+      </Badge>
+    )}
+
+    <div className="grid grid-cols-2 gap-1 text-xs">
+      <div
+        className={cn(
+          'rounded p-1.5',
+          isWinterTheme
+            ? 'bg-white/5 border border-frost-border/20'
+            : 'bg-gradient-to-br from-white via-blue-50/20 to-blue-50/40 dark:from-gray-800/90 dark:to-gray-900/80'
+        )}
+      >
+        <div className="text-[10px] text-muted-foreground uppercase">Record</div>
+        <span className="font-mono text-sm">
+          {team.wins}-{team.losses}
+        </span>
+      </div>
+      <div
+        className={cn(
+          'rounded p-1.5',
+          isWinterTheme
+            ? 'bg-white/5 border border-frost-border/20'
+            : 'bg-gradient-to-br from-white via-white to-orange-50/30 dark:from-gray-800/90 dark:to-gray-900/80'
+        )}
+      >
+        <div className="text-[10px] text-muted-foreground uppercase">Power</div>
+        <span className="font-mono text-sm">
+          {typeof team.power_score === 'number' ? team.power_score.toFixed(1) : 'N/A'}
+        </span>
+      </div>
+    </div>
+  </>
+);
+
 export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEdit }) => {
   const { isAdminAccessGranted } = useAdminAccess();
   const isMobile = useIsMobile();
@@ -65,51 +191,15 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
         )}
       >
         <div className="flex justify-between items-start">
-          <Link to={`/teams/${toTeamSlug(team.name)}`} className="hover:underline flex-1 min-w-0">
-            <h3
-              className={cn(
-                'font-bebas font-normal uppercase tracking-wide truncate text-foreground',
-                isMobile ? 'text-sm' : 'text-base sm:text-lg'
-              )}
-              title={team.name}
-            >
-              {team.name}
-            </h3>
-          </Link>
+          <TeamCardTitle team={team} isMobile={isMobile} />
 
           {!isMobile && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-8 -mt-1 -mr-1 text-muted-foreground hover:text-foreground hover:bg-muted"
-                >
-                  <MoreHorizontal size={16} />
-                  <span className="sr-only">Open menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[160px]">
-                {isAdminAccessGranted && onEdit && (
-                  <DropdownMenuItem onClick={() => onEdit(team)} className="cursor-pointer">
-                    <Edit className="mr-2 size-4" /> Edit
-                  </DropdownMenuItem>
-                )}
-                {isAdminAccessGranted && onDelete && (
-                  <DropdownMenuItem
-                    onClick={() => onDelete(team.id)}
-                    className="text-destructive focus:text-destructive cursor-pointer"
-                  >
-                    <Trash2 className="mr-2 size-4" /> Delete
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem asChild>
-                  <Link to={`/teams/${toTeamSlug(team.name)}`}>
-                    <ExternalLink className="mr-2 size-4" /> View Details
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <TeamCardMenu
+              team={team}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              isAdminAccessGranted={isAdminAccessGranted}
+            />
           )}
         </div>
 
@@ -119,57 +209,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
             {team.wins}-{team.losses}
           </span>
         ) : (
-          <>
-            {team.divisionName && (
-              <Badge
-                variant={
-                  team.divisionName.toLowerCase().includes('hidden')
-                    ? 'secondary'
-                    : team.divisionName.toLowerCase().includes('competitive')
-                      ? 'competitive'
-                      : team.divisionName.toLowerCase().includes('intermediate')
-                        ? 'intermediate'
-                        : 'recreational'
-                }
-                className={cn(
-                  'self-start mb-2 font-inter uppercase text-xs tracking-widest',
-                  team.divisionName.toLowerCase().includes('hidden') &&
-                    'bg-muted text-muted-foreground border-muted'
-                )}
-              >
-                {team.divisionName}
-              </Badge>
-            )}
-
-            <div className="grid grid-cols-2 gap-1 text-xs">
-              <div
-                className={cn(
-                  'rounded p-1.5',
-                  isWinterTheme
-                    ? 'bg-white/5 border border-frost-border/20'
-                    : 'bg-gradient-to-br from-white via-blue-50/20 to-blue-50/40 dark:from-gray-800/90 dark:to-gray-900/80'
-                )}
-              >
-                <div className="text-[10px] text-muted-foreground uppercase">Record</div>
-                <span className="font-mono text-sm">
-                  {team.wins}-{team.losses}
-                </span>
-              </div>
-              <div
-                className={cn(
-                  'rounded p-1.5',
-                  isWinterTheme
-                    ? 'bg-white/5 border border-frost-border/20'
-                    : 'bg-gradient-to-br from-white via-white to-orange-50/30 dark:from-gray-800/90 dark:to-gray-900/80'
-                )}
-              >
-                <div className="text-[10px] text-muted-foreground uppercase">Power</div>
-                <span className="font-mono text-sm">
-                  {typeof team.power_score === 'number' ? team.power_score.toFixed(1) : 'N/A'}
-                </span>
-              </div>
-            </div>
-          </>
+          <TeamCardStats team={team} isWinterTheme={isWinterTheme} />
         )}
       </div>
     </EntityCard>
