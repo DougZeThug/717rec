@@ -160,6 +160,7 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
     lastUpdated,
     teamsLoading,
     rankings.length,
+    isAdminAccessGranted,
   ]);
 
   return {
