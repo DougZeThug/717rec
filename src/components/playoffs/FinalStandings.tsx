@@ -5,7 +5,6 @@ import { useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SeasonalIcon } from '@/components/ui/seasonal-icon';
 import { fetchFinalStandings } from '@/services/brackets/BracketReadService';
-import type { TeamStanding } from '@/types/schedule';
 import { log } from '@/utils/logger';
 
 import FinalStandingsSkeleton from './FinalStandingsSkeleton';
