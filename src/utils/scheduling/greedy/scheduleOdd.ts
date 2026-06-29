@@ -27,6 +27,39 @@ export interface OddScheduleArgs {
   diagnostics: GreedySchedulerResult['diagnostics'];
 }
 
+/**
+ * Pick Bye2 for S2: a team different from Bye1 that can also play Bye1.
+ * Tries progressive relaxation, then falls back to any eligible team.
+ */
+function selectBye2(
+  bye1: Team,
+  sortedTeams: Team[],
+  byeStrategy: ByeStrategy,
+  playedSet: Set<string>,
+  tonightPairs: Set<string>,
+  maxTierGap: number,
+  relaxationLevel: RelaxationLevel
+): Team {
+  const exclude = new Set([bye1.id]);
+  for (let attempt = 0; attempt < sortedTeams.length; attempt++) {
+    const candidate = pickBye(sortedTeams, byeStrategy, playedSet, maxTierGap, exclude, relaxationLevel);
+    if (canPlay(bye1, candidate, playedSet, tonightPairs, maxTierGap, relaxationLevel)) {
+      return candidate;
+    }
+    exclude.add(candidate.id);
+  }
+
+  // Emergency fallback with full relaxation
+  const fallback =
+    sortedTeams.find(
+      (t) => t.id !== bye1.id && canPlay(bye1, t, playedSet, tonightPairs, maxTierGap, 3)
+    ) ??
+    sortedTeams.find((t) => t.id !== bye1.id) ??
+    sortedTeams[0];
+  warnLog(`Could not find ideal Bye2, using fallback: ${fallback.name}`);
+  return fallback;
+}
+
 export function scheduleOdd(args: OddScheduleArgs): ScheduledMatch[] {
   const {
     teams,
@@ -79,40 +112,16 @@ export function scheduleOdd(args: OddScheduleArgs): ScheduledMatch[] {
   );
 
   // Select Bye2 for S2 (must be different from Bye1 and able to play Bye1)
-  let bye2: Team | null = null;
-  const excludeForBye2 = new Set([bye1.id]);
-
-  // Try to find a valid Bye2 with progressive relaxation
-  for (let attempt = 0; attempt < sortedTeams.length && !bye2; attempt++) {
-    const candidate = pickBye(
-      sortedTeams,
-      byeStrategy,
-      playedSet,
-      maxTierGap,
-      excludeForBye2,
-      relaxationLevel
-    );
-
-    if (canPlay(bye1, candidate, playedSet, tonightPairs, maxTierGap, relaxationLevel)) {
-      bye2 = candidate;
-    } else {
-      excludeForBye2.add(candidate.id);
-    }
-  }
-
-  if (!bye2) {
-    // Emergency fallback with full relaxation
-    bye2 =
-      sortedTeams.find(
-        (t) => t.id !== bye1.id && canPlay(bye1, t, playedSet, tonightPairs, maxTierGap, 3)
-      ) ?? null;
-    if (!bye2) {
-      bye2 = sortedTeams.find((t) => t.id !== bye1.id) || sortedTeams[0];
-    }
-    warnLog(`Could not find ideal Bye2, using fallback: ${bye2.name}`);
-  } else {
-    scheduleLog(`Selected Bye2: ${bye2.name} (sits out ${slot2})`);
-  }
+  let bye2 = selectBye2(
+    bye1,
+    sortedTeams,
+    byeStrategy,
+    playedSet,
+    tonightPairs,
+    maxTierGap,
+    relaxationLevel
+  );
+  scheduleLog(`Selected Bye2: ${bye2.name} (sits out ${slot2})`);
 
   // Generate S2 pairings (excluding Bye2)
   let s2Matches = generateSlotPairings(
@@ -166,31 +175,15 @@ export function scheduleOdd(args: OddScheduleArgs): ScheduledMatch[] {
     // Re-pick byes at the new relaxation level (bye selection itself depends on it)
     bye1 = pickBye(sortedTeams, byeStrategy, playedSet, maxTierGap, new Set(), relaxationLevel);
 
-    bye2 = null;
-    const excludeRetry = new Set([bye1.id]);
-    for (let attempt = 0; attempt < sortedTeams.length && !bye2; attempt++) {
-      const candidate = pickBye(
-        sortedTeams,
-        byeStrategy,
-        playedSet,
-        maxTierGap,
-        excludeRetry,
-        relaxationLevel
-      );
-      if (canPlay(bye1, candidate, playedSet, tonightPairs, maxTierGap, relaxationLevel)) {
-        bye2 = candidate;
-      } else {
-        excludeRetry.add(candidate.id);
-      }
-    }
-    if (!bye2) {
-      bye2 =
-        sortedTeams.find(
-          (t) => t.id !== bye1.id && canPlay(bye1, t, playedSet, tonightPairs, maxTierGap, 3)
-        ) ||
-        sortedTeams.find((t) => t.id !== bye1.id) ||
-        sortedTeams[0];
-    }
+    bye2 = selectBye2(
+      bye1,
+      sortedTeams,
+      byeStrategy,
+      playedSet,
+      tonightPairs,
+      maxTierGap,
+      relaxationLevel
+    );
 
     s1Matches = generateSlotPairings(
       sortedTeams,
