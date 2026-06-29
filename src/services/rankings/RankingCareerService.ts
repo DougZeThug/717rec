@@ -130,8 +130,9 @@ export async function fetchHistoricalPowerScores(teamId?: string) {
   const lastWeekScores: Record<string, number> = {};
 
   const processedData = (teams ?? []).map((team) => {
+    const teamId = team.team_id ?? '';
     const currentScore = team.power_score || 50;
-    const historicalScores = snapshotsByTeam[team.team_id] || [];
+    const historicalScores = snapshotsByTeam[teamId] || [];
 
     // Add current score as the most recent data point
     const allScores = [
@@ -141,13 +142,13 @@ export async function fetchHistoricalPowerScores(teamId?: string) {
 
     // Get last week's score (second-to-last entry if available)
     if (allScores.length >= 2) {
-      lastWeekScores[team.team_id] = allScores[allScores.length - 2].score;
+      lastWeekScores[teamId] = allScores[allScores.length - 2].score;
     } else {
-      lastWeekScores[team.team_id] = currentScore;
+      lastWeekScores[teamId] = currentScore;
     }
 
     return {
-      team_id: team.team_id,
+      team_id: teamId,
       power_scores: allScores,
     };
   });

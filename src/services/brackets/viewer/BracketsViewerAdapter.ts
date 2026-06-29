@@ -97,7 +97,7 @@ export class BracketsViewerAdapter {
     );
 
     // Fetch team data to get logos - participant names match team names
-    const teamNames = participants.filter((p) => p.name !== null).map((p) => p.name);
+    const teamNames = participants.map((p) => p.name).filter((name): name is string => name !== null);
 
     debugLog('Fetching logos for teams:', teamNames);
 
@@ -116,8 +116,8 @@ export class BracketsViewerAdapter {
     const teamLogoMap = new Map<string, { logo_url?: string; image_url?: string }>();
     (teamsData || []).forEach((team) => {
       teamLogoMap.set(team.name, {
-        logo_url: team.logo_url,
-        image_url: team.image_url,
+        logo_url: team.logo_url ?? undefined,
+        image_url: team.image_url ?? undefined,
       });
     });
 

@@ -74,19 +74,22 @@ export async function fetchPowerScoreTrends(
   // Calculate trends for teams that have both current and previous data and are in visible divisions
   const trends: PowerScoreTrend[] = currentData
     .filter(
-      (team) => previousScoresMap.has(team.team_id) && visibleDivisionIds.has(team.division_id)
+      (team) =>
+        previousScoresMap.has(team.team_id ?? '') &&
+        team.division_id !== null &&
+        visibleDivisionIds.has(team.division_id)
     )
     .map((team) => {
-      const previousScore = previousScoresMap.get(team.team_id) || 0;
+      const previousScore = previousScoresMap.get(team.team_id ?? '') || 0;
       const currentScore = team.power_score || 0;
       const delta = currentScore - previousScore;
       const percentChange = previousScore > 0 ? (delta / previousScore) * 100 : 0;
 
       return {
-        teamId: team.team_id,
-        teamName: team.name,
+        teamId: team.team_id ?? '',
+        teamName: team.name ?? '',
         division: team.divisionname || 'Unknown',
-        logoUrl: team.image_url || team.logo_url,
+        logoUrl: team.image_url || team.logo_url || undefined,
         currentScore,
         previousScore,
         delta,
@@ -197,6 +200,7 @@ export async function fetchWeeklyPowerScoreTrends(
       return (
         previousScoresMap.has(snapshot.team_id) &&
         teamDetail &&
+        teamDetail.division_id !== null &&
         visibleDivisionIds.has(teamDetail.division_id)
       );
     })
@@ -211,7 +215,7 @@ export async function fetchWeeklyPowerScoreTrends(
         teamId: snapshot.team_id,
         teamName: teamDetail?.name || 'Unknown',
         division: teamDetail?.divisionname || 'Unknown',
-        logoUrl: teamDetail?.image_url || teamDetail?.logo_url,
+        logoUrl: teamDetail?.image_url || teamDetail?.logo_url || undefined,
         currentScore,
         previousScore,
         delta,

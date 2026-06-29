@@ -87,7 +87,7 @@ export const fetchPlayoffTeams = async (): Promise<Team[]> => {
     game_losses: row.game_losses ?? 0,
     players: Array.isArray(row.players) ? row.players : [],
     created_at: new Date().toISOString(),
-    seed: teamSeeds.get(row.team_id) ?? null,
+    seed: teamSeeds.get(row.team_id ?? '') ?? null,
     power_score: row.power_score ?? 0,
     sos: row.sos ?? 0.5,
     win_percentage: row.win_percentage ?? 0,

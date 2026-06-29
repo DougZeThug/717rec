@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { TeamTimeslot } from '@/types/timeslots';
 import { handleDatabaseError } from '@/utils/errorHandler';
 
+import { TimeslotTransformer } from './TimeslotTransformer';
+
 export class ByeWeekService {
   /**
    * Assign bye week to a single team
@@ -48,19 +50,7 @@ export class ByeWeekService {
       handleDatabaseError(error, 'Failed to assign bye week');
     }
 
-    return {
-      ...data,
-      is_double_header: data.is_double_header || false,
-      teams: data.teams
-        ? {
-            id: data.teams.id,
-            name: data.teams.name,
-            logo_url: data.teams.logo_url,
-            image_url: data.teams.image_url,
-            divisionName: null,
-          }
-        : undefined,
-    };
+    return TimeslotTransformer.formatSingleTimeslot(data);
   }
 
   /**
@@ -102,19 +92,7 @@ export class ByeWeekService {
       handleDatabaseError(error, 'Failed to batch assign bye weeks');
     }
 
-    return data.map((item) => ({
-      ...item,
-      is_double_header: item.is_double_header || false,
-      teams: item.teams
-        ? {
-            id: item.teams.id,
-            name: item.teams.name,
-            logo_url: item.teams.logo_url,
-            image_url: item.teams.image_url,
-            divisionName: null,
-          }
-        : undefined,
-    }));
+    return TimeslotTransformer.formatTimeslotResponse(data);
   }
 
   /**

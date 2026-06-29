@@ -24,12 +24,12 @@ export interface BracketManagerMatchWithStage {
 
 export interface LegacyPlayoffMatchWithGames {
   id: string;
-  bracket_id: string;
+  bracket_id: string | null;
   round: number;
   position: number;
   match_type: string;
-  best_of: number;
-  status: string;
+  best_of: number | null;
+  status: string | null;
   team1_id: string | null;
   team2_id: string | null;
   team1_score: number | null;
@@ -46,8 +46,8 @@ export interface LegacyPlayoffMatchWithGames {
   } | null;
   playoff_games: Array<{
     id: string;
-    match_id: string;
-    game_number: number;
+    match_id: string | null;
+    game_number: number | null;
     team1_score: number | null;
     team2_score: number | null;
     winner_id: string | null;

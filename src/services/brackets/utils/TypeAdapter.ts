@@ -41,7 +41,9 @@ export class MatchTypeAdapter {
    * @returns True if the match is a PlayoffMatch
    */
   static isPlayoffMatch(match: unknown): boolean {
-    return match && typeof match === 'object' && 'team1Score' in match && 'team2Score' in match;
+    return (
+      typeof match === 'object' && match !== null && 'team1Score' in match && 'team2Score' in match
+    );
   }
 
   /**

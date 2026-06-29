@@ -208,7 +208,7 @@ describe('fetchSeasonBreakdown', () => {
       },
     };
 
-    const merged = { ...results, ...overrides };
+    const merged = { ...results, ...overrides } as Record<string, QueryResult<unknown>>;
 
     mockFrom.mockImplementation((table: string) => {
       if (table === 'team_season_stats') {

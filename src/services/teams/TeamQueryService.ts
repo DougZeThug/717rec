@@ -96,6 +96,7 @@ export const fetchTeamsWithOptions = async (options?: TeamsQueryOptions): Promis
   // Deduplicate by team_id (view may return duplicates for players)
   const uniqueTeamsMap = new Map<string, VTeamDetailsRow>();
   (data || []).forEach((row) => {
+    if (!row.team_id) return;
     if (!uniqueTeamsMap.has(row.team_id)) {
       uniqueTeamsMap.set(row.team_id, row as VTeamDetailsRow);
     }
