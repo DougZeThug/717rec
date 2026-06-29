@@ -11,10 +11,4 @@ export * from './teamColors';
 export * from './thresholds';
 export * from './trendColors';
 export * from './winPercentageColors';
-export { getDivisionGradientClass, getDivisionStyles } from '@/styles/design-system/divisions';
-
-// Export format utilities
-export const formatPowerScore = (powerScore: number | undefined): string => {
-  if (powerScore === undefined) return 'N/A';
-  return powerScore.toFixed(2);
-};
+export { getDivisionStyles } from '@/styles/design-system/divisions';
