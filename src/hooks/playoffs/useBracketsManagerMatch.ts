@@ -51,7 +51,7 @@ export const useBracketsManagerMatch = (matchId: number | null) => {
         opponent1: opponent1Data
           ? {
               id: opponent1Data.id,
-              name: opponent1Data.name,
+              name: opponent1Data.name ?? '',
               team_id: opponent1Data.team_id ?? null,
               score: matchData.opponent1_score,
               result: matchData.opponent1_result,
@@ -60,7 +60,7 @@ export const useBracketsManagerMatch = (matchId: number | null) => {
         opponent2: opponent2Data
           ? {
               id: opponent2Data.id,
-              name: opponent2Data.name,
+              name: opponent2Data.name ?? '',
               team_id: opponent2Data.team_id ?? null,
               score: matchData.opponent2_score,
               result: matchData.opponent2_result,

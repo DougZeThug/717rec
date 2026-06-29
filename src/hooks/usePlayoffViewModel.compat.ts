@@ -42,8 +42,8 @@ export const usePlayoffData = (isAdmin: boolean = false, seasonId?: string | nul
       let brackets: PlayoffBracket[] = (data ?? []).map((br) => ({
         id: br.id,
         name: br.title,
-        division: br.divisions?.name,
-        divisionId: br.division_id,
+        division: br.divisions?.name ?? undefined,
+        divisionId: br.division_id ?? undefined,
         format: br.format ?? 'Double Elimination',
         matches: [],
         champion: undefined,
@@ -52,8 +52,8 @@ export const usePlayoffData = (isAdmin: boolean = false, seasonId?: string | nul
           : br.state === 'completed'
             ? 'completed'
             : 'pending') as PlayoffBracket['state'],
-        created_at: br.created_at,
-        challonge_tournament_id: br.challonge_tournament_id,
+        created_at: br.created_at ?? undefined,
+        challonge_tournament_id: br.challonge_tournament_id ?? undefined,
         uses_brackets_manager: br.uses_brackets_manager ?? false,
       }));
 

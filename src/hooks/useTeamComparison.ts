@@ -73,7 +73,7 @@ export const useTeamComparison = (team1: Team | null, team2: Team | null): TeamC
       return {
         id: team.id,
         name: team.name,
-        logoUrl: team.logoUrl,
+        logoUrl: team.logoUrl ?? null,
         totals,
         percentiles,
         winPct,
@@ -82,7 +82,14 @@ export const useTeamComparison = (team1: Team | null, team2: Team | null): TeamC
     };
 
     // Build head-to-head data
-    let headToHead = null;
+    let headToHead: {
+      team1Wins: number;
+      team2Wins: number;
+      gameWins1: number;
+      gameWins2: number;
+      lastPlayed: string | null;
+      isFirstMeeting: boolean;
+    } | null = null;
     if (h2hHistory?.summary) {
       const summary = h2hHistory.summary;
       headToHead = {

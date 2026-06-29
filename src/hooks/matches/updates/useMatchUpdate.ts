@@ -10,6 +10,51 @@ import { errorLog } from '@/utils/logger';
 import { invalidateAllDataQueries } from './utils/queryInvalidation';
 import { reverseTeamStats } from './utils/statReversalUtils';
 
+// Game wins a given team earned in a match (0 if unknown).
+const gameWinsFor = (match: Match, teamId: string | undefined): number =>
+  teamId === match.team1Id ? match.team1_game_wins || 0 : match.team2_game_wins || 0;
+
+// Reverse previously-applied team stats for a completed match.
+// No-op when the match has no recorded winner/loser.
+const reverseStatsForMatch = async (match: Match): Promise<void> => {
+  if (!match.winnerId || !match.loserId) return;
+  await reverseTeamStats(
+    match.winnerId,
+    match.loserId,
+    gameWinsFor(match, match.winnerId),
+    gameWinsFor(match, match.loserId)
+  );
+};
+
+// Build the app-format Match from the DB update response.
+const toUpdatedMatch = (
+  editingMatch: Match,
+  data: Awaited<ReturnType<typeof updateMatch>>
+): Match => ({
+  ...editingMatch,
+  id: data.id,
+  team1Id: data.team1_id ?? editingMatch.team1Id,
+  team2Id: data.team2_id ?? editingMatch.team2Id,
+  date: data.date ?? undefined,
+  location: data.location ?? undefined,
+  iscompleted: data.iscompleted ?? undefined,
+  team1Score: data.team1_score ?? undefined,
+  team2Score: data.team2_score ?? undefined,
+  winnerId: data.winner_id ?? undefined,
+  loserId: data.loser_id ?? undefined,
+  team1_game_wins: data.team1_game_wins ?? undefined,
+  team2_game_wins: data.team2_game_wins ?? undefined,
+  round_number: data.round_number,
+  position: data.position ?? undefined,
+  bracket_id: data.bracket_id ?? undefined,
+  match_type: data.match_type ?? undefined,
+  next_match_id: data.next_match_id ?? undefined,
+  next_loser_match_id: data.next_loser_match_id ?? undefined,
+  best_of: data.best_of ?? undefined,
+  created_at: data.created_at ?? undefined,
+  // status field not on matches table
+});
+
 interface UseMatchUpdateProps {
   matches: Match[];
   setMatches: (matches: Match[]) => void;
@@ -28,6 +73,74 @@ export const useMatchUpdate = ({
   const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState(false);
   const isUpdatingRef = useRef(false);
+
+  // Reconcile team season stats after a match edit. Returns false only on an
+  // unrecovered partial failure (match saved but team records did not), which
+  // signals the caller to abort the success path.
+  const applyStatChanges = async (
+    prevMatch: Match,
+    nextMatch: Match,
+    teams: Team[],
+    flags: {
+      wasCompleted: boolean | undefined;
+      isNowCompleted: boolean | undefined;
+      winnerChanged: boolean;
+      loserChanged: boolean;
+      gameWinsChanged: boolean;
+    }
+  ): Promise<boolean> => {
+    // Case 1: Match was completed and is now marked incomplete — reverse old stats
+    if (flags.wasCompleted && !flags.isNowCompleted) {
+      if (prevMatch.winnerId && prevMatch.loserId) {
+        await reverseStatsForMatch(prevMatch);
+        await upsertTeamSeasonStats();
+      }
+      return true;
+    }
+
+    // Case 2: Match is (still or newly) completed and stats need updating
+    const needsUpdate =
+      !flags.wasCompleted || flags.winnerChanged || flags.loserChanged || flags.gameWinsChanged;
+    if (!(flags.isNowCompleted && needsUpdate && nextMatch.winnerId && nextMatch.loserId)) {
+      return true;
+    }
+
+    // If it was already completed and something changed, reverse old stats first
+    if (flags.wasCompleted) {
+      await reverseStatsForMatch(prevMatch);
+    }
+
+    const statsSuccess = await updateTeamRecords(
+      nextMatch.winnerId,
+      nextMatch.loserId,
+      teams,
+      gameWinsFor(nextMatch, nextMatch.winnerId),
+      gameWinsFor(nextMatch, nextMatch.loserId)
+    );
+
+    if (statsSuccess) return true;
+
+    // Attempt automatic reconciliation via upsert_team_season_stats
+    try {
+      await upsertTeamSeasonStats();
+      invalidateAllDataQueries(queryClient);
+      toast({
+        title: 'Partial Failure (Auto-Recovered)',
+        description:
+          'Match was updated but team records failed to save. Season stats were reconciled automatically.',
+        variant: 'destructive',
+      });
+    } catch (reconcileError) {
+      errorLog('Failed to reconcile team season stats after partial failure:', reconcileError);
+      toast({
+        title: 'Partial Failure',
+        description:
+          'Match was updated but team records failed to save. Please contact an admin to reconcile stats.',
+        variant: 'destructive',
+      });
+    }
+    return false;
+  };
 
   const handleUpdateMatch = async (matchData: Omit<Match, 'id'>, teams: Team[]) => {
     if (!editingMatch || isUpdatingRef.current) return false;
@@ -81,30 +194,7 @@ export const useMatchUpdate = ({
       const data = await updateMatch(editingMatch.id, updatePayload);
 
       // Transform the returned match to our app's format
-      const updatedMatch: Match = {
-        ...editingMatch,
-        id: data.id,
-        team1Id: data.team1_id,
-        team2Id: data.team2_id,
-        date: data.date,
-        location: data.location,
-        iscompleted: data.iscompleted,
-        team1Score: data.team1_score,
-        team2Score: data.team2_score,
-        winnerId: data.winner_id,
-        loserId: data.loser_id,
-        team1_game_wins: data.team1_game_wins,
-        team2_game_wins: data.team2_game_wins,
-        round_number: data.round_number,
-        position: data.position,
-        bracket_id: data.bracket_id,
-        match_type: data.match_type,
-        next_match_id: data.next_match_id,
-        next_loser_match_id: data.next_loser_match_id,
-        best_of: data.best_of,
-        created_at: data.created_at,
-        // status field not on matches table
-      };
+      const updatedMatch = toUpdatedMatch(editingMatch, data);
 
       // Update the matches state
       const updatedMatches = matches.map((match) =>
@@ -116,94 +206,14 @@ export const useMatchUpdate = ({
 
       const loserChanged = editingMatch.loserId !== matchData.loserId;
 
-      // Case 1: Match was completed and is now marked incomplete — reverse old stats
-      if (wasCompleted && !isNowCompleted && editingMatch.winnerId && editingMatch.loserId) {
-        const oldWinnerGameWins =
-          editingMatch.winnerId === editingMatch.team1Id
-            ? editingMatch.team1_game_wins || 0
-            : editingMatch.team2_game_wins || 0;
-        const oldLoserGameWins =
-          editingMatch.loserId === editingMatch.team1Id
-            ? editingMatch.team1_game_wins || 0
-            : editingMatch.team2_game_wins || 0;
-
-        await reverseTeamStats(
-          editingMatch.winnerId,
-          editingMatch.loserId,
-          oldWinnerGameWins,
-          oldLoserGameWins
-        );
-
-        await upsertTeamSeasonStats();
-      }
-
-      // Case 2: Match is (still or newly) completed and stats need updating
-      if (isNowCompleted && (!wasCompleted || winnerChanged || loserChanged || gameWinsChanged)) {
-        if (updatedMatch.winnerId && updatedMatch.loserId) {
-          // If it was already completed and something changed, reverse old stats first
-          if (wasCompleted && editingMatch.winnerId && editingMatch.loserId) {
-            const oldWinnerGameWins =
-              editingMatch.winnerId === editingMatch.team1Id
-                ? editingMatch.team1_game_wins || 0
-                : editingMatch.team2_game_wins || 0;
-            const oldLoserGameWins =
-              editingMatch.loserId === editingMatch.team1Id
-                ? editingMatch.team1_game_wins || 0
-                : editingMatch.team2_game_wins || 0;
-
-            await reverseTeamStats(
-              editingMatch.winnerId,
-              editingMatch.loserId,
-              oldWinnerGameWins,
-              oldLoserGameWins
-            );
-          }
-
-          // Now apply the new stats
-          const winnerGameWins =
-            updatedMatch.winnerId === updatedMatch.team1Id
-              ? updatedMatch.team1_game_wins || 0
-              : updatedMatch.team2_game_wins || 0;
-          const loserGameWins =
-            updatedMatch.loserId === updatedMatch.team1Id
-              ? updatedMatch.team1_game_wins || 0
-              : updatedMatch.team2_game_wins || 0;
-
-          const statsSuccess = await updateTeamRecords(
-            updatedMatch.winnerId,
-            updatedMatch.loserId,
-            teams,
-            winnerGameWins,
-            loserGameWins
-          );
-
-          if (!statsSuccess) {
-            // Attempt automatic reconciliation via upsert_team_season_stats
-            try {
-              await upsertTeamSeasonStats();
-              invalidateAllDataQueries(queryClient);
-              toast({
-                title: 'Partial Failure (Auto-Recovered)',
-                description:
-                  'Match was updated but team records failed to save. Season stats were reconciled automatically.',
-                variant: 'destructive',
-              });
-            } catch (reconcileError) {
-              errorLog(
-                'Failed to reconcile team season stats after partial failure:',
-                reconcileError
-              );
-              toast({
-                title: 'Partial Failure',
-                description:
-                  'Match was updated but team records failed to save. Please contact an admin to reconcile stats.',
-                variant: 'destructive',
-              });
-            }
-            return false;
-          }
-        }
-      }
+      const statsOk = await applyStatChanges(editingMatch, updatedMatch, teams, {
+        wasCompleted,
+        isNowCompleted,
+        winnerChanged,
+        loserChanged,
+        gameWinsChanged,
+      });
+      if (!statsOk) return false;
 
       toast({
         title: 'Match Updated',

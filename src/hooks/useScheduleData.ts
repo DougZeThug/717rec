@@ -18,11 +18,13 @@ export const useScheduleData = () => {
       }
 
       scheduleLog(
-        `Fetched ${data.length} matches (${data.filter((m: RawMatchRow) => m.iscompleted).length} completed)`
+        `Fetched ${data.length} matches (${data.filter((m) => m.iscompleted).length} completed)`
       );
 
       // Use centralized transformer with team details
-      const transformedMatches = transformDatabaseMatches(data, { normalizeDate: false });
+      const transformedMatches = transformDatabaseMatches(data as RawMatchRow[], {
+        normalizeDate: false,
+      });
 
       // Filter out matches with missing team details (safety check for race conditions)
       const validMatches = transformedMatches.filter((match) => {

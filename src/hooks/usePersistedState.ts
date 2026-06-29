@@ -31,7 +31,7 @@ export function usePersistedState<T>(
       const parsedResult: StorageParseResult<T> = parseStoredJson(savedValue, validate);
 
       if (parsedResult.ok) {
-        return parsedResult.value;
+        return parsedResult.value ?? defaultValue;
       }
 
       if ('error' in parsedResult && parsedResult.error !== 'missing') {

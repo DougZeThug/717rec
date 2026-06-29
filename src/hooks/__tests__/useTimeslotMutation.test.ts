@@ -26,7 +26,7 @@ const createDeferred = <T>(): Deferred<T> => {
     resolve = res;
     reject = rej;
   });
-  return { promise, resolve, reject };
+  return { promise, resolve: resolve as (value?: T) => void, reject };
 };
 
 vi.mock('@tanstack/react-query', () => ({

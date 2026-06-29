@@ -99,7 +99,7 @@ describe('usePairingGenerator', () => {
   it('should generate pairings for valid time blocks', async () => {
     const { result } = renderHook(() => usePairingGenerator(), { wrapper: createWrapper() });
 
-    let pairings: PairingResult | null = null;
+    let pairings: PairingResult | null = null as PairingResult | null;
     await act(async () => {
       pairings = await result.current.generateMatchPairings(mockDate, mockTimeBlockTeams);
     });
@@ -149,7 +149,7 @@ describe('usePairingGenerator', () => {
 
     const { result } = renderHook(() => usePairingGenerator(), { wrapper: createWrapper() });
 
-    let pairings: PairingResult | null = null;
+    let pairings: PairingResult | null = null as PairingResult | null;
     await act(async () => {
       pairings = await result.current.generateMatchPairings(mockDate, oddBlocksData);
     });
@@ -168,7 +168,7 @@ describe('usePairingGenerator', () => {
     const { result } = renderHook(() => usePairingGenerator(), { wrapper: createWrapper() });
     const mockToast = mockUseToast().toast;
 
-    let pairings: PairingResult | null = null;
+    let pairings: PairingResult | null = null as PairingResult | null;
     await act(async () => {
       pairings = await result.current.generateMatchPairings(mockDate, mockTimeBlockTeams);
     });
