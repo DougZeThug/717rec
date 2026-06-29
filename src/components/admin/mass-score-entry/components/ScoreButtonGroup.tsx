@@ -7,10 +7,10 @@ import { SCORE_OPTIONS } from './types';
 
 interface ScoreButtonGroupProps {
   value: {
-    team1Score: number;
-    team2Score: number;
-    team1GameWins?: number;
-    team2GameWins?: number;
+    team1Score: number | null;
+    team2Score: number | null;
+    team1GameWins?: number | null;
+    team2GameWins?: number | null;
   } | null;
   onChange: (scores: {
     team1Score: number;

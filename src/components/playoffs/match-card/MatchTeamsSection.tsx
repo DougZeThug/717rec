@@ -34,9 +34,9 @@ const MatchTeamsSection: React.FC<MatchTeamsSectionProps> = ({
       {/* Team 1 Row */}
       <TeamRow
         team={team1}
-        teamId={team1Id}
+        teamId={team1Id ?? undefined}
         teamSeed={team1Seed}
-        score={team1Score}
+        score={team1Score ?? undefined}
         isWinner={team1Id === winnerId}
         matchType={matchType}
       />
@@ -44,9 +44,9 @@ const MatchTeamsSection: React.FC<MatchTeamsSectionProps> = ({
       {/* Team 2 Row */}
       <TeamRow
         team={team2}
-        teamId={team2Id}
+        teamId={team2Id ?? undefined}
         teamSeed={team2Seed}
-        score={team2Score}
+        score={team2Score ?? undefined}
         isWinner={team2Id === winnerId}
         matchType={matchType}
       />

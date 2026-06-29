@@ -35,7 +35,7 @@ type TeamMobileCardProps = {
 const TeamAvatar = ({ team }: { team: Team }) =>
   team.logoUrl || team.imageUrl ? (
     <img
-      src={team.logoUrl || team.imageUrl}
+      src={team.logoUrl || team.imageUrl || undefined}
       alt={team.name}
       className="size-6 rounded-full object-cover shrink-0"
     />

@@ -76,7 +76,11 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     errorMessage,
     isDataReady: _isDataReady,
     seedValidation,
-  } = useBracketFormData(validDivisions, validTeamsProp, validDivisionId);
+  } = useBracketFormData(
+    validDivisions,
+    validTeamsProp as Parameters<typeof useBracketFormData>[1],
+    validDivisionId ?? undefined
+  );
 
   // Determine which teams to use and loading states
   const allTeams = validTeamsProp ?? fetchedTeams;
@@ -186,7 +190,7 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
         formState={formState}
         maxTeams={maxTeams}
         minTeams={minTeams}
-        divisionId={validDivisionId}
+        divisionId={validDivisionId ?? undefined}
         seedValidation={seedValidation}
         onSeedChange={handleSeedChange}
       />

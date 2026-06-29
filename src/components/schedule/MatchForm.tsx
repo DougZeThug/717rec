@@ -24,9 +24,9 @@ const timeSlots = [
 const MatchForm: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCancel }) => {
   const [team1Id, setTeam1Id] = useState(match?.team1Id || '');
   const [team2Id, setTeam2Id] = useState(match?.team2Id || '');
-  const [selectedDate, setSelectedDate] = useState(match ? new Date(match.date) : new Date());
+  const [selectedDate, setSelectedDate] = useState(match ? new Date(match.date ?? '') : new Date());
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(
-    match ? getTimeSlotFromDate(new Date(match.date)) : null
+    match ? getTimeSlotFromDate(new Date(match.date ?? '')) : null
   );
   const [isCompleted, setIsCompleted] = useState(match?.iscompleted || false);
   const [team1Score, setTeam1Score] = useState<number | undefined>(match?.team1Score);
@@ -55,8 +55,8 @@ const MatchForm: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCancel 
       iscompleted: isCompleted,
       team1Score: isCompleted ? team1Score : undefined,
       team2Score: isCompleted ? team2Score : undefined,
-      winnerId,
-      loserId,
+      winnerId: winnerId ?? undefined,
+      loserId: loserId ?? undefined,
     });
   };
 

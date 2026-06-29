@@ -112,7 +112,7 @@ export const transformBracketsManagerData = ({
     const team1 = team1Name ? teamLookup.get(team1Name) : null;
     const team2 = team2Name ? teamLookup.get(team2Name) : null;
 
-    let winnerId = null;
+    let winnerId: string | null = null;
     if (match.opponent1_result === 'win' && team1) winnerId = team1.id;
     else if (match.opponent2_result === 'win' && team2) winnerId = team2.id;
 

@@ -47,7 +47,7 @@ const TeamRow: React.FC<TeamRowProps> = ({
             {team.imageUrl || team.logoUrl ? (
               <div className="size-5 rounded-full overflow-hidden bg-gray-200 mr-2">
                 <img
-                  src={team.imageUrl || team.logoUrl}
+                  src={team.imageUrl || team.logoUrl || undefined}
                   alt={team.name}
                   className="size-full object-contain"
                   onError={(e) => {

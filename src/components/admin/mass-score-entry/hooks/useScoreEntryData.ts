@@ -63,7 +63,7 @@ export const useScoreEntryData = () => {
       if (isInitialLoad.current && fetchedMatches.length > 0 && !filters.date) {
         isInitialLoad.current = false;
         const latestMatch = [...fetchedMatches].sort((a, b) => {
-          return new Date(b.date).getTime() - new Date(a.date).getTime();
+          return new Date(b.date ?? '').getTime() - new Date(a.date ?? '').getTime();
         })[0];
         if (latestMatch && latestMatch.date) {
           filterLog('Auto-setting filter date to latest match date', latestMatch.date);

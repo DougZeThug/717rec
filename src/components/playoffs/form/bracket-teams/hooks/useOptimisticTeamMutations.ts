@@ -58,7 +58,7 @@ export const useOptimisticTeamMutations = () => {
       queryClient.setQueryData<SeededTeamsCacheValue>(['playoff-teams'], (oldData) => {
         if (!oldData) return oldData;
         return oldData.map((team) =>
-          team.id === update.teamId ? { ...team, seed: update.newSeed } : team
+          team.id === update.teamId ? { ...team, seed: update.newSeed ?? team.seed } : team
         );
       });
 
@@ -84,7 +84,7 @@ export const useOptimisticTeamMutations = () => {
         if (!oldData) return oldData;
         return oldData.map((team) => {
           const update = currentPendingUpdates.get(team.id);
-          return update ? { ...team, seed: update.previousSeed } : team;
+          return update ? { ...team, seed: update.previousSeed ?? team.seed } : team;
         });
       });
 

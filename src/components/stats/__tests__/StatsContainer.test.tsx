@@ -2,7 +2,11 @@ import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-let mockTeamsQuery = { data: [], isLoading: false, error: null as Error | null };
+let mockTeamsQuery = {
+  data: [] as { id: string; name: string }[],
+  isLoading: false,
+  error: null as Error | null,
+};
 let mockRankingsResult = {
   rankings: [] as Array<{ teamId: string; teamName: string }>,
   isLoading: false,

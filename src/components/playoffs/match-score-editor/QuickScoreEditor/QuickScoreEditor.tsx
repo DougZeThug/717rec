@@ -19,7 +19,7 @@ const QuickScoreEditor: React.FC<QuickScoreEditorProps> = ({ match, teams, onSav
   const { team1, team2, team1Name, team2Name } = useTeamData(match, teams);
 
   // Generate score options
-  const scoreOptions = generateScoreOptions(match.team1Id, match.team2Id);
+  const scoreOptions = generateScoreOptions(match.team1Id ?? undefined, match.team2Id ?? undefined);
 
   // Setup score submission handler
   const { handleQuickScore } = useScoreSubmission({
@@ -47,8 +47,8 @@ const QuickScoreEditor: React.FC<QuickScoreEditorProps> = ({ match, teams, onSav
           style={{ animationDelay: '0.2s' }}
         >
           {/* Team logo/images */}
-          <TeamDisplay team={team1} fallbackLabel="T1" />
-          <TeamDisplay team={team2} fallbackLabel="T2" />
+          <TeamDisplay team={team1 ?? null} fallbackLabel="T1" />
+          <TeamDisplay team={team2 ?? null} fallbackLabel="T2" />
         </div>
 
         <div

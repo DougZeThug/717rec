@@ -18,11 +18,11 @@ import { usePlayoffMatchUpdate } from './usePlayoffMatchUpdate';
 
 const toPlayoffGame = (game: LegacyPlayoffMatchWithGames['playoff_games'][number]) => ({
   id: game.id,
-  matchId: game.match_id,
-  gameNumber: game.game_number,
-  team1Score: game.team1_score,
-  team2Score: game.team2_score,
-  winnerId: game.winner_id,
+  matchId: game.match_id ?? undefined,
+  gameNumber: game.game_number ?? undefined,
+  team1Score: game.team1_score ?? 0,
+  team2Score: game.team2_score ?? 0,
+  winnerId: game.winner_id ?? undefined,
 });
 
 export const usePlayoffEditMatch = () => {
@@ -171,7 +171,7 @@ export const usePlayoffEditMatch = () => {
           // Convert database match to PlayoffMatch format
           const playoffMatch: PlayoffMatch = {
             id: matchData.id,
-            bracket_id: matchData.bracket_id,
+            bracket_id: matchData.bracket_id ?? '',
             round: matchData.round,
             position: matchData.position,
             team1Id: matchData.team1_id,
@@ -190,7 +190,7 @@ export const usePlayoffEditMatch = () => {
             nextLoseMatchId: matchData.next_lose_match_id,
             status: (matchData.status as 'pending' | 'in_progress' | 'completed') || 'pending',
             games: (matchData.playoff_games ?? [])
-              .sort((a, b) => a.game_number - b.game_number)
+              .sort((a, b) => (a.game_number ?? 0) - (b.game_number ?? 0))
               .map(toPlayoffGame),
           };
 

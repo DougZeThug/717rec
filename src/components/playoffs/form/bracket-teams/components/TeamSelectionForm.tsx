@@ -8,7 +8,12 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import { useFormStateManager } from '../hooks/useFormStateManager';
-import { BracketFormStateResult, ProcessedTeam, SeedValidationState } from '../types';
+import {
+  BracketFormStateResult,
+  ProcessedTeam,
+  SeedValidationState,
+  ValidationProgress,
+} from '../types';
 import { SeedOverrideControls } from './SeedOverrideControls';
 import { SeedStatusBadge } from './SeedStatusBadge';
 
@@ -21,6 +26,70 @@ interface TeamSelectionFormProps {
   seedValidation?: SeedValidationState;
   onSeedChange?: (teamId: string, seed: number | null) => void;
 }
+
+const EMPTY_SEED_VALIDATION: SeedValidationState = {
+  isLoading: false,
+  conflicts: [],
+  hasConflicts: false,
+  errorMessage: null,
+};
+
+// Shared no-op for absent handler callbacks (expression body, not an empty fn).
+const noop = () => undefined;
+
+// The form state with every field guaranteed present (no cleanup helper).
+type SafeFormState = Omit<BracketFormStateResult, 'cleanup'>;
+
+/**
+ * Normalize the incoming form state so every property has a safe default,
+ * guarding against a missing/malformed formState (prevents React error #300).
+ * A single null guard replaces per-property optional chaining while keeping the
+ * exact `||` / `??` fallback semantics for a present formState.
+ */
+const buildSafeFormState = (
+  formState: BracketFormStateResult | undefined,
+  fallbackProgress: ValidationProgress
+): SafeFormState => {
+  if (!formState) {
+    return {
+      selected: new Set<string>(),
+      selectedArray: [],
+      count: 0,
+      handleTeamToggle: noop,
+      clearSelection: noop,
+      canSelectMore: true,
+      isAtMaximum: false,
+      hasSelection: false,
+      isValid: false,
+      isComplete: false,
+      hasError: false,
+      hasWarning: false,
+      errorMessage: null,
+      warningMessage: null,
+      statusMessage: 'Ready to select teams',
+      progress: fallbackProgress,
+    };
+  }
+
+  return {
+    selected: formState.selected || new Set<string>(),
+    selectedArray: formState.selectedArray || [],
+    count: formState.count || 0,
+    handleTeamToggle: formState.handleTeamToggle || noop,
+    clearSelection: formState.clearSelection || noop,
+    canSelectMore: formState.canSelectMore ?? true,
+    isAtMaximum: formState.isAtMaximum ?? false,
+    hasSelection: formState.hasSelection ?? false,
+    isValid: formState.isValid ?? false,
+    isComplete: formState.isComplete ?? false,
+    hasError: formState.hasError ?? false,
+    hasWarning: formState.hasWarning ?? false,
+    errorMessage: formState.errorMessage || null,
+    warningMessage: formState.warningMessage || null,
+    statusMessage: formState.statusMessage || 'Ready to select teams',
+    progress: formState.progress || fallbackProgress,
+  };
+};
 
 /**
  * Team selection form component
@@ -38,35 +107,23 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
   const [activeTab, setActiveTab] = useState<'select' | 'seeds'>('select');
 
   // Initialize form state manager for coordinated state management
-  const formStateManager = useFormStateManager(teams, formState, seedValidation, onSeedChange);
+  const formStateManager = useFormStateManager(
+    teams,
+    formState,
+    seedValidation ?? EMPTY_SEED_VALIDATION,
+    onSeedChange
+  );
   // Ensure we have valid arrays and objects to prevent React error #300
   const validTeams = Array.isArray(teams) ? teams : [];
 
   // Ensure formState has all required properties with proper defaults
-  const safeFormState = {
-    selected: formState?.selected || new Set(),
-    selectedArray: formState?.selectedArray || [],
-    count: formState?.count || 0,
-    handleTeamToggle: formState?.handleTeamToggle || (() => {}),
-    clearSelection: formState?.clearSelection || (() => {}),
-    canSelectMore: formState?.canSelectMore ?? true,
-    isAtMaximum: formState?.isAtMaximum ?? false,
-    hasSelection: formState?.hasSelection ?? false,
-    isValid: formState?.isValid ?? false,
-    isComplete: formState?.isComplete ?? false,
-    hasError: formState?.hasError ?? false,
-    hasWarning: formState?.hasWarning ?? false,
-    errorMessage: formState?.errorMessage || null,
-    warningMessage: formState?.warningMessage || null,
-    statusMessage: formState?.statusMessage || 'Ready to select teams',
-    progress: formState?.progress || {
-      percentage: 0,
-      selected: 0,
-      required: minTeams,
-      maximum: maxTeams,
-      available: validTeams.length,
-    },
-  };
+  const safeFormState = buildSafeFormState(formState, {
+    percentage: 0,
+    selected: 0,
+    required: minTeams,
+    maximum: maxTeams,
+    available: validTeams.length,
+  });
 
   /**
    * Renders team selection button with appropriate styling based on selection state
@@ -278,7 +335,7 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
           <SeedOverrideControls
             teams={formStateManager.syncedTeams}
             divisionId={divisionId || ''}
-            validation={seedValidation}
+            validation={seedValidation ?? EMPTY_SEED_VALIDATION}
             onSeedChange={onSeedChange}
             show={!!(divisionId && seedValidation)}
           />

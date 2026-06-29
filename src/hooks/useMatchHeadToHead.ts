@@ -29,7 +29,7 @@ export const useMatchHeadToHead = (
   const isFirstMeeting = data?.totalMatches === 0;
 
   return {
-    data,
+    data: data ?? null,
     isLoading,
     isFirstMeeting,
   };
