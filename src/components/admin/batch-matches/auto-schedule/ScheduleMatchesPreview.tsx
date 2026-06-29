@@ -145,7 +145,10 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
           <TimeBlockHeader
             blockName={block}
             teamCount={blockPairings.length * 2}
-            timeslots={[TIME_BLOCKS[block]?.main, TIME_BLOCKS[block]?.secondary]}
+            timeslots={[
+              TIME_BLOCKS[block as keyof typeof TIME_BLOCKS]?.main,
+              TIME_BLOCKS[block as keyof typeof TIME_BLOCKS]?.secondary,
+            ]}
           />
           <CardContent className="p-3">
             {blockPairings.length > 0 ? (

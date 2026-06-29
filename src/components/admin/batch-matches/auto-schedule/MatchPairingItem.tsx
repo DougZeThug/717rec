@@ -25,7 +25,9 @@ export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
   // Determine UI state based on compatibility score and match history
   const isWarning = pairing.compatibilityScore < 5 || pairing.hasPlayedBefore;
   const timeslot =
-    index % 2 === 0 ? TIME_BLOCKS[blockName]?.main : TIME_BLOCKS[blockName]?.secondary;
+    index % 2 === 0
+      ? TIME_BLOCKS[blockName as keyof typeof TIME_BLOCKS]?.main
+      : TIME_BLOCKS[blockName as keyof typeof TIME_BLOCKS]?.secondary;
 
   const getCardClasses = () => {
     if (isWinterTheme) {

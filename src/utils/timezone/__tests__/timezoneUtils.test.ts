@@ -140,7 +140,10 @@ describe('timezone utilities', () => {
   });
 
   it('formatUTCToLocalTimeString supports 24-hour and seconds options', () => {
-    vi.spyOn(Intl, 'DateTimeFormat').mockImplementation(function (_locales, options) {
+    vi.spyOn(Intl, 'DateTimeFormat').mockImplementation(function (
+      _locales: unknown,
+      options?: Intl.DateTimeFormatOptions
+    ) {
       const formatted =
         options?.hour12 === false && options?.second === '2-digit' ? '19:30:00' : '7:30 PM';
       return buildDateTimeFormatResult(formatted);

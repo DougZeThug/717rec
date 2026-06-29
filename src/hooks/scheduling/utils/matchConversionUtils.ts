@@ -45,7 +45,7 @@ export const convertPairingsToMatches = (
     if (pairings[primaryBlock]?.length > 0) {
       pairings[primaryBlock].forEach((pairing, index) => {
         // Use primary block's main timeslot (typically 6:30 PM)
-        const timeslot = TIME_BLOCKS[primaryBlock].main;
+        const timeslot = TIME_BLOCKS[primaryBlock as keyof typeof TIME_BLOCKS].main;
 
         // Initialize opponent tracking for both teams
         if (!teamOpponents[pairing.team1.id]) teamOpponents[pairing.team1.id] = [];
@@ -70,7 +70,7 @@ export const convertPairingsToMatches = (
     if (pairings[secondaryBlock]?.length > 0) {
       pairings[secondaryBlock].forEach((pairing, index) => {
         // Use secondary block's secondary timeslot (typically 7:00 PM)
-        const timeslot = TIME_BLOCKS[secondaryBlock].secondary;
+        const timeslot = TIME_BLOCKS[secondaryBlock as keyof typeof TIME_BLOCKS].secondary;
 
         // Initialize opponent tracking for any new teams
         if (!teamOpponents[pairing.team1.id]) teamOpponents[pairing.team1.id] = [];
@@ -108,14 +108,17 @@ export const convertPairingsToMatches = (
     // Standard single-block processing
     Object.entries(pairings).forEach(([block, blockPairings]) => {
       // Ensure we can access the TIME_BLOCKS for this block
-      if (!TIME_BLOCKS[block]) {
+      if (!TIME_BLOCKS[block as keyof typeof TIME_BLOCKS]) {
         errorLog(`Missing time block data for ${block}`);
         return;
       }
 
       blockPairings.forEach((pairing, index) => {
         // In standard mode, alternate between main and secondary timeslots
-        const timeslot = index % 2 === 0 ? TIME_BLOCKS[block].main : TIME_BLOCKS[block].secondary;
+        const timeslot =
+          index % 2 === 0
+            ? TIME_BLOCKS[block as keyof typeof TIME_BLOCKS].main
+            : TIME_BLOCKS[block as keyof typeof TIME_BLOCKS].secondary;
 
         matches.push({
           id: Date.now().toString() + '-' + block + '-' + index,
