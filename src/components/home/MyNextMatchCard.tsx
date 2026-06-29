@@ -110,6 +110,220 @@ const matchOutcome = (match: Match, myTeamId: string, isPrevious: boolean) => {
   };
 };
 
+// A single circular team logo, with an optional hover glow behind it.
+const TeamLogoBlock = ({
+  team,
+  ringClass,
+  glowClass,
+}: {
+  team: TeamInfo;
+  ringClass: string;
+  glowClass?: string;
+}) => (
+  <div className="relative">
+    {glowClass && (
+      <div
+        className={cn(
+          'absolute inset-0 rounded-full blur-xl scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-300',
+          glowClass
+        )}
+      />
+    )}
+    <TeamLogo
+      imageUrl={team.logoUrl}
+      teamName={team.name}
+      size="md"
+      rounded
+      className={cn(
+        'relative z-10 transition-all duration-300 !w-12 !h-12 !min-w-12 !min-h-12',
+        ringClass
+      )}
+    />
+  </div>
+);
+
+// Date + (optional) time row.
+const MatchDateTime = ({
+  formattedDate,
+  formattedTime,
+  iconClass,
+  textClass,
+}: {
+  formattedDate: string;
+  formattedTime: string | null;
+  iconClass: string;
+  textClass: string;
+}) => (
+  <div className="flex items-center gap-3 mt-1">
+    <div className="flex items-center gap-1.5">
+      <Calendar className={cn('size-3.5', iconClass)} />
+      <span className={cn(typeScale.caption, textClass)}>{formattedDate}</span>
+    </div>
+    {formattedTime && (
+      <div className="flex items-center gap-1.5">
+        <Clock className={cn('size-3.5', iconClass)} />
+        <span className={cn(typeScale.caption, textClass)}>{formattedTime}</span>
+      </div>
+    )}
+  </div>
+);
+
+// Team names heading + date/time, the right-hand details column.
+const MatchDetails = ({
+  myTeam,
+  opponent,
+  formattedDate,
+  formattedTime,
+  styles,
+}: {
+  myTeam: TeamInfo;
+  opponent: TeamInfo;
+  formattedDate: string;
+  formattedTime: string | null;
+  styles: CardStyleFragments;
+}) => (
+  <div className="flex-1 min-w-0">
+    <h3
+      className={cn(typeScale.body, 'font-semibold transition-colors truncate', styles.teamNames)}
+    >
+      <span className="font-bold">{myTeam.name}</span>
+      <span className="text-muted-foreground mx-2">vs</span>
+      <span>{opponent.name}</span>
+    </h3>
+
+    <MatchDateTime
+      formattedDate={formattedDate}
+      formattedTime={formattedTime}
+      iconClass={styles.dateIcon}
+      textClass={styles.dateText}
+    />
+  </div>
+);
+
+// The clickable row: team logos + score/vs + details + arrow.
+const MatchCardBody = ({
+  myTeam,
+  opponent,
+  isPrevious,
+  myTeamWins,
+  opponentWins,
+  formattedDate,
+  formattedTime,
+  styles,
+}: {
+  myTeam: TeamInfo;
+  opponent: TeamInfo;
+  isPrevious: boolean;
+  myTeamWins: number;
+  opponentWins: number;
+  formattedDate: string;
+  formattedTime: string | null;
+  styles: CardStyleFragments;
+}) => (
+  <Link to="/schedule" className="group block">
+    <div className="flex items-center gap-4 md:gap-6">
+      {/* Team Logos - VS Layout */}
+      <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+        <TeamLogoBlock team={myTeam} ringClass={styles.myLogoRing} glowClass={styles.glowBg} />
+
+        {/* VS or Score */}
+        {isPrevious ? (
+          <span className={cn('text-sm font-bold tabular-nums', styles.scoreColor)}>
+            {myTeamWins} - {opponentWins}
+          </span>
+        ) : (
+          <span className={cn('text-xs font-bold uppercase', styles.vsColor)}>vs</span>
+        )}
+
+        <TeamLogoBlock team={opponent} ringClass={styles.opponentLogoRing} />
+      </div>
+
+      <MatchDetails
+        myTeam={myTeam}
+        opponent={opponent}
+        formattedDate={formattedDate}
+        formattedTime={formattedTime}
+        styles={styles}
+      />
+
+      {/* Arrow */}
+      <ChevronRight
+        className={cn(
+          'size-5 group-hover:translate-x-1 transition-all duration-200 flex-shrink-0',
+          styles.chevronColor
+        )}
+      />
+    </div>
+  </Link>
+);
+
+// Header row: section label + win/loss + week badges.
+const NextMatchHeader = ({
+  displayHeaderText,
+  isPrevious,
+  shouldApplyWinter,
+  didWin,
+  didLose,
+  weekNumber,
+  styles,
+}: {
+  displayHeaderText: string;
+  isPrevious: boolean;
+  shouldApplyWinter: boolean;
+  didWin: boolean;
+  didLose: boolean;
+  weekNumber: number | null | undefined;
+  styles: CardStyleFragments;
+}) => (
+  <div className="flex items-center justify-between mb-4">
+    <div className="flex items-center gap-2">
+      <SeasonalIcon
+        defaultIcon={isPrevious ? Trophy : Calendar}
+        winterIcon={SnowflakeSparkle}
+        size={16}
+        className={styles.headerIcon}
+      />
+      <span className={cn('text-xs font-semibold uppercase tracking-wider', styles.headerLabel)}>
+        {displayHeaderText}
+      </span>
+    </div>
+    <div className="flex items-center gap-2">
+      {didWin && (
+        <Badge variant="default" className="text-xs bg-green-600 hover:bg-green-600">
+          Win
+        </Badge>
+      )}
+      {didLose && (
+        <Badge variant="destructive" className="text-xs">
+          Loss
+        </Badge>
+      )}
+      {weekNumber && (
+        <Badge variant={shouldApplyWinter ? 'winter' : 'outline'} className={styles.weekBadgeClass}>
+          {shouldApplyWinter && <SnowflakeSparkle size={12} className="mr-1" />}
+          Week {weekNumber}
+        </Badge>
+      )}
+    </div>
+  </div>
+);
+
+// "See full schedule" call-to-action link.
+const ScheduleCtaLink = ({ className }: { className: string }) => (
+  <div className="mt-4 text-center">
+    <Link
+      to="/schedule"
+      className={cn(
+        'text-xs font-medium transition-colors inline-flex items-center gap-1',
+        className
+      )}
+    >
+      See full schedule
+      <ChevronRight className="size-3" />
+    </Link>
+  </div>
+);
+
 const MyNextMatchCard: React.FC<MyNextMatchCardProps> = ({
   match,
   myTeam,
@@ -120,7 +334,7 @@ const MyNextMatchCard: React.FC<MyNextMatchCardProps> = ({
   headerText,
 }) => {
   const { shouldApplyWinter } = useSeasonalTheme();
-  const w = shouldApplyWinter ? WINTER_CARD_STYLES : DEFAULT_CARD_STYLES;
+  const cardStyles = shouldApplyWinter ? WINTER_CARD_STYLES : DEFAULT_CARD_STYLES;
 
   // Format date and time
   const { formattedDate, formattedTime } = matchDateParts(match.date);
@@ -132,149 +346,36 @@ const MyNextMatchCard: React.FC<MyNextMatchCardProps> = ({
   const displayHeaderText = headerText || (isPrevious ? 'Your Last Match' : 'Your Next Match');
 
   return (
-    <Card
-      className={cn('relative overflow-hidden', w.cardBg, isPrevious && 'opacity-90')}
-    >
+    <Card className={cn('relative overflow-hidden', cardStyles.cardBg, isPrevious && 'opacity-90')}>
       {/* Subtle glow effect */}
-      <div className={cn('absolute inset-0 opacity-50', w.glowGradient)} />
+      <div className={cn('absolute inset-0 opacity-50', cardStyles.glowGradient)} />
 
       <CardContent className="relative p-4 md:p-6">
-        {/* Header */}
         {showHeader && (
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <SeasonalIcon
-                defaultIcon={isPrevious ? Trophy : Calendar}
-                winterIcon={SnowflakeSparkle}
-                size={16}
-                className={w.headerIcon}
-              />
-              <span
-                className={cn('text-xs font-semibold uppercase tracking-wider', w.headerLabel)}
-              >
-                {displayHeaderText}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {didWin && (
-                <Badge variant="default" className="text-xs bg-green-600 hover:bg-green-600">
-                  Win
-                </Badge>
-              )}
-              {didLose && (
-                <Badge variant="destructive" className="text-xs">
-                  Loss
-                </Badge>
-              )}
-              {weekNumber && (
-                <Badge
-                  variant={shouldApplyWinter ? 'winter' : 'outline'}
-                  className={w.weekBadgeClass}
-                >
-                  {shouldApplyWinter && <SnowflakeSparkle size={12} className="mr-1" />}
-                  Week {weekNumber}
-                </Badge>
-              )}
-            </div>
-          </div>
+          <NextMatchHeader
+            displayHeaderText={displayHeaderText}
+            isPrevious={isPrevious}
+            shouldApplyWinter={shouldApplyWinter}
+            didWin={didWin}
+            didLose={didLose}
+            weekNumber={weekNumber}
+            styles={cardStyles}
+          />
         )}
 
-        <Link to="/schedule" className="group block">
-          <div className="flex items-center gap-4 md:gap-6">
-            {/* Team Logos - VS Layout */}
-            <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-              {/* My Team Logo */}
-              <div className="relative">
-                <div
-                  className={cn(
-                    'absolute inset-0 rounded-full blur-xl scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-300',
-                    w.glowBg
-                  )}
-                />
-                <TeamLogo
-                  imageUrl={myTeam.logoUrl}
-                  teamName={myTeam.name}
-                  size="md"
-                  rounded
-                  className={cn(
-                    'relative z-10 transition-all duration-300 !w-12 !h-12 !min-w-12 !min-h-12',
-                    w.myLogoRing
-                  )}
-                />
-              </div>
-
-              {/* VS or Score */}
-              {isPrevious ? (
-                <span className={cn('text-sm font-bold tabular-nums', w.scoreColor)}>
-                  {myTeamWins} - {opponentWins}
-                </span>
-              ) : (
-                <span className={cn('text-xs font-bold uppercase', w.vsColor)}>vs</span>
-              )}
-
-              {/* Opponent Logo */}
-              <div className="relative">
-                <TeamLogo
-                  imageUrl={opponent.logoUrl}
-                  teamName={opponent.name}
-                  size="md"
-                  rounded
-                  className={cn(
-                    'relative z-10 transition-all duration-300 !w-12 !h-12 !min-w-12 !min-h-12',
-                    w.opponentLogoRing
-                  )}
-                />
-              </div>
-            </div>
-
-            {/* Team Names & Details */}
-            <div className="flex-1 min-w-0">
-              <h3 className={cn(typeScale.body, 'font-semibold transition-colors truncate', w.teamNames)}>
-                <span className="font-bold">{myTeam.name}</span>
-                <span className="text-muted-foreground mx-2">vs</span>
-                <span>{opponent.name}</span>
-              </h3>
-
-              {/* Date & Time */}
-              <div className="flex items-center gap-3 mt-1">
-                <div className="flex items-center gap-1.5">
-                  <Calendar className={cn('size-3.5', w.dateIcon)} />
-                  <span className={cn(typeScale.caption, w.dateText)}>{formattedDate}</span>
-                </div>
-                {formattedTime && (
-                  <div className="flex items-center gap-1.5">
-                    <Clock className={cn('size-3.5', w.dateIcon)} />
-                    <span className={cn(typeScale.caption, w.dateText)}>{formattedTime}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Arrow */}
-            <ChevronRight
-              className={cn(
-                'size-5 group-hover:translate-x-1 transition-all duration-200 flex-shrink-0',
-                w.chevronColor
-              )}
-            />
-          </div>
-        </Link>
+        <MatchCardBody
+          myTeam={myTeam}
+          opponent={opponent}
+          isPrevious={isPrevious}
+          myTeamWins={myTeamWins}
+          opponentWins={opponentWins}
+          formattedDate={formattedDate}
+          formattedTime={formattedTime}
+          styles={cardStyles}
+        />
 
         {/* CTA Link - only show on first card */}
-        {showHeader && (
-          <div className="mt-4 text-center">
-            <Link
-              to="/schedule"
-              className={cn(
-                'text-xs font-medium transition-colors inline-flex items-center gap-1',
-                w.ctaLink
-              )}
-            >
-              See full schedule
-              <ChevronRight className="size-3" />
-            </Link>
-          </div>
-        )}
+        {showHeader && <ScheduleCtaLink className={cardStyles.ctaLink} />}
       </CardContent>
     </Card>
   );
