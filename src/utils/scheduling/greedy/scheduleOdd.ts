@@ -41,8 +41,17 @@ function selectBye2(
   relaxationLevel: RelaxationLevel
 ): Team {
   const exclude = new Set([bye1.id]);
-  for (let attempt = 0; attempt < sortedTeams.length; attempt++) {
-    const candidate = pickBye(sortedTeams, byeStrategy, playedSet, maxTierGap, exclude, relaxationLevel);
+  // One bye-selection attempt per team in the pool; the loop variable is unused
+  // because each attempt re-picks via the growing `exclude` set, not by index.
+  for (const _team of sortedTeams) {
+    const candidate = pickBye(
+      sortedTeams,
+      byeStrategy,
+      playedSet,
+      maxTierGap,
+      exclude,
+      relaxationLevel
+    );
     if (canPlay(bye1, candidate, playedSet, tonightPairs, maxTierGap, relaxationLevel)) {
       return candidate;
     }
