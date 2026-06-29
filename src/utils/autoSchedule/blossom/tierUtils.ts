@@ -3,7 +3,7 @@ import { Team } from '@/types';
 /**
  * Extract tier number from division name
  */
-export function getTierFromDivision(divisionName: string | undefined): number {
+export function getTierFromDivision(divisionName: string | null | undefined): number {
   if (!divisionName) return 2; // Default to intermediate
 
   const lowerName = divisionName.toLowerCase();

@@ -23,7 +23,7 @@ function makeTeam(id: string, tier: number): Team {
     created_at: new Date().toISOString(),
     challonge_participant_id: null,
     spotify_url: null,
-  } as Team;
+  } as unknown as Team;
 }
 
 describe('analyzeGreedyFeasibility', () => {

@@ -187,7 +187,7 @@ export function getValidationSummary(validation: ValidationResult): string {
   const errorCount = validation.errors.length;
   const warningCount = validation.warnings.length;
 
-  const parts = [];
+  const parts: string[] = [];
   if (errorCount > 0) {
     parts.push(`${errorCount} error${errorCount !== 1 ? 's' : ''}`);
   }

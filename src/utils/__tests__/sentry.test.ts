@@ -283,8 +283,8 @@ describe('sentry utils', () => {
     it('schedules lazy integrations via setTimeout fallback in PROD without requestIdleCallback', async () => {
       const addIntegration = vi.fn();
       getClientMock.mockReturnValue({ addIntegration });
-      delete runtimeWindow.requestIdleCallback;
-      delete runtimeGlobal.requestIdleCallback;
+      delete (runtimeWindow as { requestIdleCallback?: RequestIdleCallbackFn }).requestIdleCallback;
+      delete (runtimeGlobal as { requestIdleCallback?: RequestIdleCallbackFn }).requestIdleCallback;
       vi.spyOn(globalThis, 'setTimeout').mockImplementation((cb: TimerHandler) => {
         if (typeof cb === 'function') cb();
         return 1 as unknown as ReturnType<typeof setTimeout>;
