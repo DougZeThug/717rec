@@ -142,7 +142,9 @@ async function _fetchUpsets(
   if (!matches || matches.length === 0) return [];
 
   // Collect all team IDs involved
-  const teamIds = [...new Set(matches.flatMap((m) => [m.team1_id, m.team2_id]))];
+  const teamIds = [...new Set(matches.flatMap((m) => [m.team1_id, m.team2_id]))].filter(
+    (id): id is string => id !== null
+  );
 
   // Fetch team info (name/logo) and career stats in parallel
   const [teamDetailsResult, careerStatsResult] = await Promise.all([
@@ -189,6 +191,7 @@ async function _fetchUpsets(
   const upsets: WeeklyUpset[] = [];
 
   for (const match of matches) {
+    if (!match.winner_id || !match.loser_id) continue;
     const winnerInfo = teamInfoMap.get(match.winner_id);
     const loserInfo = teamInfoMap.get(match.loser_id);
 
@@ -214,11 +217,11 @@ async function _fetchUpsets(
 
     upsets.push({
       winnerId: match.winner_id,
-      winnerName: winnerInfo.name,
+      winnerName: winnerInfo.name ?? '',
       winnerLogoUrl: winnerInfo.image_url ?? winnerInfo.logo_url ?? undefined,
       winnerPowerScore: winnerScore,
       loserId: match.loser_id,
-      loserName: loserInfo.name,
+      loserName: loserInfo.name ?? '',
       loserLogoUrl: loserInfo.image_url ?? loserInfo.logo_url ?? undefined,
       loserPowerScore: loserScore,
       powerScoreGap: gap,
@@ -260,7 +263,9 @@ async function _fetchHotStreaks(seasonId: string): Promise<TeamStreakInfo[]> {
   }));
 
   // Find unique team IDs
-  const teamIds = [...new Set(allMatches.flatMap((m) => [m.team1_id, m.team2_id]))];
+  const teamIds = [...new Set(allMatches.flatMap((m) => [m.team1_id, m.team2_id]))].filter(
+    (id): id is string => id !== null
+  );
 
   // Get team details for all participating teams
   const { data: teamDetails, error: teamError } = await supabase
@@ -288,7 +293,7 @@ async function _fetchHotStreaks(seasonId: string): Promise<TeamStreakInfo[]> {
 
   for (const teamId of teamIds) {
     const team = teamMap.get(teamId);
-    if (!team || !visibleDivisionIds.has(team.division_id)) continue;
+    if (!team || !team.division_id || !visibleDivisionIds.has(team.division_id)) continue;
 
     const streak = calculateStreak(
       teamId,
@@ -304,7 +309,7 @@ async function _fetchHotStreaks(seasonId: string): Promise<TeamStreakInfo[]> {
 
     streaks.push({
       teamId,
-      teamName: team.name,
+      teamName: team.name ?? '',
       logoUrl: team.image_url ?? team.logo_url ?? undefined,
       division: team.divisionname ?? 'Unknown',
       streak,

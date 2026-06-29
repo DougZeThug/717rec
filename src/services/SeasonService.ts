@@ -376,9 +376,11 @@ export const SeasonService = {
   }) => {
     const { data: season, error } = await supabase.rpc('finalize_playoffs', {
       p_season_id: params.seasonId,
-      p_champion_team_id: params.championTeamId ?? null,
-      p_runner_up_team_id: params.runnerUpTeamId ?? null,
-      p_third_place_team_id: params.thirdPlaceTeamId ?? null,
+      // The generated RPC arg type omits null, but these params are nullable in
+      // the DB function; preserve the explicit null we send at runtime.
+      p_champion_team_id: (params.championTeamId ?? null) as string | undefined,
+      p_runner_up_team_id: (params.runnerUpTeamId ?? null) as string | undefined,
+      p_third_place_team_id: (params.thirdPlaceTeamId ?? null) as string | undefined,
     });
 
     if (error) handleDatabaseError(error, 'Failed to finalize playoffs');
@@ -386,11 +388,14 @@ export const SeasonService = {
   },
 
   archiveSeason: async (id: string) => {
+    // Archiving clears champions; the generated RPC arg type omits null, so cast
+    // the explicit null we send at runtime.
+    const noChampion = null as unknown as string | undefined;
     const { data: season, error } = await supabase.rpc('archive_season', {
       p_season_id: id,
-      p_champion_team_id: null,
-      p_runner_up_team_id: null,
-      p_third_place_team_id: null,
+      p_champion_team_id: noChampion,
+      p_runner_up_team_id: noChampion,
+      p_third_place_team_id: noChampion,
     });
 
     if (error) handleDatabaseError(error, 'Failed to archive season');

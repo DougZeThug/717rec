@@ -75,6 +75,9 @@ const computeBracketState = (state: string): BracketState =>
 const mapRowToBracket = (row: BracketDomainRow): PlayoffBracket => ({
   ...row,
   name: row.title || row.name,
+  format: row.format ?? '',
+  created_at: row.created_at ?? undefined,
+  challonge_tournament_id: row.challonge_tournament_id ?? undefined,
   matches: [],
   state: computeBracketState(row.state || 'pending'),
 });

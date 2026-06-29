@@ -123,8 +123,12 @@ export const fetchPendingMembershipsForAdmin = async (): Promise<TeamMembershipF
   }
 
   // Get unique user IDs and team IDs
-  const userIds = [...new Set(memberships.map((m) => m.user_id))];
-  const teamIds = [...new Set(memberships.map((m) => m.team_id))];
+  const userIds = [...new Set(memberships.map((m) => m.user_id))].filter(
+    (id): id is string => id !== null
+  );
+  const teamIds = [...new Set(memberships.map((m) => m.team_id))].filter(
+    (id): id is string => id !== null
+  );
 
   // Fetch profiles and teams in parallel
   const [profilesResult, teamsResult] = await Promise.all([
@@ -143,8 +147,8 @@ export const fetchPendingMembershipsForAdmin = async (): Promise<TeamMembershipF
   // Combine the data
   return memberships
     .map((membership) => {
-      const user = profilesMap.get(membership.user_id);
-      const team = teamsMap.get(membership.team_id);
+      const user = profilesMap.get(membership.user_id ?? '');
+      const team = teamsMap.get(membership.team_id ?? '');
 
       // Skip if user or team data is missing
       if (!user || !team) return null;

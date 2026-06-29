@@ -1,3 +1,5 @@
+import type { DataTypes } from 'brackets-manager';
+
 import { supabase } from '@/integrations/supabase/client';
 import { bracketLog, errorLog } from '@/utils/logger';
 
@@ -71,7 +73,7 @@ export class LosersRoundNormalizationService {
               opponent1: { id: opponent2Id, score: null, result: null },
               opponent2: { id: null, score: null, result: null },
               status: match.status,
-            }
+            } as unknown as Partial<DataTypes['match']>
           );
         }
       }

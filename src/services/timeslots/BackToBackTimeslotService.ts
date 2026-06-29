@@ -90,7 +90,7 @@ export class BackToBackTimeslotService {
       const { error } = await supabase
         .from('team_timeslots')
         .delete()
-        .eq('team_id', timeslot.team_id)
+        .eq('team_id', timeslot.team_id ?? '')
         .eq('match_date', timeslot.match_date)
         .eq('is_back_to_back', true);
 
