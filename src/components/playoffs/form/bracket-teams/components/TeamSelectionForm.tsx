@@ -34,6 +34,9 @@ const EMPTY_SEED_VALIDATION: SeedValidationState = {
   errorMessage: null,
 };
 
+// Shared no-op for absent handler callbacks (expression body, not an empty fn).
+const noop = () => undefined;
+
 // The form state with every field guaranteed present (no cleanup helper).
 type SafeFormState = Omit<BracketFormStateResult, 'cleanup'>;
 
@@ -52,8 +55,8 @@ const buildSafeFormState = (
       selected: new Set<string>(),
       selectedArray: [],
       count: 0,
-      handleTeamToggle: () => {},
-      clearSelection: () => {},
+      handleTeamToggle: noop,
+      clearSelection: noop,
       canSelectMore: true,
       isAtMaximum: false,
       hasSelection: false,
@@ -72,8 +75,8 @@ const buildSafeFormState = (
     selected: formState.selected || new Set<string>(),
     selectedArray: formState.selectedArray || [],
     count: formState.count || 0,
-    handleTeamToggle: formState.handleTeamToggle || (() => {}),
-    clearSelection: formState.clearSelection || (() => {}),
+    handleTeamToggle: formState.handleTeamToggle || noop,
+    clearSelection: formState.clearSelection || noop,
     canSelectMore: formState.canSelectMore ?? true,
     isAtMaximum: formState.isAtMaximum ?? false,
     hasSelection: formState.hasSelection ?? false,

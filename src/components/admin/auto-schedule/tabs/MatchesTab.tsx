@@ -47,7 +47,7 @@ interface MatchesTabProps {
 }
 
 const EMPTY_EDITABLE_MATCHES: AutoScheduleMatch[] = [];
-const noop = () => {};
+const noop = () => undefined;
 
 // True when any time block has at least one generated pairing.
 const hasAnyPairings = (pairings: TeamPairingMap): boolean =>
