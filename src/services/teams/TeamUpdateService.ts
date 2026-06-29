@@ -74,7 +74,7 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, 'id' | 
     throw new NotFoundError('Team', teamId);
   }
 
-  let divisionName = null;
+  let divisionName: string | null = null;
 
   // If division_id is provided, validate it exists in the divisions table
   // (Skip validation if division_id is null - meaning no division assigned)

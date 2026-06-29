@@ -278,7 +278,7 @@ describe('SupabaseSqlStorage', () => {
     await storage.update('match', { id: 77 }, {
       opponent1: { id: null, score: null, result: null },
       opponent2: { id: null, score: null, result: null },
-    } as Partial<DataTypes['match']>);
+    } as unknown as Partial<DataTypes['match']>);
 
     const payload = update.mock.calls[0][0] as Record<string, unknown>;
     expect(payload).not.toHaveProperty('opponent1_id');

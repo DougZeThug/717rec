@@ -23,9 +23,9 @@ export class TimeslotTransformer {
     return {
       id: item.id,
       match_date: item.match_date,
-      timeslot: item.timeslot,
-      team_id: item.team_id,
-      created_at: item.created_at,
+      timeslot: item.timeslot ?? '',
+      team_id: item.team_id ?? '',
+      created_at: item.created_at ?? '',
       is_back_to_back: item.is_back_to_back || false,
       is_double_header: item.is_double_header || false,
       pair_slot: item.pair_slot || null,
@@ -33,7 +33,7 @@ export class TimeslotTransformer {
       teams: item.teams
         ? {
             id: item.teams.id,
-            name: item.teams.name,
+            name: item.teams.name ?? '',
             logo_url: item.teams.logo_url,
             image_url: item.teams.image_url,
             divisionName: null, // Will be populated separately if needed

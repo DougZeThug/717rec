@@ -19,7 +19,7 @@ export interface TeamAnalysisInput {
   strengths?: string[];
   weaknesses?: string[];
   trends?: string;
-  rivalry_insights?: string;
+  rivalry_insights?: string | null;
 }
 
 // ─── Teams query ──────────────────────────────────────────────────────────────

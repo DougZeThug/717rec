@@ -17,7 +17,7 @@ export const batchUpdateSeasonStats = async (updates: TeamUpdate[]): Promise<voi
   dbLog(`Updating ${updates.length} team season stats...`);
 
   const batchSize = 10;
-  const batches = [];
+  const batches: TeamUpdate[][] = [];
 
   for (let i = 0; i < updates.length; i += batchSize) {
     batches.push(updates.slice(i, i + batchSize));

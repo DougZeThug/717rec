@@ -8,8 +8,8 @@ export type TimeslotRowTeam = {
 export type TimeslotRow = {
   id: string;
   match_date: string;
-  timeslot: string;
-  team_id: string;
+  timeslot: string | null;
+  team_id: string | null;
   created_at?: string | null;
   is_back_to_back?: boolean | null;
   is_double_header?: boolean | null;

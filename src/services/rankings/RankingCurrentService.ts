@@ -20,8 +20,9 @@ export async function fetchTeamPowerScores(): Promise<{
   const nameMap: Record<string, string> = {};
 
   data?.forEach((team) => {
-    scoreMap[team.team_id] = team.power_score;
-    nameMap[team.team_id] = team.name;
+    if (!team.team_id) return;
+    scoreMap[team.team_id] = team.power_score ?? 0;
+    nameMap[team.team_id] = team.name ?? '';
   });
 
   return { powerScores: scoreMap, teamNames: nameMap };

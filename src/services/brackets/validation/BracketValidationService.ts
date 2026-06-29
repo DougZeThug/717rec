@@ -16,8 +16,8 @@ export interface TeamValidationResult extends ValidationResult {
 // Type guard to ensure we have valid form data
 const isValidBracketFormData = (data: unknown): data is BracketFormData => {
   return (
-    data &&
     typeof data === 'object' &&
+    data !== null &&
     'title' in data &&
     'divisionId' in data &&
     'format' in data &&

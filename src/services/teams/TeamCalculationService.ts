@@ -16,7 +16,7 @@ export const calculateTeamStats = (team: Team) => {
     totalMatches,
     totalGames,
     // Power score is NULL for teams with no matches, calculated for others
-    powerScore: team.power_score, // Keep as-is (NULL or calculated value)
+    powerScore: team.power_score ?? null, // Keep as-is (NULL or calculated value)
     // SOS calculated in database using opponent division weights
     sos: team.sos || 0.5,
   };
@@ -25,8 +25,8 @@ export const calculateTeamStats = (team: Team) => {
 export const getTeamRank = (teams: Team[], teamId: string): number => {
   // Sort teams by power score (database-calculated) descending, with NULL values at the end
   const sortedTeams = [...teams].sort((a, b) => {
-    const aPowerScore = a.power_score;
-    const bPowerScore = b.power_score;
+    const aPowerScore = a.power_score ?? null;
+    const bPowerScore = b.power_score ?? null;
 
     // Handle NULL values - put them at the end
     if (aPowerScore === null && bPowerScore === null) return 0;

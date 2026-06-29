@@ -82,7 +82,7 @@ export const hideTeam = async (teamId: string): Promise<HideTeamResult> => {
   return {
     success: true,
     message: `Team "${team.name}" has been hidden`,
-    originalDivisionId: team.division_id,
+    originalDivisionId: team.division_id ?? undefined,
   };
 };
 

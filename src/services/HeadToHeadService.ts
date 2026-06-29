@@ -52,7 +52,7 @@ export class HeadToHeadService {
             return {
               ...record,
               opponent_name: opponentInfo?.name || 'Unknown Team',
-              opponent_image_url: opponentInfo?.image_url,
+              opponent_image_url: opponentInfo?.image_url ?? undefined,
             };
           }) || [];
 

@@ -65,7 +65,7 @@ export function toRuntime(dbMatch: DatabasePlayoffMatch | null): PlayoffMatch {
 
   return {
     id: dbMatch.id,
-    round: dbMatch.round || dbMatch.round_number,
+    round: dbMatch.round || dbMatch.round_number || 0,
     position: dbMatch.position,
     team1Id: dbMatch.team1_id || null,
     team2Id: dbMatch.team2_id || null,

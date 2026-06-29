@@ -48,7 +48,7 @@ export class ScoreParser {
         gameNumber: i + 1,
         team1Score: 21, // Placeholder scores
         team2Score: 15,
-        winnerId: null, // Will be filled by caller
+        winnerId: undefined, // Will be filled by caller
       });
     }
 
@@ -60,7 +60,7 @@ export class ScoreParser {
         gameNumber: team1Score + i + 1,
         team1Score: 15, // Placeholder scores
         team2Score: 21,
-        winnerId: null, // Will be filled by caller
+        winnerId: undefined, // Will be filled by caller
       });
     }
 
