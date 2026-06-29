@@ -59,9 +59,10 @@ export function usePendingMatches() {
 
       const teamsMap: Record<string, Team> = {};
       data?.forEach((team) => {
+        if (!team.team_id) return;
         teamsMap[team.team_id] = {
           id: team.team_id,
-          name: team.name,
+          name: team.name || '',
           logoUrl: team.image_url || team.logo_url,
           imageUrl: team.image_url || team.logo_url,
           players: Array.isArray(team.players) ? team.players : [],

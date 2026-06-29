@@ -25,7 +25,8 @@ const Card = React.forwardRef<
 
   // Get the appropriate gradient based on variant and division
   const gradientClass = division
-    ? gradients.card.division[division.toLowerCase()] || getDivisionGradientClass(division)
+    ? gradients.card.division[division.toLowerCase() as keyof typeof gradients.card.division] ||
+      getDivisionGradientClass(division)
     : gradients.card[variant];
 
   // Check if this is an interactive card (has onClick or is variant="interactive")

@@ -48,7 +48,7 @@ export function usePendingScoresMatches() {
       }
 
       return data.map((match) => ({
-        id: match.id,
+        id: match.id || '',
         team1_id: match.team1_id || '',
         team2_id: match.team2_id || '',
         team1_name: match.team1_name || '',

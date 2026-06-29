@@ -18,8 +18,8 @@ export function getPayloadConfigFromPayload(
 
   let configLabelKey = key;
 
-  if (typeof payload[key] === 'string') {
-    configLabelKey = payload[key] as string;
+  if (typeof (payload as Record<string, unknown>)[key] === 'string') {
+    configLabelKey = (payload as Record<string, unknown>)[key] as string;
   } else if (nestedPayload && typeof nestedPayload[key] === 'string') {
     configLabelKey = nestedPayload[key] as string;
   }

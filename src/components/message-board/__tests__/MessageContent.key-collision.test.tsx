@@ -23,8 +23,8 @@ describe('MessageContent key generation', () => {
 
     render(<MessageContent content={content} />);
 
-    const duplicateKeyWarnings = consoleErrorSpy.mock.calls.filter((call) =>
-      call[0]?.includes?.('Encountered two children with the same key')
+    const duplicateKeyWarnings = consoleErrorSpy.mock.calls.filter((call: unknown[]) =>
+      String(call[0] ?? '').includes('Encountered two children with the same key')
     );
     expect(duplicateKeyWarnings.length).toBe(0);
   });

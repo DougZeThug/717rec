@@ -54,7 +54,7 @@ describe('TeamTotals playoff finishes keys', () => {
   it('does not warn about duplicate keys when finishes share division+rank across seasons', () => {
     const { getAllByText } = render(<TeamTotals teamId="team-1" standalone />);
 
-    const duplicateKeyWarning = errorSpy.mock.calls.find((call) =>
+    const duplicateKeyWarning = errorSpy.mock.calls.find((call: unknown[]) =>
       String(call[0] ?? '').includes('Encountered two children with the same key')
     );
     expect(duplicateKeyWarning).toBeUndefined();

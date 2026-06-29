@@ -21,7 +21,7 @@ afterEach(() => {
 });
 
 // This makes "screen" available in tests and ensures proper React 18+ testing
-globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 // Mock next-themes to prevent SSR hydration issues in tests
 globalThis.matchMedia =

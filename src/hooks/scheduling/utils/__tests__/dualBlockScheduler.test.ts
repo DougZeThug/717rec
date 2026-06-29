@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Team } from '@/types';
 import { getBackToBackPair, getPairConfig } from '@/utils/autoSchedule/constants';
 import { errorLog } from '@/utils/logger';
-import type { ScheduledMatch } from '@/utils/scheduling/greedy';
+import type { GreedySchedulerInput, ScheduledMatch } from '@/utils/scheduling/greedy';
 import {
   generateScheduleGreedyWithTracking,
   pairKey,
@@ -263,7 +263,10 @@ describe('scheduleDualBlockPairings', () => {
     const midTeams = [makeTeam('A'), makeTeam('C')];
     const forbiddenPairsSnapshots: string[][] = [];
 
-    mockGenerateScheduleGreedyWithTracking.mockImplementation((({ teams, forbiddenPairs }) => {
+    mockGenerateScheduleGreedyWithTracking.mockImplementation((({
+      teams,
+      forbiddenPairs,
+    }: GreedySchedulerInput) => {
       forbiddenPairsSnapshots.push(Array.from(forbiddenPairs || []));
 
       const teamIds = teams.map((team) => team.id).sort();
