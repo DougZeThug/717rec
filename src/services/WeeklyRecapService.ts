@@ -188,25 +188,22 @@ async function _fetchUpsets(
 
   const teamInfoMap = new Map(teamDetailsResult.data.map((t) => [t.team_id, t]));
 
-  const upsets: WeeklyUpset[] = [];
-
-  for (const match of matches) {
-    if (!match.winner_id || !match.loser_id) continue;
+  // Build a single upset record for a match, or null if it doesn't qualify.
+  // Extracted so the surrounding fetch/aggregation stays low-complexity.
+  const buildUpset = (match: (typeof matches)[number]): WeeklyUpset | null => {
+    if (!match.winner_id || !match.loser_id) return null;
     const winnerInfo = teamInfoMap.get(match.winner_id);
     const loserInfo = teamInfoMap.get(match.loser_id);
-
-    if (!winnerInfo || !loserInfo) continue;
+    if (!winnerInfo || !loserInfo) return null;
 
     const winnerScore = careerScoreMap.get(match.winner_id) ?? 0;
     const loserScore = careerScoreMap.get(match.loser_id) ?? 0;
-
     // Skip if either team has no career history to compare
-    if (winnerScore === 0 || loserScore === 0) continue;
+    if (winnerScore === 0 || loserScore === 0) return null;
 
     const gap = loserScore - winnerScore;
-
     // Only count as upset if winner had lower career power score
-    if (gap <= 0) continue;
+    if (gap <= 0) return null;
 
     // Build score string like "21–15"
     const isWinnerTeam1 = match.winner_id === match.team1_id;
@@ -215,7 +212,7 @@ async function _fetchUpsets(
     const matchResult =
       winnerGameWins != null && loserGameWins != null ? `${winnerGameWins}–${loserGameWins}` : '';
 
-    upsets.push({
+    return {
       winnerId: match.winner_id,
       winnerName: winnerInfo.name ?? '',
       winnerLogoUrl: winnerInfo.image_url ?? winnerInfo.logo_url ?? undefined,
@@ -227,8 +224,10 @@ async function _fetchUpsets(
       powerScoreGap: gap,
       matchResult,
       weekNumber,
-    });
-  }
+    };
+  };
+
+  const upsets = matches.map(buildUpset).filter((u): u is WeeklyUpset => u !== null);
 
   // Sort by biggest gap first, return top 2
   return upsets.sort((a, b) => b.powerScoreGap - a.powerScoreGap).slice(0, 3);
