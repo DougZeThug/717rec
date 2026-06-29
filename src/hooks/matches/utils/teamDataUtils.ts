@@ -22,10 +22,11 @@ export const fetchTeamsForMatch = async (teamIds: string[]): Promise<Team[]> => 
     const uniqueTeams = new Map<string, Team>();
 
     data.forEach((team) => {
+      if (!team.team_id) return;
       if (!uniqueTeams.has(team.team_id)) {
         uniqueTeams.set(team.team_id, {
           id: team.team_id,
-          name: team.name,
+          name: team.name ?? 'Unknown Team',
           logoUrl: team.image_url || team.logo_url || null,
           imageUrl: team.image_url || team.logo_url || null,
           players: Array.isArray(team.players) ? team.players : [],

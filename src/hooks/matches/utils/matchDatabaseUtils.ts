@@ -48,6 +48,10 @@ export const updateMatchScore = async ({
 
   const { team1_id, team2_id } = matchData;
 
+  if (!team1_id || !team2_id) {
+    throw new Error(`Cannot update score: match ${matchId} is missing team IDs`);
+  }
+
   // Determine winner based on scores
   const team1Win = team1Score > team2Score;
   const winnerId = team1Win ? team1_id : team2_id;

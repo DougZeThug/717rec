@@ -26,7 +26,13 @@ export const useDivisions = () => {
         }))
       );
 
-      return data;
+      return data.map((d) => ({
+        id: d.id,
+        name: d.name ?? '',
+        division_weight: d.division_weight ?? 0,
+        display_division: d.display_division ?? '',
+        created_at: d.created_at ?? '',
+      }));
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });

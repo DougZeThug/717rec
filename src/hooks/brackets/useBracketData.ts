@@ -143,17 +143,35 @@ export const useBracketData = (bracketId: string | null) => {
 
         // Step 4: Fetch team details
         updateProgress('teams');
-        const teamNames = participants?.map((p) => p.name) || [];
+        const teamNames =
+          participants?.map((p) => p.name).filter((n): n is string => n !== null) || [];
         const teamDetails = await fetchTeamsByNames(teamNames);
 
         // Step 5: Transform data using the extracted utility
         const result = transformBracketsManagerData({
-          bracket,
+          bracket: {
+            ...bracket,
+            divisions: bracket.divisions
+              ? {
+                  display_division: bracket.divisions.display_division ?? '',
+                  name: bracket.divisions.name ?? '',
+                }
+              : null,
+          },
           stageId: stage.id,
-          participants: participants || [],
+          participants: (participants || []).map((p) => ({
+            id: p.id,
+            name: p.name ?? '',
+            position: p.position ?? 0,
+            tournament_id: p.tournament_id,
+          })),
           groups: groups || [],
           matches: matches || [],
-          teamDetails: teamDetails || [],
+          teamDetails: (teamDetails || []).map((t) => ({
+            id: t.id,
+            name: t.name,
+            image_url: t.image_url ?? undefined,
+          })),
         });
 
         updateProgress('done');

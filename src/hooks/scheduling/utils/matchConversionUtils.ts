@@ -22,7 +22,13 @@ export const convertPairingsToMatches = (
     return [];
   }
 
-  const matches = [];
+  const matches: {
+    id: string;
+    team1Id: string;
+    team2Id: string;
+    timeslot: string;
+    blockType?: 'primary' | 'secondary';
+  }[] = [];
   const blocks = Object.keys(pairings);
 
   // Special handling for dual match mode

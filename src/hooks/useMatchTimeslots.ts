@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 
 import { fetchMatchTimeslots } from '@/services/matches/MatchReadService';
+import { TimeslotTransformer } from '@/services/timeslots/TimeslotTransformer';
 import { TeamTimeslot } from '@/types';
 import { scheduleLog } from '@/utils/logger';
 
@@ -31,21 +32,8 @@ export const useMatchTimeslots = (date: Date | null) => {
 
       scheduleLog('Timeslots raw data:', rawData);
 
-      // Map the data to match the TeamTimeslot type
-      const formattedData: TeamTimeslot[] =
-        rawData?.map((item) => ({
-          ...item,
-          is_double_header: item.is_double_header || false,
-          teams: item.teams
-            ? {
-                id: item.teams.id,
-                name: item.teams.name,
-                logo_url: item.teams.logo_url,
-                image_url: item.teams.image_url,
-                divisionName: null,
-              }
-            : undefined,
-        })) || [];
+      // Normalize raw rows to the TeamTimeslot type
+      const formattedData: TeamTimeslot[] = TimeslotTransformer.formatTimeslotResponse(rawData);
 
       scheduleLog('Formatted timeslots data:', formattedData);
 

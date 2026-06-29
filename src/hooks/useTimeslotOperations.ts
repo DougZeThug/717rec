@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 
 import { useToast } from '@/hooks/useToast';
 import { TimeslotService } from '@/services/timeslots/TimeslotService';
-import { TeamTimeslot } from '@/types';
+import { TimeslotTransformer } from '@/services/timeslots/TimeslotTransformer';
 import { errorLog, scheduleLog } from '@/utils/logger';
 
 // Fetch timeslots for a specific date
@@ -17,22 +17,8 @@ const fetchTimeslotsByDate = async (date: Date | null) => {
 
     const data = await TimeslotService.fetchTimeslotsForDate(formattedDate);
 
-    // Map the data to match the TeamTimeslot type
-    const formattedData: TeamTimeslot[] =
-      data?.map((item) => ({
-        ...item,
-        is_double_header: item.is_double_header || false,
-        teams: item.teams
-          ? {
-              id: item.teams.id,
-              name: item.teams.name,
-              logo_url: item.teams.logo_url,
-              divisionName: null,
-            }
-          : undefined,
-      })) || [];
-
-    return formattedData;
+    // Normalize raw rows to the TeamTimeslot type
+    return TimeslotTransformer.formatTimeslotResponse(data);
   } catch (error) {
     errorLog('Error fetching timeslots:', error);
     throw error;
@@ -53,20 +39,8 @@ export const useTimeslotOperations = () => {
         timeslot
       );
 
-      // Format the returned data to match TeamTimeslot type
-      const formattedData: TeamTimeslot = {
-        ...data,
-        teams: data.teams
-          ? {
-              id: data.teams.id,
-              name: data.teams.name,
-              logo_url: data.teams.logo_url,
-              divisionName: null,
-            }
-          : undefined,
-      };
-
-      return formattedData;
+      // Normalize the returned row to the TeamTimeslot type
+      return TimeslotTransformer.formatSingleTimeslot(data);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       errorLog('Error adding timeslot:', error);
@@ -116,21 +90,8 @@ export const useTimeslotOperations = () => {
 
       scheduleLog('Batch assignment successful, count:', data?.length);
 
-      // Format the returned data to match TeamTimeslot type
-      const formattedData: TeamTimeslot[] =
-        data?.map((item) => ({
-          ...item,
-          teams: item.teams
-            ? {
-                id: item.teams.id,
-                name: item.teams.name,
-                logo_url: item.teams.logo_url,
-                divisionName: null,
-              }
-            : undefined,
-        })) || [];
-
-      return formattedData;
+      // Normalize the returned rows to the TeamTimeslot type
+      return TimeslotTransformer.formatTimeslotResponse(data);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       errorLog('Error in batch assignment:', error);

@@ -93,7 +93,7 @@ export const useAutoScheduleState = () => {
         avoidRematches,
         prioritizeQuality,
         dualMatchMode,
-        generatedMatches,
+        generatedMatches: generatedMatches ?? undefined,
         editableMatches,
         matchQualityMetrics,
         teamBlockMap,

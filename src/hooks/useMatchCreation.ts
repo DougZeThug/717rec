@@ -20,11 +20,11 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
     setIsCreating(true);
     try {
       // Ensure we have a valid date with proper time
-      let dateWithTime = new Date(matchData.date);
+      let dateWithTime = new Date(matchData.date ?? '');
 
       // If timeSlot is provided in the data, use it to set the time properly
       if (matchData.timeSlot) {
-        dateWithTime = createDateWithTime(new Date(matchData.date), matchData.timeSlot);
+        dateWithTime = createDateWithTime(new Date(matchData.date ?? ''), matchData.timeSlot);
       }
 
       // Create the match via service (active season is fetched internally)
@@ -45,17 +45,17 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
       // Transform the returned match to our app's format
       const newMatch: Match = {
         id: data.id,
-        team1Id: data.team1_id,
-        team2Id: data.team2_id,
-        date: data.date,
-        location: data.location,
-        iscompleted: data.iscompleted,
-        team1Score: data.team1_score,
-        team2Score: data.team2_score,
-        winnerId: data.winner_id,
-        loserId: data.loser_id,
-        team1_game_wins: data.team1_game_wins,
-        team2_game_wins: data.team2_game_wins,
+        team1Id: data.team1_id ?? matchData.team1Id,
+        team2Id: data.team2_id ?? matchData.team2Id,
+        date: data.date ?? undefined,
+        location: data.location ?? undefined,
+        iscompleted: data.iscompleted ?? undefined,
+        team1Score: data.team1_score ?? undefined,
+        team2Score: data.team2_score ?? undefined,
+        winnerId: data.winner_id ?? undefined,
+        loserId: data.loser_id ?? undefined,
+        team1_game_wins: data.team1_game_wins ?? undefined,
+        team2_game_wins: data.team2_game_wins ?? undefined,
         round_number: data.round_number,
         timeSlot: matchData.timeSlot, // Preserve the timeSlot for UI purposes
       };
