@@ -56,7 +56,7 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
       ? {
           team1Id: match.team1Id,
           team2Id: match.team2Id,
-          date: new Date(match.date),
+          date: new Date(match.date ?? ''),
           timeSlot:
             match.timeSlot || (match.date ? getTimeSlotFromDate(new Date(match.date)) : null),
           isCompleted: match.iscompleted,
@@ -93,8 +93,8 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
       iscompleted: values.isCompleted,
       team1Score: values.isCompleted ? values.team1Score : undefined,
       team2Score: values.isCompleted ? values.team2Score : undefined,
-      winnerId,
-      loserId,
+      winnerId: winnerId ?? undefined,
+      loserId: loserId ?? undefined,
       timeSlot: values.timeSlot, // This is now valid with our updated Match type
     });
   };

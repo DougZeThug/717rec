@@ -69,7 +69,7 @@ const ChampionDisplay: React.FC<ChampionDisplayProps> = ({ championId, teams }) 
           <div className="size-12 rounded-full overflow-hidden bg-gray-200">
             {(champion.imageUrl || champion.logoUrl) && (
               <img
-                src={champion.imageUrl || champion.logoUrl}
+                src={champion.imageUrl || champion.logoUrl || undefined}
                 alt={champion.name}
                 className="size-full object-contain"
                 onError={(e) => {

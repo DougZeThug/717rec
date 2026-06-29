@@ -76,7 +76,7 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
                 <Calendar
                   mode="single"
                   selected={selectedDate || undefined}
-                  onSelect={(date) => setSelectedDate(date)}
+                  onSelect={(date) => setSelectedDate(date ?? null)}
                   autoFocus
                   className="pointer-events-auto"
                 />

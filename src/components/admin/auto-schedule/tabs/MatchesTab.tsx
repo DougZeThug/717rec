@@ -19,6 +19,9 @@ import {
 } from '@/utils/autoSchedule/dualBlock';
 import { ValidationResult } from '@/utils/autoSchedule/validation';
 
+type DualBlockMetrics = ReturnType<typeof calculateDualBlockMetrics>;
+type DualBlockValidation = ReturnType<typeof validateDualBlockSchedule>;
+
 interface MatchesTabProps {
   selectedDate: Date | null;
   timeBlockTeams: TimeBlockTeamsMap;
@@ -44,6 +47,165 @@ interface MatchesTabProps {
 }
 
 const EMPTY_EDITABLE_MATCHES: AutoScheduleMatch[] = [];
+const noop = () => undefined;
+
+// True when any time block has at least one generated pairing.
+const hasAnyPairings = (pairings: TeamPairingMap): boolean =>
+  Object.keys(pairings || {}).length > 0 &&
+  Object.values(pairings || {}).some((blockPairings) => blockPairings?.length > 0);
+
+// Badge variant for the overall match-quality rating.
+const qualityBadgeVariant = (rating: string) =>
+  rating === 'Excellent' ? 'recreational' : rating === 'Good' ? 'intermediate' : 'outline';
+
+// Badge variant for the dual-block overall quality score (0–100).
+const dualScoreBadgeVariant = (score: number) =>
+  score >= 85 ? 'recreational' : score >= 70 ? 'intermediate' : 'outline';
+
+interface MatchesActionBarProps {
+  hasPairings: boolean;
+  isEditMode: boolean;
+  hasUnsavedEdits: boolean;
+  isSaving: boolean;
+  dualMatchMode?: boolean;
+  matchQualityMetrics: MatchQualityMetrics | null;
+  dualBlockMetrics: DualBlockMetrics | null;
+  validation?: ValidationResult | null;
+  onToggleEditMode?: () => void;
+  onResetEdits?: () => void;
+  onSaveSchedule?: () => Promise<boolean>;
+}
+
+// Right-aligned toolbar: edit-mode toggle, reset/save buttons, and the
+// quality/dual-mode status badges.
+const MatchesActionBar: React.FC<MatchesActionBarProps> = ({
+  hasPairings,
+  isEditMode,
+  hasUnsavedEdits,
+  isSaving,
+  dualMatchMode,
+  matchQualityMetrics,
+  dualBlockMetrics,
+  validation,
+  onToggleEditMode,
+  onResetEdits,
+  onSaveSchedule,
+}) => (
+  <div className="flex items-center gap-2">
+    {hasPairings && onToggleEditMode && (
+      <Button variant={isEditMode ? 'default' : 'outline'} size="sm" onClick={onToggleEditMode}>
+        {isEditMode ? (
+          <>
+            <Eye className="mr-2 size-4" />
+            Preview Mode
+          </>
+        ) : (
+          <>
+            <Edit className="mr-2 size-4" />
+            Edit Mode
+          </>
+        )}
+      </Button>
+    )}
+
+    {isEditMode && hasUnsavedEdits && (
+      <>
+        {onResetEdits && (
+          <Button variant="ghost" size="sm" onClick={onResetEdits}>
+            <RotateCcw className="mr-2 size-4" />
+            Reset
+          </Button>
+        )}
+
+        {onSaveSchedule && (
+          <Button
+            size="sm"
+            onClick={onSaveSchedule}
+            disabled={isSaving || validation?.isValid === false}
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="mr-2 size-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 size-4" />
+                Save Matches
+              </>
+            )}
+          </Button>
+        )}
+      </>
+    )}
+
+    {dualMatchMode && (
+      <Badge variant="secondary" className="text-xs">
+        Dual Match Mode
+      </Badge>
+    )}
+
+    {matchQualityMetrics && (
+      <Badge variant={qualityBadgeVariant(matchQualityMetrics.qualityRating)}>
+        {matchQualityMetrics.qualityRating} Quality
+      </Badge>
+    )}
+
+    {dualMatchMode && dualBlockMetrics && (
+      <Badge variant={dualScoreBadgeVariant(dualBlockMetrics.overallQualityScore)}>
+        Dual Match Score: {dualBlockMetrics.overallQualityScore}
+      </Badge>
+    )}
+  </div>
+);
+
+interface DualBlockMetricsPanelProps {
+  metrics: DualBlockMetrics;
+  validation: DualBlockValidation | null;
+  totalTeams: number;
+}
+
+// Summary stat cards plus the dual-block warning banner.
+const DualBlockMetricsPanel: React.FC<DualBlockMetricsPanelProps> = ({
+  metrics,
+  validation,
+  totalTeams,
+}) => (
+  <>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mt-2 mb-4">
+      <div className="bg-muted/50 p-3 rounded-md text-center">
+        <div className="text-lg font-semibold">{metrics.teamsWithBothMatches}</div>
+        <div className="text-xs text-muted-foreground">Teams With Both Matches</div>
+      </div>
+      <div className="bg-muted/50 p-3 rounded-md text-center">
+        <div className="text-lg font-semibold">{metrics.teamsWithSingleMatch}</div>
+        <div className="text-xs text-muted-foreground">Teams With One Match</div>
+      </div>
+      <div className="bg-muted/50 p-3 rounded-md text-center">
+        <div className="text-lg font-semibold">{metrics.crossBlockCompatibility.toFixed(1)}</div>
+        <div className="text-xs text-muted-foreground">Cross-Block Compatibility</div>
+      </div>
+      <div className="bg-muted/50 p-3 rounded-md text-center">
+        <div
+          className="text-lg font-semibold"
+          style={{
+            color: metrics.teamsWithDuplicateOpponents > 0 ? 'var(--amber-500)' : 'inherit',
+          }}
+        >
+          {metrics.teamsWithDuplicateOpponents}
+        </div>
+        <div className="text-xs text-muted-foreground">Teams With Duplicate Opponents</div>
+      </div>
+    </div>
+
+    <DualMatchWarningDisplay
+      validation={validation ?? undefined}
+      duplicateOpponentsCount={metrics.teamsWithDuplicateOpponents}
+      teamsInBothBlocks={metrics.teamsWithBothMatches}
+      totalTeams={totalTeams}
+    />
+  </>
+);
 
 const MatchesTab: React.FC<MatchesTabProps> = ({
   selectedDate,
@@ -59,18 +221,16 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
   isEditMode = false,
   onToggleEditMode,
   editableMatches = EMPTY_EDITABLE_MATCHES,
-  validation,
-  onUpdateMatchTeam,
-  onUpdateMatchTimeslot,
-  onSwapTeams,
-  onRemoveMatch,
+  validation = null,
+  onUpdateMatchTeam = noop,
+  onUpdateMatchTimeslot = noop,
+  onSwapTeams = noop,
+  onRemoveMatch = noop,
   onResetEdits,
   hasUnsavedEdits = false,
 }) => {
   // Check if we have generated any pairings
-  const hasPairings =
-    Object.keys(generatedPairings || {}).length > 0 &&
-    Object.values(generatedPairings || {}).some((blockPairings) => blockPairings?.length > 0);
+  const hasPairings = hasAnyPairings(generatedPairings);
 
   // Calculate dual block metrics if in dual match mode and we have pairings
   const dualBlockMetrics = useMemo(() => {
@@ -145,87 +305,19 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
           )}
         </div>
 
-        <div className="flex items-center gap-2">
-          {hasPairings && onToggleEditMode && (
-            <Button
-              variant={isEditMode ? 'default' : 'outline'}
-              size="sm"
-              onClick={onToggleEditMode}
-            >
-              {isEditMode ? (
-                <>
-                  <Eye className="mr-2 size-4" />
-                  Preview Mode
-                </>
-              ) : (
-                <>
-                  <Edit className="mr-2 size-4" />
-                  Edit Mode
-                </>
-              )}
-            </Button>
-          )}
-
-          {isEditMode && hasUnsavedEdits && onResetEdits && (
-            <Button variant="ghost" size="sm" onClick={onResetEdits}>
-              <RotateCcw className="mr-2 size-4" />
-              Reset
-            </Button>
-          )}
-
-          {isEditMode && hasUnsavedEdits && onSaveSchedule && (
-            <Button
-              size="sm"
-              onClick={onSaveSchedule}
-              disabled={isSaving || validation?.isValid === false}
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 size-4" />
-                  Save Matches
-                </>
-              )}
-            </Button>
-          )}
-          {dualMatchMode && (
-            <Badge variant="secondary" className="text-xs">
-              Dual Match Mode
-            </Badge>
-          )}
-
-          {matchQualityMetrics && (
-            <Badge
-              variant={
-                matchQualityMetrics.qualityRating === 'Excellent'
-                  ? 'recreational'
-                  : matchQualityMetrics.qualityRating === 'Good'
-                    ? 'intermediate'
-                    : 'outline'
-              }
-            >
-              {matchQualityMetrics.qualityRating} Quality
-            </Badge>
-          )}
-
-          {dualMatchMode && dualBlockMetrics && (
-            <Badge
-              variant={
-                dualBlockMetrics.overallQualityScore >= 85
-                  ? 'recreational'
-                  : dualBlockMetrics.overallQualityScore >= 70
-                    ? 'intermediate'
-                    : 'outline'
-              }
-            >
-              Dual Match Score: {dualBlockMetrics.overallQualityScore}
-            </Badge>
-          )}
-        </div>
+        <MatchesActionBar
+          hasPairings={hasPairings}
+          isEditMode={isEditMode}
+          hasUnsavedEdits={hasUnsavedEdits}
+          isSaving={isSaving}
+          dualMatchMode={dualMatchMode}
+          matchQualityMetrics={matchQualityMetrics}
+          dualBlockMetrics={dualBlockMetrics}
+          validation={validation}
+          onToggleEditMode={onToggleEditMode}
+          onResetEdits={onResetEdits}
+          onSaveSchedule={onSaveSchedule}
+        />
       </div>
 
       <p className="text-sm text-muted-foreground">
@@ -237,62 +329,22 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
       {hasPairings ? (
         <div className="space-y-4">
           {dualMatchMode && dualBlockMetrics && (
-            <>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mt-2 mb-4">
-                <div className="bg-muted/50 p-3 rounded-md text-center">
-                  <div className="text-lg font-semibold">
-                    {dualBlockMetrics.teamsWithBothMatches}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Teams With Both Matches</div>
-                </div>
-                <div className="bg-muted/50 p-3 rounded-md text-center">
-                  <div className="text-lg font-semibold">
-                    {dualBlockMetrics.teamsWithSingleMatch}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Teams With One Match</div>
-                </div>
-                <div className="bg-muted/50 p-3 rounded-md text-center">
-                  <div className="text-lg font-semibold">
-                    {dualBlockMetrics.crossBlockCompatibility.toFixed(1)}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Cross-Block Compatibility</div>
-                </div>
-                <div className="bg-muted/50 p-3 rounded-md text-center">
-                  <div
-                    className="text-lg font-semibold"
-                    style={{
-                      color:
-                        dualBlockMetrics.teamsWithDuplicateOpponents > 0
-                          ? 'var(--amber-500)'
-                          : 'inherit',
-                    }}
-                  >
-                    {dualBlockMetrics.teamsWithDuplicateOpponents}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    Teams With Duplicate Opponents
-                  </div>
-                </div>
-              </div>
-
-              <DualMatchWarningDisplay
-                validation={dualBlockValidation}
-                duplicateOpponentsCount={dualBlockMetrics.teamsWithDuplicateOpponents}
-                teamsInBothBlocks={dualBlockMetrics.teamsWithBothMatches}
-                totalTeams={totalTeams}
-              />
-            </>
+            <DualBlockMetricsPanel
+              metrics={dualBlockMetrics}
+              validation={dualBlockValidation}
+              totalTeams={totalTeams}
+            />
           )}
 
           {isEditMode ? (
             <EditableMatchList
               matches={editableMatches}
               teams={allTeams}
-              validation={validation || null}
-              onUpdateTeam={onUpdateMatchTeam || (() => {})}
-              onUpdateTimeslot={onUpdateMatchTimeslot || (() => {})}
-              onSwapTeams={onSwapTeams || (() => {})}
-              onRemove={onRemoveMatch || (() => {})}
+              validation={validation}
+              onUpdateTeam={onUpdateMatchTeam}
+              onUpdateTimeslot={onUpdateMatchTimeslot}
+              onSwapTeams={onSwapTeams}
+              onRemove={onRemoveMatch}
             />
           ) : (
             <ScheduleMatchesPreview

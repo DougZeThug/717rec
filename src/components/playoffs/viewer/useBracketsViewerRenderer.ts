@@ -12,11 +12,14 @@ type BracketsViewerCustomRoundInfo = {
   roundCount: number;
 };
 
-export type BracketsViewerMatchClick = Pick<Match, 'id'> &
-  Partial<Pick<Match, 'stage_id' | 'group_id' | 'round_id' | 'number'>> & {
-    opponent1?: ParticipantResult | null;
-    opponent2?: ParticipantResult | null;
-  };
+export type BracketsViewerMatchClick = Pick<Match, 'id'> & {
+  stage_id?: number | null;
+  group_id?: number | null;
+  round_id?: number | null;
+  number?: number | null;
+  opponent1?: ParticipantResult | null;
+  opponent2?: ParticipantResult | null;
+};
 
 type FingerprintMatch = Pick<Match, 'id' | 'status' | 'opponent1' | 'opponent2'>;
 
@@ -184,7 +187,7 @@ export const useBracketsViewerRenderer = ({
             .filter((p) => p.image)
             .map((p) => ({
               participantId: p.id,
-              imageUrl: p.image,
+              imageUrl: p.image ?? '',
             }));
 
           if (participantImages.length > 0) {

@@ -32,23 +32,23 @@ export const useScoreEntryData = () => {
         // Convert from database snake_case to our TypeScript camelCase
         return {
           id: match.id,
-          team1Id: match.team1_id,
-          team2Id: match.team2_id,
+          team1Id: match.team1_id ?? '',
+          team2Id: match.team2_id ?? '',
           team1Score: match.team1_score,
           team2Score: match.team2_score,
-          date: match.date,
-          location: match.location,
-          iscompleted: match.iscompleted,
+          date: match.date ?? undefined,
+          location: match.location ?? undefined,
+          iscompleted: match.iscompleted ?? undefined,
           winnerId: match.winner_id,
           loserId: match.loser_id,
-          round_number: match.round_number,
-          position: match.position,
-          bracket_id: match.bracket_id,
-          match_type: match.match_type,
-          next_match_id: match.next_match_id,
-          next_loser_match_id: match.next_loser_match_id,
-          best_of: match.best_of,
-          created_at: match.created_at,
+          round_number: match.round_number ?? undefined,
+          position: match.position ?? undefined,
+          bracket_id: match.bracket_id ?? undefined,
+          match_type: match.match_type ?? undefined,
+          next_match_id: match.next_match_id ?? undefined,
+          next_loser_match_id: match.next_loser_match_id ?? undefined,
+          best_of: match.best_of ?? undefined,
+          created_at: match.created_at ?? undefined,
           // Map the team relation data
           team1: match.team1
             ? {
@@ -151,9 +151,9 @@ export const useScoreEntryData = () => {
     try {
       // Process matches one by one to handle winner_id and loser_id
       for (const match of editedMatches) {
-        if (match.team1Score !== null && match.team2Score !== null) {
-          let winnerId = null;
-          let loserId = null;
+        if (match.team1Score != null && match.team2Score != null) {
+          let winnerId: string | null = null;
+          let loserId: string | null = null;
 
           // Determine winner and loser
           if (match.team1Score > match.team2Score) {
@@ -168,7 +168,7 @@ export const useScoreEntryData = () => {
           await updateMatchScore(match.id, {
             team1_score: match.team1Score,
             team2_score: match.team2Score,
-            iscompleted: match.iscompleted,
+            iscompleted: match.iscompleted ?? false,
             winner_id: winnerId,
             loser_id: loserId,
           });

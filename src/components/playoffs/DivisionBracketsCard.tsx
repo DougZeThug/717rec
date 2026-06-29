@@ -52,7 +52,7 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
 }) => {
   const handleViewBracket = (bracketId: string) => {
     bracketLog('View bracket clicked for ID:', bracketId);
-    onViewBracket(bracketId);
+    onViewBracket?.(bracketId);
   };
 
   return (

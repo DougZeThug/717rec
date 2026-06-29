@@ -22,9 +22,9 @@ const createMockMatch = (overrides: Partial<MatchWithTeams> = {}): MatchWithTeam
   round_number: 1,
   position: 1,
   bracket_id: 'bracket-1',
-  match_type: null,
-  next_match_id: null,
-  next_loser_match_id: null,
+  match_type: undefined,
+  next_match_id: undefined,
+  next_loser_match_id: undefined,
   best_of: 3,
   created_at: '2024-01-01',
   team1: {

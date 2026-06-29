@@ -94,8 +94,8 @@ export const useBracketFormData = (
       const sortedTeams = [...teamsToProcess]
         .filter((team) => team && typeof team.id === 'string')
         .sort((a, b) => {
-          const aPowerScore = a.power_score;
-          const bPowerScore = b.power_score;
+          const aPowerScore = a.power_score ?? null;
+          const bPowerScore = b.power_score ?? null;
 
           // Handle NULL power scores - put them at the end
           if (aPowerScore === null && bPowerScore === null) {

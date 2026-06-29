@@ -98,9 +98,11 @@ describe('useSeasonAccordionViewModel', () => {
     const { result } = renderHook(() => useSeasonAccordionViewModel(season, data));
     expect(result.current.teamCount).toBe(2);
     expect(Object.keys(result.current.divisionData)).toEqual(['Competitive', 'Casual']);
-    expect(result.current.highlights.mostWins.team_name).toBe('B');
-    expect(result.current.highlights.highestPS.team_name).toBe('B');
-    expect(result.current.highlights.mostGameWins.team_name).toBe('C');
+    const { highlights } = result.current;
+    if (!highlights) throw new Error('Expected highlights to be defined');
+    expect(highlights.mostWins.team_name).toBe('B');
+    expect(highlights.highestPS.team_name).toBe('B');
+    expect(highlights.mostGameWins.team_name).toBe('C');
   });
 });
 

@@ -39,7 +39,7 @@ const MassScoreEntryTool: React.FC = () => {
   // Create filter tags for active filters
   const hasActiveFilters = filters.date || filters.bracketId;
   const filterTags = useMemo(() => {
-    const tags = [];
+    const tags: { label: string; value: string }[] = [];
 
     if (filters.date) {
       tags.push({

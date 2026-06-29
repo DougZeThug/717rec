@@ -16,8 +16,8 @@ export const useMatchUpdates = () => {
   const updateMatchInDatabase = async (match: MatchWithTeams) => {
     try {
       scoreLog(`Updating match ${match.id} in database`, match);
-      let winnerId = null;
-      let loserId = null;
+      let winnerId: string | null = null;
+      let loserId: string | null = null;
 
       // Determine winner and loser based on match scores (binary 1/0 indicators)
       if (match.team1Score === 1) {
@@ -32,10 +32,10 @@ export const useMatchUpdates = () => {
 
       // Ensure game wins are properly parsed as integers
       const team1GameWins = Number.isInteger(match.team1_game_wins)
-        ? match.team1_game_wins
+        ? (match.team1_game_wins ?? 0)
         : parseInt(String(match.team1_game_wins)) || 0;
       const team2GameWins = Number.isInteger(match.team2_game_wins)
-        ? match.team2_game_wins
+        ? (match.team2_game_wins ?? 0)
         : parseInt(String(match.team2_game_wins)) || 0;
 
       scoreLog(`Match ${match.id} winner: ${winnerId}, loser: ${loserId}`);

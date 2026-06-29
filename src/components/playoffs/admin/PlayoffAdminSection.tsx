@@ -32,14 +32,14 @@ const PlayoffAdminSection: React.FC<PlayoffAdminSectionProps> = ({
   };
 
   // Group matches by type for the different tabs
-  const winnerMatches = bracket.matches.filter((m) => m.matchType === 'winners');
-  const loserMatches = bracket.matches.filter((m) => m.matchType === 'losers');
-  const finalMatches = bracket.matches.filter((m) => m.matchType === 'finals');
-  const playInMatches = bracket.matches.filter((m) => m.matchType === 'play-in');
+  const winnerMatches = (bracket.matches ?? []).filter((m) => m.matchType === 'winners');
+  const loserMatches = (bracket.matches ?? []).filter((m) => m.matchType === 'losers');
+  const finalMatches = (bracket.matches ?? []).filter((m) => m.matchType === 'finals');
+  const playInMatches = (bracket.matches ?? []).filter((m) => m.matchType === 'play-in');
 
   // Look up the match currently being edited so we can pass its current teams into the dialog
   const editingMatch = useMemo(
-    () => (editTeamsMatchId ? bracket.matches.find((m) => m.id === editTeamsMatchId) : null),
+    () => (editTeamsMatchId ? (bracket.matches ?? []).find((m) => m.id === editTeamsMatchId) : null),
     [editTeamsMatchId, bracket.matches]
   );
 
@@ -63,7 +63,7 @@ const PlayoffAdminSection: React.FC<PlayoffAdminSectionProps> = ({
 
         <TabsContent value="matches">
           <PlayoffMatchList
-            matches={bracket.matches}
+            matches={bracket.matches ?? []}
             teams={teams}
             onEditMatch={onEditMatch}
             onEditTeams={handleEditTeams}

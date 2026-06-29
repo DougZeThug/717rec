@@ -28,8 +28,8 @@ const PlayoffHeader: React.FC<PlayoffHeaderProps> = ({ selectedSeasonId }) => {
       {showOverlapBanner && (
         <Alert className="mb-4">
           <AlertDescription>
-            Showing <strong>{playoffSeason.name}</strong> playoffs — regular season play is on{' '}
-            <strong>{activeSeason.name}</strong>.
+            Showing <strong>{playoffSeason?.name}</strong> playoffs — regular season play is on{' '}
+            <strong>{activeSeason?.name}</strong>.
           </AlertDescription>
         </Alert>
       )}

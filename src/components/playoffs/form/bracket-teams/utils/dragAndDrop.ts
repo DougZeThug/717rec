@@ -27,7 +27,7 @@ export const getDropPosition = (dragEvent: DragEvent, containerElement: HTMLElem
   const dragOverElement = dragEvent.target as HTMLElement;
 
   // Find the closest draggable element
-  let targetElement = dragOverElement;
+  let targetElement: HTMLElement | null = dragOverElement;
   while (targetElement && !targetElement.draggable) {
     targetElement = targetElement.parentElement;
   }

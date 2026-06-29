@@ -5,7 +5,6 @@ import { useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SeasonalIcon } from '@/components/ui/seasonal-icon';
 import { fetchFinalStandings } from '@/services/brackets/BracketReadService';
-import type { TeamStanding } from '@/types/schedule';
 import { log } from '@/utils/logger';
 
 import FinalStandingsSkeleton from './FinalStandingsSkeleton';
@@ -81,32 +80,36 @@ export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) 
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          {standings.map((record: TeamStanding) => (
-            <div
-              key={record.teams.id}
-              className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 text-center font-bold">{record.placement}</div>
-                {getPlacementIcon(record.placement)}
-                <div className="flex items-center gap-2">
-                  {(record.teams.image_url || record.teams.logo_url) && (
-                    <img
-                      src={record.teams.image_url || record.teams.logo_url}
-                      alt={record.teams.name}
-                      loading="lazy"
-                      decoding="async"
-                      className="size-8 rounded-full object-cover"
-                    />
-                  )}
-                  <span className="font-medium">{record.teams.name}</span>
+          {standings.map((record) => {
+            const team = record.teams;
+            if (!team) return null;
+            return (
+              <div
+                key={team.id}
+                className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 text-center font-bold">{record.placement}</div>
+                  {getPlacementIcon(record.placement)}
+                  <div className="flex items-center gap-2">
+                    {(team.image_url || team.logo_url) && (
+                      <img
+                        src={team.image_url || team.logo_url || undefined}
+                        alt={team.name}
+                        loading="lazy"
+                        decoding="async"
+                        className="size-8 rounded-full object-cover"
+                      />
+                    )}
+                    <span className="font-medium">{team.name}</span>
+                  </div>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {record.wins}-{record.losses} ({record.game_wins}-{record.game_losses} games)
                 </div>
               </div>
-              <div className="text-sm text-muted-foreground">
-                {record.wins}-{record.losses} ({record.game_wins}-{record.game_losses} games)
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </CardContent>
     </Card>

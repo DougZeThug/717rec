@@ -58,7 +58,7 @@ export const TeamStats: React.FC<TeamStatsProps> = ({ team, isWinter = false }) 
                 : 'text-muted-foreground'
             )}
           >
-            {(team.wins || 0) + (team.losses || 0) > 0 ? team.sos.toFixed(3) : 'N/A'}
+            {(team.wins || 0) + (team.losses || 0) > 0 ? (team.sos ?? 0).toFixed(3) : 'N/A'}
           </span>
         </div>
       )}
