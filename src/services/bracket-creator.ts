@@ -164,7 +164,9 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
       challonge_tournament_id: 0, // Not used
       division_id: divisionId,
       title: name,
-      format: bracketData.format ?? (format === 'singleElim' ? 'single_elimination' : 'double_elimination'),
+      format:
+        bracketData.format ??
+        (format === 'singleElim' ? 'single_elimination' : 'double_elimination'),
       state: 'pending',
       created_at: bracketData.created_at ?? new Date().toISOString(),
       uses_brackets_manager: true,

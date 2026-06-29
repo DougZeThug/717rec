@@ -66,15 +66,11 @@ export class LosersRoundNormalizationService {
 
         if (!opponent1Id && opponent2Id) {
           bracketLog(`[NORMALIZE] Shifting opponent2 to opponent1 in LB R1 Match ${match.id}`);
-          await this.storage.update(
-            'match',
-            { id: match.id },
-            {
-              opponent1: { id: opponent2Id, score: null, result: null },
-              opponent2: { id: null, score: null, result: null },
-              status: match.status,
-            } as unknown as Partial<DataTypes['match']>
-          );
+          await this.storage.update('match', { id: match.id }, {
+            opponent1: { id: opponent2Id, score: null, result: null },
+            opponent2: { id: null, score: null, result: null },
+            status: match.status,
+          } as unknown as Partial<DataTypes['match']>);
         }
       }
 

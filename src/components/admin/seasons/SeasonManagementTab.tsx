@@ -91,7 +91,9 @@ const SeasonManagementTab = () => {
         </div>
 
         {/* Season Form */}
-        {showCreateForm && <SeasonForm season={editingSeason ?? undefined} onClose={handleCloseForm} />}
+        {showCreateForm && (
+          <SeasonForm season={editingSeason ?? undefined} onClose={handleCloseForm} />
+        )}
 
         {/* Seasons List */}
         <SeasonsList seasons={seasons} isLoading={isLoading} onEditSeason={handleEditSeason} />
