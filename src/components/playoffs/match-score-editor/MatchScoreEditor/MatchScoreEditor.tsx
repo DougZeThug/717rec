@@ -153,8 +153,8 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({ match, teams, onSav
     <div className={cn('space-y-6', animations.fadeIn)}>
       {/* Header with match info */}
       <MatchScoreHeader
-        team1={team1}
-        team2={team2}
+        team1={team1 ?? null}
+        team2={team2 ?? null}
         matchType={match.matchType}
         round={match.round}
       />
@@ -165,8 +165,8 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({ match, teams, onSav
 
         <GameScoresList
           games={games}
-          team1={team1}
-          team2={team2}
+          team1={team1 ?? null}
+          team2={team2 ?? null}
           onScoreChange={handleGameScoreChange}
           onRemoveGame={removeGame}
           canRemoveGame={games.length > 1}

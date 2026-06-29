@@ -159,7 +159,7 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
 
   const generateFirstRoundPreview = () => {
     const sorted = [...teams].sort((a, b) => a.seed - b.seed);
-    const matchups = [];
+    const matchups: { seed1: number; team1: string; seed2: number; team2: string }[] = [];
     const halfPoint = Math.ceil(sorted.length / 2);
 
     for (let i = 0; i < halfPoint; i++) {

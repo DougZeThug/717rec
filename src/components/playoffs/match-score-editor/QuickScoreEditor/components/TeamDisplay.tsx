@@ -18,7 +18,7 @@ const TeamDisplay: React.FC<TeamDisplayProps> = ({
       {team?.imageUrl || team?.logoUrl ? (
         <div className="size-16 rounded-full overflow-hidden bg-muted">
           <img
-            src={team.imageUrl || team.logoUrl}
+            src={team.imageUrl || team.logoUrl || undefined}
             alt={team.name}
             className="size-full object-cover"
           />

@@ -91,7 +91,7 @@ const MatchScoreItem = ({
             <div className="size-6 rounded overflow-hidden bg-muted mr-2">
               {teams[match.team1Id]?.imageUrl && (
                 <img
-                  src={teams[match.team1Id].imageUrl}
+                  src={teams[match.team1Id].imageUrl ?? undefined}
                   alt=""
                   loading="lazy"
                   decoding="async"
@@ -107,7 +107,7 @@ const MatchScoreItem = ({
             <div className="size-6 rounded overflow-hidden bg-muted mx-2">
               {teams[match.team2Id]?.imageUrl && (
                 <img
-                  src={teams[match.team2Id].imageUrl}
+                  src={teams[match.team2Id].imageUrl ?? undefined}
                   alt=""
                   loading="lazy"
                   decoding="async"

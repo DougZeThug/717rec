@@ -42,8 +42,8 @@ export const assignMixedSeeds = <T extends SeedInputTeam>(teams: T[]): TeamWithS
 
   // Sort teams without seeds by ranking (already sorted by caller)
   teamsWithoutSeeds.sort((a, b) => {
-    const aPowerScore = a.power_score;
-    const bPowerScore = b.power_score;
+    const aPowerScore = a.power_score ?? null;
+    const bPowerScore = b.power_score ?? null;
 
     // Handle NULL power scores - put them at the end
     if (aPowerScore === null && bPowerScore === null) {

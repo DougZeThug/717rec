@@ -83,7 +83,7 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
                 setOpponent1Score(0);
               }
             }}
-            disabled={byeEligible && byeEligible.currentStatus !== 2}
+            disabled={!!byeEligible && byeEligible.currentStatus !== 2}
             className="w-full"
           />
           {byeEligible && byeEligible.currentStatus !== 2 && (
@@ -108,7 +108,7 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
         </Button>
         <Button
           onClick={onSave}
-          disabled={isSaving || (byeEligible && byeEligible.currentStatus !== 2)}
+          disabled={isSaving || (!!byeEligible && byeEligible.currentStatus !== 2)}
           className="w-full sm:w-auto"
         >
           {isSaving && <Loader2 className="mr-2 size-4 animate-spin" />}

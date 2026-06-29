@@ -4,9 +4,9 @@ import { TeamLogo } from '@/components/shared/TeamLogo';
 import { cn } from '@/lib/utils';
 
 interface TeamDisplayProps {
-  team: {
+  team?: {
     name?: string;
-    logoUrl?: string;
+    logoUrl?: string | null;
   };
   align?: 'left' | 'right' | 'center';
   className?: string;
@@ -22,7 +22,7 @@ const TeamDisplay: React.FC<TeamDisplayProps> = ({ team, align = 'left', classNa
 
   return (
     <div className={containerClassName}>
-      <TeamLogo imageUrl={team.logoUrl} teamName={team.name || 'TBD'} size="sm" rounded />
+      <TeamLogo imageUrl={team?.logoUrl} teamName={team?.name || 'TBD'} size="sm" rounded />
       <span
         className={cn(
           'font-medium text-sm leading-tight',
@@ -30,7 +30,7 @@ const TeamDisplay: React.FC<TeamDisplayProps> = ({ team, align = 'left', classNa
           align === 'center' && 'text-center'
         )}
       >
-        {team.name || 'TBD'}
+        {team?.name || 'TBD'}
       </span>
     </div>
   );

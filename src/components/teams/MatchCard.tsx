@@ -62,7 +62,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
               className="hover:opacity-80 transition-opacity"
             >
               <SquareLogo
-                src={opponentImage}
+                src={opponentImage ?? ''}
                 alt={opponentName}
                 fallback={opponentName.charAt(0)}
               />

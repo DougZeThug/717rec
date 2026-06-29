@@ -42,7 +42,7 @@ interface TeamFormProps {
 }
 
 const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
-  const [imageUrl, setImageUrl] = useState<string | undefined>(team?.imageUrl);
+  const [imageUrl, setImageUrl] = useState<string | undefined>(team?.imageUrl ?? undefined);
   const [playerNames, setPlayerNames] = useState<string[]>(team?.players || ['']);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);

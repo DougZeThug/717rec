@@ -22,6 +22,13 @@ interface TeamSelectionFormProps {
   onSeedChange?: (teamId: string, seed: number | null) => void;
 }
 
+const EMPTY_SEED_VALIDATION: SeedValidationState = {
+  isLoading: false,
+  conflicts: [],
+  hasConflicts: false,
+  errorMessage: null,
+};
+
 /**
  * Team selection form component
  * Displays available teams with selection controls and validation feedback
@@ -38,7 +45,12 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
   const [activeTab, setActiveTab] = useState<'select' | 'seeds'>('select');
 
   // Initialize form state manager for coordinated state management
-  const formStateManager = useFormStateManager(teams, formState, seedValidation, onSeedChange);
+  const formStateManager = useFormStateManager(
+    teams,
+    formState,
+    seedValidation ?? EMPTY_SEED_VALIDATION,
+    onSeedChange
+  );
   // Ensure we have valid arrays and objects to prevent React error #300
   const validTeams = Array.isArray(teams) ? teams : [];
 
@@ -278,7 +290,7 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
           <SeedOverrideControls
             teams={formStateManager.syncedTeams}
             divisionId={divisionId || ''}
-            validation={seedValidation}
+            validation={seedValidation ?? EMPTY_SEED_VALIDATION}
             onSeedChange={onSeedChange}
             show={!!(divisionId && seedValidation)}
           />

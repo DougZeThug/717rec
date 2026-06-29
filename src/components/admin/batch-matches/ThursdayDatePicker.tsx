@@ -67,7 +67,7 @@ export const ThursdayDatePicker = ({ selected, onSelect }: ThursdayDatePickerPro
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
             mode="single"
-            selected={selected}
+            selected={selected ?? undefined}
             onSelect={handleDateSelect}
             disabled={(date) => !isThursday(date)}
             autoFocus

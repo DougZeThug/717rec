@@ -39,7 +39,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
     : 'bg-gradient-to-br from-white to-gray-50/70 dark:from-gray-900 dark:to-gray-900/90';
 
   return (
-    <EntityCard division={team.divisionName}>
+    <EntityCard division={team.divisionName ?? undefined}>
       <Link to={`/teams/${toTeamSlug(team.name)}`} className="block">
         <div
           className={cn(

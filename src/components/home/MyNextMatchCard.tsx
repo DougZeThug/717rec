@@ -49,8 +49,8 @@ const MyNextMatchCard: React.FC<MyNextMatchCardProps> = ({
 
   // Determine if user's team won (for completed matches)
   const isTeam1 = match.team1Id === myTeam.id;
-  const myTeamWins = isTeam1 ? match.team1_game_wins : match.team2_game_wins;
-  const opponentWins = isTeam1 ? match.team2_game_wins : match.team1_game_wins;
+  const myTeamWins = (isTeam1 ? match.team1_game_wins : match.team2_game_wins) ?? 0;
+  const opponentWins = (isTeam1 ? match.team2_game_wins : match.team1_game_wins) ?? 0;
   const didWin =
     isPrevious && myTeamWins !== null && opponentWins !== null && myTeamWins > opponentWins;
   const didLose =

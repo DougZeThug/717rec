@@ -24,8 +24,8 @@ interface BracketDetailProps {
   bracket: PlayoffBracket | null;
   teams: Team[];
   bracketLoading: boolean;
-  onEditBracket: () => void;
-  onEditMatch: (matchId: string) => void;
+  onEditBracket?: () => void;
+  onEditMatch?: (matchId: string) => void;
   onDeleteBracket?: (bracketId: string, bracketName: string) => void;
 }
 
@@ -201,8 +201,8 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
         open={seedingDialogOpen}
         onOpenChange={setSeedingDialogOpen}
         bracketId={bracketId}
-        bracketName={bracket.name}
-        currentParticipants={participants || []}
+        bracketName={bracket.name ?? ''}
+        currentParticipants={(participants || []).map((p) => ({ ...p, name: p.name ?? '' }))}
         bracketState={bracket.state || 'pending'}
       />
     </Card>

@@ -142,7 +142,7 @@ const bracket: PlayoffBracket = {
   division: 'Recreational',
   format: 'single_elimination',
   state: 'in_progress',
-  champion: null,
+  champion: undefined,
   matches: [
     {
       id: 'match-1',

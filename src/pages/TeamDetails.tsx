@@ -157,8 +157,8 @@ const TeamDetails = () => {
             rank={teamRank}
             totalTeams={totalTeams}
             rankChange={teamRanking?.rankChange}
-            wins={team.wins}
-            losses={team.losses}
+            wins={team.wins ?? 0}
+            losses={team.losses ?? 0}
           />
         </section>
 
@@ -176,8 +176,8 @@ const TeamDetails = () => {
             summaryValue={`${team.wins}-${team.losses}`}
           >
             <StatBreakdown
-              wins={team.wins}
-              losses={team.losses}
+              wins={team.wins ?? 0}
+              losses={team.losses ?? 0}
               winPercentage={winPct.toFixed(1)}
               gamesWon={team.game_wins || 0}
               gamesLost={team.game_losses || 0}

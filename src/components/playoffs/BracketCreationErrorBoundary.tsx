@@ -72,7 +72,7 @@ export class BracketCreationErrorBoundary extends React.Component<
 
     if (!error) return [];
 
-    const suggestions = [];
+    const suggestions: string[] = [];
 
     if (error.message.includes('divisions')) {
       suggestions.push('Ensure at least one division exists in your database');

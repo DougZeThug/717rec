@@ -89,7 +89,7 @@ const ChampionDisplay: React.FC<ChampionDisplayProps> = ({
             {champion.logoUrl || champion.imageUrl ? (
               <div className="size-24 rounded-full overflow-hidden bg-background dark:bg-card p-2 border-2 border-amber-300 dark:border-amber-700 shadow-md mb-4">
                 <img
-                  src={champion.logoUrl || champion.imageUrl}
+                  src={champion.logoUrl || champion.imageUrl || undefined}
                   alt={champion.name}
                   loading="lazy"
                   decoding="async"

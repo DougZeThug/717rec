@@ -227,7 +227,7 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
                       {ranking.imageUrl || ranking.logoUrl ? (
                         <div className="size-8 rounded-md overflow-hidden bg-muted dark:bg-card flex items-center justify-center flex-shrink-0">
                           <img
-                            src={ranking.imageUrl || ranking.logoUrl}
+                            src={ranking.imageUrl || ranking.logoUrl || undefined}
                             alt={ranking.teamName}
                             className="size-full object-contain"
                             style={{ minWidth: '2rem', minHeight: '2rem' }}

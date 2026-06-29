@@ -91,7 +91,7 @@ describe('ContactPanel', () => {
     // value ("Typed Name") differs from the verified value ("Verified Name")
     const nameLabel = screen.getByText('Your name').closest('label');
     expect(nameLabel).not.toBeNull();
-    const nameVerifiedBadge = within(nameLabel).queryByText('Verified');
+    const nameVerifiedBadge = within(nameLabel as HTMLElement).queryByText('Verified');
     expect(nameVerifiedBadge).not.toBeInTheDocument();
   });
 });

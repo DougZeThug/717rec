@@ -276,7 +276,7 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
               </div>
 
               <DualMatchWarningDisplay
-                validation={dualBlockValidation}
+                validation={dualBlockValidation ?? undefined}
                 duplicateOpponentsCount={dualBlockMetrics.teamsWithDuplicateOpponents}
                 teamsInBothBlocks={dualBlockMetrics.teamsWithBothMatches}
                 totalTeams={totalTeams}

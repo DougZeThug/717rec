@@ -58,7 +58,7 @@ const CustomLabel = ({ x, y, payload }: TeamLabelProps) => {
     return null;
   }
 
-  let icon = null;
+  let icon: string | null = null;
   if (payload.isChampion) {
     icon = '🏆';
   } else if (payload.isRunnerUp) {
@@ -70,7 +70,7 @@ const CustomLabel = ({ x, y, payload }: TeamLabelProps) => {
   return (
     <text
       x={x}
-      y={y - 12}
+      y={(y ?? 0) - 12}
       textAnchor="middle"
       fill="currentColor"
       className="text-xs font-semibold"

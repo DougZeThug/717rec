@@ -320,7 +320,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     availableDivisions,
     allBrackets: Array.isArray(allBrackets) ? allBrackets : [],
     bracketsLoading,
-    teamsByDivision: teamsByDivision || {},
+    teamsByDivision: (teamsByDivision || {}) as TeamsByDivision,
     bracketsByDivision: bracketsByDivision || {},
     typesafeBracketsByDivision,
     allBracketsData,
