@@ -72,8 +72,8 @@ export function handleOddTeamCount(
   teams: Team[],
   config: DualBlockConfig,
   notify?: NotificationCallback
-): { adjustedTeams: Team[]; unmatchedTeamId: string } {
-  let unmatchedTeamId: string;
+): { adjustedTeams: Team[]; unmatchedTeamId: string | undefined } {
+  let unmatchedTeamId: string | undefined;
   let removedTeam: Team | null | undefined;
   const adjustedTeams = [...teams];
 

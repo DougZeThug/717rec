@@ -112,8 +112,8 @@ function extractTeamDetails(team: RawTeamJoin): Match['team1Details'] {
   if (!t) return null;
 
   return {
-    team_id: t.team_id || t.id,
-    name: t.name,
+    team_id: t.team_id || t.id || '',
+    name: t.name ?? '',
     image_url: t.image_url ?? null,
     logo_url: t.logo_url ?? null,
     divisionName: t.divisionname ?? t.divisionName ?? null,

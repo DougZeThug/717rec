@@ -43,13 +43,15 @@ export function calculateTeamCompatibility(team1: Team, team2: Team): number {
   const sosDiff = Math.abs((team1.sos || 0.5) - (team2.sos || 0.5));
 
   // Calculate record similarity - teams with similar records are better matches
-  const team1WinPct = team1.wins / (team1.wins + team1.losses || 1);
-  const team2WinPct = team2.wins / (team2.wins + team2.losses || 1);
+  const team1WinPct = (team1.wins ?? 0) / ((team1.wins ?? 0) + (team1.losses ?? 0) || 1);
+  const team2WinPct = (team2.wins ?? 0) / ((team2.wins ?? 0) + (team2.losses ?? 0) || 1);
   const recordDiff = Math.abs(team1WinPct - team2WinPct);
 
   // Calculate game record similarity
-  const team1GameWinPct = team1.game_wins / (team1.game_wins + team1.game_losses || 1);
-  const team2GameWinPct = team2.game_wins / (team2.game_wins + team2.game_losses || 1);
+  const team1GameWinPct =
+    (team1.game_wins ?? 0) / ((team1.game_wins ?? 0) + (team1.game_losses ?? 0) || 1);
+  const team2GameWinPct =
+    (team2.game_wins ?? 0) / ((team2.game_wins ?? 0) + (team2.game_losses ?? 0) || 1);
   const gameRecordDiff = Math.abs(team1GameWinPct - team2GameWinPct);
 
   // Calculate weighted compatibility score (lower differences = higher compatibility)
@@ -165,13 +167,15 @@ export function calculateConfigurableCompatibility(
   const sosDiff = Math.abs((team1.sos || 0.5) - (team2.sos || 0.5));
 
   // Win percentages
-  const team1WinPct = team1.wins / (team1.wins + team1.losses || 1);
-  const team2WinPct = team2.wins / (team2.wins + team2.losses || 1);
+  const team1WinPct = (team1.wins ?? 0) / ((team1.wins ?? 0) + (team1.losses ?? 0) || 1);
+  const team2WinPct = (team2.wins ?? 0) / ((team2.wins ?? 0) + (team2.losses ?? 0) || 1);
   const recordDiff = Math.abs(team1WinPct - team2WinPct);
 
   // Game win percentages
-  const team1GameWinPct = team1.game_wins / (team1.game_wins + team1.game_losses || 1);
-  const team2GameWinPct = team2.game_wins / (team2.game_wins + team2.game_losses || 1);
+  const team1GameWinPct =
+    (team1.game_wins ?? 0) / ((team1.game_wins ?? 0) + (team1.game_losses ?? 0) || 1);
+  const team2GameWinPct =
+    (team2.game_wins ?? 0) / ((team2.game_wins ?? 0) + (team2.game_losses ?? 0) || 1);
   const gameRecordDiff = Math.abs(team1GameWinPct - team2GameWinPct);
 
   // Normalize and weight

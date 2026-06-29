@@ -102,9 +102,10 @@ export function scheduleOdd(args: OddScheduleArgs): ScheduledMatch[] {
 
   if (!bye2) {
     // Emergency fallback with full relaxation
-    bye2 = sortedTeams.find(
-      (t) => t.id !== bye1.id && canPlay(bye1, t, playedSet, tonightPairs, maxTierGap, 3)
-    );
+    bye2 =
+      sortedTeams.find(
+        (t) => t.id !== bye1.id && canPlay(bye1, t, playedSet, tonightPairs, maxTierGap, 3)
+      ) ?? null;
     if (!bye2) {
       bye2 = sortedTeams.find((t) => t.id !== bye1.id) || sortedTeams[0];
     }

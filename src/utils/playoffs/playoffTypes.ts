@@ -56,8 +56,8 @@ export interface PlayoffGame {
 export interface PlayoffTeam {
   id: string;
   name: string;
-  logo_url?: string;
-  image_url?: string;
+  logo_url?: string | null;
+  image_url?: string | null;
   division_id?: string;
   created_at?: string;
   wins?: number;
