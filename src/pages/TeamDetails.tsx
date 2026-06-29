@@ -33,31 +33,26 @@ const TeamCareerPowerScoreChart = lazy(
 );
 const ChartFallback = () => <Skeleton className="h-48 w-full" />;
 
-const TeamDetails = () => {
-  const { teamId: teamParam } = useParams<{ teamId: string }>();
-  const { teamId, isResolving } = useResolveTeamSlug(teamParam);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const locationState = location.state as { from?: string; scrollPosition?: number } | undefined;
+type TeamDetail = NonNullable<ReturnType<typeof useTeamDetails>['team']>;
+type TeamRanking = NonNullable<ReturnType<typeof useTeamRankings>['rankings']>[number];
+type SweepStats = ReturnType<typeof calculateSweepRate>;
+type ClutchRecord = ReturnType<typeof calculateClutchRecord>;
 
-  const { team, isLoading } = useTeamDetails(teamId);
-  const { pastMatches, isLoadingMatches } = useTeamMatches(teamId);
-  const { rankings } = useTeamRankings();
+// Derive this team's rank, ranking row, and the field size from the rankings list.
+const getTeamRankInfo = (
+  rankings: ReturnType<typeof useTeamRankings>['rankings'],
+  teamId: string | undefined
+): { teamRank: number | undefined; teamRanking: TeamRanking | undefined; totalTeams: number | undefined } => {
+  const index = rankings?.findIndex((r) => r.teamId === teamId) ?? -1;
+  return {
+    teamRank: index >= 0 ? index + 1 : undefined,
+    teamRanking: index >= 0 ? rankings?.[index] : undefined,
+    totalTeams: rankings?.length,
+  };
+};
 
-  const teamRankIndex = rankings?.findIndex((r) => r.teamId === teamId) ?? -1;
-  const teamRank = teamRankIndex >= 0 ? teamRankIndex + 1 : undefined;
-  const teamRanking = teamRankIndex >= 0 ? rankings?.[teamRankIndex] : undefined;
-  const totalTeams = rankings?.length;
-
-  const breadcrumbs = useMemo(
-    () => [
-      { label: 'Home', href: '/' },
-      { label: 'Teams', href: '/teams' },
-      { label: team?.name || 'Loading...' },
-    ],
-    [team?.name]
-  );
-
+// Debug log of the current render's team data (no-op in production logger).
+const logTeamRender = (team: TeamDetail | null | undefined) => {
   teamLog(
     'TeamDetails rendering with team data:',
     team
@@ -70,6 +65,163 @@ const TeamDetails = () => {
         }
       : 'Loading team...'
   );
+};
+
+interface TeamStatsSectionProps {
+  team: TeamDetail;
+  teamId: string | undefined;
+  winPct: number;
+  gamePct: number;
+  teamRank: number | undefined;
+  totalTeams: number | undefined;
+  teamRanking: TeamRanking | undefined;
+  sweepStats: SweepStats;
+  clutchRecord: ClutchRecord;
+}
+
+const TeamStatsSection = ({
+  team,
+  teamId,
+  winPct,
+  gamePct,
+  teamRank,
+  totalTeams,
+  teamRanking,
+  sweepStats,
+  clutchRecord,
+}: TeamStatsSectionProps) => (
+  <section id="stats" className="scroll-mt-20" aria-labelledby="stats-heading">
+    <CollapsibleSection
+      title="Stats & Report Card"
+      icon={BarChart3}
+      iconColor="text-blue-500"
+      defaultOpen={false}
+      headingId="stats-heading"
+      summaryValue={`${team.wins}-${team.losses}`}
+    >
+      <StatBreakdown
+        wins={team.wins ?? 0}
+        losses={team.losses ?? 0}
+        winPercentage={winPct.toFixed(1)}
+        gamesWon={team.game_wins || 0}
+        gamesLost={team.game_losses || 0}
+        gameWinPercentage={gamePct.toFixed(1)}
+        strengthOfSchedule={team.sos?.toFixed(3) || '0.000'}
+        closeMatchLosses={team.close_match_losses || 0}
+        powerScore={team.power_score || 0}
+        rank={teamRank}
+        totalTeams={totalTeams}
+        rankChange={teamRanking?.rankChange}
+        sweeps={sweepStats.sweeps}
+        sweepRate={sweepStats.sweepRate}
+        clutchWins={clutchRecord.clutchWins}
+        clutchWinPct={clutchRecord.clutchWinPct}
+        clutchGame3s={clutchRecord.game3Matches}
+      />
+      {teamId && (
+        <div className="mt-4">
+          <TeamAdvancedStatsSection teamId={teamId} />
+        </div>
+      )}
+      {teamId && (
+        <div className="mt-4 pt-4 border-t border-border">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground mb-3">
+            <GraduationCap size={16} className="text-violet-500" />
+            Report Card
+          </h3>
+          <Suspense fallback={<ChartFallback />}>
+            <TeamReportCard teamId={teamId} standalone />
+          </Suspense>
+        </div>
+      )}
+    </CollapsibleSection>
+  </section>
+);
+
+interface TeamMatchupsSectionProps {
+  teamId: string | undefined;
+  teamName: string;
+}
+
+const TeamMatchupsSection = ({ teamId, teamName }: TeamMatchupsSectionProps) => (
+  <section id="h2h" className="scroll-mt-20" aria-labelledby="h2h-heading">
+    <CollapsibleSection
+      title="Matchups & Rivalries"
+      icon={Swords}
+      iconColor="text-rose-500"
+      defaultOpen={false}
+      headingId="h2h-heading"
+    >
+      {teamId && <RivalryHighlights teamId={teamId} standalone />}
+      {teamId && (
+        <div className="mt-4">
+          <HeadToHeadRecords teamId={teamId} teamName={teamName} standalone />
+        </div>
+      )}
+    </CollapsibleSection>
+  </section>
+);
+
+const TeamCareerSection = ({ teamId }: { teamId: string | undefined }) => (
+  <section id="career" className="scroll-mt-20" aria-labelledby="career-heading">
+    <CollapsibleSection
+      title="Career & Achievements"
+      icon={TrendingUp}
+      iconColor="text-purple-500"
+      defaultOpen={false}
+      headingId="career-heading"
+    >
+      {teamId && <TeamTotals teamId={teamId} standalone />}
+      {teamId && (
+        <div className="mt-4">
+          <Suspense fallback={<ChartFallback />}>
+            <TeamCareerPowerScoreChart teamId={teamId} standalone />
+          </Suspense>
+        </div>
+      )}
+      {teamId && (
+        <div className="mt-4 pt-4 border-t border-border">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground mb-3">
+            <Trophy size={16} className="text-amber-500" />
+            Achievements
+          </h3>
+          <TeamBadgeCollection
+            teamId={teamId}
+            size="lg"
+            maxDisplay={12}
+            orientation="horizontal"
+            className="gap-3"
+            showEmptyState
+          />
+        </div>
+      )}
+    </CollapsibleSection>
+  </section>
+);
+
+const TeamDetails = () => {
+  const { teamId: teamParam } = useParams<{ teamId: string }>();
+  const { teamId, isResolving } = useResolveTeamSlug(teamParam);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const locationState = location.state as { from?: string; scrollPosition?: number } | undefined;
+
+  const { team, isLoading } = useTeamDetails(teamId);
+  const { pastMatches, isLoadingMatches } = useTeamMatches(teamId);
+  const { rankings } = useTeamRankings();
+
+  const { teamRank, teamRanking, totalTeams } = getTeamRankInfo(rankings, teamId);
+
+  const breadcrumbs = useMemo(
+    () => [
+      { label: 'Home', href: '/' },
+      { label: 'Teams', href: '/teams' },
+      { label: team?.name || 'Loading...' },
+    ],
+    [team?.name]
+  );
+
+  logTeamRender(team);
 
   const handleBack = () => {
     if (locationState?.from) {
@@ -166,70 +318,20 @@ const TeamDetails = () => {
         <PlayerList players={team.players || []} />
 
         {/* 3. Stats & Report Card - combined, default closed */}
-        <section id="stats" className="scroll-mt-20" aria-labelledby="stats-heading">
-          <CollapsibleSection
-            title="Stats & Report Card"
-            icon={BarChart3}
-            iconColor="text-blue-500"
-            defaultOpen={false}
-            headingId="stats-heading"
-            summaryValue={`${team.wins}-${team.losses}`}
-          >
-            <StatBreakdown
-              wins={team.wins ?? 0}
-              losses={team.losses ?? 0}
-              winPercentage={winPct.toFixed(1)}
-              gamesWon={team.game_wins || 0}
-              gamesLost={team.game_losses || 0}
-              gameWinPercentage={gamePct.toFixed(1)}
-              strengthOfSchedule={team.sos?.toFixed(3) || '0.000'}
-              closeMatchLosses={team.close_match_losses || 0}
-              powerScore={team.power_score || 0}
-              rank={teamRank}
-              totalTeams={totalTeams}
-              rankChange={teamRanking?.rankChange}
-              sweeps={sweepStats.sweeps}
-              sweepRate={sweepStats.sweepRate}
-              clutchWins={clutchRecord.clutchWins}
-              clutchWinPct={clutchRecord.clutchWinPct}
-              clutchGame3s={clutchRecord.game3Matches}
-            />
-            {teamId && (
-              <div className="mt-4">
-                <TeamAdvancedStatsSection teamId={teamId} />
-              </div>
-            )}
-            {teamId && (
-              <div className="mt-4 pt-4 border-t border-border">
-                <h3 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground mb-3">
-                  <GraduationCap size={16} className="text-violet-500" />
-                  Report Card
-                </h3>
-                <Suspense fallback={<ChartFallback />}>
-                  <TeamReportCard teamId={teamId} standalone />
-                </Suspense>
-              </div>
-            )}
-          </CollapsibleSection>
-        </section>
+        <TeamStatsSection
+          team={team}
+          teamId={teamId}
+          winPct={winPct}
+          gamePct={gamePct}
+          teamRank={teamRank}
+          totalTeams={totalTeams}
+          teamRanking={teamRanking}
+          sweepStats={sweepStats}
+          clutchRecord={clutchRecord}
+        />
 
         {/* 4. Matchups & Rivalries - combined, default closed */}
-        <section id="h2h" className="scroll-mt-20" aria-labelledby="h2h-heading">
-          <CollapsibleSection
-            title="Matchups & Rivalries"
-            icon={Swords}
-            iconColor="text-rose-500"
-            defaultOpen={false}
-            headingId="h2h-heading"
-          >
-            {teamId && <RivalryHighlights teamId={teamId} standalone />}
-            {teamId && (
-              <div className="mt-4">
-                <HeadToHeadRecords teamId={teamId} teamName={team.name} standalone />
-              </div>
-            )}
-          </CollapsibleSection>
-        </section>
+        <TeamMatchupsSection teamId={teamId} teamName={team.name} />
 
         {/* 5. Match History - default closed */}
         <section id="matches" className="scroll-mt-20" aria-labelledby="matches-heading">
@@ -247,40 +349,7 @@ const TeamDetails = () => {
         </section>
 
         {/* 6. Career & Achievements - combined, default closed */}
-        <section id="career" className="scroll-mt-20" aria-labelledby="career-heading">
-          <CollapsibleSection
-            title="Career & Achievements"
-            icon={TrendingUp}
-            iconColor="text-purple-500"
-            defaultOpen={false}
-            headingId="career-heading"
-          >
-            {teamId && <TeamTotals teamId={teamId} standalone />}
-            {teamId && (
-              <div className="mt-4">
-                <Suspense fallback={<ChartFallback />}>
-                  <TeamCareerPowerScoreChart teamId={teamId} standalone />
-                </Suspense>
-              </div>
-            )}
-            {teamId && (
-              <div className="mt-4 pt-4 border-t border-border">
-                <h3 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground mb-3">
-                  <Trophy size={16} className="text-amber-500" />
-                  Achievements
-                </h3>
-                <TeamBadgeCollection
-                  teamId={teamId}
-                  size="lg"
-                  maxDisplay={12}
-                  orientation="horizontal"
-                  className="gap-3"
-                  showEmptyState
-                />
-              </div>
-            )}
-          </CollapsibleSection>
-        </section>
+        <TeamCareerSection teamId={teamId} />
       </div>
     </>
   );
