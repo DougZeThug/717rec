@@ -111,8 +111,8 @@ vi.mock('@/hooks/matches/updates/utils/queryInvalidation', () => ({
 }));
 
 import EditScoresSection from '../EditScoresSection';
-import AdminMassScoreEntryTool from '../MassScoreEntryTool';
 import MassScoreEntryTool from '../mass-score-entry/MassScoreEntryTool';
+import AdminMassScoreEntryTool from '../MassScoreEntryTool';
 
 const renderWithClient = (ui: React.ReactElement) => {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });

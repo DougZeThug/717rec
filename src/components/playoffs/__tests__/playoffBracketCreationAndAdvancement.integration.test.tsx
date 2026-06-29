@@ -139,16 +139,18 @@ function IntegrationHarness() {
         setBracketDialogOpen={setBracketDialogOpen}
         onCreateBracket={() => setBracketDialogOpen(true)}
         onDeleteBracket={vi.fn()}
-        data={{
-          ready: true,
-          selectedBracketId,
-          setSelectedBracketId,
-          bracket: null,
-          teams,
-          availableDivisions: [],
-          typesafeBracketsByDivision: {},
-          isLoading: false,
-        } as unknown as React.ComponentProps<typeof AdminView>['data']}
+        data={
+          {
+            ready: true,
+            selectedBracketId,
+            setSelectedBracketId,
+            bracket: null,
+            teams,
+            availableDivisions: [],
+            typesafeBracketsByDivision: {},
+            isLoading: false,
+          } as unknown as React.ComponentProps<typeof AdminView>['data']
+        }
       />
 
       {selectedBracketId && (
