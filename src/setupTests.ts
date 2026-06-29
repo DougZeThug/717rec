@@ -59,6 +59,19 @@ for (const proto of [Element.prototype, HTMLElement.prototype]) {
 window.scrollTo = (() => {}) as typeof window.scrollTo;
 Element.prototype.scrollTo = (() => {}) as typeof Element.prototype.scrollTo;
 
+// happy-dom doesn't define window.confirm/alert/prompt (jsdom does). Provide
+// no-op stubs so tests can spy on them. Defaults mirror jsdom: confirm → false,
+// prompt → null, alert → undefined.
+if (!window.confirm) {
+  window.confirm = (() => false) as typeof window.confirm;
+}
+if (!window.alert) {
+  window.alert = (() => {}) as typeof window.alert;
+}
+if (!window.prompt) {
+  window.prompt = (() => null) as typeof window.prompt;
+}
+
 // Mock IntersectionObserver for better test compatibility with complete interface
 globalThis.IntersectionObserver =
   globalThis.IntersectionObserver ||
