@@ -1,5 +1,4 @@
 import { TimeslotService } from '@/services/timeslots/TimeslotService';
-import { TimeslotWithTeamsRow } from '@/services/timeslots/types';
 import { Team } from '@/types';
 import { errorLog, scheduleLog, warnLog } from '@/utils/logger';
 
@@ -63,9 +62,12 @@ export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Pr
     }
 
     // Group timeslots by team_id to ensure each team has both timeslots
+    type PairTimeslotRow = Awaited<
+      ReturnType<typeof TimeslotService.fetchTimeslotsForPair>
+    >[number];
     const teamSlotMap = new Map<
       string,
-      { primary?: TimeslotWithTeamsRow; secondary?: TimeslotWithTeamsRow }
+      { primary?: PairTimeslotRow; secondary?: PairTimeslotRow }
     >();
 
     timeslots.forEach((slot) => {
@@ -117,6 +119,10 @@ export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Pr
       }
 
       const teamData = slots.primary.teams;
+      if (!teamData) {
+        warnLog(`Team ${teamId} missing team data for ${pairName} pair`);
+        return;
+      }
 
       validTeams.push({
         id: teamData.id,
