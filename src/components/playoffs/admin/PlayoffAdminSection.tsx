@@ -39,7 +39,8 @@ const PlayoffAdminSection: React.FC<PlayoffAdminSectionProps> = ({
 
   // Look up the match currently being edited so we can pass its current teams into the dialog
   const editingMatch = useMemo(
-    () => (editTeamsMatchId ? (bracket.matches ?? []).find((m) => m.id === editTeamsMatchId) : null),
+    () =>
+      editTeamsMatchId ? (bracket.matches ?? []).find((m) => m.id === editTeamsMatchId) : null,
     [editTeamsMatchId, bracket.matches]
   );
 

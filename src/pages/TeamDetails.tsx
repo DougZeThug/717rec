@@ -42,7 +42,11 @@ type ClutchRecord = ReturnType<typeof calculateClutchRecord>;
 const getTeamRankInfo = (
   rankings: ReturnType<typeof useTeamRankings>['rankings'],
   teamId: string | undefined
-): { teamRank: number | undefined; teamRanking: TeamRanking | undefined; totalTeams: number | undefined } => {
+): {
+  teamRank: number | undefined;
+  teamRanking: TeamRanking | undefined;
+  totalTeams: number | undefined;
+} => {
   const index = rankings?.findIndex((r) => r.teamId === teamId) ?? -1;
   return {
     teamRank: index >= 0 ? index + 1 : undefined,

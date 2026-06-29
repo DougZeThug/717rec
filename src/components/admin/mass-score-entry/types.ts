@@ -1,11 +1,10 @@
 import { Match, Team } from '@/types';
 
 // Extended Match interface for the component's internal use
-export interface MatchWithTeams
-  extends Omit<
-    Match,
-    'team1Score' | 'team2Score' | 'team1_game_wins' | 'team2_game_wins' | 'winnerId' | 'loserId'
-  > {
+export interface MatchWithTeams extends Omit<
+  Match,
+  'team1Score' | 'team2Score' | 'team1_game_wins' | 'team2_game_wins' | 'winnerId' | 'loserId'
+> {
   team1?: Team;
   team2?: Team;
   team1Id: string;

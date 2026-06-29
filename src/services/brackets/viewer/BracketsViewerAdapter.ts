@@ -97,7 +97,9 @@ export class BracketsViewerAdapter {
     );
 
     // Fetch team data to get logos - participant names match team names
-    const teamNames = participants.map((p) => p.name).filter((name): name is string => name !== null);
+    const teamNames = participants
+      .map((p) => p.name)
+      .filter((name): name is string => name !== null);
 
     debugLog('Fetching logos for teams:', teamNames);
 
