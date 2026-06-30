@@ -1,0 +1,1 @@
+CREATE POLICY "Users can view their own contact requests" ON public.contact_requests FOR SELECT TO authenticated USING (user_id = (SELECT auth.uid()));
