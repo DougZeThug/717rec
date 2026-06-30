@@ -9,7 +9,7 @@ import { debugLog, validationLog } from '@/utils/logger';
  * @returns boolean indicating if scores are valid
  */
 export const validateMatchScores = (score1?: number | null, score2?: number | null): boolean => {
-  debugLog(`Validating match scores:`, {
+  debugLog('Validating match scores:', {
     score1,
     score2,
     types: { score1: typeof score1, score2: typeof score2 },
@@ -24,7 +24,7 @@ export const validateMatchScores = (score1?: number | null, score2?: number | nu
   const parsedScore1 = Number(score1);
   const parsedScore2 = Number(score2);
 
-  debugLog(`Parsed scores:`, {
+  debugLog('Parsed scores:', {
     parsedScore1,
     parsedScore2,
     types: { parsedScore1: typeof parsedScore1, parsedScore2: typeof parsedScore2 },
@@ -44,7 +44,7 @@ export const validateMatchScores = (score1?: number | null, score2?: number | nu
  * @returns boolean indicating if game wins are valid
  */
 export const validateGameWins = (gameWins1?: number | null, gameWins2?: number | null): boolean => {
-  debugLog(`Validating game wins:`, {
+  debugLog('Validating game wins:', {
     gameWins1,
     gameWins2,
     types: { gameWins1: typeof gameWins1, gameWins2: typeof gameWins2 },
@@ -54,7 +54,7 @@ export const validateGameWins = (gameWins1?: number | null, gameWins2?: number |
   const wins1 = Number(gameWins1 ?? 0);
   const wins2 = Number(gameWins2 ?? 0);
 
-  debugLog(`Normalized game wins:`, {
+  debugLog('Normalized game wins:', {
     wins1,
     wins2,
     types: { wins1: typeof wins1, wins2: typeof wins2 },
