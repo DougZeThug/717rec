@@ -37,7 +37,7 @@ const NotificationBell: React.FC<Props> = ({ className }) => {
           variant="ghost"
           size="icon"
           className={cn('relative', className)}
-          aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)" : ''}"}
+          aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
         >
           <Bell className="size-5" />
           {unreadCount > 0 && (

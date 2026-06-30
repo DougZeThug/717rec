@@ -185,7 +185,7 @@ export const useScoreEntryData = () => {
       if (succeededIds.length > 0) {
         toast({
           title: '✅ Matches Submitted',
-          description: `${succeededIds.length} match(es) successfully submitted.${failedIds.length > 0 ? ` ${failedIds.length} failed." : ''}",
+          description: `${succeededIds.length} match(es) successfully submitted.${failedIds.length > 0 ? ` ${failedIds.length} failed.` : ''}`,
         });
       } else {
         toast({
