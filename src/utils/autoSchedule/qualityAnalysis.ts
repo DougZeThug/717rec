@@ -260,7 +260,7 @@ export function generateQualityFeedback(metrics: MatchQualityMetrics): {
  * Calculates comprehensive quality metrics for auto-generated match pairings.
  *
  * This is the main scoring function used to evaluate schedule quality. It aggregates
- * multiple analysis dimensions into a single `MatchQualityMetrics` object that powers
+ * multiple analysis dimensions into a single 'MatchQualityMetrics' object that powers
  * the quality feedback UI shown to admins.
  *
  * ## Metrics Calculated
@@ -269,8 +269,8 @@ export function generateQualityFeedback(metrics: MatchQualityMetrics): {
  * |----------|-------------|
  * | **Basic Stats** | Total matches, rematch count, average compatibility score |
  * | **Quality Rating** | "Excellent" / "Good" / "Fair" / "Poor" based on compatibility |
- * | **Opponent Diversity** | Unique opponent relationships via `analyzeOpponentDiversity()` |
- * | **Power Score Balance** | Skill-level parity via `analyzePowerScoreBalance()` |
+ * | **Opponent Diversity** | Unique opponent relationships via 'analyzeOpponentDiversity()' |
+ * | **Power Score Balance** | Skill-level parity via 'analyzePowerScoreBalance()' |
  * | **Block Analysis** | Cross-block metrics for dual-block schedules |
  * | **Performance** | Generation time and algorithms used |
  * | **Feedback** | Actionable strengths, improvements, recommendations |

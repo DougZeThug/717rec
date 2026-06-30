@@ -40,7 +40,7 @@ type Result = { data: unknown; error: unknown | null };
 /**
  * Creates a chainable, thenable query object that mirrors the Supabase
  * PostgREST builder. Every filter method returns the same chain, and the
- * chain can be awaited directly OR terminated with `.single()`.
+ * chain can be awaited directly OR terminated with '.single()'.
  */
 const makeChain = (result: Result) => {
   const chain: Record<string, unknown> & PromiseLike<unknown> = {
@@ -65,8 +65,8 @@ const makeChain = (result: Result) => {
 };
 
 /**
- * Per-table queue of results. Each call to `supabase.from(table)` pops the
- * next queued result for that table. Falls back to `{data:null, error:null}`
+ * Per-table queue of results. Each call to 'supabase.from(table)' pops the
+ * next queued result for that table. Falls back to '{data:null, error:null}'
  * if the queue is exhausted (which matches the service's error-tolerant
  * behavior — it swallows errors and returns empty results).
  */

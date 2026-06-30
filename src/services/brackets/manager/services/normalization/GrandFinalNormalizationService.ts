@@ -80,7 +80,7 @@ export class GrandFinalNormalizationService {
 
   /**
    * Idempotent best-effort repair of the Grand Final. Runs
-   * `normalizeGrandFinalPopulation` and, if a slot is still missing, waits
+   * 'normalizeGrandFinalPopulation' and, if a slot is still missing, waits
    * briefly and retries. Designed to be invoked immediately after the WB or
    * LB Final completes so the GF becomes playable without admin intervention.
    */

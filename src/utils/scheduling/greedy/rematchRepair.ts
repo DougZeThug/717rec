@@ -10,7 +10,7 @@ import { ScheduledMatch } from './types';
  * rematch and try to 2-swap it with another pair so both replacements are
  * fresh (not in playedSet). Forbidden/session pairs and tier gap stay hard.
  *
- * Mutates `matches` in place and updates `tonightPairs` / `newPairs`.
+ * Mutates 'matches' in place and updates 'tonightPairs' / 'newPairs'.
  * Returns the number of rematches eliminated.
  */
 export function rematchRepairPass(

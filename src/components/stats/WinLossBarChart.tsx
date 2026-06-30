@@ -23,7 +23,7 @@ interface BarChartProps {
 }
 
 // Module-scope X axis tick. Recharts injects x/y/payload; the rest are passed
-// in via the element form `tick={<CustomXAxisTick ... />}`.
+// in via the element form 'tick={<CustomXAxisTick ... />}'.
 const CustomXAxisTick: React.FC<{
   x?: number;
   y?: number;

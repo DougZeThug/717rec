@@ -110,8 +110,8 @@ export const saveRankingsToStorage = async (
   options: { persistToDatabase?: boolean } = {}
 ): Promise<void> => {
   // Default to true to preserve existing behavior for callers that don't pass
-  // the option. Admin-gated callers (e.g. useTeamRankings) pass `false` for
-  // non-admins so we don't trip RLS on `ranking_snapshots`.
+  // the option. Admin-gated callers (e.g. useTeamRankings) pass 'false' for
+  // non-admins so we don't trip RLS on 'ranking_snapshots'.
   const { persistToDatabase = true } = options;
 
   try {

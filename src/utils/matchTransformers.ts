@@ -19,7 +19,7 @@ export interface TransformMatchOptions {
 // ============= Raw Input Row Types =============
 // These describe the shape of raw Supabase rows (with optional joined data)
 // passed to the transformers. They intentionally allow optional/nullable fields
-// to mirror what Supabase returns from `.select(...)` with joins.
+// to mirror what Supabase returns from '.select(...)' with joins.
 
 interface RawTeamJoinObject {
   id?: string;

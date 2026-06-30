@@ -1,7 +1,7 @@
 // I'm not modifying this file, just confirming its behavior
 // The existing implementation already handles play-in placeholders:
 //
-// ```
+// ''`
 // const getTeamById = (id?: string | null) => {
 //   if (!id) return null;
 //
@@ -16,7 +16,7 @@
 //
 //   return teams.find(team => team.id === id) || null;
 // };
-// ```
+// ''`
 //
 // This code already handles display of play-in winners appropriately. When the team ID is null,
 // there won't be a match for the team, and the UI will render "TBD" or similar placeholder.

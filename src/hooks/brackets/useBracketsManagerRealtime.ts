@@ -7,8 +7,8 @@ import { bracketLog, errorLog } from '@/utils/logger';
 
 /**
  * Realtime hook for brackets-manager brackets.
- * Subscribes to the `match` table (used by brackets-manager SQL storage)
- * instead of the legacy `playoff_matches` table.
+ * Subscribes to the 'match' table (used by brackets-manager SQL storage)
+ * instead of the legacy 'playoff_matches' table.
  *
  * If stageId is not provided, will attempt to fetch it from the database.
  */
@@ -84,7 +84,7 @@ export function useBracketsManagerRealtime(
     let hasRetried = false;
     let isCancelled = false;
 
-    // Build a fresh channel each time. Phoenix channels set `joinedOnce` on the
+    // Build a fresh channel each time. Phoenix channels set 'joinedOnce' on the
     // first join and never reset it, so retries must use a brand-new instance.
     const connect = (): ReturnType<typeof supabase.channel> => {
       // Unique channel name per attempt avoids handshake collisions with stale channels

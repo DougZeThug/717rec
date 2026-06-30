@@ -7,8 +7,8 @@ import { DualMatchMetrics, TeamMatchCount } from './types';
  * Calculate metrics for dual / multi-block pairings.
  *
  * Accepts either:
- *  - a record of `{ [blockId]: TeamPairing[] }` for the full schedule, OR
- *  - the legacy two-argument form `(primaryBlockPairings, secondaryBlockPairings)`.
+ *  - a record of '{ [blockId]: TeamPairing[] }' for the full schedule, OR
+ *  - the legacy two-argument form '(primaryBlockPairings, secondaryBlockPairings)'.
  *
  * Teams are considered to have "matches in multiple time blocks" only when
  * their pairings span 2+ distinct block ids — a team that plays twice inside

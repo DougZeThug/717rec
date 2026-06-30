@@ -82,7 +82,7 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({ match, teams, onSav
       const { team1Wins, team2Wins } = calculateTotalScore();
 
       // Guard: reject saving a match with no winner (e.g., all 0-0 games).
-      // `validateMatchScores` intentionally allows 0-0 as a transient editing
+      // 'validateMatchScores' intentionally allows 0-0 as a transient editing
       // state so users can add empty game rows, but a 0-0 save would persist
       // a "completed" match with no winner and break bracket progression.
       if (team1Wins === 0 && team2Wins === 0) {

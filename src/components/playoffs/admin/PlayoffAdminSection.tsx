@@ -44,7 +44,7 @@ const PlayoffAdminSection: React.FC<PlayoffAdminSectionProps> = ({
     [editTeamsMatchId, bracket.matches]
   );
 
-  // Only brackets-manager brackets have numeric match IDs on the `match` table.
+  // Only brackets-manager brackets have numeric match IDs on the 'match' table.
   // If this bracket is legacy (uses_brackets_manager !== true), skip the Teams action.
   const supportsTeamEdit = bracket.uses_brackets_manager === true;
   const handleEditTeams = supportsTeamEdit ? setEditTeamsMatchId : undefined;

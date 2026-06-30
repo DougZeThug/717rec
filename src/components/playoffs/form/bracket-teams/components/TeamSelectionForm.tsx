@@ -44,7 +44,7 @@ type SafeFormState = Omit<BracketFormStateResult, 'cleanup'>;
  * Normalize the incoming form state so every property has a safe default,
  * guarding against a missing/malformed formState (prevents React error #300).
  * A single null guard replaces per-property optional chaining while keeping the
- * exact `||` / `??` fallback semantics for a present formState.
+ * exact '||' / '??' fallback semantics for a present formState.
  */
 const buildSafeFormState = (
   formState: BracketFormStateResult | undefined,

@@ -9,7 +9,7 @@
  * Caption:       12px / 16px - Labels, hints, timestamps
  *
  * NUMERIC TYPOGRAPHY:
- * Always use `tabular-nums` class on:
+ * Always use 'tabular-nums' class on:
  * - Scores, rankings, percentages
  * - Record displays (W-L)
  * - Any numeric columns in tables

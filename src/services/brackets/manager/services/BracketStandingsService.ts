@@ -9,8 +9,8 @@ import type { BracketNormalizationService } from './BracketNormalizationService'
 
 /**
  * Result of a final-standings calculation attempt.
- * - `written`: records were upserted into playoff_team_records
- * - `reason`: when not written, why we bailed out (so the caller can show
+ * - 'written': records were upserted into playoff_team_records
+ * - 'reason': when not written, why we bailed out (so the caller can show
  *   an appropriate toast instead of a destructive error)
  */
 export interface FinalStandingsResult {
@@ -37,7 +37,7 @@ export class BracketStandingsService {
    * Returns a result describing whether records were written. Never throws
    * for "expected" failure modes (incomplete matches, brackets-manager
    * lookup errors) — those are logged and surfaced via the returned
-   * `reason`. Only re-throws on unexpected infrastructure failures.
+   * 'reason'. Only re-throws on unexpected infrastructure failures.
    */
   async calculateFinalStandings(bracketId: string): Promise<FinalStandingsResult> {
     bracketLog('Calculating final standings from SQL tables:', { bracketId });

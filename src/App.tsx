@@ -73,7 +73,7 @@ const AppContent = () => {
   const location = useLocation();
   const navigationStartRef = useLazyRef(() => performance.now());
 
-  // Alias to a local to avoid the `location.*` mutable-global heuristic.
+  // Alias to a local to avoid the 'location.*' mutable-global heuristic.
   const pathname = location.pathname;
 
   // Log every route change, track page views, and emit Sentry metrics

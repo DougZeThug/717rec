@@ -101,10 +101,10 @@ export interface SupabaseMock {
  * The mock works in two modes:
  *
  * **Setup mode** (before the code under test runs):
- *   Call `mock.from('table').select().order().resolves({ data, error })` to
+ *   Call "mock.from('table').select().order().resolves({ data, error })" to
  *   configure what the chain will return.
  *
- * **Runtime mode** (when production code calls `supabase.from('table').select()...`):
+ * **Runtime mode** (when production code calls "supabase.from('table').select()..."):
  *   The mock returns a thenable chain that resolves to the configured result.
  */
 export function createSupabaseMock(): SupabaseMock {

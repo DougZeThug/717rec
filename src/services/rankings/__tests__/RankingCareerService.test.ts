@@ -42,7 +42,7 @@ const pgError = (message = 'query failed', code = '42P01') => ({
 /**
  * Creates a chainable, thenable query object that mirrors the Supabase
  * PostgREST builder. Every filter method returns the same chain, and the
- * chain can be awaited directly to resolve to `{ data, error }`.
+ * chain can be awaited directly to resolve to '{ data, error }'.
  */
 const makeChain = (result: { data: unknown; error: unknown | null }) => {
   const chain: Record<string, unknown> & PromiseLike<unknown> = {
@@ -197,7 +197,7 @@ describe('fetchHistoricalPowerScores', () => {
       power_score_snapshots: { data: null, error: pgError('snapshots fetch failed') },
     });
 
-    // Call WITH a teamId to also exercise the `.eq('team_id', teamId)` branch
+    // Call WITH a teamId to also exercise the ".eq('team_id', teamId)" branch
     await expect(fetchHistoricalPowerScores('t1')).rejects.toThrow(DatabaseError);
   });
 });

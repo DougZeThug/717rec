@@ -44,7 +44,7 @@ const validateImageFile = async (
   }
 
   // Require a recognized MIME type. browser-image-compression rejects files
-  // with empty `type`, so accepting them here would lead to uploads with
+  // with empty 'type', so accepting them here would lead to uploads with
   // empty contentType metadata after the compression fallback.
   if (!ALLOWED_IMAGE_MIME_TYPES.has(file.type)) {
     throw new Error('Unsupported file type. Use JPEG, PNG, or WebP images only.');

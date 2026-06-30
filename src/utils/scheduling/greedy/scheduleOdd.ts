@@ -42,7 +42,7 @@ function selectBye2(
 ): Team {
   const exclude = new Set([bye1.id]);
   // One bye-selection attempt per team in the pool; the loop variable is unused
-  // because each attempt re-picks via the growing `exclude` set, not by index.
+  // because each attempt re-picks via the growing 'exclude' set, not by index.
   for (const _team of sortedTeams) {
     const candidate = pickBye(
       sortedTeams,
