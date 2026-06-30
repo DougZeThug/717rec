@@ -1,60 +1,40 @@
-## Goal
-Eliminate the 3 Supabase linter `multiple_permissive_policies` warnings by consolidating overlapping RLS policies into single combined policies per (role, action). Behavior stays identical — only performance and policy hygiene improve.
+## Plan: Fix DeepSource JS-0757 (autoFocus prop)
 
-## Findings to resolve
-1. `public.contact_requests` — SELECT/authenticated: `Admins can view contact requests` + `Users can view their own contact requests`
-2. `public.matches_archive` — SELECT/authenticated: `Authenticated read archived matches` + `Public read archived matches`
-3. `public.teams` — UPDATE/authenticated: `Admins can update teams` + `Approved members can update own team`
+DeepSource flagged that we are using the `autoFocus` prop on several form and calendar elements. Their guidance says this can create usability problems, especially for keyboard users and screen readers, because it unexpectedly jumps the cursor/focus when the page or popover opens.
 
-## Migration plan (single SQL migration)
+### What I found
+I scanned the entire `src/` folder and found **8** uses of `autoFocus`:
 
-For each table: inspect existing policy definitions, drop the two overlapping policies, recreate a single consolidated policy whose `USING` (and `WITH CHECK` where applicable) is the `OR` of the originals. Keep auth calls wrapped in `(SELECT auth.<fn>())` per the project's RLS performance standard.
+1. `src/components/admin/batch-matches/ThursdayDatePicker.tsx` – Calendar inside a popover
+2. `src/components/admin/auto-schedule/DateSettingsPanel.tsx` – Calendar inside a popover
+3. `src/components/admin/mass-score-entry/FilterBar.tsx` – Calendar inside a popover
+4. `src/components/admin/timeslots/TimeslotsTab.tsx` – Calendar inside a popover
+5. `src/components/schedule/ScheduleHeader.tsx` – Calendar inside a popover
+6. `src/components/ui/date-picker.tsx` – Calendar inside a popover
+7. `src/components/admin/divisions/CreateDivisionDialog.tsx` – Name input inside a dialog
+8. `src/components/stats/TeamSearchDrawer.tsx` – Search input inside a drawer
 
-### 1. contact_requests (SELECT)
-```sql
-DROP POLICY "Admins can view contact requests" ON public.contact_requests;
-DROP POLICY "Users can view their own contact requests" ON public.contact_requests;
+The message you pasted lists 5 of them; the other 3 are in the same code patterns, so I will fix all 8 to keep the rule consistent across the app.
 
-CREATE POLICY "View contact requests (admin or owner)"
-ON public.contact_requests
-FOR SELECT TO authenticated
-USING (
-  public.current_user_is_admin()
-  OR user_id = (SELECT auth.uid())
-);
-```
+### What I will do
+For each file, I will remove the `autoFocus` prop from the element. For the calendars, Radix already traps focus inside the popover when it opens, so the user can still navigate with the keyboard. For the dialog and drawer inputs, the dialog/drawer itself already manages focus, so removing `autoFocus` does not break keyboard behavior.
 
-### 2. matches_archive (SELECT)
-The `Public read archived matches` policy already covers `public` role (anon + authenticated). The authenticated-only duplicate is redundant — drop it and keep only the public one.
-```sql
-DROP POLICY "Authenticated read archived matches" ON public.matches_archive;
--- Keep "Public read archived matches" as the sole SELECT policy.
-```
+### Changes per file
 
-### 3. teams (UPDATE)
-```sql
-DROP POLICY "Admins can update teams" ON public.teams;
-DROP POLICY "Approved members can update own team" ON public.teams;
+- `src/components/admin/batch-matches/ThursdayDatePicker.tsx` – remove `autoFocus` from the `<Calendar />`.
+- `src/components/admin/auto-schedule/DateSettingsPanel.tsx` – remove `autoFocus` from the `<Calendar />`.
+- `src/components/admin/mass-score-entry/FilterBar.tsx` – remove `autoFocus` from the `<Calendar />`.
+- `src/components/admin/timeslots/TimeslotsTab.tsx` – remove `autoFocus` from the `<CalendarComponent />`.
+- `src/components/schedule/ScheduleHeader.tsx` – remove `autoFocus` from the `<CalendarComponent />`.
+- `src/components/ui/date-picker.tsx` – remove `autoFocus` from the `<Calendar />`.
+- `src/components/admin/divisions/CreateDivisionDialog.tsx` – remove `autoFocus` from the `<Input id="division-name" />`.
+- `src/components/stats/TeamSearchDrawer.tsx` – remove `autoFocus` from the search `<Input />`.
 
-CREATE POLICY "Update teams (admin or approved member)"
-ON public.teams
-FOR UPDATE TO authenticated
-USING (
-  public.current_user_is_admin()
-  OR <approved-member predicate from original>
-)
-WITH CHECK (
-  public.current_user_is_admin()
-  OR <approved-member predicate from original>
-);
-```
+### Verification
+After editing, I will run:
 
-Before writing the migration I'll read the exact `USING`/`WITH CHECK` expressions of each existing policy via `supabase--read_query` against `pg_policies` so the consolidated predicates are a faithful OR of the originals (no behavior change).
+- `npx eslint .` to confirm the JS-0757 issue is gone and nothing else breaks.
+- `npm run typecheck` to make sure TypeScript still compiles.
+- `npm run test:file -- <relevant-test-files>` to run any tests tied to the changed components.
 
-## Verification
-1. Re-run `supabase--linter` — the 3 warnings should be gone, no new ones introduced.
-2. Spot-check via `pg_policies` that each table now has exactly one permissive policy per (role, action) involved.
-3. Sanity check app paths that touch these tables (admin contact view, owner contact view, archived matches read, admin team edit, captain team edit) — no code changes required since predicates are equivalent.
-
-## Out of scope
-No code/UI changes. No changes to other tables or other (role, action) combinations.
+This is a small, safe set of changes that only removes the flagged prop; no other behavior will be altered.
