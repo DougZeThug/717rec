@@ -7,7 +7,7 @@ export const matchUpdateKeyframes = `
   }
 `;
 
-export const matchUpdateAnimation = `matchUpdate 0.8s ease-in-out`;
+export const matchUpdateAnimation = 'matchUpdate 0.8s ease-in-out';
 
 // Animation keyframes for round transitions
 export const roundAppearKeyframes = `
@@ -17,7 +17,7 @@ export const roundAppearKeyframes = `
   }
 `;
 
-export const roundAppearAnimation = `roundAppear 0.5s ease-out`;
+export const roundAppearAnimation = 'roundAppear 0.5s ease-out';
 
 // Animation keyframes for champion celebration
 export const championKeyframes = `
@@ -28,7 +28,7 @@ export const championKeyframes = `
   }
 `;
 
-export const championAnimation = `champion 1.2s ease-out`;
+export const championAnimation = 'champion 1.2s ease-out';
 
 // Function to generate staggered animation delay
 export const getStaggeredDelay = (index: number, baseDelay: number = 0.1) => {
