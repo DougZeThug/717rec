@@ -4,7 +4,7 @@ import { errorLog, teamLog } from '@/utils/logger';
 
 export const fetchTeamsForMatch = async (teamIds: string[]): Promise<Team[]> => {
   try {
-    teamLog(`Fetching teams for ids:`, teamIds);
+    teamLog('Fetching teams for ids:', teamIds);
 
     // Return early if there are no team IDs
     if (!teamIds.length) {

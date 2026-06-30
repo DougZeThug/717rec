@@ -1,20 +1,34 @@
-## Fix duplicate exports in `src/utils/colors/index.ts`
+## Fix DeepSource JS-R1004 (useless template literals)
 
-The file re-exports everything from `./powerScoreColors` (which already exports `formatPowerScore`) and also re-exports `getDivisionGradientClass` / `getDivisionStyles` from the design-system, then redeclares `formatPowerScore` locally — producing four JS-E1004 duplicate-export errors.
+Replace template literals with regular string literals where there is no interpolation, no multi-line content, and no quote-escaping benefit. Strings containing apostrophes will use double quotes.
 
-### Change
+### Files & changes
 
-Edit `src/utils/colors/index.ts`:
+**User-reported (still outstanding):**
+1. `src/hooks/useMatchCreation.ts` (L68) — `` `Match has been successfully scheduled.` `` → `'Match has been successfully scheduled.'`
+2. `src/hooks/matches/utils/teamDataUtils.ts` (L7) — `` `Fetching teams for ids:` `` → `'Fetching teams for ids:'`
+3. `src/utils/timeUtils.ts` (L130) — `` `Conversion results:` `` → `'Conversion results:'`
 
-1. Remove the local `formatPowerScore` const at the bottom (it duplicates the one already re-exported from `./powerScoreColors`, and uses a different format — `.toFixed(2)` vs `.toFixed(1)`). The canonical one in `powerScoreColors.ts` returns `'N/A'` for null/undefined and `.toFixed(1)`, matching what the rest of the codebase already uses via `@/utils/colors/powerScoreColors` and `@/utils/powerScore`.
-2. Remove the explicit `export { getDivisionGradientClass, getDivisionStyles } from '@/styles/design-system/divisions';` line — these names already come through `export * from './divisionColors'` (verify) **or** keep this line and instead drop it from whichever sub-module re-exports it. Based on the duplicate warning, the collision is between this explicit re-export and one of the `export *` lines above; I'll grep to confirm which sub-module owns it and remove the duplicate side, keeping the design-system source as the single origin.
+Note: the two `BracketUpdateService.ts` lines the user pasted are already plain strings in the current source — no change needed.
+
+**Other JS-R1004 violations found via repo sweep:**
+4. `src/hooks/matches/utils/matchValidationUtils.ts` — L33, L52, L65 (use double quotes for "can't"), L76, L82, L91, L104, L124
+5. `src/hooks/matches/utils/matchUpdateUtils.ts` — L71
+6. `src/hooks/scheduling/usePairingGenerator.ts` — L119 (concat-only template)
+7. `src/hooks/scheduling/utils/dualBlockScheduler.ts` — L97
+8. `src/components/admin/mass-score-entry/utils/matchValidation.ts` — L12, L27, L47, L57
+9. `src/components/admin/mass-score-entry/services/matchQueryService.ts` — L7
+10. `src/components/admin/mass-score-entry/hooks/useScoreSubmission.ts` — L98
+11. `src/components/admin/mass-score-entry/hooks/useMatchSubmission.ts` — L86
+12. `src/components/admin/mass-score-entry/hooks/submission/useMatchValidation.ts` — L21
+13. `src/components/stats/WinLossBarChart.tsx` — L50 (`` `rotate(-24)` `` → `'rotate(-24)'`)
+14. `src/components/playoffs/animation/BracketAnimationUtils.tsx` — L10, L20, L31 (animation shorthand strings)
 
 ### Verification
+- `npm run lint` (formatting clean)
+- `npm run typecheck` (no type regressions)
 
-- `npx eslint src/utils/colors/index.ts`
-- `npm run typecheck`
-- Spot-check that `formatPowerScore` callers still render one decimal (existing behavior from `powerScoreColors.ts`).
-
-### Risk
-
-Very low. One file, only removes duplicate re-exports. The only behavioral nuance is the local `.toFixed(2)` version being dropped in favor of the `.toFixed(1)` version that the rest of the app already imports directly.
+### Scope guardrails
+- No behavior changes — pure string-literal swap.
+- Skip backticks inside comments/JSDoc and Markdown code fences.
+- Skip template strings that contain `${...}`, newlines, or both quote types.

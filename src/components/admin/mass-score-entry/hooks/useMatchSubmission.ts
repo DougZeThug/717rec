@@ -83,7 +83,8 @@ export const useScoreSubmission = (
       } else {
         toast({
           title: 'Error',
-          description: `Failed to update any matches. Please check the error messages and try again.`,
+          description:
+            'Failed to update any matches. Please check the error messages and try again.',
           variant: 'destructive',
         });
       }

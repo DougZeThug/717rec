@@ -47,7 +47,7 @@ const CustomXAxisTick: React.FC<{
         fill={isDark ? '#e5e7eb' : '#334155'}
         fontSize={isMobile ? 10 : 11}
         fontFamily="'Inter', sans-serif"
-        transform={`rotate(-24)`}
+        transform="rotate(-24)"
         style={{
           cursor: label.length > maxLabelLength ? 'pointer' : undefined,
         }}

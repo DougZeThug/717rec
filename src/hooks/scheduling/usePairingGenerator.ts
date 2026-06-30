@@ -116,7 +116,7 @@ export const usePairingGenerator = () => {
           // Log summary of diagnostics if any relaxation was applied
           if (aggregateDiagnostics.relaxationApplied > 0 || aggregateDiagnostics.repairAttempted) {
             scheduleLog(
-              `📊 Scheduling completed with constraint adjustments: ` +
+              '📊 Scheduling completed with constraint adjustments: ' +
                 `relaxation level ${aggregateDiagnostics.relaxationApplied}, ` +
                 `constraints relaxed: [${aggregateDiagnostics.constraintsRelaxed.join(', ') || 'none'}], ` +
                 `repair attempted: ${aggregateDiagnostics.repairAttempted}`
