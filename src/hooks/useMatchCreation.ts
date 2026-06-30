@@ -65,7 +65,7 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
 
       toast({
         title: 'Match Created',
-        description: `Match has been successfully scheduled.`,
+        description: 'Match has been successfully scheduled.',
       });
 
       // Invalidate queries to refresh data
