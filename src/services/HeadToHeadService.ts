@@ -68,10 +68,7 @@ export class HeadToHeadService {
    * Returns null if no matches exist between the teams (not an error condition)
    * @throws {DatabaseError} When database operations fail
    */
-  static async getOpponentHistory(
-    teamId: string,
-    opponentId: string
-  ): Promise<OpponentHistory | null> {
+  static getOpponentHistory(teamId: string, opponentId: string): Promise<OpponentHistory | null> {
     matchLog('Fetching opponent history:', teamId, 'vs', opponentId);
 
     return withTiming(
