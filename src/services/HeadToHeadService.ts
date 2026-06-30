@@ -81,6 +81,7 @@ export class HeadToHeadService {
 
         const summary = headToHeadRecords.find((record) => record.opponent_id === opponentId);
 
+        // Returns null when no data exists yet (not an error) — caller renders an empty state.
         if (!summary) {
           matchLog('No head-to-head summary found');
           return null;

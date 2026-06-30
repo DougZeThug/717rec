@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { handleDatabaseError } from '@/utils/errorHandler';
+import { assertNonEmptyString } from '@/utils/validation';
 
 export interface BlindDrawSettings {
   id: string;
@@ -73,6 +74,10 @@ export const BlindDrawService = {
     firstName: string;
     lastInitial: string;
   }): Promise<void> => {
+    // Reject blank names (after trim) before hitting the database.
+    assertNonEmptyString(firstName, 'firstName');
+    assertNonEmptyString(lastInitial, 'lastInitial');
+
     const { error } = await supabase.from('blind_draw_signups').insert({
       event_date: eventDate,
       first_name: firstName.trim(),

@@ -29,6 +29,7 @@ export const fetchTeamMembership = async (userId: string): Promise<TeamMembershi
 
   if (fetchError) handleDatabaseError(fetchError, 'Failed to fetch team membership');
 
+  // Returns null when no data exists yet (not an error) — caller renders an empty state.
   if (!data) return null;
 
   // Transform the data to match the Team interface

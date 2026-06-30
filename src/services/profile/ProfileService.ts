@@ -67,6 +67,7 @@ export const fetchAuthProfile = async (userId: string): Promise<UserProfile | nu
   if (error) {
     // PGRST116 = no rows returned — valid for new users who don't have a profile yet
     if (error.code === 'PGRST116') {
+      // Returns null when no data exists yet (not an error) — caller renders an empty state.
       return null;
     }
     handleDatabaseError(error, 'Failed to fetch profile');

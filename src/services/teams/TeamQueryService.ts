@@ -4,6 +4,7 @@ import { NotFoundError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { teamLog } from '@/utils/logger';
 import { TeamRowData, transformTeamRow } from '@/utils/teamTransformer';
+import { assertValidUuid } from '@/utils/validation';
 
 import { TeamsQueryOptions } from './teamFetch.types';
 
@@ -123,6 +124,8 @@ export const fetchTeamsWithOptions = async (options?: TeamsQueryOptions): Promis
  * @throws {Error} When team not found or database error
  */
 export const fetchTeamDetails = async (teamId: string): Promise<Team> => {
+  assertValidUuid(teamId, 'teamId');
+
   const { data, error } = await supabase
     .from('v_team_details')
     .select(

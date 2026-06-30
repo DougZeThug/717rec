@@ -140,6 +140,10 @@ const setupFullSuccess = () => {
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
 describe('updateTeamApi', () => {
+  // Valid v4 UUID — the function now guards its teamId input. The mocked DB
+  // rows still echo 'team-abc' as the stored id, which the assertions check.
+  const TEAM_ID = '66666666-6666-4666-8666-666666666666';
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockFrom.mockReset();
@@ -147,7 +151,7 @@ describe('updateTeamApi', () => {
 
   it('returns updated team data on success', async () => {
     setupFullSuccess();
-    const result = await updateTeamApi('team-abc', makeTeamData());
+    const result = await updateTeamApi(TEAM_ID, makeTeamData());
 
     expect(result.id).toBe('team-abc');
     expect(result.name).toBe('Updated Team');
@@ -164,7 +168,7 @@ describe('updateTeamApi', () => {
       }),
     }));
 
-    await expect(updateTeamApi('missing-id', makeTeamData())).rejects.toThrow(NotFoundError);
+    await expect(updateTeamApi(TEAM_ID, makeTeamData())).rejects.toThrow(NotFoundError);
   });
 
   it('throws DatabaseError when team existence check fails', async () => {
@@ -186,7 +190,7 @@ describe('updateTeamApi', () => {
       }),
     }));
 
-    await expect(updateTeamApi('team-abc', makeTeamData())).rejects.toThrow(DatabaseError);
+    await expect(updateTeamApi(TEAM_ID, makeTeamData())).rejects.toThrow(DatabaseError);
   });
 
   it('throws NotFoundError when division does not exist', async () => {
@@ -219,7 +223,7 @@ describe('updateTeamApi', () => {
       return {};
     });
 
-    await expect(updateTeamApi('team-abc', makeTeamData())).rejects.toThrow(NotFoundError);
+    await expect(updateTeamApi(TEAM_ID, makeTeamData())).rejects.toThrow(NotFoundError);
   });
 
   it('skips division check when division_id is null', async () => {
@@ -294,13 +298,13 @@ describe('updateTeamApi', () => {
       return {};
     });
 
-    await updateTeamApi('team-abc', makeTeamData({ division_id: null }));
+    await updateTeamApi(TEAM_ID, makeTeamData({ division_id: null }));
     expect(divisionChecked).toBe(false);
   });
 
   it('uses wins/losses from teamData since db does not return them', async () => {
     setupFullSuccess();
-    const result = await updateTeamApi('team-abc', makeTeamData({ wins: 10, losses: 2 }));
+    const result = await updateTeamApi(TEAM_ID, makeTeamData({ wins: 10, losses: 2 }));
     expect(result.wins).toBe(10);
     expect(result.losses).toBe(2);
   });
@@ -308,7 +312,7 @@ describe('updateTeamApi', () => {
   it('defaults wins and losses to 0 when teamData has no wins/losses', async () => {
     setupFullSuccess();
     const result = await updateTeamApi(
-      'team-abc',
+      TEAM_ID,
       makeTeamData({ wins: undefined, losses: undefined })
     );
     expect(result.wins).toBe(0);

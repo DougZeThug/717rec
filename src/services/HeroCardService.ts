@@ -46,6 +46,7 @@ export const HeroCardService = {
   },
 
   fetchHeroCardById: async (id: string | null): Promise<HeroCard | null> => {
+    // Returns null when no data exists yet (not an error) — caller renders an empty state.
     if (!id) return null;
     const { data, error } = await supabase
       .from('hero_cards')

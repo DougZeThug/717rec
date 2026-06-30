@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
-import { ValidationError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { errorLog, scoreLog } from '@/utils/logger';
+import { assertDistinct } from '@/utils/validation';
 
 // Re-export from split services so existing imports keep working
 export type { HeadToHeadData } from '@/services/TeamCareerStatsService';
@@ -26,14 +26,7 @@ export async function applyMatchResult(
   loserId = loserId.toLowerCase();
 
   // Validate that winner and loser are different teams
-  if (winnerId === loserId) {
-    const errorMsg = 'Winner and loser must be different teams';
-    errorLog('Invalid applyMatchResult call - same team ID for winner and loser:', {
-      winnerId,
-      loserId,
-    });
-    throw new ValidationError(errorMsg);
-  }
+  assertDistinct(winnerId, loserId, 'Winner and loser must be different teams');
 
   // Convert parameters to numbers to ensure proper math
   const winnerGameWinsNum = Number(winnerGameWins || 0);

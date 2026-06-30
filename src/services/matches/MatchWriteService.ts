@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { BusinessLogicError } from '@/types/errors';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
+import { assertNonNegativeNumber, assertValidUuid } from '@/utils/validation';
 
 /**
  * Service layer for match write operations
@@ -68,6 +69,10 @@ export const batchCreateMatches = async (matches: MatchCreateData[]) => {
  * @throws {DatabaseError} When database operations fail
  */
 export const updateMatchScore = async (matchId: string, updates: MatchUpdateData) => {
+  assertValidUuid(matchId, 'matchId');
+  assertNonNegativeNumber(updates.team1_score, 'team1_score');
+  assertNonNegativeNumber(updates.team2_score, 'team2_score');
+
   const { error } = await supabase.from('matches').update(updates).eq('id', matchId);
 
   if (error) {

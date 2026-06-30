@@ -67,6 +67,11 @@ describe('fetchActiveSeasonIdStrict', () => {
 describe('countTeamMatchesInSeason', () => {
   beforeEach(() => vi.clearAllMocks());
 
+  // Valid, distinct v4 UUIDs — the function now guards its inputs.
+  const T1 = '11111111-1111-4111-8111-111111111111';
+  const T2 = '22222222-2222-4222-8222-222222222222';
+  const SEASON = '33333333-3333-4333-8333-333333333333';
+
   // .select().or().eq().eq() → returns { count, error }
   const countChain = (result: { count: number | null; error: unknown }) => ({
     select: () => ({ or: () => ({ eq: () => ({ eq: () => Promise.resolve(result) }) }) }),
@@ -74,19 +79,19 @@ describe('countTeamMatchesInSeason', () => {
 
   it('returns the count of matches', async () => {
     mockFrom.mockReturnValue(countChain({ count: 3, error: null }));
-    const result = await countTeamMatchesInSeason('t1', 't2', 'season-1');
+    const result = await countTeamMatchesInSeason(T1, T2, SEASON);
     expect(result).toBe(3);
   });
 
   it('returns 0 when count is null', async () => {
     mockFrom.mockReturnValue(countChain({ count: null, error: null }));
-    const result = await countTeamMatchesInSeason('t1', 't2', 'season-1');
+    const result = await countTeamMatchesInSeason(T1, T2, SEASON);
     expect(result).toBe(0);
   });
 
   it('throws DatabaseError on Supabase error', async () => {
     mockFrom.mockReturnValue(countChain({ count: null, error: pgError() }));
-    await expect(countTeamMatchesInSeason('t1', 't2', 'season-1')).rejects.toThrow(DatabaseError);
+    await expect(countTeamMatchesInSeason(T1, T2, SEASON)).rejects.toThrow(DatabaseError);
   });
 });
 

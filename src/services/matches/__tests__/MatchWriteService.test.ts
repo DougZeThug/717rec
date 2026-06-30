@@ -193,6 +193,9 @@ describe('batchCreateMatches', () => {
 // ─── updateMatchScore ─────────────────────────────────────────────────────────
 
 describe('updateMatchScore', () => {
+  // Valid v4 UUID — the function now guards its matchId input.
+  const MATCH_ID = '44444444-4444-4444-8444-444444444444';
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -204,7 +207,7 @@ describe('updateMatchScore', () => {
       }),
     });
 
-    await expect(updateMatchScore('match-1', makeUpdateData())).resolves.toBeUndefined();
+    await expect(updateMatchScore(MATCH_ID, makeUpdateData())).resolves.toBeUndefined();
   });
 
   it('throws DatabaseError on Supabase error', async () => {
@@ -223,7 +226,7 @@ describe('updateMatchScore', () => {
       }),
     });
 
-    await expect(updateMatchScore('match-1', makeUpdateData())).rejects.toThrow(DatabaseError);
+    await expect(updateMatchScore(MATCH_ID, makeUpdateData())).rejects.toThrow(DatabaseError);
   });
 
   it('updates the matches table', async () => {
@@ -233,7 +236,7 @@ describe('updateMatchScore', () => {
       }),
     });
 
-    await updateMatchScore('match-1', makeUpdateData());
+    await updateMatchScore(MATCH_ID, makeUpdateData());
     expect(mockFrom).toHaveBeenCalledWith('matches');
   });
 });
