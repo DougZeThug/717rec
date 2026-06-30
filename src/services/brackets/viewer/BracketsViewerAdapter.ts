@@ -33,7 +33,7 @@ export class BracketsViewerAdapter {
   /**
    * Transform from brackets-manager SQL tables
    */
-  static async transformFromSql(bracketId: string): Promise<ViewerDataWithMapping> {
+  static transformFromSql(bracketId: string): Promise<ViewerDataWithMapping> {
     return transformFromSql(bracketId);
   }
 

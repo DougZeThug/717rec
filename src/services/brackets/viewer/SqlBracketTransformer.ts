@@ -117,11 +117,11 @@ export async function transformFromSql(bracketId: string): Promise<ViewerDataWit
   // Transform participants to include logos
   const transformedParticipants = participants.map((p) => {
     const teamData = p.name ? teamLogoMap.get(p.name) : null;
-    const hasLogo = !!(teamData?.logo_url || teamData?.image_url);
+    const hasLogo = Boolean(teamData?.logo_url || teamData?.image_url);
 
     debugLog(`Participant "${p.name}":`, {
       id: p.id,
-      hasTeamData: !!teamData,
+      hasTeamData: Boolean(teamData),
       hasLogo,
       logo_url: teamData?.logo_url,
       image_url: teamData?.image_url,
