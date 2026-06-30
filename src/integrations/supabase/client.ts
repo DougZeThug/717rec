@@ -3,8 +3,13 @@ import { createClient } from '@supabase/supabase-js';
 
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const FALLBACK_SUPABASE_URL = 'https://wcitdamvochthvxvtxyb.supabase.co';
+const FALLBACK_SUPABASE_PUBLISHABLE_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9vw';
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? FALLBACK_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY =
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? FALLBACK_SUPABASE_PUBLISHABLE_KEY;
 
 export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
 
@@ -12,8 +17,9 @@ if (!isSupabaseConfigured && typeof window !== 'undefined') {
   // Surface a clear console error but DO NOT throw at module init —
   // throwing here prevents React from mounting and produces a blank white
   // screen with no UI to recover from. The app renders a config-error
-  // screen instead (see src/App.tsx).
-   
+  // screen instead. The project-specific fallback values above should keep the
+  // published app working even if build-time env injection is unavailable.
+
   console.error(
     '[supabase] Missing VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY at build time. ' +
       'Republish from Lovable so the managed Supabase env is injected, or set these in your build environment. See .env.example.'
@@ -23,11 +29,10 @@ if (!isSupabaseConfigured && typeof window !== 'undefined') {
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 //
-// When the env vars are missing we still construct a client with placeholder
-// values so module-level `import { supabase }` references don't crash. Any
-// network call will fail, but the UI can render a friendly config-error
-// screen instead of white-screening.
+// The fallback values are browser-safe Supabase publishable config for this
+// connected project, so the published app can start even if build-time env
+// injection is unavailable.
 export const supabase = createClient<Database>(
-  SUPABASE_URL ?? 'http://localhost:54321',
-  SUPABASE_PUBLISHABLE_KEY ?? 'missing-publishable-key'
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
 );

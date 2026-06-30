@@ -1,45 +1,36 @@
-## Problem
+## What is happening
 
-Two distinct issues from the agent-shell run:
+Yes, PR #850 is very likely related. This is a Vite app, so `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` are baked into the JavaScript during build. Removing the committed `.env` was the right security cleanup, but the published build is still not receiving those build-time values even though the Supabase project is connected in Lovable.
 
-1. **`npm run test:file -- ...` failed without Supabase env vars.** `src/integrations/supabase/client.ts` throws at import time when `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` are missing. Vite normally loads `.env` automatically, but sandboxed agent shells (Codex / Claude Code) often don't, so any test that imports a module touching the supabase client crashes during collection.
-2. **`npm test` hit the 10-minute timeout.** The full suite (~285 files / ~2.3k tests) takes ~3 minutes in parallel under normal conditions, but in constrained sandboxes it can exceed 10 minutes. It's the wrong command for an agent shell.
+Because republishing did not fix it, the current issue is not a browser cache problem. The deployed bundle is still being built with those values missing.
 
-Tests should not require real Supabase credentials — every test mocks the client. The env check is purely a guard for the running app.
+## Plan
 
-## Fix
+1. **Make startup resilient using the connected Supabase project values**
+   - Update `src/integrations/supabase/client.ts` so it first uses `import.meta.env.VITE_SUPABASE_URL` and `import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY`.
+   - If those are missing, fall back to the connected Supabase project’s browser-safe values:
+     - URL: `https://wcitdamvochthvxvtxyb.supabase.co`
+     - Publishable anon key from the connected Supabase project.
+   - This is safe because the Supabase anon/publishable key is already meant to ship in the browser; RLS protects the data.
 
-### 1. Inject safe test defaults for Supabase env vars
+2. **Keep the helpful error screen only for truly impossible config**
+   - Leave the “App configuration missing” screen in place as a last-resort guard.
+   - With the fallback in place, the app should render normally even if Lovable’s publish build does not inject env vars.
 
-In `src/setupTests.ts`, before any module that might import the supabase client, set placeholder values when missing:
+3. **Clean up the explanatory copy**
+   - Adjust comments so future agents do not assume republishing alone will fix this.
+   - Keep `.env` ignored; do not recommit a real `.env` file.
 
-```ts
-// Ensure supabase client import doesn't throw in test/agent shells
-// where .env isn't auto-loaded. Tests always mock the client.
-import.meta.env.VITE_SUPABASE_URL ||= 'http://localhost:54321';
-import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||= 'test-anon-key';
-import.meta.env.VITE_SUPABASE_PROJECT_ID ||= 'test-project';
-```
+4. **Verify before publishing**
+   - Run a focused typecheck/build check.
+   - Confirm the app no longer renders the config-missing screen when env vars are absent.
 
-(Equivalent `process.env` assignments as a belt-and-suspenders fallback.)
+5. **Publish again**
+   - After the code fix is approved and applied, republish so `717rec.app` gets the corrected bundle.
 
-This removes the need to prefix every test command with `VITE_SUPABASE_URL=... VITE_SUPABASE_PUBLISHABLE_KEY=... npm run test:file ...`.
+## Why this is the safest fix
 
-### 2. Document correct test commands for agent shells in `CLAUDE.md`
-
-Add a short "Running tests from a sandboxed agent shell" callout reinforcing what's already there:
-
-- Prefer `npm run test:file -- <path>` or `npx vitest run <path>` for iteration.
-- Use `npm run test:coverage` as the fast full-suite gate.
-- **Do not run bare `npm test`** in agent shells with a <15 min timeout — it's a parallel ~3 min run locally but routinely exceeds short sandbox timeouts.
-
-### 3. Verification
-
-- Run `npm run test:file -- src/components/history/__tests__/SeasonAccordion.test.tsx` with **no** env vars set and confirm it passes.
-- Run one additional file that imports a service touching supabase to confirm the defaults take effect.
-
-## Out of scope
-
-- No changes to the production supabase client guard (it still throws in real builds).
-- No changes to vitest config, test parallelism, or coverage thresholds.
-- No attempt to make the full `npm test` finish faster in the sandbox.
+- It does not restore secrets to the repo.
+- It does not expose a service role key.
+- It makes the site independent of the broken build-env injection path.
+- It keeps the previous `.env` security cleanup intact.
