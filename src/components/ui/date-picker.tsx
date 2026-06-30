@@ -40,11 +40,7 @@ export function DatePicker({ date, onDateChange }: DatePickerProps) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
-        <Calendar
-          mode="single"
-          selected={date || undefined}
-          onSelect={handleDateSelect}
-        />
+        <Calendar mode="single" selected={date || undefined} onSelect={handleDateSelect} />
       </PopoverContent>
     </Popover>
   );
