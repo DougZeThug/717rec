@@ -52,7 +52,7 @@ type ChainMethod =
   | 'textSearch';
 
 interface ChainBuilder {
-  /** Call any chainable Supabase method — returns `this` for further chaining. */
+  /** Call any chainable Supabase method — returns 'this' for further chaining. */
   select: (query?: string) => ChainBuilder;
   insert: (data?: unknown) => ChainBuilder;
   update: (data?: unknown) => ChainBuilder;
@@ -85,13 +85,13 @@ export interface SupabaseMock {
   /** The mock client object — pass to vi.mock. */
   client: { from: ReturnType<typeof vi.fn> };
 
-  /** The raw `mockFrom` spy — use for assertions like `expect(mock.mockFrom).toHaveBeenCalledWith('teams')`. */
+  /** The raw 'mockFrom' spy — use for assertions like "expect(mock.mockFrom).toHaveBeenCalledWith('teams')". */
   mockFrom: ReturnType<typeof vi.fn>;
 
   /** Start building a chain expectation for a specific table. */
   from: (table: string) => ChainBuilder;
 
-  /** Clear all mock state. Call in `beforeEach`. */
+  /** Clear all mock state. Call in 'beforeEach'. */
   reset: () => void;
 }
 
@@ -144,7 +144,7 @@ export function createSupabaseMock(): SupabaseMock {
     spies[method] = vi.fn();
   }
 
-  /** Build a thenable chain object that resolves to `result`. */
+  /** Build a thenable chain object that resolves to 'result'. */
   function makeRuntimeChain(tableName: string): Record<string, unknown> & PromiseLike<MockResult> {
     const getResult = (): MockResult =>
       pendingResults.get(tableName) ?? { data: null, error: null };
@@ -159,7 +159,7 @@ export function createSupabaseMock(): SupabaseMock {
       };
     }
 
-    // Make the chain thenable so `await supabase.from(t).select()...` works.
+    // Make the chain thenable so 'await supabase.from(t).select()...' works.
     chain.then = (onFulfilled?: (v: MockResult) => unknown, onRejected?: (r: unknown) => unknown) =>
       Promise.resolve(getResult()).then(onFulfilled, onRejected);
     chain.catch = (onRejected?: (r: unknown) => unknown) =>
