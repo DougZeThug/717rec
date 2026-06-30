@@ -79,6 +79,16 @@ export const ExampleService = {
   ```
   Use `npm` only — this repo does not use `pnpm` or `yarn`.
 
+- **Supabase env vars are not required for tests.** `src/setupTests.ts` injects
+  safe placeholder values when `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY`
+  are missing, so you do **not** need to prefix test commands with them in
+  sandboxed shells. Real values from `.env` still take precedence when present.
+
+- **Don't run bare `npm test` in agent shells with a short timeout.** The full
+  suite is ~3 min in parallel locally but routinely exceeds 10-min sandbox
+  caps. Use `npm run test:file -- <path>` for iteration and
+  `npm run test:coverage` as the fast full-suite gate.
+
 - **Which command to use day to day:**
   - One file while you work → `npm run test:file -- src/path/to/File.test.tsx`
   - Fast gate with coverage → `npm run test:coverage` (parallel; fastest full pass)
