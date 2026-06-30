@@ -68,7 +68,7 @@ export const updateMatchInDatabase = async (
 
   // Check if no rows were updated
   if (!matchData || matchData.length === 0) {
-    warnLog(`Supabase update returned 0 rows affected — possible match ID mismatch:`, matchId);
+    warnLog('Supabase update returned 0 rows affected — possible match ID mismatch:', matchId);
   }
 
   matchLog(`Match ${matchId} updated successfully:`, matchData);
