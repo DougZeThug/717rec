@@ -32,7 +32,4 @@ if (!isSupabaseConfigured && typeof window !== 'undefined') {
 // The fallback values are browser-safe Supabase publishable config for this
 // connected project, so the published app can start even if build-time env
 // injection is unavailable.
-export const supabase = createClient<Database>(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
-);
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);

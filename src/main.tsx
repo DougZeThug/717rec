@@ -40,17 +40,14 @@ if (!isSupabaseConfigured) {
       }}
     >
       <div style={{ maxWidth: 560, lineHeight: 1.5 }}>
-        <h1 style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>
-          App configuration missing
-        </h1>
+        <h1 style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>App configuration missing</h1>
         <p style={{ marginBottom: '0.75rem' }}>
-          This build is missing its Supabase environment variables
-          (<code>VITE_SUPABASE_URL</code> and{' '}
-          <code>VITE_SUPABASE_PUBLISHABLE_KEY</code>), so the app can't start.
+          This build is missing its Supabase environment variables (<code>VITE_SUPABASE_URL</code>{' '}
+          and <code>VITE_SUPABASE_PUBLISHABLE_KEY</code>), so the app can't start.
         </p>
         <p style={{ marginBottom: '0.75rem' }}>
-          Re-publish from Lovable so the managed Supabase env is injected at
-          build time, or set these variables in your deployment environment.
+          Re-publish from Lovable so the managed Supabase env is injected at build time, or set
+          these variables in your deployment environment.
         </p>
         <p style={{ opacity: 0.7, fontSize: '0.875rem' }}>
           See <code>.env.example</code> for the required keys.
@@ -60,14 +57,14 @@ if (!isSupabaseConfigured) {
   );
 } else {
   root.render(
-  <ThemeProvider
-    attribute="class"
-    defaultTheme="dark"
-    themes={['light', 'dark', 'winter-frozen']}
-    enableSystem={false}
-    disableTransitionOnChange={false}
-  >
-    <App />
-  </ThemeProvider>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="dark"
+      themes={['light', 'dark', 'winter-frozen']}
+      enableSystem={false}
+      disableTransitionOnChange={false}
+    >
+      <App />
+    </ThemeProvider>
   );
 }
