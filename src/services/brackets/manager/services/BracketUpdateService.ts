@@ -36,7 +36,7 @@ export class BracketUpdateService {
    * Both win and loss must be explicitly set for proper loser propagation
    * Updates are serialized to prevent race conditions during concurrent updates
    */
-  async updateMatch(options: UpdateMatchOptions): Promise<void> {
+  updateMatch(options: UpdateMatchOptions): Promise<void> {
     const { matchId, scores } = options;
 
     bracketLog('🎯 BracketUpdateService.updateMatch() START:', { matchId, scores });
@@ -150,7 +150,8 @@ export class BracketUpdateService {
     //
     // Safety: we only auto-promote 0/1 when BOTH opponents are present
     // and it isn't a BYE match, so genuinely incomplete matches stay locked.
-    const bothOpponentsPresent = !!currentMatch.opponent1?.id && !!currentMatch.opponent2?.id;
+    const bothOpponentsPresent =
+      Boolean(currentMatch.opponent1?.id) && Boolean(currentMatch.opponent2?.id);
 
     let unlockToStatus: number | null = null;
     if (currentMatch.status === 5) {
@@ -174,7 +175,7 @@ export class BracketUpdateService {
       }
     }
 
-    bracketLog(`CALLING manager.update.match() with:`, {
+    bracketLog('CALLING manager.update.match() with:', {
       id: matchId,
       opponent1: scores.opponent1,
       opponent2: scores.opponent2,
@@ -196,7 +197,7 @@ export class BracketUpdateService {
       };
     }
 
-    bracketLog(`Final update payload:`, updatePayload);
+    bracketLog('Final update payload:', updatePayload);
 
     try {
       await this.manager.update.match(updatePayload);

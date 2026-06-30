@@ -13,12 +13,26 @@ type UpdateByeMatchOptions = Pick<UpdateMatchOptions, 'matchId' | 'scores'> & {
   currentMatch: StorageMatch;
 };
 
+type NextMatchSlot = 'opponent1' | 'opponent2';
+
+type NextMatchRow = {
+  id: number;
+  status: number;
+  opponent1_id: number | null;
+  opponent2_id: number | null;
+};
+
+type NextMatchTarget = {
+  nextMatch: NextMatchRow;
+  nextMatchNumber: number;
+  nextRound: StorageRound;
+};
+
 export async function updateByeMatch(
   ctx: BracketUpdateContext,
   options: UpdateByeMatchOptions
 ): Promise<void> {
-  const { storage } = ctx;
-  const { matchId, scores, currentMatch } = options;
+  const { matchId, currentMatch } = options;
 
   // =============================================
   // BYE MATCH PATH: bypass brackets-manager entirely
@@ -34,8 +48,22 @@ export async function updateByeMatch(
     return;
   }
 
+  await completeByeMatch(options, winnerId);
+
+  const target = await findNextMatchTarget(ctx, currentMatch);
+  if (!target) return;
+
+  await placeByeWinnerInNextMatch(matchId, winnerId, target);
+}
+
+async function completeByeMatch(
+  options: UpdateByeMatchOptions,
+  winnerId: number | string
+): Promise<void> {
+  const { matchId, scores, currentMatch } = options;
+
   // Mark the BYE match as completed via direct SQL
-  const winnerIsOpp1 = !!currentMatch.opponent1?.id;
+  const winnerIsOpp1 = Boolean(currentMatch.opponent1?.id);
   const { error: byeUpdateError } = await supabase
     .from('match')
     .update({
@@ -56,19 +84,39 @@ export async function updateByeMatch(
   }
 
   bracketLog(`✅ BYE match ${matchId} marked completed. Winner: ${winnerId}`);
+}
 
-  // Find the next match and place the winner
+async function findNextMatchTarget(
+  ctx: BracketUpdateContext,
+  currentMatch: StorageMatch
+): Promise<NextMatchTarget | null> {
+  const { storage } = ctx;
   const rounds = await storage.select('round', { group_id: currentMatch.group_id });
   const roundsArray = (Array.isArray(rounds) ? rounds : [rounds]) as StorageRound[];
   const currentRound = roundsArray.find((r) => r.id === currentMatch.round_id);
 
-  if (!currentRound) return;
+  if (!currentRound) return null;
 
   const nextRound = roundsArray.find((r) => r.number === currentRound.number + 1);
   if (!nextRound) {
     bracketLog(`No next round found after round ${currentRound.number} — may be final match`);
-    return;
+    return null;
   }
+
+  const nextMatchNumber = await getNextMatchNumber(ctx, currentMatch, currentRound, nextRound);
+  const nextMatch = await fetchNextMatch(nextRound.id, nextMatchNumber);
+  if (!nextMatch) return null;
+
+  return { nextMatch, nextMatchNumber, nextRound };
+}
+
+async function getNextMatchNumber(
+  ctx: BracketUpdateContext,
+  currentMatch: StorageMatch,
+  currentRound: StorageRound,
+  nextRound: StorageRound
+): Promise<number> {
+  const { storage } = ctx;
 
   // Count matches in current vs next round to determine mapping ratio
   const currentRoundMatches = await storage.select('match', {
@@ -89,18 +137,31 @@ export async function updateByeMatch(
   const nextMatchNumber = isOneToOne ? currentMatch.number : Math.ceil(currentMatch.number / 2);
 
   bracketLog(
-    `📍 Propagating winner ${winnerId} → Round ${nextRound.number}, Match ${nextMatchNumber} (${isOneToOne ? '1:1' : '2:1'} mapping)`
+    `📍 Propagating winner ${currentMatch.opponent1?.id ?? currentMatch.opponent2?.id} → Round ${nextRound.number}, Match ${nextMatchNumber} (${isOneToOne ? '1:1' : '2:1'} mapping)`
   );
 
+  return nextMatchNumber;
+}
+
+async function fetchNextMatch(
+  nextRoundId: number,
+  nextMatchNumber: number
+): Promise<NextMatchRow | null> {
   const { data: nextMatches } = await supabase
     .from('match')
     .select('id, status, opponent1_id, opponent2_id')
-    .eq('round_id', nextRound.id)
+    .eq('round_id', nextRoundId)
     .eq('number', nextMatchNumber);
 
-  if (!nextMatches || nextMatches.length === 0) return;
+  return nextMatches?.[0] ?? null;
+}
 
-  const nextMatch = nextMatches[0];
+async function placeByeWinnerInNextMatch(
+  matchId: number,
+  winnerId: number | string,
+  target: NextMatchTarget
+): Promise<void> {
+  const { nextMatch } = target;
 
   // Already placed — skip
   if (nextMatch.opponent1_id === winnerId || nextMatch.opponent2_id === winnerId) {
@@ -108,14 +169,7 @@ export async function updateByeMatch(
     return;
   }
 
-  // Find an empty slot — NEVER overwrite an existing participant
-  let targetSlot: 'opponent1' | 'opponent2' | null = null;
-  if (!nextMatch.opponent1_id) {
-    targetSlot = 'opponent1';
-  } else if (!nextMatch.opponent2_id) {
-    targetSlot = 'opponent2';
-  }
-
+  const targetSlot = getEmptySlot(nextMatch);
   if (!targetSlot) {
     bracketLog(
       `⚠️ Both slots occupied in next match ${nextMatch.id} — skipping to prevent overwrite`
@@ -123,24 +177,7 @@ export async function updateByeMatch(
     return;
   }
 
-  const updateFields: {
-    opponent1_id?: number;
-    opponent2_id?: number;
-    status?: number;
-  } = {};
-  if (targetSlot === 'opponent1') {
-    updateFields.opponent1_id = Number(winnerId);
-  } else {
-    updateFields.opponent2_id = Number(winnerId);
-  }
-
-  const otherSlotFilled =
-    targetSlot === 'opponent1' ? !!nextMatch.opponent2_id : !!nextMatch.opponent1_id;
-
-  if (nextMatch.status <= 1) {
-    updateFields.status = otherSlotFilled ? 2 : nextMatch.status;
-  }
-
+  const updateFields = getWinnerUpdateFields(nextMatch, targetSlot, winnerId);
   const { error: propagateError } = await supabase
     .from('match')
     .update(updateFields)
@@ -155,4 +192,41 @@ export async function updateByeMatch(
   }
 
   bracketLog(`✅ Winner ${winnerId} placed in ${targetSlot} of match ${nextMatch.id}`);
+}
+
+function getEmptySlot(nextMatch: NextMatchRow): NextMatchSlot | null {
+  if (!nextMatch.opponent1_id) return 'opponent1';
+  if (!nextMatch.opponent2_id) return 'opponent2';
+  return null;
+}
+
+function getWinnerUpdateFields(
+  nextMatch: NextMatchRow,
+  targetSlot: NextMatchSlot,
+  winnerId: number | string
+): {
+  opponent1_id?: number;
+  opponent2_id?: number;
+  status?: number;
+} {
+  const updateFields: {
+    opponent1_id?: number;
+    opponent2_id?: number;
+    status?: number;
+  } = {};
+
+  if (targetSlot === 'opponent1') {
+    updateFields.opponent1_id = Number(winnerId);
+  } else {
+    updateFields.opponent2_id = Number(winnerId);
+  }
+
+  const otherSlotFilled =
+    targetSlot === 'opponent1' ? Boolean(nextMatch.opponent2_id) : Boolean(nextMatch.opponent1_id);
+
+  if (nextMatch.status <= 1) {
+    updateFields.status = otherSlotFilled ? 2 : nextMatch.status;
+  }
+
+  return updateFields;
 }

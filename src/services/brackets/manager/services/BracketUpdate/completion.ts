@@ -33,7 +33,7 @@ export async function markBracketCompleteIfDone(
 
     if (allMatches.length === 0) return;
 
-    const playable = allMatches.filter((m) => !!m.opponent1?.id && !!m.opponent2?.id);
+    const playable = allMatches.filter((m) => Boolean(m.opponent1?.id) && Boolean(m.opponent2?.id));
     if (playable.length === 0) return;
 
     // brackets-manager status: 4 = Completed, 5 = Archived (also done)
