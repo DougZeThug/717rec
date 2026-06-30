@@ -6,13 +6,28 @@ import type { Database } from './types';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-  throw new Error(
-    'Missing Supabase configuration. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY environment variables. See .env.example for reference.'
+export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
+
+if (!isSupabaseConfigured && typeof window !== 'undefined') {
+  // Surface a clear console error but DO NOT throw at module init —
+  // throwing here prevents React from mounting and produces a blank white
+  // screen with no UI to recover from. The app renders a config-error
+  // screen instead (see src/App.tsx).
+   
+  console.error(
+    '[supabase] Missing VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY at build time. ' +
+      'Republish from Lovable so the managed Supabase env is injected, or set these in your build environment. See .env.example.'
   );
 }
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
-
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+//
+// When the env vars are missing we still construct a client with placeholder
+// values so module-level `import { supabase }` references don't crash. Any
+// network call will fail, but the UI can render a friendly config-error
+// screen instead of white-screening.
+export const supabase = createClient<Database>(
+  SUPABASE_URL ?? 'http://localhost:54321',
+  SUPABASE_PUBLISHABLE_KEY ?? 'missing-publishable-key'
+);
