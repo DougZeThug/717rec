@@ -22,7 +22,7 @@ export const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({ totalTeams, oddB
       <div className="flex items-center gap-2">
         <Badge variant={oddBlocks > 0 ? 'destructive' : 'outline'} className="text-xs">
           {totalTeams > 0
-            ? `${totalTeams} Teams ${oddBlocks > 0 ? `(${oddBlocks} Odd Blocks)` : ''}`
+            ? `${totalTeams} Teams ${oddBlocks > 0 ? `(${oddBlocks} Odd Blocks)" : ''}"
             : 'No Teams'}
         </Badge>
       </div>

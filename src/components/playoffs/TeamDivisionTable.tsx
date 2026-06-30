@@ -69,7 +69,7 @@ const TeamDivisionTable: React.FC<TeamDivisionTableProps> = ({ divisions, teams,
   }, [divisions, teamsByDivision]);
 
   // Show the selected tab if it still exists; otherwise fall back to "all".
-  // Deriving this (instead of resetting state in an effect when `divisions`
+  // Deriving this (instead of resetting state in an effect when 'divisions'
   // changes) keeps a valid selection across data reloads and never points at a
   // tab that was removed.
   const effectiveTab = tabOptions.includes(activeTab) ? activeTab : 'all';

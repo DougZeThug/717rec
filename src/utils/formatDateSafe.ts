@@ -1,7 +1,7 @@
 import { format as fnsFormat, formatDistanceToNow as fnsDistanceToNow, parseISO } from 'date-fns';
 
 /**
- * Date formatting helpers that wrap `new Date(...)` so callers don't trigger
+ * Date formatting helpers that wrap 'new Date(...)' so callers don't trigger
  * react-doctor's "new Date reachable from JSX" warning. These are pure
  * functions — behavior is identical to inline formatting.
  */

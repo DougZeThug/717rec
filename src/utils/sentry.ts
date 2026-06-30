@@ -75,7 +75,7 @@ export const initSentry = () => {
       }
 
       // ── Network error filter — only suppress actual browser TypeError fetch failures ──
-      // Browser throws `TypeError: Failed to fetch` / `TypeError: Load failed` / `TypeError: NetworkError`
+      // Browser throws 'TypeError: Failed to fetch' / 'TypeError: Load failed' / 'TypeError: NetworkError'
       // for genuine network issues. Application errors like "Failed to fetch match data" must NOT be dropped.
       const isNetworkTypeError = error instanceof TypeError;
 
@@ -281,7 +281,7 @@ export const addBreadcrumb = (breadcrumb: Sentry.Breadcrumb) => {
 
 /**
  * Thin metrics helpers — wraps Sentry.metrics for convenience.
- * Metrics only fire in production (guarded by the Sentry client's `enabled` flag).
+ * Metrics only fire in production (guarded by the Sentry client's 'enabled' flag).
  */
 export const metrics = {
   count: (name: string, value?: number, attributes?: Record<string, string>) =>

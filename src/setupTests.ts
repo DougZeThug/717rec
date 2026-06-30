@@ -27,7 +27,7 @@ configure({
 });
 
 // React Testing Library already auto-runs cleanup() after each test because
-// `globals: true` is set in vitest.config.ts. We register it explicitly here
+// 'globals: true' is set in vitest.config.ts. We register it explicitly here
 // too so the guarantee is visible and survives any change to that setting.
 //
 // We deliberately do NOT add a global vi.useRealTimers() / vi.restoreAllMocks()

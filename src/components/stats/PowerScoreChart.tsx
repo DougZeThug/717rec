@@ -23,7 +23,7 @@ interface PowerScoreChartProps {
 }
 
 // Module-scope label renderer. Recharts merges its own props (x, y, width, value)
-// with the element's props (textColor) when used as `content={<PowerScoreLabel ... />}`.
+// with the element's props (textColor) when used as 'content={<PowerScoreLabel ... />}'.
 const PowerScoreLabel: React.FC<{
   x?: number;
   y?: number;

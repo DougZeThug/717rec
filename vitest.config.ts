@@ -49,12 +49,12 @@ export default defineConfig(({ mode }) => {
       hookTimeout: 15_000,
       teardownTimeout: 10_000,
       // Fast coverage path: parallel forks with normal per-file isolation.
-      // We tried `isolate: false` but ~33 test files in this repo rely on
+      // We tried 'isolate: false' but ~33 test files in this repo rely on
       // fresh module state between files (AuthContext providers, auth/admin
       // hooks, etc.), so we keep isolation on and rely on parallelism for
       // the speedup. Falls back to Vitest defaults when VITEST_FAST_COVERAGE
-      // is not set, so existing scripts (`test:coverage:debug`, `:triage`,
-      // `:ci`) keep their current single-worker behaviour.
+      // is not set, so existing scripts ('test:coverage:debug', ':triage',
+      // ':ci') keep their current single-worker behaviour.
       ...(isFastCoverage
         ? {
             pool: 'forks' as const,

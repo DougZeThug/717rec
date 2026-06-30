@@ -16,7 +16,7 @@ interface BracketsViewerComponentProps {
   onMatchClick?: (matchId: string) => void;
   /**
    * External signal that should trigger a re-render of the viewer (e.g. a
-   * realtime `lastUpdate` timestamp). When this value changes, the viewer
+   * realtime 'lastUpdate' timestamp). When this value changes, the viewer
    * re-runs its SQL transform so newly populated opponent slots (Grand
    * Final, etc.) appear without requiring a page refresh.
    */
@@ -43,7 +43,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
   const { isReady: isScriptReady, error: scriptError } = useBracketsViewerScript();
 
   // Include the external refresh signal in the renderer key so realtime
-  // `match` table updates flow into the viewer without a synchronous effect
+  // 'match' table updates flow into the viewer without a synchronous effect
   // state update. Internal editor saves still bump refreshCounter below.
   const refreshKey = `${refreshCounter}:${refreshSignal ?? 'initial'}`;
 

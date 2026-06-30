@@ -14,7 +14,7 @@ interface EditMatchParticipantsVariables {
 /**
  * Admin mutation hook: swap one or both teams in an unplayed playoff match.
  *
- * Mirrors the manual workflow of editing `opponent1_id` / `opponent2_id` in Supabase
+ * Mirrors the manual workflow of editing 'opponent1_id' / 'opponent2_id' in Supabase
  * — the service will refuse to touch a match that has already been played.
  */
 export const usePlayoffEditMatchParticipants = (bracketId: string | null) => {

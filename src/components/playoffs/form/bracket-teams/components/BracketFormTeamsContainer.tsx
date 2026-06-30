@@ -17,7 +17,7 @@ const EMPTY_DIVISIONS: BracketFormTeamsContainerProps['divisions'] = [];
 
 /**
  * Main container component for bracket team selection
- * Phase 4: Type-safe with runtime guards and zero `as any` casts
+ * Phase 4: Type-safe with runtime guards and zero 'as any' casts
  */
 export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps> = ({
   divisionId,

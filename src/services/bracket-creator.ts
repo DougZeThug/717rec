@@ -17,7 +17,7 @@ export interface BracketCreationOptions {
 
 // Round to 1 decimal place to match the displayed power score the user sees in
 // the standings UI. Sorting on the displayed value (instead of the raw value)
-// keeps bracket seeding consistent with `useTeamRankings`.
+// keeps bracket seeding consistent with 'useTeamRankings'.
 const getDisplayedPowerScore = (powerScore: number | null | undefined): number | null => {
   if (powerScore === null || powerScore === undefined) return null;
   return Math.round(powerScore * 10) / 10;

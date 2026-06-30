@@ -29,7 +29,7 @@ import { fetchTeamPowerScores } from '../RankingCurrentService';
 
 /**
  * Creates a thenable chain — awaitable AND chainable — to mirror the
- * Supabase PostgREST query builder when no `.single()` terminator exists.
+ * Supabase PostgREST query builder when no '.single()' terminator exists.
  */
 const makeQueryChain = (result: { data: unknown; error: unknown | null }) => {
   const chain: Record<string, unknown> & PromiseLike<unknown> = {

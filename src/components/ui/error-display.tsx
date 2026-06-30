@@ -21,13 +21,13 @@ interface ErrorDisplayProps {
  * Standardized error display component for consistent error UI across the app.
  *
  * Usage:
- * ```tsx
+ * ''`tsx
  * <ErrorDisplay
  *   error={error}
  *   onRetry={refetch}
  *   context="Loading teams"
  * />
- * ```
+ * ''`
  */
 export function ErrorDisplay({
   error,

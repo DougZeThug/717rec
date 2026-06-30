@@ -127,7 +127,7 @@ export const insertPlayoffGames = async (
  *
  * Wraps DELETE + INSERT in a single SECURITY DEFINER Postgres function so a
  * failed insert no longer leaves the match with an empty game list. Prefer
- * this over calling `deletePlayoffGames` + `insertPlayoffGames` separately.
+ * this over calling 'deletePlayoffGames' + 'insertPlayoffGames' separately.
  */
 export const replacePlayoffGames = async (
   matchId: string,

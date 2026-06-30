@@ -36,7 +36,7 @@ export interface IconProps extends Omit<LucideProps, 'size' | 'strokeWidth'> {
  * Now supports registry lookups and automatic winter variant swapping.
  *
  * @example
- * ```tsx
+ * ''`tsx
  * import { Icon } from "@/components/ui/icon";
  * import { Trophy, Users } from "lucide-react";
  *
@@ -51,7 +51,7 @@ export interface IconProps extends Omit<LucideProps, 'size' | 'strokeWidth'> {
  *
  * // Registry lookup with winter variant (auto-detected)
  * <Icon name="trophy" size="lg" useWinterVariant />
- * ```
+ * ''`
  */
 export const Icon: React.FC<IconProps> = ({
   icon,

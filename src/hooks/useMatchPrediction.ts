@@ -40,8 +40,8 @@ interface UseMatchPredictionResult {
  *
  * Uses: 65% Career Performance + 25% Current Season + 10% Head-to-Head
  *
- * When `prefetchedH2H` is supplied, the hook skips its own per-card
- * `useMatchHeadToHead` query, eliminating redundant network requests.
+ * When 'prefetchedH2H' is supplied, the hook skips its own per-card
+ * 'useMatchHeadToHead' query, eliminating redundant network requests.
  */
 export function useMatchPrediction({
   team1Details,

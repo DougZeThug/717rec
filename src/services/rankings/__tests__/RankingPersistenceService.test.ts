@@ -59,7 +59,7 @@ const pgError = (message = 'query failed', code = '42P01') => ({
 });
 
 /**
- * Returns a chain mock for querying the `seasons` table:
+ * Returns a chain mock for querying the 'seasons' table:
  *   .from('seasons').select('id').eq('is_active', true).maybeSingle()
  */
 const seasonsSelectChain = (result: { data: unknown; error: unknown | null }) => ({
@@ -71,7 +71,7 @@ const seasonsSelectChain = (result: { data: unknown; error: unknown | null }) =>
 });
 
 /**
- * Returns a chain mock for `ranking_snapshots` upsert:
+ * Returns a chain mock for 'ranking_snapshots' upsert:
  *   .from('ranking_snapshots').upsert(rows, opts)
  */
 const upsertChain = (result: { error: unknown | null }) => ({
@@ -79,7 +79,7 @@ const upsertChain = (result: { error: unknown | null }) => ({
 });
 
 /**
- * Returns a chain mock for `ranking_snapshots` load:
+ * Returns a chain mock for 'ranking_snapshots' load:
  *   .from('ranking_snapshots').select('team_id, rank_position').eq('season_id', id)
  */
 const loadSnapshotsChain = (result: { data: unknown; error: unknown | null }) => ({

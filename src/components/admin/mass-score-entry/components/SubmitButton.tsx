@@ -26,7 +26,7 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
         {submitting ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
         {submitting
           ? 'Processing...'
-          : `Submit ${editedMatchCount ? `(${editedMatchCount})` : 'All'} Changes`}
+          : `Submit ${editedMatchCount ? `(${editedMatchCount})" : 'All'} Changes"}
       </Button>
     </div>
   );

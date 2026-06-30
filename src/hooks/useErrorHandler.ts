@@ -7,7 +7,7 @@ import { handleHookError, HookErrorResult } from '@/utils/errorHandler';
  * Reusable hook for consistent error handling across the app.
  *
  * Usage:
- * ```tsx
+ * ''`tsx
  * const { handleError } = useErrorHandler();
  *
  * try {
@@ -16,7 +16,7 @@ import { handleHookError, HookErrorResult } from '@/utils/errorHandler';
  *   const errorInfo = handleError(error, 'Fetching data');
  *   setError(errorInfo.userMessage);
  * }
- * ```
+ * ''`
  */
 export function useErrorHandler() {
   const { toast } = useToast();

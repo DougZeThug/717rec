@@ -5,14 +5,14 @@
  * Import everything you need from here:
  *
  * @example
- * ```tsx
+ * ''`tsx
  * import {
  *   getIcon,
  *   getWinterGlyph,
  *   Snowflake,
  *   WINTER_ICONS_ENABLED
  * } from "@/icons";
- * ```
+ * ''`
  */
 
 // Types

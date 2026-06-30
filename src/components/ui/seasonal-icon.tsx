@@ -30,7 +30,7 @@ export interface SeasonalIconProps {
  * using useSeasonalTheme() to detect when winter-frozen theme is active.
  *
  * @example
- * ```tsx
+ * ''`tsx
  * // Using a winter glyph name
  * <SeasonalIcon
  *   defaultIcon={Trophy}
@@ -44,7 +44,7 @@ export interface SeasonalIconProps {
  *   winterIcon={WinterStar}
  *   size={24}
  * />
- * ```
+ * ''`
  */
 export const SeasonalIcon: React.FC<SeasonalIconProps> = ({
   defaultIcon: DefaultIcon,
