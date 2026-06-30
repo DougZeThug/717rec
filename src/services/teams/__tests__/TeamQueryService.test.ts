@@ -160,6 +160,9 @@ describe('fetchTeamsWithOptions', () => {
 // ─── fetchTeamDetails ─────────────────────────────────────────────────────────
 
 describe('fetchTeamDetails', () => {
+  // Valid v4 UUID — the function now guards its teamId input.
+  const TEAM_ID = '55555555-5555-4555-8555-555555555555';
+
   beforeEach(() => vi.clearAllMocks());
 
   it('returns team when found', async () => {
@@ -168,7 +171,7 @@ describe('fetchTeamDetails', () => {
         eq: () => ({ maybeSingle: () => Promise.resolve({ data: makeTeamRow(), error: null }) }),
       }),
     });
-    const result = await fetchTeamDetails('team-1');
+    const result = await fetchTeamDetails(TEAM_ID);
     expect(result.name).toBe('Eagles');
   });
 
@@ -178,7 +181,7 @@ describe('fetchTeamDetails', () => {
         eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
       }),
     });
-    await expect(fetchTeamDetails('team-1')).rejects.toThrow(NotFoundError);
+    await expect(fetchTeamDetails(TEAM_ID)).rejects.toThrow(NotFoundError);
   });
 
   it('throws DatabaseError on Supabase error', async () => {
@@ -187,7 +190,7 @@ describe('fetchTeamDetails', () => {
         eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: pgError() }) }),
       }),
     });
-    await expect(fetchTeamDetails('team-1')).rejects.toThrow(DatabaseError);
+    await expect(fetchTeamDetails(TEAM_ID)).rejects.toThrow(DatabaseError);
   });
 });
 

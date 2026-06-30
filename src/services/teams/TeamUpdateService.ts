@@ -3,6 +3,7 @@ import { Team } from '@/types';
 import { NotFoundError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { teamLog } from '@/utils/logger';
+import { assertNonEmptyString, assertValidUuid } from '@/utils/validation';
 
 /**
  * Update a team's win/loss record (used by match completion flow).
@@ -57,6 +58,9 @@ export const updateTeamNameAndImage = async (
  * @throws {NotFoundError} When team or division is not found
  */
 export const updateTeamApi = async (teamId: string, teamData: Omit<Team, 'id' | 'created_at'>) => {
+  assertValidUuid(teamId, 'teamId');
+  assertNonEmptyString(teamData.name, 'name');
+
   teamLog('Updating team:', teamId);
 
   // Validate the team exists before attempting an update

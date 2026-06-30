@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { warnLog } from '@/utils/logger';
+import { assertDistinct, assertValidUuid } from '@/utils/validation';
 
 /**
  * Service layer for match history and opponent analysis operations
@@ -36,6 +37,11 @@ export const countTeamMatchesInSeason = async (
   team2Id: string,
   seasonId: string
 ): Promise<number> => {
+  assertValidUuid(team1Id, 'team1Id');
+  assertValidUuid(team2Id, 'team2Id');
+  assertValidUuid(seasonId, 'seasonId');
+  assertDistinct(team1Id, team2Id, 'team1Id and team2Id must be different teams');
+
   const { count, error } = await supabase
     .from('matches')
     .select('id', { count: 'exact', head: true })
@@ -145,6 +151,7 @@ export const fetchSeasonOpponentHistory = async (): Promise<SeasonOpponentData |
     .eq('is_active', true)
     .single();
 
+  // Returns null when no data exists yet (not an error) — caller renders an empty state.
   if (seasonError || !activeSeason) {
     warnLog('No active season found:', seasonError);
     return null;

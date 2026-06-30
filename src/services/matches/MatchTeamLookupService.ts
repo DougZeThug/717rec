@@ -18,6 +18,7 @@ export const fetchTeamMatchesData = async (teamId: string) => {
     .eq('is_active', true)
     .single();
 
+  // Returns null when no data exists yet (not an error) — caller renders an empty state.
   if (!activeSeason) {
     return null;
   }
