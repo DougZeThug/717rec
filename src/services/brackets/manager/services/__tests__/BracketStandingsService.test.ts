@@ -54,8 +54,10 @@ function makeService(opts: {
         opts.finalStandings ?? vi.fn().mockResolvedValue([{ id: 101, name: 'Team A', rank: 1 }]),
     },
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return new BracketStandingsService(storage as any, manager as any);
+  return new BracketStandingsService(
+    storage as unknown as SupabaseSqlStorage,
+    manager as unknown as BracketsManager
+  );
 }
 
 describe('BracketStandingsService.calculateFinalStandings', () => {
