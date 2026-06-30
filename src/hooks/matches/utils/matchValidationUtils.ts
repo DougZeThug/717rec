@@ -30,7 +30,7 @@ export function validateGameScore(
       gameWins2: { value: gameWins2, type: typeof gameWins2, isNaN: isNaN(gameWins2) },
       bestOf: { value: bestOf, type: typeof bestOf, isNaN: isNaN(bestOf) },
     });
-    return { isValid: false, errorMessage: `Invalid numeric values for score validation` };
+    return { isValid: false, errorMessage: 'Invalid numeric values for score validation' };
   }
 
   if (bestOf <= 0) {
@@ -49,7 +49,7 @@ export function validateGameScore(
   const team1HasEnoughWins = gameWins1 >= minGamesForWin;
   const team2HasEnoughWins = gameWins2 >= minGamesForWin;
 
-  debugLog(`Validation details:`, {
+  debugLog('Validation details:', {
     totalGames,
     maxGames,
     minGamesForWin,
@@ -62,7 +62,7 @@ export function validateGameScore(
 
   // Both teams can't have enough wins
   if (team1HasEnoughWins && team2HasEnoughWins) {
-    errorLog(`Validation failed: both teams can't win`);
+    errorLog("Validation failed: both teams can't win");
     return {
       isValid: false,
       errorMessage: `Invalid score: both teams can't win in a best of ${bestOf}`,
@@ -73,13 +73,13 @@ export function validateGameScore(
   // This handles the case where users are in the process of entering scores
   if (gameWins1 === 0 && gameWins2 === 0) {
     // Allow zeros as a temporary state
-    debugLog(`Zero scores are allowed temporarily`);
+    debugLog('Zero scores are allowed temporarily');
     return { isValid: true };
   }
 
   // The total games must not exceed the maximum possible for the match format
   if (totalGames > maxGames) {
-    errorLog(`Validation failed: total games exceeds maximum`);
+    errorLog('Validation failed: total games exceeds maximum');
     return {
       isValid: false,
       errorMessage: `Invalid score: total games (${totalGames}) exceeds maximum (${maxGames}) for best of ${bestOf}`,
@@ -88,7 +88,7 @@ export function validateGameScore(
 
   // At least one team should have enough wins for completion
   if (!team1HasEnoughWins && !team2HasEnoughWins) {
-    warnLog(`Warning: neither team has enough wins yet`);
+    warnLog('Warning: neither team has enough wins yet');
     return {
       isValid: false,
       errorMessage: `Incomplete score: a team must win at least ${minGamesForWin} games in a best of ${bestOf}`,
@@ -101,7 +101,7 @@ export function validateGameScore(
     : team2HasEnoughWins && gameWins2 === minGamesForWin && gameWins1 < minGamesForWin;
 
   if (!totalGamesResult) {
-    errorLog(`Validation failed: invalid score combination`);
+    errorLog('Validation failed: invalid score combination');
     return { isValid: false, errorMessage: `Invalid score combination for best of ${bestOf}` };
   }
 
@@ -121,7 +121,7 @@ export function validateGameScoreWithMetadata(
   matchId?: string,
   matchDate?: string
 ): MatchValidationResult {
-  validationLog(`Validating score for match:`, {
+  validationLog('Validating score for match:', {
     matchId: matchId || 'unknown',
     matchDate: matchDate || 'unknown',
     gameWins1,
