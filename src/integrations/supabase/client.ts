@@ -3,8 +3,13 @@ import { createClient } from '@supabase/supabase-js';
 
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const FALLBACK_SUPABASE_URL = 'https://wcitdamvochthvxvtxyb.supabase.co';
+const FALLBACK_SUPABASE_PUBLISHABLE_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9vw';
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? FALLBACK_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY =
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? FALLBACK_SUPABASE_PUBLISHABLE_KEY;
 
 export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
 
@@ -12,7 +17,8 @@ if (!isSupabaseConfigured && typeof window !== 'undefined') {
   // Surface a clear console error but DO NOT throw at module init —
   // throwing here prevents React from mounting and produces a blank white
   // screen with no UI to recover from. The app renders a config-error
-  // screen instead (see src/App.tsx).
+  // screen instead. The project-specific fallback values above should keep the
+  // published app working even if build-time env injection is unavailable.
    
   console.error(
     '[supabase] Missing VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY at build time. ' +
