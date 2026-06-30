@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { BracketsManager } from 'brackets-manager';
+
 import { BracketStandingsService } from '../BracketStandingsService';
+import type { SupabaseSqlStorage } from '../../SupabaseSqlStorage';
 
 // Shared mock for the supabase client used by the service for the stage-matches
 // pre-check and the playoff_team_records upsert.
