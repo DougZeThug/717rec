@@ -76,8 +76,10 @@ interface UpdateMatchOptions {
 - Serialized via `matchUpdateQueue` to prevent race conditions
 - Fetches current match state before update
 - Special handling for BYE matches:
-  - If match is BYE (one opponent null) and status is 0 or 1, unlocks to status 2 and returns early
-  - Does NOT call brackets-manager for BYE unlock
+  - Detects BYE matches (one opponent null) and bypasses brackets-manager entirely
+  - Marks BYE match as completed (status 4) and propagates winner to next match via direct SQL
+  - Uses extracted helpers: completeByeMatch, findNextMatchTarget, placeByeWinnerInNextMatch
+  - Does NOT call brackets-manager for BYE match handling
 - For normal matches:
   - Loads participants into cache
   - Calls `manager.update.match()`
