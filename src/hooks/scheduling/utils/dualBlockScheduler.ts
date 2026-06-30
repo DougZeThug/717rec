@@ -94,7 +94,7 @@ export const scheduleDualBlockPairings = async (
     scheduleLog(`   Timeslots: ${slots[0]} and ${slots[1]}`);
 
     // Log team tier assignments for this pair
-    scheduleLog(`   Team Tier Assignments:`);
+    scheduleLog('   Team Tier Assignments:');
     pairTeams.forEach((team) => {
       const divisionName = (team.divisionName || '').toLowerCase();
       let tier = 2; // default
