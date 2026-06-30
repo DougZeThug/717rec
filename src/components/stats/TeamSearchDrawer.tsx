@@ -50,7 +50,6 @@ const TeamSearchDrawer: React.FC<TeamSearchDrawerProps> = ({
             placeholder="Search team name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            autoFocus
             className="w-full"
           />
         </div>

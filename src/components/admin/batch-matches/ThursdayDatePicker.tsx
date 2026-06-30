@@ -70,7 +70,6 @@ export const ThursdayDatePicker = ({ selected, onSelect }: ThursdayDatePickerPro
             selected={selected ?? undefined}
             onSelect={handleDateSelect}
             disabled={(date) => !isThursday(date)}
-            autoFocus
           />
         </PopoverContent>
       </Popover>

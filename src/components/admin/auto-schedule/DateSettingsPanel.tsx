@@ -77,7 +77,6 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
                   mode="single"
                   selected={selectedDate || undefined}
                   onSelect={(date) => setSelectedDate(date ?? null)}
-                  autoFocus
                   className="pointer-events-auto"
                 />
               </PopoverContent>
