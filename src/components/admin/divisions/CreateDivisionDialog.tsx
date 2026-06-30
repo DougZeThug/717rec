@@ -85,7 +85,6 @@ const CreateDivisionDialog: React.FC<Props> = ({ open, onOpenChange }) => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Competitive High"
-              autoFocus
             />
           </div>
           <div className="space-y-2">

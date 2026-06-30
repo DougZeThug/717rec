@@ -150,7 +150,6 @@ const TimeslotsTab = () => {
                 mode="single"
                 selected={selectedDate}
                 onSelect={(date) => date && setSelectedDate(date)}
-                autoFocus
                 className="pointer-events-auto"
               />
             </PopoverContent>
