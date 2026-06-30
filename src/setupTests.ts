@@ -3,6 +3,24 @@ import '@testing-library/jest-dom';
 import { cleanup, configure } from '@testing-library/react';
 import { afterEach } from 'vitest';
 
+// Provide safe default Supabase env vars for sandboxed agent shells (Codex /
+// Claude Code) where Vite's .env auto-loading isn't available. Tests always
+// mock the supabase client; these placeholders only exist to keep the client
+// module from throwing at import time. Real values from .env take precedence.
+const testEnvDefaults: Record<string, string> = {
+  VITE_SUPABASE_URL: 'http://localhost:54321',
+  VITE_SUPABASE_PUBLISHABLE_KEY: 'test-anon-key',
+  VITE_SUPABASE_PROJECT_ID: 'test-project',
+};
+for (const [key, value] of Object.entries(testEnvDefaults)) {
+  if (!import.meta.env[key]) {
+    (import.meta.env as Record<string, string>)[key] = value;
+  }
+  if (!process.env[key]) {
+    process.env[key] = value;
+  }
+}
+
 // Configure testing library
 configure({
   testIdAttribute: 'data-testid',
