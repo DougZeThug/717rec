@@ -43,8 +43,8 @@ export const PercentileBadge: React.FC<PercentileBadgeProps> = ({
 
   const tooltipText =
     rank && total
-      ? `Ranked ${formatOrdinal(rank)} of ${total} teams${statName ? ` in ${statName}" : ''}"
-      : `${percentile}th percentile${statName ? ` in ${statName}" : ''}";
+      ? `Ranked ${formatOrdinal(rank)} of ${total} teams${statName ? ` in ${statName}` : ''}`
+      : `${percentile}th percentile${statName ? ` in ${statName}` : ''}`;
 
   const badge = (
     <span
