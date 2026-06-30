@@ -77,10 +77,10 @@ export default defineConfig(({ mode }) => {
           'src/setupTests.ts',
         ],
         thresholds: {
-          lines: 42,
-          functions: 34,
-          branches: 33,
-          statements: 41,
+          lines: 47,
+          functions: 39,
+          branches: 36,
+          statements: 46,
           'src/services/**': {
             lines: 72,
             functions: 72,
@@ -88,10 +88,10 @@ export default defineConfig(({ mode }) => {
             statements: 71,
           },
           'src/hooks/**': {
-            lines: 36,
-            functions: 29,
-            branches: 27,
-            statements: 36,
+            lines: 41,
+            functions: 36,
+            branches: 32,
+            statements: 41,
           },
           'src/utils/**': {
             lines: 67,
