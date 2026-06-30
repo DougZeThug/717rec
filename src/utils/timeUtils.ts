@@ -127,7 +127,7 @@ export const testTimeConversion = (timeString: string): void => {
   // Set the UTC time directly
   utcDate.setUTCHours(hours, minutes, 0, 0);
 
-  timezoneLog(`Conversion results:`, {
+  timezoneLog('Conversion results:', {
     localTimeString: testDate.toLocaleTimeString(),
     localISOString: testDate.toISOString(),
     directUTCISOString: utcDate.toISOString(),
