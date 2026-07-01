@@ -26,18 +26,65 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run security audit
-        run: npm audit --audit-level=high
-        continue-on-error: true
+      - name: Run security audit (prod deps, high+)
+        # Blocking gate. Dev-only advisories are excluded via --omit=dev.
+        # Non-exploitable PROD advisories can be temporarily allowlisted in
+        # .github/audit-allowlist.json (with reason + expiry).
+        run: |
+          set -o pipefail
+          npm audit --json --omit=dev > audit-report.json || true
+
+          echo "## Security Audit Report" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          npm audit --omit=dev 2>&1 | head -100 >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+          node <<'EOF'
+          const fs = require('fs');
+          const report = JSON.parse(fs.readFileSync('audit-report.json', 'utf8'));
+          const allowlist = JSON.parse(fs.readFileSync('.github/audit-allowlist.json', 'utf8'));
+          const allowedIds = new Set((allowlist.advisories || []).map(a => String(a.id)));
+
+          // Warn on expired allowlist entries so they don't rot silently.
+          const today = new Date().toISOString().slice(0, 10);
+          for (const a of allowlist.advisories || []) {
+            if (a.expires && a.expires < today) {
+              console.log(`::warning::Audit allowlist entry ${a.id} (${a.package}) expired on ${a.expires}. Remove or re-justify.`);
+            }
+          }
+
+          const vulns = report.vulnerabilities || {};
+          const offenders = [];
+          for (const [pkg, info] of Object.entries(vulns)) {
+            if (!['high', 'critical'].includes(info.severity)) continue;
+            const viaIds = (info.via || [])
+              .filter(v => typeof v === 'object' && (v.source || v.url))
+              .map(v => String(v.source ?? (v.url || '').split('/').pop()));
+            const allAllowed = viaIds.length > 0 && viaIds.every(id => allowedIds.has(id));
+            if (allAllowed) {
+              console.log(`::notice::Allowlisted ${info.severity} advisory for ${pkg} (via ${viaIds.join(', ')})`);
+              continue;
+            }
+            offenders.push({ pkg, severity: info.severity, viaIds });
+          }
+
+          if (offenders.length > 0) {
+            console.log('::error::High/critical production advisories detected:');
+            for (const o of offenders) {
+              console.log(`  - ${o.pkg} [${o.severity}] via ${o.viaIds.join(', ') || '(unknown)'}`);
+            }
+            process.exit(1);
+          }
+          console.log('OK — no unallowlisted high/critical production advisories.');
+          EOF
 
       - name: Upload audit report
         if: always()
-        run: |
-          npm audit --json > audit-report.json || true
-          echo "## Security Audit Report" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          npm audit 2>&1 | head -100 >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: audit-report.json
+          retention-days: 14
 
   committed-env-files:
     name: No committed local env files

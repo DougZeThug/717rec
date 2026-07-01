@@ -1,0 +1,4 @@
+{
+  "advisories": [],
+  "notes": "Add { \"id\": \"<GHSA/npm advisory id>\", \"package\": \"<name>\", \"reason\": \"<why non-exploitable>\", \"expires\": \"YYYY-MM-DD\" } entries here to allowlist known non-exploitable PRODUCTION advisories. Dev-only advisories are already excluded via --omit=dev. Reviewed quarterly."
+}
