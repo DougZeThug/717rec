@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { batchInvalidateQueries } from '@/hooks/matches/utils/queryCacheUtils';
 import { SeasonService } from '@/services/SeasonService';
 
 interface CreateSeasonData {
@@ -15,6 +16,23 @@ interface UpdateSeasonData extends CreateSeasonData {
 interface ArchiveSeasonData {
   id: string;
 }
+
+// Season-wide operations (archive / partial-archive / finalize) touch matches,
+// team stats, rankings, standings, playoff brackets and career data, so every
+// related cache is invalidated. Shared here so the four broad mutations stay in
+// sync instead of repeating the same list.
+const SEASON_WIDE_QUERY_KEYS = [
+  'seasons',
+  'matches',
+  'teams',
+  'rankings',
+  'v_team_details',
+  'teamStats',
+  'standings',
+  'careerRankings',
+  'bracket-data',
+  'playoff-matches',
+];
 
 export const useSeasonMutations = () => {
   const queryClient = useQueryClient();
@@ -46,32 +64,14 @@ export const useSeasonMutations = () => {
   const activateSeasonWithPartialArchive = useMutation({
     mutationFn: SeasonService.activateSeasonWithPartialArchive,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['seasons'] });
-      queryClient.invalidateQueries({ queryKey: ['matches'] });
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-      queryClient.invalidateQueries({ queryKey: ['rankings'] });
-      queryClient.invalidateQueries({ queryKey: ['v_team_details'] });
-      queryClient.invalidateQueries({ queryKey: ['teamStats'] });
-      queryClient.invalidateQueries({ queryKey: ['standings'] });
-      queryClient.invalidateQueries({ queryKey: ['careerRankings'] });
-      queryClient.invalidateQueries({ queryKey: ['bracket-data'] });
-      queryClient.invalidateQueries({ queryKey: ['playoff-matches'] });
+      batchInvalidateQueries(queryClient, SEASON_WIDE_QUERY_KEYS);
     },
   });
 
   const finalizePlayoffs = useMutation({
     mutationFn: SeasonService.finalizePlayoffs,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['seasons'] });
-      queryClient.invalidateQueries({ queryKey: ['matches'] });
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-      queryClient.invalidateQueries({ queryKey: ['rankings'] });
-      queryClient.invalidateQueries({ queryKey: ['v_team_details'] });
-      queryClient.invalidateQueries({ queryKey: ['teamStats'] });
-      queryClient.invalidateQueries({ queryKey: ['standings'] });
-      queryClient.invalidateQueries({ queryKey: ['careerRankings'] });
-      queryClient.invalidateQueries({ queryKey: ['bracket-data'] });
-      queryClient.invalidateQueries({ queryKey: ['playoff-matches'] });
+      batchInvalidateQueries(queryClient, SEASON_WIDE_QUERY_KEYS);
     },
   });
 
@@ -79,32 +79,14 @@ export const useSeasonMutations = () => {
     mutationFn: ({ id }: ArchiveSeasonData) => SeasonService.archiveSeason(id),
     onSuccess: () => {
       // Broad invalidation since archival touches matches, stats, rankings, etc.
-      queryClient.invalidateQueries({ queryKey: ['seasons'] });
-      queryClient.invalidateQueries({ queryKey: ['matches'] });
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-      queryClient.invalidateQueries({ queryKey: ['rankings'] });
-      queryClient.invalidateQueries({ queryKey: ['v_team_details'] });
-      queryClient.invalidateQueries({ queryKey: ['teamStats'] });
-      queryClient.invalidateQueries({ queryKey: ['standings'] });
-      queryClient.invalidateQueries({ queryKey: ['careerRankings'] });
-      queryClient.invalidateQueries({ queryKey: ['bracket-data'] });
-      queryClient.invalidateQueries({ queryKey: ['playoff-matches'] });
+      batchInvalidateQueries(queryClient, SEASON_WIDE_QUERY_KEYS);
     },
   });
 
   const partialArchiveSeason = useMutation({
     mutationFn: ({ id }: ArchiveSeasonData) => SeasonService.partialArchiveSeason(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['seasons'] });
-      queryClient.invalidateQueries({ queryKey: ['matches'] });
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-      queryClient.invalidateQueries({ queryKey: ['rankings'] });
-      queryClient.invalidateQueries({ queryKey: ['v_team_details'] });
-      queryClient.invalidateQueries({ queryKey: ['teamStats'] });
-      queryClient.invalidateQueries({ queryKey: ['standings'] });
-      queryClient.invalidateQueries({ queryKey: ['careerRankings'] });
-      queryClient.invalidateQueries({ queryKey: ['bracket-data'] });
-      queryClient.invalidateQueries({ queryKey: ['playoff-matches'] });
+      batchInvalidateQueries(queryClient, SEASON_WIDE_QUERY_KEYS);
     },
   });
 

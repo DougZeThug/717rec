@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
+import { batchInvalidateQueries } from '@/hooks/matches/utils/queryCacheUtils';
 import { useToast } from '@/hooks/useToast';
 import { fetchPendingMatches, fetchTeamsMap } from '@/services/matches/MatchReadService';
 import { approveMatchResult, markMatchAsTie } from '@/services/matches/MatchWriteService';
@@ -102,8 +103,7 @@ export function usePendingMatches() {
         title: 'Result Approved',
         description: 'Match result has been successfully approved.',
       });
-      queryClient.invalidateQueries({ queryKey: ['matches'] });
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      batchInvalidateQueries(queryClient, ['matches', 'teams']);
     },
     onError: (error) => {
       errorLog('Error approving result:', error);
@@ -125,8 +125,7 @@ export function usePendingMatches() {
         title: 'Match Marked as Tie',
         description: 'Match has been successfully marked as a tie.',
       });
-      queryClient.invalidateQueries({ queryKey: ['matches'] });
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      batchInvalidateQueries(queryClient, ['matches', 'teams']);
     },
     onError: (error) => {
       errorLog('Error marking as tie:', error);
