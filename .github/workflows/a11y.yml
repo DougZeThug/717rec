@@ -1,4 +1,6 @@
-# Informational — remove `continue-on-error` to make this a required gate.
+# Required gate: axe WCAG 2 A/AA scan against key public routes.
+# To silence a specific rule, add its id to DISABLED_RULES in e2e/a11y.spec.ts
+# with a comment explaining why — do not re-add continue-on-error here.
 name: A11y (axe)
 
 on:
@@ -10,7 +12,6 @@ on:
 jobs:
   a11y:
     runs-on: ubuntu-latest
-    continue-on-error: true
     timeout-minutes: 20
     steps:
       - name: Checkout code
