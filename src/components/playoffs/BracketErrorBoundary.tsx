@@ -4,6 +4,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { errorLog } from '@/utils/logger';
+import { captureError } from '@/utils/sentry';
 
 interface Props {
   children: ReactNode;
@@ -31,6 +32,12 @@ class BracketErrorBoundary extends Component<Props, State> {
       error,
       errorInfo,
       bracketId: this.props.bracketId,
+    });
+    // Report to Sentry in production with bracket context, matching the
+    // app-level ErrorBoundary/RouteErrorBoundary reporting pattern.
+    captureError(error, {
+      bracketId: this.props.bracketId,
+      componentStack: errorInfo.componentStack,
     });
     this.setState({ error, errorInfo });
   }

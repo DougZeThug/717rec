@@ -10,6 +10,7 @@ import { useUncompletedMatches } from '../useUncompletedMatches';
 const mockToast = vi.fn();
 const mockHandleSubmitScore = vi.fn();
 const mockFetchTeams = vi.fn().mockResolvedValue(undefined);
+const mockInitializeScores = vi.fn();
 
 vi.mock('@/services/matches/MatchReadService', () => ({
   fetchUncompletedMatches: vi.fn(),
@@ -44,7 +45,7 @@ vi.mock('@/utils/logger', () => ({
 vi.mock('@/hooks/matches/useMatchScoresState', () => ({
   useMatchScoresState: vi.fn(() => ({
     scores: {},
-    initializeScores: vi.fn(),
+    initializeScores: mockInitializeScores,
     handleScoreChange: vi.fn(),
   })),
 }));
@@ -127,5 +128,23 @@ describe('useUncompletedMatches', () => {
     (fetchUncompletedMatches as ReturnType<typeof vi.fn>).mockResolvedValue([]);
     renderHook(() => useUncompletedMatches(), { wrapper: createWrapper() });
     await waitFor(() => expect(mockFetchTeams).toHaveBeenCalled());
+  });
+
+  it('reinitializes scores with matches once they load', async () => {
+    (fetchUncompletedMatches as ReturnType<typeof vi.fn>).mockResolvedValue(mockMatches);
+    const { result } = renderHook(() => useUncompletedMatches(), {
+      wrapper: createWrapper(),
+    });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    await waitFor(() => expect(mockInitializeScores).toHaveBeenCalledWith(mockMatches));
+  });
+
+  it('does not reinitialize scores when there are no matches', async () => {
+    (fetchUncompletedMatches as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+    const { result } = renderHook(() => useUncompletedMatches(), {
+      wrapper: createWrapper(),
+    });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(mockInitializeScores).not.toHaveBeenCalled();
   });
 });
