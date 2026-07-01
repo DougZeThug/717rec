@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
-import { Match, Team } from '@/types';
 import { LiveRegion } from '@/components/ui/live-region';
+import { Match, Team } from '@/types';
 
 import MatchScoreItem from './MatchScoreItem';
 
@@ -54,9 +54,7 @@ const MatchScoresList = ({
             if (ok) {
               const t1 = teams[match.team1Id]?.name ?? 'Team 1';
               const t2 = teams[match.team2Id]?.name ?? 'Team 2';
-              setAnnouncement(
-                `Score submitted: ${t1} ${team1GameWins}, ${t2} ${team2GameWins}.`
-              );
+              setAnnouncement(`Score submitted: ${t1} ${team1GameWins}, ${t2} ${team2GameWins}.`);
             }
             return ok;
           }}

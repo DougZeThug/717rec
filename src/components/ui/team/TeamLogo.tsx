@@ -40,9 +40,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
   );
 
   const logoContent = (
-    <div
-      className={containerClasses}
-    >
+    <div className={containerClasses}>
       {imageUrl ? (
         <img
           src={imageUrl}
