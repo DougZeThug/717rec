@@ -101,7 +101,12 @@ const AppContent = () => {
       <div className="flex flex-col min-h-screen overflow-x-hidden">
         <Navbar />
         <PageTransition>
-          <main ref={mainRef} tabIndex={-1} className="flex-grow focus:outline-none">
+          <main
+            ref={mainRef}
+            id="main-content"
+            tabIndex={-1}
+            className="flex-grow focus:outline-none"
+          >
             <Suspense
               fallback={
                 <div className="flex items-center justify-center min-h-[60vh] py-8">
