@@ -24,11 +24,11 @@ vi.mock('@/hooks/matches/useMatchSubmission', () => ({
 }));
 
 vi.mock('@/hooks/matches/updates/utils/statReversalUtils', () => ({
-  reverseTeamStats: vi.fn().mockResolvedValue(undefined),
+  reverseTeamStats: vi.fn(() => Promise.resolve()),
 }));
 
 vi.mock('@/hooks/matches/utils/queryCacheUtils', () => ({
-  invalidateMatchRelatedQueries: vi.fn().mockResolvedValue(undefined),
+  invalidateMatchRelatedQueries: vi.fn(() => Promise.resolve()),
 }));
 
 vi.mock('@/components/admin/mass-score-entry/hooks/fetching/useMatchesFetching', () => ({
@@ -159,7 +159,9 @@ describe('MassScoreEntryTool submit -> table sync (real hook + real MatchesTable
     currentFetchResult = [];
     // fetchMatches always resolves the current mutable result (a fresh copy so
     // the hook can't mutate our fixtures across renders).
-    mockFetchMatches.mockImplementation(async () => currentFetchResult.map((m) => ({ ...m })));
+    mockFetchMatches.mockImplementation(() =>
+      Promise.resolve(currentFetchResult.map((m) => ({ ...m })))
+    );
   });
 
   it('success: submits the edited row and syncs the table back to a clean state', async () => {
@@ -273,8 +275,8 @@ describe('MassScoreEntryTool submit -> table sync (real hook + real MatchesTable
     setFetchResult(two());
 
     // Keyed by matchId (robust to submission ordering): m1 succeeds, m2 fails.
-    mockHandleSubmitScore.mockImplementation(
-      async ({ matchId }: { matchId: string }) => matchId === 'm1'
+    mockHandleSubmitScore.mockImplementation(({ matchId }: { matchId: string }) =>
+      Promise.resolve(matchId === 'm1')
     );
 
     renderTool();

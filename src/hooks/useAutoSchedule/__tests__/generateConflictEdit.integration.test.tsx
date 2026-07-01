@@ -154,7 +154,7 @@ async function renderReadyToEdit() {
   });
 
   // 3. Apply -> REAL pairing->match conversion sets generatedMatches + editableMatches.
-  await act(async () => {
+  act(() => {
     result.current.handleApplySchedule();
   });
 
@@ -163,7 +163,7 @@ async function renderReadyToEdit() {
   });
 
   // Enter edit mode so useEditableMatches runs its validation effect.
-  await act(async () => {
+  act(() => {
     result.current.setIsEditMode(true);
   });
 
@@ -207,7 +207,7 @@ describe('auto-schedule generate -> conflict -> edit loop (integration)', () => 
 
     // ---- EDIT: double-book team-a into the second match at the SAME timeslot ("Early").
     // Now team-a is in both Early-0 and Early-1 at "Early" -> duplicate-team conflict.
-    await act(async () => {
+    act(() => {
       result.current.updateMatchTeam(matchToEdit.id, 'team1', 'team-a');
     });
 
@@ -232,7 +232,7 @@ describe('auto-schedule generate -> conflict -> edit loop (integration)', () => 
 
     // ---- CORRECTIVE EDIT: move the double-booked match to a different timeslot ("Late").
     // team-a is now in "Early" (Early-0) and "Late" (Early-1) -> no same-timeslot conflict.
-    await act(async () => {
+    act(() => {
       result.current.updateMatchTimeslot(matchToEdit.id, 'Late');
     });
 
