@@ -1,25 +1,25 @@
-Plan: remove the last explicit `any` cast in the codebase.
+## Fix: Lockfile out of sync
 
-Location
-- `src/services/brackets/manager/services/__tests__/BracketStandingsService.test.ts` line 55 currently casts both `storage` and `manager` with `as any` and suppresses the rule with `// eslint-disable-next-line @typescript-eslint/no-explicit-any`.
+The build fails because `bun install --frozen-lockfile` detects that the committed lockfile no longer matches `package.json`. This usually happens after a dependency was added, removed, or changed without regenerating the lockfile.
 
-Why this matters
-- The project enforces `@typescript-eslint/no-explicit-any` and currently reports 1 remaining violation. Replacing it with typed `unknown` casts keeps the test passing while removing the final `any` from the code-health tally.
+### What I will do
+1. Inspect `package.json` and the lockfile (`bun.lockb`) to confirm the mismatch.
+2. Run `bun install` without `--frozen-lockfile` locally to regenerate the lockfile.
+3. Verify that the project still builds and the basic test gate passes.
+4. Commit only the updated lockfile (and any small package.json correction if needed).
 
-Steps
-1. Add type imports:
-   - `import type { SupabaseSqlStorage } from '../../SupabaseSqlStorage';`
-   - `import type { BracketsManager } from 'brackets-manager';`
-2. In the `makeService` helper, replace the single line:
-   - `// eslint-disable-next-line @typescript-eslint/no-explicit-any`
-   - `return new BracketStandingsService(storage as any, manager as any);`
-   with:
-   - `return new BracketStandingsService(storage as unknown as SupabaseSqlStorage, manager as unknown as BracketsManager);`
-3. Run the targeted test: `npm run test:file -- src/services/brackets/manager/services/__tests__/BracketStandingsService.test.ts`
-4. Run `npx eslint .` to confirm the remaining `any` count drops to 0.
+### What you need to know
+- No application code will change.
+- If `package.json` references a dependency version that cannot resolve, I will stop and ask before choosing an alternative.
+- After the lockfile is updated, the Lovable build should restore cleanly from cache.
 
-Verification
-- Test file should pass unchanged behavior.
-- `npx eslint .` should report zero `@typescript-eslint/no-explicit-any` violations.
+### Verification
+- `bun install` completes without the frozen-lockfile error.
+- `npm run typecheck` passes.
+- `npm run build` passes.
+- `npm run lint` still passes.
+- One targeted test file runs successfully.
 
-No other files need to change; this is a single-test cleanup.
+### Files that may change
+- `bun.lockb` (lockfile regenerated)
+- `package.json` only if a dependency entry is malformed or missing a valid range
