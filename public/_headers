@@ -1,0 +1,29 @@
+# HTTP security response headers for the published SPA.
+#
+# How this ships: Vite copies everything in `public/` verbatim into `dist/`, so
+# this file is served as `dist/_headers`. The host applies it to every response
+# — Cloudflare Workers static assets (see wrangler.toml), Cloudflare Pages,
+# Netlify, and the Lovable publish pipeline all read a top-level `_headers`
+# file. No wrangler.toml change is required.
+#
+# Format notes (important): `_headers` does NOT support line continuations, so
+# every header value must stay on a single physical line. The path pattern
+# (`/*`) is unindented; the header lines below it are indented.
+#
+# Rollout: the first block of headers is safe to enforce immediately. The
+# Content-Security-Policy is shipped in *Report-Only* mode so it can never break
+# the live site — the browser only logs would-be violations to the console.
+# Once the console is clean in production, rename the header from
+# `Content-Security-Policy-Report-Only` to `Content-Security-Policy` to enforce.
+#
+# `tests/securityHeaders.test.ts` is a smoke test that guards these values.
+
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=63072000; includeSubDomains
+  Cross-Origin-Opener-Policy: same-origin
+  X-XSS-Protection: 0
+  Permissions-Policy: accelerometer=(), autoplay=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), usb=(), xr-spatial-tracking=()
+  Content-Security-Policy-Report-Only: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests; script-src 'self' 'unsafe-inline' https://cdn.gpteng.co https://progressier.app https://cdn.jsdelivr.net https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://wcitdamvochthvxvtxyb.supabase.co https://images.unsplash.com https://progressier.app https://www.googletagmanager.com https://www.google-analytics.com; connect-src 'self' https://wcitdamvochthvxvtxyb.supabase.co wss://wcitdamvochthvxvtxyb.supabase.co https://progressier.app https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://*.ingest.sentry.io https://*.ingest.us.sentry.io; frame-src https://challonge.com; manifest-src 'self' https://progressier.app; worker-src 'self' blob: https://progressier.app
