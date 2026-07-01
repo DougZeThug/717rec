@@ -46,20 +46,27 @@ const makeMatch = (overrides = {}) => ({
 /**
  * Creates a "thenable chain" — an object that can be both:
  * - Awaited like a Promise (returns { data, error })
- * - Chained with .gte(), .lt(), .eq() (which record calls via spies)
+ * - Chained with .select(), .order(), .gte(), .lt(), .eq(), .range()
+ *   (.gte/.lt/.eq record calls via spies)
  *
  * This mirrors the Supabase PostgREST query builder pattern.
  */
 type QueryResult = { data: unknown; error: unknown | null };
 type QueryChain = PromiseLike<QueryResult> & {
+  select: (...args: unknown[]) => QueryChain;
+  order: (...args: unknown[]) => QueryChain;
   gte: (...args: unknown[]) => QueryChain;
   lt: (...args: unknown[]) => QueryChain;
   eq: (...args: unknown[]) => QueryChain;
+  range: (...args: unknown[]) => PromiseLike<QueryResult>;
   catch: Promise<QueryResult>['catch'];
 };
 
 const makeQueryChain = (result: QueryResult): QueryChain => {
+  let rangeCall = 0;
   const chain: QueryChain = {
+    select: () => chain,
+    order: () => chain,
     gte: (...args: unknown[]) => {
       mockGte(...args);
       return chain;
@@ -72,6 +79,13 @@ const makeQueryChain = (result: QueryResult): QueryChain => {
       mockEq(...args);
       return chain;
     },
+    // fetchMatchesWithTeams paginates via .range(): the first page returns the
+    // result, later pages are empty, so the loop always terminates — even if a
+    // fixture ever returns a full page (guards against an accidental infinite loop).
+    range: () => {
+      rangeCall += 1;
+      return Promise.resolve(rangeCall === 1 ? result : { data: [], error: null });
+    },
     then: (onFulfilled, onRejected) => Promise.resolve(result).then(onFulfilled, onRejected),
     catch: (onRejected) => Promise.resolve(result).catch(onRejected),
   };
@@ -79,20 +93,16 @@ const makeQueryChain = (result: QueryResult): QueryChain => {
 };
 
 const setupSuccess = (rows: ReturnType<typeof makeMatch>[]) => {
-  const chain = makeQueryChain({ data: rows, error: null });
-  mockFrom.mockReturnValue({
-    select: () => ({ order: () => chain }),
-  });
+  mockFrom.mockReturnValue(makeQueryChain({ data: rows, error: null }));
 };
 
 const setupError = (message = 'query failed') => {
-  const chain = makeQueryChain({
-    data: null,
-    error: { message, code: '42P01', details: null, hint: null, name: 'PostgrestError' },
-  });
-  mockFrom.mockReturnValue({
-    select: () => ({ order: () => chain }),
-  });
+  mockFrom.mockReturnValue(
+    makeQueryChain({
+      data: null,
+      error: { message, code: '42P01', details: null, hint: null, name: 'PostgrestError' },
+    })
+  );
 };
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
@@ -116,8 +126,7 @@ describe('fetchMatchesWithTeams', () => {
   });
 
   it('returns empty array when data is null', async () => {
-    const chain = makeQueryChain({ data: null, error: null });
-    mockFrom.mockReturnValue({ select: () => ({ order: () => chain }) });
+    mockFrom.mockReturnValue(makeQueryChain({ data: null, error: null }));
     const matches = await fetchMatchesWithTeams();
     expect(matches).toEqual([]);
   });

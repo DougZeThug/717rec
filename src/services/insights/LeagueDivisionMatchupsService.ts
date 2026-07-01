@@ -34,6 +34,9 @@ export interface LeagueDivisionMatchupsData {
 
 const PAGE_SIZE = 1000;
 
+// Range pagination requires an explicit, stable ORDER BY on every query below.
+// Without one, PostgREST/Postgres may return rows in a different order per page,
+// which can skip or duplicate rows across page boundaries.
 async function fetchAllPages<T>(
   buildQuery: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: unknown }>,
   context: string
@@ -63,6 +66,7 @@ export const fetchLeagueDivisionMatchups = async (): Promise<LeagueDivisionMatch
             .select('winner_id, loser_id, season_id')
             .not('winner_id', 'is', null)
             .not('loser_id', 'is', null)
+            .order('id', { ascending: true })
             .range(from, to),
         'Failed to fetch matches for league division matchups'
       ),
@@ -73,6 +77,7 @@ export const fetchLeagueDivisionMatchups = async (): Promise<LeagueDivisionMatch
             .select('winner_id, loser_id, season_id')
             .not('winner_id', 'is', null)
             .not('loser_id', 'is', null)
+            .order('id', { ascending: true })
             .range(from, to),
         'Failed to fetch archived matches for league division matchups'
       ),
@@ -83,6 +88,7 @@ export const fetchLeagueDivisionMatchups = async (): Promise<LeagueDivisionMatch
             .select('winner_id, loser_id, bracket_id')
             .not('winner_id', 'is', null)
             .not('loser_id', 'is', null)
+            .order('id', { ascending: true })
             .range(from, to),
         'Failed to fetch playoff matches for league division matchups'
       ),
@@ -91,6 +97,8 @@ export const fetchLeagueDivisionMatchups = async (): Promise<LeagueDivisionMatch
           supabase
             .from('team_season_stats')
             .select('team_id, season_id, division_name')
+            .order('season_id', { ascending: true })
+            .order('team_id', { ascending: true })
             .range(from, to),
         'Failed to fetch team season divisions for league division matchups'
       ),

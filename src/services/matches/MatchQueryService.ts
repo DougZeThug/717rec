@@ -10,40 +10,69 @@ export interface MatchFilters {
   bracketId?: string;
 }
 
+// PostgREST caps a single response at 1,000 rows, so fetchMatchesWithTeams
+// walks through the results one page at a time instead of relying on a single
+// query (which would silently drop everything past the first 1,000 matches).
+const MATCH_PAGE_SIZE = 1000;
+
 /**
- * Fetch matches with team details, optionally filtered by date and/or bracket
+ * Fetch matches with team details, optionally filtered by date and/or bracket.
+ *
+ * Results are paginated so the admin mass-score screen never silently stops at
+ * PostgREST's 1,000-row response cap. Rows are ordered by date then id — date
+ * alone is not a total order (many matches share a date), and range pagination
+ * requires a stable, unique sort or it can skip or repeat rows across pages.
+ *
  * @throws {DatabaseError} When database operations fail
  */
 export const fetchMatchesWithTeams = async (filters?: MatchFilters) => {
-  let query = supabase
-    .from('matches')
-    .select(
-      `
-        *,
-        team1:teams!matches_team1_id_fkey(id, name, logo_url, image_url),
-        team2:teams!matches_team2_id_fkey(id, name, logo_url, image_url)
-      `
-    )
-    .order('date', { ascending: true });
+  const buildPage = (from: number, to: number) => {
+    let query = supabase
+      .from('matches')
+      .select(
+        `
+          *,
+          team1:teams!matches_team1_id_fkey(id, name, logo_url, image_url),
+          team2:teams!matches_team2_id_fkey(id, name, logo_url, image_url)
+        `
+      )
+      .order('date', { ascending: true })
+      .order('id', { ascending: true });
 
-  // Apply date filter if provided
-  if (filters?.date) {
-    const dateStr = filters.date.toISOString().split('T')[0]; // Format as yyyy-MM-dd
-    query = query.gte('date', `${dateStr}T00:00:00`).lt('date', `${dateStr}T23:59:59`);
+    // Apply date filter if provided
+    if (filters?.date) {
+      const dateStr = filters.date.toISOString().split('T')[0]; // Format as yyyy-MM-dd
+      query = query.gte('date', `${dateStr}T00:00:00`).lt('date', `${dateStr}T23:59:59`);
+    }
+
+    // Apply bracket filter if provided
+    if (filters?.bracketId) {
+      query = query.eq('bracket_id', filters.bracketId);
+    }
+
+    return query.range(from, to);
+  };
+
+  const rows: NonNullable<Awaited<ReturnType<typeof buildPage>>['data']> = [];
+  let from = 0;
+
+  // Keep fetching pages until we get a short (non-full) page — that is the last one.
+  while (true) {
+    const to = from + MATCH_PAGE_SIZE - 1;
+    const { data, error } = await buildPage(from, to);
+
+    if (error) {
+      handleDatabaseError(error, 'Failed to fetch matches with teams');
+    }
+
+    const page = data ?? [];
+    rows.push(...page);
+
+    if (page.length < MATCH_PAGE_SIZE) break;
+    from += MATCH_PAGE_SIZE;
   }
 
-  // Apply bracket filter if provided
-  if (filters?.bracketId) {
-    query = query.eq('bracket_id', filters.bracketId);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    handleDatabaseError(error, 'Failed to fetch matches with teams');
-  }
-
-  return data ?? [];
+  return rows;
 };
 
 /**
