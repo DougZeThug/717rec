@@ -20,15 +20,13 @@ vi.mock('@/components/ui/empty-state', () => ({
 
 import { TeamList } from '../TeamList';
 
-const noop = () => {};
-
 const renderList = (props: Partial<React.ComponentProps<typeof TeamList>> = {}) =>
   render(
     <TeamList
       teams={[]}
       isLoading={false}
-      onEdit={noop}
-      onDelete={noop}
+      onEdit={vi.fn()}
+      onDelete={vi.fn()}
       viewMode="grid"
       {...props}
     />
