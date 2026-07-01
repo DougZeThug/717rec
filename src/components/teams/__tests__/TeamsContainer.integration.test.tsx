@@ -14,6 +14,8 @@ type TeamsByDivisionMockProps = { teamsByDivision: Record<string, Team[]>; isLoa
 type TeamManagementState = {
   teams: Team[];
   isLoading: boolean;
+  error: Error | null;
+  refetch: () => void;
   teamToEdit: Team | null;
   setTeamToEdit: (team: Team | null) => void;
   deleteTeamId: string | null;
@@ -58,6 +60,8 @@ import TeamsContainer from '../TeamsContainer';
 const base: TeamManagementState = {
   teams: [],
   isLoading: false,
+  error: null,
+  refetch: vi.fn(),
   teamToEdit: null,
   setTeamToEdit: vi.fn(),
   deleteTeamId: null,
@@ -102,5 +106,17 @@ describe('TeamsContainer integration states', () => {
     render(<TeamsContainer displayMode="all" viewMode="grid" sortMode="rank" />);
     await userEvent.click(screen.getByRole('button', { name: /delete/i }));
     expect(handleDeleteTeam).toHaveBeenCalled();
+  });
+
+  it('shows a retryable error state in grouped mode when the fetch fails', async () => {
+    const refetch = vi.fn();
+    mockUseTeamManagement.mockReturnValue({ ...base, error: new Error('boom'), refetch });
+    render(<TeamsContainer displayMode="grouped" viewMode="grid" sortMode="rank" />);
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByText(/couldn't load the teams/i)).toBeInTheDocument();
+    // Grouped view must not fall through to the "no teams" division message.
+    expect(screen.queryByText('Grouped teams loaded')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /try again/i }));
+    expect(refetch).toHaveBeenCalledTimes(1);
   });
 });

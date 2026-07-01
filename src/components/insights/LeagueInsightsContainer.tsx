@@ -2,6 +2,7 @@ import { Lightbulb } from 'lucide-react';
 import React, { lazy, Suspense } from 'react';
 
 import { SectionHeader } from '@/components/ui/CollapsibleSection';
+import { ErrorDisplay } from '@/components/ui/error-display';
 import LoadingState from '@/components/ui/loading-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import WinterSection from '@/components/winter/WinterSection';
@@ -17,13 +18,26 @@ import TopPerformersSection from './TopPerformersSection';
 const DivisionStrengthChart = lazy(() => import('./DivisionStrengthChart'));
 
 const LeagueInsightsContainer: React.FC = () => {
-  const { overview, divisionStrength, parity, topPerformers, isLoading } = useLeagueInsights();
+  const { overview, divisionStrength, parity, topPerformers, isLoading, error, refetch } =
+    useLeagueInsights();
   const { isWinterTheme } = useSeasonalTheme();
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[40vh] py-8">
         <LoadingState message="Crunching the numbers..." size="lg" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16">
+        <ErrorDisplay
+          variant="card"
+          error="We couldn't load league insights. Please try again."
+          onRetry={refetch}
+        />
       </div>
     );
   }

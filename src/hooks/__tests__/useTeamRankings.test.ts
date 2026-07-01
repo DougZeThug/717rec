@@ -189,4 +189,49 @@ describe('useTeamRankings', () => {
       expect.objectContaining({ persistToDatabase: false })
     );
   });
+
+  it('propagates a teams fetch error', () => {
+    const teamsError = new Error('teams down');
+    (useTeams as ReturnType<typeof vi.fn>).mockReturnValue({
+      teams: [],
+      isLoading: false,
+      error: teamsError,
+      fetchTeams: vi.fn(),
+    });
+    const { result } = renderHook(() => useTeamRankings());
+    expect(result.current.error).toBe(teamsError);
+  });
+
+  it('propagates a matches fetch error', () => {
+    const matchesError = new Error('matches down');
+    (useRankingsData as ReturnType<typeof vi.fn>).mockReturnValue({
+      latestMatches: [],
+      matchesLoading: false,
+      matchesError,
+      refetchMatches: vi.fn(),
+    });
+    const { result } = renderHook(() => useTeamRankings());
+    expect(result.current.error).toBe(matchesError);
+  });
+
+  it('refetch triggers both data sources', () => {
+    const fetchTeams = vi.fn();
+    const refetchMatches = vi.fn();
+    (useTeams as ReturnType<typeof vi.fn>).mockReturnValue({
+      teams: [],
+      isLoading: false,
+      error: null,
+      fetchTeams,
+    });
+    (useRankingsData as ReturnType<typeof vi.fn>).mockReturnValue({
+      latestMatches: [],
+      matchesLoading: false,
+      matchesError: null,
+      refetchMatches,
+    });
+    const { result } = renderHook(() => useTeamRankings());
+    result.current.refetch();
+    expect(fetchTeams).toHaveBeenCalledTimes(1);
+    expect(refetchMatches).toHaveBeenCalledTimes(1);
+  });
 });

@@ -5,6 +5,7 @@ import { TeamDeleteDialog } from '@/components/teams/TeamDeleteDialog';
 import { TeamEditForm } from '@/components/teams/TeamEditForm';
 import { TeamList } from '@/components/teams/TeamList';
 import { TeamsByDivision } from '@/components/teams/TeamsByDivision';
+import { ErrorDisplay } from '@/components/ui/error-display';
 import { useDivisions } from '@/hooks/useDivisions';
 import { useTeamManagement } from '@/hooks/useTeamManagement';
 import { DisplayMode, SortMode } from '@/hooks/useTeamsPreferences';
@@ -27,6 +28,8 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode, 
   const {
     teams,
     isLoading,
+    error,
+    refetch,
     teamToEdit,
     setTeamToEdit,
     deleteTeamId,
@@ -101,19 +104,29 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode, 
           transition={{ duration: 0.2 }}
         >
           {displayMode === 'grouped' ? (
-            <TeamsByDivision
-              teamsByDivision={sortedTeamsByDivision}
-              getDivisionName={getDivisionName}
-              onEditTeam={setTeamToEdit}
-              onDeleteTeam={setDeleteTeamId}
-              isLoading={isLoading}
-              viewMode={viewMode}
-              sortMode={sortMode}
-            />
+            !isLoading && error ? (
+              <ErrorDisplay
+                variant="card"
+                error="We couldn't load the teams. Please try again."
+                onRetry={refetch}
+              />
+            ) : (
+              <TeamsByDivision
+                teamsByDivision={sortedTeamsByDivision}
+                getDivisionName={getDivisionName}
+                onEditTeam={setTeamToEdit}
+                onDeleteTeam={setDeleteTeamId}
+                isLoading={isLoading}
+                viewMode={viewMode}
+                sortMode={sortMode}
+              />
+            )
           ) : (
             <TeamList
               teams={sortedAllTeams}
               isLoading={isLoading}
+              error={error}
+              onRetry={refetch}
               onEdit={setTeamToEdit}
               onDelete={setDeleteTeamId}
               viewMode={viewMode}

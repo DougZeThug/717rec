@@ -119,4 +119,56 @@ describe('useLeagueInsights', () => {
     expect(mostImproved).toBeDefined();
     expect(mostImproved?.value).toBe('+5.5');
   });
+
+  it('propagates a rankings fetch error', () => {
+    const rankingsError = new Error('rankings down');
+    (useTeamRankings as ReturnType<typeof vi.fn>).mockReturnValue({
+      rankings: [],
+      isLoading: false,
+      error: rankingsError,
+      refetch: vi.fn(),
+    });
+    const { result } = renderHook(() => useLeagueInsights());
+    expect(result.current.error).toBe(rankingsError);
+  });
+
+  it('propagates a trends fetch error', () => {
+    (useTeamRankings as ReturnType<typeof vi.fn>).mockReturnValue({
+      rankings: [],
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    const trendsError = new Error('trends down');
+    (useWeeklyPowerScoreTrends as ReturnType<typeof vi.fn>).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: trendsError,
+      refetch: vi.fn(),
+    });
+    const { result } = renderHook(() => useLeagueInsights());
+    expect(result.current.error).toBe(trendsError);
+  });
+
+  it('refetch triggers rankings and both trend queries', () => {
+    const refetchRankings = vi.fn();
+    const refetchTrends = vi.fn();
+    (useTeamRankings as ReturnType<typeof vi.fn>).mockReturnValue({
+      rankings: [],
+      isLoading: false,
+      error: null,
+      refetch: refetchRankings,
+    });
+    (useWeeklyPowerScoreTrends as ReturnType<typeof vi.fn>).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: null,
+      refetch: refetchTrends,
+    });
+    const { result } = renderHook(() => useLeagueInsights());
+    result.current.refetch();
+    expect(refetchRankings).toHaveBeenCalledTimes(1);
+    // Two trend queries (risers + fallers) share the mocked refetch.
+    expect(refetchTrends).toHaveBeenCalledTimes(2);
+  });
 });

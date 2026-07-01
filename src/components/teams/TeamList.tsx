@@ -4,6 +4,7 @@ import React, { useCallback, useMemo } from 'react';
 import TeamCard from '@/components/teams/TeamCard';
 import { TeamListSkeleton } from '@/components/teams/TeamListSkeleton';
 import { EmptyState } from '@/components/ui/empty-state';
+import { ErrorDisplay } from '@/components/ui/error-display';
 import { Team } from '@/types';
 
 interface TeamListProps {
@@ -12,6 +13,10 @@ interface TeamListProps {
   onEdit: (team: Team) => void;
   onDelete: (teamId: string) => void;
   viewMode: 'grid' | 'list';
+  /** Fetch error to surface as a retryable error state. */
+  error?: Error | null;
+  /** Retry handler shown alongside the error state. */
+  onRetry?: () => void;
 }
 
 export const TeamList: React.FC<TeamListProps> = ({
@@ -20,6 +25,8 @@ export const TeamList: React.FC<TeamListProps> = ({
   onEdit,
   onDelete,
   viewMode,
+  error,
+  onRetry,
 }) => {
   // Create a deduplicated array of teams by team ID
   const uniqueTeams = useMemo(() => {
@@ -51,6 +58,16 @@ export const TeamList: React.FC<TeamListProps> = ({
 
   if (isLoading) {
     return <TeamListSkeleton viewMode={viewMode} />;
+  }
+
+  if (error) {
+    return (
+      <ErrorDisplay
+        variant="card"
+        error="We couldn't load the teams. Please try again."
+        onRetry={onRetry}
+      />
+    );
   }
 
   if (uniqueTeams.length === 0) {

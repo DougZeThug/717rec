@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Match, Ranking, Team } from '@/types';
 import { getTierFromDivision } from '@/utils/autoSchedule/blossom/tierUtils';
@@ -20,9 +20,18 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
   const [rankings, setRankings] = useState<Ranking[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { previousRankings, lastUpdated } = usePreviousRankings();
-  const { latestMatches, matchesLoading } = useRankingsData();
-  const { teams: latestTeams, isLoading: teamsLoading } = useTeams();
+  const { latestMatches, matchesLoading, matchesError, refetchMatches } = useRankingsData();
+  const { teams: latestTeams, isLoading: teamsLoading, error: teamsError, fetchTeams } = useTeams();
   const { isAdminAccessGranted } = useAdminAccess();
+
+  // Surface the first fetch error from either data source so consumers can show
+  // a retryable error state instead of an empty/"no data" screen.
+  const error = teamsError ?? matchesError ?? null;
+
+  const refetch = useCallback(() => {
+    fetchTeams();
+    refetchMatches?.();
+  }, [fetchTeams, refetchMatches]);
 
   useEffect(() => {
     debugLog(
@@ -166,5 +175,7 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
   return {
     rankings,
     isLoading: isLoading || teamsLoading || matchesLoading,
+    error,
+    refetch,
   };
 };

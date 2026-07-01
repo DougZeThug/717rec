@@ -6,7 +6,7 @@ import { Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 
 export function useTeamManagement() {
-  const { teams, isLoading, fetchTeams, updateTeam, deleteTeam } = useTeams();
+  const { teams, isLoading, error, fetchTeams, updateTeam, deleteTeam } = useTeams();
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
   const [deleteTeamId, setDeleteTeamId] = useState<string | null>(null);
   const [teamToEdit, setTeamToEdit] = useState<Team | null>(null);
@@ -68,6 +68,8 @@ export function useTeamManagement() {
   return {
     teams,
     isLoading,
+    error,
+    refetch: fetchTeams,
     teamToEdit,
     setTeamToEdit,
     deleteTeamId,

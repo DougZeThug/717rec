@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { SectionHeader } from '@/components/ui/CollapsibleSection';
 import { EmptyState } from '@/components/ui/empty-state';
+import { ErrorDisplay } from '@/components/ui/error-display';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { useAllTeamBadges } from '@/hooks/useTeamBadges';
 import { cn } from '@/lib/utils';
@@ -17,12 +18,16 @@ import TeamCardCompact from './TeamCardCompact';
 
 interface TopTeamsProps {
   teams: Team[];
+  /** Fetch error to surface as a retryable error state. */
+  error?: Error | null;
+  /** Retry handler shown alongside the error state. */
+  onRetry?: () => void;
 }
 
 // Reserve minimum height to prevent layout shift during loading
 const sectionStyle = { minHeight: '280px' };
 
-const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
+const TopTeams: React.FC<TopTeamsProps> = ({ teams, error, onRetry }) => {
   const { shouldApplyWinter } = useSeasonalTheme();
   const { data: allBadges } = useAllTeamBadges();
   // Memoize to prevent creating new array reference on every render
@@ -49,6 +54,18 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
         ),
     '' // Animation handled by parent PageTransition to avoid double animation CLS
   );
+
+  if (error) {
+    return (
+      <section id="top-teams-section" className={sectionClasses} style={sectionStyle}>
+        <ErrorDisplay
+          variant="card"
+          error="We couldn't load the top teams. Please try again."
+          onRetry={onRetry}
+        />
+      </section>
+    );
+  }
 
   if (topTenTeams.length === 0) {
     return (

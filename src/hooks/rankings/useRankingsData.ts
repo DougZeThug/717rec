@@ -7,6 +7,7 @@ export const useRankingsData = () => {
     data: latestMatches,
     isLoading: matchesLoading,
     error,
+    refetch,
   } = useQuery({
     queryKey: ['matches', 'rankings'],
     queryFn: fetchRankingsData,
@@ -17,5 +18,6 @@ export const useRankingsData = () => {
     latestMatches,
     matchesLoading,
     matchesError: error as Error | null,
+    refetchMatches: refetch,
   };
 };
