@@ -4,7 +4,10 @@
 // below. Do NOT enable JWT verification — it will break the cron schedule.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+import { SECURITY_HEADERS } from '../_shared/securityHeaders.ts';
+
 const corsHeaders = {
+  ...SECURITY_HEADERS,
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };

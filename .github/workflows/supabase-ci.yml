@@ -107,9 +107,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # Safe placeholders so dotenv-style test loaders don't crash.
+      # dotenv/load.ts asserts every var in .env.example is present, so all
+      # three must be set here even though the tests never call out to Supabase.
       # Tests that need real network must guard themselves.
       VITE_SUPABASE_URL: https://placeholder.supabase.co
       VITE_SUPABASE_PUBLISHABLE_KEY: placeholder-anon-key
+      VITE_SUPABASE_PROJECT_ID: placeholder
       SUPABASE_CI: '1'
       DENO_DIR: ~/.cache/deno
     steps:
