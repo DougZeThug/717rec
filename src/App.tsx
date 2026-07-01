@@ -1,6 +1,6 @@
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { domAnimation, LazyMotion } from 'framer-motion';
-import React, { lazy, Suspense, useEffect } from 'react';
+import React, { lazy, Suspense, useEffect, useRef } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
 
@@ -15,6 +15,7 @@ import { errorLog, routeLog } from '@/utils/logger';
 import { preloadCoreRoutes } from '@/utils/routePrefetch';
 import { metrics } from '@/utils/sentry';
 
+import { RouteAnnouncer } from './components/a11y/RouteAnnouncer';
 import ProtectedAdminRoute from './components/auth/ProtectedAdminRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Footer from './components/layout/Footer';
@@ -72,6 +73,7 @@ const queryClient = new QueryClient({
 const AppContent = () => {
   const location = useLocation();
   const navigationStartRef = useLazyRef(() => performance.now());
+  const mainRef = useRef<HTMLElement>(null);
 
   // Alias to a local to avoid the 'location.*' mutable-global heuristic.
   const pathname = location.pathname;
@@ -95,10 +97,11 @@ const AppContent = () => {
 
   return (
     <NavigationProvider>
+      <RouteAnnouncer mainRef={mainRef} />
       <div className="flex flex-col min-h-screen overflow-x-hidden">
         <Navbar />
         <PageTransition>
-          <main className="flex-grow">
+          <main ref={mainRef} tabIndex={-1} className="flex-grow focus:outline-none">
             <Suspense
               fallback={
                 <div className="flex items-center justify-center min-h-[60vh] py-8">
