@@ -21,7 +21,7 @@ describe('BracketErrorBoundary', () => {
   beforeEach(() => {
     vi.mocked(captureError).mockClear();
     // React logs boundary-caught errors to console.error; silence for clean output.
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
   });
 
   afterEach(() => {
