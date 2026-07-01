@@ -1,50 +1,46 @@
-# Dependency advisory patch plan
+# PR: Make security-audit + a11y CI gates blocking
 
-Small, targeted `package.json` bumps + `overrides` for transitives. No app code changes.
+Turn two informational workflows into required gates, with a tiny, explicit allowlist mechanism so noise doesn't force us back to `continue-on-error`.
 
-## Changes to `package.json`
+## 1. `.github/workflows/security-audit.yml` — blocking
 
-### `devDependencies`
-- `vite`: `7.3.2` → `^7.3.6` (latest 7.x; kills the pinned-old advisory)
-- `vitest`: `4.1.8` → `^4.1.9` (matches the already-installed `@vitest/coverage-v8@4.1.9`, so the "vitest/coverage version mismatch" warning disappears)
-- `@vitest/coverage-v8`: `^4.1.9` (unchanged, already latest)
+Changes:
+- Remove `continue-on-error: true` from the `npm audit` step.
+- Switch the audit to production deps only:
+  `npm audit --audit-level=high --omit=dev`
+  This automatically excludes advisories that only affect dev tooling (e.g. `@lhci/cli` → `tmp`, `jsdom` → `undici`, vitest transitives). No hand-maintained dev list.
+- Add a **prod allowlist step** for any residual production advisories judged non-exploitable. New file `.github/audit-allowlist.json`:
+  ```json
+  {
+    "advisories": [],
+    "notes": "Add { id: <GHSA/npm advisory id>, package: <name>, reason: <why non-exploitable>, expires: <YYYY-MM-DD> } entries. Reviewed quarterly."
+  }
+  ```
+  Small inline node script in the workflow: run `npm audit --json --omit=dev`, drop any advisory whose id is in the allowlist, fail if anything remains at high/critical. Keeps entries visible in git rather than buried in a service.
+- Keep the existing summary + `committed-env-files` job untouched.
 
-### `dependencies`
-- `react-is`: `^19.2.7` → `^18.3.1`
-  - Rationale: peer of `react@18` currently in the tree; the stray 19.x drops peer-mismatch warnings and matches what Radix/Recharts actually resolve against.
+## 2. `.github/workflows/a11y.yml` — blocking
 
-### Add `overrides` block (fixes transitive `tmp` and `undici` advisories `npm audit fix` would otherwise touch)
+Changes:
+- Remove `continue-on-error: true` from the job.
+- Update the header comment to reflect that it's now required.
+- Add a small allowlist inside `e2e/a11y.spec.ts` (a `DISABLED_RULES: string[] = []` array passed to `AxeBuilder.disableRules(...)`) so a specific WCAG rule can be muted with a code comment explaining why, without silencing the whole gate. Starts empty; nothing is silenced today.
 
-```json
-"overrides": {
-  "tmp": "^0.2.5",
-  "undici": "^7.16.0"
-}
-```
+No other test/spec changes: the six routes already covered stay in scope.
 
-Currently pulled in via:
-- `@lhci/cli` → `inquirer` → `external-editor` → `tmp@0.0.33` (and `tmp@0.1.0`)
-- `exceljs` → `tmp@0.2.5`
-- `jsdom` → `undici@7.25.0` (already patched, override just pins a floor across the tree)
+## 3. Verification (before opening the PR)
 
-## Version research (latest that still works)
+Run locally exactly what the plan message calls out:
+- `npm run typecheck && npm run lint` — clean.
+- `npm run build` — passes.
+- `npm audit --audit-level=high --omit=dev` — record the current result. If it reports high/critical prod advisories, either bump the dependency in the same PR or add a scoped entry to `.github/audit-allowlist.json` with a reason + expiry.
+- `npx playwright test e2e/a11y.spec.ts` against a local `npm run build && npm run preview` to confirm the six routes pass axe WCAG 2 A/AA. Any violation surfaced here is fixed in the same PR (or, if truly unavoidable, added to `DISABLED_RULES` with a comment).
 
-| Pkg | Installed | Target | Latest overall | Why not latest |
-|---|---|---|---|---|
-| vite | 7.3.2 | 7.3.6 | 8.1.2 | User asked to stay on 7.x; 8.x is a major |
-| vitest | 4.1.8 | 4.1.9 | 4.1.9 | — |
-| @vitest/coverage-v8 | 4.1.9 | 4.1.9 | 4.1.9 | — |
-| react-is | 19.2.7 | 18.3.1 | 19.2.7 | Peer must match `react@18` in this repo |
-| tmp (override) | 0.0.33 / 0.1.0 / 0.2.5 | ^0.2.5 | 0.2.5 | — |
-| undici (override) | 7.25.0 | ^7.16.0 | 7.25.0 | Floor-only override |
+## Out of scope
 
-## Steps
-
-1. Edit `package.json` with the version bumps + `overrides` block above.
-2. Run `npm install` to refresh `package-lock.json` and `bun install` to refresh `bun.lock` (the Lovable builder uses `bun install --frozen-lockfile`).
-3. Verify: `npm run typecheck`, `npm run build`, `npm run lint`, `npm run test:coverage`.
-4. Spot-check that the "vitest / @vitest/coverage-v8 version mismatch" console warning is gone.
+- No changes to services, hooks, or bracket code — this PR is CI-only. The BracketStageService / useAdminAccess / handleDatabaseError guidance in the message doesn't apply to this scope; those apply to the next data-layer PR.
+- No threshold changes to coverage or bundle-size gates (those live in PR8).
 
 ## Risk
 
-Low. All bumps are patch/minor within the same major, plus a downgrade of `react-is` to match the actual React major already in use. Overrides only affect deep transitives already close to the pinned versions.
+Low. If the newly-blocking gate surfaces a real issue, it's either fixed in the same PR or a single-line allowlist entry with a written reason and expiry, keeping the gate meaningful.
