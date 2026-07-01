@@ -143,22 +143,28 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
               />
             </div>
           </Link>
-          <Link
-            to={`/compare?team1=${ranking.teamId}`}
-            aria-label={`Compare ${ranking.teamName} with another team`}
-            onClick={(e) => e.stopPropagation()}
+          {/* Render the compare control as a single anchor styled like a ghost
+              icon button. `asChild` avoids an invalid <a><button> nesting and
+              ensures the accessible name (aria-label) lands on the rendered
+              element — an icon-only <button> would otherwise have no name and
+              fail axe `button-name` (WCAG 4.1.2). */}
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className={cn(
+              'size-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity',
+              isWinterTheme ? 'hover:bg-frost-primary/10' : ''
+            )}
           >
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                'size-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity',
-                isWinterTheme ? 'hover:bg-frost-primary/10' : ''
-              )}
+            <Link
+              to={`/compare?team1=${ranking.teamId}`}
+              aria-label={`Compare ${ranking.teamName} with another team`}
+              onClick={(e) => e.stopPropagation()}
             >
-              <Scale className="size-4" />
-            </Button>
-          </Link>
+              <Scale className="size-4" aria-hidden="true" />
+            </Link>
+          </Button>
         </div>
       </td>
       {showDivision && (
