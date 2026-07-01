@@ -22,7 +22,7 @@ vi.mock('react-router', async (importOriginal) => ({
 vi.mock('@/services/profile/ProfileService', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/services/profile/ProfileService')>()),
   checkUsernameAvailability: vi.fn().mockResolvedValue({ available: true }),
-  updateProfile: vi.fn().mockResolvedValue(undefined),
+  updateProfile: vi.fn(() => Promise.resolve()),
 }));
 
 vi.mock('@/hooks/useTeamMembership', () => ({ useTeamMembership: vi.fn() }));
@@ -72,7 +72,7 @@ const defaultTeamMembership = () => ({
 const authenticatedAuth = () => ({
   user: { id: 'u1' },
   profile: { username: 'Bob', full_name: 'Bob Smith' },
-  refreshProfile: vi.fn().mockResolvedValue(undefined),
+  refreshProfile: vi.fn(() => Promise.resolve()),
   isLoading: false,
   authInitialized: true,
 });
@@ -117,7 +117,7 @@ describe('ProfileSetup', () => {
     expect(screen.getByText('Checking authentication...')).toBeInTheDocument();
   });
 
-  it('redirects to /auth after max retries when there is no user', async () => {
+  it('redirects to /auth after max retries when there is no user', () => {
     vi.mocked(useAuth).mockReturnValue({
       user: null,
       profile: null,
@@ -129,13 +129,13 @@ describe('ProfileSetup', () => {
     renderPage();
 
     // Three retries at 1s each, then it redirects.
-    await act(async () => {
+    act(() => {
       vi.advanceTimersByTime(1000);
     });
-    await act(async () => {
+    act(() => {
       vi.advanceTimersByTime(1000);
     });
-    await act(async () => {
+    act(() => {
       vi.advanceTimersByTime(1000);
     });
 
@@ -228,12 +228,12 @@ describe('ProfileSetup', () => {
     renderPage();
 
     const firstName = screen.getByPlaceholderText('Enter your first name');
-    await act(async () => {
+    act(() => {
       fireEvent.change(firstName, { target: { value: 'Doug' } });
     });
 
     // Let the debounced username availability check fire and its promise resolve.
-    await act(async () => {
+    act(() => {
       vi.advanceTimersByTime(500);
     });
     await act(async () => {
@@ -245,7 +245,7 @@ describe('ProfileSetup', () => {
     const saveButton = screen.getByRole('button', { name: 'Save Profile' });
     expect(saveButton).not.toBeDisabled();
 
-    await act(async () => {
+    act(() => {
       fireEvent.click(saveButton);
     });
 

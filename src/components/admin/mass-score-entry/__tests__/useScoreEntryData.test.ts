@@ -186,11 +186,11 @@ describe('useScoreEntryData - score handling', () => {
       result.current.handleScoreChange(0, 1, 0);
     });
 
-    const m = result.current.matches[0];
-    expect(m.team1Score).toBe(1);
-    expect(m.team2Score).toBe(0);
-    expect(m.isEdited).toBe(true);
-    expect(m.isValid).toBe(true);
+    const firstMatch = result.current.matches[0];
+    expect(firstMatch.team1Score).toBe(1);
+    expect(firstMatch.team2Score).toBe(0);
+    expect(firstMatch.isEdited).toBe(true);
+    expect(firstMatch.isValid).toBe(true);
   });
 
   it('handleScoreChange marks invalid for a non-binary combination', async () => {
