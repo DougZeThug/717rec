@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { BusinessLogicError } from '@/types/errors';
+import { BusinessLogicError, DatabaseError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { bracketLog, failureLog, successLog } from '@/utils/logger';
 
@@ -54,7 +54,9 @@ export const resolveTeamToParticipantId: ResolveTeamToParticipantIdFn = async (
       if (fetchError)
         handleDatabaseError(fetchError, 'Failed to fetch existing participant after race');
       if (!existingRow)
-        throw new Error('Failed to resolve participant after unique-violation race: no row found');
+        throw new DatabaseError(
+          'Failed to resolve participant after unique-violation race: no row found'
+        );
       const existingId = (existingRow as { id: number }).id;
       participants.push({
         id: existingId,
@@ -66,7 +68,8 @@ export const resolveTeamToParticipantId: ResolveTeamToParticipantIdFn = async (
     }
     handleDatabaseError(insertError, 'Failed to create participant for team');
   }
-  if (!inserted) throw new Error('Failed to create participant for team: insert returned no row');
+  if (!inserted)
+    throw new DatabaseError('Failed to create participant for team: insert returned no row');
 
   const newId = (inserted as { id: number }).id;
   participants.push({ id: newId, tournament_id: tournamentId, name: team.name, team_id: teamId });

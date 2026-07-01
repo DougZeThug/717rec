@@ -1,3 +1,4 @@
+import { ValidationError } from '@/types/errors';
 import { convertErrorToString, getUIErrorMessage, logError } from '@/utils/errorHandler';
 import { playoffLog, warnLog } from '@/utils/logger';
 import type { PlayoffMatchWithTeams } from '@/utils/matchTransformers';
@@ -55,10 +56,10 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
         warnLog('Cannot refetch with invalid bracketId');
       },
       deleteBracket: async () => {
-        throw new Error('Cannot delete bracket: invalid bracketId');
+        throw new ValidationError('Cannot delete bracket: invalid bracketId');
       },
       updateMatchResult: async () => {
-        throw new Error('Cannot update match: invalid bracketId');
+        throw new ValidationError('Cannot update match: invalid bracketId');
       },
     };
   }

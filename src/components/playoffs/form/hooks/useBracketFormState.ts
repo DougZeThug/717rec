@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { BRACKET_FORMATS } from '@/constants/brackets';
 import { BracketFormData } from '@/services/brackets/types/BracketFormData';
 import { BracketValidationService } from '@/services/brackets/validation/BracketValidationService';
+import { ValidationError } from '@/types/errors';
 import { bracketLog, debugLog, errorLog } from '@/utils/logger';
 
 import { bracketFormSchema, BracketFormValues } from '../BracketFormSchema';
@@ -88,7 +89,7 @@ export const useBracketFormState = ({ onSubmit }: UseBracketFormStateProps) => {
 
       if (!parseResult.success) {
         errorLog('Form submission validation failed:', parseResult.error.format());
-        throw new Error('Invalid form data structure');
+        throw new ValidationError('Invalid form data structure');
       }
 
       const validatedData = parseResult.data;
@@ -107,7 +108,7 @@ export const useBracketFormState = ({ onSubmit }: UseBracketFormStateProps) => {
 
       if (!validation.isValid) {
         errorLog('Form validation failed:', validation.errors);
-        throw new Error(validation.errors[0]);
+        throw new ValidationError(validation.errors[0]);
       }
 
       bracketLog('Form validation passed, submitting:', validatedData);
