@@ -1,45 +1,39 @@
-## Goal
-A11y polish covering four issues from the audit checklist: clickable logos, unlabeled admin inputs, hero-card drop zone, and live-region announcements for score updates.
+## Audit results
 
-## Scope
+I traced each claim in the PR against the repo. Most of the work is already landed and wired up correctly — only two small gaps remain.
 
-### 1. Clickable `TeamLogo` / `TeamImage` divs — keyboard activation
-Four variants render a `<div>` with `tabIndex={0}` and `aria-label` but no `role="button"` and no keyboard handler. When wrapped in a `Link`, the anchor covers it; when used standalone with an `onClick` (future/other callers), it's inert to keyboard users. Add explicit semantics on the container when `clickable` is true (or, preferred, only render the tabIndex/aria when there is no wrapping `Link` — the `Link` already provides the accessible name and keyboard activation).
+### Already in place (no action needed)
 
-Files:
-- `src/components/shared/TeamLogo.tsx`
-- `src/components/ui/team/TeamLogo.tsx`
-- `src/components/ui/team/TeamImage.tsx`
-- `src/components/stats/rank/TeamLogo.tsx`
+1. **Admin audit triggers** — `supabase/migrations/20260701120000_admin_audit_triggers.sql`
+   - `audit_admin_mutation()` SECURITY DEFINER trigger, best-effort (swallows failures), gated on `auth.uid() IS NOT NULL AND current_user_is_admin()`.
+   - Attached AFTER INSERT/UPDATE/DELETE to: `seasons, divisions, teams, team_timeslots, brackets, admin_notifications, hero_cards, theme_settings, contact_requests`.
+   - Drift guard `admin_audit_coverage_drift()` + smoke test `supabase/tests/admin_audit_triggers.sql`, invoked by the `supabase-ci` workflow.
 
-Fix: when `clickable && teamId`, drop the redundant `tabIndex`/`aria-label` from the inner `<div>` (the wrapping `<Link>` is the single accessible control). When `clickable` without `teamId`, add `role="button"` and an `onKeyDown` that fires the same action as `onClick` (Enter / Space). No visual change.
+2. **Reusable SECURITY_HEADERS** — `supabase/functions/_shared/securityHeaders.ts` (CSP `default-src 'none'`, XFO DENY, nosniff, no-referrer) with unit test `securityHeaders.test.ts`. Applied and spread into responses in all four edge functions: `send-support-email`, `submit-contact-request`, `submit-score-report`, `capture-power-snapshots`.
 
-### 2. Labels on placeholder-only admin inputs
-Add proper `<Label htmlFor>` or `aria-label` to admin `Input`s that today rely solely on `placeholder`. Sweep the 20 files under `src/components/admin/**` returned by `rg -l "placeholder="`, but only patch inputs missing an associated label. Expected hotspots: `MatchScoreItem`, `MatchRow`, `MatchFormRow`, `DivisionRow`, `RequestsTab`, `BlindDrawSignupsTab`, `OpponentHistoryTab`, hero-card form sections. Prefer visible `<Label>` when there's room; fall back to `aria-label` for tight inline table cells.
+3. **CI env var** — `VITE_SUPABASE_PROJECT_ID: placeholder` is set in `.github/workflows/supabase-ci.yml` for the edge-function Deno tests.
 
-### 3. Hero-card drop zone
-Already has `role="button"`, `tabIndex={0}`, and Enter/Space `onKeyDown` (verified in `DesignAppearanceSection.tsx`). Remaining gaps to close:
-- Add `aria-label="Upload flyer image"` on the drop-zone div (it currently has none).
-- Add `aria-busy={isUploading}` and `aria-disabled={isUploading}` so screen readers know when it's inert.
-- Ensure the hidden `<input type="file">` has an `aria-label` (the visible zone is the labeled control; label the file input as a fallback for AT that focuses it directly).
+### Gaps to close
 
-### 4. `aria-live` for score updates
-Score-entry surfaces mutate on-screen values silently. Add polite live regions so SR users hear updates.
-- `src/components/admin/scores/MatchScoresList.tsx` — wrap the list in `<div role="status" aria-live="polite" aria-atomic="false">` OR add a visually-hidden status node that announces "Score submitted for {teamA} vs {teamB}" after `onSubmitScore` resolves.
-- `src/components/admin/mass-score-entry/` — same treatment on the summary row that updates after each entry.
-- Prefer a small shared `<LiveRegion>` component under `src/components/ui/` so future score/submit flows can reuse it.
+1. **`.github/workflows/test.yml` is missing `VITE_SUPABASE_PROJECT_ID`.** The build step only passes `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`. If any code path reads the project id at build time it will be undefined. Add it alongside the other two (from secrets, or a placeholder — matching how `supabase-ci.yml` does it).
 
-## Non-goals
-- No visual redesign, no route or data-flow changes.
-- No changes to services, hooks, or Supabase calls.
-- No sweeping ARIA changes outside the four items above.
+2. **Audit coverage does not include every "core admin-managed table."** The trigger list omits several admin-mutated tables that live in the same trust boundary:
+   - `divisions` ✅ present
+   - Missing: `season_team_participation`, `blind_draw_settings`, `challonge_fallback_config`, `challonge_fallback_brackets`, `team_requests` (admin resolve/deny), `admin_privilege_changes` is its own audit table so skip.
 
-## Verification
-1. `npm run typecheck && npm run lint` — clean.
-2. `npm run test:file -- <touched test>` for any component with existing tests; then `npm run test:coverage` as the gate.
-3. `npm run build` — passes.
-4. Manual smoke: keyboard-tab through a clickable team logo (Enter navigates), hero-card drop zone (Enter/Space opens picker), submit a score with VoiceOver / NVDA on and confirm the announcement.
-5. `e2e/a11y.spec.ts` axe scan — no new violations; ideally fewer.
+   Recommend adding at minimum `season_team_participation`, `blind_draw_settings`, `challonge_fallback_config`, and `challonge_fallback_brackets` to both the `audited_tables` array in the trigger DO-block and the matching array in `admin_audit_coverage_drift()`. This is a new forward migration (never edit the existing timestamped one).
 
-## Rollout
-Single PR ("PR 4.5 — A11y polish"). Small, reviewable diffs per file. No migrations, no data changes.
+### Proposed changes
+
+- **New migration** `supabase/migrations/<new-ts>_admin_audit_triggers_expand.sql` that re-attaches `audit_admin_mutation` to the four additional tables (guarded by `to_regclass`) and updates `admin_audit_coverage_drift()` to include them.
+- **Edit** `.github/workflows/test.yml` to add `VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}` (with the same placeholder fallback pattern used in `supabase-ci.yml` if the secret is not set).
+
+### Verification
+
+- After migration approval, `supabase/tests/admin_audit_triggers.sql` in the `supabase-ci` job will re-run and must report zero drift for the expanded list.
+- `npm run build` in `test.yml` completes with the new env var wired.
+
+### Out of scope
+
+- No changes to edge-function code or the existing `SECURITY_HEADERS` module (both correct).
+- No changes to the original audit-trigger migration (immutable history).
