@@ -1,38 +1,21 @@
-# Plan: address the "1 remaining `any`"
+## Plan: Add SeoHead to the homepage
 
-## Finding
+### What we're doing
+Add the existing `SeoHead` component to the homepage (`src/pages/Index.tsx`) so it sets the page title, meta description, canonical URL, and Open Graph/Twitter tags on the `/` route.
 
-There is **no actual `any` type left** in the codebase. I checked three ways:
+### Changes
+1. Import `SeoHead` from `@/components/seo/SeoHead` in `src/pages/Index.tsx`.
+2. Place `<SeoHead ... />` at the very top of the `Index` component's return, before the `PageLayout`.
+3. Use the same title and description already present in `index.html`:
+   - Title: "717REC — Lancaster's Premier Cornhole League"
+   - Description: "Standings, schedules, team rankings, and playoff brackets for Lancaster PA's premier recreational cornhole league."
+   - Path: `/`
+4. Remove the static `<link rel="canonical" href="https://717rec.app/" />` from `index.html` so the per-route canonical owns the homepage (matches the rest of the site pattern).
 
-1. **ESLint** (`@typescript-eslint/no-explicit-any` is set to `error` for both app and test files in `eslint.config.js`) — a full run reports **0 errors, 0 warnings**.
-2. **Ripgrep** across `src/`, `tests/`, and `supabase/` for `: any`, `<any>`, `as any`, `any[]`, `Array<any>`, `Record<…, any>`, `Promise<any>` — **0 real hits**.
-3. Test files are covered by the same rule, so the earlier `BracketStandingsService.test.ts` cast we removed was the last one.
+### Verification
+- Run `npm run typecheck` to confirm TypeScript is happy.
+- Optionally run the homepage test to make sure no render regressions.
 
-The only match ripgrep still returns is a **comment** — not a type — in one file:
-
-- `src/components/playoffs/form/bracket-teams/components/BracketFormTeamsContainer.tsx:20`
-  `* Phase 4: Type-safe with runtime guards and zero 'as any' casts`
-
-That is a doc line describing that the file is free of `any`. It is not a violation, and the tool that produced the "1 any" count was almost certainly counting this string match.
-
-## Recommended action
-
-**Option A (recommended): do nothing.** The codebase is clean. ESLint enforces it going forward.
-
-**Option B: silence the false positive** so future greps/dashboards read zero. One-line edit to the JSDoc:
-
-```ts
-// before
-* Phase 4: Type-safe with runtime guards and zero 'as any' casts
-
-// after
-* Phase 4: Type-safe with runtime guards and no unchecked casts
-```
-
-No behavior change, no test/build impact.
-
-## What I'd do on approval
-
-Apply Option B — rewrite that one comment line in `BracketFormTeamsContainer.tsx` — and re-run `npx eslint .` to confirm still clean. That's the whole change.
-
-Let me know which option you want (or skip both if you prefer to leave it).
+### Notes
+- No new dependencies are needed; `SeoHead` and `react-helmet-async` are already in use.
+- This keeps the homepage consistent with the other pages (Stats, Teams, Playoffs, etc.) that already use `SeoHead`.
