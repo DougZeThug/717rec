@@ -29,7 +29,7 @@ import { uploadTeamImage } from '@/utils/imageUpload';
 import { errorLog } from '@/utils/logger';
 
 const teamSchema = z.object({
-  name: z.string().min(1, 'Team name is required'),
+  name: z.string().trim().min(1, 'Team name is required'),
   division_id: z.string().nullable(),
 });
 
