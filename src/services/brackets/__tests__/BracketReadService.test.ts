@@ -45,6 +45,7 @@ import {
   fetchPlayoffMatchWithBracket,
   fetchPlayoffTeams,
   fetchStageAndParticipants,
+  fetchStageIdByTournament,
   fetchTeamsByNames,
   validateSeeds,
 } from '../BracketReadService';
@@ -600,6 +601,40 @@ describe('fetchStageAndParticipants', () => {
       }),
     }));
     await expect(fetchStageAndParticipants('b-1')).rejects.toThrow(DatabaseError);
+  });
+});
+
+// ─── fetchStageIdByTournament ─────────────────────────────────────────────────
+
+describe('fetchStageIdByTournament', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const stageIdChain = (result: { data: unknown; error: unknown }) => ({
+    select: () => ({
+      eq: () => ({
+        limit: () => ({
+          single: () => Promise.resolve(result),
+        }),
+      }),
+    }),
+  });
+
+  it('returns the stage id on success', async () => {
+    mockFrom.mockReturnValue(stageIdChain({ data: { id: 42 }, error: null }));
+    const result = await fetchStageIdByTournament('b-1');
+    expect(result).toBe(42);
+    expect(mockFrom).toHaveBeenCalledWith('stage');
+  });
+
+  it('returns null when the tournament has no stage (PGRST116 no-rows)', async () => {
+    mockFrom.mockReturnValue(stageIdChain({ data: null, error: pgError('no rows', 'PGRST116') }));
+    const result = await fetchStageIdByTournament('b-1');
+    expect(result).toBeNull();
+  });
+
+  it('throws DatabaseError on a genuine Supabase error', async () => {
+    mockFrom.mockReturnValue(stageIdChain({ data: null, error: pgError() }));
+    await expect(fetchStageIdByTournament('b-1')).rejects.toThrow(DatabaseError);
   });
 });
 

@@ -215,7 +215,8 @@ export class TimeslotQueryService {
       .eq('is_back_to_back', true)
       .in('timeslot', [primarySlot, secondarySlot]);
 
-    if (error || !data) return null;
-    return data;
+    if (error) handleDatabaseError(error, 'Failed to fetch timeslot validation');
+    // No rows (data is null/empty) genuinely means "no assignment" — return null.
+    return data ?? null;
   }
 }

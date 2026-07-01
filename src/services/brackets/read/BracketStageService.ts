@@ -28,6 +28,26 @@ export const fetchStageAndParticipants = async (bracketId: string) => {
 };
 
 /**
+ * Fetch the stage id for a tournament's bracket.
+ * Used by useBracketsManagerRealtime to scope its realtime subscription.
+ * Returns null when the tournament has no stage yet (genuine no-rows case).
+ */
+export const fetchStageIdByTournament = async (bracketId: string): Promise<number | null> => {
+  const { data, error } = await supabase
+    .from('stage')
+    .select('id')
+    .eq('tournament_id', bracketId)
+    .limit(1)
+    .single();
+
+  // A missing stage row is not an error here — brackets can exist before a stage.
+  if (error && error.code !== 'PGRST116') {
+    handleDatabaseError(error, 'Failed to fetch bracket stage id');
+  }
+  return data?.id ?? null;
+};
+
+/**
  * Fetch groups and matches for a stage concurrently
  * Used by useBracketData hook (step 3)
  */

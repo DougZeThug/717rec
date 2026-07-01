@@ -281,15 +281,11 @@ describe('TimeslotQueryService.fetchTimeslotValidation', () => {
     expect(result).toEqual(rows);
   });
 
-  it('returns null on error (does not throw)', async () => {
+  it('throws DatabaseError on Supabase error (no longer swallows failures)', async () => {
     mockFrom.mockReturnValue(validationChain({ data: null, error: pgError() }));
-    const result = await TimeslotQueryService.fetchTimeslotValidation(
-      '2026-04-17',
-      'team-1',
-      '6:30 PM',
-      '7:00 PM'
-    );
-    expect(result).toBeNull();
+    await expect(
+      TimeslotQueryService.fetchTimeslotValidation('2026-04-17', 'team-1', '6:30 PM', '7:00 PM')
+    ).rejects.toThrow(DatabaseError);
   });
 
   it('returns null when data is null and no error', async () => {

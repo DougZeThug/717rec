@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchStageIdByTournament } from '@/services/brackets/read/BracketStageService';
 import { bracketLog, errorLog } from '@/utils/logger';
 
 /**
@@ -47,21 +48,18 @@ export function useBracketsManagerRealtime(
     const fetchStageId = async () => {
       bracketLog('useBracketsManagerRealtime: Fetching stageId for bracket', { bracketId });
 
-      const { data, error } = await supabase
-        .from('stage')
-        .select('id')
-        .eq('tournament_id', bracketId)
-        .limit(1)
-        .single();
+      try {
+        const fetchedStageId = await fetchStageIdByTournament(bracketId);
 
-      if (error) {
+        if (fetchedStageId !== null) {
+          bracketLog('useBracketsManagerRealtime: Found stageId', {
+            bracketId,
+            stageId: fetchedStageId,
+          });
+          setStageId(fetchedStageId);
+        }
+      } catch (error) {
         errorLog('Failed to fetch stageId for realtime subscription', { bracketId, error });
-        return;
-      }
-
-      if (data) {
-        bracketLog('useBracketsManagerRealtime: Found stageId', { bracketId, stageId: data.id });
-        setStageId(data.id);
       }
     };
 

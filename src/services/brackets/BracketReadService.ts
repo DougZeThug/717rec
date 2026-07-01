@@ -35,5 +35,9 @@ export {
 } from './read/BracketParticipantService';
 export type { BracketOption } from './read/BracketSelectorService';
 export { fetchBracketsForSelector } from './read/BracketSelectorService';
-export { fetchGroupsAndMatches, fetchStageAndParticipants } from './read/BracketStageService';
+export {
+  fetchGroupsAndMatches,
+  fetchStageAndParticipants,
+  fetchStageIdByTournament,
+} from './read/BracketStageService';
 export { fetchFinalStandings } from './read/BracketStandingsService';
