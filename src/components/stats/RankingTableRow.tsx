@@ -74,13 +74,11 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
     return label;
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (onToggleExpand && (e.key === 'Enter' || e.key === ' ')) {
-      e.preventDefault();
-      onToggleExpand();
-    }
-  };
-
+  // NOTE: the row is intentionally NOT a focusable `role="button"`. It contains
+  // interactive links (team details, compare), and nesting focusable controls
+  // inside a focusable button violates WCAG 4.1.2 (axe `no-focusable-content`).
+  // Row-level expand toggles only a background highlight, so we keep it as a
+  // mouse-only affordance while leaving the inner links keyboard-accessible.
   return (
     <tr
       className={cn(
@@ -88,13 +86,9 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         isWinterTheme
           ? 'border-frost-border/20 even:bg-white/5 hover:bg-white/10'
           : 'border-gray-100 dark:border-slate-700 even:bg-gray-50 dark:even:bg-white/5 hover:bg-gray-50 dark:hover:bg-slate-700/50',
-        isExpanded && (isWinterTheme ? 'bg-frost-primary/20' : 'bg-blue-50 dark:bg-blue-900/20'),
-        onToggleExpand && 'focus:outline-none focus:ring-4 focus:ring-primary focus:ring-offset-2'
+        isExpanded && (isWinterTheme ? 'bg-frost-primary/20' : 'bg-blue-50 dark:bg-blue-900/20')
       )}
       onClick={onToggleExpand}
-      onKeyDown={handleKeyDown}
-      role={onToggleExpand ? 'button' : undefined}
-      tabIndex={onToggleExpand ? 0 : undefined}
       style={{ cursor: onToggleExpand ? 'pointer' : 'default' }}
     >
       <td className="py-3 px-3">
