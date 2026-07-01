@@ -2,12 +2,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { Team } from '@/types';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { teamLog } from '@/utils/logger';
+import { assertNonEmptyString } from '@/utils/validation';
 
 /**
  * Create a new team
  * @throws {DatabaseError} When database operations fail
  */
 export const createTeamApi = async (teamData: Omit<Team, 'id' | 'created_at'>) => {
+  assertNonEmptyString(teamData.name, 'name');
   teamLog('Creating team:', teamData.name);
 
   const { data, error } = await supabase
