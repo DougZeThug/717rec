@@ -72,8 +72,6 @@ export const TeamImage: React.FC<TeamImageProps> = ({
   const logoContent = (
     <div
       className={containerClasses}
-      tabIndex={clickable ? 0 : undefined}
-      aria-label={clickable ? `View ${teamName} details` : undefined}
       style={clickable ? { touchAction: 'manipulation' } : undefined}
     >
       {imageUrl ? (

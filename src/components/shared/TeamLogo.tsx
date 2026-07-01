@@ -43,8 +43,6 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
   const logoContent = (
     <div
       className={containerClasses}
-      tabIndex={clickable ? 0 : undefined}
-      aria-label={clickable ? `View ${teamName} details` : undefined}
     >
       {imageUrl ? (
         <img
