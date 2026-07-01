@@ -4442,6 +4442,12 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_audit_coverage_drift: {
+        Args: never
+        Returns: {
+          issue: string
+        }[]
+      }
       approve_match_result: {
         Args: {
           p_loser_game_wins?: number
