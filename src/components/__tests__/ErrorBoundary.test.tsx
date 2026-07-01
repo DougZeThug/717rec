@@ -38,7 +38,7 @@ describe('ErrorBoundary', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     (window.location.reload as ReturnType<typeof vi.fn>).mockClear?.();
     window.location.href = originalLocation.href;
   });
