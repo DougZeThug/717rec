@@ -13,30 +13,30 @@ export const HelpQuickLinks: React.FC = () => {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Link to="/teams">
-            <Button variant="outline" className="w-full justify-start">
-              <Users className="size-4 mr-2" />
+          <Button asChild variant="outline" className="w-full justify-start">
+            <Link to="/teams">
+              <Users className="size-4 mr-2" aria-hidden="true" />
               Teams
-            </Button>
-          </Link>
-          <Link to="/schedule">
-            <Button variant="outline" className="w-full justify-start">
-              <Calendar className="size-4 mr-2" />
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="w-full justify-start">
+            <Link to="/schedule">
+              <Calendar className="size-4 mr-2" aria-hidden="true" />
               Schedule
-            </Button>
-          </Link>
-          <Link to="/stats">
-            <Button variant="outline" className="w-full justify-start">
-              <BarChart3 className="size-4 mr-2" />
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="w-full justify-start">
+            <Link to="/stats">
+              <BarChart3 className="size-4 mr-2" aria-hidden="true" />
               Standings
-            </Button>
-          </Link>
-          <Link to="/playoffs">
-            <Button variant="outline" className="w-full justify-start">
-              <Trophy className="size-4 mr-2" />
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="w-full justify-start">
+            <Link to="/playoffs">
+              <Trophy className="size-4 mr-2" aria-hidden="true" />
               Playoffs
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </CardContent>
     </Card>

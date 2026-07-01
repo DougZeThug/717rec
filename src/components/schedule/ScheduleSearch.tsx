@@ -11,10 +11,14 @@ interface ScheduleSearchProps {
 const ScheduleSearch: React.FC<ScheduleSearchProps> = ({ value, onChange }) => {
   return (
     <div className="relative w-full sm:w-64">
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-muted-foreground" />
+      <Search
+        className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-muted-foreground"
+        aria-hidden="true"
+      />
       <Input
         type="text"
         placeholder="Search matches"
+        aria-label="Search matches"
         value={value}
         autoComplete="off"
         onChange={(e) => onChange(e.target.value)}

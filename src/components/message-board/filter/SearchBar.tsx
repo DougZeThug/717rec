@@ -26,6 +26,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         <Input
           type="search"
           placeholder="Search messages..."
+          aria-label="Search messages"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           className="pr-10"
