@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { fetchAllPages } from '@/services/shared/pagination';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 
 /**
@@ -10,23 +11,19 @@ export interface MatchFilters {
   bracketId?: string;
 }
 
-// PostgREST caps a single response at 1,000 rows, so fetchMatchesWithTeams
-// walks through the results one page at a time instead of relying on a single
-// query (which would silently drop everything past the first 1,000 matches).
-const MATCH_PAGE_SIZE = 1000;
-
 /**
  * Fetch matches with team details, optionally filtered by date and/or bracket.
  *
- * Results are paginated so the admin mass-score screen never silently stops at
- * PostgREST's 1,000-row response cap. Rows are ordered by date then id — date
- * alone is not a total order (many matches share a date), and range pagination
- * requires a stable, unique sort or it can skip or repeat rows across pages.
+ * Results are paginated (via fetchAllPages) so the admin mass-score screen never
+ * silently stops at PostgREST's 1,000-row response cap. Rows are ordered by date
+ * then id — date alone is not a total order (many matches share a date), and
+ * range pagination requires a stable, unique sort or it can skip or repeat rows
+ * across pages.
  *
  * @throws {DatabaseError} When database operations fail
  */
 export const fetchMatchesWithTeams = async (filters?: MatchFilters) => {
-  const buildPage = (from: number, to: number) => {
+  return fetchAllPages((from, to) => {
     let query = supabase
       .from('matches')
       .select(
@@ -51,28 +48,7 @@ export const fetchMatchesWithTeams = async (filters?: MatchFilters) => {
     }
 
     return query.range(from, to);
-  };
-
-  const rows: NonNullable<Awaited<ReturnType<typeof buildPage>>['data']> = [];
-  let from = 0;
-
-  // Keep fetching pages until we get a short (non-full) page — that is the last one.
-  while (true) {
-    const to = from + MATCH_PAGE_SIZE - 1;
-    const { data, error } = await buildPage(from, to);
-
-    if (error) {
-      handleDatabaseError(error, 'Failed to fetch matches with teams');
-    }
-
-    const page = data ?? [];
-    rows.push(...page);
-
-    if (page.length < MATCH_PAGE_SIZE) break;
-    from += MATCH_PAGE_SIZE;
-  }
-
-  return rows;
+  }, 'Failed to fetch matches with teams');
 };
 
 /**

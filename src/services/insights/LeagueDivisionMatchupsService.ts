@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { fetchAllPages } from '@/services/shared/pagination';
 import { handleDatabaseError } from '@/utils/errorHandler';
 
 export interface CompletedMatchRow {
@@ -32,30 +33,9 @@ export interface LeagueDivisionMatchupsData {
   brackets: BracketDivisionRow[];
 }
 
-const PAGE_SIZE = 1000;
-
-// Range pagination requires an explicit, stable ORDER BY on every query below.
-// Without one, PostgREST/Postgres may return rows in a different order per page,
-// which can skip or duplicate rows across page boundaries.
-async function fetchAllPages<T>(
-  buildQuery: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: unknown }>,
-  context: string
-): Promise<T[]> {
-  const rows: T[] = [];
-  let from = 0;
-  // Loop until we get a short page.
-  while (true) {
-    const to = from + PAGE_SIZE - 1;
-    const { data, error } = await buildQuery(from, to);
-    if (error) handleDatabaseError(error as never, context);
-    const page = data ?? [];
-    rows.push(...page);
-    if (page.length < PAGE_SIZE) break;
-    from += PAGE_SIZE;
-  }
-  return rows;
-}
-
+// Every paginated query below MUST apply a stable, total ORDER BY before
+// .range() (see fetchAllPages) — range pagination over an unstable order can
+// skip or duplicate rows across page boundaries.
 export const fetchLeagueDivisionMatchups = async (): Promise<LeagueDivisionMatchupsData> => {
   const [matches, archivedMatches, playoffMatches, teamSeasonDivisions, bracketRows] =
     await Promise.all([
