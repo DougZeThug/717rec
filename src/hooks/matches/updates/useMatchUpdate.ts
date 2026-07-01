@@ -164,10 +164,10 @@ export const useMatchUpdate = ({
         date: string | undefined;
         location: string;
         iscompleted: boolean | undefined;
-        team1_score: number | undefined;
-        team2_score: number | undefined;
-        winner_id: string | undefined;
-        loser_id: string | undefined;
+        team1_score: number | null;
+        team2_score: number | null;
+        winner_id: string | null;
+        loser_id: string | null;
         team1_game_wins?: number;
         team2_game_wins?: number;
       } = {
@@ -176,10 +176,13 @@ export const useMatchUpdate = ({
         date: matchData.date,
         location: matchData.location || '',
         iscompleted: matchData.iscompleted,
-        team1_score: matchData.team1Score,
-        team2_score: matchData.team2Score,
-        winner_id: matchData.winnerId,
-        loser_id: matchData.loserId,
+        // For incomplete matches, explicitly send NULL so Supabase clears any
+        // stale scores / winner / loser from a prior completed state. `undefined`
+        // would be stripped from the JSON payload and leave the DB unchanged.
+        team1_score: matchData.iscompleted ? (matchData.team1Score ?? null) : null,
+        team2_score: matchData.iscompleted ? (matchData.team2Score ?? null) : null,
+        winner_id: matchData.iscompleted ? (matchData.winnerId ?? null) : null,
+        loser_id: matchData.iscompleted ? (matchData.loserId ?? null) : null,
       };
 
       if (matchData.team1_game_wins !== undefined) {
