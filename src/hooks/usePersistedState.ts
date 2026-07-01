@@ -31,10 +31,10 @@ export function usePersistedState<T>(
       const parsedResult: StorageParseResult<T> = parseStoredJson(savedValue, validate);
 
       if (parsedResult.ok) {
-        return parsedResult.value ?? defaultValue;
+        return parsedResult.value;
       }
 
-      if ('error' in parsedResult && parsedResult.error !== 'missing') {
+      if (parsedResult.error !== 'missing') {
         errorLog(
           'Failed to parse persisted state for key "%s" with validator. Falling back to default value. Reason: %s',
           key,
