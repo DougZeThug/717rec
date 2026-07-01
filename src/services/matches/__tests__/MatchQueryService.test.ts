@@ -49,10 +49,27 @@ const makeMatch = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
-// Chain: .select().order() → Promise (fetchMatchesWithTeams no filters)
-const selectOrderChain = (result: { data: unknown; error: unknown }) => ({
-  select: () => ({ order: () => Promise.resolve(result) }),
-});
+// Chainable mock for fetchMatchesWithTeams' paginated query:
+// select → order → order → [gte → lt] → [eq] → range, where range resolves to
+// the page result. Test result sets are all smaller than the page size, so the
+// pagination loop runs exactly once.
+const matchesQueryChain = (result: { data: unknown; error: unknown }) => {
+  let rangeCall = 0;
+  const chain: Record<string, (...args: unknown[]) => unknown> = {
+    select: () => chain,
+    order: () => chain,
+    gte: () => chain,
+    lt: () => chain,
+    eq: () => chain,
+    // First page returns the result, later pages are empty, so the pagination
+    // loop always terminates (guards against an accidental infinite loop).
+    range: () => {
+      rangeCall += 1;
+      return Promise.resolve(rangeCall === 1 ? result : { data: [], error: null });
+    },
+  };
+  return chain;
+};
 
 // Chain: .select().eq().is().order() (fetchPendingMatches)
 const selectEqIsOrderChain = (result: { data: unknown; error: unknown }) => ({
@@ -90,34 +107,65 @@ describe('fetchMatchesWithTeams', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns matches on success (no filters)', async () => {
-    mockFrom.mockReturnValue(selectOrderChain({ data: [makeMatch()], error: null }));
+    mockFrom.mockReturnValue(matchesQueryChain({ data: [makeMatch()], error: null }));
     const result = await fetchMatchesWithTeams();
     expect(result).toHaveLength(1);
     expect(mockFrom).toHaveBeenCalledWith('matches');
   });
 
   it('returns empty array when no data', async () => {
-    mockFrom.mockReturnValue(selectOrderChain({ data: null, error: null }));
+    mockFrom.mockReturnValue(matchesQueryChain({ data: null, error: null }));
     const result = await fetchMatchesWithTeams();
     expect(result).toEqual([]);
   });
 
   it('throws DatabaseError on Supabase error', async () => {
-    mockFrom.mockReturnValue(selectOrderChain({ data: null, error: pgError() }));
+    mockFrom.mockReturnValue(matchesQueryChain({ data: null, error: pgError() }));
     await expect(fetchMatchesWithTeams()).rejects.toThrow(DatabaseError);
   });
 
   it('applies date filter when provided', async () => {
-    // With date filter the chain gains .gte().lt()
-    mockFrom.mockReturnValue({
-      select: () => ({
-        order: () => ({
-          gte: () => ({ lt: () => Promise.resolve({ data: [makeMatch()], error: null }) }),
-        }),
-      }),
-    });
+    // With a date filter the chain gains .gte().lt() before .range()
+    mockFrom.mockReturnValue(matchesQueryChain({ data: [makeMatch()], error: null }));
     const result = await fetchMatchesWithTeams({ date: new Date('2026-04-17') });
     expect(result).toHaveLength(1);
+  });
+
+  it('paginates past the 1,000-row cap until a short page is returned', async () => {
+    // Proves the fix: a full 1,000-row page must trigger a follow-up fetch, and
+    // rows from every page are accumulated (previously capped silently at 1,000).
+    interface PagingChain {
+      select: () => PagingChain;
+      order: () => PagingChain;
+      gte: () => PagingChain;
+      lt: () => PagingChain;
+      eq: () => PagingChain;
+      range: (from: number, to: number) => Promise<{ data: unknown; error: unknown }>;
+    }
+    const rangeCalls: Array<[number, number]> = [];
+    const fullPage = Array.from({ length: 1000 }, (_, i) => makeMatch({ id: `m-${i}` }));
+    const shortPage = [makeMatch({ id: 'm-last' })];
+    const chain: PagingChain = {
+      select: () => chain,
+      order: () => chain,
+      gte: () => chain,
+      lt: () => chain,
+      eq: () => chain,
+      range: (from, to) => {
+        rangeCalls.push([from, to]);
+        const data = rangeCalls.length === 1 ? fullPage : shortPage;
+        return Promise.resolve({ data, error: null });
+      },
+    };
+    mockFrom.mockReturnValue(chain);
+
+    const result = await fetchMatchesWithTeams();
+
+    expect(result).toHaveLength(1001);
+    expect(rangeCalls).toEqual([
+      [0, 999],
+      [1000, 1999],
+    ]);
   });
 });
 

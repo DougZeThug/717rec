@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { fetchAllPages } from '@/services/shared/pagination';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { createEveningAwareDateRange } from '@/utils/timezone';
 
@@ -7,33 +8,41 @@ import { createEveningAwareDateRange } from '@/utils/timezone';
  */
 
 /**
- * Fetch matches for admin with evening-aware date range filtering
- * @throws raw Supabase error on failure
+ * Fetch matches for admin with evening-aware date range filtering.
+ *
+ * Results are paginated (via fetchAllPages) so the admin mass-score screen never
+ * silently stops at PostgREST's 1,000-row response cap. Rows are ordered by date
+ * then id — date alone is not a total order (many matches share a date), and
+ * range pagination requires a stable, unique sort or it can skip or repeat rows
+ * across pages.
+ *
+ * @throws {DatabaseError} When database operations fail
  */
-export const fetchMatchesForAdmin = async (filters: { date?: Date; bracketId?: string }) => {
-  let query = supabase
-    .from('matches')
-    .select(
+export const fetchMatchesForAdmin = (filters: { date?: Date; bracketId?: string }) => {
+  return fetchAllPages((from, to) => {
+    let query = supabase
+      .from('matches')
+      .select(
+        `
+        *,
+        team1:teams!matches_team1_id_fkey(id, name, logo_url, image_url),
+        team2:teams!matches_team2_id_fkey(id, name, logo_url, image_url)
       `
-      *,
-      team1:teams!matches_team1_id_fkey(id, name, logo_url, image_url),
-      team2:teams!matches_team2_id_fkey(id, name, logo_url, image_url)
-    `
-    )
-    .order('date', { ascending: true });
+      )
+      .order('date', { ascending: true })
+      .order('id', { ascending: true });
 
-  if (filters.date) {
-    const { startDate, endDate } = createEveningAwareDateRange(filters.date);
-    query = query.gte('date', startDate.toISOString()).lte('date', endDate.toISOString());
-  }
+    if (filters.date) {
+      const { startDate, endDate } = createEveningAwareDateRange(filters.date);
+      query = query.gte('date', startDate.toISOString()).lte('date', endDate.toISOString());
+    }
 
-  if (filters.bracketId) {
-    query = query.eq('bracket_id', filters.bracketId);
-  }
+    if (filters.bracketId) {
+      query = query.eq('bracket_id', filters.bracketId);
+    }
 
-  const { data, error } = await query;
-  if (error) handleDatabaseError(error, 'Failed to fetch matches for admin');
-  return data || [];
+    return query.range(from, to);
+  }, 'Failed to fetch matches for admin');
 };
 
 /**
