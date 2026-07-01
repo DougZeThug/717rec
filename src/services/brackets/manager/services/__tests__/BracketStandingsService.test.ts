@@ -1,6 +1,8 @@
 import type { BracketsManager } from 'brackets-manager';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { DatabaseError } from '@/types/errors';
+
 import type { SupabaseSqlStorage } from '../../SupabaseSqlStorage';
 import { BracketStandingsService } from '../BracketStandingsService';
 
@@ -134,5 +136,37 @@ describe('BracketStandingsService.calculateFinalStandings', () => {
     await service.calculateFinalStandings('bracket-4');
 
     expect(finalStandings).toHaveBeenCalledWith(20);
+  });
+
+  it('throws a typed DatabaseError when the playoff_team_records upsert fails', async () => {
+    stageMatchesResult.data = [
+      { id: 1, number: 1, group_id: 1, round_id: 1, status: 5, opponent1_id: 1, opponent2_id: 2 },
+    ];
+    upsertMock.mockResolvedValueOnce({
+      error: { message: 'permission denied', code: '42501', details: '', hint: '' },
+    });
+    const service = makeService({});
+
+    await expect(service.calculateFinalStandings('bracket-err')).rejects.toBeInstanceOf(
+      DatabaseError
+    );
+  });
+
+  it('wraps unexpected non-service errors in a typed DatabaseError', async () => {
+    const storage = {
+      select: vi.fn().mockRejectedValue(new Error('boom')),
+    };
+    const manager = { get: { finalStandings: vi.fn() } };
+    const service = new BracketStandingsService(
+      storage as unknown as SupabaseSqlStorage,
+      manager as unknown as BracketsManager
+    );
+
+    await expect(service.calculateFinalStandings('bracket-x')).rejects.toBeInstanceOf(
+      DatabaseError
+    );
+    await expect(service.calculateFinalStandings('bracket-x')).rejects.toThrow(
+      /Final standings calculation failed: boom/
+    );
   });
 });

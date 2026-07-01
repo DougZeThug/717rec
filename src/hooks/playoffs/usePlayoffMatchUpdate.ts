@@ -13,6 +13,7 @@ import {
   updatePlayoffMatchScores,
 } from '@/services/brackets/BracketWriteService';
 import { bracketManagerService } from '@/services/brackets/manager';
+import { DatabaseError, ValidationError } from '@/types/errors';
 import { scoreLog } from '@/utils/logger';
 import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
@@ -49,7 +50,7 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
 
         if (!bmMatchData) {
           scoreLog('Failed to fetch brackets-manager match data', { matchId });
-          throw new Error('Failed to fetch match data from brackets-manager table');
+          throw new DatabaseError('Failed to fetch match data from brackets-manager table');
         }
 
         // Get participant data to map opponent IDs to team IDs
@@ -138,13 +139,13 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
         const matchData = await fetchPlayoffMatchTeams(matchId);
 
         if (!matchData) {
-          throw new Error('Failed to fetch match data');
+          throw new DatabaseError('Failed to fetch match data');
         }
 
         const winnerId = team1GameWins > team2GameWins ? matchData.team1_id : matchData.team2_id;
         const loserId = team1GameWins > team2GameWins ? matchData.team2_id : matchData.team1_id;
         if (!winnerId || !loserId) {
-          throw new Error('Cannot complete playoff match without both teams assigned');
+          throw new ValidationError('Cannot complete playoff match without both teams assigned');
         }
 
         await updatePlayoffMatchScores(matchId, {

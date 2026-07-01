@@ -1,6 +1,7 @@
 import { BracketsManager } from 'brackets-manager';
 
 import { supabase } from '@/integrations/supabase/client';
+import { DatabaseError } from '@/types/errors';
 import { bracketLog, errorLog, failureLog, successLog, warnLog } from '@/utils/logger';
 
 import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
@@ -183,9 +184,9 @@ export class BracketStandingsService {
         'Failed to calculate final standings',
         error instanceof Error ? error : String(error)
       );
-      throw new Error(
+      throw new DatabaseError(
         `Final standings calculation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        { cause: error }
+        error
       );
     }
   }
