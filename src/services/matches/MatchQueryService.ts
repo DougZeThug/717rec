@@ -22,7 +22,7 @@ export interface MatchFilters {
  *
  * @throws {DatabaseError} When database operations fail
  */
-export const fetchMatchesWithTeams = async (filters?: MatchFilters) => {
+export const fetchMatchesWithTeams = (filters?: MatchFilters) => {
   return fetchAllPages((from, to) => {
     let query = supabase
       .from('matches')

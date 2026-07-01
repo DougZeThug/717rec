@@ -18,7 +18,7 @@ import { createEveningAwareDateRange } from '@/utils/timezone';
  *
  * @throws {DatabaseError} When database operations fail
  */
-export const fetchMatchesForAdmin = async (filters: { date?: Date; bracketId?: string }) => {
+export const fetchMatchesForAdmin = (filters: { date?: Date; bracketId?: string }) => {
   return fetchAllPages((from, to) => {
     let query = supabase
       .from('matches')
