@@ -3,6 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { z } from 'https://esm.sh/zod@3.23.8';
 
 import { checkRateLimit, hashIp } from '../_shared/rateLimit.ts';
+import { SECURITY_HEADERS } from '../_shared/securityHeaders.ts';
 
 const ALLOWED_ORIGINS = new Set<string>([
   'https://717rec.app',
@@ -15,6 +16,7 @@ const ALLOWED_ORIGINS = new Set<string>([
 function buildCorsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get('origin') ?? '';
   const headers: Record<string, string> = {
+    ...SECURITY_HEADERS,
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     Vary: 'Origin',

@@ -9,7 +9,11 @@ Deno.env.set(
 );
 Deno.env.delete('RESEND_API_KEY'); // skip Resend branch in tests
 
-import { assertEquals, assertExists } from 'https://deno.land/std@0.224.0/assert/mod.ts';
+import {
+  assertEquals,
+  assertExists,
+  assertStringIncludes,
+} from 'https://deno.land/std@0.224.0/assert/mod.ts';
 
 import { handleRequest, setRateLimiter } from './index.ts';
 
@@ -227,6 +231,25 @@ Deno.test({
       assertEquals(res.status, 429);
       const body = await res.json();
       assertEquals(body.error, 'Too many requests. Please try again later.');
+    } finally {
+      restoreFetch();
+      reset();
+    }
+  },
+});
+
+Deno.test({
+  name: 'response carries explicit security headers (CSP)',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    allowAll();
+    stubFetch();
+    try {
+      const res = await handleRequest(makeReq(validPayload));
+      assertStringIncludes(res.headers.get('Content-Security-Policy') ?? '', "default-src 'none'");
+      assertEquals(res.headers.get('X-Content-Type-Options'), 'nosniff');
+      assertEquals(res.headers.get('X-Frame-Options'), 'DENY');
     } finally {
       restoreFetch();
       reset();
