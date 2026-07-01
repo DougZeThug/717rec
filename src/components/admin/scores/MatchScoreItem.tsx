@@ -153,6 +153,7 @@ const MatchScoreItem = ({
                 value={team1GameWins}
                 onChange={(e) => setTeam1GameWins(e.target.value)}
                 placeholder="Enter game wins"
+                aria-label={`${teams[match.team1Id]?.name || 'Team 1'} game wins`}
               />
             </div>
             <div>
@@ -167,6 +168,7 @@ const MatchScoreItem = ({
                 value={team2GameWins}
                 onChange={(e) => setTeam2GameWins(e.target.value)}
                 placeholder="Enter game wins"
+                aria-label={`${teams[match.team2Id]?.name || 'Team 2'} game wins`}
               />
             </div>
           </div>

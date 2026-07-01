@@ -28,8 +28,6 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
         'size-10', // enforce fixed size always for logo
         className
       )}
-      tabIndex={clickable ? 0 : undefined}
-      aria-label={clickable ? `View ${teamName} details` : undefined}
       style={{ minWidth: 40, minHeight: 40 }} // ensure square
     >
       {imageUrl ? (

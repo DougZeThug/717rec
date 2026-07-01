@@ -93,6 +93,7 @@ const DivisionRow: React.FC<Props> = ({ division, layout }) => {
   const editFields = (
     <>
       <Input
+        aria-label="Division name"
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="Name"

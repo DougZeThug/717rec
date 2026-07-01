@@ -231,6 +231,7 @@ const RequestsTab: React.FC = () => {
           </DialogHeader>
           <div className="space-y-3">
             <Textarea
+              aria-label="Admin notes"
               placeholder="Add notes (optional)..."
               value={adminNotes}
               onChange={(e) => setAdminNotes(e.target.value)}

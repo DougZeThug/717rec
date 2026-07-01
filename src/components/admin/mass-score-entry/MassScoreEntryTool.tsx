@@ -3,6 +3,7 @@ import { ClipboardCheck } from 'lucide-react';
 import React, { useMemo } from 'react';
 
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { LiveRegion } from '@/components/ui/live-region';
 
 import AdminSectionWrapper from '../AdminSectionWrapper';
 import ErrorAlert from './components/ErrorAlert';
@@ -32,6 +33,11 @@ const MassScoreEntryTool: React.FC = () => {
 
   // Count edited matches that are valid
   const validEditedMatchesCount = matches.filter((m) => m.isEdited && m.isValid).length;
+
+  const editedAnnouncement =
+    validEditedMatchesCount > 0
+      ? `${validEditedMatchesCount} match${validEditedMatchesCount === 1 ? '' : 'es'} ready to submit.`
+      : '';
 
   // Determine if submission should be disabled
   const disableSubmit = submitting || validEditedMatchesCount === 0;
@@ -63,6 +69,7 @@ const MassScoreEntryTool: React.FC = () => {
 
   return (
     <AdminSectionWrapper title="Mass Score Entry" icon={ClipboardCheck}>
+      <LiveRegion message={editedAnnouncement} />
       <Card className="rounded-xl shadow-md overflow-hidden">
         <CardHeader className="p-3 sm:p-4 bg-muted/20">
           <ScoreEntryToolbar
