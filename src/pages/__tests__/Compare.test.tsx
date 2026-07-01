@@ -90,6 +90,26 @@ describe('Compare', () => {
     expect(screen.getByText('Loading teams...')).toBeInTheDocument();
   });
 
+  it('shows a retryable error state when the teams fetch fails', async () => {
+    const refetch = vi.fn();
+    vi.mocked(useTeamsQuery).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: new Error('boom'),
+      refetch,
+    } as unknown as ReturnType<typeof useTeamsQuery>);
+
+    renderCompare('/compare');
+
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByText(/couldn't load the teams/i)).toBeInTheDocument();
+    // The selector/empty prompts should not render while erroring.
+    expect(screen.queryByText('Select Teams to Compare')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /try again/i }));
+    expect(refetch).toHaveBeenCalledTimes(1);
+  });
+
   it('prompts to select teams when loaded with no URL params', () => {
     vi.mocked(useTeamsQuery).mockReturnValue({
       data: [TEAM_A, TEAM_B],

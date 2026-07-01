@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router';
 
 import { TeamCompareSelector } from '@/components/compare/TeamCompareSelector';
 import { TeamComparisonView } from '@/components/compare/TeamComparisonView';
+import { ErrorDisplay } from '@/components/ui/error-display';
 import LoadingState from '@/components/ui/loading-state';
 import { useTeamsQuery } from '@/hooks/teams';
 import { useTeamComparison } from '@/hooks/useTeamComparison';
@@ -12,7 +13,7 @@ import { Team } from '@/types';
 
 const Compare: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { data: teams, isLoading: teamsLoading } = useTeamsQuery();
+  const { data: teams, isLoading: teamsLoading, error: teamsError, refetch } = useTeamsQuery();
 
   const [team1, setTeam1] = useState<Team | null>(null);
   const [team2, setTeam2] = useState<Team | null>(null);
@@ -60,6 +61,19 @@ const Compare: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingState message="Loading teams..." />
+      </div>
+    );
+  }
+
+  if (teamsError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <ErrorDisplay
+          variant="card"
+          error="We couldn't load the teams. Please try again."
+          onRetry={refetch}
+          className="max-w-md w-full"
+        />
       </div>
     );
   }

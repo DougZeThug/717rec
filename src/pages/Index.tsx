@@ -28,7 +28,7 @@ const ContactPanel = lazy(() => import('@/components/home/ContactPanel'));
 const TopTeams = lazy(() => import('@/components/home/TopTeams'));
 
 const Index: React.FC = () => {
-  const { teams, isLoading: teamsLoading } = useTeams();
+  const { teams, isLoading: teamsLoading, error: teamsError, fetchTeams } = useTeams();
   const { matches: pendingMatches, isLoading: pendingScoresLoading } = usePendingScoresMatches();
   const { data: heroCards, isLoading: heroCardsLoading } = useHeroCards();
   const { data: trendData, isLoading: trendLoading } = useWeeklyPowerScoreTrends('up', 3);
@@ -150,7 +150,7 @@ const Index: React.FC = () => {
                 />
               }
             >
-              <TopTeams teams={topTeams} />
+              <TopTeams teams={topTeams} error={teamsError} onRetry={fetchTeams} />
             </Suspense>
           </PageTransition>
         )}

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { useTeamRankings } from '@/hooks/useTeamRankings';
 import { useWeeklyPowerScoreTrends } from '@/hooks/useWeeklyPowerScoreTrends';
@@ -42,6 +42,8 @@ export interface LeagueInsightsData {
   parity: ParityMetrics | null;
   topPerformers: TopPerformer[];
   isLoading: boolean;
+  error: Error | null;
+  refetch: () => void;
 }
 
 function calculateStandardDeviation(values: number[]): number {
@@ -59,9 +61,35 @@ function calculateMedian(values: number[]): number {
 }
 
 export function useLeagueInsights(): LeagueInsightsData {
-  const { rankings, isLoading: isLoadingRankings } = useTeamRankings();
-  const { data: risersData, isLoading: isLoadingRisers } = useWeeklyPowerScoreTrends('up', 5);
-  const { data: fallersData, isLoading: isLoadingFallers } = useWeeklyPowerScoreTrends('down', 5);
+  const {
+    rankings,
+    isLoading: isLoadingRankings,
+    error: rankingsError,
+    refetch: refetchRankings,
+  } = useTeamRankings();
+  const {
+    data: risersData,
+    isLoading: isLoadingRisers,
+    error: risersError,
+    refetch: refetchRisers,
+  } = useWeeklyPowerScoreTrends('up', 5);
+  const {
+    data: fallersData,
+    isLoading: isLoadingFallers,
+    error: fallersError,
+    refetch: refetchFallers,
+  } = useWeeklyPowerScoreTrends('down', 5);
+
+  // Combine fetch errors from every data source so the UI can render a single
+  // retryable error state.
+  const error =
+    rankingsError ?? (risersError as Error | null) ?? (fallersError as Error | null) ?? null;
+
+  const refetch = useCallback(() => {
+    refetchRankings?.();
+    refetchRisers?.();
+    refetchFallers?.();
+  }, [refetchRankings, refetchRisers, refetchFallers]);
 
   const result = useMemo(() => {
     if (!rankings || rankings.length === 0) {
@@ -227,5 +255,7 @@ export function useLeagueInsights(): LeagueInsightsData {
   return {
     ...result,
     isLoading: isLoadingRankings || isLoadingRisers || isLoadingFallers,
+    error,
+    refetch,
   };
 }

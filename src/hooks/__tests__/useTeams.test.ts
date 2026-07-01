@@ -55,6 +55,24 @@ describe('useTeams', () => {
     expect(fetchTeamsWithOptions).toHaveBeenCalled();
   });
 
+  it('propagates the fetch error so callers can show a retryable error state', async () => {
+    (fetchTeamsWithOptions as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('boom'));
+    const { result } = renderHook(() => useTeams(), {
+      wrapper: createWrapper(),
+    });
+    await waitFor(() => expect(result.current.error).toBeInstanceOf(Error));
+    expect(result.current.error?.message).toBe('boom');
+  });
+
+  it('exposes no error on success', async () => {
+    (fetchTeamsWithOptions as ReturnType<typeof vi.fn>).mockResolvedValue([mockTeam]);
+    const { result } = renderHook(() => useTeams(), {
+      wrapper: createWrapper(),
+    });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.error).toBeNull();
+  });
+
   it('exposes mutation and fetch functions on its API surface', () => {
     (fetchTeamsWithOptions as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(vi.fn()));
     const { result } = renderHook(() => useTeams(), {
