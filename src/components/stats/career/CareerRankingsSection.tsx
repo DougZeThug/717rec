@@ -49,77 +49,85 @@ const CareerRankingsSection: React.FC = () => {
           isLight ? gradients.card.blueOrange : ''
         )}
       >
-        <CollapsibleTrigger asChild>
-          <CardHeader
-            className={cn(
-              isMobile ? 'py-2.5 px-3' : 'py-4',
-              isWinterTheme
-                ? 'bg-[hsl(var(--card))]'
-                : isLight
-                  ? 'bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30'
-                  : 'bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-gray-900/80',
-              isWinterTheme
-                ? 'border-b border-frost-border/30'
-                : 'border-b border-blue-100 dark:border-blue-900/30',
-              'rounded-t-lg cursor-pointer hover:bg-muted/50 transition-colors'
-            )}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Trophy className={cn('text-amber-500', isMobile ? 'size-4' : 'size-5')} />
-                <div>
-                  <CardTitle
-                    className={cn(
-                      'font-bebas uppercase tracking-wide',
-                      isMobile ? 'text-lg' : 'text-xl sm:text-2xl',
-                      'bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400',
-                      'heading-winter'
-                    )}
-                    style={{ letterSpacing: '0.5px' }}
-                  >
-                    Career Statistics
-                  </CardTitle>
-                  {!isMobile && (
-                    <CardDescription
-                      className={cn(
-                        isLight
-                          ? '!text-[#444444] !font-medium font-inter'
-                          : 'text-gray-400 font-inter'
-                      )}
-                    >
-                      Historical performance across all seasons and playoffs
-                    </CardDescription>
+        {/* Header is a plain container; only the chevron is the toggle button.
+            The header can't be the trigger because it contains a focusable
+            control (the Export button) — nesting focusable content in a
+            button-role element violates axe no-focusable-content. */}
+        <CardHeader
+          className={cn(
+            isMobile ? 'py-2.5 px-3' : 'py-4',
+            isWinterTheme
+              ? 'bg-[hsl(var(--card))]'
+              : isLight
+                ? 'bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30'
+                : 'bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-gray-900/80',
+            isWinterTheme
+              ? 'border-b border-frost-border/30'
+              : 'border-b border-blue-100 dark:border-blue-900/30',
+            'rounded-t-lg transition-colors'
+          )}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Trophy className={cn('text-amber-500', isMobile ? 'size-4' : 'size-5')} />
+              <div>
+                <CardTitle
+                  className={cn(
+                    'font-bebas uppercase tracking-wide',
+                    isMobile ? 'text-lg' : 'text-xl sm:text-2xl',
+                    'bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400',
+                    'heading-winter'
                   )}
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                {isOpen && careerRankings && careerRankings.length > 0 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      exportCareerStatsToCSV(careerRankings);
-                    }}
+                  style={{ letterSpacing: '0.5px' }}
+                >
+                  Career Statistics
+                </CardTitle>
+                {!isMobile && (
+                  <CardDescription
                     className={cn(
-                      'h-8 px-3 gap-2',
-                      isWinterTheme
-                        ? 'border-frost-border/50 hover:bg-frost-primary/10'
-                        : 'border-muted-foreground/30 hover:bg-muted'
+                      isLight
+                        ? '!text-[#444444] !font-medium font-inter'
+                        : 'text-gray-400 font-inter'
                     )}
-                    title="Export to CSV"
                   >
-                    <Download className="size-4" />
-                    <span className="sr-only sm:not-sr-only">Export</span>
-                  </Button>
+                    Historical performance across all seasons and playoffs
+                  </CardDescription>
                 )}
-                <ChevronDown
-                  className={cn('size-5 transition-transform', isOpen && 'rotate-180')}
-                />
               </div>
             </div>
-          </CardHeader>
-        </CollapsibleTrigger>
+            <div className="flex items-center gap-3">
+              {isOpen && careerRankings && careerRankings.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    exportCareerStatsToCSV(careerRankings);
+                  }}
+                  className={cn(
+                    'h-8 px-3 gap-2',
+                    isWinterTheme
+                      ? 'border-frost-border/50 hover:bg-frost-primary/10'
+                      : 'border-muted-foreground/30 hover:bg-muted'
+                  )}
+                  title="Export to CSV"
+                >
+                  <Download className="size-4" />
+                  <span className="sr-only sm:not-sr-only">Export</span>
+                </Button>
+              )}
+              <CollapsibleTrigger
+                aria-label={isOpen ? 'Collapse career statistics' : 'Expand career statistics'}
+                className="inline-flex items-center justify-center rounded-md p-1 hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <ChevronDown
+                  className={cn('size-5 transition-transform', isOpen && 'rotate-180')}
+                  aria-hidden="true"
+                />
+              </CollapsibleTrigger>
+            </div>
+          </div>
+        </CardHeader>
 
         <CollapsibleContent>
           <CardContent

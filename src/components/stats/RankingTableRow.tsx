@@ -74,13 +74,11 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
     return label;
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (onToggleExpand && (e.key === 'Enter' || e.key === ' ')) {
-      e.preventDefault();
-      onToggleExpand();
-    }
-  };
-
+  // NOTE: the row is intentionally NOT a focusable `role="button"`. It contains
+  // interactive links (team details, compare), and nesting focusable controls
+  // inside a focusable button violates WCAG 4.1.2 (axe `no-focusable-content`).
+  // Row-level expand toggles only a background highlight, so we keep it as a
+  // mouse-only affordance while leaving the inner links keyboard-accessible.
   return (
     <tr
       className={cn(
@@ -88,13 +86,9 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         isWinterTheme
           ? 'border-frost-border/20 even:bg-white/5 hover:bg-white/10'
           : 'border-gray-100 dark:border-slate-700 even:bg-gray-50 dark:even:bg-white/5 hover:bg-gray-50 dark:hover:bg-slate-700/50',
-        isExpanded && (isWinterTheme ? 'bg-frost-primary/20' : 'bg-blue-50 dark:bg-blue-900/20'),
-        onToggleExpand && 'focus:outline-none focus:ring-4 focus:ring-primary focus:ring-offset-2'
+        isExpanded && (isWinterTheme ? 'bg-frost-primary/20' : 'bg-blue-50 dark:bg-blue-900/20')
       )}
       onClick={onToggleExpand}
-      onKeyDown={handleKeyDown}
-      role={onToggleExpand ? 'button' : undefined}
-      tabIndex={onToggleExpand ? 0 : undefined}
       style={{ cursor: onToggleExpand ? 'pointer' : 'default' }}
     >
       <td className="py-3 px-3">
@@ -149,22 +143,28 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
               />
             </div>
           </Link>
-          <Link
-            to={`/compare?team1=${ranking.teamId}`}
-            aria-label={`Compare ${ranking.teamName} with another team`}
-            onClick={(e) => e.stopPropagation()}
+          {/* Render the compare control as a single anchor styled like a ghost
+              icon button. `asChild` avoids an invalid <a><button> nesting and
+              ensures the accessible name (aria-label) lands on the rendered
+              element — an icon-only <button> would otherwise have no name and
+              fail axe `button-name` (WCAG 4.1.2). */}
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className={cn(
+              'size-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity',
+              isWinterTheme ? 'hover:bg-frost-primary/10' : ''
+            )}
           >
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                'size-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity',
-                isWinterTheme ? 'hover:bg-frost-primary/10' : ''
-              )}
+            <Link
+              to={`/compare?team1=${ranking.teamId}`}
+              aria-label={`Compare ${ranking.teamName} with another team`}
+              onClick={(e) => e.stopPropagation()}
             >
-              <Scale className="size-4" />
-            </Button>
-          </Link>
+              <Scale className="size-4" aria-hidden="true" />
+            </Link>
+          </Button>
         </div>
       </td>
       {showDivision && (

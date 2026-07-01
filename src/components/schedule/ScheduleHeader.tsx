@@ -50,8 +50,13 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
           {onDateSelect && (
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="icon" className="shrink-0 size-9">
-                  <Calendar className="size-4" />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0 size-9"
+                  aria-label="Filter schedule by date"
+                >
+                  <Calendar className="size-4" aria-hidden="true" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent

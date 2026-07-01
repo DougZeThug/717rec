@@ -159,9 +159,13 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
         {/* Search + controls bar */}
         <div className="flex items-center space-x-2 mb-4">
           <div className="relative flex-1">
-            <Search className="absolute left-2 top-2.5 size-4 text-muted-foreground" />
+            <Search
+              className="absolute left-2 top-2.5 size-4 text-muted-foreground"
+              aria-hidden="true"
+            />
             <Input
               placeholder="Search opponents..."
+              aria-label="Search opponents"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-8"
