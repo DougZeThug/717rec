@@ -169,7 +169,7 @@ const Index: React.FC = () => {
         </PageTransition>
       </div>
     </PageLayout>
-  );
+  </>);
 };
 
 export default Index;
