@@ -43,7 +43,19 @@ const StatsSummarySection = ({ rankings, scrollToFullRankings }: StatsSummarySec
         )}
       >
         <CollapsibleTrigger asChild>
+          {/* asChild puts aria-expanded/type=button on this element. Since it
+              renders a <div>, add role="button" (so aria-expanded is valid per
+              axe aria-allowed-attr / WCAG 4.1.2) plus tabIndex + keyboard
+              activation. Safe: this header has no focusable descendants. */}
           <CardHeader
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.currentTarget.click();
+              }
+            }}
             className={cn(
               isMobile ? 'py-2.5 px-3' : 'py-4',
               isWinterTheme
