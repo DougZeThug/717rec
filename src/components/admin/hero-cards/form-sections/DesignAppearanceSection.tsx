@@ -104,6 +104,9 @@ export const DesignAppearanceSection: React.FC<FormSectionProps> = ({ formData, 
           <div
             role="button"
             tabIndex={0}
+            aria-label="Upload flyer image — click or drop image here"
+            aria-busy={isUploading}
+            aria-disabled={isUploading}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
