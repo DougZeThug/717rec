@@ -1,7 +1,5 @@
 export type StorageParseError = 'missing' | 'invalid_json' | 'invalid_shape';
 
-export interface StorageParseResult<T> {
-  ok: boolean;
-  value?: T;
-  error?: StorageParseError;
-}
+export type StorageParseResult<T> =
+  | { ok: true; value: T }
+  | { ok: false; error: StorageParseError };
