@@ -11,6 +11,7 @@ import TeamOfTheWeekSkeleton from '@/components/home/TeamOfTheWeekSkeleton';
 import WeeklyRecapCard from '@/components/home/WeeklyRecapCard';
 import WeeklyRecapSkeleton from '@/components/home/WeeklyRecapSkeleton';
 import PageLayout from '@/components/layout/PageLayout';
+import SeoHead from '@/components/seo/SeoHead';
 import PageTransition from '@/components/transitions/PageTransition';
 import { useHeroCards } from '@/hooks/useHeroCards';
 import { useIsMobile } from '@/hooks/useMobile';
@@ -56,11 +57,17 @@ const Index: React.FC = () => {
   }, []);
 
   return (
-    <PageLayout
-      className="flex flex-col gap-4 md:gap-8"
-      compact={isMobile}
-      gradientVariant="blueOrange"
-    >
+    <>
+      <SeoHead
+        title="717REC — Lancaster's Premier Cornhole League"
+        description="Standings, schedules, team rankings, and playoff brackets for Lancaster PA's premier recreational cornhole league."
+        path="/"
+      />
+      <PageLayout
+        className="flex flex-col gap-4 md:gap-8"
+        compact={isMobile}
+        gradientVariant="blueOrange"
+      >
       <PageTransition animation="fadeInSlideDown" immediate>
         <HeroSection />
       </PageTransition>
@@ -162,7 +169,7 @@ const Index: React.FC = () => {
         </PageTransition>
       </div>
     </PageLayout>
-  );
+  </>);
 };
 
 export default Index;
