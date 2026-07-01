@@ -8,7 +8,7 @@ import SwipeableDateGroups from '../SwipeableDateGroups';
 
 // Strip motion-only props so a plain <div> doesn't receive unknown DOM attrs.
 vi.mock('framer-motion', () => ({
-  AnimatePresence: ({ children }: { children: ReactNode }) => <>{children}</>,
+  AnimatePresence: ({ children }: { children: ReactNode }) => children,
   m: {
     div: ({ children, className }: { children: ReactNode; className?: string }) => (
       <div className={className}>{children}</div>

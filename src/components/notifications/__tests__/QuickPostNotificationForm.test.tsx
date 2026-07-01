@@ -23,7 +23,6 @@ describe('QuickPostNotificationForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseAuth.mockReturnValue({ user: { id: 'admin-1' } });
-    mockMutateAsync.mockResolvedValue(undefined);
     mockUseCreateNotification.mockReturnValue({
       mutateAsync: mockMutateAsync,
       isPending: false,

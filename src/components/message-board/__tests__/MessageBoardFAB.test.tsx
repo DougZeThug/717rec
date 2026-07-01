@@ -30,7 +30,7 @@ vi.mock('framer-motion', () => {
     'whileInView',
     'layout',
   ]);
-  const m = new Proxy(
+  const motionProxy = new Proxy(
     {},
     {
       get: (_target, tag: string) =>
@@ -43,7 +43,7 @@ vi.mock('framer-motion', () => {
         }),
     }
   );
-  return { m };
+  return { m: motionProxy };
 });
 
 import MessageBoardFAB from '@/components/message-board/MessageBoardFAB';

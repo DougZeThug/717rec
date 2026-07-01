@@ -8,9 +8,9 @@ import MatchFormRHF from '../MatchFormRHF';
 // Radix Switch measures itself via ResizeObserver, which jsdom lacks.
 if (!globalThis.ResizeObserver) {
   globalThis.ResizeObserver = class {
-    observe() {}
-    unobserve() {}
-    disconnect() {}
+    observe = vi.fn();
+    unobserve = vi.fn();
+    disconnect = vi.fn();
   } as unknown as typeof ResizeObserver;
 }
 

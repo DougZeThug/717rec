@@ -8,11 +8,11 @@ import DateStrip from '../DateStrip';
 // Radix ScrollArea measures itself via ResizeObserver, which jsdom lacks.
 globalThis.ResizeObserver =
   globalThis.ResizeObserver ||
-  class {
-    observe() {}
-    disconnect() {}
-    unobserve() {}
-  };
+  (class {
+    observe = vi.fn();
+    unobserve = vi.fn();
+    disconnect = vi.fn();
+  } as unknown as typeof ResizeObserver);
 
 describe('DateStrip', () => {
   const today = new Date();

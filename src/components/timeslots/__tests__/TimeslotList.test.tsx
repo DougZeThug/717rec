@@ -14,11 +14,11 @@ const renderWithRouter = (ui: ReactElement) => render(<MemoryRouter>{ui}</Memory
 // Polyfill ResizeObserver for jsdom (Radix internals may reference it)
 globalThis.ResizeObserver =
   globalThis.ResizeObserver ||
-  class {
-    observe() {}
-    disconnect() {}
-    unobserve() {}
-  };
+  (class {
+    observe = vi.fn();
+    unobserve = vi.fn();
+    disconnect = vi.fn();
+  } as unknown as typeof ResizeObserver);
 
 const teams: Team[] = [
   { id: 't1', name: 'Team Alpha' },
@@ -74,7 +74,7 @@ describe('TimeslotList', () => {
   });
 
   it('confirms deletion through the alert dialog and calls onDelete with the timeslot id', async () => {
-    const onDelete = vi.fn().mockResolvedValue(undefined);
+    const onDelete = vi.fn();
     const timeslots: TeamTimeslot[] = [
       makeTimeslot({ id: 'ts-late', timeslot: '8:00 PM', team_id: 't2' }),
       makeTimeslot({ id: 'ts-early', timeslot: '5:00 PM', team_id: 'ghost' }),
@@ -98,7 +98,7 @@ describe('TimeslotList', () => {
   });
 
   it('closes the dialog without deleting when Cancel is clicked', async () => {
-    const onDelete = vi.fn().mockResolvedValue(undefined);
+    const onDelete = vi.fn();
     const timeslots: TeamTimeslot[] = [
       makeTimeslot({ id: 'ts-1', timeslot: '7:00 PM', team_id: 't1' }),
     ];

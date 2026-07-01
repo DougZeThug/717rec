@@ -8,11 +8,11 @@ import TimeslotAssignment from '../TimeslotAssignment';
 // Polyfill ResizeObserver for jsdom (used by Radix ScrollArea / Switch internals)
 globalThis.ResizeObserver =
   globalThis.ResizeObserver ||
-  class {
-    observe() {}
-    disconnect() {}
-    unobserve() {}
-  };
+  (class {
+    observe = vi.fn();
+    unobserve = vi.fn();
+    disconnect = vi.fn();
+  } as unknown as typeof ResizeObserver);
 
 const teams: Team[] = [
   { id: 't1', name: 'Team Alpha', imageUrl: 'https://example.com/alpha.png' },

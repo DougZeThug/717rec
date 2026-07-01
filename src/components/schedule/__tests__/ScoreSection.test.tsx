@@ -58,6 +58,7 @@ describe('ScoreSection', () => {
 
     fireEvent.change(screen.getByLabelText('Alpha Score'), { target: { value: '' } });
 
-    expect(setTeam1Score).toHaveBeenCalledWith(undefined);
+    expect(setTeam1Score).toHaveBeenCalledTimes(1);
+    expect(setTeam1Score.mock.calls[0][0]).toBeUndefined();
   });
 });

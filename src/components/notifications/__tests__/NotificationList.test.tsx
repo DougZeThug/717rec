@@ -7,11 +7,11 @@ import type { NotificationRow } from '@/services/notifications/NotificationServi
 // Polyfill ResizeObserver for jsdom (used by Radix ScrollArea internals)
 globalThis.ResizeObserver =
   globalThis.ResizeObserver ||
-  class {
-    observe() {}
-    disconnect() {}
-    unobserve() {}
-  };
+  (class {
+    observe = vi.fn();
+    unobserve = vi.fn();
+    disconnect = vi.fn();
+  } as unknown as typeof ResizeObserver);
 
 const mockUseDeleteNotification = vi.hoisted(() => vi.fn());
 const mockUseAdminAccess = vi.hoisted(() => vi.fn());

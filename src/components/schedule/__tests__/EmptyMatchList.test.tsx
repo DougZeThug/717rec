@@ -26,7 +26,7 @@ describe('EmptyMatchList', () => {
   });
 
   it('renders the completed empty state when there are no results and no search', () => {
-    render(<EmptyMatchList searchTerm="" isCompleted={true} />);
+    render(<EmptyMatchList searchTerm="" isCompleted />);
 
     expect(screen.getByText('No Completed Matches')).toBeInTheDocument();
     expect(screen.getByText(/Once matches are played and scores are recorded/)).toBeInTheDocument();
