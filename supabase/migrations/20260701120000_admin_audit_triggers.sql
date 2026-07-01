@@ -134,6 +134,12 @@ BEGIN
     -- Skip tables absent in this environment (nothing to assert against).
     CONTINUE WHEN to_regclass('public.' || t) IS NULL;
 
+    -- Assert not just that a trigger of this name exists, but that it is wired
+    -- to the right function and still fires row-level AFTER on all three
+    -- events. This keeps the guard as strong as the behaviour it protects:
+    -- a repurposed or narrowed trigger (e.g. INSERT-only) is flagged as drift.
+    --   tgtype bitmask: 1 = row-level, 2 = BEFORE (absent => AFTER),
+    --   4 = INSERT, 8 = DELETE, 16 = UPDATE  (4|8|16 = 28).
     IF NOT EXISTS (
       SELECT 1
       FROM pg_trigger tg
@@ -143,8 +149,12 @@ BEGIN
         AND c.relname = t
         AND tg.tgname = 'audit_admin_mutation'
         AND NOT tg.tgisinternal
+        AND tg.tgfoid = 'public.audit_admin_mutation'::regproc
+        AND (tg.tgtype::integer & 1) = 1   -- row-level
+        AND (tg.tgtype::integer & 2) = 0   -- AFTER (not BEFORE)
+        AND (tg.tgtype::integer & 28) = 28 -- INSERT | DELETE | UPDATE
     ) THEN
-      issue := format('missing audit trigger on public.%s', t);
+      issue := format('missing or misconfigured audit trigger on public.%s', t);
       RETURN NEXT;
     END IF;
   END LOOP;
