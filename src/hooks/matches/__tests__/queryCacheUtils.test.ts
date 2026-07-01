@@ -85,4 +85,25 @@ describe('match query cache utilities', () => {
 
     expect(invalidateSpy).not.toHaveBeenCalled();
   });
+
+  it('iterates over every key in the provided array, once each and in order', async () => {
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    const keys = [
+      'seasons',
+      'matches',
+      'teams',
+      'rankings',
+      'careerRankings',
+      'bracket-data',
+      'playoff-matches',
+    ];
+
+    await batchInvalidateQueries(queryClient, keys);
+
+    expect(invalidateSpy).toHaveBeenCalledTimes(keys.length);
+    keys.forEach((key, index) => {
+      expect(invalidateSpy).toHaveBeenNthCalledWith(index + 1, { queryKey: [key] });
+    });
+  });
 });

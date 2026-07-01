@@ -109,3 +109,32 @@ describe('useSeasonMutations.finalizePlayoffs', () => {
     );
   });
 });
+
+describe('useSeasonMutations.archiveSeason', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('invalidates every key in SEASON_WIDE_QUERY_KEYS on success', async () => {
+    vi.mocked(SeasonService.archiveSeason).mockResolvedValue({
+      id: 's-1',
+      is_archived: true,
+    } as Awaited<ReturnType<typeof SeasonService.archiveSeason>>);
+    const { result, invalidateSpy } = setup();
+
+    await result.current.archiveSeason.mutateAsync({ id: 's-1' });
+
+    await waitFor(() => {
+      for (const key of INVALIDATED_KEYS) {
+        expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: key });
+      }
+    });
+    expect(vi.mocked(SeasonService.archiveSeason).mock.calls[0][0]).toBe('s-1');
+  });
+
+  it('surfaces service errors so callers can toast', async () => {
+    vi.mocked(SeasonService.archiveSeason).mockRejectedValue(new Error('archive failed'));
+    const { result } = setup();
+    await expect(result.current.archiveSeason.mutateAsync({ id: 's-1' })).rejects.toThrow(
+      'archive failed'
+    );
+  });
+});
