@@ -75,14 +75,16 @@ describe('BracketSeedingService.updateSeeding', () => {
     participantUpdates = [];
     updateErrorFor = () => null;
 
+    // Bare mocks resolve to undefined by default, which is all the service
+    // needs (it awaits both without using their return value).
     mockStorage = {
       select: vi.fn(),
-      loadParticipantsForTournament: vi.fn().mockResolvedValue(undefined),
+      loadParticipantsForTournament: vi.fn(),
     } as unknown as SupabaseSqlStorage;
 
     mockManager = {
       update: {
-        seeding: vi.fn().mockResolvedValue(undefined),
+        seeding: vi.fn(),
       },
     };
 
