@@ -6,7 +6,6 @@ import { Team } from '@/types';
 
 interface TeamRowProps {
   team: Team | null;
-  teamId?: string;
   teamSeed: number;
   score?: number;
   isWinner: boolean;
@@ -23,7 +22,6 @@ const getTeamRowClasses = (isWinner: boolean) =>
 
 const TeamRow: React.FC<TeamRowProps> = ({
   team,
-  teamId: _teamId,
   teamSeed,
   score,
   isWinner,
