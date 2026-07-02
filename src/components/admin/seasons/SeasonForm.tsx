@@ -92,7 +92,7 @@ const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>{isEditing ? 'Edit Season' : 'Create New Season'}</CardTitle>
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button variant="ghost" size="sm" onClick={onClose} aria-label="Close">
             <X className="size-4" />
           </Button>
         </div>

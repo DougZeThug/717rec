@@ -11,6 +11,8 @@ interface DestructiveIconButtonProps {
   icon?: React.ReactNode;
   className?: string;
   size?: 'default' | 'sm' | 'icon';
+  /** Accessible name for screen readers. Defaults to `title` when omitted. */
+  ariaLabel?: string;
 }
 
 /**
@@ -24,6 +26,7 @@ const DestructiveIconButton: React.FC<DestructiveIconButtonProps> = ({
   icon,
   className,
   size = 'icon',
+  ariaLabel,
 }) => {
   return (
     <Button
@@ -33,6 +36,7 @@ const DestructiveIconButton: React.FC<DestructiveIconButtonProps> = ({
       onClick={onClick}
       disabled={disabled}
       title={title}
+      aria-label={ariaLabel ?? title}
       className={cn(
         'hover:bg-destructive/10 hover:text-destructive',
         'disabled:opacity-30',

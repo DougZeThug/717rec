@@ -193,7 +193,12 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <m.div whileTap={{ scale: 0.9 }}>
-                          <Button variant="ghost" size="icon" onClick={() => onEdit(card)}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => onEdit(card)}
+                            aria-label="Edit card"
+                          >
                             <Edit className="size-4" />
                           </Button>
                         </m.div>
@@ -204,7 +209,12 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <m.div whileTap={{ scale: 0.9 }}>
-                          <Button variant="ghost" size="icon" onClick={() => handleDuplicate(card)}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDuplicate(card)}
+                            aria-label="Duplicate card"
+                          >
                             <Copy className="size-4" />
                           </Button>
                         </m.div>
@@ -221,6 +231,7 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
                             onClick={() => setDeletingCardId(card.id)}
                             disabled={isDeleting}
                             className="text-destructive hover:text-destructive"
+                            aria-label="Delete card"
                           >
                             <Trash2 className="size-4" />
                           </Button>
