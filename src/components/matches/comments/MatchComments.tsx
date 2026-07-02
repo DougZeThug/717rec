@@ -3,6 +3,7 @@ import React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useMatchComments } from '@/hooks/matches/useMatchComments';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
@@ -27,9 +28,9 @@ const MatchComments: React.FC<MatchCommentsProps> = ({ matchId }) => {
 
   if (isLoading) {
     return (
-      <div className="mt-2 animate-pulse">
-        <div className="h-8 bg-muted rounded"></div>
-        <div className="h-20 bg-muted/50 rounded mt-2"></div>
+      <div className="mt-2 space-y-2">
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-20 w-full" />
       </div>
     );
   }

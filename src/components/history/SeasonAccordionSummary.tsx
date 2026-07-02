@@ -2,6 +2,7 @@ import { Crown, TrendingUp } from 'lucide-react';
 import React from 'react';
 
 import { TeamLogo } from '@/components/shared/TeamLogo';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { getHistoryDivisionDisplayName } from '@/utils/historyDivisionUtils';
 
@@ -188,9 +189,9 @@ const SeasonAccordionSummary: React.FC<SeasonAccordionSummaryProps> = ({
 }) =>
   isLoading ? (
     <div className="px-3 py-4 md:px-6">
-      <div className="animate-pulse flex gap-3">
-        <div className="flex-1 h-16 rounded-lg bg-muted/50" />
-        <div className="flex-1 h-16 rounded-lg bg-muted/50" />
+      <div className="flex gap-3">
+        <Skeleton className="flex-1 h-16 rounded-lg" />
+        <Skeleton className="flex-1 h-16 rounded-lg" />
       </div>
     </div>
   ) : seasonData && seasonData.length > 0 ? (

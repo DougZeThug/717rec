@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/auth-context';
 import { useMessageReactions } from '@/hooks/message-board/useMessageReactions';
 import { toast } from '@/hooks/useToast';
@@ -42,7 +43,7 @@ const MessageReactions: React.FC<MessageReactionsProps> = ({
   if (isLoading) {
     return (
       <div className="flex items-center gap-1 mt-2 h-6">
-        <div className="size-6 bg-muted/20 rounded-full animate-pulse"></div>
+        <Skeleton className="size-6 rounded-full" />
       </div>
     );
   }

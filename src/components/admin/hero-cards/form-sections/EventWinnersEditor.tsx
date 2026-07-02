@@ -92,6 +92,7 @@ export const EventWinnersEditor: React.FC<FormSectionProps> = ({ formData, onCha
                 size="sm"
                 onClick={() => removeWeek(weekIndex)}
                 className="text-destructive hover:text-destructive size-8 p-0"
+                aria-label={`Remove week ${weekData.week}`}
               >
                 <Trash2 className="size-4" />
               </Button>
@@ -117,6 +118,7 @@ export const EventWinnersEditor: React.FC<FormSectionProps> = ({ formData, onCha
                   size="sm"
                   onClick={() => removeWinner(weekIndex, winnerIndex)}
                   className="text-destructive hover:text-destructive size-8 p-0 shrink-0"
+                  aria-label="Remove winner"
                 >
                   <Trash2 className="size-3" />
                 </Button>

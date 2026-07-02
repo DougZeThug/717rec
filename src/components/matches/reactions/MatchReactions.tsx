@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/auth-context';
 import { useMatchReactions } from '@/hooks/matches/useMatchReactions';
 import { toast } from '@/hooks/useToast';
@@ -38,7 +39,7 @@ const MatchReactions: React.FC<MatchReactionsProps> = ({ matchId }) => {
   if (isLoading) {
     return (
       <div className="flex items-center gap-1 h-6">
-        <div className="size-6 bg-muted/20 rounded-full animate-pulse"></div>
+        <Skeleton className="size-6 rounded-full" />
       </div>
     );
   }

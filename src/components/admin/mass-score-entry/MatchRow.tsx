@@ -120,6 +120,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
                   onDelete(realId);
                 }}
                 disabled={isSubmitting}
+                aria-label="Delete match"
               >
                 <Trash2 className="size-4" />
               </Button>

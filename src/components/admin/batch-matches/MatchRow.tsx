@@ -161,6 +161,7 @@ const MatchRow: React.FC<MatchRowProps> = ({ pair, teams, onUpdate, onRemove }) 
           size="icon"
           onClick={onRemove}
           className="shrink-0 hover:bg-destructive/10 hover:text-destructive transition-colors duration-200"
+          aria-label="Remove match"
         >
           <X className="size-4" />
         </Button>

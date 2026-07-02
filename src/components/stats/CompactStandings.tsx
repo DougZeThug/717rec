@@ -1,5 +1,5 @@
 import { useTheme } from 'next-themes';
-import React, { useCallback } from 'react';
+import React, { CSSProperties, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 
 import {
@@ -10,7 +10,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { VirtualizedList } from '@/components/ui/VirtualizedList';
 import { useIsMobile } from '@/hooks/useMobile';
+import { useVirtualization } from '@/hooks/useVirtualization';
 import { cn } from '@/lib/utils';
 import { getRowInteractionStyles } from '@/styles/interactionUtils';
 import { Ranking } from '@/types';
@@ -21,11 +23,128 @@ interface CompactStandingsProps {
   rankings: Ranking[];
 }
 
+// Fixed row height (px) for the virtualized mobile list, including the gap
+// between cards. Generous enough to avoid clipping the tallest card (logo row).
+const MOBILE_ROW_HEIGHT = 84;
+
+// Rank medal/striping styles. Module-level pure helper so the extracted row
+// component can reuse it without prop-drilling a callback.
+const getRankStyles = (index: number, isLight: boolean): string => {
+  if (isLight) {
+    if (index === 0)
+      return 'bg-gradient-to-r from-amber-100 to-amber-200/80 !font-bold text-gray-900 shadow-sm';
+    if (index === 1)
+      return 'bg-gradient-to-r from-slate-100 to-blue-100/70 !font-bold text-gray-900 shadow-sm';
+    if (index === 2)
+      return 'bg-gradient-to-r from-orange-100/90 to-orange-200/70 !font-bold text-gray-900 shadow-sm';
+    return 'bg-gray-50 text-gray-900';
+  }
+  if (index === 0) return 'bg-gradient-to-r from-amber-900/30 to-amber-800/20 font-bold text-white';
+  if (index === 1) return 'bg-gradient-to-r from-slate-800/30 to-blue-900/20 font-bold text-white';
+  if (index === 2)
+    return 'bg-gradient-to-r from-orange-900/30 to-orange-800/20 font-bold text-white';
+  return 'bg-gray-800/30 text-white';
+};
+
+// Rank medal badge shown at the start of each mobile card.
+const RankBadge: React.FC<{ index: number; isLight: boolean }> = ({ index, isLight }) => (
+  <div
+    className={cn(
+      'size-7 flex items-center justify-center rounded-full font-mono flex-shrink-0 shadow-inner',
+      getRankStyles(index, isLight)
+    )}
+  >
+    {index + 1}
+  </div>
+);
+
+// Team logo + (truncated) name for a mobile card.
+const TeamIdentity: React.FC<{ team: Ranking }> = ({ team }) => (
+  <div className="flex min-w-0 items-center space-x-2">
+    {team.imageUrl && (
+      <div className="size-8 flex items-center justify-center bg-muted rounded-md overflow-hidden border border-border flex-shrink-0">
+        <img
+          src={team.imageUrl}
+          alt={team.teamName}
+          className="size-8 rounded-none object-contain"
+        />
+      </div>
+    )}
+    <span className="font-bebas tracking-wide uppercase text-base text-foreground truncate">
+      {team.teamName}
+    </span>
+  </div>
+);
+
+// Record / win% / power / SOS stat line for a mobile card.
+const MobileStandingStats: React.FC<{ team: Ranking }> = ({ team }) => {
+  const hasGames = team.wins + team.losses > 0;
+  return (
+    <div className="flex items-center space-x-4 text-sm font-mono mt-0.5">
+      <span className="text-foreground">
+        {team.wins}-{team.losses}
+      </span>
+      <span className="text-foreground">
+        {hasGames ? `${(team.winPercentage * 100).toFixed(1)}%` : '—'}
+      </span>
+      <span
+        className={cn(
+          getPowerScoreColor(team.powerScore),
+          'bg-gradient-to-r from-transparent to-blue-50/50 dark:to-blue-900/10 px-1 rounded'
+        )}
+      >
+        {formatPowerScore(team.powerScore)}
+      </span>
+      <span
+        className={cn(
+          hasGames ? getSosColor(team.sos) : 'text-muted-foreground',
+          'bg-gradient-to-r from-transparent to-orange-50/50 dark:to-orange-900/10 px-1 rounded'
+        )}
+      >
+        {hasGames ? team.sos.toFixed(3) : '—'}
+      </span>
+    </div>
+  );
+};
+
+// Mobile standings card. Memoized: rendered once per team in a growable list.
+const MobileStandingRow: React.FC<{
+  team: Ranking;
+  index: number;
+  isLight: boolean;
+  onTeamClick: (teamName: string) => void;
+}> = React.memo(({ team, index, isLight, onTeamClick }) => (
+  <button
+    type="button"
+    onClick={() => onTeamClick(team.teamName)}
+    className={cn(
+      'w-full text-left',
+      getRowInteractionStyles(
+        'flex items-center justify-between p-2 rounded-lg border cursor-pointer bg-card border-border'
+      ),
+      index < 3 ? 'shadow-sm' : '',
+      index === 0 ? 'border-amber-200 dark:border-amber-800/40' : '',
+      index === 1 ? 'border-blue-200 dark:border-blue-800/40' : '',
+      index === 2 ? 'border-orange-200 dark:border-orange-800/40' : ''
+    )}
+  >
+    <div className="flex min-w-0 items-center space-x-2">
+      <RankBadge index={index} isLight={isLight} />
+      <div className="flex min-w-0 flex-col">
+        <TeamIdentity team={team} />
+        <MobileStandingStats team={team} />
+      </div>
+    </div>
+  </button>
+));
+MobileStandingRow.displayName = 'MobileStandingRow';
+
 const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
+  const { shouldVirtualize } = useVirtualization({ itemCount: rankings.length, threshold: 30 });
 
   const handleTeamClick = useCallback(
     (teamName: string) => {
@@ -46,102 +165,45 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
     [handleTeamClick]
   );
 
-  const getRankStyles = useCallback(
-    (index: number) => {
-      if (isLight) {
-        if (index === 0)
-          return 'bg-gradient-to-r from-amber-100 to-amber-200/80 !font-bold text-gray-900 shadow-sm';
-        if (index === 1)
-          return 'bg-gradient-to-r from-slate-100 to-blue-100/70 !font-bold text-gray-900 shadow-sm';
-        if (index === 2)
-          return 'bg-gradient-to-r from-orange-100/90 to-orange-200/70 !font-bold text-gray-900 shadow-sm';
-        return 'bg-gray-50 text-gray-900';
-      } else {
-        if (index === 0)
-          return 'bg-gradient-to-r from-amber-900/30 to-amber-800/20 font-bold text-white';
-        if (index === 1)
-          return 'bg-gradient-to-r from-slate-800/30 to-blue-900/20 font-bold text-white';
-        if (index === 2)
-          return 'bg-gradient-to-r from-orange-900/30 to-orange-800/20 font-bold text-white';
-        return 'bg-gray-800/30 text-white';
-      }
-    },
-    [isLight]
+  const renderMobileRow = useCallback(
+    (team: Ranking, index: number, style: CSSProperties) => (
+      <div key={team.teamId} style={style} className="pb-2">
+        <MobileStandingRow
+          team={team}
+          index={index}
+          isLight={isLight}
+          onTeamClick={handleTeamClick}
+        />
+      </div>
+    ),
+    [isLight, handleTeamClick]
   );
 
   if (isMobile) {
+    // Only long lists (whole-league standings) pay the virtualization cost;
+    // short per-division lists render normally to keep page-level scrolling.
+    if (shouldVirtualize) {
+      return (
+        <VirtualizedList
+          items={rankings}
+          rowHeight={MOBILE_ROW_HEIGHT}
+          height={Math.min(rankings.length * MOBILE_ROW_HEIGHT, 600)}
+          renderRow={renderMobileRow}
+          overscanCount={4}
+        />
+      );
+    }
+
     return (
       <div className="space-y-2">
         {rankings.map((team, index) => (
-          <button
-            type="button"
+          <MobileStandingRow
             key={team.teamId}
-            onClick={() => handleTeamClick(team.teamName)}
-            className={cn(
-              'w-full text-left',
-              getRowInteractionStyles(
-                'flex items-center justify-between p-2 rounded-lg border cursor-pointer bg-card border-border'
-              ),
-              index < 3 ? 'shadow-sm' : '',
-              index === 0 ? 'border-amber-200 dark:border-amber-800/40' : '',
-              index === 1 ? 'border-blue-200 dark:border-blue-800/40' : '',
-              index === 2 ? 'border-orange-200 dark:border-orange-800/40' : ''
-            )}
-          >
-            <div className="flex items-center space-x-2">
-              <div
-                className={cn(
-                  'size-7 flex items-center justify-center rounded-full font-mono',
-                  'shadow-inner',
-                  getRankStyles(index)
-                )}
-              >
-                {index + 1}
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center space-x-2">
-                  {team.imageUrl && (
-                    <div className="size-8 flex items-center justify-center bg-muted rounded-md overflow-hidden border border-border">
-                      <img
-                        src={team.imageUrl}
-                        alt={team.teamName}
-                        className="size-8 rounded-none object-contain"
-                      />
-                    </div>
-                  )}
-                  <span className="font-bebas tracking-wide uppercase text-base text-foreground">
-                    {team.teamName}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-4 text-sm font-mono mt-0.5">
-                  <span className="text-foreground">
-                    {team.wins}-{team.losses}
-                  </span>
-                  <span className="text-foreground">
-                    {team.wins + team.losses > 0
-                      ? `${(team.winPercentage * 100).toFixed(1)}%`
-                      : '—'}
-                  </span>
-                  <span
-                    className={cn(
-                      getPowerScoreColor(team.powerScore),
-                      'bg-gradient-to-r from-transparent to-blue-50/50 dark:to-blue-900/10 px-1 rounded'
-                    )}
-                  >
-                    {formatPowerScore(team.powerScore)}
-                  </span>
-                  <span
-                    className={cn(
-                      team.wins + team.losses > 0 ? getSosColor(team.sos) : 'text-muted-foreground',
-                      'bg-gradient-to-r from-transparent to-orange-50/50 dark:to-orange-900/10 px-1 rounded'
-                    )}
-                  >
-                    {team.wins + team.losses > 0 ? team.sos.toFixed(3) : '—'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </button>
+            team={team}
+            index={index}
+            isLight={isLight}
+            onTeamClick={handleTeamClick}
+          />
         ))}
       </div>
     );
@@ -199,7 +261,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
               onClick={() => handleTeamClick(team.teamName)}
               onKeyDown={(e) => handleRowKeyDown(e, team.teamName)}
             >
-              <TableCell className={cn(getRankStyles(index), 'font-mono text-lg')}>
+              <TableCell className={cn(getRankStyles(index, isLight), 'font-mono text-lg')}>
                 <div className="size-8 flex items-center justify-center rounded-full">
                   {index + 1}
                 </div>

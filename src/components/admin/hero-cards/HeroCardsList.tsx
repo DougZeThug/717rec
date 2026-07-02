@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import {
   Table,
@@ -97,7 +98,7 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
     return (
       <div className="space-y-2">
         {['hero-skel-1', 'hero-skel-2', 'hero-skel-3'].map((sk) => (
-          <div key={sk} className="h-16 bg-muted animate-pulse rounded" />
+          <Skeleton key={sk} className="h-16 w-full" />
         ))}
       </div>
     );
@@ -193,7 +194,12 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <m.div whileTap={{ scale: 0.9 }}>
-                          <Button variant="ghost" size="icon" onClick={() => onEdit(card)}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => onEdit(card)}
+                            aria-label="Edit card"
+                          >
                             <Edit className="size-4" />
                           </Button>
                         </m.div>
@@ -204,7 +210,12 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <m.div whileTap={{ scale: 0.9 }}>
-                          <Button variant="ghost" size="icon" onClick={() => handleDuplicate(card)}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDuplicate(card)}
+                            aria-label="Duplicate card"
+                          >
                             <Copy className="size-4" />
                           </Button>
                         </m.div>
@@ -221,6 +232,7 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
                             onClick={() => setDeletingCardId(card.id)}
                             disabled={isDeleting}
                             className="text-destructive hover:text-destructive"
+                            aria-label="Delete card"
                           >
                             <Trash2 className="size-4" />
                           </Button>

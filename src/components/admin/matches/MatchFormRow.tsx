@@ -85,7 +85,13 @@ const MatchFormRow = ({ match, teams, onUpdate, onRemove }: MatchFormRowProps) =
           </SelectContent>
         </Select>
 
-        <Button variant="ghost" size="icon" onClick={onRemove} className="shrink-0">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onRemove}
+          className="shrink-0"
+          aria-label="Remove match"
+        >
           <X className="size-4" />
         </Button>
       </div>

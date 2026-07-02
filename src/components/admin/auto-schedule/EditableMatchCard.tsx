@@ -142,6 +142,7 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
             onClick={() => onSwapTeams(match.id)}
             className="self-center sm:mt-5 shrink-0"
             title="Swap teams"
+            aria-label="Swap teams"
           >
             <ArrowLeftRight className="size-4 rotate-90 sm:rotate-0" />
           </Button>
