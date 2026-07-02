@@ -149,6 +149,36 @@ describe('useBracketsViewerScript', () => {
     expect(document.querySelectorAll(SCRIPT_SELECTOR)).toHaveLength(1);
   });
 
+  it('retries the download on a fresh mount after a failed load', async () => {
+    const useBracketsViewerScript = await importHook();
+
+    // First mount: script fails to load
+    const first = renderHook(() => useBracketsViewerScript());
+    act(() => {
+      getInjectedScript()?.dispatchEvent(new Event('error'));
+    });
+    await waitFor(() =>
+      expect(first.result.current.error).toBe('Failed to load bracket viewer library')
+    );
+    first.unmount();
+
+    // Failed tag must be gone so the retry can inject a fresh one
+    expect(getInjectedScript()).toBeNull();
+
+    // Second mount: a new script tag is injected and this time it loads
+    const second = renderHook(() => useBracketsViewerScript());
+    const retryScript = getInjectedScript();
+    expect(retryScript).not.toBeNull();
+
+    act(() => {
+      windowWithViewer.bracketsViewer = { render: vi.fn(), setParticipantImages: vi.fn() };
+      retryScript?.dispatchEvent(new Event('load'));
+    });
+
+    await waitFor(() => expect(second.result.current.isReady).toBe(true));
+    expect(second.result.current.error).toBeNull();
+  });
+
   it('ignores late results after unmount (no error state mutation)', async () => {
     const useBracketsViewerScript = await importHook();
     const { result, unmount } = renderHook(() => useBracketsViewerScript());
