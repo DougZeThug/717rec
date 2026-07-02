@@ -17,7 +17,7 @@ Every feature or bugfix must satisfy this checklist before it's considered "done
 ### Build & Lint
 - [ ] No ESLint errors (`npm run lint`)
 - [ ] No TypeScript compile errors (`npm run build` succeeds)
-- [ ] No `@ts-ignore` or `@ts-expect-error` without justification comment
+- [ ] No `@ts-ignore` or `@ts-nocheck` (blocked by lint). `@ts-expect-error` requires a description comment.
 - [ ] No `any` types (use proper typing or `unknown`)
 
 ### Formatting
