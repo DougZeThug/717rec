@@ -68,108 +68,109 @@ const Index: React.FC = () => {
         compact={isMobile}
         gradientVariant="blueOrange"
       >
-      <PageTransition animation="fadeInSlideDown" immediate>
-        <HeroSection />
-      </PageTransition>
+        <PageTransition animation="fadeInSlideDown" immediate>
+          <HeroSection />
+        </PageTransition>
 
-      <div className="container mx-auto px-4 flex flex-col gap-4 md:gap-8">
-        {/* Dynamic hero cards from database - shown prominently below header */}
-        {heroCardsLoading ? (
-          <HeroCardSkeleton />
-        ) : (
-          heroCards?.map((card, index) => (
-            <PageTransition key={card.id} animation="fadeIn" delay={getDelay(index)}>
+        <div className="container mx-auto px-4 flex flex-col gap-4 md:gap-8">
+          {/* Dynamic hero cards from database - shown prominently below header */}
+          {heroCardsLoading ? (
+            <HeroCardSkeleton />
+          ) : (
+            heroCards?.map((card, index) => (
+              <PageTransition key={card.id} animation="fadeIn" delay={getDelay(index)}>
+                <Suspense fallback={<HeroCardSkeleton />}>
+                  <HeroCard card={card} />
+                </Suspense>
+              </PageTransition>
+            ))
+          )}
+
+          {/* League History - rendered immediately for LCP optimization (hidden on mobile, in nav grid) */}
+          <div className="hidden md:block">
+            <PageTransition animation="fadeIn" immediate>
+              <LeagueHistoryBar />
+            </PageTransition>
+          </div>
+
+          {/* My Next Match(es) - shown for authenticated users with a team */}
+          {myNextMatch.isLoading ? (
+            <MyNextMatchSkeleton />
+          ) : myNextMatch.hasTeamMembership &&
+            myNextMatch.matches.length > 0 &&
+            myNextMatch.myTeam ? (
+            <PageTransition animation="fadeIn" delay="short">
+              <MyMatchesSection
+                matches={myNextMatch.matches}
+                myTeam={myNextMatch.myTeam}
+                isPreviousMatches={myNextMatch.isPreviousMatches}
+              />
+            </PageTransition>
+          ) : null}
+
+          {/* Season Participation Card - shown when confirmation is open */}
+          {showParticipationCard && (
+            <PageTransition animation="fadeIn" delay="short">
               <Suspense fallback={<HeroCardSkeleton />}>
-                <HeroCard card={card} />
+                <ParticipationHeroCard />
               </Suspense>
             </PageTransition>
-          ))
-        )}
+          )}
 
-        {/* League History - rendered immediately for LCP optimization (hidden on mobile, in nav grid) */}
-        <div className="hidden md:block">
-          <PageTransition animation="fadeIn" immediate>
-            <LeagueHistoryBar />
+          {/* Team of the Week */}
+          {trendLoading ? (
+            <TeamOfTheWeekSkeleton />
+          ) : hasTeamOfWeek && trendData?.latestWeek ? (
+            <PageTransition animation="fadeIn" delay="medium">
+              <TeamOfTheWeekCard trend={topGainer} weekNumber={trendData.latestWeek} />
+            </PageTransition>
+          ) : null}
+
+          {/* Weekly Recap — upsets, streaks, movers */}
+          {recapLoading ? (
+            <WeeklyRecapSkeleton />
+          ) : recapData?.hasData ? (
+            <PageTransition animation="fadeIn" delay="medium">
+              <WeeklyRecapCard
+                data={recapData}
+                risers={trendData?.trends?.slice(1) ?? []}
+                faller={fallerData?.trends?.[0]}
+              />
+            </PageTransition>
+          ) : null}
+
+          {hasPendingScores && (
+            <PageTransition animation="fadeIn" delay="long">
+              <PendingScoresCard />
+            </PageTransition>
+          )}
+
+          {teamsLoading ? (
+            <div className="animate-pulse bg-muted/30 rounded-lg" style={{ minHeight: '280px' }} />
+          ) : (
+            <PageTransition animation="fadeIn" delay="long">
+              <Suspense
+                fallback={
+                  <div
+                    className="animate-pulse bg-muted/30 rounded-lg"
+                    style={{ minHeight: '280px' }}
+                  />
+                }
+              >
+                <TopTeams teams={topTeams} error={teamsError} onRetry={fetchTeams} />
+              </Suspense>
+            </PageTransition>
+          )}
+
+          <PageTransition animation="fadeIn" delay="long">
+            <Suspense fallback={<div className="h-32" />}>
+              <ContactPanel />
+            </Suspense>
           </PageTransition>
         </div>
-
-        {/* My Next Match(es) - shown for authenticated users with a team */}
-        {myNextMatch.isLoading ? (
-          <MyNextMatchSkeleton />
-        ) : myNextMatch.hasTeamMembership &&
-          myNextMatch.matches.length > 0 &&
-          myNextMatch.myTeam ? (
-          <PageTransition animation="fadeIn" delay="short">
-            <MyMatchesSection
-              matches={myNextMatch.matches}
-              myTeam={myNextMatch.myTeam}
-              isPreviousMatches={myNextMatch.isPreviousMatches}
-            />
-          </PageTransition>
-        ) : null}
-
-        {/* Season Participation Card - shown when confirmation is open */}
-        {showParticipationCard && (
-          <PageTransition animation="fadeIn" delay="short">
-            <Suspense fallback={<HeroCardSkeleton />}>
-              <ParticipationHeroCard />
-            </Suspense>
-          </PageTransition>
-        )}
-
-        {/* Team of the Week */}
-        {trendLoading ? (
-          <TeamOfTheWeekSkeleton />
-        ) : hasTeamOfWeek && trendData?.latestWeek ? (
-          <PageTransition animation="fadeIn" delay="medium">
-            <TeamOfTheWeekCard trend={topGainer} weekNumber={trendData.latestWeek} />
-          </PageTransition>
-        ) : null}
-
-        {/* Weekly Recap — upsets, streaks, movers */}
-        {recapLoading ? (
-          <WeeklyRecapSkeleton />
-        ) : recapData?.hasData ? (
-          <PageTransition animation="fadeIn" delay="medium">
-            <WeeklyRecapCard
-              data={recapData}
-              risers={trendData?.trends?.slice(1) ?? []}
-              faller={fallerData?.trends?.[0]}
-            />
-          </PageTransition>
-        ) : null}
-
-        {hasPendingScores && (
-          <PageTransition animation="fadeIn" delay="long">
-            <PendingScoresCard />
-          </PageTransition>
-        )}
-
-        {teamsLoading ? (
-          <div className="animate-pulse bg-muted/30 rounded-lg" style={{ minHeight: '280px' }} />
-        ) : (
-          <PageTransition animation="fadeIn" delay="long">
-            <Suspense
-              fallback={
-                <div
-                  className="animate-pulse bg-muted/30 rounded-lg"
-                  style={{ minHeight: '280px' }}
-                />
-              }
-            >
-              <TopTeams teams={topTeams} error={teamsError} onRetry={fetchTeams} />
-            </Suspense>
-          </PageTransition>
-        )}
-
-        <PageTransition animation="fadeIn" delay="long">
-          <Suspense fallback={<div className="h-32" />}>
-            <ContactPanel />
-          </Suspense>
-        </PageTransition>
-      </div>
-    </PageLayout>
-  </>);
+      </PageLayout>
+    </>
+  );
 };
 
 export default Index;
