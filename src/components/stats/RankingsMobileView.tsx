@@ -1,7 +1,6 @@
 import { AnimatePresence, m } from 'framer-motion';
-import { ArrowDown, ArrowUp, Bolt, Scale, Search, User } from 'lucide-react';
+import { ArrowDown, ArrowUp, Bolt, Scale } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useInView } from 'react-intersection-observer';
 
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -16,7 +15,6 @@ import { debugLog } from '@/utils/logger';
 
 import LeagueLeaderboardCarousel from './LeagueLeaderboardCarousel';
 import RankingCard from './RankingCard';
-import TeamSearchDrawer from './TeamSearchDrawer';
 import { SortOptions } from './types';
 import ViewToggle from './ViewToggle';
 
