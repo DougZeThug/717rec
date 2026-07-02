@@ -12,7 +12,6 @@ interface DivisionBracketsCardProps {
   brackets: Array<Partial<PlayoffBracket>>;
   onViewBracket?: (bracketId: string) => void;
   onCreateBracket?: () => void;
-  onEditBracket?: () => void;
   onDeleteBracket?: (id: string, name: string) => void;
 }
 

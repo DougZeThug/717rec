@@ -71,7 +71,6 @@ const BracketList: React.FC<BracketListProps> = ({
           brackets={bracketsByDivision[division] || []}
           onViewBracket={onViewBracket}
           onCreateBracket={onCreateBracket}
-          onEditBracket={onEditBracket}
           onDeleteBracket={onDeleteBracket}
         />
       ))}
