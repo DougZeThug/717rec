@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 
+import { subscribeWithRetry } from '@/hooks/realtime/subscribeWithRetry';
 import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import { bracketManagerService } from '@/services/brackets/manager';
@@ -21,18 +22,18 @@ export function useBracketCompletion(bracketId: string | undefined) {
 
     log('🔔 useBracketCompletion effect running', { bracketId });
 
-    // Subscribe to bracket state changes
-    const channel = supabase
-      .channel(`bracket-${bracketId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'brackets',
-          filter: `id=eq.${bracketId}`,
-        },
-        async (payload) => {
+    const { dispose } = subscribeWithRetry({
+      label: `useBracketCompletion(${bracketId})`,
+      build: () =>
+        supabase.channel(`bracket-${bracketId}-${Date.now()}`).on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'brackets',
+            filter: `id=eq.${bracketId}`,
+          },
+          async (payload) => {
           const bracket = payload.new as BracketPayload;
 
           // If bracket just completed, calculate final standings
@@ -63,12 +64,12 @@ export function useBracketCompletion(bracketId: string | undefined) {
               });
             }
           }
-        }
-      )
-      .subscribe();
+          }
+        ),
+    });
 
     return () => {
-      channel.unsubscribe();
+      dispose();
     };
   }, [bracketId, toast]);
 }
