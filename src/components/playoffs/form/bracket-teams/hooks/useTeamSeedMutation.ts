@@ -4,12 +4,11 @@ import { useToast } from '@/hooks/useToast';
 import {
   bulkUpdateTeamSeeds,
   resetDivisionSeeds as resetDivisionSeedsService,
-  updateTeamSeed,
 } from '@/services/teams/TeamSeedService';
-import type { BulkTeamSeedUpdateResult, TeamSeedUpdateResult } from '@/types/seeding';
+import type { BulkTeamSeedUpdateResult } from '@/types/seeding';
 import { errorLog } from '@/utils/logger';
 
-import { formatUserError, withRetry } from '../utils/mutationErrorHandling';
+import { formatUserError } from '../utils/mutationErrorHandling';
 
 export interface TeamSeedUpdate {
   teamId: string;
@@ -27,27 +26,6 @@ export interface BulkSeedUpdateParams {
 export const useTeamSeedMutation = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-
-  // Single team seed update with retry logic
-  const updateSingleTeamSeed = useMutation<TeamSeedUpdateResult, Error, TeamSeedUpdate>({
-    mutationFn: async ({ teamId, seed }) => {
-      return withRetry(async () => {
-        return await updateTeamSeed(teamId, seed);
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['playoff-teams'] });
-      queryClient.invalidateQueries({ queryKey: ['seed-validation'] });
-    },
-    onError: (error) => {
-      errorLog('Failed to update team seed:', error);
-      toast({
-        title: 'Error',
-        description: formatUserError(error, 'Seed update'),
-        variant: 'destructive',
-      });
-    },
-  });
 
   // Bulk seed updates
   const bulkUpdateSeeds = useMutation<BulkTeamSeedUpdateResult[], Error, BulkSeedUpdateParams>({
@@ -100,10 +78,8 @@ export const useTeamSeedMutation = () => {
   });
 
   return {
-    updateSingleTeamSeed,
     bulkUpdateSeeds,
     resetDivisionSeeds,
-    isUpdating:
-      updateSingleTeamSeed.isPending || bulkUpdateSeeds.isPending || resetDivisionSeeds.isPending,
+    isUpdating: bulkUpdateSeeds.isPending || resetDivisionSeeds.isPending,
   };
 };
