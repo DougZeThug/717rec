@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 
 interface SeedInputFieldProps {
   teamId: string;
-  teamName: string;
   seed: number;
   isManualMode: boolean;
   hasConflict: boolean;
@@ -15,7 +14,6 @@ interface SeedInputFieldProps {
 
 export const SeedInputField: React.FC<SeedInputFieldProps> = ({
   teamId,
-  teamName: _teamName,
   seed,
   isManualMode,
   hasConflict,
