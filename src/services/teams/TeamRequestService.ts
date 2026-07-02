@@ -39,7 +39,7 @@ export const fetchAllRequests = async (
     .from('team_requests')
     .select(
       `
-      *,
+      id, team_id, season_id, request_type, status, match_date, current_timeslot, requested_timeslot, reason, admin_notes, submitted_by, submitted_by_name, processed_by, processed_at, created_at, updated_at,
       teams:team_id (name)
     `
     )

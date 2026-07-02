@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 import { fetchAllPages } from '@/services/shared/pagination';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { createEveningAwareDateRange } from '@/utils/timezone';
@@ -6,6 +7,36 @@ import { createEveningAwareDateRange } from '@/utils/timezone';
 /**
  * Service layer for schedule and admin match operations
  */
+
+type MatchRow = Tables<'matches'>;
+
+/** Team columns embedded by the admin match join-select. */
+type AdminMatchTeam = Pick<Tables<'teams'>, 'id' | 'name' | 'logo_url' | 'image_url'>;
+
+/** A match row plus its two joined team summaries (admin view). */
+type AdminMatchWithTeams = MatchRow & {
+  team1: AdminMatchTeam | null;
+  team2: AdminMatchTeam | null;
+};
+
+/** v_team_details columns embedded by the schedule join-select. */
+type ScheduleTeamDetail = Pick<
+  Tables<'v_team_details'>,
+  | 'team_id'
+  | 'name'
+  | 'image_url'
+  | 'logo_url'
+  | 'divisionname'
+  | 'division_id'
+  | 'power_score'
+  | 'sos'
+>;
+
+/** A match row plus its two joined v_team_details rows (schedule view). */
+type ScheduleMatchWithTeams = MatchRow & {
+  team1: ScheduleTeamDetail | null;
+  team2: ScheduleTeamDetail | null;
+};
 
 /**
  * Fetch matches for admin with evening-aware date range filtering.
@@ -18,13 +49,16 @@ import { createEveningAwareDateRange } from '@/utils/timezone';
  *
  * @throws {DatabaseError} When database operations fail
  */
-export const fetchMatchesForAdmin = (filters: { date?: Date; bracketId?: string }) => {
-  return fetchAllPages((from, to) => {
+export const fetchMatchesForAdmin = (filters: {
+  date?: Date;
+  bracketId?: string;
+}): Promise<AdminMatchWithTeams[]> => {
+  return fetchAllPages<AdminMatchWithTeams>((from, to) => {
     let query = supabase
       .from('matches')
       .select(
         `
-        *,
+        id, team1_id, team2_id, team1_score, team2_score, date, location, iscompleted, winner_id, loser_id, round_number, position, bracket_id, match_type, next_match_id, next_loser_match_id, best_of, team1_game_wins, team2_game_wins, season_id, metadata, created_at,
         team1:teams!matches_team1_id_fkey(id, name, logo_url, image_url),
         team2:teams!matches_team2_id_fkey(id, name, logo_url, image_url)
       `
@@ -50,7 +84,7 @@ export const fetchMatchesForAdmin = (filters: { date?: Date; bracketId?: string 
  * Used by useScheduleData hook.
  * @throws {DatabaseError} When database operations fail
  */
-export const fetchScheduleMatches = async () => {
+export const fetchScheduleMatches = async (): Promise<ScheduleMatchWithTeams[]> => {
   // First get the active season
   const { data: activeSeason } = await supabase
     .from('seasons')
@@ -64,7 +98,7 @@ export const fetchScheduleMatches = async () => {
     .from('matches')
     .select(
       `
-      *,
+      id, team1_id, team2_id, team1_score, team2_score, date, location, iscompleted, winner_id, loser_id, round_number, position, bracket_id, match_type, next_match_id, next_loser_match_id, best_of, team1_game_wins, team2_game_wins, season_id, metadata, created_at,
       team1:v_team_details!team1_id(
         team_id,
         name,
