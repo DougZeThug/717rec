@@ -1,21 +1,60 @@
-## Plan: Add SeoHead to the homepage
+# Realtime Reliability Hardening
 
-### What we're doing
-Add the existing `SeoHead` component to the homepage (`src/pages/Index.tsx`) so it sets the page title, meta description, canonical URL, and Open Graph/Twitter tags on the `/` route.
+## Problem
+- `useBracketCompletion` only calls `channel.unsubscribe()` in cleanup — it never calls `supabase.removeChannel(channel)`. That leaves the channel registered on the client, leaks memory across bracket switches, and (per our own Realtime guidance) can drive reconnection storms.
+- None of our 8 realtime hooks handle `CHANNEL_ERROR`, `TIMED_OUT`, or `CLOSED` status callbacks. When the socket drops (mobile backgrounding, wifi flap, Supabase blip), the UI silently stops updating and never retries.
 
-### Changes
-1. Import `SeoHead` from `@/components/seo/SeoHead` in `src/pages/Index.tsx`.
-2. Place `<SeoHead ... />` at the very top of the `Index` component's return, before the `PageLayout`.
-3. Use the same title and description already present in `index.html`:
-   - Title: "717REC — Lancaster's Premier Cornhole League"
-   - Description: "Standings, schedules, team rankings, and playoff brackets for Lancaster PA's premier recreational cornhole league."
-   - Path: `/`
-4. Remove the static `<link rel="canonical" href="https://717rec.app/" />` from `index.html` so the per-route canonical owns the homepage (matches the rest of the site pattern).
+## Scope
+Only touch realtime hooks — no service/DB/UI changes.
 
-### Verification
-- Run `npm run typecheck` to confirm TypeScript is happy.
-- Optionally run the homepage test to make sure no render regressions.
+Files:
+1. `src/hooks/useBracketCompletion.ts`
+2. `src/hooks/notifications/useNotificationsRealtime.ts`
+3. `src/hooks/message-board/useMessageRealtime.ts`
+4. `src/hooks/message-board/useMessageReactions.ts`
+5. `src/hooks/matches/useMatchComments.ts`
+6. `src/hooks/matches/useMatchReactions.ts`
+7. `src/hooks/contact/useContactRequests.ts`
+8. `src/hooks/brackets/useBracketsManagerRealtime.ts`
 
-### Notes
-- No new dependencies are needed; `SeoHead` and `react-helmet-async` are already in use.
-- This keeps the homepage consistent with the other pages (Stats, Teams, Playoffs, etc.) that already use `SeoHead`.
+## Changes
+
+### 1. Fix `useBracketCompletion` cleanup
+Replace:
+```ts
+return () => { channel.unsubscribe(); };
+```
+with:
+```ts
+return () => { supabase.removeChannel(channel); };
+```
+(matches the pattern already used by `useNotificationsRealtime`; `removeChannel` unsubscribes + deregisters.)
+
+### 2. Add a shared realtime helper
+New file `src/hooks/realtime/subscribeWithRetry.ts` exporting `subscribeWithRetry(channel, { label, onReconnect? })`:
+- Attaches `.subscribe((status, err) => …)` handler.
+- On `SUBSCRIBED`: reset backoff, call optional `onReconnect()` (used by data hooks to refetch/invalidate so we recover missed events).
+- On `CHANNEL_ERROR` / `TIMED_OUT` / `CLOSED`: `errorLog` with label, then schedule `supabase.removeChannel` + re-subscribe with exponential backoff (1s → 2s → 4s → 8s → cap 30s, jittered). Cancelable via returned `dispose()` used from the effect cleanup.
+- Returns `{ dispose }` so hooks call it in their cleanup instead of `removeChannel` directly.
+
+### 3. Wire each realtime hook through the helper
+For each of the 7 remaining hooks:
+- Keep existing `.on(...)` handlers.
+- Replace `.subscribe()` + manual cleanup with `subscribeWithRetry(channel, { label: '<hook-name>', onReconnect })`.
+- `onReconnect` behavior:
+  - `useNotificationsRealtime`, `useContactRequests`, `useBracketsManagerRealtime`: invalidate the relevant React Query keys (already imported in those files).
+  - `useMatchComments` / `useMatchReactions` / `useMessageReactions` / `useMessageRealtime`: re-run their initial fetch so state resyncs after a drop.
+- Cleanup returns `dispose()`.
+
+### 4. No new dependencies, no behavior change on happy path
+The helper is a thin wrapper; when the socket stays up, hooks behave exactly as today.
+
+## Verification
+- `npm run typecheck`
+- `npm run test:file -- src/hooks/matches/__tests__` (existing tests must still pass; no new tests required unless you want them).
+- Manual: toggle network offline/online in devtools on Playoffs page and confirm bracket updates resume without reload.
+
+## Out of scope
+- Changing which tables are on `supabase_realtime`.
+- Any RLS / service changes.
+- Presence/broadcast channels (none in repo).
