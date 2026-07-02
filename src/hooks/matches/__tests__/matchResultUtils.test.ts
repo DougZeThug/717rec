@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { ValidationError } from '@/types/errors';
+
 import { determineMatchResults } from '../utils/matchResultUtils';
 
 describe('determineMatchResults', () => {
@@ -34,11 +36,10 @@ describe('determineMatchResults', () => {
     expect(result.team2Id).toBe('b');
   });
 
-  it('treats a tie as a team2 win (current behavior — ties are expected to be filtered upstream)', () => {
-    // Documents existing behavior: equal game wins fall through to team2.
-    const result = determineMatchResults(1, 1, 'team-1', 'team-2');
-
-    expect(result.winnerId).toBe('team-2');
-    expect(result.loserId).toBe('team-1');
+  it('throws a ValidationError when game wins are tied instead of picking a winner', () => {
+    expect(() => determineMatchResults(1, 1, 'team-1', 'team-2')).toThrow(ValidationError);
+    expect(() => determineMatchResults(0, 0, 'team-1', 'team-2')).toThrow(
+      'Cannot determine a match winner: game wins are tied'
+    );
   });
 });

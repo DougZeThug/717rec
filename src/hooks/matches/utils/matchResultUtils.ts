@@ -1,3 +1,5 @@
+import { ValidationError } from '@/types/errors';
+
 import { MatchResultData } from '../types/matchSubmissionTypes';
 
 export function determineMatchResults(
@@ -6,6 +8,10 @@ export function determineMatchResults(
   team1Id: string,
   team2Id: string
 ): MatchResultData {
+  if (team1GameWins === team2GameWins) {
+    throw new ValidationError('Cannot determine a match winner: game wins are tied');
+  }
+
   const team1Wins = team1GameWins > team2GameWins;
 
   return {
