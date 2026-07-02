@@ -1,6 +1,6 @@
 import { AnimatePresence, m } from 'framer-motion';
 import { ArrowDown, ArrowUp, Bolt, Scale } from 'lucide-react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
