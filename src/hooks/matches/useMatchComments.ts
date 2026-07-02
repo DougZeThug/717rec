@@ -31,6 +31,7 @@ export const useMatchComments = (matchId: string) => {
 
   // Fetch comments for the match
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load
     void fetchComments();
   }, [fetchComments]);
 
