@@ -10,7 +10,6 @@ export function usePlayoffViewState(
   handlers: ReturnType<typeof usePlayoffHandlers>,
   defaultTab: string = 'brackets'
 ) {
-  const [activeTab, setActiveTab] = useState(defaultTab);
   const [bracketDialogOpen, setBracketDialogOpen] = useState(false);
   const [teamDialogOpen, setTeamDialogOpen] = useState(false);
   const [deletingBracket, setDeletingBracket] = useState<{ id: string; name: string } | null>(null);
@@ -53,21 +52,7 @@ export function usePlayoffViewState(
     }
   };
 
-  // Use the enhanced bracket creation handler from usePlayoffHandlers
-  const handleBracketCreatedWithNavigation = async () => {
-    try {
-      // Use the handler that includes navigation
-      await handlers.handleBracketCreatedWithNavigation();
-      setBracketDialogOpen(false);
-      bracketLog('usePlayoffViewState: Bracket creation and navigation completed');
-    } catch (error) {
-      errorLog('usePlayoffViewState: Error in bracket creation flow:', error);
-    }
-  };
-
   return {
-    activeTab,
-    setActiveTab,
     bracketDialogOpen,
     setBracketDialogOpen,
     teamDialogOpen,
@@ -78,6 +63,5 @@ export function usePlayoffViewState(
     handleCreateBracket,
     handleDeleteBracket,
     handleConfirmDeleteBracket,
-    handleBracketCreated: handleBracketCreatedWithNavigation,
   };
 }
