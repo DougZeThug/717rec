@@ -78,9 +78,13 @@ const PageLayout: React.FC<PageLayoutProps> = ({
       {/* Snow effect for winter theme - homepage only (controlled by WinterSnowfall) */}
       <WinterSnowfall />
 
-      <main id="main-content" className="max-w-full w-full relative z-10">
-        {children}
-      </main>
+      {/*
+        Content wrapper. This used to be a second <main id="main-content">, which
+        produced two <main> landmarks (the other lives in App.tsx). The single
+        <main> now lives in App.tsx and carries the id="main-content" that the
+        "Skip to main content" link targets, so this stays a plain <div>.
+      */}
+      <div className="max-w-full w-full relative z-10">{children}</div>
     </div>
   );
 };
