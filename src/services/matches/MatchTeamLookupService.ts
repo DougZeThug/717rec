@@ -1,16 +1,54 @@
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 import { handleDatabaseError } from '@/utils/errorHandler';
 
 /**
  * Service layer for team data lookup operations
  */
 
+type MatchRow = Tables<'matches'>;
+
+/** v_team_details columns embedded in the team-matches join-select. */
+type TeamMatchDetail = Pick<
+  Tables<'v_team_details'>,
+  'team_id' | 'name' | 'image_url' | 'logo_url' | 'divisionname'
+>;
+
+/** A match row plus its two joined v_team_details rows. */
+type MatchWithTeamDetails = MatchRow & {
+  team1: TeamMatchDetail | null;
+  team2: TeamMatchDetail | null;
+};
+
+/** v_team_details columns returned by the team-lookup queries. */
+type TeamDetailsRow = Pick<
+  Tables<'v_team_details'>,
+  | 'team_id'
+  | 'name'
+  | 'image_url'
+  | 'logo_url'
+  | 'players'
+  | 'wins'
+  | 'losses'
+  | 'game_wins'
+  | 'game_losses'
+  | 'created_at'
+  | 'division_id'
+  | 'divisionname'
+  | 'sos'
+  | 'power_score'
+  | 'win_percentage'
+  | 'game_win_percentage'
+>;
+
 /**
  * Fetch team matches for a specific team in the active season.
  * Returns null if no active season is found.
  * @throws {DatabaseError} When database operations fail
  */
-export const fetchTeamMatchesData = async (teamId: string) => {
+export const fetchTeamMatchesData = async (
+  teamId: string
+): Promise<MatchWithTeamDetails[] | null> => {
   // Get active season first to filter matches
   const { data: activeSeason } = await supabase
     .from('seasons')
@@ -27,7 +65,7 @@ export const fetchTeamMatchesData = async (teamId: string) => {
     .from('matches')
     .select(
       `
-      *,
+      id, team1_id, team2_id, team1_score, team2_score, date, location, iscompleted, winner_id, loser_id, round_number, position, bracket_id, match_type, next_match_id, next_loser_match_id, best_of, team1_game_wins, team2_game_wins, season_id, metadata, created_at,
       team1:v_team_details!team1_id(
         team_id,
         name,
@@ -57,7 +95,7 @@ export const fetchTeamMatchesData = async (teamId: string) => {
  * Returns empty array if no IDs provided
  * @throws {DatabaseError} When database operations fail
  */
-export const fetchTeamsByIds = async (teamIds: string[]) => {
+export const fetchTeamsByIds = async (teamIds: string[]): Promise<TeamDetailsRow[]> => {
   if (!teamIds.length) return [];
 
   const { data, error } = await supabase
@@ -75,7 +113,7 @@ export const fetchTeamsByIds = async (teamIds: string[]) => {
  * Fetch all teams from v_team_details view (for team lookup maps)
  * @throws {DatabaseError} When database operations fail
  */
-export const fetchTeamsMap = async () => {
+export const fetchTeamsMap = async (): Promise<TeamDetailsRow[]> => {
   const { data, error } = await supabase
     .from('v_team_details')
     .select(

@@ -1,10 +1,30 @@
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 import { fetchAllPages } from '@/services/shared/pagination';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 
 /**
  * Service layer for core match query operations
  */
+
+type MatchRow = Tables<'matches'>;
+
+/** Team columns embedded in match join-selects. */
+type MatchTeamSummary = Pick<Tables<'teams'>, 'id' | 'name' | 'logo_url' | 'image_url'>;
+
+/** A match row plus its two joined team summaries. */
+export type MatchWithTeamSummaries = MatchRow & {
+  team1: MatchTeamSummary | null;
+  team2: MatchTeamSummary | null;
+};
+
+/** Match columns returned by the pending/uncompleted queries (everything except metadata + season_id). */
+type MatchListRow = Omit<MatchRow, 'metadata' | 'season_id'>;
+
+/** A timeslot row plus its joined team summary. */
+type MatchTimeslotRow = Tables<'team_timeslots'> & {
+  teams: MatchTeamSummary | null;
+};
 
 export interface MatchFilters {
   date?: Date;
@@ -22,13 +42,15 @@ export interface MatchFilters {
  *
  * @throws {DatabaseError} When database operations fail
  */
-export const fetchMatchesWithTeams = (filters?: MatchFilters) => {
-  return fetchAllPages((from, to) => {
+export const fetchMatchesWithTeams = (
+  filters?: MatchFilters
+): Promise<MatchWithTeamSummaries[]> => {
+  return fetchAllPages<MatchWithTeamSummaries>((from, to) => {
     let query = supabase
       .from('matches')
       .select(
         `
-          *,
+          id, team1_id, team2_id, team1_score, team2_score, date, location, iscompleted, winner_id, loser_id, round_number, position, bracket_id, match_type, next_match_id, next_loser_match_id, best_of, team1_game_wins, team2_game_wins, season_id, metadata, created_at,
           team1:teams!matches_team1_id_fkey(id, name, logo_url, image_url),
           team2:teams!matches_team2_id_fkey(id, name, logo_url, image_url)
         `
@@ -55,7 +77,7 @@ export const fetchMatchesWithTeams = (filters?: MatchFilters) => {
  * Fetch pending matches (completed but no winner = ties)
  * @throws {DatabaseError} When database operations fail
  */
-export const fetchPendingMatches = async () => {
+export const fetchPendingMatches = async (): Promise<MatchListRow[]> => {
   const { data, error } = await supabase
     .from('matches')
     .select(
@@ -73,7 +95,7 @@ export const fetchPendingMatches = async () => {
  * Fetch uncompleted matches
  * @throws {DatabaseError} When database operations fail
  */
-export const fetchUncompletedMatches = async () => {
+export const fetchUncompletedMatches = async (): Promise<MatchListRow[]> => {
   const { data, error } = await supabase
     .from('matches')
     .select(
@@ -90,7 +112,7 @@ export const fetchUncompletedMatches = async () => {
  * Fetch pending score matches from v_pending_matches view
  * @throws {DatabaseError} When database operations fail
  */
-export const fetchPendingScoresMatches = async () => {
+export const fetchPendingScoresMatches = async (): Promise<Tables<'v_pending_matches'>[]> => {
   const { data, error } = await supabase
     .from('v_pending_matches')
     .select(
@@ -106,7 +128,7 @@ export const fetchPendingScoresMatches = async () => {
  * Fetch match timeslots for a given formatted date (yyyy-MM-dd)
  * @throws {DatabaseError} When database operations fail
  */
-export const fetchMatchTimeslots = async (formattedDate: string) => {
+export const fetchMatchTimeslots = async (formattedDate: string): Promise<MatchTimeslotRow[]> => {
   const { data, error } = await supabase
     .from('team_timeslots')
     .select(
@@ -141,7 +163,20 @@ export const fetchMatchTimeslots = async (formattedDate: string) => {
  * Fetch pending score submissions
  * @throws {DatabaseError} When database operations fail
  */
-export const fetchScoreSubmissions = async () => {
+export const fetchScoreSubmissions = async (): Promise<
+  Pick<
+    Tables<'score_submissions'>,
+    | 'id'
+    | 'match_id'
+    | 'submitter_name'
+    | 'submitter_team'
+    | 'message'
+    | 'status'
+    | 'created_at'
+    | 'reviewed_by'
+    | 'reviewed_at'
+  >[]
+> => {
   const { data, error } = await supabase
     .from('score_submissions')
     .select(
@@ -159,7 +194,14 @@ export const fetchScoreSubmissions = async () => {
  * @throws {DatabaseError} When database operations fail
  * @throws {NotFoundError} When match not found
  */
-export const fetchMatchForTie = async (matchId: string) => {
+export const fetchMatchForTie = async (
+  matchId: string
+): Promise<
+  Pick<
+    MatchRow,
+    'winner_id' | 'loser_id' | 'team1_id' | 'team2_id' | 'team1_game_wins' | 'team2_game_wins'
+  >
+> => {
   const { data: currentMatch, error: fetchError } = await supabase
     .from('matches')
     .select('winner_id, loser_id, team1_id, team2_id, team1_game_wins, team2_game_wins')
@@ -175,7 +217,9 @@ export const fetchMatchForTie = async (matchId: string) => {
  * @throws {DatabaseError} When database operations fail
  * @throws {NotFoundError} When match not found
  */
-export const fetchMatchTeamIds = async (matchId: string) => {
+export const fetchMatchTeamIds = async (
+  matchId: string
+): Promise<Pick<MatchRow, 'team1_id' | 'team2_id'>> => {
   const { data: matchData, error: matchError } = await supabase
     .from('matches')
     .select('team1_id, team2_id')
