@@ -16,6 +16,7 @@ import React from 'react';
 
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
 import { PercentileFromResult } from '@/components/ui/PercentileBadge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useLeaguePercentiles } from '@/hooks/useLeaguePercentiles';
 import { useTeamTotals } from '@/hooks/useTeamTotals';
 import { getPowerScoreColor, getSosColor, getSweepRateColor } from '@/utils/colors';
@@ -51,12 +52,12 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
   if (isLoading) {
     if (standalone) {
       return (
-        <div className="animate-pulse">
+        <div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {['totals-skel-1', 'totals-skel-2', 'totals-skel-3', 'totals-skel-4'].map((sk) => (
               <div key={sk} className="space-y-2">
-                <div className="h-4 bg-muted rounded w-20"></div>
-                <div className="h-6 bg-muted rounded w-16"></div>
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-6 w-16" />
               </div>
             ))}
           </div>
@@ -70,13 +71,13 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
         iconColor="text-purple-500"
         defaultOpen={false}
       >
-        <div className="animate-pulse">
+        <div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {['totals-cs-skel-1', 'totals-cs-skel-2', 'totals-cs-skel-3', 'totals-cs-skel-4'].map(
               (sk) => (
                 <div key={sk} className="space-y-2">
-                  <div className="h-4 bg-muted rounded w-20"></div>
-                  <div className="h-6 bg-muted rounded w-16"></div>
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-6 w-16" />
                 </div>
               )
             )}

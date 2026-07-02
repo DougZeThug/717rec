@@ -2,7 +2,7 @@ import React from 'react';
 
 import { cn } from '@/lib/utils';
 
-type SkeletonVariant = 'card' | 'input' | 'pill';
+import { skeletonBaseClass, type SkeletonVariant, skeletonVariantClasses } from './skeleton-base';
 
 interface ShimmerSkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Width of the skeleton */
@@ -16,12 +16,6 @@ interface ShimmerSkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Radius variant matching design tokens */
   variant?: SkeletonVariant;
 }
-
-const variantClasses: Record<SkeletonVariant, string> = {
-  card: 'rounded-card',
-  input: 'rounded-input',
-  pill: 'rounded-pill',
-};
 
 const sizes = {
   sm: 'size-8',
@@ -41,7 +35,7 @@ const ShimmerSkeleton = React.forwardRef<HTMLDivElement, ShimmerSkeletonProps>(
       ...style,
     };
 
-    const radiusClass = circle ? 'rounded-full' : variantClasses[variant];
+    const radiusClass = circle ? 'rounded-full' : skeletonVariantClasses[variant];
 
     // Stable ids per count avoid using array index as React key.
     const skeletonIds = React.useMemo(
@@ -52,17 +46,7 @@ const ShimmerSkeleton = React.forwardRef<HTMLDivElement, ShimmerSkeletonProps>(
       <div
         key={id}
         ref={i === 0 ? ref : undefined}
-        className={cn(
-          'relative overflow-hidden bg-muted',
-          radiusClass,
-          // Base shimmer animation
-          'before:absolute before:inset-0',
-          'before:-translate-x-full',
-          'before:animate-[shimmer_2s_infinite]',
-          'before:bg-gradient-to-r',
-          'before:from-transparent before:via-foreground/5 before:to-transparent',
-          className
-        )}
+        className={cn(skeletonBaseClass, radiusClass, className)}
         style={skeletonStyle}
         {...props}
       />

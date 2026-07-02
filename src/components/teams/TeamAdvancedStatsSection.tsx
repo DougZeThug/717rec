@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { TeamAdvancedStatsInsightsTab } from '@/components/teams/TeamAdvancedStatsInsightsTab';
 import { TeamAdvancedStatsSeasonsTab } from '@/components/teams/TeamAdvancedStatsSeasonsTab';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTeamSeasonBreakdown } from '@/hooks/useTeamSeasonBreakdown';
 
@@ -35,10 +36,10 @@ const TeamAdvancedStatsSection: React.FC<TeamAdvancedStatsSectionProps> = ({ tea
         iconColor="text-indigo-500"
         defaultOpen={false}
       >
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-muted rounded w-full"></div>
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-full" />
           {['adv-stats-row-1', 'adv-stats-row-2', 'adv-stats-row-3'].map((k) => (
-            <div key={k} className="h-12 bg-muted rounded w-full"></div>
+            <Skeleton key={k} className="h-12 w-full" />
           ))}
         </div>
       </CollapsibleSection>

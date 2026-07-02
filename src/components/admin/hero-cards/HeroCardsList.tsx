@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import {
   Table,
@@ -97,7 +98,7 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
     return (
       <div className="space-y-2">
         {['hero-skel-1', 'hero-skel-2', 'hero-skel-3'].map((sk) => (
-          <div key={sk} className="h-16 bg-muted animate-pulse rounded" />
+          <Skeleton key={sk} className="h-16 w-full" />
         ))}
       </div>
     );
