@@ -5,13 +5,11 @@ import { Team } from '@/types';
 interface TeamDisplayProps {
   team: Team | null;
   fallbackLabel: string;
-  animationDelay?: string;
 }
 
 const TeamDisplay: React.FC<TeamDisplayProps> = ({
   team,
   fallbackLabel,
-  animationDelay: _animationDelay = '0.2s',
 }) => {
   return (
     <div className="flex justify-center">
