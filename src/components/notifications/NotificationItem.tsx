@@ -13,7 +13,7 @@ interface Props {
   lastSeenAt: string;
 }
 
-const NotificationItem: React.FC<Props> = ({ notification, lastSeenAt }) => {
+const NotificationItemComponent: React.FC<Props> = ({ notification, lastSeenAt }) => {
   const { isAdminAccessGranted } = useAdminAccess();
   const del = useDeleteNotification();
 
@@ -64,5 +64,9 @@ const NotificationItem: React.FC<Props> = ({ notification, lastSeenAt }) => {
     </div>
   );
 };
+
+// Memoized: rendered once per notification in a growable list; props are stable.
+const NotificationItem = React.memo(NotificationItemComponent);
+NotificationItem.displayName = 'NotificationItem';
 
 export default NotificationItem;

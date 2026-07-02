@@ -21,7 +21,7 @@ interface TeamDetails {
   divisionname?: string | null;
 }
 
-export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({
+const TeamGameScoreRowComponent: React.FC<TeamGameScoreRowProps> = ({
   match,
   teamId: _teamId,
   highlightWinnerLoser,
@@ -132,5 +132,9 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({
     </div>
   );
 };
+
+// Memoized: rendered once per match in potentially long match-history lists.
+export const TeamGameScoreRow = React.memo(TeamGameScoreRowComponent);
+TeamGameScoreRow.displayName = 'TeamGameScoreRow';
 
 export default TeamGameScoreRow;
