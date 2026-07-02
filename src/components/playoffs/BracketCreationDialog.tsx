@@ -40,7 +40,6 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
 }) => {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [dialogError, setDialogError] = React.useState<string | null>(null);
-  const [teamsValid, setTeamsValid] = React.useState(false);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -234,10 +233,6 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
     }
   };
 
-  const handleTeamsValidityChange = React.useCallback((isValid: boolean) => {
-    setTeamsValid(isValid);
-  }, []);
-
   const handleErrorReset = () => {
     setIsSubmitting(false);
     setDialogError(null);
@@ -276,8 +271,6 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
             divisions={divisions}
             teams={teams}
             isSubmitting={isSubmitting}
-            teamsValid={teamsValid}
-            onTeamsValidityChange={handleTeamsValidityChange}
             onSubmit={handleSubmit}
             onCancel={() => onOpenChange(false)}
           />

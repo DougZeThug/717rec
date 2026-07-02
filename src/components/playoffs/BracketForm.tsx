@@ -21,7 +21,6 @@ interface BracketFormProps {
   divisions?: Division[];
   teams?: Team[];
   isSubmitting?: boolean;
-  teamsValid?: boolean;
   onTeamsValidityChange?: (isValid: boolean) => void;
   onSubmit: (data: BracketFormValues) => void;
   onCancel: () => void;
@@ -31,7 +30,6 @@ const BracketForm: React.FC<BracketFormProps> = ({
   divisions,
   teams,
   isSubmitting = false,
-  teamsValid: _teamsValid = false,
   onTeamsValidityChange,
   onSubmit,
   onCancel,
