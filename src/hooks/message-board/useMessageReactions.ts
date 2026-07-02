@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/contexts/auth-context';
+import { subscribeWithRetry } from '@/hooks/realtime/subscribeWithRetry';
 import { toast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import { MessageReactionsService } from '@/services/messages/MessageReactionsService';
@@ -39,9 +40,8 @@ export const useMessageReactions = (messageId: string) => {
     return counts.sort((a, b) => b.count - a.count);
   }, [reactions, user?.id]);
 
-  // Fetch initial reactions
-  useEffect(() => {
-    const fetchReactions = async () => {
+  const fetchReactions = useCallback(async () => {
+    if (!messageId) return;
       try {
         setIsLoading(true);
         const data = await MessageReactionsService.fetchReactions(messageId);
@@ -51,55 +51,57 @@ export const useMessageReactions = (messageId: string) => {
       } finally {
         setIsLoading(false);
       }
-    };
-
-    if (messageId) {
-      fetchReactions();
-    }
   }, [messageId]);
+
+  // Fetch initial reactions
+  useEffect(() => {
+    void fetchReactions();
+  }, [fetchReactions]);
 
   // Set up realtime subscription
   useEffect(() => {
     if (!messageId) return;
 
-    const channel = supabase
-      .channel(`message-reactions-${messageId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'message_reactions',
-          filter: `message_id=eq.${messageId}`,
-        },
-        (payload) => {
-          const newReaction = payload.new as MessageReaction;
-          setReactions((curr) => {
-            if (curr.some((r) => r.id === newReaction.id)) return curr;
-            return [...curr, newReaction];
-          });
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'message_reactions',
-          filter: `message_id=eq.${messageId}`,
-        },
-        (payload) => {
-          const deletedReaction = payload.old as MessageReaction;
-          setReactions((curr) => curr.filter((r) => r.id !== deletedReaction.id));
-        }
-      )
-      .subscribe();
-
-    return () => {
-      channel.unsubscribe();
-      supabase.removeChannel(channel);
-    };
-  }, [messageId]);
+    const { dispose } = subscribeWithRetry({
+      label: `useMessageReactions(${messageId})`,
+      build: () =>
+        supabase
+          .channel(`message-reactions-${messageId}-${Date.now()}`)
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'message_reactions',
+              filter: `message_id=eq.${messageId}`,
+            },
+            (payload) => {
+              const newReaction = payload.new as MessageReaction;
+              setReactions((curr) => {
+                if (curr.some((r) => r.id === newReaction.id)) return curr;
+                return [...curr, newReaction];
+              });
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: 'DELETE',
+              schema: 'public',
+              table: 'message_reactions',
+              filter: `message_id=eq.${messageId}`,
+            },
+            (payload) => {
+              const deletedReaction = payload.old as MessageReaction;
+              setReactions((curr) => curr.filter((r) => r.id !== deletedReaction.id));
+            }
+          ),
+      onReconnect: (isFirst) => {
+        if (!isFirst) void fetchReactions();
+      },
+    });
+    return () => dispose();
+  }, [messageId, fetchReactions]);
 
   // Add reaction
   const addReaction = async (emoji: string) => {
