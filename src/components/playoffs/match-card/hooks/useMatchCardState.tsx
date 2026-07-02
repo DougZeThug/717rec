@@ -58,7 +58,6 @@ export const useMatchCardState = ({ match, teams }: UseMatchCardStateProps) => {
   // Determine match state
   const isPending = !match.team1Id || !match.team2Id;
   const isComplete = !!match.winnerId;
-  const isPlayIn = match.matchType === 'play-in' || match.matchType === 'play-in-2';
   const isResetMatch = match.matchType === 'finals' && match.round > 3;
 
   // Format series score for display
@@ -75,7 +74,6 @@ export const useMatchCardState = ({ match, teams }: UseMatchCardStateProps) => {
     team2Seed,
     isPending,
     isComplete,
-    isPlayIn,
     isResetMatch,
     seriesScoreText: getSeriesScoreText(),
   };

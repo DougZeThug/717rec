@@ -44,7 +44,6 @@ const PlayoffMatchCard: React.FC<PlayoffMatchCardProps> = ({
     team2Seed,
     isPending,
     isComplete,
-    isPlayIn: _isPlayIn,
     isResetMatch,
     seriesScoreText,
   } = useMatchCardState({ match, teams });
