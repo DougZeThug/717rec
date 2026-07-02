@@ -46,6 +46,67 @@ const getRankStyles = (index: number, isLight: boolean): string => {
   return 'bg-gray-800/30 text-white';
 };
 
+// Rank medal badge shown at the start of each mobile card.
+const RankBadge: React.FC<{ index: number; isLight: boolean }> = ({ index, isLight }) => (
+  <div
+    className={cn(
+      'size-7 flex items-center justify-center rounded-full font-mono flex-shrink-0 shadow-inner',
+      getRankStyles(index, isLight)
+    )}
+  >
+    {index + 1}
+  </div>
+);
+
+// Team logo + (truncated) name for a mobile card.
+const TeamIdentity: React.FC<{ team: Ranking }> = ({ team }) => (
+  <div className="flex min-w-0 items-center space-x-2">
+    {team.imageUrl && (
+      <div className="size-8 flex items-center justify-center bg-muted rounded-md overflow-hidden border border-border flex-shrink-0">
+        <img
+          src={team.imageUrl}
+          alt={team.teamName}
+          className="size-8 rounded-none object-contain"
+        />
+      </div>
+    )}
+    <span className="font-bebas tracking-wide uppercase text-base text-foreground truncate">
+      {team.teamName}
+    </span>
+  </div>
+);
+
+// Record / win% / power / SOS stat line for a mobile card.
+const MobileStandingStats: React.FC<{ team: Ranking }> = ({ team }) => {
+  const hasGames = team.wins + team.losses > 0;
+  return (
+    <div className="flex items-center space-x-4 text-sm font-mono mt-0.5">
+      <span className="text-foreground">
+        {team.wins}-{team.losses}
+      </span>
+      <span className="text-foreground">
+        {hasGames ? `${(team.winPercentage * 100).toFixed(1)}%` : '—'}
+      </span>
+      <span
+        className={cn(
+          getPowerScoreColor(team.powerScore),
+          'bg-gradient-to-r from-transparent to-blue-50/50 dark:to-blue-900/10 px-1 rounded'
+        )}
+      >
+        {formatPowerScore(team.powerScore)}
+      </span>
+      <span
+        className={cn(
+          hasGames ? getSosColor(team.sos) : 'text-muted-foreground',
+          'bg-gradient-to-r from-transparent to-orange-50/50 dark:to-orange-900/10 px-1 rounded'
+        )}
+      >
+        {hasGames ? team.sos.toFixed(3) : '—'}
+      </span>
+    </div>
+  );
+};
+
 // Mobile standings card. Memoized: rendered once per team in a growable list.
 const MobileStandingRow: React.FC<{
   team: Ranking;
@@ -68,54 +129,10 @@ const MobileStandingRow: React.FC<{
     )}
   >
     <div className="flex min-w-0 items-center space-x-2">
-      <div
-        className={cn(
-          'size-7 flex items-center justify-center rounded-full font-mono flex-shrink-0',
-          'shadow-inner',
-          getRankStyles(index, isLight)
-        )}
-      >
-        {index + 1}
-      </div>
+      <RankBadge index={index} isLight={isLight} />
       <div className="flex min-w-0 flex-col">
-        <div className="flex min-w-0 items-center space-x-2">
-          {team.imageUrl && (
-            <div className="size-8 flex items-center justify-center bg-muted rounded-md overflow-hidden border border-border flex-shrink-0">
-              <img
-                src={team.imageUrl}
-                alt={team.teamName}
-                className="size-8 rounded-none object-contain"
-              />
-            </div>
-          )}
-          <span className="font-bebas tracking-wide uppercase text-base text-foreground truncate">
-            {team.teamName}
-          </span>
-        </div>
-        <div className="flex items-center space-x-4 text-sm font-mono mt-0.5">
-          <span className="text-foreground">
-            {team.wins}-{team.losses}
-          </span>
-          <span className="text-foreground">
-            {team.wins + team.losses > 0 ? `${(team.winPercentage * 100).toFixed(1)}%` : '—'}
-          </span>
-          <span
-            className={cn(
-              getPowerScoreColor(team.powerScore),
-              'bg-gradient-to-r from-transparent to-blue-50/50 dark:to-blue-900/10 px-1 rounded'
-            )}
-          >
-            {formatPowerScore(team.powerScore)}
-          </span>
-          <span
-            className={cn(
-              team.wins + team.losses > 0 ? getSosColor(team.sos) : 'text-muted-foreground',
-              'bg-gradient-to-r from-transparent to-orange-50/50 dark:to-orange-900/10 px-1 rounded'
-            )}
-          >
-            {team.wins + team.losses > 0 ? team.sos.toFixed(3) : '—'}
-          </span>
-        </div>
+        <TeamIdentity team={team} />
+        <MobileStandingStats team={team} />
       </div>
     </div>
   </button>
