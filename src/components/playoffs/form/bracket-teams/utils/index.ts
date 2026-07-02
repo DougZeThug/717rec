@@ -4,6 +4,5 @@
 
 export * from './dragAndDrop';
 export * from './seedAssignment';
-export * from './teamDataHelpers';
 export * from './testDataFactory';
 export * from './validationHelpers';
