@@ -4,7 +4,6 @@ export default interface MatchCardProps {
   match: PlayoffMatch;
   teams: Team[];
   onEditMatch?: (matchId: string) => void;
-  hasNextMatch: boolean;
 }
 
 export interface MatchTeamProps {

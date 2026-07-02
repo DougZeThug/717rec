@@ -8,7 +8,6 @@ interface MatchCardProps {
   match: PlayoffMatch;
   teams: Team[];
   onEditMatch?: (matchId: string) => void;
-  hasNextMatch: boolean;
   isUpdated?: boolean;
 }
 
@@ -20,7 +19,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
   match,
   teams,
   onEditMatch,
-  hasNextMatch,
   isUpdated,
 }) => {
   return (
@@ -28,7 +26,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
       match={match}
       teams={teams}
       onEditMatch={onEditMatch}
-      hasNextMatch={hasNextMatch}
       isUpdated={isUpdated}
     />
   );
