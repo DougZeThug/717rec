@@ -81,7 +81,6 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
     const savedView = localStorage.getItem('rankingsDetailedView');
     return savedView ? savedView === 'true' : false;
   });
-  const [searchOpen, setSearchOpen] = useState(false);
   const [highlightedTeamId, setHighlightedTeamId] = useState<string | null>(null);
   const teamRefs = useLazyRef<Map<string, HTMLDivElement>>(() => new Map());
 
@@ -119,22 +118,6 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- teamRefs is a stable ref from useLazyRef
   }, []);
-
-  const handleFindMyTeam = useCallback(() => {
-    if (myTeamId) {
-      scrollToTeam(myTeamId);
-    } else {
-      setSearchOpen(true);
-    }
-  }, [myTeamId, scrollToTeam]);
-
-  const handleTeamSelect = useCallback(
-    (teamId: string) => {
-      setSearchOpen(false);
-      setTimeout(() => scrollToTeam(teamId), 150);
-    },
-    [scrollToTeam]
-  );
 
   const toggleViewMode = (value: string) => {
     if (!value) return;
