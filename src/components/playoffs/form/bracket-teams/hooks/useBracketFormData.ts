@@ -68,21 +68,6 @@ export const useBracketFormData = (
     divisions &&
     Array.isArray(divisions);
 
-  // Create division mapping
-  const divisionMapping = React.useMemo(() => {
-    if (!isDataReady || !Array.isArray(divisions)) {
-      return new Map<string, string>();
-    }
-
-    const mapping = new Map<string, string>();
-    divisions.forEach((division) => {
-      if (division && typeof division.id === 'string' && typeof division.name === 'string') {
-        mapping.set(division.id, division.name);
-      }
-    });
-    return mapping;
-  }, [divisions, isDataReady]);
-
   // Process team data - works for both provided and fetched teams
   const { processedTeams, processingError } = React.useMemo(() => {
     if (!isDataReady || !Array.isArray(teamsToProcess) || teamsToProcess.length === 0) {
@@ -157,8 +142,7 @@ export const useBracketFormData = (
         processingError: error instanceof Error ? error.message : 'Failed to process team data',
       };
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- divisionMapping is unused inside memo body
-  }, [teamsToProcess, divisionMapping, isDataReady]);
+  }, [teamsToProcess, isDataReady]);
 
   // Prepare seed validation state
   const seedValidationState: SeedValidationState = React.useMemo(
