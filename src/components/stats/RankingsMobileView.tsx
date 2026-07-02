@@ -60,7 +60,6 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
   sortOptions,
   onSortChange,
   showUnified = false,
-  myTeamId,
   view = 'division',
   onViewChange,
 }) => {
@@ -81,7 +80,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
     const savedView = localStorage.getItem('rankingsDetailedView');
     return savedView ? savedView === 'true' : false;
   });
-  const [highlightedTeamId, setHighlightedTeamId] = useState<string | null>(null);
+  const [highlightedTeamId] = useState<string | null>(null);
   const teamRefs = useLazyRef<Map<string, HTMLDivElement>>(() => new Map());
 
   useEffect(() => {
@@ -108,16 +107,6 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
       );
     }
   }, [rankings]);
-
-  const scrollToTeam = useCallback((teamId: string) => {
-    const element = teamRefs.current.get(teamId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setHighlightedTeamId(teamId);
-      setTimeout(() => setHighlightedTeamId(null), 2000);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- teamRefs is a stable ref from useLazyRef
-  }, []);
 
   const toggleViewMode = (value: string) => {
     if (!value) return;
