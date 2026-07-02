@@ -17,9 +17,10 @@ const validateTeamStats = (
     };
   }
 
-  // Ensure game wins are valid numbers
-  const parsedWinnerGameWins = parseInt(String(winnerGameWins)) || 0;
-  const parsedLoserGameWins = parseInt(String(loserGameWins)) || 0;
+  // Ensure game wins are valid numbers (parse first, THEN reject NaN —
+  // `|| 0` here would silently turn bad input into 0 and skip the check)
+  const parsedWinnerGameWins = parseInt(String(winnerGameWins), 10);
+  const parsedLoserGameWins = parseInt(String(loserGameWins), 10);
 
   if (isNaN(parsedWinnerGameWins) || isNaN(parsedLoserGameWins)) {
     return {
