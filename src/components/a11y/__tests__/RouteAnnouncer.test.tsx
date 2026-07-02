@@ -41,6 +41,21 @@ describe('RouteAnnouncer', () => {
     expect(screen.getByTestId('main')).not.toHaveFocus();
   });
 
+  it('stays a no-op on initial load under StrictMode double-invoke', () => {
+    // StrictMode runs effects setup → cleanup → setup in dev. The guard must
+    // survive that cycle and still not announce or steal focus on first load.
+    render(
+      <React.StrictMode>
+        <MemoryRouter initialEntries={['/']}>
+          <Harness />
+        </MemoryRouter>
+      </React.StrictMode>
+    );
+
+    expect(screen.getByRole('status')).toHaveTextContent('');
+    expect(screen.getByTestId('main')).not.toHaveFocus();
+  });
+
   it('announces the new page name and focuses main after navigation', async () => {
     const user = (await import('@testing-library/user-event')).default.setup();
 

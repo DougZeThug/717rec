@@ -22,13 +22,17 @@ export const RouteAnnouncer: React.FC<RouteAnnouncerProps> = ({ mainRef }) => {
   const location = useLocation();
   const pathname = location.pathname;
   const [message, setMessage] = useState('');
-  const isFirstRender = useRef(true);
+  // Track the last path we acted on rather than a one-way "first render" flag.
+  // Comparing paths keeps the effect idempotent: re-running it without a real
+  // navigation (e.g. React StrictMode's setup → cleanup → setup cycle) is a
+  // no-op, so we never steal focus or announce on the initial page load.
+  const lastAnnouncedPath = useRef(pathname);
 
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
+    if (lastAnnouncedPath.current === pathname) {
       return;
     }
+    lastAnnouncedPath.current = pathname;
 
     setMessage(`${getRouteName(pathname)} page`);
     mainRef.current?.focus();
