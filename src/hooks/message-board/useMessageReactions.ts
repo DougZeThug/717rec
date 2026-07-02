@@ -42,15 +42,15 @@ export const useMessageReactions = (messageId: string) => {
 
   const fetchReactions = useCallback(async () => {
     if (!messageId) return;
-      try {
-        setIsLoading(true);
-        const data = await MessageReactionsService.fetchReactions(messageId);
-        setReactions(data);
-      } catch (err) {
-        errorLog('Error fetching reactions:', err);
-      } finally {
-        setIsLoading(false);
-      }
+    try {
+      setIsLoading(true);
+      const data = await MessageReactionsService.fetchReactions(messageId);
+      setReactions(data);
+    } catch (err) {
+      errorLog('Error fetching reactions:', err);
+    } finally {
+      setIsLoading(false);
+    }
   }, [messageId]);
 
   // Fetch initial reactions
