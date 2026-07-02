@@ -139,8 +139,8 @@ The best return on investment. Mostly small, user-facing fixes.
 - **Lock the good state in with lint** so future changes can't regress it
   (forbid direct Supabase client imports outside services; forbid wildcard
   `select`).  **(~+1)**
-- **Replace base-table `*` join-selects with explicit columns** and add explicit
-  return types to services.  **(~+1)**
+- ~~**Replace base-table `*` join-selects with explicit columns** and add explicit
+  return types to services.~~  **(Done — PR #883)**
 - **Make the last error-swallowing services throw** (e.g. `RankingTrendsService`)
   and delete dead code (`useErrorHandler`, a leftover compat hook).  **(~+1)**
 - **Polish pass**: memoize hot list rows, extend virtualization to more growable
@@ -176,7 +176,7 @@ needs judgment. Each PR is intentionally small and independently shippable
 | PR | Tool | Scope |
 |---|---|---|
 | 9 | **Codex** | ESLint `no-restricted-imports` to forbid `@/integrations/supabase/client` outside `src/services` (+ allowed exceptions); rule flagging wildcard `select`; enable `ban-ts-comment`. |
-| 10 | **Codex** | Replace base-table `*` in join-selects with explicit columns (~4–5 queries); add explicit return types to service functions. |
+| 10 | **Codex** | ~~Replace base-table `*` in join-selects with explicit columns (~4–5 queries); add explicit return types to service functions.~~ **Done — PR #883** |
 | 11 | **Claude Code** | Route `RankingTrendsService` (and any peers) through `handleDatabaseError` so they throw; delete unused `useErrorHandler` and the leftover compat hook. |
 | 12 | **Codex / Lovable** | Memoize hot list rows; extend virtualization to more growable lists; standardize skeleton loaders; add `aria-label` to icon-only admin buttons. |
 
