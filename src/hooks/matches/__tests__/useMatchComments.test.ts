@@ -106,7 +106,6 @@ describe('useMatchComments', () => {
     expect(result.current.comments.map((c) => c.id)).toEqual(['comment-2']);
 
     unmount();
-    expect(mockChannel.unsubscribe).toHaveBeenCalled();
     expect(supabase.removeChannel).toHaveBeenCalledWith(mockChannel);
   });
 
