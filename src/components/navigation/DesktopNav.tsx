@@ -4,14 +4,12 @@ import { useLocation } from 'react-router';
 
 import CommandPalette from '@/components/navigation/CommandPalette';
 import { NavItem } from '@/components/navigation/NavItem';
-import { useIsMobile } from '@/hooks/useMobile';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { ICON_SIZES } from '@/styles/icon-system';
 
 export const DesktopNav = React.memo(() => {
   const location = useLocation();
-  const isMobile = useIsMobile();
   // Use base theme hook - no homepage dependency needed
   const { isWinterTheme } = useSeasonalThemeBase();
 
@@ -36,9 +34,6 @@ export const DesktopNav = React.memo(() => {
     ],
     []
   );
-
-  // Don't render on mobile
-  if (isMobile) return null;
 
   return (
     <div
