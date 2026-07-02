@@ -12,5 +12,3 @@ export { useMatchCardInteractions } from './hooks/useMatchCardInteractions';
 export { useMatchCardState } from './hooks/useMatchCardState';
 export { useMatchCardStyles } from './hooks/useMatchCardStyles';
 
-// Types
-export type { default as MatchCardProps } from '../MatchCard';
