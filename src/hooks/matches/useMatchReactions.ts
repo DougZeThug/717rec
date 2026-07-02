@@ -63,6 +63,7 @@ export const useMatchReactions = (matchId: string) => {
 
   // Fetch initial reactions
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load
     void fetchReactions();
   }, [fetchReactions]);
 
