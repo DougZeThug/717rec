@@ -341,7 +341,7 @@ describe('BracketsViewerComponent', () => {
 
     it('logs an error when the legacy viewer match ID cannot be mapped', () => {
       const mockOnMatchClick = vi.fn();
-      mockGetPlayoffMatchIdRef.current.mockReturnValue(undefined);
+      // fresh vi.fn() from beforeEach returns undefined -> no mapping found
 
       render(
         <BracketsViewerComponent

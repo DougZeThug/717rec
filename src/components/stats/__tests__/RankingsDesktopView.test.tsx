@@ -78,7 +78,7 @@ describe('RankingsDesktopView', () => {
   });
 
   it('groups teams without a division under "Unassigned"', () => {
-    render(<RankingsDesktopView rankings={[makeRanking('a', undefined)]} {...defaultProps} />);
+    render(<RankingsDesktopView rankings={[makeRanking('a')]} {...defaultProps} />);
     expect(screen.getByTestId('division-Unassigned')).toHaveAttribute('data-count', '1');
   });
 

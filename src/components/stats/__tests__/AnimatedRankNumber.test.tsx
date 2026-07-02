@@ -14,7 +14,7 @@ vi.mock('framer-motion', () => ({
       )
     ),
   },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 let mockIsWinterTheme = false;
