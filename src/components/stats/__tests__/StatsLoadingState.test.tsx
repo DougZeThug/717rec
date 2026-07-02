@@ -7,13 +7,9 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('@/components/ui/staggered-content', () => ({
   StaggeredContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   StaggerItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  AutoStagger: ({
-    children,
-    className,
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => <div className={className}>{children}</div>,
+  AutoStagger: ({ children, className }: { children: React.ReactNode; className?: string }) => (
+    <div className={className}>{children}</div>
+  ),
 }));
 
 vi.mock('@/components/ui/shimmer-skeleton', () => ({

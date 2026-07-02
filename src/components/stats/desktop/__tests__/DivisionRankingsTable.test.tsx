@@ -79,10 +79,7 @@ describe('DivisionRankingsTable', () => {
 
   it('appends the division rank in parentheses in division view', () => {
     render(
-      <DivisionRankingsTable
-        {...defaultProps}
-        rankings={[makeRanking('b', { divisionRank: 1 })]}
-      />
+      <DivisionRankingsTable {...defaultProps} rankings={[makeRanking('b', { divisionRank: 1 })]} />
     );
     expect(screen.getByText('(1)')).toBeInTheDocument();
   });

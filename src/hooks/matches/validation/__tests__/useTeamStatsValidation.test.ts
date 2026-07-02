@@ -41,20 +41,15 @@ describe('useTeamStatsValidation', () => {
     const { validateTeamStats } = setup();
     // parseInt('abc') is NaN, which the `|| 0` fallback converts to 0 — so this
     // is treated as a valid 0/0 update rather than rejected as non-numeric.
-    expect(
-      validateTeamStats('winner-1', 'loser-1', 'abc' as unknown as number, 1)
-    ).toEqual({ isValid: true });
+    expect(validateTeamStats('winner-1', 'loser-1', 'abc' as unknown as number, 1)).toEqual({
+      isValid: true,
+    });
   });
 
   it('parses numeric strings as game wins', () => {
     const { validateTeamStats } = setup();
     expect(
-      validateTeamStats(
-        'winner-1',
-        'loser-1',
-        '2' as unknown as number,
-        '1' as unknown as number
-      )
+      validateTeamStats('winner-1', 'loser-1', '2' as unknown as number, '1' as unknown as number)
     ).toEqual({ isValid: true });
   });
 });

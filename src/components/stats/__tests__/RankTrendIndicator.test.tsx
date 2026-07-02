@@ -7,7 +7,6 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('framer-motion', () => ({
   m: {
     div: React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       ({ children, ...props }, ref) => {
         const { className } = props;
         return (

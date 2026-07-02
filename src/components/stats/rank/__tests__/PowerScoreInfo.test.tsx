@@ -17,17 +17,13 @@ describe('PowerScoreInfo', () => {
 
   it('renders an accessible info trigger on desktop', () => {
     render(<PowerScoreInfo />);
-    expect(
-      screen.getByRole('button', { name: 'Power Score information' })
-    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Power Score information' })).toBeInTheDocument();
   });
 
   it('renders an accessible info trigger on mobile', () => {
     mockIsMobile = true;
     render(<PowerScoreInfo />);
-    expect(
-      screen.getByRole('button', { name: 'Power Score information' })
-    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Power Score information' })).toBeInTheDocument();
   });
 
   it('opens a popover explaining the formula on mobile tap', async () => {

@@ -41,9 +41,30 @@ const ranking = (overrides: Partial<Ranking> = {}): Ranking =>
 
 describe('sortRankings (field/direction branches)', () => {
   const teams = [
-    ranking({ teamId: 'a', teamName: 'Alpha', wins: 2, winPercentage: 0.4, sos: 0.7, powerScore: 55 }),
-    ranking({ teamId: 'b', teamName: 'Bravo', wins: 8, winPercentage: 0.9, sos: 0.5, powerScore: 80 }),
-    ranking({ teamId: 'c', teamName: 'Charlie', wins: 5, winPercentage: 0.6, sos: 0.9, powerScore: 65 }),
+    ranking({
+      teamId: 'a',
+      teamName: 'Alpha',
+      wins: 2,
+      winPercentage: 0.4,
+      sos: 0.7,
+      powerScore: 55,
+    }),
+    ranking({
+      teamId: 'b',
+      teamName: 'Bravo',
+      wins: 8,
+      winPercentage: 0.9,
+      sos: 0.5,
+      powerScore: 80,
+    }),
+    ranking({
+      teamId: 'c',
+      teamName: 'Charlie',
+      wins: 5,
+      winPercentage: 0.6,
+      sos: 0.9,
+      powerScore: 65,
+    }),
   ];
 
   it('sorts by winPercentage descending', () => {
@@ -206,10 +227,7 @@ describe('sortRankings (field/direction branches)', () => {
 
   it('returns 0 (stable) for exact ties on non-powerScore fields', () => {
     const result = sortRankings(
-      [
-        ranking({ teamId: 'first', wins: 4 }),
-        ranking({ teamId: 'second', wins: 4 }),
-      ],
+      [ranking({ teamId: 'first', wins: 4 }), ranking({ teamId: 'second', wins: 4 })],
       'wins',
       'desc'
     );
@@ -279,11 +297,9 @@ describe('saveRankingsToStorage', () => {
 
   it('swallows localStorage failures instead of throwing', async () => {
     vi.mocked(saveRankingsToDatabase).mockResolvedValue(undefined as never);
-    const setItemSpy = vi
-      .spyOn(Storage.prototype, 'setItem')
-      .mockImplementation(() => {
-        throw new Error('quota exceeded');
-      });
+    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('quota exceeded');
+    });
 
     try {
       await expect(saveRankingsToStorage(twoRankings)).resolves.toBeUndefined();

@@ -41,11 +41,7 @@ describe('calculateHeadToHead edge cases', () => {
   });
 
   it('skips team entries without an id and null entries', () => {
-    const teams = [
-      team('t2'),
-      { name: 'No Id Team' } as Team,
-      null as unknown as Team,
-    ];
+    const teams = [team('t2'), { name: 'No Id Team' } as Team, null as unknown as Team];
     const result = calculateHeadToHead(T, teams, []);
     expect(Object.keys(result)).toEqual(['t2']);
   });
@@ -85,9 +81,7 @@ describe('calculateHeadToHead edge cases', () => {
 
 describe('calculateSOS edge cases', () => {
   it('returns 0.5 when team is null/undefined', () => {
-    expect(
-      calculateSOS(null as unknown as Team, [team('t2')], [], new Map())
-    ).toBe(0.5);
+    expect(calculateSOS(null as unknown as Team, [team('t2')], [], new Map())).toBe(0.5);
   });
 
   it('returns 0.5 when allMatches is undefined', () => {

@@ -7,15 +7,11 @@ import StatsErrorState from '../StatsErrorState';
 describe('StatsErrorState', () => {
   it('renders the generic error message', () => {
     render(<StatsErrorState teamsError={null} matchesError={null} />);
-    expect(
-      screen.getByText(/error loading the statistics data/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/error loading the statistics data/i)).toBeInTheDocument();
   });
 
   it('shows the teams error message when present', () => {
-    render(
-      <StatsErrorState teamsError={new Error('Failed to fetch teams')} matchesError={null} />
-    );
+    render(<StatsErrorState teamsError={new Error('Failed to fetch teams')} matchesError={null} />);
     expect(screen.getByText('Failed to fetch teams')).toBeInTheDocument();
   });
 

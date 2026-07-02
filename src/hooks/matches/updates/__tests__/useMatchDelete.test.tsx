@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook } from '@testing-library/react';
 import React from 'react';
+import type { Mock } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Match, Team } from '@/types';
@@ -41,9 +42,9 @@ const matchB = { id: 'match-b', team1Id: 't3', team2Id: 't4' } as unknown as Mat
 const teams: Team[] = [];
 
 describe('useMatchDelete', () => {
-  let setMatches: ReturnType<typeof vi.fn>;
-  let setDeleteMatchId: ReturnType<typeof vi.fn>;
-  let setIsDeleting: ReturnType<typeof vi.fn>;
+  let setMatches: Mock<(matches: Match[]) => void>;
+  let setDeleteMatchId: Mock<(id: string | null) => void>;
+  let setIsDeleting: Mock<(isDeleting: boolean) => void>;
 
   const renderDelete = (deleteMatchId: string | null, matches: Match[] = [matchA, matchB]) =>
     renderHook(

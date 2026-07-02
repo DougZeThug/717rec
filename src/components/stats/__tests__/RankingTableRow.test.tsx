@@ -27,9 +27,7 @@ vi.mock('@/hooks/useSeasonalTheme', () => ({
 vi.mock('@/utils/logger', () => ({ debugLog: vi.fn() }));
 
 vi.mock('@/components/badges/TeamBadgeCollection', () => ({
-  default: ({ teamId }: { teamId: string }) => (
-    <div data-testid={`badges-${teamId}`} />
-  ),
+  default: ({ teamId }: { teamId: string }) => <div data-testid={`badges-${teamId}`} />,
 }));
 
 import { Ranking } from '@/types';
@@ -121,9 +119,10 @@ describe('RankingTableRow', () => {
 
   it('links to the team details page', () => {
     renderRow();
-    expect(
-      screen.getByRole('link', { name: 'View Team One team details' })
-    ).toHaveAttribute('href', expect.stringContaining('/teams/'));
+    expect(screen.getByRole('link', { name: 'View Team One team details' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('/teams/')
+    );
   });
 
   it('links to the compare page for the team', () => {

@@ -10,11 +10,7 @@ vi.mock('../../FullRankings', () => ({
     rankings: Array<{ teamId: string }>;
     myTeamId?: string | null;
   }) => (
-    <div
-      data-testid="full-rankings"
-      data-count={rankings.length}
-      data-my-team={myTeamId ?? ''}
-    />
+    <div data-testid="full-rankings" data-count={rankings.length} data-my-team={myTeamId ?? ''} />
   ),
 }));
 
