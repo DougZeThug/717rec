@@ -116,6 +116,63 @@ describe('useScoreSubmission', () => {
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Error' }));
   });
 
+  it('shows an error toast when the matches argument is missing', async () => {
+    const fetchMatches = vi.fn().mockResolvedValue([]);
+    const { result } = renderHook(
+      () => useScoreSubmission(undefined as unknown as MatchWithTeams[], fetchMatches),
+      { wrapper }
+    );
+
+    await act(async () => {
+      await result.current.handleSubmitAll();
+    });
+
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Error',
+        description: 'No match data available',
+        variant: 'destructive',
+      })
+    );
+    expect(mockUpdateMatch).not.toHaveBeenCalled();
+    expect(mockSetSubmitting).not.toHaveBeenCalled();
+  });
+
+  it('shows a "No Changes" toast when no match qualifies for submission', async () => {
+    const fetchMatches = vi.fn().mockResolvedValue([]);
+    const matches = [
+      makeMatch({ isEdited: false }),
+      makeMatch({ id: 'm2', isValid: false }),
+      makeMatch({ id: 'm3', iscompleted: false }),
+    ];
+    const { result } = renderHook(() => useScoreSubmission(matches, fetchMatches), { wrapper });
+
+    await act(async () => {
+      await result.current.handleSubmitAll();
+    });
+
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'No Changes' }));
+    expect(mockUpdateMatch).not.toHaveBeenCalled();
+  });
+
+  it('logs but does not fail when the post-submit refresh rejects', async () => {
+    const fetchMatches = vi.fn().mockRejectedValue(new Error('refresh failed'));
+    const { result } = renderHook(() => useScoreSubmission([makeMatch()], fetchMatches), {
+      wrapper,
+    });
+
+    await act(async () => {
+      await result.current.handleSubmitAll();
+    });
+
+    // Success toast still fired; the refresh failure never reached the catch branch
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Success' }));
+    expect(mockToast).not.toHaveBeenCalledWith(
+      expect.objectContaining({ description: expect.stringContaining('refresh failed') })
+    );
+    expect(mockSetSubmitting).toHaveBeenLastCalledWith(false);
+  });
+
   it('handles validation failure and thrown update error branch', async () => {
     const fetchMatches = vi.fn().mockResolvedValue([]);
     mockValidateMatch.mockReturnValueOnce({ isValid: false });

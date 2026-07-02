@@ -302,6 +302,55 @@ describe('useScoreEntryData - submission flow', () => {
     expect(mockHandleSubmitScore).toHaveBeenCalled();
   });
 
+  it('does not reverse stats twice when the reversal succeeded but the score write failed', async () => {
+    const completedRow = makeRow({
+      id: 'match-1',
+      date: '2026-06-25T18:00:00.000Z',
+      iscompleted: true,
+      winner_id: 'team-a',
+      loser_id: 'team-b',
+      team1_score: 1,
+      team2_score: 0,
+      team1_game_wins: 2,
+      team2_game_wins: 1,
+    });
+    vi.mocked(fetchMatchesForAdmin).mockResolvedValue([completedRow] as never);
+    // First submission throws AFTER the reversal ran; the retry succeeds.
+    mockHandleSubmitScore.mockRejectedValueOnce(new Error('write failed'));
+
+    const { result } = renderHook(() => useScoreEntryData(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.matches.length).toBeGreaterThan(0));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => {
+      result.current.handleScoreChange(0, 0, 1);
+    });
+    act(() => {
+      result.current.handleMarkCompleted(0, true);
+    });
+
+    // First attempt: reversal applied, then the score write blows up.
+    await act(async () => {
+      await result.current.handleSubmitAll();
+    });
+
+    expect(reverseTeamStats).toHaveBeenCalledTimes(1);
+    expect(result.current.matches[0].submitError).toBe(true);
+    expect(result.current.matches[0].isEdited).toBe(true);
+
+    // Retry: succeeds — the original snapshot was cleared, so the already-applied
+    // reversal must NOT run a second time (that would double-decrement stats).
+    await act(async () => {
+      await result.current.handleSubmitAll();
+    });
+
+    expect(reverseTeamStats).toHaveBeenCalledTimes(1);
+    expect(mockHandleSubmitScore).toHaveBeenCalledTimes(2);
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: expect.stringContaining('Submitted') })
+    );
+  });
+
   it('shows a destructive error toast and keeps the match edited when submission fails', async () => {
     mockHandleSubmitScore.mockResolvedValue(false);
     vi.mocked(fetchMatchesForAdmin).mockResolvedValue([makeRow({ id: 'match-1' })] as never);
