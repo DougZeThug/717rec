@@ -33,7 +33,8 @@ import { LoadingState } from "@/components/ui/loading-state";
 Use content-shaped skeleton components for data sections and lists. These provide better perceived performance by showing the structure of upcoming content.
 
 **Available Skeleton Components:**
-- `ShimmerSkeleton` - Base skeleton with shimmer animation
+- `Skeleton` - Simple skeleton with shimmer animation (most common)
+- `ShimmerSkeleton` - Configurable skeleton with count, size, and variant options
 - `TextSkeleton` - Multi-line text placeholder
 - `AvatarSkeleton` - Circular avatar placeholder
 - `CardSkeleton` - Card layout placeholder
@@ -105,8 +106,8 @@ if (isLoading) return <MatchesTableSkeleton />;
 
 When creating a skeleton for a new component:
 
-1. Import `ShimmerSkeleton` and other utilities from `@/components/ui/shimmer-skeleton`
-2. Match the component's layout structure
-3. Use appropriate sizes and proportions
-4. Add shimmer animation via the ShimmerSkeleton component
+1. For simple cases, import `Skeleton` from `@/components/ui/skeleton` and apply size classes
+2. For complex multi-item skeletons, import `ShimmerSkeleton` from `@/components/ui/shimmer-skeleton`
+3. Match the component's layout structure
+4. Use appropriate sizes and proportions
 5. Place the skeleton file next to the component it represents

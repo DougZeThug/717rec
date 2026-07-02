@@ -115,6 +115,7 @@ TeamsPage → useTeamsQuery() → TeamFetchService.fetchTeams() → supabase.fro
 - **Realtime**: Live playoff brackets, message board, scores
 - **Type Safety**: Full TypeScript + auto-generated Supabase types
 - **Feature Organization**: Code grouped by feature, not file type
+- **Virtualization**: Long lists (standings, match history) use `VirtualizedList` to render only visible items
 
 ## Page → Data Dependencies
 
