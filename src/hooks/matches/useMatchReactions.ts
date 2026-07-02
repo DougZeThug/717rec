@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/contexts/auth-context';
+import { subscribeWithRetry } from '@/hooks/realtime/subscribeWithRetry';
 import { toast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import { MatchReaction, MatchReactionsService } from '@/services/matches/MatchReactionsService';
@@ -47,67 +48,68 @@ export const useMatchReactions = (matchId: string) => {
     return counts.sort((a, b) => b.count - a.count);
   }, [reactions, user?.id]);
 
-  // Fetch initial reactions
-  useEffect(() => {
-    const fetchReactions = async () => {
-      try {
-        setIsLoading(true);
-        const data = await MatchReactionsService.fetchReactions(matchId);
-        setReactions(data);
-      } catch (err) {
-        errorLog('Error fetching match reactions:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (matchId) {
-      fetchReactions();
+  const fetchReactions = useCallback(async () => {
+    if (!matchId) return;
+    try {
+      setIsLoading(true);
+      const data = await MatchReactionsService.fetchReactions(matchId);
+      setReactions(data);
+    } catch (err) {
+      errorLog('Error fetching match reactions:', err);
+    } finally {
+      setIsLoading(false);
     }
   }, [matchId]);
+
+  // Fetch initial reactions
+  useEffect(() => {
+    void fetchReactions();
+  }, [fetchReactions]);
 
   // Set up realtime subscription
   useEffect(() => {
     if (!matchId) return;
 
-    const channel = supabase
-      .channel(`match-reactions-${matchId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'match_reactions',
-          filter: `match_id=eq.${matchId}`,
-        },
-        (payload) => {
-          const newReaction = payload.new as MatchReaction;
-          setReactions((curr) => {
-            if (curr.some((r) => r.id === newReaction.id)) return curr;
-            return [...curr, newReaction];
-          });
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'match_reactions',
-          filter: `match_id=eq.${matchId}`,
-        },
-        (payload) => {
-          const deletedReaction = payload.old as MatchReaction;
-          setReactions((curr) => curr.filter((r) => r.id !== deletedReaction.id));
-        }
-      )
-      .subscribe();
-
-    return () => {
-      channel.unsubscribe();
-      supabase.removeChannel(channel);
-    };
-  }, [matchId]);
+    const { dispose } = subscribeWithRetry({
+      label: `useMatchReactions(${matchId})`,
+      build: () =>
+        supabase
+          .channel(`match-reactions-${matchId}-${Date.now()}`)
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'match_reactions',
+              filter: `match_id=eq.${matchId}`,
+            },
+            (payload) => {
+              const newReaction = payload.new as MatchReaction;
+              setReactions((curr) => {
+                if (curr.some((r) => r.id === newReaction.id)) return curr;
+                return [...curr, newReaction];
+              });
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: 'DELETE',
+              schema: 'public',
+              table: 'match_reactions',
+              filter: `match_id=eq.${matchId}`,
+            },
+            (payload) => {
+              const deletedReaction = payload.old as MatchReaction;
+              setReactions((curr) => curr.filter((r) => r.id !== deletedReaction.id));
+            }
+          ),
+      onReconnect: (isFirst) => {
+        if (!isFirst) void fetchReactions();
+      },
+    });
+    return () => dispose();
+  }, [matchId, fetchReactions]);
 
   // Toggle reaction (add or remove)
   const toggleReaction = async (emoji: string) => {
