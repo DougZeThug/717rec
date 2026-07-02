@@ -10,7 +10,6 @@ export { BracketFormTeamsContainer } from './components/BracketFormTeamsContaine
 
 // UI Components
 export {
-  SeedInputField,
   SeedOrderList,
   SeedOverrideControls,
   SeedStatusBadge,

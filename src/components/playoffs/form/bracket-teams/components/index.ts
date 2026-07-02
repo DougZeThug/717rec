@@ -1,5 +1,4 @@
 export { BracketFormTeamsContainer } from './BracketFormTeamsContainer';
-export { SeedInputField } from './SeedInputField';
 export { SeedOrderList } from './SeedOrderList';
 export { SeedOverrideControls } from './SeedOverrideControls';
 export { SeedStatusBadge } from './SeedStatusBadge';
