@@ -144,8 +144,6 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
     [rankings, showUnified]
   );
 
-  const { ref: sectionRef, inView: isSectionVisible } = useInView({ threshold: 0.05 });
-
   return (
     <div className="font-inter">
       <LeagueLeaderboardCarousel rankings={rankings} />
@@ -220,7 +218,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
         </div>
       )}
 
-      <div className="space-y-2" ref={sectionRef}>
+      <div className="space-y-2">
         {sortHistoryDivisions(Object.entries(rankingsByDivision)).map(
           ([displayDivision, divisionRankings]) => (
             <div key={displayDivision} className="space-y-1">
@@ -284,32 +282,6 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
           )
         )}
       </div>
-
-      {/* Find My Team FAB — only visible when standings section is in viewport */}
-      {isSectionVisible && (
-        <Button
-          variant="default"
-          size="sm"
-          className={cn(
-            'fixed bottom-24 right-4 z-50 rounded-full shadow-lg',
-            isWinterTheme
-              ? 'bg-frost-primary hover:bg-frost-primary/90 text-white'
-              : 'bg-primary hover:bg-primary/90'
-          )}
-          onClick={handleFindMyTeam}
-          aria-label={myTeamId ? 'Scroll to my team' : 'Search for a team'}
-        >
-          {myTeamId ? <User className="size-4" /> : <Search className="size-4" />}
-        </Button>
-      )}
-
-      {/* Team Search Drawer */}
-      <TeamSearchDrawer
-        open={searchOpen}
-        onOpenChange={setSearchOpen}
-        rankings={rankings}
-        onTeamSelect={handleTeamSelect}
-      />
     </div>
   );
 };
