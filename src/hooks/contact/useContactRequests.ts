@@ -22,10 +22,8 @@ export function useContactRequests(enabled = true) {
       build: () =>
         supabase
           .channel(`contact-requests-realtime-${Math.random().toString(36).slice(2)}`)
-          .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'contact_requests' },
-            () => qc.invalidateQueries({ queryKey: CONTACT_REQUESTS_QUERY_KEY })
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_requests' }, () =>
+            qc.invalidateQueries({ queryKey: CONTACT_REQUESTS_QUERY_KEY })
           ),
       onReconnect: (isFirst) => {
         if (!isFirst) qc.invalidateQueries({ queryKey: CONTACT_REQUESTS_QUERY_KEY });

@@ -34,36 +34,37 @@ export function useBracketCompletion(bracketId: string | undefined) {
             filter: `id=eq.${bracketId}`,
           },
           async (payload) => {
-          const bracket = payload.new as BracketPayload;
+            const bracket = payload.new as BracketPayload;
 
-          // If bracket just completed, calculate final standings
-          if (bracket.state === 'completed' && bracket.uses_brackets_manager) {
-            try {
-              const result = await bracketManagerService.calculateFinalStandings(bracketId);
+            // If bracket just completed, calculate final standings
+            if (bracket.state === 'completed' && bracket.uses_brackets_manager) {
+              try {
+                const result = await bracketManagerService.calculateFinalStandings(bracketId);
 
-              if (result.written) {
+                if (result.written) {
+                  toast({
+                    title: 'Tournament Complete!',
+                    description: 'Final standings have been calculated.',
+                  });
+                } else if (result.reason === 'incomplete-matches') {
+                  toast({
+                    title: 'Standings Pending',
+                    description:
+                      'Final standings will be calculated once all matches are complete.',
+                  });
+                }
+                // 'calculation-error' / 'no-stages' / 'no-records' are logged
+                // server-side; no user-facing toast to avoid noise.
+              } catch (error) {
+                errorLog('Failed to calculate final standings:', error);
                 toast({
-                  title: 'Tournament Complete!',
-                  description: 'Final standings have been calculated.',
-                });
-              } else if (result.reason === 'incomplete-matches') {
-                toast({
-                  title: 'Standings Pending',
-                  description: 'Final standings will be calculated once all matches are complete.',
+                  title: 'Standings Calculation Failed',
+                  description:
+                    'Could not calculate final placements. Please contact an admin to recalculate.',
+                  variant: 'destructive',
                 });
               }
-              // 'calculation-error' / 'no-stages' / 'no-records' are logged
-              // server-side; no user-facing toast to avoid noise.
-            } catch (error) {
-              errorLog('Failed to calculate final standings:', error);
-              toast({
-                title: 'Standings Calculation Failed',
-                description:
-                  'Could not calculate final placements. Please contact an admin to recalculate.',
-                variant: 'destructive',
-              });
             }
-          }
           }
         ),
     });

@@ -81,40 +81,34 @@ export function useBracketsManagerRealtime(
     const { dispose } = subscribeWithRetry({
       label: `useBracketsManagerRealtime(${bracketId},${stageId})`,
       build: () =>
-        supabase
-          .channel(`bracket-matches-${bracketId}-${stageId}-${Date.now()}`)
-          .on(
-            'postgres_changes',
-            {
-              event: '*',
-              schema: 'public',
-              table: 'match',
-              filter: `stage_id=eq.${stageId}`,
-            },
-            (payload) => {
-              bracketLog('Match table updated via realtime:', payload);
-              setLastUpdate(new Date());
+        supabase.channel(`bracket-matches-${bracketId}-${stageId}-${Date.now()}`).on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'match',
+            filter: `stage_id=eq.${stageId}`,
+          },
+          (payload) => {
+            bracketLog('Match table updated via realtime:', payload);
+            setLastUpdate(new Date());
 
-              queryClientRef.current.invalidateQueries({ queryKey: ['bracket-data', bracketId] });
-              queryClientRef.current.invalidateQueries({ queryKey: ['bracket-info', bracketId] });
-              queryClientRef.current.refetchQueries({ queryKey: ['bracket-data', bracketId] });
+            queryClientRef.current.invalidateQueries({ queryKey: ['bracket-data', bracketId] });
+            queryClientRef.current.invalidateQueries({ queryKey: ['bracket-info', bracketId] });
+            queryClientRef.current.refetchQueries({ queryKey: ['bracket-data', bracketId] });
 
-              toastRef.current({
-                title: 'Bracket Updated',
-                description: 'Match scores have been updated.',
-                duration: 3000,
-              });
-            }
-          ),
+            toastRef.current({
+              title: 'Bracket Updated',
+              description: 'Match scores have been updated.',
+              duration: 3000,
+            });
+          }
+        ),
       onStatus: (status) => {
         bracketLog('Realtime subscription status:', { status, bracketId, stageId });
         if (status === 'SUBSCRIBED') {
           setRealtimeEnabled(true);
-        } else if (
-          status === 'CHANNEL_ERROR' ||
-          status === 'TIMED_OUT' ||
-          status === 'CLOSED'
-        ) {
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
           setRealtimeEnabled(false);
         }
       },
