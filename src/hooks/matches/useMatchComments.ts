@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/contexts/auth-context';
+import { subscribeWithRetry } from '@/hooks/realtime/subscribeWithRetry';
 import { toast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import { MatchComment, MatchCommentsService } from '@/services/matches/MatchCommentsService';
@@ -14,64 +15,68 @@ export const useMatchComments = (matchId: string) => {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  // Fetch comments for the match
-  useEffect(() => {
-    const fetchComments = async () => {
-      try {
-        setIsLoading(true);
-        const data = await MatchCommentsService.fetchComments(matchId);
-        setComments(data);
-      } catch (err) {
-        errorLog('Error fetching match comments:', err);
-        setError('Failed to load comments');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (matchId) {
-      fetchComments();
+  const fetchComments = useCallback(async () => {
+    if (!matchId) return;
+    try {
+      setIsLoading(true);
+      const data = await MatchCommentsService.fetchComments(matchId);
+      setComments(data);
+    } catch (err) {
+      errorLog('Error fetching match comments:', err);
+      setError('Failed to load comments');
+    } finally {
+      setIsLoading(false);
     }
   }, [matchId]);
+
+  // Fetch comments for the match
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load
+    void fetchComments();
+  }, [fetchComments]);
 
   // Set up realtime subscription
   useEffect(() => {
     if (!matchId) return;
 
-    const channel = supabase
-      .channel(`match-comments-${matchId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'match_comments',
-          filter: `match_id=eq.${matchId}`,
-        },
-        (payload) => {
-          const newComment = payload.new as MatchComment;
-          setComments((curr) => [...curr, newComment]);
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'match_comments',
-          filter: `match_id=eq.${matchId}`,
-        },
-        (payload) => {
-          setComments((curr) => curr.filter((c) => c.id !== payload.old.id));
-        }
-      )
-      .subscribe();
-
-    return () => {
-      channel.unsubscribe();
-      supabase.removeChannel(channel);
-    };
-  }, [matchId]);
+    const { dispose } = subscribeWithRetry({
+      label: `useMatchComments(${matchId})`,
+      build: () =>
+        supabase
+          .channel(`match-comments-${matchId}-${Date.now()}`)
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'match_comments',
+              filter: `match_id=eq.${matchId}`,
+            },
+            (payload) => {
+              const newComment = payload.new as MatchComment;
+              setComments((curr) =>
+                curr.some((c) => c.id === newComment.id) ? curr : [...curr, newComment]
+              );
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: 'DELETE',
+              schema: 'public',
+              table: 'match_comments',
+              filter: `match_id=eq.${matchId}`,
+            },
+            (payload) => {
+              setComments((curr) => curr.filter((c) => c.id !== payload.old.id));
+            }
+          ),
+      onReconnect: (isFirst) => {
+        if (!isFirst) void fetchComments();
+      },
+    });
+    return () => dispose();
+  }, [matchId, fetchComments]);
 
   // Post a new comment
   const addComment = async (content: string) => {

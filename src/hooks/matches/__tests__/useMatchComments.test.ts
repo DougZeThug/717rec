@@ -81,7 +81,7 @@ describe('useMatchComments', () => {
 
     expect(result.current.comments).toEqual([comment]);
     expect(mockFetchComments).toHaveBeenCalledWith('match-1');
-    expect(supabase.channel).toHaveBeenCalledWith('match-comments-match-1');
+    expect(supabase.channel).toHaveBeenCalledWith(expect.stringMatching(/^match-comments-match-1-/));
     expect(mockChannel.on).toHaveBeenCalledWith(
       'postgres_changes',
       expect.objectContaining({ event: 'INSERT', filter: 'match_id=eq.match-1' }),
@@ -106,7 +106,6 @@ describe('useMatchComments', () => {
     expect(result.current.comments.map((c) => c.id)).toEqual(['comment-2']);
 
     unmount();
-    expect(mockChannel.unsubscribe).toHaveBeenCalled();
     expect(supabase.removeChannel).toHaveBeenCalledWith(mockChannel);
   });
 

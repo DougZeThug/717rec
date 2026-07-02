@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
+import { subscribeWithRetry } from '@/hooks/realtime/subscribeWithRetry';
 import { toast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -16,15 +17,19 @@ export function useContactRequests(enabled = true) {
 
   useEffect(() => {
     if (!enabled) return;
-    const channel = supabase
-      .channel(`contact-requests-realtime-${Math.random().toString(36).slice(2)}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_requests' }, () =>
-        qc.invalidateQueries({ queryKey: CONTACT_REQUESTS_QUERY_KEY })
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    const { dispose } = subscribeWithRetry({
+      label: 'useContactRequests',
+      build: () =>
+        supabase
+          .channel(`contact-requests-realtime-${Math.random().toString(36).slice(2)}`)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_requests' }, () =>
+            qc.invalidateQueries({ queryKey: CONTACT_REQUESTS_QUERY_KEY })
+          ),
+      onReconnect: (isFirst) => {
+        if (!isFirst) qc.invalidateQueries({ queryKey: CONTACT_REQUESTS_QUERY_KEY });
+      },
+    });
+    return () => dispose();
   }, [qc, enabled]);
 
   return useQuery<ContactRequestRow[]>({

@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 
+import { subscribeWithRetry } from '@/hooks/realtime/subscribeWithRetry';
 import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchStageIdByTournament } from '@/services/brackets/read/BracketStageService';
@@ -77,22 +78,13 @@ export function useBracketsManagerRealtime(
 
     bracketLog('Setting up realtime subscription for match table', { bracketId, stageId });
 
-    let currentChannel: ReturnType<typeof supabase.channel> | null = null;
-    let retryTimer: ReturnType<typeof setTimeout> | null = null;
-    let hasRetried = false;
-    let isCancelled = false;
-
-    // Build a fresh channel each time. Phoenix channels set 'joinedOnce' on the
-    // first join and never reset it, so retries must use a brand-new instance.
-    const connect = (): ReturnType<typeof supabase.channel> => {
-      // Unique channel name per attempt avoids handshake collisions with stale channels
-      const channelName = `bracket-matches-${bracketId}-${stageId}-${Date.now()}`;
-      return supabase
-        .channel(channelName)
-        .on(
+    const { dispose } = subscribeWithRetry({
+      label: `useBracketsManagerRealtime(${bracketId},${stageId})`,
+      build: () =>
+        supabase.channel(`bracket-matches-${bracketId}-${stageId}-${Date.now()}`).on(
           'postgres_changes',
           {
-            event: '*', // Listen to INSERT, UPDATE, DELETE
+            event: '*',
             schema: 'public',
             table: 'match',
             filter: `stage_id=eq.${stageId}`,
@@ -101,7 +93,6 @@ export function useBracketsManagerRealtime(
             bracketLog('Match table updated via realtime:', payload);
             setLastUpdate(new Date());
 
-            // Immediately invalidate and refetch the cache
             queryClientRef.current.invalidateQueries({ queryKey: ['bracket-data', bracketId] });
             queryClientRef.current.invalidateQueries({ queryKey: ['bracket-info', bracketId] });
             queryClientRef.current.refetchQueries({ queryKey: ['bracket-data', bracketId] });
@@ -112,41 +103,26 @@ export function useBracketsManagerRealtime(
               duration: 3000,
             });
           }
-        )
-        .subscribe((status) => {
-          bracketLog('Realtime subscription status:', { status, bracketId, stageId });
-          if (status === 'SUBSCRIBED') {
-            bracketLog('Realtime subscription to match table ACTIVE');
-            setRealtimeEnabled(true);
-          } else if (status === 'CHANNEL_ERROR') {
-            setRealtimeEnabled(false);
-            if (!hasRetried) {
-              hasRetried = true;
-              bracketLog('Realtime CHANNEL_ERROR — retrying once in 2s', { bracketId, stageId });
-              retryTimer = setTimeout(async () => {
-                if (isCancelled) return;
-                // Tear down the failed channel, then create a fresh instance.
-                // Reusing the original channel throws "tried to join multiple times".
-                if (currentChannel) {
-                  await supabase.removeChannel(currentChannel);
-                }
-                if (isCancelled) return;
-                currentChannel = connect();
-              }, 2000);
-            } else {
-              errorLog('Realtime subscription FAILED after retry', { bracketId, stageId });
-            }
-          }
-        });
-    };
-
-    currentChannel = connect();
+        ),
+      onStatus: (status) => {
+        bracketLog('Realtime subscription status:', { status, bracketId, stageId });
+        if (status === 'SUBSCRIBED') {
+          setRealtimeEnabled(true);
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          setRealtimeEnabled(false);
+        }
+      },
+      onReconnect: (isFirst) => {
+        if (isFirst) return;
+        // Refetch after reconnect to recover any missed events.
+        queryClientRef.current.invalidateQueries({ queryKey: ['bracket-data', bracketId] });
+        queryClientRef.current.invalidateQueries({ queryKey: ['bracket-info', bracketId] });
+      },
+    });
 
     return () => {
       bracketLog('Cleaning up match table realtime subscription');
-      isCancelled = true;
-      if (retryTimer) clearTimeout(retryTimer);
-      if (currentChannel) supabase.removeChannel(currentChannel);
+      dispose();
       setRealtimeEnabled(false);
     };
   }, [bracketId, stageId]); // Only depend on bracketId and stageId - toast/queryClient accessed via refs
