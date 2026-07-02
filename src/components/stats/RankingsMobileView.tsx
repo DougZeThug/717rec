@@ -1,7 +1,6 @@
 import { AnimatePresence, m } from 'framer-motion';
-import { ArrowDown, ArrowUp, Bolt, Scale, Search, User } from 'lucide-react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useInView } from 'react-intersection-observer';
+import { ArrowDown, ArrowUp, Bolt, Scale } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -16,7 +15,6 @@ import { debugLog } from '@/utils/logger';
 
 import LeagueLeaderboardCarousel from './LeagueLeaderboardCarousel';
 import RankingCard from './RankingCard';
-import TeamSearchDrawer from './TeamSearchDrawer';
 import { SortOptions } from './types';
 import ViewToggle from './ViewToggle';
 
@@ -62,7 +60,6 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
   sortOptions,
   onSortChange,
   showUnified = false,
-  myTeamId,
   view = 'division',
   onViewChange,
 }) => {
@@ -83,8 +80,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
     const savedView = localStorage.getItem('rankingsDetailedView');
     return savedView ? savedView === 'true' : false;
   });
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [highlightedTeamId, setHighlightedTeamId] = useState<string | null>(null);
+  const [highlightedTeamId] = useState<string | null>(null);
   const teamRefs = useLazyRef<Map<string, HTMLDivElement>>(() => new Map());
 
   useEffect(() => {
@@ -112,32 +108,6 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
     }
   }, [rankings]);
 
-  const scrollToTeam = useCallback((teamId: string) => {
-    const element = teamRefs.current.get(teamId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setHighlightedTeamId(teamId);
-      setTimeout(() => setHighlightedTeamId(null), 2000);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- teamRefs is a stable ref from useLazyRef
-  }, []);
-
-  const handleFindMyTeam = useCallback(() => {
-    if (myTeamId) {
-      scrollToTeam(myTeamId);
-    } else {
-      setSearchOpen(true);
-    }
-  }, [myTeamId, scrollToTeam]);
-
-  const handleTeamSelect = useCallback(
-    (teamId: string) => {
-      setSearchOpen(false);
-      setTimeout(() => scrollToTeam(teamId), 150);
-    },
-    [scrollToTeam]
-  );
-
   const toggleViewMode = (value: string) => {
     if (!value) return;
     const isDetailed = value === 'detailed';
@@ -162,8 +132,6 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
           ),
     [rankings, showUnified]
   );
-
-  const { ref: sectionRef, inView: isSectionVisible } = useInView({ threshold: 0.05 });
 
   return (
     <div className="font-inter">
@@ -239,7 +207,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
         </div>
       )}
 
-      <div className="space-y-2" ref={sectionRef}>
+      <div className="space-y-2">
         {sortHistoryDivisions(Object.entries(rankingsByDivision)).map(
           ([displayDivision, divisionRankings]) => (
             <div key={displayDivision} className="space-y-1">
@@ -303,32 +271,6 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
           )
         )}
       </div>
-
-      {/* Find My Team FAB — only visible when standings section is in viewport */}
-      {isSectionVisible && (
-        <Button
-          variant="default"
-          size="sm"
-          className={cn(
-            'fixed bottom-24 right-4 z-50 rounded-full shadow-lg',
-            isWinterTheme
-              ? 'bg-frost-primary hover:bg-frost-primary/90 text-white'
-              : 'bg-primary hover:bg-primary/90'
-          )}
-          onClick={handleFindMyTeam}
-          aria-label={myTeamId ? 'Scroll to my team' : 'Search for a team'}
-        >
-          {myTeamId ? <User className="size-4" /> : <Search className="size-4" />}
-        </Button>
-      )}
-
-      {/* Team Search Drawer */}
-      <TeamSearchDrawer
-        open={searchOpen}
-        onOpenChange={setSearchOpen}
-        rankings={rankings}
-        onTeamSelect={handleTeamSelect}
-      />
     </div>
   );
 };
