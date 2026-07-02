@@ -64,7 +64,6 @@ describe('useMatchDelete', () => {
     setMatches = vi.fn();
     setDeleteMatchId = vi.fn();
     setIsDeleting = vi.fn();
-    mockDeleteMatchWithStatsReversal.mockResolvedValue(undefined);
   });
 
   it('returns false and does nothing when no match is selected for deletion', async () => {

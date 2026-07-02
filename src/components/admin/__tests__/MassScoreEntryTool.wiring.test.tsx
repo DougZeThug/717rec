@@ -19,11 +19,11 @@ vi.mock('@/hooks/matches/useMatchSubmission', () => ({
 }));
 
 vi.mock('@/hooks/matches/updates/utils/statReversalUtils', () => ({
-  reverseTeamStats: vi.fn().mockResolvedValue(undefined),
+  reverseTeamStats: vi.fn(),
 }));
 
 vi.mock('@/hooks/matches/utils/queryCacheUtils', () => ({
-  invalidateMatchRelatedQueries: vi.fn().mockResolvedValue(undefined),
+  invalidateMatchRelatedQueries: vi.fn(),
 }));
 
 vi.mock('@/components/admin/mass-score-entry/hooks/fetching/useMatchesFetching', () => ({

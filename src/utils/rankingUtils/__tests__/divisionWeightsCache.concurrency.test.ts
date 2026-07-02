@@ -15,7 +15,7 @@ describe('divisionWeightsCache concurrency and error handling', () => {
   });
 
   it('shares one in-flight fetch between concurrent callers', async () => {
-    let resolveFetch: (value: { id: string; division_weight: number }[]) => void = () => {};
+    let resolveFetch: (value: { id: string; division_weight: number }[]) => void = vi.fn();
     vi.mocked(DivisionService.fetchDivisionWeightsMap).mockReturnValue(
       new Promise((resolve) => {
         resolveFetch = resolve;

@@ -16,8 +16,6 @@ describe('reverseTeamStats', () => {
   });
 
   it('delegates to the service with winner/loser ids and game wins in order', async () => {
-    mockReverseTeamStatsService.mockResolvedValue(undefined);
-
     await reverseTeamStats('winner-1', 'loser-1', 2, 1);
 
     expect(mockReverseTeamStatsService).toHaveBeenCalledTimes(1);

@@ -41,8 +41,9 @@ const getInjectedScript = (): HTMLScriptElement | null =>
 describe('useBracketsViewerScript', () => {
   beforeEach(() => {
     vi.resetModules();
-    vi.clearAllMocks();
-    mocks.loadBracketStyles.mockResolvedValue(undefined);
+    // resetAllMocks (not clearAllMocks) so a mockRejectedValue set in one
+    // test cannot leak its rejection into the next test's default behavior.
+    vi.resetAllMocks();
     delete windowWithViewer.bracketsViewer;
     document.querySelectorAll(SCRIPT_SELECTOR).forEach((el) => el.remove());
   });

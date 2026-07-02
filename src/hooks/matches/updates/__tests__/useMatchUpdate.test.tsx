@@ -72,8 +72,6 @@ describe('useMatchUpdate — Case 1 regression', () => {
       team1_game_wins: 2,
       team2_game_wins: 1,
     });
-    mockReverseTeamStats.mockResolvedValue(undefined);
-    mockUpsertTeamSeasonStats.mockResolvedValue(undefined);
   });
 
   it('calls upsertTeamSeasonStats after reverseTeamStats when completed → incomplete', async () => {
@@ -186,8 +184,6 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUpdateMatch.mockResolvedValue(completedDbRow);
-    mockReverseTeamStats.mockResolvedValue(undefined);
-    mockUpsertTeamSeasonStats.mockResolvedValue(undefined);
     mockUpdateTeamRecords.mockResolvedValue(true);
   });
 

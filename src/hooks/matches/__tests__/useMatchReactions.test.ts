@@ -180,7 +180,6 @@ describe('useMatchReactions', () => {
   it('adds a new reaction when the user has not reacted with that emoji', async () => {
     mockUser.current = { id: 'user-1' };
     mockFetchReactions.mockResolvedValue([reaction('r1', 'user-1', '👏')]);
-    mockInsertReaction.mockResolvedValue(undefined);
 
     const { result } = renderHook(() => useMatchReactions('match-1'));
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -196,7 +195,6 @@ describe('useMatchReactions', () => {
   it('removes an existing reaction when the user toggles the same emoji', async () => {
     mockUser.current = { id: 'user-1' };
     mockFetchReactions.mockResolvedValue([reaction('r1', 'user-1', '🔥')]);
-    mockDeleteReaction.mockResolvedValue(undefined);
 
     const { result } = renderHook(() => useMatchReactions('match-1'));
     await waitFor(() => expect(result.current.reactions).toHaveLength(1));

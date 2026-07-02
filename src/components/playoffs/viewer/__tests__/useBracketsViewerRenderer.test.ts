@@ -625,7 +625,7 @@ describe('useBracketsViewerRenderer', () => {
 
   describe('unmount cancellation', () => {
     it('does not transform or render when unmounted before fonts are ready', async () => {
-      let resolveFonts: () => void = () => {};
+      let resolveFonts: () => void = vi.fn();
       fontsReady = new Promise<void>((resolve) => {
         resolveFonts = resolve as () => void;
       });
