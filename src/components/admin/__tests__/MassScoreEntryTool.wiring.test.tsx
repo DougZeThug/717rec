@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { MatchWithTeams } from '../types';
+import { MatchWithTeams } from '../mass-score-entry/types';
 
 const mockHandleSubmitScore = vi.fn();
 const mockFetchMatches = vi.fn();

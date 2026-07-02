@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { MatchWithTeams } from '../types';
+import { MatchWithTeams } from '../mass-score-entry/types';
 
 // ---------------------------------------------------------------------------
 // Shared spies for the lowest-level seams we mock. Everything else (the real

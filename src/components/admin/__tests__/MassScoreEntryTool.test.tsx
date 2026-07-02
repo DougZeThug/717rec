@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
@@ -82,6 +83,15 @@ vi.mock('framer-motion', () => ({
 
 import MassScoreEntryTool from '../MassScoreEntryTool';
 
+const renderTool = () => {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MassScoreEntryTool />
+    </QueryClientProvider>
+  );
+};
+
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
 describe('MassScoreEntryTool', () => {
@@ -97,7 +107,7 @@ describe('MassScoreEntryTool', () => {
         matches: [{ id: 'm1', isEdited: false, isValid: true }],
       };
 
-      render(<MassScoreEntryTool />);
+      renderTool();
 
       expect(screen.getByRole('button', { name: /submit all changes/i })).toBeDisabled();
     });
@@ -108,7 +118,7 @@ describe('MassScoreEntryTool', () => {
         matches: [{ id: 'm1', isEdited: true, isValid: false }],
       };
 
-      render(<MassScoreEntryTool />);
+      renderTool();
 
       expect(screen.getByRole('button', { name: /submit all changes/i })).toBeDisabled();
     });
@@ -122,7 +132,7 @@ describe('MassScoreEntryTool', () => {
         ],
       };
 
-      render(<MassScoreEntryTool />);
+      renderTool();
 
       expect(screen.getByRole('button', { name: /submit \(2\) changes/i })).toBeEnabled();
     });
@@ -134,7 +144,7 @@ describe('MassScoreEntryTool', () => {
         matches: [{ id: 'm1', isEdited: true, isValid: true }],
       };
 
-      render(<MassScoreEntryTool />);
+      renderTool();
 
       // Button text changes to "Processing..." when submitting
       expect(screen.getByRole('button', { name: /processing/i })).toBeDisabled();
@@ -146,7 +156,7 @@ describe('MassScoreEntryTool', () => {
         matches: [{ id: 'm1', isEdited: true, isValid: true }],
       };
 
-      render(<MassScoreEntryTool />);
+      renderTool();
 
       await userEvent.click(screen.getByRole('button', { name: /submit \(1\) changes/i }));
 
@@ -162,7 +172,7 @@ describe('MassScoreEntryTool', () => {
         filters: { date: filterDate, bracketId: undefined },
       };
 
-      render(<MassScoreEntryTool />);
+      renderTool();
 
       expect(screen.getByText('Date:')).toBeInTheDocument();
       expect(screen.getByText(filterDate.toLocaleDateString())).toBeInTheDocument();
@@ -175,19 +185,19 @@ describe('MassScoreEntryTool', () => {
         filters: { date: undefined, bracketId: 'bracket-1' },
       };
 
-      render(<MassScoreEntryTool />);
+      renderTool();
 
       expect(screen.getByText('Bracket:')).toBeInTheDocument();
       expect(screen.getByText('Spring Playoffs')).toBeInTheDocument();
     });
 
     it('does not show filter tags when no filters are active', () => {
-      render(<MassScoreEntryTool />);
+      renderTool();
       expect(screen.queryByText('Date:')).not.toBeInTheDocument();
     });
 
     it('calls clearFilters when toolbar clear button is clicked', async () => {
-      render(<MassScoreEntryTool />);
+      renderTool();
       await userEvent.click(screen.getByTestId('toolbar-clear'));
       expect(mockClearFilters).toHaveBeenCalledTimes(1);
     });
@@ -200,20 +210,20 @@ describe('MassScoreEntryTool', () => {
         failedMatches: ['m1', 'm2'],
       };
 
-      render(<MassScoreEntryTool />);
+      renderTool();
 
       // ErrorAlert shows "2 matches failed to update"
       expect(screen.getByText(/2 matches failed to update/i)).toBeInTheDocument();
     });
 
     it('does not render error alert when no failed matches', () => {
-      render(<MassScoreEntryTool />);
+      renderTool();
       expect(screen.queryByText(/failed to update/i)).not.toBeInTheDocument();
     });
   });
 
   it('renders the MatchesTable component', () => {
-    render(<MassScoreEntryTool />);
+    renderTool();
     expect(screen.getByTestId('matches-table')).toBeInTheDocument();
   });
 });
