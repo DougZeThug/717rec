@@ -30,9 +30,22 @@ per-file percentages with line-by-line highlighting.
 ## End-to-end tests (Playwright)
 
 E2E specs live in `e2e/` (separate from Vitest, which only picks up
-`__tests__/` and `tests/` folders). A single smoke spec at
-`e2e/smoke.spec.ts` loads the app and verifies the main shell and primary
-navigation render.
+`__tests__/` and `tests/` folders). There are currently six specs:
+
+| Spec                        | What it checks                                                          |
+| --------------------------- | ----------------------------------------------------------------------- |
+| `smoke.spec.ts`             | App loads; main shell and primary navigation render                     |
+| `score-submission.spec.ts`  | Public score-submission workflow in the browser                         |
+| `admin-access.spec.ts`      | Admin route gating for admin vs non-admin users                         |
+| `admin-mass-score.spec.ts`  | Admin mass score entry flow                                             |
+| `playoff-bracket.spec.ts`   | Bracket advances semifinal winners into the final and crowns a champion |
+| `a11y.spec.ts`              | axe WCAG 2 A/AA scan of six public routes (runs in its own workflow)    |
+
+**Honest caveat:** these specs intercept and mock all Supabase network calls
+(`page.route`) — they exercise the real UI in a real browser, but against
+canned data, never a live backend or real RLS policies. They are best thought
+of as browser-level integration tests, not true end-to-end tests. Anything
+that depends on actual database behavior still needs the manual checks below.
 
 ```bash
 npm ci                # install the exact npm dependencies from package-lock.json
@@ -67,11 +80,14 @@ start. Artifacts (HTML report, traces, screenshots) are written to
 
 ### CI status: non-blocking
 
-The `E2E (smoke)` GitHub Actions workflow runs on every PR but is configured
-with `continue-on-error: true`, so failures do **not** block merges while the
-suite stabilizes. To make it a required gate, remove `continue-on-error: true`
-from `.github/workflows/e2e.yml` and add the check to the branch protection
-rules.
+The `E2E (smoke)` GitHub Actions workflow (`.github/workflows/e2e.yml`) runs
+on every PR but is configured with `continue-on-error: true`, so failures do
+**not** block merges while the suite stabilizes. To make it a required gate,
+remove `continue-on-error: true` from `.github/workflows/e2e.yml` and add the
+check to the branch protection rules.
+
+The a11y scan is the exception: `.github/workflows/a11y.yml` runs
+`e2e/a11y.spec.ts` as a **blocking** gate on every PR.
 
 
 ## Coverage troubleshooting (hangs/timeouts)
@@ -118,20 +134,43 @@ Do not use `pnpm` or `yarn` — neither is installed.
 
 ## Current baseline
 
-Last measured: 2026-06-24.
+Last measured: 2026-07-02.
 
 | Metric     | Covered |
 | ---------- | ------- |
-| Lines      | 44.77%  |
-| Statements | 43.98%  |
-| Functions  | 36.49%  |
-| Branches   | 35.45%  |
+| Lines      | 53.27%  |
+| Statements | 52.07%  |
+| Functions  | 46.75%  |
+| Branches   | 43.34%  |
 
-The overall number is low because most React components and UI pages are not
-yet under test. The logic-heavy areas (utils, scheduling, rankings, career
-math) are in much better shape — see the per-area table below.
+The overall number is moderate because component coverage is very uneven —
+several admin and display folders have no tests at all. The logic-heavy areas
+(utils, scheduling, rankings, career math) and the service layer are in much
+better shape — see the per-area table below.
 
 Full baseline output is saved to `coverage-baseline.txt` at the repo root.
+
+This baseline exists to prevent future changes from silently lowering
+confidence, not to claim the app is comprehensively tested. It is not.
+
+### Automated vs manual confidence
+
+Be precise about which kind of confidence a claim rests on:
+
+- **Verified by automated tests (runs on every PR):** services/data-access
+  layer, ranking/career/prediction/playoff math, scheduling algorithms,
+  bracket seeding, error handling, and a sample of hooks, pages, and admin
+  components. The axe accessibility scan of public routes is also a blocking
+  automated gate.
+- **Automated but non-blocking:** the Playwright browser suite in `e2e/`
+  (smoke, score submission, admin access, mass score entry, playoff bracket).
+  It runs on every PR but failures do not block merges, and it mocks all
+  Supabase traffic.
+- **Manual only — no automated coverage:** anything that executes inside the
+  database (RLS policies, Postgres RPCs, triggers, migrations), real
+  authentication against Supabase, image upload/storage, realtime
+  subscriptions, and most of the visual component layer. Confidence here
+  comes from the manual checks documented below, nothing else.
 
 ## Coverage threshold policy (enforced)
 
@@ -143,12 +182,21 @@ Vitest coverage thresholds are now enforced in CI and locally via
 Global thresholds in `vitest.config.ts` are pinned a few points below the
 current baseline:
 
-- Lines: **42%**
-- Statements: **41%**
-- Functions: **34%**
-- Branches: **33%**
+- Lines: **49%**
+- Statements: **48%**
+- Functions: **41%**
+- Branches: **39%**
 
 If a PR drops any global metric below those numbers, the coverage job fails.
+
+**Scope caveat:** the PR gate (`npm run test:coverage:ci`, which sets
+`VITEST_CI_COVERAGE=1`) narrows the coverage `include` to `src/services/**`,
+`src/hooks/**`, and `src/utils/**` only. So in CI the "global" thresholds are
+measured against those three folders — not the whole app. The full-scope
+numbers for all of `src/` come from `npm run test:coverage` and are recorded
+in the baseline table above. Numbers in `vitest.config.ts` are authoritative;
+if this doc and the config disagree, the config wins and this doc needs a
+sync.
 
 ### Stage 2 (active now): folder thresholds
 
@@ -156,7 +204,7 @@ These floors sit a few points below current measured coverage for each area, so
 they catch regressions without blocking normal work:
 
 - `src/services/**`: 72% lines / 71% statements / 72% functions / 58% branches
-- `src/hooks/**`: 36% lines / 36% statements / 29% functions / 27% branches
+- `src/hooks/**`: 44% lines / 43% statements / 38% functions / 34% branches
 - `src/utils/**`: 67% lines / 66% statements / 64% functions / 55% branches
 
 These values are below current measured coverage for those areas and are meant
@@ -164,6 +212,16 @@ as a floor, not a final target.
 
 ### Stage 2 ratchet history
 
+- **2026-07-02**: Documentation audit. Re-synced this doc with reality: the
+  late-June ratchets (below) had raised enforced thresholds without updating
+  this file, the E2E section still claimed a single smoke spec (there are
+  six), and the baseline table was one ratchet stale. No thresholds changed
+  in this pass — docs only, plus removal of a dead `COVERAGE_CRITICAL_ONLY`
+  env var from two package.json scripts (nothing reads it).
+- **2026-06-25 → 06-30**: Two test-expansion ratchets ("add unit tests for 13
+  hooks", "raise page + hook coverage") lifted global gates from 42/41/34/33
+  to **49/48/41/39** (lines/statements/functions/branches) and hooks folder
+  floors from 36/36/29/27 to **44/43/38/34**.
 - **2026-06-24**: Refreshed the baseline from the latest passing fast coverage run
   (285 files / 2318 tests in 429.38s) and raised global plus high-risk folder
   floors by a small margin. The new gates remain below measured coverage and
@@ -184,7 +242,9 @@ We will keep incrementing thresholds over time, focusing on:
 3. key util domains (ranking, career, predictions, playoffs, scheduling)
 
 Each threshold increase should happen in a dedicated PR with rationale in the
-description and an updated table in this file.
+description and an updated table in this file. The broader (non-threshold)
+improvement plan lives in the "Next ratchet plan" section at the end of this
+document.
 
 ### Ownership expectations
 
@@ -214,34 +274,40 @@ run `npm run test:coverage:sync-docs`.
 
 ## Coverage by area
 
-Line coverage snapshot by folder. Targets are what we want each area to reach
+Line coverage snapshot by folder, measured 2026-07-02 from
+`coverage/coverage-summary.json`. Targets are what we want each area to reach
 over time; anything already above target is just "keep it green".
 
 | Area                               | Lines today | Target | Notes                                        |
 | ---------------------------------- | ----------- | ------ | -------------------------------------------- |
-| `src/services/**`                  | 74%         | 70%    | Data access layer — on target                |
+| `src/services/**`                  | 75%         | 70%    | Data access layer — on target                |
 | `src/services/auth`                | 100%        | 70%    | On target                                    |
-| `src/hooks/**`                     | 37%         | 60%    | React Query hooks wrapping services          |
-| `src/hooks/matches`                | 21%         | 60%    | Coverage spread across many small hooks      |
-| `src/utils/**` (aggregate)         | 69%         | 85%    | Strong gains from logic-heavy utility tests  |
+| `src/hooks/**`                     | 46%         | 60%    | React Query hooks wrapping services          |
+| `src/hooks/matches`                | 47%         | 60%    | Coverage spread across many small hooks      |
+| `src/utils/**` (aggregate)         | 70%         | 85%    | Strong gains from logic-heavy utility tests  |
 | `src/utils/career`                 | 89%         | 85%    | On target                                    |
-| `src/utils/rankingUtils`           | 96%         | 85%    | On target                                    |
-| `src/utils/predictions`            | 95%         | 85%    | On target                                    |
+| `src/utils/rankingUtils`           | 74%         | 85%    | Fell below target as new code landed         |
+| `src/utils/predictions`            | 96%         | 85%    | On target                                    |
 | `src/utils/playoffs`               | 100%        | 85%    | On target                                    |
 | `src/utils/matchUtils`             | 100%        | 85%    | On target                                    |
 | `src/utils/brackets/mappers`       | 100%        | 85%    | On target                                    |
 | `src/utils/brackets/validators`    | 100%        | 85%    | On target                                    |
 | `src/utils/auth`                   | 90%         | 85%    | On target                                    |
-| `src/utils/autoSchedule`           | 77%         | 85%    | Complex scheduling algorithms — gradual      |
-| `src/utils/autoSchedule/dualBlock` | 89%         | 85%    | On target                                    |
-| `src/utils/scheduling/greedy`      | 71%         | 85%    | `swapRepair` improved but still below target |
-| `src/utils/colors`                 | 89%         | 60%    | On target                                    |
-| `src/utils/timezone`               | 87%         | 60%    | On target                                    |
+| `src/utils/autoSchedule`           | 66%         | 85%    | Complex scheduling algorithms — gradual      |
+| `src/utils/autoSchedule/dualBlock` | 85%         | 85%    | On target                                    |
+| `src/utils/scheduling/greedy`      | 70%         | 85%    | `swapRepair` improved but still below target |
+| `src/utils/colors`                 | 91%         | 60%    | On target                                    |
+| `src/utils/timezone`               | 90%         | 60%    | On target                                    |
 | `src/utils/teamDetailsUtils`       | 73%         | 60%    | On target                                    |
 | `src/utils/teamStatsUtils`         | 100%        | 60%    | On target                                    |
-| `src/pages/**`                     | 33%         | 40%    | Mostly integration-style tests               |
-| `src/components/**` (non-UI)       | 10%         | 40%    | Component coverage is still lowest priority  |
-| `src/types`                        | 77%         | —      | Types only — no target                       |
+| `src/pages/**`                     | 67%         | 40%    | Big gains from late-June page-test ratchet   |
+| `src/components/**` (non-UI)       | 41%         | 40%    | Improved, but very uneven — many 0% folders  |
+| `src/types`                        | 82%         | —      | Types only — no target                       |
+
+This table is a manual snapshot and drifts as code lands. Only the top-level
+baseline table above is auto-synced by `npm run test:coverage:sync-docs`; when
+per-area numbers matter for a decision, recompute them from a fresh
+`coverage/coverage-summary.json` rather than trusting this table.
 
 ## What's tested today
 
@@ -320,6 +386,48 @@ artifact DeepSource expects in this repo: LCOV at
 Use `npm run test:coverage` for fast local/CI gating and
 `npm run test:coverage:full` for deep local diagnostics with HTML output.
 
+## PR baseline checklist
+
+Before merging any PR, confirm:
+
+- [ ] Unit/integration tests pass (`npm test` — CI runs this in `test.yml`)
+- [ ] Typecheck passes (`npm run typecheck`)
+- [ ] Build passes (`npm run build`)
+- [ ] Coverage thresholds hold (`npm run test:coverage:ci` — enforced in CI)
+- [ ] a11y scan passes (blocking CI gate)
+- [ ] Critical user flows manually checked when the change touches them
+      (home page, schedule, standings, teams)
+- [ ] Admin score submission flow checked when score/match logic changed
+- [ ] Bracket/playoff flow checked when bracket, seeding, or playoff code
+      changed
+- [ ] Supabase migration / RLS / RPC changes reviewed extra carefully — these
+      have **no automated coverage**; run the relevant manual checks below
+- [ ] No new `any` usage unless justified in the PR description
+- [ ] No docs claiming test coverage that does not exist — if you touch
+      thresholds or add/remove suites, update this file in the same PR
+
+## Manual QA expectations
+
+Some things can only be validated by a human clicking through the app,
+because no automated test exercises a real backend:
+
+- **Every release-worthy change:** load the home page, schedule, standings,
+  and teams pages on desktop and mobile widths; confirm no blank sections or
+  console errors.
+- **Score/match changes:** submit a score as admin (single and mass entry)
+  and confirm standings and team records update.
+- **Playoff changes:** open an active bracket, advance a match, and confirm
+  the bracket redraws correctly through the final round.
+- **Database changes (migrations, RLS, RPCs, triggers):** run the relevant
+  staging checks — see "Manual checks: overlapping seasons" below for the
+  season-workflow example. There is no automated safety net here.
+- **Auth changes:** log in/out with a real account, confirm admin routes stay
+  blocked for non-admins.
+
+When you complete manual QA for a PR, say so in the PR description ("manually
+verified X and Y") so reviewers know which confidence is human-verified
+rather than assumed.
+
 ## Manual checks: overlapping seasons
 
 The three new Postgres RPCs and the `ensure_single_playoffs_active_season`
@@ -342,3 +450,47 @@ RPC wrappers, run this 4-step smoke check in a staging environment:
    the partial-archived season. It should flip to
    `is_active=false, is_archived=true, playoffs_active=false`, snapshot team
    details, and award champion badges in the relevant divisions.
+
+## Next ratchet plan
+
+Realistic next improvements, in tiers. Each tier should be fully true before
+moving to the next; don't skip ahead and claim higher-tier confidence.
+
+### Tier 1 — Minimum protection (where we are today)
+
+Already in place and enforced:
+
+- Typecheck must pass (CI: `test.yml`)
+- Build must pass (CI: `test.yml`)
+- Existing tests must pass (CI: `test.yml`)
+- Coverage floors enforced on services/hooks/utils (CI: `coverage-threshold.yml`)
+- a11y scan blocking on public routes (CI: `a11y.yml`)
+- Manual smoke expectations documented (this file)
+
+### Tier 2 — Core app confidence (next)
+
+- Extend tests for score submission logic
+  (`src/components/admin/mass-score-entry/hooks/` sits at ~46% lines with
+  several files at 0% — submission, updates, game-wins handling)
+- Keep standings/ranking calculation tests green and extend to the standings
+  *display* components (`src/components/stats/**` is ~23% covered) and pull
+  `src/utils/rankingUtils` back above its 85% target (currently 74%)
+- Add tests for match completion and winner/loser handling at the hook level
+  (`src/hooks/matches` is ~47%, spread unevenly across many small hooks)
+- Add regression tests for late-round playoff/bracket display issues (the
+  seeding algorithm and `BracketView` are tested, but the viewer/renderer
+  layer `src/components/playoffs/viewer/` is only ~25% covered)
+- Make the Playwright E2E workflow a blocking gate once it has been stable
+  for a few weeks (remove `continue-on-error` from `e2e.yml`)
+
+### Tier 3 — Higher confidence (later)
+
+- Component tests for the remaining admin flows (divisions, timeslots, and
+  requests are all at 0% today)
+- Integration tests against mocked Supabase data for multi-step admin
+  workflows (season rollover, blind draw)
+- E2E smoke coverage for public schedule, standings, teams, and admin score
+  entry against a seeded staging backend (today's E2E mocks all network
+  traffic, so RLS and RPC behavior is never exercised)
+- Automated checks for database code (pgTAP or a scripted staging smoke) so
+  the "manual only" list above starts shrinking

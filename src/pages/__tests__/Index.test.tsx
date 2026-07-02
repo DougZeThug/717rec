@@ -30,6 +30,7 @@ vi.mock('@/hooks/useSeasonParticipation', () => ({
 vi.mock('@/hooks/useMyNextMatch', () => ({ useMyNextMatch: () => mockUseMyNextMatch() }));
 vi.mock('@/hooks/useMobile', () => ({ useIsMobile: () => mockUseIsMobile() }));
 
+vi.mock('@/components/seo/SeoHead', () => ({ default: () => null }));
 vi.mock('@/components/layout/PageLayout', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));

@@ -85,7 +85,7 @@ export const ExampleService = {
   sandboxed shells. Real values from `.env` still take precedence when present.
 
 - **Don't run bare `npm test` in agent shells with a short timeout.** The full
-  suite is ~3 min in parallel locally but routinely exceeds 10-min sandbox
+  suite is ~4 min in parallel locally but routinely exceeds 10-min sandbox
   caps. Use `npm run test:file -- <path>` for iteration and
   `npm run test:coverage` as the fast full-suite gate.
 
@@ -94,8 +94,8 @@ export const ExampleService = {
   - Fast gate with coverage → `npm run test:coverage` (parallel; fastest full pass)
   - Diagnose a slow or stuck run → `npm run test:debug` (serial + verbose, 10-min cap;
     surfaces the last-active file if anything truly stalls)
-  - Whole suite → `npm test`. It is large (~285 files / ~2.3k tests) and takes
-    **~3 minutes in parallel** — that is expected, **not** a hang. Reserve it for CI or
+  - Whole suite → `npm test`. It is large (~370 files / ~2.7k tests) and takes
+    **~4 minutes in parallel** — that is expected, **not** a hang. Reserve it for CI or
     final checks. Running it *serially* (e.g. `--maxWorkers=1 --fileParallelism=false`)
     drops that parallelism and can take several times longer, which is what previously
     looked like a hang.
