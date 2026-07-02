@@ -116,4 +116,272 @@ describe('useMatchUpdate — Case 1 regression', () => {
     // updateTeamRecords (Case 2 path) should NOT run when match is now incomplete
     expect(mockUpdateTeamRecords).not.toHaveBeenCalled();
   });
+
+  it('skips stat reversal when the previously completed match had no recorded winner/loser', async () => {
+    const noWinnerMatch = {
+      ...completedMatch,
+      winnerId: undefined,
+      loserId: undefined,
+    } as unknown as Match;
+
+    const { result } = renderHook(
+      () =>
+        useMatchUpdate({
+          matches: [noWinnerMatch],
+          setMatches: vi.fn(),
+          editingMatch: noWinnerMatch,
+          setEditingMatch: vi.fn(),
+        }),
+      { wrapper }
+    );
+
+    await act(async () => {
+      await result.current.handleUpdateMatch(
+        { ...noWinnerMatch, iscompleted: false } as unknown as Omit<Match, 'id'>,
+        [] as Team[]
+      );
+    });
+
+    expect(mockReverseTeamStats).not.toHaveBeenCalled();
+    expect(mockUpsertTeamSeasonStats).not.toHaveBeenCalled();
+  });
+});
+
+describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
+  const incompleteMatch: Match = {
+    id: 'm1',
+    team1Id: 't1',
+    team2Id: 't2',
+    date: '2026-01-01',
+    location: 'Court',
+    iscompleted: false,
+  } as unknown as Match;
+
+  const completedDbRow = {
+    id: 'm1',
+    team1_id: 't1',
+    team2_id: 't2',
+    date: '2026-01-01',
+    location: 'Court',
+    iscompleted: true,
+    team1_score: 1,
+    team2_score: 0,
+    winner_id: 't1',
+    loser_id: 't2',
+    team1_game_wins: 2,
+    team2_game_wins: 1,
+  };
+
+  const completedMatchData = {
+    ...incompleteMatch,
+    iscompleted: true,
+    team1Score: 1,
+    team2Score: 0,
+    winnerId: 't1',
+    loserId: 't2',
+    team1_game_wins: 2,
+    team2_game_wins: 1,
+  } as unknown as Omit<Match, 'id'>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockUpdateMatch.mockResolvedValue(completedDbRow);
+    mockReverseTeamStats.mockResolvedValue(undefined);
+    mockUpsertTeamSeasonStats.mockResolvedValue(undefined);
+    mockUpdateTeamRecords.mockResolvedValue(true);
+  });
+
+  it('applies winner/loser team records when an incomplete match is completed (no reversal)', async () => {
+    const setMatches = vi.fn();
+    const { result } = renderHook(
+      () =>
+        useMatchUpdate({
+          matches: [incompleteMatch],
+          setMatches,
+          editingMatch: incompleteMatch,
+          setEditingMatch: vi.fn(),
+        }),
+      { wrapper }
+    );
+
+    let outcome = false;
+    await act(async () => {
+      outcome = await result.current.handleUpdateMatch(completedMatchData, [] as Team[]);
+    });
+
+    expect(outcome).toBe(true);
+    // Winner id, loser id, teams, then winner's and loser's game wins
+    expect(mockUpdateTeamRecords).toHaveBeenCalledWith('t1', 't2', [], 2, 1);
+    expect(mockReverseTeamStats).not.toHaveBeenCalled();
+    expect(mockUpsertTeamSeasonStats).not.toHaveBeenCalled();
+    // State updated with the DB-derived winner/loser
+    expect(setMatches).toHaveBeenCalledWith([
+      expect.objectContaining({ id: 'm1', winnerId: 't1', loserId: 't2', iscompleted: true }),
+    ]);
+  });
+
+  it('reverses old stats before applying new records when the winner changes on a completed match', async () => {
+    const previouslyCompleted = {
+      ...incompleteMatch,
+      iscompleted: true,
+      winnerId: 't2',
+      loserId: 't1',
+      team1_game_wins: 1,
+      team2_game_wins: 2,
+    } as unknown as Match;
+
+    const { result } = renderHook(
+      () =>
+        useMatchUpdate({
+          matches: [previouslyCompleted],
+          setMatches: vi.fn(),
+          editingMatch: previouslyCompleted,
+          setEditingMatch: vi.fn(),
+        }),
+      { wrapper }
+    );
+
+    let outcome = false;
+    await act(async () => {
+      outcome = await result.current.handleUpdateMatch(completedMatchData, [] as Team[]);
+    });
+
+    expect(outcome).toBe(true);
+    // Old stats reversed: previous winner t2 had 2 game wins, loser t1 had 1
+    expect(mockReverseTeamStats).toHaveBeenCalledWith('t2', 't1', 2, 1);
+    // New records applied for the new winner t1
+    expect(mockUpdateTeamRecords).toHaveBeenCalledWith('t1', 't2', [], 2, 1);
+    // Reversal must happen before the new records are applied
+    expect(mockReverseTeamStats.mock.invocationCallOrder[0]).toBeLessThan(
+      mockUpdateTeamRecords.mock.invocationCallOrder[0]
+    );
+  });
+
+  it('does not touch stats when a completed match is edited without winner/score changes', async () => {
+    const previouslyCompleted = {
+      ...incompleteMatch,
+      iscompleted: true,
+      winnerId: 't1',
+      loserId: 't2',
+      team1_game_wins: 2,
+      team2_game_wins: 1,
+    } as unknown as Match;
+
+    const { result } = renderHook(
+      () =>
+        useMatchUpdate({
+          matches: [previouslyCompleted],
+          setMatches: vi.fn(),
+          editingMatch: previouslyCompleted,
+          setEditingMatch: vi.fn(),
+        }),
+      { wrapper }
+    );
+
+    let outcome = false;
+    await act(async () => {
+      // Same winner/loser/game wins — only e.g. location would differ
+      outcome = await result.current.handleUpdateMatch(
+        { ...completedMatchData, location: 'New Court' } as unknown as Omit<Match, 'id'>,
+        [] as Team[]
+      );
+    });
+
+    expect(outcome).toBe(true);
+    expect(mockReverseTeamStats).not.toHaveBeenCalled();
+    expect(mockUpdateTeamRecords).not.toHaveBeenCalled();
+  });
+
+  it('auto-recovers via upsertTeamSeasonStats and returns false when team records fail', async () => {
+    mockUpdateTeamRecords.mockResolvedValue(false);
+
+    const { result } = renderHook(
+      () =>
+        useMatchUpdate({
+          matches: [incompleteMatch],
+          setMatches: vi.fn(),
+          editingMatch: incompleteMatch,
+          setEditingMatch: vi.fn(),
+        }),
+      { wrapper }
+    );
+
+    let outcome = true;
+    await act(async () => {
+      outcome = await result.current.handleUpdateMatch(completedMatchData, [] as Team[]);
+    });
+
+    expect(outcome).toBe(false);
+    expect(mockUpsertTeamSeasonStats).toHaveBeenCalledTimes(1);
+  });
+
+  it('still returns false (without throwing) when the reconciliation upsert also fails', async () => {
+    mockUpdateTeamRecords.mockResolvedValue(false);
+    mockUpsertTeamSeasonStats.mockRejectedValue(new Error('rpc down'));
+
+    const { result } = renderHook(
+      () =>
+        useMatchUpdate({
+          matches: [incompleteMatch],
+          setMatches: vi.fn(),
+          editingMatch: incompleteMatch,
+          setEditingMatch: vi.fn(),
+        }),
+      { wrapper }
+    );
+
+    let outcome = true;
+    await act(async () => {
+      outcome = await result.current.handleUpdateMatch(completedMatchData, [] as Team[]);
+    });
+
+    expect(outcome).toBe(false);
+  });
+
+  it('returns false when the match update itself throws and leaves state untouched', async () => {
+    mockUpdateMatch.mockRejectedValue(new Error('update failed'));
+    const setMatches = vi.fn();
+
+    const { result } = renderHook(
+      () =>
+        useMatchUpdate({
+          matches: [incompleteMatch],
+          setMatches,
+          editingMatch: incompleteMatch,
+          setEditingMatch: vi.fn(),
+        }),
+      { wrapper }
+    );
+
+    let outcome = true;
+    await act(async () => {
+      outcome = await result.current.handleUpdateMatch(completedMatchData, [] as Team[]);
+    });
+
+    expect(outcome).toBe(false);
+    expect(setMatches).not.toHaveBeenCalled();
+    expect(mockUpdateTeamRecords).not.toHaveBeenCalled();
+    expect(result.current.isUpdating).toBe(false);
+  });
+
+  it('returns false without calling the service when no match is being edited', async () => {
+    const { result } = renderHook(
+      () =>
+        useMatchUpdate({
+          matches: [incompleteMatch],
+          setMatches: vi.fn(),
+          editingMatch: undefined,
+          setEditingMatch: vi.fn(),
+        }),
+      { wrapper }
+    );
+
+    let outcome = true;
+    await act(async () => {
+      outcome = await result.current.handleUpdateMatch(completedMatchData, [] as Team[]);
+    });
+
+    expect(outcome).toBe(false);
+    expect(mockUpdateMatch).not.toHaveBeenCalled();
+  });
 });
