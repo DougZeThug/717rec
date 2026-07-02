@@ -3,11 +3,9 @@ import React from 'react';
 import { FormMessage } from '@/components/ui/form';
 import { TeamLogo } from '@/components/ui/team';
 import { useTeamRankings } from '@/hooks/useTeamRankings';
-import { Team } from '@/types';
 import { teamLog } from '@/utils/logger';
 
 interface TeamSelectionListProps {
-  teams?: Team[];
   selectedTeams: string[];
   selectedTeamIds?: string[];
   onTeamToggle: (teamId: string) => void;
