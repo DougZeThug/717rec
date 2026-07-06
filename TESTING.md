@@ -467,26 +467,31 @@ Already in place and enforced:
 - a11y scan blocking on public routes (CI: `a11y.yml`)
 - Manual smoke expectations documented (this file)
 
-### Tier 2 — Core app confidence (next)
+### Tier 2 — Core app confidence (mostly done as of 2026-07-06)
 
-- Extend tests for score submission logic
-  (`src/components/admin/mass-score-entry/hooks/` sits at ~46% lines with
-  several files at 0% — submission, updates, game-wins handling)
-- Keep standings/ranking calculation tests green and extend to the standings
-  *display* components (`src/components/stats/**` is ~23% covered) and pull
-  `src/utils/rankingUtils` back above its 85% target (currently 74%)
-- Add tests for match completion and winner/loser handling at the hook level
-  (`src/hooks/matches` is ~47%, spread unevenly across many small hooks)
-- Add regression tests for late-round playoff/bracket display issues (the
-  seeding algorithm and `BracketView` are tested, but the viewer/renderer
-  layer `src/components/playoffs/viewer/` is only ~25% covered)
+- ~~Extend tests for score submission logic~~ **Done.** All seven
+  `src/components/admin/mass-score-entry/hooks/` files have suites,
+  including game-wins submission via `useMatchScores`.
+- ~~Extend to standings display components / pull rankingUtils above 85%~~
+  **Done.** `src/components/stats/**` gained suites (rank/, containers/,
+  hooks, career table, HeadToHeadRecords, OpponentHistoryModal), and
+  `src/utils/rankingUtils/` sits well above its 85% target after the
+  2026-07 dead-code cleanup removed untested orphans and equal-score
+  tiebreaker tests were added.
+- ~~Match completion/winner handling at the hook level~~ **Done.** Every
+  hook and util in `src/hooks/matches` has a suite.
+- ~~Playoff viewer/renderer regression tests~~ **Done.** All three
+  `src/components/playoffs/viewer/` files are tested.
 - Make the Playwright E2E workflow a blocking gate once it has been stable
-  for a few weeks (remove `continue-on-error` from `e2e.yml`)
+  for a few weeks (remove `continue-on-error` from `e2e.yml`) — still open.
 
 ### Tier 3 — Higher confidence (later)
 
-- Component tests for the remaining admin flows (divisions, timeslots, and
-  requests are all at 0% today)
+- ~~Component tests for the remaining admin flows~~ **Largely done
+  (2026-07-06).** Divisions (DivisionsTab, DivisionRow,
+  CreateDivisionDialog, useDivisionMutations), timeslots (TimeslotsTab,
+  useTimeslots/useTimeslotQuery — useTimeslotMutation already had a suite),
+  and requests (RequestsTab, useTeamRequests) are now covered.
 - Integration tests against mocked Supabase data for multi-step admin
   workflows (season rollover, blind draw)
 - E2E smoke coverage for public schedule, standings, teams, and admin score
