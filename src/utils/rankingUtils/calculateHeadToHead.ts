@@ -6,7 +6,7 @@ import { HeadToHeadMap, Match, Team } from '@/types';
 export const calculateHeadToHead = (
   teamId: string,
   allTeams: Team[] | undefined,
-  allMatches: Match[] | undefined
+  allMatches?: Match[]
 ): HeadToHeadMap => {
   const result: HeadToHeadMap = {};
 

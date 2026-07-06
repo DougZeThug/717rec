@@ -19,7 +19,13 @@ const loadBracketsViewerScript = (): Promise<void> => {
     script.src = BRACKETS_VIEWER_URL;
     script.async = true;
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Failed to load brackets-viewer script'));
+    script.onerror = () => {
+      // Clear the cached promise and drop the dead tag so the next mount
+      // retries the download instead of reusing this rejection forever.
+      scriptLoadPromise = null;
+      script.remove();
+      reject(new Error('Failed to load brackets-viewer script'));
+    };
     document.head.appendChild(script);
   });
 

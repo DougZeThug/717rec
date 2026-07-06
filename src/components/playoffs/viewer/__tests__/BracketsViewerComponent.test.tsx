@@ -14,6 +14,8 @@ type MockMatch = { id: number; opponent1: { id: string } | null; opponent2: { id
 
 // Capture the onMatchClicked callback passed by the component
 let capturedOnMatchClicked: ((match: MockMatch) => void) | null = null;
+// Capture the full options object handed to the renderer hook (latest call)
+let capturedRendererOpts: Record<string, unknown> | null = null;
 
 vi.mock('@/components/playoffs/viewer/useBracketsViewerScript', () => ({
   useBracketsViewerScript: () => ({
@@ -28,6 +30,7 @@ vi.mock('@/components/playoffs/viewer/useBracketsViewerRenderer', () => ({
     [key: string]: unknown;
   }) => {
     capturedOnMatchClicked = opts.onMatchClicked ?? null;
+    capturedRendererOpts = opts;
     return {
       isInitialized: mockIsInitialized,
       error: mockRenderError,
@@ -74,6 +77,7 @@ vi.mock('@/components/ui/loading-state', () => ({
 
 // ─── Import after mocks ───────────────────────────────────────────────────────
 
+import { errorLog, warnLog } from '@/utils/logger';
 import { PlayoffBracket, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 
 import { BracketsViewerComponent } from '../BracketsViewerComponent';
@@ -108,6 +112,7 @@ describe('BracketsViewerComponent', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     capturedOnMatchClicked = null;
+    capturedRendererOpts = null;
     mockScriptIsReady = true;
     mockScriptError = null;
     mockIsInitialized = true;
@@ -253,6 +258,108 @@ describe('BracketsViewerComponent', () => {
     });
   });
 
+  describe('renderer wiring', () => {
+    it('passes the container id, bracket, and script readiness to the renderer hook', () => {
+      const bracket = makeBracket();
+      render(<BracketsViewerComponent bracket={bracket} teams={teams} />);
+
+      expect(capturedRendererOpts).toMatchObject({
+        bracket,
+        containerId: 'brackets-viewer-container',
+        isScriptReady: true,
+      });
+    });
+
+    it('builds the refresh key from the external refresh signal', () => {
+      render(
+        <BracketsViewerComponent bracket={makeBracket()} teams={teams} refreshSignal={12345} />
+      );
+
+      expect(capturedRendererOpts?.refreshKey).toBe('0:12345');
+    });
+
+    it('defaults the refresh key when no refresh signal is provided', () => {
+      render(<BracketsViewerComponent bracket={makeBracket()} teams={teams} />);
+
+      expect(capturedRendererOpts?.refreshKey).toBe('0:initial');
+    });
+
+    it('changes the refresh key when the realtime refresh signal changes', () => {
+      const bracket = makeBracket();
+      const { rerender } = render(
+        <BracketsViewerComponent bracket={bracket} teams={teams} refreshSignal={1} />
+      );
+      expect(capturedRendererOpts?.refreshKey).toBe('0:1');
+
+      rerender(<BracketsViewerComponent bracket={bracket} teams={teams} refreshSignal={2} />);
+      expect(capturedRendererOpts?.refreshKey).toBe('0:2');
+    });
+  });
+
+  describe('additional match click branches', () => {
+    it('does not open the brackets-manager editor when no onMatchClick handler is provided', () => {
+      const bmBracket = makeBracket({ uses_brackets_manager: true });
+      render(<BracketsViewerComponent bracket={bmBracket} teams={teams} />);
+
+      act(() => {
+        capturedOnMatchClicked?.({ id: 7, opponent1: { id: 't1' }, opponent2: { id: 't2' } });
+      });
+
+      expect(screen.queryByTestId('bm-editor')).not.toBeInTheDocument();
+    });
+
+    it('warns when a match with no determined participants is clicked', () => {
+      render(
+        <BracketsViewerComponent bracket={makeBracket()} teams={teams} onMatchClick={vi.fn()} />
+      );
+
+      act(() => {
+        capturedOnMatchClicked?.({ id: 5, opponent1: null, opponent2: null });
+      });
+
+      expect(warnLog).toHaveBeenCalledWith('Match clicked but no participants determined yet');
+    });
+
+    it('allows clicks when only one opponent is determined (late-round TBD slot)', () => {
+      const mockOnMatchClick = vi.fn();
+      mockGetPlayoffMatchIdRef.current.mockReturnValue('playoff-final-1');
+
+      render(
+        <BracketsViewerComponent
+          bracket={makeBracket({ uses_brackets_manager: false })}
+          teams={teams}
+          onMatchClick={mockOnMatchClick}
+        />
+      );
+
+      act(() => {
+        capturedOnMatchClicked?.({ id: 11, opponent1: { id: 't1' }, opponent2: null });
+      });
+
+      expect(mockOnMatchClick).toHaveBeenCalledWith('playoff-final-1');
+    });
+
+    it('logs an error when the legacy viewer match ID cannot be mapped', () => {
+      const mockOnMatchClick = vi.fn();
+      // fresh vi.fn() from beforeEach returns undefined -> no mapping found
+
+      render(
+        <BracketsViewerComponent
+          bracket={makeBracket({ uses_brackets_manager: false })}
+          teams={teams}
+          onMatchClick={mockOnMatchClick}
+        />
+      );
+
+      act(() => {
+        capturedOnMatchClicked?.({ id: 13, opponent1: { id: 't1' }, opponent2: { id: 't2' } });
+      });
+
+      expect(errorLog).toHaveBeenCalledWith('Could not map viewer match ID to playoff match:', 13);
+      expect(mockOnMatchClick).not.toHaveBeenCalled();
+    });
+  });
+
   describe('BracketsManagerMatchEditor lifecycle', () => {
     it('closes editor and clears matchId when onClose is called', async () => {
       const bmBracket = makeBracket({ uses_brackets_manager: true });
@@ -271,6 +378,32 @@ describe('BracketsViewerComponent', () => {
       });
 
       expect(screen.queryByTestId('bm-editor')).not.toBeInTheDocument();
+    });
+
+    it('bumps the renderer refresh key after a match result is saved', async () => {
+      const bmBracket = makeBracket({ uses_brackets_manager: true });
+      render(<BracketsViewerComponent bracket={bmBracket} teams={teams} onMatchClick={vi.fn()} />);
+
+      expect(capturedRendererOpts?.refreshKey).toBe('0:initial');
+
+      // Open the editor and save
+      act(() => {
+        capturedOnMatchClicked?.({ id: 3, opponent1: { id: 't1' }, opponent2: null });
+      });
+      expect(await screen.findByTestId('bm-editor')).toBeInTheDocument();
+
+      act(() => {
+        screen.getByTestId('bm-saved').click();
+      });
+
+      expect(capturedRendererOpts?.refreshKey).toBe('1:initial');
+    });
+  });
+
+  describe('module exports', () => {
+    it('re-exports BracketsViewerComponent from the folder index', async () => {
+      const indexModule = await import('../index');
+      expect(indexModule.BracketsViewerComponent).toBe(BracketsViewerComponent);
     });
   });
 });

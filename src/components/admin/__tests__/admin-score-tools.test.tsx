@@ -64,12 +64,6 @@ vi.mock('@/hooks/useUncompletedMatches', () => ({ useUncompletedMatches: () => e
 vi.mock('@/components/admin/mass-score-entry/hooks/useScoreEntryData', () => ({
   useScoreEntryData: () => massScoreState,
 }));
-vi.mock('@/components/admin/mass-score-entry/services/matchQueryService', () => ({
-  buildMatchQuery: vi.fn(),
-}));
-vi.mock('@/components/admin/mass-score-entry/services/matchUpdateService', () => ({
-  useMatchUpdateService: () => ({ updateMatch: vi.fn() }),
-}));
 vi.mock('@/hooks/useToast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 vi.mock('@/hooks/useSeasonalTheme', () => ({
   useSeasonalTheme: () => ({ isWinterTheme: false }),
@@ -111,7 +105,6 @@ vi.mock('@/hooks/matches/updates/utils/queryInvalidation', () => ({
 }));
 
 import EditScoresSection from '../EditScoresSection';
-import MassScoreEntryTool from '../mass-score-entry/MassScoreEntryTool';
 import AdminMassScoreEntryTool from '../MassScoreEntryTool';
 
 const renderWithClient = (ui: React.ReactElement) => {
@@ -179,13 +172,13 @@ describe('admin score tooling component states', () => {
 
   it('shows loading and empty states in the mass score table', () => {
     massScoreState = { ...defaultMassScoreState, loading: true };
-    const { rerender } = renderWithClient(<MassScoreEntryTool />);
+    const { rerender } = renderWithClient(<AdminMassScoreEntryTool />);
     expect(screen.getByRole('button', { name: /filter by date/i })).toBeInTheDocument();
     expect(screen.queryByText(/no matches found/i)).not.toBeInTheDocument();
     massScoreState = { ...defaultMassScoreState, loading: false, matches: [] };
     rerender(
       <QueryClientProvider client={new QueryClient()}>
-        <MassScoreEntryTool />
+        <AdminMassScoreEntryTool />
       </QueryClientProvider>
     );
     expect(screen.getByText(/no matches found/i)).toBeInTheDocument();
@@ -196,7 +189,7 @@ describe('admin score tooling component states', () => {
       ...defaultMassScoreState,
       matches: [makeMassMatch({ isEdited: true, isValid: true, iscompleted: true })],
     };
-    renderWithClient(<MassScoreEntryTool />);
+    renderWithClient(<AdminMassScoreEntryTool />);
     await userEvent.click(screen.getByRole('button', { name: /2–0/iu }));
     expect(mockHandleMassScoreChange).toHaveBeenCalledWith(0, 1, 0);
     expect(mockHandleGameWinsChange).toHaveBeenCalledWith(0, 2, 0);
@@ -209,7 +202,7 @@ describe('admin score tooling component states', () => {
       ...defaultMassScoreState,
       matches: [makeMassMatch({ isEdited: true, isValid: false, iscompleted: true })],
     };
-    renderWithClient(<MassScoreEntryTool />);
+    renderWithClient(<AdminMassScoreEntryTool />);
     expect(screen.getByRole('button', { name: /submit all changes/i })).toBeDisabled();
   });
 
