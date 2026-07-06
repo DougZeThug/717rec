@@ -52,7 +52,8 @@ describe('HeadToHeadRecords', () => {
     mockUseHeadToHead.mockReturnValue({ data: records, isLoading: false, error: null });
   });
 
-  const renderRecords = () => render(<HeadToHeadRecords teamId="t1" teamName="My Team" standalone />);
+  const renderRecords = () =>
+    render(<HeadToHeadRecords teamId="t1" teamName="My Team" standalone />);
 
   it('renders a row per opponent, sorted by wins descending by default', () => {
     renderRecords();

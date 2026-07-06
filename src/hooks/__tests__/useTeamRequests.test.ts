@@ -9,7 +9,11 @@ import {
   updateTeamRequestStatus,
 } from '@/services/teams/TeamFetchService';
 
-import { useAllRequests, usePendingRequestsCount, useUpdateRequestStatus } from '../useTeamRequests';
+import {
+  useAllRequests,
+  usePendingRequestsCount,
+  useUpdateRequestStatus,
+} from '../useTeamRequests';
 
 const toast = vi.fn();
 vi.mock('@/hooks/useToast', () => ({ useToast: () => ({ toast }) }));
@@ -90,9 +94,9 @@ describe('useUpdateRequestStatus', () => {
     const { result } = renderHook(() => useUpdateRequestStatus(), { wrapper: createWrapper() });
 
     await act(async () => {
-      await expect(
-        result.current.mutateAsync({ id: 'req-9', status: 'DENIED' })
-      ).rejects.toThrow('nope');
+      await expect(result.current.mutateAsync({ id: 'req-9', status: 'DENIED' })).rejects.toThrow(
+        'nope'
+      );
     });
 
     expect(toast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));

@@ -46,9 +46,7 @@ describe('useTimeslotQuery', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (TimeslotService.fetchByDate as ReturnType<typeof vi.fn>).mockResolvedValue(sampleRows);
-    (TimeslotTransformer.groupByTimeslot as ReturnType<typeof vi.fn>).mockReturnValue(
-      sampleGroups
-    );
+    (TimeslotTransformer.groupByTimeslot as ReturnType<typeof vi.fn>).mockReturnValue(sampleGroups);
   });
 
   it('fetches and groups timeslots for the given date', async () => {
@@ -88,9 +86,7 @@ describe('useTimeslots', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (TimeslotService.fetchByDate as ReturnType<typeof vi.fn>).mockResolvedValue(sampleRows);
-    (TimeslotTransformer.groupByTimeslot as ReturnType<typeof vi.fn>).mockReturnValue(
-      sampleGroups
-    );
+    (TimeslotTransformer.groupByTimeslot as ReturnType<typeof vi.fn>).mockReturnValue(sampleGroups);
   });
 
   it('exposes query data and every mutation function', async () => {

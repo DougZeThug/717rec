@@ -110,7 +110,6 @@ describe('home dashboard cards', () => {
     );
     expect(screen.getByText('1 match awaiting score reports')).toBeInTheDocument();
   });
-
 });
 
 describe('leaderboard and highlight widgets', () => {
