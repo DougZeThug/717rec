@@ -134,19 +134,20 @@ Do not use `pnpm` or `yarn` — neither is installed.
 
 ## Current baseline
 
-Last measured: 2026-07-02.
+Last measured: 2026-07-06.
 
 | Metric     | Covered |
 | ---------- | ------- |
-| Lines      | 53.27%  |
-| Statements | 52.07%  |
-| Functions  | 46.75%  |
-| Branches   | 43.34%  |
+| Lines      | 62.98%  |
+| Statements | 61.56%  |
+| Functions  | 56.65%  |
+| Branches   | 51.32%  |
 
-The overall number is moderate because component coverage is very uneven —
-several admin and display folders have no tests at all. The logic-heavy areas
-(utils, scheduling, rankings, career math) and the service layer are in much
-better shape — see the per-area table below.
+The overall number is moderate because component coverage is still uneven,
+though the 2026-07 dead-code cleanup removed most zero-coverage orphans and
+the admin request/timeslot/division flows now have suites. The logic-heavy
+areas (utils, scheduling, rankings, career math) and the service layer are in
+much better shape — see the per-area table below.
 
 Full baseline output is saved to `coverage-baseline.txt` at the repo root.
 
