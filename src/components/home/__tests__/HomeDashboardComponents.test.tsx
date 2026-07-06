@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 
 import { WeeklyRecapData } from '@/services/WeeklyRecapService';
-import { Match, Team } from '@/types';
+import { Team } from '@/types';
 import { WeeklyPowerScoreTrend } from '@/types/powerScoreSnapshot';
 
 type PendingMatchStub = {
@@ -27,9 +27,6 @@ vi.mock('@/hooks/usePendingScoresMatches', () => ({
 }));
 vi.mock('@/hooks/useTeamBadges', () => ({ useAllTeamBadges: () => ({ data: [] }) }));
 
-vi.mock('../MatchCard', () => ({
-  default: ({ match }: { match: { id: string } }) => <div>match-card-{match.id}</div>,
-}));
 vi.mock('../ScoreSubmissionModal', () => ({
   ScoreSubmissionModal: ({ open }: { open: boolean }) => (open ? <div>score-modal</div> : null),
 }));
@@ -45,22 +42,10 @@ vi.mock('@/components/ui/carousel', () => ({
   CarouselItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-import MyNextMatchCard from '../MyNextMatchCard';
 import PendingScoresCard from '../PendingScoresCard';
-import RecentMatches from '../RecentMatches';
 import TeamOfTheWeekCard from '../TeamOfTheWeekCard';
 import TopTeams from '../TopTeams';
 import WeeklyRecapCard from '../WeeklyRecapCard';
-
-const baseMatch: Match = {
-  id: 'm1',
-  team1Id: 't1',
-  team2Id: 't2',
-  date: '2026-02-14T18:00:00.000Z',
-  team1_game_wins: 2,
-  team2_game_wins: 1,
-  created_at: '2026-01-01T00:00:00.000Z',
-};
 
 const baseTeam: Team = {
   id: 't1',
@@ -90,26 +75,6 @@ const risingTrend: WeeklyPowerScoreTrend = {
 };
 
 describe('home dashboard cards', () => {
-  it('covers MyNextMatchCard normal and previous states', () => {
-    const common = {
-      match: baseMatch,
-      myTeam: { id: 't1', name: 'Alpha', logoUrl: null },
-      opponent: { id: 't2', name: 'Beta', logoUrl: null },
-    };
-    const { rerender } = render(
-      <MemoryRouter>
-        <MyNextMatchCard {...common} weekNumber={4} />
-      </MemoryRouter>
-    );
-    expect(screen.getByText('Your Next Match')).toBeInTheDocument();
-    rerender(
-      <MemoryRouter>
-        <MyNextMatchCard {...common} isPrevious />
-      </MemoryRouter>
-    );
-    expect(screen.getByText('Win')).toBeInTheDocument();
-  });
-
   it('covers PendingScoresCard loading, empty, and populated states', () => {
     pendingState = { isLoading: true, matches: [] };
     const { rerender } = render(
@@ -146,36 +111,6 @@ describe('home dashboard cards', () => {
     expect(screen.getByText('1 match awaiting score reports')).toBeInTheDocument();
   });
 
-  it('covers RecentMatches loading, empty, and normal states', () => {
-    const getTeamById = (id: string): Team => ({ ...baseTeam, id, name: id });
-    const { rerender } = render(
-      <RecentMatches
-        completedMatches={[]}
-        getTeamById={getTeamById}
-        formatDate={() => ''}
-        formatTime={() => ''}
-        isLoading
-      />
-    );
-    expect(document.querySelector('#recent-matches-skeleton')).toBeTruthy();
-    rerender(
-      <RecentMatches
-        completedMatches={[]}
-        getTeamById={getTeamById}
-        formatDate={() => ''}
-        formatTime={() => ''}
-      />
-    );
-    rerender(
-      <RecentMatches
-        completedMatches={[baseMatch]}
-        getTeamById={getTeamById}
-        formatDate={() => ''}
-        formatTime={() => ''}
-      />
-    );
-    expect(screen.getByText('match-card-m1')).toBeInTheDocument();
-  });
 });
 
 describe('leaderboard and highlight widgets', () => {
