@@ -1,0 +1,20 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": ["src/main.tsx", "index.html", "e2e/**/*.spec.ts", "playwright.config.ts"],
+  "project": ["src/**/*.{ts,tsx}"],
+  "ignore": [
+    "src/integrations/supabase/types.ts",
+    "src/types/*.d.ts",
+    "supabase/functions/**",
+    "public/**",
+    "tools/**"
+  ],
+  "ignoreDependencies": ["events"],
+  "rules": {
+    "exports": "off",
+    "types": "off",
+    "duplicates": "off",
+    "enumMembers": "off",
+    "classMembers": "off"
+  }
+}
