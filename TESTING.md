@@ -470,8 +470,8 @@ Already in place and enforced:
 ### Tier 2 — Core app confidence (next)
 
 - Extend tests for score submission logic
-  (`src/components/admin/mass-score-entry/hooks/` sits at ~46% lines with
-  several files at 0% — submission, updates, game-wins handling)
+  (`src/components/admin/mass-score-entry/hooks/` — new tests added for
+  useMatchScores, useErrorHandling, useMatchesFetching, useMatchesState)
 - Keep standings/ranking calculation tests green and extend to the standings
   *display* components (`src/components/stats/**` is ~23% covered) and pull
   `src/utils/rankingUtils` back above its 85% target (currently 74%)
