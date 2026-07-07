@@ -116,7 +116,7 @@ describe('useTimeslots', () => {
     expect(spy).toHaveBeenCalledWith({ queryKey: ['timeslots', '2026-06-05'] });
   });
 
-  it('reports loading while a mutation is submitting', async () => {
+  it('reports loading while a mutation is submitting', () => {
     mutationFns.isSubmitting = true;
     const { result } = renderHook(() => useTimeslots(new Date('2026-06-05T00:00:00')), {
       wrapper: createWrapper(),

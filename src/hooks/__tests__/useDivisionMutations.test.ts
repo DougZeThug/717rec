@@ -37,7 +37,9 @@ describe('useDivisionMutations', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('creates a division, clears the weights cache, and invalidates division queries', async () => {
-    (DivisionService.createDivision as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+    (DivisionService.createDivision as ReturnType<typeof vi.fn>).mockImplementation(() =>
+      Promise.resolve()
+    );
     const { result } = renderHook(() => useDivisionMutations(), { wrapper: createWrapper() });
     const spy = vi.spyOn(queryClient, 'invalidateQueries');
 
@@ -52,7 +54,9 @@ describe('useDivisionMutations', () => {
   });
 
   it('updates a division with the id and patch', async () => {
-    (DivisionService.updateDivision as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+    (DivisionService.updateDivision as ReturnType<typeof vi.fn>).mockImplementation(() =>
+      Promise.resolve()
+    );
     const { result } = renderHook(() => useDivisionMutations(), { wrapper: createWrapper() });
 
     await act(async () => {
@@ -64,7 +68,9 @@ describe('useDivisionMutations', () => {
   });
 
   it('deletes a division by id', async () => {
-    (DivisionService.deleteDivision as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+    (DivisionService.deleteDivision as ReturnType<typeof vi.fn>).mockImplementation(() =>
+      Promise.resolve()
+    );
     const { result } = renderHook(() => useDivisionMutations(), { wrapper: createWrapper() });
 
     await act(async () => {

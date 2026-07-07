@@ -49,9 +49,10 @@ describe('useAllRequests', () => {
 
   it('fetches all requests when no filter is given', async () => {
     (fetchAllRequests as ReturnType<typeof vi.fn>).mockResolvedValue([]);
-    const { result } = renderHook(() => useAllRequests(undefined), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useAllRequests(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(fetchAllRequests).toHaveBeenCalledWith(undefined);
+    expect(fetchAllRequests).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(fetchAllRequests).mock.calls[0]).toEqual([undefined]);
   });
 });
 
@@ -67,7 +68,9 @@ describe('useUpdateRequestStatus', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('stamps the admin user id and invalidates team-request queries on success', async () => {
-    (updateTeamRequestStatus as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+    (updateTeamRequestStatus as ReturnType<typeof vi.fn>).mockImplementation(() =>
+      Promise.resolve()
+    );
     const { result } = renderHook(() => useUpdateRequestStatus(), { wrapper: createWrapper() });
     const spy = vi.spyOn(queryClient, 'invalidateQueries');
 

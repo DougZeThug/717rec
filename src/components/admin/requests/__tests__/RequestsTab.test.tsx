@@ -9,7 +9,7 @@ import RequestsTab from '../RequestsTab';
 
 const mockUseAllRequests = vi.fn();
 const mockUsePendingRequestsCount = vi.fn();
-const mutateAsync = vi.fn();
+const mutateAsync = vi.fn(() => Promise.resolve());
 
 vi.mock('@/hooks/useTeamRequests', () => ({
   useAllRequests: (...args: unknown[]) => mockUseAllRequests(...args),
@@ -47,7 +47,6 @@ describe('RequestsTab', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mutateAsync.mockResolvedValue(undefined);
     mockUseAllRequests.mockReturnValue({ data: [baseRequest], isLoading: false });
     mockUsePendingRequestsCount.mockReturnValue({ data: 1 });
   });
