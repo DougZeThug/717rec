@@ -191,7 +191,7 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
       fullErrorString: JSON.stringify(error, null, 2),
     });
 
-    failureLog('Bracket creation failed', error instanceof Error ? error : String(error));
+    failureLog('Bracket creation failed', error);
 
     // Rollback: clean up orphaned bracket row if it was inserted
     if (createdBracketId) {
