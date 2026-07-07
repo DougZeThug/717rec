@@ -149,4 +149,72 @@ describe('sortRankings', () => {
       expect(sorted.map((r) => r.teamName)).toEqual(['Alpha', 'Bravo']);
     });
   });
+
+  describe('powerScore tiebreakers for equal non-null scores', () => {
+    it('breaks equal-score ties by division tier first', () => {
+      const teams: Ranking[] = [
+        makeRanking({
+          teamId: 'rec',
+          teamName: 'Alpha',
+          powerScore: 75,
+          divisionName: 'Recreational',
+          winPercentage: 0.9,
+        }),
+        makeRanking({
+          teamId: 'comp',
+          teamName: 'Zebra',
+          powerScore: 75,
+          divisionName: 'Competitive',
+          winPercentage: 0.1,
+        }),
+      ];
+
+      const sorted = sortRankings(teams, 'powerScore', 'desc');
+      expect(sorted.map((r) => r.teamId)).toEqual(['comp', 'rec']);
+    });
+
+    it('breaks equal-score same-tier ties by win percentage', () => {
+      const teams: Ranking[] = [
+        makeRanking({
+          teamId: 'low-win',
+          teamName: 'Alpha',
+          powerScore: 75,
+          divisionName: 'Competitive',
+          winPercentage: 0.25,
+        }),
+        makeRanking({
+          teamId: 'high-win',
+          teamName: 'Zebra',
+          powerScore: 75,
+          divisionName: 'Competitive',
+          winPercentage: 0.75,
+        }),
+      ];
+
+      const sorted = sortRankings(teams, 'powerScore', 'desc');
+      expect(sorted.map((r) => r.teamId)).toEqual(['high-win', 'low-win']);
+    });
+
+    it('breaks equal-score, same-tier, same-win% ties alphabetically', () => {
+      const teams: Ranking[] = [
+        makeRanking({
+          teamId: 'z',
+          teamName: 'Zebra',
+          powerScore: 75,
+          divisionName: 'Intermediate',
+          winPercentage: 0.5,
+        }),
+        makeRanking({
+          teamId: 'a',
+          teamName: 'Alpha',
+          powerScore: 75,
+          divisionName: 'Intermediate',
+          winPercentage: 0.5,
+        }),
+      ];
+
+      const sorted = sortRankings(teams, 'powerScore', 'desc');
+      expect(sorted.map((r) => r.teamName)).toEqual(['Alpha', 'Zebra']);
+    });
+  });
 });

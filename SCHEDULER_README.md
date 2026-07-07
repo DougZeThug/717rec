@@ -113,7 +113,6 @@ When "Prioritize Match Quality" is enabled:
 - `src/hooks/useAutoSchedule/` - Higher-level scheduling hooks
 
 **UI Components:**
-- `src/components/admin/auto-schedule/AlgorithmSettings.tsx` - Settings accordion
 - `src/components/admin/auto-schedule/DateSettingsPanel.tsx` - Date & settings panel
 - `src/components/admin/batch-matches/auto-schedule/components/AlgorithmSettings.tsx` - Batch settings
 
