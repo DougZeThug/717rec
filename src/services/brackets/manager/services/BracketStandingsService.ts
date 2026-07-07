@@ -180,10 +180,7 @@ export class BracketStandingsService {
 
       return { written: false, reason: 'no-records' };
     } catch (error) {
-      failureLog(
-        'Failed to calculate final standings',
-        error instanceof Error ? error : String(error)
-      );
+      failureLog('Failed to calculate final standings', error);
       throw new DatabaseError(
         `Final standings calculation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         error
