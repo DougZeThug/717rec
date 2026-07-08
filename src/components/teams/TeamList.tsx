@@ -60,7 +60,7 @@ export const TeamList: React.FC<TeamListProps> = ({
     return <TeamListSkeleton viewMode={viewMode} />;
   }
 
-  if (error) {
+  if (error && uniqueTeams.length === 0) {
     return (
       <ErrorDisplay
         variant="card"
