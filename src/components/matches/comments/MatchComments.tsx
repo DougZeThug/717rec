@@ -30,7 +30,7 @@ const MatchComments: React.FC<MatchCommentsProps> = ({ matchId }) => {
     return (
       <div className="mt-2 space-y-2">
         <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-20 w-full" />
+        <Skeleton className="h-20 w-full bg-muted/50" />
       </div>
     );
   }
