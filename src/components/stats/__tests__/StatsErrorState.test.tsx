@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import StatsErrorState from '../StatsErrorState';
 
@@ -31,5 +31,27 @@ describe('StatsErrorState', () => {
     );
     expect(screen.getByText('teams broke')).toBeInTheDocument();
     expect(screen.getByText('matches broke')).toBeInTheDocument();
+  });
+
+  it('shows a retry button when onRetry is provided and calls it when clicked', () => {
+    const onRetry = vi.fn();
+    render(
+      <StatsErrorState
+        teamsError={new Error('teams broke')}
+        matchesError={null}
+        onRetry={onRetry}
+      />
+    );
+
+    const retryButton = screen.getByRole('button', { name: /try again/i });
+    fireEvent.click(retryButton);
+
+    expect(onRetry).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not show a retry button when onRetry is not provided', () => {
+    render(<StatsErrorState teamsError={new Error('teams broke')} matchesError={null} />);
+
+    expect(screen.queryByRole('button', { name: /try again/i })).not.toBeInTheDocument();
   });
 });
