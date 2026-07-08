@@ -67,7 +67,25 @@ const NotificationsAdmin: React.FC<{ currentTimeMs?: number }> = ({
 
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
-  const [editing, setEditing] = useState<NotificationRow | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const editing = useMemo(
+    () => (editingId ? notifications.find((n) => n.id === editingId) ?? null : null),
+    [editingId, notifications]
+  );
+
+  useEffect(() => {
+    if (editingId && !editing) {
+      setEditingId(null);
+      setTitle('');
+      setBody('');
+      toast({
+        title: 'Notification deleted',
+        description: 'The notification you were editing has been removed.',
+        variant: 'destructive',
+      });
+    }
+  }, [editingId, editing]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +95,7 @@ const NotificationsAdmin: React.FC<{ currentTimeMs?: number }> = ({
     try {
       if (editing) {
         await update.mutateAsync({ id: editing.id, patch: { title: t, body: b } });
-        setEditing(null);
+        setEditingId(null);
         toast({ title: 'Notification updated' });
       } else {
         await create.mutateAsync({ title: t, body: b, createdBy: user?.id ?? null });
@@ -95,13 +113,13 @@ const NotificationsAdmin: React.FC<{ currentTimeMs?: number }> = ({
   };
 
   const startEdit = (n: NotificationRow) => {
-    setEditing(n);
+    setEditingId(n.id);
     setTitle(n.title);
     setBody(n.body);
   };
 
   const cancelEdit = () => {
-    setEditing(null);
+    setEditingId(null);
     setTitle('');
     setBody('');
   };
