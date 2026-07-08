@@ -164,6 +164,66 @@ describe('useMatchReactions', () => {
     expect(mockDispose).toHaveBeenCalled();
   });
 
+  it('preserves realtime INSERTs that arrive while a fetch is in flight', async () => {
+    let resolveInitialFetch: (value: unknown[]) => void;
+    const initialFetchPromise = new Promise<unknown[]>((resolve) => {
+      resolveInitialFetch = resolve;
+    });
+    mockFetchReactions.mockReturnValueOnce(initialFetchPromise);
+
+    const { result } = renderHook(() => useMatchReactions('match-1'));
+
+    const insertHandler = mockChannel.on.mock.calls[0][2];
+
+    act(() => {
+      insertHandler({ new: reaction('realtime-insert', 'user-99', '🔥') });
+    });
+    expect(result.current.reactions).toHaveLength(1);
+
+    const fetchedData = [reaction('existing-1', 'user-50', '👏')];
+    await act(async () => {
+      resolveInitialFetch!(fetchedData);
+      await initialFetchPromise;
+    });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.reactions).toHaveLength(2);
+  });
+
+  it('does not reintroduce reactions deleted while a reconnect fetch is in flight', async () => {
+    mockFetchReactions.mockResolvedValueOnce([reaction('r1', 'user-1', '🔥')]);
+
+    const { result } = renderHook(() => useMatchReactions('match-1'));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.reactions).toHaveLength(1);
+
+    const deleteHandler = mockChannel.on.mock.calls[1][2];
+
+    let resolveReconnectFetch: (value: unknown[]) => void;
+    const reconnectFetchPromise = new Promise<unknown[]>((resolve) => {
+      resolveReconnectFetch = resolve;
+    });
+    mockFetchReactions.mockReturnValueOnce(reconnectFetchPromise);
+
+    act(() => {
+      subscribeOptions.current?.onReconnect?.(false);
+    });
+
+    act(() => {
+      deleteHandler({ old: { id: 'r1' } });
+    });
+    expect(result.current.reactions).toHaveLength(0);
+
+    const staleFetchedData = [reaction('r1', 'user-1', '🔥')];
+    await act(async () => {
+      resolveReconnectFetch!(staleFetchedData);
+      await reconnectFetchPromise;
+    });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.reactions).toHaveLength(0);
+  });
+
   it('blocks toggling a reaction when signed out', async () => {
     const { result } = renderHook(() => useMatchReactions('match-1'));
     await waitFor(() => expect(result.current.isLoading).toBe(false));

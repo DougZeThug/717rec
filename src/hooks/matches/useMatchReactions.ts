@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAuth } from '@/contexts/auth-context';
 import { subscribeWithRetry } from '@/hooks/realtime/subscribeWithRetry';
@@ -20,6 +20,8 @@ export const useMatchReactions = (matchId: string) => {
   const [reactions, setReactions] = useState<MatchReaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
+  const isFetchingRef = useRef(false);
+  const deletedDuringFetchRef = useRef<Set<string>>(new Set());
 
   // Group and count reactions
   const reactionCounts = useMemo(() => {
@@ -51,12 +53,19 @@ export const useMatchReactions = (matchId: string) => {
   const fetchReactions = useCallback(async () => {
     if (!matchId) return;
     try {
+      isFetchingRef.current = true;
+      deletedDuringFetchRef.current.clear();
       setIsLoading(true);
       const data = await MatchReactionsService.fetchReactions(matchId);
-      setReactions(data);
+      setReactions((curr) => {
+        const fetchedIds = new Set(data.map((r) => r.id));
+        const realtimeOnly = curr.filter((r) => !fetchedIds.has(r.id));
+        return [...data, ...realtimeOnly].filter((r) => !deletedDuringFetchRef.current.has(r.id));
+      });
     } catch (err) {
       errorLog('Error fetching match reactions:', err);
     } finally {
+      isFetchingRef.current = false;
       setIsLoading(false);
     }
   }, [matchId]);
@@ -88,6 +97,7 @@ export const useMatchReactions = (matchId: string) => {
               const newReaction = payload.new as MatchReaction;
               setReactions((curr) => {
                 if (curr.some((r) => r.id === newReaction.id)) return curr;
+                deletedDuringFetchRef.current.delete(newReaction.id);
                 return [...curr, newReaction];
               });
             }
@@ -102,7 +112,12 @@ export const useMatchReactions = (matchId: string) => {
             },
             (payload) => {
               const deletedReaction = payload.old as MatchReaction;
-              setReactions((curr) => curr.filter((r) => r.id !== deletedReaction.id));
+              setReactions((curr) => {
+                if (isFetchingRef.current) {
+                  deletedDuringFetchRef.current.add(deletedReaction.id);
+                }
+                return curr.filter((r) => r.id !== deletedReaction.id);
+              });
             }
           ),
       onReconnect: (isFirst) => {
