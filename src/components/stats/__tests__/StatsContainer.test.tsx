@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -10,6 +10,7 @@ let mockTeamsQuery = {
 let mockRankingsResult = {
   rankings: [] as Array<{ teamId: string; teamName: string }>,
   isLoading: false,
+  refetch: vi.fn(),
 };
 let mockMembership: { is_approved: boolean; team_id: string } | null = null;
 
@@ -89,7 +90,7 @@ describe('StatsContainer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockTeamsQuery = { data: [], isLoading: false, error: null };
-    mockRankingsResult = { rankings: [], isLoading: false };
+    mockRankingsResult = { rankings: [], isLoading: false, refetch: vi.fn() };
     mockMembership = null;
   });
 
@@ -119,6 +120,23 @@ describe('StatsContainer', () => {
     expect(screen.queryByTestId('full-rankings')).not.toBeInTheDocument();
   });
 
+  it('calls useTeamRankings refetch when the retry button is clicked', () => {
+    mockTeamsQuery = { data: [], isLoading: false, error: new Error('Teams unavailable') };
+
+    render(
+      <StatsContainer
+        matches={[]}
+        isLoadingMatches={false}
+        matchesError={new Error('Matches unavailable')}
+      />
+    );
+
+    const retryButton = screen.getByRole('button', { name: /try again/i });
+    fireEvent.click(retryButton);
+
+    expect(mockRankingsResult.refetch).toHaveBeenCalledTimes(1);
+  });
+
   it('renders an empty state when rankings are loaded but no teams are available', () => {
     render(<StatsContainer matches={[]} isLoadingMatches={false} matchesError={null} />);
 
@@ -127,7 +145,7 @@ describe('StatsContainer', () => {
   });
 
   it('renders rankings, charts, and career sections for populated rankings', async () => {
-    mockRankingsResult = { rankings: populatedRankings, isLoading: false };
+    mockRankingsResult = { rankings: populatedRankings, isLoading: false, refetch: vi.fn() };
     mockMembership = { is_approved: true, team_id: 'alpha' };
 
     render(<StatsContainer matches={[]} isLoadingMatches={false} matchesError={null} />);
@@ -143,7 +161,7 @@ describe('StatsContainer', () => {
     const teams = [{ id: 'team-1', name: 'Team One' }];
     const matches = [{ id: 'match-1' }];
     mockTeamsQuery = { data: teams, isLoading: false, error: null };
-    mockRankingsResult = { rankings: populatedRankings, isLoading: false };
+    mockRankingsResult = { rankings: populatedRankings, isLoading: false, refetch: vi.fn() };
     mockMembership = { is_approved: false, team_id: 'alpha' };
 
     render(
