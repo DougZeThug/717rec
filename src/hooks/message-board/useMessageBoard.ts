@@ -255,7 +255,12 @@ export const useMessageBoard = (): UseMessageBoardResult => {
   }, []);
 
   // Set up real-time subscription with memoized callbacks
-  useMessageRealtime(handleMessageInserted, handleMessageUpdated, handleMessageDeleted);
+  useMessageRealtime(
+    handleMessageInserted,
+    handleMessageUpdated,
+    handleMessageDeleted,
+    fetchInitialMessages
+  );
 
   // Refresh messages function
   const refreshMessages = useCallback(async () => {
