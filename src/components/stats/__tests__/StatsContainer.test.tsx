@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -10,6 +10,7 @@ let mockTeamsQuery = {
 let mockRankingsResult = {
   rankings: [] as Array<{ teamId: string; teamName: string }>,
   isLoading: false,
+  refetch: vi.fn(),
 };
 let mockMembership: { is_approved: boolean; team_id: string } | null = null;
 
