@@ -265,6 +265,7 @@ const BracketView: React.FC<BracketViewProps> = ({
             }
             onMatchClick={handleMatchClick}
             refreshSignal={lastUpdate ? lastUpdate.getTime() : null}
+            realtimeEnabled={realtimeEnabled}
           />
         ) : (
           <div className="text-center p-8 text-muted-foreground">
