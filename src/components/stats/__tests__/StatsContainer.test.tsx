@@ -90,7 +90,7 @@ describe('StatsContainer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockTeamsQuery = { data: [], isLoading: false, error: null };
-    mockRankingsResult = { rankings: [], isLoading: false };
+    mockRankingsResult = { rankings: [], isLoading: false, refetch: vi.fn() };
     mockMembership = null;
   });
 
