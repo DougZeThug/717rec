@@ -21,6 +21,12 @@ interface BracketsViewerComponentProps {
    * Final, etc.) appear without requiring a page refresh.
    */
   refreshSignal?: number | string | null;
+  /**
+   * Whether a realtime subscription is actively delivering refresh signals.
+   * When true, the editor's onSaved callback should not bump the refresh
+   * counter because the realtime signal already triggers the update.
+   */
+  realtimeEnabled?: boolean;
 }
 
 const CONTAINER_ID = 'brackets-viewer-container';
