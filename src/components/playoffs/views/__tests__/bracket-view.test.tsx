@@ -240,6 +240,19 @@ describe('bracket display and admin interaction views', () => {
     expect(onEditMatch).toHaveBeenCalledWith('match-1');
   });
 
+  it('passes realtimeEnabled to the bracket viewer component', () => {
+    render(
+      <BracketView
+        bracketId="bracket-1"
+        bracket={bracket}
+        teams={teams}
+      />
+    );
+
+    const lastCall = mockBracketsViewer.mock.lastCall;
+    expect(lastCall?.[0]).toMatchObject({ realtimeEnabled: false });
+  });
+
   it('shows final standings for completed brackets', () => {
     render(
       <BracketView
