@@ -97,6 +97,7 @@ export const useMatchReactions = (matchId: string) => {
               const newReaction = payload.new as MatchReaction;
               setReactions((curr) => {
                 if (curr.some((r) => r.id === newReaction.id)) return curr;
+                deletedDuringFetchRef.current.delete(newReaction.id);
                 return [...curr, newReaction];
               });
             }
@@ -111,7 +112,12 @@ export const useMatchReactions = (matchId: string) => {
             },
             (payload) => {
               const deletedReaction = payload.old as MatchReaction;
-              setReactions((curr) => curr.filter((r) => r.id !== deletedReaction.id));
+              setReactions((curr) => {
+                if (isFetchingRef.current) {
+                  deletedDuringFetchRef.current.add(deletedReaction.id);
+                }
+                return curr.filter((r) => r.id !== deletedReaction.id);
+              });
             }
           ),
       onReconnect: (isFirst) => {
