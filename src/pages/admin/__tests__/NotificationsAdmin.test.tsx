@@ -36,6 +36,15 @@ vi.mock('@/hooks/useToast', () => ({
 
 import NotificationsAdmin from '../NotificationsAdmin';
 
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return function Wrapper({ children }: { children: React.ReactNode }) {
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  };
+};
+
 const makeNotification = (id: string, title: string, body: string): NotificationRow => ({
   id,
   title,
