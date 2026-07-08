@@ -32,6 +32,9 @@ vi.mock('@/hooks/notifications/useNotificationMutations', () => ({
   useUpdateNotification: () => mockUseUpdateNotification(),
   useDeleteNotification: () => mockUseDeleteNotification(),
 }));
+vi.mock('@/hooks/contact/useContactRequests', () => ({
+  useContactRequests: () => mockUseContactRequests(),
+}));
 vi.mock('@/hooks/useToast', () => ({
   toast: (payload: unknown) => mockToast(payload),
 }));
