@@ -144,7 +144,7 @@ describe('StatsContainer', () => {
     const teams = [{ id: 'team-1', name: 'Team One' }];
     const matches = [{ id: 'match-1' }];
     mockTeamsQuery = { data: teams, isLoading: false, error: null };
-    mockRankingsResult = { rankings: populatedRankings, isLoading: false };
+    mockRankingsResult = { rankings: populatedRankings, isLoading: false, refetch: vi.fn() };
     mockMembership = { is_approved: false, team_id: 'alpha' };
 
     render(
