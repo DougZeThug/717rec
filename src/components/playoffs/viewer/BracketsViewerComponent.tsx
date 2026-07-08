@@ -36,6 +36,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
   teams,
   onMatchClick,
   refreshSignal,
+  realtimeEnabled = false,
 }) => {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
