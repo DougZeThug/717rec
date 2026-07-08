@@ -431,7 +431,7 @@ describe('BracketUpdateService', () => {
           matchId: 1,
           scores: {
             opponent1: { score: 2, result: 'win' },
-            opponent2: { score: undefined, result: 'loss' },
+            opponent2: { result: 'loss' },
           },
         })
       ).resolves.toBeUndefined();
