@@ -380,7 +380,7 @@ describe('BracketsViewerComponent', () => {
       expect(screen.queryByTestId('bm-editor')).not.toBeInTheDocument();
     });
 
-    it('bumps the renderer refresh key after a match result is saved', async () => {
+    it('bumps the renderer refresh key after a match result is saved when realtime is disabled', async () => {
       const bmBracket = makeBracket({ uses_brackets_manager: true });
       render(<BracketsViewerComponent bracket={bmBracket} teams={teams} onMatchClick={vi.fn()} />);
 
@@ -397,6 +397,33 @@ describe('BracketsViewerComponent', () => {
       });
 
       expect(capturedRendererOpts?.refreshKey).toBe('1:initial');
+    });
+
+    it('does not bump the renderer refresh key after save when realtime is enabled', async () => {
+      const bmBracket = makeBracket({ uses_brackets_manager: true });
+      render(
+        <BracketsViewerComponent
+          bracket={bmBracket}
+          teams={teams}
+          onMatchClick={vi.fn()}
+          realtimeEnabled
+        />
+      );
+
+      expect(capturedRendererOpts?.refreshKey).toBe('0:initial');
+
+      // Open the editor and save
+      act(() => {
+        capturedOnMatchClicked?.({ id: 3, opponent1: { id: 't1' }, opponent2: null });
+      });
+      expect(await screen.findByTestId('bm-editor')).toBeInTheDocument();
+
+      act(() => {
+        screen.getByTestId('bm-saved').click();
+      });
+
+      // Realtime already handles the refresh, so the counter should stay at 0.
+      expect(capturedRendererOpts?.refreshKey).toBe('0:initial');
     });
   });
 
