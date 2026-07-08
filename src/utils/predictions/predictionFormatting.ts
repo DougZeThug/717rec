@@ -52,8 +52,13 @@ export function formatBreakdown(breakdown: PredictionBreakdown): string {
   const parts = [`Season: ${Math.round(powerScoreA)} vs ${Math.round(powerScoreB)}`];
 
   if (hasCareerDataA || hasCareerDataB) {
-    parts.push(`Career: ${Math.round(careerPowerA)} vs ${Math.round(careerPowerB)}`);
-    parts.push(`Win%: ${Math.round(careerWinPctA * 100)}% vs ${Math.round(careerWinPctB * 100)}%`);
+    const careerA = hasCareerDataA ? `${Math.round(careerPowerA)}` : 'N/A';
+    const careerB = hasCareerDataB ? `${Math.round(careerPowerB)}` : 'N/A';
+    const winPctA = hasCareerDataA ? `${Math.round(careerWinPctA * 100)}%` : 'N/A';
+    const winPctB = hasCareerDataB ? `${Math.round(careerWinPctB * 100)}%` : 'N/A';
+
+    parts.push(`Career: ${careerA} vs ${careerB}`);
+    parts.push(`Win%: ${winPctA} vs ${winPctB}`);
   }
 
   if (hasH2HData) {
