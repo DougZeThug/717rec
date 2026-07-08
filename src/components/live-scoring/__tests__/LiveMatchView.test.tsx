@@ -156,6 +156,12 @@ const gamePlayers = (gameId: string): LiveMatchBundle['gamePlayers'] => [
   { id: 'gp4', game_id: gameId, team_id: 'team-2', player_id: 'p4', slot: 2, created_at: '' },
 ];
 
+const gridButton = (grid: HTMLElement, label: string): HTMLButtonElement => {
+  const button = Array.from(grid.querySelectorAll('button')).find((b) => b.textContent === label);
+  if (!button) throw new Error(`No score button labelled ${label}`);
+  return button;
+};
+
 const renderView = (
   bundle: LiveMatchBundle,
   { canScore = true, isAdmin = false }: { canScore?: boolean; isAdmin?: boolean } = {}
@@ -215,12 +221,8 @@ describe('in-game state', () => {
     renderView(inGameBundle());
 
     const grids = screen.getAllByRole('group');
-    await userEvent.click(
-      Array.from(grids[0].querySelectorAll('button')).find((b) => b.textContent === '9')!
-    );
-    await userEvent.click(
-      Array.from(grids[1].querySelectorAll('button')).find((b) => b.textContent === '0')!
-    );
+    await userEvent.click(gridButton(grids[0], '9'));
+    await userEvent.click(gridButton(grids[1], '0'));
     await userEvent.click(screen.getByRole('button', { name: /save round/i }));
 
     expect(mockSubmitRound.mutate).toHaveBeenCalledWith(
@@ -254,7 +256,7 @@ describe('in-game state', () => {
     });
     renderView(bundle);
 
-    expect(screen.getByText(/baggers wins game 1, 21–0/i)).toBeInTheDocument();
+    expect(screen.getByText(/baggers wins game 1, 21–0/iu)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /end game 1/i })).toBeInTheDocument();
     // No further round entry while the game is decided.
     expect(screen.queryByRole('button', { name: /save round/i })).not.toBeInTheDocument();
@@ -327,7 +329,7 @@ describe('match decided (not yet official)', () => {
   it('offers the finalize flow to scorers', async () => {
     renderView(decidedBundle());
 
-    expect(screen.getByText(/tossers wins the match 0–2/i)).toBeInTheDocument();
+    expect(screen.getByText(/tossers wins the match 0–2/iu)).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /save official result/i }));
     await userEvent.click(await screen.findByRole('button', { name: 'Save result' }));

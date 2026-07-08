@@ -56,7 +56,7 @@ export const GameSetupPanel: React.FC<GameSetupPanelProps> = ({
     <div className="rounded-lg border bg-card p-4">
       <h2 className="mb-1 text-base font-semibold">Game {gameNumber} setup</h2>
       <p className="mb-4 text-xs text-muted-foreground">
-        Pick who's playing this game — you can change players between games.
+        Pick who is playing this game — you can change players between games.
       </p>
 
       <div className="space-y-3">

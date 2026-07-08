@@ -50,6 +50,14 @@ import { useLiveMatchRealtime } from '../useLiveMatchRealtime';
 
 let queryClient: QueryClient;
 
+const findRoundInsertHandler = (): CapturedOn => {
+  const insert = capturedOns.find(
+    (o) => o.config.table === 'match_rounds' && o.config.event === 'INSERT'
+  );
+  if (!insert) throw new Error('No match_rounds INSERT subscription captured');
+  return insert;
+};
+
 const createWrapper = () => {
   queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
   return ({ children }: { children: React.ReactNode }) => (
@@ -91,9 +99,7 @@ describe('useLiveMatchRealtime', () => {
     renderHook(() => useLiveMatchRealtime('match-1'), { wrapper: createWrapper() });
     const spy = vi.spyOn(queryClient, 'invalidateQueries');
 
-    const insert = capturedOns.find(
-      (o) => o.config.table === 'match_rounds' && o.config.event === 'INSERT'
-    )!;
+    const insert = findRoundInsertHandler();
     insert.handler({
       new: { game_id: 'game-1', round_number: 3, team1_score: 5, team2_score: 2 },
       old: {},
@@ -112,9 +118,7 @@ describe('useLiveMatchRealtime', () => {
     } as unknown as LiveMatchBundle);
     const spy = vi.spyOn(queryClient, 'invalidateQueries');
 
-    const insert = capturedOns.find(
-      (o) => o.config.table === 'match_rounds' && o.config.event === 'INSERT'
-    )!;
+    const insert = findRoundInsertHandler();
     insert.handler({
       new: { game_id: 'game-1', round_number: 3, team1_score: 5, team2_score: 2 },
       old: {},

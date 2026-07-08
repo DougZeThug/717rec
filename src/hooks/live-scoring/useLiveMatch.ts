@@ -101,8 +101,11 @@ export function deriveLiveMatch(bundle: LiveMatchBundle): LiveMatchDerived {
 export function useLiveMatch(matchId: string | undefined) {
   const query = useQuery({
     queryKey: liveScoringKeys.liveMatch(matchId ?? ''),
-    queryFn: () => LiveMatchService.fetchLiveMatchBundle(matchId!),
-    enabled: !!matchId,
+    queryFn: () => {
+      if (!matchId) throw new Error('Match id is required');
+      return LiveMatchService.fetchLiveMatchBundle(matchId);
+    },
+    enabled: Boolean(matchId),
     // Realtime invalidation keeps this fresh; keep staleTime short as a backstop.
     staleTime: 15_000,
     retry: (failureCount, error) =>

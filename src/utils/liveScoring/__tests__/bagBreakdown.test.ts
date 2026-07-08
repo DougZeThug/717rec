@@ -61,8 +61,10 @@ describe('getBagBreakdown', () => {
     for (const score of VALID_ROUND_SCORES) {
       for (const bagsIn of isAmbiguousScore(score) ? getAmbiguousOptions(score) : [undefined]) {
         const breakdown = getBagBreakdown(score, bagsIn);
-        expect(breakdown).not.toBeNull();
-        expect(validateBreakdown(score, breakdown!)).toBe(true);
+        if (breakdown === null) {
+          throw new Error(`Breakdown unexpectedly unresolvable for score ${score}`);
+        }
+        expect(validateBreakdown(score, breakdown)).toBe(true);
       }
     }
   });

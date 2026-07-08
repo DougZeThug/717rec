@@ -17,8 +17,11 @@ export function useTeamPlayerSeasonStats(teamId: string | undefined) {
 
   const query = useQuery({
     queryKey: liveScoringKeys.teamPlayerSeasonStats(teamId ?? '', seasonId ?? ''),
-    queryFn: () => PlayerStatsService.fetchTeamPlayerSeasonStats(teamId!, seasonId!),
-    enabled: !!teamId && !!seasonId,
+    queryFn: () => {
+      if (!teamId || !seasonId) throw new Error('Team and season ids are required');
+      return PlayerStatsService.fetchTeamPlayerSeasonStats(teamId, seasonId);
+    },
+    enabled: Boolean(teamId) && Boolean(seasonId),
     staleTime: 60_000,
     retry: (failureCount, error) =>
       !(error instanceof LiveScoringNotEnabledError) && failureCount < 1,

@@ -94,7 +94,8 @@ describe('submitRound', () => {
   });
 
   it('optimistically appends the round with computed cancellation values', async () => {
-    let resolveInsert: (v: unknown) => void = () => {};
+    // Definite-assignment: the Promise executor runs synchronously.
+    let resolveInsert!: (v: unknown) => void;
     mockInsertRound.mockReturnValue(new Promise((resolve) => (resolveInsert = resolve)));
 
     const { result } = renderHook(() => useRoundMutations('match-1'), {

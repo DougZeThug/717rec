@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import type { PlayerStatLine } from '../matchPlayerStats';
 import { computePlayerStatLines } from '../matchPlayerStats';
 
 const round = (
@@ -9,16 +10,22 @@ const round = (
   team2_thrower_id: string | null
 ) => ({ team1_score, team2_score, team1_thrower_id, team2_thrower_id });
 
+const lineFor = (lines: PlayerStatLine[], playerId: string): PlayerStatLine => {
+  const line = lines.find((l) => l.playerId === playerId);
+  if (!line) throw new Error(`No stat line for player ${playerId}`);
+  return line;
+};
+
 describe('computePlayerStatLines', () => {
   it('attributes points to the thrower of each side', () => {
     const lines = computePlayerStatLines([round(8, 5, 'a', 'b'), round(4, 9, 'a', 'b')]);
 
-    const a = lines.find((l) => l.playerId === 'a')!;
-    expect(a).toMatchObject({ roundsThrown: 2, pointsFor: 12, pointsAgainst: 14 });
-    expect(a.ppr).toBeCloseTo(6);
+    const playerA = lineFor(lines, 'a');
+    expect(playerA).toMatchObject({ roundsThrown: 2, pointsFor: 12, pointsAgainst: 14 });
+    expect(playerA.ppr).toBeCloseTo(6);
 
-    const b = lines.find((l) => l.playerId === 'b')!;
-    expect(b).toMatchObject({ roundsThrown: 2, pointsFor: 14, pointsAgainst: 12 });
+    const playerB = lineFor(lines, 'b');
+    expect(playerB).toMatchObject({ roundsThrown: 2, pointsFor: 14, pointsAgainst: 12 });
   });
 
   it('splits rounds between alternating throwers', () => {

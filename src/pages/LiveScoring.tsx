@@ -54,7 +54,7 @@ const LiveScoring: React.FC = () => {
   } else {
     content = (
       <LiveMatchView
-        matchId={matchId!}
+        matchId={bundle.match.id}
         bundle={bundle}
         derived={derived}
         canScore={canScore}

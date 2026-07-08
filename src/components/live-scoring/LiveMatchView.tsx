@@ -215,13 +215,14 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
   };
 
   const renderSetup = () => {
-    if (matchState.nextGameNumber === null) return null;
+    const nextGameNumber = matchState.nextGameNumber;
+    if (nextGameNumber === null) return null;
     const previous = lastCompletedGame;
     return (
       <div className="space-y-3">
         <GameSetupPanel
-          key={`setup-game-${matchState.nextGameNumber}`}
-          gameNumber={matchState.nextGameNumber}
+          key={`setup-game-${nextGameNumber}`}
+          gameNumber={nextGameNumber}
           team1Name={team1Name}
           team2Name={team2Name}
           team1Roster={team1Players.players}
@@ -232,7 +233,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
           isStarting={startGame.isPending}
           onStart={(team1Ids, team2Ids) =>
             startGame.mutate({
-              gameNumber: matchState.nextGameNumber!,
+              gameNumber: nextGameNumber,
               team1Id: match.team1_id ?? '',
               team2Id: match.team2_id ?? '',
               team1PlayerIds: team1Ids,

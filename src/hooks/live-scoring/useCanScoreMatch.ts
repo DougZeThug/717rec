@@ -16,14 +16,16 @@ export function useCanScoreMatch(match: CanScoreMatchInput | undefined) {
   const { isAdminAccessGranted, isLoading: isAdminLoading } = useAdminAccess();
   const { membership, isFetching: isMembershipLoading } = useTeamMembership();
 
-  const isMemberOfMatch =
-    !!match &&
-    !!membership &&
+  const isMemberOfMatch = Boolean(
+    match &&
+    membership &&
     membership.is_approved === true &&
-    (membership.team_id === match.team1_id || membership.team_id === match.team2_id);
+    (membership.team_id === match.team1_id || membership.team_id === match.team2_id)
+  );
 
-  const canScore =
-    !!match && match.iscompleted !== true && (isAdminAccessGranted || isMemberOfMatch);
+  const canScore = Boolean(
+    match && match.iscompleted !== true && (isAdminAccessGranted || isMemberOfMatch)
+  );
 
   return {
     canScore,

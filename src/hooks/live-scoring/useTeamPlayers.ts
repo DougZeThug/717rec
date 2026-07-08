@@ -11,13 +11,19 @@ export function useTeamPlayers(teamId: string | undefined) {
 
   const query = useQuery({
     queryKey: liveScoringKeys.teamPlayers(teamId ?? ''),
-    queryFn: () => TeamPlayersService.fetchTeamPlayers(teamId!),
-    enabled: !!teamId,
+    queryFn: () => {
+      if (!teamId) throw new Error('Team id is required');
+      return TeamPlayersService.fetchTeamPlayers(teamId);
+    },
+    enabled: Boolean(teamId),
     staleTime: 5 * 60 * 1000,
   });
 
   const addPlayer = useMutation({
-    mutationFn: (displayName: string) => TeamPlayersService.addTeamPlayer(teamId!, displayName),
+    mutationFn: (displayName: string) => {
+      if (!teamId) throw new Error('Team id is required');
+      return TeamPlayersService.addTeamPlayer(teamId, displayName);
+    },
     onSuccess: (player) => {
       toast({ title: 'Player added', description: `${player.display_name} joined the roster.` });
       queryClient.invalidateQueries({ queryKey: liveScoringKeys.teamPlayers(teamId ?? '') });

@@ -121,9 +121,9 @@ export const CompletedMatchReview: React.FC<CompletedMatchReviewProps> = ({
             <AlertDialogHeader>
               <AlertDialogTitle>Reopen this match?</AlertDialogTitle>
               <AlertDialogDescription>
-                The official result is removed and both teams' records are reverted. The scored
-                games and rounds are kept so you can correct them and save the result again.
-                Standings update immediately.
+                The official result is removed and both team records are reverted. The scored games
+                and rounds are kept so you can correct them and save the result again. Standings
+                update immediately.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
