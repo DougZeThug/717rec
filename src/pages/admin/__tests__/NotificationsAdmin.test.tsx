@@ -130,7 +130,7 @@ describe('NotificationsAdmin', () => {
     });
     mockUpdateMutateAsync.mockResolvedValueOnce({ ...notification, title: 'New title', body: 'New body' });
 
-    render(<NotificationsAdmin />);
+    render(<NotificationsAdmin />, { wrapper: createWrapper() });
 
     await user.click(screen.getByRole('button', { name: 'Edit' }));
 
