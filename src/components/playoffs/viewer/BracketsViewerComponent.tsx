@@ -178,7 +178,12 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
           setSelectedBMMatchId(null);
         }}
         onSaved={() => {
-          setRefreshCounter((c) => c + 1);
+          // When realtime is active, the refreshSignal effect already bumps the
+          // counter, so a direct increment here would trigger redundant SQL
+          // queries. Only fall back to manual refresh when realtime is disabled.
+          if (!realtimeEnabled) {
+            setRefreshCounter((c) => c + 1);
+          }
         }}
       />
     </>
