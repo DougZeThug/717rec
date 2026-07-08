@@ -77,6 +77,7 @@ describe('NotificationsAdmin', () => {
       mutate: mockDeleteMutate,
       isPending: false,
     });
+    mockUseContactRequests.mockReturnValue({ data: [], isLoading: false });
   });
 
   it('exits edit mode and clears fields when the edited notification is deleted', async () => {
