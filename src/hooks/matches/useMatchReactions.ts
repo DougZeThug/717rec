@@ -53,7 +53,11 @@ export const useMatchReactions = (matchId: string) => {
     try {
       setIsLoading(true);
       const data = await MatchReactionsService.fetchReactions(matchId);
-      setReactions(data);
+      setReactions((curr) => {
+        const fetchedIds = new Set(data.map((r) => r.id));
+        const realtimeOnly = curr.filter((r) => !fetchedIds.has(r.id));
+        return [...data, ...realtimeOnly];
+      });
     } catch (err) {
       errorLog('Error fetching match reactions:', err);
     } finally {
