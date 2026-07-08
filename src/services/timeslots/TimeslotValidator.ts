@@ -52,6 +52,16 @@ export class TimeslotValidator {
       return { valid: false, error: 'Timeslot is required' };
     }
 
+    // Validate date is not in the past
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selectedDate = new Date(date);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    if (selectedDate < today) {
+      return { valid: false, error: 'Cannot assign timeslots to past dates' };
+    }
+
     return { valid: true };
   }
 }

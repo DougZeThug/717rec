@@ -64,6 +64,13 @@ describe('validateBatchAssignment', () => {
     expect(result.error).toBe('Timeslot is required');
   });
 
+  it('returns invalid for a past date', () => {
+    const past = new Date('2020-01-01');
+    const result = TimeslotValidator.validateBatchAssignment(past, ['t-1', 't-2'], '6:30 PM');
+    expect(result.valid).toBe(false);
+    expect(result.error).toBe('Cannot assign timeslots to past dates');
+  });
+
   it('returns valid when all fields are provided', () => {
     const result = TimeslotValidator.validateBatchAssignment(tomorrow, ['t-1', 't-2'], '6:30 PM');
     expect(result.valid).toBe(true);
