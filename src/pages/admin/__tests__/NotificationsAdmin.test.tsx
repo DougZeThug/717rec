@@ -34,6 +34,9 @@ vi.mock('@/hooks/notifications/useNotificationMutations', () => ({
 }));
 vi.mock('@/hooks/contact/useContactRequests', () => ({
   useContactRequests: () => mockUseContactRequests(),
+  useMarkContactRequestResolved: () => ({ mutate: vi.fn(), isPending: false }),
+  useReopenContactRequest: () => ({ mutate: vi.fn(), isPending: false }),
+  useDeleteContactRequest: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 vi.mock('@/hooks/useToast', () => ({
   toast: (payload: unknown) => mockToast(payload),
