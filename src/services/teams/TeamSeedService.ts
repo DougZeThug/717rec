@@ -64,7 +64,7 @@ function isBulkTeamSeedUpdateResult(value: unknown): value is BulkTeamSeedUpdate
 
   const candidate = value as Record<string, unknown>;
 
-  return typeof candidate.ok === 'boolean';
+  return typeof candidate.success === 'boolean';
 }
 
 function parseBulkTeamSeedUpdateResults(data: unknown): BulkTeamSeedUpdateResult[] {
