@@ -1,5 +1,5 @@
 import { Trash2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import ContactInboxSection from '@/components/admin/contact/ContactInboxSection';
 import { Button } from '@/components/ui/button';
