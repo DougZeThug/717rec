@@ -48,7 +48,13 @@ export function subscribeWithRetry(options: SubscribeWithRetryOptions): { dispos
 
     channel.subscribe((status) => {
       if (disposed) return;
+      // Ignore events from a stale channel that is being cleaned up (e.g.
+      // removeChannel() can synchronously emit CLOSED before the binding is
+      // removed). Without this guard, cleanup-triggered CLOSED would schedule
+      // another reconnect and create a loop.
+      if (channel !== currentChannel) return;
       onStatus?.(status);
+
 
       if (status === 'SUBSCRIBED') {
         const isFirst = !hasConnectedOnce;
