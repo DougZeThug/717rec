@@ -9,8 +9,7 @@ import { LiveScoringNotEnabledError } from '@/types/errors';
 const mockUseTeamPlayerSeasonStats = vi.fn();
 
 vi.mock('@/hooks/live-scoring/useTeamPlayerSeasonStats', () => ({
-  useTeamPlayerSeasonStats: (teamId: string | undefined) =>
-    mockUseTeamPlayerSeasonStats(teamId),
+  useTeamPlayerSeasonStats: (teamId: string | undefined) => mockUseTeamPlayerSeasonStats(teamId),
 }));
 
 import TeamPlayerStatsSection from '../TeamPlayerStatsSection';
@@ -69,7 +68,9 @@ describe('TeamPlayerStatsSection', () => {
       error: null,
     });
 
-    const { container } = render(<TeamPlayerStatsSection teamId="team-1" />, { wrapper: MemoryRouter });
+    const { container } = render(<TeamPlayerStatsSection teamId="team-1" />, {
+      wrapper: MemoryRouter,
+    });
     expect(container).toBeEmptyDOMElement();
   });
 
@@ -81,7 +82,9 @@ describe('TeamPlayerStatsSection', () => {
       error: new LiveScoringNotEnabledError(),
     });
 
-    const { container } = render(<TeamPlayerStatsSection teamId="team-1" />, { wrapper: MemoryRouter });
+    const { container } = render(<TeamPlayerStatsSection teamId="team-1" />, {
+      wrapper: MemoryRouter,
+    });
     expect(container).toBeEmptyDOMElement();
   });
 });

@@ -61,7 +61,9 @@ describe('fetchTeamPlayers', () => {
   it('maps a missing table to LiveScoringNotEnabledError', async () => {
     mockFrom.mockReturnValue({
       select: () => ({
-        eq: () => ({ eq: () => ({ order: () => Promise.resolve({ data: null, error: pgError('42P01') }) }) }),
+        eq: () => ({
+          eq: () => ({ order: () => Promise.resolve({ data: null, error: pgError('42P01') }) }),
+        }),
       }),
     });
 

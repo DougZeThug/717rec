@@ -49,17 +49,32 @@ export function useLiveMatchRealtime(matchId: string | undefined) {
           .channel(`live-match-${matchId}-${Math.random().toString(36).slice(2)}`)
           .on(
             'postgres_changes',
-            { event: 'INSERT', schema: 'public', table: 'match_rounds', filter: `match_id=eq.${matchId}` },
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'match_rounds',
+              filter: `match_id=eq.${matchId}`,
+            },
             (payload) => onRoundInsert(payload.new as RoundInsertPayload)
           )
           .on(
             'postgres_changes',
-            { event: 'DELETE', schema: 'public', table: 'match_rounds', filter: `match_id=eq.${matchId}` },
+            {
+              event: 'DELETE',
+              schema: 'public',
+              table: 'match_rounds',
+              filter: `match_id=eq.${matchId}`,
+            },
             invalidate
           )
           .on(
             'postgres_changes',
-            { event: 'UPDATE', schema: 'public', table: 'match_rounds', filter: `match_id=eq.${matchId}` },
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'match_rounds',
+              filter: `match_id=eq.${matchId}`,
+            },
             invalidate
           )
           .on(

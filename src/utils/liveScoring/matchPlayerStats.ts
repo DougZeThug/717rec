@@ -21,7 +21,10 @@ export interface PlayerStatLine {
  * purely from thrower attribution — used by the live summary screens.
  */
 export function computePlayerStatLines(rounds: RoundForStats[]): PlayerStatLine[] {
-  const byPlayer = new Map<string, { roundsThrown: number; pointsFor: number; pointsAgainst: number }>();
+  const byPlayer = new Map<
+    string,
+    { roundsThrown: number; pointsFor: number; pointsAgainst: number }
+  >();
 
   const add = (playerId: string | null, pointsFor: number, pointsAgainst: number) => {
     if (!playerId) return;

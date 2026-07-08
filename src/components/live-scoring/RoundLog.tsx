@@ -42,7 +42,9 @@ export const RoundLog: React.FC<RoundLogProps> = ({
 
         return (
           <li key={round.id} className="flex items-center gap-3 px-3 py-2 text-sm">
-            <span className="w-8 shrink-0 text-xs text-muted-foreground">R{round.round_number}</span>
+            <span className="w-8 shrink-0 text-xs text-muted-foreground">
+              R{round.round_number}
+            </span>
             <span className="shrink-0 font-semibold tabular-nums">
               {round.team1_score}–{round.team2_score}
             </span>

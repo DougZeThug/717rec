@@ -128,8 +128,6 @@ describe('reopen', () => {
       await result.current.reopen.mutateAsync();
     });
 
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Nothing to reopen' })
-    );
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Nothing to reopen' }));
   });
 });

@@ -33,11 +33,7 @@ vi.mock('@/integrations/supabase/client', () => ({
     channel: (name: string) => {
       capturedChannelName = name;
       const chain = {
-        on: (
-          _type: string,
-          config: CapturedOn['config'],
-          handler: ChannelHandler
-        ) => {
+        on: (_type: string, config: CapturedOn['config'], handler: ChannelHandler) => {
           capturedOns.push({ config, handler });
           return chain;
         },
@@ -75,11 +71,11 @@ describe('useLiveMatchRealtime', () => {
     expect(capturedChannelName).toContain('live-match-match-1');
 
     const byTable = (table: string) => capturedOns.filter((o) => o.config.table === table);
-    expect(byTable('match_rounds').map((o) => o.config.event).sort()).toEqual([
-      'DELETE',
-      'INSERT',
-      'UPDATE',
-    ]);
+    expect(
+      byTable('match_rounds')
+        .map((o) => o.config.event)
+        .sort()
+    ).toEqual(['DELETE', 'INSERT', 'UPDATE']);
     expect(byTable('match_rounds')[0].config.filter).toBe('match_id=eq.match-1');
     expect(byTable('games')).toHaveLength(1);
     expect(byTable('games')[0].config.filter).toBe('match_id=eq.match-1');

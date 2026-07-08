@@ -37,9 +37,7 @@ export const PlayerSelector: React.FC<PlayerSelectorProps> = ({
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState('');
 
-  const selectedNames = roster
-    .filter((p) => selectedIds.includes(p.id))
-    .map((p) => p.display_name);
+  const selectedNames = roster.filter((p) => selectedIds.includes(p.id)).map((p) => p.display_name);
 
   const toggle = (playerId: string, checked: boolean) => {
     if (checked) {

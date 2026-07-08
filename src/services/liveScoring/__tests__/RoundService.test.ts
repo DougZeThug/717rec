@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DatabaseError, DuplicateRoundError, LiveScoringNotEnabledError, ValidationError } from '@/types/errors';
+import {
+  DatabaseError,
+  DuplicateRoundError,
+  LiveScoringNotEnabledError,
+  ValidationError,
+} from '@/types/errors';
 
 // ─── Supabase mock (liveDb wraps the same client module) ─────────────────────
 
@@ -18,8 +23,8 @@ vi.mock('@/utils/logger', () => ({
 }));
 
 // Import after mocks
-import { RoundService } from '../RoundService';
 import type { InsertRoundInput } from '../RoundService';
+import { RoundService } from '../RoundService';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

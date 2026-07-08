@@ -169,10 +169,38 @@ describe('deriveLiveMatch', () => {
         games: [gameRow()],
         rounds: [roundRow({ round_number: 1, team1_thrower_id: 'p1', team2_thrower_id: 'p3' })],
         gamePlayers: [
-          { id: 'gp1', game_id: 'game-1', team_id: 'team-1', player_id: 'p1', slot: 1, created_at: '' },
-          { id: 'gp2', game_id: 'game-1', team_id: 'team-1', player_id: 'p2', slot: 2, created_at: '' },
-          { id: 'gp3', game_id: 'game-1', team_id: 'team-2', player_id: 'p3', slot: 1, created_at: '' },
-          { id: 'gp4', game_id: 'game-1', team_id: 'team-2', player_id: 'p4', slot: 2, created_at: '' },
+          {
+            id: 'gp1',
+            game_id: 'game-1',
+            team_id: 'team-1',
+            player_id: 'p1',
+            slot: 1,
+            created_at: '',
+          },
+          {
+            id: 'gp2',
+            game_id: 'game-1',
+            team_id: 'team-1',
+            player_id: 'p2',
+            slot: 2,
+            created_at: '',
+          },
+          {
+            id: 'gp3',
+            game_id: 'game-1',
+            team_id: 'team-2',
+            player_id: 'p3',
+            slot: 1,
+            created_at: '',
+          },
+          {
+            id: 'gp4',
+            game_id: 'game-1',
+            team_id: 'team-2',
+            player_id: 'p4',
+            slot: 2,
+            created_at: '',
+          },
         ],
       })
     );

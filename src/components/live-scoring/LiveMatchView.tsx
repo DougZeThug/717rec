@@ -11,16 +11,16 @@ import type { LiveMatchBundle } from '@/services/liveScoring/LiveMatchService';
 import { DEFAULT_GAME_RULES } from '@/utils/liveScoring/rules';
 
 import { CompletedMatchReview } from './CompletedMatchReview';
-import { CompleteMatchDialog } from './CompleteMatchDialog';
 import type { GameLine } from './CompleteMatchDialog';
+import { CompleteMatchDialog } from './CompleteMatchDialog';
 import { GameScoreboard } from './GameScoreboard';
 import { GameSetupPanel } from './GameSetupPanel';
 import { GameWonBanner } from './GameWonBanner';
 import { LiveScoringControls } from './LiveScoringControls';
 import { MatchScoringHeader } from './MatchScoringHeader';
 import { RoundLog } from './RoundLog';
-import { RoundScoreInput } from './RoundScoreInput';
 import type { RoundSubmission } from './RoundScoreInput';
+import { RoundScoreInput } from './RoundScoreInput';
 import { ThrowerBar } from './ThrowerBar';
 
 interface LiveMatchViewProps {

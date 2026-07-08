@@ -37,12 +37,40 @@ vi.mock('@/hooks/live-scoring/useTeamPlayers', () => ({
     players:
       teamId === 'team-1'
         ? [
-            { id: 'p1', team_id: 'team-1', display_name: 'Doug', profile_id: null, is_active: true, created_at: '' },
-            { id: 'p2', team_id: 'team-1', display_name: 'Bill', profile_id: null, is_active: true, created_at: '' },
+            {
+              id: 'p1',
+              team_id: 'team-1',
+              display_name: 'Doug',
+              profile_id: null,
+              is_active: true,
+              created_at: '',
+            },
+            {
+              id: 'p2',
+              team_id: 'team-1',
+              display_name: 'Bill',
+              profile_id: null,
+              is_active: true,
+              created_at: '',
+            },
           ]
         : [
-            { id: 'p3', team_id: 'team-2', display_name: 'Sara', profile_id: null, is_active: true, created_at: '' },
-            { id: 'p4', team_id: 'team-2', display_name: 'Anne', profile_id: null, is_active: true, created_at: '' },
+            {
+              id: 'p3',
+              team_id: 'team-2',
+              display_name: 'Sara',
+              profile_id: null,
+              is_active: true,
+              created_at: '',
+            },
+            {
+              id: 'p4',
+              team_id: 'team-2',
+              display_name: 'Anne',
+              profile_id: null,
+              is_active: true,
+              created_at: '',
+            },
           ],
     isLoading: false,
     error: null,

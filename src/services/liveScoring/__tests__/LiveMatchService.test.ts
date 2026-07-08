@@ -137,15 +137,19 @@ describe('fetchLiveMatchBundle', () => {
   });
 
   it('maps a missing match_rounds table to LiveScoringNotEnabledError', async () => {
-    routeTables({
-      matches: matchChain({ data: matchRow(), error: null }),
-      games: selectEqOrderChain({ data: [], error: null }),
-      match_rounds: selectEqOrderChain({ data: null, error: pgError('42P01') }),
-    });
+    // PGRST205 is what PostgREST actually returns for a table missing from
+    // its schema cache (verified against the live API pre-migration).
+    for (const code of ['PGRST205', '42P01']) {
+      routeTables({
+        matches: matchChain({ data: matchRow(), error: null }),
+        games: selectEqOrderChain({ data: [], error: null }),
+        match_rounds: selectEqOrderChain({ data: null, error: pgError(code) }),
+      });
 
-    await expect(LiveMatchService.fetchLiveMatchBundle('match-1')).rejects.toBeInstanceOf(
-      LiveScoringNotEnabledError
-    );
+      await expect(LiveMatchService.fetchLiveMatchBundle('match-1')).rejects.toBeInstanceOf(
+        LiveScoringNotEnabledError
+      );
+    }
   });
 });
 

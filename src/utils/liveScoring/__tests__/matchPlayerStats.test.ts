@@ -11,10 +11,7 @@ const round = (
 
 describe('computePlayerStatLines', () => {
   it('attributes points to the thrower of each side', () => {
-    const lines = computePlayerStatLines([
-      round(8, 5, 'a', 'b'),
-      round(4, 9, 'a', 'b'),
-    ]);
+    const lines = computePlayerStatLines([round(8, 5, 'a', 'b'), round(4, 9, 'a', 'b')]);
 
     const a = lines.find((l) => l.playerId === 'a')!;
     expect(a).toMatchObject({ roundsThrown: 2, pointsFor: 12, pointsAgainst: 14 });

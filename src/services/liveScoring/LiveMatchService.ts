@@ -2,7 +2,7 @@ import type { PostgrestError } from '@supabase/supabase-js';
 
 import { supabase } from '@/integrations/supabase/client';
 import { LiveScoringNotEnabledError } from '@/types/errors';
-import { handleDatabaseError, ensureFound } from '@/utils/errorHandler';
+import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 import { MAX_PLAYERS_PER_SIDE } from '@/utils/liveScoring/rules';
 
 import type { GamePlayerRow, LiveGameRow, MatchRoundRow } from './dbTypes';
@@ -52,8 +52,13 @@ export interface LiveMatchBundle {
  * applied, PostgREST reports 42P01 (relation does not exist). Surface that as
  * a typed "not enabled" error so the UI can degrade gracefully.
  */
+// PGRST205/PGRST202: PostgREST schema-cache miss for a table/function (what
+// the live API actually returns pre-migration). 42P01: undefined relation at
+// the Postgres level (e.g. surfaced through an RPC).
+const NOT_ENABLED_CODES = ['PGRST205', 'PGRST202', '42P01'];
+
 export function handleLiveScoringError(error: PostgrestError, context: string): never {
-  if (error.code === '42P01') {
+  if (NOT_ENABLED_CODES.includes(error.code)) {
     throw new LiveScoringNotEnabledError();
   }
   handleDatabaseError(error, context);

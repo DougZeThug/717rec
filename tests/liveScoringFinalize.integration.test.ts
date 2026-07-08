@@ -129,9 +129,7 @@ describe('standings refresh wiring', () => {
     // The finalize hook refreshes standings through the shared invalidation
     // helper — assert the helper touches the core keys so a rename there
     // can't silently detach live scoring from standings updates.
-    const { invalidateMatchRelatedQueries } = await import(
-      '@/hooks/matches/utils/queryCacheUtils'
-    );
+    const { invalidateMatchRelatedQueries } = await import('@/hooks/matches/utils/queryCacheUtils');
     const queryClient = new QueryClient();
     const spy = vi.spyOn(queryClient, 'invalidateQueries');
 
