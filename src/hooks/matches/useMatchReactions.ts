@@ -53,16 +53,19 @@ export const useMatchReactions = (matchId: string) => {
   const fetchReactions = useCallback(async () => {
     if (!matchId) return;
     try {
+      isFetchingRef.current = true;
+      deletedDuringFetchRef.current.clear();
       setIsLoading(true);
       const data = await MatchReactionsService.fetchReactions(matchId);
       setReactions((curr) => {
         const fetchedIds = new Set(data.map((r) => r.id));
         const realtimeOnly = curr.filter((r) => !fetchedIds.has(r.id));
-        return [...data, ...realtimeOnly];
+        return [...data, ...realtimeOnly].filter((r) => !deletedDuringFetchRef.current.has(r.id));
       });
     } catch (err) {
       errorLog('Error fetching match reactions:', err);
     } finally {
+      isFetchingRef.current = false;
       setIsLoading(false);
     }
   }, [matchId]);
