@@ -99,4 +99,13 @@ describe('HeadToHeadRecords', () => {
     renderRecords();
     expect(screen.getByText('No head-to-head records yet')).toBeInTheDocument();
   });
+
+  it('renders clickable opponent name as a keyboard-accessible button', () => {
+    renderRecords();
+    const opponentButton = screen
+      .getAllByRole('button')
+      .find((btn) => btn.textContent?.includes('Bandits'));
+    expect(opponentButton).toBeDefined();
+    expect(opponentButton).toHaveAttribute('tabIndex', '0');
+  });
 });

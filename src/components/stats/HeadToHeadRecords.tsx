@@ -264,10 +264,19 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
                           const badge = rivalryType ? rivalryBadgeConfig[rivalryType] : null;
                           return (
                             <div
+                              role="button"
+                              tabIndex={0}
+                              aria-label={`View team details for ${record.opponent_name}`}
                               className="flex items-center space-x-3 cursor-pointer hover:bg-muted/30 rounded-md p-1 -m-1 transition-colors"
                               onClick={() =>
                                 handleTeamClick(record.opponent_id, record.opponent_name)
                               }
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  handleTeamClick(record.opponent_id, record.opponent_name);
+                                }
+                              }}
                             >
                               {record.opponent_image_url ? (
                                 <img
