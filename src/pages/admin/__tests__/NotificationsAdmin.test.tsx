@@ -78,8 +78,9 @@ describe('NotificationsAdmin', () => {
   it('exits edit mode and clears fields when the edited notification is deleted', async () => {
     const user = userEvent.setup();
     const notification = makeNotification('n-1', 'Old title', 'Old body');
+    const Wrapper = createWrapper();
 
-    const { rerender } = render(<NotificationsAdmin />, { wrapper: createWrapper() });
+    const { rerender } = render(<NotificationsAdmin />, { wrapper: Wrapper });
 
     // Wait for the empty state to render, then simulate a notification arriving.
     await waitFor(() =>
@@ -90,7 +91,7 @@ describe('NotificationsAdmin', () => {
       data: [notification],
       isLoading: false,
     });
-    rerender(<NotificationsAdmin />, { wrapper: createWrapper() });
+    rerender(<NotificationsAdmin />);
 
     await user.click(screen.getByRole('button', { name: 'Edit' }));
 
