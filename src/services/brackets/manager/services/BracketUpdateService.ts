@@ -42,16 +42,15 @@ export class BracketUpdateService {
 
     bracketLog('🎯 BracketUpdateService.updateMatch() START:', { matchId, scores });
 
-    // Guard against negative scores at the service boundary, regardless of UI clamping.
-    if (scores.opponent1?.score !== undefined) {
-      assertNonNegativeNumber(scores.opponent1.score, 'Opponent 1 score');
-    }
-    if (scores.opponent2?.score !== undefined) {
-      assertNonNegativeNumber(scores.opponent2.score, 'Opponent 2 score');
-    }
-
     // Serialize updates to prevent race conditions
     return matchUpdateQueue.enqueue(async () => {
+      // Guard against negative scores at the service boundary, regardless of UI clamping.
+      if (scores.opponent1?.score !== undefined) {
+        assertNonNegativeNumber(scores.opponent1.score, 'Opponent 1 score');
+      }
+      if (scores.opponent2?.score !== undefined) {
+        assertNonNegativeNumber(scores.opponent2.score, 'Opponent 2 score');
+      }
       try {
         const ctx = this.getContext();
 
