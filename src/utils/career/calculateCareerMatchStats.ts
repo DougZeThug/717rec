@@ -43,6 +43,12 @@ export const calculateCareerMatchStats = ({
   // Add current season matches
   if (currentMatches) {
     for (const match of currentMatches) {
+      // Skip past-season matches: their totals are already included via historical
+      // seasonStats (team_season_stats aggregates the matches table too). Only the
+      // active season should be counted live here to avoid double-counting.
+      if (currentSeasonId && match.season_id && match.season_id !== currentSeasonId) {
+        continue;
+      }
       if (match.winner_id === teamId) {
         career_match_wins++;
         career_game_wins +=

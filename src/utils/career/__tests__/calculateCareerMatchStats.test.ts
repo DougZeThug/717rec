@@ -263,4 +263,52 @@ describe('calculateCareerMatchStats', () => {
       career_game_losses: 0,
     });
   });
+
+  it('does not double-count past-season matches left in the matches table', () => {
+    // A past season already aggregated into seasonStats (team_season_stats)...
+    const seasonStats: SeasonStats[] = [
+      {
+        match_wins: 5,
+        match_losses: 3,
+        game_wins: 12,
+        game_losses: 8,
+        champion: null,
+        runner_up: null,
+        playoff_rank: null,
+        sos: null,
+        division_name: null,
+        season_id: 'past-season',
+      },
+    ];
+
+    // ...and the same past-season match still sitting in the matches table
+    // (e.g. after a plain activate_season that didn't archive it). It must NOT
+    // be counted again on top of the seasonStats aggregate above.
+    const currentMatches: MatchData[] = [
+      {
+        winner_id: 'team-1',
+        loser_id: 'team-2',
+        team1_id: 'team-1',
+        team2_id: 'team-2',
+        team1_game_wins: 2,
+        team2_game_wins: 0,
+        season_id: 'past-season',
+      },
+    ];
+
+    const result = calculateCareerMatchStats({
+      seasonStats,
+      currentMatches,
+      teamId,
+      currentSeasonId: 'current-season',
+    });
+
+    // Past season counted ONCE (from seasonStats), not twice.
+    expect(result).toEqual({
+      career_match_wins: 5, // not 6
+      career_match_losses: 3,
+      career_game_wins: 12, // not 14
+      career_game_losses: 8,
+    });
+  });
 });

@@ -41,7 +41,9 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
       `
       )
       .eq('team_id', teamId),
-    // Get current season matches with opponent team info
+    // Get all completed matches still in the `matches` table (typically the current
+    // season, but past-season rows can remain here if a season was switched without
+    // archiving). Season filtering for career totals happens in calculateCareerMatchStats.
     supabase
       .from('matches')
       .select(
