@@ -75,3 +75,27 @@ export class BusinessLogicError extends ServiceError {
     this.name = 'BusinessLogicError';
   }
 }
+
+/**
+ * A live-scoring round was already recorded for this game/round number
+ * (another scorer got there first — unique constraint on the round log)
+ */
+export class DuplicateRoundError extends BusinessLogicError {
+  constructor(gameId: string, roundNumber: number) {
+    super(`Round ${roundNumber} was already recorded for this game`, { gameId, roundNumber });
+    this.name = 'DuplicateRoundError';
+  }
+}
+
+/**
+ * The live-scoring tables don't exist yet (database migration not applied)
+ */
+export class LiveScoringNotEnabledError extends ServiceError {
+  constructor() {
+    super(
+      'Live scoring is not enabled yet — the database update has not been applied',
+      'LIVE_SCORING_NOT_ENABLED'
+    );
+    this.name = 'LiveScoringNotEnabledError';
+  }
+}
