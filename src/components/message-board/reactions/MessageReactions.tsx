@@ -43,7 +43,7 @@ const MessageReactions: React.FC<MessageReactionsProps> = ({
   if (isLoading) {
     return (
       <div className="flex items-center gap-1 mt-2 h-6">
-        <Skeleton className="size-6 rounded-full" />
+        <Skeleton className="size-6 rounded-full bg-muted/20" />
       </div>
     );
   }

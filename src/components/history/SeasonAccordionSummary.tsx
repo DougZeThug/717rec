@@ -190,8 +190,8 @@ const SeasonAccordionSummary: React.FC<SeasonAccordionSummaryProps> = ({
   isLoading ? (
     <div className="px-3 py-4 md:px-6">
       <div className="flex gap-3">
-        <Skeleton className="flex-1 h-16 rounded-lg" />
-        <Skeleton className="flex-1 h-16 rounded-lg" />
+        <Skeleton className="flex-1 h-16 rounded-lg bg-muted/50" />
+        <Skeleton className="flex-1 h-16 rounded-lg bg-muted/50" />
       </div>
     </div>
   ) : seasonData && seasonData.length > 0 ? (
