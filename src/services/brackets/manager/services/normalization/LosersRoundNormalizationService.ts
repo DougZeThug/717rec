@@ -48,6 +48,8 @@ export class LosersRoundNormalizationService {
               opponent2_id: null,
               opponent2_score: null,
               opponent2_result: null,
+              opponent1_result: 'win',
+              opponent1_score: 0,
               status: 4,
             })
             .eq('id', match.id);
