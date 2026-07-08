@@ -78,9 +78,7 @@ const NotificationsAdmin: React.FC<{ currentTimeMs?: number }> = ({
     if (editingId && !editing) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- clear stale edit state when the underlying notification is removed by a realtime update
       setEditingId(null);
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- reset form fields alongside the cleared edit state
       setTitle('');
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- reset form fields alongside the cleared edit state
       setBody('');
       toast({
         title: 'Notification deleted',
