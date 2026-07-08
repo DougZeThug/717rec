@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { BusinessLogicError } from '@/types/errors';
+import { BusinessLogicError, ValidationError } from '@/types/errors';
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
