@@ -425,13 +425,21 @@ describe('BracketNormalizationService', () => {
         .mockResolvedValueOnce([{ id: 21, number: 1 }])
         .mockResolvedValueOnce([{ id: 31, status: 1, opponent1: { id: 8 }, opponent2: { id: 8 } }]);
 
-      const { eq } = mockSupabaseDirectUpdate({ error: null });
+      const { update, eq } = mockSupabaseDirectUpdate({ error: null });
 
       const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
       await service.normalizeLosersR1(100);
 
       expect(mockFrom).toHaveBeenCalledWith('match');
       expect(eq).toHaveBeenCalledWith('id', 31);
+      expect(update).toHaveBeenCalledWith({
+        opponent2_id: null,
+        opponent2_score: null,
+        opponent2_result: null,
+        opponent1_result: 'win',
+        opponent1_score: 0,
+        status: 4,
+      });
       expect(storage.clearParticipantCache).toHaveBeenCalledTimes(2);
     });
 
