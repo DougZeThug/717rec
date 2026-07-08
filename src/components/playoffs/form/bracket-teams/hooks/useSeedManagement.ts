@@ -127,11 +127,10 @@ export const useSeedManagement = (
   const switchMode = useCallback(
     (newMode: 'automatic' | 'manual') => {
       setMode(newMode);
-      if (newMode === 'automatic') {
-        resetToAutomatic();
-      }
+      // Do NOT reset pending changes when toggling modes; the dedicated
+      // "Reset to Auto" button is the explicit path for discarding edits.
     },
-    [resetToAutomatic]
+    []
   );
 
   return {
