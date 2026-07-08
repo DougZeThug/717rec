@@ -61,7 +61,7 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
             type="number"
             min="0"
             value={opponent1Score}
-            onChange={(e) => setOpponent1Score(parseInt(e.target.value) || 0)}
+            onChange={(e) => setOpponent1Score(Math.max(0, parseInt(e.target.value) || 0))}
             className="w-full"
           />
         </div>
@@ -74,7 +74,7 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
             type="number"
             min="0"
             value={opponent2Score}
-            onChange={(e) => setOpponent2Score(parseInt(e.target.value) || 0)}
+            onChange={(e) => setOpponent2Score(Math.max(0, parseInt(e.target.value) || 0))}
             className="w-full"
           />
         </div>
