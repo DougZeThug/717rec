@@ -120,6 +120,23 @@ describe('StatsContainer', () => {
     expect(screen.queryByTestId('full-rankings')).not.toBeInTheDocument();
   });
 
+  it('calls useTeamRankings refetch when the retry button is clicked', () => {
+    mockTeamsQuery = { data: [], isLoading: false, error: new Error('Teams unavailable') };
+
+    render(
+      <StatsContainer
+        matches={[]}
+        isLoadingMatches={false}
+        matchesError={new Error('Matches unavailable')}
+      />
+    );
+
+    const retryButton = screen.getByRole('button', { name: /try again/i });
+    fireEvent.click(retryButton);
+
+    expect(mockRankingsResult.refetch).toHaveBeenCalledTimes(1);
+  });
+
   it('renders an empty state when rankings are loaded but no teams are available', () => {
     render(<StatsContainer matches={[]} isLoadingMatches={false} matchesError={null} />);
 
