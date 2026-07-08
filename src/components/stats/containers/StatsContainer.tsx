@@ -43,7 +43,9 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
   const hasError = teamsError || matchesError;
 
   if (hasError) {
-    return <StatsErrorState teamsError={teamsError} matchesError={matchesError} onRetry={refetch} />;
+    return (
+      <StatsErrorState teamsError={teamsError} matchesError={matchesError} onRetry={refetch} />
+    );
   }
 
   if (isLoading) {

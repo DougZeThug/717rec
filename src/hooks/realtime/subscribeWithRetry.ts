@@ -55,7 +55,6 @@ export function subscribeWithRetry(options: SubscribeWithRetryOptions): { dispos
       if (channel !== currentChannel) return;
       onStatus?.(status);
 
-
       if (status === 'SUBSCRIBED') {
         const isFirst = !hasConnectedOnce;
         hasConnectedOnce = true;
