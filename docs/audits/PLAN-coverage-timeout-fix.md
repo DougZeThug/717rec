@@ -63,9 +63,8 @@ primary lever:
   would prevent vitest from exiting (Sentry/analytics timeouts are
   gated behind `initSentry()` / `initAnalytics()` which test entry
   points don't call).
-- No unmocked `recharts` / `framer-motion` / `brackets-viewer` /
-  `exceljs` in tests — sweep confirmed those are mocked everywhere
-  they appear.
+- No unmocked `recharts` / `framer-motion` / `brackets-viewer`
+  in tests — sweep confirmed those are mocked everywhere they appear.
 
 ### 1d. What the user actually saw in their last run
 
