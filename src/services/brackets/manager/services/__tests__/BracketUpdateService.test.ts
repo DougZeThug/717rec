@@ -350,4 +350,91 @@ describe('BracketUpdateService', () => {
       expect(mockNormalizationService.repairGrandFinalWithRetries).not.toHaveBeenCalled();
     });
   });
+
+  describe('score validation', () => {
+    it('throws ValidationError when opponent1 score is negative', async () => {
+      await expect(
+        service.updateMatch({
+          matchId: 1,
+          scores: {
+            opponent1: { score: -1, result: 'win' },
+            opponent2: { score: 0, result: 'loss' },
+          },
+        })
+      ).rejects.toThrow(ValidationError);
+
+      await expect(
+        service.updateMatch({
+          matchId: 1,
+          scores: {
+            opponent1: { score: -1, result: 'win' },
+            opponent2: { score: 0, result: 'loss' },
+          },
+        })
+      ).rejects.toThrow(/Opponent 1 score must be a non-negative number/);
+    });
+
+    it('throws ValidationError when opponent2 score is negative', async () => {
+      await expect(
+        service.updateMatch({
+          matchId: 1,
+          scores: {
+            opponent1: { score: 2, result: 'win' },
+            opponent2: { score: -5, result: 'loss' },
+          },
+        })
+      ).rejects.toThrow(ValidationError);
+
+      await expect(
+        service.updateMatch({
+          matchId: 1,
+          scores: {
+            opponent1: { score: 2, result: 'win' },
+            opponent2: { score: -5, result: 'loss' },
+          },
+        })
+      ).rejects.toThrow(/Opponent 2 score must be a non-negative number/);
+    });
+
+    it('allows undefined scores to pass validation', async () => {
+      const byeMatch = {
+        id: 1,
+        stage_id: 10,
+        group_id: 1,
+        round_id: 100,
+        number: 1,
+        status: 2,
+        opponent1: { id: 42, position: 1 },
+        opponent2: null,
+      };
+
+      (mockStorage.select as ReturnType<typeof vi.fn>).mockImplementation(
+        (table: string, query?: unknown) => {
+          if (table === 'match') {
+            if (typeof query === 'number' || typeof query === 'string') return Promise.resolve(byeMatch);
+            return Promise.resolve([]);
+          }
+          if (table === 'stage') return Promise.resolve({ id: 10, tournament_id: 'tourney-1' });
+          return Promise.resolve(null);
+        }
+      );
+
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table !== 'match') return {};
+        return {
+          update: () => ({ eq: () => Promise.resolve({ data: null, error: null }) }),
+        };
+      });
+
+      await expect(
+        service.updateMatch({
+          matchId: 1,
+          scores: {
+            opponent1: { score: 2, result: 'win' },
+            opponent2: { score: undefined, result: 'loss' },
+          },
+        })
+      ).resolves.toBeUndefined();
+    });
+  });
 });
