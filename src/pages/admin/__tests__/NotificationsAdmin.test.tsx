@@ -12,6 +12,7 @@ const mockUseNotificationsQuery = vi.hoisted(() => vi.fn());
 const mockUseCreateNotification = vi.hoisted(() => vi.fn());
 const mockUseUpdateNotification = vi.hoisted(() => vi.fn());
 const mockUseDeleteNotification = vi.hoisted(() => vi.fn());
+const mockUseContactRequests = vi.hoisted(() => vi.fn());
 const mockToast = vi.hoisted(() => vi.fn());
 const mockCreateMutateAsync = vi.hoisted(() => vi.fn());
 const mockUpdateMutateAsync = vi.hoisted(() => vi.fn());
