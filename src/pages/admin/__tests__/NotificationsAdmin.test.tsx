@@ -89,7 +89,7 @@ describe('NotificationsAdmin', () => {
       data: [notification],
       isLoading: false,
     });
-    rerender(<NotificationsAdmin />);
+    rerender(<NotificationsAdmin />, { wrapper: createWrapper() });
 
     await user.click(screen.getByRole('button', { name: 'Edit' }));
 
