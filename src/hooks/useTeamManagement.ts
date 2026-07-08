@@ -17,9 +17,15 @@ export function useTeamManagement() {
   const handleUpdateTeam = useCallback(
     async (teamData: Omit<Team, 'id' | 'created_at'>) => {
       if (!teamToEdit) return;
+      const updatingTeamId = teamToEdit.id;
       try {
-        await updateTeam(teamToEdit.id, teamData);
-        setTeamToEdit(null);
+        await updateTeam(updatingTeamId, teamData);
+        setTeamToEdit((current) => {
+          if (current?.id === updatingTeamId) {
+            return null;
+          }
+          return current;
+        });
       } catch (error) {
         errorLog('Error updating team:', error);
       }
