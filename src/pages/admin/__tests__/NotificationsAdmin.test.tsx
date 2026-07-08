@@ -78,7 +78,7 @@ describe('NotificationsAdmin', () => {
     const user = userEvent.setup();
     const notification = makeNotification('n-1', 'Old title', 'Old body');
 
-    const { rerender } = render(<NotificationsAdmin />);
+    const { rerender } = render(<NotificationsAdmin />, { wrapper: createWrapper() });
 
     // Wait for the empty state to render, then simulate a notification arriving.
     await waitFor(() =>
