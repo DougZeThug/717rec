@@ -3,6 +3,7 @@ import { BracketsManager } from 'brackets-manager';
 import { supabase } from '@/integrations/supabase/client';
 import { BusinessLogicError } from '@/types/errors';
 import { bracketLog, errorLog, failureLog, successLog } from '@/utils/logger';
+import { assertNonNegativeNumber } from '@/utils/validation';
 
 import { matchUpdateQueue } from '../MatchUpdateQueue';
 import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
@@ -43,6 +44,13 @@ export class BracketUpdateService {
 
     // Serialize updates to prevent race conditions
     return matchUpdateQueue.enqueue(async () => {
+      // Guard against negative scores at the service boundary, regardless of UI clamping.
+      if (scores.opponent1?.score !== undefined) {
+        assertNonNegativeNumber(scores.opponent1.score, 'Opponent 1 score');
+      }
+      if (scores.opponent2?.score !== undefined) {
+        assertNonNegativeNumber(scores.opponent2.score, 'Opponent 2 score');
+      }
       try {
         const ctx = this.getContext();
 
