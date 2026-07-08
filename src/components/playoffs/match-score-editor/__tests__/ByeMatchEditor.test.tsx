@@ -1,5 +1,4 @@
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -39,32 +38,27 @@ describe('ByeMatchEditor', () => {
     vi.clearAllMocks();
   });
 
-  it('clamps negative BYE winner score to 0', async () => {
-    const user = userEvent.setup();
+  it('clamps negative BYE winner score to 0', () => {
     render(<ByeMatchEditor {...defaultProps} />);
 
     const input = screen.getByLabelText('Team One Score (Games Won)');
-    await user.clear(input);
-    await user.type(input, '-5');
+    fireEvent.change(input, { target: { value: '-5' } });
 
     expect(defaultProps.setOpponent1Score).toHaveBeenLastCalledWith(0);
     expect(defaultProps.setOpponent2Score).toHaveBeenLastCalledWith(0);
   });
 
-  it('accepts positive BYE winner score unchanged', async () => {
-    const user = userEvent.setup();
+  it('accepts positive BYE winner score unchanged', () => {
     render(<ByeMatchEditor {...defaultProps} />);
 
     const input = screen.getByLabelText('Team One Score (Games Won)');
-    await user.clear(input);
-    await user.type(input, '2');
+    fireEvent.change(input, { target: { value: '2' } });
 
     expect(defaultProps.setOpponent1Score).toHaveBeenLastCalledWith(2);
     expect(defaultProps.setOpponent2Score).toHaveBeenLastCalledWith(0);
   });
 
-  it('clamps negative score when winner is opponent2', async () => {
-    const user = userEvent.setup();
+  it('clamps negative score when winner is opponent2', () => {
     render(
       <ByeMatchEditor
         {...defaultProps}
@@ -74,8 +68,7 @@ describe('ByeMatchEditor', () => {
     );
 
     const input = screen.getByLabelText('Team Two Score (Games Won)');
-    await user.clear(input);
-    await user.type(input, '-3');
+    fireEvent.change(input, { target: { value: '-3' } });
 
     expect(defaultProps.setOpponent2Score).toHaveBeenLastCalledWith(0);
     expect(defaultProps.setOpponent1Score).toHaveBeenLastCalledWith(0);

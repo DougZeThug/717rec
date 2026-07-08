@@ -1,5 +1,4 @@
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -30,45 +29,38 @@ describe('RegularMatchEditor', () => {
     vi.clearAllMocks();
   });
 
-  it('clamps negative team 1 score to 0', async () => {
-    const user = userEvent.setup();
+  it('clamps negative team 1 score to 0', () => {
     render(<RegularMatchEditor {...defaultProps} />);
 
     const input = screen.getByLabelText('Team One Score');
-    await user.clear(input);
-    await user.type(input, '-5');
+    fireEvent.change(input, { target: { value: '-5' } });
 
     expect(defaultProps.setOpponent1Score).toHaveBeenLastCalledWith(0);
   });
 
-  it('clamps negative team 2 score to 0', async () => {
-    const user = userEvent.setup();
+  it('clamps negative team 2 score to 0', () => {
     render(<RegularMatchEditor {...defaultProps} />);
 
     const input = screen.getByLabelText('Team Two Score');
-    await user.clear(input);
-    await user.type(input, '-3');
+    fireEvent.change(input, { target: { value: '-3' } });
 
     expect(defaultProps.setOpponent2Score).toHaveBeenLastCalledWith(0);
   });
 
-  it('accepts positive scores unchanged', async () => {
-    const user = userEvent.setup();
+  it('accepts positive scores unchanged', () => {
     render(<RegularMatchEditor {...defaultProps} />);
 
     const input = screen.getByLabelText('Team One Score');
-    await user.clear(input);
-    await user.type(input, '21');
+    fireEvent.change(input, { target: { value: '21' } });
 
     expect(defaultProps.setOpponent1Score).toHaveBeenLastCalledWith(21);
   });
 
-  it('defaults empty input to 0', async () => {
-    const user = userEvent.setup();
+  it('defaults empty input to 0', () => {
     render(<RegularMatchEditor {...defaultProps} />);
 
     const input = screen.getByLabelText('Team One Score');
-    await user.clear(input);
+    fireEvent.change(input, { target: { value: '' } });
 
     expect(defaultProps.setOpponent1Score).toHaveBeenLastCalledWith(0);
   });
