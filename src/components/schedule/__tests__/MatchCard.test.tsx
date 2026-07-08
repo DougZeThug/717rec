@@ -6,11 +6,15 @@ import type { Match } from '@/types';
 const mockUseTheme = vi.hoisted(() => vi.fn());
 const mockUseAdminAccess = vi.hoisted(() => vi.fn());
 const mockUseMatchPrediction = vi.hoisted(() => vi.fn());
+const mockUseCanScoreMatch = vi.hoisted(() => vi.fn());
 
 vi.mock('next-themes', () => ({ useTheme: () => mockUseTheme() }));
 vi.mock('@/hooks/useAdminAccess', () => ({ useAdminAccess: () => mockUseAdminAccess() }));
 vi.mock('@/hooks/useMatchPrediction', () => ({
   useMatchPrediction: (params: unknown) => mockUseMatchPrediction(params),
+}));
+vi.mock('@/hooks/live-scoring/useCanScoreMatch', () => ({
+  useCanScoreMatch: (match: unknown) => mockUseCanScoreMatch(match),
 }));
 
 vi.mock('@/components/matches', () => ({
@@ -78,6 +82,7 @@ describe('MatchCard', () => {
       isUpsetResult: false,
       isLoading: false,
     });
+    mockUseCanScoreMatch.mockReturnValue({ canScore: false, isAdmin: false, isLoading: false });
   });
 
   it('renders a completed match with team names, Final badge, game-win score and upset tag', () => {
@@ -146,6 +151,40 @@ describe('MatchCard', () => {
 
     expect(screen.queryByRole('button', { name: 'Edit match' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Delete match' })).not.toBeInTheDocument();
+  });
+
+  it('links authorized scorers to live scoring for upcoming matches', () => {
+    mockUseCanScoreMatch.mockReturnValue({ canScore: true, isAdmin: false, isLoading: false });
+
+    render(<MatchCard match={{ ...baseMatch, iscompleted: false }} isCompleted={false} />);
+
+    // The TransitionLink test stub only forwards to/children, so the
+    // accessible name is the visible text.
+    const link = screen.getByRole('link', { name: 'Live score this match' });
+    expect(link).toHaveAttribute('href', '/matches/match-1/live');
+  });
+
+  it('hides the live scoring link from users who cannot score', () => {
+    render(<MatchCard match={{ ...baseMatch, iscompleted: false }} isCompleted={false} />);
+
+    expect(screen.queryByText('Live score this match')).not.toBeInTheDocument();
+  });
+
+  it('hides the live scoring link for completed and postponed matches', () => {
+    mockUseCanScoreMatch.mockReturnValue({ canScore: true, isAdmin: true, isLoading: false });
+
+    const { rerender } = render(
+      <MatchCard match={{ ...baseMatch, iscompleted: true }} isCompleted />
+    );
+    expect(screen.queryByText('Live score this match')).not.toBeInTheDocument();
+
+    rerender(
+      <MatchCard
+        match={{ ...baseMatch, status: 'postponed', iscompleted: false }}
+        isCompleted={false}
+      />
+    );
+    expect(screen.queryByText('Live score this match')).not.toBeInTheDocument();
   });
 
   it('renders the postponed status badge for a postponed match', () => {

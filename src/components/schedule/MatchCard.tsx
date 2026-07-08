@@ -1,10 +1,11 @@
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Radio, Trash2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { MatchInteractions } from '@/components/matches';
 import { TransitionLink } from '@/components/transitions/TransitionLink';
 import { TeamLogo } from '@/components/ui/team';
+import { useCanScoreMatch } from '@/hooks/live-scoring/useCanScoreMatch';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import type { HeadToHeadData } from '@/hooks/useBatchHeadToHead';
 import { useMatchPrediction } from '@/hooks/useMatchPrediction';
@@ -69,6 +70,12 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const isPostponed = match.status === 'postponed';
   const isCanceled = match.status === 'canceled';
   const hasSpecialStatus = isPostponed || isCanceled;
+
+  const { canScore } = useCanScoreMatch({
+    team1_id: match.team1Id ?? null,
+    team2_id: match.team2Id ?? null,
+    iscompleted: isCompleted,
+  });
 
   useEffect(() => {
     if (match.team1Score !== undefined || match.team2Score !== undefined) {
@@ -228,6 +235,20 @@ const MatchCard: React.FC<MatchCardProps> = ({
                   team1Name={team1Name}
                   team2Name={team2Name}
                 />
+              </div>
+            )}
+
+            {/* Live scoring entry for team members and admins */}
+            {!isCompleted && !hasSpecialStatus && canScore && (
+              <div className="mt-1.5">
+                <TransitionLink
+                  to={`/matches/${match.id}/live`}
+                  className="flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-lg bg-primary/10 text-sm font-medium text-primary transition-colors hover:bg-primary/20"
+                  aria-label={`Live score ${team1Name} vs ${team2Name}`}
+                >
+                  <Radio className="size-4" aria-hidden />
+                  Live score this match
+                </TransitionLink>
               </div>
             )}
 
