@@ -34,7 +34,11 @@ export const RouteAnnouncer: React.FC<RouteAnnouncerProps> = ({ mainRef }) => {
     }
     lastAnnouncedPath.current = pathname;
 
-    setMessage(`${getRouteName(pathname)} page`);
+    const announcement =
+      (typeof document !== 'undefined' &&
+        (document.title || document.querySelector('h1')?.textContent)) ||
+      `${getRouteName(pathname)} page`;
+    setMessage(announcement);
     mainRef.current?.focus();
   }, [pathname, mainRef]);
 
