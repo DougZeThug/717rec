@@ -20,6 +20,8 @@ export const useMatchReactions = (matchId: string) => {
   const [reactions, setReactions] = useState<MatchReaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
+  const isFetchingRef = useRef(false);
+  const deletedDuringFetchRef = useRef<Set<string>>(new Set());
 
   // Group and count reactions
   const reactionCounts = useMemo(() => {
