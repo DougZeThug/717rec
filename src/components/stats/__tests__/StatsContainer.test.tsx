@@ -128,7 +128,7 @@ describe('StatsContainer', () => {
   });
 
   it('renders rankings, charts, and career sections for populated rankings', async () => {
-    mockRankingsResult = { rankings: populatedRankings, isLoading: false };
+    mockRankingsResult = { rankings: populatedRankings, isLoading: false, refetch: vi.fn() };
     mockMembership = { is_approved: true, team_id: 'alpha' };
 
     render(<StatsContainer matches={[]} isLoadingMatches={false} matchesError={null} />);
