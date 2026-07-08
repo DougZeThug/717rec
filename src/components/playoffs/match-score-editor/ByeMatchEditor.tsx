@@ -74,7 +74,7 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
             min="0"
             value={hasOpponent1 ? opponent1Score : opponent2Score}
             onChange={(e) => {
-              const score = parseInt(e.target.value) || 0;
+              const score = Math.max(0, parseInt(e.target.value) || 0);
               if (hasOpponent1) {
                 setOpponent1Score(score);
                 setOpponent2Score(0);

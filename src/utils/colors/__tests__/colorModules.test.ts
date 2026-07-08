@@ -157,8 +157,9 @@ describe('color modules table-driven coverage', () => {
   });
 
   it.each([
-    { delta: 10, color: 'text-green-600 dark:text-green-400', arrow: '↑' },
-    { delta: 5, color: 'text-green-500 dark:text-green-500', arrow: '↑' },
+    { delta: 10, color: 'text-emerald-600 dark:text-emerald-400', arrow: '↑' },
+    { delta: 5, color: 'text-green-600 dark:text-green-500', arrow: '↑' },
+    { delta: 2, color: 'text-green-500 dark:text-green-400', arrow: '↑' },
     { delta: 0, color: 'text-muted-foreground', arrow: '→' },
     { delta: -4, color: 'text-orange-500 dark:text-orange-400', arrow: '↓' },
     { delta: -10, color: 'text-red-600 dark:text-red-400', arrow: '↓' },

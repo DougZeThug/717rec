@@ -124,15 +124,11 @@ export const useSeedManagement = (
     isInitializedRef.current = false; // Allow resync with initialTeams
   }, [safeInitialTeams]);
 
-  const switchMode = useCallback(
-    (newMode: 'automatic' | 'manual') => {
-      setMode(newMode);
-      if (newMode === 'automatic') {
-        resetToAutomatic();
-      }
-    },
-    [resetToAutomatic]
-  );
+  const switchMode = useCallback((newMode: 'automatic' | 'manual') => {
+    setMode(newMode);
+    // Do NOT reset pending changes when toggling modes; the dedicated
+    // "Reset to Auto" button is the explicit path for discarding edits.
+  }, []);
 
   return {
     state: {

@@ -135,7 +135,8 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
       }
       const totalMatches = r.wins + r.losses;
       if (totalMatches === 0) return 0;
-      return r.gameWinPercentage > 0.6 ? r.gameWinPercentage * 0.8 : r.gameWinPercentage * 0.5;
+      // Estimated sweep rate must be on the same 0-100 scale as calculateSweepRate's output.
+      return r.gameWinPercentage > 0.6 ? r.gameWinPercentage * 80 : r.gameWinPercentage * 50;
     });
 
     const teamClutchRecord = calculateClutchRecord(teamId, pastMatches);

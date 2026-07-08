@@ -103,6 +103,18 @@ describe('useTeamTotalsComputed', () => {
     expect(result.current.totals?.championships).toBe(1);
   });
 
+  it('does not double-count playoff matches in sweep rate denominator', async () => {
+    (fetchCareerData as ReturnType<typeof vi.fn>).mockResolvedValue(mockCareerData);
+    const { calculateSweepRate } = await import('@/utils/career');
+    renderHook(() => useTeamTotalsComputed('team-1'), {
+      wrapper: createWrapper(),
+    });
+    await waitFor(() => expect(calculateSweepRate).toHaveBeenCalled());
+    const calledWith = (calculateSweepRate as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    // 10 wins + 5 losses = 15; playoff wins/losses are already included in career_match_* totals
+    expect(calledWith.totalMatches).toBe(15);
+  });
+
   it('sets error when fetchCareerData throws', async () => {
     (fetchCareerData as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Fetch failed'));
     const { result } = renderHook(() => useTeamTotalsComputed('team-1'), {

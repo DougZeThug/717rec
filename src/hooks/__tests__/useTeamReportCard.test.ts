@@ -109,6 +109,9 @@ describe('useTeamReportCard', () => {
 
     const { result } = renderHook(() => useTeamReportCard('team-1', 'season'));
 
+    const offenseCall = mockCalculatePercentile.mock.calls[1];
+    expect(offenseCall[1]).toEqual([55, 52]); // current team 55, team-2 estimate 0.65 * 80 = 52 (0-100 scale)
+
     expect(result.current.grades).toEqual({
       overall: {
         label: 'Overall',

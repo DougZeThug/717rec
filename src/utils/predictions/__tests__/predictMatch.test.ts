@@ -430,4 +430,45 @@ describe('formatBreakdown', () => {
 
     expect(formatted).toContain('H2H: 5-2');
   });
+
+  it('should show N/A for missing career data when only one team has career stats', () => {
+    const breakdown = {
+      powerScoreA: 65,
+      powerScoreB: 55,
+      sosA: 0.9,
+      sosB: 0.8,
+      divisionWeightA: 1.1,
+      divisionWeightB: 0.95,
+      careerPowerA: 70,
+      careerPowerB: 50,
+      careerSosA: 0.95,
+      careerSosB: 0.85,
+      careerWinPctA: 0.65,
+      careerWinPctB: 0.5,
+      h2hWinsA: 0,
+      h2hWinsB: 0,
+      h2hTotalMatches: 0,
+      h2hRatingA: 0.5,
+      h2hRatingB: 0.5,
+      h2hDominanceFactor: 0,
+      hasH2HData: false,
+      seasonRatingA: 0.5,
+      seasonRatingB: 0.4,
+      careerRatingA: 0.6,
+      careerRatingB: 0.5,
+      teamRatingA: 0.55,
+      teamRatingB: 0.45,
+      ratingDiff: 0.1,
+      hasCareerDataA: true,
+      hasCareerDataB: false,
+    };
+
+    const formatted = formatBreakdown(breakdown);
+
+    expect(formatted).toContain('Season: 65 vs 55');
+    expect(formatted).toContain('Career: 70 vs N/A');
+    expect(formatted).toContain('Win%: 65% vs N/A');
+    expect(formatted).not.toContain('Career: 70 vs 50');
+    expect(formatted).not.toContain('Win%: 65% vs 50%');
+  });
 });

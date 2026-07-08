@@ -33,7 +33,7 @@ interface StatsContainerProps {
 const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContainerProps) => {
   const { isWinterTheme } = useSeasonalTheme();
   const { data: teams, isLoading: isLoadingTeams, error: teamsError } = useTeamsQuery();
-  const { rankings, isLoading: isLoadingRankings } = useTeamRankings(teams, matches);
+  const { rankings, isLoading: isLoadingRankings, refetch } = useTeamRankings(teams, matches);
   const { membership } = useTeamMembership();
 
   // Only pass myTeamId if user has approved membership
@@ -43,7 +43,9 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
   const hasError = teamsError || matchesError;
 
   if (hasError) {
-    return <StatsErrorState teamsError={teamsError} matchesError={matchesError} />;
+    return (
+      <StatsErrorState teamsError={teamsError} matchesError={matchesError} onRetry={refetch} />
+    );
   }
 
   if (isLoading) {

@@ -39,7 +39,7 @@ const MatchReactions: React.FC<MatchReactionsProps> = ({ matchId }) => {
   if (isLoading) {
     return (
       <div className="flex items-center gap-1 h-6">
-        <Skeleton className="size-6 rounded-full" />
+        <Skeleton className="size-6 rounded-full bg-muted/20" />
       </div>
     );
   }

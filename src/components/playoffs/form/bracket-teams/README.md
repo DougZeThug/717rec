@@ -30,7 +30,7 @@ This module provides components and utilities for team selection in bracket crea
 ## Usage
 
 ```tsx
-import { BracketFormTeamsContainer } from './bracket-teams';
+import BracketFormTeamsContainer from './bracket-teams/components/BracketFormTeamsContainer';
 
 <BracketFormTeamsContainer
   divisionId={selectedDivisionId}

@@ -21,6 +21,12 @@ interface BracketsViewerComponentProps {
    * Final, etc.) appear without requiring a page refresh.
    */
   refreshSignal?: number | string | null;
+  /**
+   * Whether a realtime subscription is actively delivering refresh signals.
+   * When true, the editor's onSaved callback should not bump the refresh
+   * counter because the realtime signal already triggers the update.
+   */
+  realtimeEnabled?: boolean;
 }
 
 const CONTAINER_ID = 'brackets-viewer-container';
@@ -30,6 +36,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
   teams,
   onMatchClick,
   refreshSignal,
+  realtimeEnabled = false,
 }) => {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -171,7 +178,12 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
           setSelectedBMMatchId(null);
         }}
         onSaved={() => {
-          setRefreshCounter((c) => c + 1);
+          // When realtime is active, the refreshSignal effect already bumps the
+          // counter, so a direct increment here would trigger redundant SQL
+          // queries. Only fall back to manual refresh when realtime is disabled.
+          if (!realtimeEnabled) {
+            setRefreshCounter((c) => c + 1);
+          }
         }}
       />
     </>

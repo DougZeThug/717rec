@@ -163,7 +163,7 @@ export const progressLog = (step: number, total: number, message: string, detail
 export const successLog = (operation: string, details?: string) =>
   log(`✅ ${operation}`, details || '');
 
-export const failureLog = (operation: string, error: string | Error) =>
+export const failureLog = (operation: string, error: unknown) =>
   errorLog(`❌ ${operation}:`, error);
 
 // ============================================

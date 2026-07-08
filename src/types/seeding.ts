@@ -9,7 +9,7 @@ export type TeamSeedUpdateResult = {
 };
 
 export type BulkTeamSeedUpdateResult = {
-  ok: boolean;
+  success: boolean;
   team_id?: string;
   seed?: string | null;
   error?: string | null;

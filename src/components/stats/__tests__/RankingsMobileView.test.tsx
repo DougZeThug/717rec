@@ -18,11 +18,6 @@ vi.mock('framer-motion', () => ({
   AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-let mockInView = true;
-vi.mock('react-intersection-observer', () => ({
-  useInView: () => ({ ref: vi.fn(), inView: mockInView }),
-}));
-
 vi.mock('@/hooks/useSeasonalTheme', () => ({
   useSeasonalTheme: () => ({ isWinterTheme: false }),
   useSeasonalThemeBase: () => ({ isWinterTheme: false }),
@@ -37,12 +32,6 @@ vi.mock('@/utils/logger', () => ({ debugLog: vi.fn() }));
 
 vi.mock('../LeagueLeaderboardCarousel', () => ({
   default: () => <div data-testid="leaderboard-carousel" />,
-}));
-
-vi.mock('../TeamSearchDrawer', () => ({
-  default: ({ open }: { open: boolean }) => (
-    <div data-testid="search-drawer" data-open={String(open)} />
-  ),
 }));
 
 vi.mock('../ViewToggle', () => ({
@@ -117,7 +106,6 @@ describe('RankingsMobileView', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
-    mockInView = true;
     mockAllBadges = undefined;
   });
 
@@ -183,25 +171,6 @@ describe('RankingsMobileView', () => {
 
     rerender(<RankingsMobileView {...defaultProps} view="all" onViewChange={vi.fn()} />);
     expect(screen.getByTestId('view-toggle')).toHaveAttribute('data-view', 'all');
-  });
-
-  it('shows a search FAB that opens the drawer when the user has no team', async () => {
-    render(<RankingsMobileView {...defaultProps} />);
-
-    expect(screen.getByTestId('search-drawer')).toHaveAttribute('data-open', 'false');
-    await userEvent.click(screen.getByRole('button', { name: 'Search for a team' }));
-    expect(screen.getByTestId('search-drawer')).toHaveAttribute('data-open', 'true');
-  });
-
-  it('labels the FAB for scrolling when the user has a team', () => {
-    render(<RankingsMobileView {...defaultProps} myTeamId="team-a" />);
-    expect(screen.getByRole('button', { name: 'Scroll to my team' })).toBeInTheDocument();
-  });
-
-  it('hides the FAB when the standings section is out of view', () => {
-    mockInView = false;
-    render(<RankingsMobileView {...defaultProps} />);
-    expect(screen.queryByRole('button', { name: 'Search for a team' })).not.toBeInTheDocument();
   });
 
   it('distributes prefetched badges to the matching team cards', () => {

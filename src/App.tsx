@@ -150,7 +150,7 @@ const AppContent = () => {
                 <Route
                   path="/stats"
                   element={
-                    <RouteErrorBoundary routeName="Stats">
+                    <RouteErrorBoundary routeName="Standings">
                       <Stats />
                     </RouteErrorBoundary>
                   }

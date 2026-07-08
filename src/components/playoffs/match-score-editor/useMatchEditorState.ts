@@ -50,12 +50,23 @@ export const useMatchEditorState = ({ matchId, onClose, onSaved }: UseMatchEdito
       ? scoreDraft.opponent2Score
       : (matchData?.opponent2?.score ?? 0);
 
+  const baseOpponent1Score = matchData?.opponent1?.score ?? 0;
+  const baseOpponent2Score = matchData?.opponent2?.score ?? 0;
+
   const setOpponent1Score = (score: number) => {
-    setScoreDraft({ key: matchScoreKey, opponent1Score: score, opponent2Score });
+    setScoreDraft((prev) => {
+      const current =
+        prev && prev.key === matchScoreKey ? prev.opponent2Score : baseOpponent2Score;
+      return { key: matchScoreKey, opponent1Score: score, opponent2Score: current };
+    });
   };
 
   const setOpponent2Score = (score: number) => {
-    setScoreDraft({ key: matchScoreKey, opponent1Score, opponent2Score: score });
+    setScoreDraft((prev) => {
+      const current =
+        prev && prev.key === matchScoreKey ? prev.opponent1Score : baseOpponent1Score;
+      return { key: matchScoreKey, opponent1Score: current, opponent2Score: score };
+    });
   };
 
   // Check BYE eligibility when match loads

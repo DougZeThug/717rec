@@ -7,7 +7,8 @@ import { Message } from '@/types/reactions';
 export const useMessageRealtime = (
   onMessageInserted: (message: Message) => void,
   onMessageUpdated: (message: Message) => void,
-  onMessageDeleted: (message: Message) => void
+  onMessageDeleted: (message: Message) => void,
+  onReconnect?: () => void
 ) => {
   // Use ref to hold callbacks to prevent subscription recreation
   const handlersRef = useRef({
@@ -24,6 +25,11 @@ export const useMessageRealtime = (
       onMessageDeleted,
     };
   }, [onMessageInserted, onMessageUpdated, onMessageDeleted]);
+
+  const reconnectRef = useRef(onReconnect);
+  useEffect(() => {
+    reconnectRef.current = onReconnect;
+  }, [onReconnect]);
 
   useEffect(() => {
     const { dispose } = subscribeWithRetry({
@@ -52,6 +58,9 @@ export const useMessageRealtime = (
               handlersRef.current.onMessageDeleted(payload.old as Message);
             }
           ),
+      onReconnect: (isFirst) => {
+        if (!isFirst) reconnectRef.current?.();
+      },
     });
     return () => dispose();
   }, []); // Empty deps - callbacks are accessed via ref

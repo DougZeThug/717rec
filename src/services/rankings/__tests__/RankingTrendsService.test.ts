@@ -164,7 +164,7 @@ describe('fetchPowerScoreTrends', () => {
       error: null,
     });
     queueResult('team_season_stats', {
-      data: [{ team_id: 't1', power_score: 70 }],
+      data: [{ team_id: 't1', power_score: 0.7 }],
       error: null,
     });
     queueResult('divisions', { data: [{ id: 'd1' }], error: null });
@@ -218,9 +218,9 @@ describe('fetchPowerScoreTrends', () => {
     });
     queueResult('team_season_stats', {
       data: [
-        { team_id: 't1', power_score: 70 },
-        { team_id: 't2', power_score: 75 },
-        { team_id: 't3', power_score: 78 },
+        { team_id: 't1', power_score: 0.7 },
+        { team_id: 't2', power_score: 0.75 },
+        { team_id: 't3', power_score: 0.78 },
       ],
       error: null,
     });

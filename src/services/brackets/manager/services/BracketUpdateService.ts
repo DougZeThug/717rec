@@ -3,6 +3,7 @@ import { BracketsManager } from 'brackets-manager';
 import { supabase } from '@/integrations/supabase/client';
 import { BusinessLogicError } from '@/types/errors';
 import { bracketLog, errorLog, failureLog, successLog } from '@/utils/logger';
+import { assertNonNegativeNumber } from '@/utils/validation';
 
 import { matchUpdateQueue } from '../MatchUpdateQueue';
 import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
@@ -43,6 +44,13 @@ export class BracketUpdateService {
 
     // Serialize updates to prevent race conditions
     return matchUpdateQueue.enqueue(async () => {
+      // Guard against negative scores at the service boundary, regardless of UI clamping.
+      if (scores.opponent1?.score !== undefined) {
+        assertNonNegativeNumber(scores.opponent1.score, 'Opponent 1 score');
+      }
+      if (scores.opponent2?.score !== undefined) {
+        assertNonNegativeNumber(scores.opponent2.score, 'Opponent 2 score');
+      }
       try {
         const ctx = this.getContext();
 
@@ -108,7 +116,7 @@ export class BracketUpdateService {
           await markBracketCompleteIfDone(ctx, stage.tournament_id);
         }
       } catch (error) {
-        failureLog('Failed to update match', error instanceof Error ? error : String(error));
+        failureLog('Failed to update match', error);
         errorLog(`FULL ERROR DETAILS for Match ${matchId}:`, error);
         throw new BusinessLogicError(
           `Match update failed: ${error instanceof Error ? error.message : 'Unknown error'}`,

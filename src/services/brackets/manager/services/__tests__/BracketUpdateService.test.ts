@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { BusinessLogicError } from '@/types/errors';
+import { BusinessLogicError, ValidationError } from '@/types/errors';
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -348,6 +348,115 @@ describe('BracketUpdateService', () => {
       });
 
       expect(mockNormalizationService.repairGrandFinalWithRetries).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('score validation', () => {
+    const setupNormalMatchSuccess = () => {
+      const match = {
+        id: 42,
+        stage_id: 10,
+        group_id: 1,
+        round_id: 300,
+        number: 1,
+        status: 4,
+        opponent1: { id: 11, position: 1 },
+        opponent2: { id: 12, position: 2 },
+      };
+
+      (mockStorage.select as ReturnType<typeof vi.fn>).mockImplementation(
+        (table: string, query?: unknown) => {
+          if (table === 'match') {
+            if (typeof query === 'number' || typeof query === 'string')
+              return Promise.resolve(match);
+            return Promise.resolve([]);
+          }
+          if (table === 'stage')
+            return Promise.resolve({
+              id: 10,
+              tournament_id: 'tourney-1',
+              name: 'Stage',
+              type: 'double_elimination',
+              number: 1,
+              settings: {},
+            });
+          return Promise.resolve(null);
+        }
+      );
+
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table !== 'match') return {};
+        return {
+          update: () => ({ eq: () => Promise.resolve({ data: null, error: null }) }),
+          select: () => ({ eq: () => ({ eq: () => Promise.resolve({ data: [], error: null }) }) }),
+        };
+      });
+
+      mockManager.update.match.mockResolvedValue(undefined);
+      mockNormalizationService.isWbFinalRound.mockResolvedValue(false);
+      mockNormalizationService.isLbFinalRound.mockResolvedValue(false);
+    };
+
+    it('throws ValidationError when opponent1 score is negative', async () => {
+      setupNormalMatchSuccess();
+
+      await expect(
+        service.updateMatch({
+          matchId: 42,
+          scores: {
+            opponent1: { score: -1, result: 'win' },
+            opponent2: { score: 0, result: 'loss' },
+          },
+        })
+      ).rejects.toThrow(ValidationError);
+
+      await expect(
+        service.updateMatch({
+          matchId: 42,
+          scores: {
+            opponent1: { score: -1, result: 'win' },
+            opponent2: { score: 0, result: 'loss' },
+          },
+        })
+      ).rejects.toThrow(/Opponent 1 score must be a non-negative number/);
+    });
+
+    it('throws ValidationError when opponent2 score is negative', async () => {
+      setupNormalMatchSuccess();
+
+      await expect(
+        service.updateMatch({
+          matchId: 42,
+          scores: {
+            opponent1: { score: 2, result: 'win' },
+            opponent2: { score: -5, result: 'loss' },
+          },
+        })
+      ).rejects.toThrow(ValidationError);
+
+      await expect(
+        service.updateMatch({
+          matchId: 42,
+          scores: {
+            opponent1: { score: 2, result: 'win' },
+            opponent2: { score: -5, result: 'loss' },
+          },
+        })
+      ).rejects.toThrow(/Opponent 2 score must be a non-negative number/);
+    });
+
+    it('allows omitted scores to pass validation', async () => {
+      setupNormalMatchSuccess();
+
+      await expect(
+        service.updateMatch({
+          matchId: 42,
+          scores: {
+            opponent1: { score: 2, result: 'win' },
+            opponent2: { result: 'loss' },
+          },
+        })
+      ).resolves.toBeUndefined();
     });
   });
 });

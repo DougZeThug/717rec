@@ -1,0 +1,13 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": ["index.html", "e2e/**/*.spec.ts"],
+  "project": ["src/**/*.{ts,tsx}"],
+  "ignore": ["src/integrations/supabase/types.ts", "src/types/*.d.ts"],
+  "ignoreDependencies": ["events"],
+  "rules": {
+    "exports": "off",
+    "types": "off",
+    "duplicates": "off",
+    "enumMembers": "off"
+  }
+}

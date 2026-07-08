@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { WeeklyPowerScoreTrend } from '@/types/powerScoreSnapshot';
 import { PowerScoreTrend, TrendDirection } from '@/types/powerScoreTrends';
 import { warnLog } from '@/utils/logger';
+import { normalizePowerScore } from '@/utils/powerScore/normalizePowerScore';
 
 /**
  * Fetch power score trends (movers) comparing current season vs previous season.
@@ -61,7 +62,13 @@ export async function fetchPowerScoreTrends(
   }
 
   // Create a map of previous scores for quick lookup
-  const previousScoresMap = new Map(previousData.map((team) => [team.team_id, team.power_score]));
+  // team_season_stats stores power_score on a 0-1 scale, so normalize to 0-100.
+  const previousScoresMap = new Map(
+    previousData.map((team) => [
+      team.team_id,
+      normalizePowerScore(team.power_score, 'team_season_stats'),
+    ])
+  );
 
   // Get visible divisions (exclude hidden ones)
   const { data: visibleDivisions } = await supabase
