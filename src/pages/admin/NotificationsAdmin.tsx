@@ -70,7 +70,7 @@ const NotificationsAdmin: React.FC<{ currentTimeMs?: number }> = ({
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const editing = useMemo(
-    () => (editingId ? notifications.find((n) => n.id === editingId) ?? null : null),
+    () => (editingId ? (notifications.find((n) => n.id === editingId) ?? null) : null),
     [editingId, notifications]
   );
 

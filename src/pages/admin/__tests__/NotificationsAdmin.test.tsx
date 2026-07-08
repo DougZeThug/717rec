@@ -91,9 +91,7 @@ describe('NotificationsAdmin', () => {
     const { rerender } = render(<NotificationsAdmin />, { wrapper: Wrapper });
 
     // Wait for the empty state to render, then simulate a notification arriving.
-    await waitFor(() =>
-      expect(screen.getByText('No notifications yet.')).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByText('No notifications yet.')).toBeInTheDocument());
 
     mockUseNotificationsQuery.mockReturnValue({
       data: [notification],
@@ -114,9 +112,7 @@ describe('NotificationsAdmin', () => {
     });
     rerender(<NotificationsAdmin />);
 
-    await waitFor(() =>
-      expect(screen.getByText('New notification')).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByText('New notification')).toBeInTheDocument());
 
     expect(screen.queryByText('Edit notification')).not.toBeInTheDocument();
     expect(screen.queryByDisplayValue('Old title')).not.toBeInTheDocument();
@@ -136,7 +132,11 @@ describe('NotificationsAdmin', () => {
       data: [notification],
       isLoading: false,
     });
-    mockUpdateMutateAsync.mockResolvedValueOnce({ ...notification, title: 'New title', body: 'New body' });
+    mockUpdateMutateAsync.mockResolvedValueOnce({
+      ...notification,
+      title: 'New title',
+      body: 'New body',
+    });
 
     render(<NotificationsAdmin />, { wrapper: createWrapper() });
 
