@@ -69,10 +69,10 @@ describe('bulkUpdateTeamSeeds', () => {
   ];
 
   it('calls batch_update_team_seeds RPC and returns results', async () => {
-    mockRpc.mockResolvedValue({ data: { results: [{ ok: true }] }, error: null });
+    mockRpc.mockResolvedValue({ data: { results: [{ success: true }] }, error: null });
     const result = await bulkUpdateTeamSeeds(updates);
     expect(mockRpc).toHaveBeenCalledWith('batch_update_team_seeds', expect.any(Object));
-    expect(result).toEqual([{ ok: true }]);
+    expect(result).toEqual([{ success: true }]);
   });
 
   it('returns empty array when data has no results key', async () => {
