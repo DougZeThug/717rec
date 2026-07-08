@@ -165,7 +165,7 @@ describe('useMatchReactions', () => {
   });
 
   it('preserves realtime INSERTs that arrive while a fetch is in flight', async () => {
-    let resolveInitialFetch: (value: unknown[]) => void;
+    let resolveInitialFetch: ((value: unknown[]) => void) | undefined;
     const initialFetchPromise = new Promise<unknown[]>((resolve) => {
       resolveInitialFetch = resolve;
     });
@@ -182,7 +182,7 @@ describe('useMatchReactions', () => {
 
     const fetchedData = [reaction('existing-1', 'user-50', '👏')];
     await act(async () => {
-      resolveInitialFetch!(fetchedData);
+      resolveInitialFetch?.(fetchedData);
       await initialFetchPromise;
     });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -199,7 +199,7 @@ describe('useMatchReactions', () => {
 
     const deleteHandler = mockChannel.on.mock.calls[1][2];
 
-    let resolveReconnectFetch: (value: unknown[]) => void;
+    let resolveReconnectFetch: ((value: unknown[]) => void) | undefined;
     const reconnectFetchPromise = new Promise<unknown[]>((resolve) => {
       resolveReconnectFetch = resolve;
     });
@@ -216,7 +216,7 @@ describe('useMatchReactions', () => {
 
     const staleFetchedData = [reaction('r1', 'user-1', '🔥')];
     await act(async () => {
-      resolveReconnectFetch!(staleFetchedData);
+      resolveReconnectFetch?.(staleFetchedData);
       await reconnectFetchPromise;
     });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
