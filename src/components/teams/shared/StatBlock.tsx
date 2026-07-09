@@ -10,8 +10,6 @@ interface StatBlockProps {
   orientation?: 'vertical' | 'horizontal';
   icon?: React.ReactNode;
   gradient?: string;
-  highlight?: boolean;
-  variant?: 'default' | 'blue' | 'orange' | 'green' | 'amber';
 }
 
 export const StatBlock: React.FC<StatBlockProps> = ({
@@ -21,8 +19,6 @@ export const StatBlock: React.FC<StatBlockProps> = ({
   orientation = 'vertical',
   icon,
   gradient,
-  highlight = false,
-  variant = 'default',
 }) => {
   const { isWinterTheme } = useSeasonalThemeBase();
 
@@ -35,18 +31,7 @@ export const StatBlock: React.FC<StatBlockProps> = ({
       return 'bg-gradient-to-br from-[hsl(222,30%,18%)] via-[hsl(222,35%,15%)] to-[hsl(222,40%,12%)]';
     }
 
-    switch (variant) {
-      case 'blue':
-        return 'bg-gradient-to-br from-white via-blue-50/30 to-blue-50/50 dark:from-gray-800/80 dark:via-gray-800/60 dark:to-blue-900/10';
-      case 'orange':
-        return 'bg-gradient-to-br from-white via-white to-orange-50/50 dark:from-gray-800/80 dark:via-gray-800/60 dark:to-amber-900/10';
-      case 'green':
-        return 'bg-gradient-to-br from-white via-white to-green-50/50 dark:from-gray-800/80 dark:via-gray-800/60 dark:to-green-900/10';
-      case 'amber':
-        return 'bg-gradient-to-br from-white via-white to-amber-50/50 dark:from-gray-800/80 dark:via-gray-800/60 dark:to-amber-900/10';
-      default:
-        return 'bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30 dark:from-gray-800/80 dark:to-gray-900/80';
-    }
+    return 'bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30 dark:from-gray-800/80 dark:to-gray-900/80';
   };
 
   const baseClasses = cn(
@@ -54,9 +39,7 @@ export const StatBlock: React.FC<StatBlockProps> = ({
     'p-3 sm:p-4 rounded-lg text-left transition-all duration-200 hover:shadow-md border',
     isWinterTheme
       ? 'border-[hsl(199,60%,50%,0.3)]'
-      : highlight
-        ? 'shadow-md border-blue-200 dark:border-blue-900/40'
-        : 'border-gray-200 dark:border-gray-700/50'
+      : 'border-gray-200 dark:border-gray-700/50'
   );
 
   const labelClasses = cn(
@@ -67,11 +50,7 @@ export const StatBlock: React.FC<StatBlockProps> = ({
   // Apply gradient to the value text based on variant
   const valueClasses = cn(
     'font-mono text-base sm:text-lg font-medium',
-    isWinterTheme
-      ? 'text-[hsl(210,40%,96%)]'
-      : highlight
-        ? 'text-blue-700 dark:text-blue-300'
-        : 'text-gray-800 dark:text-white'
+    isWinterTheme ? 'text-[hsl(210,40%,96%)]' : 'text-gray-800 dark:text-white'
   );
 
   if (orientation === 'horizontal') {
