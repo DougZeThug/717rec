@@ -86,7 +86,7 @@ export function deriveLiveMatch(bundle: LiveMatchBundle): LiveMatchDerived {
 
   const summaries: GameSummary[] = games.map((g) => ({
     gameNumber: g.game.game_number,
-    status: g.game.status,
+    status: g.game.status as GameSummary['status'],
     winnerSide: winnerSideOf(g.game, bundle),
   }));
 
