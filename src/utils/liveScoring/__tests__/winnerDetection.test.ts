@@ -31,6 +31,15 @@ describe('checkGameWinner (first to 21, win by 2)', () => {
     expect(checkGameWinner(21, 25)).toBe(2);
   });
 
+  it('exact league boundary cases', () => {
+    expect(checkGameWinner(21, 19)).toBe(1); // 21-19 wins
+    expect(checkGameWinner(21, 20)).toBeNull(); // 21-20 does not win
+    expect(checkGameWinner(22, 20)).toBe(1); // 22-20 wins
+    expect(checkGameWinner(23, 22)).toBeNull(); // 23-22 does not win
+    expect(checkGameWinner(24, 22)).toBe(1); // 24-22 wins
+    expect(checkGameWinner(22, 24)).toBe(2); // mirrored for team 2
+  });
+
   it('honors a custom win-by-1 rule', () => {
     const rules = { targetScore: 21, winBy: 1, hardCap: null };
     expect(checkGameWinner(21, 20, rules)).toBe(1);

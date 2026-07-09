@@ -245,6 +245,44 @@ describe('in-game state', () => {
     expect(screen.getByTestId('team1-total')).toBeInTheDocument();
   });
 
+  it('does NOT offer the banner at 21-20 (win by 2) — scoring continues', () => {
+    const bundle = makeBundle({
+      games: [game()],
+      rounds: [
+        round({ round_number: 1, team1_score: 12, team2_score: 0, net_points: 12, winner_team: 1 }),
+        round({ round_number: 2, team1_score: 9, team2_score: 0, net_points: 9, winner_team: 1 }),
+        round({ round_number: 3, team1_score: 0, team2_score: 12, net_points: 12, winner_team: 2 }),
+        round({ round_number: 4, team1_score: 0, team2_score: 8, net_points: 8, winner_team: 2 }),
+      ],
+      gamePlayers: gamePlayers('game-1'),
+    });
+    renderView(bundle);
+
+    expect(screen.getByTestId('team1-total')).toHaveTextContent('21');
+    expect(screen.getByTestId('team2-total')).toHaveTextContent('20');
+    expect(screen.queryByRole('button', { name: /end game/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /save round/i })).toBeInTheDocument();
+  });
+
+  it('offers the banner at 22-20 (2-point lead past 21)', () => {
+    const bundle = makeBundle({
+      games: [game()],
+      rounds: [
+        round({ round_number: 1, team1_score: 12, team2_score: 0, net_points: 12, winner_team: 1 }),
+        round({ round_number: 2, team1_score: 9, team2_score: 0, net_points: 9, winner_team: 1 }),
+        round({ round_number: 3, team1_score: 0, team2_score: 12, net_points: 12, winner_team: 2 }),
+        round({ round_number: 4, team1_score: 0, team2_score: 8, net_points: 8, winner_team: 2 }),
+        round({ round_number: 5, team1_score: 1, team2_score: 0, net_points: 1, winner_team: 1 }),
+      ],
+      gamePlayers: gamePlayers('game-1'),
+    });
+    renderView(bundle);
+
+    expect(screen.getByText(/baggers wins game 1, 22–20/iu)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /end game 1/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /save round/i })).not.toBeInTheDocument();
+  });
+
   it('offers the game-won banner once totals cross 21 with a 2-point lead', () => {
     const bundle = makeBundle({
       games: [game()],

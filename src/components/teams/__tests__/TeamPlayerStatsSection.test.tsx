@@ -60,6 +60,40 @@ describe('TeamPlayerStatsSection', () => {
     expect(screen.getByText('5–2')).toBeInTheDocument();
   });
 
+  it('shows Hole%, Board% and Off% from the bag counters', async () => {
+    // 30 in, 25 on, 25 off of 80 bags -> 38% / 31% / 31%.
+    mockUseTeamPlayerSeasonStats.mockReturnValue({
+      stats: [statRow()],
+      isLoading: false,
+      isNotEnabled: false,
+      error: null,
+    });
+
+    render(<TeamPlayerStatsSection teamId="team-1" />, { wrapper: MemoryRouter });
+    await userEvent.click(screen.getByText('Player Stats'));
+
+    expect(screen.getByText('Hole%')).toBeInTheDocument();
+    expect(screen.getByText('38%')).toBeInTheDocument();
+    expect(screen.getAllByText('31%')).toHaveLength(2); // Board% and Off%
+  });
+
+  it('renders dashes without crashing when bag fields are null', async () => {
+    mockUseTeamPlayerSeasonStats.mockReturnValue({
+      stats: [statRow({ bags_in: null, bags_on: null, bags_off: null })],
+      isLoading: false,
+      isNotEnabled: false,
+      error: null,
+    });
+
+    render(<TeamPlayerStatsSection teamId="team-1" />, { wrapper: MemoryRouter });
+    await userEvent.click(screen.getByText('Player Stats'));
+
+    expect(screen.getByText('Doug')).toBeInTheDocument();
+    // Hole%, Board% and Off% all render as unknown dashes.
+    expect(screen.getAllByText('–').length).toBeGreaterThanOrEqual(3);
+    expect(screen.queryByText('0%')).not.toBeInTheDocument();
+  });
+
   it('renders nothing when there is no live-scoring data yet', () => {
     mockUseTeamPlayerSeasonStats.mockReturnValue({
       stats: [],

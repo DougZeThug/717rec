@@ -4,7 +4,13 @@ import React from 'react';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
 import { LoadingState } from '@/components/ui/loading-state';
 import { useTeamPlayerSeasonStats } from '@/hooks/live-scoring/useTeamPlayerSeasonStats';
-import { differentialPerRound, formatRatio, pointsPerRound } from '@/utils/liveScoring/pprCalc';
+import {
+  differentialPerRound,
+  formatPercent,
+  formatRatio,
+  percentage,
+  pointsPerRound,
+} from '@/utils/liveScoring/pprCalc';
 
 interface TeamPlayerStatsSectionProps {
   teamId: string | undefined;
@@ -42,6 +48,15 @@ const TeamPlayerStatsSection: React.FC<TeamPlayerStatsSectionProps> = ({ teamId 
                 <th className="pb-1.5 px-2 text-right font-medium" title="Differential per round">
                   DPR
                 </th>
+                <th className="pb-1.5 px-2 text-right font-medium" title="Bags in the hole">
+                  Hole%
+                </th>
+                <th className="pb-1.5 px-2 text-right font-medium" title="Bags on the board">
+                  Board%
+                </th>
+                <th className="pb-1.5 px-2 text-right font-medium" title="Bags off the board">
+                  Off%
+                </th>
                 <th className="pb-1.5 px-2 text-right font-medium" title="Four-baggers">
                   4B
                 </th>
@@ -49,29 +64,43 @@ const TeamPlayerStatsSection: React.FC<TeamPlayerStatsSectionProps> = ({ teamId 
               </tr>
             </thead>
             <tbody>
-              {stats.map((row) => (
-                <tr key={row.player_id} className="border-t border-border/50 tabular-nums">
-                  <td className="py-1.5 pr-2">{row.display_name}</td>
-                  <td className="py-1.5 px-2 text-right">{row.rounds_thrown}</td>
-                  <td className="py-1.5 px-2 text-right font-medium">
-                    {formatRatio(pointsPerRound(row.points_for, row.rounds_thrown))}
-                  </td>
-                  <td className="py-1.5 px-2 text-right">
-                    {formatRatio(
-                      differentialPerRound(row.points_for, row.points_against, row.rounds_thrown)
-                    )}
-                  </td>
-                  <td className="py-1.5 px-2 text-right">{row.four_baggers}</td>
-                  <td className="py-1.5 pl-2 text-right">
-                    {row.game_wins}–{row.game_losses}
-                  </td>
-                </tr>
-              ))}
+              {stats.map((row) => {
+                // Only bag-tracked rounds count — null bags mean "unknown".
+                const totalBags = (row.bags_in ?? 0) + (row.bags_on ?? 0) + (row.bags_off ?? 0);
+                return (
+                  <tr key={row.player_id} className="border-t border-border/50 tabular-nums">
+                    <td className="py-1.5 pr-2">{row.display_name}</td>
+                    <td className="py-1.5 px-2 text-right">{row.rounds_thrown}</td>
+                    <td className="py-1.5 px-2 text-right font-medium">
+                      {formatRatio(pointsPerRound(row.points_for, row.rounds_thrown))}
+                    </td>
+                    <td className="py-1.5 px-2 text-right">
+                      {formatRatio(
+                        differentialPerRound(row.points_for, row.points_against, row.rounds_thrown)
+                      )}
+                    </td>
+                    <td className="py-1.5 px-2 text-right">
+                      {formatPercent(percentage(row.bags_in ?? 0, totalBags))}
+                    </td>
+                    <td className="py-1.5 px-2 text-right">
+                      {formatPercent(percentage(row.bags_on ?? 0, totalBags))}
+                    </td>
+                    <td className="py-1.5 px-2 text-right">
+                      {formatPercent(percentage(row.bags_off ?? 0, totalBags))}
+                    </td>
+                    <td className="py-1.5 px-2 text-right">{row.four_baggers}</td>
+                    <td className="py-1.5 pl-2 text-right">
+                      {row.game_wins}–{row.game_losses}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
           <p className="mt-2 text-xs text-muted-foreground">
             From live-scored matches this season. PPR = points per round thrown; DPR = point
-            differential per round.
+            differential per round. Hole%, Board% and Off% count only rounds where bag placement was
+            tracked.
           </p>
         </div>
       )}
