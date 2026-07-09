@@ -176,8 +176,16 @@ function teamBagTotals(
 }
 
 export function computeMatchRecap(input: ComputeMatchRecapInput): MatchRecap {
-  const { rounds, games, playerNames, playerTeamMap, team1Id, team2Id: _team2Id, team1Name, team2Name } =
-    input;
+  const {
+    rounds,
+    games,
+    playerNames,
+    playerTeamMap,
+    team1Id,
+    team2Id: _team2Id,
+    team1Name,
+    team2Name,
+  } = input;
 
   const lines = computePlayerStatLines(rounds).map((line) =>
     toRecapPlayer(line, playerNames[line.playerId] ?? 'Former player')
