@@ -22,7 +22,7 @@ export interface UpdateRoundPatch {
 
 export interface AdminLiveScoredMatch {
   id: string;
-  date: string;
+  date: string | null;
   location: string | null;
   iscompleted: boolean | null;
   winner_id: string | null;
@@ -60,7 +60,7 @@ export const AdminCorrectionsService = {
       throw new ValidationError('Team 2 bag breakdown does not match the round score');
     }
 
-    const update: Record<string, unknown> = {};
+    const update: Partial<MatchRoundRow> = {};
     if (patch.team1Score !== undefined) update.team1_score = patch.team1Score;
     if (patch.team2Score !== undefined) update.team2_score = patch.team2Score;
     if (patch.team1ThrowerId !== undefined) update.team1_thrower_id = patch.team1ThrowerId;
