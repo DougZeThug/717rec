@@ -43,9 +43,10 @@ export const CompletedMatchReview: React.FC<CompletedMatchReviewProps> = ({
   isReopening,
   onReopen,
 }) => {
-  const playerLines = computePlayerStatLines(rounds)
-    .filter((line) => playerNames[line.playerId])
-    .sort((a, b) => b.roundsThrown - a.roundsThrown);
+  // Keep every attributed line — a thrower may have left the roster since.
+  const playerLines = computePlayerStatLines(rounds).sort(
+    (a, b) => b.roundsThrown - a.roundsThrown
+  );
 
   return (
     <div className="space-y-4">
@@ -93,7 +94,7 @@ export const CompletedMatchReview: React.FC<CompletedMatchReviewProps> = ({
             <tbody>
               {playerLines.map((line) => (
                 <tr key={line.playerId} className="tabular-nums">
-                  <td className="py-0.5">{playerNames[line.playerId]}</td>
+                  <td className="py-0.5">{playerNames[line.playerId] ?? 'Former player'}</td>
                   <td className="py-0.5 text-right">{line.roundsThrown}</td>
                   <td className="py-0.5 text-right">{line.pointsFor}</td>
                   <td className="py-0.5 text-right font-medium">{formatRatio(line.ppr)}</td>

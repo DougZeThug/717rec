@@ -28,6 +28,19 @@ CREATE TABLE IF NOT EXISTS public.team_players (
   UNIQUE (team_id, display_name)
 );
 
+-- Composite key target so game_players can prove "this player plays for
+-- this team" declaratively (see game_players_player_team_fk below).
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'team_players_id_team_id_key'
+      AND conrelid = 'public.team_players'::regclass
+  ) THEN
+    ALTER TABLE public.team_players
+      ADD CONSTRAINT team_players_id_team_id_key UNIQUE (id, team_id);
+  END IF;
+END $$;
+
 CREATE INDEX IF NOT EXISTS idx_team_players_team_id ON public.team_players (team_id);
 
 -- Seed from the legacy roster arrays (trimmed, de-duplicated, non-empty).
@@ -79,6 +92,19 @@ END $$;
 CREATE UNIQUE INDEX IF NOT EXISTS games_match_game_number_key
   ON public.games (match_id, game_number);
 CREATE INDEX IF NOT EXISTS idx_games_match_id ON public.games (match_id);
+
+-- Composite key target so match_rounds can prove "this game belongs to this
+-- match" declaratively (see match_rounds_game_match_fk below). Without it, a
+-- scorer with ANY open match could insert rounds pointing at other matches'
+-- games (stat pollution + undo denial-of-service on the victim game).
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'games_id_match_id_key' AND conrelid = 'public.games'::regclass
+  ) THEN
+    ALTER TABLE public.games ADD CONSTRAINT games_id_match_id_key UNIQUE (id, match_id);
+  END IF;
+END $$;
 
 -- Legacy rows attached to already-completed matches must not surface as
 -- phantom in-progress games.
@@ -148,6 +174,61 @@ CREATE INDEX IF NOT EXISTS idx_match_rounds_game_id ON public.match_rounds (game
 CREATE INDEX IF NOT EXISTS idx_match_rounds_thrower1 ON public.match_rounds (team1_thrower_id);
 CREATE INDEX IF NOT EXISTS idx_match_rounds_thrower2 ON public.match_rounds (team2_thrower_id);
 
+-- A round's game MUST belong to the round's match: closes the cross-match
+-- injection hole in the insert policy (which only checks match_id).
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'match_rounds_game_match_fk'
+      AND conrelid = 'public.match_rounds'::regclass
+  ) THEN
+    ALTER TABLE public.match_rounds
+      ADD CONSTRAINT match_rounds_game_match_fk
+      FOREIGN KEY (game_id, match_id) REFERENCES public.games (id, match_id) ON DELETE CASCADE;
+  END IF;
+END $$;
+
+-- Full old-row images so realtime DELETE events (undo) carry match_id and
+-- can be matched client-side (postgres_changes cannot filter DELETEs).
+ALTER TABLE public.match_rounds REPLICA IDENTITY FULL;
+
+-- Throwers must actually play for the match's two teams.
+CREATE OR REPLACE FUNCTION public.validate_match_rounds_row()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = 'pg_catalog', 'public'
+AS $$
+DECLARE
+  v_team1 uuid;
+  v_team2 uuid;
+BEGIN
+  SELECT m.team1_id, m.team2_id INTO v_team1, v_team2
+  FROM public.matches m WHERE m.id = NEW.match_id;
+
+  IF NEW.team1_thrower_id IS NOT NULL AND NOT EXISTS (
+    SELECT 1 FROM public.team_players tp
+    WHERE tp.id = NEW.team1_thrower_id AND tp.team_id = v_team1
+  ) THEN
+    RAISE EXCEPTION 'Thrower does not play for team 1 of this match';
+  END IF;
+
+  IF NEW.team2_thrower_id IS NOT NULL AND NOT EXISTS (
+    SELECT 1 FROM public.team_players tp
+    WHERE tp.id = NEW.team2_thrower_id AND tp.team_id = v_team2
+  ) THEN
+    RAISE EXCEPTION 'Thrower does not play for team 2 of this match';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS validate_match_rounds_row ON public.match_rounds;
+CREATE TRIGGER validate_match_rounds_row
+  BEFORE INSERT OR UPDATE ON public.match_rounds
+  FOR EACH ROW EXECUTE FUNCTION public.validate_match_rounds_row();
+
 -- ============================================================
 -- 4. game_players — per-game player selections
 -- ============================================================
@@ -164,6 +245,73 @@ CREATE TABLE IF NOT EXISTS public.game_players (
 
 CREATE INDEX IF NOT EXISTS idx_game_players_game_id ON public.game_players (game_id);
 CREATE INDEX IF NOT EXISTS idx_game_players_player_id ON public.game_players (player_id);
+
+-- The selected player must actually belong to the claimed team.
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'game_players_player_team_fk'
+      AND conrelid = 'public.game_players'::regclass
+  ) THEN
+    ALTER TABLE public.game_players
+      ADD CONSTRAINT game_players_player_team_fk
+      FOREIGN KEY (player_id, team_id) REFERENCES public.team_players (id, team_id)
+      ON DELETE CASCADE;
+  END IF;
+END $$;
+
+-- The claimed team must be one of the two teams in the game's match.
+CREATE OR REPLACE FUNCTION public.validate_game_players_row()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = 'pg_catalog', 'public'
+AS $$
+DECLARE
+  v_team1 uuid;
+  v_team2 uuid;
+BEGIN
+  SELECT m.team1_id, m.team2_id INTO v_team1, v_team2
+  FROM public.games g
+  JOIN public.matches m ON m.id = g.match_id
+  WHERE g.id = NEW.game_id;
+
+  IF NEW.team_id IS DISTINCT FROM v_team1 AND NEW.team_id IS DISTINCT FROM v_team2 THEN
+    RAISE EXCEPTION 'Team is not part of this match';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS validate_game_players_row ON public.game_players;
+CREATE TRIGGER validate_game_players_row
+  BEFORE INSERT OR UPDATE ON public.game_players
+  FOR EACH ROW EXECUTE FUNCTION public.validate_game_players_row();
+
+-- A game's winner (when set) must be one of the match's two teams.
+CREATE OR REPLACE FUNCTION public.validate_games_row()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = 'pg_catalog', 'public'
+AS $$
+BEGIN
+  IF NEW.winner_team_id IS NOT NULL AND NOT EXISTS (
+    SELECT 1 FROM public.matches m
+    WHERE m.id = NEW.match_id
+      AND NEW.winner_team_id IN (m.team1_id, m.team2_id)
+  ) THEN
+    RAISE EXCEPTION 'Winner must be one of the match teams';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS validate_games_row ON public.games;
+CREATE TRIGGER validate_games_row
+  BEFORE INSERT OR UPDATE ON public.games
+  FOR EACH ROW EXECUTE FUNCTION public.validate_games_row();
 
 -- ============================================================
 -- 5. Permission helper (shared by RLS policies and RPCs)
@@ -256,6 +404,7 @@ CREATE POLICY "Scorers delete last round" ON public.match_rounds
       AND round_number = (
         SELECT max(r.round_number) FROM public.match_rounds r
         WHERE r.game_id = match_rounds.game_id
+          AND r.match_id = match_rounds.match_id
       )
     )
   );
@@ -532,6 +681,13 @@ BEGIN
     WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'matches'
   ) THEN
     ALTER PUBLICATION supabase_realtime ADD TABLE public.matches;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'game_players'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.game_players;
   END IF;
 END $$;
 

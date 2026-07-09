@@ -184,13 +184,14 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
               team2Name={team2Name}
               onSubmit={handleSubmit}
               isSubmitting={submitRound.isPending}
+              disabled={undoLastRound.isPending}
             />
           </>
         )}
 
         {canScore && (
           <LiveScoringControls
-            canUndo={lastRound !== null}
+            canUndo={lastRound !== null && !submitRound.isPending}
             isUndoing={undoLastRound.isPending}
             lastRoundLabel={
               lastRound
@@ -216,8 +217,32 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
 
   const renderSetup = () => {
     const nextGameNumber = matchState.nextGameNumber;
-    if (nextGameNumber === null) return null;
+    if (nextGameNumber === null) {
+      // Shouldn't happen (all 3 games completed without a 2-win side means
+      // corrupted data) — degrade to the round history instead of a blank page.
+      return (
+        <div className="space-y-3">
+          <div className="rounded-lg border bg-card p-6 text-center text-sm text-muted-foreground">
+            This match's games look inconsistent. An admin can reopen a game to fix the scores.
+          </div>
+          <RoundLog
+            rounds={bundle.rounds}
+            team1Name={team1Name}
+            team2Name={team2Name}
+            playerNames={playerNames}
+          />
+        </div>
+      );
+    }
     const previous = lastCompletedGame;
+    const rosterIds = {
+      team1: new Set(team1Players.players.map((p) => p.id)),
+      team2: new Set(team2Players.players.map((p) => p.id)),
+    };
+    const prefill = (side: 1 | 2) =>
+      (side === 1 ? previous?.players.team1 : previous?.players.team2)
+        ?.map((gp) => gp.player_id)
+        .filter((id) => (side === 1 ? rosterIds.team1 : rosterIds.team2).has(id)) ?? [];
     return (
       <div className="space-y-3">
         <GameSetupPanel
@@ -227,8 +252,8 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
           team2Name={team2Name}
           team1Roster={team1Players.players}
           team2Roster={team2Players.players}
-          initialTeam1Ids={previous?.players.team1.map((gp) => gp.player_id) ?? []}
-          initialTeam2Ids={previous?.players.team2.map((gp) => gp.player_id) ?? []}
+          initialTeam1Ids={prefill(1)}
+          initialTeam2Ids={prefill(2)}
           canScore={canScore}
           isStarting={startGame.isPending}
           onStart={(team1Ids, team2Ids) =>

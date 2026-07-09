@@ -73,7 +73,7 @@ beforeEach(() => {
 });
 
 describe('useLiveMatchRealtime', () => {
-  it('subscribes to rounds, games and the match row filtered to this match', () => {
+  it('subscribes to rounds, games, player selections and the match row', () => {
     renderHook(() => useLiveMatchRealtime('match-1'), { wrapper: createWrapper() });
 
     expect(capturedChannelName).toContain('live-match-match-1');
@@ -85,9 +85,29 @@ describe('useLiveMatchRealtime', () => {
         .sort()
     ).toEqual(['DELETE', 'INSERT', 'UPDATE']);
     expect(byTable('match_rounds')[0].config.filter).toBe('match_id=eq.match-1');
+    // DELETE events cannot be server-filtered — matched client-side instead.
+    const roundDelete = byTable('match_rounds').find((o) => o.config.event === 'DELETE');
+    expect(roundDelete?.config.filter).toBeUndefined();
     expect(byTable('games')).toHaveLength(1);
     expect(byTable('games')[0].config.filter).toBe('match_id=eq.match-1');
+    expect(byTable('game_players')).toHaveLength(1);
     expect(byTable('matches')[0].config.filter).toBe('id=eq.match-1');
+  });
+
+  it('ignores round deletes that belong to a different match', () => {
+    renderHook(() => useLiveMatchRealtime('match-1'), { wrapper: createWrapper() });
+    const spy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    const roundDelete = capturedOns.find(
+      (o) => o.config.table === 'match_rounds' && o.config.event === 'DELETE'
+    );
+    if (!roundDelete) throw new Error('No match_rounds DELETE subscription captured');
+
+    roundDelete.handler({ new: {}, old: { match_id: 'someone-elses-match' } });
+    expect(spy).not.toHaveBeenCalled();
+
+    roundDelete.handler({ new: {}, old: { match_id: 'match-1' } });
+    expect(spy).toHaveBeenCalledWith({ queryKey: liveScoringKeys.liveMatch('match-1') });
   });
 
   it('does not subscribe without a match id', () => {

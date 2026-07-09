@@ -93,7 +93,9 @@ export function deriveLiveMatch(bundle: LiveMatchBundle): LiveMatchDerived {
   return {
     games,
     matchState: deriveMatchState(summaries),
-    currentGame: inProgress.length > 0 ? inProgress[inProgress.length - 1] : null,
+    // Lowest-numbered open game first: if an earlier game was reopened for a
+    // correction, it must be resolved before play continues.
+    currentGame: inProgress.length > 0 ? inProgress[0] : null,
     lastCompletedGame: completed.length > 0 ? completed[completed.length - 1] : null,
   };
 }
