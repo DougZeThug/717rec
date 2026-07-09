@@ -17,11 +17,11 @@ import type { LiveGameDerived } from '@/hooks/live-scoring/useLiveMatch';
 import type { Tables } from '@/integrations/supabase/types';
 type MatchRoundRow = Tables<'match_rounds'>;
 import { computePlayerStatLines } from '@/utils/liveScoring/matchPlayerStats';
-import { formatPercent, formatRatio, percentage } from '@/utils/liveScoring/pprCalc';
 import { buildPlayerTeamMap, computeMatchRecap } from '@/utils/liveScoring/matchRecap';
+import { formatPercent, formatRatio, percentage } from '@/utils/liveScoring/pprCalc';
 
-import { RoundLog } from './RoundLog';
 import { MatchRecapSummary } from './MatchRecapSummary';
+import { RoundLog } from './RoundLog';
 
 interface CompletedMatchReviewProps {
   team1Name: string;

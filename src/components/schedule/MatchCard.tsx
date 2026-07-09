@@ -2,8 +2,8 @@ import { ClipboardList, Pencil, Radio, Trash2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { MatchInteractions } from '@/components/matches';
 import { MatchRecapDialog } from '@/components/live-scoring/MatchRecapDialog';
+import { MatchInteractions } from '@/components/matches';
 import { TransitionLink } from '@/components/transitions/TransitionLink';
 import { TeamLogo } from '@/components/ui/team';
 import { useCanScoreMatch } from '@/hooks/live-scoring/useCanScoreMatch';

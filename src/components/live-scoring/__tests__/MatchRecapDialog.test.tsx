@@ -104,8 +104,6 @@ describe('MatchRecapDialog', () => {
     renderDialog();
     await userEvent.click(screen.getByRole('button', { name: /open recap/i }));
 
-    await waitFor(() =>
-      expect(screen.getByLabelText('Loading recap')).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByLabelText('Loading recap')).toBeInTheDocument());
   });
 });

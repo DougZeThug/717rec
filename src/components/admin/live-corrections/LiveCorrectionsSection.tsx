@@ -34,8 +34,8 @@ const LiveCorrectionsSection: React.FC = () => {
       <div>
         <h2 className="text-xl font-semibold">Live Score Corrections</h2>
         <p className="text-sm text-muted-foreground">
-          Fix wrong round scores, bag breakdowns, throwers, or the winner of a completed game.
-          Only matches scored live are listed here.
+          Fix wrong round scores, bag breakdowns, throwers, or the winner of a completed game. Only
+          matches scored live are listed here.
         </p>
       </div>
 
@@ -121,7 +121,11 @@ const LiveCorrectionsSection: React.FC = () => {
       </div>
 
       <div className="flex justify-end">
-        <Button variant="ghost" onClick={() => setSelectedMatchId(null)} disabled={!selectedMatchId}>
+        <Button
+          variant="ghost"
+          onClick={() => setSelectedMatchId(null)}
+          disabled={!selectedMatchId}
+        >
           Clear selection
         </Button>
       </div>

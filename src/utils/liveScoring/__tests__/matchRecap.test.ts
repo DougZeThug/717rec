@@ -146,8 +146,14 @@ describe('computeMatchRecap', () => {
         round({ round_number: 2, team1_thrower_id: 'p2', team2_thrower_id: 'p4' }),
       ],
     });
-    const team1Names = recap.teams.find((t) => t.side === 1)!.players.map((p) => p.name).sort();
-    const team2Names = recap.teams.find((t) => t.side === 2)!.players.map((p) => p.name).sort();
+    const team1Names = recap.teams
+      .find((t) => t.side === 1)!
+      .players.map((p) => p.name)
+      .sort();
+    const team2Names = recap.teams
+      .find((t) => t.side === 2)!
+      .players.map((p) => p.name)
+      .sort();
     expect(team1Names).toEqual(['Dan', 'Doug']);
     expect(team2Names).toEqual(['Alex', 'Jordan']);
   });

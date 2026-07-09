@@ -79,18 +79,9 @@ const PlayerStatCard: React.FC<{ row: PlayerStatRow }> = ({ row }) => {
                 boardPct
               )}, Off ${formatPercent(offPct)}`}
             >
-              <div
-                className="bg-emerald-500"
-                style={{ width: `${holePct ?? 0}%` }}
-              />
-              <div
-                className="bg-amber-500"
-                style={{ width: `${boardPct ?? 0}%` }}
-              />
-              <div
-                className="bg-muted-foreground/40"
-                style={{ width: `${offPct ?? 0}%` }}
-              />
+              <div className="bg-emerald-500" style={{ width: `${holePct ?? 0}%` }} />
+              <div className="bg-amber-500" style={{ width: `${boardPct ?? 0}%` }} />
+              <div className="bg-muted-foreground/40" style={{ width: `${offPct ?? 0}%` }} />
             </div>
             <div className="grid grid-cols-3 text-xs tabular-nums">
               <div>

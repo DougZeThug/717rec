@@ -156,12 +156,10 @@ export const EditRoundDialog: React.FC<EditRoundDialogProps> = ({
     const patch: UpdateRoundPatch = {
       team1Score: s1,
       team2Score: s2,
-      team1ThrowerId: side1.throwerId === '' || side1.throwerId === NULL_THROWER
-        ? null
-        : side1.throwerId,
-      team2ThrowerId: side2.throwerId === '' || side2.throwerId === NULL_THROWER
-        ? null
-        : side2.throwerId,
+      team1ThrowerId:
+        side1.throwerId === '' || side1.throwerId === NULL_THROWER ? null : side1.throwerId,
+      team2ThrowerId:
+        side2.throwerId === '' || side2.throwerId === NULL_THROWER ? null : side2.throwerId,
     };
     if (side1.bagsIn !== '' && side1.bagsOn !== '' && side1.bagsOff !== '') {
       patch.team1Bags = {

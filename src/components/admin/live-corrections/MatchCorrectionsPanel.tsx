@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, Pencil, Trash2, Trophy } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
@@ -6,9 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import LoadingState from '@/components/ui/loading-state';
 import { useAdminCorrections } from '@/hooks/live-scoring/useAdminCorrections';
 import { useLiveMatch } from '@/hooks/live-scoring/useLiveMatch';
-import { TeamPlayersService } from '@/services/liveScoring/TeamPlayersService';
-import { useQuery } from '@tanstack/react-query';
 import type { Tables } from '@/integrations/supabase/types';
+import { TeamPlayersService } from '@/services/liveScoring/TeamPlayersService';
 
 import { ChangeGameWinnerDialog } from './ChangeGameWinnerDialog';
 import { DeleteRoundDialog } from './DeleteRoundDialog';
@@ -53,11 +53,7 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
 
   if (isLoading) return <LoadingState variant="section" message="Loading match…" />;
   if (isNotEnabled || !bundle || !derived) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        No live-scoring data for this match.
-      </p>
-    );
+    return <p className="text-sm text-muted-foreground">No live-scoring data for this match.</p>;
   }
 
   const team1Name = bundle.match.team1?.name ?? 'Team 1';
@@ -66,9 +62,7 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
   const editingGame = editingRound
     ? derived.games.find((g) => g.game.id === editingRound.game_id)
     : null;
-  const winnerGame = winnerGameId
-    ? derived.games.find((g) => g.game.id === winnerGameId)
-    : null;
+  const winnerGame = winnerGameId ? derived.games.find((g) => g.game.id === winnerGameId) : null;
 
   return (
     <div className="space-y-4">
@@ -77,8 +71,8 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
           <AlertTriangle className="size-4 mt-0.5 text-amber-600 shrink-0" aria-hidden />
           <div>
             This match is <strong>finalized</strong>. Edits here will change round/game data
-            immediately, but the official result & standings won't update until you reopen the
-            match from the live view and re-finalize it.
+            immediately, but the official result & standings won't update until you reopen the match
+            from the live view and re-finalize it.
           </div>
         </div>
       )}
@@ -123,10 +117,7 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
               ) : (
                 <ul className="divide-y divide-border">
                   {gameRounds.map((r) => (
-                    <li
-                      key={r.id}
-                      className="flex items-center justify-between py-2 text-sm gap-2"
-                    >
+                    <li key={r.id} className="flex items-center justify-between py-2 text-sm gap-2">
                       <div className="flex-1 min-w-0">
                         <div className="font-medium">Round {r.round_number}</div>
                         <div className="text-muted-foreground text-xs">
