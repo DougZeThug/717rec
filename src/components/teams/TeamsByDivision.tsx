@@ -75,7 +75,6 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
           <TeamsDivisionSection
             key={displayDivision}
             divisionName={divisionName}
-            divisionId={displayDivision}
             teams={divisionTeams}
             isExpanded={isExpanded}
             onToggleExpand={() => toggleDivision(displayDivision)}
