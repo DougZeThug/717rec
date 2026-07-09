@@ -3,7 +3,8 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { MatchRoundRow } from '@/services/liveScoring/dbTypes';
+import type { Tables } from '@/integrations/supabase/types';
+type MatchRoundRow = Tables<'match_rounds'>;
 
 import { CompletedMatchReview } from '../CompletedMatchReview';
 

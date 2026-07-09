@@ -1,6 +1,7 @@
 import React from 'react';
 
-import type { MatchRoundRow } from '@/services/liveScoring/dbTypes';
+import type { Tables } from '@/integrations/supabase/types';
+type MatchRoundRow = Tables<'match_rounds'>;
 
 interface RoundLogProps {
   rounds: MatchRoundRow[];

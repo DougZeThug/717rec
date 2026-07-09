@@ -14,7 +14,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import type { LiveGameDerived } from '@/hooks/live-scoring/useLiveMatch';
-import type { MatchRoundRow } from '@/services/liveScoring/dbTypes';
+import type { Tables } from '@/integrations/supabase/types';
+type MatchRoundRow = Tables<'match_rounds'>;
 import { computePlayerStatLines } from '@/utils/liveScoring/matchPlayerStats';
 import { formatPercent, formatRatio, percentage } from '@/utils/liveScoring/pprCalc';
 

@@ -2,7 +2,8 @@ import { Play } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import type { TeamPlayerRow } from '@/services/liveScoring/dbTypes';
+import type { Tables } from '@/integrations/supabase/types';
+type TeamPlayerRow = Tables<'team_players'>;
 
 import { PlayerSelector } from './PlayerSelector';
 

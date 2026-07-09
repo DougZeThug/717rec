@@ -12,7 +12,8 @@ import {
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
-import type { TeamPlayerRow } from '@/services/liveScoring/dbTypes';
+import type { Tables } from '@/integrations/supabase/types';
+type TeamPlayerRow = Tables<'team_players'>;
 import { MAX_PLAYERS_PER_SIDE } from '@/utils/liveScoring/rules';
 
 interface PlayerSelectorProps {

@@ -3,7 +3,8 @@ import { validateBreakdown } from '@/utils/liveScoring/bagBreakdown';
 import { isValidRoundScore } from '@/utils/liveScoring/scoring';
 import type { BagBreakdown } from '@/utils/liveScoring/types';
 
-import type { MatchRoundRow } from './dbTypes';
+import type { Tables } from '@/integrations/supabase/types';
+type MatchRoundRow = Tables<'match_rounds'>;
 import { supabase } from '@/integrations/supabase/client';
 import { handleLiveScoringError, ROUND_COLUMNS } from './LiveMatchService';
 

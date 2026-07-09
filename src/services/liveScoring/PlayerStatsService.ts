@@ -1,4 +1,6 @@
-import type { PlayerMatchStatsRow, PlayerSeasonStatsRow } from './dbTypes';
+import type { Tables } from '@/integrations/supabase/types';
+type PlayerMatchStatsRow = Tables<'v_player_match_stats'>;
+type PlayerSeasonStatsRow = Tables<'v_player_season_stats'>;
 import { supabase } from '@/integrations/supabase/client';
 import { handleLiveScoringError } from './LiveMatchService';
 

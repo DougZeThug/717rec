@@ -5,7 +5,10 @@ import { LiveScoringNotEnabledError } from '@/types/errors';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 import { MAX_PLAYERS_PER_SIDE } from '@/utils/liveScoring/rules';
 
-import type { GamePlayerRow, LiveGameRow, MatchRoundRow } from './dbTypes';
+import type { Tables } from '@/integrations/supabase/types';
+type GamePlayerRow = Tables<'game_players'>;
+type LiveGameRow = Tables<'games'>;
+type MatchRoundRow = Tables<'match_rounds'>;
 
 export const GAME_COLUMNS =
   'id, match_id, game_number, team1_score, team2_score, status, winner_team_id, started_at, completed_at, created_at, updated_at';

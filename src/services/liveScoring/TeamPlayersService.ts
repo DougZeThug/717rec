@@ -1,7 +1,8 @@
 import { ValidationError } from '@/types/errors';
 import { ensureFound } from '@/utils/errorHandler';
 
-import type { TeamPlayerRow } from './dbTypes';
+import type { Tables } from '@/integrations/supabase/types';
+type TeamPlayerRow = Tables<'team_players'>;
 import { supabase } from '@/integrations/supabase/client';
 import { handleLiveScoringError } from './LiveMatchService';
 
