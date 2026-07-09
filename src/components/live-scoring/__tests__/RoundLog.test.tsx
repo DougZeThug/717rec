@@ -2,7 +2,8 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it } from 'vitest';
 
-import type { MatchRoundRow } from '@/services/liveScoring/dbTypes';
+import type { Tables } from '@/integrations/supabase/types';
+type MatchRoundRow = Tables<'match_rounds'>;
 
 import { RoundLog } from '../RoundLog';
 

@@ -2,7 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '@/contexts/auth-context';
 import { toast } from '@/hooks/useToast';
-import type { MatchRoundRow } from '@/services/liveScoring/dbTypes';
+import type { Tables } from '@/integrations/supabase/types';
+type MatchRoundRow = Tables<'match_rounds'>;
 import type { LiveMatchBundle } from '@/services/liveScoring/LiveMatchService';
 import { RoundService } from '@/services/liveScoring/RoundService';
 import { DuplicateRoundError } from '@/types/errors';

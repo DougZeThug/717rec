@@ -1,7 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
-import type { GamePlayerRow, LiveGameRow, MatchRoundRow } from '@/services/liveScoring/dbTypes';
+import type { Tables } from '@/integrations/supabase/types';
+type GamePlayerRow = Tables<'game_players'>;
+type LiveGameRow = Tables<'games'>;
+type MatchRoundRow = Tables<'match_rounds'>;
 import type { LiveMatchBundle } from '@/services/liveScoring/LiveMatchService';
 import { LiveMatchService } from '@/services/liveScoring/LiveMatchService';
 import { LiveScoringNotEnabledError } from '@/types/errors';
