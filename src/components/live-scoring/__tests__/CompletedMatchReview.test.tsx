@@ -86,6 +86,10 @@ describe('CompletedMatchReview', () => {
       }),
     ]);
 
+    // Recap summary now renders above the details table.
+    expect(screen.getByText('Top Performer')).toBeInTheDocument();
+    expect(screen.getByText('Round Stats')).toBeInTheDocument();
+
     // Doug: 5 in, 2 on, 1 off of 8 bags -> Hole 63%, Board 25%, one 4-bagger.
     const doug = rowFor('Doug');
     expect(doug.getByText('63%')).toBeInTheDocument();
