@@ -17,6 +17,7 @@ interface DateMatchGroupProps {
   isFirstGroup?: boolean;
   onEditMatch?: (match: Match) => void;
   onDeleteMatch?: (matchId: string) => void;
+  liveScoredMatchIds?: ReadonlySet<string>;
 }
 
 const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
@@ -26,6 +27,7 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
   isFirstGroup = false,
   onEditMatch,
   onDeleteMatch,
+  liveScoredMatchIds,
 }) => {
   const [isOpen, setIsOpen] = React.useState(isCurrentDay || isFirstGroup);
   const { resolvedTheme } = useTheme();
@@ -79,6 +81,7 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
                 onEditMatch={onEditMatch}
                 onDeleteMatch={onDeleteMatch}
                 isFirstTimeSlot={index === 0 && isOpen}
+                liveScoredMatchIds={liveScoredMatchIds}
               />
             ))
           ) : (

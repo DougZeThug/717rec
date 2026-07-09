@@ -1,42 +1,54 @@
 ## Goal
 
-Make the completed-match review (game scores, per-player PPR/bag stats, round-by-round history) reachable in one tap from any completed match card on the schedule.
+The recap page's rich sections (Games, Player stats, Round-by-round) already self-hide when there's no live-scoring data, but the new **"View match recap"** button on the schedule shows for every completed match. For matches scored the traditional admin way, that button leads to a near-empty page. Hide the button unless live-scoring data exists for that match.
 
-## What exists today
+## Detection rule
 
-- `/matches/:matchId/live` already renders `CompletedMatchReview` automatically once a match is officially completed (`LiveMatchView` branches on `match.iscompleted`).
-- Schedule `MatchCard` shows a "Live score this match" CTA only for **upcoming** matches. Completed cards have no link into the review.
-- `CompletedMatchReview` currently shows: final score card, per-game totals, and a per-player stats table (PPR, Hole%, Board%, 4B). It does **not** yet show the round-by-round log — that's only rendered in the in-progress/decided views via `RoundLog`.
+A match is "live-scored" if it has at least one row in the `games` table with that `match_id`. (Matches without any games row = traditional admin entry.)
 
 ## Changes
 
-### 1. Add "View match recap" CTA on completed schedule cards
+### 1. New service: `src/services/liveScoring/LiveScoredMatchesService.ts`
 
-In `src/components/schedule/MatchCard.tsx`, mirror the existing "Live score this match" block for the completed case:
+Exports `fetchLiveScoredMatchIds(matchIds: string[]): Promise<Set<string>>`.
 
-- When `isCompleted && !hasSpecialStatus`, render a `TransitionLink` to `/matches/${match.id}/live` styled as a secondary CTA (muted background, `Trophy` or `ClipboardList` icon, label "View match recap").
-- Placed in the same slot as the current live-scoring CTA (just below the H2H / prediction area, above the admin actions).
-- No permission gating — the recap page is already public-readable; anyone who can see the card can open the recap.
+- Bulk query: `supabase.from('games').select('match_id').in('match_id', matchIds)`
+- Returns a `Set` of distinct `match_id` values that have ≥1 game row.
+- Uses `handleDatabaseError`; returns empty set when `matchIds` is empty.
 
-### 2. Add round-by-round history to the recap page
+### 2. New hook: `src/hooks/live-scoring/useLiveScoredMatchIds.ts`
 
-In `src/components/live-scoring/CompletedMatchReview.tsx`:
+Thin TanStack Query wrapper:
+- Key: `['live-scored-match-ids', sortedMatchIds]`
+- `staleTime`: 5 min (matches existing cache norms)
+- `enabled`: `matchIds.length > 0`
+- Returns `{ liveScoredIds: Set<string>, isLoading }`.
 
-- Add a new "Round-by-round" section beneath the existing Player-stats card that reuses the existing `RoundLog` component (`src/components/live-scoring/RoundLog.tsx`) so the presentation matches the in-progress view exactly.
-- Pass `rounds`, `team1Name`, `team2Name`, and `playerNames` (all already props of `CompletedMatchReview`).
-- If `games.length > 1`, group rounds by game (one `RoundLog` per game with a small "Game N" subheading) so the reader can see the flow of each game separately. If there's only one game, render a single log.
+### 3. `src/components/schedule/ScheduleContent.tsx` (or the nearest common parent that already has the full match list)
 
-No other files need to change — `LiveMatchView` already forwards the correct props, and `/matches/:matchId/live` route + `LiveScoring.tsx` page already handle the completed case.
+- Compute `completedIds = matches.filter(m => isCompleted(m)).map(m => m.id)`.
+- Call `useLiveScoredMatchIds(completedIds)`.
+- Pass the resulting `Set` down through `DateMatchGroup` → `TimeSlotMatchGroup` → `MatchCard` as a single `liveScoredMatchIds: Set<string>` prop (drilled, no context needed — the chain is only 3 levels).
 
-### Technical notes
+### 4. `src/components/schedule/MatchCard.tsx`
 
-- No service, hook, or DB changes.
-- No new dependencies.
-- Round grouping in `CompletedMatchReview` is a pure client-side filter (`rounds.filter(r => r.game_id === g.game.id)`); `games` already contains its own sorted `rounds` array on `LiveGameDerived`, which we can use directly to avoid re-filtering.
-- The CTA is safe to always show for completed matches — if a match was completed the old way (no live-scored rounds), the recap page still renders a valid final-score card and simply omits the empty sections.
+- Accept new optional prop `liveScoredMatchIds?: Set<string>` (default `undefined`).
+- Derive `const hasRecap = liveScoredMatchIds?.has(match.id) ?? false;`
+- Gate the recap CTA:
+  ```tsx
+  {isCompleted && !hasSpecialStatus && hasRecap && ( ...View match recap link... )}
+  ```
+- No visual/styling changes; only the conditional is tightened.
+
+### 5. Tests
+
+- Update `src/components/schedule/__tests__/MatchCard.test.tsx`:
+  - Add case: completed match **with** `liveScoredMatchIds` containing its id → recap link visible.
+  - Add case: completed match **without** it → recap link absent.
+- Update `TimeSlotMatchGroup` / `DateMatchGroup` tests only if their prop drilling breaks type-wise (pass empty `Set` in existing tests).
 
 ## Out of scope
 
-- No changes to the playoff `PlayoffMatchCard` (user asked about schedule/match card).
-- No changes to team-page "Player Stats" visibility (separate open question).
-- No new leaderboard or navigation entries elsewhere.
+- No change to `CompletedMatchReview.tsx` — its section-level `.length > 0` gates already handle the empty case correctly for any user who reaches the page via direct URL.
+- No change to playoff match cards, admin mass-entry, or the live-scoring "Live score this match" CTA (still shown for upcoming matches regardless).
+- No DB migration — reuses existing `games` table.

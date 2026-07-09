@@ -27,6 +27,12 @@ interface MatchCardProps {
   showInteractions?: boolean;
   prefetchedH2H?: HeadToHeadData | null;
   isBatchH2HLoading?: boolean;
+  /**
+   * Set of match IDs known to have live-scoring data. When provided, the
+   * "View match recap" CTA is only shown for matches contained in the set.
+   * Undefined = unknown (CTA hidden to avoid dead-end links).
+   */
+  liveScoredMatchIds?: ReadonlySet<string>;
 }
 
 const MatchCard: React.FC<MatchCardProps> = ({
@@ -37,6 +43,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
   showInteractions = true,
   prefetchedH2H,
   isBatchH2HLoading = false,
+  liveScoredMatchIds,
 }) => {
   const { resolvedTheme } = useTheme();
   const { isAdminAccessGranted } = useAdminAccess();
@@ -252,8 +259,8 @@ const MatchCard: React.FC<MatchCardProps> = ({
               </div>
             )}
 
-            {/* Recap entry for completed matches */}
-            {isCompleted && !hasSpecialStatus && (
+            {/* Recap entry for completed matches (only when live-scored) */}
+            {isCompleted && !hasSpecialStatus && liveScoredMatchIds?.has(match.id) && (
               <div className="mt-1.5">
                 <TransitionLink
                   to={`/matches/${match.id}/live`}

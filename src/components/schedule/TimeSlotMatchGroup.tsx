@@ -15,6 +15,7 @@ interface TimeSlotMatchGroupProps {
   onEditMatch?: (match: Match) => void;
   onDeleteMatch?: (matchId: string) => void;
   isFirstTimeSlot?: boolean;
+  liveScoredMatchIds?: ReadonlySet<string>;
 }
 
 const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
@@ -23,6 +24,7 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
   onEditMatch,
   onDeleteMatch,
   isFirstTimeSlot = false,
+  liveScoredMatchIds,
 }) => {
   const [isOpen, setIsOpen] = React.useState(isFirstTimeSlot);
 
@@ -71,6 +73,7 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
               onDelete={onDeleteMatch}
               prefetchedH2H={getHeadToHead(match.team1Id, match.team2Id)}
               isBatchH2HLoading={isH2HLoading}
+              liveScoredMatchIds={liveScoredMatchIds}
             />
           ))}
         </div>

@@ -20,6 +20,7 @@ interface SwipeableDateGroupsProps {
   onDeleteMatch?: (matchId: string) => void;
   activeIndex: number;
   onIndexChange: (index: number) => void;
+  liveScoredMatchIds?: ReadonlySet<string>;
 }
 
 const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
@@ -29,6 +30,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
   onDeleteMatch,
   activeIndex,
   onIndexChange,
+  liveScoredMatchIds,
 }) => {
   // Reset index when it goes out of bounds (e.g., after filtering or tab change)
   useEffect(() => {
@@ -151,6 +153,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
                 isFirstGroup={safeIndex === 0}
                 onEditMatch={onEditMatch}
                 onDeleteMatch={onDeleteMatch}
+                liveScoredMatchIds={liveScoredMatchIds}
               />
             </m.div>
           </AnimatePresence>

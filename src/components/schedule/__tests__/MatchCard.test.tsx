@@ -198,4 +198,27 @@ describe('MatchCard', () => {
     expect(screen.getByText('Postponed')).toBeInTheDocument();
     expect(screen.queryByText('Final')).not.toBeInTheDocument();
   });
+
+  it('shows "View match recap" only when the match id is in liveScoredMatchIds', () => {
+    const completed: Match = {
+      ...baseMatch,
+      iscompleted: true,
+      team1_game_wins: 3,
+      team2_game_wins: 1,
+    };
+
+    const { rerender } = render(<MatchCard match={completed} isCompleted />);
+    expect(screen.queryByText('View match recap')).not.toBeInTheDocument();
+
+    rerender(
+      <MatchCard match={completed} isCompleted liveScoredMatchIds={new Set(['other-id'])} />
+    );
+    expect(screen.queryByText('View match recap')).not.toBeInTheDocument();
+
+    rerender(
+      <MatchCard match={completed} isCompleted liveScoredMatchIds={new Set(['match-1'])} />
+    );
+    const link = screen.getByRole('link', { name: /view match recap/i });
+    expect(link).toHaveAttribute('href', '/matches/match-1/live');
+  });
 });
