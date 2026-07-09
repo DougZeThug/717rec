@@ -1,18 +1,6 @@
 import { createContext, useContext } from 'react';
 
-/** Route state passed during navigation */
-export interface RouteState {
-  isAppNavigating?: boolean;
-  [key: string]: unknown;
-}
-
-export interface NavigationOptions {
-  state?: RouteState;
-  replace?: boolean;
-}
-
 export interface NavigationContextType {
-  navigateWithTransition: (to: string, options?: NavigationOptions) => void;
   isNavigating: boolean;
 }
 
