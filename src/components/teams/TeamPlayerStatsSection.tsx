@@ -15,8 +15,8 @@ import {
 } from '@/utils/liveScoring/pprCalc';
 
 interface PlayerStatRow {
-  player_id: string;
-  display_name: string;
+  player_id: string | null;
+  display_name: string | null;
   rounds_thrown: number | null;
   points_for: number | null;
   points_against: number | null;
@@ -49,7 +49,7 @@ const PlayerStatCard: React.FC<{ row: PlayerStatRow }> = ({ row }) => {
     <Card>
       <CardContent className="p-4 space-y-3">
         <div className="flex items-baseline justify-between gap-2">
-          <div className="font-semibold truncate">{row.display_name}</div>
+          <div className="font-semibold truncate">{row.display_name ?? 'Unknown player'}</div>
           <div className="text-xs text-muted-foreground tabular-nums shrink-0">
             {rounds} round{rounds === 1 ? '' : 's'}
           </div>
@@ -155,7 +155,7 @@ const TeamPlayerStatsSection: React.FC<TeamPlayerStatsSectionProps> = ({ teamId 
         <div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {stats.map((row) => (
-              <PlayerStatCard key={row.player_id} row={row} />
+              <PlayerStatCard key={row.player_id ?? row.display_name ?? Math.random()} row={row} />
             ))}
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
