@@ -86,7 +86,8 @@ describe('MatchRecapDialog', () => {
     await userEvent.click(screen.getByRole('button', { name: /open recap/i }));
 
     expect(await screen.findByText('Match Recap')).toBeInTheDocument();
-    expect(screen.getByText(/Baggers won/i)).toBeInTheDocument();
+    // "Baggers won" appears in both the winner header and the Key Game line.
+    expect(screen.getAllByText(/Baggers won/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('2–1')).toBeInTheDocument();
 
     const fullRecap = screen.getByRole('link', { name: /open full recap/i });
