@@ -72,11 +72,15 @@ const TeamPlayerStatsSection: React.FC<TeamPlayerStatsSectionProps> = ({ teamId 
                     <td className="py-1.5 pr-2">{row.display_name}</td>
                     <td className="py-1.5 px-2 text-right">{row.rounds_thrown}</td>
                     <td className="py-1.5 px-2 text-right font-medium">
-                      {formatRatio(pointsPerRound(row.points_for, row.rounds_thrown))}
+                      {formatRatio(pointsPerRound(row.points_for ?? 0, row.rounds_thrown ?? 0))}
                     </td>
                     <td className="py-1.5 px-2 text-right">
                       {formatRatio(
-                        differentialPerRound(row.points_for, row.points_against, row.rounds_thrown)
+                        differentialPerRound(
+                          row.points_for ?? 0,
+                          row.points_against ?? 0,
+                          row.rounds_thrown ?? 0
+                        )
                       )}
                     </td>
                     <td className="py-1.5 px-2 text-right">
