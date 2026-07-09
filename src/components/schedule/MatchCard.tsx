@@ -3,6 +3,7 @@ import { useTheme } from 'next-themes';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { MatchInteractions } from '@/components/matches';
+import { MatchRecapDialog } from '@/components/live-scoring/MatchRecapDialog';
 import { TransitionLink } from '@/components/transitions/TransitionLink';
 import { TeamLogo } from '@/components/ui/team';
 import { useCanScoreMatch } from '@/hooks/live-scoring/useCanScoreMatch';
@@ -262,14 +263,21 @@ const MatchCard: React.FC<MatchCardProps> = ({
             {/* Recap entry for completed matches (only when live-scored) */}
             {isCompleted && !hasSpecialStatus && liveScoredMatchIds?.has(match.id) && (
               <div className="mt-1.5">
-                <TransitionLink
-                  to={`/matches/${match.id}/live`}
-                  className="flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-lg bg-muted text-sm font-medium text-foreground/80 transition-colors hover:bg-muted/70"
-                  aria-label={`View match recap for ${team1Name} vs ${team2Name}`}
-                >
-                  <ClipboardList className="size-4" aria-hidden />
-                  View match recap
-                </TransitionLink>
+                <MatchRecapDialog
+                  matchId={match.id}
+                  team1Name={team1Name}
+                  team2Name={team2Name}
+                  trigger={
+                    <button
+                      type="button"
+                      className="flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-lg bg-muted text-sm font-medium text-foreground/80 transition-colors hover:bg-muted/70"
+                      aria-label={`View match recap for ${team1Name} vs ${team2Name}`}
+                    >
+                      <ClipboardList className="size-4" aria-hidden />
+                      View match recap
+                    </button>
+                  }
+                />
               </div>
             )}
 
