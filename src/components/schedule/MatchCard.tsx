@@ -1,4 +1,4 @@
-import { Pencil, Radio, Trash2 } from 'lucide-react';
+import { ClipboardList, Pencil, Radio, Trash2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React, { useCallback, useEffect, useState } from 'react';
 
@@ -248,6 +248,20 @@ const MatchCard: React.FC<MatchCardProps> = ({
                 >
                   <Radio className="size-4" aria-hidden />
                   Live score this match
+                </TransitionLink>
+              </div>
+            )}
+
+            {/* Recap entry for completed matches */}
+            {isCompleted && !hasSpecialStatus && (
+              <div className="mt-1.5">
+                <TransitionLink
+                  to={`/matches/${match.id}/live`}
+                  className="flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-lg bg-muted text-sm font-medium text-foreground/80 transition-colors hover:bg-muted/70"
+                  aria-label={`View match recap for ${team1Name} vs ${team2Name}`}
+                >
+                  <ClipboardList className="size-4" aria-hidden />
+                  View match recap
                 </TransitionLink>
               </div>
             )}
