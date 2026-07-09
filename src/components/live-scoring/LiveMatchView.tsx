@@ -347,6 +347,8 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         isAdmin={isAdmin}
         isReopening={reopen.isPending}
         onReopen={() => reopen.mutate()}
+        team1Id={match.team1_id}
+        team2Id={match.team2_id}
       />
     );
   } else if (matchState.isComplete) {
