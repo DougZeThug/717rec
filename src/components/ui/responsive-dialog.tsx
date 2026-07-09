@@ -25,7 +25,6 @@ interface ResponsiveDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   children: React.ReactNode;
-  className?: string;
 }
 
 interface ResponsiveDialogContentProps {
