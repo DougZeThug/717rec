@@ -60,11 +60,7 @@ describe('ByeMatchEditor', () => {
 
   it('clamps negative score when winner is opponent2', () => {
     render(
-      <ByeMatchEditor
-        {...defaultProps}
-        byeWinner={{ name: 'Team Two' }}
-        hasOpponent1={false}
-      />
+      <ByeMatchEditor {...defaultProps} byeWinner={{ name: 'Team Two' }} hasOpponent1={false} />
     );
 
     const input = screen.getByLabelText('Team Two Score (Games Won)');
