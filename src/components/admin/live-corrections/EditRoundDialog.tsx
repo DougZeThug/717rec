@@ -97,6 +97,7 @@ export const EditRoundDialog: React.FC<EditRoundDialogProps> = ({
 
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reset form when dialog opens on a new round
       setSide1(
         toSide(
           round.team1_score,
@@ -106,6 +107,7 @@ export const EditRoundDialog: React.FC<EditRoundDialogProps> = ({
           round.team1_thrower_id
         )
       );
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reset form when dialog opens on a new round
       setSide2(
         toSide(
           round.team2_score,
