@@ -13,6 +13,7 @@ import TeamAdvancedStatsSection from '@/components/teams/TeamAdvancedStatsSectio
 import TeamDetailsStickyNav from '@/components/teams/TeamDetailsStickyNav';
 import TeamHeader from '@/components/teams/TeamHeader';
 import TeamPerformanceCards from '@/components/teams/TeamPerformanceCards';
+import TeamPlayerStatsSection from '@/components/teams/TeamPlayerStatsSection';
 import TeamTotals from '@/components/teams/TeamTotals';
 import { Button } from '@/components/ui/button';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
@@ -320,6 +321,9 @@ const TeamDetails = () => {
 
         {/* 2. Roster - default open */}
         <PlayerList players={team.players || []} />
+
+        {/* 2b. Live-scoring player stats (renders only once data exists) */}
+        <TeamPlayerStatsSection teamId={teamId} />
 
         {/* 3. Stats & Report Card - combined, default closed */}
         <TeamStatsSection

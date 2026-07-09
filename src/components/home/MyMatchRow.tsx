@@ -1,9 +1,10 @@
-import { Calendar, ChevronRight, Clock } from 'lucide-react';
+import { Calendar, ChevronRight, Clock, Radio } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router';
 
 import { TeamLogo } from '@/components/shared/TeamLogo';
 import { Badge } from '@/components/ui/badge';
+import { useCanScoreMatch } from '@/hooks/live-scoring/useCanScoreMatch';
 import { cn } from '@/lib/utils';
 
 import {
@@ -229,6 +230,12 @@ export const MatchRow: React.FC<MatchRowProps> = ({
   const { match, opponent } = matchInfo;
   const rowStyles = shouldApplyWinter ? WINTER_ROW_STYLES : DEFAULT_ROW_STYLES;
 
+  const { canScore } = useCanScoreMatch({
+    team1_id: match.team1Id ?? null,
+    team2_id: match.team2Id ?? null,
+    iscompleted: isPrevious,
+  });
+
   // Format date and time
   const { formattedDate, formattedTime } = matchDateParts(match.date);
 
@@ -239,7 +246,7 @@ export const MatchRow: React.FC<MatchRowProps> = ({
   const didWin = isPrevious && myTeamWins > opponentWins;
   const didLose = isPrevious && myTeamWins < opponentWins;
 
-  return (
+  const row = (
     <Link to="/schedule" className="group block">
       <div className="py-3">
         <MobileDateTime
@@ -276,5 +283,21 @@ export const MatchRow: React.FC<MatchRowProps> = ({
         </div>
       </div>
     </Link>
+  );
+
+  return (
+    <div>
+      {row}
+      {!isPrevious && canScore && (
+        <Link
+          to={`/matches/${match.id}/live`}
+          className="mb-2 flex min-h-[40px] items-center justify-center gap-1.5 rounded-lg bg-primary/10 text-sm font-medium text-primary transition-colors hover:bg-primary/20"
+          aria-label={`Score ${myTeam.name} vs ${opponent.name} live`}
+        >
+          <Radio className="size-4" aria-hidden />
+          Score live
+        </Link>
+      )}
+    </div>
   );
 };
