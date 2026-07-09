@@ -143,6 +143,7 @@ Team Details (/teams/:id)
 ├─ Team power scores (trends)
 ├─ Team badges (achievements)
 ├─ Team members
+├─ Player stats (live-scored PPR/DPR)
 ├─ Head-to-head records
 └─ Season breakdown
 
