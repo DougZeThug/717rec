@@ -3,60 +3,49 @@ import * as React from 'react';
 
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
-import { getDivisionGradientClass, gradients } from '@/styles/design-system';
+import { gradients } from '@/styles/design-system';
 
-interface CardVariantProps {
-  variant?: 'default' | 'subtle' | 'highlight' | 'elevated' | 'interactive';
-  division?: string | null;
-  /** Disable winter styling for this card */
-  noWinter?: boolean;
-}
+const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => {
+    const { resolvedTheme } = useTheme();
+    // Card only needs the winter flag, not homepage detection — using the
+    // location-free base hook avoids needless re-renders on route changes
+    // and keeps Card renderable outside a Router (e.g. in unit tests).
+    const { isWinterTheme } = useSeasonalThemeBase();
+    const isLight = resolvedTheme === 'light';
 
-const Card = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & CardVariantProps
->(({ className, variant = 'default', division, noWinter = false, ...props }, ref) => {
-  const { resolvedTheme } = useTheme();
-  // Card only needs the winter flag, not homepage detection — using the
-  // location-free base hook avoids needless re-renders on route changes
-  // and keeps Card renderable outside a Router (e.g. in unit tests).
-  const { isWinterTheme } = useSeasonalThemeBase();
-  const isLight = resolvedTheme === 'light';
+    // Light mode default card gradient
+    const gradientClass = gradients.card.default;
 
-  // Get the appropriate gradient based on variant and division
-  const gradientClass = division
-    ? gradients.card.division[division.toLowerCase() as keyof typeof gradients.card.division] ||
-      getDivisionGradientClass(division)
-    : gradients.card[variant];
+    // Check if this is an interactive card (has onClick)
+    const isInteractive = Boolean(props.onClick);
 
-  // Check if this is an interactive card (has onClick or is variant="interactive")
-  const isInteractive = variant === 'interactive' || props.onClick;
+    // Apply winter styling
+    const applyWinter = isWinterTheme;
 
-  // Apply winter styling unless disabled
-  const applyWinter = isWinterTheme && !noWinter;
-
-  return (
-    <div
-      ref={ref}
-      className={cn(
-        // Unified: rounded-card, border only (no shadow), consistent border color
-        'rounded-card border border-border bg-card text-card-foreground shadow-none',
-        // Fast transition for pressed states
-        'transition-all duration-100',
-        // Interactive cards get pressed feedback and focus ring
-        isInteractive &&
-          'cursor-pointer hover:shadow-md active:scale-[0.98] active:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-        // Winter theme: frosted card surface with frost edge
-        applyWinter && 'winter-card-surface frost-edge relative',
-        // Light mode gradient (skip when winter theme active)
-        isLight && !applyWinter ? gradientClass : '',
-        isLight && !applyWinter ? '!text-[#222222]' : '',
-        className
-      )}
-      {...props}
-    />
-  );
-});
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          // Unified: rounded-card, border only (no shadow), consistent border color
+          'rounded-card border border-border bg-card text-card-foreground shadow-none',
+          // Fast transition for pressed states
+          'transition-all duration-100',
+          // Interactive cards get pressed feedback and focus ring
+          isInteractive &&
+            'cursor-pointer hover:shadow-md active:scale-[0.98] active:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+          // Winter theme: frosted card surface with frost edge
+          applyWinter && 'winter-card-surface frost-edge relative',
+          // Light mode gradient (skip when winter theme active)
+          isLight && !applyWinter ? gradientClass : '',
+          isLight && !applyWinter ? '!text-[#222222]' : '',
+          className
+        )}
+        {...props}
+      />
+    );
+  }
+);
 Card.displayName = 'Card';
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
