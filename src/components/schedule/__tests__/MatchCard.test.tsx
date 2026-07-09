@@ -43,6 +43,12 @@ vi.mock('@/components/schedule/MatchPrediction', () => ({
   MatchPrediction: () => <div data-testid="prediction">prediction</div>,
 }));
 
+vi.mock('@/components/live-scoring/MatchRecapDialog', () => ({
+  MatchRecapDialog: ({ trigger }: { trigger: React.ReactNode }) => (
+    <div data-testid="recap-dialog">{trigger}</div>
+  ),
+}));
+
 import MatchCard from '../MatchCard';
 
 const teamDetails = (team_id: string, name: string): NonNullable<Match['team1Details']> => ({
