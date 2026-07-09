@@ -3,7 +3,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/utils/logger', () => ({ chartLog: vi.fn() }));
 
-import { type ChartDataItem, useSortedWinLossData } from '../useSortedWinLossData';
+import { type ChartDataItem } from '@/types/chart';
+import { useSortedWinLossData } from '../useSortedWinLossData';
 
 const item = (
   id: string,
