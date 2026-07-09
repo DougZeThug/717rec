@@ -55,16 +55,14 @@ export const useMatchEditorState = ({ matchId, onClose, onSaved }: UseMatchEdito
 
   const setOpponent1Score = (score: number) => {
     setScoreDraft((prev) => {
-      const current =
-        prev && prev.key === matchScoreKey ? prev.opponent2Score : baseOpponent2Score;
+      const current = prev && prev.key === matchScoreKey ? prev.opponent2Score : baseOpponent2Score;
       return { key: matchScoreKey, opponent1Score: score, opponent2Score: current };
     });
   };
 
   const setOpponent2Score = (score: number) => {
     setScoreDraft((prev) => {
-      const current =
-        prev && prev.key === matchScoreKey ? prev.opponent1Score : baseOpponent1Score;
+      const current = prev && prev.key === matchScoreKey ? prev.opponent1Score : baseOpponent1Score;
       return { key: matchScoreKey, opponent1Score: current, opponent2Score: score };
     });
   };

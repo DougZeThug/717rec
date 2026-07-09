@@ -241,13 +241,7 @@ describe('bracket display and admin interaction views', () => {
   });
 
   it('passes realtimeEnabled to the bracket viewer component', () => {
-    render(
-      <BracketView
-        bracketId="bracket-1"
-        bracket={bracket}
-        teams={teams}
-      />
-    );
+    render(<BracketView bracketId="bracket-1" bracket={bracket} teams={teams} />);
 
     const lastCall = mockBracketsViewer.mock.lastCall;
     expect(lastCall?.[0]).toMatchObject({ realtimeEnabled: false });

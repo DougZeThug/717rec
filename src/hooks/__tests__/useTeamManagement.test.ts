@@ -1,9 +1,9 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useTeamManagement } from '../useTeamManagement';
-
 import type { Team } from '@/types';
+
+import { useTeamManagement } from '../useTeamManagement';
 
 const mockUpdateTeam = vi.fn();
 const mockDeleteTeam = vi.fn();
