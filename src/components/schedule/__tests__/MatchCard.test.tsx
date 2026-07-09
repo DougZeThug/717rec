@@ -43,6 +43,12 @@ vi.mock('@/components/schedule/MatchPrediction', () => ({
   MatchPrediction: () => <div data-testid="prediction">prediction</div>,
 }));
 
+vi.mock('@/components/live-scoring/MatchRecapDialog', () => ({
+  MatchRecapDialog: ({ trigger }: { trigger: React.ReactNode }) => (
+    <div data-testid="recap-dialog">{trigger}</div>
+  ),
+}));
+
 import MatchCard from '../MatchCard';
 
 const teamDetails = (team_id: string, name: string): NonNullable<Match['team1Details']> => ({
@@ -199,7 +205,7 @@ describe('MatchCard', () => {
     expect(screen.queryByText('Final')).not.toBeInTheDocument();
   });
 
-  it('shows "View match recap" only when the match id is in liveScoredMatchIds', () => {
+  it('shows "View match recap" trigger only when the match id is in liveScoredMatchIds', () => {
     const completed: Match = {
       ...baseMatch,
       iscompleted: true,
@@ -218,7 +224,9 @@ describe('MatchCard', () => {
     rerender(
       <MatchCard match={completed} isCompleted liveScoredMatchIds={new Set(['match-1'])} />
     );
-    const link = screen.getByRole('link', { name: /view match recap/i });
-    expect(link).toHaveAttribute('href', '/matches/match-1/live');
+    // Now rendered as a dialog trigger button, not a link.
+    const trigger = screen.getByRole('button', { name: /view match recap/i });
+    expect(trigger).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /view match recap/i })).not.toBeInTheDocument();
   });
 });

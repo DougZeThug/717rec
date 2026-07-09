@@ -18,8 +18,10 @@ import type { Tables } from '@/integrations/supabase/types';
 type MatchRoundRow = Tables<'match_rounds'>;
 import { computePlayerStatLines } from '@/utils/liveScoring/matchPlayerStats';
 import { formatPercent, formatRatio, percentage } from '@/utils/liveScoring/pprCalc';
+import { buildPlayerTeamMap, computeMatchRecap } from '@/utils/liveScoring/matchRecap';
 
 import { RoundLog } from './RoundLog';
+import { MatchRecapSummary } from './MatchRecapSummary';
 
 interface CompletedMatchReviewProps {
   team1Name: string;
@@ -32,6 +34,10 @@ interface CompletedMatchReviewProps {
   isAdmin: boolean;
   isReopening: boolean;
   onReopen: () => void;
+  /** Optional: player_id -> team side, used by the recap summary. */
+  playerTeamMap?: Record<string, 1 | 2>;
+  team1Id?: string | null;
+  team2Id?: string | null;
 }
 
 export const CompletedMatchReview: React.FC<CompletedMatchReviewProps> = ({
@@ -45,11 +51,38 @@ export const CompletedMatchReview: React.FC<CompletedMatchReviewProps> = ({
   isAdmin,
   isReopening,
   onReopen,
+  playerTeamMap,
+  team1Id = null,
+  team2Id = null,
 }) => {
   // Keep every attributed line — a thrower may have left the roster since.
   const playerLines = computePlayerStatLines(rounds).sort(
     (a, b) => b.roundsThrown - a.roundsThrown
   );
+
+  // Derive from games if caller didn't pass a map explicitly.
+  const resolvedPlayerTeamMap =
+    playerTeamMap ??
+    buildPlayerTeamMap(
+      games.flatMap((g) =>
+        [...g.players.team1, ...g.players.team2].map((gp) => ({
+          player_id: gp.player_id,
+          team_id: gp.team_id,
+        }))
+      ),
+      team1Id
+    );
+
+  const recap = computeMatchRecap({
+    rounds,
+    games,
+    playerNames,
+    playerTeamMap: resolvedPlayerTeamMap,
+    team1Id,
+    team2Id,
+    team1Name,
+    team2Name,
+  });
 
   return (
     <div className="space-y-4">
@@ -65,6 +98,8 @@ export const CompletedMatchReview: React.FC<CompletedMatchReviewProps> = ({
           {team1Name} vs {team2Name}
         </p>
       </div>
+
+      <MatchRecapSummary recap={recap} />
 
       {games.length > 0 && (
         <div className="rounded-lg border bg-card p-4">

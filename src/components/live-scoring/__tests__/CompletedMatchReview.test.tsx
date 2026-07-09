@@ -49,8 +49,11 @@ const renderReview = (rounds: MatchRoundRow[], { isAdmin = false } = {}) =>
   );
 
 const rowFor = (name: string) => {
-  const cell = screen.getByText(name);
-  const tr = cell.closest('tr');
+  // The player name may also appear in the recap summary above the table —
+  // pick the occurrence inside a table row.
+  const matches = screen.getAllByText(name);
+  const cell = matches.find((el) => el.closest('tr'));
+  const tr = cell?.closest('tr');
   if (!tr) throw new Error(`No table row for ${name}`);
   return within(tr);
 };
@@ -85,6 +88,10 @@ describe('CompletedMatchReview', () => {
         team2_bags_off: 4,
       }),
     ]);
+
+    // Recap summary now renders above the details table.
+    expect(screen.getByText('Top Performer')).toBeInTheDocument();
+    expect(screen.getByText('Round Stats')).toBeInTheDocument();
 
     // Doug: 5 in, 2 on, 1 off of 8 bags -> Hole 63%, Board 25%, one 4-bagger.
     const doug = rowFor('Doug');
