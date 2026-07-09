@@ -145,8 +145,11 @@ const TeamPlayerStatsSection: React.FC<TeamPlayerStatsSectionProps> = ({ teamId 
       ) : (
         <div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {stats.map((row) => (
-              <PlayerStatCard key={row.player_id ?? row.display_name ?? Math.random()} row={row} />
+            {stats.map((row, index) => (
+              <PlayerStatCard
+                key={row.player_id ?? row.display_name ?? `row-${index}`}
+                row={row}
+              />
             ))}
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
