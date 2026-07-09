@@ -19,6 +19,8 @@ type MatchRoundRow = Tables<'match_rounds'>;
 import { computePlayerStatLines } from '@/utils/liveScoring/matchPlayerStats';
 import { formatPercent, formatRatio, percentage } from '@/utils/liveScoring/pprCalc';
 
+import { RoundLog } from './RoundLog';
+
 interface CompletedMatchReviewProps {
   team1Name: string;
   team2Name: string;
@@ -154,6 +156,36 @@ export const CompletedMatchReview: React.FC<CompletedMatchReviewProps> = ({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+      )}
+
+      {rounds.length > 0 && (
+        <div className="rounded-lg border bg-card p-4">
+          <h3 className="mb-2 text-sm font-semibold">Round-by-round</h3>
+          {games.length > 1 ? (
+            <div className="space-y-3">
+              {games.map((g) => (
+                <div key={g.game.id} className="space-y-1">
+                  <div className="text-xs font-medium text-muted-foreground">
+                    Game {g.game.game_number} · {g.totals.team1}–{g.totals.team2}
+                  </div>
+                  <RoundLog
+                    rounds={g.rounds}
+                    team1Name={team1Name}
+                    team2Name={team2Name}
+                    playerNames={playerNames}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <RoundLog
+              rounds={rounds}
+              team1Name={team1Name}
+              team2Name={team2Name}
+              playerNames={playerNames}
+            />
+          )}
+        </div>
       )}
     </div>
   );

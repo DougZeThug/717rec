@@ -1,23 +1,42 @@
-## Plan: Apply live-scoring migration
+## Goal
 
-Execute the pre-written SQL at `supabase/migrations/20260708120000_live_scoring.sql` (842 lines, idempotent) against the Supabase database exactly as written. No edits, reorders, or "improvements".
+Make the completed-match review (game scores, per-player PPR/bag stats, round-by-round history) reachable in one tap from any completed match card on the schedule.
 
-### Steps
+## What exists today
 
-1. **Run the migration via `supabase--migration`** — pass the file contents verbatim as the `query`. This triggers your approval prompt; on approval it executes and auto-regenerates `src/integrations/supabase/types.ts`.
-2. **Verify** with two read-only queries:
-   - `select count(*) from team_players;` — confirms roster seeded from `teams.players`.
-   - `select * from v_player_season_stats limit 1;` — confirms the view exists.
-3. **Report back** with the row counts and confirm the live-scoring page should now load.
+- `/matches/:matchId/live` already renders `CompletedMatchReview` automatically once a match is officially completed (`LiveMatchView` branches on `match.iscompleted`).
+- Schedule `MatchCard` shows a "Live score this match" CTA only for **upcoming** matches. Completed cards have no link into the review.
+- `CompletedMatchReview` currently shows: final score card, per-game totals, and a per-player stats table (PPR, Hole%, Board%, 4B). It does **not** yet show the round-by-round log — that's only rendered in the in-progress/decided views via `RoundLog`.
 
-### Explicitly NOT doing
+## Changes
 
-- Not modifying the SQL contents.
-- Not touching other tables, policies, functions, or data.
-- Not deleting the temp shim (`src/services/liveScoring/dbTypes.ts` / `liveDb.ts`) — that's a follow-up you can request separately once you've confirmed the regenerated types look right.
-- No frontend changes (the live-scoring page is already wired).
+### 1. Add "View match recap" CTA on completed schedule cards
 
-### Notes
+In `src/components/schedule/MatchCard.tsx`, mirror the existing "Live score this match" block for the completed case:
 
-- The migration only ADDS objects and fixes the dormant `games` table (deletes rows with no `match_id`, dedupes `(match_id, game_number)` duplicates in that unused table). Existing workflows (admin score entry, standings, playoffs) are untouched.
-- Approve the migration when prompted to proceed.
+- When `isCompleted && !hasSpecialStatus`, render a `TransitionLink` to `/matches/${match.id}/live` styled as a secondary CTA (muted background, `Trophy` or `ClipboardList` icon, label "View match recap").
+- Placed in the same slot as the current live-scoring CTA (just below the H2H / prediction area, above the admin actions).
+- No permission gating — the recap page is already public-readable; anyone who can see the card can open the recap.
+
+### 2. Add round-by-round history to the recap page
+
+In `src/components/live-scoring/CompletedMatchReview.tsx`:
+
+- Add a new "Round-by-round" section beneath the existing Player-stats card that reuses the existing `RoundLog` component (`src/components/live-scoring/RoundLog.tsx`) so the presentation matches the in-progress view exactly.
+- Pass `rounds`, `team1Name`, `team2Name`, and `playerNames` (all already props of `CompletedMatchReview`).
+- If `games.length > 1`, group rounds by game (one `RoundLog` per game with a small "Game N" subheading) so the reader can see the flow of each game separately. If there's only one game, render a single log.
+
+No other files need to change — `LiveMatchView` already forwards the correct props, and `/matches/:matchId/live` route + `LiveScoring.tsx` page already handle the completed case.
+
+### Technical notes
+
+- No service, hook, or DB changes.
+- No new dependencies.
+- Round grouping in `CompletedMatchReview` is a pure client-side filter (`rounds.filter(r => r.game_id === g.game.id)`); `games` already contains its own sorted `rounds` array on `LiveGameDerived`, which we can use directly to avoid re-filtering.
+- The CTA is safe to always show for completed matches — if a match was completed the old way (no live-scored rounds), the recap page still renders a valid final-score card and simply omits the empty sections.
+
+## Out of scope
+
+- No changes to the playoff `PlayoffMatchCard` (user asked about schedule/match card).
+- No changes to team-page "Player Stats" visibility (separate open question).
+- No new leaderboard or navigation entries elsewhere.
