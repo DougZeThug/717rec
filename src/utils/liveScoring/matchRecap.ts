@@ -182,7 +182,7 @@ export function computeMatchRecap(input: ComputeMatchRecapInput): MatchRecap {
     playerNames,
     playerTeamMap,
     team1Id,
-    team2Id,
+    team2Id: _team2Id,
     team1Name,
     team2Name,
   } = input;

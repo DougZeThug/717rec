@@ -1,8 +1,8 @@
 import { Star, Target, Trophy, Users } from 'lucide-react';
 import React from 'react';
 
-import { formatPercent, formatRatio } from '@/utils/liveScoring/pprCalc';
 import type { MatchRecap, RecapPlayer } from '@/utils/liveScoring/matchRecap';
+import { formatPercent, formatRatio } from '@/utils/liveScoring/pprCalc';
 
 interface MatchRecapSummaryProps {
   recap: MatchRecap;
@@ -35,7 +35,8 @@ export const MatchRecapSummary: React.FC<MatchRecapSummaryProps> = ({ recap }) =
           <p className="mt-1 text-sm">
             <span className="font-semibold">{topPerformer.name}</span>
             <span className="text-muted-foreground">
-              {' '}— {formatRatio(topPerformer.ppr)} PPR
+              {' '}
+              — {formatRatio(topPerformer.ppr)} PPR
               {topPerformer.holePct !== null
                 ? `, ${formatPercent(topPerformer.holePct)} hole rate`
                 : ''}
@@ -53,7 +54,8 @@ export const MatchRecapSummary: React.FC<MatchRecapSummaryProps> = ({ recap }) =
           <p className="mt-1 text-sm">
             <span className="font-semibold">{mostConsistent.name}</span>
             <span className="text-muted-foreground">
-              {' '}— {formatPercent(mostConsistent.offPct)} off-board rate
+              {' '}
+              — {formatPercent(mostConsistent.offPct)} off-board rate
             </span>
           </p>
         </div>
@@ -69,9 +71,7 @@ export const MatchRecapSummary: React.FC<MatchRecapSummaryProps> = ({ recap }) =
             <span className="font-semibold">Game {keyGame.gameNumber}</span>
             <span className="text-muted-foreground">
               {', '}
-              {keyGame.winnerName
-                ? `${keyGame.winnerName} won `
-                : 'tied '}
+              {keyGame.winnerName ? `${keyGame.winnerName} won ` : 'tied '}
               {keyGame.team1Score}–{keyGame.team2Score}
             </span>
           </p>
@@ -105,7 +105,8 @@ export const MatchRecapSummary: React.FC<MatchRecapSummaryProps> = ({ recap }) =
                       const bags = bagPercents(p);
                       return (
                         <li key={p.playerId} className="tabular-nums">
-                          <span className="text-foreground">{p.name}</span> — {formatRatio(p.ppr)} PPR
+                          <span className="text-foreground">{p.name}</span> — {formatRatio(p.ppr)}{' '}
+                          PPR
                           {bags ? ` · ${bags}` : ''}
                         </li>
                       );

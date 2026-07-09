@@ -221,9 +221,7 @@ describe('MatchCard', () => {
     );
     expect(screen.queryByText('View match recap')).not.toBeInTheDocument();
 
-    rerender(
-      <MatchCard match={completed} isCompleted liveScoredMatchIds={new Set(['match-1'])} />
-    );
+    rerender(<MatchCard match={completed} isCompleted liveScoredMatchIds={new Set(['match-1'])} />);
     // Now rendered as a dialog trigger button, not a link.
     const trigger = screen.getByRole('button', { name: /view match recap/i });
     expect(trigger).toBeInTheDocument();

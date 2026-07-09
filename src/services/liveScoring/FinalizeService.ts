@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+
 import { handleLiveScoringError } from './LiveMatchService';
 
 export interface FinalizeResult {

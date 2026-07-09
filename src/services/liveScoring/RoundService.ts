@@ -1,11 +1,11 @@
+import type { Tables } from '@/integrations/supabase/types';
 import { DuplicateRoundError, ValidationError } from '@/types/errors';
 import { validateBreakdown } from '@/utils/liveScoring/bagBreakdown';
 import { isValidRoundScore } from '@/utils/liveScoring/scoring';
 import type { BagBreakdown } from '@/utils/liveScoring/types';
-
-import type { Tables } from '@/integrations/supabase/types';
 type MatchRoundRow = Tables<'match_rounds'>;
 import { supabase } from '@/integrations/supabase/client';
+
 import { handleLiveScoringError, ROUND_COLUMNS } from './LiveMatchService';
 
 export interface InsertRoundInput {

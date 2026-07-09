@@ -79,18 +79,9 @@ const PlayerStatCard: React.FC<{ row: PlayerStatRow }> = ({ row }) => {
                 boardPct
               )}, Off ${formatPercent(offPct)}`}
             >
-              <div
-                className="bg-emerald-500"
-                style={{ width: `${holePct ?? 0}%` }}
-              />
-              <div
-                className="bg-amber-500"
-                style={{ width: `${boardPct ?? 0}%` }}
-              />
-              <div
-                className="bg-muted-foreground/40"
-                style={{ width: `${offPct ?? 0}%` }}
-              />
+              <div className="bg-emerald-500" style={{ width: `${holePct ?? 0}%` }} />
+              <div className="bg-amber-500" style={{ width: `${boardPct ?? 0}%` }} />
+              <div className="bg-muted-foreground/40" style={{ width: `${offPct ?? 0}%` }} />
             </div>
             <div className="grid grid-cols-3 text-xs tabular-nums">
               <div>
@@ -154,8 +145,8 @@ const TeamPlayerStatsSection: React.FC<TeamPlayerStatsSectionProps> = ({ teamId 
       ) : (
         <div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {stats.map((row) => (
-              <PlayerStatCard key={row.player_id ?? row.display_name ?? Math.random()} row={row} />
+            {stats.map((row, index) => (
+              <PlayerStatCard key={row.player_id ?? row.display_name ?? `row-${index}`} row={row} />
             ))}
           </div>
           <p className="mt-3 text-xs text-muted-foreground">

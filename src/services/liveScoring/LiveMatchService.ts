@@ -1,11 +1,10 @@
 import type { PostgrestError } from '@supabase/supabase-js';
 
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 import { LiveScoringNotEnabledError } from '@/types/errors';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 import { MAX_PLAYERS_PER_SIDE } from '@/utils/liveScoring/rules';
-
-import type { Tables } from '@/integrations/supabase/types';
 type GamePlayerRow = Tables<'game_players'>;
 type LiveGameRow = Tables<'games'>;
 type MatchRoundRow = Tables<'match_rounds'>;

@@ -132,8 +132,9 @@ describe('computeMatchRecap', () => {
         round({ round_number: 2 }), // no bag data -> skipped
       ],
     });
-    const team1 = recap.teams.find((t) => t.side === 1)!;
-    const team2 = recap.teams.find((t) => t.side === 2)!;
+    const team1 = recap.teams.find((t) => t.side === 1);
+    const team2 = recap.teams.find((t) => t.side === 2);
+    if (!team1 || !team2) throw new Error('missing team');
     expect(team1.bagTotals).toEqual({ in: 3, on: 1, off: 0, total: 4 });
     expect(team2.bagTotals).toEqual({ in: 1, on: 2, off: 1, total: 4 });
   });
@@ -146,8 +147,11 @@ describe('computeMatchRecap', () => {
         round({ round_number: 2, team1_thrower_id: 'p2', team2_thrower_id: 'p4' }),
       ],
     });
-    const team1Names = recap.teams.find((t) => t.side === 1)!.players.map((p) => p.name).sort();
-    const team2Names = recap.teams.find((t) => t.side === 2)!.players.map((p) => p.name).sort();
+    const team1 = recap.teams.find((t) => t.side === 1);
+    const team2 = recap.teams.find((t) => t.side === 2);
+    if (!team1 || !team2) throw new Error('missing team');
+    const team1Names = team1.players.map((p) => p.name).sort();
+    const team2Names = team2.players.map((p) => p.name).sort();
     expect(team1Names).toEqual(['Dan', 'Doug']);
     expect(team2Names).toEqual(['Alex', 'Jordan']);
   });

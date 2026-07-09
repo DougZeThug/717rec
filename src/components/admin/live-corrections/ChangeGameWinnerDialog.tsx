@@ -44,6 +44,7 @@ export const ChangeGameWinnerDialog: React.FC<ChangeGameWinnerDialogProps> = ({
   const [winnerId, setWinnerId] = useState<string>(currentWinnerId ?? team1.id);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync form to the newly opened game
     if (open) setWinnerId(currentWinnerId ?? team1.id);
   }, [open, currentWinnerId, team1.id]);
 
@@ -54,8 +55,8 @@ export const ChangeGameWinnerDialog: React.FC<ChangeGameWinnerDialogProps> = ({
           <DialogTitle>Change game {gameNumber} winner</DialogTitle>
           <DialogDescription>
             Current totals: {team1.name} {totals.team1}, {team2.name} {totals.team2}. Choose the
-            correct winner. This does not change the finalized match result; if the match is
-            already finalized, reopen it first from the live view.
+            correct winner. This does not change the finalized match result; if the match is already
+            finalized, reopen it first from the live view.
           </DialogDescription>
         </DialogHeader>
 

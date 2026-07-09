@@ -93,11 +93,7 @@ const RecapBody: React.FC<{ matchId: string }> = ({ matchId }) => {
   }
 
   if (error) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        Couldn&apos;t load recap details.
-      </p>
-    );
+    return <p className="text-sm text-muted-foreground">Couldn&apos;t load recap details.</p>;
   }
 
   const gameWins = {
@@ -114,9 +110,7 @@ const RecapBody: React.FC<{ matchId: string }> = ({ matchId }) => {
   return (
     <div className="space-y-4">
       <div className="rounded-lg border bg-card p-4 text-center">
-        <p className="text-sm font-semibold">
-          {winnerName ? `${winnerName} won` : 'Final'}
-        </p>
+        <p className="text-sm font-semibold">{winnerName ? `${winnerName} won` : 'Final'}</p>
         <p className="font-display text-3xl font-bold tabular-nums">
           {gameWins.team1}–{gameWins.team2}
         </p>

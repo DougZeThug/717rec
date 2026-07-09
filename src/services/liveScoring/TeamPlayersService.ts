@@ -1,9 +1,9 @@
+import type { Tables } from '@/integrations/supabase/types';
 import { ValidationError } from '@/types/errors';
 import { ensureFound } from '@/utils/errorHandler';
-
-import type { Tables } from '@/integrations/supabase/types';
 type TeamPlayerRow = Tables<'team_players'>;
 import { supabase } from '@/integrations/supabase/client';
+
 import { handleLiveScoringError } from './LiveMatchService';
 
 const TEAM_PLAYER_COLUMNS = 'id, team_id, display_name, profile_id, is_active, created_at';
