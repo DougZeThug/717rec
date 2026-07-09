@@ -17,6 +17,7 @@ import {
   Trophy,
   Users,
   Users2,
+  Wrench,
   X,
 } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
@@ -45,6 +46,7 @@ const adminMenuItems: AdminMenuItem[] = [
   { id: 'auto-schedule', label: 'Auto Schedule', icon: CalendarClock },
   { id: 'matchups', label: 'Matchups', icon: Users2 },
   { id: 'scores', label: 'Scores', icon: ListChecks },
+  { id: 'live-corrections', label: 'Live Corrections', icon: Wrench },
   { id: 'seasons', label: 'Season', icon: Calendar },
   { id: 'participation', label: 'Participation', icon: ClipboardCheck },
   { id: 'requests', label: 'Requests', icon: Inbox },
@@ -70,6 +72,12 @@ const tabGroups: TabGroup[] = [
     label: 'Scores & Stats',
     icon: ListChecks,
     tabs: ['scores', 'matchups', 'pending-matches'],
+  },
+  {
+    id: 'corrections',
+    label: 'Corrections',
+    icon: Wrench,
+    tabs: ['live-corrections'],
   },
   {
     id: 'teams-players',
