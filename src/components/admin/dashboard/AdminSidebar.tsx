@@ -19,6 +19,7 @@ import {
   Trophy,
   Users,
   Users2,
+  Wrench,
 } from 'lucide-react';
 import React, { lazy, Suspense, useCallback, useMemo, useState } from 'react';
 
@@ -62,6 +63,9 @@ const HeroCardsTab = lazy(() => import('@/components/admin/hero-cards/HeroCardsT
 const ThemeManagementTab = lazy(() => import('@/components/admin/theme/ThemeManagementTab'));
 const BlindDrawSignupsTab = lazy(() => import('@/components/admin/blind-draw/BlindDrawSignupsTab'));
 const GettingStartedTab = lazy(() => import('@/components/admin/help/GettingStartedTab'));
+const LiveCorrectionsSection = lazy(
+  () => import('@/components/admin/live-corrections/LiveCorrectionsSection')
+);
 
 const adminMenuItems: AdminMenuItem[] = [
   { id: 'timeslots', label: 'Timeslots', icon: Timer, Component: TimeslotsTab },
@@ -79,6 +83,12 @@ const adminMenuItems: AdminMenuItem[] = [
   },
   { id: 'matchups', label: 'Matchups', icon: Users2, Component: OpponentHistoryTab },
   { id: 'scores', label: 'Scores', icon: ListChecks, Component: MassScoresTab },
+  {
+    id: 'live-corrections',
+    label: 'Live Corrections',
+    icon: Wrench,
+    Component: LiveCorrectionsSection,
+  },
   { id: 'seasons', label: 'Season', icon: Calendar, Component: SeasonManagementTab },
   {
     id: 'participation',
