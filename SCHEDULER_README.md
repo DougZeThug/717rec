@@ -109,7 +109,7 @@ When "Prioritize Match Quality" is enabled:
 - `src/utils/autoSchedule/pairingAlgorithm.ts` - Legacy version
 
 **Integration:**
-- `src/hooks/usePairingGenerator.ts` - Hook that switches between algorithms
+- `src/hooks/scheduling/usePairingGenerator.ts` - Hook that switches between algorithms
 - `src/hooks/useAutoSchedule/` - Higher-level scheduling hooks
 
 **UI Components:**
