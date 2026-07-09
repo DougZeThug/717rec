@@ -1,43 +1,23 @@
-## Problem
+## Plan: Apply live-scoring migration
 
-Commit `11eef1f8` migrated hand-rolled skeleton loaders to the shared `Skeleton` primitive. The new primitive hardcodes `bg-muted` (100% opacity) in `src/components/ui/skeleton-base.ts`. During migration, components that previously used contextual opacities (`bg-muted/20`, `bg-muted/50`) lost those overrides, so skeletons are now darker than the loaded content they represent.
+Execute the pre-written SQL at `supabase/migrations/20260708120000_live_scoring.sql` (842 lines, idempotent) against the Supabase database exactly as written. No edits, reorders, or "improvements".
 
-## Affected components
+### Steps
 
-Verified by diffing commit `11eef1f8`:
+1. **Run the migration via `supabase--migration`** — pass the file contents verbatim as the `query`. This triggers your approval prompt; on approval it executes and auto-regenerates `src/integrations/supabase/types.ts`.
+2. **Verify** with two read-only queries:
+   - `select count(*) from team_players;` — confirms roster seeded from `teams.players`.
+   - `select * from v_player_season_stats limit 1;` — confirms the view exists.
+3. **Report back** with the row counts and confirm the live-scoring page should now load.
 
-1. `src/components/matches/reactions/MatchReactions.tsx` — was `bg-muted/20`
-2. `src/components/message-board/reactions/MessageReactions.tsx` — was `bg-muted/20` (same pattern, same commit)
-3. `src/components/history/SeasonAccordionSummary.tsx` — was `bg-muted/50`
-4. `src/components/matches/comments/MatchComments.tsx` — second skeleton was `bg-muted/50`
+### Explicitly NOT doing
 
-## Proposed changes
+- Not modifying the SQL contents.
+- Not touching other tables, policies, functions, or data.
+- Not deleting the temp shim (`src/services/liveScoring/dbTypes.ts` / `liveDb.ts`) — that's a follow-up you can request separately once you've confirmed the regenerated types look right.
+- No frontend changes (the live-scoring page is already wired).
 
-Add opacity overrides back via `className` on the affected `Skeleton` instances. `cn` / tailwind-merge resolves `bg-muted/20` and `bg-muted/50` as overrides of the base `bg-muted`.
+### Notes
 
-```tsx
-// MatchReactions.tsx
-<Skeleton className="size-6 rounded-full bg-muted/20" />
-
-// MessageReactions.tsx
-<Skeleton className="size-6 rounded-full bg-muted/20" />
-
-// SeasonAccordionSummary.tsx (both skeletons)
-<Skeleton className="flex-1 h-16 rounded-lg bg-muted/50" />
-<Skeleton className="flex-1 h-16 rounded-lg bg-muted/50" />
-
-// MatchComments.tsx (second skeleton only)
-<Skeleton className="h-8 w-full" />
-<Skeleton className="h-20 w-full bg-muted/50" />
-```
-
-## Verification
-
-- Run TypeScript type check (`npx tsc --noEmit`)
-- Run relevant component tests if they exist:
-  - `MatchReactions`, `MessageReactions`, `SeasonAccordionSummary`, `MatchComments`
-- Visually confirm in preview that skeletons match the loaded content background tones
-
-## Scope
-
-No new components, no design tokens changed, no backend work. Pure CSS opacity restoration on four skeleton call sites.
+- The migration only ADDS objects and fixes the dormant `games` table (deletes rows with no `match_id`, dedupes `(match_id, game_number)` duplicates in that unused table). Existing workflows (admin score entry, standings, playoffs) are untouched.
+- Approve the migration when prompted to proceed.
