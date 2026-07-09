@@ -111,7 +111,7 @@ describe('useLiveMatchRealtime', () => {
   });
 
   it('does not subscribe without a match id', () => {
-    renderHook(() => useLiveMatchRealtime(undefined), { wrapper: createWrapper() });
+    renderHook(() => useLiveMatchRealtime(), { wrapper: createWrapper() });
     expect(capturedOns).toHaveLength(0);
   });
 

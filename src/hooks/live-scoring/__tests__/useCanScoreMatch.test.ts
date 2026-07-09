@@ -77,7 +77,7 @@ describe('useCanScoreMatch', () => {
 
   it('handles a missing match', () => {
     setAuthState({ isAdmin: true });
-    const { result } = renderHook(() => useCanScoreMatch(undefined));
+    const { result } = renderHook(() => useCanScoreMatch());
     expect(result.current.canScore).toBe(false);
   });
 });

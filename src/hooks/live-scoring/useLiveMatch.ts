@@ -100,7 +100,7 @@ export function deriveLiveMatch(bundle: LiveMatchBundle): LiveMatchDerived {
   };
 }
 
-export function useLiveMatch(matchId: string | undefined) {
+export function useLiveMatch(matchId?: string) {
   const query = useQuery({
     queryKey: liveScoringKeys.liveMatch(matchId ?? ''),
     queryFn: () => {

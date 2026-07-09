@@ -41,7 +41,7 @@ beforeEach(() => {
 describe('startGame', () => {
   it('creates the game then assigns both sides players', async () => {
     mockCreateGame.mockResolvedValue({ id: 'game-1' });
-    mockSetGamePlayers.mockResolvedValue(undefined);
+    mockSetGamePlayers.mockResolvedValue(null);
 
     const { result } = renderHook(() => useGameFlow('match-1'), { wrapper: createWrapper() });
 
@@ -85,7 +85,7 @@ describe('startGame', () => {
 
 describe('confirmGameComplete', () => {
   it('completes the game with the winner and folded totals', async () => {
-    mockCompleteGame.mockResolvedValue(undefined);
+    mockCompleteGame.mockResolvedValue(null);
 
     const { result } = renderHook(() => useGameFlow('match-1'), { wrapper: createWrapper() });
 
@@ -103,7 +103,7 @@ describe('confirmGameComplete', () => {
 
 describe('reopenGame', () => {
   it('reopens the given game', async () => {
-    mockReopenGame.mockResolvedValue(undefined);
+    mockReopenGame.mockResolvedValue(null);
 
     const { result } = renderHook(() => useGameFlow('match-1'), { wrapper: createWrapper() });
 

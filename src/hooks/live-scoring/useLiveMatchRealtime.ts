@@ -29,7 +29,7 @@ interface DeletedRowPayload {
  * subscribed unfiltered and matched client-side (REPLICA IDENTITY FULL on
  * match_rounds makes the old row's match_id available).
  */
-export function useLiveMatchRealtime(matchId: string | undefined) {
+export function useLiveMatchRealtime(matchId?: string) {
   const queryClient = useQueryClient();
   const [status, setStatus] = useState<string>('connecting');
 

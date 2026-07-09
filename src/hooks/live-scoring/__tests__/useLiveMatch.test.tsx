@@ -104,7 +104,7 @@ describe('useLiveMatch', () => {
   });
 
   it('does not fetch without a match id', () => {
-    renderHook(() => useLiveMatch(undefined), { wrapper: createWrapper() });
+    renderHook(() => useLiveMatch(), { wrapper: createWrapper() });
     expect(mockFetchLiveMatchBundle).not.toHaveBeenCalled();
   });
 

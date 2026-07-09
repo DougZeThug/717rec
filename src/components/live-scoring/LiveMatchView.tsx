@@ -223,7 +223,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
       return (
         <div className="space-y-3">
           <div className="rounded-lg border bg-card p-6 text-center text-sm text-muted-foreground">
-            This match's games look inconsistent. An admin can reopen a game to fix the scores.
+            The games in this match look inconsistent. An admin can reopen a game to fix the scores.
           </div>
           <RoundLog
             rounds={bundle.rounds}

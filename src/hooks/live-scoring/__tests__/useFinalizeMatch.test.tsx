@@ -37,7 +37,7 @@ const createWrapper = () => {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockInvalidateMatchRelatedQueries.mockResolvedValue(undefined);
+  mockInvalidateMatchRelatedQueries.mockResolvedValue(null);
 });
 
 describe('finalize', () => {
