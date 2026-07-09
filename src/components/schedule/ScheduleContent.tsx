@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import WinterSection from '@/components/winter/WinterSection';
+import { useLiveScoredMatchIds } from '@/hooks/live-scoring/useLiveScoredMatchIds';
 import { useIsMobile } from '@/hooks/useMobile';
 import { Match, Team, TeamTimeslot } from '@/types';
 
@@ -41,6 +42,14 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
   const [upcomingIndex, setUpcomingIndex] = useState(0);
   const [completedIndex, setCompletedIndex] = useState(0);
   const upcomingInteractedRef = useRef(false);
+
+  // Ids of completed matches that were actually live-scored (have games rows).
+  // Used to hide the "View match recap" CTA for traditionally-scored matches.
+  const completedMatchIds = useMemo(
+    () => filteredMatches.filter((m) => m.iscompleted).map((m) => m.id),
+    [filteredMatches]
+  );
+  const { liveScoredIds } = useLiveScoredMatchIds(completedMatchIds);
 
   // Group matches by date
   const groupedMatches = useMemo(() => {
@@ -158,6 +167,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
           onDeleteMatch={onDeleteMatch}
           activeIndex={activeTab === 'upcoming' ? upcomingIndex : completedIndex}
           onIndexChange={activeTab === 'upcoming' ? handleUpcomingIndexChange : setCompletedIndex}
+          liveScoredMatchIds={liveScoredIds}
         />
       );
     }
@@ -173,6 +183,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
             isFirstGroup={index === 0}
             onEditMatch={onEditMatch}
             onDeleteMatch={onDeleteMatch}
+            liveScoredMatchIds={liveScoredIds}
           />
         ))}
       </div>
