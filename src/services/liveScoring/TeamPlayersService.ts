@@ -2,14 +2,14 @@ import { ValidationError } from '@/types/errors';
 import { ensureFound } from '@/utils/errorHandler';
 
 import type { TeamPlayerRow } from './dbTypes';
-import { liveDb } from './liveDb';
+import { supabase } from '@/integrations/supabase/client';
 import { handleLiveScoringError } from './LiveMatchService';
 
 const TEAM_PLAYER_COLUMNS = 'id, team_id, display_name, profile_id, is_active, created_at';
 
 export const TeamPlayersService = {
   fetchTeamPlayers: async (teamId: string): Promise<TeamPlayerRow[]> => {
-    const { data, error } = await liveDb
+    const { data, error } = await supabase
       .from('team_players')
       .select(TEAM_PLAYER_COLUMNS)
       .eq('team_id', teamId)
@@ -26,7 +26,7 @@ export const TeamPlayersService = {
       throw new ValidationError('Player name cannot be empty');
     }
 
-    const { data, error } = await liveDb
+    const { data, error } = await supabase
       .from('team_players')
       .insert({ team_id: teamId, display_name: trimmed })
       .select(TEAM_PLAYER_COLUMNS)

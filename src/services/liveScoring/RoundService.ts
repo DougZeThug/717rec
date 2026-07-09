@@ -4,7 +4,7 @@ import { isValidRoundScore } from '@/utils/liveScoring/scoring';
 import type { BagBreakdown } from '@/utils/liveScoring/types';
 
 import type { MatchRoundRow } from './dbTypes';
-import { liveDb } from './liveDb';
+import { supabase } from '@/integrations/supabase/client';
 import { handleLiveScoringError, ROUND_COLUMNS } from './LiveMatchService';
 
 export interface InsertRoundInput {
@@ -32,7 +32,7 @@ export const RoundService = {
       throw new ValidationError('Bag breakdown does not match the round score');
     }
 
-    const { data, error } = await liveDb
+    const { data, error } = await supabase
       .from('match_rounds')
       .insert({
         match_id: input.matchId,
@@ -72,7 +72,7 @@ export const RoundService = {
    * RLS additionally restricts non-admins to the latest round of the game.
    */
   deleteLastRound: async (gameId: string, roundNumber: number): Promise<boolean> => {
-    const { data, error } = await liveDb
+    const { data, error } = await supabase
       .from('match_rounds')
       .delete()
       .eq('game_id', gameId)

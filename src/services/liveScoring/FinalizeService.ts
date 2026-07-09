@@ -1,4 +1,4 @@
-import { liveDb } from './liveDb';
+import { supabase } from '@/integrations/supabase/client';
 import { handleLiveScoringError } from './LiveMatchService';
 
 export interface FinalizeResult {
@@ -16,7 +16,7 @@ export const FinalizeService = {
    * already resulted (by another scorer or an admin) — not an error.
    */
   finalizeLiveMatch: async (matchId: string): Promise<FinalizeResult> => {
-    const { data, error } = await liveDb.rpc('finalize_live_match', { p_match_id: matchId });
+    const { data, error } = await supabase.rpc('finalize_live_match', { p_match_id: matchId });
     if (error) handleLiveScoringError(error, 'Failed to finalize match');
 
     const result = (data ?? {}) as Record<string, unknown>;
@@ -37,7 +37,7 @@ export const FinalizeService = {
    * there was nothing to reverse.
    */
   reopenLiveMatch: async (matchId: string): Promise<boolean> => {
-    const { data, error } = await liveDb.rpc('reopen_live_match', { p_match_id: matchId });
+    const { data, error } = await supabase.rpc('reopen_live_match', { p_match_id: matchId });
     if (error) handleLiveScoringError(error, 'Failed to reopen match');
     return data === true;
   },

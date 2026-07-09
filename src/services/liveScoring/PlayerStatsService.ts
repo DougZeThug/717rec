@@ -1,5 +1,5 @@
 import type { PlayerMatchStatsRow, PlayerSeasonStatsRow } from './dbTypes';
-import { liveDb } from './liveDb';
+import { supabase } from '@/integrations/supabase/client';
 import { handleLiveScoringError } from './LiveMatchService';
 
 // Single literals (not concatenated) so PostgREST result typing can parse them.
@@ -11,7 +11,7 @@ const PLAYER_SEASON_STATS_COLUMNS =
 
 export const PlayerStatsService = {
   fetchPlayerMatchStats: async (matchId: string): Promise<PlayerMatchStatsRow[]> => {
-    const { data, error } = await liveDb
+    const { data, error } = await supabase
       .from('v_player_match_stats')
       .select(PLAYER_MATCH_STATS_COLUMNS)
       .eq('match_id', matchId);
@@ -24,7 +24,7 @@ export const PlayerStatsService = {
     teamId: string,
     seasonId: string
   ): Promise<PlayerSeasonStatsRow[]> => {
-    const { data, error } = await liveDb
+    const { data, error } = await supabase
       .from('v_player_season_stats')
       .select(PLAYER_SEASON_STATS_COLUMNS)
       .eq('team_id', teamId)

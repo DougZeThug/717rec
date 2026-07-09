@@ -6,7 +6,7 @@ import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 import { MAX_PLAYERS_PER_SIDE } from '@/utils/liveScoring/rules';
 
 import type { GamePlayerRow, LiveGameRow, MatchRoundRow } from './dbTypes';
-import { liveDb } from './liveDb';
+import { supabase } from '@/integrations/supabase/client';
 
 export const GAME_COLUMNS =
   'id, match_id, game_number, team1_score, team2_score, status, winner_team_id, started_at, completed_at, created_at, updated_at';
@@ -77,12 +77,12 @@ export const LiveMatchService = {
         )
         .eq('id', matchId)
         .maybeSingle(),
-      liveDb
+      supabase
         .from('games')
         .select(GAME_COLUMNS)
         .eq('match_id', matchId)
         .order('game_number', { ascending: true }),
-      liveDb
+      supabase
         .from('match_rounds')
         .select(ROUND_COLUMNS)
         .eq('match_id', matchId)
@@ -100,7 +100,7 @@ export const LiveMatchService = {
 
     let gamePlayers: GamePlayerRow[] = [];
     if (games.length > 0) {
-      const { data, error } = await liveDb
+      const { data, error } = await supabase
         .from('game_players')
         .select(GAME_PLAYER_COLUMNS)
         .in(
@@ -122,7 +122,7 @@ export const LiveMatchService = {
 
   /** Idempotent: a concurrent create of the same game number returns the existing row. */
   createGame: async (matchId: string, gameNumber: number): Promise<LiveGameRow> => {
-    const { data, error } = await liveDb
+    const { data, error } = await supabase
       .from('games')
       .insert({ match_id: matchId, game_number: gameNumber })
       .select(GAME_COLUMNS)
@@ -130,7 +130,7 @@ export const LiveMatchService = {
 
     if (error) {
       if (error.code === '23505') {
-        const { data: existing, error: fetchError } = await liveDb
+        const { data: existing, error: fetchError } = await supabase
           .from('games')
           .select(GAME_COLUMNS)
           .eq('match_id', matchId)
@@ -149,7 +149,7 @@ export const LiveMatchService = {
     winnerTeamId: string,
     finalTotals: { team1: number; team2: number }
   ): Promise<void> => {
-    const { error } = await liveDb
+    const { error } = await supabase
       .from('games')
       .update({
         status: 'completed',
@@ -164,7 +164,7 @@ export const LiveMatchService = {
   },
 
   reopenGame: async (gameId: string): Promise<void> => {
-    const { error } = await liveDb
+    const { error } = await supabase
       .from('games')
       .update({ status: 'in_progress', winner_team_id: null, completed_at: null })
       .eq('id', gameId);
@@ -178,7 +178,7 @@ export const LiveMatchService = {
       throw new Error(`A team can select at most ${MAX_PLAYERS_PER_SIDE} players per game`);
     }
 
-    const { error: deleteError } = await liveDb
+    const { error: deleteError } = await supabase
       .from('game_players')
       .delete()
       .eq('game_id', gameId)
@@ -187,7 +187,7 @@ export const LiveMatchService = {
 
     if (playerIds.length === 0) return;
 
-    const { error: insertError } = await liveDb.from('game_players').insert(
+    const { error: insertError } = await supabase.from('game_players').insert(
       playerIds.map((playerId, index) => ({
         game_id: gameId,
         team_id: teamId,
