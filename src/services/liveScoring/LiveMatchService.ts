@@ -6,7 +6,6 @@ import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 import { MAX_PLAYERS_PER_SIDE } from '@/utils/liveScoring/rules';
 
 import type { GamePlayerRow, LiveGameRow, MatchRoundRow } from './dbTypes';
-import { supabase } from '@/integrations/supabase/client';
 
 export const GAME_COLUMNS =
   'id, match_id, game_number, team1_score, team2_score, status, winner_team_id, started_at, completed_at, created_at, updated_at';
