@@ -85,15 +85,6 @@ const createSimpleSelectQuery = <TData>(result: QueryResult<TData>, selects: str
   },
 });
 
-const createSimpleEqQuery = <TData>(result: QueryResult<TData>, selects: string[]) => ({
-  select: (columns: string) => {
-    selects.push(columns);
-    return {
-      eq: () => Promise.resolve(result),
-    };
-  },
-});
-
 const createOrEqQuery = <TData>(result: QueryResult<TData>, selects: string[]) => ({
   select: (columns: string) => {
     selects.push(columns);
