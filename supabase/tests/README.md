@@ -20,10 +20,15 @@ so a non-zero exit code means drift was detected.
   `public.seasons` are present and attached to the expected roles.
   Backed by the `public.seasons_rls_drift()` helper function.
 - `migrations_apply.sql` — sanity check that core tables exist after
-  the full migration set has been applied.
-- `_bootstrap.sql` — CI-only Supabase stubs (auth/storage/roles).
-  Files prefixed with `_` are helpers and are skipped by the smoke
-  runner.
+  the full migration set (baseline + all migrations) has been applied.
+- `_bootstrap.sql` — CI-only Supabase stubs (auth/storage/roles/realtime
+  publication). Files prefixed with `_` are helpers and are skipped by
+  the smoke runner.
+
+The core tables themselves come from
+`supabase/migrations/00000000000000_baseline.sql` (see
+`docs/SUPABASE_CI.md`), which recreates the pre-migration dashboard-era
+schema so the whole chain can replay on an empty database.
 
 ## Adding a new smoke test
 
