@@ -7,8 +7,7 @@ export interface AdminContext {
 }
 
 export type RequireAdminResult =
-  | { ok: true; ctx: AdminContext }
-  | { ok: false; response: Response };
+  { ok: true; ctx: AdminContext } | { ok: false; response: Response };
 
 function jsonResponse(cors: Record<string, string>, status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
