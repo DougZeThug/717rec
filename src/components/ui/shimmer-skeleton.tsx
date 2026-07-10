@@ -59,34 +59,6 @@ const ShimmerSkeleton = React.forwardRef<HTMLDivElement, ShimmerSkeletonProps>(
 ShimmerSkeleton.displayName = 'ShimmerSkeleton';
 
 /**
- * Skeleton for text lines - uses 8pt grid spacing
- */
-const TextSkeleton: React.FC<{
-  lines?: number;
-  className?: string;
-  lastLineWidth?: string;
-}> = ({ lines = 3, className, lastLineWidth = '60%' }) => {
-  const lineIds = React.useMemo(
-    () => Array.from({ length: lines }, () => crypto.randomUUID()),
-    [lines]
-  );
-  return (
-    <div className={cn('space-y-2', className)}>
-      {lineIds.map((id, i) => (
-        <ShimmerSkeleton
-          key={id}
-          variant="input"
-          className="h-4"
-          style={{
-            width: i === lines - 1 ? lastLineWidth : '100%',
-          }}
-        />
-      ))}
-    </div>
-  );
-};
-
-/**
  * Skeleton for avatar/profile images
  */
 const AvatarSkeleton: React.FC<{
@@ -96,50 +68,4 @@ const AvatarSkeleton: React.FC<{
   return <ShimmerSkeleton circle className={cn(sizes[size], className)} />;
 };
 
-/**
- * Skeleton for cards - matches Card component exactly
- * Uses rounded-card, border-border, 8pt grid spacing
- */
-const CardSkeleton: React.FC<{
-  hasImage?: boolean;
-  hasActions?: boolean;
-  className?: string;
-}> = ({ hasImage = false, hasActions = false, className }) => {
-  return (
-    <div className={cn('rounded-card border border-border bg-card p-4 space-y-4', className)}>
-      {hasImage && <ShimmerSkeleton variant="input" className="h-40 w-full" />}
-      <div className="space-y-2">
-        <ShimmerSkeleton variant="input" className="h-5 w-3/4" />
-        <TextSkeleton lines={2} />
-      </div>
-      {hasActions && (
-        <div className="flex gap-2 pt-2">
-          <ShimmerSkeleton variant="input" className="h-10 w-20" />
-          <ShimmerSkeleton variant="input" className="h-10 w-20" />
-        </div>
-      )}
-    </div>
-  );
-};
-
-/**
- * Skeleton for list items - uses rounded-card, 8pt grid
- */
-const ListItemSkeleton: React.FC<{
-  hasAvatar?: boolean;
-  hasAction?: boolean;
-  className?: string;
-}> = ({ hasAvatar = true, hasAction = false, className }) => {
-  return (
-    <div className={cn('flex items-center gap-4 p-4 rounded-card', className)}>
-      {hasAvatar && <AvatarSkeleton size="md" />}
-      <div className="flex-1 space-y-2">
-        <ShimmerSkeleton variant="input" className="h-4 w-1/3" />
-        <ShimmerSkeleton variant="input" className="h-4 w-1/2" />
-      </div>
-      {hasAction && <ShimmerSkeleton variant="input" className="h-10 w-16" />}
-    </div>
-  );
-};
-
-export { AvatarSkeleton, CardSkeleton, ListItemSkeleton, ShimmerSkeleton, TextSkeleton };
+export { AvatarSkeleton, ShimmerSkeleton };
