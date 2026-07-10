@@ -43,7 +43,7 @@ if (!isSupabaseConfigured) {
         <h1 style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>App configuration missing</h1>
         <p style={{ marginBottom: '0.75rem' }}>
           This build is missing its Supabase environment variables (<code>VITE_SUPABASE_URL</code>{' '}
-          and <code>VITE_SUPABASE_PUBLISHABLE_KEY</code>), so the app can't start.
+          and <code>VITE_SUPABASE_PUBLISHABLE_KEY</code>), so the app can&apos;t start.
         </p>
         <p style={{ marginBottom: '0.75rem' }}>
           Re-publish from Lovable so the managed Supabase env is injected at build time, or set

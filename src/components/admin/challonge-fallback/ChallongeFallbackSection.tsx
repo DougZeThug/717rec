@@ -272,7 +272,7 @@ const ChallongeFallbackSection: React.FC = () => {
 
           <p className="text-xs text-muted-foreground">
             Slug is the part of the Challonge URL after challonge.com/ (e.g. for
-            challonge.com/5hy558bb use "5hy558bb").
+            challonge.com/5hy558bb use &quot;5hy558bb&quot;).
           </p>
         </div>
       </CardContent>

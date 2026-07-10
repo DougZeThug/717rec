@@ -25,7 +25,7 @@ const AuthFooter: React.FC<AuthFooterProps> = ({ activeTab, setActiveTab }) => (
   <p className="py-1">
     {activeTab === 'login' ? (
       <>
-        Don't have an account?{' '}
+        Don&apos;t have an account?{' '}
         <button
           type="button"
           className="text-primary hover:underline py-2 px-1 -my-2"

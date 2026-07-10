@@ -292,7 +292,7 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
                 </div>
                 {safeFormState.count >= minTeams && !safeFormState.isAtMaximum && (
                   <div className="mt-1 text-blue-600 font-medium">
-                    ✓ Ready to create bracket • Add more teams or click "Create Bracket"
+                    ✓ Ready to create bracket • Add more teams or click &quot;Create Bracket&quot;
                   </div>
                 )}
               </div>

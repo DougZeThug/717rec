@@ -36,7 +36,7 @@ export const CallToActionSection: React.FC<FormSectionProps> = ({ formData, onCh
             placeholder="e.g., View Schedule, Learn More"
           />
           <p className="text-xs text-muted-foreground mt-1">
-            Leave blank if you don't want a button
+            Leave blank if you don&apos;t want a button
           </p>
         </div>
 

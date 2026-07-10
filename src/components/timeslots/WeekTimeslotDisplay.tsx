@@ -41,7 +41,7 @@ const WeekTimeslotDisplay: React.FC<WeekTimeslotDisplayProps> = ({
     return (
       <Card className="bg-muted">
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">This Week's Timeslot</CardTitle>
+          <CardTitle className="text-lg">This Week&apos;s Timeslot</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           <p className="text-muted-foreground">No timeslots assigned this week</p>
@@ -54,7 +54,7 @@ const WeekTimeslotDisplay: React.FC<WeekTimeslotDisplayProps> = ({
     <Card className="bg-blue-50">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg">
-          This Week's Timeslot{timeslots.length > 1 ? 's' : ''}
+          This Week&apos;s Timeslot{timeslots.length > 1 ? 's' : ''}
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
