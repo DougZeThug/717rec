@@ -163,7 +163,8 @@ describe('withErrorHandling', () => {
   });
 
   it('wraps non-Error throws in ServiceError', async () => {
-    const thrown = await withErrorHandling(() => Promise.reject('plain string'), 'ctx').catch(
+    const nonErrorReason: unknown = 'plain string';
+    const thrown = await withErrorHandling(() => Promise.reject(nonErrorReason), 'ctx').catch(
       (e) => e
     );
     expect(thrown).toBeInstanceOf(ServiceError);
