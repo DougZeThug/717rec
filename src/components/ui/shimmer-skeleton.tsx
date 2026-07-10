@@ -52,7 +52,7 @@ const ShimmerSkeleton = React.forwardRef<HTMLDivElement, ShimmerSkeletonProps>(
       />
     ));
 
-    return count === 1 ? skeletons[0] : <>{skeletons}</>;
+    return count === 1 ? skeletons[0] : skeletons;
   }
 );
 

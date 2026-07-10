@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth-context';
 
 interface LoginRequiredProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   message?: string;
   fallback?: React.ReactNode;
 }
@@ -42,12 +42,12 @@ const LoginRequired: React.FC<LoginRequiredProps> = ({
 
   // If auth is initialized and we have a user, show the content
   if (user) {
-    return <>{children}</>;
+    return children;
   }
 
   // If auth is initialized, we've waited, and there's no user, show the fallback or login prompt
   if (fallback) {
-    return <>{fallback}</>;
+    return fallback;
   }
 
   return (

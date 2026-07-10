@@ -104,70 +104,68 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete, onEdit }) 
   };
 
   return (
-    <>
-      <Card
-        className={cn(
-          'mb-2 overflow-hidden relative border shadow-sm transition-all duration-200',
-          isAuthor ? gradients.card.highlight : gradients.card.default,
-          isAuthor ? 'hover:shadow-md' : '',
-          isAnnouncement ? 'border-blue-300 dark:border-blue-800' : '',
-          isAuthor ? 'focus:outline-none focus:ring-2 focus:ring-primary' : '',
-          animations.fadeIn
-        )}
-        {...longPressHandlers}
-        onClick={isAuthor ? handleDesktopClick : undefined}
-        onKeyDown={isAuthor ? handleCardKeyDown : undefined}
-        role={isAuthor ? 'button' : undefined}
-        tabIndex={isAuthor ? 0 : undefined}
-      >
-        <CardContent className="p-3">
-          <MessageHeader
-            username={message.username}
-            teamName={message.team_name}
-            timeString={timeString}
-            powerScore={powerScore}
-            isAnnouncement={isAnnouncement}
+    <Card
+      className={cn(
+        'mb-2 overflow-hidden relative border shadow-sm transition-all duration-200',
+        isAuthor ? gradients.card.highlight : gradients.card.default,
+        isAuthor ? 'hover:shadow-md' : '',
+        isAnnouncement ? 'border-blue-300 dark:border-blue-800' : '',
+        isAuthor ? 'focus:outline-none focus:ring-2 focus:ring-primary' : '',
+        animations.fadeIn
+      )}
+      {...longPressHandlers}
+      onClick={isAuthor ? handleDesktopClick : undefined}
+      onKeyDown={isAuthor ? handleCardKeyDown : undefined}
+      role={isAuthor ? 'button' : undefined}
+      tabIndex={isAuthor ? 0 : undefined}
+    >
+      <CardContent className="p-3">
+        <MessageHeader
+          username={message.username}
+          teamName={message.team_name}
+          timeString={timeString}
+          powerScore={powerScore}
+          isAnnouncement={isAnnouncement}
+        />
+
+        {isEditing ? (
+          <MessageEditForm
+            content={message.content}
+            onSave={handleSaveEdit}
+            onCancel={() => setIsEditing(false)}
           />
+        ) : (
+          <MessageContent
+            content={message.content}
+            isEdited={message.is_edited}
+            updatedAt={message.updated_at}
+          />
+        )}
 
-          {isEditing ? (
-            <MessageEditForm
-              content={message.content}
-              onSave={handleSaveEdit}
-              onCancel={() => setIsEditing(false)}
-            />
-          ) : (
-            <MessageContent
-              content={message.content}
-              isEdited={message.is_edited}
-              updatedAt={message.updated_at}
-            />
-          )}
-
-          {/* Message Reactions */}
-          {!isEditing && (
-            <MessageReactions
-              messageId={message.id}
-              showPicker={showReactionPicker}
-              onPickerClose={() => setShowReactionPicker(false)}
-            />
-          )}
-        </CardContent>
-
-        {/* Message Controls for editing/deleting messages */}
+        {/* Message Reactions */}
         {!isEditing && (
-          <MessageControls
-            isAuthor={isAuthor}
-            showOptions={showOptions}
-            isDeleting={isDeleting}
-            showDeleteConfirm={showDeleteConfirm}
-            setShowDeleteConfirm={setShowDeleteConfirm}
-            setShowOptions={setShowOptions}
-            onDelete={handleDelete}
-            onEdit={handleEdit}
+          <MessageReactions
+            messageId={message.id}
+            showPicker={showReactionPicker}
+            onPickerClose={() => setShowReactionPicker(false)}
           />
         )}
-      </Card>
-    </>
+      </CardContent>
+
+      {/* Message Controls for editing/deleting messages */}
+      {!isEditing && (
+        <MessageControls
+          isAuthor={isAuthor}
+          showOptions={showOptions}
+          isDeleting={isDeleting}
+          showDeleteConfirm={showDeleteConfirm}
+          setShowDeleteConfirm={setShowDeleteConfirm}
+          setShowOptions={setShowOptions}
+          onDelete={handleDelete}
+          onEdit={handleEdit}
+        />
+      )}
+    </Card>
   );
 };
 

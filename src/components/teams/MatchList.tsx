@@ -64,41 +64,37 @@ const MatchList: React.FC<MatchListProps> = ({
     [teamId, highlightWinnerLoser, matches.length]
   );
 
-  const matchContent = (
-    <>
-      {isLoading ? (
-        <Skeleton className="h-32 w-full rounded" />
-      ) : matches.length === 0 ? (
-        <InlineEmptyState
-          icon={History}
-          message={isPast ? 'No Match History' : 'No Upcoming Matches'}
-          description={
-            isPast
-              ? 'Match history will appear after games are played'
-              : 'No upcoming matches scheduled'
-          }
+  const matchContent = isLoading ? (
+    <Skeleton className="h-32 w-full rounded" />
+  ) : matches.length === 0 ? (
+    <InlineEmptyState
+      icon={History}
+      message={isPast ? 'No Match History' : 'No Upcoming Matches'}
+      description={
+        isPast
+          ? 'Match history will appear after games are played'
+          : 'No upcoming matches scheduled'
+      }
+    />
+  ) : shouldVirtualize ? (
+    <VirtualizedList
+      items={matches}
+      rowHeight={72}
+      height={Math.min(matches.length * 72, 400)}
+      renderRow={renderRow}
+      overscanCount={3}
+    />
+  ) : (
+    <div className="divide-y divide-border">
+      {matches.map((match) => (
+        <TeamGameScoreRow
+          key={match.id}
+          match={match}
+          teamId={teamId}
+          highlightWinnerLoser={highlightWinnerLoser}
         />
-      ) : shouldVirtualize ? (
-        <VirtualizedList
-          items={matches}
-          rowHeight={72}
-          height={Math.min(matches.length * 72, 400)}
-          renderRow={renderRow}
-          overscanCount={3}
-        />
-      ) : (
-        <div className="divide-y divide-border">
-          {matches.map((match) => (
-            <TeamGameScoreRow
-              key={match.id}
-              match={match}
-              teamId={teamId}
-              highlightWinnerLoser={highlightWinnerLoser}
-            />
-          ))}
-        </div>
-      )}
-    </>
+      ))}
+    </div>
   );
 
   if (collapsible && title) {

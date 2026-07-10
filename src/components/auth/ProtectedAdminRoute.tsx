@@ -73,7 +73,7 @@ const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({ children }) =
 
   // User has admin access
   authLog('Admin access granted, rendering content');
-  return <>{children}</>;
+  return children;
 };
 
 export default ProtectedAdminRoute;
