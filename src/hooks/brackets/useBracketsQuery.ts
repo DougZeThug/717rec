@@ -9,21 +9,14 @@ import { errorLog } from '@/utils/logger';
  */
 export const useBracketsQuery = () => {
   const [brackets, setBrackets] = useState<{ id: string; title: string }[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const fetchBrackets = async () => {
-    setLoading(true);
-    setError(null);
     try {
       const data = await fetchBracketsForSelector();
       setBrackets(data);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
-      setError(message);
       errorLog('Error fetching brackets:', message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -34,8 +27,5 @@ export const useBracketsQuery = () => {
 
   return {
     brackets,
-    loading,
-    error,
-    refetch: fetchBrackets,
   };
 };
