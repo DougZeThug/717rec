@@ -304,7 +304,7 @@ export class BracketManagerService {
    * const result = await bracketManagerService.adminToggleByeReady(42, false, true);
    * console.log(result.message); // "Match 42 reopened to Ready (downstream cleared)"
    */
-  async adminToggleByeReady(matchId: number, makeReady: boolean, clearDownstream: boolean = false) {
+  async adminToggleByeReady(matchId: number, makeReady: boolean, clearDownstream = false) {
     return this.adminService.adminToggleByeReady(matchId, makeReady, clearDownstream);
   }
 

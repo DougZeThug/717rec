@@ -15,7 +15,7 @@ const hashTeamId = (teamId: string): number => {
  * Uses deterministic hashing to distribute hues evenly across the color wheel
  * Supports unlimited teams with no color collisions
  */
-export const getTeamColor = (teamId: string, isDark: boolean = false): string => {
+export const getTeamColor = (teamId: string, isDark = false): string => {
   const hash = hashTeamId(teamId);
   const hue = hash % 360; // Distribute across full color wheel (0-359 degrees)
 

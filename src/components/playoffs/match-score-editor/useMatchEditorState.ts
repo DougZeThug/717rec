@@ -163,7 +163,7 @@ export const useMatchEditorState = ({ matchId, onClose, onSaved }: UseMatchEdito
     }
   };
 
-  const handleToggleByeStatus = async (clearDownstream: boolean = false) => {
+  const handleToggleByeStatus = async (clearDownstream = false) => {
     if (!matchId || !byeEligible) return;
 
     try {

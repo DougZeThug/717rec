@@ -10,7 +10,7 @@ export class ServiceError extends Error {
   public readonly code: string;
   public readonly details?: unknown;
 
-  constructor(message: string, code: string = 'SERVICE_ERROR', details?: unknown) {
+  constructor(message: string, code = 'SERVICE_ERROR', details?: unknown) {
     super(message);
     this.name = 'ServiceError';
     this.code = code;
@@ -60,7 +60,7 @@ export class ValidationError extends ServiceError {
  * Authorization errors (insufficient permissions)
  */
 export class AuthorizationError extends ServiceError {
-  constructor(message: string = 'Insufficient permissions') {
+  constructor(message = 'Insufficient permissions') {
     super(message, 'AUTHORIZATION_ERROR');
     this.name = 'AuthorizationError';
   }

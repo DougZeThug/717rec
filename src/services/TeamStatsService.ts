@@ -65,8 +65,8 @@ export async function applyMatchResult(
 export const updateTeamStatsRecord = async (
   winnerId: string,
   loserId: string,
-  winnerGameWins: number = 0,
-  loserGameWins: number = 0
+  winnerGameWins = 0,
+  loserGameWins = 0
 ) => {
   // Ensure game wins are integers
   const parsedWinnerGameWins = parseInt(String(winnerGameWins)) || 0;

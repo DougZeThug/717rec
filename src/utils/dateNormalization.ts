@@ -4,7 +4,7 @@ import { errorLog, timezoneLog, warnLog } from '@/utils/logger';
  * Normalizes a date value to an ISO string with validation and tracing
  * Handles timezone offsets consistently to prevent date shifts
  */
-export const normalizeDate = (date: Date | string | null, context: string = 'unknown'): string => {
+export const normalizeDate = (date: Date | string | null, context = 'unknown'): string => {
   // Start with current date as fallback
   const fallbackDate = new Date().toISOString().split('T')[0];
 
@@ -106,10 +106,7 @@ export const normalizeDate = (date: Date | string | null, context: string = 'unk
  * Normalizes a date value but preserves the time information
  * Used for features that need to display time-specific information
  */
-export const normalizeDateWithTime = (
-  date: Date | string | null,
-  context: string = 'unknown'
-): string => {
+export const normalizeDateWithTime = (date: Date | string | null, context = 'unknown'): string => {
   // Start with current date as fallback
   const fallbackDate = new Date().toISOString();
 

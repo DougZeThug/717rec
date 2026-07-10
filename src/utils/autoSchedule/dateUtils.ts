@@ -9,10 +9,7 @@ import { errorLog, timezoneLog, warnLog } from '@/utils/logger';
  * Normalizes a date for auto-schedule database queries
  * Always returns YYYY-MM-DD format in local timezone
  */
-export const normalizeScheduleDate = (
-  date: Date | string | null,
-  context: string = 'unknown'
-): string => {
+export const normalizeScheduleDate = (date: Date | string | null, context = 'unknown'): string => {
   timezoneLog(`[${context}] normalizeScheduleDate input:`, {
     value: date,
     type: typeof date,
@@ -70,7 +67,7 @@ export const normalizeScheduleDate = (
 /**
  * Validates that a date is not null and is a valid date
  */
-export const validateScheduleDate = (date: Date | null, context: string = 'unknown'): boolean => {
+export const validateScheduleDate = (date: Date | null, context = 'unknown'): boolean => {
   if (!date) {
     errorLog(`[${context}] Date validation failed: date is null/undefined`);
     return false;

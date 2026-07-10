@@ -61,7 +61,7 @@ export const useTeamOperations = () => {
   const handleLoadTeams = useCallback(
     async (
       date: Date | null,
-      dualBlockMode: boolean = false,
+      dualBlockMode = false,
       dualBlockConfig: DualBlockConfig = {}
     ): Promise<TimeBlockTeamsMap> => {
       if (!date) {

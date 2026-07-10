@@ -46,11 +46,7 @@ export const formatUTCToLocalTimeString = (
 /**
  * Format time string components (hours/minutes) to a standardized time string
  */
-export const formatTimeString = (
-  hours: number,
-  minutes: number,
-  use24Hour: boolean = false
-): string => {
+export const formatTimeString = (hours: number, minutes: number, use24Hour = false): string => {
   if (use24Hour) {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   }

@@ -28,11 +28,7 @@ export const arrayToCSV = <T extends Record<string, unknown>>(
 /**
  * Trigger a file download in the browser
  */
-export const downloadFile = (
-  content: string,
-  filename: string,
-  mimeType: string = 'text/csv'
-): void => {
+export const downloadFile = (content: string, filename: string, mimeType = 'text/csv'): void => {
   const blob = new Blob([content], { type: `${mimeType};charset=utf-8;` });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');

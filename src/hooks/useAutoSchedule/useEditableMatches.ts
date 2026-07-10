@@ -5,7 +5,7 @@ import { validateMatchSchedule, ValidationResult } from '@/utils/autoSchedule/va
 
 export const useEditableMatches = (
   currentEditableMatches: AutoScheduleMatch[] = [],
-  currentIsEditMode: boolean = false
+  currentIsEditMode = false
 ) => {
   const [validation, setValidation] = useState<ValidationResult | null>(null);
 

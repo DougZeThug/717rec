@@ -10,7 +10,7 @@ import {
 } from '../greedyBackToBackScheduler';
 
 // Helper to create mock teams
-function createMockTeam(id: string, name: string, division: string, tier: number = 1): Team {
+function createMockTeam(id: string, name: string, division: string, tier = 1): Team {
   return {
     id,
     name,

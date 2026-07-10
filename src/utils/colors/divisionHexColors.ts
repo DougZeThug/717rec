@@ -5,7 +5,7 @@
 
 export const getDivisionHexColor = (
   divisionName: string | null | undefined,
-  isDark: boolean = false
+  isDark = false
 ): string => {
   if (!divisionName) {
     return isDark ? '#9ca3af' : '#6b7280'; // gray fallback

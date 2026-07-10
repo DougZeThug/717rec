@@ -31,6 +31,6 @@ export const championKeyframes = `
 export const championAnimation = 'champion 1.2s ease-out';
 
 // Function to generate staggered animation delay
-export const getStaggeredDelay = (index: number, baseDelay: number = 0.1) => {
+export const getStaggeredDelay = (index: number, baseDelay = 0.1) => {
   return `${baseDelay * index}s`;
 };
