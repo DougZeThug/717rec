@@ -44,7 +44,7 @@ test.describe('@real-backend golden paths', () => {
     await page.goto('/auth');
     await page.getByLabel('Email').fill(realEnv.email);
     await page.getByLabel('Password').fill(realEnv.password);
-    await page.getByRole('button', { name: /^(Log ?in|Sign ?in)$/i }).click();
+    await page.getByRole('button', { name: /^Login$/i }).click();
     await expect(page).toHaveURL(/\/(?!auth)/, { timeout: 15_000 });
 
     // 2. View schedule
