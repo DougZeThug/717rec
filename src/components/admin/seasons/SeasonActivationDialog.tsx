@@ -74,7 +74,7 @@ const SeasonActivationDialog: React.FC<SeasonActivationDialogProps> = ({
         <AlertDialogHeader>
           <AlertDialogTitle>Activate Season: {season?.name}</AlertDialogTitle>
           <AlertDialogDescription>
-            This will make "{season?.name}" the active season for the league.
+            This will make &quot;{season?.name}&quot; the active season for the league.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -82,9 +82,9 @@ const SeasonActivationDialog: React.FC<SeasonActivationDialogProps> = ({
           <Alert>
             <AlertTriangle className="size-4" />
             <AlertDescription>
-              <strong>Warning:</strong> The current active season "{activeSeason?.name}" will be
-              automatically deactivated. All new matches and activities will be associated with "
-              {season?.name}".
+              <strong>Warning:</strong> The current active season &quot;{activeSeason?.name}&quot; will be
+              automatically deactivated. All new matches and activities will be associated with &quot;
+              {season?.name}&quot;.
             </AlertDescription>
           </Alert>
         )}

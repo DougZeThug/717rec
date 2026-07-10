@@ -106,7 +106,7 @@ export default function Contact() {
                 </div>
                 <h1 className="text-2xl font-bold mb-2">Message Sent!</h1>
                 <p className="text-muted-foreground mb-6">
-                  Thank you for contacting us. We'll get back to you within 24-48 hours.
+                  Thank you for contacting us. We&apos;ll get back to you within 24-48 hours.
                 </p>
                 <Button onClick={() => setIsSuccess(false)}>Send Another Message</Button>
               </CardContent>
@@ -136,7 +136,7 @@ export default function Contact() {
             </div>
             <h1 className="text-3xl font-bold mb-2">Contact Support</h1>
             <p className="text-muted-foreground">
-              Have a question or need help? We're here for you.
+              Have a question or need help? We&apos;re here for you.
             </p>
           </div>
 
@@ -147,7 +147,7 @@ export default function Contact() {
                 Send us a message
               </CardTitle>
               <CardDescription>
-                Fill out the form below and we'll get back to you as soon as possible.
+                Fill out the form below and we&apos;ll get back to you as soon as possible.
               </CardDescription>
             </CardHeader>
             <CardContent>

@@ -133,7 +133,7 @@ const TeamEditSection: React.FC = () => {
                 placeholder="https://example.com/team-logo.png"
               />
               <p className="text-xs text-muted-foreground">
-                Optional: Provide a URL to your team's logo or image
+                Optional: Provide a URL to your team&apos;s logo or image
               </p>
             </div>
 

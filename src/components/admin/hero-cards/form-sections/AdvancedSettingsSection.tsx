@@ -42,7 +42,7 @@ export const AdvancedSettingsSection: React.FC<AdvancedSettingsSectionProps> = (
       <CollapsibleContent className="mt-2">
         <div className="bg-card rounded-lg border p-4 space-y-4">
           <p className="text-xs text-muted-foreground italic">
-            These settings are for technical customization. Most cards don't need these.
+            These settings are for technical customization. Most cards don&apos;t need these.
           </p>
 
           <div>

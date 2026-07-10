@@ -151,7 +151,7 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
             <div className="text-center py-8 text-muted-foreground">
               <p>Select a date and load teams to preview schedule</p>
               <p className="text-sm mt-2">
-                Or use the "Manual Assignment" tab to add teams manually
+                Or use the &quot;Manual Assignment&quot; tab to add teams manually
               </p>
             </div>
           )}

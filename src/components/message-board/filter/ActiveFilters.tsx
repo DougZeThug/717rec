@@ -50,7 +50,7 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({ filterOptions, onFilterCh
       )}
       {filterOptions.searchQuery && (
         <Badge variant="outline" className="flex items-center gap-1 text-xs">
-          "{filterOptions.searchQuery}"
+          &quot;{filterOptions.searchQuery}&quot;
           <button
             type="button"
             onClick={() => onFilterChange({ searchQuery: null })}
