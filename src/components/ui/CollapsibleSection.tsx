@@ -13,13 +13,6 @@ interface CollapsibleSectionProps {
   defaultOpen?: boolean;
   className?: string;
   contentClassName?: string;
-  /** If true, renders special loading/empty/error states outside the collapsible content */
-  isLoading?: boolean;
-  loadingContent?: ReactNode;
-  isEmpty?: boolean;
-  emptyContent?: ReactNode;
-  error?: boolean;
-  errorContent?: ReactNode;
   /** Optional ID for the heading element for accessibility */
   headingId?: string;
   /** Optional summary value shown to the left of the chevron when collapsed */
@@ -34,12 +27,6 @@ export const CollapsibleSection = ({
   defaultOpen = false,
   className,
   contentClassName,
-  isLoading = false,
-  loadingContent,
-  isEmpty = false,
-  emptyContent,
-  error = false,
-  errorContent,
   headingId,
   summaryValue,
 }: CollapsibleSectionProps) => {
@@ -81,13 +68,7 @@ export const CollapsibleSection = ({
         <CollapsibleContent>
           <div className={cn('p-3 md:p-4 pt-0 border-t', contentClassName)}>
             <div className="pt-3">
-              {isLoading && loadingContent
-                ? loadingContent
-                : error && errorContent
-                  ? errorContent
-                  : isEmpty && emptyContent
-                    ? emptyContent
-                    : children}
+              {children}
             </div>
           </div>
         </CollapsibleContent>
