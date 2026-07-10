@@ -41,7 +41,7 @@ export const calculateSOS = (
 
   uniqueOpponentIds.forEach((opponentId) => {
     const opponent = allTeams.find((t) => t.id === opponentId);
-    if (opponent && opponent.division_id) {
+    if (opponent?.division_id) {
       const weight = divisionWeights.get(opponent.division_id) || defaultWeight;
       totalWeight += weight;
       countedOpponents++;

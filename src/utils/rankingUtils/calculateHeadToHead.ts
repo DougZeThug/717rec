@@ -14,7 +14,7 @@ export const calculateHeadToHead = (
 
   // Initialize records for all teams
   allTeams.forEach((team) => {
-    if (team && team.id && team.id !== teamId) {
+    if (team?.id && team.id !== teamId) {
       result[team.id] = {
         opponentName: team.name || 'Unknown Team',
         wins: 0,
@@ -25,10 +25,7 @@ export const calculateHeadToHead = (
 
   // Count wins and losses against each team
   allMatches
-    .filter(
-      (match) =>
-        match && match.iscompleted && (match.team1Id === teamId || match.team2Id === teamId)
-    )
+    .filter((match) => match?.iscompleted && (match.team1Id === teamId || match.team2Id === teamId))
     .forEach((match) => {
       if (!match) return;
 

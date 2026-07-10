@@ -252,7 +252,7 @@ const BracketView: React.FC<BracketViewProps> = ({
       <FinalStandings bracketId={bracketId} show={showStandings} />
 
       <BracketErrorBoundary bracketId={bracketId}>
-        {displayBracket && displayBracket.id ? (
+        {displayBracket?.id ? (
           <BracketsViewerComponent
             // Cast needed due to union type from multiple data sources
             bracket={

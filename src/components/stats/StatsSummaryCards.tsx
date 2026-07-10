@@ -67,7 +67,7 @@ const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
       rankings[0]
     );
     return {
-      sos: highestSOS && highestSOS.sos ? highestSOS.sos.toFixed(3) : 0,
+      sos: highestSOS?.sos ? highestSOS.sos.toFixed(3) : 0,
       teamName: highestSOS?.teamName || 'No teams',
     };
   };
