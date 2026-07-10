@@ -39,8 +39,18 @@ CREATE POLICY "Public can view playoff games" ON playoff_games
 
 -- 6. score_submissions: restrict UPDATE to admin
 DROP POLICY "Allow authenticated users to update score submissions" ON score_submissions;
-CREATE POLICY "Admins can update score submissions" ON score_submissions
-  FOR UPDATE USING (current_user_is_admin()) WITH CHECK (current_user_is_admin());
+-- Guarded: 20250819145652 already created "Admins can update score
+-- submissions" with the identical admin-only definition, so this CREATE
+-- failed as a duplicate when the migration originally ran and must be
+-- skipped on replays where the policy already exists.
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname = 'public'
+                 AND tablename = 'score_submissions'
+                 AND policyname = 'Admins can update score submissions') THEN
+    EXECUTE $p$CREATE POLICY "Admins can update score submissions" ON score_submissions
+      FOR UPDATE USING (current_user_is_admin()) WITH CHECK (current_user_is_admin())$p$;
+  END IF;
+END $$;
 
 -- 7. season_team_participation: restrict UPDATE to admin
 DROP POLICY "Anyone can update participation" ON season_team_participation;
