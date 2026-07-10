@@ -64,8 +64,9 @@ export const seedPendingMatch = async (admin: SupabaseClient): Promise<SeededMat
     .select('id, name');
   if (teamErr || !teams || teams.length !== 2) throw teamErr ?? new Error('Failed to seed teams');
 
-  const team1 = teams.find((t) => t.name === team1Name)!;
-  const team2 = teams.find((t) => t.name === team2Name)!;
+  const team1 = teams.find((t) => t.name === team1Name);
+  const team2 = teams.find((t) => t.name === team2Name);
+  if (!team1 || !team2) throw new Error('Seeded teams missing after insert');
 
   // A pending match: no scores, not completed, dated in the recent past so it
   // shows up in the "Pending Scores" view.
