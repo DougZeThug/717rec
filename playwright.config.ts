@@ -54,8 +54,8 @@ export default defineConfig({
     timeout: 120_000,
     env: hasRealBackend
       ? {
-          VITE_SUPABASE_URL: process.env.E2E_SUPABASE_URL!,
-          VITE_SUPABASE_PUBLISHABLE_KEY: process.env.E2E_SUPABASE_ANON_KEY!,
+          VITE_SUPABASE_URL: process.env.E2E_SUPABASE_URL ?? '',
+          VITE_SUPABASE_PUBLISHABLE_KEY: process.env.E2E_SUPABASE_ANON_KEY ?? '',
         }
       : undefined,
   },
