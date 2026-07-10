@@ -57,7 +57,7 @@ export const AlgorithmSettings: React.FC<AlgorithmSettingsProps> = ({
               <div className="space-y-0.5">
                 <Label htmlFor="avoid-rematches">Avoid Rematches</Label>
                 <p className="text-[0.8rem] text-muted-foreground">
-                  Prioritize pairing teams that haven't played each other before
+                  Prioritize pairing teams that haven&apos;t played each other before
                 </p>
               </div>
               <Switch

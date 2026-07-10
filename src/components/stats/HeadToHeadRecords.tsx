@@ -206,7 +206,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
 
         {filteredRecords.length === 0 ? (
           <div className="text-center py-4 text-muted-foreground">
-            No opponents found matching "{searchTerm}"
+            No opponents found matching &quot;{searchTerm}&quot;
           </div>
         ) : isMobile ? (
           /* Mobile: Card list */

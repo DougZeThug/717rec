@@ -19,7 +19,7 @@ const NotFound = () => {
       <EmptyState
         icon={FileQuestion}
         title="Page Not Found"
-        description="Oops! The page you're looking for doesn't exist or has been moved."
+        description="Oops! The page you are looking for does not exist or has been moved."
         actions={[
           {
             label: 'Go Home',

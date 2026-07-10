@@ -23,8 +23,8 @@ const LiveScoring: React.FC = () => {
     content = (
       <EmptyState
         icon={Construction}
-        title="Live scoring isn't enabled yet"
-        description="The database update for live scoring hasn't been applied. Check back soon!"
+        title="Live scoring is not enabled yet"
+        description="The database update for live scoring has not been applied. Check back soon!"
       />
     );
   } else if (error instanceof NotFoundError) {
@@ -32,14 +32,14 @@ const LiveScoring: React.FC = () => {
       <EmptyState
         icon={CalendarX}
         title="Match not found"
-        description="This match doesn't exist or was removed from the schedule."
+        description="This match does not exist or was removed from the schedule."
       />
     );
   } else if (error || !bundle || !derived) {
     content = (
       <EmptyState
         icon={CalendarX}
-        title="Couldn't load the match"
+        title="Could not load the match"
         description="Something went wrong loading live scoring. Please try again."
       />
     );

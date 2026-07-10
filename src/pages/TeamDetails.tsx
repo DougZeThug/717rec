@@ -259,7 +259,7 @@ const TeamDetails = () => {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
         <h1 className="text-2xl font-bold mb-4">Team Not Found</h1>
-        <p className="mb-4">The team you're looking for doesn't exist.</p>
+        <p className="mb-4">The team you&apos;re looking for doesn&apos;t exist.</p>
         <Button onClick={() => navigate('/teams')}>Back to Teams</Button>
       </div>
     );

@@ -145,7 +145,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
         <EmptyState
           icon={Trophy}
           title="No Completed Matches"
-          description="Matches will appear here once they've been played. Check the upcoming schedule to see what's next."
+          description="Matches will appear here after they have been played. Check the upcoming schedule to see what is next."
           actions={[
             {
               label: 'View Upcoming',
