@@ -1,13 +1,36 @@
-name: Security Audit
+name: Security
 
 on:
   push:
     branches: [main]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - '.gitleaks.toml'
+      - '.github/audit-allowlist.json'
+      - '.github/workflows/security.yml'
+      - '.env*'
   pull_request:
     branches: [main]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - '.gitleaks.toml'
+      - '.github/audit-allowlist.json'
+      - '.github/workflows/security.yml'
+      - '.env*'
   schedule:
-    # Run weekly on Monday at midnight UTC
-    - cron: '0 0 * * 1'
+    # Weekly full security sweep, Monday 01:00 UTC.
+    - cron: '0 1 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   audit:
@@ -27,9 +50,6 @@ jobs:
         run: npm ci
 
       - name: Run security audit (prod deps, high+)
-        # Blocking gate. Dev-only advisories are excluded via --omit=dev.
-        # Non-exploitable PROD advisories can be temporarily allowlisted in
-        # .github/audit-allowlist.json (with reason + expiry).
         run: |
           set -o pipefail
           npm audit --json --omit=dev > audit-report.json || true
@@ -39,13 +59,12 @@ jobs:
           npm audit --omit=dev 2>&1 | head -100 >> "$GITHUB_STEP_SUMMARY" || true
           echo '```' >> "$GITHUB_STEP_SUMMARY"
 
-          node <<'EOF'
+          node <<'EOF_NODE'
           const fs = require('fs');
           const report = JSON.parse(fs.readFileSync('audit-report.json', 'utf8'));
           const allowlist = JSON.parse(fs.readFileSync('.github/audit-allowlist.json', 'utf8'));
           const allowedIds = new Set((allowlist.advisories || []).map(a => String(a.id)));
 
-          // Warn on expired allowlist entries so they don't rot silently.
           const today = new Date().toISOString().slice(0, 10);
           for (const a of allowlist.advisories || []) {
             if (a.expires && a.expires < today) {
@@ -76,7 +95,7 @@ jobs:
             process.exit(1);
           }
           console.log('OK — no unallowlisted high/critical production advisories.');
-          EOF
+          EOF_NODE
 
       - name: Upload audit report
         if: always()
@@ -95,12 +114,6 @@ jobs:
 
       - name: Fail if local env files are tracked
         run: |
-          # Block per-environment / per-developer env files from being committed.
-          # Allowed: .env.example (placeholder template) and the repo-level .env
-          # used by the Lovable preview build (publishable keys only — RLS-gated).
-          # Disallowed: anything that looks like a local or environment-specific
-          # override, which is where service-role keys and personal values tend
-          # to leak in.
           offenders=$(git ls-files \
             | grep -E '(^|/)\.env\.(local|development|production|test)(\.[A-Za-z0-9_.-]+)?$' \
             | grep -vE '(^|/)\.env\.example$' || true)
@@ -111,3 +124,20 @@ jobs:
             exit 1
           fi
           echo "OK — no local .env files are tracked."
+
+  gitleaks:
+    name: Gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: true
+          GITLEAKS_ENABLE_SUMMARY: true
