@@ -2,7 +2,6 @@ import type { PostgrestError } from '@supabase/supabase-js';
 
 import { SeasonBreakdown, TeamAdvancedStats } from '@/types/teamAdvancedStats';
 import { handleDatabaseError } from '@/utils/errorHandler';
-import { errorLog } from '@/utils/logger';
 
 import { buildSeasonBreakdown } from './assemblers';
 import { calculateBestWorstDivisionTiers, calculatePowerScoreTrend } from './calculations';
@@ -13,9 +12,8 @@ import { fetchBracketsByIds, fetchSeasonBreakdownQueries } from './queries';
  * Fetch season-by-season breakdown stats for a team.
  * Returns null if no data exists.
  *
- * Query 1 (team_season_stats) is critical and throws on failure.
- * Queries 2-6 are enrichment — errors are logged but not thrown,
- * allowing graceful UI degradation with partial data.
+ * Database query failures throw so callers can handle data access errors consistently.
+ * Returns null only when the primary season stats query succeeds with no rows.
  */
 export const fetchSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedStats | null> => {
   const {
@@ -34,19 +32,28 @@ export const fetchSeasonBreakdown = async (teamId: string): Promise<TeamAdvanced
   }
 
   if (allTeamSeasonStatsResult.error) {
-    errorLog(
-      'Failed to fetch all team season stats for division lookup:',
-      allTeamSeasonStatsResult.error
+    handleDatabaseError(
+      allTeamSeasonStatsResult.error as PostgrestError,
+      'Failed to fetch all team season stats for division lookup'
     );
   }
   if (currentMatchesResult.error) {
-    errorLog('Failed to fetch current matches for season breakdown:', currentMatchesResult.error);
+    handleDatabaseError(
+      currentMatchesResult.error as PostgrestError,
+      'Failed to fetch current matches for season breakdown'
+    );
   }
   if (archivedMatchesResult.error) {
-    errorLog('Failed to fetch archived matches for season breakdown:', archivedMatchesResult.error);
+    handleDatabaseError(
+      archivedMatchesResult.error as PostgrestError,
+      'Failed to fetch archived matches for season breakdown'
+    );
   }
   if (playoffMatchesResult.error) {
-    errorLog('Failed to fetch playoff matches for season breakdown:', playoffMatchesResult.error);
+    handleDatabaseError(
+      playoffMatchesResult.error as PostgrestError,
+      'Failed to fetch playoff matches for season breakdown'
+    );
   }
 
   const seasonStats = seasonStatsResult.data;
@@ -69,9 +76,13 @@ export const fetchSeasonBreakdown = async (teamId: string): Promise<TeamAdvanced
     ...new Set((playoffMatchesRaw || []).map((match) => match.bracket_id).filter(Boolean)),
   ] as string[];
 
-  const { data: brackets, error: bracketsError } = await fetchBracketsByIds(bracketIds);
+  const { data: brackets, error: bracketsError } =
+    bracketIds.length > 0 ? await fetchBracketsByIds(bracketIds) : { data: [], error: null };
   if (bracketsError) {
-    errorLog('Failed to fetch bracket info for season breakdown:', bracketsError);
+    handleDatabaseError(
+      bracketsError as PostgrestError,
+      'Failed to fetch bracket info for season breakdown'
+    );
   }
 
   const bracketInfoMap = buildBracketInfoMap(
