@@ -36,7 +36,7 @@ describe('LeagueInsightsContainer error state', () => {
     mockUseLeagueInsights.mockReturnValue({ ...base, error: new Error('boom'), refetch });
     render(<LeagueInsightsContainer />);
     expect(screen.getByRole('alert')).toBeInTheDocument();
-    expect(screen.getByText(/couldn't load league insights/i)).toBeInTheDocument();
+    expect(screen.getByText(/could not load league insights/i)).toBeInTheDocument();
     // Must not fall through to the "No Data Yet" empty state.
     expect(screen.queryByText('No Data Yet')).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: /try again/i }));

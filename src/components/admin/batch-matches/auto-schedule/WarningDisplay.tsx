@@ -40,7 +40,7 @@ export const WarningDisplay: React.FC<WarningDisplayProps> = ({
 
         {unmatchedTeamDetails.length > 0 && (
           <div className="mt-2 space-y-1">
-            <p className="font-medium">Teams that won't be matched:</p>
+            <p className="font-medium">Teams that won&apos;t be matched:</p>
             <ul className="list-disc pl-5 text-sm">
               {unmatchedTeamDetails.map((item) => (
                 <li key={item.team.id}>
@@ -54,7 +54,7 @@ export const WarningDisplay: React.FC<WarningDisplayProps> = ({
 
         {insufficientBlocks.length > 0 && (
           <div className="mt-2">
-            <p>These blocks don't have enough teams to create matches:</p>
+            <p>These blocks don&apos;t have enough teams to create matches:</p>
             <ul className="list-disc pl-5 mt-1">
               {insufficientBlocks.map((block) => (
                 <li key={block}>{block}</li>

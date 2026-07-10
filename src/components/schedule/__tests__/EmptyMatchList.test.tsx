@@ -19,7 +19,7 @@ describe('EmptyMatchList', () => {
 
     expect(screen.getByText('No Matches Found')).toBeInTheDocument();
     expect(
-      screen.getByText('No matches found for "dragons". Try a different search term.')
+      screen.getByText('No matches found for “dragons”. Try a different search term.')
     ).toBeInTheDocument();
     // Search branch exposes no actions.
     expect(screen.queryByRole('button')).not.toBeInTheDocument();

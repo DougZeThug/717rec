@@ -8,8 +8,8 @@ export const WelcomeSection: React.FC = () => {
     <HelpAccordionItem value="welcome" icon={HelpCircle} title="Welcome to 717REC">
       <p>
         717REC is your central hub for managing and participating in recreational cornhole leagues.
-        Whether you're an admin running the league or a player tracking your team's progress, this
-        guide will help you get started.
+        Whether you&apos;re an admin running the league or a player tracking your team&apos;s
+        progress, this guide will help you get started.
       </p>
       <div className="grid gap-3">
         <div className="p-3 bg-muted/50 rounded-lg">

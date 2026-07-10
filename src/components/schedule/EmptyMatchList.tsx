@@ -17,7 +17,7 @@ const EmptyMatchList: React.FC<EmptyMatchListProps> = ({ searchTerm, isCompleted
       return {
         icon: Search,
         title: 'No Matches Found',
-        description: `No matches found for "${searchTerm}". Try a different search term.`,
+        description: `No matches found for “${searchTerm}”. Try a different search term.`,
         actions: [],
       };
     }
@@ -26,7 +26,7 @@ const EmptyMatchList: React.FC<EmptyMatchListProps> = ({ searchTerm, isCompleted
       return {
         icon: CalendarX,
         title: 'No Completed Matches',
-        description: "Once matches are played and scores are recorded, they'll appear here.",
+        description: 'Once matches are played and scores are recorded, they will appear here.',
         actions: [],
       };
     }

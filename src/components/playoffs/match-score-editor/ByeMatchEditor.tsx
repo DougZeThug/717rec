@@ -206,7 +206,7 @@ const ByeStatusControl: React.FC<{
               ⚠️ This match is marked as Completed but has no winner (zombie state).
             </p>
             <p>
-              <strong>Reopen (Safe)</strong>: Only works if downstream matches haven't been
+              <strong>Reopen (Safe)</strong>: Only works if downstream matches haven&apos;t been
               populated yet.
             </p>
             <p>
@@ -216,7 +216,8 @@ const ByeStatusControl: React.FC<{
           </div>
         ) : byeEligible.currentStatus !== 2 ? (
           <p>
-            ⚠️ This BYE match is currently locked. Click "Unlock to Ready" to enable score entry.
+            ⚠️ This BYE match is currently locked. Click &quot;Unlock to Ready&quot; to enable score
+            entry.
           </p>
         ) : (
           <p>✅ Match is ready. You can now enter scores below or revert if needed.</p>

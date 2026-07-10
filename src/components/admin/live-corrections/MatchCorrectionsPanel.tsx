@@ -71,8 +71,8 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
           <AlertTriangle className="size-4 mt-0.5 text-amber-600 shrink-0" aria-hidden />
           <div>
             This match is <strong>finalized</strong>. Edits here will change round/game data
-            immediately, but the official result & standings won't update until you reopen the match
-            from the live view and re-finalize it.
+            immediately, but the official result & standings won&apos;t update until you reopen the
+            match from the live view and re-finalize it.
           </div>
         </div>
       )}

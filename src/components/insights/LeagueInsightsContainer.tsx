@@ -35,7 +35,7 @@ const LeagueInsightsContainer: React.FC = () => {
       <div className="max-w-2xl mx-auto px-4 py-16">
         <ErrorDisplay
           variant="card"
-          error="We couldn't load league insights. Please try again."
+          error="We could not load league insights. Please try again."
           onRetry={refetch}
         />
       </div>

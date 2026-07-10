@@ -71,7 +71,7 @@ describe('LiveScoring page', () => {
       isNotEnabled: true,
     });
     renderPage();
-    expect(screen.getByText(/live scoring isn't enabled yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/live scoring is not enabled yet/i)).toBeInTheDocument();
   });
 
   it('shows a not-found state for unknown matches', () => {
@@ -86,7 +86,7 @@ describe('LiveScoring page', () => {
   it('shows a friendly error for other failures', () => {
     mockUseLiveMatch.mockReturnValue({ ...baseHookResult, error: new Error('boom') });
     renderPage();
-    expect(screen.getByText(/couldn't load the match/i)).toBeInTheDocument();
+    expect(screen.getByText(/could not load the match/i)).toBeInTheDocument();
   });
 
   it('blocks matches without both teams assigned', () => {

@@ -276,7 +276,7 @@ const DeleteConfirm: React.FC<DeleteConfirmProps> = ({
   <AlertDialog open={open} onOpenChange={onOpenChange}>
     <AlertDialogContent>
       <AlertDialogHeader>
-        <AlertDialogTitle>Delete division "{name}"?</AlertDialogTitle>
+        <AlertDialogTitle>Delete division &quot;{name}&quot;?</AlertDialogTitle>
         <AlertDialogDescription>
           This cannot be undone. Divisions currently assigned to any team or bracket cannot be
           deleted.
