@@ -183,21 +183,17 @@ Vitest coverage thresholds are now enforced in CI and locally via
 Global thresholds in `vitest.config.ts` are pinned a few points below the
 current baseline:
 
-- Lines: **49%**
-- Statements: **48%**
-- Functions: **41%**
-- Branches: **39%**
+- Lines: **62%**
+- Statements: **61%**
+- Functions: **56%**
+- Branches: **51%**
 
 If a PR drops any global metric below those numbers, the coverage job fails.
 
-**Scope caveat:** the PR gate (`npm run test:coverage:ci`, which sets
-`VITEST_CI_COVERAGE=1`) narrows the coverage `include` to `src/services/**`,
-`src/hooks/**`, and `src/utils/**` only. So in CI the "global" thresholds are
-measured against those three folders — not the whole app. The full-scope
-numbers for all of `src/` come from `npm run test:coverage` and are recorded
-in the baseline table above. Numbers in `vitest.config.ts` are authoritative;
-if this doc and the config disagree, the config wins and this doc needs a
-sync.
+The PR gate (`npm run test:coverage:ci`) now measures the same full `src/**`
+scope as local coverage, including components and pages. Numbers in
+`vitest.config.ts` are authoritative; if this doc and the config disagree, the
+config wins and this doc needs a sync.
 
 ### Stage 2 (active now): folder thresholds
 
