@@ -103,7 +103,6 @@ jobs:
           VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
 
       - name: Check bundle size budgets
-        continue-on-error: true
         run: npm run size
 
   browser:
@@ -127,7 +126,6 @@ jobs:
         run: npm run e2e:install
 
       - name: Run Playwright smoke tests
-        continue-on-error: true
         run: npm run e2e
         env:
           CI: 'true'
@@ -148,7 +146,6 @@ jobs:
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
       - name: Run Lighthouse CI
-        continue-on-error: true
         run: npx lhci autorun
 
       - name: Upload Playwright report
