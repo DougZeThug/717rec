@@ -1,5 +1,4 @@
-import React, { createContext, useContext } from 'react';
-import { useNavigate } from 'react-router';
+import { createContext, useContext } from 'react';
 
 import { AuthContextType } from '@/types/auth';
 
@@ -13,17 +12,4 @@ export const useAuth = () => {
   }
 
   return context;
-};
-
-export const useRequireAuth = () => {
-  const { user, isLoading, authInitialized } = useAuth();
-  const navigate = useNavigate();
-
-  React.useEffect(() => {
-    if (authInitialized && !isLoading && !user) {
-      navigate('/auth', { state: { returnTo: window.location.pathname } });
-    }
-  }, [user, isLoading, authInitialized, navigate]);
-
-  return { user, isLoading, authInitialized };
 };
