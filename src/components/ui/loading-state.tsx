@@ -3,17 +3,13 @@ import React from 'react';
 
 import { cn } from '@/lib/utils';
 
-type LoadingVariant = 'page' | 'section' | 'inline';
+type LoadingVariant = 'section' | 'inline';
 
 interface LoadingStateProps {
   message?: string;
-  className?: string;
   size?: 'sm' | 'md' | 'lg';
-  /** @deprecated Use variant="page" instead */
-  fullscreen?: boolean;
   /**
    * Loading state variant:
-   * - page: Full-screen centered (use for page-level loading)
    * - section: Padding-based centered (use for card/section loading)
    * - inline: Minimal padding, smaller spinner (use for inline loading)
    */
@@ -27,7 +23,6 @@ const sizeClasses = {
 };
 
 const containerClasses = {
-  page: 'min-h-screen flex items-center justify-center',
   section: 'py-8 flex items-center justify-center',
   inline: 'py-2 flex items-center justify-center gap-2',
 };
@@ -40,21 +35,16 @@ const textSizeClasses = {
 
 export const LoadingState: React.FC<LoadingStateProps> = ({
   message = 'Loading...',
-  className = '',
   size,
-  fullscreen = false,
   variant,
 }) => {
-  // Determine effective variant (backward compatible with fullscreen prop)
-  const effectiveVariant: LoadingVariant = variant ?? (fullscreen ? 'page' : 'section');
+  const effectiveVariant: LoadingVariant = variant ?? 'section';
 
-  // Auto-determine size based on variant if not explicitly set
   const effectiveSize = size ?? (effectiveVariant === 'inline' ? 'sm' : 'md');
 
-  // Inline variant uses horizontal layout
   if (effectiveVariant === 'inline') {
     return (
-      <div className={cn(containerClasses.inline, className)} role="status" aria-live="polite">
+      <div className={containerClasses.inline} role="status" aria-live="polite">
         <Loader2
           className={cn('text-primary animate-spin', sizeClasses[effectiveSize])}
           aria-hidden="true"
@@ -70,7 +60,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
 
   return (
     <div
-      className={cn(containerClasses[effectiveVariant], className)}
+      className={containerClasses[effectiveVariant]}
       role="status"
       aria-live="polite"
     >
