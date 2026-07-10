@@ -14,6 +14,13 @@ vi.mock('@/hooks/useMobile', () => ({
   useIsMobile: () => mockIsMobile(),
 }));
 
+vi.mock('@/hooks/live-scoring/useLiveScoredMatchIds', () => ({
+  useLiveScoredMatchIds: () => ({
+    liveScoredIds: new Set<string>(),
+    isLoading: false,
+  }),
+}));
+
 vi.mock('react-router', () => ({
   useNavigate: () => mockNavigate,
 }));
