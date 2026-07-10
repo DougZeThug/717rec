@@ -21,7 +21,7 @@ export function useAutoScheduleSave() {
   const saveMatches = async (
     matches: AutoScheduleMatch[],
     selectedDate: Date | null,
-    dualMatchMode: boolean = false,
+    dualMatchMode = false,
     seasonId?: string | null
   ): Promise<boolean> => {
     if (!selectedDate || !matches || matches.length === 0) {

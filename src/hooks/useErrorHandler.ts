@@ -29,7 +29,7 @@ export function useErrorHandler() {
    * @returns Error information for state management
    */
   const handleError = useCallback(
-    (error: unknown, context: string, showToast: boolean = true): HookErrorResult => {
+    (error: unknown, context: string, showToast = true): HookErrorResult => {
       const errorInfo = handleHookError(error, context);
 
       if (showToast) {

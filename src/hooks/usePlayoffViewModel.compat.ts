@@ -12,7 +12,7 @@ import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 import { groupTeamsByDivision } from '@/utils/teamGrouping';
 
 /** Temporary shim exposing the legacy shape for Playoffs.tsx */
-export const usePlayoffData = (isAdmin: boolean = false, seasonId?: string | null) => {
+export const usePlayoffData = (isAdmin = false, seasonId?: string | null) => {
   // Call the view model without a bracketId to get overview data
   const vm = usePlayoffViewModel(null);
 

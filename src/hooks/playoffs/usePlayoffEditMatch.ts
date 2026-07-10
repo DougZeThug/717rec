@@ -41,7 +41,7 @@ export const usePlayoffEditMatch = () => {
   const optimisticMutation = useOptimisticScoreMutation(currentBracket?.id ?? null);
 
   const handleEditMatch = useCallback(
-    async (matchId: string, quickEdit: boolean = false) => {
+    async (matchId: string, quickEdit = false) => {
       playoffLog('Edit match requested:', matchId);
 
       try {

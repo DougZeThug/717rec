@@ -286,7 +286,7 @@ export function generateQualityFeedback(metrics: MatchQualityMetrics): {
  */
 export function calculateComprehensiveQualityMetrics(
   pairings: TeamPairingMap,
-  generationTimeMs: number = 0,
+  generationTimeMs = 0,
   algorithmsUsed: string[] = ['standard']
 ): MatchQualityMetrics {
   // Basic metrics
@@ -372,10 +372,7 @@ function calculateBlockQuality(blockPairings: TeamPair[]): number {
 /**
  * Log detailed quality analysis for debugging
  */
-export function logQualityAnalysis(
-  metrics: MatchQualityMetrics,
-  label: string = 'Quality Analysis'
-): void {
+export function logQualityAnalysis(metrics: MatchQualityMetrics, label = 'Quality Analysis'): void {
   scheduleLog(`${label}:`, {
     overall: `${metrics.qualityRating} (${metrics.averageCompatibilityScore.toFixed(1)}/10)`,
     matches: `${metrics.totalMatches} total, ${metrics.rematchCount} rematches`,

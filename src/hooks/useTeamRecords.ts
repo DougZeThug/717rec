@@ -23,8 +23,8 @@ export const useTeamRecords = () => {
     winnerId: string,
     loserId: string,
     teams: Team[],
-    winnerGameWins: number = 0,
-    loserGameWins: number = 0
+    winnerGameWins = 0,
+    loserGameWins = 0
   ) => {
     teamLog('===== TEAM RECORDS UPDATE PROCESS STARTING =====');
     teamLog('Winner ID:', winnerId, 'Loser ID:', loserId);

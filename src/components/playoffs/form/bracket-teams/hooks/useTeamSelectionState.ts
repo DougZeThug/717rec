@@ -9,8 +9,8 @@ import { BracketFormStateResult } from '../types';
 export const useTeamSelectionState = (
   maxTeams: number,
   initialSelected: Set<string> = new Set(),
-  availableTeamsCount: number = 0,
-  minTeams: number = 2
+  availableTeamsCount = 0,
+  minTeams = 2
 ): BracketFormStateResult => {
   // Ensure we have valid numbers to prevent React errors
   const validMaxTeams = typeof maxTeams === 'number' && maxTeams > 0 ? maxTeams : 16;

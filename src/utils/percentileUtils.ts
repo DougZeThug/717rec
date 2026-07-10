@@ -16,7 +16,7 @@ export interface PercentileResult {
 export function calculatePercentile(
   value: number,
   allValues: number[],
-  higherIsBetter: boolean = true
+  higherIsBetter = true
 ): PercentileResult {
   const total = allValues.length;
   if (total === 0) {
@@ -79,7 +79,7 @@ export function getPercentileTier(percentile: number): PercentileTier {
  */
 export function calculateAllPercentiles(
   teams: { id: string; value: number }[],
-  higherIsBetter: boolean = true
+  higherIsBetter = true
 ): Map<string, PercentileResult> {
   const values = teams.map((t) => t.value);
   const result = new Map<string, PercentileResult>();

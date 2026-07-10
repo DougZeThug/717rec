@@ -40,7 +40,7 @@ export function getTeamById(
 /**
  * Creates a placeholder team for missing team references
  */
-export function createPlaceholderTeam(teamId: string, prefix: string = 'Team'): PlayoffTeam {
+export function createPlaceholderTeam(teamId: string, prefix = 'Team'): PlayoffTeam {
   return {
     id: teamId,
     name: `${prefix} ${teamId.substring(0, 8)}`,

@@ -8,7 +8,7 @@ import { PlayoffPageData } from './usePlayoffPageData';
 export function usePlayoffViewState(
   data: PlayoffPageData,
   handlers: ReturnType<typeof usePlayoffHandlers>,
-  defaultTab: string = 'brackets'
+  defaultTab = 'brackets'
 ) {
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [bracketDialogOpen, setBracketDialogOpen] = useState(false);
