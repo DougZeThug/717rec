@@ -25,10 +25,7 @@ export const createAdminClient = (env: RealBackendEnv): SupabaseClient =>
 
 // Guarantee the shared E2E user exists and has a known password. Idempotent —
 // safe to call before every test.
-export const ensureTestUser = async (
-  admin: SupabaseClient,
-  env: RealBackendEnv
-): Promise<void> => {
+export const ensureTestUser = async (admin: SupabaseClient, env: RealBackendEnv): Promise<void> => {
   const { data: created, error } = await admin.auth.admin.createUser({
     email: env.email,
     password: env.password,
@@ -65,11 +62,11 @@ export const seedPendingMatch = async (admin: SupabaseClient): Promise<SeededMat
     .from('teams')
     .insert([{ name: team1Name }, { name: team2Name }])
     .select('id, name');
-  if (teamErr || !teams || teams.length !== 2)
-    throw teamErr ?? new Error('Failed to seed teams');
+  if (teamErr || !teams || teams.length !== 2) throw teamErr ?? new Error('Failed to seed teams');
 
-  const team1 = teams.find((t) => t.name === team1Name)!;
-  const team2 = teams.find((t) => t.name === team2Name)!;
+  const team1 = teams.find((t) => t.name === team1Name);
+  const team2 = teams.find((t) => t.name === team2Name);
+  if (!team1 || !team2) throw new Error('Seeded teams missing after insert');
 
   // A pending match: no scores, not completed, dated in the recent past so it
   // shows up in the "Pending Scores" view.
