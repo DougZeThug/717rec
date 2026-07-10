@@ -8,7 +8,7 @@ This document outlines the standardized approach to loading states across the ap
 Is this a button/action state?
   → YES: Use Loader2 inline
   → NO: Is this a full page?
-    → YES: Use LoadingState with fullscreen
+    → YES: Use a full-page Skeleton component
     → NO: Does the content have a known structure?
       → YES: Use matching Skeleton component
       → NO: Use LoadingState section variant
@@ -17,16 +17,16 @@ Is this a button/action state?
 ## Loading State Types
 
 ### 1. Full Page Loading
-Use `<LoadingState>` component with `fullscreen` prop for page-level loading.
+Use a full-page Skeleton component (e.g., `CardSkeleton` with appropriate sizing) for page-level loading.
 
 ```tsx
 import { LoadingState } from "@/components/ui/loading-state";
 
-// Full page loading
-<LoadingState fullscreen message="Loading page..." />
-
-// Section loading
+// Section loading (default variant)
 <LoadingState message="Loading data..." />
+
+// Inline loading (for use within existing content)
+<LoadingState variant="inline" size="sm" message="Loading..." />
 ```
 
 ### 2. Content Skeleton Loaders
