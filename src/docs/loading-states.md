@@ -34,10 +34,7 @@ Use content-shaped skeleton components for data sections and lists. These provid
 
 **Available Skeleton Components:**
 - `ShimmerSkeleton` - Base skeleton with shimmer animation
-- `TextSkeleton` - Multi-line text placeholder
 - `AvatarSkeleton` - Circular avatar placeholder
-- `CardSkeleton` - Card layout placeholder
-- `ListItemSkeleton` - List row placeholder
 
 **Component-specific Skeletons:**
 - `FinalStandingsSkeleton` - Playoff final standings
