@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { processSeasonMatches } from '../processSeasonMatches';
+import { processSeasonMatches } from '@/services/teamSeasonStats/calculations';
 
 const TEAM_ID = 'team-main';
 const SEASON_ID = 'season-2026';
@@ -178,6 +178,15 @@ describe('processSeasonMatches', () => {
       }),
       createPlayoffMatch({
         team1_id: TEAM_ID,
+        team2_id: 'opp-playoff-zero-weight',
+        team1_score: 0,
+        team2_score: 2,
+        winner_id: 'opp-playoff-zero-weight',
+        loser_id: TEAM_ID,
+        bracketInfo: { season_id: SEASON_ID, division_weight: 0 },
+      }),
+      createPlayoffMatch({
+        team1_id: TEAM_ID,
         team2_id: 'opp-playoff-5',
         team1_score: 2,
         team2_score: 1,
@@ -199,10 +208,10 @@ describe('processSeasonMatches', () => {
       divisionRecords: {
         competitive: { wins: 1, losses: 0, gameWins: 2, gameLosses: 0 },
         intermediate: { wins: 2, losses: 1, gameWins: 5, gameLosses: 4 },
-        recreational: { wins: 0, losses: 1, gameWins: 1, gameLosses: 2 },
+        recreational: { wins: 0, losses: 2, gameWins: 1, gameLosses: 4 },
       },
       playoffWins: 3,
-      playoffLosses: 2,
+      playoffLosses: 3,
     });
   });
 });

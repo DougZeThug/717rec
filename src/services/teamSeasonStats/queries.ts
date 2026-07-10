@@ -1,7 +1,6 @@
-import { DivisionRelation } from '@/hooks/teams/seasonBreakdown/types';
 import { supabase } from '@/integrations/supabase/client';
 
-import type { MatchRecord, PlayoffMatchRecord, SeasonStatRow } from './types';
+import type { DivisionRelation, MatchRecord, PlayoffMatchRecord, SeasonStatRow } from './types';
 
 export interface FetchSeasonBreakdownQueryResults {
   seasonStatsResult: { data: SeasonStatRow[] | null; error: unknown | null };
@@ -17,6 +16,7 @@ export interface FetchSeasonBreakdownQueryResults {
   };
 }
 
+/** Fetches the base and enrichment query results needed for a team's season breakdown. */
 export const fetchSeasonBreakdownQueries = async (
   teamId: string
 ): Promise<FetchSeasonBreakdownQueryResults> => {
@@ -104,6 +104,7 @@ export const fetchSeasonBreakdownQueries = async (
   };
 };
 
+/** Fetches bracket season and division metadata for playoff match enrichment. */
 export const fetchBracketsByIds = async (bracketIds: string[]) => {
   if (bracketIds.length === 0) {
     return { data: [], error: null };

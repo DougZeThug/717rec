@@ -1,4 +1,12 @@
-import { SeasonRelation } from '@/hooks/teams/seasonBreakdown/types';
+export interface DivisionRelation {
+  division_weight?: number;
+}
+
+export interface SeasonRelation {
+  id: string;
+  name: string;
+  start_date: string;
+}
 
 export interface TeamUpdate {
   team_id: string;
