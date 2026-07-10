@@ -13,7 +13,6 @@ interface TeamStatsProps {
   winPercentage: string;
   gameWinPercentage: string;
   sos?: number;
-  closeMatchLosses?: number;
   powerScore?: number;
 }
 
@@ -25,7 +24,6 @@ const TeamStats: React.FC<TeamStatsProps> = ({
   winPercentage,
   gameWinPercentage,
   sos,
-  closeMatchLosses: _closeMatchLosses,
   powerScore,
 }) => {
   const powerScoreColor = powerScore !== undefined ? getPowerScoreColor(powerScore) : '';
