@@ -1,36 +1,47 @@
 import { supabase } from '@/integrations/supabase/client';
 import { WeeklyPowerScoreTrend } from '@/types/powerScoreSnapshot';
 import { PowerScoreTrend, TrendDirection } from '@/types/powerScoreTrends';
-import { warnLog } from '@/utils/logger';
+import { handleDatabaseError } from '@/utils/errorHandler';
 import { normalizePowerScore } from '@/utils/powerScore/normalizePowerScore';
 
 /**
  * Fetch power score trends (movers) comparing current season vs previous season.
- * Swallows errors and returns empty array on failure to preserve original hook behavior.
+ * Returns empty arrays for legitimate no-data states and throws on database errors.
  */
 export async function fetchPowerScoreTrends(
   direction: TrendDirection = 'up',
   limit = 10
 ): Promise<PowerScoreTrend[]> {
   // Get current active season
-  const { data: activeSeason } = await supabase
+  const { data: activeSeason, error: activeSeasonError } = await supabase
     .from('seasons')
     .select('id, start_date')
     .eq('is_active', true)
     .single();
+
+  if (activeSeasonError) {
+    handleDatabaseError(activeSeasonError, 'Failed to fetch active season for power score trends');
+  }
 
   if (!activeSeason) {
     return [];
   }
 
   // Find the actual previous season (chronologically before the active one)
-  const { data: previousSeason } = await supabase
+  const { data: previousSeason, error: previousSeasonError } = await supabase
     .from('seasons')
     .select('id')
     .lt('start_date', activeSeason.start_date)
     .order('start_date', { ascending: false })
     .limit(1)
     .maybeSingle();
+
+  if (previousSeasonError) {
+    handleDatabaseError(
+      previousSeasonError,
+      'Failed to fetch previous season for power score trends'
+    );
+  }
 
   const previousSeasonId = previousSeason?.id ?? null;
 
@@ -44,8 +55,11 @@ export async function fetchPowerScoreTrends(
     .select('team_id, name, divisionname, division_id, logo_url, image_url, power_score')
     .not('power_score', 'is', null);
 
-  if (currentError || !currentData) {
-    warnLog('Error fetching current season data:', currentError);
+  if (currentError) {
+    handleDatabaseError(currentError, 'Failed to fetch current team power scores for trends');
+  }
+
+  if (!currentData) {
     return [];
   }
 
@@ -56,8 +70,11 @@ export async function fetchPowerScoreTrends(
     .eq('season_id', previousSeasonId)
     .not('power_score', 'is', null);
 
-  if (previousError || !previousData) {
-    warnLog('Error fetching previous season data:', previousError);
+  if (previousError) {
+    handleDatabaseError(previousError, 'Failed to fetch previous team power scores for trends');
+  }
+
+  if (!previousData) {
     return [];
   }
 
@@ -71,10 +88,17 @@ export async function fetchPowerScoreTrends(
   );
 
   // Get visible divisions (exclude hidden ones)
-  const { data: visibleDivisions } = await supabase
+  const { data: visibleDivisions, error: visibleDivisionsError } = await supabase
     .from('divisions')
     .select('id')
     .neq('display_division', 'Hidden');
+
+  if (visibleDivisionsError) {
+    handleDatabaseError(
+      visibleDivisionsError,
+      'Failed to fetch visible divisions for power score trends'
+    );
+  }
 
   const visibleDivisionIds = new Set(visibleDivisions?.map((d) => d.id) || []);
 
@@ -119,18 +143,25 @@ export async function fetchPowerScoreTrends(
 
 /**
  * Fetch weekly power score trends using power_score_snapshots table.
- * Swallows errors and returns empty state on failure to preserve original hook behavior.
+ * Preserves no-data states and throws on database errors.
  */
 export async function fetchWeeklyPowerScoreTrends(
   direction: TrendDirection = 'up',
   limit = 10
 ): Promise<{ trends: WeeklyPowerScoreTrend[]; hasData: boolean; latestWeek: number | null }> {
   // 1. Get active season first (required for other queries)
-  const { data: activeSeason } = await supabase
+  const { data: activeSeason, error: activeSeasonError } = await supabase
     .from('seasons')
     .select('id')
     .eq('is_active', true)
     .single();
+
+  if (activeSeasonError) {
+    handleDatabaseError(
+      activeSeasonError,
+      'Failed to fetch active season for weekly power score trends'
+    );
+  }
 
   if (!activeSeason) {
     return { trends: [], hasData: false, latestWeek: null };
@@ -145,6 +176,20 @@ export async function fetchWeeklyPowerScoreTrends(
       .order('week_number', { ascending: false }),
     supabase.from('divisions').select('id').neq('display_division', 'Hidden'),
   ]);
+
+  if (weekNumbersResult.error) {
+    handleDatabaseError(
+      weekNumbersResult.error,
+      'Failed to fetch week numbers for weekly power score trends'
+    );
+  }
+
+  if (visibleDivisionsResult.error) {
+    handleDatabaseError(
+      visibleDivisionsResult.error,
+      'Failed to fetch visible divisions for weekly power score trends'
+    );
+  }
 
   const weekNumbers = weekNumbersResult.data;
   const visibleDivisions = visibleDivisionsResult.data;
@@ -180,6 +225,20 @@ export async function fetchWeeklyPowerScoreTrends(
       .not('power_score', 'is', null),
   ]);
 
+  if (currentSnapshotsResult.error) {
+    handleDatabaseError(
+      currentSnapshotsResult.error,
+      'Failed to fetch current weekly power score snapshots'
+    );
+  }
+
+  if (previousSnapshotsResult.error) {
+    handleDatabaseError(
+      previousSnapshotsResult.error,
+      'Failed to fetch previous weekly power score snapshots'
+    );
+  }
+
   const currentSnapshots = currentSnapshotsResult.data;
   const previousSnapshots = previousSnapshotsResult.data;
 
@@ -193,10 +252,17 @@ export async function fetchWeeklyPowerScoreTrends(
   // 5. Get team details for names, divisions, logos
   const teamIds = currentSnapshots.map((s) => s.team_id);
 
-  const { data: teamDetails } = await supabase
+  const { data: teamDetails, error: teamDetailsError } = await supabase
     .from('v_team_details')
     .select('team_id, name, divisionname, division_id, logo_url, image_url')
     .in('team_id', teamIds);
+
+  if (teamDetailsError) {
+    handleDatabaseError(
+      teamDetailsError,
+      'Failed to fetch team details for weekly power score trends'
+    );
+  }
 
   const teamDetailsMap = new Map(teamDetails?.map((t) => [t.team_id, t]) || []);
 
