@@ -42,7 +42,6 @@ const MatchCommentForm: React.FC<MatchCommentFormProps> = ({
             Sign in to comment on this match
           </div>
         }
-        children={null}
       />
     );
   }

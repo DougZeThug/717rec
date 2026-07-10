@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth-context';
 
 interface LoginRequiredProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   message?: string;
   fallback?: React.ReactNode;
 }
