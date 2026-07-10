@@ -114,7 +114,7 @@ const getRegularOpponentId = (match: MatchRecord, teamId: string) =>
 
 /** Maps playoff bracket division weight to the corresponding division tier bucket. */
 const getPlayoffDivisionTier = (match: PlayoffMatchRecord): DivisionTier => {
-  const bracketWeight = match.bracketInfo?.division_weight || 0.85;
+  const bracketWeight = match.bracketInfo?.division_weight ?? 0.85;
   if (bracketWeight >= 0.89) return 'competitive';
   if (bracketWeight >= 0.4) return 'intermediate';
   return 'recreational';
