@@ -52,6 +52,7 @@ function selectBye2(
       exclude,
       relaxationLevel
     );
+    if (!candidate) break;
     if (canPlay(bye1, candidate, playedSet, tonightPairs, maxTierGap, relaxationLevel)) {
       return candidate;
     }
