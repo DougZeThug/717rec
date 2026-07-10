@@ -5,10 +5,10 @@ const baseURL = `http://localhost:${PORT}`;
 const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
 const hasRealBackend = Boolean(
   process.env.E2E_SUPABASE_URL &&
-    process.env.E2E_SUPABASE_ANON_KEY &&
-    process.env.E2E_SUPABASE_SERVICE_ROLE_KEY &&
-    process.env.E2E_TEST_USER_EMAIL &&
-    process.env.E2E_TEST_USER_PASSWORD
+  process.env.E2E_SUPABASE_ANON_KEY &&
+  process.env.E2E_SUPABASE_SERVICE_ROLE_KEY &&
+  process.env.E2E_TEST_USER_EMAIL &&
+  process.env.E2E_TEST_USER_PASSWORD
 );
 
 export default defineConfig({
@@ -48,9 +48,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: hasRealBackend
-      ? 'npm run dev -- --mode e2e-real-backend'
-      : 'npm run dev',
+    command: hasRealBackend ? 'npm run dev -- --mode e2e-real-backend' : 'npm run dev',
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

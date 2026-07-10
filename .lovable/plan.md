@@ -1,41 +1,32 @@
 ## Problem
 
-`npm run e2e` runs `playwright test` with no project filter, so it executes **all** Playwright projects — including `real-backend`. In CI's `browser` job the `E2E_*` secrets aren't set, so `getRealBackendEnv()` returns `null`. But `real-backend.spec.ts` calls `createAdminClient(env as RealBackendEnv)` at the **top of the describe block**, which runs during test collection — *before* `test.skip(!env, ...)` has a chance to skip anything. Result: `TypeError: Cannot read properties of null (reading 'supabaseUrl')` and CI fails.
+Lint/prettier failures across three e2e files. Pure formatting + two non-null assertions.
 
-## Fix (two small changes)
+## Fixes
 
-**1. `e2e/real-backend.spec.ts` — move admin-client creation behind the skip guard.**
+**`playwright.config.ts`**
+- Dedent lines 8–11 (continuation from 4 → 2 spaces) inside `Boolean(...)`.
+- Collapse the `command:` ternary onto one line.
+- Replace `process.env.E2E_SUPABASE_URL!` / `E2E_SUPABASE_ANON_KEY!` with `?? ''` to drop the non-null assertion warnings.
 
-Right now `admin` and `createAdminClient` run at module/describe evaluation time. Restructure so nothing dereferences `env` unless `env` is truthy:
+**`e2e/helpers/realBackend.ts`**
+- Line 28–31: put `ensureTestUser` params on one line.
+- Line 68–69: fold the `throw` onto the same line as the `if`.
+- Lines 71–72: replace `teams.find(...)!` with a proper narrow — destructure via a lookup that throws if missing (already guarded above, but restate to satisfy lint):
+  ```ts
+  const team1 = teams.find((t) => t.name === team1Name);
+  const team2 = teams.find((t) => t.name === team2Name);
+  if (!team1 || !team2) throw new Error('Seeded teams missing after insert');
+  ```
+- Line 106: add trailing newline at EOF.
 
-- Declare `let admin: SupabaseClient` (uninitialised).
-- Initialise `admin = createAdminClient(realEnv)` inside `beforeAll`, after the skip has taken effect.
-- Keep the `test.skip(!env, ...)` at the top of the describe so the whole block is skipped cleanly when secrets are missing.
-
-This makes the spec safe to load in any CI job, with or without the `E2E_*` secrets.
-
-**2. `package.json` — scope the default `e2e` script to the mocked project.**
-
-Change:
-```
-"e2e": "playwright test"
-```
-to:
-```
-"e2e": "playwright test --project=chromium"
-```
-
-The `browser` CI job (and local `npm run e2e`) should only run the mocked-backend smoke tests. The real-backend project is already run separately by the `e2e-real-backend` job via `npx playwright test --project=real-backend`, so nothing else needs to change in CI.
-
-Belt-and-suspenders: even if someone later runs `playwright test` with no filter, fix #1 ensures the real-backend spec skips gracefully instead of crashing.
-
-## Files touched
-
-- `e2e/real-backend.spec.ts` — lazy-init `admin` inside `beforeAll`
-- `package.json` — narrow the `e2e` script to `--project=chromium`
+**`e2e/real-backend.spec.ts`**
+- Run import sort (move `@playwright/test` and `@supabase/supabase-js` imports into the correct order per `simple-import-sort`).
+- Collapse the `consoleErrors.filter(...)` arrow back onto one line inside `expect(...)`.
+- Add trailing newline at EOF.
 
 ## Verification
 
-- `npm run e2e` locally runs only the chromium project (real-backend spec not loaded).
-- With `E2E_*` unset, `npx playwright test` (no filter) now reports the real-backend spec as **skipped**, not failed.
-- With `E2E_*` set, the `e2e-real-backend` job behaves exactly as before.
+- `npx eslint e2e playwright.config.ts` → 0 errors, 0 warnings.
+- `npx prettier --check e2e playwright.config.ts` → passes.
+- No runtime behavior change.

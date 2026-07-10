@@ -6,9 +6,9 @@ import {
   createAdminClient,
   ensureTestUser,
   getRealBackendEnv,
-  seedPendingMatch,
   type RealBackendEnv,
   type SeededMatch,
+  seedPendingMatch,
 } from './helpers/realBackend';
 
 const env = getRealBackendEnv();
@@ -91,9 +91,7 @@ test.describe('@real-backend golden paths', () => {
     expect(rows?.[0]?.submitter_name).toBe('E2E Reporter');
 
     expect(
-      consoleErrors.filter(
-        (t) => !t.includes('supabase.co') && !t.includes('fetchPriority')
-      ),
+      consoleErrors.filter((t) => !t.includes('supabase.co') && !t.includes('fetchPriority')),
       `console errors:\n${consoleErrors.join('\n')}`
     ).toEqual([]);
   });
