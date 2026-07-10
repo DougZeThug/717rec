@@ -59,11 +59,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   }
 
   return (
-    <div
-      className={containerClasses[effectiveVariant]}
-      role="status"
-      aria-live="polite"
-    >
+    <div className={containerClasses[effectiveVariant]} role="status" aria-live="polite">
       <div className="flex flex-col items-center">
         <Loader2
           className={cn('text-primary animate-spin mb-3', sizeClasses[effectiveSize])}

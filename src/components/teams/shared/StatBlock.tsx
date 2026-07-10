@@ -37,9 +37,7 @@ export const StatBlock: React.FC<StatBlockProps> = ({
   const baseClasses = cn(
     getGradient(),
     'p-3 sm:p-4 rounded-lg text-left transition-all duration-200 hover:shadow-md border',
-    isWinterTheme
-      ? 'border-[hsl(199,60%,50%,0.3)]'
-      : 'border-gray-200 dark:border-gray-700/50'
+    isWinterTheme ? 'border-[hsl(199,60%,50%,0.3)]' : 'border-gray-200 dark:border-gray-700/50'
   );
 
   const labelClasses = cn(
