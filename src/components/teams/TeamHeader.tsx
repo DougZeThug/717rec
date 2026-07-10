@@ -1,5 +1,3 @@
-import React from 'react';
-
 import TeamBadgeCollection from '@/components/badges/TeamBadgeCollection';
 import LastMatchHighlight from '@/components/teams/LastMatchHighlight';
 import { Badge } from '@/components/ui/badge';
