@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 import {
   cleanupSeededMatch,
@@ -18,11 +19,14 @@ test.describe('@real-backend golden paths', () => {
     'Set E2E_SUPABASE_URL / E2E_SUPABASE_ANON_KEY / E2E_SUPABASE_SERVICE_ROLE_KEY / E2E_TEST_USER_EMAIL / E2E_TEST_USER_PASSWORD to enable.'
   );
 
-  const realEnv = env as RealBackendEnv;
-  const admin = createAdminClient(realEnv);
+  let realEnv: RealBackendEnv;
+  let admin: SupabaseClient;
   let seeded: SeededMatch;
 
   test.beforeAll(async () => {
+    if (!env) return;
+    realEnv = env;
+    admin = createAdminClient(realEnv);
     await ensureTestUser(admin, realEnv);
   });
 
