@@ -9,7 +9,6 @@ import { Team } from '@/types';
 
 interface TeamsDivisionSectionProps {
   divisionName: string;
-  divisionId: string;
   teams: Team[];
   isExpanded: boolean;
   onToggleExpand: () => void;
@@ -21,7 +20,6 @@ interface TeamsDivisionSectionProps {
 
 export const TeamsDivisionSection: React.FC<TeamsDivisionSectionProps> = ({
   divisionName,
-  divisionId: _divisionId,
   teams,
   isExpanded,
   onToggleExpand,
