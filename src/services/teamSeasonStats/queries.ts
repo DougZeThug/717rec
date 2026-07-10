@@ -1,6 +1,6 @@
-import { DivisionRelation } from '@/hooks/teams/seasonBreakdown/types';
 import { supabase } from '@/integrations/supabase/client';
 
+import type { DivisionRelation } from './types';
 import type { MatchRecord, PlayoffMatchRecord, SeasonStatRow } from './types';
 
 export interface FetchSeasonBreakdownQueryResults {

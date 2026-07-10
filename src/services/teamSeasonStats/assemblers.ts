@@ -1,6 +1,6 @@
-import { processSeasonMatches } from '@/hooks/teams/seasonBreakdown/processSeasonMatches';
 import { SeasonBreakdown } from '@/types/teamAdvancedStats';
 
+import { processSeasonMatches } from './calculations';
 import type { MatchRecord, PlayoffMatchRecord, SeasonStatRow } from './types';
 
 export const buildSeasonBreakdown = (

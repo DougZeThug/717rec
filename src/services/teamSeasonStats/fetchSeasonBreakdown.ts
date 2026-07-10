@@ -1,15 +1,12 @@
 import type { PostgrestError } from '@supabase/supabase-js';
 
-import {
-  calculateBestWorstDivisionTiers,
-  calculatePowerScoreTrend,
-} from '@/hooks/teams/seasonBreakdown/calculateSeasonStats';
 import { TeamAdvancedStats } from '@/types/teamAdvancedStats';
 import { SeasonBreakdown } from '@/types/teamAdvancedStats';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 import { buildSeasonBreakdown } from './assemblers';
+import { calculateBestWorstDivisionTiers, calculatePowerScoreTrend } from './calculations';
 import { buildBracketInfoMap, buildTeamDivisionMap, groupMatchesBySeason } from './mappers';
 import { fetchBracketsByIds, fetchSeasonBreakdownQueries } from './queries';
 

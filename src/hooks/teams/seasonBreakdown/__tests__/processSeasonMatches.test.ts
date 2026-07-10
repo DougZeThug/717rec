@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { processSeasonMatches } from '../processSeasonMatches';
+import { processSeasonMatches } from '@/services/teamSeasonStats/calculations';
 
 const TEAM_ID = 'team-main';
 const SEASON_ID = 'season-2026';

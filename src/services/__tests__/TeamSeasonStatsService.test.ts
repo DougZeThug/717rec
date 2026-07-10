@@ -49,7 +49,7 @@ vi.mock('@/utils/logger', () => ({
   dbLog: (...args: unknown[]) => mockDbLog(...args),
 }));
 
-vi.mock('@/hooks/teams/seasonBreakdown/processSeasonMatches', () => ({
+vi.mock('@/services/teamSeasonStats/calculations', () => ({
   processSeasonMatches: vi.fn(() => ({
     sweeps: 0,
     closeWins: 0,
@@ -58,9 +58,6 @@ vi.mock('@/hooks/teams/seasonBreakdown/processSeasonMatches', () => ({
     playoffWins: 0,
     playoffLosses: 0,
   })),
-}));
-
-vi.mock('@/hooks/teams/seasonBreakdown/calculateSeasonStats', () => ({
   calculatePowerScoreTrend: vi.fn(() => 'up'),
   calculateBestWorstDivisionTiers: vi.fn(() => ({
     bestDivisionTier: 'Gold',
