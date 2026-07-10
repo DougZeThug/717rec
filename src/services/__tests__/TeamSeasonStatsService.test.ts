@@ -78,6 +78,13 @@ const createSeasonStatsQuery = <TData>(result: QueryResult<TData>, selects: stri
   },
 });
 
+const createSimpleSelectQuery = <TData>(result: QueryResult<TData>, selects: string[]) => ({
+  select: (columns: string) => {
+    selects.push(columns);
+    return Promise.resolve(result);
+  },
+});
+
 const createSimpleEqQuery = <TData>(result: QueryResult<TData>, selects: string[]) => ({
   select: (columns: string) => {
     selects.push(columns);
@@ -212,7 +219,7 @@ describe('fetchSeasonBreakdown', () => {
         if (selectCalls.team_season_stats.length === 0) {
           return createSeasonStatsQuery(merged.team_season_stats, selectCalls.team_season_stats);
         }
-        return createSimpleEqQuery(merged.all_team_season_stats, selectCalls.team_season_stats);
+        return createSimpleSelectQuery(merged.all_team_season_stats, selectCalls.team_season_stats);
       }
       if (table === 'matches') return createOrEqQuery(merged.matches, selectCalls.matches);
       if (table === 'matches_archive') {
@@ -263,7 +270,13 @@ describe('fetchSeasonBreakdown', () => {
     await expect(fetchSeasonBreakdown('team-1')).rejects.toThrow(DatabaseError);
   });
 
-  it('keeps enrichment failures non-fatal and logs each query failure', async () => {
+  it.each([
+    ['all team season stats', 'all_team_season_stats'],
+    ['current matches', 'matches'],
+    ['archived matches', 'matches_archive'],
+    ['playoff matches', 'playoff_matches'],
+    ['bracket info', 'brackets'],
+  ] as const)('throws DatabaseError when %s enrichment query fails', async (_label, resultKey) => {
     const enrichmentError = {
       message: 'temporary failure',
       code: '57014',
@@ -273,25 +286,19 @@ describe('fetchSeasonBreakdown', () => {
     };
 
     setupQueries({
-      all_team_season_stats: { data: null, error: enrichmentError },
-      matches: { data: null, error: enrichmentError },
-      matches_archive: { data: null, error: enrichmentError },
-      playoff_matches: { data: null, error: enrichmentError },
-      brackets: { data: null, error: enrichmentError },
+      [resultKey]: { data: null, error: enrichmentError },
     });
+
+    await expect(fetchSeasonBreakdown('team-1')).rejects.toThrow(DatabaseError);
+  });
+
+  it('does not query brackets when playoff matches have no bracket ids', async () => {
+    setupQueries({ playoff_matches: { data: [], error: null } });
 
     const result = await fetchSeasonBreakdown('team-1');
 
     expect(result?.seasons).toHaveLength(2);
-    expect(mockErrorLog).toHaveBeenCalledWith(
-      'Failed to fetch current matches for season breakdown:',
-      enrichmentError
-    );
-    expect(mockErrorLog).toHaveBeenCalledWith(
-      'Failed to fetch archived matches for season breakdown:',
-      enrichmentError
-    );
-    expect(mockErrorLog.mock.calls.length).toBeGreaterThanOrEqual(3);
+    expect(selectCalls.brackets).toHaveLength(0);
   });
 
   it('uses explicit column lists in all select queries', async () => {
