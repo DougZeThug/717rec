@@ -249,14 +249,14 @@ describe('batchUpdateTeamSeeds', () => {
 
   it('returns parsed rpc results on success', async () => {
     mockRpc.mockResolvedValue({
-      data: { results: [{ ok: true, team_id: 't-1', seed: '1' }] },
+      data: { results: [{ success: true, team_id: 't-1', seed: '1' }] },
       error: null,
     });
     const result = await batchUpdateTeamSeeds([{ teamId: 't-1', seed: 1 }]);
     expect(mockRpc).toHaveBeenCalledWith('batch_update_team_seeds', {
       p_updates: [{ team_id: 't-1', seed: '1' }],
     });
-    expect(result).toEqual([{ ok: true, team_id: 't-1', seed: '1' }]);
+    expect(result).toEqual([{ success: true, team_id: 't-1', seed: '1' }]);
   });
 
   it('throws DatabaseError on rpc error', async () => {

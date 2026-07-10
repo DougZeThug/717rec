@@ -56,9 +56,8 @@ describe('RouteAnnouncer', () => {
     expect(screen.getByTestId('main')).not.toHaveFocus();
   });
 
-  it('announces the new page name and focuses main after navigation', async () => {
+  it('announces the new page heading and focuses main after navigation', async () => {
     const user = (await import('@testing-library/user-event')).default.setup();
-
     render(
       <MemoryRouter initialEntries={['/']}>
         <Harness />
@@ -68,7 +67,7 @@ describe('RouteAnnouncer', () => {
     await user.click(screen.getByRole('button', { name: 'go' }));
 
     await waitFor(() => {
-      expect(screen.getByRole('status')).toHaveTextContent('Schedule page');
+      expect(screen.getByRole('status')).toHaveTextContent('Schedule');
     });
     expect(screen.getByTestId('main')).toHaveFocus();
   });
