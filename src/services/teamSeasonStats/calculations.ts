@@ -2,9 +2,26 @@ import { DivisionSeasonRecord, SeasonBreakdown } from '@/types/teamAdvancedStats
 
 import type { MatchRecord, PlayoffMatchRecord } from './types';
 
-export const categorizeDivision = (
-  divisionName: string | null
-): 'competitive' | 'intermediate' | 'recreational' | null => {
+type DivisionTier = 'competitive' | 'intermediate' | 'recreational';
+type DivisionRecords = Record<DivisionTier, DivisionSeasonRecord>;
+type MatchOutcome = 'win' | 'loss' | 'other';
+
+interface ScoreContext {
+  teamScore: number;
+  opponentScore: number;
+  outcome: MatchOutcome;
+}
+
+interface MatchCounters {
+  sweeps: number;
+  closeWins: number;
+  closeLosses: number;
+  playoffWins: number;
+  playoffLosses: number;
+}
+
+/** Maps a division display name to the tier buckets used in season breakdown stats. */
+export const categorizeDivision = (divisionName: string | null): DivisionTier | null => {
   if (!divisionName) return null;
   const name = divisionName.toLowerCase();
   if (name.includes('competitive') || name.includes('hidden')) return 'competitive';
@@ -13,6 +30,7 @@ export const categorizeDivision = (
   return null;
 };
 
+/** Creates a zeroed record for one division tier. */
 export const createEmptyDivisionRecord = (): DivisionSeasonRecord => ({
   wins: 0,
   losses: 0,
@@ -20,11 +38,125 @@ export const createEmptyDivisionRecord = (): DivisionSeasonRecord => ({
   gameLosses: 0,
 });
 
+/** Returns a match win rate, or -1 when no matches were played. */
 const getWinRate = (record: { wins: number; losses: number }) => {
   const total = record.wins + record.losses;
   return total > 0 ? record.wins / total : -1;
 };
 
+/** Builds zeroed division records for all supported season breakdown tiers. */
+const createEmptyDivisionRecords = (): DivisionRecords => ({
+  competitive: createEmptyDivisionRecord(),
+  intermediate: createEmptyDivisionRecord(),
+  recreational: createEmptyDivisionRecord(),
+});
+
+/** Determines whether the target team won, lost, or did not have a completed result. */
+const getMatchOutcome = (
+  winnerId: string | null,
+  loserId: string | null,
+  teamId: string
+): MatchOutcome => {
+  if (winnerId === teamId) return 'win';
+  if (loserId === teamId) return 'loss';
+  return 'other';
+};
+
+/** Updates sweep and close-match counters from a completed match score. */
+const addCloseMatchCounters = (counters: MatchCounters, score: ScoreContext) => {
+  if (score.outcome === 'win') {
+    if (score.teamScore === 2 && score.opponentScore === 0) counters.sweeps++;
+    else if (score.teamScore === 2 && score.opponentScore === 1) counters.closeWins++;
+  } else if (score.outcome === 'loss' && score.opponentScore === 2 && score.teamScore === 1) {
+    counters.closeLosses++;
+  }
+};
+
+/** Adds one completed match result into the appropriate division tier record. */
+const addDivisionRecord = (
+  divisionRecords: DivisionRecords,
+  tier: DivisionTier | null,
+  score: ScoreContext
+) => {
+  if (!tier || score.outcome === 'other') return;
+
+  const record = divisionRecords[tier];
+  if (score.outcome === 'win') record.wins++;
+  else record.losses++;
+
+  record.gameWins += score.teamScore;
+  record.gameLosses += score.opponentScore;
+};
+
+/** Resolves the target team's game score from a regular season match row. */
+const getRegularScoreContext = (match: MatchRecord, teamId: string): ScoreContext => {
+  const isTeam1 = match.team1_id === teamId;
+  return {
+    teamScore: isTeam1 ? match.team1_game_wins || 0 : match.team2_game_wins || 0,
+    opponentScore: isTeam1 ? match.team2_game_wins || 0 : match.team1_game_wins || 0,
+    outcome: getMatchOutcome(match.winner_id, match.loser_id, teamId),
+  };
+};
+
+/** Resolves the target team's game score from a playoff match row. */
+const getPlayoffScoreContext = (match: PlayoffMatchRecord, teamId: string): ScoreContext => {
+  const isTeam1 = match.team1_id === teamId;
+  return {
+    teamScore: isTeam1 ? match.team1_score || 0 : match.team2_score || 0,
+    opponentScore: isTeam1 ? match.team2_score || 0 : match.team1_score || 0,
+    outcome: getMatchOutcome(match.winner_id, match.loser_id, teamId),
+  };
+};
+
+/** Finds the opposing team id for the target team in a regular season match. */
+const getRegularOpponentId = (match: MatchRecord, teamId: string) =>
+  match.team1_id === teamId ? match.team2_id : match.team1_id;
+
+/** Maps playoff bracket division weight to the corresponding division tier bucket. */
+const getPlayoffDivisionTier = (match: PlayoffMatchRecord): DivisionTier => {
+  const bracketWeight = match.bracketInfo?.division_weight || 0.85;
+  if (bracketWeight >= 0.89) return 'competitive';
+  if (bracketWeight >= 0.4) return 'intermediate';
+  return 'recreational';
+};
+
+/** Processes regular season matches into counters and division records. */
+const processRegularSeasonMatches = (
+  teamId: string,
+  seasonId: string,
+  seasonMatches: MatchRecord[],
+  teamDivisionMap: Map<string, string>,
+  counters: MatchCounters,
+  divisionRecords: DivisionRecords
+) => {
+  for (const match of seasonMatches) {
+    const score = getRegularScoreContext(match, teamId);
+    addCloseMatchCounters(counters, score);
+
+    const opponentId = getRegularOpponentId(match, teamId);
+    const opponentDivision = opponentId ? teamDivisionMap.get(`${opponentId}_${seasonId}`) : null;
+    addDivisionRecord(divisionRecords, categorizeDivision(opponentDivision || null), score);
+  }
+};
+
+/** Processes playoff matches into counters and division records. */
+const processPlayoffMatches = (
+  teamId: string,
+  seasonPlayoffMatches: PlayoffMatchRecord[],
+  counters: MatchCounters,
+  divisionRecords: DivisionRecords
+) => {
+  for (const match of seasonPlayoffMatches) {
+    const score = getPlayoffScoreContext(match, teamId);
+    if (score.outcome === 'win') counters.playoffWins++;
+    else if (score.outcome === 'loss') counters.playoffLosses++;
+
+    addCloseMatchCounters(counters, score);
+    addDivisionRecord(divisionRecords, getPlayoffDivisionTier(match), score);
+  }
+};
+
+/** Calculates whether recent power scores are improving, declining, or stable. */
 export const calculatePowerScoreTrend = (
   seasonsWithPowerScore: SeasonBreakdown[]
 ): 'improving' | 'declining' | 'stable' => {
@@ -44,11 +176,12 @@ export const calculatePowerScoreTrend = (
   return powerScoreTrend;
 };
 
+/** Finds the team's best and worst division tiers by aggregate match win rate. */
 export const calculateBestWorstDivisionTiers = (
   seasons: SeasonBreakdown[]
 ): {
-  bestDivisionTier: 'competitive' | 'intermediate' | 'recreational' | null;
-  worstDivisionTier: 'competitive' | 'intermediate' | 'recreational' | null;
+  bestDivisionTier: DivisionTier | null;
+  worstDivisionTier: DivisionTier | null;
 } => {
   const divisionTotals = {
     competitive: { wins: 0, losses: 0 },
@@ -63,11 +196,13 @@ export const calculateBestWorstDivisionTiers = (
     }
   }
 
-  const tiers = ['competitive', 'intermediate', 'recreational'] as const;
-  const tiersWithGames = tiers.filter((t) => divisionTotals[t].wins + divisionTotals[t].losses > 0);
+  const tiers: DivisionTier[] = ['competitive', 'intermediate', 'recreational'];
+  const tiersWithGames = tiers.filter(
+    (tier) => divisionTotals[tier].wins + divisionTotals[tier].losses > 0
+  );
 
-  let bestDivisionTier: 'competitive' | 'intermediate' | 'recreational' | null = null;
-  let worstDivisionTier: 'competitive' | 'intermediate' | 'recreational' | null = null;
+  let bestDivisionTier: DivisionTier | null = null;
+  let worstDivisionTier: DivisionTier | null = null;
 
   if (tiersWithGames.length > 0) {
     bestDivisionTier = tiersWithGames.reduce((best, tier) =>
@@ -85,15 +220,12 @@ export interface MatchProcessingResult {
   sweeps: number;
   closeWins: number;
   closeLosses: number;
-  divisionRecords: {
-    competitive: { wins: number; losses: number; gameWins: number; gameLosses: number };
-    intermediate: { wins: number; losses: number; gameWins: number; gameLosses: number };
-    recreational: { wins: number; losses: number; gameWins: number; gameLosses: number };
-  };
+  divisionRecords: DivisionRecords;
   playoffWins: number;
   playoffLosses: number;
 }
 
+/** Processes regular season and playoff match rows into per-season breakdown metrics. */
 export const processSeasonMatches = (
   teamId: string,
   seasonId: string,
@@ -101,98 +233,27 @@ export const processSeasonMatches = (
   seasonPlayoffMatches: PlayoffMatchRecord[],
   teamDivisionMap: Map<string, string>
 ): MatchProcessingResult => {
-  let sweeps = 0;
-  let closeWins = 0;
-  let closeLosses = 0;
-
-  const divisionRecords = {
-    competitive: createEmptyDivisionRecord(),
-    intermediate: createEmptyDivisionRecord(),
-    recreational: createEmptyDivisionRecord(),
+  const counters = {
+    sweeps: 0,
+    closeWins: 0,
+    closeLosses: 0,
+    playoffWins: 0,
+    playoffLosses: 0,
   };
+  const divisionRecords = createEmptyDivisionRecords();
 
-  for (const match of seasonMatches) {
-    const isTeam1 = match.team1_id === teamId;
-    const teamGameWins = isTeam1 ? match.team1_game_wins || 0 : match.team2_game_wins || 0;
-    const opponentGameWins = isTeam1 ? match.team2_game_wins || 0 : match.team1_game_wins || 0;
-    const isWinner = match.winner_id === teamId;
-
-    if (isWinner) {
-      if (teamGameWins === 2 && opponentGameWins === 0) {
-        sweeps++;
-      } else if (teamGameWins === 2 && opponentGameWins === 1) {
-        closeWins++;
-      }
-    } else if (match.loser_id === teamId) {
-      if (opponentGameWins === 2 && teamGameWins === 1) {
-        closeLosses++;
-      }
-    }
-
-    const opponentId = isTeam1 ? match.team2_id : match.team1_id;
-    if (opponentId) {
-      const opponentDivision = teamDivisionMap.get(`${opponentId}_${seasonId}`);
-      const tier = categorizeDivision(opponentDivision || null);
-      if (tier) {
-        if (isWinner) {
-          divisionRecords[tier].wins++;
-          divisionRecords[tier].gameWins += teamGameWins;
-          divisionRecords[tier].gameLosses += opponentGameWins;
-        } else if (match.loser_id === teamId) {
-          divisionRecords[tier].losses++;
-          divisionRecords[tier].gameWins += teamGameWins;
-          divisionRecords[tier].gameLosses += opponentGameWins;
-        }
-      }
-    }
-  }
-
-  let playoffWins = 0;
-  let playoffLosses = 0;
-
-  for (const match of seasonPlayoffMatches) {
-    const isTeam1 = match.team1_id === teamId;
-    const teamScore = isTeam1 ? match.team1_score || 0 : match.team2_score || 0;
-    const opponentScore = isTeam1 ? match.team2_score || 0 : match.team1_score || 0;
-    const isWinner = match.winner_id === teamId;
-
-    if (isWinner) {
-      playoffWins++;
-      if (teamScore === 2 && opponentScore === 0) {
-        sweeps++;
-      } else if (teamScore === 2 && opponentScore === 1) {
-        closeWins++;
-      }
-    } else if (match.loser_id === teamId) {
-      playoffLosses++;
-      if (opponentScore === 2 && teamScore === 1) {
-        closeLosses++;
-      }
-    }
-
-    const bracketWeight = match.bracketInfo?.division_weight || 0.85;
-    let tier: 'competitive' | 'intermediate' | 'recreational';
-    if (bracketWeight >= 0.89) tier = 'competitive';
-    else if (bracketWeight >= 0.4) tier = 'intermediate';
-    else tier = 'recreational';
-
-    if (isWinner) {
-      divisionRecords[tier].wins++;
-      divisionRecords[tier].gameWins += teamScore;
-      divisionRecords[tier].gameLosses += opponentScore;
-    } else if (match.loser_id === teamId) {
-      divisionRecords[tier].losses++;
-      divisionRecords[tier].gameWins += teamScore;
-      divisionRecords[tier].gameLosses += opponentScore;
-    }
-  }
+  processRegularSeasonMatches(
+    teamId,
+    seasonId,
+    seasonMatches,
+    teamDivisionMap,
+    counters,
+    divisionRecords
+  );
+  processPlayoffMatches(teamId, seasonPlayoffMatches, counters, divisionRecords);
 
   return {
-    sweeps,
-    closeWins,
-    closeLosses,
+    ...counters,
     divisionRecords,
-    playoffWins,
-    playoffLosses,
   };
 };

@@ -1,7 +1,6 @@
 import type { PostgrestError } from '@supabase/supabase-js';
 
-import { TeamAdvancedStats } from '@/types/teamAdvancedStats';
-import { SeasonBreakdown } from '@/types/teamAdvancedStats';
+import { SeasonBreakdown, TeamAdvancedStats } from '@/types/teamAdvancedStats';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 

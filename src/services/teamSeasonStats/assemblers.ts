@@ -3,6 +3,7 @@ import { SeasonBreakdown } from '@/types/teamAdvancedStats';
 import { processSeasonMatches } from './calculations';
 import type { MatchRecord, PlayoffMatchRecord, SeasonStatRow } from './types';
 
+/** Assembles one team season row plus grouped matches into UI-ready season breakdown metrics. */
 export const buildSeasonBreakdown = (
   stat: SeasonStatRow,
   teamId: string,
