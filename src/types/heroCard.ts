@@ -1,12 +1,6 @@
 export type HeroCardTargetType = 'none' | 'team' | 'division' | 'season';
 export type HeroCardType =
-  | 'standard'
-  | 'champions'
-  | 'event'
-  | 'announcement'
-  | 'participation'
-  | 'request'
-  | 'flyer';
+  'standard' | 'champions' | 'event' | 'announcement' | 'participation' | 'request' | 'flyer';
 
 export interface EventWinner {
   place: number;
