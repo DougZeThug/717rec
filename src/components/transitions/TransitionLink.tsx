@@ -5,9 +5,6 @@ import { cn } from '@/lib/utils';
 import { interactive } from '@/styles/design-system';
 
 export interface TransitionLinkProps extends Omit<LinkProps, 'onClick'> {
-  color?: string;
-  duration?: number;
-  noFeedback?: boolean;
   onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
   variant?: 'default' | 'subtle' | 'underline';
 }
@@ -18,7 +15,6 @@ export const TransitionLink: React.FC<TransitionLinkProps> = ({
   className,
   onClick,
   variant = 'default',
-  noFeedback: _noFeedback = false,
   ...rest
 }) => {
   const getLinkStyle = () => {
