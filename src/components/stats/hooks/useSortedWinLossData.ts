@@ -1,18 +1,7 @@
 import React from 'react';
 
 import { chartLog } from '@/utils/logger';
-
-export interface ChartDataItem {
-  name: string;
-  wins: number;
-  losses: number;
-  winPercentage?: number; // legacy field
-  powerScore?: number;
-  imageUrl?: string | null;
-  logoUrl?: string | null;
-  id: string;
-  win_percentage?: number; // from v_team_details
-}
+import type { ChartDataItem } from '@/types/chart';
 
 export function useSortedWinLossData(data: ChartDataItem[] = [], chartLimit: number) {
   return React.useMemo(() => {
