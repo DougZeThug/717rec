@@ -3,7 +3,7 @@ import React from 'react';
 import type { ChartDataItem } from '@/types/chart';
 import { chartLog } from '@/utils/logger';
 
-export function useSortedWinLossData(data: ChartDataItem[] = [], chartLimit: number) {
+export function useSortedWinLossData(data: ChartDataItem[], chartLimit: number) {
   return React.useMemo(() => {
     if (!Array.isArray(data) || data.length === 0) {
       chartLog('No data provided to useSortedWinLossData or data is not an array');
