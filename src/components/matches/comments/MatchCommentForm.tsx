@@ -42,10 +42,8 @@ const MatchCommentForm: React.FC<MatchCommentFormProps> = ({
             Sign in to comment on this match
           </div>
         }
-      >
-        {/* This empty fragment satisfies the children prop requirement */}
-        <></>
-      </LoginRequired>
+        children={null}
+      />
     );
   }
 
