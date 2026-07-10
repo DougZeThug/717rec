@@ -468,19 +468,6 @@ Already in place and enforced:
 - a11y scan blocking on public routes (CI: `a11y.yml`)
 - Manual smoke expectations documented (this file)
 
-### Tier 2 — Core app confidence (next)
-
-- Extend tests for score submission logic
-  (`src/components/admin/mass-score-entry/hooks/` — new tests added for
-  useMatchScores, useErrorHandling, useMatchesFetching, useMatchesState)
-- Keep standings/ranking calculation tests green and extend to the standings
-  *display* components (`src/components/stats/**` is ~23% covered) and pull
-  `src/utils/rankingUtils` back above its 85% target (currently 74%)
-- Add tests for match completion and winner/loser handling at the hook level
-  (`src/hooks/matches` is ~47%, spread unevenly across many small hooks)
-- Add regression tests for late-round playoff/bracket display issues (the
-  seeding algorithm and `BracketView` are tested, but the viewer/renderer
-  layer `src/components/playoffs/viewer/` is only ~25% covered)
 ### Tier 2 — Core app confidence (mostly done as of 2026-07-06)
 
 - ~~Extend tests for score submission logic~~ **Done.** All seven

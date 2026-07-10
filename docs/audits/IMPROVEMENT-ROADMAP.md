@@ -61,7 +61,7 @@ It is based on a full read of the codebase (architecture, testing/CI, and code-q
 - `.env` **is** git-tracked but holds only `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID` — all public, browser-shipped keys. It's already in `.gitignore`; it just needs untracking. **Hygiene, not a leak.**
 - E2E now present: `e2e/{smoke,admin-access,admin-mass-score,score-submission,playoff-bracket}.spec.ts` (5 specs, non-blocking in CI). Integration tests still only 2 (`TeamsContainer`, `HeroCardForm`).
 - Build succeeds and the built app serves (HTTP 200) via `vite preview`. **Sandbox note:** the dev/preview server must bind IPv4 (`--host 127.0.0.1`); the config default `host: '::'` fails where IPv6 is unavailable.
-- Largest non-generated files remain over the ~400-line guideline (e.g. `predictMatch.ts`, `SeasonAccordion.tsx`, `WeeklyRecapCard.tsx`, `BracketUpdateService.ts`, `BracketsViewerAdapter.ts`).
+- Largest non-generated files remain over the ~400-line guideline (e.g. `predictMatch.ts`, `BracketUpdateService.ts`, `BracketsViewerAdapter.ts`). (SeasonAccordion.tsx and WeeklyRecapCard.tsx were refactored in the 2026-07 dead-code cleanup.)
 
 ---
 
