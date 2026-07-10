@@ -1,4 +1,15 @@
--- Create a hidden division for teams that should not appear in the frontend
-INSERT INTO divisions (name, display_division, division_weight, created_at)
-VALUES ('Hidden', 'Hidden', -1.0, now())
-WHERE NOT EXISTS (SELECT 1 FROM divisions WHERE name = 'Hidden');
+-- NEUTRALIZED — this migration can never have applied cleanly.
+-- (Lovable's runner tolerates failed statements, so fragments may have
+-- taken effect on the live project; everything load-bearing here is
+-- superseded by the working rewrite named below.)
+--
+-- INSERT ... VALUES ... WHERE is invalid SQL on every Postgres version,
+-- so this file always errored.
+-- 20250807125135_318a91e4 (the INSERT ... SELECT ... WHERE NOT EXISTS
+-- version) is the attempt that actually applied to the live project.
+-- Original text kept below, commented out, for history.
+
+-- -- Create a hidden division for teams that should not appear in the frontend
+-- INSERT INTO divisions (name, display_division, division_weight, created_at)
+-- VALUES ('Hidden', 'Hidden', -1.0, now())
+-- WHERE NOT EXISTS (SELECT 1 FROM divisions WHERE name = 'Hidden');

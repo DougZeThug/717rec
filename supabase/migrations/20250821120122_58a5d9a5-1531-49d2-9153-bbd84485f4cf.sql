@@ -1,46 +1,61 @@
+-- PARTIALLY NEUTRALIZED — only some statements of this migration ever
+-- took effect.
+--
+-- 20250819145652 (two days earlier) had already created score_submissions,
+-- its anonymous-INSERT policy, and the v_pending_matches view. When this
+-- regeneration ran, the statements below that recreate those objects
+-- errored ("already exists" / "cannot drop columns from view") while the
+-- genuinely new statements — the two authenticated policies and the
+-- IF NOT EXISTS index — succeeded. 20260225194054 later drops
+-- "Allow authenticated users to update score submissions" BY NAME without
+-- IF EXISTS, which proves this file's new policies were in effect on the
+-- live project. The failed statements are commented out so the file
+-- replays the same way on a fresh database; the view is recreated minutes
+-- later by 20250821120517/20250821121435 (which DROP it first).
+
 -- Create score_submissions table for admin review
-CREATE TABLE public.score_submissions (
-  id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  match_id UUID NOT NULL REFERENCES public.matches(id) ON DELETE CASCADE,
-  submitter_name TEXT NOT NULL,
-  submitter_team TEXT,
-  message TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'pending',
-  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-  reviewed_at TIMESTAMP WITH TIME ZONE,
-  reviewed_by UUID REFERENCES auth.users(id)
-);
+-- CREATE TABLE public.score_submissions (
+--   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+--   match_id UUID NOT NULL REFERENCES public.matches(id) ON DELETE CASCADE,
+--   submitter_name TEXT NOT NULL,
+--   submitter_team TEXT,
+--   message TEXT NOT NULL,
+--   status TEXT NOT NULL DEFAULT 'pending',
+--   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+--   reviewed_at TIMESTAMP WITH TIME ZONE,
+--   reviewed_by UUID REFERENCES auth.users(id)
+-- );
 
 -- Create view for pending matches (16+ hours past start time in EST)
-CREATE OR REPLACE VIEW public.v_pending_matches AS
-SELECT 
-  m.id,
-  m.date,
-  m.location,
-  t1.id as team1_id,
-  t1.name as team1_name,
-  t1.logo_url as team1_logo,
-  t2.id as team2_id,
-  t2.name as team2_name,
-  t2.logo_url as team2_logo
-FROM public.matches m
-LEFT JOIN public.teams t1 ON m.team1_id = t1.id
-LEFT JOIN public.teams t2 ON m.team2_id = t2.id
-WHERE m.iscompleted = false
-  AND m.date IS NOT NULL
-  AND m.date AT TIME ZONE 'America/New_York' <= (now() AT TIME ZONE 'America/New_York' - INTERVAL '16 hours')
-ORDER BY m.date ASC
-LIMIT 50;
+-- CREATE OR REPLACE VIEW public.v_pending_matches AS
+-- SELECT 
+--   m.id,
+--   m.date,
+--   m.location,
+--   t1.id as team1_id,
+--   t1.name as team1_name,
+--   t1.logo_url as team1_logo,
+--   t2.id as team2_id,
+--   t2.name as team2_name,
+--   t2.logo_url as team2_logo
+-- FROM public.matches m
+-- LEFT JOIN public.teams t1 ON m.team1_id = t1.id
+-- LEFT JOIN public.teams t2 ON m.team2_id = t2.id
+-- WHERE m.iscompleted = false
+--   AND m.date IS NOT NULL
+--   AND m.date AT TIME ZONE 'America/New_York' <= (now() AT TIME ZONE 'America/New_York' - INTERVAL '16 hours')
+-- ORDER BY m.date ASC
+-- LIMIT 50;
 
 -- Enable RLS on score_submissions
 ALTER TABLE public.score_submissions ENABLE ROW LEVEL SECURITY;
 
 -- Allow anonymous users to submit scores (no auth required)
-CREATE POLICY "Allow anonymous score submissions"
-ON public.score_submissions
-FOR INSERT
-TO anon
-WITH CHECK (true);
+-- CREATE POLICY "Allow anonymous score submissions"
+-- ON public.score_submissions
+-- FOR INSERT
+-- TO anon
+-- WITH CHECK (true);
 
 -- Allow authenticated users to view all submissions (for admins)
 CREATE POLICY "Allow authenticated users to view score submissions"
