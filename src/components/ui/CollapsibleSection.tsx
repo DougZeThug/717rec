@@ -67,9 +67,7 @@ export const CollapsibleSection = ({
         </CollapsibleTrigger>
         <CollapsibleContent>
           <div className={cn('p-3 md:p-4 pt-0 border-t', contentClassName)}>
-            <div className="pt-3">
-              {children}
-            </div>
+            <div className="pt-3">{children}</div>
           </div>
         </CollapsibleContent>
       </div>

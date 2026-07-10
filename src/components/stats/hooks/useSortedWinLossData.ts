@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { chartLog } from '@/utils/logger';
 import type { ChartDataItem } from '@/types/chart';
+import { chartLog } from '@/utils/logger';
 
 export function useSortedWinLossData(data: ChartDataItem[] = [], chartLimit: number) {
   return React.useMemo(() => {

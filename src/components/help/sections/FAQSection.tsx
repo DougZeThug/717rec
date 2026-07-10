@@ -16,8 +16,8 @@ export const FAQSection: React.FC = () => {
       <div>
         <p className="font-medium">What does SOS (Strength of Schedule) mean?</p>
         <p className="text-muted-foreground mt-1">
-          SOS measures the average win percentage of all opponents you&apos;ve faced. A higher SOS means
-          you&apos;ve played tougher competition.
+          SOS measures the average win percentage of all opponents you&apos;ve faced. A higher SOS
+          means you&apos;ve played tougher competition.
         </p>
       </div>
       <div>
@@ -30,8 +30,8 @@ export const FAQSection: React.FC = () => {
       <div>
         <p className="font-medium">Can I see my team&apos;s historical performance?</p>
         <p className="text-muted-foreground mt-1">
-          Yes! Visit the History page to view past seasons, or check your team&apos;s page for career
-          statistics.
+          Yes! Visit the History page to view past seasons, or check your team&apos;s page for
+          career statistics.
         </p>
       </div>
     </HelpAccordionItem>
