@@ -55,7 +55,7 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
         </div>
 
         {/* BYE Status Toggle Control - Admin Only */}
-        {byeEligible && byeEligible.canToggle && (
+        {byeEligible?.canToggle && (
           <ByeStatusControl
             byeEligible={byeEligible}
             isTogglingStatus={isTogglingStatus}

@@ -173,7 +173,7 @@ export class SupabaseSqlStorage implements CrudInterface {
       return true;
     } else {
       const insertedData = data as Array<{ id: number }> | null;
-      return insertedData && insertedData[0] ? insertedData[0].id : 0;
+      return insertedData?.[0] ? insertedData[0].id : 0;
     }
   }
 

@@ -13,7 +13,7 @@ export const useMatchEventListeners = ({
     // Listen for custom events when matches are created
     const handleMatchesCreated = (event: Event) => {
       const customEvent = event as CustomEvent<{ date: Date }>;
-      if (customEvent.detail && customEvent.detail.date) {
+      if (customEvent.detail?.date) {
         matchLog('Match creation event detected, updating filters to:', customEvent.detail.date);
         updateFiltersForMatchDate(customEvent.detail.date);
       }

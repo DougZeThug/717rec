@@ -206,13 +206,13 @@ export function useLeagueInsights(): LeagueInsightsData {
 
     // Longest streak
     const longestStreak = [...activeTeams]
-      .filter((r) => r.streak && r.streak.startsWith('W'))
+      .filter((r) => r.streak?.startsWith('W'))
       .sort((a, b) => {
         const aNum = parseInt(a.streak?.replace('W', '') || '0');
         const bNum = parseInt(b.streak?.replace('W', '') || '0');
         return bNum - aNum;
       })[0];
-    if (longestStreak && longestStreak.streak) {
+    if (longestStreak?.streak) {
       topPerformers.push({
         category: 'Longest Win Streak',
         teamName: longestStreak.teamName,

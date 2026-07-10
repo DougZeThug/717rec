@@ -88,7 +88,7 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className: _className })
           </>
         )}
 
-        {membership && membership.team ? (
+        {membership?.team ? (
           <DropdownMenuItem asChild onSelect={handleMenuItemClick}>
             <Link
               to={`/teams/${toTeamSlug(membership.team.name)}`}

@@ -10,8 +10,7 @@ export const calculateStreak = (teamId: string, allMatches: Match[] | undefined)
   const teamMatches = allMatches
     .filter(
       (match) =>
-        match &&
-        match.iscompleted &&
+        match?.iscompleted &&
         match.winnerId != null &&
         (match.team1Id === teamId || match.team2Id === teamId)
     )
