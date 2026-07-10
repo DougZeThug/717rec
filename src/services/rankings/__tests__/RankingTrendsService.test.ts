@@ -20,8 +20,6 @@ vi.mock('@/utils/logger', () => ({
   dbLog: vi.fn(),
 }));
 
-import { warnLog } from '@/utils/logger';
-
 // Import after mocks
 import { fetchPowerScoreTrends, fetchWeeklyPowerScoreTrends } from '../RankingTrendsService';
 
@@ -67,8 +65,7 @@ const makeChain = (result: Result) => {
 /**
  * Per-table queue of results. Each call to 'supabase.from(table)' pops the
  * next queued result for that table. Falls back to '{data:null, error:null}'
- * if the queue is exhausted (which matches the service's error-tolerant
- * behavior — it swallows errors and returns empty results).
+ * if the queue is exhausted.
  */
 const queues: Record<string, Result[]> = {};
 
@@ -114,7 +111,7 @@ describe('fetchPowerScoreTrends', () => {
     expect(result).toEqual([]);
   });
 
-  it('returns [] when current season query has an error', async () => {
+  it('rejects when current season query has an error', async () => {
     queueResult('seasons', { data: { id: 's1', start_date: '2025-01-01' }, error: null });
     queueResult('seasons', {
       data: { id: 's1', start_date: '2024-01-01' },
@@ -122,13 +119,12 @@ describe('fetchPowerScoreTrends', () => {
     });
     queueResult('v_team_details', { data: null, error: pgError('current fetch failed') });
 
-    const result = await fetchPowerScoreTrends();
-
-    expect(result).toEqual([]);
-    expect(warnLog).toHaveBeenCalled();
+    await expect(fetchPowerScoreTrends()).rejects.toThrow(
+      'Failed to fetch current team power scores for trends: current fetch failed'
+    );
   });
 
-  it('returns [] when previous season query has an error', async () => {
+  it('rejects when previous season stats query has an error', async () => {
     queueResult('seasons', { data: { id: 's2', start_date: '2025-01-01' }, error: null });
     queueResult('seasons', {
       data: { id: 's1', start_date: '2024-01-01' },
@@ -137,10 +133,9 @@ describe('fetchPowerScoreTrends', () => {
     queueResult('v_team_details', { data: [], error: null });
     queueResult('team_season_stats', { data: null, error: pgError('previous fetch failed') });
 
-    const result = await fetchPowerScoreTrends();
-
-    expect(result).toEqual([]);
-    expect(warnLog).toHaveBeenCalled();
+    await expect(fetchPowerScoreTrends()).rejects.toThrow(
+      'Failed to fetch previous team power scores for trends: previous fetch failed'
+    );
   });
 
   it('returns trend rows on full success', async () => {
@@ -335,15 +330,39 @@ describe('fetchWeeklyPowerScoreTrends', () => {
     expect(result.trends[0].previousWeek).toBe(1);
   });
 
-  it('does not throw on an unexpected database error', async () => {
-    // Every query returns an error, but the service must still resolve
-    // (never throws, per its contract).
+  it('rejects when active season query has an error', async () => {
     queueResult('seasons', { data: null, error: pgError('seasons fetch failed') });
 
-    await expect(fetchWeeklyPowerScoreTrends()).resolves.toEqual({
-      trends: [],
-      hasData: false,
-      latestWeek: null,
+    await expect(fetchWeeklyPowerScoreTrends()).rejects.toThrow(
+      'Failed to fetch active season for weekly power score trends: seasons fetch failed'
+    );
+  });
+
+  it('rejects when week numbers query has an error', async () => {
+    queueResult('seasons', { data: { id: 's1' }, error: null });
+    queueResult('power_score_snapshots', { data: null, error: pgError('weeks fetch failed') });
+    queueResult('divisions', { data: [{ id: 'd1' }], error: null });
+
+    await expect(fetchWeeklyPowerScoreTrends()).rejects.toThrow(
+      'Failed to fetch week numbers for weekly power score trends: weeks fetch failed'
+    );
+  });
+
+  it('rejects when current weekly snapshots query has an error', async () => {
+    queueResult('seasons', { data: { id: 's1' }, error: null });
+    queueResult('power_score_snapshots', {
+      data: [{ week_number: 2 }, { week_number: 1 }],
+      error: null,
     });
+    queueResult('divisions', { data: [{ id: 'd1' }], error: null });
+    queueResult('power_score_snapshots', {
+      data: null,
+      error: pgError('current snapshots failed'),
+    });
+    queueResult('power_score_snapshots', { data: [], error: null });
+
+    await expect(fetchWeeklyPowerScoreTrends()).rejects.toThrow(
+      'Failed to fetch current weekly power score snapshots: current snapshots failed'
+    );
   });
 });
