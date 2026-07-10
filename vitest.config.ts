@@ -6,7 +6,6 @@ import { defineConfig } from 'vitest/config';
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const isCi = process.env.CI === 'true' || process.env.CI === '1';
-  const isCiCoverage = process.env.VITEST_CI_COVERAGE === '1';
   const isDeepSourceCoverage = process.env.VITEST_DEEPSOURCE === '1';
   const isLightCoverage = process.env.VITEST_LIGHT_COVERAGE === '1';
   const isLocalDiagnostics = process.env.VITEST_LOCAL_DIAGNOSTICS === '1';
@@ -21,9 +20,7 @@ export default defineConfig(({ mode }) => {
         ? ['text', 'html', 'json-summary']
         : ['text', 'json-summary'];
   const reportsDirectory = isDeepSourceCoverage ? './coverage/deepsource' : './coverage';
-  const coverageInclude = isCiCoverage
-    ? ['src/services/**/*.{ts,tsx}', 'src/hooks/**/*.{ts,tsx}', 'src/utils/**/*.{ts,tsx}']
-    : ['src/**/*.{ts,tsx}'];
+  const coverageInclude = ['src/**/*.{ts,tsx}'];
 
   return {
     server: {
@@ -77,10 +74,10 @@ export default defineConfig(({ mode }) => {
           'src/setupTests.ts',
         ],
         thresholds: {
-          lines: 49,
-          functions: 41,
-          branches: 39,
-          statements: 48,
+          lines: 62,
+          functions: 56,
+          branches: 51,
+          statements: 61,
           'src/services/**': {
             lines: 72,
             functions: 72,
