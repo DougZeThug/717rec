@@ -20,6 +20,12 @@ CREATE SCHEMA IF NOT EXISTS extensions;
 CREATE SCHEMA IF NOT EXISTS vault;
 CREATE SCHEMA IF NOT EXISTS realtime;
 
+-- Supabase creates this publication for Realtime; several migrations run
+-- ALTER PUBLICATION supabase_realtime ADD TABLE ... and fail without it.
+DO $$ BEGIN
+  CREATE PUBLICATION supabase_realtime;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
 -- Reserved roles referenced by GRANT statements in migrations.
 DO $$ BEGIN
   CREATE ROLE anon NOLOGIN;
