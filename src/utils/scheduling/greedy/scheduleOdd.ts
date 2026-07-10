@@ -52,6 +52,7 @@ function selectBye2(
       exclude,
       relaxationLevel
     );
+    if (!candidate) break;
     if (canPlay(bye1, candidate, playedSet, tonightPairs, maxTierGap, relaxationLevel)) {
       return candidate;
     }
@@ -69,6 +70,10 @@ function selectBye2(
   return fallback;
 }
 
+/**
+ * Schedule an odd-sized team block across two regular slots plus a third
+ * bye-vs-bye slot, preserving shared pairing state for the greedy scheduler.
+ */
 export function scheduleOdd(args: OddScheduleArgs): ScheduledMatch[] {
   const {
     teams,
