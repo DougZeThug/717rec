@@ -145,34 +145,6 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      {/* Hide the mode toggle buttons - they are commented out but kept for later cleanup */}
-      {/*
-      <div className="flex items-center gap-2 mb-4">
-        <Button
-          type="button"
-          variant={batchMode ? "default" : "outline"}
-          onClick={() => {
-            setBatchMode(false);
-            setSelectedTeamIds([]);
-          }}
-          className="flex-1"
-        >
-          Single Team
-        </Button>
-        <Button
-          type="button"
-          variant={batchMode ? "outline" : "default"}
-          onClick={() => {
-            setBatchMode(true);
-            setTeamId("");
-          }}
-          className="flex-1"
-        >
-          Multiple Teams
-        </Button>
-      </div>
-      */}
-
       {!batchMode ? (
         <div className="space-y-2">
           <label htmlFor="teamSelect" className="block text-sm font-medium">
