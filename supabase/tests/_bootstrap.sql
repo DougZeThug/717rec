@@ -1,6 +1,7 @@
 -- CI-only bootstrap. Provides minimal stand-ins for Supabase-managed
--- schemas (auth, storage, extensions, vault) so that the migrations in
--- supabase/migrations/ can be applied against a vanilla Postgres 15 in CI.
+-- schemas (auth, storage, extensions, vault, realtime publication) so that
+-- the migrations in supabase/migrations/ can be applied against a vanilla
+-- Postgres 15 in CI.
 --
 -- This file is NEVER loaded by the real Supabase project — those schemas
 -- already exist there. It is loaded by .github/workflows/supabase-ci.yml

@@ -87,7 +87,8 @@ docker rm -f supa-ci
 ## Extending the bootstrap
 
 `supabase/tests/_bootstrap.sql` stubs Supabase-managed objects (`auth.*`,
-`storage.*`, reserved roles, common extensions). If a new migration
+`storage.*`, reserved roles, common extensions, the `supabase_realtime`
+publication). If a new migration
 depends on a Supabase object we haven't stubbed, extend the bootstrap
 rather than skip the apply job. The stubs are CI-only and never run
 against the real project.
