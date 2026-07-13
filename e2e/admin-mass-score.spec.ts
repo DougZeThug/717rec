@@ -122,13 +122,13 @@ test.describe('admin mass score submission workflow', () => {
   test('enters and submits a valid mass score without depending on other admin flows', async ({
     page,
   }) => {
-    const matchUpdates: unknown[] = [];
+    const resultSubmissions: unknown[] = [];
     page.on('request', (request) => {
       if (
-        request.url().startsWith(`${SUPABASE_URL}/rest/v1/matches`) &&
-        request.method() === 'PATCH'
+        request.url().startsWith(`${SUPABASE_URL}/rest/v1/rpc/resubmit_match_result`) &&
+        request.method() === 'POST'
       ) {
-        matchUpdates.push(request.postDataJSON());
+        resultSubmissions.push(request.postDataJSON());
       }
     });
 
@@ -146,27 +146,25 @@ test.describe('admin mass score submission workflow', () => {
     await page.getByRole('button', { name: 'Submit (1) Changes' }).click();
 
     await expect(page.getByText('✅ Matches Submitted', { exact: true })).toBeVisible();
-    expect(matchUpdates).toEqual([
+    expect(resultSubmissions).toEqual([
       expect.objectContaining({
-        team1_score: 1,
-        team2_score: 0,
-        team1_game_wins: 2,
-        team2_game_wins: 0,
-        winner_id: 'e2e-team-alpha',
-        loser_id: 'e2e-team-beta',
-        iscompleted: true,
+        p_match_id: match.id,
+        p_winner_id: 'e2e-team-alpha',
+        p_loser_id: 'e2e-team-beta',
+        p_winner_game_wins: 2,
+        p_loser_game_wins: 0,
       }),
     ]);
   });
 
   test('blocks an invalid completed mass score before writing match updates', async ({ page }) => {
-    const matchUpdates: unknown[] = [];
+    const resultSubmissions: unknown[] = [];
     page.on('request', (request) => {
       if (
-        request.url().startsWith(`${SUPABASE_URL}/rest/v1/matches`) &&
-        request.method() === 'PATCH'
+        request.url().startsWith(`${SUPABASE_URL}/rest/v1/rpc/resubmit_match_result`) &&
+        request.method() === 'POST'
       ) {
-        matchUpdates.push(request.postDataJSON());
+        resultSubmissions.push(request.postDataJSON());
       }
     });
 
@@ -178,6 +176,6 @@ test.describe('admin mass score submission workflow', () => {
     await page.getByRole('switch', { name: 'Mark as Complete' }).click();
     await expect(page.getByRole('button', { name: 'Submit All Changes' })).toBeDisabled();
     await expect(page.getByText('Invalid Score')).toBeVisible();
-    expect(matchUpdates).toEqual([]);
+    expect(resultSubmissions).toEqual([]);
   });
 });
