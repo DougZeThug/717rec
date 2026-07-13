@@ -138,8 +138,7 @@ export const useMatchUpdate = ({
       // resubmit_match_result RPC writes match fields AND team counters in one
       // transaction, so we skip the plain match UPDATE and only touch
       // non-result fields (date/location/teams) up front.
-      const isResultEdit =
-        !!matchData.iscompleted && !!matchData.winnerId && !!matchData.loserId;
+      const isResultEdit = !!matchData.iscompleted && !!matchData.winnerId && !!matchData.loserId;
 
       const updatePayload: {
         team1_id: string;
