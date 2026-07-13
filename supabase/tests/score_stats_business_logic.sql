@@ -75,7 +75,7 @@ BEGIN
   IF v_result_bool IS DISTINCT FROM true THEN RAISE EXCEPTION 'mark_match_as_tie did not return true'; END IF;
   IF EXISTS (SELECT 1 FROM public.matches WHERE id = v_match_id AND (winner_id IS NOT NULL OR loser_id IS NOT NULL)) THEN RAISE EXCEPTION 'mark_match_as_tie did not clear winner/loser'; END IF;
   IF EXISTS (SELECT 1 FROM public.teams WHERE id IN (v_team1_id, v_team2_id) AND (wins <> 0 OR losses <> 0 OR game_wins <> 0 OR game_losses <> 0)) THEN RAISE EXCEPTION 'mark_match_as_tie did not reverse team stats'; END IF;
-  IF NOT EXISTS (SELECT 1 FROM public.team_season_stats WHERE season_id = v_season_id AND team_id = v_team1_id AND match_wins = 0 AND game_wins = 0) THEN RAISE EXCEPTION 'mark_match_as_tie did not refresh season stats'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.team_season_stats WHERE season_id = v_season_id AND team_id = v_team1_id AND match_wins = 0 AND match_losses = 0) THEN RAISE EXCEPTION 'mark_match_as_tie did not refresh season stats'; END IF;
   v_result_bool := public.mark_match_as_tie(v_match_id);
   IF v_result_bool IS DISTINCT FROM false THEN RAISE EXCEPTION 'mark_match_as_tie repeat did not return false'; END IF;
   UPDATE public.matches SET iscompleted = false WHERE id = v_match_id;
