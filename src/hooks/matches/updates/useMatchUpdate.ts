@@ -3,7 +3,7 @@ import { useRef, useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
 import {
-  markMatchAsTie,
+  reopenMatchResult,
   resubmitMatchResult,
   updateMatch,
 } from '@/services/matches/MatchWriteService';
@@ -79,10 +79,11 @@ export const useMatchUpdate = ({
     }
   ): Promise<boolean> => {
     // Case 1: Match was completed and is now marked incomplete — clear the
-    // result through the atomic tie/reversal RPC rather than the generic updater.
+    // complete result through the atomic reopen/reversal RPC rather than the
+    // generic updater.
     if (flags.wasCompleted && !flags.isNowCompleted) {
       if (prevMatch.winnerId && prevMatch.loserId) {
-        await markMatchAsTie(prevMatch.id);
+        await reopenMatchResult(prevMatch.id);
       }
       return true;
     }

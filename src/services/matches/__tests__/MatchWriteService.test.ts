@@ -5,10 +5,12 @@ import { DatabaseError, NotFoundError } from '@/types/errors';
 // ─── Supabase mock ────────────────────────────────────────────────────────────
 
 const mockFrom = vi.fn();
+const mockRpc = vi.fn();
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     from: (table: string) => mockFrom(table),
+    rpc: (...args: unknown[]) => mockRpc(...args),
   },
 }));
 
@@ -28,6 +30,7 @@ import {
   fetchActiveSeason,
   MatchCreateData,
   MatchNonResultUpdate,
+  reopenMatchResult,
   updateMatch,
 } from '../MatchWriteService';
 
@@ -240,5 +243,43 @@ describe('updateMatch', () => {
     });
 
     await expect(updateMatch(MATCH_ID, { location: 'Court B' })).rejects.toThrow(DatabaseError);
+  });
+});
+
+// ─── reopenMatchResult ────────────────────────────────────────────────────────
+
+describe('reopenMatchResult', () => {
+  const MATCH_ID = '44444444-4444-4444-8444-444444444444';
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('calls reopen_live_match so completion and score fields are cleared atomically', async () => {
+    mockRpc.mockResolvedValue({ data: true, error: null });
+
+    await expect(reopenMatchResult(MATCH_ID)).resolves.toBe(true);
+    expect(mockRpc).toHaveBeenCalledWith('reopen_live_match', { p_match_id: MATCH_ID });
+  });
+
+  it('returns false for idempotent no-op outcomes', async () => {
+    mockRpc.mockResolvedValue({ data: false, error: null });
+
+    await expect(reopenMatchResult(MATCH_ID)).resolves.toBe(false);
+  });
+
+  it('throws DatabaseError on Supabase RPC error', async () => {
+    mockRpc.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'Admin access required',
+        code: 'P0001',
+        details: null,
+        hint: null,
+        name: 'PostgrestError',
+      },
+    });
+
+    await expect(reopenMatchResult(MATCH_ID)).rejects.toThrow(DatabaseError);
   });
 });

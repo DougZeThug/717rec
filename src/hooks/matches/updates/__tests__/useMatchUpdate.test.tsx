@@ -6,12 +6,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Match, Team } from '@/types';
 
 const mockUpdateMatch = vi.fn();
-const mockMarkMatchAsTie = vi.fn();
+const mockReopenMatchResult = vi.fn();
 const mockResubmitMatchResult = vi.fn();
 
 vi.mock('@/services/matches/MatchWriteService', () => ({
   updateMatch: (...args: unknown[]) => mockUpdateMatch(...args),
-  markMatchAsTie: (...args: unknown[]) => mockMarkMatchAsTie(...args),
+  reopenMatchResult: (...args: unknown[]) => mockReopenMatchResult(...args),
   resubmitMatchResult: (...args: unknown[]) => mockResubmitMatchResult(...args),
 }));
 
@@ -64,7 +64,7 @@ describe('useMatchUpdate — Case 1 regression', () => {
     });
   });
 
-  it('calls markMatchAsTie when completed → incomplete', async () => {
+  it('calls reopenMatchResult when completed → incomplete', async () => {
     const setMatches = vi.fn();
     const setEditingMatch = vi.fn();
 
@@ -92,8 +92,8 @@ describe('useMatchUpdate — Case 1 regression', () => {
       await result.current.handleUpdateMatch(incomplete, [] as Team[]);
     });
 
-    expect(mockMarkMatchAsTie).toHaveBeenCalledTimes(1);
-    expect(mockMarkMatchAsTie).toHaveBeenCalledWith('m1');
+    expect(mockReopenMatchResult).toHaveBeenCalledTimes(1);
+    expect(mockReopenMatchResult).toHaveBeenCalledWith('m1');
 
     // The atomic result RPC (Case 2 path) should NOT run when match is now incomplete
     expect(mockResubmitMatchResult).not.toHaveBeenCalled();
@@ -124,7 +124,7 @@ describe('useMatchUpdate — Case 1 regression', () => {
       );
     });
 
-    expect(mockMarkMatchAsTie).not.toHaveBeenCalled();
+    expect(mockReopenMatchResult).not.toHaveBeenCalled();
   });
 });
 
@@ -195,7 +195,7 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
     expect(outcome).toBe(true);
     // matchId, winnerId, loserId, winner game wins, loser game wins
     expect(mockResubmitMatchResult).toHaveBeenCalledWith('m1', 't1', 't2', 2, 1);
-    expect(mockMarkMatchAsTie).not.toHaveBeenCalled();
+    expect(mockReopenMatchResult).not.toHaveBeenCalled();
     // State updated with the intended winner/loser
     expect(setMatches).toHaveBeenCalledWith([
       expect.objectContaining({ id: 'm1', winnerId: 't1', loserId: 't2', iscompleted: true }),
@@ -230,7 +230,7 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
 
     expect(outcome).toBe(true);
     // Reversal + reapplication happen atomically inside the RPC
-    expect(mockMarkMatchAsTie).not.toHaveBeenCalled();
+    expect(mockReopenMatchResult).not.toHaveBeenCalled();
     expect(mockResubmitMatchResult).toHaveBeenCalledWith('m1', 't1', 't2', 2, 1);
   });
 
@@ -265,7 +265,7 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
     });
 
     expect(outcome).toBe(true);
-    expect(mockMarkMatchAsTie).not.toHaveBeenCalled();
+    expect(mockReopenMatchResult).not.toHaveBeenCalled();
     // No winner/loser/game-wins changes → hook short-circuits before RPC.
     expect(mockResubmitMatchResult).not.toHaveBeenCalled();
   });

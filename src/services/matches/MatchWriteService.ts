@@ -306,6 +306,19 @@ export const updateScoreSubmissionStatus = async (
 };
 
 /**
+ * Atomically reopen a completed match result and reverse any applied stats.
+ * Clears winner/loser, completion, and match score fields in the database.
+ */
+export const reopenMatchResult = async (matchId: string): Promise<boolean> => {
+  const { data, error } = await supabase.rpc('reopen_live_match', {
+    p_match_id: matchId,
+  });
+
+  if (error) handleDatabaseError(error, 'Failed to reopen match result');
+  return data ?? false;
+};
+
+/**
  * Atomically approve a match result and update team stats in a single transaction.
  * Idempotent: if already approved, returns false without double-counting.
  */
