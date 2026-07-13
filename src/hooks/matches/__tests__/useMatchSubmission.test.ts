@@ -59,7 +59,11 @@ import { invalidateMatchRelatedQueries } from '../utils/queryCacheUtils';
 const makeUpdateMatchScoreResult = (
   overrides: Partial<UpdateMatchScoreResult> = {}
 ): UpdateMatchScoreResult => ({
-  data: { id: 'match-1' } as UpdateMatchScoreResult['data'],
+  data: {
+    applied: true,
+    reversed_previous: false,
+    previous_winner_id: null,
+  } as UpdateMatchScoreResult['data'],
   team1_id: 'team-1',
   team2_id: 'team-2',
   team1Win: true,
@@ -91,9 +95,7 @@ describe('useMatchSubmission', () => {
 
   it('successfully submits match score', async () => {
     vi.mocked(updateMatchScore).mockResolvedValue(
-      makeUpdateMatchScoreResult({
-        data: { id: 'match-1', team1_score: 2, team2_score: 1 } as UpdateMatchScoreResult['data'],
-      })
+      makeUpdateMatchScoreResult()
     );
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
@@ -232,12 +234,8 @@ describe('useMatchSubmission', () => {
   });
 
   it('allows concurrent submissions for different match IDs', async () => {
-    vi.mocked(updateMatchScore).mockImplementation(({ matchId }) =>
-      Promise.resolve(
-        makeUpdateMatchScoreResult({
-          data: { id: matchId } as UpdateMatchScoreResult['data'],
-        })
-      )
+    vi.mocked(updateMatchScore).mockImplementation(() =>
+      Promise.resolve(makeUpdateMatchScoreResult())
     );
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
@@ -277,14 +275,12 @@ describe('useMatchSubmission', () => {
     expect(updateMatchScore).toHaveBeenCalledTimes(1);
 
     resolveFirst(
-      makeUpdateMatchScoreResult({
-        data: { id: 'same-match' } as UpdateMatchScoreResult['data'],
-      })
+      makeUpdateMatchScoreResult()
     );
     await first;
 
     vi.mocked(updateMatchScore).mockResolvedValueOnce(
-      makeUpdateMatchScoreResult({ data: { id: 'same-match' } as UpdateMatchScoreResult['data'] })
+      makeUpdateMatchScoreResult()
     );
 
     const third = await result.current.handleSubmitScore({
