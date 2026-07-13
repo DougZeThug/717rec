@@ -57,7 +57,7 @@ BEGIN
   -- approve_match_result: first application mutates stats, repeat is idempotent, season stats refresh.
   v_match_id := '00000000-0000-0000-0000-00000000d001';
   INSERT INTO public.matches (id, team1_id, team2_id, season_id, round_number, iscompleted, team1_game_wins, team2_game_wins)
-  VALUES (v_match_id, v_team1_id, v_team2_id, v_season_id, 1, false, 2, 1);
+  VALUES (v_match_id, v_team1_id, v_team2_id, v_season_id, 1, true, 2, 1);
   v_result_bool := public.approve_match_result(v_match_id, v_team1_id, v_team2_id, 2, 1);
   IF v_result_bool IS DISTINCT FROM true THEN RAISE EXCEPTION 'approve_match_result first call did not return true'; END IF;
   SELECT wins, losses, game_wins, game_losses INTO r FROM public.teams WHERE id = v_team1_id;
@@ -78,6 +78,7 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM public.team_season_stats WHERE season_id = v_season_id AND team_id = v_team1_id AND match_wins = 0 AND game_wins = 0) THEN RAISE EXCEPTION 'mark_match_as_tie did not refresh season stats'; END IF;
   v_result_bool := public.mark_match_as_tie(v_match_id);
   IF v_result_bool IS DISTINCT FROM false THEN RAISE EXCEPTION 'mark_match_as_tie repeat did not return false'; END IF;
+  UPDATE public.matches SET iscompleted = false WHERE id = v_match_id;
 
   -- update/reverse stats: null/zero game wins are safe and reverse never underflows.
   PERFORM public.update_team_stats(v_team1_id, v_team2_id, NULL, 0);
