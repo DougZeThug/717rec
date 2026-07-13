@@ -30,7 +30,7 @@ per-file percentages with line-by-line highlighting.
 ## End-to-end tests (Playwright)
 
 E2E specs live in `e2e/` (separate from Vitest, which only picks up
-`__tests__/` and `tests/` folders). There are currently six specs:
+`__tests__/` and `tests/` folders). There are currently seven specs:
 
 | Spec                        | What it checks                                                          |
 | --------------------------- | ----------------------------------------------------------------------- |
@@ -40,12 +40,16 @@ E2E specs live in `e2e/` (separate from Vitest, which only picks up
 | `admin-mass-score.spec.ts`  | Admin mass score entry flow                                             |
 | `playoff-bracket.spec.ts`   | Bracket advances semifinal winners into the final and crowns a champion |
 | `a11y.spec.ts`              | axe WCAG 2 A/AA scan of six public routes (runs in its own workflow)    |
+| `real-backend.spec.ts`      | Optional live Supabase golden path: logs in, views the schedule, submits a score for a seeded pending match, and verifies the submission row in `score_submissions`; skipped unless `E2E_SUPABASE_URL`, `E2E_SUPABASE_ANON_KEY`, `E2E_SUPABASE_SERVICE_ROLE_KEY`, `E2E_TEST_USER_EMAIL`, and `E2E_TEST_USER_PASSWORD` are set |
 
-**Honest caveat:** these specs intercept and mock all Supabase network calls
+**Honest caveat:** most specs intercept and mock all Supabase network calls
 (`page.route`) — they exercise the real UI in a real browser, but against
-canned data, never a live backend or real RLS policies. They are best thought
-of as browser-level integration tests, not true end-to-end tests. Anything
-that depends on actual database behavior still needs the manual checks below.
+canned data, not a live backend or real RLS policies. They are best thought
+of as browser-level integration tests. `real-backend.spec.ts` is the exception:
+it uses a live Supabase backend, service-role setup/cleanup, and a real test
+login when its required `E2E_SUPABASE_*` and `E2E_TEST_USER_*` environment
+variables are configured. Anything outside that golden path that depends on
+actual database behavior still needs the manual checks below.
 
 ```bash
 npm ci                # install the exact npm dependencies from package-lock.json
@@ -164,9 +168,12 @@ Be precise about which kind of confidence a claim rests on:
   components. The axe accessibility scan of public routes is also a blocking
   automated gate.
 - **Automated but non-blocking:** the Playwright browser suite in `e2e/`
-  (smoke, score submission, admin access, mass score entry, playoff bracket).
-  It runs on every PR but failures do not block merges, and it mocks all
-  Supabase traffic.
+  (smoke, score submission, admin access, mass score entry, playoff bracket,
+  and the optional real-backend golden path). It runs on every PR but failures
+  do not block merges. Most browser specs mock all Supabase traffic;
+  `real-backend.spec.ts` is skipped unless the live Supabase credentials above
+  are configured, and then verifies one login/schedule/score-submission path
+  against the real backend.
 - **Manual only — no automated coverage:** anything that executes inside the
   database (RLS policies, Postgres RPCs, triggers, migrations), real
   authentication against Supabase, image upload/storage, realtime
