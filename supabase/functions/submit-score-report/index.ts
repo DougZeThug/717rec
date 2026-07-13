@@ -2,8 +2,16 @@ import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { z } from 'https://esm.sh/zod@3.23.8';
 
-import { checkRateLimit, hashIp } from '../_shared/rateLimit.ts';
+import { checkRateLimit as defaultCheckRateLimit, hashIp } from '../_shared/rateLimit.ts';
 import { SECURITY_HEADERS } from '../_shared/securityHeaders.ts';
+
+type RateLimitFn = typeof defaultCheckRateLimit;
+
+// Test seam — overridable from tests via setRateLimiter().
+let rateLimiterImpl: RateLimitFn = defaultCheckRateLimit;
+export function setRateLimiter(fn: RateLimitFn | null): void {
+  rateLimiterImpl = fn ?? defaultCheckRateLimit;
+}
 
 const ALLOWED_ORIGINS = new Set<string>([
   'https://717rec.app',
@@ -67,7 +75,7 @@ async function handleRequest(req: Request): Promise<Response> {
   const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  const rl = await checkRateLimit(supabase, {
+  const rl = await rateLimiterImpl(supabase, {
     endpoint: ENDPOINT_KEY,
     ipHash,
     windowSeconds: RATE_LIMIT_WINDOW_SECONDS,
@@ -165,8 +173,32 @@ async function handleRequest(req: Request): Promise<Response> {
     is_verified,
   };
 
+  // Dedupe pre-check: an identical pending report for the same match already
+  // exists (e.g. double-tap). Treat as success without inserting a second row
+  // and without leaking whether one exists to unrelated callers — the response
+  // shape mirrors a fresh submission.
+  const { data: existing, error: dedupeError } = await supabase
+    .from('score_submissions')
+    .select('id')
+    .eq('match_id', payload.match_id)
+    .eq('status', 'pending')
+    .eq('message', payload.message)
+    .limit(1)
+    .maybeSingle();
+  if (dedupeError) {
+    console.warn('[ScoreReport] dedupe pre-check error:', dedupeError);
+  }
+  if (existing) {
+    return jsonResponse({ success: true, duplicate: true }, 200, corsHeaders);
+  }
+
   const { error: insertError } = await supabase.from('score_submissions').insert(insertRow);
   if (insertError) {
+    // 23505 = unique_violation — partial unique index caught a racing duplicate
+    // between the pre-check and the insert. Same friendly response.
+    if ((insertError as { code?: string }).code === '23505') {
+      return jsonResponse({ success: true, duplicate: true }, 200, corsHeaders);
+    }
     console.error('[ScoreReport] insert error:', insertError);
     return jsonResponse({ error: 'Failed to save score report' }, 500, corsHeaders);
   }
