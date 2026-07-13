@@ -78,9 +78,9 @@ BEGIN
     RETURNING id INTO v_msg_id;
   INSERT INTO public.match_comments (match_id, user_id, username, content)
     VALUES (v_match_id, v_user_id, 'fk_user', 'nice');
-  INSERT INTO public.match_reactions (match_id, user_id, reaction_type)
+  INSERT INTO public.match_reactions (match_id, user_id, emoji)
     VALUES (v_match_id, v_user_id, 'like');
-  INSERT INTO public.message_reactions (message_id, user_id, reaction_type)
+  INSERT INTO public.message_reactions (message_id, user_id, emoji)
     VALUES (v_msg_id, v_user_id, 'like');
   INSERT INTO public.team_memberships (team_id, user_id, is_approved)
     VALUES (v_team_id, v_user_id, false);
@@ -89,7 +89,7 @@ BEGIN
 
   -- 3) A bogus user_id now fails with FK violation on a CASCADE-side table.
   BEGIN
-    INSERT INTO public.match_reactions (match_id, user_id, reaction_type)
+    INSERT INTO public.match_reactions (match_id, user_id, emoji)
     VALUES (v_match_id, '00000000-0000-0000-0000-0000000ffdea', 'like');
     RAISE EXCEPTION 'expected foreign_key_violation for bogus user_id';
   EXCEPTION WHEN foreign_key_violation THEN
