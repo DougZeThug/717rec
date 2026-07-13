@@ -40,7 +40,7 @@ gaps — not a rebuild.
 | Architecture discipline | grep sweep | 0 bare `select('*')`, **1** `any`, 0 `@ts-ignore`, 0 `TODO/FIXME` |
 | Data layer | file review | 313 migrations, 284 RLS policies, 28 RLS-enabled tables |
 | Backend functions | file review | Edge functions with shared auth + rate-limiting + security headers |
-| End-to-end tests | `e2e/` | 6 Playwright specs on critical flows (score submission, admin, playoffs, a11y) |
+| End-to-end tests | `e2e/` | 7 Playwright specs on critical flows (score submission, admin, playoffs, a11y, real-backend golden path) |
 | CI gates | `.github/workflows` | 12 workflows: test, lint/typecheck, coverage floor, a11y (axe), Lighthouse, bundle size, e2e, secret scan, security audit, Supabase schema CI |
 
 ---
