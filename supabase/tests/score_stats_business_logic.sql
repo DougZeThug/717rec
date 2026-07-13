@@ -37,7 +37,11 @@ BEGIN
   PERFORM set_config('session_replication_role', 'replica', true);
   INSERT INTO public.profiles (id, username, full_name, is_admin) VALUES
     (v_admin_id, 'admin', 'Admin', true), (v_member_id, 'member', 'Approved Member', false),
-    (v_pending_member_id, 'pending', 'Pending Member', false), (v_outsider_id, 'outsider', 'Outsider', false);
+    (v_pending_member_id, 'pending', 'Pending Member', false), (v_outsider_id, 'outsider', 'Outsider', false)
+  ON CONFLICT (id) DO UPDATE
+  SET username = EXCLUDED.username,
+      full_name = EXCLUDED.full_name,
+      is_admin = EXCLUDED.is_admin;
   PERFORM set_config('session_replication_role', 'origin', true);
   INSERT INTO public.seasons (id, name, start_date, is_active) VALUES (v_season_id, 'Smoke Season', '2026-01-01', true);
   INSERT INTO public.divisions (id, name, display_division) VALUES (v_division_id, 'Smoke Division', 'Smoke Division');
