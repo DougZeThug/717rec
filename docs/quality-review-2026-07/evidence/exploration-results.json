@@ -1,0 +1,1981 @@
+{
+  "results": [
+    {
+      "route": "/",
+      "slug": "home",
+      "viewport": "mobile",
+      "status": 200,
+      "networkIdle": false,
+      "title": "717REC — Lancaster's Premier Cornhole League",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Login | 717REC | Where Bags Fly and Beers Flow. | Standings | Full Schedule | History | My Teams | TEAM OF THE WEEK | WEEKLY RECAP | Send us a message | Request a timeslot change, report a ",
+      "hOverflow": false,
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Warning: React does not recognize the `%s` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `%s` instead. If you accidentally passed it from a parent component, remove it from the DOM element.%s fetchPriority fetchpriority \n    at ",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_pending_matches?select=id%2Cteam1_id%2Cteam2_id%2Cteam1_name%2Cteam2_name%2Cteam1_logo%2Cteam2_logo%2Cdate%2Clocation&limit=10",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/hero_cards?select=id%2Cslug%2Ctitle%2Csubtitle%2Cbody%2Ccta_label%2Ccta_url%2Cbackground_color%2Ctext_color%2Caccent_color%2Cimage_url%2Cicon_name%2Cis",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/teams",
+      "slug": "teams",
+      "viewport": "mobile",
+      "status": 200,
+      "networkIdle": false,
+      "title": "Teams | 717REC Cornhole League",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Login | TEAMS | Sort: | Rank | · | View: | By Division | · | Style: | Grid | No teams available in any division. | Standings | Schedule | Teams | Playoffs | admin@717rec.com | © 2026 717 Rec. All righ",
+      "hOverflow": false,
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/divisions?select=id%2Cname%2Cdivision_weight%2Cdisplay_division%2Ccreated_at&order=division_weight.desc",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/schedule",
+      "slug": "schedule",
+      "viewport": "mobile",
+      "status": 200,
+      "networkIdle": false,
+      "title": "Schedule | 717REC Cornhole League",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Login | FRI | 10 | SAT | 11 | SUN | 12 | MON | 13 | TUE | 14 | WED | 15 | THU | 16 | FRI | 17 | SAT | 18 | SUN | 19 | MON | 20 | TUE | 21 | WED | 22 | THU | 23 | Upcoming Matches | Completed Matches | Standings | Schedule | Teams | Playoffs",
+      "hOverflow": false,
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/seasons?select=id&is_active=eq.true",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/team_timeslots?select=id%2Cmatch_date%2Ctimeslot%2Cteam_id%2Ccreated_at%2Cis_back_to_back%2Cis_double_header%2Cpair_slot%2Cmatch_sequence%2Cteams%3Atea",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/stats",
+      "slug": "standings",
+      "viewport": "mobile",
+      "status": 200,
+      "networkIdle": false,
+      "title": "Standings & Rankings | 717REC",
+      "hasContent": false,
+      "bodyTextSample": "Skip to main content | 717Rec | Login | Standings | Schedule | Teams | Playoffs | admin@717rec.com | © 2026 717 Rec. All rights reserved.",
+      "hOverflow": false,
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/matches?select=id%2Cteam1_id%2Cteam2_id%2Cteam1_score%2Cteam2_score%2Cdate%2Clocation%2Ciscompleted%2Cwinner_id%2Closer_id%2Cround_number%2Cposition%2C",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/seasons?select=id&is_active=eq.true",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/playoffs",
+      "slug": "playoffs",
+      "viewport": "mobile",
+      "status": 200,
+      "networkIdle": false,
+      "title": "Playoff Brackets | 717REC",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Login | PLAYOFFS | Tournament brackets and playoff schedules | Loading... | Standings | Schedule | Teams | Playoffs | admin@717rec.com | © 2026 717 Rec. All rights reserved.",
+      "hOverflow": false,
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/seasons?select=id%2Cname%2Cis_active%2Cis_archived%2Cplayoffs_active%2Cstart_date%2Cend_date%2Ccreated_at%2Cchampion_team_id%2Crunner_up_team_id%2Cconf",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/seasons?select=id%2Cname%2Cis_active%2Cis_archived%2Cplayoffs_active%2Cstart_date%2Cend_date%2Ccreated_at%2Cchampion_team_id%2Crunner_up_team_id%2Cconf",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/seasons?select=id%2Cname%2Cis_active%2Cis_archived%2Cplayoffs_active%2Cstart_date%2Cend_date%2Ccreated_at%2Cchampion_team_id%2Crunner_up_team_id%2Cconf",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/history",
+      "slug": "history",
+      "viewport": "mobile",
+      "status": 200,
+      "networkIdle": false,
+      "title": "Season History | 717REC",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Login | Home | History | SEASON HISTORY | Loading historical data... | Standings | Schedule | Teams | Playoffs | admin@717rec.com | © 2026 717 Rec. All rights reserved.",
+      "hOverflow": false,
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/seasons?select=id%2Cname%2Cstart_date%2Cend_date%2Cis_active&order=start_date.desc",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/message-board",
+      "slug": "message-board",
+      "viewport": "mobile",
+      "status": 200,
+      "networkIdle": false,
+      "title": "717REC — Lancaster's Premier Cornhole League",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Login | MESSAGE BOARD | Chat with other teams and participants | Search | No Messages Yet | Be the first to start a conversation! Share updates, tips, or just say hello. | Sign in ",
+      "hOverflow": false,
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] Failed to fetch messages: {message: AbortError: signal is aborted without reason, details: AbortError: signal is aborted without reason\n    a…/src/hooks/message-board/useMessageBoard.ts:81:13, hint: Request was aborted (timeout or manual cancellation), code: }",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useMessageRealtime] channel TIMED_OUT — scheduling reconnect",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/messages?select=id%2Ccontent%2Ccreated_at%2Cusername%2Cteam_name%2Cuser_id%2Cteam_id%2Ccategory%2Cupdated_at%2Cis_edited&order=created_at.desc&limit=10",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/messages?select=id%2Ccontent%2Ccreated_at%2Cusername%2Cteam_name%2Cuser_id%2Cteam_id%2Ccategory%2Cupdated_at%2Cis_edited&order=created_at.desc&limit=10",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/compare",
+      "slug": "compare",
+      "viewport": "mobile",
+      "status": 200,
+      "title": "717REC — Lancaster's Premier Cornhole League",
+      "hasContent": false,
+      "bodyTextSample": "Skip to main content | 717Rec | Login | Loading teams... | Standings | Schedule | Teams | Playoffs | admin@717rec.com | © 2026 717 Rec. All rights reserved.",
+      "hOverflow": false,
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/insights",
+      "slug": "insights",
+      "viewport": "mobile",
+      "status": 200,
+      "networkIdle": false,
+      "title": "League Insights | 717REC",
+      "hasContent": false,
+      "bodyTextSample": "Skip to main content | 717Rec | Login | Crunching the numbers... | Standings | Schedule | Teams | Playoffs | admin@717rec.com | © 2026 717 Rec. All rights reserved.",
+      "hOverflow": false,
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/matches?select=id%2Cteam1_id%2Cteam2_id%2Cteam1_score%2Cteam2_score%2Cdate%2Clocation%2Ciscompleted%2Cwinner_id%2Closer_id%2Cround_number%2Cposition%2C",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/seasons?select=id&is_active=eq.true",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/help",
+      "slug": "help",
+      "viewport": "mobile",
+      "status": 200,
+      "title": "Help & Getting Started | 717REC",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Login | Help & Getting Started | Everything you need to know about using 717REC for league management and participation. | Quick Navigation | Teams | Schedule | Standings | Playoffs | We",
+      "hOverflow": false,
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/contact",
+      "slug": "contact",
+      "viewport": "mobile",
+      "status": 200,
+      "title": "Contact Support | 717REC",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Login | Contact Support | Have a question or need help? We're here for you. | Send us a message | Fill out the form below and we'll get back to you as soon as possible. | Name | Em",
+      "hOverflow": false,
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/auth",
+      "slug": "auth",
+      "viewport": "mobile",
+      "status": 200,
+      "networkIdle": false,
+      "title": "717REC — Lancaster's Premier Cornhole League",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Login | Welcome to 717Rec | Login or create an account to access all features | Login | Sign Up | Email | Password | Login | OR CONTINUE WITH | Google | Don't have an account? Sign up | Stan",
+      "hOverflow": false,
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/this-route-does-not-exist",
+      "slug": "404",
+      "viewport": "mobile",
+      "status": 200,
+      "title": "717REC — Lancaster's Premier Cornhole League",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Login | Page Not Found | Oops! The page you are looking for does not exist or has been moved. | Go Home | Go Back | Standings | Schedule | Teams | Playoffs | admin@717rec.com | © 2026 717 ",
+      "hOverflow": false,
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/",
+      "slug": "home",
+      "viewport": "tablet",
+      "status": 200,
+      "networkIdle": false,
+      "title": "717REC — Lancaster's Premier Cornhole League",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | 717REC | Where Bags Fly and Beers Flow. | View Standings | See Schedule | League History | TEAM OF THE WE",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Warning: React does not recognize the `%s` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `%s` instead. If you accidentally passed it from a parent component, remove it from the DOM element.%s fetchPriority fetchpriority \n    at ",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_pending_matches?select=id%2Cteam1_id%2Cteam2_id%2Cteam1_name%2Cteam2_name%2Cteam1_logo%2Cteam2_logo%2Cdate%2Clocation&limit=10",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/hero_cards?select=id%2Cslug%2Ctitle%2Csubtitle%2Cbody%2Ccta_label%2Ccta_url%2Cbackground_color%2Ctext_color%2Caccent_color%2Cimage_url%2Cicon_name%2Cis",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/teams",
+      "slug": "teams",
+      "viewport": "tablet",
+      "status": 200,
+      "networkIdle": false,
+      "title": "Teams | 717REC Cornhole League",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | TEAMS | Grid | List | All Teams | By Division | Browse all teams or view by division | Standings | Schedule | T",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/divisions?select=id%2Cname%2Cdivision_weight%2Cdisplay_division%2Ccreated_at&order=division_weight.desc",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/schedule",
+      "slug": "schedule",
+      "viewport": "tablet",
+      "status": 200,
+      "networkIdle": false,
+      "title": "Schedule | 717REC Cornhole League",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | FRI | 10 | SAT | 11 | SUN | 12 | MON | 13 | TUE | 14 | WED | 15 | THU | 16 | FRI | 17 | SAT | 18 | SUN | 19 | MON | 20 | TUE | 21 | WED | 22 | THU | 23",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/seasons?select=id&is_active=eq.true",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/team_timeslots?select=id%2Cmatch_date%2Ctimeslot%2Cteam_id%2Ccreated_at%2Cis_back_to_back%2Cis_double_header%2Cpair_slot%2Cmatch_sequence%2Cteams%3Atea",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/stats",
+      "slug": "standings",
+      "viewport": "tablet",
+      "status": 200,
+      "networkIdle": false,
+      "title": "Standings & Rankings | 717REC",
+      "hasContent": false,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | Standings | Schedule | Teams | admin@717rec.com | © 2026 717 Rec. All rights reserved.",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/matches?select=id%2Cteam1_id%2Cteam2_id%2Cteam1_score%2Cteam2_score%2Cdate%2Clocation%2Ciscompleted%2Cwinner_id%2Closer_id%2Cround_number%2Cposition%2C",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/seasons?select=id&is_active=eq.true",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/playoffs",
+      "slug": "playoffs",
+      "viewport": "tablet",
+      "status": 200,
+      "networkIdle": false,
+      "title": "Playoff Brackets | 717REC",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | PLAYOFFS | Tournament brackets and playoff schedules | Loading... | Standings | Schedule | Teams | admin@",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/seasons?select=id%2Cname%2Cis_active%2Cis_archived%2Cplayoffs_active%2Cstart_date%2Cend_date%2Ccreated_at%2Cchampion_team_id%2Crunner_up_team_id%2Cconf",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/seasons?select=id%2Cname%2Cis_active%2Cis_archived%2Cplayoffs_active%2Cstart_date%2Cend_date%2Ccreated_at%2Cchampion_team_id%2Crunner_up_team_id%2Cconf",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/history",
+      "slug": "history",
+      "viewport": "tablet",
+      "status": 200,
+      "title": "Season History | 717REC",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | Home | History | SEASON HISTORY | Explore past seasons, champions, and standings | Loading historical d",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/seasons?select=id%2Cname%2Cstart_date%2Cend_date%2Cis_active&order=start_date.desc",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/message-board",
+      "slug": "message-board",
+      "viewport": "tablet",
+      "status": 200,
+      "networkIdle": false,
+      "title": "717REC — Lancaster's Premier Cornhole League",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | MESSAGE BOARD | Chat with other teams and participants | Search | No Messages Yet | Be the first to st",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] Failed to fetch messages: {message: AbortError: signal is aborted without reason, details: AbortError: signal is aborted without reason\n    a…/src/hooks/message-board/useMessageBoard.ts:81:13, hint: Request was aborted (timeout or manual cancellation), code: }",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useMessageRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/messages?select=id%2Ccontent%2Ccreated_at%2Cusername%2Cteam_name%2Cuser_id%2Cteam_id%2Ccategory%2Cupdated_at%2Cis_edited&order=created_at.desc&limit=10",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/messages?select=id%2Ccontent%2Ccreated_at%2Cusername%2Cteam_name%2Cuser_id%2Cteam_id%2Ccategory%2Cupdated_at%2Cis_edited&order=created_at.desc&limit=10",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/compare",
+      "slug": "compare",
+      "viewport": "tablet",
+      "status": 200,
+      "title": "717REC — Lancaster's Premier Cornhole League",
+      "hasContent": false,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | Loading teams... | Standings | Schedule | Teams | admin@717rec.com | © 2026 717 Rec. All rights reserve",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/insights",
+      "slug": "insights",
+      "viewport": "tablet",
+      "status": 200,
+      "networkIdle": false,
+      "title": "League Insights | 717REC",
+      "hasContent": false,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | Crunching the numbers... | Standings | Schedule | Teams | admin@717rec.com | © 2026 717 Rec. All rights",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/matches?select=id%2Cteam1_id%2Cteam2_id%2Cteam1_score%2Cteam2_score%2Cdate%2Clocation%2Ciscompleted%2Cwinner_id%2Closer_id%2Cround_number%2Cposition%2C",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/seasons?select=id&is_active=eq.true",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/help",
+      "slug": "help",
+      "viewport": "tablet",
+      "status": 200,
+      "title": "Help & Getting Started | 717REC",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | Help & Getting Started | Everything you need to know about using 717REC for league management and ",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/contact",
+      "slug": "contact",
+      "viewport": "tablet",
+      "status": 200,
+      "title": "Contact Support | 717REC",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | Contact Support | Have a question or need help? We're here for you. | Send us a message | Fill out t",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/auth",
+      "slug": "auth",
+      "viewport": "tablet",
+      "status": 200,
+      "title": "717REC — Lancaster's Premier Cornhole League",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | Welcome to 717Rec | Login or create an account to access all features | Login | Sign Up | Email | Passwor",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/this-route-does-not-exist",
+      "slug": "404",
+      "viewport": "tablet",
+      "status": 200,
+      "title": "717REC — Lancaster's Premier Cornhole League",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | Page Not Found | Oops! The page you are looking for does not exist or has been moved. | Go Home | Go ",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/",
+      "slug": "home",
+      "viewport": "desktop",
+      "status": 200,
+      "networkIdle": false,
+      "title": "717REC — Lancaster's Premier Cornhole League",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | 717REC | Where Bags Fly and Beers Flow. | View Standings | See Schedule | League History | TEAM OF THE WE",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Warning: React does not recognize the `%s` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `%s` instead. If you accidentally passed it from a parent component, remove it from the DOM element.%s fetchPriority fetchpriority \n    at ",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_pending_matches?select=id%2Cteam1_id%2Cteam2_id%2Cteam1_name%2Cteam2_name%2Cteam1_logo%2Cteam2_logo%2Cdate%2Clocation&limit=10",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/hero_cards?select=id%2Cslug%2Ctitle%2Csubtitle%2Cbody%2Ccta_label%2Ccta_url%2Cbackground_color%2Ctext_color%2Caccent_color%2Cimage_url%2Cicon_name%2Cis",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/teams",
+      "slug": "teams",
+      "viewport": "desktop",
+      "status": 200,
+      "networkIdle": false,
+      "title": "Teams | 717REC Cornhole League",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | TEAMS | Grid | List | All Teams | By Division | Browse all teams or view by division | Standings | Schedule | T",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/divisions?select=id%2Cname%2Cdivision_weight%2Cdisplay_division%2Ccreated_at&order=division_weight.desc",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/schedule",
+      "slug": "schedule",
+      "viewport": "desktop",
+      "status": 200,
+      "networkIdle": false,
+      "title": "Schedule | 717REC Cornhole League",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | FRI | 10 | SAT | 11 | SUN | 12 | MON | 13 | TUE | 14 | WED | 15 | THU | 16 | FRI | 17 | SAT | 18 | SUN | 19 | MON | 20 | TUE | 21 | WED | 22 | THU | 23",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/seasons?select=id&is_active=eq.true",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/team_timeslots?select=id%2Cmatch_date%2Ctimeslot%2Cteam_id%2Ccreated_at%2Cis_back_to_back%2Cis_double_header%2Cpair_slot%2Cmatch_sequence%2Cteams%3Atea",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/stats",
+      "slug": "standings",
+      "viewport": "desktop",
+      "status": 200,
+      "networkIdle": false,
+      "title": "Standings & Rankings | 717REC",
+      "hasContent": false,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | Standings | Schedule | Teams | Search... | ⌘ | K | admin@717rec.com | © 2026 717 Rec. All rights reserved.",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/matches?select=id%2Cteam1_id%2Cteam2_id%2Cteam1_score%2Cteam2_score%2Cdate%2Clocation%2Ciscompleted%2Cwinner_id%2Closer_id%2Cround_number%2Cposition%2C",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/seasons?select=id&is_active=eq.true",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/playoffs",
+      "slug": "playoffs",
+      "viewport": "desktop",
+      "status": 200,
+      "networkIdle": false,
+      "title": "Playoff Brackets | 717REC",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | PLAYOFFS | Tournament brackets and playoff schedules | Loading... | Standings | Schedule | Teams | Search.",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/seasons?select=id%2Cname%2Cis_active%2Cis_archived%2Cplayoffs_active%2Cstart_date%2Cend_date%2Ccreated_at%2Cchampion_team_id%2Crunner_up_team_id%2Cconf",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/seasons?select=id%2Cname%2Cis_active%2Cis_archived%2Cplayoffs_active%2Cstart_date%2Cend_date%2Ccreated_at%2Cchampion_team_id%2Crunner_up_team_id%2Cconf",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/history",
+      "slug": "history",
+      "viewport": "desktop",
+      "status": 200,
+      "title": "Season History | 717REC",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | Home | History | SEASON HISTORY | Explore past seasons, champions, and standings | Loading historical d",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/seasons?select=id%2Cname%2Cstart_date%2Cend_date%2Cis_active&order=start_date.desc",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/message-board",
+      "slug": "message-board",
+      "viewport": "desktop",
+      "status": 200,
+      "title": "717REC — Lancaster's Premier Cornhole League",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | MESSAGE BOARD | Chat with other teams and participants | Search | No Messages Yet | Be the first to st",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] Failed to fetch messages: {message: AbortError: signal is aborted without reason, details: AbortError: signal is aborted without reason\n    a…/src/hooks/message-board/useMessageBoard.ts:81:13, hint: Request was aborted (timeout or manual cancellation), code: }",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useMessageRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/messages?select=id%2Ccontent%2Ccreated_at%2Cusername%2Cteam_name%2Cuser_id%2Cteam_id%2Ccategory%2Cupdated_at%2Cis_edited&order=created_at.desc&limit=10",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/messages?select=id%2Ccontent%2Ccreated_at%2Cusername%2Cteam_name%2Cuser_id%2Cteam_id%2Ccategory%2Cupdated_at%2Cis_edited&order=created_at.desc&limit=10",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/compare",
+      "slug": "compare",
+      "viewport": "desktop",
+      "status": 200,
+      "title": "717REC — Lancaster's Premier Cornhole League",
+      "hasContent": false,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | Loading teams... | Standings | Schedule | Teams | Search... | ⌘ | K | admin@717rec.com | © 2026 717 Rec. All ",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/insights",
+      "slug": "insights",
+      "viewport": "desktop",
+      "status": 200,
+      "networkIdle": false,
+      "title": "League Insights | 717REC",
+      "hasContent": false,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | Crunching the numbers... | Standings | Schedule | Teams | Search... | ⌘ | K | admin@717rec.com | © 2026 717 R",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/matches?select=id%2Cteam1_id%2Cteam2_id%2Cteam1_score%2Cteam2_score%2Cdate%2Clocation%2Ciscompleted%2Cwinner_id%2Closer_id%2Cround_number%2Cposition%2C",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/seasons?select=id&is_active=eq.true",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/help",
+      "slug": "help",
+      "viewport": "desktop",
+      "status": 200,
+      "title": "Help & Getting Started | 717REC",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | Help & Getting Started | Everything you need to know about using 717REC for league management and ",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/contact",
+      "slug": "contact",
+      "viewport": "desktop",
+      "status": 200,
+      "title": "Contact Support | 717REC",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | Contact Support | Have a question or need help? We're here for you. | Send us a message | Fill out t",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/auth",
+      "slug": "auth",
+      "viewport": "desktop",
+      "status": 200,
+      "title": "717REC — Lancaster's Premier Cornhole League",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | Welcome to 717Rec | Login or create an account to access all features | Login | Sign Up | Email | Passwor",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    },
+    {
+      "route": "/this-route-does-not-exist",
+      "slug": "404",
+      "viewport": "desktop",
+      "status": 200,
+      "networkIdle": false,
+      "title": "717REC — Lancaster's Premier Cornhole League",
+      "hasContent": true,
+      "bodyTextSample": "Skip to main content | 717Rec | Home | Teams | Schedule | Standings | Playoffs | History | Messages | Help | Contact | Login | Page Not Found | Oops! The page you are looking for does not exist or has been moved. | Go Home | Go ",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel TIMED_OUT — scheduling reconnect",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://cdn.gpteng.co/gptengineer.js",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/admin_notifications?select=id%2Ctitle%2Cbody%2Ccreated_by%2Ccreated_at%2Cupdated_at%2Cexpires_at&order=created_at.desc&limit=20",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/theme_settings?select=id%2Ctheme_key%2Clabel%2Cis_enabled%2Csort_order%2Cupdated_at&order=sort_order.asc",
+          "error": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/v_team_details?select=team_id%2Cname%2Clogo_url%2Cimage_url%2Cwins%2Closses%2Cgame_wins%2Cgame_losses%2Cdivision_id%2Cdivisionname%2Csos%2Cpower_score%",
+          "error": "net::ERR_CONNECTION_RESET"
+        }
+      ]
+    }
+  ],
+  "blockedRequests": [],
+  "teamPath": null,
+  "livePath": null
+}
