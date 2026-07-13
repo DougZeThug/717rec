@@ -42,10 +42,12 @@ vi.mock('@/services/FailedBadgeOperationsService', () => ({
 }));
 
 vi.mock('@/services/matches/MatchReadService', () => ({
-  fetchMatchTeamIds: vi.fn(async (_matchId: string) => ({
-    team1_id: 'team-1',
-    team2_id: 'team-2',
-  })),
+  fetchMatchTeamIds: vi.fn((_matchId: string) =>
+    Promise.resolve({
+      team1_id: 'team-1',
+      team2_id: 'team-2',
+    })
+  ),
 }));
 
 import { updateMatchScore } from '@/hooks/matches/utils/matchDatabaseUtils';

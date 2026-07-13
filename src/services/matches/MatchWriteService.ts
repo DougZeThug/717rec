@@ -2,7 +2,6 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { BusinessLogicError } from '@/types/errors';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
-import { assertNonNegativeNumber, assertValidUuid } from '@/utils/validation';
 
 /**
  * Service layer for match write operations
@@ -23,13 +22,12 @@ export interface MatchCreateData {
   season_id: string | null;
 }
 
-export interface MatchUpdateData {
-  team1_score: number;
-  team2_score: number;
-  iscompleted: boolean;
-  winner_id: string | null;
-  loser_id: string | null;
-}
+export type MatchNonResultUpdate = Partial<
+  Pick<
+    Database['public']['Tables']['matches']['Update'],
+    'date' | 'location' | 'team1_id' | 'team2_id' | 'round_number' | 'metadata'
+  >
+>;
 
 /**
  * Fetch the active season ID
@@ -62,22 +60,6 @@ export const batchCreateMatches = async (matches: MatchCreateData[]) => {
   }
 
   return data;
-};
-
-/**
- * Update a single match with scores and completion status
- * @throws {DatabaseError} When database operations fail
- */
-export const updateMatchScore = async (matchId: string, updates: MatchUpdateData) => {
-  assertValidUuid(matchId, 'matchId');
-  assertNonNegativeNumber(updates.team1_score, 'team1_score');
-  assertNonNegativeNumber(updates.team2_score, 'team2_score');
-
-  const { error } = await supabase.from('matches').update(updates).eq('id', matchId);
-
-  if (error) {
-    handleDatabaseError(error, 'Failed to update match score');
-  }
 };
 
 /**
@@ -162,7 +144,7 @@ export const deleteMatch = async (matchId: string) => {
  * Update a match and return the updated single record
  * @throws {DatabaseError} When database operations fail
  */
-export const updateMatch = async (matchId: string, updatePayload: object) => {
+export const updateMatch = async (matchId: string, updatePayload: MatchNonResultUpdate) => {
   const { data, error } = await supabase
     .from('matches')
     .update(updatePayload)
@@ -178,7 +160,7 @@ export const updateMatch = async (matchId: string, updatePayload: object) => {
  * Update a match and return all updated records as an array
  * @throws {DatabaseError} When database operations fail
  */
-export const updateMatchArray = async (matchId: string, updatePayload: object) => {
+export const updateMatchArray = async (matchId: string, updatePayload: MatchNonResultUpdate) => {
   const { data, error } = await supabase
     .from('matches')
     .update(updatePayload)
@@ -324,35 +306,16 @@ export const updateScoreSubmissionStatus = async (
 };
 
 /**
- * Set winner and loser on a match (approve result)
- * @throws {DatabaseError} When database operations fail
+ * Atomically reopen a completed match result and reverse any applied stats.
+ * Clears winner/loser, completion, and match score fields in the database.
  */
-export const approveMatch = async (matchId: string, winnerId: string, loserId: string) => {
-  const { error } = await supabase
-    .from('matches')
-    .update({
-      winner_id: winnerId,
-      loser_id: loserId,
-    })
-    .eq('id', matchId);
+export const reopenMatchResult = async (matchId: string): Promise<boolean> => {
+  const { data, error } = await supabase.rpc('reopen_live_match', {
+    p_match_id: matchId,
+  });
 
-  if (error) handleDatabaseError(error, 'Failed to approve match');
-};
-
-/**
- * Clear winner/loser on a match (mark as tie)
- * @throws {DatabaseError} When database operations fail
- */
-export const setMatchAsTie = async (matchId: string) => {
-  const { error } = await supabase
-    .from('matches')
-    .update({
-      winner_id: null,
-      loser_id: null,
-    })
-    .eq('id', matchId);
-
-  if (error) handleDatabaseError(error, 'Failed to set match as tie');
+  if (error) handleDatabaseError(error, 'Failed to reopen match result');
+  return data ?? false;
 };
 
 /**
