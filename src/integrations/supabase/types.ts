@@ -369,39 +369,6 @@ export type Database = {
         }
         Relationships: []
       }
-      debug_match_updates: {
-        Row: {
-          id: string
-          inserted_at: string | null
-          match_id: string | null
-          team1_game_wins: number | null
-          team1_score: number | null
-          team2_game_wins: number | null
-          team2_score: number | null
-          user_id: string | null
-        }
-        Insert: {
-          id?: string
-          inserted_at?: string | null
-          match_id?: string | null
-          team1_game_wins?: number | null
-          team1_score?: number | null
-          team2_game_wins?: number | null
-          team2_score?: number | null
-          user_id?: string | null
-        }
-        Update: {
-          id?: string
-          inserted_at?: string | null
-          match_id?: string | null
-          team1_game_wins?: number | null
-          team1_score?: number | null
-          team2_game_wins?: number | null
-          team2_score?: number | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       divisions: {
         Row: {
           created_at: string | null
