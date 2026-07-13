@@ -8,7 +8,7 @@ vi.mock('@/services/matches/MatchReadService', () => ({
 }));
 
 vi.mock('@/services/matches/MatchWriteService', () => ({
-  updateMatch: vi.fn(),
+  resubmitMatchResult: vi.fn(),
 }));
 
 // Mock BadgeProcessingService
@@ -41,15 +41,15 @@ vi.mock('@/utils/logger', () => ({
 
 import { BadgeProcessingService } from '@/services/BadgeProcessingService';
 import { fetchMatchTeamIds } from '@/services/matches/MatchReadService';
-import { updateMatch } from '@/services/matches/MatchWriteService';
+import { resubmitMatchResult } from '@/services/matches/MatchWriteService';
 
-type UpdatedMatch = Awaited<ReturnType<typeof updateMatch>>;
+type UpdatedMatch = Awaited<ReturnType<typeof resubmitMatchResult>>;
 
 const makeUpdatedMatch = (overrides: Partial<UpdatedMatch> = {}): UpdatedMatch =>
   ({
-    id: 'match-1',
-    team1_score: 2,
-    team2_score: 1,
+    applied: true,
+    reversed_previous: false,
+    previous_winner_id: null,
     ...overrides,
   }) as UpdatedMatch;
 
@@ -60,7 +60,7 @@ describe('updateMatchScore', () => {
 
   it('successfully updates match score when team1 wins', async () => {
     vi.mocked(fetchMatchTeamIds).mockResolvedValue({ team1_id: 'team-1', team2_id: 'team-2' });
-    vi.mocked(updateMatch).mockResolvedValue(makeUpdatedMatch());
+    vi.mocked(resubmitMatchResult).mockResolvedValue(makeUpdatedMatch());
 
     const params: UpdateMatchScoreParams = {
       matchId: 'match-1',
@@ -80,7 +80,7 @@ describe('updateMatchScore', () => {
 
   it('correctly determines team2 as winner', async () => {
     vi.mocked(fetchMatchTeamIds).mockResolvedValue({ team1_id: 'team-1', team2_id: 'team-2' });
-    vi.mocked(updateMatch).mockResolvedValue(makeUpdatedMatch({ team1_score: 1, team2_score: 3 }));
+    vi.mocked(resubmitMatchResult).mockResolvedValue(makeUpdatedMatch());
 
     const params: UpdateMatchScoreParams = {
       matchId: 'match-1',
@@ -113,7 +113,7 @@ describe('updateMatchScore', () => {
 
   it('throws error when update fails', async () => {
     vi.mocked(fetchMatchTeamIds).mockResolvedValue({ team1_id: 'team-1', team2_id: 'team-2' });
-    vi.mocked(updateMatch).mockRejectedValue(new Error('Update failed'));
+    vi.mocked(resubmitMatchResult).mockRejectedValue(new Error('Update failed'));
 
     const params: UpdateMatchScoreParams = {
       matchId: 'match-1',
@@ -128,7 +128,7 @@ describe('updateMatchScore', () => {
 
   it('processes badges after successful update', async () => {
     vi.mocked(fetchMatchTeamIds).mockResolvedValue({ team1_id: 'team-1', team2_id: 'team-2' });
-    vi.mocked(updateMatch).mockResolvedValue(makeUpdatedMatch());
+    vi.mocked(resubmitMatchResult).mockResolvedValue(makeUpdatedMatch());
 
     const params: UpdateMatchScoreParams = {
       matchId: 'match-1',
@@ -152,7 +152,7 @@ describe('updateMatchScore', () => {
     );
 
     vi.mocked(fetchMatchTeamIds).mockResolvedValue({ team1_id: 'team-1', team2_id: 'team-2' });
-    vi.mocked(updateMatch).mockResolvedValue(makeUpdatedMatch());
+    vi.mocked(resubmitMatchResult).mockResolvedValue(makeUpdatedMatch());
 
     const params: UpdateMatchScoreParams = {
       matchId: 'match-1',
