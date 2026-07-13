@@ -50,19 +50,33 @@ CREATE TABLE IF NOT EXISTS auth.users (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
--- auth helper functions used by RLS policies. Return NULL in CI so RLS
--- evaluates as if no user is signed in (which is fine for apply-only tests).
+-- Auth helper functions used by RLS policies. CI smoke tests can set
+-- request.jwt.claim.* locally via auth.set_test_claims(); unset sessions
+-- still evaluate as anonymous users.
 CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$
-  SELECT NULL::uuid;
+  SELECT NULLIF(current_setting('request.jwt.claim.sub', true), '')::uuid;
 $$;
 CREATE OR REPLACE FUNCTION auth.role() RETURNS text LANGUAGE sql STABLE AS $$
-  SELECT 'anon'::text;
+  SELECT COALESCE(NULLIF(current_setting('request.jwt.claim.role', true), ''), 'anon')::text;
 $$;
 CREATE OR REPLACE FUNCTION auth.jwt() RETURNS jsonb LANGUAGE sql STABLE AS $$
-  SELECT '{}'::jsonb;
+  SELECT COALESCE(NULLIF(current_setting('request.jwt.claims', true), '')::jsonb, '{}'::jsonb);
 $$;
 CREATE OR REPLACE FUNCTION auth.email() RETURNS text LANGUAGE sql STABLE AS $$
-  SELECT NULL::text;
+  SELECT NULLIF(current_setting('request.jwt.claim.email', true), '')::text;
+$$;
+CREATE OR REPLACE FUNCTION auth.set_test_claims(
+  p_uid uuid DEFAULT NULL,
+  p_role text DEFAULT 'authenticated',
+  p_claims jsonb DEFAULT '{}'::jsonb,
+  p_email text DEFAULT NULL
+) RETURNS void LANGUAGE plpgsql AS $$
+BEGIN
+  PERFORM set_config('request.jwt.claim.sub', COALESCE(p_uid::text, ''), true);
+  PERFORM set_config('request.jwt.claim.role', COALESCE(p_role, 'anon'), true);
+  PERFORM set_config('request.jwt.claims', COALESCE(p_claims, '{}'::jsonb)::text, true);
+  PERFORM set_config('request.jwt.claim.email', COALESCE(p_email, ''), true);
+END;
 $$;
 
 -- Minimal storage.* surface used by some migrations.

@@ -21,6 +21,11 @@ so a non-zero exit code means drift was detected.
   Backed by the `public.seasons_rls_drift()` helper function.
 - `migrations_apply.sql` — sanity check that core tables exist after
   the full migration set (baseline + all migrations) has been applied.
+- `score_stats_business_logic.sql` — end-to-end business-rule coverage for
+  score/stat RPCs: approving match results, marking ties, deleting completed
+  matches with stats reversal, finalizing/reopening live matches,
+  update/reverse team stat guardrails, season-stat refreshes, and scorer
+  authorization for admins and approved team members.
 - `_bootstrap.sql` — CI-only Supabase stubs (auth/storage/roles/realtime
   publication). Files prefixed with `_` are helpers and are skipped by
   the smoke runner.
