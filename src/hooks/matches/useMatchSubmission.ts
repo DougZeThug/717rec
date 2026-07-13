@@ -5,7 +5,6 @@ import { useToast } from '@/hooks/useToast';
 import { errorLog, matchLog } from '@/utils/logger';
 
 import { SubmitScoreParams } from './types/matchSubmissionTypes';
-import { useTeamRecordUpdate } from './useTeamRecordUpdate';
 import { updateMatchScore } from './utils/matchDatabaseUtils';
 import { invalidateMatchRelatedQueries } from './utils/queryCacheUtils';
 import { useScoreValidation } from './validation/useScoreValidation';
@@ -13,7 +12,6 @@ import { useScoreValidation } from './validation/useScoreValidation';
 export const useMatchSubmission = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { updateTeamStats } = useTeamRecordUpdate();
   const { validateScore } = useScoreValidation();
   const submittingMatchIds = useLazyRef<Set<string>>(() => new Set());
 
@@ -47,30 +45,15 @@ export const useMatchSubmission = () => {
         return false;
       }
 
-      // Update match score and get result details
-      const { data, team1_id, team2_id, team1Win } = await updateMatchScore({
+      // Update match score + reverse-any-previous + apply new counters
+      // atomically via the resubmit_match_result RPC (inside updateMatchScore).
+      await updateMatchScore({
         matchId,
         team1Score,
         team2Score,
         team1GameWins: parsedTeam1GameWins,
         team2GameWins: parsedTeam2GameWins,
       });
-
-      // Update team records if match is completed
-      const statsSuccess = await updateTeamStats(
-        team1Win ? team1_id : team2_id,
-        team1Win ? team2_id : team1_id,
-        [data] as unknown as import('@/types').Team[],
-        team1Win ? parsedTeam1GameWins : parsedTeam2GameWins,
-        team1Win ? parsedTeam2GameWins : parsedTeam1GameWins
-      );
-
-      // If the team records failed to update, stop here and report failure.
-      // updateTeamStats already showed a "Partial Update"/"Validation Error"
-      // toast, so we must not show a success toast or tell callers it worked.
-      if (!statsSuccess) {
-        return false;
-      }
 
       // Invalidate all relevant query caches
       await invalidateMatchRelatedQueries(queryClient);
