@@ -639,7 +639,7 @@ describe('BracketUpdateService', () => {
       );
 
       mockManager.update.match.mockImplementation(
-        async (payload: {
+        (payload: {
           id: number;
           opponent1?: { score?: number; result?: string };
           opponent2?: { score?: number; result?: string };
