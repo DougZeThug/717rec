@@ -298,7 +298,7 @@ describe('useScoreEntryData - submission flow', () => {
       await result.current.handleSubmitAll();
     });
 
-    expect(reverseTeamStats).toHaveBeenCalledWith('team-a', 'team-b', 2, 1);
+    expect(reverseTeamStats).not.toHaveBeenCalled();
     expect(mockHandleSubmitScore).toHaveBeenCalled();
   });
 
@@ -334,7 +334,7 @@ describe('useScoreEntryData - submission flow', () => {
       await result.current.handleSubmitAll();
     });
 
-    expect(reverseTeamStats).toHaveBeenCalledTimes(1);
+    expect(reverseTeamStats).not.toHaveBeenCalled();
     expect(result.current.matches[0].submitError).toBe(true);
     expect(result.current.matches[0].isEdited).toBe(true);
 
@@ -344,7 +344,7 @@ describe('useScoreEntryData - submission flow', () => {
       await result.current.handleSubmitAll();
     });
 
-    expect(reverseTeamStats).toHaveBeenCalledTimes(1);
+    expect(reverseTeamStats).not.toHaveBeenCalled();
     expect(mockHandleSubmitScore).toHaveBeenCalledTimes(2);
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({ title: expect.stringContaining('Submitted') })

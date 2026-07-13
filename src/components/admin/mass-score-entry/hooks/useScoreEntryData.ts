@@ -1,7 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 
-import { reverseTeamStats } from '@/hooks/matches/updates/utils/statReversalUtils';
 import { useMatchSubmission } from '@/hooks/matches/useMatchSubmission';
 import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
 import { useToast } from '@/hooks/useToast';
@@ -21,7 +20,7 @@ export const useScoreEntryData = () => {
   const {
     matches,
     setMatches,
-    originalMatches,
+    originalMatches: _originalMatches,
     setOriginalMatches,
     loading,
     setLoading,
@@ -108,47 +107,16 @@ export const useScoreEntryData = () => {
 
     // Track per-match outcome so the finally block can do a smart merge.
     // Each inner lambda catches its own errors, so Promise.all never rejects.
-    type SubmissionOutcome = { matchId: string; succeeded: boolean; reversalApplied: boolean };
+    type SubmissionOutcome = { matchId: string; succeeded: boolean };
     let submissionOutcomes: SubmissionOutcome[] = [];
 
     try {
-      // Per-match reversal + submission (paired to prevent double-decrement).
-      // Each lambda returns an outcome object instead of throwing, so we always
-      // know whether the reversal ran before a submission failure.
+      // The atomic resubmit_match_result RPC owns reversal + write + counters
+      // inside a single transaction, so there is no pre-call to make here and
+      // no compensation bookkeeping on failure.
       submissionOutcomes = await Promise.all(
         validMatches.map(async (match): Promise<SubmissionOutcome> => {
-          let reversalApplied = false;
           try {
-            const original = originalMatches.get(match.id);
-
-            // Reverse old stats for this specific match before submitting new scores
-            if (original?.iscompleted && original.winnerId && original.loserId) {
-              const oldWinnerGameWins =
-                original.winnerId === original.team1Id
-                  ? original.team1_game_wins || 0
-                  : original.team2_game_wins || 0;
-              const oldLoserGameWins =
-                original.loserId === original.team1Id
-                  ? original.team1_game_wins || 0
-                  : original.team2_game_wins || 0;
-
-              scoreLog(`Reversing old stats for match ${match.id}`, {
-                oldWinner: original.winnerId,
-                oldLoser: original.loserId,
-                oldWinnerGameWins,
-                oldLoserGameWins,
-              });
-
-              await reverseTeamStats(
-                original.winnerId,
-                original.loserId,
-                oldWinnerGameWins,
-                oldLoserGameWins
-              );
-              reversalApplied = true;
-            }
-
-            // Immediately submit new scores for this match
             const success = await handleSubmitScore({
               matchId: match.id,
               team1Score: match.team1Score ?? 0,
@@ -157,10 +125,10 @@ export const useScoreEntryData = () => {
               team2GameWins: match.team2_game_wins ?? 0,
             });
 
-            return { matchId: match.id, succeeded: !!success, reversalApplied };
+            return { matchId: match.id, succeeded: !!success };
           } catch (err) {
             errorLog(`Error submitting match ${match.id}:`, err);
-            return { matchId: match.id, succeeded: false, reversalApplied };
+            return { matchId: match.id, succeeded: false };
           }
         })
       );
@@ -199,45 +167,17 @@ export const useScoreEntryData = () => {
       await invalidateMatchRelatedQueries(queryClient);
       const fetchedMatches = await fetchMatches(filters);
 
-      // Matches where the reversal ran but the score write failed.
-      // Their DB stats are already decremented; a retry must NOT reverse again.
-      // CRITICAL: This must run regardless of fetch success to prevent double-reversal.
-      const reversalAppliedButFailed = new Set(
-        submissionOutcomes.filter((r) => !r.succeeded && r.reversalApplied).map((r) => r.matchId)
-      );
-
-      if (reversalAppliedButFailed.size > 0) {
-        setOriginalMatches((prev) => {
-          const updated = new Map(prev);
-          reversalAppliedButFailed.forEach((matchId) => {
-            const existing = updated.get(matchId);
-            if (existing) {
-              updated.set(matchId, {
-                ...existing,
-                winnerId: null,
-                loserId: null,
-                iscompleted: false,
-              });
-            }
-          });
-          return updated;
-        });
-      }
-
       // Only merge fetched data if the fetch returned results — an empty array
       // most likely signals a network error (fetchMatches returns [] on failure),
       // and we must not blank the entire list in that case.
       if (fetchedMatches.length > 0) {
         const fetchedById = new Map(fetchedMatches.map((m) => [m.id, m]));
 
-        // Update originalMatches with fresh server state for non-failed matches.
+        // Update originalMatches with fresh server state.
         setOriginalMatches((prev) => {
           const updated = new Map(prev);
           fetchedMatches.forEach((m) => {
-            // Don't overwrite the cleared winner/loser we just set above
-            if (!reversalAppliedButFailed.has(m.id)) {
-              updated.set(m.id, { ...m });
-            }
+            updated.set(m.id, { ...m });
           });
           return updated;
         });

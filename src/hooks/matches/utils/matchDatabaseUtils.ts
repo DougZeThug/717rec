@@ -1,7 +1,7 @@
 import { BadgeProcessingService } from '@/services/BadgeProcessingService';
 import { FailedBadgeOperationsService } from '@/services/FailedBadgeOperationsService';
 import { fetchMatchTeamIds } from '@/services/matches/MatchReadService';
-import { updateMatch } from '@/services/matches/MatchWriteService';
+import { resubmitMatchResult } from '@/services/matches/MatchWriteService';
 import { BadgeOperationKind as BadgeOperationType, BadgeOperationParams } from '@/types/badges';
 import { badgeLog, matchLog, warnLog } from '@/utils/logger';
 
@@ -14,7 +14,7 @@ export interface UpdateMatchScoreParams {
 }
 
 export interface UpdateMatchScoreResult {
-  data: Awaited<ReturnType<typeof updateMatch>>;
+  data: Awaited<ReturnType<typeof resubmitMatchResult>>;
   team1_id: string;
   team2_id: string;
   team1Win: boolean;
@@ -65,18 +65,19 @@ export const updateMatchScore = async ({
     team2_id,
   });
 
-  // Update the match with scores and completion status
-  const data = await updateMatch(matchId, {
-    team1_score: team1Score,
-    team2_score: team2Score,
-    team1_game_wins: team1GameWins,
-    team2_game_wins: team2GameWins,
-    winner_id: winnerId,
-    loser_id: loserId,
-    iscompleted: true,
-  });
+  // Atomically reverse prior stats (if any), write scores + winner, apply new
+  // counters, and refresh season stats in one transaction.
+  const winnerGameWins = team1Win ? team1GameWins : team2GameWins;
+  const loserGameWins = team1Win ? team2GameWins : team1GameWins;
+  const data = await resubmitMatchResult(
+    matchId,
+    winnerId,
+    loserId,
+    winnerGameWins,
+    loserGameWins
+  );
 
-  matchLog('Match updated successfully:', data);
+  matchLog('Match result submitted atomically:', data);
 
   // Process all badges for both teams after match completion
   // Each badge type is processed independently to avoid cascading failures

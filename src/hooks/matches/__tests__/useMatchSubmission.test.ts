@@ -18,16 +18,6 @@ vi.mock('@/hooks/useToast', () => ({
   }),
 }));
 
-const { mockUpdateTeamStats } = vi.hoisted(() => ({
-  mockUpdateTeamStats: vi.fn(),
-}));
-
-vi.mock('../useTeamRecordUpdate', () => ({
-  useTeamRecordUpdate: () => ({
-    updateTeamStats: mockUpdateTeamStats,
-  }),
-}));
-
 vi.mock('../utils/matchDatabaseUtils', () => ({
   updateMatchScore: vi.fn(),
 }));
@@ -59,7 +49,11 @@ import { invalidateMatchRelatedQueries } from '../utils/queryCacheUtils';
 const makeUpdateMatchScoreResult = (
   overrides: Partial<UpdateMatchScoreResult> = {}
 ): UpdateMatchScoreResult => ({
-  data: { id: 'match-1' } as UpdateMatchScoreResult['data'],
+  data: {
+    applied: true,
+    reversed_previous: false,
+    previous_winner_id: null,
+  } as UpdateMatchScoreResult['data'],
   team1_id: 'team-1',
   team2_id: 'team-2',
   team1Win: true,
@@ -79,8 +73,6 @@ const createWrapper = () => {
 describe('useMatchSubmission', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Default: team stats update succeeds (matches existing tests' assumptions)
-    mockUpdateTeamStats.mockResolvedValue(true);
   });
 
   it('returns handleSubmitScore function', () => {
@@ -91,9 +83,7 @@ describe('useMatchSubmission', () => {
 
   it('successfully submits match score', async () => {
     vi.mocked(updateMatchScore).mockResolvedValue(
-      makeUpdateMatchScoreResult({
-        data: { id: 'match-1', team1_score: 2, team2_score: 1 } as UpdateMatchScoreResult['data'],
-      })
+      makeUpdateMatchScoreResult()
     );
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
@@ -172,10 +162,8 @@ describe('useMatchSubmission', () => {
     expect(success).toBe(false);
   });
 
-  it('returns false and skips success path when team stats update fails', async () => {
-    vi.mocked(updateMatchScore).mockResolvedValue(makeUpdateMatchScoreResult({ team1Win: true }));
-    // Simulate a team-records update failure (e.g. RPC/DB error converted to false)
-    mockUpdateTeamStats.mockResolvedValueOnce(false);
+  it('returns false when the atomic resubmit RPC throws', async () => {
+    vi.mocked(updateMatchScore).mockRejectedValueOnce(new Error('rpc failure'));
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
 
@@ -232,12 +220,8 @@ describe('useMatchSubmission', () => {
   });
 
   it('allows concurrent submissions for different match IDs', async () => {
-    vi.mocked(updateMatchScore).mockImplementation(({ matchId }) =>
-      Promise.resolve(
-        makeUpdateMatchScoreResult({
-          data: { id: matchId } as UpdateMatchScoreResult['data'],
-        })
-      )
+    vi.mocked(updateMatchScore).mockImplementation(() =>
+      Promise.resolve(makeUpdateMatchScoreResult())
     );
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
@@ -277,14 +261,12 @@ describe('useMatchSubmission', () => {
     expect(updateMatchScore).toHaveBeenCalledTimes(1);
 
     resolveFirst(
-      makeUpdateMatchScoreResult({
-        data: { id: 'same-match' } as UpdateMatchScoreResult['data'],
-      })
+      makeUpdateMatchScoreResult()
     );
     await first;
 
     vi.mocked(updateMatchScore).mockResolvedValueOnce(
-      makeUpdateMatchScoreResult({ data: { id: 'same-match' } as UpdateMatchScoreResult['data'] })
+      makeUpdateMatchScoreResult()
     );
 
     const third = await result.current.handleSubmitScore({

@@ -390,3 +390,41 @@ export const markMatchAsTie = async (matchId: string): Promise<boolean> => {
   if (error) handleDatabaseError(error, 'Failed to mark match as tie');
   return data ?? false;
 };
+
+/**
+ * Atomically submit or edit a match result in a single transaction.
+ * Reverses any prior result's team counters, writes the new scores/winner,
+ * applies new counters, and refreshes season stats. Admin-only.
+ *
+ * Idempotent: submitting the exact same result twice returns
+ * `{ applied: false }` without touching counters.
+ */
+export interface ResubmitMatchResultOutcome {
+  applied: boolean;
+  reversed_previous: boolean;
+  previous_winner_id: string | null;
+}
+
+export const resubmitMatchResult = async (
+  matchId: string,
+  winnerId: string,
+  loserId: string,
+  winnerGameWins: number,
+  loserGameWins: number
+): Promise<ResubmitMatchResultOutcome> => {
+  const { data, error } = await supabase.rpc('resubmit_match_result', {
+    p_match_id: matchId,
+    p_winner_id: winnerId,
+    p_loser_id: loserId,
+    p_winner_game_wins: winnerGameWins,
+    p_loser_game_wins: loserGameWins,
+  });
+
+  if (error) handleDatabaseError(error, 'Failed to submit match result');
+  const result = (data ?? {}) as Partial<ResubmitMatchResultOutcome>;
+  return {
+    applied: result.applied ?? false,
+    reversed_previous: result.reversed_previous ?? false,
+    previous_winner_id: result.previous_winner_id ?? null,
+  };
+};
