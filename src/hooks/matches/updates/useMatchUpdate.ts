@@ -49,7 +49,7 @@ interface UseMatchUpdateProps {
   matches: Match[];
   setMatches: (matches: Match[]) => void;
   editingMatch: Match | undefined;
-  setEditingMatch: (match: Match | undefined) => void;
+  setEditingMatch: (match?: Match) => void;
 }
 
 export const useMatchUpdate = ({
@@ -167,7 +167,7 @@ export const useMatchUpdate = ({
       );
       setMatches(updatedMatches);
 
-      setEditingMatch(undefined);
+      setEditingMatch();
 
       const loserChanged = editingMatch.loserId !== matchData.loserId;
 
