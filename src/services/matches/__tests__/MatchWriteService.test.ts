@@ -27,8 +27,8 @@ import {
   batchCreateMatches,
   fetchActiveSeason,
   MatchCreateData,
-  MatchUpdateData,
-  updateMatchScore,
+  MatchNonResultUpdate,
+  updateMatch,
 } from '../MatchWriteService';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -48,14 +48,10 @@ const makeMatchData = (overrides: Partial<MatchCreateData> = {}): MatchCreateDat
   ...overrides,
 });
 
-const makeUpdateData = (overrides: Partial<MatchUpdateData> = {}): MatchUpdateData => ({
-  team1_score: 3,
-  team2_score: 1,
-  iscompleted: true,
-  winner_id: 'team-a',
-  loser_id: 'team-b',
-  ...overrides,
-});
+// Type-level guard: result fields must not be accepted by generic match updates.
+const assertNonResultUpdate = (_payload: MatchNonResultUpdate) => undefined;
+// @ts-expect-error winner_id is a result field and must go through an atomic RPC.
+assertNonResultUpdate({ winner_id: 'team-a' });
 
 // ─── fetchActiveSeason ────────────────────────────────────────────────────────
 
@@ -190,53 +186,59 @@ describe('batchCreateMatches', () => {
   });
 });
 
-// ─── updateMatchScore ─────────────────────────────────────────────────────────
+// ─── updateMatch ──────────────────────────────────────────────────────────────
 
-describe('updateMatchScore', () => {
-  // Valid v4 UUID — the function now guards its matchId input.
+describe('updateMatch', () => {
   const MATCH_ID = '44444444-4444-4444-8444-444444444444';
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('resolves without error on success', async () => {
+  it('updates non-result match fields and returns the row', async () => {
+    const row = { id: MATCH_ID, date: '2026-01-01', location: 'Court B' };
     mockFrom.mockReturnValue({
-      update: () => ({
-        eq: () => Promise.resolve({ error: null }),
+      update: (payload: MatchNonResultUpdate) => ({
+        eq: (column: string, value: string) => ({
+          select: () => ({
+            single: () =>
+              Promise.resolve({ data: { ...row, payload, column, value }, error: null }),
+          }),
+        }),
       }),
     });
 
-    await expect(updateMatchScore(MATCH_ID, makeUpdateData())).resolves.toBeUndefined();
+    await expect(
+      updateMatch(MATCH_ID, { date: '2026-01-01', location: 'Court B' })
+    ).resolves.toEqual(
+      expect.objectContaining({
+        id: MATCH_ID,
+        payload: { date: '2026-01-01', location: 'Court B' },
+      })
+    );
   });
 
   it('throws DatabaseError on Supabase error', async () => {
     mockFrom.mockReturnValue({
       update: () => ({
-        eq: () =>
-          Promise.resolve({
-            error: {
-              message: 'update failed',
-              code: '23503',
-              details: null,
-              hint: null,
-              name: 'PostgrestError',
-            },
+        eq: () => ({
+          select: () => ({
+            single: () =>
+              Promise.resolve({
+                data: null,
+                error: {
+                  message: 'update failed',
+                  code: '23503',
+                  details: null,
+                  hint: null,
+                  name: 'PostgrestError',
+                },
+              }),
           }),
+        }),
       }),
     });
 
-    await expect(updateMatchScore(MATCH_ID, makeUpdateData())).rejects.toThrow(DatabaseError);
-  });
-
-  it('updates the matches table', async () => {
-    mockFrom.mockReturnValue({
-      update: () => ({
-        eq: () => Promise.resolve({ error: null }),
-      }),
-    });
-
-    await updateMatchScore(MATCH_ID, makeUpdateData());
-    expect(mockFrom).toHaveBeenCalledWith('matches');
+    await expect(updateMatch(MATCH_ID, { location: 'Court B' })).rejects.toThrow(DatabaseError);
   });
 });

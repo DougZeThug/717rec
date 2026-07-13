@@ -6,20 +6,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Match, Team } from '@/types';
 
 const mockUpdateMatch = vi.fn();
-const mockUpsertTeamSeasonStats = vi.fn();
-const mockReverseTeamStatsService = vi.fn();
-const mockReverseTeamStats = vi.fn();
+const mockMarkMatchAsTie = vi.fn();
 const mockResubmitMatchResult = vi.fn();
 
 vi.mock('@/services/matches/MatchWriteService', () => ({
   updateMatch: (...args: unknown[]) => mockUpdateMatch(...args),
-  upsertTeamSeasonStats: (...args: unknown[]) => mockUpsertTeamSeasonStats(...args),
-  reverseTeamStats: (...args: unknown[]) => mockReverseTeamStatsService(...args),
+  markMatchAsTie: (...args: unknown[]) => mockMarkMatchAsTie(...args),
   resubmitMatchResult: (...args: unknown[]) => mockResubmitMatchResult(...args),
-}));
-
-vi.mock('../utils/statReversalUtils', () => ({
-  reverseTeamStats: (...args: unknown[]) => mockReverseTeamStats(...args),
 }));
 
 vi.mock('../utils/queryInvalidation', () => ({
@@ -71,7 +64,7 @@ describe('useMatchUpdate — Case 1 regression', () => {
     });
   });
 
-  it('calls upsertTeamSeasonStats after reverseTeamStats when completed → incomplete', async () => {
+  it('calls markMatchAsTie when completed → incomplete', async () => {
     const setMatches = vi.fn();
     const setEditingMatch = vi.fn();
 
@@ -99,14 +92,8 @@ describe('useMatchUpdate — Case 1 regression', () => {
       await result.current.handleUpdateMatch(incomplete, [] as Team[]);
     });
 
-    expect(mockReverseTeamStats).toHaveBeenCalledTimes(1);
-    expect(mockReverseTeamStats).toHaveBeenCalledWith('t1', 't2', 2, 1);
-    expect(mockUpsertTeamSeasonStats).toHaveBeenCalledTimes(1);
-
-    // Order: reverse before upsert
-    const reverseOrder = mockReverseTeamStats.mock.invocationCallOrder[0];
-    const upsertOrder = mockUpsertTeamSeasonStats.mock.invocationCallOrder[0];
-    expect(upsertOrder).toBeGreaterThan(reverseOrder);
+    expect(mockMarkMatchAsTie).toHaveBeenCalledTimes(1);
+    expect(mockMarkMatchAsTie).toHaveBeenCalledWith('m1');
 
     // The atomic result RPC (Case 2 path) should NOT run when match is now incomplete
     expect(mockResubmitMatchResult).not.toHaveBeenCalled();
@@ -137,8 +124,7 @@ describe('useMatchUpdate — Case 1 regression', () => {
       );
     });
 
-    expect(mockReverseTeamStats).not.toHaveBeenCalled();
-    expect(mockUpsertTeamSeasonStats).not.toHaveBeenCalled();
+    expect(mockMarkMatchAsTie).not.toHaveBeenCalled();
   });
 });
 
@@ -209,8 +195,7 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
     expect(outcome).toBe(true);
     // matchId, winnerId, loserId, winner game wins, loser game wins
     expect(mockResubmitMatchResult).toHaveBeenCalledWith('m1', 't1', 't2', 2, 1);
-    expect(mockReverseTeamStats).not.toHaveBeenCalled();
-    expect(mockUpsertTeamSeasonStats).not.toHaveBeenCalled();
+    expect(mockMarkMatchAsTie).not.toHaveBeenCalled();
     // State updated with the intended winner/loser
     expect(setMatches).toHaveBeenCalledWith([
       expect.objectContaining({ id: 'm1', winnerId: 't1', loserId: 't2', iscompleted: true }),
@@ -245,7 +230,7 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
 
     expect(outcome).toBe(true);
     // Reversal + reapplication happen atomically inside the RPC
-    expect(mockReverseTeamStats).not.toHaveBeenCalled();
+    expect(mockMarkMatchAsTie).not.toHaveBeenCalled();
     expect(mockResubmitMatchResult).toHaveBeenCalledWith('m1', 't1', 't2', 2, 1);
   });
 
@@ -280,7 +265,7 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
     });
 
     expect(outcome).toBe(true);
-    expect(mockReverseTeamStats).not.toHaveBeenCalled();
+    expect(mockMarkMatchAsTie).not.toHaveBeenCalled();
     // No winner/loser/game-wins changes → hook short-circuits before RPC.
     expect(mockResubmitMatchResult).not.toHaveBeenCalled();
   });

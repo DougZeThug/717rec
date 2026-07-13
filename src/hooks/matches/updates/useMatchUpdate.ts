@@ -3,31 +3,18 @@ import { useRef, useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
 import {
+  markMatchAsTie,
   resubmitMatchResult,
   updateMatch,
-  upsertTeamSeasonStats,
 } from '@/services/matches/MatchWriteService';
 import { Match, Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 
 import { invalidateAllDataQueries } from './utils/queryInvalidation';
-import { reverseTeamStats } from './utils/statReversalUtils';
 
 // Game wins a given team earned in a match (0 if unknown).
 const gameWinsFor = (match: Match, teamId: string | undefined): number =>
   teamId === match.team1Id ? match.team1_game_wins || 0 : match.team2_game_wins || 0;
-
-// Reverse previously-applied team stats for a completed match.
-// No-op when the match has no recorded winner/loser.
-const reverseStatsForMatch = async (match: Match): Promise<void> => {
-  if (!match.winnerId || !match.loserId) return;
-  await reverseTeamStats(
-    match.winnerId,
-    match.loserId,
-    gameWinsFor(match, match.winnerId),
-    gameWinsFor(match, match.loserId)
-  );
-};
 
 // Build the app-format Match from the DB update response.
 const toUpdatedMatch = (
@@ -91,11 +78,11 @@ export const useMatchUpdate = ({
       gameWinsChanged: boolean;
     }
   ): Promise<boolean> => {
-    // Case 1: Match was completed and is now marked incomplete — reverse old stats
+    // Case 1: Match was completed and is now marked incomplete — clear the
+    // result through the atomic tie/reversal RPC rather than the generic updater.
     if (flags.wasCompleted && !flags.isNowCompleted) {
       if (prevMatch.winnerId && prevMatch.loserId) {
-        await reverseStatsForMatch(prevMatch);
-        await upsertTeamSeasonStats();
+        await markMatchAsTie(prevMatch.id);
       }
       return true;
     }
@@ -138,60 +125,17 @@ export const useMatchUpdate = ({
       // resubmit_match_result RPC writes match fields AND team counters in one
       // transaction, so we skip the plain match UPDATE and only touch
       // non-result fields (date/location/teams) up front.
-      const isResultEdit =
-        !!matchData.iscompleted && !!matchData.winnerId && !!matchData.loserId;
+      const isResultEdit = !!matchData.iscompleted && !!matchData.winnerId && !!matchData.loserId;
 
-      const updatePayload: {
-        team1_id: string;
-        team2_id: string;
-        date: string | undefined;
-        location: string;
-        iscompleted: boolean | undefined;
-        team1_score: number | null;
-        team2_score: number | null;
-        winner_id: string | null;
-        loser_id: string | null;
-        team1_game_wins?: number;
-        team2_game_wins?: number;
-      } = {
+      const updatePayload = {
         team1_id: matchData.team1Id,
         team2_id: matchData.team2Id,
         date: matchData.date,
         location: matchData.location || '',
-        iscompleted: matchData.iscompleted,
-        // For incomplete matches, explicitly send NULL so Supabase clears any
-        // stale scores / winner / loser from a prior completed state. `undefined`
-        // would be stripped from the JSON payload and leave the DB unchanged.
-        team1_score: matchData.iscompleted ? (matchData.team1Score ?? null) : null,
-        team2_score: matchData.iscompleted ? (matchData.team2Score ?? null) : null,
-        winner_id: matchData.iscompleted ? (matchData.winnerId ?? null) : null,
-        loser_id: matchData.iscompleted ? (matchData.loserId ?? null) : null,
       };
 
-      if (matchData.team1_game_wins !== undefined) {
-        updatePayload.team1_game_wins = matchData.team1_game_wins;
-      }
-
-      if (matchData.team2_game_wins !== undefined) {
-        updatePayload.team2_game_wins = matchData.team2_game_wins;
-      }
-
-      // For result-carrying edits, avoid writing scores/winner/loser/game_wins
-      // twice — resubmit_match_result will set them atomically below.
-      if (isResultEdit) {
-        updatePayload.team1_score = null;
-        updatePayload.team2_score = null;
-        updatePayload.winner_id = null;
-        updatePayload.loser_id = null;
-        delete updatePayload.team1_game_wins;
-        delete updatePayload.team2_game_wins;
-        // Leave iscompleted for the RPC to set to true — we still write it so
-        // the row's non-result columns (date/location/teams) are updated now.
-        updatePayload.iscompleted = false;
-      }
-
-      // Update the match's non-result fields (and, when not a result edit, its
-      // scores/completion which the RPC does not touch).
+      // Update only the match's non-result fields. Result fields are changed
+      // exclusively by the atomic RPCs below.
       const data = await updateMatch(editingMatch.id, updatePayload);
 
       // Transform the returned match to our app's format
@@ -206,6 +150,15 @@ export const useMatchUpdate = ({
         updatedMatch.team2Score = matchData.team2Score;
         updatedMatch.team1_game_wins = matchData.team1_game_wins;
         updatedMatch.team2_game_wins = matchData.team2_game_wins;
+      }
+      if (!isNowCompleted) {
+        updatedMatch.iscompleted = false;
+        updatedMatch.winnerId = undefined;
+        updatedMatch.loserId = undefined;
+        updatedMatch.team1Score = undefined;
+        updatedMatch.team2Score = undefined;
+        updatedMatch.team1_game_wins = undefined;
+        updatedMatch.team2_game_wins = undefined;
       }
 
       // Update the matches state

@@ -82,9 +82,7 @@ describe('useMatchSubmission', () => {
   });
 
   it('successfully submits match score', async () => {
-    vi.mocked(updateMatchScore).mockResolvedValue(
-      makeUpdateMatchScoreResult()
-    );
+    vi.mocked(updateMatchScore).mockResolvedValue(makeUpdateMatchScoreResult());
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
 
@@ -260,14 +258,10 @@ describe('useMatchSubmission', () => {
     expect(secondImmediate).toBe(false);
     expect(updateMatchScore).toHaveBeenCalledTimes(1);
 
-    resolveFirst(
-      makeUpdateMatchScoreResult()
-    );
+    resolveFirst(makeUpdateMatchScoreResult());
     await first;
 
-    vi.mocked(updateMatchScore).mockResolvedValueOnce(
-      makeUpdateMatchScoreResult()
-    );
+    vi.mocked(updateMatchScore).mockResolvedValueOnce(makeUpdateMatchScoreResult());
 
     const third = await result.current.handleSubmitScore({
       matchId: 'same-match',

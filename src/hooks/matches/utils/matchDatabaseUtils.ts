@@ -69,13 +69,7 @@ export const updateMatchScore = async ({
   // counters, and refresh season stats in one transaction.
   const winnerGameWins = team1Win ? team1GameWins : team2GameWins;
   const loserGameWins = team1Win ? team2GameWins : team1GameWins;
-  const data = await resubmitMatchResult(
-    matchId,
-    winnerId,
-    loserId,
-    winnerGameWins,
-    loserGameWins
-  );
+  const data = await resubmitMatchResult(matchId, winnerId, loserId, winnerGameWins, loserGameWins);
 
   matchLog('Match result submitted atomically:', data);
 
