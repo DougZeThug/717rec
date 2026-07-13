@@ -9,12 +9,13 @@ const mockUpdateMatch = vi.fn();
 const mockUpsertTeamSeasonStats = vi.fn();
 const mockReverseTeamStatsService = vi.fn();
 const mockReverseTeamStats = vi.fn();
-const mockUpdateTeamRecords = vi.fn();
+const mockResubmitMatchResult = vi.fn();
 
 vi.mock('@/services/matches/MatchWriteService', () => ({
   updateMatch: (...args: unknown[]) => mockUpdateMatch(...args),
   upsertTeamSeasonStats: (...args: unknown[]) => mockUpsertTeamSeasonStats(...args),
   reverseTeamStats: (...args: unknown[]) => mockReverseTeamStatsService(...args),
+  resubmitMatchResult: (...args: unknown[]) => mockResubmitMatchResult(...args),
 }));
 
 vi.mock('../utils/statReversalUtils', () => ({
@@ -23,10 +24,6 @@ vi.mock('../utils/statReversalUtils', () => ({
 
 vi.mock('../utils/queryInvalidation', () => ({
   invalidateAllDataQueries: vi.fn(),
-}));
-
-vi.mock('@/hooks/useTeamRecords', () => ({
-  useTeamRecords: () => ({ updateTeamRecords: mockUpdateTeamRecords }),
 }));
 
 vi.mock('@/hooks/useToast', () => ({
@@ -111,8 +108,8 @@ describe('useMatchUpdate — Case 1 regression', () => {
     const upsertOrder = mockUpsertTeamSeasonStats.mock.invocationCallOrder[0];
     expect(upsertOrder).toBeGreaterThan(reverseOrder);
 
-    // updateTeamRecords (Case 2 path) should NOT run when match is now incomplete
-    expect(mockUpdateTeamRecords).not.toHaveBeenCalled();
+    // The atomic result RPC (Case 2 path) should NOT run when match is now incomplete
+    expect(mockResubmitMatchResult).not.toHaveBeenCalled();
   });
 
   it('skips stat reversal when the previously completed match had no recorded winner/loser', async () => {
@@ -184,10 +181,14 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUpdateMatch.mockResolvedValue(completedDbRow);
-    mockUpdateTeamRecords.mockResolvedValue(true);
+    mockResubmitMatchResult.mockResolvedValue({
+      applied: true,
+      reversed_previous: false,
+      previous_winner_id: null,
+    });
   });
 
-  it('applies winner/loser team records when an incomplete match is completed (no reversal)', async () => {
+  it('calls resubmit_match_result RPC when an incomplete match is completed', async () => {
     const setMatches = vi.fn();
     const { result } = renderHook(
       () =>
@@ -206,17 +207,17 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
     });
 
     expect(outcome).toBe(true);
-    // Winner id, loser id, teams, then winner's and loser's game wins
-    expect(mockUpdateTeamRecords).toHaveBeenCalledWith('t1', 't2', [], 2, 1);
+    // matchId, winnerId, loserId, winner game wins, loser game wins
+    expect(mockResubmitMatchResult).toHaveBeenCalledWith('m1', 't1', 't2', 2, 1);
     expect(mockReverseTeamStats).not.toHaveBeenCalled();
     expect(mockUpsertTeamSeasonStats).not.toHaveBeenCalled();
-    // State updated with the DB-derived winner/loser
+    // State updated with the intended winner/loser
     expect(setMatches).toHaveBeenCalledWith([
       expect.objectContaining({ id: 'm1', winnerId: 't1', loserId: 't2', iscompleted: true }),
     ]);
   });
 
-  it('reverses old stats before applying new records when the winner changes on a completed match', async () => {
+  it('delegates reversal + reapplication to resubmit RPC when the winner changes on a completed match', async () => {
     const previouslyCompleted = {
       ...incompleteMatch,
       iscompleted: true,
@@ -243,14 +244,9 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
     });
 
     expect(outcome).toBe(true);
-    // Old stats reversed: previous winner t2 had 2 game wins, loser t1 had 1
-    expect(mockReverseTeamStats).toHaveBeenCalledWith('t2', 't1', 2, 1);
-    // New records applied for the new winner t1
-    expect(mockUpdateTeamRecords).toHaveBeenCalledWith('t1', 't2', [], 2, 1);
-    // Reversal must happen before the new records are applied
-    expect(mockReverseTeamStats.mock.invocationCallOrder[0]).toBeLessThan(
-      mockUpdateTeamRecords.mock.invocationCallOrder[0]
-    );
+    // Reversal + reapplication happen atomically inside the RPC
+    expect(mockReverseTeamStats).not.toHaveBeenCalled();
+    expect(mockResubmitMatchResult).toHaveBeenCalledWith('m1', 't1', 't2', 2, 1);
   });
 
   it('does not touch stats when a completed match is edited without winner/score changes', async () => {
@@ -285,35 +281,13 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
 
     expect(outcome).toBe(true);
     expect(mockReverseTeamStats).not.toHaveBeenCalled();
-    expect(mockUpdateTeamRecords).not.toHaveBeenCalled();
+    // Same winner/game wins → still a result-carrying edit; RPC is idempotent
+    // (returns applied:false server-side). Client still calls it.
+    expect(mockResubmitMatchResult).toHaveBeenCalledWith('m1', 't1', 't2', 2, 1);
   });
 
-  it('auto-recovers via upsertTeamSeasonStats and returns false when team records fail', async () => {
-    mockUpdateTeamRecords.mockResolvedValue(false);
-
-    const { result } = renderHook(
-      () =>
-        useMatchUpdate({
-          matches: [incompleteMatch],
-          setMatches: vi.fn(),
-          editingMatch: incompleteMatch,
-          setEditingMatch: vi.fn(),
-        }),
-      { wrapper }
-    );
-
-    let outcome = true;
-    await act(async () => {
-      outcome = await result.current.handleUpdateMatch(completedMatchData, [] as Team[]);
-    });
-
-    expect(outcome).toBe(false);
-    expect(mockUpsertTeamSeasonStats).toHaveBeenCalledTimes(1);
-  });
-
-  it('still returns false (without throwing) when the reconciliation upsert also fails', async () => {
-    mockUpdateTeamRecords.mockResolvedValue(false);
-    mockUpsertTeamSeasonStats.mockRejectedValue(new Error('rpc down'));
+  it('returns false when the atomic resubmit RPC throws', async () => {
+    mockResubmitMatchResult.mockRejectedValueOnce(new Error('rpc down'));
 
     const { result } = renderHook(
       () =>
@@ -356,7 +330,7 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
 
     expect(outcome).toBe(false);
     expect(setMatches).not.toHaveBeenCalled();
-    expect(mockUpdateTeamRecords).not.toHaveBeenCalled();
+    expect(mockResubmitMatchResult).not.toHaveBeenCalled();
     expect(result.current.isUpdating).toBe(false);
   });
 
