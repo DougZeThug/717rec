@@ -184,6 +184,119 @@ BEGIN
     IF v_err_text NOT LIKE 'Match not found:%' THEN RAISE; END IF;
   END;
 
+  -- resubmit_match_result: admin-gated, atomic first-apply, idempotent repeat,
+  -- edit reverses prior counters and reapplies new ones, validates teams,
+  -- rejects missing/invalid input.
+  v_match_id := '00000000-0000-0000-0000-00000000d005';
+  INSERT INTO public.matches (id, team1_id, team2_id, season_id, round_number, iscompleted)
+  VALUES (v_match_id, v_team1_id, v_team2_id, v_season_id, 5, false);
+
+  -- Non-admin rejected.
+  PERFORM auth.set_test_claims(v_member_id);
+  BEGIN
+    PERFORM public.resubmit_match_result(v_match_id, v_team1_id, v_team2_id, 3, 1);
+    RAISE EXCEPTION 'resubmit_match_result allowed non-admin';
+  EXCEPTION WHEN OTHERS THEN
+    GET STACKED DIAGNOSTICS v_err_text = MESSAGE_TEXT;
+    IF v_err_text <> 'Admin access required' THEN RAISE; END IF;
+  END;
+
+  PERFORM auth.set_test_claims(v_admin_id);
+
+  -- First application: applies stats, applied=true, reversed_previous=false.
+  v_result_json := public.resubmit_match_result(v_match_id, v_team1_id, v_team2_id, 3, 1);
+  IF v_result_json->>'applied' <> 'true' OR v_result_json->>'reversed_previous' <> 'false'
+     OR (v_result_json->>'previous_winner_id') IS NOT NULL THEN
+    RAISE EXCEPTION 'resubmit_match_result first call returned %', v_result_json;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.matches WHERE id = v_match_id AND iscompleted = true
+                   AND winner_id = v_team1_id AND loser_id = v_team2_id
+                   AND team1_score = 1 AND team2_score = 0
+                   AND team1_game_wins = 3 AND team2_game_wins = 1) THEN
+    RAISE EXCEPTION 'resubmit_match_result did not persist match fields';
+  END IF;
+  SELECT wins, losses, game_wins, game_losses INTO r FROM public.teams WHERE id = v_team1_id;
+  IF (r.wins, r.losses, r.game_wins, r.game_losses) IS DISTINCT FROM (1, 0, 3, 1) THEN
+    RAISE EXCEPTION 'winner stats after first resubmit were %', r;
+  END IF;
+  SELECT wins, losses, game_wins, game_losses INTO r FROM public.teams WHERE id = v_team2_id;
+  IF (r.wins, r.losses, r.game_wins, r.game_losses) IS DISTINCT FROM (0, 1, 1, 3) THEN
+    RAISE EXCEPTION 'loser stats after first resubmit were %', r;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.team_season_stats WHERE season_id = v_season_id
+                   AND team_id = v_team1_id AND match_wins = 1 AND game_wins = 3) THEN
+    RAISE EXCEPTION 'resubmit_match_result did not refresh team_season_stats';
+  END IF;
+
+  -- Idempotent repeat: applied=false, counters untouched.
+  v_result_json := public.resubmit_match_result(v_match_id, v_team1_id, v_team2_id, 3, 1);
+  IF v_result_json->>'applied' <> 'false' OR v_result_json->>'reversed_previous' <> 'false' THEN
+    RAISE EXCEPTION 'resubmit_match_result repeat was not idempotent: %', v_result_json;
+  END IF;
+  SELECT wins, losses, game_wins, game_losses INTO r FROM public.teams WHERE id = v_team1_id;
+  IF (r.wins, r.losses, r.game_wins, r.game_losses) IS DISTINCT FROM (1, 0, 3, 1) THEN
+    RAISE EXCEPTION 'idempotent resubmit mutated winner stats: %', r;
+  END IF;
+
+  -- Edit: flip winner + change game wins. Prior counters reversed, new ones applied.
+  v_result_json := public.resubmit_match_result(v_match_id, v_team2_id, v_team1_id, 2, 0);
+  IF v_result_json->>'applied' <> 'true'
+     OR v_result_json->>'reversed_previous' <> 'true'
+     OR v_result_json->>'previous_winner_id' <> v_team1_id::text THEN
+    RAISE EXCEPTION 'resubmit_match_result edit returned %', v_result_json;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.matches WHERE id = v_match_id
+                   AND winner_id = v_team2_id AND loser_id = v_team1_id
+                   AND team1_score = 0 AND team2_score = 1
+                   AND team1_game_wins = 0 AND team2_game_wins = 2) THEN
+    RAISE EXCEPTION 'resubmit_match_result edit did not rewrite match fields';
+  END IF;
+  SELECT wins, losses, game_wins, game_losses INTO r FROM public.teams WHERE id = v_team1_id;
+  IF (r.wins, r.losses, r.game_wins, r.game_losses) IS DISTINCT FROM (0, 1, 0, 2) THEN
+    RAISE EXCEPTION 'previous-winner stats after edit were %', r;
+  END IF;
+  SELECT wins, losses, game_wins, game_losses INTO r FROM public.teams WHERE id = v_team2_id;
+  IF (r.wins, r.losses, r.game_wins, r.game_losses) IS DISTINCT FROM (1, 0, 2, 0) THEN
+    RAISE EXCEPTION 'new-winner stats after edit were %', r;
+  END IF;
+
+  -- Winner and loser must differ.
+  BEGIN
+    PERFORM public.resubmit_match_result(v_match_id, v_team1_id, v_team1_id, 2, 0);
+    RAISE EXCEPTION 'resubmit_match_result allowed identical winner/loser';
+  EXCEPTION WHEN OTHERS THEN
+    GET STACKED DIAGNOSTICS v_err_text = MESSAGE_TEXT;
+    IF v_err_text <> 'Winner and loser must be different teams' THEN RAISE; END IF;
+  END;
+
+  -- Winner/loser must be the match's two teams.
+  BEGIN
+    PERFORM public.resubmit_match_result(v_match_id, v_team1_id, v_outsider_id, 2, 0);
+    RAISE EXCEPTION 'resubmit_match_result allowed foreign team';
+  EXCEPTION WHEN OTHERS THEN
+    GET STACKED DIAGNOSTICS v_err_text = MESSAGE_TEXT;
+    IF v_err_text NOT LIKE 'Winner/loser %do not match teams%' THEN RAISE; END IF;
+  END;
+
+  -- NULL winner/loser rejected.
+  BEGIN
+    PERFORM public.resubmit_match_result(v_match_id, NULL, v_team2_id, 2, 0);
+    RAISE EXCEPTION 'resubmit_match_result allowed NULL winner';
+  EXCEPTION WHEN OTHERS THEN
+    GET STACKED DIAGNOSTICS v_err_text = MESSAGE_TEXT;
+    IF v_err_text <> 'Winner and loser required' THEN RAISE; END IF;
+  END;
+
+  -- Missing match errors.
+  BEGIN
+    PERFORM public.resubmit_match_result('00000000-0000-0000-0000-00000000dfff'::uuid,
+                                         v_team1_id, v_team2_id, 2, 0);
+    RAISE EXCEPTION 'resubmit_match_result allowed missing match';
+  EXCEPTION WHEN OTHERS THEN
+    GET STACKED DIAGNOSTICS v_err_text = MESSAGE_TEXT;
+    IF v_err_text NOT LIKE 'Match not found:%' THEN RAISE; END IF;
+  END;
+
   RAISE NOTICE 'score_stats_business_logic smoke test passed';
 END $$;
 
