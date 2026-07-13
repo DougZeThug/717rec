@@ -1166,9 +1166,13 @@ DO $$ BEGIN
              ELSE COALESCE(SUM(CASE WHEN m.winner_id = t.id THEN d_opp.division_weight ELSE 0 END), 0)
                   / NULLIF(SUM(d_opp.division_weight), 0)
         END AS weighted_win_percentage,
-        CASE WHEN COALESCE(SUM(d_opp.division_weight), 0) = 0 THEN 0
-             ELSE COALESCE(SUM(CASE WHEN m.winner_id = t.id THEN d_opp.division_weight ELSE 0 END), 0)
-                  / NULLIF(SUM(d_opp.division_weight), 0)
+        CASE WHEN COALESCE(SUM((COALESCE(m.team1_game_wins, 0) + COALESCE(m.team2_game_wins, 0))
+                               * d_opp.division_weight), 0) = 0 THEN 0
+             ELSE COALESCE(SUM(CASE WHEN m.team1_id = t.id THEN COALESCE(m.team1_game_wins, 0)
+                                    WHEN m.team2_id = t.id THEN COALESCE(m.team2_game_wins, 0)
+                                    ELSE 0 END * d_opp.division_weight), 0)
+                  / NULLIF(SUM((COALESCE(m.team1_game_wins, 0) + COALESCE(m.team2_game_wins, 0))
+                               * d_opp.division_weight), 0)
         END AS weighted_game_win_percentage
       FROM public.teams t
       LEFT JOIN public.matches m
