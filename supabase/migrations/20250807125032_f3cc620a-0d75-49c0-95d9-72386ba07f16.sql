@@ -1,4 +1,15 @@
--- Create a hidden division for teams that should not appear in the frontend
-INSERT INTO divisions (name, display_division, division_weight, created_at)
-VALUES ('Hidden', 'Hidden', -1.0, now())
-ON CONFLICT (name) DO NOTHING;
+-- NEUTRALIZED — this migration can never have applied cleanly.
+-- (Lovable's runner tolerates failed statements, so fragments may have
+-- taken effect on the live project; everything load-bearing here is
+-- superseded by the working rewrite named below.)
+--
+-- ON CONFLICT (name) requires a unique constraint on divisions.name,
+-- which the live table does not have, so this INSERT always errored.
+-- 20250807125135_318a91e4 (the INSERT ... SELECT ... WHERE NOT EXISTS
+-- version) is the attempt that actually applied to the live project.
+-- Original text kept below, commented out, for history.
+
+-- -- Create a hidden division for teams that should not appear in the frontend
+-- INSERT INTO divisions (name, display_division, division_weight, created_at)
+-- VALUES ('Hidden', 'Hidden', -1.0, now())
+-- ON CONFLICT (name) DO NOTHING;

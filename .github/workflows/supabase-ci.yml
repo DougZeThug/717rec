@@ -77,9 +77,14 @@ jobs:
           {
             echo "\\echo '== bootstrap =='"
             cat supabase/tests/_bootstrap.sql
+            printf '\n;\n'
             for f in $(ls supabase/migrations/*.sql | sort); do
               echo "\\echo '== migration: $f =='"
               cat "$f"
+              # Most generated migrations lack a trailing newline and a few
+              # lack a final semicolon; without this separator, consecutive
+              # files glue into one statement and the apply fails.
+              printf '\n;\n'
             done
           } > "$combined"
           psql -v ON_ERROR_STOP=1 -f "$combined"

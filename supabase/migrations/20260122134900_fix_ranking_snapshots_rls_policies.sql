@@ -1,35 +1,47 @@
--- Fix RLS policies for ranking_snapshots table
--- The previous policies were too restrictive, requiring admin access for all writes
--- Rankings are automatically calculated and should be saveable by authenticated users
+-- NEUTRALIZED — this migration can never have applied cleanly.
+-- (Lovable's runner tolerates failed statements, so fragments may have
+-- taken effect on the live project; everything load-bearing here is
+-- superseded by the working rewrite named below.)
+--
+-- Hand-written file (round timestamp) committed to the repo but never run
+-- against the live project: 20260122171444 — the Lovable-generated migration
+-- from later the same day — creates the identical
+-- "Authenticated users can insert/update rankings" policies without dropping
+-- these names first, which only succeeds if they did not exist on live.
+-- Original text kept below, commented out, for history.
 
--- Drop the existing restrictive policies
-DROP POLICY IF EXISTS "Admins can insert rankings" ON public.ranking_snapshots;
-DROP POLICY IF EXISTS "Admins can update rankings" ON public.ranking_snapshots;
-DROP POLICY IF EXISTS "Admins can delete rankings" ON public.ranking_snapshots;
-
--- Create new policies allowing authenticated users to save rankings
-CREATE POLICY "Authenticated users can insert rankings"
-ON public.ranking_snapshots
-FOR INSERT
-TO authenticated
-WITH CHECK (true);
-
-CREATE POLICY "Authenticated users can update rankings"
-ON public.ranking_snapshots
-FOR UPDATE
-TO authenticated
-USING (true)
-WITH CHECK (true);
-
--- Keep delete restricted to admins for data integrity
-CREATE POLICY "Admins can delete rankings"
-ON public.ranking_snapshots
-FOR DELETE
-TO authenticated
-USING (
-  EXISTS (
-    SELECT 1 FROM public.profiles
-    WHERE profiles.id = auth.uid()
-    AND profiles.is_admin = true
-  )
-);
+-- -- Fix RLS policies for ranking_snapshots table
+-- -- The previous policies were too restrictive, requiring admin access for all writes
+-- -- Rankings are automatically calculated and should be saveable by authenticated users
+--
+-- -- Drop the existing restrictive policies
+-- DROP POLICY IF EXISTS "Admins can insert rankings" ON public.ranking_snapshots;
+-- DROP POLICY IF EXISTS "Admins can update rankings" ON public.ranking_snapshots;
+-- DROP POLICY IF EXISTS "Admins can delete rankings" ON public.ranking_snapshots;
+--
+-- -- Create new policies allowing authenticated users to save rankings
+-- CREATE POLICY "Authenticated users can insert rankings"
+-- ON public.ranking_snapshots
+-- FOR INSERT
+-- TO authenticated
+-- WITH CHECK (true);
+--
+-- CREATE POLICY "Authenticated users can update rankings"
+-- ON public.ranking_snapshots
+-- FOR UPDATE
+-- TO authenticated
+-- USING (true)
+-- WITH CHECK (true);
+--
+-- -- Keep delete restricted to admins for data integrity
+-- CREATE POLICY "Admins can delete rankings"
+-- ON public.ranking_snapshots
+-- FOR DELETE
+-- TO authenticated
+-- USING (
+--   EXISTS (
+--     SELECT 1 FROM public.profiles
+--     WHERE profiles.id = auth.uid()
+--     AND profiles.is_admin = true
+--   )
+-- );

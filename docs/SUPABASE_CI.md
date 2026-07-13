@@ -4,6 +4,38 @@
 function code on every PR that touches `supabase/**`. It runs on push to
 `main` and weekly via cron as well.
 
+## The baseline migration (migration 0)
+
+`supabase/migrations/00000000000000_baseline.sql` recreates the schema as
+it existed *before* the first checked-in migration (May 2025). The
+project's core tables (`teams`, `matches`, `seasons`, `divisions`, …) were
+created in the Supabase dashboard before migrations were adopted, so no
+regular migration creates them — without the baseline, a fresh database
+cannot be rebuilt and the apply job below would fail on the very first
+file.
+
+Two properties to preserve when touching it:
+
+1. **It only contains pre-migration state.** Anything a later migration
+   adds (columns, views, functions) must NOT be in the baseline, or that
+   later migration breaks on replay.
+2. **Every statement is guarded** (`IF NOT EXISTS` / catalog lookups), so
+   applying it to the real project — where everything already exists — is
+   a complete no-op. It never drops or replaces anything. Sections that
+   only make sense when rebuilding from zero (historical seed rows,
+   dashboard-era policies that later migrations drop, default grants) are
+   additionally gated on a fresh-database sentinel, so they cannot
+   re-create rows, policies, or grants that later hardening migrations
+   removed from the live project.
+
+The baseline was reconstructed from `src/integrations/supabase/types.ts`
+(the auto-generated live-schema snapshot) plus evidence in later
+migrations and app code, then verified by replaying all migrations on a
+fresh Postgres. Column types are best-effort where the snapshot is
+ambiguous. If you ever run `supabase db dump --linked` against the live
+project, its output can replace the reconstructed table definitions
+wholesale.
+
 ## What runs
 
 1. **`db-lint`** — `supabase db lint --level warning` over the migrations

@@ -13,9 +13,13 @@ BEGIN
       ('matches'),
       ('seasons'),
       ('profiles'),
-      ('user_roles'),
       ('divisions'),
-      ('games')
+      ('games'),
+      ('brackets'),
+      ('participants'),
+      ('team_season_stats'),
+      ('match_rounds'),
+      ('game_players')
     ) AS expected(t)
     WHERE NOT EXISTS (
       SELECT 1 FROM information_schema.tables

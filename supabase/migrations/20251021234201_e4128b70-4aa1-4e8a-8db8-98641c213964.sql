@@ -1,25 +1,37 @@
--- Fix brackets table RLS policies to use current_user_is_admin()
--- Drop incorrect policies that check auth.role()
-DROP POLICY IF EXISTS "Admin full access for INSERT" ON public.brackets;
-DROP POLICY IF EXISTS "Admin full access for DELETE" ON public.brackets;
-DROP POLICY IF EXISTS "Admin full access for UPDATE" ON public.brackets;
+-- NEUTRALIZED — this migration can never have applied cleanly.
+-- (Lovable's runner tolerates failed statements, so fragments may have
+-- taken effect on the live project; everything load-bearing here is
+-- superseded by the working rewrite named below.)
+--
+-- 20251021154942 (8 hours earlier) already applied the same fix: it created
+-- "Admins can insert/update/delete brackets" policies (plus a divisions
+-- policy this file does not include). Re-creating those policies without
+-- dropping them first errors with "already exists", so this near-duplicate
+-- regeneration always aborted.
+-- Original text kept below, commented out, for history.
 
--- Create correct policies using current_user_is_admin()
-CREATE POLICY "Admins can insert brackets" 
-ON public.brackets
-FOR INSERT 
-TO authenticated
-WITH CHECK (current_user_is_admin());
-
-CREATE POLICY "Admins can update brackets" 
-ON public.brackets
-FOR UPDATE 
-TO authenticated
-USING (current_user_is_admin())
-WITH CHECK (current_user_is_admin());
-
-CREATE POLICY "Admins can delete brackets" 
-ON public.brackets
-FOR DELETE 
-TO authenticated
-USING (current_user_is_admin());
+-- -- Fix brackets table RLS policies to use current_user_is_admin()
+-- -- Drop incorrect policies that check auth.role()
+-- DROP POLICY IF EXISTS "Admin full access for INSERT" ON public.brackets;
+-- DROP POLICY IF EXISTS "Admin full access for DELETE" ON public.brackets;
+-- DROP POLICY IF EXISTS "Admin full access for UPDATE" ON public.brackets;
+--
+-- -- Create correct policies using current_user_is_admin()
+-- CREATE POLICY "Admins can insert brackets" 
+-- ON public.brackets
+-- FOR INSERT 
+-- TO authenticated
+-- WITH CHECK (current_user_is_admin());
+--
+-- CREATE POLICY "Admins can update brackets" 
+-- ON public.brackets
+-- FOR UPDATE 
+-- TO authenticated
+-- USING (current_user_is_admin())
+-- WITH CHECK (current_user_is_admin());
+--
+-- CREATE POLICY "Admins can delete brackets" 
+-- ON public.brackets
+-- FOR DELETE 
+-- TO authenticated
+-- USING (current_user_is_admin());

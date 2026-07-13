@@ -1,42 +1,58 @@
--- Fix infinite recursion in team_memberships RLS policy
--- Create a security definer function to check team membership without triggering RLS recursion
+-- NEUTRALIZED — this migration can never have applied cleanly.
+-- (Lovable's runner tolerates failed statements, so fragments may have
+-- taken effect on the live project; everything load-bearing here is
+-- superseded by the working rewrite named below.)
+--
+-- It defines user_is_team_member with parameters (_user_id, _team_id), but
+-- 20251021205645 (4 hours later, applied on live) re-creates the same
+-- function with (p_user_id, p_team_id) via CREATE OR REPLACE — which
+-- Postgres rejects with "cannot change name of input parameter" if this
+-- version is in place. Every later migration (20260112135802, 20260409184922,
+-- 20260410152541, 20260521151617) uses the p_-prefixed signature, so this
+-- file's version cannot have been in effect on the live project; its
+-- transaction must have aborted (most likely a duplicate policy name from a
+-- dashboard-created policy).
+-- Original text kept below, commented out, for history.
 
-CREATE OR REPLACE FUNCTION public.user_is_team_member(_user_id uuid, _team_id uuid)
-RETURNS boolean
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT EXISTS (
-    SELECT 1
-    FROM public.team_memberships
-    WHERE user_id = _user_id
-      AND team_id = _team_id
-  )
-$$;
-
--- Drop the existing recursive policy
-DROP POLICY IF EXISTS "authenticated_can_select_memberships" ON team_memberships;
-DROP POLICY IF EXISTS "Users can view own and team memberships" ON team_memberships;
-DROP POLICY IF EXISTS "Users can view memberships" ON team_memberships;
-
--- Create new non-recursive policies using the security definer function
-CREATE POLICY "Users can view own memberships"
-ON team_memberships
-FOR SELECT
-TO authenticated
-USING (auth.uid() = user_id);
-
-CREATE POLICY "Team members can view team memberships"
-ON team_memberships
-FOR SELECT
-TO authenticated
-USING (public.user_is_team_member(auth.uid(), team_id));
-
--- Allow admins to view all memberships
-CREATE POLICY "Admins can view all memberships"
-ON team_memberships
-FOR SELECT
-TO authenticated
-USING (public.current_user_is_admin());
+-- -- Fix infinite recursion in team_memberships RLS policy
+-- -- Create a security definer function to check team membership without triggering RLS recursion
+--
+-- CREATE OR REPLACE FUNCTION public.user_is_team_member(_user_id uuid, _team_id uuid)
+-- RETURNS boolean
+-- LANGUAGE sql
+-- STABLE
+-- SECURITY DEFINER
+-- SET search_path = public
+-- AS $$
+--   SELECT EXISTS (
+--     SELECT 1
+--     FROM public.team_memberships
+--     WHERE user_id = _user_id
+--       AND team_id = _team_id
+--   )
+-- $$;
+--
+-- -- Drop the existing recursive policy
+-- DROP POLICY IF EXISTS "authenticated_can_select_memberships" ON team_memberships;
+-- DROP POLICY IF EXISTS "Users can view own and team memberships" ON team_memberships;
+-- DROP POLICY IF EXISTS "Users can view memberships" ON team_memberships;
+--
+-- -- Create new non-recursive policies using the security definer function
+-- CREATE POLICY "Users can view own memberships"
+-- ON team_memberships
+-- FOR SELECT
+-- TO authenticated
+-- USING (auth.uid() = user_id);
+--
+-- CREATE POLICY "Team members can view team memberships"
+-- ON team_memberships
+-- FOR SELECT
+-- TO authenticated
+-- USING (public.user_is_team_member(auth.uid(), team_id));
+--
+-- -- Allow admins to view all memberships
+-- CREATE POLICY "Admins can view all memberships"
+-- ON team_memberships
+-- FOR SELECT
+-- TO authenticated
+-- USING (public.current_user_is_admin());
