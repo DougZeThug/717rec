@@ -1,9 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 
-import { useTeamRecords } from '@/hooks/useTeamRecords';
 import { useToast } from '@/hooks/useToast';
-import { updateMatch, upsertTeamSeasonStats } from '@/services/matches/MatchWriteService';
+import {
+  resubmitMatchResult,
+  updateMatch,
+  upsertTeamSeasonStats,
+} from '@/services/matches/MatchWriteService';
 import { Match, Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 
@@ -69,7 +72,6 @@ export const useMatchUpdate = ({
   setEditingMatch,
 }: UseMatchUpdateProps) => {
   const { toast } = useToast();
-  const { updateTeamRecords } = useTeamRecords();
   const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState(false);
   const isUpdatingRef = useRef(false);
@@ -80,7 +82,7 @@ export const useMatchUpdate = ({
   const applyStatChanges = async (
     prevMatch: Match,
     nextMatch: Match,
-    teams: Team[],
+    _teams: Team[],
     flags: {
       wasCompleted: boolean | undefined;
       isNowCompleted: boolean | undefined;
@@ -105,41 +107,15 @@ export const useMatchUpdate = ({
       return true;
     }
 
-    // If it was already completed and something changed, reverse old stats first
-    if (flags.wasCompleted) {
-      await reverseStatsForMatch(prevMatch);
-    }
-
-    const statsSuccess = await updateTeamRecords(
+    // Atomic: reverse prior + write new + apply counters in one transaction.
+    await resubmitMatchResult(
+      nextMatch.id,
       nextMatch.winnerId,
       nextMatch.loserId,
-      teams,
       gameWinsFor(nextMatch, nextMatch.winnerId),
       gameWinsFor(nextMatch, nextMatch.loserId)
     );
-
-    if (statsSuccess) return true;
-
-    // Attempt automatic reconciliation via upsert_team_season_stats
-    try {
-      await upsertTeamSeasonStats();
-      invalidateAllDataQueries(queryClient);
-      toast({
-        title: 'Partial Failure (Auto-Recovered)',
-        description:
-          'Match was updated but team records failed to save. Season stats were reconciled automatically.',
-        variant: 'destructive',
-      });
-    } catch (reconcileError) {
-      errorLog('Failed to reconcile team season stats after partial failure:', reconcileError);
-      toast({
-        title: 'Partial Failure',
-        description:
-          'Match was updated but team records failed to save. Please contact an admin to reconcile stats.',
-        variant: 'destructive',
-      });
-    }
-    return false;
+    return true;
   };
 
   const handleUpdateMatch = async (matchData: Omit<Match, 'id'>, teams: Team[]) => {
@@ -157,6 +133,13 @@ export const useMatchUpdate = ({
       const gameWinsChanged =
         editingMatch.team1_game_wins !== matchData.team1_game_wins ||
         editingMatch.team2_game_wins !== matchData.team2_game_wins;
+
+      // For result-carrying edits (completed with winner/loser) the atomic
+      // resubmit_match_result RPC writes match fields AND team counters in one
+      // transaction, so we skip the plain match UPDATE and only touch
+      // non-result fields (date/location/teams) up front.
+      const isResultEdit =
+        !!matchData.iscompleted && !!matchData.winnerId && !!matchData.loserId;
 
       const updatePayload: {
         team1_id: string;
@@ -193,11 +176,37 @@ export const useMatchUpdate = ({
         updatePayload.team2_game_wins = matchData.team2_game_wins;
       }
 
-      // Update the match
+      // For result-carrying edits, avoid writing scores/winner/loser/game_wins
+      // twice — resubmit_match_result will set them atomically below.
+      if (isResultEdit) {
+        updatePayload.team1_score = null;
+        updatePayload.team2_score = null;
+        updatePayload.winner_id = null;
+        updatePayload.loser_id = null;
+        delete updatePayload.team1_game_wins;
+        delete updatePayload.team2_game_wins;
+        // Leave iscompleted for the RPC to set to true — we still write it so
+        // the row's non-result columns (date/location/teams) are updated now.
+        updatePayload.iscompleted = false;
+      }
+
+      // Update the match's non-result fields (and, when not a result edit, its
+      // scores/completion which the RPC does not touch).
       const data = await updateMatch(editingMatch.id, updatePayload);
 
       // Transform the returned match to our app's format
       const updatedMatch = toUpdatedMatch(editingMatch, data);
+      // If this is a result edit, restore the intended in-memory match state
+      // so applyStatChanges can pass the correct winner/loser/scores.
+      if (isResultEdit) {
+        updatedMatch.iscompleted = true;
+        updatedMatch.winnerId = matchData.winnerId;
+        updatedMatch.loserId = matchData.loserId;
+        updatedMatch.team1Score = matchData.team1Score;
+        updatedMatch.team2Score = matchData.team2Score;
+        updatedMatch.team1_game_wins = matchData.team1_game_wins;
+        updatedMatch.team2_game_wins = matchData.team2_game_wins;
+      }
 
       // Update the matches state
       const updatedMatches = matches.map((match) =>
