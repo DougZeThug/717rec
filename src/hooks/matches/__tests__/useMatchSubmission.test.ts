@@ -18,16 +18,6 @@ vi.mock('@/hooks/useToast', () => ({
   }),
 }));
 
-const { mockUpdateTeamStats } = vi.hoisted(() => ({
-  mockUpdateTeamStats: vi.fn(),
-}));
-
-vi.mock('../useTeamRecordUpdate', () => ({
-  useTeamRecordUpdate: () => ({
-    updateTeamStats: mockUpdateTeamStats,
-  }),
-}));
-
 vi.mock('../utils/matchDatabaseUtils', () => ({
   updateMatchScore: vi.fn(),
 }));
@@ -83,8 +73,6 @@ const createWrapper = () => {
 describe('useMatchSubmission', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Default: team stats update succeeds (matches existing tests' assumptions)
-    mockUpdateTeamStats.mockResolvedValue(true);
   });
 
   it('returns handleSubmitScore function', () => {
@@ -174,10 +162,8 @@ describe('useMatchSubmission', () => {
     expect(success).toBe(false);
   });
 
-  it('returns false and skips success path when team stats update fails', async () => {
-    vi.mocked(updateMatchScore).mockResolvedValue(makeUpdateMatchScoreResult({ team1Win: true }));
-    // Simulate a team-records update failure (e.g. RPC/DB error converted to false)
-    mockUpdateTeamStats.mockResolvedValueOnce(false);
+  it('returns false when the atomic resubmit RPC throws', async () => {
+    vi.mocked(updateMatchScore).mockRejectedValueOnce(new Error('rpc failure'));
 
     const { result } = renderHook(() => useMatchSubmission(), { wrapper: createWrapper() });
 
