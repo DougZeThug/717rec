@@ -281,9 +281,8 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
 
     expect(outcome).toBe(true);
     expect(mockReverseTeamStats).not.toHaveBeenCalled();
-    // Same winner/game wins → still a result-carrying edit; RPC is idempotent
-    // (returns applied:false server-side). Client still calls it.
-    expect(mockResubmitMatchResult).toHaveBeenCalledWith('m1', 't1', 't2', 2, 1);
+    // No winner/loser/game-wins changes → hook short-circuits before RPC.
+    expect(mockResubmitMatchResult).not.toHaveBeenCalled();
   });
 
   it('returns false when the atomic resubmit RPC throws', async () => {
