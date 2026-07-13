@@ -15,16 +15,16 @@ A recreational league management system built with React, TypeScript, and Supaba
 
 ```
 src/
-├── pages/              # Route components (17 pages)
+├── pages/              # Route components
 ├── components/         # UI components by feature
-│   ├── ui/            # shadcn base components (40+)
+│   ├── ui/            # shadcn base components (50+)
 │   ├── admin/         # Admin dashboard components
 │   ├── teams/         # Team cards, details, forms
 │   ├── matches/       # Match displays, score entry
 │   ├── playoffs/      # Bracket visualization
 │   ├── schedule/      # Calendar, timeslot views
 │   └── layout/        # Navbar, Footer
-├── hooks/             # Custom hooks (60+, organized by feature)
+├── hooks/             # Custom hooks, organized by feature
 ├── services/          # Business logic (Supabase queries)
 ├── integrations/      # Supabase client + auto-generated types
 └── contexts/          # Auth & navigation contexts
