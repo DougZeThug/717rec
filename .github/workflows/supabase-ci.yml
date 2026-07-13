@@ -33,16 +33,23 @@ jobs:
       - uses: supabase/setup-cli@v1
         with:
           version: latest
+      - name: Start local Supabase database
+        run: |
+          # `supabase db lint` requires a running local database. Starting only
+          # the database avoids the full Studio/API stack while still giving the
+          # linter the Supabase Postgres image and extensions it expects.
+          supabase init --force --workdir . >/dev/null || true
+          supabase db start
       - name: Lint migrations
         run: |
-          # `supabase db lint` requires a running DB; use `--linked`-free local run.
-          # We run it against the migrations directory via a temporary local DB.
-          supabase init --force --workdir . >/dev/null || true
-          # Best-effort lint. Surfaces warnings/errors from migration SQL.
-          supabase db lint --level warning --schema public || {
+          # Lint the running local Supabase database populated from migrations.
+          supabase db lint --local --level warning --schema public || {
             echo "::warning::supabase db lint reported issues (see log)";
             exit 1;
           }
+      - name: Stop local Supabase database
+        if: always()
+        run: supabase stop --no-backup
 
   db-apply-and-smoke:
     name: Apply migrations + SQL smoke tests
