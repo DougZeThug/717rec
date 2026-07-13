@@ -22,6 +22,27 @@ jobs:
   db-lint:
     name: supabase db lint
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      SUPABASE_DB_URL: postgresql://postgres:postgres@localhost:5432/postgres
     steps:
       - uses: actions/checkout@v4
       - name: Cache Supabase CLI
@@ -33,23 +54,30 @@ jobs:
       - uses: supabase/setup-cli@v1
         with:
           version: latest
-      - name: Start local Supabase database
+      - name: Apply bootstrap + all migrations for lint
         run: |
-          # `supabase db lint` requires a running local database. Starting only
-          # the database avoids the full Studio/API stack while still giving the
-          # linter the Supabase Postgres image and extensions it expects.
-          supabase init --force --workdir . >/dev/null || true
-          supabase db start
+          set -euo pipefail
+          combined=$(mktemp)
+          {
+            echo "\echo '== bootstrap =='"
+            cat supabase/tests/_bootstrap.sql
+            printf '\n;\n'
+            for f in $(ls supabase/migrations/*.sql | sort); do
+              echo "\echo '== migration: $f =='"
+              cat "$f"
+              printf '\n;\n'
+            done
+          } > "$combined"
+          psql -v ON_ERROR_STOP=1 -f "$combined"
       - name: Lint migrations
         run: |
-          # Lint the running local Supabase database populated from migrations.
-          supabase db lint --local --level warning --schema public || {
+          # Point db lint at the schema applied above. We avoid `supabase db start`
+          # because this repo has legacy duplicate timestamp migrations that the
+          # Supabase migration runner rejects before lint can run.
+          supabase db lint --db-url "$SUPABASE_DB_URL" --level warning --schema public || {
             echo "::warning::supabase db lint reported issues (see log)";
             exit 1;
           }
-      - name: Stop local Supabase database
-        if: always()
-        run: supabase stop --no-backup
 
   db-apply-and-smoke:
     name: Apply migrations + SQL smoke tests
