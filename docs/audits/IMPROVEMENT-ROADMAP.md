@@ -143,7 +143,7 @@ After each PR, the existing CI is your net — it runs lint, typecheck, build, u
 | Phase | Status | Score | PRs |
 |---|---|---|---|
 | 0 — Make this branch green | ☐ Not started | → 77 | — |
-| 1 — Test safety-net | ◐ Partial (5 E2E specs landed; integration + component tests remain) | → 85 | — |
+| 1 — Test safety-net | ◐ Partial (7 E2E specs landed; integration + component tests remain) | → 85 | — |
 | 2 — TypeScript strict (incremental) | ☐ Not started | → 92 | — |
 | 3 — Tidy big files & types | ☐ Not started | → 96 | — |
 | 4 — Polish & lock-in | ☐ Not started | → ~98–100 | — |

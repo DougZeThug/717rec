@@ -404,8 +404,9 @@ Before merging any PR, confirm:
 - [ ] Admin score submission flow checked when score/match logic changed
 - [ ] Bracket/playoff flow checked when bracket, seeding, or playoff code
       changed
-- [ ] Supabase migration / RLS / RPC changes reviewed extra carefully — these
-      have **no automated coverage**; run the relevant manual checks below
+- [ ] Supabase migration / RLS / RPC changes reviewed extra carefully — outside
+      the `real-backend` golden path these have **no automated coverage**; run
+      the relevant manual checks below
 - [ ] No new `any` usage unless justified in the PR description
 - [ ] No docs claiming test coverage that does not exist — if you touch
       thresholds or add/remove suites, update this file in the same PR
@@ -413,7 +414,8 @@ Before merging any PR, confirm:
 ## Manual QA expectations
 
 Some things can only be validated by a human clicking through the app,
-because no automated test exercises a real backend:
+because only the optional `real-backend` spec exercises a live backend
+(and it covers a single golden-path login/score-submission flow):
 
 - **Every release-worthy change:** load the home page, schedule, standings,
   and teams pages on desktop and mobile widths; confirm no blank sections or
