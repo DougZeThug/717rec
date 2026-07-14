@@ -1,39 +1,37 @@
-# Fix lockfiles for external installs (Codex, GitHub Actions)
+## Status
 
-## Problem
-`package-lock.json` and `bun.lock` contain package tarball URLs pointing at Lovable's private Artifact Registry cache, which returns 403 outside Lovable:
+All 449 test files pass (3385 tests, 1 expected-fail, **0 failures**). Nothing is broken — this plan is purely about raising coverage in a few of the weakest spots.
 
-- `https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/...`
-- `https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/...`
+## Goal
 
-Counts of matching lines today: `bun.lock` 867, `package-lock.json` 26. No other files in the repo reference these hosts.
+Add small, targeted unit tests for a handful of `src/utils/*` files currently sitting at 0–20% coverage, without touching production code. Keep each test file small and focused, in line with the repo's "small, safe diffs" preference.
 
-## Changes (URL normalization only — no version, hash, or tree changes)
+## Scope (files to add tests for)
 
-1. `package-lock.json` — replace both prefixes:
-   - `https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/` → `https://registry.npmjs.org/`
-   - `https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/` → `https://registry.npmjs.org/`
-   - Everything after `sandbox-npm-cache/` (path to the `.tgz`) is preserved byte-for-byte.
+Chosen because they are pure-ish utility modules with real logic and no coverage — easiest, safest wins:
 
-2. `bun.lock` — same two replacements, same preservation rule.
+1. **`src/utils/analytics.ts`** — currently 0%. Tests for its exported tracking helpers using `vi.fn()` for any injected sinks / mocking `window`.
+2. **`src/utils/routePrefetch.ts`** — 16%. Tests for the prefetch trigger logic (mock `import()` / router).
+3. **`src/utils/reportCardUtils.ts`** — 1.72%. Tests for the grade/GPA calculation helpers with a few representative team-stat inputs.
+4. **`src/utils/charts/chartStyleUtils.ts`** — 20%. Tests for style-mapping helpers (input → expected class/color).
+5. **`src/utils/autoSchedule/scheduleUtils.ts`** — 41%. Add a couple of unit tests for the pure helpers only (skip the heavier integration paths already covered elsewhere).
 
-3. `.npmrc` — set to exactly:
-   ```
-   registry=https://registry.npmjs.org/
-   legacy-peer-deps=true
-   ```
+Explicitly **out of scope** for this pass:
+- `exportUtils.ts` / `exportGroupsToExcel.ts` (require heavy `exceljs` mocking — separate PR)
+- `nativeAuth.ts` (platform bridge, needs Capacitor mocks)
+- `autoSchedule/blossom/graphBuilder.ts` and `repair.ts` (large; best done as a dedicated scheduler-coverage PR)
 
-## Explicitly not changed
-- `package.json`
-- Any dependency version, range, or `integrity` / `sha512` hash
-- Dependency tree structure in either lockfile
-- Any application source
+## Approach
 
-## How it will be executed
-Use `sed -i` with the two exact prefix replacements on each lockfile (safe because the strings are unique and appear only in URL positions). Then overwrite `.npmrc` with the two lines above.
+- One new `__tests__/<file>.test.ts(x)` file per target module, placed next to the source per `FOLDER_CONVENTIONS.md`.
+- Use existing patterns from the repo (`vitest`, `@testing-library/*`, mock Supabase via `tests/__mocks__/supabase.ts` if any target ends up importing it — none of the chosen files should).
+- No changes to production code, no changes to `vitest.config.ts` thresholds. Thresholds will naturally have a bit more headroom afterwards.
 
 ## Verification
-- `rg -l 'lovable-core-prod|sandbox-npm-cache|europe-west[0-9]+-npm\.pkg\.dev' .` returns no results.
-- `git diff --stat` shows only `package-lock.json`, `bun.lock`, `.npmrc` touched.
-- Spot-check a few changed lines in each lockfile to confirm only the URL host/path prefix changed and `integrity` fields are untouched.
-- Show the resulting diff (with lockfile bodies truncated for readability — full diff available on request).
+
+- `npm run test:file -- <new-file>` for each new test during authoring.
+- `npm run test:coverage` at the end to confirm suite still green and per-file coverage moved up for the five targeted files.
+
+## Deliverable
+
+5 new test files, ~30–80 lines each, plus a one-line summary of before/after coverage for each targeted file.
