@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { useAuth } from '@/contexts/auth-context';
 import { subscribeWithRetry } from '@/hooks/realtime/subscribeWithRetry';
@@ -16,7 +16,7 @@ export const useMatchComments = (matchId: string) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const currentUserId = user?.id;
-  const queryKey = matchInteractionKeys.comments(matchId);
+  const queryKey = useMemo(() => matchInteractionKeys.comments(matchId), [matchId]);
 
   const commentsQuery = useQuery({
     queryKey,

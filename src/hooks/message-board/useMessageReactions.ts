@@ -36,7 +36,7 @@ export const useMessageReactions = (messageId: string) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const currentUserId = user?.id;
-  const queryKey = messageBoardKeys.reactions(messageId);
+  const queryKey = useMemo(() => messageBoardKeys.reactions(messageId), [messageId]);
   const reactionsQuery = useQuery({
     queryKey,
     queryFn: () => MessageReactionsService.fetchReactions(messageId),

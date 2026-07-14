@@ -74,8 +74,9 @@ export function useScoreSubmissions() {
   }, [submissionsQuery.error, toast]);
 
   /** Apply an approval or rejection to a score submission. */
-  const handleSubmissionAction = (submissionId: string, status: 'approved' | 'rejected') =>
-    actionMutation.mutateAsync({ submissionId, status });
+  const handleSubmissionAction = (submissionId: string, status: 'approved' | 'rejected') => {
+    actionMutation.mutate({ submissionId, status });
+  };
 
   return {
     submissions: submissionsQuery.data ?? [],

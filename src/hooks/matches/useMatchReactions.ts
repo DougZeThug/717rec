@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import { useAuth } from '@/contexts/auth-context';
 import { subscribeWithRetry } from '@/hooks/realtime/subscribeWithRetry';
@@ -43,10 +43,22 @@ export const useMatchReactions = (matchId: string) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const currentUserId = user?.id;
-  const queryKey = matchInteractionKeys.reactions(matchId);
+  const queryKey = useMemo(() => matchInteractionKeys.reactions(matchId), [matchId]);
+  const realtimeInsertsRef = useRef<Map<string, MatchReaction>>(new Map());
+  const realtimeDeletesRef = useRef<Set<string>>(new Set());
   const reactionsQuery = useQuery({
     queryKey,
-    queryFn: () => MatchReactionsService.fetchReactions(matchId),
+    queryFn: async () => {
+      const fetched = await MatchReactionsService.fetchReactions(matchId);
+      const byId = new Map(fetched.map((reaction) => [reaction.id, reaction]));
+      realtimeInsertsRef.current.forEach((reaction, id) => {
+        byId.set(id, reaction);
+      });
+      realtimeDeletesRef.current.forEach((id) => {
+        byId.delete(id);
+      });
+      return Array.from(byId.values());
+    },
     enabled: Boolean(matchId),
   });
   const reactions = reactionsQuery.data ?? EMPTY_MATCH_REACTIONS;
@@ -77,6 +89,8 @@ export const useMatchReactions = (matchId: string) => {
             },
             (payload: { new: unknown; old: { id?: string } }) => {
               const newReaction = payload.new as MatchReaction;
+              realtimeDeletesRef.current.delete(newReaction.id);
+              realtimeInsertsRef.current.set(newReaction.id, newReaction);
               queryClient.setQueryData<MatchReaction[]>(queryKey, (curr = []) =>
                 curr.some((r) => r.id === newReaction.id) ? curr : [...curr, newReaction]
               );
@@ -92,6 +106,8 @@ export const useMatchReactions = (matchId: string) => {
             },
             (payload: { new: unknown; old: { id?: string } }) => {
               const deletedReaction = payload.old as MatchReaction;
+              realtimeInsertsRef.current.delete(deletedReaction.id);
+              realtimeDeletesRef.current.add(deletedReaction.id);
               queryClient.setQueryData<MatchReaction[]>(queryKey, (curr = []) =>
                 curr.filter((r) => r.id !== deletedReaction.id)
               );
