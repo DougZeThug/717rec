@@ -13,6 +13,9 @@ import { MatchPropagationRepairService } from './normalization/MatchPropagationR
  * - GrandFinalNormalizationService
  * - LosersRoundNormalizationService
  * - MatchPropagationRepairService
+ *
+ * Key invariant: `propagateCompletedMatches()` repairs missing winner advancement
+ * WITHOUT rewriting completed source match results (score/result fields preserved).
  */
 export class BracketNormalizationService {
   private readonly lbStructureService: LbStructureService;
