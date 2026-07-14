@@ -17,20 +17,23 @@ export const RouteFocusManager: React.FC<RouteFocusManagerProps> = ({ mainRef })
   const lastFocusedPath = useRef(pathname);
 
   useEffect(() => {
-    if (lastFocusedPath.current === pathname) {
-      return;
+    let frameId: number | undefined;
+
+    if (lastFocusedPath.current !== pathname) {
+      lastFocusedPath.current = pathname;
+
+      if (navigationType !== 'POP') {
+        frameId = window.requestAnimationFrame(() => {
+          mainRef.current?.focus({ preventScroll: true });
+        });
+      }
     }
-    lastFocusedPath.current = pathname;
 
-    if (navigationType === 'POP') {
-      return;
-    }
-
-    const frameId = window.requestAnimationFrame(() => {
-      mainRef.current?.focus({ preventScroll: true });
-    });
-
-    return () => window.cancelAnimationFrame(frameId);
+    return () => {
+      if (frameId !== undefined) {
+        window.cancelAnimationFrame(frameId);
+      }
+    };
   }, [mainRef, navigationType, pathname]);
 
   return null;

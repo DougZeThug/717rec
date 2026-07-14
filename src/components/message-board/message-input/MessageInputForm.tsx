@@ -21,6 +21,7 @@ interface MessageInputFormProps {
 
 const MAX_MESSAGE_LENGTH = 500;
 
+/** Renders the message composer, validation, and optional admin category picker. */
 const MessageInputForm: React.FC<MessageInputFormProps> = ({ onSend }) => {
   const [message, setMessage] = useState('');
   const [category, setCategory] = useState<MessageCategory>('General');
@@ -29,6 +30,7 @@ const MessageInputForm: React.FC<MessageInputFormProps> = ({ onSend }) => {
   const { user: _user } = useAuth();
   const { isAdminAccessGranted } = useAdminAccess();
 
+  /** Validates and sends the current message without allowing empty or over-limit posts. */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

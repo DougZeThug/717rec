@@ -25,6 +25,7 @@ interface FilterBarProps {
   onClearFilters: () => void;
 }
 
+/** Renders date and bracket filters for the mass score entry workflow. */
 const FilterBar: React.FC<FilterBarProps> = ({
   filters,
   brackets,

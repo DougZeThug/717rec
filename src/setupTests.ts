@@ -2,9 +2,9 @@ import '@testing-library/jest-dom';
 
 import { cleanup, configure } from '@testing-library/react';
 import { afterEach, expect } from 'vitest';
-import * as axeMatchers from 'vitest-axe/matchers';
+import { toHaveNoViolations } from 'vitest-axe/dist/matchers';
 
-expect.extend(axeMatchers);
+expect.extend({ toHaveNoViolations });
 
 // Provide safe default Supabase env vars for sandboxed agent shells (Codex /
 // Claude Code) where Vite's .env auto-loading isn't available. Tests always
@@ -90,15 +90,19 @@ globalThis.IntersectionObserver =
     scrollMargin = '0px';
 
     constructor() {}
+    /** Starts observing an element; no-op in jsdom tests. */
     observe() {
       return null;
     }
+    /** Disconnects all observed elements; no-op in jsdom tests. */
     disconnect() {
       return null;
     }
+    /** Stops observing an element; no-op in jsdom tests. */
     unobserve() {
       return null;
     }
+    /** Returns queued intersection records; always empty in jsdom tests. */
     takeRecords(): IntersectionObserverEntry[] {
       return [];
     }

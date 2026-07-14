@@ -16,6 +16,7 @@ interface CategorySelectorProps {
   adminOnly?: boolean;
 }
 
+/** Lets message authors choose the visible category for a new board post. */
 const CategorySelector: React.FC<CategorySelectorProps> = ({
   value,
   onChange,

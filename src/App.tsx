@@ -72,6 +72,7 @@ const queryClient = new QueryClient({
   }),
 });
 
+/** Renders the authenticated application shell, route content, and route-level side effects. */
 const AppContent = () => {
   const location = useLocation();
   const navigationStartRef = useLazyRef(() => performance.now());
@@ -298,6 +299,7 @@ const AppContent = () => {
   );
 };
 
+/** Provides top-level app providers and the browser router. */
 const App = () => {
   return (
     <ErrorBoundary>
