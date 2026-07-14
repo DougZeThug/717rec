@@ -20,6 +20,9 @@ export interface ScoreSubmission {
   reviewed_at: string | null;
 }
 
+/**
+ * Load and moderate pending score submissions with shared query caching.
+ */
 export function useScoreSubmissions() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -57,9 +60,7 @@ export function useScoreSubmissions() {
         variant: 'destructive',
       });
     },
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: scoreSubmissionKeys.all });
-    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: scoreSubmissionKeys.all }),
   });
 
   useEffect(() => {
@@ -72,6 +73,7 @@ export function useScoreSubmissions() {
     });
   }, [submissionsQuery.error, toast]);
 
+  /** Apply an approval or rejection to a score submission. */
   const handleSubmissionAction = (submissionId: string, status: 'approved' | 'rejected') =>
     actionMutation.mutateAsync({ submissionId, status });
 

@@ -15,6 +15,7 @@ export type { MatchComment };
 export const useMatchComments = (matchId: string) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const currentUserId = user?.id;
   const queryKey = matchInteractionKeys.comments(matchId);
 
   const commentsQuery = useQuery({
@@ -30,7 +31,11 @@ export const useMatchComments = (matchId: string) => {
 
   useEffect(() => {
     if (!matchId) return;
-    const invalidate = () => void queryClient.invalidateQueries({ queryKey });
+    const invalidate = () => {
+      queryClient.invalidateQueries({ queryKey }).catch((err: unknown) => {
+        errorLog('Error invalidating match comments:', err);
+      });
+    };
     const { dispose } = subscribeWithRetry({
       label: `useMatchComments(${matchId})`,
       build: () =>
@@ -73,7 +78,10 @@ export const useMatchComments = (matchId: string) => {
   }, [matchId, queryClient, queryKey]);
 
   const deleteMutation = useMutation({
-    mutationFn: (commentId: string) => MatchCommentsService.deleteComment(commentId, user!.id),
+    mutationFn: (commentId: string) =>
+      currentUserId
+        ? MatchCommentsService.deleteComment(commentId, currentUserId)
+        : Promise.reject(new Error('User is required to delete a comment')),
     onMutate: async (commentId) => {
       await queryClient.cancelQueries({ queryKey });
       const previous = queryClient.getQueryData<MatchComment[]>(queryKey);
@@ -87,7 +95,7 @@ export const useMatchComments = (matchId: string) => {
       errorLog('Error removing comment:', err);
       toast({ title: 'Error', description: 'Failed to delete comment', variant: 'destructive' });
     },
-    onSettled: () => void queryClient.invalidateQueries({ queryKey }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey }),
   });
 
   const addComment = async (content: string) => {

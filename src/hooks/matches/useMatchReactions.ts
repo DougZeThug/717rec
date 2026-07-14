@@ -42,6 +42,7 @@ const countReactions = (reactions: MatchReaction[], userId?: string): ReactionCo
 export const useMatchReactions = (matchId: string) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const currentUserId = user?.id;
   const queryKey = matchInteractionKeys.reactions(matchId);
   const reactionsQuery = useQuery({
     queryKey,
@@ -56,7 +57,11 @@ export const useMatchReactions = (matchId: string) => {
   }, [reactionsQuery.error]);
   useEffect(() => {
     if (!matchId) return;
-    const invalidate = () => void queryClient.invalidateQueries({ queryKey });
+    const invalidate = () => {
+      queryClient.invalidateQueries({ queryKey }).catch((err: unknown) => {
+        errorLog('Error invalidating match reactions:', err);
+      });
+    };
     const { dispose } = subscribeWithRetry({
       label: `useMatchReactions(${matchId})`,
       build: () =>
@@ -101,22 +106,24 @@ export const useMatchReactions = (matchId: string) => {
 
   const mutation = useMutation({
     mutationFn: async (emoji: string) => {
-      const existing = reactions.find((r) => r.user_id === user!.id && r.emoji === emoji);
-      if (existing) await MatchReactionsService.deleteReaction(existing.id, user!.id);
-      else await MatchReactionsService.insertReaction(matchId, user!.id, emoji);
+      if (!currentUserId) throw new Error('User is required to toggle a reaction');
+      const existing = reactions.find((r) => r.user_id === currentUserId && r.emoji === emoji);
+      if (existing) await MatchReactionsService.deleteReaction(existing.id, currentUserId);
+      else await MatchReactionsService.insertReaction(matchId, currentUserId, emoji);
     },
     onMutate: async (emoji) => {
       await queryClient.cancelQueries({ queryKey });
       const previous = queryClient.getQueryData<MatchReaction[]>(queryKey);
       queryClient.setQueryData<MatchReaction[]>(queryKey, (curr = []) => {
-        const existing = curr.find((r) => r.user_id === user!.id && r.emoji === emoji);
+        if (!currentUserId) return curr;
+        const existing = curr.find((r) => r.user_id === currentUserId && r.emoji === emoji);
         if (existing) return curr.filter((r) => r.id !== existing.id);
         return [
           ...curr,
           {
-            id: `optimistic-${user!.id}-${emoji}`,
+            id: `optimistic-${currentUserId}-${emoji}`,
             match_id: matchId,
-            user_id: user!.id,
+            user_id: currentUserId,
             emoji,
             created_at: new Date().toISOString(),
           },
@@ -129,7 +136,7 @@ export const useMatchReactions = (matchId: string) => {
       errorLog('Error toggling reaction:', err);
       toast({ title: 'Error', description: 'Failed to update reaction', variant: 'destructive' });
     },
-    onSettled: () => void queryClient.invalidateQueries({ queryKey }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey }),
   });
   const toggleReaction = async (emoji: string) => {
     if (!user) {

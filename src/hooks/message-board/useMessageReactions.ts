@@ -35,6 +35,7 @@ const countReactions = (reactions: MessageReaction[], userId?: string): Reaction
 export const useMessageReactions = (messageId: string) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const currentUserId = user?.id;
   const queryKey = messageBoardKeys.reactions(messageId);
   const reactionsQuery = useQuery({
     queryKey,
@@ -48,7 +49,11 @@ export const useMessageReactions = (messageId: string) => {
   }, [reactionsQuery.error]);
   useEffect(() => {
     if (!messageId) return;
-    const invalidate = () => void queryClient.invalidateQueries({ queryKey });
+    const invalidate = () => {
+      queryClient.invalidateQueries({ queryKey }).catch((err: unknown) => {
+        errorLog('Error invalidating message reactions:', err);
+      });
+    };
     const { dispose } = subscribeWithRetry({
       label: `useMessageReactions(${messageId})`,
       build: () =>
@@ -92,7 +97,9 @@ export const useMessageReactions = (messageId: string) => {
   }, [messageId, queryClient, queryKey]);
   const removeMutation = useMutation({
     mutationFn: (reactionId: string) =>
-      MessageReactionsService.removeReaction(reactionId, user!.id),
+      currentUserId
+        ? MessageReactionsService.removeReaction(reactionId, currentUserId)
+        : Promise.reject(new Error('User is required to remove a reaction')),
     onMutate: async (reactionId) => {
       await queryClient.cancelQueries({ queryKey });
       const previous = queryClient.getQueryData<MessageReaction[]>(queryKey);
@@ -106,19 +113,23 @@ export const useMessageReactions = (messageId: string) => {
       errorLog('Error removing reaction:', err);
       toast({ title: 'Error', description: 'Failed to remove reaction', variant: 'destructive' });
     },
-    onSettled: () => void queryClient.invalidateQueries({ queryKey }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey }),
   });
   const addReactionMutation = useMutation({
-    mutationFn: (emoji: string) => MessageReactionsService.addReaction(messageId, user!.id, emoji),
+    mutationFn: (emoji: string) =>
+      currentUserId
+        ? MessageReactionsService.addReaction(messageId, currentUserId, emoji)
+        : Promise.reject(new Error('User is required to add a reaction')),
     onMutate: async (emoji) => {
       await queryClient.cancelQueries({ queryKey });
       const previous = queryClient.getQueryData<MessageReaction[]>(queryKey);
+      if (!currentUserId) return { previous };
       queryClient.setQueryData<MessageReaction[]>(queryKey, (curr = []) => [
         ...curr,
         {
-          id: `optimistic-${user!.id}-${emoji}`,
+          id: `optimistic-${currentUserId}-${emoji}`,
           message_id: messageId,
-          user_id: user!.id,
+          user_id: currentUserId,
           emoji,
           created_at: new Date().toISOString(),
         },
@@ -130,12 +141,14 @@ export const useMessageReactions = (messageId: string) => {
       errorLog('Error adding reaction:', err);
       toast({ title: 'Error', description: 'Failed to add reaction', variant: 'destructive' });
     },
-    onSettled: () => void queryClient.invalidateQueries({ queryKey }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey }),
   });
+  /** Remove the current user's reaction from this message. */
   const removeReaction = async (reactionId: string) => {
     if (!user) return;
     await removeMutation.mutateAsync(reactionId).catch(() => undefined);
   };
+  /** Toggle the current user's reaction for this message. */
   const addReaction = async (emoji: string) => {
     if (!user) {
       toast({
@@ -147,7 +160,10 @@ export const useMessageReactions = (messageId: string) => {
     }
     if (!emoji) return;
     const existingReaction = reactions.find((r) => r.user_id === user.id && r.emoji === emoji);
-    if (existingReaction) return removeReaction(existingReaction.id);
+    if (existingReaction) {
+      await removeReaction(existingReaction.id);
+      return;
+    }
     await addReactionMutation.mutateAsync(emoji).catch(() => undefined);
   };
   return {
