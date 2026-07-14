@@ -83,6 +83,7 @@ interface UpdateMatchOptions {
   - Calls `manager.update.match()`
   - Runs `normalizeLosersR1()` 3 times with 100ms delays
   - Runs `normalizeGrandFinalPopulation()`
+  - Runs `propagateCompletedMatches()` to repair any missing winner advancement
   - Logs all LB matches after update
 
 **Success Case:**
@@ -390,6 +391,7 @@ The service uses consistent logging via `@/utils/logger`:
 5. **Cache Management:** Participant cache is loaded before operations and cleared during normalization
 6. **Direct SQL for Fixes:** Duplicate fix in `normalizeLosersR1()` uses direct SQL to bypass defensive merge
 7. **Downstream Cascade:** `adminToggleByeReady()` can cascade clear downstream matches when reopening
+8. **Propagation Repair:** `propagateCompletedMatches()` advances winners without rewriting completed source match results
 
 ---
 
