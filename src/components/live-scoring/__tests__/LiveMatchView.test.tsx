@@ -253,10 +253,10 @@ describe('in-game state', () => {
     await userEvent.click(screen.getByRole('button', { name: /undo last round/i }));
 
     expect(
-      await screen.findByText(/This removes round 2 \(0–4\) from the game/i)
+      await screen.findByText(/This removes round 2 \(0–4\) from the game/iu)
     ).toBeInTheDocument();
     expect(
-      screen.queryByText(/This removes round 1 \(8–5\) from the game/i)
+      screen.queryByText(/This removes round 1 \(8–5\) from the game/iu)
     ).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Undo round' }));

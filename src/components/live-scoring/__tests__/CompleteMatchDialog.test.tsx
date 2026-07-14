@@ -42,9 +42,9 @@ describe('CompleteMatchDialog', () => {
 
     expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
     expect(screen.getByText('Baggers wins 2–1')).toBeInTheDocument();
-    expect(screen.getByText(/Game 1: Baggers 21–18 Tossers/i)).toBeInTheDocument();
-    expect(screen.getByText(/Game 2: Baggers 15–21 Tossers/i)).toBeInTheDocument();
-    expect(screen.getByText(/Game 3: Baggers 22–20 Tossers/i)).toBeInTheDocument();
+    expect(screen.getByText(/Game 1: Baggers 21–18 Tossers/iu)).toBeInTheDocument();
+    expect(screen.getByText(/Game 2: Baggers 15–21 Tossers/iu)).toBeInTheDocument();
+    expect(screen.getByText(/Game 3: Baggers 22–20 Tossers/iu)).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Save result' }));
     expect(onConfirm).toHaveBeenCalledTimes(1);
