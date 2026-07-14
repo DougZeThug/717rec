@@ -11,6 +11,7 @@ import MessageFilterBar from '@/components/message-board/MessageFilterBar';
 import MessageInput from '@/components/message-board/MessageInput';
 import MessageReactions from '@/components/message-board/reactions/MessageReactions';
 import type { FilterOptions } from '@/hooks/message-board/types';
+import { expectNoAxeViolations } from '@/test/a11y';
 import type { Message } from '@/types/reactions';
 
 const mockUseAuth = vi.fn();
@@ -148,12 +149,19 @@ describe('message board main flow components', () => {
     });
   });
 
+  it('has no WCAG 2 A/AA axe violations in the composer', async () => {
+    const onSend = vi.fn().mockResolvedValue(undefined);
+    const { container } = withClient(<MessageInput onSend={onSend} />);
+
+    await expectNoAxeViolations(container);
+  });
+
   it('handles composer validation and category selection', async () => {
     const onSend = vi.fn().mockResolvedValue(undefined);
     withClient(<MessageInput onSend={onSend} />);
 
     const textbox = screen.getByPlaceholderText('Type a message...');
-    fireEvent.click(screen.getByRole('button', { name: '' }));
+    fireEvent.click(screen.getByRole('button', { name: /send message/i }));
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Empty message' }));
 
     fireEvent.change(textbox, { target: { value: 'x'.repeat(501) } });

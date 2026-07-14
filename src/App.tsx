@@ -16,6 +16,7 @@ import { preloadCoreRoutes } from '@/utils/routePrefetch';
 import { metrics } from '@/utils/sentry';
 
 import { RouteAnnouncer } from './components/a11y/RouteAnnouncer';
+import { RouteFocusManager } from './components/a11y/RouteFocusManager';
 import ProtectedAdminRoute from './components/auth/ProtectedAdminRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Footer from './components/layout/Footer';
@@ -98,7 +99,7 @@ const AppContent = () => {
 
   return (
     <NavigationProvider>
-      <RouteAnnouncer mainRef={mainRef} />
+      <RouteAnnouncer />
       <div className="flex flex-col min-h-screen overflow-x-hidden">
         <Navbar />
         <PageTransition>
@@ -286,6 +287,7 @@ const AppContent = () => {
                 />
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <RouteFocusManager mainRef={mainRef} />
             </Suspense>
           </main>
         </PageTransition>

@@ -1,7 +1,10 @@
 import '@testing-library/jest-dom';
 
 import { cleanup, configure } from '@testing-library/react';
-import { afterEach } from 'vitest';
+import { afterEach, expect } from 'vitest';
+import * as axeMatchers from 'vitest-axe/matchers';
+
+expect.extend(axeMatchers);
 
 // Provide safe default Supabase env vars for sandboxed agent shells (Codex /
 // Claude Code) where Vite's .env auto-loading isn't available. Tests always

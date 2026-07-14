@@ -36,6 +36,7 @@ vi.mock('@/components/ui/responsive-dialog', () => ({
 // ─── Import after mocks ───────────────────────────────────────────────────────
 
 import { PendingMatch } from '@/hooks/usePendingScoresMatches';
+import { expectNoAxeViolations } from '@/test/a11y';
 
 import { ScoreSubmissionModal } from '../ScoreSubmissionModal';
 
@@ -70,6 +71,12 @@ describe('ScoreSubmissionModal', () => {
     vi.clearAllMocks();
     mockIsSubmitting.mockImplementation(() => false);
     mockSubmitScore.mockResolvedValue(true);
+  });
+
+  it('has no WCAG 2 A/AA axe violations', async () => {
+    const { container } = renderModal();
+
+    await expectNoAxeViolations(container);
   });
 
   it('renders team names from the match prop', () => {

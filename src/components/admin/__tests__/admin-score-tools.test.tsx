@@ -4,6 +4,8 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { expectNoAxeViolations } from '@/test/a11y';
+
 const mockHandleSubmitScore = vi.fn();
 const mockHandleScoreChange = vi.fn();
 const mockHandleSubmitAll = vi.fn();
@@ -134,6 +136,18 @@ describe('admin score tooling component states', () => {
     vi.clearAllMocks();
     editScoresState = { ...defaultEditScoresState, toggleItem: vi.fn() };
     massScoreState = { ...defaultMassScoreState };
+  });
+
+  it('has no WCAG 2 A/AA axe violations in the mass score entry admin section', async () => {
+    massScoreState = {
+      ...defaultMassScoreState,
+      matches: [makeMassMatch()],
+      loading: false,
+    };
+
+    const { container } = renderWithClient(<AdminMassScoreEntryTool />);
+
+    await expectNoAxeViolations(container);
   });
 
   it('shows the edit scores loading state', () => {

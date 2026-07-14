@@ -80,6 +80,7 @@ vi.mock('@/hooks/live-scoring/useTeamPlayers', () => ({
 
 import { deriveLiveMatch } from '@/hooks/live-scoring/useLiveMatch';
 import type { LiveMatchBundle } from '@/services/liveScoring/LiveMatchService';
+import { expectNoAxeViolations } from '@/test/a11y';
 
 import { LiveMatchView } from '../LiveMatchView';
 
@@ -182,6 +183,26 @@ beforeEach(() => {
 });
 
 // ─── States ───────────────────────────────────────────────────────────────────
+
+describe('component accessibility', () => {
+  it('has no WCAG 2 A/AA axe violations in pre-game setup', async () => {
+    const { container } = renderView(makeBundle());
+
+    await expectNoAxeViolations(container);
+  });
+
+  it('has no WCAG 2 A/AA axe violations in active scoring view', async () => {
+    const { container } = renderView(
+      makeBundle({
+        games: [game()],
+        rounds: [round()],
+        gamePlayers: gamePlayers('game-1'),
+      })
+    );
+
+    await expectNoAxeViolations(container);
+  });
+});
 
 describe('pre-game state', () => {
   it('shows Game 1 setup for a scorer', () => {

@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import React, { useRef } from 'react';
+import React from 'react';
 import { MemoryRouter, Route, Routes, useNavigate } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
@@ -10,16 +10,15 @@ import { RouteAnnouncer } from '../RouteAnnouncer';
  * plus a button that navigates so we can assert post-navigation behavior.
  */
 const Harness: React.FC = () => {
-  const mainRef = useRef<HTMLElement>(null);
   const navigate = useNavigate();
 
   return (
     <>
-      <RouteAnnouncer mainRef={mainRef} />
+      <RouteAnnouncer />
       <button type="button" onClick={() => navigate('/schedule')}>
         go
       </button>
-      <main ref={mainRef} tabIndex={-1} data-testid="main">
+      <main tabIndex={-1} data-testid="main">
         <Routes>
           <Route path="/" element={<h1>Home</h1>} />
           <Route path="/schedule" element={<h1>Schedule</h1>} />
@@ -56,7 +55,7 @@ describe('RouteAnnouncer', () => {
     expect(screen.getByTestId('main')).not.toHaveFocus();
   });
 
-  it('announces the new page heading and focuses main after navigation', async () => {
+  it('announces the new page heading after navigation', async () => {
     const user = (await import('@testing-library/user-event')).default.setup();
     render(
       <MemoryRouter initialEntries={['/']}>
@@ -69,6 +68,5 @@ describe('RouteAnnouncer', () => {
     await waitFor(() => {
       expect(screen.getByRole('status')).toHaveTextContent('Schedule');
     });
-    expect(screen.getByTestId('main')).toHaveFocus();
   });
 });
