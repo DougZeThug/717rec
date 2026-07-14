@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { toast } from '@/hooks/useToast';
 import { Message, MessageCategory } from '@/types/reactions';
@@ -30,7 +30,7 @@ const loadPersistedFilters = (): FilterOptions => {
 export const useMessageBoard = (): UseMessageBoardResult => {
   const queryClient = useQueryClient();
   const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
+  const [paginationExhausted, setPaginationExhausted] = useState(false);
 
   // Filter state - initialize from sessionStorage
   const [filterOptions, setFilterOptions] = useState<FilterOptions>(loadPersistedFilters);
@@ -58,12 +58,11 @@ export const useMessageBoard = (): UseMessageBoardResult => {
   const messages = messagesQuery.data ?? [];
   const isLoading = messagesQuery.isLoading || messagesQuery.isFetching;
   const error = messagesQuery.error ? 'Failed to load messages' : null;
-  useEffect(() => {
-    setHasMore((messagesQuery.data?.length ?? 0) === PAGE_SIZE);
-  }, [messagesQuery.data]);
+  const hasMore = !paginationExhausted && messages.length === PAGE_SIZE;
 
   // Set filter function - shows loading immediately for UX feedback
   const setFilter = useCallback((filter: Partial<FilterOptions>) => {
+    setPaginationExhausted(false);
     setFilterOptions((prev) => {
       const newOptions = { ...prev, ...filter };
       // Persist to sessionStorage
@@ -87,7 +86,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
       const oldestMessage = messages[messages.length - 1];
 
       if (!oldestMessage) {
-        setHasMore(false);
+        setPaginationExhausted(true);
         return;
       }
 
@@ -106,9 +105,9 @@ export const useMessageBoard = (): UseMessageBoardResult => {
           ...prev,
           ...data,
         ]);
-        setHasMore(data.length === PAGE_SIZE);
+        setPaginationExhausted(data.length < PAGE_SIZE);
       } else {
-        setHasMore(false);
+        setPaginationExhausted(true);
       }
     } catch (err) {
       errorLog('Error loading more messages:', err);
@@ -120,7 +119,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     } finally {
       setLoadingMore(false);
     }
-  }, [messages, hasMore, loadingMore, fetchMessages, filterOptions]);
+  }, [baseOptions, messages, hasMore, loadingMore, fetchMessages, filterOptions, queryClient]);
 
   // Post message function
   const postMessage = async (content: string, category: MessageCategory = 'General') => {

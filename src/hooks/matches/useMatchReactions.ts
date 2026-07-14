@@ -103,7 +103,27 @@ export const useMatchReactions = (matchId: string) => {
       if (existing) await MatchReactionsService.deleteReaction(existing.id, user!.id);
       else await MatchReactionsService.insertReaction(matchId, user!.id, emoji);
     },
-    onError: (err) => {
+    onMutate: async (emoji) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<MatchReaction[]>(queryKey);
+      queryClient.setQueryData<MatchReaction[]>(queryKey, (curr = []) => {
+        const existing = curr.find((r) => r.user_id === user!.id && r.emoji === emoji);
+        if (existing) return curr.filter((r) => r.id !== existing.id);
+        return [
+          ...curr,
+          {
+            id: `optimistic-${user!.id}-${emoji}`,
+            match_id: matchId,
+            user_id: user!.id,
+            emoji,
+            created_at: new Date().toISOString(),
+          },
+        ];
+      });
+      return { previous };
+    },
+    onError: (err, _emoji, context) => {
+      if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
       errorLog('Error toggling reaction:', err);
       toast({ title: 'Error', description: 'Failed to update reaction', variant: 'destructive' });
     },

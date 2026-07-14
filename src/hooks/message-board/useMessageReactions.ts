@@ -91,7 +91,16 @@ export const useMessageReactions = (messageId: string) => {
   const removeMutation = useMutation({
     mutationFn: (reactionId: string) =>
       MessageReactionsService.removeReaction(reactionId, user!.id),
-    onError: (err) => {
+    onMutate: async (reactionId) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<MessageReaction[]>(queryKey);
+      queryClient.setQueryData<MessageReaction[]>(queryKey, (curr = []) =>
+        curr.filter((reaction) => reaction.id !== reactionId)
+      );
+      return { previous };
+    },
+    onError: (err, _reactionId, context) => {
+      if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
       errorLog('Error removing reaction:', err);
       toast({ title: 'Error', description: 'Failed to remove reaction', variant: 'destructive' });
     },
@@ -99,7 +108,23 @@ export const useMessageReactions = (messageId: string) => {
   });
   const addReactionMutation = useMutation({
     mutationFn: (emoji: string) => MessageReactionsService.addReaction(messageId, user!.id, emoji),
-    onError: (err) => {
+    onMutate: async (emoji) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<MessageReaction[]>(queryKey);
+      queryClient.setQueryData<MessageReaction[]>(queryKey, (curr = []) => [
+        ...curr,
+        {
+          id: `optimistic-${user!.id}-${emoji}`,
+          message_id: messageId,
+          user_id: user!.id,
+          emoji,
+          created_at: new Date().toISOString(),
+        },
+      ]);
+      return { previous };
+    },
+    onError: (err, _emoji, context) => {
+      if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
       errorLog('Error adding reaction:', err);
       toast({ title: 'Error', description: 'Failed to add reaction', variant: 'destructive' });
     },
