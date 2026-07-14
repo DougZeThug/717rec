@@ -11,7 +11,7 @@ const mockStartGame = { mutate: vi.fn(), isPending: false };
 const mockConfirmGameComplete = { mutate: vi.fn(), isPending: false };
 const mockReopenGame = { mutate: vi.fn(), isPending: false };
 const mockUpdateGamePlayers = { mutate: vi.fn(), isPending: false };
-const mockFinalize = { mutate: vi.fn(), isPending: false };
+const mockFinalize = { mutate: vi.fn(), isPending: false, isError: false, error: null as unknown };
 const mockReopen = { mutate: vi.fn(), isPending: false };
 const mockAddPlayer = { mutate: vi.fn(), isPending: false };
 
@@ -179,6 +179,8 @@ const renderView = (
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockFinalize.isError = false;
+  mockFinalize.error = null;
 });
 
 // ─── States ───────────────────────────────────────────────────────────────────
@@ -410,6 +412,20 @@ describe('match decided (not yet official)', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Not yet' }));
 
     expect(mockFinalize.mutate).not.toHaveBeenCalled();
+  });
+
+  it('surfaces a finalize error in the match-complete dialog instead of crashing', async () => {
+    mockFinalize.isError = true;
+    mockFinalize.error = new Error('The official result was already recorded.');
+
+    renderView(decidedBundle());
+
+    await userEvent.click(screen.getByRole('button', { name: /save official result/i }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Could not save result');
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'The official result was already recorded.'
+    );
   });
 
   it('spectators see the result but no finalize button', () => {

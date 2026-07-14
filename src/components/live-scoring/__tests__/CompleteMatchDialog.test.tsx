@@ -5,7 +5,16 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { CompleteMatchDialog } from '../CompleteMatchDialog';
 
-const renderDialog = (onConfirm = vi.fn(), isFinalizing = false) => {
+const renderDialog = (
+  onConfirm = vi.fn(),
+  {
+    isFinalizing = false,
+    finalizeError,
+  }: {
+    isFinalizing?: boolean;
+    finalizeError?: unknown;
+  } = {}
+) => {
   render(
     <CompleteMatchDialog
       team1Name="Baggers"
@@ -18,6 +27,7 @@ const renderDialog = (onConfirm = vi.fn(), isFinalizing = false) => {
         { gameNumber: 3, team1Total: 22, team2Total: 20, winnerName: 'Baggers' },
       ]}
       isFinalizing={isFinalizing}
+      finalizeError={finalizeError}
       onConfirm={onConfirm}
     />
   );
@@ -50,8 +60,21 @@ describe('CompleteMatchDialog', () => {
   });
 
   it('disables the trigger and shows the saving label while finalization is pending', () => {
-    renderDialog(vi.fn(), true);
+    renderDialog(vi.fn(), { isFinalizing: true });
 
     expect(screen.getByRole('button', { name: /saving result/i })).toBeDisabled();
+  });
+
+  it('renders finalize errors in the dialog instead of crashing', async () => {
+    renderDialog(vi.fn(), {
+      finalizeError: new Error('The official result was already recorded.'),
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /save official result/i }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Could not save result');
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'The official result was already recorded.'
+    );
   });
 });

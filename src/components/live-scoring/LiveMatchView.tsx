@@ -305,6 +305,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
           gameWins={matchState.gameWins}
           gameLines={gameLines}
           isFinalizing={finalize.isPending}
+          finalizeError={finalize.isError ? finalize.error : null}
           onConfirm={() => finalize.mutate()}
         />
       )}

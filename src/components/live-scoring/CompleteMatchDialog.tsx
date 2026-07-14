@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,6 +13,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 export interface GameLine {
   gameNumber: number;
@@ -27,6 +29,7 @@ interface CompleteMatchDialogProps {
   gameWins: { team1: number; team2: number };
   gameLines: GameLine[];
   isFinalizing: boolean;
+  finalizeError?: unknown;
   onConfirm: () => void;
 }
 
@@ -41,6 +44,7 @@ export const CompleteMatchDialog: React.FC<CompleteMatchDialogProps> = ({
   gameWins,
   gameLines,
   isFinalizing,
+  finalizeError,
   onConfirm,
 }) => (
   <AlertDialog>
@@ -69,6 +73,12 @@ export const CompleteMatchDialog: React.FC<CompleteMatchDialogProps> = ({
             </ul>
             This records the official match result and updates the standings. An admin can reopen
             the match later if a correction is needed.
+            {finalizeError != null ? (
+              <Alert variant="destructive" className="mt-3">
+                <AlertTitle>Could not save result</AlertTitle>
+                <AlertDescription>{getUIErrorMessage(finalizeError)}</AlertDescription>
+              </Alert>
+            ) : null}
           </div>
         </AlertDialogDescription>
       </AlertDialogHeader>
