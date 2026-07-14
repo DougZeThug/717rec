@@ -150,14 +150,14 @@ describe('message board main flow components', () => {
   });
 
   it('has no WCAG 2 A/AA axe violations in the composer', async () => {
-    const onSend = vi.fn().mockImplementation(async () => {});
+    const onSend = vi.fn().mockImplementation(() => Promise.resolve());
     const { container } = withClient(<MessageInput onSend={onSend} />);
 
     await expectNoAxeViolations(container);
   });
 
   it('handles composer validation and category selection', async () => {
-    const onSend = vi.fn().mockImplementation(async () => {});
+    const onSend = vi.fn().mockImplementation(() => Promise.resolve());
     withClient(<MessageInput onSend={onSend} />);
 
     const textbox = screen.getByPlaceholderText('Type a message...');
@@ -186,7 +186,7 @@ describe('message board main flow components', () => {
   });
 
   it('supports message edit/cancel/save and permission branches in controls', async () => {
-    const onSave = vi.fn().mockImplementation(async () => {});
+    const onSave = vi.fn().mockImplementation(() => Promise.resolve());
     const onCancel = vi.fn();
 
     withClient(<MessageEditForm content="Original text" onSave={onSave} onCancel={onCancel} />);
@@ -200,7 +200,7 @@ describe('message board main flow components', () => {
     fireEvent.keyDown(screen.getByPlaceholderText('Edit message...'), { key: 'Escape' });
     expect(onCancel).toHaveBeenCalled();
 
-    const onDelete = vi.fn().mockImplementation(async () => {});
+    const onDelete = vi.fn().mockImplementation(() => Promise.resolve());
     const setShowDeleteConfirm = vi.fn();
     const setShowOptions = vi.fn();
 
