@@ -39,7 +39,7 @@ E2E specs live in `e2e/` (separate from Vitest, which only picks up
 | `admin-access.spec.ts`      | Admin route gating for admin vs non-admin users                         |
 | `admin-mass-score.spec.ts`  | Admin mass score entry flow                                             |
 | `playoff-bracket.spec.ts`   | Bracket advances semifinal winners into the final and crowns a champion |
-| `a11y.spec.ts`              | axe WCAG 2 A/AA scan of six public routes (runs in its own workflow)    |
+| `a11y.spec.ts`              | axe WCAG 2 A/AA scan of six public routes (blocking step in CI's `browser` job) |
 | `real-backend.spec.ts`      | Optional live Supabase golden path: logs in, views the schedule, submits a score for a seeded pending match, and verifies the submission row in `score_submissions`; skipped unless `E2E_SUPABASE_URL`, `E2E_SUPABASE_ANON_KEY`, `E2E_SUPABASE_SERVICE_ROLE_KEY`, `E2E_TEST_USER_EMAIL`, and `E2E_TEST_USER_PASSWORD` are set |
 
 **Honest caveat:** most specs intercept and mock all Supabase network calls
@@ -77,21 +77,20 @@ Local E2E setup checklist:
 4. Run `npm run e2e`. Playwright reuses an already-running dev server locally;
    otherwise it auto-starts `npm run dev` on port 8080.
 
-In CI, `.github/workflows/e2e.yml` runs `npm ci`, then `npm run e2e:install`,
-and only then `npm run e2e`, so browser installation is validated before tests
-start. Artifacts (HTML report, traces, screenshots) are written to
-`playwright-report/` and `test-results/` and are gitignored.
+In CI, the `browser` job in `.github/workflows/ci.yml` runs `npm ci`, then
+`npm run e2e:install`, and only then `npm run e2e`, so browser installation is
+validated before tests start. Artifacts (HTML report, traces, screenshots) are
+written to `playwright-report/` and `test-results/` and are gitignored.
 
-### CI status: non-blocking
+### CI status: blocking
 
-The `E2E (smoke)` GitHub Actions workflow (`.github/workflows/e2e.yml`) runs
-on every PR but is configured with `continue-on-error: true`, so failures do
-**not** block merges while the suite stabilizes. To make it a required gate,
-remove `continue-on-error: true` from `.github/workflows/e2e.yml` and add the
-check to the branch protection rules.
+The Playwright smoke suite runs in the `browser` job of
+`.github/workflows/ci.yml` on every PR with no `continue-on-error`, so a
+failing spec fails the job. (Before the CI consolidation the suite lived in a
+separate workflow marked non-blocking; that escape hatch is gone.)
 
-The a11y scan is the exception: `.github/workflows/a11y.yml` runs
-`e2e/a11y.spec.ts` as a **blocking** gate on every PR.
+The axe a11y scan (`e2e/a11y.spec.ts`) runs as a **blocking** step in the same
+`browser` job.
 
 
 ## Coverage troubleshooting (hangs/timeouts)
@@ -201,13 +200,14 @@ Be precise about which kind of confidence a claim rests on:
   bracket seeding, error handling, and a sample of hooks, pages, and admin
   components. The axe accessibility scan of public routes is also a blocking
   automated gate.
-- **Automated but non-blocking:** the Playwright browser suite in `e2e/`
-  (smoke, score submission, admin access, mass score entry, playoff bracket,
-  and the optional real-backend golden path). It runs on every PR but failures
-  do not block merges. Most browser specs mock all Supabase traffic;
-  `real-backend.spec.ts` is skipped unless the live Supabase credentials above
-  are configured, and then verifies one login/schedule/score-submission path
-  against the real backend.
+- **Automated in a real browser (blocking since the CI consolidation):** the
+  Playwright suite in `e2e/` (smoke, score submission, admin access, mass
+  score entry, playoff bracket) runs in the `browser` job of
+  `.github/workflows/ci.yml` on every PR, and failures fail the job. Most
+  browser specs mock all Supabase traffic; `real-backend.spec.ts` is skipped
+  unless the live Supabase credentials above are configured — CI provides
+  them in the dedicated `e2e-real-backend` job, where it verifies one
+  login/schedule/score-submission path against the real backend.
 - **Manual only — no automated coverage:** anything that executes inside the
   database (RLS policies, Postgres RPCs, triggers, migrations), real
   authentication against Supabase, image upload/storage, realtime
@@ -401,14 +401,15 @@ Configured in `vitest.config.ts` under `test.coverage.exclude`:
 
 ## CI enforcement
 
-Coverage enforcement runs on pull requests via
-`.github/workflows/coverage-threshold.yml`, which executes:
+Coverage enforcement runs on pull requests via the `quality` job in
+`.github/workflows/ci.yml` (step "Enforce coverage thresholds"), which
+executes:
 
 ```bash
 npm run test:coverage:ci
 ```
 
-Because Vitest thresholds are configured in `vitest.config.ts`, that workflow
+Because Vitest thresholds are configured in `vitest.config.ts`, that job
 fails automatically when any enforced global or folder threshold regresses.
 
 DeepSource reporting should invoke its dedicated lightweight command:
@@ -428,7 +429,7 @@ Use `npm run test:coverage` for fast local/CI gating and
 
 Before merging any PR, confirm:
 
-- [ ] Unit/integration tests pass (`npm test` — CI runs this in `test.yml`)
+- [ ] Unit/integration tests pass (`npm test` — CI runs this in the `quality` job of `ci.yml`)
 - [ ] Typecheck passes (`npm run typecheck`)
 - [ ] Build passes (`npm run build`)
 - [ ] Coverage thresholds hold (`npm run test:coverage:ci` — enforced in CI)
@@ -500,11 +501,11 @@ moving to the next; don't skip ahead and claim higher-tier confidence.
 
 Already in place and enforced:
 
-- Typecheck must pass (CI: `test.yml`)
-- Build must pass (CI: `test.yml`)
-- Existing tests must pass (CI: `test.yml`)
-- Coverage floors enforced on services/hooks/utils (CI: `coverage-threshold.yml`)
-- a11y scan blocking on public routes (CI: `a11y.yml`)
+- Typecheck must pass (CI: `quality` job in `ci.yml`)
+- Build must pass (CI: `build-size` job in `ci.yml`)
+- Existing tests must pass (CI: `quality` job in `ci.yml`)
+- Coverage floors enforced on services/hooks/utils (CI: `quality` job in `ci.yml`)
+- a11y scan blocking on public routes (CI: `browser` job in `ci.yml`)
 - Manual smoke expectations documented (this file)
 
 ### Tier 2 — Core app confidence (mostly done as of 2026-07-06)
@@ -522,8 +523,9 @@ Already in place and enforced:
   hook and util in `src/hooks/matches` has a suite.
 - ~~Playoff viewer/renderer regression tests~~ **Done.** All three
   `src/components/playoffs/viewer/` files are tested.
-- Make the Playwright E2E workflow a blocking gate once it has been stable
-  for a few weeks (remove `continue-on-error` from `e2e.yml`) — still open.
+- ~~Make the Playwright E2E workflow a blocking gate~~ **Done.** The CI
+  consolidation moved the smoke suite into the `browser` job of `ci.yml`
+  with no `continue-on-error`, so E2E failures now fail the job.
 
 ### Tier 3 — Higher confidence (later)
 

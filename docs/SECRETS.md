@@ -22,7 +22,7 @@ All three are **publishable** — safe to expose in the browser. Access control 
 ## Where they come from
 
 - **Lovable preview & published app**: auto-injected at build time from the connected Supabase / Lovable Cloud project. No `.env` file needed.
-- **CI (GitHub Actions)**: pulled from GitHub Secrets (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`). See `.github/workflows/test.yml`.
+- **CI (GitHub Actions)**: pulled from GitHub Secrets (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`). See the `build-size` and `browser` jobs in `.github/workflows/ci.yml`.
 - **Local development outside Lovable**: copy `.env.example` → `.env` and fill in real values from the Supabase Dashboard → Project Settings → API.
 
 ## What `.env.example` is for
@@ -76,8 +76,8 @@ If the leaked value was the publishable/anon key, rotation is usually optional (
 
 Two CI guardrails protect the repo from accidental secret commits:
 
-1. **`committed-env-files`** (in `.github/workflows/security-audit.yml`) fails the build if any per-environment `.env` file (e.g. `.env.local`, `.env.production`) is tracked by git. `.env.example` and the repo-level `.env` (publishable values only) are allowed.
-2. **`secret-scan`** (in `.github/workflows/secret-scan.yml`) runs [Gitleaks](https://github.com/gitleaks/gitleaks) against every PR, every push to `main`, and a weekly cron. The ruleset (`.gitleaks.toml`) extends Gitleaks' defaults and adds a custom detector for Supabase `service_role` JWTs.
+1. **`committed-env-files`** (a job in `.github/workflows/security.yml`) fails the build if any per-environment `.env` file (e.g. `.env.local`, `.env.production`) is tracked by git. `.env.example` and the repo-level `.env` (publishable values only) are allowed.
+2. **`gitleaks`** (a job in `.github/workflows/security.yml`) runs [Gitleaks](https://github.com/gitleaks/gitleaks) against every PR, every push to `main`, and a weekly cron. The ruleset (`.gitleaks.toml`) extends Gitleaks' defaults and adds a custom detector for Supabase `service_role` JWTs.
 
 ### Triaging a Gitleaks finding
 
