@@ -119,6 +119,40 @@ Interpretation:
 - Use `--reporter=verbose` to see the last completed suite before the stall.
 - The default `test:coverage` runs in fast parallel mode (`VITEST_FAST_COVERAGE=1` → forked workers). If parallelism appears unstable, fall back to `npm run test:coverage:serial` to confirm before changing CI defaults.
 
+### Bisecting a hang to a single file
+
+When coverage keeps hanging, run this sequence exactly to narrow down the
+culprit without guesswork:
+
+1. **Confirm hang in deterministic mode**
+   ```sh
+   npm run test:coverage:debug
+   ```
+2. **Run focused subset (services/hooks/utils)**
+   ```sh
+   npm run test:coverage:debug:subset
+   ```
+3. **Bisect by directory with file-pattern execution**
+   ```sh
+   npm run test:coverage:debug -- "src/services/**/{__tests__,tests}/**/*.{test,spec}.{ts,tsx}"
+   npm run test:coverage:debug -- "src/hooks/**/{__tests__,tests}/**/*.{test,spec}.{ts,tsx}"
+   npm run test:coverage:debug -- "src/utils/**/{__tests__,tests}/**/*.{test,spec}.{ts,tsx}"
+   ```
+4. **Narrow to one package/folder**
+   ```sh
+   npm run test:coverage:debug -- "src/services/<area>/**/{__tests__,tests}/**/*.{test,spec}.{ts,tsx}"
+   ```
+5. **Narrow to one file**
+   ```sh
+   npm run test:coverage:debug -- "src/services/<area>/tests/<name>.test.ts"
+   ```
+
+If a directory keeps hanging, temporarily tighten `test.include` in
+`vitest.config.ts` to only that directory's globs, then rerun
+`npm run test:coverage:debug`. Keep shrinking the include globs until a single
+culprit spec is identified, then restore the broader include patterns after
+fixing the test.
+
 ## Troubleshooting agent shells (Codex / Claude Code)
 
 If you see either of these errors when an AI agent tries to run a single test file:

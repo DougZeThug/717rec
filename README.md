@@ -1,134 +1,94 @@
-# Welcome to your Lovable project
+# 717REC
 
-## Project info
+717REC is the league management app for a recreational cornhole league in
+Lancaster, PA. It runs the full season lifecycle: teams and rosters, weekly
+match scheduling (including auto-scheduling), score submission and admin
+score entry, standings and power rankings, playoff brackets, and season
+history — plus an admin dashboard for managing all of it.
 
-**URL**: https://lovable.dev/projects/71485458-eece-4db2-a818-0dbc3e38e42e
+The project started on [Lovable](https://lovable.dev/projects/71485458-eece-4db2-a818-0dbc3e38e42e)
+and can still be edited there; changes made via Lovable are committed back to
+this repo automatically.
 
-## How can I edit this code?
+## Tech stack
 
-There are several ways of editing your application.
+- **Frontend**: React 18 + TypeScript + Vite, styled with Tailwind CSS + shadcn/ui
+- **Backend**: Supabase (PostgreSQL, Auth, Realtime, Edge Functions)
+- **Server state**: TanStack Query v5
+- **Playoff brackets**: [`brackets-manager`](https://github.com/Drarig29/brackets-manager.js)
+- **Tests**: Vitest + Testing Library (unit/integration), Playwright (browser E2E)
 
-**Use Lovable**
+See [`ARCHITECTURE.md`](ARCHITECTURE.md) for the full picture: project
+structure, routing, data flow, and the service-layer rules.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/71485458-eece-4db2-a818-0dbc3e38e42e) and start prompting.
+## Getting started
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+Requires Node.js 20+ and npm. This repo is **npm-only** — do not use bun,
+pnpm, or yarn (`.npmrc` sets `legacy-peer-deps=true`, and `package-lock.json`
+is the only Node lockfile; `deno.lock` belongs to the Supabase edge functions).
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+git clone <repo-url>
+cd 717rec
+npm ci          # install exact dependencies from package-lock.json
+npm run dev     # start the Vite dev server on http://localhost:8080
 ```
 
 ## Environment setup
 
-Copy `.env.example` to `.env` and fill in the values from your Supabase project (Dashboard → Project Settings → API). All variables prefixed with `VITE_` are publishable/browser-safe — access control is enforced by Supabase Row Level Security. **Never** put a `service_role` key in a `VITE_*` variable or any frontend `.env` file. See [`docs/SECRETS.md`](docs/SECRETS.md) for the full guide and what to do if a secret is accidentally committed.
+Copy `.env.example` to `.env` and fill in the values from your Supabase
+project (Dashboard → Project Settings → API). All variables prefixed with
+`VITE_` are publishable/browser-safe — access control is enforced by Supabase
+Row Level Security. **Never** put a `service_role` key in a `VITE_*` variable
+or any frontend `.env` file. See [`docs/SECRETS.md`](docs/SECRETS.md) for the
+full guide and what to do if a secret is accidentally committed.
 
-Every pull request runs [Gitleaks](https://github.com/gitleaks/gitleaks) (see `.github/workflows/secret-scan.yml`). Commits that contain API keys or Supabase `service_role` JWTs will fail CI; tune `.gitleaks.toml` if you hit a false positive.
+Every pull request runs [Gitleaks](https://github.com/gitleaks/gitleaks)
+secret scanning (the `gitleaks` job in `.github/workflows/security.yml`).
+Commits that contain API keys or Supabase `service_role` JWTs will fail CI;
+tune `.gitleaks.toml` if you hit a false positive.
 
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/71485458-eece-4db2-a818-0dbc3e38e42e) and click on Share -> Publish.
-
-For governed releases (versioning, tags, deployment checklist, rollback steps), use the runbook in [`docs/RELEASE_AND_DEPLOYMENT.md`](docs/RELEASE_AND_DEPLOYMENT.md).
-
-## Testing and coverage commands
+## Testing
 
 ```sh
-npm test
-npm run test:debug
-npm run test:coverage
-npm run test:coverage:serial
-npm run test:coverage:ci
-npm run test:coverage:deepsource
-npm run test:coverage:debug
-npm run test:coverage:debug:subset
+npm test                 # full Vitest suite
+npm run test:coverage    # fast coverage gate (parallel workers)
+npm run e2e              # Playwright browser suite
 ```
 
-- `test:coverage` is the default fast coverage path: parallel forked workers (`VITEST_FAST_COVERAGE=1`) with lightweight reporters. Use this for everyday local + Codex/Claude runs.
-- `test:coverage:serial` is the slow single-worker fallback for diagnosing flaky parallel runs.
-- `test:coverage:ci` runs the PR-gate coverage pass with a **10-minute hard timeout** in fast parallel mode (`timeout 10m env CI=true VITEST_CI_COVERAGE=1 VITEST_FAST_COVERAGE=1 vitest run --coverage`).
-- `test:coverage:deepsource` is the DeepSource path: it has a **15-minute hard runtime budget** and emits **LCOV only** at `coverage/deepsource/lcov.info`.
+[`TESTING.md`](TESTING.md) is the single source of truth for everything else:
+the full command list, the coverage baseline and threshold policy, E2E setup,
+manual QA expectations, and the coverage hang triage playbook.
 
-Single source of truth: script values in `package.json` are authoritative; documentation should match those exact script definitions.
-- `test:coverage:debug` runs coverage in single-thread mode with verbose logging to isolate hangs.
-- `test:coverage:debug:subset` runs only `src/services`, `src/hooks`, and `src/utils` test files so teams can bisect by directory quickly.
+## Continuous integration
 
-### Coverage hang triage playbook
+Four GitHub Actions workflows live in `.github/workflows/`:
 
-When coverage fails or times out in CI, reproduce locally with `npm run test:coverage:debug` first.
+| Workflow | File | What it runs |
+| --- | --- | --- |
+| CI | `ci.yml` | `quality`: lint, typecheck, full test suite, coverage thresholds, knip dead-code check. `build-size`: production build + bundle-size budgets. `browser`: Playwright smoke tests, blocking axe a11y scan, Lighthouse. `react-doctor`: React best-practice scan. `e2e-real-backend`: E2E golden path against a real Supabase backend. |
+| Security | `security.yml` | `audit`: npm audit. `committed-env-files`: fails if local `.env` files are tracked. `gitleaks`: secret scan on PRs, pushes to main, and a weekly cron. |
+| Supabase CI | `supabase-ci.yml` | `db-lint`: `supabase db lint`. `db-apply-and-smoke`: apply migrations + SQL smoke tests. `edge-function-tests`: edge-function Deno tests. |
+| Summarize new issues | `summary.yml` | Posts an AI-generated summary comment on newly opened GitHub issues. |
 
-When coverage appears to hang, run this sequence exactly to narrow down the culprit without guesswork:
+## Deployment
 
-1. **Confirm hang in deterministic mode**
-   ```sh
-   npm run test:coverage:debug
-   ```
-2. **Run focused subset (services/hooks/utils)**
-   ```sh
-   npm run test:coverage:debug:subset
-   ```
-3. **Bisect by directory with file-pattern execution**
-   ```sh
-   npm run test:coverage:debug -- "src/services/**/{__tests__,tests}/**/*.{test,spec}.{ts,tsx}"
-   npm run test:coverage:debug -- "src/hooks/**/{__tests__,tests}/**/*.{test,spec}.{ts,tsx}"
-   npm run test:coverage:debug -- "src/utils/**/{__tests__,tests}/**/*.{test,spec}.{ts,tsx}"
-   ```
-4. **Narrow to one package/folder**
-   ```sh
-   npm run test:coverage:debug -- "src/services/<area>/**/{__tests__,tests}/**/*.{test,spec}.{ts,tsx}"
-   ```
-5. **Narrow to one file**
-   ```sh
-   npm run test:coverage:debug -- "src/services/<area>/tests/<name>.test.ts"
-   ```
+Production deploys go through **Lovable Publish** (open the
+[Lovable project](https://lovable.dev/projects/71485458-eece-4db2-a818-0dbc3e38e42e)
+and click Share → Publish); the published SPA is served through Cloudflare,
+with HTTP security headers defined in [`public/_headers`](public/_headers).
+For governed releases (versioning, tags, deployment checklist, rollback
+steps), use the runbook in
+[`docs/RELEASE_AND_DEPLOYMENT.md`](docs/RELEASE_AND_DEPLOYMENT.md).
 
-If a directory keeps hanging, temporarily tighten `test.include` in `vitest.config.ts` to only that directory's globs, then rerun `npm run test:coverage:debug`. Keep shrinking the include globs until a single culprit spec is identified, then restore the broader include patterns after fixing the test.
+A custom domain can be connected in Lovable under Project → Settings →
+Domains ([guide](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)).
 
-## Can I connect a custom domain to my Lovable project?
+## Documentation map
 
-Yes it is!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+| Doc | What's in it |
+| --- | --- |
+| [`ARCHITECTURE.md`](ARCHITECTURE.md) | Stack, project structure, routing, data flow, service-layer rules |
+| [`TESTING.md`](TESTING.md) | Test commands, coverage baseline and thresholds, E2E setup, manual QA checklists |
+| [`CLAUDE.md`](CLAUDE.md) | Working agreements for AI agents (and humans): architecture rules, service template, test-running notes |
+| [`docs/`](docs/) | Deep dives: secrets handling, release runbook, Supabase CI, RLS notes, bracket schema, past audits |
