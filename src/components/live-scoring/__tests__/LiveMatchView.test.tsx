@@ -237,6 +237,34 @@ describe('in-game state', () => {
     );
   });
 
+  it('confirms undo only for the latest round and sends the last round number', async () => {
+    const bundle = makeBundle({
+      games: [game()],
+      rounds: [
+        round({ round_number: 1, team1_score: 8, team2_score: 5, net_points: 3, winner_team: 1 }),
+        round({ round_number: 2, team1_score: 0, team2_score: 4, net_points: 4, winner_team: 2 }),
+      ],
+      gamePlayers: gamePlayers('game-1'),
+    });
+    renderView(bundle);
+
+    await userEvent.click(screen.getByRole('button', { name: /undo last round/i }));
+
+    expect(
+      await screen.findByText(/This removes round 2 \(0–4\) from the game/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/This removes round 1 \(8–5\) from the game/i)
+    ).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Undo round' }));
+
+    expect(mockUndoLastRound.mutate).toHaveBeenCalledWith({
+      gameId: 'game-1',
+      roundNumber: 2,
+    });
+  });
+
   it('hides all scoring controls from spectators', () => {
     renderView(inGameBundle(), { canScore: false });
 
@@ -373,6 +401,15 @@ describe('match decided (not yet official)', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Save result' }));
 
     expect(mockFinalize.mutate).toHaveBeenCalled();
+  });
+
+  it('does not finalize when the scorer cancels the match-complete dialog', async () => {
+    renderView(decidedBundle());
+
+    await userEvent.click(screen.getByRole('button', { name: /save official result/i }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Not yet' }));
+
+    expect(mockFinalize.mutate).not.toHaveBeenCalled();
   });
 
   it('spectators see the result but no finalize button', () => {
