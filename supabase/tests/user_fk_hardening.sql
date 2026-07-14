@@ -84,8 +84,10 @@ BEGIN
     VALUES (v_msg_id, v_user_id, 'like');
   INSERT INTO public.team_memberships (team_id, user_id, is_approved)
     VALUES (v_team_id, v_user_id, false);
-  INSERT INTO public.contact_requests (user_id, name, email, subject, message)
-    VALUES (v_user_id, 'FK User', 'fk-user@example.test', 'general_question', 'hi');
+  INSERT INTO public.contact_requests (
+    user_id, submitter_name, submitter_contact, request_type, message
+  )
+    VALUES (v_user_id, 'FK User', 'fk-user@example.test', 'general', 'hi');
 
   -- 3) A bogus user_id now fails with FK violation on a CASCADE-side table.
   BEGIN
@@ -122,7 +124,7 @@ BEGIN
   END IF;
   IF NOT EXISTS (
     SELECT 1 FROM public.contact_requests
-     WHERE email = 'fk-user@example.test' AND user_id IS NULL
+     WHERE submitter_contact = 'fk-user@example.test' AND user_id IS NULL
   ) THEN
     RAISE EXCEPTION 'contact_requests.user_id should have been set to NULL';
   END IF;
