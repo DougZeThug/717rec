@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo } from 'react';
 
 import { useAuth } from '@/contexts/auth-context';
 import { subscribeWithRetry } from '@/hooks/realtime/subscribeWithRetry';
@@ -7,8 +8,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { MatchReaction, MatchReactionsService } from '@/services/matches/MatchReactionsService';
 import { errorLog } from '@/utils/logger';
 
-export type { MatchReaction };
+import { matchInteractionKeys } from './matchInteractionKeys';
 
+export type { MatchReaction };
 export interface ReactionCount {
   emoji: string;
   count: number;
@@ -16,70 +18,43 @@ export interface ReactionCount {
   hasReacted: boolean;
 }
 
-export const useMatchReactions = (matchId: string) => {
-  const [reactions, setReactions] = useState<MatchReaction[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuth();
-  const isFetchingRef = useRef(false);
-  const deletedDuringFetchRef = useRef<Set<string>>(new Set());
-
-  // Group and count reactions
-  const reactionCounts = useMemo(() => {
-    const counts: ReactionCount[] = [];
-
-    // Group by emoji
-    reactions.forEach((reaction) => {
-      const existing = counts.find((item) => item.emoji === reaction.emoji);
-
-      if (existing) {
-        existing.count += 1;
-        existing.users.push(reaction.user_id);
-        if (reaction.user_id === user?.id) {
-          existing.hasReacted = true;
-        }
-      } else {
-        counts.push({
-          emoji: reaction.emoji,
-          count: 1,
-          users: [reaction.user_id],
-          hasReacted: reaction.user_id === user?.id,
-        });
-      }
-    });
-
-    return counts.sort((a, b) => b.count - a.count);
-  }, [reactions, user?.id]);
-
-  const fetchReactions = useCallback(async () => {
-    if (!matchId) return;
-    try {
-      isFetchingRef.current = true;
-      deletedDuringFetchRef.current.clear();
-      setIsLoading(true);
-      const data = await MatchReactionsService.fetchReactions(matchId);
-      setReactions((curr) => {
-        const fetchedIds = new Set(data.map((r) => r.id));
-        const realtimeOnly = curr.filter((r) => !fetchedIds.has(r.id));
-        return [...data, ...realtimeOnly].filter((r) => !deletedDuringFetchRef.current.has(r.id));
+const countReactions = (reactions: MatchReaction[], userId?: string): ReactionCount[] => {
+  const counts: ReactionCount[] = [];
+  reactions.forEach((reaction) => {
+    const existing = counts.find((item) => item.emoji === reaction.emoji);
+    if (existing) {
+      existing.count += 1;
+      existing.users.push(reaction.user_id);
+      if (reaction.user_id === userId) existing.hasReacted = true;
+    } else
+      counts.push({
+        emoji: reaction.emoji,
+        count: 1,
+        users: [reaction.user_id],
+        hasReacted: reaction.user_id === userId,
       });
-    } catch (err) {
-      errorLog('Error fetching match reactions:', err);
-    } finally {
-      isFetchingRef.current = false;
-      setIsLoading(false);
-    }
-  }, [matchId]);
+  });
+  return counts.sort((a, b) => b.count - a.count);
+};
 
-  // Fetch initial reactions
+export const useMatchReactions = (matchId: string) => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const queryKey = matchInteractionKeys.reactions(matchId);
+  const reactionsQuery = useQuery({
+    queryKey,
+    queryFn: () => MatchReactionsService.fetchReactions(matchId),
+    enabled: Boolean(matchId),
+  });
+  const reactions = reactionsQuery.data ?? [];
+  const reactionCounts = useMemo(() => countReactions(reactions, user?.id), [reactions, user?.id]);
+
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load
-    void fetchReactions();
-  }, [fetchReactions]);
-
-  // Set up realtime subscription
+    if (reactionsQuery.error) errorLog('Error fetching match reactions:', reactionsQuery.error);
+  }, [reactionsQuery.error]);
   useEffect(() => {
     if (!matchId) return;
-
+    const invalidate = () => void queryClient.invalidateQueries({ queryKey });
     const { dispose } = subscribeWithRetry({
       label: `useMatchReactions(${matchId})`,
       build: () =>
@@ -93,13 +68,11 @@ export const useMatchReactions = (matchId: string) => {
               table: 'match_reactions',
               filter: `match_id=eq.${matchId}`,
             },
-            (payload) => {
+            (payload: { new: unknown; old: { id?: string } }) => {
               const newReaction = payload.new as MatchReaction;
-              setReactions((curr) => {
-                if (curr.some((r) => r.id === newReaction.id)) return curr;
-                deletedDuringFetchRef.current.delete(newReaction.id);
-                return [...curr, newReaction];
-              });
+              queryClient.setQueryData<MatchReaction[]>(queryKey, (curr = []) =>
+                curr.some((r) => r.id === newReaction.id) ? curr : [...curr, newReaction]
+              );
             }
           )
           .on(
@@ -110,24 +83,32 @@ export const useMatchReactions = (matchId: string) => {
               table: 'match_reactions',
               filter: `match_id=eq.${matchId}`,
             },
-            (payload) => {
+            (payload: { new: unknown; old: { id?: string } }) => {
               const deletedReaction = payload.old as MatchReaction;
-              setReactions((curr) => {
-                if (isFetchingRef.current) {
-                  deletedDuringFetchRef.current.add(deletedReaction.id);
-                }
-                return curr.filter((r) => r.id !== deletedReaction.id);
-              });
+              queryClient.setQueryData<MatchReaction[]>(queryKey, (curr = []) =>
+                curr.filter((r) => r.id !== deletedReaction.id)
+              );
             }
           ),
       onReconnect: (isFirst) => {
-        if (!isFirst) void fetchReactions();
+        if (!isFirst) invalidate();
       },
     });
     return () => dispose();
-  }, [matchId, fetchReactions]);
+  }, [matchId, queryClient, queryKey]);
 
-  // Toggle reaction (add or remove)
+  const mutation = useMutation({
+    mutationFn: async (emoji: string) => {
+      const existing = reactions.find((r) => r.user_id === user!.id && r.emoji === emoji);
+      if (existing) await MatchReactionsService.deleteReaction(existing.id, user!.id);
+      else await MatchReactionsService.insertReaction(matchId, user!.id, emoji);
+    },
+    onError: (err) => {
+      errorLog('Error toggling reaction:', err);
+      toast({ title: 'Error', description: 'Failed to update reaction', variant: 'destructive' });
+    },
+    onSettled: () => void queryClient.invalidateQueries({ queryKey }),
+  });
   const toggleReaction = async (emoji: string) => {
     if (!user) {
       toast({
@@ -137,34 +118,8 @@ export const useMatchReactions = (matchId: string) => {
       });
       return;
     }
-
     if (!emoji) return;
-
-    try {
-      // Check if the user already added this emoji reaction
-      const existingReaction = reactions.find((r) => r.user_id === user.id && r.emoji === emoji);
-
-      if (existingReaction) {
-        // If the reaction exists, remove it (toggle behavior)
-        await MatchReactionsService.deleteReaction(existingReaction.id, user.id);
-      } else {
-        // Add the new reaction
-        await MatchReactionsService.insertReaction(matchId, user.id, emoji);
-      }
-    } catch (err) {
-      errorLog('Error toggling reaction:', err);
-      toast({
-        title: 'Error',
-        description: 'Failed to update reaction',
-        variant: 'destructive',
-      });
-    }
+    await mutation.mutateAsync(emoji).catch(() => undefined);
   };
-
-  return {
-    reactions,
-    reactionCounts,
-    isLoading,
-    toggleReaction,
-  };
+  return { reactions, reactionCounts, isLoading: reactionsQuery.isLoading, toggleReaction };
 };

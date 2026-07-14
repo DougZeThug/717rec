@@ -1,15 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { toast } from '@/hooks/useToast';
 import { Message, MessageCategory } from '@/types/reactions';
 import { errorLog } from '@/utils/logger';
 
+import { messageBoardKeys } from './messageBoardKeys';
 import { FilterOptions, MessageQueryOptions, UseMessageBoardResult } from './types';
 import { useMessageApi } from './useMessageApi';
 import { useMessageRealtime } from './useMessageRealtime';
 
 const PAGE_SIZE = 10;
-const FILTER_DEBOUNCE_MS = 300;
 const MAX_MESSAGES_IN_STATE = 100;
 const MESSAGE_FILTER_KEY = 'messageBoardFilters';
 
@@ -27,17 +28,12 @@ const loadPersistedFilters = (): FilterOptions => {
 };
 
 export const useMessageBoard = (): UseMessageBoardResult => {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
 
   // Filter state - initialize from sessionStorage
   const [filterOptions, setFilterOptions] = useState<FilterOptions>(loadPersistedFilters);
-
-  // Debounce ref for filter changes
-  const filterDebounceRef = useRef<NodeJS.Timeout>();
 
   const {
     fetchMessages,
@@ -46,9 +42,28 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     deleteMessage: apiDeleteMessage,
   } = useMessageApi();
 
+  const baseOptions = useMemo(
+    () => ({
+      limit: PAGE_SIZE,
+      category: filterOptions.category,
+      teamId: filterOptions.teamId,
+      searchQuery: filterOptions.searchQuery,
+    }),
+    [filterOptions.category, filterOptions.teamId, filterOptions.searchQuery]
+  );
+  const messagesQuery = useQuery({
+    queryKey: messageBoardKeys.page(baseOptions),
+    queryFn: () => fetchMessages(baseOptions),
+  });
+  const messages = messagesQuery.data ?? [];
+  const isLoading = messagesQuery.isLoading || messagesQuery.isFetching;
+  const error = messagesQuery.error ? 'Failed to load messages' : null;
+  useEffect(() => {
+    setHasMore((messagesQuery.data?.length ?? 0) === PAGE_SIZE);
+  }, [messagesQuery.data]);
+
   // Set filter function - shows loading immediately for UX feedback
   const setFilter = useCallback((filter: Partial<FilterOptions>) => {
-    setIsLoading(true); // Immediate feedback
     setFilterOptions((prev) => {
       const newOptions = { ...prev, ...filter };
       // Persist to sessionStorage
@@ -57,49 +72,9 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     });
   }, []);
 
-  // Fetch initial messages
   const fetchInitialMessages = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const data = await fetchMessages({
-        limit: PAGE_SIZE,
-        category: filterOptions.category,
-        teamId: filterOptions.teamId,
-        searchQuery: filterOptions.searchQuery,
-      });
-
-      setMessages(data || []);
-      setHasMore(data.length === PAGE_SIZE);
-    } catch (err) {
-      errorLog('Error fetching messages:', err);
-      setError('Failed to load messages');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [fetchMessages, filterOptions]);
-
-  // Debounced effect to refetch messages when filters change
-  useEffect(() => {
-    // Clear any pending debounce timer
-    if (filterDebounceRef.current) {
-      clearTimeout(filterDebounceRef.current);
-    }
-
-    // Set a new debounce timer
-    filterDebounceRef.current = setTimeout(() => {
-      fetchInitialMessages();
-    }, FILTER_DEBOUNCE_MS);
-
-    // Cleanup on filter change or unmount
-    return () => {
-      if (filterDebounceRef.current) {
-        clearTimeout(filterDebounceRef.current);
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- we intentionally only re-run when filter values change; fetchInitialMessages closes over them.
-  }, [filterOptions.category, filterOptions.teamId, filterOptions.searchQuery]);
+    await messagesQuery.refetch();
+  }, [messagesQuery]);
 
   // Load more messages
   const loadMoreMessages = useCallback(async () => {
@@ -127,7 +102,10 @@ export const useMessageBoard = (): UseMessageBoardResult => {
       const data = await fetchMessages(options);
 
       if (data && data.length > 0) {
-        setMessages((prev) => [...prev, ...data]);
+        queryClient.setQueryData<Message[]>(messageBoardKeys.page(baseOptions), (prev = []) => [
+          ...prev,
+          ...data,
+        ]);
         setHasMore(data.length === PAGE_SIZE);
       } else {
         setHasMore(false);
@@ -159,7 +137,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     try {
       await apiUpdateMessage(messageId, content);
       // Optimistic UI update
-      setMessages((curr) =>
+      queryClient.setQueryData<Message[]>(messageBoardKeys.page(baseOptions), (curr = []) =>
         curr.map((msg) =>
           msg.id === messageId
             ? {
@@ -182,7 +160,9 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     try {
       await apiDeleteMessage(messageId);
       // Optimistic UI update
-      setMessages((curr) => curr.filter((msg) => msg.id !== messageId));
+      queryClient.setQueryData<Message[]>(messageBoardKeys.page(baseOptions), (curr = []) =>
+        curr.filter((msg) => msg.id !== messageId)
+      );
     } catch (err) {
       errorLog('Error deleting message:', err);
       // Error is already handled in the API function
@@ -199,7 +179,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
         (!filterOptions.searchQuery ||
           newMessage.content.toLowerCase().includes(filterOptions.searchQuery.toLowerCase()))
       ) {
-        setMessages((curr) => {
+        queryClient.setQueryData<Message[]>(messageBoardKeys.page(baseOptions), (curr = []) => {
           const updated = [newMessage, ...curr];
           // Cap at MAX_MESSAGES_IN_STATE to prevent memory bloat
           return updated.length > MAX_MESSAGES_IN_STATE
@@ -208,7 +188,13 @@ export const useMessageBoard = (): UseMessageBoardResult => {
         });
       }
     },
-    [filterOptions.category, filterOptions.teamId, filterOptions.searchQuery]
+    [
+      baseOptions,
+      filterOptions.category,
+      filterOptions.teamId,
+      filterOptions.searchQuery,
+      queryClient,
+    ]
   );
 
   // Memoized callback for message updated
@@ -220,7 +206,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
         (!filterOptions.searchQuery ||
           updatedMessage.content.toLowerCase().includes(filterOptions.searchQuery.toLowerCase()));
 
-      setMessages((curr) => {
+      queryClient.setQueryData<Message[]>(messageBoardKeys.page(baseOptions), (curr = []) => {
         const existsInList = curr.some((msg) => msg.id === updatedMessage.id);
 
         if (existsInList) {
@@ -246,13 +232,24 @@ export const useMessageBoard = (): UseMessageBoardResult => {
         }
       });
     },
-    [filterOptions.category, filterOptions.teamId, filterOptions.searchQuery]
+    [
+      baseOptions,
+      filterOptions.category,
+      filterOptions.teamId,
+      filterOptions.searchQuery,
+      queryClient,
+    ]
   );
 
   // Memoized callback for message deleted
-  const handleMessageDeleted = useCallback((deletedMessage: Message) => {
-    setMessages((curr) => curr.filter((msg) => msg.id !== deletedMessage.id));
-  }, []);
+  const handleMessageDeleted = useCallback(
+    (deletedMessage: Message) => {
+      queryClient.setQueryData<Message[]>(messageBoardKeys.page(baseOptions), (curr = []) =>
+        curr.filter((msg) => msg.id !== deletedMessage.id)
+      );
+    },
+    [baseOptions, queryClient]
+  );
 
   // Set up real-time subscription with memoized callbacks
   useMessageRealtime(
@@ -266,13 +263,6 @@ export const useMessageBoard = (): UseMessageBoardResult => {
   const refreshMessages = useCallback(async () => {
     await fetchInitialMessages();
   }, [fetchInitialMessages]);
-
-  // Initialize on mount
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial fetch on mount only
-    fetchInitialMessages();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- initial fetch on mount only
-  }, []);
 
   return {
     messages,
