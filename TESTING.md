@@ -321,7 +321,7 @@ per-area numbers matter for a decision, recompute them from a fresh
 `RankingCurrentService`, `RankingTrendsService`.
 
 **Hooks:** `usePendingMatches`, `useTeamScheduleLoader`, `usePairingGenerator`,
-`useMatchComments`, match-submission and team-record-update hooks,
+`useMatchComments`, match-submission and match-update hooks,
 match query-cache utilities, team-stats util.
 
 **Utils:** ranking calculations (SOS, head-to-head, streaks, win %, power
