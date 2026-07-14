@@ -34,6 +34,7 @@ interface LiveMatchViewProps {
 
 const RULES_LABEL = `First to ${DEFAULT_GAME_RULES.targetScore}, win by ${DEFAULT_GAME_RULES.winBy}`;
 
+/** Renders the complete live-scoring workflow for setup, scoring, deciding, and reviewing a match. */
 export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
   matchId,
   bundle,
@@ -89,12 +90,14 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
       winnerName: g.game.winner_team_id === match.team1_id ? team1Name : team2Name,
     }));
 
+  /** Renders the active game scoring controls, scoreboard, undo button, and round history. */
   const renderScoring = (game: LiveGameDerived) => {
     const overrideKey = `${game.game.id}:${game.nextRoundNumber}`;
     const override = throwerOverride?.key === overrideKey ? throwerOverride : null;
     const team1ThrowerId = override?.team1 ?? game.nextThrowers.team1ThrowerId;
     const team2ThrowerId = override?.team2 ?? game.nextThrowers.team2ThrowerId;
 
+    /** Builds the selectable thrower buttons for one side of the current game. */
     const throwerOptions = (side: 1 | 2) =>
       (side === 1 ? game.players.team1 : game.players.team2).map((gp) => ({
         id: gp.player_id,
@@ -105,6 +108,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
     const gameWon = game.pendingWinnerSide !== null;
     const pendingWinnerName = game.pendingWinnerSide === 1 ? team1Name : team2Name;
 
+    /** Saves the next round using the currently selected throwers. */
     const handleSubmit = (submission: RoundSubmission) => {
       submitRound.mutate({
         gameId: game.game.id,
@@ -215,6 +219,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
     );
   };
 
+  /** Renders setup controls for the next game when no game is currently in progress. */
   const renderSetup = () => {
     const nextGameNumber = matchState.nextGameNumber;
     if (nextGameNumber === null) {
@@ -239,6 +244,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
       team1: new Set(team1Players.players.map((p) => p.id)),
       team2: new Set(team2Players.players.map((p) => p.id)),
     };
+    /** Reuses the previous game's players when they still belong to the same team's roster. */
     const prefill = (side: 1 | 2) =>
       (side === 1 ? previous?.players.team1 : previous?.players.team2)
         ?.map((gp) => gp.player_id)
@@ -287,6 +293,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
     );
   };
 
+  /** Renders the not-yet-official match winner state and finalization controls. */
   const renderDecided = () => (
     <div className="space-y-3">
       <div className="rounded-lg border border-primary/50 bg-primary/10 p-4 text-center">
@@ -305,6 +312,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
           gameWins={matchState.gameWins}
           gameLines={gameLines}
           isFinalizing={finalize.isPending}
+          finalizeError={finalize.isError ? finalize.error : null}
           onConfirm={() => finalize.mutate()}
         />
       )}

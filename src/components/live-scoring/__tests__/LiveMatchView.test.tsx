@@ -11,7 +11,7 @@ const mockStartGame = { mutate: vi.fn(), isPending: false };
 const mockConfirmGameComplete = { mutate: vi.fn(), isPending: false };
 const mockReopenGame = { mutate: vi.fn(), isPending: false };
 const mockUpdateGamePlayers = { mutate: vi.fn(), isPending: false };
-const mockFinalize = { mutate: vi.fn(), isPending: false };
+const mockFinalize = { mutate: vi.fn(), isPending: false, isError: false, error: null as unknown };
 const mockReopen = { mutate: vi.fn(), isPending: false };
 const mockAddPlayer = { mutate: vi.fn(), isPending: false };
 
@@ -180,6 +180,8 @@ const renderView = (
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockFinalize.isError = false;
+  mockFinalize.error = null;
 });
 
 // ─── States ───────────────────────────────────────────────────────────────────
@@ -256,6 +258,34 @@ describe('in-game state', () => {
         team2ThrowerId: 'p4',
       })
     );
+  });
+
+  it('confirms undo only for the latest round and sends the last round number', async () => {
+    const bundle = makeBundle({
+      games: [game()],
+      rounds: [
+        round({ round_number: 1, team1_score: 8, team2_score: 5, net_points: 3, winner_team: 1 }),
+        round({ round_number: 2, team1_score: 0, team2_score: 4, net_points: 4, winner_team: 2 }),
+      ],
+      gamePlayers: gamePlayers('game-1'),
+    });
+    renderView(bundle);
+
+    await userEvent.click(screen.getByRole('button', { name: /undo last round/i }));
+
+    expect(
+      await screen.findByText(/This removes round 2 \(0–4\) from the game/iu)
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/This removes round 1 \(8–5\) from the game/iu)
+    ).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Undo round' }));
+
+    expect(mockUndoLastRound.mutate).toHaveBeenCalledWith({
+      gameId: 'game-1',
+      roundNumber: 2,
+    });
   });
 
   it('hides all scoring controls from spectators', () => {
@@ -394,6 +424,28 @@ describe('match decided (not yet official)', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Save result' }));
 
     expect(mockFinalize.mutate).toHaveBeenCalled();
+  });
+
+  it('does not finalize when the scorer cancels the match-complete dialog', async () => {
+    renderView(decidedBundle());
+
+    await userEvent.click(screen.getByRole('button', { name: /save official result/i }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Not yet' }));
+
+    expect(mockFinalize.mutate).not.toHaveBeenCalled();
+  });
+
+  it('surfaces a finalize error outside the closed match-complete dialog', async () => {
+    mockFinalize.isError = true;
+    mockFinalize.error = new Error('The official result was already recorded.');
+
+    renderView(decidedBundle());
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Could not save result');
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'The official result was already recorded.'
+    );
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
   it('spectators see the result but no finalize button', () => {
