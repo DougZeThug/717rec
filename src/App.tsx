@@ -16,6 +16,7 @@ import { preloadCoreRoutes } from '@/utils/routePrefetch';
 import { metrics } from '@/utils/sentry';
 
 import { RouteAnnouncer } from './components/a11y/RouteAnnouncer';
+import { RouteFocusManager } from './components/a11y/RouteFocusManager';
 import ProtectedAdminRoute from './components/auth/ProtectedAdminRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Footer from './components/layout/Footer';
@@ -71,6 +72,7 @@ const queryClient = new QueryClient({
   }),
 });
 
+/** Renders the authenticated application shell, route content, and route-level side effects. */
 const AppContent = () => {
   const location = useLocation();
   const navigationStartRef = useLazyRef(() => performance.now());
@@ -98,7 +100,7 @@ const AppContent = () => {
 
   return (
     <NavigationProvider>
-      <RouteAnnouncer mainRef={mainRef} />
+      <RouteAnnouncer />
       <div className="flex flex-col min-h-screen overflow-x-hidden">
         <Navbar />
         <PageTransition>
@@ -286,6 +288,7 @@ const AppContent = () => {
                 />
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <RouteFocusManager mainRef={mainRef} />
             </Suspense>
           </main>
         </PageTransition>
@@ -296,6 +299,7 @@ const AppContent = () => {
   );
 };
 
+/** Provides top-level app providers and the browser router. */
 const App = () => {
   return (
     <ErrorBoundary>

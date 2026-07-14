@@ -4,21 +4,14 @@ import { useLocation } from 'react-router';
 import { LiveRegion } from '@/components/ui/live-region';
 import { getRouteName } from '@/utils/routeName';
 
-interface RouteAnnouncerProps {
-  /** Ref to the page's `<main>` element that should receive focus on navigation. */
-  mainRef: React.RefObject<HTMLElement | null>;
-}
-
 /**
  * Improves keyboard and screen-reader navigation on route changes:
- *  - moves focus to the main content region so the next Tab starts inside the
- *    new page rather than back at the top of the browser chrome, and
  *  - announces the new page name through a visually-hidden ARIA live region.
  *
  * The very first render (initial page load) is skipped so we don't steal focus
  * or announce a page the user hasn't navigated to.
  */
-export const RouteAnnouncer: React.FC<RouteAnnouncerProps> = ({ mainRef }) => {
+export const RouteAnnouncer: React.FC = () => {
   const location = useLocation();
   const pathname = location.pathname;
   const [message, setMessage] = useState('');
@@ -39,8 +32,7 @@ export const RouteAnnouncer: React.FC<RouteAnnouncerProps> = ({ mainRef }) => {
         (document.title || document.querySelector('h1')?.textContent)) ||
       `${getRouteName(pathname)} page`;
     setMessage(announcement);
-    mainRef.current?.focus();
-  }, [pathname, mainRef]);
+  }, [pathname]);
 
   return <LiveRegion message={message} />;
 };

@@ -27,6 +27,8 @@ vi.mock('@/components/ui/empty-state', () => ({
 
 // ─── Import after mocks ───────────────────────────────────────────────────────
 
+import { expectNoAxeViolations } from '@/test/a11y';
+
 import MatchesTable from '../MatchesTable';
 import { MatchWithTeams } from '../types';
 
@@ -58,6 +60,19 @@ const tableProps = {
 describe('MatchesTable', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('has no WCAG 2 A/AA axe violations for the grouped matches table', async () => {
+    const matches = [
+      makeMatch('m1', '2025-01-04T18:00:00Z'),
+      makeMatch('m2', '2025-01-11T18:00:00Z'),
+    ];
+
+    const { container } = render(
+      <MatchesTable {...tableProps} matches={matches} loading={false} />
+    );
+
+    await expectNoAxeViolations(container);
   });
 
   it('renders the skeleton when loading is true', () => {
