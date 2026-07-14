@@ -65,12 +65,46 @@ describe('CompleteMatchDialog', () => {
     expect(screen.getByRole('button', { name: /saving result/i })).toBeDisabled();
   });
 
-  it('renders finalize errors in the dialog instead of crashing', async () => {
-    renderDialog(vi.fn(), {
-      finalizeError: new Error('The official result was already recorded.'),
-    });
+  it('renders finalize errors outside the dialog after the confirm action closes it', async () => {
+    const onConfirm = vi.fn();
+    const { rerender } = render(
+      <CompleteMatchDialog
+        team1Name="Baggers"
+        team2Name="Tossers"
+        winnerName="Baggers"
+        gameWins={{ team1: 2, team2: 1 }}
+        gameLines={[
+          { gameNumber: 1, team1Total: 21, team2Total: 18, winnerName: 'Baggers' },
+          { gameNumber: 2, team1Total: 15, team2Total: 21, winnerName: 'Tossers' },
+          { gameNumber: 3, team1Total: 22, team2Total: 20, winnerName: 'Baggers' },
+        ]}
+        isFinalizing={false}
+        onConfirm={onConfirm}
+      />
+    );
 
     await userEvent.click(screen.getByRole('button', { name: /save official result/i }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Save result' }));
+
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+
+    rerender(
+      <CompleteMatchDialog
+        team1Name="Baggers"
+        team2Name="Tossers"
+        winnerName="Baggers"
+        gameWins={{ team1: 2, team2: 1 }}
+        gameLines={[
+          { gameNumber: 1, team1Total: 21, team2Total: 18, winnerName: 'Baggers' },
+          { gameNumber: 2, team1Total: 15, team2Total: 21, winnerName: 'Tossers' },
+          { gameNumber: 3, team1Total: 22, team2Total: 20, winnerName: 'Baggers' },
+        ]}
+        isFinalizing={false}
+        finalizeError={new Error('The official result was already recorded.')}
+        onConfirm={onConfirm}
+      />
+    );
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Could not save result');
     expect(screen.getByRole('alert')).toHaveTextContent(

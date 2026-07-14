@@ -47,45 +47,47 @@ export const CompleteMatchDialog: React.FC<CompleteMatchDialogProps> = ({
   finalizeError,
   onConfirm,
 }) => (
-  <AlertDialog>
-    <AlertDialogTrigger asChild>
-      <Button type="button" className="min-h-[52px] w-full text-base" disabled={isFinalizing}>
-        {isFinalizing ? 'Saving result…' : 'Save official result'}
-      </Button>
-    </AlertDialogTrigger>
-    <AlertDialogContent>
-      <AlertDialogHeader>
-        <AlertDialogTitle>
-          {winnerName} wins {gameWins.team1}–{gameWins.team2}
-        </AlertDialogTitle>
-        <AlertDialogDescription asChild>
-          <div>
-            <ul className="mb-2 space-y-1 text-sm">
-              {gameLines.map((line) => (
-                <li key={line.gameNumber} className="flex justify-between">
-                  <span>
-                    Game {line.gameNumber}: {team1Name} {line.team1Total}–{line.team2Total}{' '}
-                    {team2Name}
-                  </span>
-                  <span className="font-medium">{line.winnerName}</span>
-                </li>
-              ))}
-            </ul>
-            This records the official match result and updates the standings. An admin can reopen
-            the match later if a correction is needed.
-            {finalizeError != null ? (
-              <Alert variant="destructive" className="mt-3">
-                <AlertTitle>Could not save result</AlertTitle>
-                <AlertDescription>{getUIErrorMessage(finalizeError)}</AlertDescription>
-              </Alert>
-            ) : null}
-          </div>
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter>
-        <AlertDialogCancel>Not yet</AlertDialogCancel>
-        <AlertDialogAction onClick={onConfirm}>Save result</AlertDialogAction>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>
+  <div className="space-y-2">
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button type="button" className="min-h-[52px] w-full text-base" disabled={isFinalizing}>
+          {isFinalizing ? 'Saving result…' : 'Save official result'}
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            {winnerName} wins {gameWins.team1}–{gameWins.team2}
+          </AlertDialogTitle>
+          <AlertDialogDescription asChild>
+            <div>
+              <ul className="mb-2 space-y-1 text-sm">
+                {gameLines.map((line) => (
+                  <li key={line.gameNumber} className="flex justify-between">
+                    <span>
+                      Game {line.gameNumber}: {team1Name} {line.team1Total}–{line.team2Total}{' '}
+                      {team2Name}
+                    </span>
+                    <span className="font-medium">{line.winnerName}</span>
+                  </li>
+                ))}
+              </ul>
+              This records the official match result and updates the standings. An admin can reopen
+              the match later if a correction is needed.
+            </div>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Not yet</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm}>Save result</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    {finalizeError != null ? (
+      <Alert variant="destructive">
+        <AlertTitle>Could not save result</AlertTitle>
+        <AlertDescription>{getUIErrorMessage(finalizeError)}</AlertDescription>
+      </Alert>
+    ) : null}
+  </div>
 );

@@ -414,18 +414,17 @@ describe('match decided (not yet official)', () => {
     expect(mockFinalize.mutate).not.toHaveBeenCalled();
   });
 
-  it('surfaces a finalize error in the match-complete dialog instead of crashing', async () => {
+  it('surfaces a finalize error outside the closed match-complete dialog', async () => {
     mockFinalize.isError = true;
     mockFinalize.error = new Error('The official result was already recorded.');
 
     renderView(decidedBundle());
 
-    await userEvent.click(screen.getByRole('button', { name: /save official result/i }));
-
     expect(await screen.findByRole('alert')).toHaveTextContent('Could not save result');
     expect(screen.getByRole('alert')).toHaveTextContent(
       'The official result was already recorded.'
     );
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
   it('spectators see the result but no finalize button', () => {
