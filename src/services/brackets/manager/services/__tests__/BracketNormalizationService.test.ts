@@ -539,4 +539,46 @@ describe('BracketNormalizationService', () => {
     expect(selectEqNumber).toHaveBeenCalledWith('number', 1);
     expect(updateEqId).toHaveBeenCalledWith('id', 41);
   });
+
+  it('repairs missing propagation without rewriting the completed source match result', async () => {
+    const completedSource = {
+      id: 31,
+      number: 1,
+      status: 4,
+      opponent1: { id: 18, score: 21, result: 'win' },
+      opponent2: { id: 5, score: 17, result: 'loss' },
+    };
+    const storage = {
+      clearParticipantCache: vi.fn(),
+      select: vi
+        .fn()
+        .mockResolvedValueOnce([{ id: 11, number: 2 }])
+        .mockResolvedValueOnce([
+          { id: 21, number: 1 },
+          { id: 22, number: 2 },
+        ])
+        .mockResolvedValueOnce([completedSource])
+        .mockResolvedValueOnce([{ id: 41, number: 1 }]),
+      update: vi.fn(),
+    };
+
+    const nextMatchLookup = vi.fn(() =>
+      Promise.resolve({ data: [{ id: 41, opponent1_id: null, opponent2_id: 33, status: 1 }] })
+    );
+    const roundEq = vi.fn(() => ({ eq: nextMatchLookup }));
+    const update = vi.fn(() => ({ eq: vi.fn(() => Promise.resolve({ error: null })) }));
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table !== 'match') return {};
+      return { select: vi.fn(() => ({ eq: roundEq })), update };
+    });
+
+    const before = structuredClone(completedSource);
+    const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
+    await service.propagateCompletedMatches(400);
+
+    expect(completedSource).toEqual(before);
+    expect(storage.update).not.toHaveBeenCalledWith('match', { id: 31 }, expect.anything());
+    expect(update).toHaveBeenCalledWith({ opponent1_id: 18, status: 2 });
+  });
 });

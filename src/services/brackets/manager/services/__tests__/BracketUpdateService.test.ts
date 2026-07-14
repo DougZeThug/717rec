@@ -459,4 +459,307 @@ describe('BracketUpdateService', () => {
       ).resolves.toBeUndefined();
     });
   });
+
+  describe('single-elimination advancement contracts', () => {
+    type MutableMatch = {
+      id: number;
+      stage_id: number;
+      group_id: number;
+      round_id: number;
+      number: number;
+      status: number;
+      opponent1: {
+        id: number | null;
+        position?: number;
+        score?: number | null;
+        result?: string | null;
+      } | null;
+      opponent2: {
+        id: number | null;
+        position?: number;
+        score?: number | null;
+        result?: string | null;
+      } | null;
+    };
+
+    const stage = {
+      id: 10,
+      tournament_id: 'single-elim-tourney',
+      name: 'Single Elimination',
+      type: 'single_elimination',
+      number: 1,
+      settings: {},
+    };
+
+    const installDirectSqlNoops = () => {
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table === 'brackets') {
+          return {
+            update: () => ({ eq: () => ({ neq: () => Promise.resolve({ error: null }) }) }),
+          };
+        }
+        if (table !== 'match') return {};
+        return {
+          update: () => ({ eq: () => Promise.resolve({ data: null, error: null }) }),
+          select: () => ({ eq: () => ({ eq: () => Promise.resolve({ data: [], error: null }) }) }),
+        };
+      });
+    };
+
+    const setupInMemorySingleElim = (bracketSize: 4 | 8) => {
+      const firstRoundId = 100;
+      const secondRoundId = 101;
+      const finalRoundId = 102;
+      const rows: MutableMatch[] =
+        bracketSize === 4
+          ? [
+              {
+                id: 1,
+                stage_id: 10,
+                group_id: 1,
+                round_id: firstRoundId,
+                number: 1,
+                status: 2,
+                opponent1: { id: 1, position: 1 },
+                opponent2: { id: 4, position: 4 },
+              },
+              {
+                id: 2,
+                stage_id: 10,
+                group_id: 1,
+                round_id: firstRoundId,
+                number: 2,
+                status: 2,
+                opponent1: { id: 2, position: 2 },
+                opponent2: { id: 3, position: 3 },
+              },
+              {
+                id: 3,
+                stage_id: 10,
+                group_id: 1,
+                round_id: secondRoundId,
+                number: 1,
+                status: 1,
+                opponent1: null,
+                opponent2: null,
+              },
+            ]
+          : [
+              {
+                id: 1,
+                stage_id: 10,
+                group_id: 1,
+                round_id: firstRoundId,
+                number: 1,
+                status: 2,
+                opponent1: { id: 1, position: 1 },
+                opponent2: { id: 8, position: 8 },
+              },
+              {
+                id: 2,
+                stage_id: 10,
+                group_id: 1,
+                round_id: firstRoundId,
+                number: 2,
+                status: 2,
+                opponent1: { id: 4, position: 4 },
+                opponent2: { id: 5, position: 5 },
+              },
+              {
+                id: 3,
+                stage_id: 10,
+                group_id: 1,
+                round_id: firstRoundId,
+                number: 3,
+                status: 2,
+                opponent1: { id: 2, position: 2 },
+                opponent2: { id: 7, position: 7 },
+              },
+              {
+                id: 4,
+                stage_id: 10,
+                group_id: 1,
+                round_id: firstRoundId,
+                number: 4,
+                status: 2,
+                opponent1: { id: 3, position: 3 },
+                opponent2: { id: 6, position: 6 },
+              },
+              {
+                id: 5,
+                stage_id: 10,
+                group_id: 1,
+                round_id: secondRoundId,
+                number: 1,
+                status: 1,
+                opponent1: null,
+                opponent2: null,
+              },
+              {
+                id: 6,
+                stage_id: 10,
+                group_id: 1,
+                round_id: secondRoundId,
+                number: 2,
+                status: 1,
+                opponent1: null,
+                opponent2: null,
+              },
+              {
+                id: 7,
+                stage_id: 10,
+                group_id: 1,
+                round_id: finalRoundId,
+                number: 1,
+                status: 1,
+                opponent1: null,
+                opponent2: null,
+              },
+            ];
+      const roundOrder = [firstRoundId, secondRoundId, finalRoundId];
+
+      (mockStorage.select as ReturnType<typeof vi.fn>).mockImplementation(
+        (table: string, query?: unknown) => {
+          if (table === 'stage') return Promise.resolve(stage);
+          if (table === 'match') {
+            if (typeof query === 'number')
+              return Promise.resolve(rows.find((m) => m.id === query) ?? null);
+            if (query && typeof query === 'object') {
+              return Promise.resolve(
+                rows.filter((m) =>
+                  Object.entries(query as Record<string, unknown>).every(
+                    ([k, v]) => (m as unknown as Record<string, unknown>)[k] === v
+                  )
+                )
+              );
+            }
+          }
+          return Promise.resolve([]);
+        }
+      );
+
+      mockManager.update.match.mockImplementation(
+        (payload: {
+          id: number;
+          opponent1?: { score?: number; result?: string };
+          opponent2?: { score?: number; result?: string };
+        }) => {
+          const match = rows.find((m) => m.id === payload.id);
+          if (!match?.opponent1?.id || !match.opponent2?.id)
+            throw new Error('The match is locked.');
+          match.opponent1 = {
+            ...match.opponent1,
+            score: payload.opponent1?.score,
+            result: payload.opponent1?.result,
+          };
+          match.opponent2 = {
+            ...match.opponent2,
+            score: payload.opponent2?.score,
+            result: payload.opponent2?.result,
+          };
+          match.status = 4;
+          const winner =
+            match.opponent1.result === 'win'
+              ? match.opponent1
+              : match.opponent2.result === 'win'
+                ? match.opponent2
+                : null;
+          if (!winner) return;
+          const nextRoundId = roundOrder[roundOrder.indexOf(match.round_id) + 1];
+          const next = rows.find(
+            (m) => m.round_id === nextRoundId && m.number === Math.ceil(match.number / 2)
+          );
+          if (!next) return;
+          const slot = match.number % 2 === 1 ? 'opponent1' : 'opponent2';
+          next[slot] = { id: winner.id, position: winner.position, score: null, result: null };
+          if (next.opponent1?.id && next.opponent2?.id) next.status = 2;
+        }
+      );
+
+      installDirectSqlNoops();
+      return rows;
+    };
+
+    it('advances the correct winner into the final for a 4-team bracket', async () => {
+      const rows = setupInMemorySingleElim(4);
+
+      await service.updateMatch({
+        matchId: 1,
+        scores: {
+          opponent1: { score: 21, result: 'win' },
+          opponent2: { score: 12, result: 'loss' },
+        },
+      });
+
+      expect(rows.find((m) => m.id === 3)?.opponent1?.id).toBe(1);
+      expect(rows.find((m) => m.id === 3)?.opponent2).toBeNull();
+    });
+
+    it('advances quarterfinal winners into the correct semifinal slots for an 8-team bracket', async () => {
+      const rows = setupInMemorySingleElim(8);
+
+      await service.updateMatch({
+        matchId: 1,
+        scores: {
+          opponent1: { score: 21, result: 'win' },
+          opponent2: { score: 10, result: 'loss' },
+        },
+      });
+      await service.updateMatch({
+        matchId: 2,
+        scores: {
+          opponent1: { score: 18, result: 'loss' },
+          opponent2: { score: 21, result: 'win' },
+        },
+      });
+
+      const semifinal = rows.find((m) => m.id === 5);
+      expect(semifinal?.opponent1?.id).toBe(1);
+      expect(semifinal?.opponent2?.id).toBe(5);
+      expect(semifinal?.status).toBe(2);
+    });
+
+    it('supports a lower seed winning and score correction on an already-scored match', async () => {
+      const rows = setupInMemorySingleElim(4);
+
+      await service.updateMatch({
+        matchId: 1,
+        scores: {
+          opponent1: { score: 19, result: 'loss' },
+          opponent2: { score: 21, result: 'win' },
+        },
+      });
+      expect(rows.find((m) => m.id === 3)?.opponent1?.id).toBe(4);
+
+      await service.updateMatch({
+        matchId: 1,
+        scores: {
+          opponent1: { score: 21, result: 'win' },
+          opponent2: { score: 19, result: 'loss' },
+        },
+      });
+
+      expect(rows.find((m) => m.id === 1)?.opponent1?.result).toBe('win');
+      expect(rows.find((m) => m.id === 3)?.opponent1?.id).toBe(1);
+    });
+
+    it.fails(
+      'documents current gap: scoring a partially populated match is treated as BYE instead of controlled failure',
+      async () => {
+        const rows = setupInMemorySingleElim(4);
+        rows[2].opponent1 = { id: 1, position: 1 };
+        rows[2].opponent2 = null;
+
+        await expect(
+          service.updateMatch({
+            matchId: 3,
+            scores: {
+              opponent1: { score: 21, result: 'win' },
+              opponent2: { score: 0, result: 'loss' },
+            },
+          })
+        ).rejects.toThrow(BusinessLogicError);
+      }
+    );
+  });
 });
