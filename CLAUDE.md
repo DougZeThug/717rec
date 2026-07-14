@@ -94,7 +94,7 @@ export const ExampleService = {
   - Fast gate with coverage → `npm run test:coverage` (parallel; fastest full pass)
   - Diagnose a slow or stuck run → `npm run test:debug` (serial + verbose, 10-min cap;
     surfaces the last-active file if anything truly stalls)
-  - Whole suite → `npm test`. It is large (~370 files / ~2.7k tests) and takes
+  - Whole suite → `npm test`. It is large (~450 files / ~3.2k tests) and takes
     **~4 minutes in parallel** — that is expected, **not** a hang. Reserve it for CI or
     final checks. Running it *serially* (e.g. `--maxWorkers=1 --fileParallelism=false`)
     drops that parallelism and can take several times longer, which is what previously
@@ -117,4 +117,4 @@ export const ExampleService = {
 
 ---
 
-*Last updated: 2026-06-24*
+*Last updated: 2026-07-14*
