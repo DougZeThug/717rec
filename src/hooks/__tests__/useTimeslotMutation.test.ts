@@ -252,6 +252,10 @@ describe('useTimeslotMutation', () => {
   });
 
   it('batchAssignDoubleHeaders: validates empty team list', async () => {
+    validateBatchAssignmentMock.mockReturnValueOnce({
+      valid: false,
+      error: 'Please select at least one team',
+    } as ValidationResult);
     const { result } = renderHook(() => useTimeslotMutation());
 
     await expect(
