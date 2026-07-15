@@ -12,9 +12,9 @@ vi.mock('@tanstack/react-query', async () => {
   return {
     ...actual,
     useQueryClient: () => ({
-      invalidateQueries: vi.fn().mockResolvedValue(undefined),
+      invalidateQueries: vi.fn().mockImplementation(() => Promise.resolve()),
       removeQueries: vi.fn(),
-      prefetchQuery: vi.fn().mockResolvedValue(undefined),
+      prefetchQuery: vi.fn().mockImplementation(() => Promise.resolve()),
     }),
   };
 });
@@ -52,7 +52,7 @@ vi.mock('@/hooks/usePlayoffViewModel.compat', () => ({
     bracketsByDivision: {},
     handleBracketCreated: vi.fn(),
     handleTeamDivisionChange: vi.fn(),
-    refetchBrackets: vi.fn().mockResolvedValue(undefined),
+    refetchBrackets: vi.fn().mockImplementation(() => Promise.resolve()),
     error: null,
   }),
 }));

@@ -109,7 +109,7 @@ describe('useBracketFormData', () => {
       asPlayoffTeamsQuery({ data: mockTeams as unknown as Team[], isLoading: false })
     );
 
-    const { result } = renderHook(() => useBracketFormData(mockDivisions, undefined), { wrapper });
+    const { result } = renderHook(() => useBracketFormData(mockDivisions), { wrapper });
 
     await waitFor(() => {
       expect(result.current.teams).toEqual(
@@ -128,7 +128,7 @@ describe('useBracketFormData', () => {
   it('should handle loading state', () => {
     mockUsePlayoffTeams.mockReturnValue(asPlayoffTeamsQuery({ data: undefined, isLoading: true }));
 
-    const { result } = renderHook(() => useBracketFormData(mockDivisions, undefined), { wrapper });
+    const { result } = renderHook(() => useBracketFormData(mockDivisions), { wrapper });
 
     expect(result.current.isLoading).toBe(true);
     expect(result.current.isDataReady).toBe(false);
@@ -137,7 +137,7 @@ describe('useBracketFormData', () => {
   it('should handle error state when no teams are fetched', async () => {
     mockUsePlayoffTeams.mockReturnValue(asPlayoffTeamsQuery({ data: [], isLoading: false }));
 
-    const { result } = renderHook(() => useBracketFormData(mockDivisions, undefined), { wrapper });
+    const { result } = renderHook(() => useBracketFormData(mockDivisions), { wrapper });
 
     await waitFor(() => {
       expect(result.current.isError).toBe(true);

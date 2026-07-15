@@ -61,12 +61,12 @@ describe('BracketUpdateService', () => {
     };
 
     mockNormalizationService = {
-      normalizeLosersR1: vi.fn().mockResolvedValue(undefined),
-      normalizeGrandFinalPopulation: vi.fn().mockResolvedValue(undefined),
-      propagateCompletedMatches: vi.fn().mockResolvedValue(undefined),
+      normalizeLosersR1: vi.fn().mockImplementation(() => Promise.resolve()),
+      normalizeGrandFinalPopulation: vi.fn().mockImplementation(() => Promise.resolve()),
+      propagateCompletedMatches: vi.fn().mockImplementation(() => Promise.resolve()),
       isWbFinalRound: vi.fn().mockResolvedValue(false),
       isLbFinalRound: vi.fn().mockResolvedValue(false),
-      repairGrandFinalWithRetries: vi.fn().mockResolvedValue(undefined),
+      repairGrandFinalWithRetries: vi.fn().mockImplementation(() => Promise.resolve()),
     };
 
     service = new BracketUpdateService(
@@ -300,7 +300,7 @@ describe('BracketUpdateService', () => {
 
     it('runs repairGrandFinalWithRetries when WB Final completes', async () => {
       setupNormalMatch({ status: 4, round_id: 500 });
-      mockManager.update.match.mockResolvedValue(undefined);
+      mockManager.update.match.mockImplementation(() => Promise.resolve());
       mockNormalizationService.isWbFinalRound.mockResolvedValue(true);
 
       await service.updateMatch({
@@ -317,7 +317,7 @@ describe('BracketUpdateService', () => {
 
     it('runs repairGrandFinalWithRetries when LB Final completes', async () => {
       setupNormalMatch({ status: 4, round_id: 700 });
-      mockManager.update.match.mockResolvedValue(undefined);
+      mockManager.update.match.mockImplementation(() => Promise.resolve());
       mockNormalizationService.isWbFinalRound.mockResolvedValue(false);
       mockNormalizationService.isLbFinalRound.mockResolvedValue(true);
 
@@ -335,7 +335,7 @@ describe('BracketUpdateService', () => {
 
     it('does not run GF repair for unrelated rounds', async () => {
       setupNormalMatch({ status: 4, round_id: 300 });
-      mockManager.update.match.mockResolvedValue(undefined);
+      mockManager.update.match.mockImplementation(() => Promise.resolve());
       mockNormalizationService.isWbFinalRound.mockResolvedValue(false);
       mockNormalizationService.isLbFinalRound.mockResolvedValue(false);
 
@@ -392,7 +392,7 @@ describe('BracketUpdateService', () => {
         };
       });
 
-      mockManager.update.match.mockResolvedValue(undefined);
+      mockManager.update.match.mockImplementation(() => Promise.resolve());
       mockNormalizationService.isWbFinalRound.mockResolvedValue(false);
       mockNormalizationService.isLbFinalRound.mockResolvedValue(false);
     };

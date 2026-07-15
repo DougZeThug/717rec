@@ -31,10 +31,10 @@ const hookMocks = vi.hoisted(() => ({
     error: null as Error | null,
   },
   mutations: {
-    updateConfig: vi.fn().mockResolvedValue(undefined),
-    createBracket: vi.fn().mockResolvedValue(undefined),
-    updateBracket: vi.fn().mockResolvedValue(undefined),
-    deleteBracket: vi.fn().mockResolvedValue(undefined),
+    updateConfig: vi.fn().mockImplementation(() => Promise.resolve()),
+    createBracket: vi.fn().mockImplementation(() => Promise.resolve()),
+    updateBracket: vi.fn().mockImplementation(() => Promise.resolve()),
+    deleteBracket: vi.fn().mockImplementation(() => Promise.resolve()),
     isMutating: false,
   },
 }));

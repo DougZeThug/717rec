@@ -171,7 +171,7 @@ describe('fetchMatchesWithTeams', () => {
 
   it('works without any filters (undefined filters arg)', async () => {
     setupSuccess([makeMatch()]);
-    const matches = await fetchMatchesWithTeams(undefined);
+    const matches = await fetchMatchesWithTeams();
     expect(matches).toHaveLength(1);
   });
 });

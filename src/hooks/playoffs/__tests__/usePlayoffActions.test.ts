@@ -52,7 +52,7 @@ describe('usePlayoffActions', () => {
 
   describe('deleteBracket', () => {
     it('calls service, shows success toast, and invalidates queries', async () => {
-      (deleteBracket as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+      (deleteBracket as ReturnType<typeof vi.fn>).mockImplementation(() => Promise.resolve());
       const { result } = renderHook(() => usePlayoffActions(), { wrapper: createWrapper() });
 
       await act(async () => {
@@ -65,7 +65,7 @@ describe('usePlayoffActions', () => {
     });
 
     it('resets isDeleting after success', async () => {
-      (deleteBracket as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+      (deleteBracket as ReturnType<typeof vi.fn>).mockImplementation(() => Promise.resolve());
       const { result } = renderHook(() => usePlayoffActions(), { wrapper: createWrapper() });
 
       await act(async () => {
@@ -118,7 +118,9 @@ describe('usePlayoffActions', () => {
 
   describe('updateMatchResult', () => {
     it('calls updatePlayoffMatchResult with correct payload and shows success toast', async () => {
-      (updatePlayoffMatchResult as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+      (updatePlayoffMatchResult as ReturnType<typeof vi.fn>).mockImplementation(() =>
+        Promise.resolve()
+      );
       const { result } = renderHook(() => usePlayoffActions(), { wrapper: createWrapper() });
 
       await act(async () => {
@@ -136,8 +138,10 @@ describe('usePlayoffActions', () => {
     });
 
     it('calls upsertPlayoffGame for each game when games provided', async () => {
-      (updatePlayoffMatchResult as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
-      (upsertPlayoffGame as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+      (updatePlayoffMatchResult as ReturnType<typeof vi.fn>).mockImplementation(() =>
+        Promise.resolve()
+      );
+      (upsertPlayoffGame as ReturnType<typeof vi.fn>).mockImplementation(() => Promise.resolve());
       const { result } = renderHook(() => usePlayoffActions(), { wrapper: createWrapper() });
 
       const games = [

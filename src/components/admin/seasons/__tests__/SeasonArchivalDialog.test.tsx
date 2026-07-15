@@ -6,8 +6,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Season } from '@/types/season';
 
 const toastMock = vi.fn();
-const archiveMock = vi.fn().mockResolvedValue(undefined);
-const partialArchiveMock = vi.fn().mockResolvedValue(undefined);
+const archiveMock = vi.fn().mockImplementation(() => Promise.resolve());
+const partialArchiveMock = vi.fn().mockImplementation(() => Promise.resolve());
 
 vi.mock('@/hooks/useToast', () => ({
   toast: (...args: unknown[]) => toastMock(...args),

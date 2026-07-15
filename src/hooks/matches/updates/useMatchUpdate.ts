@@ -114,6 +114,7 @@ export const useMatchUpdate = ({
     // Snapshot for rollback if the atomic RPC in applyStatChanges fails after
     // we've already applied the optimistic local state.
     const previousMatches = matches;
+    let didUpdateMatches = false;
     try {
       // Check if the winner/loser has changed
       const winnerChanged = editingMatch.winnerId !== matchData.winnerId;
@@ -170,6 +171,7 @@ export const useMatchUpdate = ({
         match.id === updatedMatch.id ? { ...match, ...updatedMatch } : match
       );
       setMatches(updatedMatches);
+      didUpdateMatches = true;
 
       setEditingMatch();
 
@@ -196,7 +198,9 @@ export const useMatchUpdate = ({
     } catch (error) {
       // Roll back the optimistic setMatches() above so the UI doesn't show a
       // reopened/updated match while the DB still holds the original result.
-      setMatches(previousMatches);
+      if (didUpdateMatches) {
+        setMatches(previousMatches);
+      }
       invalidateAllDataQueries(queryClient);
       const message = error instanceof Error ? error.message : 'Unknown error';
       errorLog('Error updating match:', error);
