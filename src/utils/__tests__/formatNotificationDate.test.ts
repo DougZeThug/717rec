@@ -5,7 +5,8 @@ import { formatNotificationDate } from '../formatNotificationDate';
 describe('formatNotificationDate', () => {
   it('returns empty fields for null/undefined input', () => {
     expect(formatNotificationDate(null)).toEqual({ absolute: '', relative: '', iso: '' });
-    expect(formatNotificationDate(undefined)).toEqual({ absolute: '', relative: '', iso: '' });
+    const missingDate: string | undefined = undefined;
+    expect(formatNotificationDate(missingDate)).toEqual({ absolute: '', relative: '', iso: '' });
   });
 
   it('returns empty absolute/relative but preserves iso for invalid date strings', () => {

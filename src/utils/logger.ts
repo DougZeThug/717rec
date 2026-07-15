@@ -28,18 +28,20 @@ export const errorLog = (...args: unknown[]) => {
       const messageArg = args.find((arg) => typeof arg === 'string');
 
       // Also check for Error objects nested inside plain objects
-      const nestedError = !errorArg
-        ? args.reduce<Error | undefined>((found, arg) => {
-            if (found) return found;
-            if (arg && typeof arg === 'object' && !Array.isArray(arg)) {
-              const nested = Object.values(arg as Record<string, unknown>).find(
-                (v) => v instanceof Error
-              );
-              if (nested instanceof Error) return nested;
-            }
-            return undefined;
-          }, undefined)
-        : undefined;
+      const findNestedError = (): Error | undefined => {
+        for (const arg of args) {
+          if (!arg || typeof arg !== 'object' || Array.isArray(arg)) continue;
+
+          const nested = Object.values(arg as Record<string, unknown>).find(
+            (v) => v instanceof Error
+          );
+          if (nested instanceof Error) return nested;
+        }
+
+        return undefined;
+      };
+
+      const nestedError = !errorArg ? findNestedError() : undefined;
 
       const resolvedError = errorArg instanceof Error ? errorArg : nestedError;
 

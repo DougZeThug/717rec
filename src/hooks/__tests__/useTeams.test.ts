@@ -42,7 +42,8 @@ describe('useTeams', () => {
     });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.teams).toEqual([mockTeam]);
-    expect(fetchTeamsWithOptions).toHaveBeenCalledWith(undefined);
+    const noOptions: undefined = undefined;
+    expect(fetchTeamsWithOptions).toHaveBeenCalledWith(noOptions);
   });
 
   it('returns empty teams on service error', async () => {

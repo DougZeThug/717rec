@@ -15,7 +15,8 @@ describe('calculateStreak', () => {
   });
 
   it('returns undefined for undefined allMatches', () => {
-    expect(calculateStreak(T, undefined)).toBeUndefined();
+    const missingMatches: undefined = undefined;
+    expect(calculateStreak(T, missingMatches)).toBeUndefined();
   });
 
   it('returns undefined for empty teamId', () => {
