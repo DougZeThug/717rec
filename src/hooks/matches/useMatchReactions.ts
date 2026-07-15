@@ -97,7 +97,7 @@ export const useMatchReactions = (matchId: string) => {
   }, [reactionsQuery.error]);
   useEffect(
     function setupMatchReactionSubscription(): (() => void) | undefined {
-      if (!matchId) return;
+      if (!matchId) return undefined;
       /** Resync match reactions after realtime reconnects. */
       const invalidate = () => {
         queryClient.invalidateQueries({ queryKey }).catch((err: unknown) => {
