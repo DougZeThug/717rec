@@ -14,10 +14,10 @@ const LiveScoring: React.FC = () => {
   const { matchId } = useParams<{ matchId: string }>();
   const { bundle, derived, isLoading, error, isNotEnabled } = useLiveMatch(matchId);
   const { status: realtimeStatus } = useLiveMatchRealtime(matchId);
-  const { canScore, isAdmin } = useCanScoreMatch(bundle?.match);
+  const { canScore, isAdmin, isLoading: isPermissionLoading } = useCanScoreMatch(bundle?.match);
 
   let content: React.ReactNode;
-  if (isLoading) {
+  if (isLoading || isPermissionLoading) {
     content = <LoadingState message="Loading match…" variant="section" size="lg" />;
   } else if (isNotEnabled) {
     content = (
