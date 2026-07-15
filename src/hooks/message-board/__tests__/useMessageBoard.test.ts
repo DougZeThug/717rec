@@ -136,7 +136,7 @@ describe('useMessageBoard', () => {
     await act(async () => {
       await result.current.editMessage('m1', 'updated');
     });
-    expect(result.current.messages[0].content).toBe('updated');
+    await waitFor(() => expect(result.current.messages[0].content).toBe('updated'));
     expect(result.current.messages[0].is_edited).toBe(true);
 
     act(() => {
@@ -147,12 +147,12 @@ describe('useMessageBoard', () => {
         created_at: '2026-04-21T10:00:00.000Z',
       });
     });
-    expect(result.current.messages[0].id).toBe('m2');
+    await waitFor(() => expect(result.current.messages[0].id).toBe('m2'));
 
     await act(async () => {
       await result.current.deleteMessage('m2');
     });
-    expect(result.current.messages.find((m) => m.id === 'm2')).toBeUndefined();
+    await waitFor(() => expect(result.current.messages.find((m) => m.id === 'm2')).toBeUndefined());
   });
 
   it('shows load-more toast on failure', async () => {

@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo } from 'react';
 
 import { useAuth } from '@/contexts/auth-context';
 import { subscribeWithRetry } from '@/hooks/realtime/subscribeWithRetry';
@@ -8,61 +9,54 @@ import { MessageReactionsService } from '@/services/messages/MessageReactionsSer
 import { MessageReaction, ReactionCount } from '@/types/reactions';
 import { errorLog } from '@/utils/logger';
 
+import { messageBoardKeys } from './messageBoardKeys';
+
+const EMPTY_MESSAGE_REACTIONS: MessageReaction[] = [];
+
+/** Build sorted message reaction counts and current-user reaction flags. */
+const countReactions = (reactions: MessageReaction[], userId?: string): ReactionCount[] => {
+  const counts: ReactionCount[] = [];
+  reactions.forEach((reaction) => {
+    const existing = counts.find((item) => item.emoji === reaction.emoji);
+    if (existing) {
+      existing.count += 1;
+      existing.users.push(reaction.user_id);
+      if (reaction.user_id === userId) existing.hasReacted = true;
+    } else
+      counts.push({
+        emoji: reaction.emoji,
+        count: 1,
+        users: [reaction.user_id],
+        hasReacted: reaction.user_id === userId,
+      });
+  });
+  return counts.sort((a, b) => b.count - a.count);
+};
+
+/** Subscribe to and mutate reaction state for a message through the query cache. */
 export const useMessageReactions = (messageId: string) => {
-  const [reactions, setReactions] = useState<MessageReaction[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
-
-  // Group and count reactions
-  const reactionCounts = useMemo(() => {
-    const counts: ReactionCount[] = [];
-
-    // Group by emoji
-    reactions.forEach((reaction) => {
-      const existing = counts.find((item) => item.emoji === reaction.emoji);
-
-      if (existing) {
-        existing.count += 1;
-        existing.users.push(reaction.user_id);
-        if (reaction.user_id === user?.id) {
-          existing.hasReacted = true;
-        }
-      } else {
-        counts.push({
-          emoji: reaction.emoji,
-          count: 1,
-          users: [reaction.user_id],
-          hasReacted: reaction.user_id === user?.id,
-        });
-      }
-    });
-
-    return counts.sort((a, b) => b.count - a.count);
-  }, [reactions, user?.id]);
-
-  const fetchReactions = useCallback(async () => {
-    if (!messageId) return;
-    try {
-      setIsLoading(true);
-      const data = await MessageReactionsService.fetchReactions(messageId);
-      setReactions(data);
-    } catch (err) {
-      errorLog('Error fetching reactions:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [messageId]);
-
-  // Fetch initial reactions
+  const queryClient = useQueryClient();
+  const currentUserId = user?.id;
+  const queryKey = useMemo(() => messageBoardKeys.reactions(messageId), [messageId]);
+  const reactionsQuery = useQuery({
+    queryKey,
+    queryFn: () => MessageReactionsService.fetchReactions(messageId),
+    enabled: Boolean(messageId),
+  });
+  const reactions = reactionsQuery.data ?? EMPTY_MESSAGE_REACTIONS;
+  const reactionCounts = useMemo(() => countReactions(reactions, user?.id), [reactions, user?.id]);
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load
-    void fetchReactions();
-  }, [fetchReactions]);
-
-  // Set up realtime subscription
+    if (reactionsQuery.error) errorLog('Error fetching reactions:', reactionsQuery.error);
+  }, [reactionsQuery.error]);
   useEffect(() => {
     if (!messageId) return;
-
+    /** Resync message reactions after realtime reconnects. */
+    const invalidate = () => {
+      queryClient.invalidateQueries({ queryKey }).catch((err: unknown) => {
+        errorLog('Error invalidating message reactions:', err);
+      });
+    };
     const { dispose } = subscribeWithRetry({
       label: `useMessageReactions(${messageId})`,
       build: () =>
@@ -76,12 +70,11 @@ export const useMessageReactions = (messageId: string) => {
               table: 'message_reactions',
               filter: `message_id=eq.${messageId}`,
             },
-            (payload) => {
+            (payload: { new: unknown; old: { id?: string } }) => {
               const newReaction = payload.new as MessageReaction;
-              setReactions((curr) => {
-                if (curr.some((r) => r.id === newReaction.id)) return curr;
-                return [...curr, newReaction];
-              });
+              queryClient.setQueryData<MessageReaction[]>(queryKey, (curr = []) =>
+                curr.some((r) => r.id === newReaction.id) ? curr : [...curr, newReaction]
+              );
             }
           )
           .on(
@@ -92,19 +85,73 @@ export const useMessageReactions = (messageId: string) => {
               table: 'message_reactions',
               filter: `message_id=eq.${messageId}`,
             },
-            (payload) => {
+            (payload: { new: unknown; old: { id?: string } }) => {
               const deletedReaction = payload.old as MessageReaction;
-              setReactions((curr) => curr.filter((r) => r.id !== deletedReaction.id));
+              queryClient.setQueryData<MessageReaction[]>(queryKey, (curr = []) =>
+                curr.filter((r) => r.id !== deletedReaction.id)
+              );
             }
           ),
       onReconnect: (isFirst) => {
-        if (!isFirst) void fetchReactions();
+        if (!isFirst) invalidate();
       },
     });
     return () => dispose();
-  }, [messageId, fetchReactions]);
-
-  // Add reaction
+  }, [messageId, queryClient, queryKey]);
+  const removeMutation = useMutation({
+    mutationFn: (reactionId: string) =>
+      currentUserId
+        ? MessageReactionsService.removeReaction(reactionId, currentUserId)
+        : Promise.reject(new Error('User is required to remove a reaction')),
+    onMutate: async (reactionId) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<MessageReaction[]>(queryKey);
+      queryClient.setQueryData<MessageReaction[]>(queryKey, (curr = []) =>
+        curr.filter((reaction) => reaction.id !== reactionId)
+      );
+      return { previous };
+    },
+    onError: (err, _reactionId, context) => {
+      if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
+      errorLog('Error removing reaction:', err);
+      toast({ title: 'Error', description: 'Failed to remove reaction', variant: 'destructive' });
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey, refetchType: 'none' }),
+  });
+  const addReactionMutation = useMutation({
+    mutationFn: (emoji: string) =>
+      currentUserId
+        ? MessageReactionsService.addReaction(messageId, currentUserId, emoji)
+        : Promise.reject(new Error('User is required to add a reaction')),
+    onMutate: async (emoji) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<MessageReaction[]>(queryKey);
+      if (!currentUserId) return { previous };
+      queryClient.setQueryData<MessageReaction[]>(queryKey, (curr = []) => [
+        ...curr,
+        {
+          id: `optimistic-${currentUserId}-${emoji}`,
+          message_id: messageId,
+          user_id: currentUserId,
+          emoji,
+          created_at: new Date().toISOString(),
+        },
+      ]);
+      return { previous };
+    },
+    onError: (err, _emoji, context) => {
+      if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
+      errorLog('Error adding reaction:', err);
+      toast({ title: 'Error', description: 'Failed to add reaction', variant: 'destructive' });
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey, refetchType: 'none' }),
+  });
+  /** Remove the current user's reaction from this message. */
+  const removeReaction = async (reactionId: string) => {
+    if (!user) return;
+    await removeMutation.mutateAsync(reactionId).catch(() => undefined);
+  };
+  /** Toggle the current user's reaction for this message. */
   const addReaction = async (emoji: string) => {
     if (!user) {
       toast({
@@ -114,49 +161,18 @@ export const useMessageReactions = (messageId: string) => {
       });
       return;
     }
-
     if (!emoji) return;
-
-    try {
-      // Check if the user already added this emoji reaction
-      const existingReaction = reactions.find((r) => r.user_id === user.id && r.emoji === emoji);
-
-      if (existingReaction) {
-        // If the reaction exists, remove it (toggle behavior)
-        return removeReaction(existingReaction.id);
-      }
-
-      await MessageReactionsService.addReaction(messageId, user.id, emoji);
-    } catch (err) {
-      errorLog('Error adding reaction:', err);
-      toast({
-        title: 'Error',
-        description: 'Failed to add reaction',
-        variant: 'destructive',
-      });
+    const existingReaction = reactions.find((r) => r.user_id === user.id && r.emoji === emoji);
+    if (existingReaction) {
+      await removeReaction(existingReaction.id);
+      return;
     }
+    await addReactionMutation.mutateAsync(emoji).catch(() => undefined);
   };
-
-  // Remove reaction
-  const removeReaction = async (reactionId: string) => {
-    if (!user) return;
-
-    try {
-      await MessageReactionsService.removeReaction(reactionId, user.id);
-    } catch (err) {
-      errorLog('Error removing reaction:', err);
-      toast({
-        title: 'Error',
-        description: 'Failed to remove reaction',
-        variant: 'destructive',
-      });
-    }
-  };
-
   return {
     reactions,
     reactionCounts,
-    isLoading,
+    isLoading: reactionsQuery.isLoading,
     addReaction,
     removeReaction,
   };

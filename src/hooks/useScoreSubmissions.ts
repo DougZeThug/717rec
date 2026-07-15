@@ -1,9 +1,12 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 
 import { useToast } from '@/hooks/useToast';
 import { fetchScoreSubmissions as fetchScoreSubmissionsData } from '@/services/matches/MatchReadService';
 import { updateScoreSubmissionStatus } from '@/services/matches/MatchWriteService';
 import { errorLog } from '@/utils/logger';
+
+import { scoreSubmissionKeys } from './scoreSubmissionKeys';
 
 export interface ScoreSubmission {
   id: string;
@@ -17,64 +20,72 @@ export interface ScoreSubmission {
   reviewed_at: string | null;
 }
 
+/**
+ * Load and moderate pending score submissions with shared query caching.
+ */
 export function useScoreSubmissions() {
-  const [submissions, setSubmissions] = useState<ScoreSubmission[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const fetchScoreSubmissions = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const data = await fetchScoreSubmissionsData();
-      setSubmissions(data as ScoreSubmission[]);
-    } catch (error) {
-      errorLog('Error fetching score submissions:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load score submissions. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [toast]);
+  const submissionsQuery = useQuery({
+    queryKey: scoreSubmissionKeys.all,
+    queryFn: async () => (await fetchScoreSubmissionsData()) as ScoreSubmission[],
+  });
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
-    fetchScoreSubmissions();
-  }, [fetchScoreSubmissions]);
-
-  const handleSubmissionAction = async (submissionId: string, status: 'approved' | 'rejected') => {
-    try {
-      await updateScoreSubmissionStatus(submissionId, status);
-
-      setSubmissions((prev) => prev.filter((sub) => sub.id !== submissionId));
-
-      toast({
-        title: 'Success',
-        description: `Score submission ${status} successfully.`,
-      });
-    } catch (error) {
+  const actionMutation = useMutation({
+    mutationFn: ({
+      submissionId,
+      status,
+    }: {
+      submissionId: string;
+      status: 'approved' | 'rejected';
+    }) => updateScoreSubmissionStatus(submissionId, status),
+    onMutate: async ({ submissionId }) => {
+      await queryClient.cancelQueries({ queryKey: scoreSubmissionKeys.all });
+      const previous = queryClient.getQueryData<ScoreSubmission[]>(scoreSubmissionKeys.all);
+      queryClient.setQueryData<ScoreSubmission[]>(scoreSubmissionKeys.all, (curr = []) =>
+        curr.filter((sub) => sub.id !== submissionId)
+      );
+      return { previous };
+    },
+    onSuccess: (_data, { status }) => {
+      toast({ title: 'Success', description: `Score submission ${status} successfully.` });
+    },
+    onError: (error, { status }, context) => {
+      if (context?.previous) queryClient.setQueryData(scoreSubmissionKeys.all, context.previous);
       errorLog(`Error ${status === 'approved' ? 'approving' : 'rejecting'} submission:`, error);
       toast({
         title: 'Error',
         description: `Failed to ${status === 'approved' ? 'approve' : 'reject'} submission. Please try again.`,
         variant: 'destructive',
       });
-    }
+    },
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: scoreSubmissionKeys.all, refetchType: 'none' }),
+  });
+
+  useEffect(() => {
+    if (!submissionsQuery.error) return;
+    errorLog('Error fetching score submissions:', submissionsQuery.error);
+    toast({
+      title: 'Error',
+      description: 'Failed to load score submissions. Please try again.',
+      variant: 'destructive',
+    });
+  }, [submissionsQuery.error, toast]);
+
+  /** Apply an approval or rejection to a score submission. */
+  const handleSubmissionAction = (submissionId: string, status: 'approved' | 'rejected') => {
+    actionMutation.mutate({ submissionId, status });
   };
 
-  const handleApproveSubmission = (submissionId: string) =>
-    handleSubmissionAction(submissionId, 'approved');
-
-  const handleRejectSubmission = (submissionId: string) =>
-    handleSubmissionAction(submissionId, 'rejected');
-
   return {
-    submissions,
-    isLoading,
-    handleApproveSubmission,
-    handleRejectSubmission,
-    refetch: fetchScoreSubmissions,
+    submissions: submissionsQuery.data ?? [],
+    isLoading: submissionsQuery.isLoading,
+    handleApproveSubmission: (submissionId: string) =>
+      handleSubmissionAction(submissionId, 'approved'),
+    handleRejectSubmission: (submissionId: string) =>
+      handleSubmissionAction(submissionId, 'rejected'),
+    refetch: submissionsQuery.refetch,
   };
 }

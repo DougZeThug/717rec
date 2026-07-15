@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo } from 'react';
 
 import { useAuth } from '@/contexts/auth-context';
 import { subscribeWithRetry } from '@/hooks/realtime/subscribeWithRetry';
@@ -7,38 +8,34 @@ import { supabase } from '@/integrations/supabase/client';
 import { MatchComment, MatchCommentsService } from '@/services/matches/MatchCommentsService';
 import { errorLog } from '@/utils/logger';
 
+import { matchInteractionKeys } from './matchInteractionKeys';
+
 export type { MatchComment };
 
 export const useMatchComments = (matchId: string) => {
-  const [comments, setComments] = useState<MatchComment[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const currentUserId = user?.id;
+  const queryKey = useMemo(() => matchInteractionKeys.comments(matchId), [matchId]);
 
-  const fetchComments = useCallback(async () => {
-    if (!matchId) return;
-    try {
-      setIsLoading(true);
-      const data = await MatchCommentsService.fetchComments(matchId);
-      setComments(data);
-    } catch (err) {
-      errorLog('Error fetching match comments:', err);
-      setError('Failed to load comments');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [matchId]);
+  const commentsQuery = useQuery({
+    queryKey,
+    queryFn: () => MatchCommentsService.fetchComments(matchId),
+    enabled: Boolean(matchId),
+  });
 
-  // Fetch comments for the match
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load
-    void fetchComments();
-  }, [fetchComments]);
+    if (!commentsQuery.error) return;
+    errorLog('Error fetching match comments:', commentsQuery.error);
+  }, [commentsQuery.error]);
 
-  // Set up realtime subscription
   useEffect(() => {
     if (!matchId) return;
-
+    const invalidate = () => {
+      queryClient.invalidateQueries({ queryKey }).catch((err: unknown) => {
+        errorLog('Error invalidating match comments:', err);
+      });
+    };
     const { dispose } = subscribeWithRetry({
       label: `useMatchComments(${matchId})`,
       build: () =>
@@ -52,9 +49,9 @@ export const useMatchComments = (matchId: string) => {
               table: 'match_comments',
               filter: `match_id=eq.${matchId}`,
             },
-            (payload) => {
+            (payload: { new: unknown; old: { id?: string } }) => {
               const newComment = payload.new as MatchComment;
-              setComments((curr) =>
+              queryClient.setQueryData<MatchComment[]>(queryKey, (curr = []) =>
                 curr.some((c) => c.id === newComment.id) ? curr : [...curr, newComment]
               );
             }
@@ -67,18 +64,40 @@ export const useMatchComments = (matchId: string) => {
               table: 'match_comments',
               filter: `match_id=eq.${matchId}`,
             },
-            (payload) => {
-              setComments((curr) => curr.filter((c) => c.id !== payload.old.id));
+            (payload: { new: unknown; old: { id?: string } }) => {
+              queryClient.setQueryData<MatchComment[]>(queryKey, (curr = []) =>
+                curr.filter((c) => c.id !== payload.old.id)
+              );
             }
           ),
       onReconnect: (isFirst) => {
-        if (!isFirst) void fetchComments();
+        if (!isFirst) invalidate();
       },
     });
     return () => dispose();
-  }, [matchId, fetchComments]);
+  }, [matchId, queryClient, queryKey]);
 
-  // Post a new comment
+  const deleteMutation = useMutation({
+    mutationFn: (commentId: string) =>
+      currentUserId
+        ? MatchCommentsService.deleteComment(commentId, currentUserId)
+        : Promise.reject(new Error('User is required to delete a comment')),
+    onMutate: async (commentId) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<MatchComment[]>(queryKey);
+      queryClient.setQueryData<MatchComment[]>(queryKey, (curr = []) =>
+        curr.filter((c) => c.id !== commentId)
+      );
+      return { previous };
+    },
+    onError: (err, _commentId, context) => {
+      if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
+      errorLog('Error removing comment:', err);
+      toast({ title: 'Error', description: 'Failed to delete comment', variant: 'destructive' });
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey, refetchType: 'none' }),
+  });
+
   const addComment = async (content: string) => {
     if (!user) {
       toast({
@@ -88,58 +107,43 @@ export const useMatchComments = (matchId: string) => {
       });
       return null;
     }
-
     if (!content.trim()) return null;
-
     try {
       const { username: profileUsername, teamName } =
         await MatchCommentsService.fetchCommentAuthorInfo(user.id);
-
       const username =
         profileUsername || user.user_metadata?.name || user.email?.split('@')[0] || 'Anonymous';
-
       const data = await MatchCommentsService.addComment(matchId, {
         user_id: user.id,
         username,
         team_name: teamName,
         content: content.trim(),
       });
-
+      queryClient.setQueryData<MatchComment[]>(queryKey, (curr = []) =>
+        curr.some((c) => c.id === data.id) ? curr : [...curr, data]
+      );
       return data;
     } catch (err) {
       errorLog('Error adding comment:', err);
-      toast({
-        title: 'Error',
-        description: 'Failed to post comment',
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: 'Failed to post comment', variant: 'destructive' });
       return null;
     }
   };
 
-  // Delete a comment (only author can delete)
   const deleteComment = async (commentId: string) => {
     if (!user) return false;
-
     try {
-      await MatchCommentsService.deleteComment(commentId, user.id);
-      setComments((curr) => curr.filter((c) => c.id !== commentId));
+      await deleteMutation.mutateAsync(commentId);
       return true;
-    } catch (err) {
-      errorLog('Error removing comment:', err);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete comment',
-        variant: 'destructive',
-      });
+    } catch {
       return false;
     }
   };
 
   return {
-    comments,
-    isLoading,
-    error,
+    comments: commentsQuery.data ?? [],
+    isLoading: commentsQuery.isLoading,
+    error: commentsQuery.error ? 'Failed to load comments' : null,
     addComment,
     deleteComment,
   };
