@@ -24,12 +24,18 @@ export function deriveNextThrowers(
   rounds: RoundRecord[],
   roster: TeamRosters
 ): { team1ThrowerId: string | null; team2ThrowerId: string | null } {
-  let last: RoundRecord | null = null;
-  for (const round of rounds) {
-    if (last === null || round.roundNumber > last.roundNumber) last = round;
+  // Walk rounds in ascending order so we can find each side's most recent
+  // *non-null* thrower independently. An "Unassigned" (null) thrower in the
+  // latest round must not reset the alternation established by earlier rounds.
+  const sorted = [...rounds].sort((a, b) => a.roundNumber - b.roundNumber);
+  let lastTeam1: string | null = null;
+  let lastTeam2: string | null = null;
+  for (const round of sorted) {
+    if (round.team1ThrowerId != null) lastTeam1 = round.team1ThrowerId;
+    if (round.team2ThrowerId != null) lastTeam2 = round.team2ThrowerId;
   }
   return {
-    team1ThrowerId: nextForSide(last?.team1ThrowerId ?? null, roster.team1),
-    team2ThrowerId: nextForSide(last?.team2ThrowerId ?? null, roster.team2),
+    team1ThrowerId: nextForSide(lastTeam1, roster.team1),
+    team2ThrowerId: nextForSide(lastTeam2, roster.team2),
   };
 }
