@@ -72,12 +72,6 @@ const LeagueNightStatusTab = lazy(
 );
 
 const adminMenuItems: AdminMenuItem[] = [
-  {
-    id: 'league-night-status',
-    label: 'League Night',
-    icon: Activity,
-    Component: LeagueNightStatusTab,
-  },
   { id: 'timeslots', label: 'Timeslots', icon: Timer, Component: TimeslotsTab },
   {
     id: 'batch-matches',
@@ -115,6 +109,12 @@ const adminMenuItems: AdminMenuItem[] = [
   { id: 'themes', label: 'Themes', icon: Palette, Component: ThemeManagementTab },
   { id: 'blind-draw', label: 'Blind Draw', icon: Shuffle, Component: BlindDrawSignupsTab },
   { id: 'help', label: 'Help', icon: HelpCircle, Component: GettingStartedTab },
+  {
+    id: 'league-night-status',
+    label: 'League Night',
+    icon: Activity,
+    Component: LeagueNightStatusTab,
+  },
 ];
 
 const STORAGE_KEY = 'adminActiveTab';
