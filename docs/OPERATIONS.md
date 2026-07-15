@@ -17,7 +17,7 @@ Everything below lives outside the repo (Supabase Dashboard, Lovable, Cloudflare
 
 | Setting | Where | Required value | Why | Last verified |
 |---|---|---|---|---|
-| Email confirmations on signup | Dashboard → Authentication → Sign In / Up → Email | **ON** | Prevents random email addresses from squatting accounts and receiving league notifications. `supabase/config.toml` sets `enable_confirmations = false`, but that only affects local dev; the dashboard value wins in production. Tradeoff for a rec-league audience: one extra click during signup, offset by real email addresses on the roster. | _fill me in_ |
+| Email confirmations on signup | Dashboard → Authentication → Sign In / Up → Email | **OFF** | Internal rec-league app used by trusted team members — email deliverability isn't part of the security model, and the extra click hurts signup completion more than it helps. Matches `supabase/config.toml` (`enable_confirmations = false`). | _fill me in_ |
 | Leaked-password protection | Dashboard → Authentication → Attack protection | **ON** | Rejects passwords that appear in known breach corpora (HaveIBeenPwned). Free, zero UX cost beyond the occasional "pick another password". | _fill me in_ |
 | MFA (TOTP) | Dashboard → Authentication → Multi-Factor Authentication | **ON (optional for users)** | Not required for players, but leave the provider enabled so admins (Doug + anyone else with `is_admin = true`) can opt in. | _fill me in_ |
 | Site URL / redirect URLs | Dashboard → Authentication → URL Configuration | `https://717rec.app`, `https://717rec.lovable.app`, plus any preview domain in active use | Sign-in magic links and password resets fail silently if the redirect isn't on the allowlist. | _fill me in_ |
@@ -47,7 +47,7 @@ Every `Deno.env.get(...)` key across every function in `supabase/functions/`. `S
 
 | Job | Cadence | Calls | Notes | Last verified |
 |---|---|---|---|---|
-| `capture-power-snapshots` | Weekly, Thursday night (matches the "Thursday snapshots" convention) | `https://wcitdamvochthvxvtxyb.supabase.co/functions/v1/capture-power-snapshots` | Header must include `x-cron-secret: <CRON_WEBHOOK_SECRET>`. Confirm in Dashboard → SQL editor: `SELECT * FROM cron.job;` | _fill me in_ |
+| `weekly-power-score-snapshot-v2` → `capture-power-snapshots` | Weekly, Fridays 04:00 UTC (= Thursday ~11pm–midnight ET) | `https://wcitdamvochthvxvtxyb.supabase.co/functions/v1/capture-power-snapshots` | Header must be `Authorization: Bearer <CRON_WEBHOOK_SECRET>` (the function rejects anything else with 401). Secret is stored in Postgres Vault as `CRON_WEBHOOK_SECRET` and read by pg_cron at execution time — do NOT paste the raw value into a migration file. Verify with `SELECT jobname, schedule FROM cron.job;`. Manual test: `curl -X POST -H "Authorization: Bearer $CRON_WEBHOOK_SECRET" https://wcitdamvochthvxvtxyb.supabase.co/functions/v1/capture-power-snapshots` should return `{"success":true,...}`. **Known cleanup item:** an older duplicate `weekly-power-score-snapshot` (jobid 1) is owned by the dashboard `postgres` role and can only be removed from Dashboard → SQL editor as that role: `SELECT cron.unschedule(1);`. It fires alongside v2 and 401s harmlessly, but should be removed. | 2026-07-15 (job present + manual invocation returned 200 / 27 snapshots) |
 
 ### 1e. Hosting & DNS
 
@@ -142,7 +142,7 @@ WHERE t.wins        <> agg.wins
    OR t.game_losses <> agg.game_losses;
 ```
 
-**Demonstrated output:** run against the current replay DB on 2026-07-15 returned `[]` (zero drift rows). Manufactured-drift check: `UPDATE teams SET wins = wins + 1 WHERE id = '<any-id>'` in a scratch DB produces exactly one row with `stored_w = calc_w + 1`; roll it back with the reverse update.
+**Demonstrated output:** run against the production DB on 2026-07-15 returned `[]` (zero drift rows — re-verified during PR-13 walk-through). Manufactured-drift check: `UPDATE teams SET wins = wins + 1 WHERE id = '<any-id>'` in a scratch DB produces exactly one row with `stored_w = calc_w + 1`; roll it back with the reverse update.
 
 If drift is found, the fix is a targeted `UPDATE teams SET wins = <calc>, losses = <calc>, game_wins = <calc>, game_losses = <calc> WHERE id = '<id>';` per drifted row. Verify by re-running the query — expect zero rows.
 
