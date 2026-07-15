@@ -30,7 +30,7 @@ export const useTeamSeedMutation = () => {
 
   // Single team seed update with retry logic
   const updateSingleTeamSeed = useMutation<TeamSeedUpdateResult, Error, TeamSeedUpdate>({
-    mutationFn: async ({ teamId, seed }) => {
+    mutationFn: ({ teamId, seed }) => {
       return withRetry(async () => {
         return await updateTeamSeed(teamId, seed);
       });

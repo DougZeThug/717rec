@@ -8,7 +8,7 @@ class MatchUpdateQueue {
   /**
    * Enqueue an update operation to be executed serially
    */
-  async enqueue<T>(operation: () => Promise<T>): Promise<T> {
+  enqueue<T>(operation: () => Promise<T>): Promise<T> {
     const result = this.queue.then(() => operation());
     // Update queue regardless of success/failure to continue processing
     this.queue = result.then(

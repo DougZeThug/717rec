@@ -125,7 +125,7 @@ describe('useBracketFormData', () => {
     });
   });
 
-  it('should handle loading state', async () => {
+  it('should handle loading state', () => {
     mockUsePlayoffTeams.mockReturnValue(asPlayoffTeamsQuery({ data: undefined, isLoading: true }));
 
     const { result } = renderHook(() => useBracketFormData(mockDivisions, undefined), { wrapper });

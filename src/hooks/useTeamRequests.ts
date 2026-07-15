@@ -50,7 +50,7 @@ export const useSubmitRequest = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (request: {
+    mutationFn: (request: {
       team_id: string;
       request_type: TeamRequestType;
       match_date?: string;
@@ -86,7 +86,7 @@ export const useUpdateRequestStatus = () => {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({
+    mutationFn: ({
       id,
       status,
       admin_notes,

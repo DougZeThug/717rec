@@ -41,7 +41,7 @@ export const signInWithOAuth = async (redirectTo: string): Promise<void> => {
   if (error) handleDatabaseError(toPgError(error), 'Failed to sign in with OAuth');
 };
 
-export const getAuthSession = async () => {
+export const getAuthSession = () => {
   return supabase.auth.getSession();
 };
 

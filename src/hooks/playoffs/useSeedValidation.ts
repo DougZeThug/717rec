@@ -12,8 +12,8 @@ export interface SeedValidationResult {
 export const useSeedValidation = (divisionId?: string) => {
   return useQuery({
     queryKey: ['seed-validation', divisionId],
-    queryFn: async (): Promise<SeedValidationResult[]> => {
-      if (!divisionId) return [];
+    queryFn: (): Promise<SeedValidationResult[]> => {
+      if (!divisionId) return Promise.resolve([]);
       return validateSeeds(divisionId) as Promise<SeedValidationResult[]>;
     },
     enabled: !!divisionId,

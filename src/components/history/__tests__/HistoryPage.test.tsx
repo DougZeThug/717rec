@@ -47,7 +47,7 @@ const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 describe('HistoryPage', () => {
-  it('renders season history correctly', async () => {
+  it('renders season history correctly', () => {
     render(
       <TestWrapper>
         <HistoryPageContent />

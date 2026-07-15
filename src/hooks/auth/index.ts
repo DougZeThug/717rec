@@ -68,7 +68,7 @@ export const useAuth = () => {
     // Set up auth state listener
     const {
       data: { subscription },
-    } = onAuthStateChange(async (event, currentSession) => {
+    } = onAuthStateChange((event, currentSession) => {
       authLog('Auth state changed:', event);
 
       // Update the current user ID to track which profile fetch is valid
@@ -145,6 +145,9 @@ export const useAuth = () => {
           }
         }, 0);
       }
+
+      // Supabase types this callback as Promise-returning; async work is deferred above.
+      return Promise.resolve();
     });
 
     const initializeAuth = async () => {
