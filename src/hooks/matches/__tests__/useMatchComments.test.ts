@@ -1,4 +1,6 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
+import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useMatchComments } from '../useMatchComments';
@@ -65,6 +67,15 @@ const comment = {
   created_at: '2026-06-24T00:00:00Z',
 };
 
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } },
+  });
+
+  return ({ children }: { children: React.ReactNode }) =>
+    React.createElement(QueryClientProvider, { client: queryClient }, children);
+};
+
 describe('useMatchComments', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -75,7 +86,9 @@ describe('useMatchComments', () => {
   });
 
   it('loads comments and wires realtime inserts and deletes for the current match', async () => {
-    const { result, unmount } = renderHook(() => useMatchComments('match-1'));
+    const { result, unmount } = renderHook(() => useMatchComments('match-1'), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
@@ -99,13 +112,13 @@ describe('useMatchComments', () => {
     act(() => {
       insertHandler({ new: { ...comment, id: 'comment-2', content: 'Rematch?' } });
     });
-    expect(result.current.comments).toHaveLength(2);
+    await waitFor(() => expect(result.current.comments).toHaveLength(2));
 
     const deleteHandler = mockChannel.on.mock.calls[1][2];
     act(() => {
       deleteHandler({ old: { id: 'comment-1' } });
     });
-    expect(result.current.comments.map((c) => c.id)).toEqual(['comment-2']);
+    await waitFor(() => expect(result.current.comments.map((c) => c.id)).toEqual(['comment-2']));
 
     unmount();
     expect(supabase.removeChannel).toHaveBeenCalledWith(mockChannel);
@@ -114,7 +127,7 @@ describe('useMatchComments', () => {
   it('surfaces fetch failures without leaving the hook loading', async () => {
     mockFetchComments.mockRejectedValueOnce(new Error('database down'));
 
-    const { result } = renderHook(() => useMatchComments('match-1'));
+    const { result } = renderHook(() => useMatchComments('match-1'), { wrapper: createWrapper() });
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.error).toBe('Failed to load comments');
@@ -122,14 +135,16 @@ describe('useMatchComments', () => {
   });
 
   it('blocks signed-out and blank comments before calling the service', async () => {
-    const { result } = renderHook(() => useMatchComments('match-1'));
+    const { result } = renderHook(() => useMatchComments('match-1'), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     await expect(result.current.addComment('hello')).resolves.toBeNull();
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Not signed in' }));
 
     mockUser.current = { id: 'user-1', email: 'fallback@example.com', user_metadata: {} };
-    const { result: signedInResult } = renderHook(() => useMatchComments('match-1'));
+    const { result: signedInResult } = renderHook(() => useMatchComments('match-1'), {
+      wrapper: createWrapper(),
+    });
     await waitFor(() => expect(signedInResult.current.isLoading).toBe(false));
 
     await expect(signedInResult.current.addComment('   ')).resolves.toBeNull();
@@ -141,7 +156,7 @@ describe('useMatchComments', () => {
     mockFetchAuthor.mockResolvedValue({ username: null, teamName: 'Aces' });
     mockAddComment.mockResolvedValue({ ...comment, content: 'Nice shot' });
 
-    const { result } = renderHook(() => useMatchComments('match-1'));
+    const { result } = renderHook(() => useMatchComments('match-1'), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     await expect(result.current.addComment('  Nice shot  ')).resolves.toEqual({
@@ -159,7 +174,8 @@ describe('useMatchComments', () => {
 
   it('removes a deleted comment locally and returns false on delete failures', async () => {
     mockUser.current = { id: 'user-1' };
-    const { result } = renderHook(() => useMatchComments('match-1'));
+    mockFetchComments.mockResolvedValueOnce([comment]).mockResolvedValue([]);
+    const { result } = renderHook(() => useMatchComments('match-1'), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.comments).toHaveLength(1));
 
     let deleteResult = false;

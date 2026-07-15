@@ -1,4 +1,6 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
+import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useScoreSubmissions } from '../useScoreSubmissions';
@@ -49,6 +51,14 @@ const mockSubmissions = [
   },
 ];
 
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } },
+  });
+  return ({ children }: { children: React.ReactNode }) =>
+    React.createElement(QueryClientProvider, { client: queryClient }, children);
+};
+
 describe('useScoreSubmissions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -56,7 +66,7 @@ describe('useScoreSubmissions', () => {
 
   it('starts with isLoading=true and fetches on mount', async () => {
     (fetchScoreSubmissions as ReturnType<typeof vi.fn>).mockResolvedValue(mockSubmissions);
-    const { result } = renderHook(() => useScoreSubmissions());
+    const { result } = renderHook(() => useScoreSubmissions(), { wrapper: createWrapper() });
     expect(result.current.isLoading).toBe(true);
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.submissions).toEqual(mockSubmissions);
@@ -64,16 +74,18 @@ describe('useScoreSubmissions', () => {
 
   it('shows error toast when fetch fails', async () => {
     (fetchScoreSubmissions as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('DB error'));
-    const { result } = renderHook(() => useScoreSubmissions());
+    const { result } = renderHook(() => useScoreSubmissions(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
     expect(result.current.submissions).toEqual([]);
   });
 
   it('handleApproveSubmission calls service with approved and removes from list', async () => {
-    (fetchScoreSubmissions as ReturnType<typeof vi.fn>).mockResolvedValue(mockSubmissions);
+    (fetchScoreSubmissions as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(mockSubmissions)
+      .mockResolvedValue([mockSubmissions[1]]);
     (updateScoreSubmissionStatus as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
-    const { result } = renderHook(() => useScoreSubmissions());
+    const { result } = renderHook(() => useScoreSubmissions(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     await act(async () => {
@@ -81,15 +93,17 @@ describe('useScoreSubmissions', () => {
     });
 
     expect(updateScoreSubmissionStatus).toHaveBeenCalledWith('sub-1', 'approved');
-    expect(result.current.submissions).toHaveLength(1);
+    await waitFor(() => expect(result.current.submissions).toHaveLength(1));
     expect(result.current.submissions[0].id).toBe('sub-2');
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Success' }));
   });
 
   it('handleRejectSubmission calls service with rejected and removes from list', async () => {
-    (fetchScoreSubmissions as ReturnType<typeof vi.fn>).mockResolvedValue(mockSubmissions);
+    (fetchScoreSubmissions as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(mockSubmissions)
+      .mockResolvedValue([mockSubmissions[0]]);
     (updateScoreSubmissionStatus as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
-    const { result } = renderHook(() => useScoreSubmissions());
+    const { result } = renderHook(() => useScoreSubmissions(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     await act(async () => {
@@ -97,7 +111,7 @@ describe('useScoreSubmissions', () => {
     });
 
     expect(updateScoreSubmissionStatus).toHaveBeenCalledWith('sub-2', 'rejected');
-    expect(result.current.submissions).toHaveLength(1);
+    await waitFor(() => expect(result.current.submissions).toHaveLength(1));
     expect(result.current.submissions[0].id).toBe('sub-1');
   });
 
@@ -106,7 +120,7 @@ describe('useScoreSubmissions', () => {
     (updateScoreSubmissionStatus as ReturnType<typeof vi.fn>).mockRejectedValue(
       new Error('Approve failed')
     );
-    const { result } = renderHook(() => useScoreSubmissions());
+    const { result } = renderHook(() => useScoreSubmissions(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     mockToast.mockClear();
 
@@ -120,7 +134,7 @@ describe('useScoreSubmissions', () => {
 
   it('refetch re-calls the service', async () => {
     (fetchScoreSubmissions as ReturnType<typeof vi.fn>).mockResolvedValue(mockSubmissions);
-    const { result } = renderHook(() => useScoreSubmissions());
+    const { result } = renderHook(() => useScoreSubmissions(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     const callCount = (fetchScoreSubmissions as ReturnType<typeof vi.fn>).mock.calls.length;
 
@@ -129,5 +143,25 @@ describe('useScoreSubmissions', () => {
     });
 
     expect(fetchScoreSubmissions).toHaveBeenCalledTimes(callCount + 1);
+  });
+
+  it('refetches on remount even while the cached inbox is fresh', async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false, gcTime: 0, staleTime: 5 * 60 * 1000 },
+        mutations: { retry: false },
+      },
+    });
+    const wrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(QueryClientProvider, { client: queryClient }, children);
+    (fetchScoreSubmissions as ReturnType<typeof vi.fn>).mockResolvedValue(mockSubmissions);
+
+    const firstRender = renderHook(() => useScoreSubmissions(), { wrapper });
+    await waitFor(() => expect(firstRender.result.current.isLoading).toBe(false));
+    firstRender.unmount();
+
+    renderHook(() => useScoreSubmissions(), { wrapper });
+
+    await waitFor(() => expect(fetchScoreSubmissions).toHaveBeenCalledTimes(2));
   });
 });
