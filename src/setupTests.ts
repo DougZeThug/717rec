@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 
 import { cleanup, configure } from '@testing-library/react';
-import { afterEach, expect } from 'vitest';
+import { afterEach, expect, vi } from 'vitest';
 import { toHaveNoViolations } from 'vitest-axe/dist/matchers';
 
 expect.extend({ toHaveNoViolations });
@@ -79,6 +79,58 @@ for (const proto of [Element.prototype, HTMLElement.prototype]) {
 // jsdom doesn't implement window.scrollTo — stub it to silence "Not implemented" warnings
 window.scrollTo = (() => {}) as typeof window.scrollTo;
 Element.prototype.scrollTo = (() => {}) as typeof Element.prototype.scrollTo;
+
+// jsdom doesn't implement HTMLCanvasElement.getContext — stub a 2D context so
+// components that touch canvas (charts, measureText, etc.) don't crash tests.
+const createMockCanvasContext = () => ({
+  clearRect: vi.fn(),
+  fillRect: vi.fn(),
+  strokeRect: vi.fn(),
+  beginPath: vi.fn(),
+  closePath: vi.fn(),
+  moveTo: vi.fn(),
+  lineTo: vi.fn(),
+  rect: vi.fn(),
+  arc: vi.fn(),
+  arcTo: vi.fn(),
+  bezierCurveTo: vi.fn(),
+  quadraticCurveTo: vi.fn(),
+  clip: vi.fn(),
+  fill: vi.fn(),
+  stroke: vi.fn(),
+  save: vi.fn(),
+  restore: vi.fn(),
+  translate: vi.fn(),
+  rotate: vi.fn(),
+  scale: vi.fn(),
+  transform: vi.fn(),
+  setTransform: vi.fn(),
+  resetTransform: vi.fn(),
+  drawImage: vi.fn(),
+  fillText: vi.fn(),
+  strokeText: vi.fn(),
+  measureText: vi.fn(() => ({
+    width: 0,
+    actualBoundingBoxAscent: 0,
+    actualBoundingBoxDescent: 0,
+  })),
+  createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+  createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+  createPattern: vi.fn(),
+  getImageData: vi.fn(() => ({
+    data: new Uint8ClampedArray(),
+    width: 0,
+    height: 0,
+  })),
+  putImageData: vi.fn(),
+  canvas: document.createElement('canvas'),
+});
+
+Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+  configurable: true,
+  writable: true,
+  value: vi.fn(() => createMockCanvasContext()) as unknown as HTMLCanvasElement['getContext'],
+});
 
 // Mock IntersectionObserver for better test compatibility with complete interface
 globalThis.IntersectionObserver =
