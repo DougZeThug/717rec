@@ -1,0 +1,113 @@
+{
+  "results": [
+    {
+      "label": "Timeslots",
+      "ok": true,
+      "note": "text=1193",
+      "consoleErrors": []
+    },
+    {
+      "label": "Match Creation",
+      "ok": true,
+      "note": "text=761",
+      "consoleErrors": []
+    },
+    {
+      "label": "Auto Schedule",
+      "ok": true,
+      "note": "text=1436",
+      "consoleErrors": []
+    },
+    {
+      "label": "Matchups",
+      "ok": true,
+      "note": "text=4268",
+      "consoleErrors": []
+    },
+    {
+      "label": "Scores",
+      "ok": true,
+      "note": "text=611",
+      "consoleErrors": []
+    },
+    {
+      "label": "Live Corrections",
+      "ok": true,
+      "note": "text=713",
+      "consoleErrors": []
+    },
+    {
+      "label": "Season",
+      "ok": true,
+      "note": "text=1293",
+      "consoleErrors": []
+    },
+    {
+      "label": "Participation",
+      "ok": true,
+      "note": "text=1735",
+      "consoleErrors": []
+    },
+    {
+      "label": "Requests",
+      "ok": true,
+      "note": "text=468",
+      "consoleErrors": []
+    },
+    {
+      "label": "Contact Inbox",
+      "ok": true,
+      "note": "text=443",
+      "consoleErrors": []
+    },
+    {
+      "label": "Teams",
+      "ok": true,
+      "note": "text=1841",
+      "consoleErrors": []
+    },
+    {
+      "label": "Divisions",
+      "ok": true,
+      "note": "text=853",
+      "consoleErrors": []
+    },
+    {
+      "label": "Pending",
+      "ok": true,
+      "note": "text=488",
+      "consoleErrors": []
+    },
+    {
+      "label": "Hero",
+      "ok": true,
+      "note": "text=1218",
+      "consoleErrors": []
+    },
+    {
+      "label": "Themes",
+      "ok": true,
+      "note": "text=580",
+      "consoleErrors": []
+    },
+    {
+      "label": "Blind Draw",
+      "ok": true,
+      "note": "text=1013",
+      "consoleErrors": []
+    },
+    {
+      "label": "Help",
+      "ok": true,
+      "note": "text=1752",
+      "consoleErrors": []
+    },
+    {
+      "label": "League Night",
+      "ok": true,
+      "note": "text=866",
+      "consoleErrors": []
+    }
+  ],
+  "abortedRequests": []
+}

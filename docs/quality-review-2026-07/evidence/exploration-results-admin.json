@@ -1,0 +1,163 @@
+{
+  "results": [
+    {
+      "phase": "admin",
+      "path": "(login)",
+      "loginSuccess": true,
+      "landedOn": "http://localhost:8080/"
+    },
+    {
+      "phase": "admin",
+      "path": "/admin",
+      "viewport": "desktop-1440",
+      "navError": null,
+      "contentRendered": true,
+      "textLen": 1193,
+      "title": "717REC — Lancaster's Premier Cornhole League",
+      "h1": "Admin Dashboard",
+      "scrollWidth": 1440,
+      "hasSkipLink": true,
+      "imgsNoAlt": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/team_requests?select=id&status=eq.PENDING",
+          "error": "net::ERR_ABORTED",
+          "guardAborted": false
+        }
+      ],
+      "guardAbortCount": 0,
+      "screenshot": "/tmp/claude-0/-home-user-717rec/fbbd526d-ace5-5f8d-b537-9f6b728a2332/scratchpad/evidence/screenshots/admin-_admin-desktop-1440.png"
+    },
+    {
+      "phase": "admin",
+      "path": "/admin/notifications",
+      "viewport": "desktop-1440",
+      "navError": null,
+      "contentRendered": true,
+      "textLen": 826,
+      "title": "717REC — Lancaster's Premier Cornhole League",
+      "h1": "Admin Notifications",
+      "scrollWidth": 1440,
+      "hasSkipLink": true,
+      "imgsNoAlt": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "guardAbortCount": 0,
+      "screenshot": "/tmp/claude-0/-home-user-717rec/fbbd526d-ace5-5f8d-b537-9f6b728a2332/scratchpad/evidence/screenshots/admin-_admin_notifications-desktop-1440.png"
+    },
+    {
+      "phase": "admin",
+      "path": "/my-team",
+      "viewport": "desktop-1440",
+      "navError": null,
+      "contentRendered": true,
+      "textLen": 621,
+      "title": "717REC — Lancaster's Premier Cornhole League",
+      "h1": "My Team",
+      "scrollWidth": 1440,
+      "hasSkipLink": true,
+      "imgsNoAlt": 0,
+      "consoleErrors": [
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [],
+      "guardAbortCount": 0,
+      "screenshot": "/tmp/claude-0/-home-user-717rec/fbbd526d-ace5-5f8d-b537-9f6b728a2332/scratchpad/evidence/screenshots/admin-_my-team-desktop-1440.png"
+    },
+    {
+      "phase": "admin",
+      "path": "/admin",
+      "viewport": "mobile-375",
+      "navError": null,
+      "contentRendered": true,
+      "textLen": 1080,
+      "title": "717REC — Lancaster's Premier Cornhole League",
+      "h1": "Admin Dashboard",
+      "hOverflow": false,
+      "scrollWidth": 375,
+      "hasSkipLink": true,
+      "imgsNoAlt": 0,
+      "consoleErrors": [
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://wcitdamvochthvxvtxyb.supabase.co/rest/v1/team_requests?select=id&status=eq.PENDING",
+          "error": "net::ERR_ABORTED",
+          "guardAborted": false
+        }
+      ],
+      "guardAbortCount": 0,
+      "screenshot": "/tmp/claude-0/-home-user-717rec/fbbd526d-ace5-5f8d-b537-9f6b728a2332/scratchpad/evidence/screenshots/admin-_admin-mobile-375.png"
+    },
+    {
+      "phase": "admin",
+      "path": "/admin/notifications",
+      "viewport": "mobile-375",
+      "navError": null,
+      "contentRendered": true,
+      "textLen": 752,
+      "title": "717REC — Lancaster's Premier Cornhole League",
+      "h1": "Admin Notifications",
+      "hOverflow": false,
+      "scrollWidth": 375,
+      "hasSkipLink": true,
+      "imgsNoAlt": 0,
+      "consoleErrors": [
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect",
+        "[717REC ERROR] [realtime:useContactRequests] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [],
+      "guardAbortCount": 0,
+      "screenshot": "/tmp/claude-0/-home-user-717rec/fbbd526d-ace5-5f8d-b537-9f6b728a2332/scratchpad/evidence/screenshots/admin-_admin_notifications-mobile-375.png"
+    },
+    {
+      "phase": "admin",
+      "path": "/my-team",
+      "viewport": "mobile-375",
+      "navError": null,
+      "contentRendered": true,
+      "textLen": 547,
+      "title": "717REC — Lancaster's Premier Cornhole League",
+      "h1": "My Team",
+      "hOverflow": false,
+      "scrollWidth": 375,
+      "hasSkipLink": true,
+      "imgsNoAlt": 0,
+      "consoleErrors": [
+        "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+      ],
+      "pageErrors": [],
+      "failedRequests": [],
+      "guardAbortCount": 0,
+      "screenshot": "/tmp/claude-0/-home-user-717rec/fbbd526d-ace5-5f8d-b537-9f6b728a2332/scratchpad/evidence/screenshots/admin-_my-team-mobile-375.png"
+    },
+    {
+      "phase": "admin",
+      "path": "/admin",
+      "adminTabs": [
+        "717Rec",
+        "Home",
+        "Teams",
+        "Schedule",
+        "Standings",
+        "Playoffs",
+        "History",
+        "Messages",
+        "Help",
+        "Contact"
+      ]
+    }
+  ],
+  "abortedRequests": []
+}
