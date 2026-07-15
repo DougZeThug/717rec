@@ -94,9 +94,18 @@ export const useMatchReactions = (matchId: string) => {
               const newReaction = payload.new as MatchReaction;
               realtimeDeletesRef.current.delete(newReaction.id);
               realtimeInsertsRef.current.set(newReaction.id, newReaction);
-              queryClient.setQueryData<MatchReaction[]>(queryKey, (curr = []) =>
-                curr.some((r) => r.id === newReaction.id) ? curr : [...curr, newReaction]
-              );
+              queryClient.setQueryData<MatchReaction[]>(queryKey, (curr = []) => {
+                if (curr.some((r) => r.id === newReaction.id)) return curr;
+                const withoutOptimisticDuplicate = curr.filter(
+                  (reaction) =>
+                    !(
+                      reaction.id.startsWith('optimistic-') &&
+                      reaction.user_id === newReaction.user_id &&
+                      reaction.emoji === newReaction.emoji
+                    )
+                );
+                return [...withoutOptimisticDuplicate, newReaction];
+              });
             }
           )
           .on(

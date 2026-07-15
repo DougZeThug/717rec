@@ -265,6 +265,28 @@ describe('useMatchReactions', () => {
     expect(mockDeleteReaction).not.toHaveBeenCalled();
   });
 
+  it('replaces optimistic reactions when realtime sends the saved row', async () => {
+    mockUser.current = { id: 'user-1' };
+    mockInsertReaction.mockResolvedValue(undefined);
+
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await act(async () => {
+      await result.current.toggleReaction('🔥');
+    });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(1));
+    expect(result.current.reactions[0].id).toMatch(/^optimistic-/);
+
+    const insertHandler = mockChannel.on.mock.calls[0][2];
+    act(() => {
+      insertHandler({ new: reaction('real-reaction', 'user-1', '🔥') });
+    });
+
+    await waitFor(() => expect(result.current.reactions).toHaveLength(1));
+    expect(result.current.reactions[0].id).toBe('real-reaction');
+  });
+
   it('removes an existing reaction when the user toggles the same emoji', async () => {
     mockUser.current = { id: 'user-1' };
     mockFetchReactions.mockResolvedValue([reaction('r1', 'user-1', '🔥')]);

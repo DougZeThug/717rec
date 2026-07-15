@@ -12,6 +12,7 @@ import { matchInteractionKeys } from './matchInteractionKeys';
 
 export type { MatchComment };
 
+/** Subscribe to, fetch, create, and delete comments for a match through the query cache. */
 export const useMatchComments = (matchId: string) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -31,6 +32,7 @@ export const useMatchComments = (matchId: string) => {
 
   useEffect(() => {
     if (!matchId) return;
+    /** Mark match comments stale after realtime reconnects. */
     const invalidate = () => {
       queryClient.invalidateQueries({ queryKey }).catch((err: unknown) => {
         errorLog('Error invalidating match comments:', err);
@@ -98,6 +100,7 @@ export const useMatchComments = (matchId: string) => {
     onSettled: () => queryClient.invalidateQueries({ queryKey, refetchType: 'none' }),
   });
 
+  /** Add a trimmed comment for the current user and patch the cached list. */
   const addComment = async (content: string) => {
     if (!user) {
       toast({
@@ -130,6 +133,7 @@ export const useMatchComments = (matchId: string) => {
     }
   };
 
+  /** Delete a comment owned by the current user with optimistic cache removal. */
   const deleteComment = async (commentId: string) => {
     if (!user) return false;
     try {

@@ -173,4 +173,35 @@ describe('useMessageBoard', () => {
       expect.objectContaining({ title: 'Error loading messages', variant: 'destructive' })
     );
   });
+
+  it('preserves load-more availability after realtime cache rewrites', async () => {
+    mockFetchMessages.mockResolvedValue(
+      Array.from({ length: 10 }, (_, i) => ({
+        ...baseMessage,
+        id: `m${i}`,
+        created_at: `2026-04-20T10:0${i}:00.000Z`,
+      }))
+    );
+
+    const { result } = renderHook(() => useMessageBoard(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.hasMore).toBe(true);
+
+    act(() => {
+      realtimeHandlers.onMessageInserted?.({
+        ...baseMessage,
+        id: 'new-message',
+        created_at: '2026-04-21T10:00:00.000Z',
+      });
+    });
+    await waitFor(() => expect(result.current.messages[0].id).toBe('new-message'));
+    expect(result.current.hasMore).toBe(true);
+
+    act(() => {
+      realtimeHandlers.onMessageDeleted?.({ ...baseMessage, id: 'm9' });
+    });
+    await waitFor(() => expect(result.current.messages.find((m) => m.id === 'm9')).toBeUndefined());
+    expect(result.current.hasMore).toBe(true);
+  });
 });

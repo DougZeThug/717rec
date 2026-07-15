@@ -15,16 +15,24 @@ const PAGE_SIZE = 10;
 const MAX_MESSAGES_IN_STATE = 100;
 const MESSAGE_FILTER_KEY = 'messageBoardFilters';
 const EMPTY_MESSAGES: Message[] = [];
-type MessagePages = InfiniteData<Message[], string | undefined>;
+type MessagePage = Message[] & { hasMore?: boolean };
+type MessagePages = InfiniteData<MessagePage, string | undefined>;
+
+/** Attach server-pagination metadata to a message page without changing array behavior. */
+const toMessagePage = (messages: Message[], hasMore = messages.length === PAGE_SIZE): MessagePage =>
+  Object.assign([...messages], { hasMore });
 
 /** Split a flat, newest-first message list into infinite-query page records. */
-const buildMessagePages = (messages: Message[]): MessagePages => {
-  const pages: Message[][] = [];
+const buildMessagePages = (messages: Message[], hasMore?: boolean): MessagePages => {
+  const pages: MessagePage[] = [];
   for (let index = 0; index < messages.length; index += PAGE_SIZE) {
-    pages.push(messages.slice(index, index + PAGE_SIZE));
+    const isLastPage = index + PAGE_SIZE >= messages.length;
+    pages.push(
+      toMessagePage(messages.slice(index, index + PAGE_SIZE), isLastPage ? hasMore : true)
+    );
   }
   return {
-    pages: pages.length > 0 ? pages : [[]],
+    pages: pages.length > 0 ? pages : [toMessagePage([], false)],
     pageParams: pages.map((_, index) =>
       index === 0 ? undefined : pages[index - 1]?.at(-1)?.created_at
     ),
@@ -70,13 +78,15 @@ export const useMessageBoard = (): UseMessageBoardResult => {
   const messagesQuery = useInfiniteQuery({
     queryKey,
     initialPageParam: undefined as string | undefined,
-    queryFn: ({ pageParam }) =>
-      fetchMessages({
+    queryFn: async ({ pageParam }) => {
+      const page = await fetchMessages({
         ...baseOptions,
         olderThan: pageParam,
-      }),
+      });
+      return toMessagePage(page);
+    },
     getNextPageParam: (lastPage) =>
-      lastPage.length === PAGE_SIZE ? lastPage[lastPage.length - 1]?.created_at : undefined,
+      lastPage.hasMore ? lastPage[lastPage.length - 1]?.created_at : undefined,
   });
   const messages = messagesQuery.data?.pages.flat() ?? EMPTY_MESSAGES;
   const isLoading =
@@ -136,15 +146,18 @@ export const useMessageBoard = (): UseMessageBoardResult => {
         return {
           ...curr,
           pages: curr.pages.map((page) =>
-            page.map((msg) =>
-              msg.id === messageId
-                ? {
-                    ...msg,
-                    content,
-                    updated_at: new Date().toISOString(),
-                    is_edited: true,
-                  }
-                : msg
+            toMessagePage(
+              page.map((msg) =>
+                msg.id === messageId
+                  ? {
+                      ...msg,
+                      content,
+                      updated_at: new Date().toISOString(),
+                      is_edited: true,
+                    }
+                  : msg
+              ),
+              page.hasMore
             )
           ),
         };
@@ -162,7 +175,10 @@ export const useMessageBoard = (): UseMessageBoardResult => {
       // Optimistic UI update
       queryClient.setQueryData<MessagePages>(queryKey, (curr) =>
         curr
-          ? { ...curr, pages: curr.pages.map((page) => page.filter((msg) => msg.id !== messageId)) }
+          ? buildMessagePages(
+              curr.pages.flat().filter((msg) => msg.id !== messageId),
+              curr.pages.at(-1)?.hasMore
+            )
           : curr
       );
     } catch (err) {
@@ -184,7 +200,8 @@ export const useMessageBoard = (): UseMessageBoardResult => {
         queryClient.setQueryData<MessagePages>(queryKey, (curr) => {
           if (!curr) return buildMessagePages([newMessage]);
           const flattened = [newMessage, ...curr.pages.flat()].slice(0, MAX_MESSAGES_IN_STATE);
-          return buildMessagePages(flattened);
+          const hasMore = curr.pages.at(-1)?.hasMore;
+          return buildMessagePages(flattened, hasMore);
         });
       }
     },
@@ -213,7 +230,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
                 (b.created_at ?? '').localeCompare(a.created_at ?? '')
               )
             : flattened;
-        return buildMessagePages(nextMessages);
+        return buildMessagePages(nextMessages, curr.pages.at(-1)?.hasMore);
       });
     },
     [queryKey, filterOptions.category, filterOptions.teamId, filterOptions.searchQuery, queryClient]
@@ -224,10 +241,10 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     (deletedMessage: Message) => {
       queryClient.setQueryData<MessagePages>(queryKey, (curr) =>
         curr
-          ? {
-              ...curr,
-              pages: curr.pages.map((page) => page.filter((msg) => msg.id !== deletedMessage.id)),
-            }
+          ? buildMessagePages(
+              curr.pages.flat().filter((msg) => msg.id !== deletedMessage.id),
+              curr.pages.at(-1)?.hasMore
+            )
           : curr
       );
     },

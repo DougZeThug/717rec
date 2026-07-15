@@ -72,9 +72,18 @@ export const useMessageReactions = (messageId: string) => {
             },
             (payload: { new: unknown; old: { id?: string } }) => {
               const newReaction = payload.new as MessageReaction;
-              queryClient.setQueryData<MessageReaction[]>(queryKey, (curr = []) =>
-                curr.some((r) => r.id === newReaction.id) ? curr : [...curr, newReaction]
-              );
+              queryClient.setQueryData<MessageReaction[]>(queryKey, (curr = []) => {
+                if (curr.some((r) => r.id === newReaction.id)) return curr;
+                const withoutOptimisticDuplicate = curr.filter(
+                  (reaction) =>
+                    !(
+                      reaction.id.startsWith('optimistic-') &&
+                      reaction.user_id === newReaction.user_id &&
+                      reaction.emoji === newReaction.emoji
+                    )
+                );
+                return [...withoutOptimisticDuplicate, newReaction];
+              });
             }
           )
           .on(
