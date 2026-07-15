@@ -26,8 +26,8 @@ structure, routing, data flow, and the service-layer rules.
 Requires Node.js 20+ and npm. Day-to-day development and CI are npm-based —
 `npm ci` installs from `package-lock.json`, and `.npmrc` sets
 `legacy-peer-deps=true`. Do not use pnpm or yarn. Two additional lockfiles are
-tracked on purpose: `bun.lock` (used in some edge cases that run under Bun)
-and `deno.lock` (Supabase edge functions).
+tracked on purpose: `bun.lock` (keeps `bun install` working as an optional,
+faster installer — see `AGENTS.md`) and `deno.lock` (Supabase edge functions).
 
 ```sh
 git clone <repo-url>
