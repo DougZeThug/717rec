@@ -121,17 +121,20 @@ export const useTimeslotMutation = () => {
     slot1: string,
     slot2: string
   ): Promise<TeamTimeslot[] | null> => {
-    // Basic validation
-    if (!teamIds.length) {
+    // Shared validation (past-date, empty teams, empty slot) — keep parity
+    // with batchAssignTimeslots so the UI form behaves the same regardless of
+    // the "Double Header" toggle.
+    const validation = TimeslotValidator.validateBatchAssignment(date, teamIds, slot1);
+    if (!validation.valid) {
       toast({
         title: 'Validation Error',
-        description: 'Please select at least one team',
+        description: validation.error,
         variant: 'destructive',
       });
       return null;
     }
 
-    if (!slot1 || !slot2) {
+    if (!slot2) {
       toast({
         title: 'Validation Error',
         description: 'Please select two timeslots for double header',
