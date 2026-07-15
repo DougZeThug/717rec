@@ -81,7 +81,7 @@ export const useMessageReactions = (messageId: string) => {
   }, [reactionsQuery.error]);
   useEffect(
     function setupMessageReactionSubscription(): (() => void) | undefined {
-      if (!messageId) return;
+      if (!messageId) return undefined;
       /** Resync message reactions after realtime reconnects. */
       const invalidate = () => {
         queryClient.invalidateQueries({ queryKey }).catch((err: unknown) => {
