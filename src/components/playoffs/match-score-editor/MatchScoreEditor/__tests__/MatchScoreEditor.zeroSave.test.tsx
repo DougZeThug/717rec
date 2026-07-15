@@ -29,7 +29,7 @@ const match: PlayoffMatch = {
 
 describe('MatchScoreEditor — 0-0 save guard (regression)', () => {
   it('does not call onSave and surfaces an error when all games are 0-0', () => {
-    const onSave = vi.fn().mockResolvedValue(undefined);
+    const onSave = vi.fn().mockImplementation(() => Promise.resolve());
     const onCancel = vi.fn();
 
     render(<MatchScoreEditor match={match} teams={teams} onSave={onSave} onCancel={onCancel} />);

@@ -64,7 +64,9 @@ describe('usePendingMemberships', () => {
 
   it('approveMembership calls updateMembershipApproval with the right args', async () => {
     (fetchPendingMembershipsForAdmin as ReturnType<typeof vi.fn>).mockResolvedValue([]);
-    (updateMembershipApproval as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+    (updateMembershipApproval as ReturnType<typeof vi.fn>).mockImplementation(() =>
+      Promise.resolve()
+    );
     const { result } = renderHook(() => usePendingMemberships(), {
       wrapper: createWrapper(),
     });

@@ -75,7 +75,7 @@ describe('useAuthMethods', () => {
   });
 
   it('sign-out navigates on success and surfaces failure', async () => {
-    mockSignOutUser.mockResolvedValue(undefined);
+    mockSignOutUser.mockImplementation(() => Promise.resolve());
     const { result, rerender } = renderHook(
       () => useAuthMethods(clearAuthError, ensureThemeConsistency, handleAuthError, navigate),
       { wrapper: createWrapper() }

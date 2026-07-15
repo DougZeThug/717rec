@@ -102,7 +102,7 @@ const renderPage = () => {
 describe('Contact page', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSubmitContactRequest.mockResolvedValue(undefined);
+    mockSubmitContactRequest.mockImplementation(() => Promise.resolve());
   });
 
   it('shows loading state during form submission', async () => {

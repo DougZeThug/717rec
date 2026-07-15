@@ -9,7 +9,7 @@ import { useUncompletedMatches } from '../useUncompletedMatches';
 
 const mockToast = vi.fn();
 const mockHandleSubmitScore = vi.fn();
-const mockFetchTeams = vi.fn().mockResolvedValue(undefined);
+const mockFetchTeams = vi.fn().mockImplementation(() => Promise.resolve());
 const mockInitializeScores = vi.fn();
 
 vi.mock('@/services/matches/MatchReadService', () => ({

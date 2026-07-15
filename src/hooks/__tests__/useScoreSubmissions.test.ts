@@ -84,7 +84,9 @@ describe('useScoreSubmissions', () => {
     (fetchScoreSubmissions as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce(mockSubmissions)
       .mockResolvedValue([mockSubmissions[1]]);
-    (updateScoreSubmissionStatus as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+    (updateScoreSubmissionStatus as ReturnType<typeof vi.fn>).mockImplementation(() =>
+      Promise.resolve()
+    );
     const { result } = renderHook(() => useScoreSubmissions(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
@@ -102,7 +104,9 @@ describe('useScoreSubmissions', () => {
     (fetchScoreSubmissions as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce(mockSubmissions)
       .mockResolvedValue([mockSubmissions[0]]);
-    (updateScoreSubmissionStatus as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+    (updateScoreSubmissionStatus as ReturnType<typeof vi.fn>).mockImplementation(() =>
+      Promise.resolve()
+    );
     const { result } = renderHook(() => useScoreSubmissions(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 

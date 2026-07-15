@@ -67,7 +67,7 @@ const base: TeamManagementState = {
   deleteTeamId: null,
   setDeleteTeamId: vi.fn(),
   isDeleting: false,
-  handleUpdateTeam: vi.fn().mockResolvedValue(undefined),
+  handleUpdateTeam: vi.fn().mockImplementation(() => Promise.resolve()),
   handleDeleteTeam: vi.fn(),
 };
 

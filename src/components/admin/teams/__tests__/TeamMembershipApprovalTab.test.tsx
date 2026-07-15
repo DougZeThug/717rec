@@ -68,7 +68,7 @@ const defaultHookState = {
 describe('TeamMembershipApprovalTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockApproveMembership.mockResolvedValue(undefined);
+    mockApproveMembership.mockImplementation(() => Promise.resolve());
     mockUsePendingMemberships.mockReturnValue({ ...defaultHookState });
   });
 

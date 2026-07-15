@@ -23,7 +23,7 @@ vi.mock('../utils/matchDatabaseUtils', () => ({
 }));
 
 vi.mock('../utils/queryCacheUtils', () => ({
-  invalidateMatchRelatedQueries: vi.fn().mockResolvedValue(undefined),
+  invalidateMatchRelatedQueries: vi.fn().mockImplementation(() => Promise.resolve()),
 }));
 
 vi.mock('../validation/useScoreValidation', () => ({

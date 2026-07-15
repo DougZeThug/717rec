@@ -135,7 +135,7 @@ describe('history editing modules', () => {
       data: seasonData,
       isLoading: false,
       error: null,
-      refetch: vi.fn().mockResolvedValue(undefined),
+      refetch: vi.fn().mockImplementation(() => Promise.resolve()),
       isRefetching: false,
     });
   });

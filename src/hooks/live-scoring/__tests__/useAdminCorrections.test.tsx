@@ -66,7 +66,7 @@ describe('useAdminCorrections', () => {
   });
 
   it('affectsStandings=true also invalidates match-related queries', async () => {
-    mockDeleteRound.mockResolvedValue(undefined);
+    mockDeleteRound.mockImplementation(() => Promise.resolve());
 
     const { result } = renderHook(
       () => useAdminCorrections({ matchId: 'match-1', affectsStandings: true }),
