@@ -23,9 +23,11 @@ structure, routing, data flow, and the service-layer rules.
 
 ## Getting started
 
-Requires Node.js 20+ and npm. This repo is **npm-only** — do not use bun,
-pnpm, or yarn (`.npmrc` sets `legacy-peer-deps=true`, and `package-lock.json`
-is the only Node lockfile; `deno.lock` belongs to the Supabase edge functions).
+Requires Node.js 20+ and npm. Day-to-day development and CI are npm-based —
+`npm ci` installs from `package-lock.json`, and `.npmrc` sets
+`legacy-peer-deps=true`. Do not use pnpm or yarn. Two additional lockfiles are
+tracked on purpose: `bun.lock` (used in some edge cases that run under Bun)
+and `deno.lock` (Supabase edge functions).
 
 ```sh
 git clone <repo-url>
