@@ -13,6 +13,9 @@ import { useMessageRealtime } from './useMessageRealtime';
 
 const PAGE_SIZE = 10;
 const MAX_MESSAGES_IN_STATE = 100;
+// Cap the realtime reconciliation buffers so a long-lived board with an
+// unchanged filter can't accumulate every insert/delete indefinitely.
+const REALTIME_BUFFER_MAX = MAX_MESSAGES_IN_STATE;
 const MESSAGE_FILTER_KEY = 'messageBoardFilters';
 const EMPTY_MESSAGES: Message[] = [];
 type MessagePage = Message[] & { hasMore?: boolean };
@@ -114,12 +117,29 @@ export const useMessageBoard = (): UseMessageBoardResult => {
         }
         if (!pageParam || byId.has(id)) byId.set(id, message);
       });
-      return toMessagePage(
-        Array.from(byId.values()).sort((a, b) =>
-          (b.created_at ?? '').localeCompare(a.created_at ?? '')
-        ),
-        hasMore
+      const merged = Array.from(byId.values()).sort((a, b) =>
+        (b.created_at ?? '').localeCompare(a.created_at ?? '')
       );
+      // Prune reconciled entries: anything now present in the server page, or
+      // older than the oldest message returned, no longer needs to be held in
+      // the realtime buffer to survive the round-trip.
+      const serverIds = new Set(page.map((m) => m.id));
+      const oldestReturned = page.at(-1)?.created_at ?? null;
+      realtimeMessagesRef.current.forEach((message, id) => {
+        if (serverIds.has(id)) {
+          realtimeMessagesRef.current.delete(id);
+          return;
+        }
+        if (oldestReturned && (message.created_at ?? '') < oldestReturned) {
+          realtimeMessagesRef.current.delete(id);
+        }
+      });
+      realtimeDeletesRef.current.forEach((id) => {
+        if (serverIds.has(id)) return; // server row still exists somehow; keep tombstone
+        // Once the server no longer returns the id, the tombstone has done its job.
+        if (!page.some((m) => m.id === id)) realtimeDeletesRef.current.delete(id);
+      });
+      return toMessagePage(merged, hasMore);
     },
     getNextPageParam: (lastPage) =>
       lastPage.hasMore ? lastPage[lastPage.length - 1]?.created_at : undefined,
@@ -128,7 +148,13 @@ export const useMessageBoard = (): UseMessageBoardResult => {
   const isLoading =
     messagesQuery.isLoading || (messagesQuery.isFetching && !messagesQuery.isFetchingNextPage);
   const loadingMore = messagesQuery.isFetchingNextPage;
-  const error = messagesQuery.error ? 'Failed to load messages' : null;
+  // Only surface a full error state on initial-load failures. Pagination or
+  // refetch failures keep the cached feed visible and rely on the toast at
+  // loadMoreMessages() below.
+  const error =
+    messagesQuery.error && (messagesQuery.data?.pages.flat().length ?? 0) === 0
+      ? 'Failed to load messages'
+      : null;
   const hasMore = Boolean(messagesQuery.hasNextPage);
 
   // Set filter function - shows loading immediately for UX feedback
