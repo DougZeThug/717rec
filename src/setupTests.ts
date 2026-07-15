@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 
 import { cleanup, configure } from '@testing-library/react';
-import { afterEach, expect } from 'vitest';
+import { afterEach, expect, vi } from 'vitest';
 import { toHaveNoViolations } from 'vitest-axe/dist/matchers';
 
 expect.extend({ toHaveNoViolations });
