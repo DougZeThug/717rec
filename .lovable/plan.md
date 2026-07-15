@@ -1,66 +1,74 @@
-# PR-13 verification follow-up
+# League Night Status admin tab
 
-## What I already verified (read-only)
+## Scope
+New admin tab, `league-night-status`, showing at-a-glance operational health for a league-night incident commander. Read-only surface — actions are links, not new mutations.
 
-- **Reconciliation query (§3b):** 0 drift rows on production data. Clean.
-- **Cron job present:** `weekly-power-score-snapshot`, schedule `0 4 * * 5` (Thursday ~11pm–midnight ET). Matches the "Thursday night" cadence.
-- **Secrets present:** `CRON_WEBHOOK_SECRET`, `RESEND_API_KEY`, `OPENAI_API_KEY`, `LOVABLE_API_KEY`.
+## Files
 
-## Problems found
+### New — `src/services/opsHealth/OpsHealthService.ts`
+Thin service (follows the standard `handleDatabaseError` / explicit columns pattern):
+- `fetchLastPowerSnapshot(): Promise<{ created_at: string; week_number: number; season_id: string; row_count: number } | null>` — reads the most recent row from `power_score_snapshots` (order by `created_at desc limit 1`) plus a `count(*)` grouped by that snapshot's `created_at` (so we can show "27 teams captured").
+- `fetchPendingCounts(): Promise<{ pendingMatches: number; pendingRequests: number; pendingScoreSubmissions: number; unreadContact: number }>` — head-count queries against `matches` (unapproved), `team_requests` (pending), `score_submissions` (pending), `contact_requests` (new). Each is a `select('id', { count: 'exact', head: true })`.
 
-1. The scheduled cron sends `Authorization: Bearer <anon JWT>`, but `capture-power-snapshots/index.ts` requires `Authorization: Bearer ${CRON_WEBHOOK_SECRET}`. The function is almost certainly returning `401 Unauthorized` every Thursday — no recent invocation logs exist. Power-score snapshots have not been captured on schedule.
-2. `docs/OPERATIONS.md` §1d incorrectly documents the header as `x-cron-secret`. The actual contract is `Authorization: Bearer <secret>`.
-3. §1a asked us to choose a recommended value for email confirmations. You picked **OFF**.
+### New — `src/hooks/useOpsHealth.ts`
+- `useLastPowerSnapshot()` — TanStack Query, staleTime 60s, refetchInterval 60s.
+- `usePendingOpsCounts()` — TanStack Query, staleTime 30s, refetchInterval 30s.
+- `useRealtimeHealth()` — subscribes to a lightweight heartbeat channel inside `useEffect`, returns `{ state: 'connecting' | 'connected' | 'error' | 'closed', lastChangeAt: Date | null }`. Cleans up with `supabase.removeChannel` per the project realtime rule.
 
-## What I'll do
+### New — `src/components/admin/league-night-status/LeagueNightStatusTab.tsx`
+Single tab component composed of three cards + a quick-actions row:
 
-### 1. Fix the cron job (one migration)
+1. **Realtime health card** — colored dot (green/yellow/red) driven by `useRealtimeHealth`, label + "last state change" timestamp, one-line hint ("Refresh a scorer's browser if red").
+2. **Last power-snapshot card** — from `useLastPowerSnapshot`: relative time ("Ran 2 days ago"), absolute EST timestamp (project timezone rule), week + row count, and a warning badge when `created_at` is older than 8 days.
+3. **Pending queue card** — four small stat tiles from `usePendingOpsCounts` (Matches / Requests / Score reports / Contact). Each tile is a button that switches `activeTab` to the relevant existing admin tab via `sessionStorage.setItem('adminActiveTab', …)` + a page reload — matching how `AdminSidebar` already reads its initial tab from sessionStorage. (Simpler than plumbing a global setter; matches existing pattern.)
+4. **Quick actions strip** — external links (open in new tab) to:
+   - Supabase status page (`https://status.supabase.com`)
+   - Lovable status (`https://status.lovable.dev`)
+   - Supabase SQL editor (deep link with the reconciliation query URL-encoded)
+   - `docs/OPERATIONS.md` League-night playbook on GitHub (URL config lives in a small `OPS_LINKS` constant at the top of the file for easy editing)
+   - Internal links: Live Corrections tab, Mass Score Entry tab (same sessionStorage-switch trick)
 
-Rewrite the scheduled command so it sends the correct auth header. The migration:
+### Modified — `src/components/admin/dashboard/AdminSidebar.tsx` and `AdminMobileNav.tsx`
+- Add `LeagueNightStatusTab` lazy import.
+- New menu entry `{ id: 'league-night-status', label: 'League Night', icon: Activity }` inserted at the **top** of `adminMenuItems`.
+- In mobile nav, add the id to a new group (or reuse `corrections`) — I'll add it as the first entry in a new `Operations` group so it's discoverable during an incident. Also add a Quick Access button that swaps `Timeslots` for `League Night` when there is any red signal (realtime error OR stale snapshot OR pending>0) — implemented purely inside `AdminMobileNav` by accepting an optional `hasIncidentSignal` prop from the sidebar, which reads the same hooks. If wiring that cleanly gets messy, fall back to always showing the Quick Access button — the tab is discoverable either way.
 
-- Calls `cron.unschedule('weekly-power-score-snapshot')`.
-- Re-registers it with the same name, same schedule (`0 4 * * 5`), same URL, but header set to `Authorization: Bearer <CRON_WEBHOOK_SECRET>` read from Supabase Vault at execution time (so the secret does not appear in the migration file).
-- After it runs, I'll verify by:
-  - Reading `cron.job` back to confirm the new command.
-  - Manually invoking the edge function once via `curl_edge_functions` with the correct header to confirm 200 + a fresh row in the snapshots table.
+No other admin files change.
 
-If Vault lookup for `CRON_WEBHOOK_SECRET` isn't set up, fallback plan: I'll ask you to paste the secret value once so I can insert it into a `cron.job` command that only lives in `pg_cron` metadata (never checked into the repo). We won't put the raw secret in a migration file.
+## Tests
 
-### 2. Fix `docs/OPERATIONS.md`
+### `src/services/opsHealth/__tests__/OpsHealthService.test.ts`
+- Mocks `@/integrations/supabase/client` via the shared `supabaseMock` factory.
+- Covers: last snapshot returns row + count; last snapshot returns null when table is empty; each pending count returns `count ?? 0` when the RPC returns null; error paths throw via `handleDatabaseError`.
 
-- §1d: change header reference from `x-cron-secret` to `Authorization: Bearer <CRON_WEBHOOK_SECRET>`. Update the sample `curl` accordingly.
-- §1a: set the recommended value for "Email confirmations on signup" to **OFF** with a one-line rationale ("internal-league app, deliverability isn't a security assumption").
-- Add a short "Verified 2026-07-15" note under §3b Reconciliation ("0 drift rows on prod") and §1c Cron ("job present; auth header corrected in migration <timestamp>").
-- Leave the Auth (email confirmations state, leaked-password protection, MFA/TOTP, redirect URL allowlist) and Backups (schedule, retention, PITR) rows blank with a `Last verified: __` placeholder — those are yours to fill after the dashboard walk-through.
+### `src/hooks/__tests__/useOpsHealth.test.tsx`
+- Renders each hook inside a `QueryClientProvider`, asserts data flows through and that stale/refetch intervals are set (spies on `queryOptions`).
+- Realtime hook: mock `supabase.channel(...).on(...).subscribe((status) => …)`, drive the callback through `connecting → connected → error`, assert returned state transitions and that `removeChannel` is called on unmount.
 
-### 3. Prep for your dashboard walk-through
+### `src/components/admin/league-night-status/__tests__/LeagueNightStatusTab.test.tsx`
+- Renders the tab with mocked hooks. Cases:
+  - Happy path: green realtime dot, snapshot card shows "Ran … ago" and no stale badge, pending tiles render zeros.
+  - Stale snapshot: `created_at` = 10 days ago → renders "Stale" badge.
+  - Incident path: realtime returns `error` → red dot + hint text present.
+  - Clicking the "Score reports" tile writes `pending-matches` … actually `pending-matches` for pending matches, `requests` for team requests, etc. — assert `sessionStorage.setItem('adminActiveTab', <expected>)` + `window.location.reload` was called (mocked).
+  - Quick-action links have `target="_blank"` and `rel="noopener noreferrer"`.
 
-Give you a compact "click here → look for this → paste back to me" list for the five items I can't check from the sandbox:
+### `src/pages/__tests__/AdminDashboard.test.tsx` (if it exercises the menu)
+- Extend existing menu-item snapshot / count expectation, if any, to include the new tab. If the current test only checks that admin loads, no change needed — I'll re-read and adjust minimally.
 
-```
-Auth → Sign In / Up → Email confirmations         (expect: OFF)
-Auth → Attack Protection → Leaked password        (expect: ON)
-Auth → Multi-Factor Authentication → TOTP         (expect: Enabled)
-Auth → URL Configuration                          (expect: prod + staging URLs listed)
-Database → Backups                                (record: schedule, retention days, PITR on/off)
-```
+## Verification
 
-When you paste back what you see, I'll fill the dates into OPERATIONS.md in one edit.
-
-## Order of operations
-
-1. Migration to reschedule the cron with the correct header.
-2. Manual curl test of the edge function; confirm a snapshot row was written.
-3. Edit `docs/OPERATIONS.md` (header fix, §1a value, verified notes, blank Auth/Backups rows).
-4. Hand you the dashboard checklist.
+1. `npm run test:file -- src/services/opsHealth/__tests__/OpsHealthService.test.ts`
+2. `npm run test:file -- src/hooks/__tests__/useOpsHealth.test.tsx`
+3. `npm run test:file -- src/components/admin/league-night-status/__tests__/LeagueNightStatusTab.test.tsx`
+4. `npx eslint . --fix`
+5. Confirm the tab renders in the running preview (browse to `/admin`, click **League Night**) — screenshot via Playwright, redacting no secrets since it's a read-only dashboard.
 
 ## Non-goals
-
-- No changes to `capture-power-snapshots/index.ts` itself — its auth check is already correct.
-- No changes to any other cron job, edge function, RLS, or app code.
-- No secret values written into migration files or the repo.
+- No new DB tables, migrations, RLS, or edge functions.
+- No changes to the cron job, `capture-power-snapshots`, or `OPERATIONS.md` beyond what was already done.
+- No changes to authentication or admin gating — the tab lives inside the existing `AdminSidebar`, which is already behind `useAdminAccess`.
+- No new mutations. Every "action" is either an internal tab switch or an external link.
 
 ## Rollback
-
-- Cron: `cron.unschedule('weekly-power-score-snapshot')` then re-run the original scheduled command from this conversation's logs.
-- Docs: revert `docs/OPERATIONS.md`.
+Delete the three new files and revert the two nav files.
