@@ -19,11 +19,12 @@ const DEFAULT_DIVISION_WEIGHT = 0.85;
  * Safe to call multiple times - returns cached data after first fetch
  * Throws DatabaseError on failure so callers can handle it properly
  */
-export const fetchDivisionWeights = async (): Promise<DivisionWeightsMap> => {
+export const fetchDivisionWeights = (): Promise<DivisionWeightsMap> => {
   // Return cached data if available
   if (cachedWeights) {
     cacheLog('Division weights cache hit');
-    return cachedWeights;
+    // Preserve the public Promise-returning API for immediate cache hits.
+    return Promise.resolve(cachedWeights);
   }
 
   // If fetch is in progress, wait for it

@@ -43,10 +43,12 @@ function makeService(opts: {
   finalStandings?: () => Promise<unknown>;
 }) {
   const storage = {
-    select: vi.fn().mockImplementation(async (table: string) => {
-      if (table === 'stage') return opts.stages ?? [{ id: 10, number: 1 }];
-      if (table === 'participant') return opts.participants ?? [{ id: 101, team_id: 'team-a' }];
-      return [];
+    select: vi.fn().mockImplementation((table: string) => {
+      if (table === 'stage') return Promise.resolve(opts.stages ?? [{ id: 10, number: 1 }]);
+      if (table === 'participant') {
+        return Promise.resolve(opts.participants ?? [{ id: 101, team_id: 'team-a' }]);
+      }
+      return Promise.resolve([]);
     }),
   };
   const manager = {
