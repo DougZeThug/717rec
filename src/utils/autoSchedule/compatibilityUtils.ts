@@ -89,7 +89,7 @@ export function calculateTeamCompatibility(team1: Team, team2: Team): number {
 /**
  * Check if two teams have played each other before
  */
-export async function haveTeamsPlayed(team1Id: string, team2Id: string): Promise<boolean> {
+export function haveTeamsPlayed(team1Id: string, team2Id: string): Promise<boolean> {
   return getCachedMatchHistory(team1Id, team2Id, checkTeamsPlayedHistory);
 }
 

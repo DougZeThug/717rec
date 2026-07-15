@@ -52,14 +52,16 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
       bracketMatchesByType: null,
       teams: [],
       teamsLoading: false,
-      refetch: async () => {
+      refetch: () => {
         warnLog('Cannot refetch with invalid bracketId');
+        // Preserve the PlayoffViewModel async contract without an unnecessary async wrapper.
+        return Promise.resolve();
       },
-      deleteBracket: async () => {
-        throw new ValidationError('Cannot delete bracket: invalid bracketId');
+      deleteBracket: () => {
+        return Promise.reject(new ValidationError('Cannot delete bracket: invalid bracketId'));
       },
-      updateMatchResult: async () => {
-        throw new ValidationError('Cannot update match: invalid bracketId');
+      updateMatchResult: () => {
+        return Promise.reject(new ValidationError('Cannot update match: invalid bracketId'));
       },
     };
   }

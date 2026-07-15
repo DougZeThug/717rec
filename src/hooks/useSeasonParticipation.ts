@@ -17,7 +17,7 @@ export const useConfirmationSeason = () => {
 export const useTeamParticipation = (seasonId: string | undefined, teamId: string | undefined) => {
   return useQuery({
     queryKey: ['season-participation', seasonId, teamId],
-    queryFn: async () => {
+    queryFn: () => {
       if (!seasonId || !teamId) return null;
       return SeasonService.fetchTeamParticipation(seasonId, teamId);
     },
@@ -29,7 +29,7 @@ export const useTeamParticipation = (seasonId: string | undefined, teamId: strin
 export const useSeasonParticipations = (seasonId: string | undefined) => {
   return useQuery({
     queryKey: ['season-participations', seasonId],
-    queryFn: async () => {
+    queryFn: () => {
       if (!seasonId) return [];
       return SeasonService.fetchSeasonParticipations(seasonId);
     },
