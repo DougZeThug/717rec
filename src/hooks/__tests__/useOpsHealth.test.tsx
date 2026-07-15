@@ -33,17 +33,16 @@ vi.mock('@/integrations/supabase/client', () => {
 import * as SupabaseClientModule from '@/integrations/supabase/client';
 const { subscribeCallbacks, removeChannel } = (
   SupabaseClientModule as unknown as {
-    __rtHelpers: { subscribeCallbacks: Array<(status: string) => void>; removeChannel: ReturnType<typeof vi.fn> };
+    __rtHelpers: {
+      subscribeCallbacks: Array<(status: string) => void>;
+      removeChannel: ReturnType<typeof vi.fn>;
+    };
   }
 ).__rtHelpers;
 
 import { OpsHealthService } from '@/services/opsHealth/OpsHealthService';
 
-import {
-  useLastPowerSnapshot,
-  usePendingOpsCounts,
-  useRealtimeHealth,
-} from '../useOpsHealth';
+import { useLastPowerSnapshot, usePendingOpsCounts, useRealtimeHealth } from '../useOpsHealth';
 
 let queryClient: QueryClient;
 const wrapper = ({ children }: { children: React.ReactNode }) => (

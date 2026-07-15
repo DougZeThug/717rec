@@ -16,10 +16,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
+  type RealtimeConnectionState,
   useLastPowerSnapshot,
   usePendingOpsCounts,
   useRealtimeHealth,
-  type RealtimeConnectionState,
 } from '@/hooks/useOpsHealth';
 import { cn } from '@/lib/utils';
 
@@ -139,8 +139,8 @@ const LeagueNightStatusTab: React.FC = () => {
       <header>
         <h2 className="text-xl font-semibold">League Night Status</h2>
         <p className="text-sm text-muted-foreground">
-          At-a-glance health for the incident commander. Everything here is read-only — actions
-          open the relevant admin section or an external status page.
+          At-a-glance health for the incident commander. Everything here is read-only — actions open
+          the relevant admin section or an external status page.
         </p>
       </header>
 
@@ -183,9 +183,7 @@ const LeagueNightStatusTab: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {snapshotQuery.isLoading && (
-              <p className="text-sm text-muted-foreground">Loading…</p>
-            )}
+            {snapshotQuery.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
             {isSnapshotMissing && (
               <div className="flex items-center gap-2 text-sm text-red-500">
                 <AlertTriangle className="size-4" aria-hidden="true" />
@@ -206,7 +204,9 @@ const LeagueNightStatusTab: React.FC = () => {
                   Week {snapshot.week_number} · {snapshot.row_count} team
                   {snapshot.row_count === 1 ? '' : 's'} captured
                 </p>
-                <p className="text-xs text-muted-foreground">{formatEst(snapshot.created_at)} EST</p>
+                <p className="text-xs text-muted-foreground">
+                  {formatEst(snapshot.created_at)} EST
+                </p>
                 {isSnapshotStale && (
                   <p className="text-xs text-red-500">
                     Older than {SNAPSHOT_STALE_DAYS} days — verify pg_cron and CRON_WEBHOOK_SECRET.
