@@ -74,7 +74,7 @@ export class TimeslotBatchService {
    * Legacy method — redirects to back-to-back batch assignment.
    * @deprecated Use batchAssignBackToBackTimeslots instead
    */
-  static async batchAssignTimeslots(
+  static batchAssignTimeslots(
     date: Date,
     teamIds: string[],
     timeslot: string

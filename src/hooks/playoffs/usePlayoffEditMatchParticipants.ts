@@ -22,11 +22,7 @@ export const usePlayoffEditMatchParticipants = (bracketId: string | null) => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({
-      matchId,
-      opponent1TeamId,
-      opponent2TeamId,
-    }: EditMatchParticipantsVariables) => {
+    mutationFn: ({ matchId, opponent1TeamId, opponent2TeamId }: EditMatchParticipantsVariables) => {
       bracketLog('usePlayoffEditMatchParticipants - calling service', {
         matchId,
         opponent1TeamId,

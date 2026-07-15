@@ -21,7 +21,7 @@ export const useAuthProfile = (user: User | null, navigate: NavigateFunction) =>
   }, [user]);
 
   // Fetch user profile from database
-  const fetchProfile = useCallback(async (userId: string): Promise<UserProfile | null> => {
+  const fetchProfile = useCallback((userId: string): Promise<UserProfile | null> => {
     return fetchAuthProfile(userId);
   }, []);
 

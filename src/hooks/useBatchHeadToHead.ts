@@ -50,7 +50,7 @@ export const useBatchHeadToHead = (
 
   const { data, isLoading } = useQuery({
     queryKey: ['batch-head-to-head', validPairs.map((p) => `${p.team1Id}-${p.team2Id}`).join(',')],
-    queryFn: async () => {
+    queryFn: () => {
       if (validPairs.length === 0) {
         return new Map<string, HeadToHeadData>();
       }

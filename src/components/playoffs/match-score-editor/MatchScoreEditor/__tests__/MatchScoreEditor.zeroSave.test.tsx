@@ -28,7 +28,7 @@ const match: PlayoffMatch = {
 } as unknown as PlayoffMatch;
 
 describe('MatchScoreEditor — 0-0 save guard (regression)', () => {
-  it('does not call onSave and surfaces an error when all games are 0-0', async () => {
+  it('does not call onSave and surfaces an error when all games are 0-0', () => {
     const onSave = vi.fn().mockResolvedValue(undefined);
     const onCancel = vi.fn();
 
