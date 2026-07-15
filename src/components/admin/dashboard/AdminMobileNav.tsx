@@ -42,7 +42,6 @@ interface TabGroup {
 }
 
 const adminMenuItems: AdminMenuItem[] = [
-  { id: 'league-night-status', label: 'League Night', icon: Activity },
   { id: 'timeslots', label: 'Timeslots', icon: Timer },
   { id: 'batch-matches', label: 'Match Creation', icon: Sparkles },
   { id: 'auto-schedule', label: 'Auto Schedule', icon: CalendarClock },
@@ -60,15 +59,10 @@ const adminMenuItems: AdminMenuItem[] = [
   { id: 'themes', label: 'Themes', icon: Palette },
   { id: 'blind-draw', label: 'Blind Draw', icon: Shuffle },
   { id: 'help', label: 'Help', icon: HelpCircle },
+  { id: 'league-night-status', label: 'League Night', icon: Activity },
 ];
 
 const tabGroups: TabGroup[] = [
-  {
-    id: 'operations',
-    label: 'Operations',
-    icon: Activity,
-    tabs: ['league-night-status'],
-  },
   {
     id: 'scheduling',
     label: 'Scheduling',
@@ -98,6 +92,12 @@ const tabGroups: TabGroup[] = [
     label: 'Settings & Content',
     icon: LayoutGrid,
     tabs: ['seasons', 'hero-cards', 'themes', 'blind-draw', 'help'],
+  },
+  {
+    id: 'operations',
+    label: 'Operations',
+    icon: Activity,
+    tabs: ['league-night-status'],
   },
 ];
 
