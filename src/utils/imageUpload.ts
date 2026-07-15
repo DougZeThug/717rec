@@ -13,11 +13,17 @@ const FILE_SIGNATURES = {
   webp: [0x52, 0x49, 0x46, 0x46], // RIFF....WEBP checked separately
 } as const;
 
+/**
+ * Check whether a file name uses one of the supported image extensions.
+ */
 const hasAllowedExtension = (fileName: string): boolean => {
   const fileExtension = fileName.split('.').pop()?.toLowerCase() ?? '';
   return ALLOWED_IMAGE_EXTENSIONS.has(fileExtension);
 };
 
+/**
+ * Check whether the leading bytes match a supported image file signature.
+ */
 const matchesFileSignature = (bytes: Uint8Array): boolean => {
   const isJpeg = FILE_SIGNATURES.jpeg.every((byte, index) => bytes[index] === byte);
   if (isJpeg) return true;
@@ -100,7 +106,7 @@ export const uploadHeroCardImage = async (file: File): Promise<string> => {
  * @param file The file to verify
  * @returns Promise<boolean> True if valid, false otherwise
  */
-const isValidCompressedImage = async (file: File): Promise<boolean> => {
+const isValidCompressedImage = (file: File): Promise<boolean> => {
   // For WebP, small size is a feature - skip size check for WebP files
   if (file.type !== 'image/webp') {
     // Check file size (minimum 3KB for non-WebP)
@@ -108,14 +114,14 @@ const isValidCompressedImage = async (file: File): Promise<boolean> => {
     const fileSizeKB = file.size / 1024;
     if (fileSizeKB < minSizeKB) {
       warnLog(`Compressed image too small (${fileSizeKB.toFixed(2)}KB < ${minSizeKB}KB)`);
-      return false;
+      return Promise.resolve(false);
     }
   }
 
   // Verify MIME type
   if (!file.type.startsWith('image/')) {
     warnLog(`Invalid MIME type: ${file.type}`);
-    return false;
+    return Promise.resolve(false);
   }
 
   // Verify image dimensions
@@ -143,7 +149,7 @@ const isValidCompressedImage = async (file: File): Promise<boolean> => {
     });
   } catch (error) {
     warnLog('Error validating image:', error);
-    return false;
+    return Promise.resolve(false);
   }
 };
 

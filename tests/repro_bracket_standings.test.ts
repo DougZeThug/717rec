@@ -36,21 +36,21 @@ vi.mock('../src/utils/logger', () => ({
 describe('BracketStandingsService', () => {
   it('should use the LAST stage for final standings, not the first one', async () => {
     const mockStorage: StandingsStorage = {
-      select: vi.fn().mockImplementation(async (table: string) => {
+      select: vi.fn().mockImplementation((table: string) => {
         if (table === 'stage') {
           // Simulate a tournament with a Group Stage and a Playoff Stage
-          return [
+          return Promise.resolve([
             { id: 1, name: 'Group Stage', number: 1 },
             { id: 2, name: 'Playoff Stage', number: 2 },
-          ];
+          ]);
         }
         if (table === 'participant') {
-          return [
+          return Promise.resolve([
             { id: 101, team_id: 'team-a', name: 'Team A' },
             { id: 102, team_id: 'team-b', name: 'Team B' },
-          ];
+          ]);
         }
-        return [];
+        return Promise.resolve([]);
       }),
     };
 

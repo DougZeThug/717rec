@@ -9,6 +9,7 @@ interface DragOverlayItemProps {
   logoUrl?: string | null;
 }
 
+/** Floating card shown under the cursor while dragging a seeded team in the bracket editor. */
 export const DragOverlayItem: React.FC<DragOverlayItemProps> = ({ name, seed, logoUrl }) => {
   return (
     <div
@@ -55,5 +56,3 @@ export const DragOverlayItem: React.FC<DragOverlayItemProps> = ({ name, seed, lo
     </div>
   );
 };
-
-export default DragOverlayItem;

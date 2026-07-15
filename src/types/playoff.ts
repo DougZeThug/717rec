@@ -19,13 +19,3 @@ export interface BracketViewData {
   matches?: unknown[];
   teams?: PlayoffTeam[];
 }
-
-// Type guard for checking if displayBracket has matches property
-export function hasMatches(bracket: unknown): bracket is { matches: unknown[] } {
-  return typeof bracket === 'object' && bracket !== null && 'matches' in bracket;
-}
-
-// Type guard for checking if displayBracket has teams property
-export function hasTeams(bracket: unknown): bracket is { teams: PlayoffTeam[] } {
-  return typeof bracket === 'object' && bracket !== null && 'teams' in bracket;
-}

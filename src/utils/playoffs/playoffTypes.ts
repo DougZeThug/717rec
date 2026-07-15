@@ -68,35 +68,14 @@ export interface PlayoffTeam {
   players?: string[];
 }
 
-export type PlayoffMatchType = 'winners' | 'losers' | 'finals' | 'play-in' | 'play-in-2';
+type PlayoffMatchType = 'winners' | 'losers' | 'finals' | 'play-in' | 'play-in-2';
 export type BracketState = 'pending' | 'in_progress' | 'completed';
 export type BracketFormat = 'Single Elimination' | 'Double Elimination';
-
-export interface DatabaseBracketState {
-  isWinnersBracketComplete: boolean;
-  isLosersBracketComplete: boolean;
-  isResetMatchNeeded: boolean;
-  isComplete: boolean;
-  winnersBracketChampionId: string | null;
-  losersBracketChampionId: string | null;
-  championId: string | null;
-}
-
-export interface MatchResult {
-  matchId: string;
-  winnerId: string;
-  loserId: string;
-  team1Score: number;
-  team2Score: number;
-  team1GameWins?: number;
-  team2GameWins?: number;
-  games?: PlayoffGame[];
-}
 
 /**
  * Match display data used in bracket visualization
  */
-export interface BracketMatchDisplay {
+interface BracketMatchDisplay {
   id: string;
   round: number;
   position: number;
@@ -117,7 +96,7 @@ export interface BracketMatchDisplay {
   nextLoseMatchId?: string | null;
 }
 
-export type BracketMatchesByType = {
+type BracketMatchesByType = {
   winners: BracketMatchDisplay[][];
   losers: BracketMatchDisplay[][];
   finals: BracketMatchDisplay[];

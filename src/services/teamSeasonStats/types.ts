@@ -2,7 +2,7 @@ export interface DivisionRelation {
   division_weight?: number;
 }
 
-export interface SeasonRelation {
+interface SeasonRelation {
   id: string;
   name: string;
   start_date: string;

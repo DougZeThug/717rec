@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useToast } from '@/hooks/useToast';
-import { ParticipationStatus, SeasonParticipation, SeasonService } from '@/services/SeasonService';
+import { ParticipationStatus, SeasonService } from '@/services/SeasonService';
 
-export type { ParticipationStatus, SeasonParticipation };
+export type { ParticipationStatus };
 
 // Get the confirmation season (active season with confirmation_open = true)
 export const useConfirmationSeason = () => {
@@ -17,7 +17,7 @@ export const useConfirmationSeason = () => {
 export const useTeamParticipation = (seasonId: string | undefined, teamId: string | undefined) => {
   return useQuery({
     queryKey: ['season-participation', seasonId, teamId],
-    queryFn: async () => {
+    queryFn: () => {
       if (!seasonId || !teamId) return null;
       return SeasonService.fetchTeamParticipation(seasonId, teamId);
     },
@@ -29,7 +29,7 @@ export const useTeamParticipation = (seasonId: string | undefined, teamId: strin
 export const useSeasonParticipations = (seasonId: string | undefined) => {
   return useQuery({
     queryKey: ['season-participations', seasonId],
-    queryFn: async () => {
+    queryFn: () => {
       if (!seasonId) return [];
       return SeasonService.fetchSeasonParticipations(seasonId);
     },

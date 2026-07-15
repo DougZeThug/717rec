@@ -75,6 +75,9 @@ export class SupabaseSqlStorage implements CrudInterface {
     round: 'id, group_id, name, number, stage_id',
   };
 
+  /**
+   * Select bracket-manager rows from Supabase and transform match rows into bracket-manager format.
+   */
   private async internalSelect<T extends keyof DataTypes>(
     table: T,
     filter?: Partial<DataTypes[T]> | Id
@@ -126,7 +129,7 @@ export class SupabaseSqlStorage implements CrudInterface {
     return data;
   }
 
-  async select<T extends keyof DataTypes>(
+  select<T extends keyof DataTypes>(
     table: T,
     filter?: Partial<DataTypes[T]> | Id
   ): Promise<DataTypes[T][] | DataTypes[T] | null> {
@@ -134,13 +137,22 @@ export class SupabaseSqlStorage implements CrudInterface {
     return this.internalSelect(table, filter);
   }
 
-  // Insert overloads - single returns number (ID), array returns boolean
+  /**
+   * Insert a single bracket-manager row and return the inserted row ID.
+   */
   async insert<T extends keyof DataTypes>(table: T, value: OmitId<DataTypes[T]>): Promise<number>;
+
+  /**
+   * Insert multiple bracket-manager rows and return whether the operation succeeded.
+   */
   async insert<T extends keyof DataTypes>(
     table: T,
     values: OmitId<DataTypes[T]>[]
   ): Promise<boolean>;
 
+  /**
+   * Insert one or more bracket-manager rows after transforming them for the Supabase schema.
+   */
   async insert<T extends keyof DataTypes>(
     table: T,
     values: OmitId<DataTypes[T]> | OmitId<DataTypes[T]>[]
@@ -177,14 +189,23 @@ export class SupabaseSqlStorage implements CrudInterface {
     }
   }
 
-  // Update overloads
+  /**
+   * Update a bracket-manager row by ID.
+   */
   async update<T extends keyof DataTypes>(table: T, id: Id, value: DataTypes[T]): Promise<boolean>;
+
+  /**
+   * Update bracket-manager rows matching a partial filter.
+   */
   async update<T extends keyof DataTypes>(
     table: T,
     filter: Partial<DataTypes[T]>,
     value: Partial<DataTypes[T]>
   ): Promise<boolean>;
 
+  /**
+   * Update bracket-manager rows after transforming values for the Supabase schema.
+   */
   async update<T extends keyof DataTypes>(
     table: T,
     filter: Partial<DataTypes[T]> | Id,
@@ -244,13 +265,22 @@ export class SupabaseSqlStorage implements CrudInterface {
     return true;
   }
 
-  // Delete overloads
+  /**
+   * Delete all rows from a bracket-manager table.
+   */
   async delete<T extends keyof DataTypes>(table: T): Promise<boolean>;
+
+  /**
+   * Delete bracket-manager rows matching a partial filter.
+   */
   async delete<T extends keyof DataTypes>(
     table: T,
     filter: Partial<DataTypes[T]>
   ): Promise<boolean>;
 
+  /**
+   * Delete bracket-manager rows from Supabase, optionally constrained by a filter.
+   */
   async delete<T extends keyof DataTypes>(
     table: T,
     filter?: Partial<DataTypes[T]>

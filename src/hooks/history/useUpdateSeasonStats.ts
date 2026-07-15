@@ -5,20 +5,19 @@ import { toast } from '@/hooks/useToast';
 import { batchUpdateSeasonStats, type TeamUpdate } from '@/services/TeamStatsService';
 import { dbLog, errorLog } from '@/utils/logger';
 
-// Re-export the type for existing consumers
-export type { TeamUpdate };
-
 interface UseUpdateSeasonStatsReturn {
   updateStats: (updates: TeamUpdate[]) => Promise<boolean>;
   isUpdating: boolean;
   error: Error | null;
 }
 
+/** Hook for batch-saving team season stat edits, with loading/error state and cache refresh. */
 export const useUpdateSeasonStats = (): UseUpdateSeasonStatsReturn => {
   const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  /** Save the updates and refresh affected season caches; toasts and returns false on error. */
   const updateStats = async (updates: TeamUpdate[]): Promise<boolean> => {
     if (updates.length === 0) {
       return true;

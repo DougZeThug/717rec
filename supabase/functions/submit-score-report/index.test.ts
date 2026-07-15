@@ -36,7 +36,8 @@ const validPayload = {
 };
 
 function allowAll() {
-  setRateLimiter(async () => ({ allowed: true, error: null }));
+  // setRateLimiter expects a Promise-returning callback; this test value is immediate.
+  setRateLimiter(() => Promise.resolve({ allowed: true, error: null }));
 }
 function resetLimiter() {
   setRateLimiter(null);

@@ -1,68 +1,5 @@
-import { format } from 'date-fns';
-
-import { Match, Team } from '@/types';
+import { Team } from '@/types';
 import { TeamPair, TimeBlockTeamsMap } from '@/types/autoSchedule';
-import { TeamTimeslot } from '@/types/timeslots';
-
-/**
- * Create a mock date string in ISO format
- */
-export function createMockDateString(date: Date = new Date()): string {
-  return format(date, 'yyyy-MM-dd');
-}
-
-/**
- * Create a mock team timeslot
- */
-export function createMockTimeslot(overrides: Partial<TeamTimeslot> = {}): TeamTimeslot {
-  return {
-    id: 'timeslot-1',
-    match_date: '2023-06-15',
-    timeslot: '6:30 PM',
-    team_id: 'team-1',
-    created_at: '2023-06-10T10:00:00Z',
-    is_back_to_back: false,
-    is_double_header: false,
-    pair_slot: null,
-    match_sequence: null,
-    teams: {
-      id: 'team-1',
-      name: 'Mock Team',
-      logo_url: '/mock-logo.png',
-      image_url: null,
-      divisionName: 'Division A',
-    },
-    ...overrides,
-  };
-}
-
-/**
- * Create a block of mock team timeslots
- */
-export function createMockTimeslotBlock(
-  timeslot: string,
-  count: number,
-  baseDate: Date = new Date()
-): TeamTimeslot[] {
-  const dateStr = format(baseDate, 'yyyy-MM-dd');
-  return Array(count)
-    .fill(null)
-    .map((_, i) =>
-      createMockTimeslot({
-        id: `timeslot-${i + 1}`,
-        match_date: dateStr,
-        timeslot,
-        team_id: `team-${i + 1}`,
-        teams: {
-          id: `team-${i + 1}`,
-          name: `Team ${i + 1}`,
-          logo_url: `/logo-${i + 1}.png`,
-          image_url: null,
-          divisionName: 'Division A',
-        },
-      })
-    );
-}
 
 /**
  * Create a mock team
@@ -115,18 +52,4 @@ export function createMockTeamPairing(overrides: Partial<TeamPair> = {}): TeamPa
     hasPlayedBefore: false,
     ...overrides,
   };
-}
-
-/**
- * Create a mock match
- */
-export function createMockMatch(overrides: Partial<Match> = {}): Match {
-  return {
-    id: 'match-1',
-    team1_id: 'team-1',
-    team2_id: 'team-2',
-    date: new Date().toISOString(),
-    location: 'Mock Location',
-    ...overrides,
-  } as Match;
 }

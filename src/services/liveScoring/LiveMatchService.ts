@@ -18,14 +18,14 @@ export const ROUND_COLUMNS =
 
 const GAME_PLAYER_COLUMNS = 'id, game_id, team_id, player_id, slot, created_at';
 
-export interface LiveMatchTeamInfo {
+interface LiveMatchTeamInfo {
   id: string;
   name: string;
   logo_url: string | null;
   image_url: string | null;
 }
 
-export interface LiveMatchInfo {
+interface LiveMatchInfo {
   id: string;
   season_id: string | null;
   date: string;
@@ -58,6 +58,7 @@ export interface LiveMatchBundle {
 // the Postgres level (e.g. surfaced through an RPC).
 const NOT_ENABLED_CODES = ['PGRST205', 'PGRST202', '42P01'];
 
+/** Map "live scoring tables not migrated yet" error codes to LiveScoringNotEnabledError; delegate everything else to handleDatabaseError. */
 export function handleLiveScoringError(error: PostgrestError, context: string): never {
   if (NOT_ENABLED_CODES.includes(error.code)) {
     throw new LiveScoringNotEnabledError();

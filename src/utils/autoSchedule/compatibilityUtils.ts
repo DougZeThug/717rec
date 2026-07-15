@@ -3,7 +3,7 @@ import { getDisplayDivision } from '@/styles/design-system/divisions';
 import { Team } from '@/types';
 import { debugLog, errorLog } from '@/utils/logger';
 
-import { getCachedCompatibilityScore, getCachedMatchHistory } from './cachingUtils';
+import { getCachedMatchHistory } from './cachingUtils';
 
 /**
  * Get tier distance between two teams (0 = same tier, 1 = adjacent, 2 = extreme)
@@ -87,16 +87,9 @@ export function calculateTeamCompatibility(team1: Team, team2: Team): number {
 }
 
 /**
- * Get cached or freshly calculated compatibility score
- */
-export function getCompatibilityScore(team1: Team, team2: Team): number {
-  return getCachedCompatibilityScore(team1, team2, calculateTeamCompatibility);
-}
-
-/**
  * Check if two teams have played each other before
  */
-export async function haveTeamsPlayed(team1Id: string, team2Id: string): Promise<boolean> {
+export function haveTeamsPlayed(team1Id: string, team2Id: string): Promise<boolean> {
   return getCachedMatchHistory(team1Id, team2Id, checkTeamsPlayedHistory);
 }
 

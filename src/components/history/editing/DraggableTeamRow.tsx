@@ -15,7 +15,7 @@ interface DraggableTeamRowProps {
 
 // Larger drag handle with better touch target
 
-export const DraggableTeamRow: React.FC<DraggableTeamRowProps> = ({ team, rank }) => {
+const DraggableTeamRow: React.FC<DraggableTeamRowProps> = ({ team, rank }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging, isOver } =
     useSortable({
       id: team.team_id,

@@ -2,7 +2,7 @@ import React from 'react';
 
 import { cn } from '@/lib/utils';
 
-export type SnowtopTextAs = 'span' | 'h1' | 'h2' | 'h3' | 'div';
+type SnowtopTextAs = 'span' | 'h1' | 'h2' | 'h3' | 'div';
 
 interface SnowtopTextProps {
   as?: SnowtopTextAs;

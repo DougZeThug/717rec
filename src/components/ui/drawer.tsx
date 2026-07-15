@@ -3,6 +3,7 @@ import { Drawer as DrawerPrimitive } from 'vaul';
 
 import { cn } from '@/lib/utils';
 
+/** Vaul drawer root; scales the page background behind the drawer by default. */
 const Drawer = ({
   shouldScaleBackground = true,
   ...props
@@ -11,11 +12,7 @@ const Drawer = ({
 );
 Drawer.displayName = 'Drawer';
 
-const DrawerTrigger = DrawerPrimitive.Trigger;
-
 const DrawerPortal = DrawerPrimitive.Portal;
-
-const DrawerClose = DrawerPrimitive.Close;
 
 const DrawerOverlay = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Overlay>,
@@ -50,11 +47,13 @@ const DrawerContent = React.forwardRef<
 ));
 DrawerContent.displayName = 'DrawerContent';
 
+/** Padded header block, centered on small screens and left-aligned on larger ones. */
 const DrawerHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div className={cn('grid gap-1.5 p-4 text-center sm:text-left', className)} {...props} />
 );
 DrawerHeader.displayName = 'DrawerHeader';
 
+/** Bottom-pinned footer that stacks its children vertically with padding. */
 const DrawerFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div className={cn('mt-auto flex flex-col gap-2 p-4', className)} {...props} />
 );
@@ -84,15 +83,4 @@ const DrawerDescription = React.forwardRef<
 ));
 DrawerDescription.displayName = DrawerPrimitive.Description.displayName;
 
-export {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerOverlay,
-  DrawerPortal,
-  DrawerTitle,
-  DrawerTrigger,
-};
+export { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle };

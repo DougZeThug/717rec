@@ -13,7 +13,8 @@ interface EditModeToolbarProps {
   onReset: () => void;
 }
 
-export const EditModeToolbar: React.FC<EditModeToolbarProps> = ({
+/** Toolbar for history edit mode: unsaved-change indicator plus reset, cancel, and save actions. */
+const EditModeToolbar: React.FC<EditModeToolbarProps> = ({
   hasChanges,
   isSaving,
   changeCount,

@@ -27,14 +27,12 @@ export const RouteAnnouncer: React.FC = () => {
     }
     lastAnnouncedPath.current = pathname;
 
-    const announcement =
-      (typeof document !== 'undefined' &&
-        (document.title || document.querySelector('h1')?.textContent)) ||
-      `${getRouteName(pathname)} page`;
-    setMessage(announcement);
+    // Derive the announcement from the route directly. Reading document.title
+    // here is unreliable because react-helmet-async defers title updates to a
+    // requestAnimationFrame, so this effect fires before the new title is
+    // committed and would announce the previous page.
+    setMessage(`${getRouteName(pathname)} page`);
   }, [pathname]);
 
   return <LiveRegion message={message} />;
 };
-
-export default RouteAnnouncer;

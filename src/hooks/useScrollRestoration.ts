@@ -18,7 +18,7 @@ const IS_RESTORING_RESET_DELAY_MS = 100;
  *
  * Uses exponential backoff for robust scroll restoration after DOM renders.
  */
-export const useScrollRestoration = (routeKey?: string) => {
+const useScrollRestoration = (routeKey?: string) => {
   const location = useLocation();
   const key = routeKey || location.pathname;
   const isRestoring = useRef(false);
@@ -26,6 +26,7 @@ export const useScrollRestoration = (routeKey?: string) => {
 
   // Save scroll position on scroll
   useEffect(() => {
+    /** Save the current scrollY for this route to sessionStorage (skipped during restore). */
     const handleScroll = () => {
       if (isRestoring.current) return;
 
@@ -40,6 +41,7 @@ export const useScrollRestoration = (routeKey?: string) => {
 
     // Throttle scroll saves using requestAnimationFrame
     let ticking = false;
+    /** requestAnimationFrame throttle so scroll saves run at most once per frame. */
     const throttledScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
@@ -73,6 +75,7 @@ export const useScrollRestoration = (routeKey?: string) => {
       if (savedPosition !== undefined && savedPosition > 0) {
         isRestoring.current = true;
 
+        /** Scroll to the saved offset once the page is tall enough, retrying with backoff. */
         const restoreScroll = () => {
           // Clean up if we've exceeded max retries
           if (retryCount >= SCROLL_RESTORE_MAX_RETRIES) {

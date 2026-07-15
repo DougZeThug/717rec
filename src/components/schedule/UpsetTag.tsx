@@ -30,5 +30,3 @@ export const UpsetTag: React.FC<UpsetTagProps> = ({ className }) => {
     </div>
   );
 };
-
-export default UpsetTag;

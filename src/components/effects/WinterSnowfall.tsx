@@ -29,5 +29,3 @@ export const WinterSnowfall = () => {
     />
   );
 };
-
-export default WinterSnowfall;

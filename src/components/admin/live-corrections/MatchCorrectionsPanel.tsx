@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import LoadingState from '@/components/ui/loading-state';
+import { LoadingState } from '@/components/ui/loading-state';
 import { useAdminCorrections } from '@/hooks/live-scoring/useAdminCorrections';
 import { useLiveMatch } from '@/hooks/live-scoring/useLiveMatch';
 import type { Tables } from '@/integrations/supabase/types';
@@ -20,14 +20,19 @@ export interface MatchCorrectionsPanelProps {
   matchId: string;
 }
 
+/** Admin panel for editing rounds, deleting rounds, and changing game winners on a match. */
 export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ matchId }) => {
   const { bundle, derived, isLoading, isNotEnabled } = useLiveMatch(matchId);
   const finalized = bundle?.match.iscompleted === true;
 
   const corrections = useAdminCorrections({ matchId, affectsStandings: finalized });
 
-  const [editingRound, setEditingRound] = useState<MatchRoundRow | null>(null);
-  const [deletingRound, setDeletingRound] = useState<MatchRoundRow | null>(null);
+  // Store only IDs and derive the current row from the realtime-updated
+  // bundle.rounds so open dialogs always reflect the latest data (and close
+  // themselves if the round disappears). See NotificationsAdmin for the same
+  // pattern.
+  const [editingRoundId, setEditingRoundId] = useState<string | null>(null);
+  const [deletingRoundId, setDeletingRoundId] = useState<string | null>(null);
   const [winnerGameId, setWinnerGameId] = useState<string | null>(null);
 
   const team1Id = bundle?.match.team1_id ?? null;
@@ -43,6 +48,18 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
     queryFn: () => TeamPlayersService.fetchTeamPlayers(team2Id as string),
     enabled: !!team2Id,
   });
+
+  const editingRound: MatchRoundRow | null = editingRoundId
+    ? (bundle?.rounds.find((r) => r.id === editingRoundId) ?? null)
+    : null;
+  const deletingRound: MatchRoundRow | null = deletingRoundId
+    ? (bundle?.rounds.find((r) => r.id === deletingRoundId) ?? null)
+    : null;
+
+  // If the underlying round disappears from realtime data, the dialog's render
+  // guards below (`editingRound && editingGame`, `deletingRound`) unmount it —
+  // no effect needed. The stale ID stays in state harmlessly until the next
+  // edit action overwrites it.
 
   const rosterById = useMemo(() => {
     const map = new Map<string, Tables<'team_players'>>();
@@ -128,7 +145,7 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => setEditingRound(r)}
+                          onClick={() => setEditingRoundId(r.id)}
                           aria-label={`Edit round ${r.round_number}`}
                         >
                           <Pencil className="size-4" aria-hidden />
@@ -136,7 +153,7 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => setDeletingRound(r)}
+                          onClick={() => setDeletingRoundId(r.id)}
                           aria-label={`Delete round ${r.round_number}`}
                         >
                           <Trash2 className="size-4 text-destructive" aria-hidden />
@@ -154,7 +171,7 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
       {editingRound && editingGame && (
         <EditRoundDialog
           open={!!editingRound}
-          onOpenChange={(open) => !open && setEditingRound(null)}
+          onOpenChange={(open) => !open && setEditingRoundId(null)}
           round={editingRound}
           team1Name={team1Name}
           team2Name={team2Name}
@@ -164,7 +181,7 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
           isSubmitting={corrections.updateRound.isPending}
           onSubmit={async (patch) => {
             await corrections.updateRound.mutateAsync({ roundId: editingRound.id, patch });
-            setEditingRound(null);
+            setEditingRoundId(null);
           }}
         />
       )}
@@ -172,7 +189,7 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
       {deletingRound && (
         <DeleteRoundDialog
           open={!!deletingRound}
-          onOpenChange={(open) => !open && setDeletingRound(null)}
+          onOpenChange={(open) => !open && setDeletingRoundId(null)}
           roundNumber={deletingRound.round_number}
           gameNumber={
             derived.games.find((g) => g.game.id === deletingRound.game_id)?.game.game_number ?? 0
@@ -180,7 +197,7 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
           isDeleting={corrections.deleteRound.isPending}
           onConfirm={async () => {
             await corrections.deleteRound.mutateAsync(deletingRound.id);
-            setDeletingRound(null);
+            setDeletingRoundId(null);
           }}
         />
       )}

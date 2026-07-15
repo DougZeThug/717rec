@@ -155,5 +155,3 @@ export const useTeamScheduleLoader = () => {
     getDualBlockCountStatus,
   };
 };
-
-export default useTeamScheduleLoader;

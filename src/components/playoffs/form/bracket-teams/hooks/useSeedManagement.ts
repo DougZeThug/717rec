@@ -2,14 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { ProcessedTeam, SeedValidationState } from '../types';
 
-export interface SeedManagementState {
+interface SeedManagementState {
   mode: 'automatic' | 'manual';
   pendingChanges: Map<string, number>;
   isDirty: boolean;
   draggedTeam: ProcessedTeam | null;
 }
 
-export interface SeedManagementActions {
+interface SeedManagementActions {
   setMode: (mode: 'automatic' | 'manual') => void;
   updateTeamSeed: (teamId: string, seed: number | null) => void;
   reorderTeams: (teams: ProcessedTeam[]) => void;
@@ -26,6 +26,7 @@ export interface SeedManagementResult {
   hasConflicts: boolean;
 }
 
+/** Manages manual vs automatic playoff seeding, tracking pending seed edits and drag state. */
 export const useSeedManagement = (
   initialTeams: ProcessedTeam[],
   validation: SeedValidationState,

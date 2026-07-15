@@ -1,5 +1,6 @@
 import { AnimatePresence, m } from 'framer-motion';
 import {
+  Activity,
   Calendar,
   CalendarClock,
   ChevronLeft,
@@ -26,7 +27,7 @@ import React, { lazy, Suspense, useCallback, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import LoadingState from '@/components/ui/loading-state';
+import { LoadingState } from '@/components/ui/loading-state';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/useMobile';
 import { usePendingRequestsCount } from '@/hooks/useTeamRequests';
@@ -65,6 +66,9 @@ const BlindDrawSignupsTab = lazy(() => import('@/components/admin/blind-draw/Bli
 const GettingStartedTab = lazy(() => import('@/components/admin/help/GettingStartedTab'));
 const LiveCorrectionsSection = lazy(
   () => import('@/components/admin/live-corrections/LiveCorrectionsSection')
+);
+const LeagueNightStatusTab = lazy(
+  () => import('@/components/admin/league-night-status/LeagueNightStatusTab')
 );
 
 const adminMenuItems: AdminMenuItem[] = [
@@ -105,6 +109,12 @@ const adminMenuItems: AdminMenuItem[] = [
   { id: 'themes', label: 'Themes', icon: Palette, Component: ThemeManagementTab },
   { id: 'blind-draw', label: 'Blind Draw', icon: Shuffle, Component: BlindDrawSignupsTab },
   { id: 'help', label: 'Help', icon: HelpCircle, Component: GettingStartedTab },
+  {
+    id: 'league-night-status',
+    label: 'League Night',
+    icon: Activity,
+    Component: LeagueNightStatusTab,
+  },
 ];
 
 const STORAGE_KEY = 'adminActiveTab';
@@ -123,6 +133,7 @@ const labelAnimateProps = {
   exit: { opacity: 0, width: 0 },
 };
 
+/** Admin dashboard shell: searchable section nav (sidebar or mobile) persisting the active tab. */
 const AdminSidebar: React.FC = () => {
   const isMobile = useIsMobile();
   const { data: pendingRequestsCount } = usePendingRequestsCount();

@@ -50,7 +50,7 @@ vi.mock('@/utils/logger', () => ({
 // Stand-in for TeamLogo so option accessible names are exactly the team name
 // (the real logo injects a 2-char fallback like "Al" that corrupts the name).
 vi.mock('@/components/ui/team/TeamLogo', () => ({
-  default: () => null,
+  TeamLogo: () => null,
 }));
 
 vi.mock('framer-motion', () => ({

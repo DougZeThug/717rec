@@ -22,16 +22,6 @@ export const useAllHeroCards = () => {
   });
 };
 
-// Hook for single hero card
-export const useHeroCard = (id: string | null) => {
-  return useQuery({
-    queryKey: ['hero-cards', id],
-    queryFn: () => HeroCardService.fetchHeroCardById(id),
-    enabled: !!id,
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-  });
-};
-
 // Mutations for CRUD operations
 export const useHeroCardMutations = () => {
   const queryClient = useQueryClient();

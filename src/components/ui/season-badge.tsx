@@ -12,7 +12,7 @@ interface SeasonBadgeProps {
  * Subtle season branding badge showing current season and week number
  * Example: "❄️ Winter 2026 • Week 4"
  */
-export const SeasonBadge: React.FC<SeasonBadgeProps> = ({ className }) => {
+const SeasonBadge: React.FC<SeasonBadgeProps> = ({ className }) => {
   const { seasonName, weekNumber, seasonIcon: SeasonIcon, isLoading } = useSeasonWeek();
 
   if (isLoading || !seasonName) {

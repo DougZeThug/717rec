@@ -1,4 +1,5 @@
 import {
+  Activity,
   Calendar,
   CalendarClock,
   ChevronDown,
@@ -58,6 +59,7 @@ const adminMenuItems: AdminMenuItem[] = [
   { id: 'themes', label: 'Themes', icon: Palette },
   { id: 'blind-draw', label: 'Blind Draw', icon: Shuffle },
   { id: 'help', label: 'Help', icon: HelpCircle },
+  { id: 'league-night-status', label: 'League Night', icon: Activity },
 ];
 
 const tabGroups: TabGroup[] = [
@@ -90,6 +92,12 @@ const tabGroups: TabGroup[] = [
     label: 'Settings & Content',
     icon: LayoutGrid,
     tabs: ['seasons', 'hero-cards', 'themes', 'blind-draw', 'help'],
+  },
+  {
+    id: 'operations',
+    label: 'Operations',
+    icon: Activity,
+    tabs: ['league-night-status'],
   },
 ];
 

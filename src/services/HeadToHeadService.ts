@@ -9,7 +9,7 @@ export class HeadToHeadService {
    * Get all head-to-head records for a specific team
    * @throws {DatabaseError} When database operations fail
    */
-  static async getTeamHeadToHead(teamId: string): Promise<HeadToHeadRecord[]> {
+  static getTeamHeadToHead(teamId: string): Promise<HeadToHeadRecord[]> {
     matchLog('Fetching head-to-head records for team:', teamId);
 
     return withTiming(

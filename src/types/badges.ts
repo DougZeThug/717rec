@@ -57,63 +57,15 @@ export interface ChampionshipBadgeMetadata {
   playoff_losses?: number;
 }
 
-export interface KingSlayerBadgeMetadata {
-  defeated_team_id: string;
-  defeated_team_name: string;
-  match_id: string;
-  season_name: string;
-}
-
-export interface StreakBadgeMetadata {
-  streak_length: number;
-  start_date: string;
-  end_date?: string;
-}
-
-export interface PerformanceBadgeMetadata {
-  stat_value: number;
-  threshold: number;
-  period: 'season' | 'career';
-}
-
-export type BadgeMetadata =
-  | ChampionshipBadgeMetadata
-  | KingSlayerBadgeMetadata
-  | StreakBadgeMetadata
-  | PerformanceBadgeMetadata
-  | Record<string, unknown>;
-
-export type BadgeRpcJsonResult = {
-  awarded?: boolean;
-  badge_type?: BadgeType;
-  reason?: string;
-  [key: string]: Json | string | number | boolean | null | undefined;
-};
-
 export type TeamStreakRpcResult = {
   streak_type: string;
   streak_count: number;
 };
 
-export interface BadgeRpcResult {
-  process_match_badges: BadgeRpcJsonResult;
-  award_kingslayer_badge: BadgeRpcJsonResult;
-  award_clutch_performer_badge: BadgeRpcJsonResult;
-  award_consistent_performer_badge: BadgeRpcJsonResult;
-  award_streak_badges: BadgeRpcJsonResult;
-  award_ice_cold_badge: BadgeRpcJsonResult;
-  award_broom_crew_badge: BadgeRpcJsonResult;
-  award_gatekeeper_badge: BadgeRpcJsonResult;
-  award_chaos_agent_badge: BadgeRpcJsonResult;
-  award_bully_badge: BadgeRpcJsonResult;
-  calculate_team_streak: TeamStreakRpcResult[];
-}
-
 import type {
   BadgeOperationParams,
   BadgeOperationType,
-  FailedBadgeOperation,
 } from '@/services/FailedBadgeOperationsService';
 
 export type BadgeOperationKind = BadgeOperationType;
-export type { BadgeOperationParams, FailedBadgeOperation };
+export type { BadgeOperationParams };

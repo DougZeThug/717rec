@@ -78,7 +78,7 @@ export interface BracketRoundRow {
   number: number;
 }
 
-export interface ViewerData {
+interface ViewerData {
   stages: ViewerStage[];
   groups?: BracketGroupRow[];
   rounds?: BracketRoundRow[];

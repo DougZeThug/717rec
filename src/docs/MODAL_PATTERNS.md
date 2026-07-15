@@ -31,7 +31,6 @@ import {
   ResponsiveDialogTitle,
   ResponsiveDialogDescription,
   ResponsiveDialogFooter,
-  ResponsiveDialogClose,
 } from "@/components/ui/responsive-dialog";
 import { Button } from "@/components/ui/button";
 
@@ -52,9 +51,9 @@ const MyModal = ({ open, onOpenChange }) => {
         </div>
 
         <ResponsiveDialogFooter>
-          <ResponsiveDialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </ResponsiveDialogClose>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
           <Button>Save</Button>
         </ResponsiveDialogFooter>
       </ResponsiveDialogContent>

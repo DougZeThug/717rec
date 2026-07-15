@@ -17,7 +17,7 @@ interface LastMatchHighlightProps {
  * Compact display of the team's most recent match result
  * Example: "Last match: W 21-17 vs Off Dogs"
  */
-export const LastMatchHighlight: React.FC<LastMatchHighlightProps> = ({
+const LastMatchHighlight: React.FC<LastMatchHighlightProps> = ({
   teamId,
   pastMatches,
   className,

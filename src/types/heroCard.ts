@@ -2,7 +2,7 @@ export type HeroCardTargetType = 'none' | 'team' | 'division' | 'season';
 export type HeroCardType =
   'standard' | 'champions' | 'event' | 'announcement' | 'participation' | 'request' | 'flyer';
 
-export interface EventWinner {
+interface EventWinner {
   place: number;
   names: string;
 }
@@ -12,7 +12,7 @@ export interface EventWeekWinners {
   winners: EventWinner[];
 }
 
-export interface StandardHeroCardMetadata {
+interface StandardHeroCardMetadata {
   [key: string]: unknown;
 }
 

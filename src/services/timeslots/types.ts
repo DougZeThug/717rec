@@ -1,4 +1,4 @@
-export type TimeslotRowTeam = {
+type TimeslotRowTeam = {
   id: string;
   name: string | null;
   logo_url?: string | null;
@@ -16,18 +16,4 @@ export type TimeslotRow = {
   pair_slot?: string | null;
   match_sequence?: number | null;
   teams?: TimeslotRowTeam | null;
-};
-
-export type TimeslotWithTeamsRow = TimeslotRow & {
-  teams:
-    | (TimeslotRowTeam & {
-        players?: unknown[] | null;
-        wins?: number | null;
-        losses?: number | null;
-        game_wins?: number | null;
-        game_losses?: number | null;
-        division_id?: string | null;
-        divisions?: { name?: string | null; display_division?: string | null } | null;
-      })
-    | null;
 };

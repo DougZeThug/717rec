@@ -52,5 +52,3 @@ export const EntityCard: React.FC<EntityCardProps> = ({
     </m.div>
   );
 };
-
-export default EntityCard;

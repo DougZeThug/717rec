@@ -2,18 +2,12 @@ import { useQuery } from '@tanstack/react-query';
 
 import { fetchTeamPowerScores } from '@/services/rankings/RankingCurrentService';
 
-// Define interface for the team power score data
-export interface TeamPowerScoreData {
-  team_id: string;
-  name: string;
-  power_score: number;
-}
-
 interface PowerScoreResult {
   powerScores: Record<string, number>;
   teamNames: Record<string, string>;
 }
 
+/** Fetch cached team power scores and names, with lookup helpers keyed by team id. */
 export const useTeamPowerScores = () => {
   const { data, isLoading, error } = useQuery<PowerScoreResult, Error>({
     queryKey: ['team-power-scores'],

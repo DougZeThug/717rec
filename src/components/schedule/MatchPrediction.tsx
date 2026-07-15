@@ -11,6 +11,7 @@ interface MatchPredictionProps {
   team2Name: string;
 }
 
+/** Win-probability bar for a matchup, expandable to show the prediction factor breakdown. */
 export const MatchPrediction: React.FC<MatchPredictionProps> = ({
   prediction,
   team1Name,
@@ -98,6 +99,7 @@ const colorClasses = {
   High: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
 };
 
+/** Small pill labeling prediction confidence, color-coded for Low/Medium/High. */
 const ConfidenceBadge: React.FC<{ level: ConfidenceLevel }> = ({ level }) => {
   return (
     <span
@@ -107,5 +109,3 @@ const ConfidenceBadge: React.FC<{ level: ConfidenceLevel }> = ({ level }) => {
     </span>
   );
 };
-
-export default MatchPrediction;

@@ -10,7 +10,7 @@ export interface ErrorLike {
 }
 
 /** Opponent data in bracket match */
-export interface BracketOpponent {
+interface BracketOpponent {
   id?: number | null;
   position?: number;
   score?: number | null;

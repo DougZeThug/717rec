@@ -39,26 +39,3 @@ export const typeScale = {
   numericBold: 'font-inter font-bold tabular-nums',
   numericMedium: 'font-inter font-medium tabular-nums',
 };
-
-// Legacy heading styles (deprecated - use typeScale instead)
-export const typography = {
-  heading: {
-    h1: typeScale.h1,
-    h2: typeScale.h2,
-    h3: typeScale.h3,
-    h4: 'text-[14px] leading-[20px] font-bebas uppercase tracking-wide',
-  },
-
-  body: {
-    large: typeScale.bodyRelaxed,
-    default: typeScale.body,
-    small: 'text-[13px] leading-[18px] font-inter',
-    tiny: typeScale.caption,
-  },
-
-  special: {
-    stat: 'font-bebas tracking-wide uppercase',
-    accent: 'font-inter tracking-wide',
-    numeric: typeScale.numeric,
-  },
-};

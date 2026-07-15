@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import TeamLogo from '@/components/ui/team/TeamLogo';
+import { TeamLogo } from '@/components/ui/team/TeamLogo';
 import { Team } from '@/types';
 
 export interface MatchPair {
@@ -39,6 +39,7 @@ const timeSlotOptions = [
   '10:00 PM',
 ];
 
+/** Editable list of match pairings with team/timeslot selects; shows an empty state when none. */
 const MatchPairsList: React.FC<MatchPairsListProps> = ({ pairs, teams, onUpdate, onRemove }) => {
   if (pairs.length === 0) {
     return (
@@ -49,6 +50,7 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({ pairs, teams, onUpdate,
     );
   }
 
+  /** Looks up a team from the teams prop by id; returns null for missing or empty ids. */
   const getTeamById = (id: string | null) => {
     if (!id) return null;
     return teams.find((t) => t.id === id) || null;

@@ -31,7 +31,7 @@ export const WINTER_ICONS_ENABLED = true;
 /**
  * Registry mapping winter glyph names to their SVG components
  */
-export const winterGlyphRegistry: Record<WinterGlyphName, SvgIconComponent> = {
+const winterGlyphRegistry: Record<WinterGlyphName, SvgIconComponent> = {
   snowflake: Snowflake,
   'snowflake-sparkle': SnowflakeSparkle,
   icicle: Icicle,
@@ -53,23 +53,5 @@ export const getWinterGlyph = (name: WinterGlyphName): SvgIconComponent | undefi
   return winterGlyphRegistry[name];
 };
 
-/**
- * Check if a winter glyph exists
- */
-export const hasWinterGlyph = (name: string): name is WinterGlyphName => {
-  return name in winterGlyphRegistry;
-};
-
 // Export individual components for direct import when needed
-export {
-  FrostCrystal,
-  FrozenTrophy,
-  IceShard,
-  Icicle,
-  SnowCloud,
-  SnowDrift,
-  Snowflake,
-  SnowflakeSparkle,
-  SparkleFrost,
-  WinterStar,
-};
+export { SnowflakeSparkle };

@@ -12,7 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import TeamLogo from '@/components/ui/team/TeamLogo';
+import { TeamLogo } from '@/components/ui/team/TeamLogo';
 import { Team } from '@/types';
 import { teamLog } from '@/utils/logger';
 
@@ -22,6 +22,7 @@ interface TeamDivisionTableProps {
   isLoading: boolean;
 }
 
+/** Tabbed table of teams grouped by division, showing per-division counts and W-L records. */
 const TeamDivisionTable: React.FC<TeamDivisionTableProps> = ({ divisions, teams, isLoading }) => {
   const [activeTab, setActiveTab] = useState<string>('all');
 

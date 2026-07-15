@@ -155,7 +155,7 @@ export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Pr
  * Legacy function - now redirects to back-to-back pair loading
  * @deprecated Use getTeamsByBackToBackPair instead
  */
-export const getTeamsByTimeBlock = async (date: Date, timeBlock: string): Promise<Team[]> => {
+export const getTeamsByTimeBlock = (date: Date, timeBlock: string): Promise<Team[]> => {
   warnLog(`getTeamsByTimeBlock is deprecated. Converting ${timeBlock} to back-to-back pair.`);
 
   // Map legacy time blocks to pair names
@@ -170,7 +170,7 @@ export const getTeamsByTimeBlock = async (date: Date, timeBlock: string): Promis
 
   if (!pairName) {
     errorLog(`Cannot map legacy time block ${timeBlock} to back-to-back pair`);
-    return [];
+    return Promise.resolve([]);
   }
 
   return getTeamsByBackToBackPair(date, pairName);

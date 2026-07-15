@@ -17,6 +17,7 @@ interface SortableTeamItemProps {
   onSeedChange?: (seed: number | null) => void;
 }
 
+/** Draggable bracket-team row with seed badge, logo, and optional manual seed input. */
 export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
   id,
   name,
@@ -126,5 +127,3 @@ export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
     </m.div>
   );
 };
-
-export default SortableTeamItem;

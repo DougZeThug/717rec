@@ -31,7 +31,7 @@ export const categorizeDivision = (divisionName: string | null): DivisionTier | 
 };
 
 /** Creates a zeroed record for one division tier. */
-export const createEmptyDivisionRecord = (): DivisionSeasonRecord => ({
+const createEmptyDivisionRecord = (): DivisionSeasonRecord => ({
   wins: 0,
   losses: 0,
   gameWins: 0,

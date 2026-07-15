@@ -4,7 +4,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { InlineEmptyState } from '@/components/ui/inline-empty-state';
-import TeamLogo from '@/components/ui/team/TeamLogo';
+import { TeamLogo } from '@/components/ui/team/TeamLogo';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { Team } from '@/types';
 
@@ -20,6 +20,7 @@ interface TimeBlockTeamsListProps {
 
 const EMPTY_STRING_ARRAY: string[] = [];
 
+/** Grid of a time block's teams with optional multi-select and unmatched-team highlighting. */
 export const TimeBlockTeamsList: React.FC<TimeBlockTeamsListProps> = ({
   teams,
   unmatchedTeamIds = EMPTY_STRING_ARRAY,

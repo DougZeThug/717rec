@@ -5,11 +5,6 @@
  * Import from those directly for new code; this class exists so that
  * existing hooks and utilities require zero changes.
  */
-export { BackToBackTimeslotService } from './BackToBackTimeslotService';
-export { DoubleHeaderService } from './DoubleHeaderService';
-export { TimeslotBatchService } from './TimeslotBatchService';
-export { TimeslotQueryService } from './TimeslotQueryService';
-
 import { BackToBackTimeslotService } from './BackToBackTimeslotService';
 import { DoubleHeaderService } from './DoubleHeaderService';
 import { TimeslotBatchService } from './TimeslotBatchService';

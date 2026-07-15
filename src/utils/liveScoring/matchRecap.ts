@@ -2,14 +2,14 @@ import type { Tables } from '@/integrations/supabase/types';
 type MatchRoundRow = Tables<'match_rounds'>;
 
 import { computePlayerStatLines, type PlayerStatLine } from './matchPlayerStats';
-import { percentage, pointsPerRound } from './pprCalc';
+import { percentage } from './pprCalc';
 
 export type TeamSide = 1 | 2;
 
 /** Minimum rounds a player must have thrown to qualify as "Top Performer". */
-export const TOP_PERFORMER_MIN_ROUNDS = 2;
+const TOP_PERFORMER_MIN_ROUNDS = 2;
 /** Minimum bag-tracked bags a player must have to qualify as "Most Consistent". */
-export const MOST_CONSISTENT_MIN_BAGS = 4;
+const MOST_CONSISTENT_MIN_BAGS = 4;
 
 export interface RecapPlayer {
   playerId: string;
@@ -25,14 +25,14 @@ export interface RecapPlayer {
   offPct: number | null;
 }
 
-export interface RecapTeam {
+interface RecapTeam {
   side: TeamSide;
   name: string;
   bagTotals: { in: number; on: number; off: number; total: number };
   players: RecapPlayer[];
 }
 
-export interface RecapKeyGame {
+interface RecapKeyGame {
   gameNumber: number;
   team1Score: number;
   team2Score: number;
@@ -40,14 +40,14 @@ export interface RecapKeyGame {
   margin: number;
 }
 
-export interface RecapTopPerformer {
+interface RecapTopPerformer {
   playerId: string;
   name: string;
   ppr: number;
   holePct: number | null;
 }
 
-export interface RecapMostConsistent {
+interface RecapMostConsistent {
   playerId: string;
   name: string;
   offPct: number;
@@ -61,7 +61,7 @@ export interface MatchRecap {
 }
 
 /** Minimal shape needed to pick the "Key Game" — matches LiveGameDerived. */
-export interface GameForRecap {
+interface GameForRecap {
   game: { id: string; game_number: number; winner_team_id: string | null };
   totals: { team1: number; team2: number };
 }
@@ -78,6 +78,7 @@ export interface ComputeMatchRecapInput {
   team2Name: string;
 }
 
+/** Attach a display name and derived hole/board/off percentages to a raw player stat line. */
 function toRecapPlayer(line: PlayerStatLine, name: string): RecapPlayer {
   return {
     playerId: line.playerId,
@@ -94,12 +95,14 @@ function toRecapPlayer(line: PlayerStatLine, name: string): RecapPlayer {
   };
 }
 
+/** Pick the eligible player with the highest points-per-round, or null if none qualify. */
 function pickTopPerformer(players: RecapPlayer[]): RecapTopPerformer | null {
   const eligible = players.filter(
     (p) => p.roundsThrown >= TOP_PERFORMER_MIN_ROUNDS && p.ppr !== null
   );
   if (eligible.length === 0) return null;
   const best = [...eligible].sort((a, b) => {
+    /** Descending PPR gap; positive means b outranks a (null PPR counts as 0). */
     const pprDelta = (b.ppr ?? 0) - (a.ppr ?? 0);
     if (pprDelta !== 0) return pprDelta;
     // Tie-break: higher hole rate wins; nulls last.
@@ -113,6 +116,7 @@ function pickTopPerformer(players: RecapPlayer[]): RecapTopPerformer | null {
   };
 }
 
+/** Pick the eligible player with the lowest off-board percentage, or null if none qualify. */
 function pickMostConsistent(players: RecapPlayer[]): RecapMostConsistent | null {
   const eligible = players.filter(
     (p) => p.totalBags >= MOST_CONSISTENT_MIN_BAGS && p.offPct !== null
@@ -126,6 +130,7 @@ function pickMostConsistent(players: RecapPlayer[]): RecapMostConsistent | null 
   };
 }
 
+/** Pick the closest game of the match (ties go to the later game) as the "Key Game". */
 function pickKeyGame(
   games: GameForRecap[],
   team1Id: string | null,
@@ -156,6 +161,7 @@ function pickKeyGame(
   };
 }
 
+/** Sum a team's in/on/off bag counts across all rounds, skipping rounds with untracked bags. */
 function teamBagTotals(
   rounds: MatchRoundRow[],
   side: TeamSide
@@ -175,6 +181,7 @@ function teamBagTotals(
   return { in: bagsIn, on: bagsOn, off: bagsOff, total: bagsIn + bagsOn + bagsOff };
 }
 
+/** Build the full post-match recap: per-team bag totals and rosters, key game, and award picks. */
 export function computeMatchRecap(input: ComputeMatchRecapInput): MatchRecap {
   const {
     rounds,
@@ -191,6 +198,7 @@ export function computeMatchRecap(input: ComputeMatchRecapInput): MatchRecap {
     toRecapPlayer(line, playerNames[line.playerId] ?? 'Former player')
   );
 
+  /** Players on the given side, busiest throwers (then highest PPR) first. */
   const forSide = (side: TeamSide) =>
     lines
       .filter((p) => playerTeamMap[p.playerId] === side)
@@ -234,6 +242,3 @@ export function buildPlayerTeamMap(
   }
   return map;
 }
-
-// Re-export for tests that want to construct example PlayerStatLines directly.
-export { pointsPerRound };

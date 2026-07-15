@@ -1,6 +1,6 @@
 import { PostgrestError } from '@supabase/supabase-js';
 
-export interface ErrorCategory {
+interface ErrorCategory {
   type: 'network' | 'validation' | 'permission' | 'conflict' | 'server' | 'unknown';
   severity: 'low' | 'medium' | 'high' | 'critical';
   retryable: boolean;
@@ -15,7 +15,7 @@ export interface RetryConfig {
   backoffMultiplier: number;
 }
 
-export interface ErrorHandlingResult {
+interface ErrorHandlingResult {
   category: ErrorCategory;
   shouldRetry: boolean;
   retryDelay: number;
@@ -48,7 +48,7 @@ const ERROR_PATTERNS = {
 /**
  * Categorize an error based on its message and properties
  */
-export const categorizeError = (error: unknown): ErrorCategory => {
+const categorizeError = (error: unknown): ErrorCategory => {
   const errorMessage = getErrorMessage(error);
   const errorCode = getErrorCode(error);
 
@@ -77,7 +77,7 @@ export const categorizeError = (error: unknown): ErrorCategory => {
 /**
  * Determine if an error should be retried and calculate delay
  */
-export const shouldRetryError = (
+const shouldRetryError = (
   error: unknown,
   attemptCount: number,
   config: Partial<RetryConfig> = {}
@@ -157,6 +157,7 @@ function getErrorMessage(error: unknown): string {
   return 'Unknown error';
 }
 
+/** Extract the error's code property as a string, or '' when absent. */
 function getErrorCode(error: unknown): string {
   if (error && typeof error === 'object' && 'code' in error) {
     return String(error.code);
@@ -164,6 +165,7 @@ function getErrorCode(error: unknown): string {
   return '';
 }
 
+/** Type guard: true when the error has the code/message/details shape of a PostgrestError. */
 function isSupabaseError(error: unknown): error is PostgrestError {
   return (
     error !== null &&
@@ -174,6 +176,7 @@ function isSupabaseError(error: unknown): error is PostgrestError {
   );
 }
 
+/** Map known Postgres error codes to typed categories with user-friendly messages. */
 function categorizeSupabaseError(error: PostgrestError): ErrorCategory {
   const code = error.code;
   const message = error.message.toLowerCase();
@@ -238,6 +241,7 @@ function categorizeSupabaseError(error: PostgrestError): ErrorCategory {
   }
 }
 
+/** Build the preset ErrorCategory for a pattern type, keeping the raw message as detail. */
 function createErrorCategory(type: keyof typeof ERROR_PATTERNS, message: string): ErrorCategory {
   const categoryMap: Record<
     keyof typeof ERROR_PATTERNS,
@@ -281,6 +285,7 @@ function createErrorCategory(type: keyof typeof ERROR_PATTERNS, message: string)
   };
 }
 
+/** Map an error category to a suggested next step for the user, if any. */
 function getUserAction(category: ErrorCategory): string | undefined {
   switch (category.type) {
     case 'network':

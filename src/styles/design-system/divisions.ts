@@ -1,7 +1,7 @@
 /**
  * Extended division color system - now uses display_division for consistent grouping
  */
-export const divisionColors = {
+const divisionColors = {
   competitive: {
     primary: 'hsl(var(--competitive))',
     light: 'hsl(var(--competitive) / 0.8)',

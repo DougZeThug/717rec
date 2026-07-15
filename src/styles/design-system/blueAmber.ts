@@ -75,22 +75,3 @@ export function blueAmberHeading(className?: string) {
     className
   );
 }
-
-// Helper utility for interactive elements with blue-amber styling
-export function blueAmberInteractive(className?: string) {
-  return cn(
-    'transition-all duration-200 bg-gradient-to-br from-blue-600 to-amber-600 hover:from-blue-500 hover:to-amber-500 text-white',
-    className
-  );
-}
-
-// Winter text gradient class exports for direct use
-export const winterText = {
-  heading: 'text-gradient-winter-heading heading-winter',
-  accent: 'text-gradient-winter-accent',
-  subtle: 'text-gradient-winter-subtle',
-  glow: 'text-gradient-winter-glow',
-};
-
-// Winter active toggle style
-export const winterToggleActive = 'toggle-winter-active';

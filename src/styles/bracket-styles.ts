@@ -8,6 +8,7 @@ import { errorLog } from '@/utils/logger';
 
 let stylesLoaded = false;
 
+/** Dynamically load the bracket stylesheets once, the first time a bracket view needs them. */
 export const loadBracketStyles = async (): Promise<void> => {
   if (stylesLoaded) return;
 
@@ -24,5 +25,3 @@ export const loadBracketStyles = async (): Promise<void> => {
     errorLog('Failed to load bracket styles:', error);
   }
 };
-
-export const areBracketStylesLoaded = (): boolean => stylesLoaded;

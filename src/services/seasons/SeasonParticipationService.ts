@@ -3,7 +3,7 @@ import { handleDatabaseError } from '@/utils/errorHandler';
 
 export type ParticipationStatus = 'PLAYING' | 'NOT_PLAYING';
 
-export interface SeasonParticipation {
+interface SeasonParticipation {
   id: string;
   season_id: string;
   team_id: string;
