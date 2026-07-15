@@ -1,11 +1,11 @@
 # Agent Instructions (Codex, Claude Code, etc.)
 
-This repo uses **npm** (with `bun` as a faster optional installer). It does **not** use pnpm or yarn.
+This repo uses **npm**. It does **not** use pnpm, yarn, or bun.
 
 ## Package manager
 
-- Use `npm install` / `npm ci` (or `bun install`).
-- Never use `pnpm` or `yarn` — they are not installed and the lockfiles aren't compatible.
+- Use `npm install` / `npm ci`.
+- Never use `pnpm`, `yarn`, or `bun` — they are not installed and the lockfiles aren't compatible.
 
 ## Running tests
 
