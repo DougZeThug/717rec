@@ -29,7 +29,7 @@ const BatchMatchFormContainer = () => {
     setMatchPairs,
   } = useBatchMatchForm(teams || []);
 
-  const handleAutoAssign = async () => {
+  const handleAutoAssign = () => {
     setIsAutoAssigning(true);
     autoAssignTimeslots();
 
