@@ -254,8 +254,8 @@ export const useMessageBoard = (): UseMessageBoardResult => {
   /** Enforce REALTIME_BUFFER_MAX on the reconciliation refs to bound memory on long-lived boards. */
   const pruneRealtimeBuffers = useCallback(() => {
     if (realtimeMessagesRef.current.size > REALTIME_BUFFER_MAX) {
-      const sorted = Array.from(realtimeMessagesRef.current.entries()).sort(
-        ([, a], [, b]) => (a.created_at ?? '').localeCompare(b.created_at ?? '')
+      const sorted = Array.from(realtimeMessagesRef.current.entries()).sort(([, a], [, b]) =>
+        (a.created_at ?? '').localeCompare(b.created_at ?? '')
       );
       const excess = sorted.length - REALTIME_BUFFER_MAX;
       for (let i = 0; i < excess; i++) {
