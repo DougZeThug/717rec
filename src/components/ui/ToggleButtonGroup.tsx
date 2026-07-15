@@ -18,6 +18,7 @@ export interface ToggleButtonGroupProps<T extends string> {
   className?: string;
 }
 
+/** Single-select button group rendered as pills (default) or a segmented control. */
 export function ToggleButtonGroup<T extends string>({
   options,
   value,

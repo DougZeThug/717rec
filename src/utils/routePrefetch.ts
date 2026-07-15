@@ -46,6 +46,7 @@ export const prefetchRoute = (path: string): void => {
 // NOTE: Only preload lightweight pages to avoid loading heavy chunks (recharts, brackets)
 // that hurt TTI and increase unused JavaScript on initial load
 export const preloadCoreRoutes = (): void => {
+  /** Import the lightweight Teams, Schedule, and History page chunks ahead of navigation. */
   const preloadLight = () => {
     // Only preload pages with minimal dependencies
     prefetchRoutes.teams();

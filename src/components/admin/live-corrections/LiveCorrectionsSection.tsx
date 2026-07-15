@@ -18,6 +18,7 @@ import { MatchCorrectionsPanel } from './MatchCorrectionsPanel';
 
 const ALL_SEASONS = '__all__';
 
+/** Admin panel to browse live-scored matches by season and open one for score corrections. */
 const LiveCorrectionsSection: React.FC = () => {
   const { data: seasons } = useSeasons();
   const [seasonId, setSeasonId] = useState<string>(ALL_SEASONS);

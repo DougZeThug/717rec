@@ -32,6 +32,7 @@ interface BracketsManagerMatchData {
   }>;
 }
 
+/** Query one brackets-manager match, reshaped with opponents and games; idle when id is null. */
 export const useBracketsManagerMatch = (matchId: number | null) => {
   return useQuery({
     queryKey: ['brackets-manager-match', matchId],

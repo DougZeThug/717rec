@@ -52,6 +52,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ open: controlledOpen, o
 
   // Keyboard shortcut handler
   useEffect(() => {
+    /** Toggle the palette on Cmd/Ctrl+K, suppressing the browser's default shortcut. */
     const down = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();

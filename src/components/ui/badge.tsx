@@ -8,6 +8,7 @@ import { badgeVariants } from './badge-variants';
 interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {}
 
+/** Small pill-shaped label div styled by the shared badgeVariants variant classes. */
 function Badge({ className, variant, ...props }: BadgeProps) {
   return <div className={cn(badgeVariants({ variant }), className)} {...props} />;
 }

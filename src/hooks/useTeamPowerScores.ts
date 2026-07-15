@@ -7,6 +7,7 @@ interface PowerScoreResult {
   teamNames: Record<string, string>;
 }
 
+/** Fetch cached team power scores and names, with lookup helpers keyed by team id. */
 export const useTeamPowerScores = () => {
   const { data, isLoading, error } = useQuery<PowerScoreResult, Error>({
     queryKey: ['team-power-scores'],

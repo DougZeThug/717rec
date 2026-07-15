@@ -26,6 +26,7 @@ type CarouselContextProps = {
 
 const CarouselContext = React.createContext<CarouselContextProps | null>(null);
 
+/** Read the carousel context; throws if used outside a <Carousel /> provider. */
 function useCarousel() {
   const context = React.useContext(CarouselContext);
 

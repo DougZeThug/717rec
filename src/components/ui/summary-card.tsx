@@ -18,6 +18,7 @@ export interface SummaryCardProps {
   className?: string;
 }
 
+/** Animated stat tile: icon, title, value, optional description; gradient in light mode only. */
 export const SummaryCard: React.FC<SummaryCardProps> = ({
   icon: Icon,
   iconColor,
