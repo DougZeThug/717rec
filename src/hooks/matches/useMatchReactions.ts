@@ -5,12 +5,14 @@ import { useAuth } from '@/contexts/auth-context';
 import { subscribeWithRetry } from '@/hooks/realtime/subscribeWithRetry';
 import { toast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
-import { MatchReaction, MatchReactionsService } from '@/services/matches/MatchReactionsService';
+import type { MatchReaction as ServiceMatchReaction } from '@/services/matches/MatchReactionsService';
+import { MatchReactionsService } from '@/services/matches/MatchReactionsService';
 import { errorLog } from '@/utils/logger';
 
 import { matchInteractionKeys } from './matchInteractionKeys';
 
-export type { MatchReaction };
+export type MatchReaction = ServiceMatchReaction;
+
 interface ReactionCount {
   emoji: string;
   count: number;
