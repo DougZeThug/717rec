@@ -11,7 +11,6 @@ import { errorLog } from '@/utils/logger';
 import { matchInteractionKeys } from './matchInteractionKeys';
 
 export type { MatchReaction };
-export interface ReactionCount {
 interface ReactionCount {
   emoji: string;
   count: number;
@@ -20,13 +19,6 @@ interface ReactionCount {
 }
 
 const EMPTY_MATCH_REACTIONS: MatchReaction[] = [];
-/** Loads a match's emoji reactions, keeps them synced via realtime, and groups counts by emoji. */
-export const useMatchReactions = (matchId: string) => {
-  const [reactions, setReactions] = useState<MatchReaction[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuth();
-  const isFetchingRef = useRef(false);
-  const deletedDuringFetchRef = useRef<Set<string>>(new Set());
 
 /** Build a stable key for canceling an optimistic reaction by user and emoji. */
 const optimisticRemovalKey = (reactionMatchId: string, userId: string, emoji: string) =>
