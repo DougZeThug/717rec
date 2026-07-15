@@ -10,23 +10,32 @@ vi.mock('@/services/opsHealth/OpsHealthService', () => ({
   },
 }));
 
-const subscribeCallbacks: Array<(status: string) => void> = [];
-const removeChannel = vi.fn();
+vi.mock('@/integrations/supabase/client', () => {
+  const subscribeCallbacks: Array<(status: string) => void> = [];
+  const removeChannel = vi.fn();
+  return {
+    __rtHelpers: { subscribeCallbacks, removeChannel },
+    supabase: {
+      channel: () => ({
+        on: function on() {
+          return this;
+        },
+        subscribe: (cb: (status: string) => void) => {
+          subscribeCallbacks.push(cb);
+          return {};
+        },
+      }),
+      removeChannel,
+    },
+  };
+});
 
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
-    channel: () => ({
-      on: function on() {
-        return this;
-      },
-      subscribe: (cb: (status: string) => void) => {
-        subscribeCallbacks.push(cb);
-        return {};
-      },
-    }),
-    removeChannel,
-  },
-}));
+import * as SupabaseClientModule from '@/integrations/supabase/client';
+const { subscribeCallbacks, removeChannel } = (
+  SupabaseClientModule as unknown as {
+    __rtHelpers: { subscribeCallbacks: Array<(status: string) => void>; removeChannel: ReturnType<typeof vi.fn> };
+  }
+).__rtHelpers;
 
 import { OpsHealthService } from '@/services/opsHealth/OpsHealthService';
 
