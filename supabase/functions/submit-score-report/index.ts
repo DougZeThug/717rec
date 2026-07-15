@@ -183,6 +183,7 @@ async function handleRequest(req: Request): Promise<Response> {
     .eq('match_id', payload.match_id)
     .eq('status', 'pending')
     .eq('message', payload.message)
+    .eq('submitter_name', insertRow.submitter_name)
     .limit(1)
     .maybeSingle();
   if (dedupeError) {
