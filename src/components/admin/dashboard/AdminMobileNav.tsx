@@ -1,4 +1,5 @@
 import {
+  Activity,
   Calendar,
   CalendarClock,
   ChevronDown,
@@ -41,6 +42,7 @@ interface TabGroup {
 }
 
 const adminMenuItems: AdminMenuItem[] = [
+  { id: 'league-night-status', label: 'League Night', icon: Activity },
   { id: 'timeslots', label: 'Timeslots', icon: Timer },
   { id: 'batch-matches', label: 'Match Creation', icon: Sparkles },
   { id: 'auto-schedule', label: 'Auto Schedule', icon: CalendarClock },
@@ -61,6 +63,12 @@ const adminMenuItems: AdminMenuItem[] = [
 ];
 
 const tabGroups: TabGroup[] = [
+  {
+    id: 'operations',
+    label: 'Operations',
+    icon: Activity,
+    tabs: ['league-night-status'],
+  },
   {
     id: 'scheduling',
     label: 'Scheduling',

@@ -1,5 +1,6 @@
 import { AnimatePresence, m } from 'framer-motion';
 import {
+  Activity,
   Calendar,
   CalendarClock,
   ChevronLeft,
@@ -66,8 +67,17 @@ const GettingStartedTab = lazy(() => import('@/components/admin/help/GettingStar
 const LiveCorrectionsSection = lazy(
   () => import('@/components/admin/live-corrections/LiveCorrectionsSection')
 );
+const LeagueNightStatusTab = lazy(
+  () => import('@/components/admin/league-night-status/LeagueNightStatusTab')
+);
 
 const adminMenuItems: AdminMenuItem[] = [
+  {
+    id: 'league-night-status',
+    label: 'League Night',
+    icon: Activity,
+    Component: LeagueNightStatusTab,
+  },
   { id: 'timeslots', label: 'Timeslots', icon: Timer, Component: TimeslotsTab },
   {
     id: 'batch-matches',
