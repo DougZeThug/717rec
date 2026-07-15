@@ -19,18 +19,21 @@ const AddDivisionButton: React.FC<AddDivisionButtonProps> = ({
   const [newName, setNewName] = useState('');
   const [error, setError] = useState<string | null>(null);
 
+  /** Open the inline input for naming a new division. */
   const handleStartAdd = () => {
     setNewName('');
     setError(null);
     setIsAdding(true);
   };
 
+  /** Close the input and discard the entered name. */
   const handleCancel = () => {
     setNewName('');
     setError(null);
     setIsAdding(false);
   };
 
+  /** Validate the name (non-empty, not a duplicate) and add the division. */
   const handleSave = () => {
     const trimmedName = newName.trim();
 
@@ -50,6 +53,7 @@ const AddDivisionButton: React.FC<AddDivisionButtonProps> = ({
     setIsAdding(false);
   };
 
+  /** Enter saves, Escape cancels. */
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSave();

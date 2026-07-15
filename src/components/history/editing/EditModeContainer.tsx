@@ -249,6 +249,7 @@ const EditModeContainer: React.FC<EditModeContainerProps> = ({
     [pendingMove, teams, getTeamsByDivision, moveTeam, reorderTeamInDivision]
   );
 
+  /** Persist all pending team moves/reorders, then notify success or "no changes". */
   const handleSave = async () => {
     const changes = getChanges();
 
@@ -278,6 +279,7 @@ const EditModeContainer: React.FC<EditModeContainerProps> = ({
     }
   };
 
+  /** Leave edit mode, asking for confirmation first if there are unsaved changes. */
   const handleCancel = () => {
     if (hasChanges) {
       const confirmed = window.confirm(
@@ -288,6 +290,7 @@ const EditModeContainer: React.FC<EditModeContainerProps> = ({
     onCancel();
   };
 
+  /** Remove an empty division; shows an error toast (and returns false) if teams remain in it. */
   const handleRemoveDivision = (name: string): boolean => {
     const success = removeDivision(name);
     if (!success) {
