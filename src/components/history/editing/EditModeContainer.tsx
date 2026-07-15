@@ -86,6 +86,7 @@ const measuringConfig = {
   },
 };
 
+/** Drag-and-drop editing surface for a historical season: reorganize teams across divisions, then save or discard. */
 const EditModeContainer: React.FC<EditModeContainerProps> = ({
   seasonId,
   seasonData,

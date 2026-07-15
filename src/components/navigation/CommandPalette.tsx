@@ -41,6 +41,7 @@ const quickActions = [
   { name: 'Message Board', icon: MessageSquare, path: '/message-board' },
 ];
 
+/** Cmd/Ctrl+K command palette for jumping to pages and teams. */
 const CommandPalette: React.FC<CommandPaletteProps> = ({ open: controlledOpen, onOpenChange }) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const navigate = useNavigate();

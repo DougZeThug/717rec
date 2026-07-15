@@ -78,6 +78,7 @@ export interface ComputeMatchRecapInput {
   team2Name: string;
 }
 
+/** Attach a display name and derived hole/board/off percentages to a raw player stat line. */
 function toRecapPlayer(line: PlayerStatLine, name: string): RecapPlayer {
   return {
     playerId: line.playerId,
@@ -94,6 +95,7 @@ function toRecapPlayer(line: PlayerStatLine, name: string): RecapPlayer {
   };
 }
 
+/** Pick the eligible player with the highest points-per-round, or null if none qualify. */
 function pickTopPerformer(players: RecapPlayer[]): RecapTopPerformer | null {
   const eligible = players.filter(
     (p) => p.roundsThrown >= TOP_PERFORMER_MIN_ROUNDS && p.ppr !== null

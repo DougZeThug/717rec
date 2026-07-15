@@ -10,6 +10,7 @@ interface AddDivisionButtonProps {
   existingDivisions: string[];
 }
 
+/** Button for adding a new division while editing a historical season. */
 const AddDivisionButton: React.FC<AddDivisionButtonProps> = ({
   onAddDivision,
   existingDivisions,

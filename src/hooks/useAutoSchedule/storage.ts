@@ -95,6 +95,7 @@ const isMatchQualityMetrics = (value: unknown): value is MatchQualityMetrics => 
   return isObject(value);
 };
 
+/** Type guard validating that a parsed localStorage payload is a usable auto-schedule state. */
 const isPersistedAutoScheduleState = (value: unknown): value is PersistedAutoScheduleState => {
   if (!isObject(value)) return false;
 

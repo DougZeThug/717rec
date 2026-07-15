@@ -58,6 +58,7 @@ export interface LiveMatchBundle {
 // the Postgres level (e.g. surfaced through an RPC).
 const NOT_ENABLED_CODES = ['PGRST205', 'PGRST202', '42P01'];
 
+/** Map "live scoring tables not migrated yet" error codes to LiveScoringNotEnabledError; delegate everything else to handleDatabaseError. */
 export function handleLiveScoringError(error: PostgrestError, context: string): never {
   if (NOT_ENABLED_CODES.includes(error.code)) {
     throw new LiveScoringNotEnabledError();

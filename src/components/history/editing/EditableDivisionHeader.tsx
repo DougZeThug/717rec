@@ -15,6 +15,7 @@ interface EditableDivisionHeaderProps {
   existingDivisions: string[];
 }
 
+/** Division title row in history edit mode, with inline rename and delete controls. */
 const EditableDivisionHeader: React.FC<EditableDivisionHeaderProps> = ({
   divisionName,
   teamCount,

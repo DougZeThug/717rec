@@ -26,6 +26,7 @@ const routeLabels: Record<string, string> = {
   admin: 'Admin',
 };
 
+/** Breadcrumb trail for the current route with animated transitions between pages. */
 const AnimatedBreadcrumbs: React.FC<AnimatedBreadcrumbsProps> = ({
   items: propItems,
   className,

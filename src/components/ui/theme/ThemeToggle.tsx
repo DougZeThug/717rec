@@ -15,6 +15,7 @@ interface ThemeToggleProps {
 
 const themeOrder = ['light', 'dark', 'winter-frozen'] as const;
 
+/** Button that cycles the app theme: light, dark, winter-frozen. */
 const ThemeToggle: React.FC<ThemeToggleProps> = ({
   className,
   variant = 'outline',

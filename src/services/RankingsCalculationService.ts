@@ -3,6 +3,7 @@ import { Match } from '@/types';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { transformDatabaseMatches } from '@/utils/matchTransformers';
 
+/** Fetch all matches (newest first) with the columns needed for rankings calculations. */
 export const fetchRankingsData = async (): Promise<Match[]> => {
   const { data, error } = await supabase
     .from('matches')

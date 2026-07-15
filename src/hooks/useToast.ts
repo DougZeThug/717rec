@@ -68,6 +68,7 @@ const addToRemoveQueue = (toastId: string) => {
   toastTimeouts.set(toastId, timeout);
 };
 
+/** Toast state reducer: add, update, dismiss (queues removal), and remove actions. */
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case 'ADD_TOAST':

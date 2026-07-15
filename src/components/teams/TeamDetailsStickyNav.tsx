@@ -43,6 +43,7 @@ interface TeamDetailsStickyNavProps {
   className?: string;
 }
 
+/** Sticky section navigator on the team details page that tracks and scrolls to page sections. */
 const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ className }) => {
   const [activeSection, setActiveSection] = useState<string>('stats');
   const [isVisible, setIsVisible] = useState(false);

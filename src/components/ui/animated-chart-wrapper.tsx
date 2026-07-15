@@ -10,6 +10,7 @@ interface AnimatedChartWrapperProps {
   delay?: number;
 }
 
+/** Fades charts in (with optional delay) once they scroll into view. */
 const AnimatedChartWrapper: React.FC<AnimatedChartWrapperProps> = ({
   children,
   className,

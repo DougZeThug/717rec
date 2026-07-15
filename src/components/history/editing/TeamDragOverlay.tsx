@@ -10,6 +10,7 @@ interface TeamDragOverlayProps {
   rank: number;
 }
 
+/** Floating preview card rendered under the cursor while a team row is being dragged. */
 const TeamDragOverlay: React.FC<TeamDragOverlayProps> = ({ team, rank }) => {
   const winPct =
     team.match_wins + team.match_losses > 0

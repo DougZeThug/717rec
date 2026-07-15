@@ -106,6 +106,7 @@ export const getBackToBackPair = (timeSlot: string): string | null => {
   return BACK_TO_BACK_MAP.get(timeSlot) ?? null;
 };
 
+/** Name of the back-to-back pair whose primary slot is the given time, or null if none. */
 export const getBackToBackPairName = (timeSlot: string): string | null => {
   return TIME_TO_PAIR_NAME_MAP.get(timeSlot) ?? null;
 };

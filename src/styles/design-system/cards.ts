@@ -69,6 +69,7 @@ export function getCardStyle({
   );
 }
 
+/** Tailwind background-gradient classes for a card variant. */
 function getCardGradient(variant: 'default' | 'subtle' | 'highlight'): string {
   switch (variant) {
     case 'subtle':
@@ -80,6 +81,7 @@ function getCardGradient(variant: 'default' | 'subtle' | 'highlight'): string {
   }
 }
 
+/** Tailwind shadow classes for a card elevation level. */
 function getCardElevation(type: 'default' | 'active' | 'highlighted'): string {
   switch (type) {
     case 'active':

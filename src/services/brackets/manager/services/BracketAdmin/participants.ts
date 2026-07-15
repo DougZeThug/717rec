@@ -14,6 +14,7 @@ import type {
   ResolveTeamToParticipantIdFn,
 } from './types';
 
+/** Find the bracket participant id for a team, inserting a new participant row if none exists yet. */
 const resolveTeamToParticipantId: ResolveTeamToParticipantIdFn = async (
   teamId,
   tournamentId,
@@ -76,6 +77,7 @@ const resolveTeamToParticipantId: ResolveTeamToParticipantIdFn = async (
   return newId;
 };
 
+/** Admin operation: swap one or both teams in a not-yet-completed bracket match, creating participants as needed. */
 export async function editMatchParticipants(
   deps: BracketAdminDeps,
   matchId: number,
