@@ -83,10 +83,12 @@ export const errorLog = (...args: unknown[]) => {
   }
 };
 
+/** Log a warning to the console (dev only, gated by VITE_LOG_LEVEL). */
 export const warnLog = (...args: unknown[]) => {
   if (shouldLog('warn')) console.warn('[717REC WARN]', ...args); // skipcq: JS-0002
 };
 
+/** Log debug output to the console (dev only, gated by VITE_LOG_LEVEL). */
 export const debugLog = (...args: unknown[]) => {
   if (shouldLog('debug')) console.log('[717REC DEBUG]', ...args); // skipcq: JS-0002
 };
@@ -151,5 +153,6 @@ export const filterLog = (...args: unknown[]) => log('🔍 Filter:', ...args);
 export const successLog = (operation: string, details?: string) =>
   log(`✅ ${operation}`, details || '');
 
+/** Log a failed operation with its error via errorLog. */
 export const failureLog = (operation: string, error: unknown) =>
   errorLog(`❌ ${operation}:`, error);

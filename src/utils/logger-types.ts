@@ -21,6 +21,7 @@ const LOG_LEVEL: LogLevel =
   (typeof import.meta !== 'undefined' ? (import.meta.env?.VITE_LOG_LEVEL as LogLevel) : 'info') ||
   'info';
 
+/** Whether messages at the given level should be logged (dev builds only, respects VITE_LOG_LEVEL). */
 export const shouldLog = (level: LogLevel): boolean => {
   if (!isDev) return false;
   return LOG_LEVEL_PRIORITY[level] >= LOG_LEVEL_PRIORITY[LOG_LEVEL];

@@ -113,6 +113,7 @@ function pickTopPerformer(players: RecapPlayer[]): RecapTopPerformer | null {
   };
 }
 
+/** Pick the eligible player with the lowest off-board percentage, or null if none qualify. */
 function pickMostConsistent(players: RecapPlayer[]): RecapMostConsistent | null {
   const eligible = players.filter(
     (p) => p.totalBags >= MOST_CONSISTENT_MIN_BAGS && p.offPct !== null
@@ -126,6 +127,7 @@ function pickMostConsistent(players: RecapPlayer[]): RecapMostConsistent | null 
   };
 }
 
+/** Pick the closest game of the match (ties go to the later game) as the "Key Game". */
 function pickKeyGame(
   games: GameForRecap[],
   team1Id: string | null,
@@ -156,6 +158,7 @@ function pickKeyGame(
   };
 }
 
+/** Sum a team's in/on/off bag counts across all rounds, skipping rounds with untracked bags. */
 function teamBagTotals(
   rounds: MatchRoundRow[],
   side: TeamSide
@@ -175,6 +178,7 @@ function teamBagTotals(
   return { in: bagsIn, on: bagsOn, off: bagsOff, total: bagsIn + bagsOn + bagsOff };
 }
 
+/** Build the full post-match recap: per-team bag totals and rosters, key game, and award picks. */
 export function computeMatchRecap(input: ComputeMatchRecapInput): MatchRecap {
   const {
     rounds,
@@ -191,6 +195,7 @@ export function computeMatchRecap(input: ComputeMatchRecapInput): MatchRecap {
     toRecapPlayer(line, playerNames[line.playerId] ?? 'Former player')
   );
 
+  /** Players on the given side, busiest throwers (then highest PPR) first. */
   const forSide = (side: TeamSide) =>
     lines
       .filter((p) => playerTeamMap[p.playerId] === side)
