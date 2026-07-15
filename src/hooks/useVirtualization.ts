@@ -47,5 +47,3 @@ export function useVirtualization({
     itemCount,
   };
 }
-
-export default useVirtualization;

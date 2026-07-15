@@ -36,5 +36,3 @@ export const RouteAnnouncer: React.FC = () => {
 
   return <LiveRegion message={message} />;
 };
-
-export default RouteAnnouncer;

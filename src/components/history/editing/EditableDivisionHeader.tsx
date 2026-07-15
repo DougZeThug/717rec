@@ -15,7 +15,8 @@ interface EditableDivisionHeaderProps {
   existingDivisions: string[];
 }
 
-export const EditableDivisionHeader: React.FC<EditableDivisionHeaderProps> = ({
+/** Division title row in history edit mode, with inline rename and delete controls. */
+const EditableDivisionHeader: React.FC<EditableDivisionHeaderProps> = ({
   divisionName,
   teamCount,
   onRename,
@@ -27,18 +28,21 @@ export const EditableDivisionHeader: React.FC<EditableDivisionHeaderProps> = ({
   const [editValue, setEditValue] = useState(divisionName);
   const [error, setError] = useState<string | null>(null);
 
+  /** Enter rename mode, seeded with the current division name. */
   const handleStartEdit = () => {
     setEditValue(divisionName);
     setError(null);
     setIsEditing(true);
   };
 
+  /** Exit rename mode, discarding any edits. */
   const handleCancelEdit = () => {
     setEditValue(divisionName);
     setError(null);
     setIsEditing(false);
   };
 
+  /** Validate the new name (non-empty, not a duplicate) and commit the rename. */
   const handleSaveEdit = () => {
     const trimmedValue = editValue.trim();
 
@@ -60,6 +64,7 @@ export const EditableDivisionHeader: React.FC<EditableDivisionHeaderProps> = ({
     setError(null);
   };
 
+  /** Enter saves, Escape cancels. */
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSaveEdit();

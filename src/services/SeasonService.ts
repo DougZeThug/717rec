@@ -1,8 +1,4 @@
-export type { CreateSeasonData, UpdateSeasonData } from './seasons/SeasonLifecycleService';
-export type {
-  ParticipationStatus,
-  SeasonParticipation,
-} from './seasons/SeasonParticipationService';
+export type { ParticipationStatus } from './seasons/SeasonParticipationService';
 
 import { SeasonLifecycleService } from './seasons/SeasonLifecycleService';
 import { SeasonParticipationService } from './seasons/SeasonParticipationService';

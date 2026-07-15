@@ -6,6 +6,4 @@ export { DesignAppearanceSection } from './DesignAppearanceSection';
 export { EventWinnersEditor } from './EventWinnersEditor';
 export { FormActions } from './FormActions';
 export { HeroCardPreview } from './HeroCardPreview';
-export { SectionHeader } from './SectionHeader';
 export { TargetingDisplaySection } from './TargetingDisplaySection';
-export type { FormSectionProps, SectionHeaderProps } from './types';

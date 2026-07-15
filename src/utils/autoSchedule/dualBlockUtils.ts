@@ -1,16 +1,11 @@
 import { Team } from '@/types';
-import {
-  DualBlockConfig,
-  PairedTimeBlockTeamsMap,
-  TeamPair,
-  TimeBlockTeamsMap,
-} from '@/types/autoSchedule';
+import { DualBlockConfig, PairedTimeBlockTeamsMap, TimeBlockTeamsMap } from '@/types/autoSchedule';
 import { DualBlockValidationResult, NotificationCallback } from '@/types/dualBlock';
 
 /**
  * Default block names if not specified in config
  */
-export const DEFAULT_BLOCKS = {
+const DEFAULT_BLOCKS = {
   PRIMARY: 'Early',
   SECONDARY: 'Late',
 };
@@ -115,30 +110,6 @@ export function handleOddTeamCount(
 }
 
 /**
- * Create cross-block compatibility adjustments to ensure teams
- * play against different opponents in each block
- */
-export function createCrossBlockCompatibilityAdjuster(
-  pairings: TeamPair[]
-): (team1: Team, team2: Team) => number {
-  // Create map of team ID to opponent ID for quick lookup
-  const opponentMap = new Map<string, string>();
-
-  pairings.forEach((pair) => {
-    opponentMap.set(pair.team1.id, pair.team2.id);
-    opponentMap.set(pair.team2.id, pair.team1.id);
-  });
-
-  // Return a function that applies heavy penalty for matching with same opponent
-  return (team1: Team, team2: Team) => {
-    if (opponentMap.get(team1.id) === team2.id) {
-      return -100; // Strong negative score to avoid matching
-    }
-    return 0; // No adjustment
-  };
-}
-
-/**
  * Create time block pairs from individual time blocks
  */
 export function createTimeBlockPairs(
@@ -164,22 +135,6 @@ export function createTimeBlockPairs(
   };
 
   return pairedBlocks;
-}
-
-/**
- * Transform paired time block structure back to standard time blocks
- */
-export function transformPairedTeamsToRegular(
-  pairedBlocks: PairedTimeBlockTeamsMap
-): TimeBlockTeamsMap {
-  const regularBlocks: TimeBlockTeamsMap = {};
-
-  Object.values(pairedBlocks).forEach((pair) => {
-    regularBlocks[pair.primaryBlock] = pair.primaryTeams;
-    regularBlocks[pair.secondaryBlock] = pair.secondaryTeams;
-  });
-
-  return regularBlocks;
 }
 
 /**

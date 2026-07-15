@@ -4,8 +4,7 @@ import { useToast } from '@/hooks/useToast';
 import { BlindDrawService } from '@/services/BlindDrawService';
 import { errorLog } from '@/utils/logger';
 
-export type { BlindDrawSettings } from '@/services/BlindDrawService';
-
+/** Fetches blind-draw signup settings, cached for 5 minutes. */
 export const useBlindDrawSettings = () => {
   return useQuery({
     queryKey: ['blind-draw-settings'],
@@ -14,6 +13,7 @@ export const useBlindDrawSettings = () => {
   });
 };
 
+/** Mutation that saves blind-draw settings, refreshes the cache, and toasts success/failure. */
 export const useUpdateBlindDrawSettings = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();

@@ -98,8 +98,6 @@ interface RawPlayoffMatchRow {
   team2?: RawTeamJoin;
 }
 
-type RawRealtimePlayoffMatch = Omit<RawPlayoffMatchRow, 'playoff_games' | 'team1' | 'team2'>;
-
 // ============= Helper Functions =============
 
 /**
@@ -219,7 +217,7 @@ export function transformDatabaseMatches(
  * @param match - Raw database row from 'playoff_matches' table
  * @returns Transformed PlayoffMatch object
  */
-export function transformDatabasePlayoffMatch(match: RawPlayoffMatchRow): PlayoffMatch {
+function transformDatabasePlayoffMatch(match: RawPlayoffMatchRow): PlayoffMatch {
   const games = match.playoff_games || [];
 
   // Calculate game wins from games array
@@ -255,42 +253,6 @@ export function transformDatabasePlayoffMatch(match: RawPlayoffMatchRow): Playof
   };
 }
 
-/**
- * Transform multiple database playoff match rows to PlayoffMatch array
- */
-export function transformDatabasePlayoffMatches(matches: RawPlayoffMatchRow[]): PlayoffMatch[] {
-  if (!matches) return [];
-  return matches.map(transformDatabasePlayoffMatch);
-}
-
-/**
- * Transform a realtime payload to PlayoffMatch format (minimal fields from realtime update)
- */
-export function transformRealtimePlayoffMatch(payload: RawRealtimePlayoffMatch): PlayoffMatch {
-  return {
-    id: payload.id,
-    bracket_id: payload.bracket_id || '',
-    round: payload.round ?? 0,
-    position: payload.position ?? 0,
-    team1Id: payload.team1_id ?? null,
-    team2Id: payload.team2_id ?? null,
-    winnerId: payload.winner_id ?? null,
-    loserId: payload.loser_id ?? null,
-    team1Score: payload.team1_score ?? null,
-    team2Score: payload.team2_score ?? null,
-    team1GameWins: payload.team1_game_wins ?? 0,
-    team2GameWins: payload.team2_game_wins ?? 0,
-    matchType: (payload.match_type as PlayoffMatch['matchType']) ?? 'winners',
-    bestOf: payload.best_of ?? 3,
-    team1Seed: payload.team1_seed ?? null,
-    team2Seed: payload.team2_seed ?? null,
-    nextWinMatchId: payload.next_win_match_id ?? null,
-    nextLoseMatchId: payload.next_lose_match_id ?? null,
-    status: (payload.status as PlayoffMatch['status']) || 'pending',
-    games: [],
-  };
-}
-
 // ============= Extended Types for Hooks with Team Data =============
 
 /**
@@ -304,9 +266,7 @@ export interface PlayoffMatchWithTeams extends PlayoffMatch {
 /**
  * Transform database playoff match with team data included
  */
-export function transformDatabasePlayoffMatchWithTeams(
-  match: RawPlayoffMatchRow
-): PlayoffMatchWithTeams {
+function transformDatabasePlayoffMatchWithTeams(match: RawPlayoffMatchRow): PlayoffMatchWithTeams {
   const baseMatch = transformDatabasePlayoffMatch(match);
 
   return {

@@ -75,15 +75,3 @@ export const determineMatchOutcome = (
 
   return { winnerId: null, loserId: null };
 };
-
-/**
- * Determine if a match time is in the evening
- * This helps with UI display to indicate which matches may appear on different UTC days
- */
-export const isEveningMatch = (date: Date): boolean => {
-  if (!date) return false;
-
-  const hours = date.getHours();
-  // Consider matches after 6pm to be "evening" matches
-  return hours >= 18;
-};

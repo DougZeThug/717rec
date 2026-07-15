@@ -234,8 +234,3 @@ export const findPresetByColors = (bgColor: string, textColor: string) => {
     (p) => p.background_color === bgColor && p.text_color === textColor
   );
 };
-
-// Helper to find icon by id
-export const findIconById = (iconId: string) => {
-  return HERO_CARD_ICONS.find((i) => i.id === iconId);
-};

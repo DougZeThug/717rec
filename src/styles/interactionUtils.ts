@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
  * Utility function to apply consistent interactive feedback styles
  * to elements across the application
  */
-export const getInteractionStyles = (
+const getInteractionStyles = (
   className?: string,
   options?: {
     withHover?: boolean;
@@ -35,22 +35,6 @@ export const getInteractionStyles = (
     // Custom classes
     className
   );
-};
-
-/**
- * Utility function specifically for card-based interactions
- */
-export const getCardInteractionStyles = (className?: string) => {
-  return getInteractionStyles(cn('hover:shadow-md active:shadow', className));
-};
-
-/**
- * Utility function for button interactions
- */
-export const getButtonInteractionStyles = (className?: string) => {
-  return getInteractionStyles(cn('hover:bg-opacity-90 active:bg-opacity-100', className), {
-    withShadow: false,
-  });
 };
 
 /**

@@ -29,7 +29,7 @@ export function toViewerOpponent(
 /**
  * Ensure opponent object exists for in-place mutation
  */
-export function ensureOpponentObject(match: ViewerMatch, key: 'opponent1' | 'opponent2') {
+function ensureOpponentObject(match: ViewerMatch, key: 'opponent1' | 'opponent2') {
   if (!match[key]) {
     match[key] = { id: null };
   }

@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { fetchBracketsManagerMatchData } from '@/services/brackets/BracketReadService';
 
-export interface BracketsManagerMatchData {
+interface BracketsManagerMatchData {
   id: number;
   stage_id: number;
   group_id: number;
@@ -32,6 +32,7 @@ export interface BracketsManagerMatchData {
   }>;
 }
 
+/** Query one brackets-manager match, reshaped with opponents and games; idle when id is null. */
 export const useBracketsManagerMatch = (matchId: number | null) => {
   return useQuery({
     queryKey: ['brackets-manager-match', matchId],

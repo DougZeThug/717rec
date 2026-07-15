@@ -1,5 +1,3 @@
-import { Team } from '@/types';
-
 /**
  * Notification callback for errors and warnings
  */
@@ -16,15 +14,4 @@ export interface DualBlockValidationResult {
   isValid: boolean;
   errorMessage?: string;
   warningMessages?: string[];
-}
-
-/**
- * Internal state tracking for dual block pairings
- */
-export interface DualBlockPairingState {
-  earlyTeams: Team[];
-  lateTeams: Team[];
-  earlyOpponents: Map<string, string>;
-  unmatchedTeamId?: string;
-  hasOddTeams: boolean;
 }

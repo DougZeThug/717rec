@@ -24,22 +24,3 @@ export const useChartColors = () => {
     },
   };
 };
-
-/**
- * Get text color classes based on the current theme
- */
-export const getThemeTextColor = (
-  isDark: boolean,
-  variant: 'primary' | 'secondary' | 'muted' = 'primary'
-) => {
-  switch (variant) {
-    case 'primary':
-      return isDark ? 'text-gray-100' : 'text-gray-900';
-    case 'secondary':
-      return isDark ? 'text-gray-200' : 'text-gray-800';
-    case 'muted':
-      return isDark ? 'text-gray-400' : 'text-gray-500';
-    default:
-      return isDark ? 'text-gray-100' : 'text-gray-900';
-  }
-};

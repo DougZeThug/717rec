@@ -1,12 +1,9 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Match, Ranking, Team } from '@/types';
+import { Match } from '@/types';
 import { handleDatabaseError } from '@/utils/errorHandler';
-import { errorLog } from '@/utils/logger';
 import { transformDatabaseMatches } from '@/utils/matchTransformers';
-import { sortRankings, updateRankChanges } from '@/utils/rankingUtils';
-import { createRankingObject } from '@/utils/rankingUtils/createRankingObject';
-import { fetchDivisionWeights } from '@/utils/rankingUtils/divisionWeightsCache';
 
+/** Fetch all matches (newest first) with the columns needed for rankings calculations. */
 export const fetchRankingsData = async (): Promise<Match[]> => {
   const { data, error } = await supabase
     .from('matches')
@@ -17,35 +14,4 @@ export const fetchRankingsData = async (): Promise<Match[]> => {
 
   if (error) handleDatabaseError(error, 'Failed to fetch rankings data');
   return transformDatabaseMatches(data ?? [], { normalizeDate: false });
-};
-
-export const calculateRankings = async (
-  teams: Team[] | undefined,
-  matches: Match[] | undefined,
-  previousRankings: Record<string, number>
-): Promise<Ranking[]> => {
-  if (!teams || teams.length === 0) {
-    return [];
-  }
-
-  try {
-    // Fetch division weights ONCE before processing all teams
-    const divisionWeights = await fetchDivisionWeights();
-
-    // Create ranking objects for each team (now synchronous)
-    const unsortedRankings = teams.map((team) =>
-      createRankingObject(team, teams, matches, previousRankings, divisionWeights)
-    );
-
-    // Sort the rankings by power score
-    const sortedRankings = sortRankings(unsortedRankings, 'powerScore', 'desc');
-
-    // Update rank changes
-    const finalRankings = updateRankChanges(sortedRankings);
-
-    return finalRankings;
-  } catch (error) {
-    errorLog('Error calculating rankings:', error);
-    throw error;
-  }
 };

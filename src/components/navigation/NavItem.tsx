@@ -104,5 +104,3 @@ export const NavItem: React.FC<NavItemProps> = React.memo(
 );
 
 NavItem.displayName = 'NavItem';
-
-export default NavItem;

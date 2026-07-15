@@ -18,7 +18,8 @@ interface EditableDivisionPanelProps {
   isPendingTarget?: boolean;
 }
 
-export const EditableDivisionPanel: React.FC<EditableDivisionPanelProps> = ({
+/** A division's droppable panel in history edit mode, listing its draggable team rows. */
+const EditableDivisionPanel: React.FC<EditableDivisionPanelProps> = ({
   divisionName,
   teams,
   onRenameDivision,

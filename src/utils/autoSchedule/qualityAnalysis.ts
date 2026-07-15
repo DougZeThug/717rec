@@ -133,7 +133,7 @@ export function analyzePowerScoreBalance(pairings: TeamPairingMap): {
  * // Imperfect diversity (same opponent in both blocks)
  * // Early: TeamA vs TeamB, Late: TeamA vs TeamB → 0%
  */
-export function analyzeCrossBlockDiversity(pairings: TeamPairingMap): number {
+function analyzeCrossBlockDiversity(pairings: TeamPairingMap): number {
   const blocks = Object.keys(pairings);
   if (blocks.length < 2) return 100; // Single block is perfectly diverse
 

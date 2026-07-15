@@ -4,8 +4,6 @@ import { useToast } from '@/hooks/useToast';
 import { BlindDrawService } from '@/services/BlindDrawService';
 import { errorLog } from '@/utils/logger';
 
-export type { BlindDrawSignup } from '@/services/BlindDrawService';
-
 // Fetch signup count for public display (no auth required)
 export const useBlindDrawSignupCount = (eventDate?: string) => {
   return useQuery({

@@ -33,7 +33,6 @@ export {
   fetchTeamsByNames,
   validateSeeds,
 } from './read/BracketParticipantService';
-export type { BracketOption } from './read/BracketSelectorService';
 export { fetchBracketsForSelector } from './read/BracketSelectorService';
 export {
   fetchGroupsAndMatches,

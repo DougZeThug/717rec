@@ -9,7 +9,7 @@ import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { ICON_SIZES } from '@/styles/icon-system';
 
-export const DesktopNav = React.memo(() => {
+const DesktopNav = React.memo(() => {
   const location = useLocation();
   const isMobile = useIsMobile();
   // Use base theme hook - no homepage dependency needed

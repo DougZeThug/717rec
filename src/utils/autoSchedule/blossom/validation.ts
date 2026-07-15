@@ -9,7 +9,7 @@ import { TeamPairingConfig } from './types';
 /**
  * Validate that no teams play each other more than once in the session
  */
-export function validateNoSessionRematches(pairings: TeamPairing[]): {
+function validateNoSessionRematches(pairings: TeamPairing[]): {
   hasRematches: boolean;
   rematches: string[];
 } {

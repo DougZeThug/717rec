@@ -9,13 +9,14 @@ import { errorLog } from '@/utils/logger';
 
 export type { MatchReaction };
 
-export interface ReactionCount {
+interface ReactionCount {
   emoji: string;
   count: number;
   users: string[];
   hasReacted: boolean;
 }
 
+/** Loads a match's emoji reactions, keeps them synced via realtime, and groups counts by emoji. */
 export const useMatchReactions = (matchId: string) => {
   const [reactions, setReactions] = useState<MatchReaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);

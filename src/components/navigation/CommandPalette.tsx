@@ -41,10 +41,8 @@ const quickActions = [
   { name: 'Message Board', icon: MessageSquare, path: '/message-board' },
 ];
 
-export const CommandPalette: React.FC<CommandPaletteProps> = ({
-  open: controlledOpen,
-  onOpenChange,
-}) => {
+/** Cmd/Ctrl+K command palette for jumping to pages and teams. */
+const CommandPalette: React.FC<CommandPaletteProps> = ({ open: controlledOpen, onOpenChange }) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const navigate = useNavigate();
   const { data: teams } = useTeamsQuery();
@@ -54,6 +52,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
   // Keyboard shortcut handler
   useEffect(() => {
+    /** Toggle the palette on Cmd/Ctrl+K, suppressing the browser's default shortcut. */
     const down = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();

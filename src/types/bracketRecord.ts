@@ -13,14 +13,3 @@ export interface BracketRecord {
     seed: number;
   }>;
 }
-
-export interface CreateBracketPayload {
-  name: string;
-  divisionId: string;
-  format: 'singleElim' | 'doubleElim';
-  teams: Array<{
-    id: string;
-    name: string;
-    seed?: number;
-  }>;
-}

@@ -18,10 +18,8 @@ export {
   fetchSeasonOpponentHistory,
   haveTeamsPlayedBefore,
 } from './MatchHistoryService';
-export type { MatchFilters } from './MatchQueryService';
 export {
   fetchMatchesWithTeams,
-  fetchMatchForTie,
   fetchMatchTeamIds,
   fetchMatchTimeslots,
   fetchPendingMatches,

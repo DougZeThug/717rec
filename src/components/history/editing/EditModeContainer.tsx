@@ -86,7 +86,8 @@ const measuringConfig = {
   },
 };
 
-export const EditModeContainer: React.FC<EditModeContainerProps> = ({
+/** Drag-and-drop editing surface for a historical season: reorganize teams across divisions, then save or discard. */
+const EditModeContainer: React.FC<EditModeContainerProps> = ({
   seasonId,
   seasonData,
   onSave,
@@ -248,6 +249,7 @@ export const EditModeContainer: React.FC<EditModeContainerProps> = ({
     [pendingMove, teams, getTeamsByDivision, moveTeam, reorderTeamInDivision]
   );
 
+  /** Persist all pending team moves/reorders, then notify success or "no changes". */
   const handleSave = async () => {
     const changes = getChanges();
 
@@ -277,6 +279,7 @@ export const EditModeContainer: React.FC<EditModeContainerProps> = ({
     }
   };
 
+  /** Leave edit mode, asking for confirmation first if there are unsaved changes. */
   const handleCancel = () => {
     if (hasChanges) {
       const confirmed = window.confirm(
@@ -287,6 +290,7 @@ export const EditModeContainer: React.FC<EditModeContainerProps> = ({
     onCancel();
   };
 
+  /** Remove an empty division; shows an error toast (and returns false) if teams remain in it. */
   const handleRemoveDivision = (name: string): boolean => {
     const success = removeDivision(name);
     if (!success) {

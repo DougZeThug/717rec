@@ -33,6 +33,7 @@ const textSizeClasses = {
   lg: 'text-lg',
 };
 
+/** Centered spinner with message; 'inline' renders a compact row, 'section' a padded block. */
 export const LoadingState: React.FC<LoadingStateProps> = ({
   message = 'Loading...',
   size,
@@ -70,5 +71,3 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
     </div>
   );
 };
-
-export default LoadingState;

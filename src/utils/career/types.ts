@@ -1,6 +1,6 @@
 // Types for career calculation utilities
 
-export interface DivisionRecord {
+interface DivisionRecord {
   wins: number;
   losses: number;
 }
@@ -11,7 +11,7 @@ export interface DivisionRecords {
   recreational: DivisionRecord;
 }
 
-export interface PlayoffConsistency {
+interface PlayoffConsistency {
   seasonsPlayed: number;
   seasonsInPlayoffs: number;
   playoffRate: number;

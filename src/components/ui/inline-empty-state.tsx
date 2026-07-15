@@ -36,4 +36,3 @@ const InlineEmptyState: React.FC<InlineEmptyStateProps> = ({
 };
 
 export { InlineEmptyState };
-export type { InlineEmptyStateProps };

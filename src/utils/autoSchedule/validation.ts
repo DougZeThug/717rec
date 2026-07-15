@@ -9,14 +9,14 @@ export interface ValidationResult {
   warnings: ValidationWarning[];
 }
 
-export interface ValidationError {
+interface ValidationError {
   matchId: string;
   type: 'duplicate-team' | 'same-team' | 'missing-team' | 'invalid-timeslot' | 'rematch';
   message: string;
   severity: 'error' | 'warning';
 }
 
-export interface ValidationWarning {
+interface ValidationWarning {
   matchId: string;
   type: 'rematch' | 'low-quality' | 'imbalanced';
   message: string;

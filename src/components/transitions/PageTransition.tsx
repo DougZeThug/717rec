@@ -21,7 +21,8 @@ const delayClass = {
   long: 'animation-delay-300',
 };
 
-export const PageTransition: React.FC<PageTransitionProps> = ({
+/** Wrapper that animates route content in and out on navigation. */
+const PageTransition: React.FC<PageTransitionProps> = ({
   children,
   delay = 'none',
   animation = 'fadeIn',

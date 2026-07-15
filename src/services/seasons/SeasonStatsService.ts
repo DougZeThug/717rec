@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 import { handleDatabaseError } from '@/utils/errorHandler';
 
-export type SeasonStatsAccordionRow = Pick<
+type SeasonStatsAccordionRow = Pick<
   Tables<'team_season_stats'>,
   | 'team_id'
   | 'season_id'

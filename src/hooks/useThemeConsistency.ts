@@ -31,5 +31,3 @@ export const useThemeConsistency = () => {
     ensureThemeConsistency,
   };
 };
-
-export default useThemeConsistency;

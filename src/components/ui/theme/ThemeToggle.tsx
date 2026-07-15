@@ -15,7 +15,8 @@ interface ThemeToggleProps {
 
 const themeOrder = ['light', 'dark', 'winter-frozen'] as const;
 
-export const ThemeToggle: React.FC<ThemeToggleProps> = ({
+/** Button that cycles the app theme: light, dark, winter-frozen. */
+const ThemeToggle: React.FC<ThemeToggleProps> = ({
   className,
   variant = 'outline',
   size = 'icon',
@@ -43,6 +44,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
 
   const cycleTheme = useCallback(() => {
     const currentIndex = enabledThemes.indexOf(theme ?? 'dark');
+    /** Wraps around to the first enabled theme after the last one. */
     const nextIndex = (currentIndex + 1) % enabledThemes.length;
     const next = enabledThemes[nextIndex];
     setTheme(next);
@@ -53,6 +55,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
     return null;
   }
 
+  /** Picks the button icon — snowflake, moon, or sun — to match the active theme. */
   const getCurrentIcon = () => {
     if (theme === 'winter-frozen') {
       return (
@@ -68,6 +71,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
     return <Sun className="size-5" />;
   };
 
+  /** Returns frosty glow styling for winter-frozen, plain neutral styling otherwise. */
   const getButtonClasses = () => {
     if (theme === 'winter-frozen') {
       return [

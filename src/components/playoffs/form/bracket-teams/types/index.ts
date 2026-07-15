@@ -1,23 +1,7 @@
-// Re-export shared types from main types to avoid duplication
-export type { Ranking, Team } from '@/types';
-
 // Team selection callback types
-export interface TeamSelectionCallback {
+interface TeamSelectionCallback {
   ids: string[];
   isValid: boolean;
-}
-
-// Team selection state types
-export interface TeamSelectionStateResult {
-  selected: Set<string>;
-  selectedArray: string[];
-  count: number;
-  toggle: (teamId: string) => void;
-  setSelected: (teamIds: string[]) => void;
-  clearSelection: () => void;
-  canSelectMore: boolean;
-  isAtMaximum: boolean;
-  hasSelection: boolean;
 }
 
 // Form validation types
@@ -27,22 +11,6 @@ export interface ValidationProgress {
   required: number;
   maximum: number;
   available: number;
-}
-
-export interface FormValidationResult {
-  isValid: boolean;
-  isComplete: boolean;
-  hasError: boolean;
-  hasWarning: boolean;
-  errorMessage: string | null;
-  warningMessage: string | null;
-  statusMessage: string;
-  progress: ValidationProgress;
-}
-
-// Team selection effects types
-export interface TeamSelectionEffectsResult {
-  cleanup: () => void;
 }
 
 // Consolidated state types
@@ -94,20 +62,8 @@ export interface ProcessedTeam {
   close_match_losses: number;
 }
 
-// Division mapping types
-export interface DivisionMappingResult {
-  divisionMap: Map<string, string>;
-  mapDivisionName: (name: string) => string | null;
-}
-
-// Team data processor types
-export interface TeamDataProcessorResult {
-  processedTeams: ProcessedTeam[];
-  processingError: string | null;
-}
-
 // Seed validation types
-export interface SeedValidationResult {
+interface SeedValidationResult {
   team_id: string;
   team_name: string;
   seed: number;
@@ -133,7 +89,7 @@ export interface BracketFormDataResult {
 }
 
 // Component props - Updated to use new callback type
-export interface BracketFormTeamsProps {
+interface BracketFormTeamsProps {
   divisionId?: string | null;
   teams?: import('@/types').Team[];
   maxTeams: number;

@@ -1,4 +1,4 @@
-export type CareerSortDirection = 'asc' | 'desc';
+type CareerSortDirection = 'asc' | 'desc';
 
 export interface CareerSortOptions {
   field: string;

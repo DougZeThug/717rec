@@ -14,25 +14,3 @@ export interface ScheduledMatch {
   blockType?: 'primary' | 'secondary';
   isBackToBack?: boolean;
 }
-
-export interface ScheduleSlot {
-  id: string;
-  time: string;
-  date: Date | string;
-  isAvailable: boolean;
-  matchId?: string;
-}
-
-export interface TeamStanding {
-  placement: number;
-  wins: number;
-  losses: number;
-  game_wins: number;
-  game_losses: number;
-  teams: {
-    id: string;
-    name: string;
-    logo_url?: string | null;
-    image_url?: string | null;
-  };
-}

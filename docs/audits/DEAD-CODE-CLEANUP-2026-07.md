@@ -1,5 +1,7 @@
 # Dead-Code Cleanup — 2026-07-06
 
+> Historical record — workflow names below refer to the pre-consolidation CI; `knip.yml` is now the "Check dead code" step of the `quality` job in `ci.yml`.
+
 Follow-up to `CODE-QUALITY-AUDIT-2026-04-24.md`, which graded architecture rules
 but did not run a reachability sweep. This pass did: a knip import-graph scan
 over all of `src/` plus grep re-verification of every single candidate before

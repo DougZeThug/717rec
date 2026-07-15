@@ -11,7 +11,7 @@ import { useTimeslotGrouping } from '@/components/schedule/timeslot-grouping/use
 import { AppCard } from '@/components/ui/app-card';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import LoadingState from '@/components/ui/loading-state';
+import { LoadingState } from '@/components/ui/loading-state';
 import { TeamLogo } from '@/components/ui/team';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
@@ -30,6 +30,7 @@ interface ByeWeekDesktopRowProps {
   isWinterTheme: boolean;
 }
 
+/** Desktop row for a team on a bye: logo, team link, division badge, "not playing" note. */
 const ByeWeekDesktopRow = ({ teamTimeslot, teamIndex, isWinterTheme }: ByeWeekDesktopRowProps) => (
   <div
     className={cn(
@@ -104,6 +105,7 @@ interface TimeslotSectionCardProps {
   children: React.ReactNode;
 }
 
+/** Collapsible card for one timeslot; the header trigger shows the time and team count. */
 const TimeslotSectionCard = ({
   timeslot,
   teams,
@@ -128,6 +130,7 @@ const TimeslotSectionCard = ({
   </AppCard>
 );
 
+/** Renders collapsible cards of matches per timeslot, plus orange-styled bye-week sections. */
 const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, isLoading }) => {
   const { isWinterTheme } = useSeasonalThemeBase();
   const {

@@ -15,6 +15,7 @@ export const log = (...args: unknown[]) => {
   if (shouldLog('info')) console.log('[717REC]', ...args); // skipcq: JS-0002
 };
 
+/** Log an error to the console and, in production, report it to Sentry with noise filtering. */
 export const errorLog = (...args: unknown[]) => {
   // Always log errors in dev mode
   if (shouldLog('error')) console.error('[717REC ERROR]', ...args); // skipcq: JS-0002
@@ -57,6 +58,7 @@ export const errorLog = (...args: unknown[]) => {
 
         const isNetworkError = additionalArgs.some((arg) => {
           if (arg && typeof arg === 'object') {
+            /** Pull the message field so it can be tested for network-failure strings. */
             const msg = (arg as Record<string, unknown>).message;
             if (typeof msg === 'string') {
               return (
@@ -83,10 +85,12 @@ export const errorLog = (...args: unknown[]) => {
   }
 };
 
+/** Log a warning to the console (dev only, gated by VITE_LOG_LEVEL). */
 export const warnLog = (...args: unknown[]) => {
   if (shouldLog('warn')) console.warn('[717REC WARN]', ...args); // skipcq: JS-0002
 };
 
+/** Log debug output to the console (dev only, gated by VITE_LOG_LEVEL). */
 export const debugLog = (...args: unknown[]) => {
   if (shouldLog('debug')) console.log('[717REC DEBUG]', ...args); // skipcq: JS-0002
 };
@@ -122,12 +126,6 @@ export const dbLog = (...args: unknown[]) => log('💾 DB:', ...args);
 // Schedule operations
 export const scheduleLog = (...args: unknown[]) => log('📅 Schedule:', ...args);
 
-// Admin operations
-export const adminLog = (...args: unknown[]) => log('⚡ Admin:', ...args);
-
-// Challonge operations
-export const challongeLog = (...args: unknown[]) => log('🎮 Challonge:', ...args);
-
 // Timezone operations
 export const timezoneLog = (...args: unknown[]) => log('🌐 Timezone:', ...args);
 
@@ -154,39 +152,9 @@ export const filterLog = (...args: unknown[]) => log('🔍 Filter:', ...args);
 // Status loggers
 // ============================================
 
-export const progressLog = (step: number, total: number, message: string, details?: string) => {
-  if (!isDev) return;
-  const percentage = Math.round((step / total) * 100);
-  log(`[${step}/${total}] ${percentage}% - ${message}`, details || '');
-};
-
 export const successLog = (operation: string, details?: string) =>
   log(`✅ ${operation}`, details || '');
 
+/** Log a failed operation with its error via errorLog. */
 export const failureLog = (operation: string, error: unknown) =>
   errorLog(`❌ ${operation}:`, error);
-
-// ============================================
-// Supabase-specific logging
-// ============================================
-
-export const supabaseErrorLog = (operation: string, error: unknown) => {
-  if (error && typeof error === 'object' && 'message' in error) {
-    const supabaseError = error as { message: string; code?: string; details?: string };
-    errorLog(`Supabase ${operation} failed:`, {
-      code: supabaseError.code,
-      message: supabaseError.message,
-      details: supabaseError.details,
-    });
-  } else {
-    errorLog(`Supabase ${operation} failed:`, error);
-  }
-};
-
-// ============================================
-// Diagnostic logging
-// ============================================
-
-export const diagnosticLog = (context: string, data: Record<string, unknown>) =>
-  // skipcq: JS-0002
-  isDev && console.log(`[717REC DIAGNOSTIC] ${context}:`, data);

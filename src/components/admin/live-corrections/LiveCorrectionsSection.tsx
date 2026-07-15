@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import LoadingState from '@/components/ui/loading-state';
+import { LoadingState } from '@/components/ui/loading-state';
 import {
   Select,
   SelectContent,
@@ -18,6 +18,7 @@ import { MatchCorrectionsPanel } from './MatchCorrectionsPanel';
 
 const ALL_SEASONS = '__all__';
 
+/** Admin panel to browse live-scored matches by season and open one for score corrections. */
 const LiveCorrectionsSection: React.FC = () => {
   const { data: seasons } = useSeasons();
   const [seasonId, setSeasonId] = useState<string>(ALL_SEASONS);

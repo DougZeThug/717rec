@@ -3,8 +3,7 @@ import { Link } from 'react-router';
 
 import { useThemeConsistency } from '@/hooks/useThemeConsistency';
 import { cn } from '@/lib/utils';
-import { getCardStyle } from '@/styles/design-system';
-import { gradients } from '@/styles/design-system';
+import { getCardStyle, gradients } from '@/styles/design-system';
 
 import { Badge } from './badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './card';
@@ -36,6 +35,7 @@ interface AppCardProps {
   gradient?: 'default' | 'subtle' | 'highlight' | 'blueOrange' | 'orangeAccent';
 }
 
+/** Themed card that renders as a link, keyboard-activatable button, or static container. */
 export const AppCard: React.FC<AppCardProps> = ({
   title,
   description,
@@ -57,6 +57,7 @@ export const AppCard: React.FC<AppCardProps> = ({
 }) => {
   const { isDark } = useThemeConsistency();
 
+  /** Shared header/body/footer markup reused by all three card render variants below. */
   const cardContent = (
     <>
       {(title || description || badge) && (
@@ -154,5 +155,3 @@ export const AppCard: React.FC<AppCardProps> = ({
     return <Card className={cardStyles}>{cardContent}</Card>;
   }
 };
-
-export default AppCard;

@@ -5,6 +5,7 @@
 /**
  * Get snapshot of Losers Bracket Round 1 matches
  * Shows which opponent slots are filled for debugging
+ * @public
  */
 export const LB_R1_SNAPSHOT = (stageId: number): string => `
 SELECT 
@@ -32,6 +33,7 @@ ORDER BY m.number;
 /**
  * Reset a Losers Bracket match to empty state
  * Useful for re-testing loser propagation
+ * @public
  */
 export const RESET_LB_R1_MATCH = (lbMatchId: number): string => `
 UPDATE match 
@@ -49,6 +51,7 @@ WHERE id = ${lbMatchId};
 /**
  * Get all matches for a stage with their current state
  * Useful for seeing the full bracket state
+ * @public
  */
 export const STAGE_MATCHES_SNAPSHOT = (stageId: number): string => `
 SELECT 

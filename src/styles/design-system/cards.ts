@@ -3,26 +3,6 @@ import { cn } from '@/lib/utils';
 import { getDivisionGradientClass } from './divisions';
 
 /**
- * Card style presets for common use cases
- */
-export const cardPresets = {
-  // Summary/stat cards (like StatsSummaryCards)
-  summary: 'p-4 rounded-xl border shadow-sm',
-
-  // Entity display cards (teams, rankings)
-  entity: 'rounded-lg border p-4 transition-all duration-200',
-
-  // Interactive cards with motion
-  interactive: 'rounded-lg border shadow-sm cursor-pointer',
-
-  // Hero/feature cards
-  hero: 'rounded-xl border shadow-md overflow-hidden',
-
-  // Compact list item cards
-  listItem: 'rounded-lg border p-3',
-};
-
-/**
  * Card gradient presets for light mode
  */
 export const cardGradients = {
@@ -89,6 +69,7 @@ export function getCardStyle({
   );
 }
 
+/** Tailwind background-gradient classes for a card variant. */
 function getCardGradient(variant: 'default' | 'subtle' | 'highlight'): string {
   switch (variant) {
     case 'subtle':
@@ -100,6 +81,7 @@ function getCardGradient(variant: 'default' | 'subtle' | 'highlight'): string {
   }
 }
 
+/** Tailwind shadow classes for a card elevation level. */
 function getCardElevation(type: 'default' | 'active' | 'highlighted'): string {
   switch (type) {
     case 'active':

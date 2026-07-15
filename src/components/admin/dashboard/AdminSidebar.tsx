@@ -26,7 +26,7 @@ import React, { lazy, Suspense, useCallback, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import LoadingState from '@/components/ui/loading-state';
+import { LoadingState } from '@/components/ui/loading-state';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/useMobile';
 import { usePendingRequestsCount } from '@/hooks/useTeamRequests';
@@ -123,6 +123,7 @@ const labelAnimateProps = {
   exit: { opacity: 0, width: 0 },
 };
 
+/** Admin dashboard shell: searchable section nav (sidebar or mobile) persisting the active tab. */
 const AdminSidebar: React.FC = () => {
   const isMobile = useIsMobile();
   const { data: pendingRequestsCount } = usePendingRequestsCount();

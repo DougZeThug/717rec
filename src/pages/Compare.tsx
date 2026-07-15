@@ -6,11 +6,12 @@ import { useSearchParams } from 'react-router';
 import { TeamCompareSelector } from '@/components/compare/TeamCompareSelector';
 import { TeamComparisonView } from '@/components/compare/TeamComparisonView';
 import { ErrorDisplay } from '@/components/ui/error-display';
-import LoadingState from '@/components/ui/loading-state';
+import { LoadingState } from '@/components/ui/loading-state';
 import { useTeamsQuery } from '@/hooks/teams';
 import { useTeamComparison } from '@/hooks/useTeamComparison';
 import { Team } from '@/types';
 
+/** Team comparison page: pick two teams (synced to the URL) and view their stats head-to-head. */
 const Compare: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: teams, isLoading: teamsLoading, error: teamsError, refetch } = useTeamsQuery();
@@ -52,6 +53,7 @@ const Compare: React.FC = () => {
     isLoading: comparisonLoading,
   } = useTeamComparison(team1, team2);
 
+  /** Swap which team is on which side of the comparison. */
   const handleSwap = () => {
     setTeam1(team2);
     setTeam2(team1);

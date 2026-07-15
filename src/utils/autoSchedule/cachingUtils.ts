@@ -1,50 +1,9 @@
-import { Team } from '@/types';
-
-// Create a cache for compatibility scores to avoid recalculating
-type CompatibilityCache = {
-  [key: string]: number;
-};
-
-// Global cache object for the current session
-const compatibilityScoreCache: CompatibilityCache = {};
-
 /**
  * Generate a unique key for two teams regardless of order
  */
 export function getCacheKey(team1Id: string, team2Id: string): string {
   // Sort IDs to ensure consistent key regardless of team order
   return [team1Id, team2Id].sort().join('-');
-}
-
-/**
- * Get compatibility score from cache or calculate it
- */
-export function getCachedCompatibilityScore(
-  team1: Team,
-  team2: Team,
-  calculateFn: (t1: Team, t2: Team) => number
-): number {
-  const cacheKey = getCacheKey(team1.id, team2.id);
-
-  // Return from cache if available
-  if (compatibilityScoreCache[cacheKey] !== undefined) {
-    return compatibilityScoreCache[cacheKey];
-  }
-
-  // Calculate and cache the score
-  const score = calculateFn(team1, team2);
-  compatibilityScoreCache[cacheKey] = score;
-
-  return score;
-}
-
-/**
- * Clear the compatibility score cache
- */
-export function clearCompatibilityCache(): void {
-  Object.keys(compatibilityScoreCache).forEach((key) => {
-    delete compatibilityScoreCache[key];
-  });
 }
 
 /**

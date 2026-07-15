@@ -37,9 +37,3 @@ export type NativeGoogleLoginResult = {
     | Record<string, unknown>
     | null;
 };
-
-export type AuthErrorDetails = {
-  message: string;
-  context?: string;
-  originalError?: unknown;
-};

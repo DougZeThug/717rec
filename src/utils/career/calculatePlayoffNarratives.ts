@@ -6,14 +6,6 @@ export interface PlayoffConsistency {
   playoffRate: number;
 }
 
-export interface SeedPerformance {
-  seasonName: string;
-  divisionName: string;
-  finish: number;
-  isChampion: boolean;
-  isRunnerUp: boolean;
-}
-
 /**
  * Calculates how consistently a team makes the playoffs across seasons.
  * A team "made playoffs" if they have a non-null playoff_rank for that season.

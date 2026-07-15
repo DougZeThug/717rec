@@ -43,7 +43,8 @@ interface TeamDetailsStickyNavProps {
   className?: string;
 }
 
-export const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ className }) => {
+/** Sticky section navigator on the team details page that tracks and scrolls to page sections. */
+const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ className }) => {
   const [activeSection, setActiveSection] = useState<string>('stats');
   const [isVisible, setIsVisible] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
@@ -76,6 +77,7 @@ export const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ clas
 
   // Show/hide sticky nav based on scroll position
   useEffect(() => {
+    /** Reveal the sticky nav once the page scrolls past the header (about 200px). */
     const handleScroll = () => {
       // Show after scrolling past 200px (roughly past the header)
       setIsVisible(window.scrollY > 200);

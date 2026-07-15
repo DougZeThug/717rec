@@ -46,7 +46,7 @@ export interface PersistedAutoScheduleState {
 /**
  * Default empty state
  */
-export const getDefaultPersistedState = (): PersistedAutoScheduleState => ({
+const getDefaultPersistedState = (): PersistedAutoScheduleState => ({
   selectedDate: new Date().toISOString(),
   generationDate: null,
   activeTab: 'teams',
@@ -64,15 +64,21 @@ export const getDefaultPersistedState = (): PersistedAutoScheduleState => ({
   teamBlockMap: {},
 });
 
+/** Type guard: true for any non-null object, arrays included. */
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
 
+/** Type guard: true when value is a boolean. */
 const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean';
+/** Type guard: true when value is a string. */
 const isString = (value: unknown): value is string => typeof value === 'string';
+/** Type guard: true when value is an array containing only strings. */
 const isStringArray = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every(isString);
+/** Alias of isObject, used where a string-keyed record is expected. */
 const isRecord = (value: unknown): value is Record<string, unknown> => isObject(value);
 
+/** Type guard checking a stored match has id, team ids, timeslot, date, and valid blockType. */
 const isAutoScheduleMatch = (value: unknown): value is AutoScheduleMatch => {
   if (!isObject(value)) return false;
 
@@ -90,14 +96,14 @@ const isAutoScheduleMatch = (value: unknown): value is AutoScheduleMatch => {
   );
 };
 
+/** Loose guard for stored quality metrics: accepts null or any object shape. */
 const isMatchQualityMetrics = (value: unknown): value is MatchQualityMetrics => {
   if (value === null) return true;
   return isObject(value);
 };
 
-export const isPersistedAutoScheduleState = (
-  value: unknown
-): value is PersistedAutoScheduleState => {
+/** Type guard validating that a parsed localStorage payload is a usable auto-schedule state. */
+const isPersistedAutoScheduleState = (value: unknown): value is PersistedAutoScheduleState => {
   if (!isObject(value)) return false;
 
   return (
@@ -174,17 +180,6 @@ export function clearAutoScheduleState(): void {
   } catch (error) {
     warnLog('Failed to clear auto-schedule state:', error);
   }
-}
-
-/**
- * Convert Date objects in matches to ISO strings for storage
- * (Date objects become strings when JSON.stringify'd anyway, this makes it explicit)
- */
-export function serializeMatches(matches: AutoScheduleMatch[]): AutoScheduleMatch[] {
-  return matches.map((match) => ({
-    ...match,
-    date: match.date instanceof Date ? match.date : new Date(match.date),
-  }));
 }
 
 /**

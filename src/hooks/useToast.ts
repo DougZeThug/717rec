@@ -21,6 +21,7 @@ const _actionTypes = {
 
 let count = 0;
 
+/** Returns the next sequential toast id, wrapping safely at MAX_SAFE_INTEGER. */
 function genId() {
   count = (count + 1) % Number.MAX_SAFE_INTEGER;
   return count.toString();
@@ -52,6 +53,7 @@ interface State {
 
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 
+/** Schedule a dismissed toast's removal after TOAST_REMOVE_DELAY, at most once per toast id. */
 const addToRemoveQueue = (toastId: string) => {
   if (toastTimeouts.has(toastId)) {
     return;
@@ -68,7 +70,9 @@ const addToRemoveQueue = (toastId: string) => {
   toastTimeouts.set(toastId, timeout);
 };
 
-export const reducer = (state: State, action: Action): State => {
+/** Toast state reducer: add, update, dismiss (queues removal), and remove actions. */
+// skipcq: JS-0045 -- the switch is exhaustive over Action and TS enforces it
+const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case 'ADD_TOAST':
       return {
@@ -125,6 +129,7 @@ const listeners: Array<(state: State) => void> = [];
 
 let memoryState: State = { toasts: [] };
 
+/** Apply an action to the shared in-memory toast state and notify every subscribed component. */
 function dispatch(action: Action) {
   memoryState = reducer(memoryState, action);
   listeners.forEach((listener) => {
@@ -134,14 +139,17 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, 'id'>;
 
+/** Show a toast; returns its id plus update() and dismiss() handles for that toast. */
 function toast({ ...props }: Toast) {
   const id = genId();
 
+  /** Replace this toast's contents in place. */
   const update = (props: ToasterToast) =>
     dispatch({
       type: 'UPDATE_TOAST',
       toast: { ...props, id },
     });
+  /** Close this toast (removal is queued by the reducer). */
   const dismiss = () => dispatch({ type: 'DISMISS_TOAST', toastId: id });
 
   dispatch({
@@ -163,6 +171,7 @@ function toast({ ...props }: Toast) {
   };
 }
 
+/** Hook exposing the current toasts plus toast() and dismiss() helpers. */
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState);
 

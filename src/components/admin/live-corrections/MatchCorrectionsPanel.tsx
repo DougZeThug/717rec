@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import LoadingState from '@/components/ui/loading-state';
+import { LoadingState } from '@/components/ui/loading-state';
 import { useAdminCorrections } from '@/hooks/live-scoring/useAdminCorrections';
 import { useLiveMatch } from '@/hooks/live-scoring/useLiveMatch';
 import type { Tables } from '@/integrations/supabase/types';
@@ -20,6 +20,7 @@ export interface MatchCorrectionsPanelProps {
   matchId: string;
 }
 
+/** Admin panel for editing rounds, deleting rounds, and changing game winners on a match. */
 export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ matchId }) => {
   const { bundle, derived, isLoading, isNotEnabled } = useLiveMatch(matchId);
   const finalized = bundle?.match.iscompleted === true;

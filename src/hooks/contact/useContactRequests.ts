@@ -10,8 +10,9 @@ import {
   type SubmitContactRequestInput,
 } from '@/services/contact/ContactRequestService';
 
-export const CONTACT_REQUESTS_QUERY_KEY = ['contact-requests'] as const;
+const CONTACT_REQUESTS_QUERY_KEY = ['contact-requests'] as const;
 
+/** Fetch all contact requests, kept fresh via a Supabase realtime subscription. */
 export function useContactRequests(enabled = true) {
   const qc = useQueryClient();
 
@@ -40,6 +41,7 @@ export function useContactRequests(enabled = true) {
   });
 }
 
+/** Mutation to submit a new contact request and refresh the cached list on success. */
 export function useSubmitContactRequest() {
   const qc = useQueryClient();
   return useMutation({
@@ -48,6 +50,7 @@ export function useSubmitContactRequest() {
   });
 }
 
+/** Mutation to mark a request resolved, recording who resolved it; toasts on failure. */
 export function useMarkContactRequestResolved() {
   const qc = useQueryClient();
   return useMutation({
@@ -59,6 +62,7 @@ export function useMarkContactRequestResolved() {
   });
 }
 
+/** Mutation to reopen a resolved contact request; shows an error toast on failure. */
 export function useReopenContactRequest() {
   const qc = useQueryClient();
   return useMutation({
@@ -68,6 +72,7 @@ export function useReopenContactRequest() {
   });
 }
 
+/** Mutation to permanently delete a contact request; shows an error toast on failure. */
 export function useDeleteContactRequest() {
   const qc = useQueryClient();
   return useMutation({

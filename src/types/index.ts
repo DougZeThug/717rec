@@ -69,7 +69,7 @@ export interface Match {
 }
 
 // Head to Head types
-export interface HeadToHeadEntry {
+interface HeadToHeadEntry {
   opponentName: string;
   wins: number;
   losses: number;
@@ -108,17 +108,6 @@ export * from '@/utils/playoffs/playoffTypes';
 // Export bracket record types
 export * from './bracketRecord';
 
-// Export specific types from bracket.ts (excluding BracketFormat to avoid conflict)
-export type {
-  BracketCreationRequest,
-  BracketMeta,
-  BracketOperationResult,
-  MatchStatus,
-  MatchType,
-  PlayoffMatchSimple,
-  TeamBase,
-} from './bracket';
-
 // Division type - updated to include display_division
 export interface Division {
   id: string;
@@ -128,26 +117,8 @@ export interface Division {
   created_at?: string;
 }
 
-export * from './admin';
-export type {
-  BadgeMetadata,
-  ChampionshipBadgeMetadata,
-  KingSlayerBadgeMetadata,
-  PerformanceBadgeMetadata,
-  StreakBadgeMetadata,
-} from './badges';
-export type {
-  BracketGroup,
-  BracketMatch,
-  BracketParticipant,
-  BracketRound,
-  BracketStage,
-  DatabaseMatch,
-  OpponentSlot,
-} from './bracket';
 export * from './career';
 export * from './chart';
-export * from './match';
 export * from './playoff';
 export * from './schedule';
 export * from './season';
@@ -162,14 +133,7 @@ export * from './reactions';
 export * from './heroCard';
 
 // Timeslot types
-export type {
-  BackToBackAssignmentOptions,
-  BackToBackTimeslotGroup,
-  TeamTimeslot,
-  TimeslotFilterOptions,
-  TimeslotGroup,
-  TimeslotOperationResult,
-} from './timeslots';
+export type { TeamTimeslot } from './timeslots';
 
 // Power score types
 export * from './powerScoreSnapshot';

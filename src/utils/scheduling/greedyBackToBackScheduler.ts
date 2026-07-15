@@ -6,10 +6,5 @@
  * continue to resolve. See './greedy/index.ts' for the public API and
  * sibling modules for the focused implementation.
  */
-export type {
-  GreedySchedulerInput,
-  GreedySchedulerResult,
-  RelaxationLevel,
-  ScheduledMatch,
-} from './greedy';
+export type { GreedySchedulerInput } from './greedy';
 export { generateScheduleGreedy, generateScheduleGreedyWithTracking, pairKey } from './greedy';

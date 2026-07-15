@@ -28,6 +28,7 @@ const sizeStyles: Record<string, string> = {
   md: 'text-sm px-2.5 py-1',
 };
 
+/** Tier-colored pill showing rank or percentile; adds a tooltip when rank and total are given. */
 export const PercentileBadge: React.FC<PercentileBadgeProps> = ({
   percentile,
   rank,
@@ -46,6 +47,7 @@ export const PercentileBadge: React.FC<PercentileBadgeProps> = ({
       ? `Ranked ${formatOrdinal(rank)} of ${total} teams${statName ? ` in ${statName}` : ''}`
       : `${percentile}th percentile${statName ? ` in ${statName}` : ''}`;
 
+  /** Pill showing the rank as an ordinal (or percentile), colored by performance tier. */
   const badge = (
     <span
       className={cn(
@@ -83,6 +85,7 @@ interface PercentileFromResultProps {
   className?: string;
 }
 
+/** Renders a PercentileBadge from a PercentileResult; renders nothing when total is 0. */
 export const PercentileFromResult: React.FC<PercentileFromResultProps> = ({
   result,
   size = 'xs',
@@ -102,5 +105,3 @@ export const PercentileFromResult: React.FC<PercentileFromResultProps> = ({
     />
   );
 };
-
-export default PercentileBadge;

@@ -4,8 +4,6 @@ import { errorLog, scoreLog } from '@/utils/logger';
 import { assertDistinct } from '@/utils/validation';
 
 // Re-export from split services so existing imports keep working
-export type { HeadToHeadData } from '@/services/TeamCareerStatsService';
-export { fetchBatchHeadToHead } from '@/services/TeamCareerStatsService';
 export type { TeamUpdate } from '@/services/TeamSeasonStatsService';
 export { batchUpdateSeasonStats, fetchSeasonBreakdown } from '@/services/TeamSeasonStatsService';
 
@@ -59,18 +57,3 @@ export async function applyMatchResult(
     throw err;
   }
 }
-
-// ─── updateTeamStatsRecord ────────────────────────────────────────────────────
-
-export const updateTeamStatsRecord = async (
-  winnerId: string,
-  loserId: string,
-  winnerGameWins = 0,
-  loserGameWins = 0
-) => {
-  // Ensure game wins are integers
-  const parsedWinnerGameWins = parseInt(String(winnerGameWins)) || 0;
-  const parsedLoserGameWins = parseInt(String(loserGameWins)) || 0;
-
-  return applyMatchResult(winnerId, loserId, parsedWinnerGameWins, parsedLoserGameWins);
-};

@@ -21,6 +21,7 @@ interface TeamDetails {
   divisionname?: string | null;
 }
 
+/** Match row with date, linked team names/logos, and game wins; can color winner and loser. */
 const TeamGameScoreRowComponent: React.FC<TeamGameScoreRowProps> = ({
   match,
   teamId: _teamId,
@@ -134,7 +135,7 @@ const TeamGameScoreRowComponent: React.FC<TeamGameScoreRowProps> = ({
 };
 
 // Memoized: rendered once per match in potentially long match-history lists.
-export const TeamGameScoreRow = React.memo(TeamGameScoreRowComponent);
+const TeamGameScoreRow = React.memo(TeamGameScoreRowComponent);
 TeamGameScoreRow.displayName = 'TeamGameScoreRow';
 
 export default TeamGameScoreRow;
