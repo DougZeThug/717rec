@@ -13,11 +13,17 @@ const FILE_SIGNATURES = {
   webp: [0x52, 0x49, 0x46, 0x46], // RIFF....WEBP checked separately
 } as const;
 
+/**
+ * Check whether a file name uses one of the supported image extensions.
+ */
 const hasAllowedExtension = (fileName: string): boolean => {
   const fileExtension = fileName.split('.').pop()?.toLowerCase() ?? '';
   return ALLOWED_IMAGE_EXTENSIONS.has(fileExtension);
 };
 
+/**
+ * Check whether the leading bytes match a supported image file signature.
+ */
 const matchesFileSignature = (bytes: Uint8Array): boolean => {
   const isJpeg = FILE_SIGNATURES.jpeg.every((byte, index) => bytes[index] === byte);
   if (isJpeg) return true;
