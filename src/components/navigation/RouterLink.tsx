@@ -12,6 +12,7 @@ interface RouterLinkProps extends Omit<LinkProps, 'onClick'> {
  * Allows default navigation behavior to work properly
  */
 const RouterLink: React.FC<RouterLinkProps> = ({ to, children, className, onClick, ...rest }) => {
+  /** Invoke the caller's onClick without blocking React Router's default navigation. */
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (onClick) {
       onClick(e);

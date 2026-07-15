@@ -21,6 +21,7 @@ interface TeamDetails {
   divisionname?: string | null;
 }
 
+/** Match row with date, linked team names/logos, and game wins; can color winner and loser. */
 const TeamGameScoreRowComponent: React.FC<TeamGameScoreRowProps> = ({
   match,
   teamId: _teamId,

@@ -77,6 +77,7 @@ const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ className }
 
   // Show/hide sticky nav based on scroll position
   useEffect(() => {
+    /** Reveal the sticky nav once the page scrolls past the header (about 200px). */
     const handleScroll = () => {
       // Show after scrolling past 200px (roughly past the header)
       setIsVisible(window.scrollY > 200);

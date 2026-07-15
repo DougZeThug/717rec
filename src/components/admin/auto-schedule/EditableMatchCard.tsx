@@ -38,6 +38,7 @@ const timeSlotOptions = [
   '10:00 PM',
 ];
 
+/** Card for editing one auto-scheduled match: team pickers, timeslot, swap, and remove. */
 const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
   match,
   teams,
@@ -50,6 +51,7 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
   hasWarning,
   warningMessage,
 }) => {
+  /** Find a team in the provided list by id; returns null when id is empty or not found. */
   const getTeamById = (id: string | null) => {
     if (!id) return null;
     return teams.find((t) => t.id === id) || null;

@@ -21,6 +21,7 @@ const _actionTypes = {
 
 let count = 0;
 
+/** Returns the next sequential toast id, wrapping safely at MAX_SAFE_INTEGER. */
 function genId() {
   count = (count + 1) % Number.MAX_SAFE_INTEGER;
   return count.toString();

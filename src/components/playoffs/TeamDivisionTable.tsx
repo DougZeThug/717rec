@@ -22,6 +22,7 @@ interface TeamDivisionTableProps {
   isLoading: boolean;
 }
 
+/** Tabbed table of teams grouped by division, showing per-division counts and W-L records. */
 const TeamDivisionTable: React.FC<TeamDivisionTableProps> = ({ divisions, teams, isLoading }) => {
   const [activeTab, setActiveTab] = useState<string>('all');
 

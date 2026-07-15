@@ -22,6 +22,7 @@ interface TargetTypeSelectorProps {
   onChange: (value: HeroCardTargetType) => void;
 }
 
+/** Dropdown for picking which audience type (team, division, season) a hero card targets. */
 export const TargetTypeSelector: React.FC<TargetTypeSelectorProps> = ({ value, onChange }) => {
   const handleValueChange = useCallback(
     (nextValue: string) => {
@@ -58,6 +59,7 @@ interface TargetEntitySelectorProps {
   onChange: (value: string) => void;
 }
 
+/** Dropdown of teams, divisions, or seasons (fetched on demand) for the chosen target type. */
 export const TargetEntitySelector: React.FC<TargetEntitySelectorProps> = ({
   targetType,
   value,
@@ -83,6 +85,7 @@ export const TargetEntitySelector: React.FC<TargetEntitySelectorProps> = ({
 
   if (targetType === 'none') return null;
 
+  /** Return the fetched option list (teams, divisions, or seasons) for the target type. */
   const getOptions = () => {
     switch (targetType) {
       case 'team':
@@ -96,6 +99,7 @@ export const TargetEntitySelector: React.FC<TargetEntitySelectorProps> = ({
     }
   };
 
+  /** Return the dropdown label matching the current target type. */
   const getLabel = () => {
     switch (targetType) {
       case 'team':

@@ -249,6 +249,7 @@ export interface ScoreSubmissionInsertData {
   message: string;
 }
 
+/** Invoke the submit-score-report edge function; throws on any error, returns true on success. */
 export const createScoreSubmission = async (data: ScoreSubmissionInsertData) => {
   const { data: result, error } = await supabase.functions.invoke('submit-score-report', {
     body: {
@@ -353,6 +354,7 @@ export interface ResubmitMatchResultOutcome {
   previous_winner_id: string | null;
 }
 
+/** Call the resubmit_match_result RPC and normalize its JSON reply into a complete outcome. */
 export const resubmitMatchResult = async (
   matchId: string,
   winnerId: string,

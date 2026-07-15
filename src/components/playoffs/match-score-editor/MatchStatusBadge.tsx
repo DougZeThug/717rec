@@ -26,6 +26,7 @@ interface StatusDisplay {
   editable: boolean;
 }
 
+/** Map a brackets-manager status code to its label, icon, badge variant, and editability. */
 const getStatusDisplay = (status: number | undefined): StatusDisplay => {
   switch (status) {
     case 0:
@@ -90,6 +91,7 @@ const getStatusDisplay = (status: number | undefined): StatusDisplay => {
   }
 };
 
+/** Shows a bracket match's status badge plus whether it can be edited and why. */
 export const MatchStatusBadge: React.FC<MatchStatusBadgeProps> = ({ status }) => {
   const { label, description, Icon, variant, editable } = getStatusDisplay(status);
 

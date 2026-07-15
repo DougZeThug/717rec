@@ -15,6 +15,7 @@ interface ThrowerSideProps {
   disabled: boolean;
 }
 
+/** One team's labeled column of tappable player pills for selecting the active thrower. */
 const ThrowerSide: React.FC<ThrowerSideProps> = ({
   label,
   options,

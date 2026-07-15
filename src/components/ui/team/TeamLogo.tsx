@@ -22,6 +22,7 @@ const sizeClasses = {
   lg: 'size-36 min-w-36 min-h-36',
 };
 
+/** Team logo with size presets, initials fallback, and optional link to the team page. */
 export const TeamLogo: React.FC<TeamLogoProps> = ({
   imageUrl,
   teamName,
@@ -39,6 +40,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
     className
   );
 
+  /** The logo box: team image (hidden if it fails to load) or fallback text/initials. */
   const logoContent = (
     <div className={containerClasses}>
       {imageUrl ? (

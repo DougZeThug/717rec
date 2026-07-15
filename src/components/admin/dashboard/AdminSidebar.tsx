@@ -123,6 +123,7 @@ const labelAnimateProps = {
   exit: { opacity: 0, width: 0 },
 };
 
+/** Admin dashboard shell: searchable section nav (sidebar or mobile) persisting the active tab. */
 const AdminSidebar: React.FC = () => {
   const isMobile = useIsMobile();
   const { data: pendingRequestsCount } = usePendingRequestsCount();

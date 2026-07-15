@@ -26,6 +26,7 @@ const useScrollRestoration = (routeKey?: string) => {
 
   // Save scroll position on scroll
   useEffect(() => {
+    /** Save the current scrollY for this route to sessionStorage (skipped during restore). */
     const handleScroll = () => {
       if (isRestoring.current) return;
 
@@ -40,6 +41,7 @@ const useScrollRestoration = (routeKey?: string) => {
 
     // Throttle scroll saves using requestAnimationFrame
     let ticking = false;
+    /** requestAnimationFrame throttle so scroll saves run at most once per frame. */
     const throttledScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
@@ -73,6 +75,7 @@ const useScrollRestoration = (routeKey?: string) => {
       if (savedPosition !== undefined && savedPosition > 0) {
         isRestoring.current = true;
 
+        /** Scroll to the saved offset once the page is tall enough, retrying with backoff. */
         const restoreScroll = () => {
           // Clean up if we've exceeded max retries
           if (retryCount >= SCROLL_RESTORE_MAX_RETRIES) {

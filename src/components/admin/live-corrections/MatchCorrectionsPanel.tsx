@@ -20,6 +20,7 @@ export interface MatchCorrectionsPanelProps {
   matchId: string;
 }
 
+/** Admin panel for editing rounds, deleting rounds, and changing game winners on a match. */
 export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ matchId }) => {
   const { bundle, derived, isLoading, isNotEnabled } = useLiveMatch(matchId);
   const finalized = bundle?.match.iscompleted === true;

@@ -10,6 +10,7 @@ interface AnimatedRankNumberProps {
   showFlash?: boolean;
 }
 
+/** Rank badge that springs in on change and flashes green/red when the rank rises or falls. */
 export const AnimatedRankNumber: React.FC<AnimatedRankNumberProps> = ({
   rank,
   previousRank,
@@ -18,6 +19,7 @@ export const AnimatedRankNumber: React.FC<AnimatedRankNumberProps> = ({
   const [flashColor, setFlashColor] = useState<'green' | 'red' | null>(null);
   const { isWinterTheme } = useSeasonalThemeBase();
 
+  /** Gold/silver/bronze badge classes for ranks 1-3 (theme-aware); muted style otherwise. */
   const getRankStyles = (index: number) => {
     // Winter theme: Use darker backgrounds with icy borders
     if (isWinterTheme) {

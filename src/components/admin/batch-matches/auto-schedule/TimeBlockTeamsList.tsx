@@ -20,6 +20,7 @@ interface TimeBlockTeamsListProps {
 
 const EMPTY_STRING_ARRAY: string[] = [];
 
+/** Grid of a time block's teams with optional multi-select and unmatched-team highlighting. */
 export const TimeBlockTeamsList: React.FC<TimeBlockTeamsListProps> = ({
   teams,
   unmatchedTeamIds = EMPTY_STRING_ARRAY,

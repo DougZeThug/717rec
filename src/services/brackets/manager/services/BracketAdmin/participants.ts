@@ -58,6 +58,7 @@ const resolveTeamToParticipantId: ResolveTeamToParticipantIdFn = async (
         throw new DatabaseError(
           'Failed to resolve participant after unique-violation race: no row found'
         );
+      /** Reuse the row the concurrent request created, caching it for future lookups. */
       const existingId = (existingRow as { id: number }).id;
       participants.push({
         id: existingId,
@@ -72,6 +73,7 @@ const resolveTeamToParticipantId: ResolveTeamToParticipantIdFn = async (
   if (!inserted)
     throw new DatabaseError('Failed to create participant for team: insert returned no row');
 
+  /** Cache the new participant locally so later lookups in this edit skip the database. */
   const newId = (inserted as { id: number }).id;
   participants.push({ id: newId, tournament_id: tournamentId, name: team.name, team_id: teamId });
   return newId;
@@ -91,6 +93,7 @@ export async function editMatchParticipants(
   });
 
   try {
+    /** Load the match from bracket storage; editing requires it to exist and be unplayed. */
     const matchData = (await deps.storage.select('match', matchId)) as StorageMatch | null;
     if (!matchData) throw new BusinessLogicError(`Match ${matchId} not found`);
     if (matchData.status === 4)
@@ -111,6 +114,7 @@ export async function editMatchParticipants(
       );
     }
 
+    /** Load the match's stage to find which tournament its participants belong to. */
     const stage = (await deps.storage.select('stage', matchData.stage_id)) as StorageStage | null;
     if (!stage)
       throw new BusinessLogicError(`Stage ${matchData.stage_id} not found for match ${matchId}`);
@@ -119,6 +123,7 @@ export async function editMatchParticipants(
     const participantsRaw = await deps.storage.select('participant', {
       tournament_id: tournamentId,
     });
+    /** Normalize the storage result (row, array, or null) into a participant array. */
     const participants = (
       Array.isArray(participantsRaw) ? participantsRaw : participantsRaw ? [participantsRaw] : []
     ) as StorageParticipant[];

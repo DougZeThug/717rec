@@ -36,6 +36,7 @@ interface AppCardProps {
   gradient?: 'default' | 'subtle' | 'highlight' | 'blueOrange' | 'orangeAccent';
 }
 
+/** Themed card that renders as a link, keyboard-activatable button, or static container. */
 export const AppCard: React.FC<AppCardProps> = ({
   title,
   description,
@@ -57,6 +58,7 @@ export const AppCard: React.FC<AppCardProps> = ({
 }) => {
   const { isDark } = useThemeConsistency();
 
+  /** Shared header/body/footer markup reused by all three card render variants below. */
   const cardContent = (
     <>
       {(title || description || badge) && (

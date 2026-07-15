@@ -114,6 +114,7 @@ export const usePlayoffData = (isAdmin = false, seasonId?: string | null) => {
     return grouped;
   }, [divisions, brackets]);
 
+  /** Refetch the bracket list so a newly created bracket appears immediately. */
   const handleBracketCreated = async () => {
     await refetchBrackets();
   };

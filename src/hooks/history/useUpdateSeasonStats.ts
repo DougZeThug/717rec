@@ -11,11 +11,13 @@ interface UseUpdateSeasonStatsReturn {
   error: Error | null;
 }
 
+/** Hook for batch-saving team season stat edits, with loading/error state and cache refresh. */
 export const useUpdateSeasonStats = (): UseUpdateSeasonStatsReturn => {
   const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  /** Save the updates and refresh affected season caches; toasts and returns false on error. */
   const updateStats = async (updates: TeamUpdate[]): Promise<boolean> => {
     if (updates.length === 0) {
       return true;

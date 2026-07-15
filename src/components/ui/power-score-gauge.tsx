@@ -17,6 +17,7 @@ const sizeConfig = {
   lg: { width: 80, strokeWidth: 6, fontSize: 'text-xl', labelSize: 'text-sm' },
 };
 
+/** Circular ring gauge that animates a 0-100 power score, color-coded by score thresholds. */
 export const PowerScoreGauge: React.FC<PowerScoreGaugeProps> = ({
   score,
   size = 'md',

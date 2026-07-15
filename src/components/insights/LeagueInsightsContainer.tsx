@@ -17,6 +17,7 @@ import TopPerformersSection from './TopPerformersSection';
 
 const DivisionStrengthChart = lazy(() => import('./DivisionStrengthChart'));
 
+/** Loads league insights and lays out overview cards, charts, matchups, and top performers. */
 const LeagueInsightsContainer: React.FC = () => {
   const { overview, divisionStrength, parity, topPerformers, isLoading, error, refetch } =
     useLeagueInsights();

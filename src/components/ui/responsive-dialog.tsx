@@ -54,6 +54,7 @@ const ResponsiveDialogContext = React.createContext<{ isMobile: boolean }>({
   isMobile: false,
 });
 
+/** Modal root that opens as a bottom drawer on mobile and a centered dialog on desktop. */
 export const ResponsiveDialog: React.FC<ResponsiveDialogProps> = ({
   open,
   onOpenChange,
@@ -76,6 +77,7 @@ export const ResponsiveDialog: React.FC<ResponsiveDialogProps> = ({
   );
 };
 
+/** Body area: a scrollable drawer panel on mobile, standard dialog content on desktop. */
 export const ResponsiveDialogContent: React.FC<ResponsiveDialogContentProps> = ({
   children,
   className,
@@ -93,6 +95,7 @@ export const ResponsiveDialogContent: React.FC<ResponsiveDialogContentProps> = (
   return <DialogContent className={className}>{children}</DialogContent>;
 };
 
+/** Header that renders as DrawerHeader on mobile and DialogHeader on desktop. */
 export const ResponsiveDialogHeader: React.FC<ResponsiveDialogHeaderProps> = ({
   children,
   className,
@@ -106,6 +109,7 @@ export const ResponsiveDialogHeader: React.FC<ResponsiveDialogHeaderProps> = ({
   return <DialogHeader className={className}>{children}</DialogHeader>;
 };
 
+/** Title that renders as DrawerTitle on mobile and DialogTitle on desktop. */
 export const ResponsiveDialogTitle: React.FC<ResponsiveDialogTitleProps> = ({
   children,
   className,
@@ -119,6 +123,7 @@ export const ResponsiveDialogTitle: React.FC<ResponsiveDialogTitleProps> = ({
   return <DialogTitle className={className}>{children}</DialogTitle>;
 };
 
+/** Description text that renders in drawer style on mobile and dialog style on desktop. */
 export const ResponsiveDialogDescription: React.FC<ResponsiveDialogDescriptionProps> = ({
   children,
   className,
@@ -132,6 +137,7 @@ export const ResponsiveDialogDescription: React.FC<ResponsiveDialogDescriptionPr
   return <DialogDescription className={className}>{children}</DialogDescription>;
 };
 
+/** Footer that renders as DrawerFooter on mobile and DialogFooter on desktop. */
 export const ResponsiveDialogFooter: React.FC<ResponsiveDialogFooterProps> = ({
   children,
   className,

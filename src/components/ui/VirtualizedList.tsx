@@ -21,6 +21,7 @@ interface CustomRowProps<T> {
 // Full props received by row component (includes index, style, ariaAttributes from react-window)
 type FullRowProps<T> = RowComponentProps<CustomRowProps<T>>;
 
+/** Adapter for react-window rows: looks up the item by index and delegates to renderRow. */
 function RowComponent<T>(props: FullRowProps<T>): ReactElement {
   const { index, style, items, renderRow } = props;
   const item = items[index];

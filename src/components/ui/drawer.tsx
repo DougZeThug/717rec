@@ -3,6 +3,7 @@ import { Drawer as DrawerPrimitive } from 'vaul';
 
 import { cn } from '@/lib/utils';
 
+/** Vaul drawer root; scales the page background behind the drawer by default. */
 const Drawer = ({
   shouldScaleBackground = true,
   ...props
@@ -46,11 +47,13 @@ const DrawerContent = React.forwardRef<
 ));
 DrawerContent.displayName = 'DrawerContent';
 
+/** Padded header block, centered on small screens and left-aligned on larger ones. */
 const DrawerHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div className={cn('grid gap-1.5 p-4 text-center sm:text-left', className)} {...props} />
 );
 DrawerHeader.displayName = 'DrawerHeader';
 
+/** Bottom-pinned footer that stacks its children vertically with padding. */
 const DrawerFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div className={cn('mt-auto flex flex-col gap-2 p-4', className)} {...props} />
 );

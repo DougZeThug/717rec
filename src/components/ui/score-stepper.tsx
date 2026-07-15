@@ -57,6 +57,7 @@ const accentClasses = {
   },
 };
 
+/** Plus/minus score input with an animated digit, team label, and optional leader highlight. */
 export const ScoreStepper: React.FC<ScoreStepperProps> = ({
   value,
   onChange,
@@ -74,6 +75,7 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
   const [isAnimating, setIsAnimating] = useState(false);
   const [direction, setDirection] = useState<'up' | 'down'>('up');
 
+  /** Raise the score by 1 (up to max), animating the digit sliding upward. */
   const handleIncrement = () => {
     if (value < max && !disabled) {
       setDirection('up');
@@ -83,6 +85,7 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
     }
   };
 
+  /** Lower the score by 1 (down to min), animating the digit sliding downward. */
   const handleDecrement = () => {
     if (value > min && !disabled) {
       setDirection('down');

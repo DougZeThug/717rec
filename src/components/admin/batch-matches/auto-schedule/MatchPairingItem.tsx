@@ -14,6 +14,7 @@ interface MatchPairingItemProps {
   isDualMatchMode?: boolean;
 }
 
+/** Card showing one proposed matchup with compatibility score, records, and its timeslot. */
 export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
   pairing,
   index,
@@ -29,6 +30,7 @@ export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
       ? TIME_BLOCKS[blockName as keyof typeof TIME_BLOCKS]?.main
       : TIME_BLOCKS[blockName as keyof typeof TIME_BLOCKS]?.secondary;
 
+  /** Pick card colors: amber when the pairing is flagged, green/theme colors otherwise. */
   const getCardClasses = () => {
     if (isWinterTheme) {
       return isWarning

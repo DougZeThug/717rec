@@ -26,6 +26,7 @@ export interface SeedManagementResult {
   hasConflicts: boolean;
 }
 
+/** Manages manual vs automatic playoff seeding, tracking pending seed edits and drag state. */
 export const useSeedManagement = (
   initialTeams: ProcessedTeam[],
   validation: SeedValidationState,

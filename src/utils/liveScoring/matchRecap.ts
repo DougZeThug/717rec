@@ -102,6 +102,7 @@ function pickTopPerformer(players: RecapPlayer[]): RecapTopPerformer | null {
   );
   if (eligible.length === 0) return null;
   const best = [...eligible].sort((a, b) => {
+    /** Descending PPR gap; positive means b outranks a (null PPR counts as 0). */
     const pprDelta = (b.ppr ?? 0) - (a.ppr ?? 0);
     if (pprDelta !== 0) return pprDelta;
     // Tie-break: higher hole rate wins; nulls last.

@@ -15,6 +15,7 @@ export const log = (...args: unknown[]) => {
   if (shouldLog('info')) console.log('[717REC]', ...args); // skipcq: JS-0002
 };
 
+/** Log an error to the console and, in production, report it to Sentry with noise filtering. */
 export const errorLog = (...args: unknown[]) => {
   // Always log errors in dev mode
   if (shouldLog('error')) console.error('[717REC ERROR]', ...args); // skipcq: JS-0002
@@ -57,6 +58,7 @@ export const errorLog = (...args: unknown[]) => {
 
         const isNetworkError = additionalArgs.some((arg) => {
           if (arg && typeof arg === 'object') {
+            /** Pull the message field so it can be tested for network-failure strings. */
             const msg = (arg as Record<string, unknown>).message;
             if (typeof msg === 'string') {
               return (
