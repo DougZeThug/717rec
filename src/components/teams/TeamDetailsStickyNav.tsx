@@ -43,7 +43,7 @@ interface TeamDetailsStickyNavProps {
   className?: string;
 }
 
-export const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ className }) => {
+const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ className }) => {
   const [activeSection, setActiveSection] = useState<string>('stats');
   const [isVisible, setIsVisible] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);

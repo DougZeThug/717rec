@@ -30,5 +30,3 @@ export const LiveRegion: React.FC<LiveRegionProps> = ({
     {message}
   </div>
 );
-
-export default LiveRegion;

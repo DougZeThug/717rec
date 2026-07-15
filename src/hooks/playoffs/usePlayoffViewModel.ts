@@ -119,9 +119,3 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
 
 // Re-export the component hooks for direct use
 export * as playoffActions from './usePlayoffActions';
-export { usePlayoffBracketData } from './usePlayoffBracketData';
-export { usePlayoffMatches } from './usePlayoffMatches';
-export { usePlayoffTeams } from './usePlayoffTeams';
-
-// Re-export the BracketMatchesByType type for convenience
-export type { BracketMatchesByType } from '@/services/brackets/types';

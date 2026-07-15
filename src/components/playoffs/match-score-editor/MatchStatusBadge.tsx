@@ -112,5 +112,3 @@ export const MatchStatusBadge: React.FC<MatchStatusBadgeProps> = ({ status }) =>
     </div>
   );
 };
-
-export default MatchStatusBadge;

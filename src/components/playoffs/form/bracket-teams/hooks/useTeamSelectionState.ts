@@ -88,5 +88,3 @@ export const useTeamSelectionState = (
 
   return result;
 };
-
-export default useTeamSelectionState;

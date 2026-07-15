@@ -14,7 +14,7 @@ import type {
   ResolveTeamToParticipantIdFn,
 } from './types';
 
-export const resolveTeamToParticipantId: ResolveTeamToParticipantIdFn = async (
+const resolveTeamToParticipantId: ResolveTeamToParticipantIdFn = async (
   teamId,
   tournamentId,
   participants

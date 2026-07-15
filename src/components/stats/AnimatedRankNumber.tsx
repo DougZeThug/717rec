@@ -95,5 +95,3 @@ export const AnimatedRankNumber: React.FC<AnimatedRankNumberProps> = ({
     </div>
   );
 };
-
-export default AnimatedRankNumber;

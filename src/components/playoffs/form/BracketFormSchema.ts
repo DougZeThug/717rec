@@ -14,4 +14,3 @@ export const bracketFormSchema = z.object({
 });
 
 export type BracketFormValues = z.infer<typeof bracketFormSchema>;
-export type BracketFormInput = z.input<typeof bracketFormSchema>;

@@ -2,7 +2,6 @@ import * as React from 'react';
 
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -11,7 +10,6 @@ import {
 } from '@/components/ui/dialog';
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
   DrawerFooter,
@@ -50,12 +48,6 @@ interface ResponsiveDialogDescriptionProps {
 interface ResponsiveDialogFooterProps {
   children: React.ReactNode;
   className?: string;
-}
-
-interface ResponsiveDialogCloseProps {
-  children: React.ReactNode;
-  className?: string;
-  asChild?: boolean;
 }
 
 const ResponsiveDialogContext = React.createContext<{ isMobile: boolean }>({
@@ -151,26 +143,4 @@ export const ResponsiveDialogFooter: React.FC<ResponsiveDialogFooterProps> = ({
   }
 
   return <DialogFooter className={className}>{children}</DialogFooter>;
-};
-
-export const ResponsiveDialogClose: React.FC<ResponsiveDialogCloseProps> = ({
-  children,
-  className,
-  asChild,
-}) => {
-  const { isMobile } = React.useContext(ResponsiveDialogContext);
-
-  if (isMobile) {
-    return (
-      <DrawerClose className={className} asChild={asChild}>
-        {children}
-      </DrawerClose>
-    );
-  }
-
-  return (
-    <DialogClose className={className} asChild={asChild}>
-      {children}
-    </DialogClose>
-  );
 };

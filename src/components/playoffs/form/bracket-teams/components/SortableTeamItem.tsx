@@ -126,5 +126,3 @@ export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
     </m.div>
   );
 };
-
-export default SortableTeamItem;

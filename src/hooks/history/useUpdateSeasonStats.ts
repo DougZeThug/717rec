@@ -5,9 +5,6 @@ import { toast } from '@/hooks/useToast';
 import { batchUpdateSeasonStats, type TeamUpdate } from '@/services/TeamStatsService';
 import { dbLog, errorLog } from '@/utils/logger';
 
-// Re-export the type for existing consumers
-export type { TeamUpdate };
-
 interface UseUpdateSeasonStatsReturn {
   updateStats: (updates: TeamUpdate[]) => Promise<boolean>;
   isUpdating: boolean;

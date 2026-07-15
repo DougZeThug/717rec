@@ -2,7 +2,7 @@ import React from 'react';
 
 import { cn } from '@/lib/utils';
 
-export interface ThrowerOption {
+interface ThrowerOption {
   id: string;
   name: string;
 }

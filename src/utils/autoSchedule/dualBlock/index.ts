@@ -10,7 +10,3 @@ export { generateDualBlockPairings } from './pairingGenerator';
 export { calculateOverallQualityScore } from './qualityScoreUtils';
 export { balanceTeamsBetweenBlocks } from './teamBalancer';
 export { validateDualBlockSchedule } from './validationUtils';
-
-// Types
-export type { TeamBalanceResult } from './teamBalancer';
-export type { DualBlockValidationResult, DualMatchMetrics, TeamMatchCount } from './types';

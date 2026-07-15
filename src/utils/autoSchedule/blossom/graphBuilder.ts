@@ -9,7 +9,7 @@ import { Edge, RelaxationLevel, TeamPairingConfig } from './types';
 /**
  * Check if edge should be excluded based on hard constraints
  */
-export function shouldExcludeEdge(team1: Team, team2: Team, config: TeamPairingConfig): boolean {
+function shouldExcludeEdge(team1: Team, team2: Team, config: TeamPairingConfig): boolean {
   // Hard constraint: Block T1 vs T3 (extreme tier difference)
   if (isExtremeTierDifference(team1, team2)) {
     debugLog(`Blocking extreme tier difference: ${team1.name} vs ${team2.name}`);
@@ -185,42 +185,6 @@ export function buildEdgesWithRelaxationLevel(
         team1,
         team2,
         weight: adjustedWeight,
-        rawScore,
-        hasPlayedBefore,
-        pairingKey,
-      });
-    }
-  }
-
-  return edges;
-}
-
-/**
- * Build graph with very relaxed constraints for fallback
- */
-export function _buildRelaxedGraph(teams: Team[], config: TeamPairingConfig): Edge[] {
-  const edges: Edge[] = [];
-
-  for (let i = 0; i < teams.length - 1; i++) {
-    for (let j = i + 1; j < teams.length; j++) {
-      const team1 = teams[i];
-      const team2 = teams[j];
-
-      // Only block extreme tier differences in relaxed mode
-      if (isExtremeTierDifference(team1, team2)) {
-        continue;
-      }
-
-      const rawScore = config.getCompatibilityScoreFn(team1, team2);
-      // Always compute accurate metadata so downstream stats stay correct.
-      const hasPlayedBefore = haveTeamsPlayedBeforeSync(team1.id, team2.id, config);
-
-      const pairingKey = [team1.id, team2.id].sort().join('-');
-
-      edges.push({
-        team1,
-        team2,
-        weight: rawScore,
         rawScore,
         hasPlayedBefore,
         pairingKey,

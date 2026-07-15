@@ -4,7 +4,7 @@ import React, { lazy, Suspense, useEffect, useRef } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
 
-import LoadingState from '@/components/ui/loading-state';
+import { LoadingState } from '@/components/ui/loading-state';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/contexts/AuthContext';

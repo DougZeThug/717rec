@@ -18,7 +18,7 @@ const IS_RESTORING_RESET_DELAY_MS = 100;
  *
  * Uses exponential backoff for robust scroll restoration after DOM renders.
  */
-export const useScrollRestoration = (routeKey?: string) => {
+const useScrollRestoration = (routeKey?: string) => {
   const location = useLocation();
   const key = routeKey || location.pathname;
   const isRestoring = useRef(false);

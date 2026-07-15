@@ -13,16 +13,8 @@
  *   - TeamBadgeService.ts     — achievement badges
  */
 
-export { fetchTeamAnalysis, upsertTeamAnalysis } from './TeamAnalysisService';
-export { fetchAllTeamBadges, fetchSeasonBadges, fetchTeamBadges } from './TeamBadgeService';
-export type {
-  TeamAnalysis,
-  TeamAnalysisInput,
-  TeamMembershipForAdmin,
-  TeamMembershipRecord,
-  TeamsQueryOptions,
-  UserProfile,
-} from './teamFetch.types';
+export { fetchAllTeamBadges, fetchTeamBadges } from './TeamBadgeService';
+export type { TeamsQueryOptions } from './teamFetch.types';
 export {
   fetchPendingMembershipCount,
   fetchPendingMembershipsForAdmin,

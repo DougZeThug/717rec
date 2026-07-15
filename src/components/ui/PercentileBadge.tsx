@@ -102,5 +102,3 @@ export const PercentileFromResult: React.FC<PercentileFromResultProps> = ({
     />
   );
 };
-
-export default PercentileBadge;

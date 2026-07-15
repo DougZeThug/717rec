@@ -12,7 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import TeamLogo from '@/components/ui/team/TeamLogo';
+import { TeamLogo } from '@/components/ui/team/TeamLogo';
 import { Team } from '@/types';
 import { teamLog } from '@/utils/logger';
 

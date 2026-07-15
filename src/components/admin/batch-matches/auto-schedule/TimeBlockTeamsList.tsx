@@ -4,7 +4,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { InlineEmptyState } from '@/components/ui/inline-empty-state';
-import TeamLogo from '@/components/ui/team/TeamLogo';
+import { TeamLogo } from '@/components/ui/team/TeamLogo';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { Team } from '@/types';
 

@@ -37,13 +37,3 @@ export function isBothRecreational(team1: Team, team2: Team): boolean {
 
   return tier1 === 3 && tier2 === 3; // Both recreational
 }
-
-/**
- * Check if teams are from same tier
- */
-export function _isSameTier(team1: Team, team2: Team): boolean {
-  const tier1 = getTierFromDivision(team1.divisionName);
-  const tier2 = getTierFromDivision(team2.divisionName);
-
-  return tier1 === tier2;
-}

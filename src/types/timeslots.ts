@@ -20,33 +20,3 @@ export interface TeamTimeslot {
 export interface TimeslotGroup {
   [timeslot: string]: TeamTimeslot[];
 }
-
-// New interface for back-to-back pair grouping
-export interface BackToBackTimeslotGroup {
-  [pairName: string]: {
-    primary: TeamTimeslot[];
-    secondary: TeamTimeslot[];
-    pairLabel: string;
-  };
-}
-
-export interface TimeslotOperationResult {
-  success: boolean;
-  data?: TeamTimeslot | TeamTimeslot[];
-  error?: string;
-}
-
-export interface TimeslotFilterOptions {
-  date?: Date;
-  teamId?: string;
-  timeslot?: string;
-  isBackToBack?: boolean;
-  pairSlot?: string;
-}
-
-// New interface for back-to-back assignment operations
-export interface BackToBackAssignmentOptions {
-  teamIds: string[];
-  pairName: 'Early' | 'Mid' | 'Late';
-  date: Date;
-}

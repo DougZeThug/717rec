@@ -24,5 +24,3 @@ export const loadBracketStyles = async (): Promise<void> => {
     errorLog('Failed to load bracket styles:', error);
   }
 };
-
-export const areBracketStylesLoaded = (): boolean => stylesLoaded;

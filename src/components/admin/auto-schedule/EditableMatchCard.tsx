@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import TeamLogo from '@/components/ui/team/TeamLogo';
+import { TeamLogo } from '@/components/ui/team/TeamLogo';
 import { AutoScheduleMatch, Team } from '@/types';
 
 interface EditableMatchCardProps {

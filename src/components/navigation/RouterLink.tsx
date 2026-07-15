@@ -3,7 +3,7 @@ import { Link, LinkProps } from 'react-router';
 
 import { cn } from '@/lib/utils';
 
-export interface RouterLinkProps extends Omit<LinkProps, 'onClick'> {
+interface RouterLinkProps extends Omit<LinkProps, 'onClick'> {
   onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
@@ -11,13 +11,7 @@ export interface RouterLinkProps extends Omit<LinkProps, 'onClick'> {
  * A Link component that handles navigation through React Router
  * Allows default navigation behavior to work properly
  */
-export const RouterLink: React.FC<RouterLinkProps> = ({
-  to,
-  children,
-  className,
-  onClick,
-  ...rest
-}) => {
+const RouterLink: React.FC<RouterLinkProps> = ({ to, children, className, onClick, ...rest }) => {
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (onClick) {
       onClick(e);

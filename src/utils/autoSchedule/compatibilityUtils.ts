@@ -3,7 +3,7 @@ import { getDisplayDivision } from '@/styles/design-system/divisions';
 import { Team } from '@/types';
 import { debugLog, errorLog } from '@/utils/logger';
 
-import { getCachedCompatibilityScore, getCachedMatchHistory } from './cachingUtils';
+import { getCachedMatchHistory } from './cachingUtils';
 
 /**
  * Get tier distance between two teams (0 = same tier, 1 = adjacent, 2 = extreme)
@@ -84,13 +84,6 @@ export function calculateTeamCompatibility(team1: Team, team2: Team): number {
 
   // Ensure the score is within a reasonable range (0-10)
   return Math.max(0, Math.min(10, finalScore));
-}
-
-/**
- * Get cached or freshly calculated compatibility score
- */
-export function getCompatibilityScore(team1: Team, team2: Team): number {
-  return getCachedCompatibilityScore(team1, team2, calculateTeamCompatibility);
 }
 
 /**

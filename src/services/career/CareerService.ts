@@ -12,4 +12,3 @@
 export type { BulkTeamCareerData } from './CareerBulkFetchService';
 export { fetchAllTeamsCareerData } from './CareerBulkFetchService';
 export { fetchCareerData } from './CareerFetchService';
-export type { CareerData } from './CareerTypes';

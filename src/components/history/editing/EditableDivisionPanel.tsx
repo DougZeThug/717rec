@@ -18,7 +18,7 @@ interface EditableDivisionPanelProps {
   isPendingTarget?: boolean;
 }
 
-export const EditableDivisionPanel: React.FC<EditableDivisionPanelProps> = ({
+const EditableDivisionPanel: React.FC<EditableDivisionPanelProps> = ({
   divisionName,
   teams,
   onRenameDivision,

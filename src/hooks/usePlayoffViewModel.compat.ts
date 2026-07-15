@@ -6,7 +6,6 @@ import { useTeamsArray } from '@/hooks/teams';
 import { useDivisions } from '@/hooks/useDivisions';
 import type { BracketsOverviewRow } from '@/services/brackets/BracketReadService';
 import { fetchBracketsOverview } from '@/services/brackets/BracketReadService';
-import type { BracketMatchesByType } from '@/services/brackets/types';
 import { bracketLog } from '@/utils/logger';
 import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 import { groupTeamsByDivision } from '@/utils/teamGrouping';
@@ -150,21 +149,3 @@ export const usePlayoffData = (isAdmin = false, seasonId?: string | null) => {
     ]
   );
 };
-
-/**
- * @deprecated – use usePlayoffViewModel directly
- */
-export const usePlayoffBracketData = (bracketId: string) => {
-  const viewModel = usePlayoffViewModel(bracketId);
-
-  return {
-    bracketMatchesByType: viewModel.bracketMatchesByType,
-    bracket: viewModel.bracket,
-    isLoading: viewModel.isLoading,
-    error: viewModel.error,
-    teams: viewModel.teams,
-  };
-};
-
-// Re-export the type from the brackets services
-export type { BracketMatchesByType };

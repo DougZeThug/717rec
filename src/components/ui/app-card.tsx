@@ -154,5 +154,3 @@ export const AppCard: React.FC<AppCardProps> = ({
     return <Card className={cardStyles}>{cardContent}</Card>;
   }
 };
-
-export default AppCard;

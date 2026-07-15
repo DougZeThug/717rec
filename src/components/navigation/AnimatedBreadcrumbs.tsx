@@ -26,7 +26,7 @@ const routeLabels: Record<string, string> = {
   admin: 'Admin',
 };
 
-export const AnimatedBreadcrumbs: React.FC<AnimatedBreadcrumbsProps> = ({
+const AnimatedBreadcrumbs: React.FC<AnimatedBreadcrumbsProps> = ({
   items: propItems,
   className,
 }) => {

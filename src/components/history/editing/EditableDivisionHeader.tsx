@@ -15,7 +15,7 @@ interface EditableDivisionHeaderProps {
   existingDivisions: string[];
 }
 
-export const EditableDivisionHeader: React.FC<EditableDivisionHeaderProps> = ({
+const EditableDivisionHeader: React.FC<EditableDivisionHeaderProps> = ({
   divisionName,
   teamCount,
   onRename,

@@ -2,25 +2,25 @@ import { supabase } from '@/integrations/supabase/client';
 import { fetchAllPages } from '@/services/shared/pagination';
 import { handleDatabaseError } from '@/utils/errorHandler';
 
-export interface CompletedMatchRow {
+interface CompletedMatchRow {
   winner_id: string;
   loser_id: string;
   season_id: string | null;
 }
 
-export interface CompletedPlayoffMatchRow {
+interface CompletedPlayoffMatchRow {
   winner_id: string;
   loser_id: string;
   bracket_id: string | null;
 }
 
-export interface TeamSeasonDivisionRow {
+interface TeamSeasonDivisionRow {
   team_id: string;
   season_id: string;
   division_name: string | null;
 }
 
-export interface BracketDivisionRow {
+interface BracketDivisionRow {
   id: string;
   display_division: string | null;
 }

@@ -4,8 +4,6 @@ import { useToast } from '@/hooks/useToast';
 import { BlindDrawService } from '@/services/BlindDrawService';
 import { errorLog } from '@/utils/logger';
 
-export type { BlindDrawSettings } from '@/services/BlindDrawService';
-
 export const useBlindDrawSettings = () => {
   return useQuery({
     queryKey: ['blind-draw-settings'],

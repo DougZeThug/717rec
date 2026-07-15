@@ -55,5 +55,3 @@ export const DragOverlayItem: React.FC<DragOverlayItemProps> = ({ name, seed, lo
     </div>
   );
 };
-
-export default DragOverlayItem;

@@ -13,7 +13,7 @@ interface EditModeToolbarProps {
   onReset: () => void;
 }
 
-export const EditModeToolbar: React.FC<EditModeToolbarProps> = ({
+const EditModeToolbar: React.FC<EditModeToolbarProps> = ({
   hasChanges,
   isSaving,
   changeCount,

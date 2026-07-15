@@ -63,5 +63,3 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
     </m.div>
   );
 };
-
-export default SummaryCard;

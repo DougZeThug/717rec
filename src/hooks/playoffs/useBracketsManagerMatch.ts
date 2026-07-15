@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { fetchBracketsManagerMatchData } from '@/services/brackets/BracketReadService';
 
-export interface BracketsManagerMatchData {
+interface BracketsManagerMatchData {
   id: number;
   stage_id: number;
   group_id: number;

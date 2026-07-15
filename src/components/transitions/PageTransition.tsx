@@ -21,7 +21,7 @@ const delayClass = {
   long: 'animation-delay-300',
 };
 
-export const PageTransition: React.FC<PageTransitionProps> = ({
+const PageTransition: React.FC<PageTransitionProps> = ({
   children,
   delay = 'none',
   animation = 'fadeIn',

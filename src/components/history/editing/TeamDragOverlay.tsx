@@ -10,7 +10,7 @@ interface TeamDragOverlayProps {
   rank: number;
 }
 
-export const TeamDragOverlay: React.FC<TeamDragOverlayProps> = ({ team, rank }) => {
+const TeamDragOverlay: React.FC<TeamDragOverlayProps> = ({ team, rank }) => {
   const winPct =
     team.match_wins + team.match_losses > 0
       ? ((team.match_wins / (team.match_wins + team.match_losses)) * 100).toFixed(0)

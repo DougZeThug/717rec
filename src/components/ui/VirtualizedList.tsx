@@ -77,5 +77,3 @@ export function VirtualizedList<T>({
     />
   );
 }
-
-export default VirtualizedList;

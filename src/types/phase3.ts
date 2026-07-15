@@ -2,13 +2,7 @@ import type {
   BracketManagerMatchWithStage,
   LegacyPlayoffMatchWithGames,
 } from '@/services/brackets/read/types';
-import type {
-  BadgeOperationParams,
-  BadgeOperationType,
-  FailedBadgeOperation,
-} from '@/services/FailedBadgeOperationsService';
-import type { NativeGoogleLoginResult } from '@/types/auth';
-import type { BadgeRpcJsonResult, TeamStreakRpcResult } from '@/types/badges';
+import type { TeamStreakRpcResult } from '@/types/badges';
 import type {
   BulkTeamSeedUpdateResult,
   BulkTeamSeedUpdateRpcResponse,
@@ -32,10 +26,4 @@ export type Phase3TeamSeedUpdateResult = TeamSeedUpdateResult;
 export type Phase3BulkTeamSeedUpdateResult = BulkTeamSeedUpdateResult;
 export type Phase3BulkTeamSeedUpdateRpcResponse = BulkTeamSeedUpdateRpcResponse;
 
-export type Phase3BadgeOperationType = BadgeOperationType;
-export type Phase3BadgeOperationParams = BadgeOperationParams;
-export type Phase3FailedBadgeOperation = FailedBadgeOperation;
-export type Phase3BadgeRpcJsonResult = BadgeRpcJsonResult;
 export type Phase3TeamStreakRpcResult = TeamStreakRpcResult;
-
-export type Phase3NativeGoogleLoginResult = NativeGoogleLoginResult;

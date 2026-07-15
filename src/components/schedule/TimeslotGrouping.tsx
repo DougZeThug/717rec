@@ -11,7 +11,7 @@ import { useTimeslotGrouping } from '@/components/schedule/timeslot-grouping/use
 import { AppCard } from '@/components/ui/app-card';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import LoadingState from '@/components/ui/loading-state';
+import { LoadingState } from '@/components/ui/loading-state';
 import { TeamLogo } from '@/components/ui/team';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';

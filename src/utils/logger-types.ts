@@ -6,7 +6,7 @@
 // Log level control (can be overridden via environment variable)
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'none';
 
-export const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
+const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
   debug: 0,
   info: 1,
   warn: 2,
@@ -17,7 +17,7 @@ export const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
 // Vite-compatible environment detection
 export const isDev = typeof import.meta !== 'undefined' && import.meta.env?.DEV === true;
 
-export const LOG_LEVEL: LogLevel =
+const LOG_LEVEL: LogLevel =
   (typeof import.meta !== 'undefined' ? (import.meta.env?.VITE_LOG_LEVEL as LogLevel) : 'info') ||
   'info';
 

@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import TeamLogo from '@/components/ui/team/TeamLogo';
+import { TeamLogo } from '@/components/ui/team/TeamLogo';
 import { Team } from '@/types';
 
 export interface MatchPair {

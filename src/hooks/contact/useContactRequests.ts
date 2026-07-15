@@ -10,7 +10,7 @@ import {
   type SubmitContactRequestInput,
 } from '@/services/contact/ContactRequestService';
 
-export const CONTACT_REQUESTS_QUERY_KEY = ['contact-requests'] as const;
+const CONTACT_REQUESTS_QUERY_KEY = ['contact-requests'] as const;
 
 export function useContactRequests(enabled = true) {
   const qc = useQueryClient();

@@ -5,7 +5,7 @@ import { useIsMobile } from '@/hooks/useMobile';
 import BottomNav from './BottomNav';
 import DesktopNav from './DesktopNav';
 
-export const AppNavigation: React.FC = () => {
+const AppNavigation: React.FC = () => {
   const isMobile = useIsMobile();
 
   return (

@@ -18,14 +18,14 @@ export const ROUND_COLUMNS =
 
 const GAME_PLAYER_COLUMNS = 'id, game_id, team_id, player_id, slot, created_at';
 
-export interface LiveMatchTeamInfo {
+interface LiveMatchTeamInfo {
   id: string;
   name: string;
   logo_url: string | null;
   image_url: string | null;
 }
 
-export interface LiveMatchInfo {
+interface LiveMatchInfo {
   id: string;
   season_id: string | null;
   date: string;

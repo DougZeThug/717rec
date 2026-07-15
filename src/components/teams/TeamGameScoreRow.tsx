@@ -134,7 +134,7 @@ const TeamGameScoreRowComponent: React.FC<TeamGameScoreRowProps> = ({
 };
 
 // Memoized: rendered once per match in potentially long match-history lists.
-export const TeamGameScoreRow = React.memo(TeamGameScoreRowComponent);
+const TeamGameScoreRow = React.memo(TeamGameScoreRowComponent);
 TeamGameScoreRow.displayName = 'TeamGameScoreRow';
 
 export default TeamGameScoreRow;

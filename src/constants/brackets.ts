@@ -16,7 +16,3 @@ export const BRACKET_STATES = {
   IN_PROGRESS: 'in_progress',
   COMPLETED: 'completed',
 } as const;
-
-// Use the BracketState type from types/playoffs.ts
-// This is now used for compatibility
-export type { BracketState } from '@/utils/playoffs/playoffTypes';

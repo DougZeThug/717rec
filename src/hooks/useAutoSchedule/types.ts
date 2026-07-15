@@ -25,10 +25,3 @@ export interface UseAutoScheduleState {
   matchQualityMetrics: MatchQualityMetrics | null;
   setMatchQualityMetrics: (metrics: MatchQualityMetrics | null) => void;
 }
-
-export interface PairingOperationsProps {
-  setActiveTab: (tab: string) => void;
-  dualMatchMode?: boolean;
-  // Maps team ID to array of block names (supports double headers in multiple blocks)
-  teamBlockMap?: Record<string, string[]>;
-}

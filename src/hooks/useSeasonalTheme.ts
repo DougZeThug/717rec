@@ -40,5 +40,3 @@ export function useSeasonalTheme() {
     shouldApplyWinter: baseTheme.isWinterTheme && isHomepage,
   };
 }
-
-export default useSeasonalTheme;

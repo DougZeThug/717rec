@@ -107,5 +107,3 @@ const ConfidenceBadge: React.FC<{ level: ConfidenceLevel }> = ({ level }) => {
     </span>
   );
 };
-
-export default MatchPrediction;

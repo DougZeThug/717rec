@@ -69,5 +69,3 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
 
   return logoContent;
 };
-
-export default TeamLogo;

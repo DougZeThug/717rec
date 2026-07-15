@@ -86,7 +86,7 @@ const measuringConfig = {
   },
 };
 
-export const EditModeContainer: React.FC<EditModeContainerProps> = ({
+const EditModeContainer: React.FC<EditModeContainerProps> = ({
   seasonId,
   seasonData,
   onSave,

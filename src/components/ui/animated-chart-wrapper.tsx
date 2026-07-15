@@ -10,7 +10,7 @@ interface AnimatedChartWrapperProps {
   delay?: number;
 }
 
-export const AnimatedChartWrapper: React.FC<AnimatedChartWrapperProps> = ({
+const AnimatedChartWrapper: React.FC<AnimatedChartWrapperProps> = ({
   children,
   className,
   delay = 0,

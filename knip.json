@@ -5,9 +5,9 @@
   "ignore": ["src/integrations/supabase/types.ts"],
   "ignoreDependencies": ["events"],
   "rules": {
-    "exports": "off",
-    "types": "off",
-    "duplicates": "off",
-    "enumMembers": "off"
+    "exports": "error",
+    "types": "error",
+    "duplicates": "error",
+    "enumMembers": "error"
   }
 }

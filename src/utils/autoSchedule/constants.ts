@@ -52,33 +52,6 @@ export const BACK_TO_BACK_PAIRS = {
   },
 } as const;
 
-// Valid time slot type
-export type TimeSlot =
-  | '5:00 PM'
-  | '5:30 PM'
-  | '6:00 PM'
-  | '6:30 PM'
-  | '7:00 PM'
-  | '7:30 PM'
-  | '8:00 PM'
-  | '8:30 PM'
-  | '9:00 PM'
-  | '9:30 PM';
-
-// Individual time slots for reference
-export const TIME_SLOTS: Record<TimeSlot, TimeSlot> = {
-  '5:00 PM': '5:00 PM',
-  '5:30 PM': '5:30 PM',
-  '6:00 PM': '6:00 PM',
-  '6:30 PM': '6:30 PM',
-  '7:00 PM': '7:00 PM',
-  '7:30 PM': '7:30 PM',
-  '8:00 PM': '8:00 PM',
-  '8:30 PM': '8:30 PM',
-  '9:00 PM': '9:00 PM',
-  '9:30 PM': '9:30 PM',
-};
-
 // TIME_BLOCKS with structure expected by MatchPairingItem
 export const TIME_BLOCKS = {
   SuperUltraEarly: {
@@ -133,51 +106,11 @@ export const getBackToBackPair = (timeSlot: string): string | null => {
   return BACK_TO_BACK_MAP.get(timeSlot) ?? null;
 };
 
-export const isValidBackToBackSlot = (timeSlot: string): boolean => {
-  return getBackToBackPair(timeSlot) !== null;
-};
-
 export const getBackToBackPairName = (timeSlot: string): string | null => {
   return TIME_TO_PAIR_NAME_MAP.get(timeSlot) ?? null;
-};
-
-export const getMatchSequence = (timeSlot: string): number | null => {
-  // Determine sequence based on whether the timeslot is in the earlier or later position
-  // Primary slots are always sequence 1, secondary slots are always sequence 2
-
-  switch (timeSlot) {
-    case '5:00 PM':
-      return 1; // Always primary (SuperUltraEarly only)
-    case '5:30 PM':
-      // Can be either primary (UltraEarly) or secondary (SuperUltraEarly)
-      return 1; // Default to primary
-    case '6:00 PM':
-    case '6:30 PM':
-    case '7:00 PM':
-    case '7:30 PM':
-    case '8:00 PM':
-    case '8:30 PM':
-    case '9:00 PM':
-      // These can be either primary or secondary depending on context
-      // For now, default to primary (sequence 1) - will be overridden by TimeslotService
-      return 1;
-    case '9:30 PM':
-      return 2; // Always secondary (SuperLate only)
-    default:
-      return null;
-  }
 };
 
 // Get the pair configuration for a given pair name
 export const getPairConfig = (pairName: string) => {
   return BACK_TO_BACK_PAIRS[pairName as keyof typeof BACK_TO_BACK_PAIRS];
 };
-
-// Get all valid pair names
-export const getAllPairNames = (): string[] => {
-  return Object.keys(BACK_TO_BACK_PAIRS);
-};
-
-// Validation constants
-export const MIN_TEAMS_PER_BACK_TO_BACK_PAIR = 4; // Minimum 2 matches (4 teams)
-export const MAX_TEAMS_PER_BACK_TO_BACK_PAIR = 16; // Maximum 8 matches (16 teams)

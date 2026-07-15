@@ -10,7 +10,7 @@ interface AddDivisionButtonProps {
   existingDivisions: string[];
 }
 
-export const AddDivisionButton: React.FC<AddDivisionButtonProps> = ({
+const AddDivisionButton: React.FC<AddDivisionButtonProps> = ({
   onAddDivision,
   existingDivisions,
 }) => {

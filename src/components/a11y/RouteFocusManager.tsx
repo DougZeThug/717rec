@@ -38,5 +38,3 @@ export const RouteFocusManager: React.FC<RouteFocusManagerProps> = ({ mainRef })
 
   return null;
 };
-
-export default RouteFocusManager;

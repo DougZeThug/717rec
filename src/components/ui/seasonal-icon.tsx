@@ -82,5 +82,3 @@ export const SeasonalIcon: React.FC<SeasonalIconProps> = ({
     }
   );
 };
-
-export default SeasonalIcon;

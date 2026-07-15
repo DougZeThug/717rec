@@ -129,16 +129,3 @@ export const TargetEntitySelector: React.FC<TargetEntitySelectorProps> = ({
     </div>
   );
 };
-
-// Legacy default export for backwards compatibility
-interface TargetSelectorProps {
-  targetType: HeroCardTargetType;
-  value: string;
-  onChange: (value: string) => void;
-}
-
-const TargetSelector: React.FC<TargetSelectorProps> = ({ targetType, value, onChange }) => {
-  return <TargetEntitySelector targetType={targetType} value={value} onChange={onChange} />;
-};
-
-export default TargetSelector;

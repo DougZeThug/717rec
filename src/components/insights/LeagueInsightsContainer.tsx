@@ -3,7 +3,7 @@ import React, { lazy, Suspense } from 'react';
 
 import { SectionHeader } from '@/components/ui/CollapsibleSection';
 import { ErrorDisplay } from '@/components/ui/error-display';
-import LoadingState from '@/components/ui/loading-state';
+import { LoadingState } from '@/components/ui/loading-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import WinterSection from '@/components/winter/WinterSection';
 import { useLeagueInsights } from '@/hooks/useLeagueInsights';

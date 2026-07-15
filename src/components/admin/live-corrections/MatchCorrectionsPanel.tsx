@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import LoadingState from '@/components/ui/loading-state';
+import { LoadingState } from '@/components/ui/loading-state';
 import { useAdminCorrections } from '@/hooks/live-scoring/useAdminCorrections';
 import { useLiveMatch } from '@/hooks/live-scoring/useLiveMatch';
 import type { Tables } from '@/integrations/supabase/types';

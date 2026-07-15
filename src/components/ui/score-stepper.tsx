@@ -211,5 +211,3 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
     </div>
   );
 };
-
-export default ScoreStepper;

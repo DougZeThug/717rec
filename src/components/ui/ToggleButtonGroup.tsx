@@ -82,5 +82,3 @@ export function ToggleButtonGroup<T extends string>({
     </div>
   );
 }
-
-export default ToggleButtonGroup;

@@ -46,7 +46,7 @@ export interface PersistedAutoScheduleState {
 /**
  * Default empty state
  */
-export const getDefaultPersistedState = (): PersistedAutoScheduleState => ({
+const getDefaultPersistedState = (): PersistedAutoScheduleState => ({
   selectedDate: new Date().toISOString(),
   generationDate: null,
   activeTab: 'teams',
@@ -95,9 +95,7 @@ const isMatchQualityMetrics = (value: unknown): value is MatchQualityMetrics => 
   return isObject(value);
 };
 
-export const isPersistedAutoScheduleState = (
-  value: unknown
-): value is PersistedAutoScheduleState => {
+const isPersistedAutoScheduleState = (value: unknown): value is PersistedAutoScheduleState => {
   if (!isObject(value)) return false;
 
   return (
@@ -174,17 +172,6 @@ export function clearAutoScheduleState(): void {
   } catch (error) {
     warnLog('Failed to clear auto-schedule state:', error);
   }
-}
-
-/**
- * Convert Date objects in matches to ISO strings for storage
- * (Date objects become strings when JSON.stringify'd anyway, this makes it explicit)
- */
-export function serializeMatches(matches: AutoScheduleMatch[]): AutoScheduleMatch[] {
-  return matches.map((match) => ({
-    ...match,
-    date: match.date instanceof Date ? match.date : new Date(match.date),
-  }));
 }
 
 /**

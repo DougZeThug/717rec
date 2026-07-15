@@ -1,7 +1,7 @@
 import { AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import React from 'react';
 
-import TeamLogo from '@/components/ui/team/TeamLogo';
+import { TeamLogo } from '@/components/ui/team/TeamLogo';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { TeamPairing } from '@/types/autoSchedule';

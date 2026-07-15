@@ -15,7 +15,7 @@ interface ThemeToggleProps {
 
 const themeOrder = ['light', 'dark', 'winter-frozen'] as const;
 
-export const ThemeToggle: React.FC<ThemeToggleProps> = ({
+const ThemeToggle: React.FC<ThemeToggleProps> = ({
   className,
   variant = 'outline',
   size = 'icon',

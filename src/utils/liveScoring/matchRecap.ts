@@ -2,14 +2,14 @@ import type { Tables } from '@/integrations/supabase/types';
 type MatchRoundRow = Tables<'match_rounds'>;
 
 import { computePlayerStatLines, type PlayerStatLine } from './matchPlayerStats';
-import { percentage, pointsPerRound } from './pprCalc';
+import { percentage } from './pprCalc';
 
 export type TeamSide = 1 | 2;
 
 /** Minimum rounds a player must have thrown to qualify as "Top Performer". */
-export const TOP_PERFORMER_MIN_ROUNDS = 2;
+const TOP_PERFORMER_MIN_ROUNDS = 2;
 /** Minimum bag-tracked bags a player must have to qualify as "Most Consistent". */
-export const MOST_CONSISTENT_MIN_BAGS = 4;
+const MOST_CONSISTENT_MIN_BAGS = 4;
 
 export interface RecapPlayer {
   playerId: string;
@@ -25,14 +25,14 @@ export interface RecapPlayer {
   offPct: number | null;
 }
 
-export interface RecapTeam {
+interface RecapTeam {
   side: TeamSide;
   name: string;
   bagTotals: { in: number; on: number; off: number; total: number };
   players: RecapPlayer[];
 }
 
-export interface RecapKeyGame {
+interface RecapKeyGame {
   gameNumber: number;
   team1Score: number;
   team2Score: number;
@@ -40,14 +40,14 @@ export interface RecapKeyGame {
   margin: number;
 }
 
-export interface RecapTopPerformer {
+interface RecapTopPerformer {
   playerId: string;
   name: string;
   ppr: number;
   holePct: number | null;
 }
 
-export interface RecapMostConsistent {
+interface RecapMostConsistent {
   playerId: string;
   name: string;
   offPct: number;
@@ -61,7 +61,7 @@ export interface MatchRecap {
 }
 
 /** Minimal shape needed to pick the "Key Game" — matches LiveGameDerived. */
-export interface GameForRecap {
+interface GameForRecap {
   game: { id: string; game_number: number; winner_team_id: string | null };
   totals: { team1: number; team2: number };
 }
@@ -234,6 +234,3 @@ export function buildPlayerTeamMap(
   }
   return map;
 }
-
-// Re-export for tests that want to construct example PlayerStatLines directly.
-export { pointsPerRound };

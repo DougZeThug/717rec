@@ -41,10 +41,7 @@ const quickActions = [
   { name: 'Message Board', icon: MessageSquare, path: '/message-board' },
 ];
 
-export const CommandPalette: React.FC<CommandPaletteProps> = ({
-  open: controlledOpen,
-  onOpenChange,
-}) => {
+const CommandPalette: React.FC<CommandPaletteProps> = ({ open: controlledOpen, onOpenChange }) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const navigate = useNavigate();
   const { data: teams } = useTeamsQuery();

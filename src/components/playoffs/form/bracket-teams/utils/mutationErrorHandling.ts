@@ -1,6 +1,6 @@
 import { PostgrestError } from '@supabase/supabase-js';
 
-export interface ErrorCategory {
+interface ErrorCategory {
   type: 'network' | 'validation' | 'permission' | 'conflict' | 'server' | 'unknown';
   severity: 'low' | 'medium' | 'high' | 'critical';
   retryable: boolean;
@@ -15,7 +15,7 @@ export interface RetryConfig {
   backoffMultiplier: number;
 }
 
-export interface ErrorHandlingResult {
+interface ErrorHandlingResult {
   category: ErrorCategory;
   shouldRetry: boolean;
   retryDelay: number;
@@ -48,7 +48,7 @@ const ERROR_PATTERNS = {
 /**
  * Categorize an error based on its message and properties
  */
-export const categorizeError = (error: unknown): ErrorCategory => {
+const categorizeError = (error: unknown): ErrorCategory => {
   const errorMessage = getErrorMessage(error);
   const errorCode = getErrorCode(error);
 
@@ -77,7 +77,7 @@ export const categorizeError = (error: unknown): ErrorCategory => {
 /**
  * Determine if an error should be retried and calculate delay
  */
-export const shouldRetryError = (
+const shouldRetryError = (
   error: unknown,
   attemptCount: number,
   config: Partial<RetryConfig> = {}

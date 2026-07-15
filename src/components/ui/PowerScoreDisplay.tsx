@@ -104,5 +104,3 @@ export const PowerScoreDisplay: React.FC<PowerScoreDisplayProps> = ({
       );
   }
 };
-
-export default PowerScoreDisplay;

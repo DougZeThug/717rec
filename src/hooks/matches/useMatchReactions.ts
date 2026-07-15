@@ -9,7 +9,7 @@ import { errorLog } from '@/utils/logger';
 
 export type { MatchReaction };
 
-export interface ReactionCount {
+interface ReactionCount {
   emoji: string;
   count: number;
   users: string[];

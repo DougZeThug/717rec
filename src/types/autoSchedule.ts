@@ -19,7 +19,7 @@ export interface AutoScheduleMatch {
   blockType?: 'primary' | 'secondary';
 }
 
-export interface CompatibilityWeights {
+interface CompatibilityWeights {
   powerScoreWeight?: number;
   sosWeight?: number;
   recordWeight?: number;
@@ -59,17 +59,6 @@ export interface PairedTimeBlockTeamsMap {
     secondaryBlock: string;
     primaryTeams: Team[];
     secondaryTeams: Team[];
-  };
-}
-
-/**
- * New interface for back-to-back team grouping
- */
-export interface BackToBackTeamsMap {
-  [pairName: string]: {
-    primary: Team[];
-    secondary: Team[];
-    pairLabel: string;
   };
 }
 
@@ -141,20 +130,4 @@ export interface PreviewResult {
   date: Date;
   timeBlocks: TimeBlockTeamsMap;
   unmatchableBlocks: string[];
-}
-
-/**
- * Enhanced pairing result to include back-to-back information
- */
-export interface BackToBackPairingResult extends PairingResult {
-  backToBackPairs?: BackToBackTeamsMap;
-  opponentDiversityScore?: number;
-}
-
-// Add missing MatchConversionOptions interface
-export interface MatchConversionOptions {
-  includeMetadata?: boolean;
-  validateTeams?: boolean;
-  defaultLocation?: string;
-  dualMatchMode?: boolean;
 }

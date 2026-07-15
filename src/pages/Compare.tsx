@@ -6,7 +6,7 @@ import { useSearchParams } from 'react-router';
 import { TeamCompareSelector } from '@/components/compare/TeamCompareSelector';
 import { TeamComparisonView } from '@/components/compare/TeamComparisonView';
 import { ErrorDisplay } from '@/components/ui/error-display';
-import LoadingState from '@/components/ui/loading-state';
+import { LoadingState } from '@/components/ui/loading-state';
 import { useTeamsQuery } from '@/hooks/teams';
 import { useTeamComparison } from '@/hooks/useTeamComparison';
 import { Team } from '@/types';

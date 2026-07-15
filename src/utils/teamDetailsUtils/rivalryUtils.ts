@@ -9,11 +9,6 @@ const NEMESIS_THRESHOLD = 18;
 const TOUGH_MATCHUP_THRESHOLD = 30;
 const MIN_MATCHES = 3;
 
-export interface RivalryClassification {
-  type: RivalryType;
-  record: HeadToHeadRecord;
-}
-
 export interface RivalryResults {
   /** Opponents with the most matches played (top 3) */
   mostPlayed: HeadToHeadRecord[];

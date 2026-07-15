@@ -99,5 +99,3 @@ export const PowerScoreGauge: React.FC<PowerScoreGaugeProps> = ({
     </div>
   );
 };
-
-export default PowerScoreGauge;

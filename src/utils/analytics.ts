@@ -73,10 +73,7 @@ export const trackPageView = (path: string, title?: string) => {
 /**
  * Track a custom event
  */
-export const trackEvent = (
-  eventName: string,
-  params?: Record<string, string | number | boolean>
-) => {
+const trackEvent = (eventName: string, params?: Record<string, string | number | boolean>) => {
   if (!GA_MEASUREMENT_ID || !import.meta.env.PROD) {
     console.log('[Analytics] Event:', eventName, params); // skipcq: JS-0002
     return;
@@ -85,39 +82,9 @@ export const trackEvent = (
   window.gtag?.('event', eventName, params);
 };
 
-/**
- * Set user ID for tracking
- */
-export const setAnalyticsUser = (userId: string | null) => {
-  if (!GA_MEASUREMENT_ID || !import.meta.env.PROD) {
-    console.log('[Analytics] Set user:', userId); // skipcq: JS-0002
-    return;
-  }
-
-  window.gtag?.('config', GA_MEASUREMENT_ID, {
-    user_id: userId,
-  });
-};
-
 // ============================================
 // Pre-defined event helpers
 // ============================================
-
-export const trackAuth = (action: 'login' | 'signup' | 'logout') => {
-  trackEvent('auth', { action });
-};
-
-export const trackScoreSubmission = (matchId: string) => {
-  trackEvent('score_submission', { match_id: matchId });
-};
-
-export const trackBracketView = (bracketId: string, bracketTitle: string) => {
-  trackEvent('bracket_view', { bracket_id: bracketId, bracket_title: bracketTitle });
-};
-
-export const trackTeamView = (teamId: string, teamName: string) => {
-  trackEvent('team_view', { team_id: teamId, team_name: teamName });
-};
 
 export const trackContactForm = (subject: string) => {
   trackEvent('contact_form_submit', { subject });

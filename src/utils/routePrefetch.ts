@@ -4,7 +4,7 @@
  */
 
 // Prefetch functions matching lazy imports in App.tsx
-export const prefetchRoutes = {
+const prefetchRoutes = {
   index: () => import('../pages/Index'),
   teams: () => import('../pages/TeamsPage'),
   teamDetails: () => import('../pages/TeamDetails'),
@@ -20,7 +20,7 @@ export const prefetchRoutes = {
 } as const;
 
 // Map routes to prefetch functions
-export const routePrefetchMap: Record<string, () => Promise<unknown>> = {
+const routePrefetchMap: Record<string, () => Promise<unknown>> = {
   '/': prefetchRoutes.index,
   '/teams': prefetchRoutes.teams,
   '/schedule': prefetchRoutes.schedule,
@@ -60,15 +60,5 @@ export const preloadCoreRoutes = (): void => {
     requestIdleCallback(preloadLight, { timeout: 3000 });
   } else {
     setTimeout(preloadLight, 2000);
-  }
-};
-
-// Prefetch heavy routes on-demand (e.g., on hover/focus)
-// This avoids loading unused JavaScript on initial page load
-export const prefetchHeavyRoute = (route: 'stats' | 'playoffs'): void => {
-  if (route === 'stats') {
-    prefetchRoutes.stats();
-  } else if (route === 'playoffs') {
-    prefetchRoutes.playoffs();
   }
 };
