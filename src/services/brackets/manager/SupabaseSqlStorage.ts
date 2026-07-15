@@ -126,7 +126,7 @@ export class SupabaseSqlStorage implements CrudInterface {
     return data;
   }
 
-  async select<T extends keyof DataTypes>(
+  select<T extends keyof DataTypes>(
     table: T,
     filter?: Partial<DataTypes[T]> | Id
   ): Promise<DataTypes[T][] | DataTypes[T] | null> {

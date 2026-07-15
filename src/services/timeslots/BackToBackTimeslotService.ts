@@ -63,7 +63,7 @@ export class BackToBackTimeslotService {
    * Legacy method — redirects to back-to-back assignment.
    * @deprecated Use addBackToBackTimeslot instead
    */
-  static async addTimeslot(date: Date, teamId: string, timeslot: string): Promise<TeamTimeslot[]> {
+  static addTimeslot(date: Date, teamId: string, timeslot: string): Promise<TeamTimeslot[]> {
     warnLog('addTimeslot is deprecated. Converting to back-to-back assignment.');
 
     const pairName = getBackToBackPairName(timeslot);

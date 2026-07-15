@@ -99,7 +99,7 @@ export class BracketManagerService {
    *   grandFinalType: 'simple',
    * });
    */
-  async createBracket(options: CreateBracketOptions): Promise<void> {
+  createBracket(options: CreateBracketOptions): Promise<void> {
     return this.creationService.createBracket(options);
   }
 
@@ -133,7 +133,7 @@ export class BracketManagerService {
    * Both win and loss must be explicitly set for proper loser propagation in double elimination.
    * Updates are queued and processed serially to prevent race conditions during concurrent updates.
    */
-  async updateMatch(options: UpdateMatchOptions): Promise<void> {
+  updateMatch(options: UpdateMatchOptions): Promise<void> {
     return this.updateService.updateMatch(options);
   }
 
@@ -157,7 +157,7 @@ export class BracketManagerService {
    * @example
    * await bracketManagerService.normalizeLosersR1(stageId);
    */
-  async normalizeLosersR1(stageId: number): Promise<void> {
+  normalizeLosersR1(stageId: number): Promise<void> {
     return this.normalizationService.normalizeLosersR1(stageId);
   }
 
@@ -191,7 +191,7 @@ export class BracketManagerService {
    * @remarks
    * Only allowed if changes don't impact existing match results.
    */
-  async updateSeeding(options: UpdateSeedingOptions): Promise<void> {
+  updateSeeding(options: UpdateSeedingOptions): Promise<void> {
     return this.seedingService.updateSeeding(options);
   }
 
@@ -216,7 +216,7 @@ export class BracketManagerService {
    * - Returns early with error log if no participants found
    * - Uses upsert with conflict resolution on team_id, bracket_id
    */
-  async calculateFinalStandings(
+  calculateFinalStandings(
     bracketId: string
   ): ReturnType<typeof this.standingsService.calculateFinalStandings> {
     return this.standingsService.calculateFinalStandings(bracketId);
@@ -256,7 +256,7 @@ export class BracketManagerService {
    *   console.log('Not eligible:', result.reason);
    * }
    */
-  async checkByeEligibility(matchId: number) {
+  checkByeEligibility(matchId: number) {
     return this.adminService.checkByeEligibility(matchId);
   }
 
@@ -304,7 +304,7 @@ export class BracketManagerService {
    * const result = await bracketManagerService.adminToggleByeReady(42, false, true);
    * console.log(result.message); // "Match 42 reopened to Ready (downstream cleared)"
    */
-  async adminToggleByeReady(matchId: number, makeReady: boolean, clearDownstream = false) {
+  adminToggleByeReady(matchId: number, makeReady: boolean, clearDownstream = false) {
     return this.adminService.adminToggleByeReady(matchId, makeReady, clearDownstream);
   }
 
@@ -322,7 +322,7 @@ export class BracketManagerService {
    * @example
    * await bracketManagerService.editMatchParticipants(42, 'team-uuid-a', 'team-uuid-b');
    */
-  async editMatchParticipants(
+  editMatchParticipants(
     matchId: number,
     newOpponent1TeamId: string | null,
     newOpponent2TeamId: string | null

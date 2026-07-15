@@ -100,7 +100,7 @@ export const uploadHeroCardImage = async (file: File): Promise<string> => {
  * @param file The file to verify
  * @returns Promise<boolean> True if valid, false otherwise
  */
-const isValidCompressedImage = async (file: File): Promise<boolean> => {
+const isValidCompressedImage = (file: File): Promise<boolean> => {
   // For WebP, small size is a feature - skip size check for WebP files
   if (file.type !== 'image/webp') {
     // Check file size (minimum 3KB for non-WebP)
@@ -108,14 +108,14 @@ const isValidCompressedImage = async (file: File): Promise<boolean> => {
     const fileSizeKB = file.size / 1024;
     if (fileSizeKB < minSizeKB) {
       warnLog(`Compressed image too small (${fileSizeKB.toFixed(2)}KB < ${minSizeKB}KB)`);
-      return false;
+      return Promise.resolve(false);
     }
   }
 
   // Verify MIME type
   if (!file.type.startsWith('image/')) {
     warnLog(`Invalid MIME type: ${file.type}`);
-    return false;
+    return Promise.resolve(false);
   }
 
   // Verify image dimensions
@@ -143,7 +143,7 @@ const isValidCompressedImage = async (file: File): Promise<boolean> => {
     });
   } catch (error) {
     warnLog('Error validating image:', error);
-    return false;
+    return Promise.resolve(false);
   }
 };
 

@@ -26,7 +26,7 @@ import {
  * @param toast - Toast notification function for user feedback
  * @returns Pairings, unmatched team IDs, and diagnostics
  */
-export const scheduleDualBlockPairings = async (
+export const scheduleDualBlockPairings = (
   timeBlockTeams: TimeBlockTeamsMap,
   config: AlgorithmConfig,
   blockMap: Record<string, string[]>,
@@ -59,7 +59,7 @@ export const scheduleDualBlockPairings = async (
       description: 'Please load teams for a specific date first.',
       variant: 'destructive',
     });
-    throw new Error('No teams found in any time blocks');
+    return Promise.reject(new Error('No teams found in any time blocks'));
   }
 
   scheduleLog(
@@ -218,9 +218,10 @@ export const scheduleDualBlockPairings = async (
   );
   scheduleLog(`   Timeslots used: ${Object.keys(pairings).join(', ')}`);
 
-  return {
+  // Preserve the existing Promise-returning API even though scheduling is synchronous.
+  return Promise.resolve({
     pairings,
     unmatchedTeamIds: allUnmatchedTeamIds,
     diagnostics: aggregateDiagnostics,
-  };
+  });
 };
