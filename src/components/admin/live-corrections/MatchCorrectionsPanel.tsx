@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, Pencil, Trash2, Trophy } from 'lucide-react';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -56,12 +56,10 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
     ? (bundle?.rounds.find((r) => r.id === deletingRoundId) ?? null)
     : null;
 
-  useEffect(() => {
-    if (editingRoundId && !editingRound) setEditingRoundId(null);
-  }, [editingRoundId, editingRound]);
-  useEffect(() => {
-    if (deletingRoundId && !deletingRound) setDeletingRoundId(null);
-  }, [deletingRoundId, deletingRound]);
+  // If the underlying round disappears from realtime data, the dialog's render
+  // guards below (`editingRound && editingGame`, `deletingRound`) unmount it —
+  // no effect needed. The stale ID stays in state harmlessly until the next
+  // edit action overwrites it.
 
   const rosterById = useMemo(() => {
     const map = new Map<string, Tables<'team_players'>>();
