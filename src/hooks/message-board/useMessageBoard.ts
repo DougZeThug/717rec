@@ -1,17 +1,43 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import type { InfiniteData } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useMemo, useState } from 'react';
 
 import { toast } from '@/hooks/useToast';
-import { Message, MessageCategory } from '@/types/reactions';
+import type { Message, MessageCategory } from '@/types/reactions';
 import { errorLog } from '@/utils/logger';
 
-import { FilterOptions, MessageQueryOptions, UseMessageBoardResult } from './types';
+import { messageBoardKeys } from './messageBoardKeys';
+import type { FilterOptions, UseMessageBoardResult } from './types';
 import { useMessageApi } from './useMessageApi';
 import { useMessageRealtime } from './useMessageRealtime';
 
 const PAGE_SIZE = 10;
-const FILTER_DEBOUNCE_MS = 300;
 const MAX_MESSAGES_IN_STATE = 100;
 const MESSAGE_FILTER_KEY = 'messageBoardFilters';
+const EMPTY_MESSAGES: Message[] = [];
+type MessagePage = Message[] & { hasMore?: boolean };
+type MessagePages = InfiniteData<MessagePage, string | undefined>;
+
+/** Attach server-pagination metadata to a message page without changing array behavior. */
+const toMessagePage = (messages: Message[], hasMore = messages.length === PAGE_SIZE): MessagePage =>
+  Object.assign([...messages], { hasMore });
+
+/** Split a flat, newest-first message list into infinite-query page records. */
+const buildMessagePages = (messages: Message[], hasMore?: boolean): MessagePages => {
+  const pages: MessagePage[] = [];
+  for (let index = 0; index < messages.length; index += PAGE_SIZE) {
+    const isLastPage = index + PAGE_SIZE >= messages.length;
+    pages.push(
+      toMessagePage(messages.slice(index, index + PAGE_SIZE), isLastPage ? hasMore : true)
+    );
+  }
+  return {
+    pages: pages.length > 0 ? pages : [toMessagePage([], false)],
+    pageParams: pages.map((_, index) =>
+      index === 0 ? undefined : pages[index - 1]?.at(-1)?.created_at
+    ),
+  };
+};
 
 // Helper to load persisted filters
 const loadPersistedFilters = (): FilterOptions => {
@@ -26,18 +52,11 @@ const loadPersistedFilters = (): FilterOptions => {
   return { category: null, teamId: null, searchQuery: null };
 };
 
+/** Manage message-board filters, pagination, mutations, and realtime cache patches. */
 export const useMessageBoard = (): UseMessageBoardResult => {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
-
+  const queryClient = useQueryClient();
   // Filter state - initialize from sessionStorage
   const [filterOptions, setFilterOptions] = useState<FilterOptions>(loadPersistedFilters);
-
-  // Debounce ref for filter changes
-  const filterDebounceRef = useRef<NodeJS.Timeout>();
 
   const {
     fetchMessages,
@@ -46,9 +65,39 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     deleteMessage: apiDeleteMessage,
   } = useMessageApi();
 
+  const baseOptions = useMemo(
+    () => ({
+      limit: PAGE_SIZE,
+      category: filterOptions.category,
+      teamId: filterOptions.teamId,
+      searchQuery: filterOptions.searchQuery,
+    }),
+    [filterOptions.category, filterOptions.teamId, filterOptions.searchQuery]
+  );
+  const queryKey = useMemo(() => messageBoardKeys.messages(baseOptions), [baseOptions]);
+  const messagesQuery = useInfiniteQuery({
+    queryKey,
+    initialPageParam: undefined as string | undefined,
+    refetchOnMount: 'always',
+    queryFn: async ({ pageParam }) => {
+      const page = await fetchMessages({
+        ...baseOptions,
+        olderThan: pageParam,
+      });
+      return toMessagePage(page);
+    },
+    getNextPageParam: (lastPage) =>
+      lastPage.hasMore ? lastPage[lastPage.length - 1]?.created_at : undefined,
+  });
+  const messages = messagesQuery.data?.pages.flat() ?? EMPTY_MESSAGES;
+  const isLoading =
+    messagesQuery.isLoading || (messagesQuery.isFetching && !messagesQuery.isFetchingNextPage);
+  const loadingMore = messagesQuery.isFetchingNextPage;
+  const error = messagesQuery.error ? 'Failed to load messages' : null;
+  const hasMore = Boolean(messagesQuery.hasNextPage);
+
   // Set filter function - shows loading immediately for UX feedback
   const setFilter = useCallback((filter: Partial<FilterOptions>) => {
-    setIsLoading(true); // Immediate feedback
     setFilterOptions((prev) => {
       const newOptions = { ...prev, ...filter };
       // Persist to sessionStorage
@@ -57,81 +106,17 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     });
   }, []);
 
-  // Fetch initial messages
   const fetchInitialMessages = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const data = await fetchMessages({
-        limit: PAGE_SIZE,
-        category: filterOptions.category,
-        teamId: filterOptions.teamId,
-        searchQuery: filterOptions.searchQuery,
-      });
-
-      setMessages(data || []);
-      setHasMore(data.length === PAGE_SIZE);
-    } catch (err) {
-      errorLog('Error fetching messages:', err);
-      setError('Failed to load messages');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [fetchMessages, filterOptions]);
-
-  // Debounced effect to refetch messages when filters change
-  useEffect(() => {
-    // Clear any pending debounce timer
-    if (filterDebounceRef.current) {
-      clearTimeout(filterDebounceRef.current);
-    }
-
-    // Set a new debounce timer
-    filterDebounceRef.current = setTimeout(() => {
-      fetchInitialMessages();
-    }, FILTER_DEBOUNCE_MS);
-
-    // Cleanup on filter change or unmount
-    return () => {
-      if (filterDebounceRef.current) {
-        clearTimeout(filterDebounceRef.current);
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- we intentionally only re-run when filter values change; fetchInitialMessages closes over them.
-  }, [filterOptions.category, filterOptions.teamId, filterOptions.searchQuery]);
+    await messagesQuery.refetch();
+  }, [messagesQuery]);
 
   // Load more messages
   const loadMoreMessages = useCallback(async () => {
-    if (!hasMore || loadingMore) return;
+    if (!messagesQuery.hasNextPage || messagesQuery.isFetchingNextPage) return;
 
     try {
-      setLoadingMore(true);
-
-      // Get the oldest message date in the current list
-      const oldestMessage = messages[messages.length - 1];
-
-      if (!oldestMessage) {
-        setHasMore(false);
-        return;
-      }
-
-      const options: MessageQueryOptions = {
-        limit: PAGE_SIZE,
-        olderThan: oldestMessage.created_at,
-        category: filterOptions.category,
-        teamId: filterOptions.teamId,
-        searchQuery: filterOptions.searchQuery,
-      };
-
-      const data = await fetchMessages(options);
-
-      if (data && data.length > 0) {
-        setMessages((prev) => [...prev, ...data]);
-        setHasMore(data.length === PAGE_SIZE);
-      } else {
-        setHasMore(false);
-      }
+      const result = await messagesQuery.fetchNextPage();
+      if (result.error) throw result.error;
     } catch (err) {
       errorLog('Error loading more messages:', err);
       toast({
@@ -139,10 +124,8 @@ export const useMessageBoard = (): UseMessageBoardResult => {
         description: 'Could not load additional messages. Please try again.',
         variant: 'destructive',
       });
-    } finally {
-      setLoadingMore(false);
     }
-  }, [messages, hasMore, loadingMore, fetchMessages, filterOptions]);
+  }, [messagesQuery]);
 
   // Post message function
   const postMessage = async (content: string, category: MessageCategory = 'General') => {
@@ -159,18 +142,27 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     try {
       await apiUpdateMessage(messageId, content);
       // Optimistic UI update
-      setMessages((curr) =>
-        curr.map((msg) =>
-          msg.id === messageId
-            ? {
-                ...msg,
-                content,
-                updated_at: new Date().toISOString(),
-                is_edited: true,
-              }
-            : msg
-        )
-      );
+      queryClient.setQueryData<MessagePages>(queryKey, (curr) => {
+        if (!curr) return curr;
+        return {
+          ...curr,
+          pages: curr.pages.map((page) =>
+            toMessagePage(
+              page.map((msg) =>
+                msg.id === messageId
+                  ? {
+                      ...msg,
+                      content,
+                      updated_at: new Date().toISOString(),
+                      is_edited: true,
+                    }
+                  : msg
+              ),
+              page.hasMore
+            )
+          ),
+        };
+      });
     } catch (err) {
       errorLog('Error updating message:', err);
       // Error is already handled in the API function
@@ -182,7 +174,14 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     try {
       await apiDeleteMessage(messageId);
       // Optimistic UI update
-      setMessages((curr) => curr.filter((msg) => msg.id !== messageId));
+      queryClient.setQueryData<MessagePages>(queryKey, (curr) =>
+        curr
+          ? buildMessagePages(
+              curr.pages.flat().filter((msg) => msg.id !== messageId),
+              curr.pages.at(-1)?.hasMore
+            )
+          : curr
+      );
     } catch (err) {
       errorLog('Error deleting message:', err);
       // Error is already handled in the API function
@@ -199,16 +198,15 @@ export const useMessageBoard = (): UseMessageBoardResult => {
         (!filterOptions.searchQuery ||
           newMessage.content.toLowerCase().includes(filterOptions.searchQuery.toLowerCase()))
       ) {
-        setMessages((curr) => {
-          const updated = [newMessage, ...curr];
-          // Cap at MAX_MESSAGES_IN_STATE to prevent memory bloat
-          return updated.length > MAX_MESSAGES_IN_STATE
-            ? updated.slice(0, MAX_MESSAGES_IN_STATE)
-            : updated;
+        queryClient.setQueryData<MessagePages>(queryKey, (curr) => {
+          if (!curr) return buildMessagePages([newMessage]);
+          const flattened = [newMessage, ...curr.pages.flat()].slice(0, MAX_MESSAGES_IN_STATE);
+          const hasMore = curr.pages.at(-1)?.hasMore;
+          return buildMessagePages(flattened, hasMore);
         });
       }
     },
-    [filterOptions.category, filterOptions.teamId, filterOptions.searchQuery]
+    [queryKey, filterOptions.category, filterOptions.teamId, filterOptions.searchQuery, queryClient]
   );
 
   // Memoized callback for message updated
@@ -220,39 +218,39 @@ export const useMessageBoard = (): UseMessageBoardResult => {
         (!filterOptions.searchQuery ||
           updatedMessage.content.toLowerCase().includes(filterOptions.searchQuery.toLowerCase()));
 
-      setMessages((curr) => {
-        const existsInList = curr.some((msg) => msg.id === updatedMessage.id);
-
-        if (existsInList) {
-          // Update in place if still matches filter, otherwise remove
-          return matchesFilter
-            ? curr.map((msg) => (msg.id === updatedMessage.id ? updatedMessage : msg))
-            : curr.filter((msg) => msg.id !== updatedMessage.id);
-        } else {
-          // Not in list — insert at correct position to maintain created_at desc order
-          if (matchesFilter) {
-            const insertIndex = curr.findIndex(
-              (msg) =>
-                msg.created_at &&
-                updatedMessage.created_at &&
-                msg.created_at < updatedMessage.created_at
-            );
-            if (insertIndex === -1) {
-              return [...curr, updatedMessage];
-            }
-            return [...curr.slice(0, insertIndex), updatedMessage, ...curr.slice(insertIndex)];
-          }
-          return curr;
-        }
+      queryClient.setQueryData<MessagePages>(queryKey, (curr) => {
+        if (!curr) return curr;
+        const flattened = curr.pages.flat();
+        const existsInList = flattened.some((msg) => msg.id === updatedMessage.id);
+        const nextMessages = existsInList
+          ? matchesFilter
+            ? flattened.map((msg) => (msg.id === updatedMessage.id ? updatedMessage : msg))
+            : flattened.filter((msg) => msg.id !== updatedMessage.id)
+          : matchesFilter
+            ? [updatedMessage, ...flattened].sort((a, b) =>
+                (b.created_at ?? '').localeCompare(a.created_at ?? '')
+              )
+            : flattened;
+        return buildMessagePages(nextMessages, curr.pages.at(-1)?.hasMore);
       });
     },
-    [filterOptions.category, filterOptions.teamId, filterOptions.searchQuery]
+    [queryKey, filterOptions.category, filterOptions.teamId, filterOptions.searchQuery, queryClient]
   );
 
   // Memoized callback for message deleted
-  const handleMessageDeleted = useCallback((deletedMessage: Message) => {
-    setMessages((curr) => curr.filter((msg) => msg.id !== deletedMessage.id));
-  }, []);
+  const handleMessageDeleted = useCallback(
+    (deletedMessage: Message) => {
+      queryClient.setQueryData<MessagePages>(queryKey, (curr) =>
+        curr
+          ? buildMessagePages(
+              curr.pages.flat().filter((msg) => msg.id !== deletedMessage.id),
+              curr.pages.at(-1)?.hasMore
+            )
+          : curr
+      );
+    },
+    [queryKey, queryClient]
+  );
 
   // Set up real-time subscription with memoized callbacks
   useMessageRealtime(
@@ -266,13 +264,6 @@ export const useMessageBoard = (): UseMessageBoardResult => {
   const refreshMessages = useCallback(async () => {
     await fetchInitialMessages();
   }, [fetchInitialMessages]);
-
-  // Initialize on mount
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial fetch on mount only
-    fetchInitialMessages();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- initial fetch on mount only
-  }, []);
 
   return {
     messages,
