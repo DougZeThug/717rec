@@ -251,6 +251,26 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     }
   };
 
+  /** Enforce REALTIME_BUFFER_MAX on the reconciliation refs to bound memory on long-lived boards. */
+  const pruneRealtimeBuffers = useCallback(() => {
+    if (realtimeMessagesRef.current.size > REALTIME_BUFFER_MAX) {
+      const sorted = Array.from(realtimeMessagesRef.current.entries()).sort(
+        ([, a], [, b]) => (a.created_at ?? '').localeCompare(b.created_at ?? '')
+      );
+      const excess = sorted.length - REALTIME_BUFFER_MAX;
+      for (let i = 0; i < excess; i++) {
+        realtimeMessagesRef.current.delete(sorted[i][0]);
+      }
+    }
+    if (realtimeDeletesRef.current.size > REALTIME_BUFFER_MAX) {
+      const ids = Array.from(realtimeDeletesRef.current);
+      const excess = ids.length - REALTIME_BUFFER_MAX;
+      for (let i = 0; i < excess; i++) {
+        realtimeDeletesRef.current.delete(ids[i]);
+      }
+    }
+  }, []);
+
   // Memoized callback for message inserted
   const handleMessageInserted = useCallback(
     (newMessage: Message) => {
@@ -258,6 +278,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
       if (messageMatchesFilters(newMessage)) {
         realtimeDeletesRef.current.delete(newMessage.id);
         realtimeMessagesRef.current.set(newMessage.id, newMessage);
+        pruneRealtimeBuffers();
         queryClient.setQueryData<MessagePages>(queryKey, (curr) => {
           if (!curr) return buildMessagePages([newMessage]);
           const flattened = [
@@ -269,7 +290,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
         });
       }
     },
-    [queryKey, messageMatchesFilters, queryClient]
+    [queryKey, messageMatchesFilters, queryClient, pruneRealtimeBuffers]
   );
 
   // Memoized callback for message updated
@@ -283,6 +304,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
         realtimeMessagesRef.current.delete(updatedMessage.id);
         realtimeDeletesRef.current.add(updatedMessage.id);
       }
+      pruneRealtimeBuffers();
 
       queryClient.setQueryData<MessagePages>(queryKey, (curr) => {
         if (!curr) return curr;
@@ -300,7 +322,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
         return buildMessagePages(nextMessages, curr.pages.at(-1)?.hasMore);
       });
     },
-    [queryKey, messageMatchesFilters, queryClient]
+    [queryKey, messageMatchesFilters, queryClient, pruneRealtimeBuffers]
   );
 
   // Memoized callback for message deleted
@@ -308,6 +330,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     (deletedMessage: Message) => {
       realtimeMessagesRef.current.delete(deletedMessage.id);
       realtimeDeletesRef.current.add(deletedMessage.id);
+      pruneRealtimeBuffers();
       queryClient.setQueryData<MessagePages>(queryKey, (curr) =>
         curr
           ? buildMessagePages(
@@ -317,7 +340,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
           : curr
       );
     },
-    [queryKey, queryClient]
+    [queryKey, queryClient, pruneRealtimeBuffers]
   );
 
   // Set up real-time subscription with memoized callbacks
