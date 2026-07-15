@@ -106,4 +106,20 @@ describe('MatchRecapDialog', () => {
 
     await waitFor(() => expect(screen.getByLabelText('Loading recap')).toBeInTheDocument());
   });
+
+  it('shows an error state when the recap fetch fails', async () => {
+    mockUseLiveMatch.mockReturnValue({
+      bundle: undefined,
+      derived: undefined,
+      isLoading: false,
+      error: new Error('Network request failed'),
+    });
+    renderDialog();
+    await userEvent.click(screen.getByRole('button', { name: /open recap/i }));
+
+    await waitFor(() =>
+      expect(screen.getByText(/couldn't load recap details/i)).toBeInTheDocument()
+    );
+    expect(screen.queryByLabelText('Loading recap')).not.toBeInTheDocument();
+  });
 });
