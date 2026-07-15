@@ -82,7 +82,7 @@ const RecapBody: React.FC<{ matchId: string }> = ({ matchId }) => {
     });
   }, [bundle, derived, playerNames]);
 
-  if (isLoading || !bundle || !derived) {
+  if (isLoading) {
     return (
       <div className="space-y-3" aria-label="Loading recap">
         <Skeleton className="h-16 w-full" />
@@ -92,7 +92,7 @@ const RecapBody: React.FC<{ matchId: string }> = ({ matchId }) => {
     );
   }
 
-  if (error) {
+  if (error || !bundle || !derived) {
     return <p className="text-sm text-muted-foreground">Couldn&apos;t load recap details.</p>;
   }
 
