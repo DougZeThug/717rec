@@ -15,7 +15,7 @@ describe('calculateStreak', () => {
   });
 
   it('returns undefined for undefined allMatches', () => {
-    const missingMatches: undefined = undefined;
+    const missingMatches = undefined;
     expect(calculateStreak(T, missingMatches)).toBeUndefined();
   });
 

@@ -42,7 +42,7 @@ describe('useTeams', () => {
     });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.teams).toEqual([mockTeam]);
-    const noOptions: undefined = undefined;
+    const noOptions = undefined;
     expect(fetchTeamsWithOptions).toHaveBeenCalledWith(noOptions);
   });
 

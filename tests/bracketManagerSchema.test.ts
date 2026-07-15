@@ -26,11 +26,11 @@ vi.mock('@/integrations/supabase/client', () => ({
 vi.mock('brackets-manager', () => {
   class MockBracketsManager {
     create = {
-      stage: vi.fn().mockImplementation(async () => {}),
+      stage: vi.fn().mockImplementation(() => Promise.resolve()),
     };
     update = {
-      match: vi.fn().mockImplementation(async () => {}),
-      seeding: vi.fn().mockImplementation(async () => {}),
+      match: vi.fn().mockImplementation(() => Promise.resolve()),
+      seeding: vi.fn().mockImplementation(() => Promise.resolve()),
     };
     get = {
       finalStandings: vi.fn().mockResolvedValue([]),
@@ -62,10 +62,10 @@ vi.mock('@/services/brackets/manager/MatchUpdateQueue', () => ({
 vi.mock('@/services/brackets/manager/SupabaseSqlStorage', () => {
   class MockSupabaseSqlStorage {
     select = vi.fn();
-    insert = vi.fn().mockImplementation(async () => {});
-    update = vi.fn().mockImplementation(async () => {});
-    delete = vi.fn().mockImplementation(async () => {});
-    loadParticipantsForTournament = vi.fn().mockImplementation(async () => {});
+    insert = vi.fn().mockImplementation(() => Promise.resolve());
+    update = vi.fn().mockImplementation(() => Promise.resolve());
+    delete = vi.fn().mockImplementation(() => Promise.resolve());
+    loadParticipantsForTournament = vi.fn().mockImplementation(() => Promise.resolve());
     clearParticipantCache = vi.fn();
 
     constructor() {

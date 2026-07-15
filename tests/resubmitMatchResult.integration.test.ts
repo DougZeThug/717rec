@@ -35,7 +35,7 @@ vi.mock('@/utils/logger', () => ({
 // Isolate the RPC path: badge processing has its own tests and would
 // otherwise fan out to dozens of unrelated Supabase mocks here.
 vi.mock('@/services/BadgeProcessingService', () => ({
-  BadgeProcessingService: new Proxy({}, { get: () => vi.fn().mockImplementation(async () => {}) }),
+  BadgeProcessingService: new Proxy({}, { get: () => vi.fn().mockImplementation(() => Promise.resolve()) }),
 }));
 vi.mock('@/services/FailedBadgeOperationsService', () => ({
   FailedBadgeOperationsService: { queueFailedOperation: vi.fn() },
