@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { useAuth } from '@/contexts/auth-context';
 import { subscribeWithRetry } from '@/hooks/realtime/subscribeWithRetry';
@@ -7,38 +8,72 @@ import { supabase } from '@/integrations/supabase/client';
 import { MatchComment, MatchCommentsService } from '@/services/matches/MatchCommentsService';
 import { errorLog } from '@/utils/logger';
 
+import { matchInteractionKeys } from './matchInteractionKeys';
+
 export type { MatchComment };
 
+interface RealtimeCommentBuffers {
+  inserts: Map<string, MatchComment>;
+  deletes: Set<string>;
+}
+
+/** Subscribe to, fetch, create, and delete comments for a match through the query cache. */
 export const useMatchComments = (matchId: string) => {
-  const [comments, setComments] = useState<MatchComment[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const currentUserId = user?.id;
+  const queryKey = useMemo(() => matchInteractionKeys.comments(matchId), [matchId]);
+  const realtimeBuffersRef = useRef<Map<string, RealtimeCommentBuffers>>(new Map());
+  const pendingCommentDeletesRef = useRef<Set<string>>(new Set());
+  const confirmedCommentDeletesRef = useRef<Set<string>>(new Set());
 
-  const fetchComments = useCallback(async () => {
-    if (!matchId) return;
-    try {
-      setIsLoading(true);
-      const data = await MatchCommentsService.fetchComments(matchId);
-      setComments(data);
-    } catch (err) {
-      errorLog('Error fetching match comments:', err);
-      setError('Failed to load comments');
-    } finally {
-      setIsLoading(false);
+  /** Get realtime insert/delete buffers scoped to a single match. */
+  const getRealtimeBuffers = useCallback((bufferMatchId: string) => {
+    let buffers = realtimeBuffersRef.current.get(bufferMatchId);
+    if (!buffers) {
+      buffers = { inserts: new Map(), deletes: new Set() };
+      realtimeBuffersRef.current.set(bufferMatchId, buffers);
     }
-  }, [matchId]);
+    return buffers;
+  }, []);
 
-  // Fetch comments for the match
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data load
-    void fetchComments();
-  }, [fetchComments]);
+    const buffers = getRealtimeBuffers(matchId);
+    buffers.inserts.clear();
+    buffers.deletes.clear();
+  }, [getRealtimeBuffers, matchId]);
 
-  // Set up realtime subscription
+  const commentsQuery = useQuery({
+    queryKey,
+    queryFn: async () => {
+      const fetched = await MatchCommentsService.fetchComments(matchId);
+      const buffers = getRealtimeBuffers(matchId);
+      const byId = new Map(fetched.map((comment) => [comment.id, comment]));
+      buffers.inserts.forEach((comment, id) => {
+        byId.set(id, comment);
+      });
+      buffers.deletes.forEach((id) => {
+        byId.delete(id);
+      });
+      return Array.from(byId.values());
+    },
+    enabled: Boolean(matchId),
+    refetchOnMount: 'always',
+  });
+
+  useEffect(() => {
+    if (!commentsQuery.error) return;
+    errorLog('Error fetching match comments:', commentsQuery.error);
+  }, [commentsQuery.error]);
+
   useEffect(() => {
     if (!matchId) return;
-
+    /** Mark match comments stale after realtime reconnects. */
+    const invalidate = () => {
+      queryClient.invalidateQueries({ queryKey }).catch((err: unknown) => {
+        errorLog('Error invalidating match comments:', err);
+      });
+    };
     const { dispose } = subscribeWithRetry({
       label: `useMatchComments(${matchId})`,
       build: () =>
@@ -52,9 +87,12 @@ export const useMatchComments = (matchId: string) => {
               table: 'match_comments',
               filter: `match_id=eq.${matchId}`,
             },
-            (payload) => {
+            (payload: { new: unknown; old: { id?: string } }) => {
               const newComment = payload.new as MatchComment;
-              setComments((curr) =>
+              const buffers = getRealtimeBuffers(matchId);
+              buffers.deletes.delete(newComment.id);
+              buffers.inserts.set(newComment.id, newComment);
+              queryClient.setQueryData<MatchComment[]>(queryKey, (curr = []) =>
                 curr.some((c) => c.id === newComment.id) ? curr : [...curr, newComment]
               );
             }
@@ -67,18 +105,79 @@ export const useMatchComments = (matchId: string) => {
               table: 'match_comments',
               filter: `match_id=eq.${matchId}`,
             },
-            (payload) => {
-              setComments((curr) => curr.filter((c) => c.id !== payload.old.id));
+            (payload: { new: unknown; old: { id?: string } }) => {
+              const buffers = getRealtimeBuffers(matchId);
+              if (payload.old.id) {
+                buffers.inserts.delete(payload.old.id);
+                buffers.deletes.add(payload.old.id);
+                if (pendingCommentDeletesRef.current.has(payload.old.id)) {
+                  confirmedCommentDeletesRef.current.add(payload.old.id);
+                }
+              }
+              queryClient.setQueryData<MatchComment[]>(queryKey, (curr = []) =>
+                curr.filter((c) => c.id !== payload.old.id)
+              );
             }
           ),
       onReconnect: (isFirst) => {
-        if (!isFirst) void fetchComments();
+        if (!isFirst) invalidate();
       },
     });
     return () => dispose();
-  }, [matchId, fetchComments]);
+  }, [getRealtimeBuffers, matchId, queryClient, queryKey]);
 
-  // Post a new comment
+  const deleteMutation = useMutation({
+    mutationFn: (commentId: string) =>
+      currentUserId
+        ? MatchCommentsService.deleteComment(commentId, currentUserId)
+        : Promise.reject(new Error('User is required to delete a comment')),
+    onMutate: async (commentId) => {
+      await queryClient.cancelQueries({ queryKey });
+      const buffers = getRealtimeBuffers(matchId);
+      buffers.inserts.delete(commentId);
+      buffers.deletes.add(commentId);
+      pendingCommentDeletesRef.current.add(commentId);
+      const previous = queryClient.getQueryData<MatchComment[]>(queryKey);
+      const removedComment = previous?.find((comment) => comment.id === commentId);
+      queryClient.setQueryData<MatchComment[]>(queryKey, (curr = []) =>
+        curr.filter((c) => c.id !== commentId)
+      );
+      return { removedComment };
+    },
+    onError: (err, _commentId, context) => {
+      if (context?.removedComment) {
+        const removedComment = context.removedComment;
+        if (confirmedCommentDeletesRef.current.has(removedComment.id)) {
+          pendingCommentDeletesRef.current.delete(removedComment.id);
+          confirmedCommentDeletesRef.current.delete(removedComment.id);
+          errorLog('Error removing comment after realtime delete confirmation:', err);
+          toast({
+            title: 'Error',
+            description: 'Failed to delete comment',
+            variant: 'destructive',
+          });
+          return;
+        }
+        const buffers = getRealtimeBuffers(matchId);
+        buffers.deletes.delete(removedComment.id);
+        buffers.inserts.set(removedComment.id, removedComment);
+        queryClient.setQueryData<MatchComment[]>(queryKey, (curr = []) =>
+          curr.some((comment) => comment.id === removedComment.id)
+            ? curr
+            : [...curr, removedComment]
+        );
+      }
+      errorLog('Error removing comment:', err);
+      toast({ title: 'Error', description: 'Failed to delete comment', variant: 'destructive' });
+    },
+    onSettled: (_data, _error, commentId) => {
+      pendingCommentDeletesRef.current.delete(commentId);
+      confirmedCommentDeletesRef.current.delete(commentId);
+      return queryClient.invalidateQueries({ queryKey, refetchType: 'active' });
+    },
+  });
+
+  /** Add a trimmed comment for the current user and patch the cached list. */
   const addComment = async (content: string) => {
     if (!user) {
       toast({
@@ -88,58 +187,47 @@ export const useMatchComments = (matchId: string) => {
       });
       return null;
     }
-
     if (!content.trim()) return null;
-
     try {
       const { username: profileUsername, teamName } =
         await MatchCommentsService.fetchCommentAuthorInfo(user.id);
-
       const username =
         profileUsername || user.user_metadata?.name || user.email?.split('@')[0] || 'Anonymous';
-
       const data = await MatchCommentsService.addComment(matchId, {
         user_id: user.id,
         username,
         team_name: teamName,
         content: content.trim(),
       });
-
+      const buffers = getRealtimeBuffers(matchId);
+      buffers.deletes.delete(data.id);
+      buffers.inserts.set(data.id, data);
+      queryClient.setQueryData<MatchComment[]>(queryKey, (curr = []) =>
+        curr.some((c) => c.id === data.id) ? curr : [...curr, data]
+      );
       return data;
     } catch (err) {
       errorLog('Error adding comment:', err);
-      toast({
-        title: 'Error',
-        description: 'Failed to post comment',
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: 'Failed to post comment', variant: 'destructive' });
       return null;
     }
   };
 
-  // Delete a comment (only author can delete)
+  /** Delete a comment owned by the current user with optimistic cache removal. */
   const deleteComment = async (commentId: string) => {
     if (!user) return false;
-
     try {
-      await MatchCommentsService.deleteComment(commentId, user.id);
-      setComments((curr) => curr.filter((c) => c.id !== commentId));
+      await deleteMutation.mutateAsync(commentId);
       return true;
-    } catch (err) {
-      errorLog('Error removing comment:', err);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete comment',
-        variant: 'destructive',
-      });
+    } catch {
       return false;
     }
   };
 
   return {
-    comments,
-    isLoading,
-    error,
+    comments: commentsQuery.data ?? [],
+    isLoading: commentsQuery.isLoading,
+    error: commentsQuery.error ? 'Failed to load comments' : null,
     addComment,
     deleteComment,
   };

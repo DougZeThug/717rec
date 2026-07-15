@@ -1,4 +1,6 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
+import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const {
@@ -70,6 +72,15 @@ const reaction = (id: string, userId: string, emoji: string) => ({
   created_at: '2026-06-24T00:00:00Z',
 });
 
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } },
+  });
+
+  return ({ children }: { children: React.ReactNode }) =>
+    React.createElement(QueryClientProvider, { client: queryClient }, children);
+};
+
 describe('useMatchReactions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -87,7 +98,7 @@ describe('useMatchReactions', () => {
       reaction('r3', 'user-3', '👏'),
     ]);
 
-    const { result } = renderHook(() => useMatchReactions('match-1'));
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
@@ -103,14 +114,14 @@ describe('useMatchReactions', () => {
   it('stops loading (with empty reactions) when the fetch fails', async () => {
     mockFetchReactions.mockRejectedValueOnce(new Error('database down'));
 
-    const { result } = renderHook(() => useMatchReactions('match-1'));
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.reactions).toEqual([]);
   });
 
   it('applies realtime INSERT events, deduplicates by id, and applies DELETE events', async () => {
-    const { result } = renderHook(() => useMatchReactions('match-1'));
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     expect(mockChannel.on).toHaveBeenCalledWith(
@@ -130,22 +141,24 @@ describe('useMatchReactions', () => {
     act(() => {
       insertHandler({ new: reaction('r1', 'user-2', '🔥') });
     });
-    expect(result.current.reactions).toHaveLength(1);
+    await waitFor(() => expect(result.current.reactions).toHaveLength(1));
 
     // Duplicate insert (same id) is ignored
     act(() => {
       insertHandler({ new: reaction('r1', 'user-2', '🔥') });
     });
-    expect(result.current.reactions).toHaveLength(1);
+    await waitFor(() => expect(result.current.reactions).toHaveLength(1));
 
     act(() => {
       deleteHandler({ old: { id: 'r1' } });
     });
-    expect(result.current.reactions).toEqual([]);
+    await waitFor(() => expect(result.current.reactions).toEqual([]));
   });
 
   it('refetches on reconnect (but not on the first connection) and disposes on unmount', async () => {
-    const { result, unmount } = renderHook(() => useMatchReactions('match-1'));
+    const { result, unmount } = renderHook(() => useMatchReactions('match-1'), {
+      wrapper: createWrapper(),
+    });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     const initialFetchCount = mockFetchReactions.mock.calls.length;
@@ -171,14 +184,14 @@ describe('useMatchReactions', () => {
     });
     mockFetchReactions.mockReturnValueOnce(initialFetchPromise);
 
-    const { result } = renderHook(() => useMatchReactions('match-1'));
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
 
     const insertHandler = mockChannel.on.mock.calls[0][2];
 
     act(() => {
       insertHandler({ new: reaction('realtime-insert', 'user-99', '🔥') });
     });
-    expect(result.current.reactions).toHaveLength(1);
+    await waitFor(() => expect(result.current.reactions).toHaveLength(1));
 
     const fetchedData = [reaction('existing-1', 'user-50', '👏')];
     await act(async () => {
@@ -193,7 +206,7 @@ describe('useMatchReactions', () => {
   it('does not reintroduce reactions deleted while a reconnect fetch is in flight', async () => {
     mockFetchReactions.mockResolvedValueOnce([reaction('r1', 'user-1', '🔥')]);
 
-    const { result } = renderHook(() => useMatchReactions('match-1'));
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.reactions).toHaveLength(1);
 
@@ -212,7 +225,7 @@ describe('useMatchReactions', () => {
     act(() => {
       deleteHandler({ old: { id: 'r1' } });
     });
-    expect(result.current.reactions).toHaveLength(0);
+    await waitFor(() => expect(result.current.reactions).toHaveLength(0));
 
     const staleFetchedData = [reaction('r1', 'user-1', '🔥')];
     await act(async () => {
@@ -225,7 +238,7 @@ describe('useMatchReactions', () => {
   });
 
   it('blocks toggling a reaction when signed out', async () => {
-    const { result } = renderHook(() => useMatchReactions('match-1'));
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     await act(async () => {
@@ -241,7 +254,7 @@ describe('useMatchReactions', () => {
     mockUser.current = { id: 'user-1' };
     mockFetchReactions.mockResolvedValue([reaction('r1', 'user-1', '👏')]);
 
-    const { result } = renderHook(() => useMatchReactions('match-1'));
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     await act(async () => {
@@ -252,11 +265,89 @@ describe('useMatchReactions', () => {
     expect(mockDeleteReaction).not.toHaveBeenCalled();
   });
 
+  it('replaces optimistic reactions when realtime sends the saved row', async () => {
+    mockUser.current = { id: 'user-1' };
+    let resolveInsert!: () => void;
+    mockInsertReaction.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveInsert = resolve;
+        })
+    );
+
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    let togglePromise: Promise<void> | undefined;
+    act(() => {
+      togglePromise = result.current.toggleReaction('🔥');
+    });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(1));
+    expect(result.current.reactions[0].id).toMatch(/^optimistic-/);
+
+    const insertHandler = mockChannel.on.mock.calls[0][2];
+    act(() => {
+      insertHandler({ new: reaction('real-reaction', 'user-1', '🔥') });
+    });
+
+    await waitFor(() => expect(result.current.reactions).toHaveLength(1));
+    expect(result.current.reactions[0].id).toBe('real-reaction');
+
+    act(() => {
+      resolveInsert();
+    });
+    await togglePromise;
+  });
+
+  it('does not send optimistic ids to delete when a pending reaction is toggled off', async () => {
+    mockUser.current = { id: 'user-1' };
+    let resolveInsert!: () => void;
+    mockInsertReaction.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveInsert = resolve;
+        })
+    );
+    mockDeleteReaction.mockImplementation(() => Promise.resolve());
+
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    let togglePromise: Promise<void> | undefined;
+    act(() => {
+      togglePromise = result.current.toggleReaction('🔥');
+    });
+    await waitFor(() => expect(result.current.reactions[0].id).toMatch(/^optimistic-/));
+
+    await act(async () => {
+      await result.current.toggleReaction('🔥');
+    });
+
+    expect(mockDeleteReaction).not.toHaveBeenCalledWith(
+      expect.stringMatching(/^optimistic-/),
+      'user-1'
+    );
+    await waitFor(() => expect(result.current.reactions).toHaveLength(0));
+
+    const insertHandler = mockChannel.on.mock.calls[0][2];
+    act(() => {
+      insertHandler({ new: reaction('real-reaction', 'user-1', '🔥') });
+    });
+
+    await waitFor(() => expect(mockDeleteReaction).toHaveBeenCalledWith('real-reaction', 'user-1'));
+    expect(result.current.reactions).toHaveLength(0);
+
+    act(() => {
+      resolveInsert();
+    });
+    await togglePromise;
+  });
+
   it('removes an existing reaction when the user toggles the same emoji', async () => {
     mockUser.current = { id: 'user-1' };
     mockFetchReactions.mockResolvedValue([reaction('r1', 'user-1', '🔥')]);
 
-    const { result } = renderHook(() => useMatchReactions('match-1'));
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.reactions).toHaveLength(1));
 
     await act(async () => {
@@ -269,7 +360,7 @@ describe('useMatchReactions', () => {
 
   it('ignores an empty emoji', async () => {
     mockUser.current = { id: 'user-1' };
-    const { result } = renderHook(() => useMatchReactions('match-1'));
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     await act(async () => {
@@ -285,7 +376,7 @@ describe('useMatchReactions', () => {
     mockUser.current = { id: 'user-1' };
     mockInsertReaction.mockRejectedValue(new Error('insert failed'));
 
-    const { result } = renderHook(() => useMatchReactions('match-1'));
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     await act(async () => {
