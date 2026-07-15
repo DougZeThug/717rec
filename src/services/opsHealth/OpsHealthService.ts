@@ -25,17 +25,19 @@ export const OpsHealthService = {
       .maybeSingle();
 
     if (error) handleDatabaseError(error, 'Failed to fetch last power snapshot');
-    if (!data) return null;
+    if (!data || !data.created_at) return null;
+
+    const createdAt = data.created_at;
 
     const { count, error: countError } = await supabase
       .from('power_score_snapshots')
       .select('id', { count: 'exact', head: true })
-      .eq('created_at', data.created_at);
+      .eq('created_at', createdAt);
 
     if (countError) handleDatabaseError(countError, 'Failed to count power snapshot rows');
 
     return {
-      created_at: data.created_at,
+      created_at: createdAt,
       snapshot_date: data.snapshot_date,
       week_number: data.week_number,
       season_id: data.season_id,
