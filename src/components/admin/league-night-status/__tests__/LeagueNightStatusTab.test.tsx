@@ -14,7 +14,8 @@ vi.mock('@/hooks/useOpsHealth', () => ({
   useRealtimeHealth: () => mockUseRealtimeHealth(),
 }));
 
-import LeagueNightStatusTab, { OPS_LINKS } from '../LeagueNightStatusTab';
+import LeagueNightStatusTab from '../LeagueNightStatusTab';
+import { OPS_LINKS } from '../opsLinks';
 
 const freshSnapshot = (): LastPowerSnapshot => ({
   created_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
