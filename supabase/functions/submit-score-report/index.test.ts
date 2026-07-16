@@ -144,6 +144,7 @@ Deno.test({
       const body = await res.json();
       assertEquals(body.success, true);
       assert(body.duplicate === undefined);
+      assertEquals(body.duplicate);
       assertEquals(pending.length, 1);
     } finally {
       restoreFetch();
