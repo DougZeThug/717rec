@@ -110,31 +110,3 @@ export function validateGameScore(
   );
   return { isValid: true };
 }
-
-/**
- * Enhanced validation that logs the match ID and date for better debugging
- */
-export function validateGameScoreWithMetadata(
-  gameWins1: number,
-  gameWins2: number,
-  bestOf: number,
-  matchId?: string,
-  matchDate?: string
-): MatchValidationResult {
-  validationLog('Validating score for match:', {
-    matchId: matchId || 'unknown',
-    matchDate: matchDate || 'unknown',
-    gameWins1,
-    gameWins2,
-    bestOf,
-  });
-
-  const result = validateGameScore(gameWins1, gameWins2, bestOf);
-
-  validationLog(`Validation result for match ${matchId}:`, {
-    isValid: result.isValid,
-    errorMessage: result.errorMessage || 'No error',
-  });
-
-  return result;
-}
