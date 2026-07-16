@@ -51,19 +51,19 @@ describe('MatchRecapSummary', () => {
     render(<MatchRecapSummary recap={baseRecap} />);
 
     expect(screen.getByText('Top Performer')).toBeInTheDocument();
-    expect(screen.getByText(/7\.60 PPR, 38% hole rate/)).toBeInTheDocument();
+    expect(screen.getByText(/7\.60 PPR, 38% hole rate/u)).toBeInTheDocument();
 
     expect(screen.getByText('Most Consistent')).toBeInTheDocument();
-    expect(screen.getByText(/12% off-board rate/)).toBeInTheDocument();
+    expect(screen.getByText(/12% off-board rate/u)).toBeInTheDocument();
 
     expect(screen.getByText('Key Game')).toBeInTheDocument();
-    expect(screen.getByText(/Baggers won 22–20/)).toBeInTheDocument();
+    expect(screen.getByText(/Baggers won 22–20/u)).toBeInTheDocument();
 
     expect(screen.getByText('Round Stats')).toBeInTheDocument();
-    expect(screen.getByText(/34 in, 51 on, 23 off/)).toBeInTheDocument();
-    expect(screen.getByText(/29 in, 49 on, 30 off/)).toBeInTheDocument();
+    expect(screen.getByText(/34 in, 51 on, 23 off/u)).toBeInTheDocument();
+    expect(screen.getByText(/29 in, 49 on, 30 off/u)).toBeInTheDocument();
     // Doug's per-player line with bag percents.
-    expect(screen.getByText(/7\.60 PPR · 38% in · 50% on/)).toBeInTheDocument();
+    expect(screen.getByText(/7\.60 PPR · 38% in · 50% on/u)).toBeInTheDocument();
   });
 
   it('hides Most Consistent when null', () => {

@@ -283,7 +283,7 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
             shouldApplyWinter ? 'text-amber-50' : 'text-white'
           )}
         >
-          {card.title.replace(/🏆\s*/g, '')}
+          {card.title.replace(/🏆\s*/gu, '')}
         </h2>
       </div>
 
