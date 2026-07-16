@@ -42,6 +42,8 @@ const timeSlots = [
   '10:00 PM',
 ];
 
+const missingScore: number | undefined = undefined;
+
 const MatchFormRHF: React.FC<MatchFormProps> = ({
   match,
   teams,
@@ -254,9 +256,9 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
                       value={field.value === undefined ? '' : field.value}
                       onChange={(e) => {
                         const { value } = e.target;
-                        if (value === '') return field.onChange(undefined);
+                        if (value === '') return field.onChange(missingScore);
                         const parsed = parseInt(value, 10);
-                        field.onChange(Number.isNaN(parsed) ? undefined : parsed);
+                        field.onChange(Number.isNaN(parsed) ? missingScore : parsed);
                       }}
                       required={isCompleted}
                     />
@@ -281,9 +283,9 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
                       value={field.value === undefined ? '' : field.value}
                       onChange={(e) => {
                         const { value } = e.target;
-                        if (value === '') return field.onChange(undefined);
+                        if (value === '') return field.onChange(missingScore);
                         const parsed = parseInt(value, 10);
-                        field.onChange(Number.isNaN(parsed) ? undefined : parsed);
+                        field.onChange(Number.isNaN(parsed) ? missingScore : parsed);
                       }}
                       required={isCompleted}
                     />

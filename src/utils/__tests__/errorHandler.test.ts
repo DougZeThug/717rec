@@ -239,6 +239,8 @@ describe('getErrorMessage', () => {
     const missingError: unknown = undefined;
 
     expect(getErrorMessage(null)).toBe('An unknown error occurred');
+    const missingError: unknown = undefined;
+
     expect(getErrorMessage(missingError)).toBe('An unknown error occurred');
     expect(getErrorMessage(42)).toBe('An unknown error occurred');
     expect(getErrorMessage({ code: 1 })).toBe('An unknown error occurred');
