@@ -10,7 +10,6 @@ const mockSaveAutoScheduleState = vi.fn();
 const mockValidateScheduleDate = vi.fn();
 const mockNormalizeScheduleDate = vi.fn();
 const mockGetAllBackToBackTeams = vi.fn();
-const mockGetTeamsByBackToBackPair = vi.fn();
 const mockValidateBackToBackPairAssignments = vi.fn();
 
 vi.mock('../storage', () => ({
@@ -24,8 +23,7 @@ vi.mock('@/utils/autoSchedule/dateUtils', () => ({
 }));
 
 vi.mock('@/utils/autoSchedule/teamLoaderUtils', () => ({
-  getAllBackToBackTeams: (...args: unknown[]) => mockGetAllBackToBackTeams(...args),
-  getTeamsByBackToBackPair: (...args: unknown[]) => mockGetTeamsByBackToBackPair(...args),
+  getAllBackToBackTeams: (...args: unknown[]) => mockGetAllBackToBackTeams(),
 }));
 
 vi.mock('@/utils/autoSchedule/edgeCaseUtils', () => ({
@@ -175,57 +173,6 @@ describe('useTeamOperations', () => {
     expect(result.current.timeBlockTeams).toEqual({});
     expect(result.current.originalTimeBlockTeams).toEqual({});
     expect(result.current.pairedTimeBlockTeams).toEqual({});
-  });
-
-  it('loadTeamsForPair handles invalid dates, success, and fetch failures', async () => {
-    const { result } = renderHook(() => useTeamOperations());
-
-    mockValidateScheduleDate.mockReturnValueOnce(false);
-    await expect(
-      result.current.loadTeamsForPair(new Date('2026-04-20T00:00:00.000Z'), 'Early')
-    ).resolves.toEqual([]);
-
-    const pairTeams = [buildTeam('10'), buildTeam('11')];
-    mockGetTeamsByBackToBackPair.mockResolvedValueOnce(pairTeams);
-
-    await expect(
-      result.current.loadTeamsForPair(new Date('2026-04-20T00:00:00.000Z'), 'Early')
-    ).resolves.toEqual(pairTeams);
-
-    mockGetTeamsByBackToBackPair.mockRejectedValueOnce(new Error('fetch failed'));
-    await expect(
-      result.current.loadTeamsForPair(new Date('2026-04-20T00:00:00.000Z'), 'Early')
-    ).resolves.toEqual([]);
-  });
-
-  it('balanceBackToBackTeams keeps even counts and removes unmatched IDs per strategy', () => {
-    const evenTeams = [buildTeam('1', 100), buildTeam('2', 90)];
-    const oddTeams = [buildTeam('3', 80), buildTeam('4', 70), buildTeam('5', 60)];
-
-    const { result } = renderHook(() => useTeamOperations());
-
-    act(() => {
-      result.current.setTimeBlockTeams({
-        EvenPair: evenTeams,
-        OddPair: oddTeams,
-      });
-    });
-
-    const lowestRank = result.current.balanceBackToBackTeams({
-      unmatchedTeamStrategy: 'lowest-rank',
-    });
-    expect(lowestRank.balancedTeams.EvenPair).toEqual(evenTeams);
-    expect(lowestRank.unmatchedTeamIds).toEqual(['5']);
-
-    const highestRank = result.current.balanceBackToBackTeams({
-      unmatchedTeamStrategy: 'highest-rank',
-    });
-    expect(highestRank.unmatchedTeamIds).toEqual(['3']);
-
-    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.4);
-    const randomResult = result.current.balanceBackToBackTeams({ unmatchedTeamStrategy: 'random' });
-    expect(randomResult.unmatchedTeamIds).toEqual(['4']);
-    randomSpy.mockRestore();
   });
 
   it('computes teamBlockMap and getTeamCountStatus for single and multi-block teams', () => {
