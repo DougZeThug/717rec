@@ -224,16 +224,16 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
   if (isLoading) {
     return (
       <section className={cn(plainSectionClasses, 'animate-pulse')}>
-        <div className="h-6 bg-white/20 rounded mb-4 w-48"></div>
+        <div className="h-6 bg-white/20 rounded mb-4 w-48" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {['champ-1', 'champ-2', 'champ-3', 'champ-4'].map((k) => (
             <div key={k} className="bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4">
-              <div className="h-3 bg-white/20 rounded w-24 mb-2"></div>
+              <div className="h-3 bg-white/20 rounded w-24 mb-2" />
               <div className="flex items-center gap-3">
-                <div className="size-20 bg-white/20 rounded-lg"></div>
+                <div className="size-20 bg-white/20 rounded-lg" />
                 <div className="space-y-1">
-                  <div className="h-3 bg-white/20 rounded w-16"></div>
-                  <div className="h-4 bg-white/20 rounded w-24"></div>
+                  <div className="h-3 bg-white/20 rounded w-16" />
+                  <div className="h-4 bg-white/20 rounded w-24" />
                 </div>
               </div>
             </div>
@@ -283,7 +283,7 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
             shouldApplyWinter ? 'text-amber-50' : 'text-white'
           )}
         >
-          {card.title.replace(/🏆\s*/g, '')}
+          {card.title.replace(/🏆\s*/gu, '')}
         </h2>
       </div>
 
