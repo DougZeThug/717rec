@@ -67,7 +67,7 @@ Four GitHub Actions workflows live in `.github/workflows/`:
 
 | Workflow | File | What it runs |
 | --- | --- | --- |
-| CI | `ci.yml` | `quality`: lint, typecheck, full test suite, coverage thresholds, knip dead-code check. `build-size`: production build + bundle-size budgets. `browser`: Playwright smoke tests, blocking axe a11y scan, Lighthouse. `react-doctor`: React best-practice scan. `e2e-real-backend`: E2E golden path against a real Supabase backend. |
+| CI | `ci.yml` | `quality`: lint, typecheck, full test suite, knip dead-code check. `deepsource-coverage`: generate LCOV coverage, enforce thresholds, and report to DeepSource. `build-size`: production build + bundle-size budgets. `browser`: Playwright smoke tests, blocking axe a11y scan, Lighthouse. `react-doctor`: React best-practice scan. `e2e-real-backend`: E2E golden path against a real Supabase backend. |
 | Security | `security.yml` | `audit`: npm audit. `committed-env-files`: fails if local `.env` files are tracked. `gitleaks`: secret scan on PRs, pushes to main, and a weekly cron. |
 | Supabase CI | `supabase-ci.yml` | `db-lint`: `supabase db lint`. `db-apply-and-smoke`: apply migrations + SQL smoke tests. `edge-function-tests`: edge-function Deno tests. |
 | Summarize new issues | `summary.yml` | Posts an AI-generated summary comment on newly opened GitHub issues. |

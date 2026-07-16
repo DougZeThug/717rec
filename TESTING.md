@@ -15,8 +15,8 @@ npm run test:coverage # fast gate: parallel forked workers + lightweight reporte
 npm run test:coverage:serial # slow single-worker fallback for diagnosing flaky parallel coverage runs
 npm run test:coverage:full # deep local diagnostics: includes HTML artifact at coverage/index.html
 npm run test:coverage:refresh-docs # run coverage and auto-sync baseline metrics in this doc
-npm run test:coverage:ci # PR gate: fast parallel threshold enforcement (10m timeout)
-npm run test:coverage:deepsource # DeepSource artifact: LCOV @ coverage/deepsource/lcov.info (15m timeout)
+npm run test:coverage:ci # fast parallel threshold enforcement (10m timeout); local equivalent of the CI gate
+npm run test:coverage:deepsource # CI PR gate: enforces thresholds and emits LCOV @ coverage/deepsource/lcov.info (15m timeout)
 npm run test:coverage:debug # serial + verbose coverage diagnostics (15m timeout)
 npm run test:coverage:triage # bounded verbose coverage run with timestamped triage log
 ```
@@ -231,10 +231,10 @@ current baseline:
 
 If a PR drops any global metric below those numbers, the coverage job fails.
 
-The PR gate (`npm run test:coverage:ci`) now measures the same full `src/**`
-scope as local coverage, including components and pages. Numbers in
-`vitest.config.ts` are authoritative; if this doc and the config disagree, the
-config wins and this doc needs a sync.
+The PR gate (`npm run test:coverage:deepsource`, run in the `deepsource-coverage`
+CI job) measures the same full `src/**` scope as local coverage, including
+components and pages. Numbers in `vitest.config.ts` are authoritative; if this
+doc and the config disagree, the config wins and this doc needs a sync.
 
 ### Stage 2 (active now): folder thresholds
 
@@ -401,26 +401,17 @@ Configured in `vitest.config.ts` under `test.coverage.exclude`:
 
 ## CI enforcement
 
-Coverage enforcement runs on pull requests via the `quality` job in
-`.github/workflows/ci.yml` (step "Enforce coverage thresholds"), which
-executes:
-
-```bash
-npm run test:coverage:ci
-```
-
-Because Vitest thresholds are configured in `vitest.config.ts`, that job
-fails automatically when any enforced global or folder threshold regresses.
-
-DeepSource reporting should invoke its dedicated lightweight command:
+Coverage enforcement runs on pull requests via the `deepsource-coverage` job
+in `.github/workflows/ci.yml`, which executes:
 
 ```bash
 npm run test:coverage:deepsource
 ```
 
-This command enforces a hard runtime cap (`timeout 15m`) and emits the exact
-artifact DeepSource expects in this repo: LCOV at
-`coverage/deepsource/lcov.info`.
+This command enforces a hard runtime cap (`timeout 15m`) and emits the LCOV
+artifact at `coverage/deepsource/lcov.info` that the job uploads to DeepSource.
+Because Vitest thresholds are configured in `vitest.config.ts`, that same job
+fails automatically when any enforced global or folder threshold regresses.
 
 Use `npm run test:coverage` for fast local/CI gating and
 `npm run test:coverage:full` for deep local diagnostics with HTML output.
@@ -504,7 +495,7 @@ Already in place and enforced:
 - Typecheck must pass (CI: `quality` job in `ci.yml`)
 - Build must pass (CI: `build-size` job in `ci.yml`)
 - Existing tests must pass (CI: `quality` job in `ci.yml`)
-- Coverage floors enforced on services/hooks/utils (CI: `quality` job in `ci.yml`)
+- Coverage floors enforced on services/hooks/utils (CI: `deepsource-coverage` job in `ci.yml`)
 - a11y scan blocking on public routes (CI: `browser` job in `ci.yml`)
 - Manual smoke expectations documented (this file)
 
