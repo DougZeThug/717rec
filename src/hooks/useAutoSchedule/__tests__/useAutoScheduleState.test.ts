@@ -45,7 +45,6 @@ describe('useAutoScheduleState', () => {
       editableMatches: [],
       matchQualityMetrics: { totalMatches: 4 },
       isEditMode: true,
-      teamBlockMap: { a: ['b1'] },
     });
 
     const { result } = renderHook(() => useAutoScheduleState(), { wrapper: createWrapper() });
