@@ -17,42 +17,42 @@ import {
   ViewerStage,
 } from './types';
 
-export class BracketsViewerAdapter {
-  private static teamIdMap: Map<string, number> = new Map();
+const teamIdMap: Map<string, number> = new Map();
 
-  /**
-   * Boundary cast — see ANY_PHASE_2.
-   * Centralizes the unchecked casts at the brackets-viewer adapter boundary
-   * where upstream rows (Supabase / brackets-manager JSONB) are handed off to
-   * the viewer's expected shapes. No runtime validation is performed.
-   */
-  private static castToViewer<T>(value: unknown): T {
-    return value as T;
-  }
+/**
+ * Boundary cast — see ANY_PHASE_2.
+ * Centralizes the unchecked casts at the brackets-viewer adapter boundary
+ * where upstream rows (Supabase / brackets-manager JSONB) are handed off to
+ * the viewer's expected shapes. No runtime validation is performed.
+ */
+function castToViewer<T>(value: unknown): T {
+  return value as T;
+}
 
+export const BracketsViewerAdapter = {
   /**
    * Transform from brackets-manager SQL tables
    */
-  static transformFromSql(bracketId: string): Promise<ViewerDataWithMapping> {
+  transformFromSql(bracketId: string): Promise<ViewerDataWithMapping> {
     return transformFromSql(bracketId);
-  }
+  },
 
   /**
    * Transform from JSONB bracket_data (brackets-manager's native format)
    */
-  static transformFromJsonb(
+  transformFromJsonb(
     bracketData: InMemoryDatabase['data'],
     _bracketId: string
   ): ViewerDataWithMapping {
     // Reset team map
-    this.teamIdMap.clear();
+    teamIdMap.clear();
 
     bracketLog('transformFromJsonb: Using in-memory data');
 
     // Create match ID mapping (brackets-manager match ID -> playoff match UUID)
     const reverseMatchIdMap = new Map<number, string>();
 
-    const matches = this.castToViewer<ViewerMatch[]>(bracketData.match || []);
+    const matches = castToViewer<ViewerMatch[]>(bracketData.match || []);
     const groups = (bracketData.group || []) as BracketGroupRow[];
     const rounds = (bracketData.round || []) as BracketRoundRow[];
 
@@ -68,21 +68,21 @@ export class BracketsViewerAdapter {
 
     return {
       data: {
-        stages: this.castToViewer<ViewerStage[]>(bracketData.stage || []),
+        stages: castToViewer<ViewerStage[]>(bracketData.stage || []),
         groups: groups,
         rounds: rounds,
         matches: matchesWithSources,
-        matchGames: this.castToViewer<ViewerMatchGame[]>(bracketData.match_game || []),
+        matchGames: castToViewer<ViewerMatchGame[]>(bracketData.match_game || []),
         participants: (bracketData.participant || []) as ViewerParticipant[],
       },
       getPlayoffMatchId: (viewerMatchId: number) => reverseMatchIdMap.get(viewerMatchId),
     };
-  }
+  },
 
   /**
    * Main transformation function - returns data and ID mapping function
    */
-  static transform(
+  transform(
     bracket: PlayoffBracket,
     teams: PlayoffTeam[],
     storedParticipants?: Array<{
@@ -94,7 +94,7 @@ export class BracketsViewerAdapter {
     }>
   ): ViewerDataWithMapping {
     // Reset team map for each transformation
-    this.teamIdMap.clear();
+    teamIdMap.clear();
 
     // Create a local match ID map for this transformation
     const matchIdMap = new Map<string, number>();
@@ -103,17 +103,17 @@ export class BracketsViewerAdapter {
     // Use stored participants if available, otherwise fall back to teams
     const participants =
       storedParticipants && storedParticipants.length > 0
-        ? transformStoredParticipants(storedParticipants, this.teamIdMap)
-        : transformParticipants(teams, this.teamIdMap);
+        ? transformStoredParticipants(storedParticipants, teamIdMap)
+        : transformParticipants(teams, teamIdMap);
 
     const stage = transformBracket(bracket);
     const matches = transformMatches(
       bracket.matches || [],
       matchIdMap,
       reverseMatchIdMap,
-      this.teamIdMap
+      teamIdMap
     );
-    const matchGames = transformGames(bracket.matches || [], matchIdMap, this.teamIdMap);
+    const matchGames = transformGames(bracket.matches || [], matchIdMap, teamIdMap);
 
     // Build groups and rounds arrays for connector calculation (CRITICAL FIX)
     const isDoubleElim = bracket.format === 'Double Elimination';
@@ -165,5 +165,5 @@ export class BracketsViewerAdapter {
       },
       getPlayoffMatchId: (viewerMatchId: number) => reverseMatchIdMap.get(viewerMatchId),
     };
-  }
-}
+  },
+};

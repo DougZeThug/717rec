@@ -6,12 +6,12 @@ import { handleDatabaseError } from '@/utils/errorHandler';
 
 import { TimeslotTransformer } from './TimeslotTransformer';
 
-export class ByeWeekService {
+export const ByeWeekService = {
   /**
    * Assign bye week to a single team
    * @throws {DatabaseError} When database operations fail
    */
-  static async assignByeWeek(date: Date, teamId: string): Promise<TeamTimeslot> {
+  async assignByeWeek(date: Date, teamId: string): Promise<TeamTimeslot> {
     const formattedDate = format(date, 'yyyy-MM-dd');
 
     const { data, error } = await supabase
@@ -51,13 +51,13 @@ export class ByeWeekService {
     }
 
     return TimeslotTransformer.formatSingleTimeslot(data);
-  }
+  },
 
   /**
    * Batch assign bye weeks to multiple teams
    * @throws {DatabaseError} When database operations fail
    */
-  static async batchAssignByeWeeks(date: Date, teamIds: string[]): Promise<TeamTimeslot[]> {
+  async batchAssignByeWeeks(date: Date, teamIds: string[]): Promise<TeamTimeslot[]> {
     const formattedDate = format(date, 'yyyy-MM-dd');
 
     const insertData = teamIds.map((teamId) => ({
@@ -93,13 +93,13 @@ export class ByeWeekService {
     }
 
     return TimeslotTransformer.formatTimeslotResponse(data);
-  }
+  },
 
   /**
    * Remove bye week assignment
    * @throws {DatabaseError} When database operations fail
    */
-  static async removeByeWeek(timeslotId: string): Promise<void> {
+  async removeByeWeek(timeslotId: string): Promise<void> {
     const { error } = await supabase
       .from('team_timeslots')
       .delete()
@@ -109,5 +109,5 @@ export class ByeWeekService {
     if (error) {
       handleDatabaseError(error, 'Failed to remove bye week');
     }
-  }
-}
+  },
+};

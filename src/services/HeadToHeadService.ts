@@ -4,12 +4,12 @@ import { handleDatabaseError } from '@/utils/errorHandler';
 import { matchLog } from '@/utils/logger';
 import { withTiming } from '@/utils/performance';
 
-export class HeadToHeadService {
+export const HeadToHeadService = {
   /**
    * Get all head-to-head records for a specific team
    * @throws {DatabaseError} When database operations fail
    */
-  static getTeamHeadToHead(teamId: string): Promise<HeadToHeadRecord[]> {
+  getTeamHeadToHead(teamId: string): Promise<HeadToHeadRecord[]> {
     matchLog('Fetching head-to-head records for team:', teamId);
 
     return withTiming(
@@ -61,20 +61,20 @@ export class HeadToHeadService {
       matchLog,
       'Head-to-head records fetch'
     );
-  }
+  },
 
   /**
    * Get detailed match history between two specific teams
    * Returns null if no matches exist between the teams (not an error condition)
    * @throws {DatabaseError} When database operations fail
    */
-  static getOpponentHistory(teamId: string, opponentId: string): Promise<OpponentHistory | null> {
+  getOpponentHistory(teamId: string, opponentId: string): Promise<OpponentHistory | null> {
     matchLog('Fetching opponent history:', teamId, 'vs', opponentId);
 
     return withTiming(
       async () => {
         // First get the head-to-head summary for this specific opponent
-        const headToHeadRecords = await this.getTeamHeadToHead(teamId);
+        const headToHeadRecords = await HeadToHeadService.getTeamHeadToHead(teamId);
 
         const summary = headToHeadRecords.find((record) => record.opponent_id === opponentId);
 
@@ -102,5 +102,5 @@ export class HeadToHeadService {
       matchLog,
       'Opponent history fetch'
     );
-  }
-}
+  },
+};

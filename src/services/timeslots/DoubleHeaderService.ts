@@ -19,7 +19,7 @@ interface TimeslotInsert {
   match_sequence: number;
 }
 
-export class DoubleHeaderService {
+export const DoubleHeaderService = {
   /**
    * Assign a double header to a single team (two separate back-to-back pairs).
    * Creates 4 timeslot entries: 2 for each back-to-back pair.
@@ -27,7 +27,7 @@ export class DoubleHeaderService {
    *   - 6:00PM ↔ 6:30PM (first back-to-back pair)
    *   - 7:00PM ↔ 7:30PM (second back-to-back pair)
    */
-  static async assignDoubleHeader(
+  async assignDoubleHeader(
     date: Date,
     teamId: string,
     slot1: string,
@@ -104,13 +104,13 @@ export class DoubleHeaderService {
 
     if (error) handleDatabaseError(error, 'Failed to add double header timeslots');
     return TimeslotTransformer.formatTimeslotResponse(data ?? []);
-  }
+  },
 
   /**
    * Batch assign double headers to multiple teams.
    * Each team gets 4 timeslot entries: 2 for each back-to-back pair.
    */
-  static async batchAssignDoubleHeaders(
+  async batchAssignDoubleHeaders(
     date: Date,
     teamIds: string[],
     slot1: string,
@@ -190,13 +190,13 @@ export class DoubleHeaderService {
 
     if (error) handleDatabaseError(error, 'Failed to batch assign double header timeslots');
     return TimeslotTransformer.formatTimeslotResponse(data ?? []);
-  }
+  },
 
   /**
    * Reject overlapping back-to-back pairs (e.g. 7:00 PM expands to 7:00/7:30
    * and 7:30 PM expands to 7:30/8:00 — the team would be booked twice at 7:30).
    */
-  private static assertPairsDoNotOverlap(
+  assertPairsDoNotOverlap(
     pair1Config: { primary: string; secondary: string },
     pair2Config: { primary: string; secondary: string },
     slot1: string,
@@ -213,5 +213,5 @@ export class DoubleHeaderService {
         `Double header pairs cannot overlap. ${slot1} and ${slot2} would assign the team to the same timeslot twice.`
       );
     }
-  }
-}
+  },
+};

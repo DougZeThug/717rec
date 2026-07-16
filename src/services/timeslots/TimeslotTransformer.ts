@@ -2,24 +2,24 @@ import { TeamTimeslot, TimeslotGroup } from '@/types/timeslots';
 
 import { TimeslotRow } from './types';
 
-export class TimeslotTransformer {
+export const TimeslotTransformer = {
   /**
    * Transform raw database response to TeamTimeslot format
    * Enhanced to handle back-to-back scheduling fields
    */
-  static formatTimeslotResponse(data: TimeslotRow[] | null | undefined): TeamTimeslot[] {
+  formatTimeslotResponse(data: TimeslotRow[] | null | undefined): TeamTimeslot[] {
     if (!data || !Array.isArray(data)) {
       return [];
     }
 
-    return data.map((item) => this.formatSingleTimeslot(item));
-  }
+    return data.map((item) => TimeslotTransformer.formatSingleTimeslot(item));
+  },
 
   /**
    * Transform single timeslot record
    * Enhanced to handle back-to-back scheduling fields
    */
-  static formatSingleTimeslot(item: TimeslotRow): TeamTimeslot {
+  formatSingleTimeslot(item: TimeslotRow): TeamTimeslot {
     return {
       id: item.id,
       match_date: item.match_date,
@@ -40,12 +40,12 @@ export class TimeslotTransformer {
           }
         : undefined,
     };
-  }
+  },
 
   /**
    * Group timeslots by timeslot value (needed for backwards compatibility)
    */
-  static groupByTimeslot(timeslots: TeamTimeslot[]): TimeslotGroup {
+  groupByTimeslot(timeslots: TeamTimeslot[]): TimeslotGroup {
     const grouped: TimeslotGroup = {};
 
     timeslots.forEach((slot) => {
@@ -56,12 +56,12 @@ export class TimeslotTransformer {
     });
 
     return grouped;
-  }
+  },
 
   /**
    * Group timeslots by back-to-back pairs
    */
-  static groupByBackToBackPairs(timeslots: TeamTimeslot[]) {
+  groupByBackToBackPairs(timeslots: TeamTimeslot[]) {
     const pairs: Record<
       string,
       { primary: TeamTimeslot[]; secondary: TeamTimeslot[]; pairLabel: string }
@@ -101,5 +101,5 @@ export class TimeslotTransformer {
     });
 
     return pairs;
-  }
-}
+  },
+};
