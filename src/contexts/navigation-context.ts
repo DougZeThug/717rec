@@ -4,7 +4,11 @@ export interface NavigationContextType {
   isNavigating: boolean;
 }
 
-export const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
+const missingNavigationContext: NavigationContextType | undefined = undefined;
+
+export const NavigationContext = createContext<NavigationContextType | undefined>(
+  missingNavigationContext
+);
 
 export const useNavigation = () => {
   const context = useContext(NavigationContext);

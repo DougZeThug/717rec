@@ -42,7 +42,8 @@ interface TeamFormProps {
 }
 
 const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
-  const [imageUrl, setImageUrl] = useState<string | undefined>(team?.imageUrl ?? undefined);
+  const missingImageUrl: string | undefined = undefined;
+  const [imageUrl, setImageUrl] = useState<string | undefined>(team?.imageUrl ?? missingImageUrl);
   const [playerNames, setPlayerNames] = useState<string[]>(team?.players || ['']);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -111,7 +112,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
   };
 
   const handleRemoveImage = () => {
-    setImageUrl(undefined);
+    setImageUrl(missingImageUrl);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
