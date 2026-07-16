@@ -10,14 +10,14 @@ export interface ParsedScore {
 /**
  * Utility for parsing and validating score strings
  */
-export class ScoreParser {
+export const ScoreParser = {
   /**
    * Parse a score string like "2-1" into individual scores
    * @param scoreText Score text like "2-1"
    * @param matchId Match ID for game records
    * @returns Parsed score data
    */
-  static parseScoreString(scoreText: string, matchId: string): ParsedScore {
+  parseScoreString(scoreText: string, matchId: string): ParsedScore {
     const scores = scoreText.split('-').map((s) => parseInt(s.trim()));
 
     if (scores.length !== 2 || isNaN(scores[0]) || isNaN(scores[1])) {
@@ -65,7 +65,7 @@ export class ScoreParser {
     }
 
     return { team1Score, team2Score, games };
-  }
+  },
 
   /**
    * Validate that scores make sense for a best-of-N match
@@ -74,7 +74,7 @@ export class ScoreParser {
    * @param bestOf The best-of number (3, 5, 7, etc)
    * @returns True if valid
    */
-  static validateMatchScore(team1Score: number, team2Score: number, bestOf: number): boolean {
+  validateMatchScore(team1Score: number, team2Score: number, bestOf: number): boolean {
     // Scores must be non-negative
     if (team1Score < 0 || team2Score < 0) {
       return false;
@@ -99,7 +99,7 @@ export class ScoreParser {
 
     // Check that total games doesn't exceed bestOf
     return totalGames <= bestOf;
-  }
+  },
 
   /**
    * Get winner ID based on scores
@@ -109,7 +109,7 @@ export class ScoreParser {
    * @param team2Id Team 2's ID
    * @returns Winner's ID or null if tie
    */
-  static getWinnerId(
+  getWinnerId(
     team1Score: number,
     team2Score: number,
     team1Id: string | null,
@@ -121,7 +121,7 @@ export class ScoreParser {
       return team2Id;
     }
     return null;
-  }
+  },
 
   /**
    * Get loser ID based on scores
@@ -131,7 +131,7 @@ export class ScoreParser {
    * @param team2Id Team 2's ID
    * @returns Loser's ID or null if tie
    */
-  static getLoserId(
+  getLoserId(
     team1Score: number,
     team2Score: number,
     team1Id: string | null,
@@ -143,5 +143,5 @@ export class ScoreParser {
       return team2Id;
     }
     return null;
-  }
-}
+  },
+};

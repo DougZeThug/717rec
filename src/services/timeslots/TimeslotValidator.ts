@@ -1,8 +1,8 @@
-export class TimeslotValidator {
+export const TimeslotValidator = {
   /**
    * Validate timeslot data before submission
    */
-  static validateTimeslotAssignment(
+  validateTimeslotAssignment(
     date: Date | null,
     teamId: string | null,
     timeslot: string | null
@@ -30,12 +30,12 @@ export class TimeslotValidator {
     }
 
     return { valid: true };
-  }
+  },
 
   /**
    * Validate batch timeslot assignment data
    */
-  static validateBatchAssignment(
+  validateBatchAssignment(
     date: Date | null,
     teamIds: string[],
     timeslot: string | null
@@ -63,5 +63,5 @@ export class TimeslotValidator {
     }
 
     return { valid: true };
-  }
-}
+  },
+};

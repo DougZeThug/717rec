@@ -18,11 +18,11 @@ interface TimeslotInsert {
   match_sequence: number;
 }
 
-export class TimeslotBatchService {
+export const TimeslotBatchService = {
   /**
    * Batch assign multiple teams to the same back-to-back pair.
    */
-  static async batchAssignBackToBackTimeslots(
+  async batchAssignBackToBackTimeslots(
     date: Date,
     teamIds: string[],
     pairName: string
@@ -68,17 +68,13 @@ export class TimeslotBatchService {
 
     if (error) handleDatabaseError(error, 'Failed to batch assign back-to-back timeslots');
     return TimeslotTransformer.formatTimeslotResponse(data ?? []);
-  }
+  },
 
   /**
    * Legacy method — redirects to back-to-back batch assignment.
    * @deprecated Use batchAssignBackToBackTimeslots instead
    */
-  static batchAssignTimeslots(
-    date: Date,
-    teamIds: string[],
-    timeslot: string
-  ): Promise<TeamTimeslot[]> {
+  batchAssignTimeslots(date: Date, teamIds: string[], timeslot: string): Promise<TeamTimeslot[]> {
     warnLog('batchAssignTimeslots is deprecated. Converting to back-to-back batch assignment.');
 
     const pairName = getBackToBackPairName(timeslot);
@@ -86,12 +82,12 @@ export class TimeslotBatchService {
       throw new ValidationError(`Cannot determine back-to-back pair for timeslot: ${timeslot}`);
 
     return TimeslotBatchService.batchAssignBackToBackTimeslots(date, teamIds, pairName);
-  }
+  },
 
   /**
    * Insert a single timeslot (used by useTimeslotOperations.addTimeslot).
    */
-  static async insertTimeslot(match_date: string, team_id: string, timeslot: string) {
+  async insertTimeslot(match_date: string, team_id: string, timeslot: string) {
     const { data, error } = await supabase
       .from('team_timeslots')
       .insert({ match_date, team_id, timeslot })
@@ -102,21 +98,21 @@ export class TimeslotBatchService {
 
     if (error) handleDatabaseError(error, 'Failed to insert timeslot');
     return data;
-  }
+  },
 
   /**
    * Delete a single timeslot by id.
    * Simple delete — does NOT handle back-to-back pair deletion.
    */
-  static async deleteTimeslotSimple(id: string) {
+  async deleteTimeslotSimple(id: string) {
     const { error } = await supabase.from('team_timeslots').delete().eq('id', id);
     if (error) handleDatabaseError(error, 'Failed to delete timeslot');
-  }
+  },
 
   /**
    * Batch insert timeslots (used by useTimeslotOperations.batchAssignTimeslots).
    */
-  static async batchInsertTimeslots(
+  async batchInsertTimeslots(
     insertData: Array<{ match_date: string; team_id: string; timeslot: string }>
   ) {
     const { data, error } = await supabase
@@ -128,5 +124,5 @@ export class TimeslotBatchService {
 
     if (error) handleDatabaseError(error, 'Failed to batch insert timeslots');
     return data ?? [];
-  }
-}
+  },
+};

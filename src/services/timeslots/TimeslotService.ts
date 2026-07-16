@@ -10,41 +10,33 @@ import { DoubleHeaderService } from './DoubleHeaderService';
 import { TimeslotBatchService } from './TimeslotBatchService';
 import { TimeslotQueryService } from './TimeslotQueryService';
 
-export class TimeslotService {
+export const TimeslotService = {
   // ── Query ──────────────────────────────────────────────────────────────────
-  static fetchByDate = TimeslotQueryService.fetchByDate.bind(TimeslotQueryService);
-  static fetchTimeslotsByDate =
-    TimeslotQueryService.fetchTimeslotsByDate.bind(TimeslotQueryService);
-  static fetchTimeslotsForDate =
-    TimeslotQueryService.fetchTimeslotsForDate.bind(TimeslotQueryService);
-  static fetchWeekTimeslotsByTeam =
-    TimeslotQueryService.fetchWeekTimeslotsByTeam.bind(TimeslotQueryService);
-  static fetchTimeslotsForPair =
-    TimeslotQueryService.fetchTimeslotsForPair.bind(TimeslotQueryService);
-  static fetchTimeslotValidation =
-    TimeslotQueryService.fetchTimeslotValidation.bind(TimeslotQueryService);
+  fetchByDate: TimeslotQueryService.fetchByDate.bind(TimeslotQueryService),
+  fetchTimeslotsByDate: TimeslotQueryService.fetchTimeslotsByDate.bind(TimeslotQueryService),
+  fetchTimeslotsForDate: TimeslotQueryService.fetchTimeslotsForDate.bind(TimeslotQueryService),
+  fetchWeekTimeslotsByTeam:
+    TimeslotQueryService.fetchWeekTimeslotsByTeam.bind(TimeslotQueryService),
+  fetchTimeslotsForPair: TimeslotQueryService.fetchTimeslotsForPair.bind(TimeslotQueryService),
+  fetchTimeslotValidation: TimeslotQueryService.fetchTimeslotValidation.bind(TimeslotQueryService),
 
   // ── Back-to-back ───────────────────────────────────────────────────────────
-  static addBackToBackTimeslot =
-    BackToBackTimeslotService.addBackToBackTimeslot.bind(BackToBackTimeslotService);
+  addBackToBackTimeslot:
+    BackToBackTimeslotService.addBackToBackTimeslot.bind(BackToBackTimeslotService),
   /** @deprecated Use addBackToBackTimeslot instead */
-  static addTimeslot = BackToBackTimeslotService.addTimeslot.bind(BackToBackTimeslotService);
-  static deleteTimeslot = BackToBackTimeslotService.deleteTimeslot.bind(BackToBackTimeslotService);
+  addTimeslot: BackToBackTimeslotService.addTimeslot.bind(BackToBackTimeslotService),
+  deleteTimeslot: BackToBackTimeslotService.deleteTimeslot.bind(BackToBackTimeslotService),
 
   // ── Double header ──────────────────────────────────────────────────────────
-  static assignDoubleHeader = DoubleHeaderService.assignDoubleHeader.bind(DoubleHeaderService);
-  static batchAssignDoubleHeaders =
-    DoubleHeaderService.batchAssignDoubleHeaders.bind(DoubleHeaderService);
+  assignDoubleHeader: DoubleHeaderService.assignDoubleHeader.bind(DoubleHeaderService),
+  batchAssignDoubleHeaders: DoubleHeaderService.batchAssignDoubleHeaders.bind(DoubleHeaderService),
 
   // ── Batch ──────────────────────────────────────────────────────────────────
-  static batchAssignBackToBackTimeslots =
-    TimeslotBatchService.batchAssignBackToBackTimeslots.bind(TimeslotBatchService);
+  batchAssignBackToBackTimeslots:
+    TimeslotBatchService.batchAssignBackToBackTimeslots.bind(TimeslotBatchService),
   /** @deprecated Use batchAssignBackToBackTimeslots instead */
-  static batchAssignTimeslots =
-    TimeslotBatchService.batchAssignTimeslots.bind(TimeslotBatchService);
-  static insertTimeslot = TimeslotBatchService.insertTimeslot.bind(TimeslotBatchService);
-  static deleteTimeslotSimple =
-    TimeslotBatchService.deleteTimeslotSimple.bind(TimeslotBatchService);
-  static batchInsertTimeslots =
-    TimeslotBatchService.batchInsertTimeslots.bind(TimeslotBatchService);
-}
+  batchAssignTimeslots: TimeslotBatchService.batchAssignTimeslots.bind(TimeslotBatchService),
+  insertTimeslot: TimeslotBatchService.insertTimeslot.bind(TimeslotBatchService),
+  deleteTimeslotSimple: TimeslotBatchService.deleteTimeslotSimple.bind(TimeslotBatchService),
+  batchInsertTimeslots: TimeslotBatchService.batchInsertTimeslots.bind(TimeslotBatchService),
+};

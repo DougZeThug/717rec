@@ -6,11 +6,11 @@ import { handleDatabaseError } from '@/utils/errorHandler';
 
 import { TimeslotTransformer } from './TimeslotTransformer';
 
-export class TimeslotQueryService {
+export const TimeslotQueryService = {
   /**
    * Fetch timeslots for a specific date (Date object)
    */
-  static async fetchByDate(date: Date): Promise<TeamTimeslot[]> {
+  async fetchByDate(date: Date): Promise<TeamTimeslot[]> {
     const formattedDate = format(date, 'yyyy-MM-dd');
 
     const { data, error } = await supabase
@@ -38,12 +38,12 @@ export class TimeslotQueryService {
 
     if (error) handleDatabaseError(error, 'Failed to fetch timeslots');
     return TimeslotTransformer.formatTimeslotResponse(data ?? []);
-  }
+  },
 
   /**
    * Fetch timeslots for a formatted date string (used by useTimeslotsByDate hook)
    */
-  static async fetchTimeslotsByDate(formattedDate: string) {
+  async fetchTimeslotsByDate(formattedDate: string) {
     const { data, error } = await supabase
       .from('team_timeslots')
       .select(
@@ -70,13 +70,13 @@ export class TimeslotQueryService {
     if (error) handleDatabaseError(error, 'Failed to fetch timeslots by date');
 
     return data ?? [];
-  }
+  },
 
   /**
    * Fetch timeslots for a formatted date (used by useTimeslotOperations hook)
    * Note: no image_url in teams select
    */
-  static async fetchTimeslotsForDate(formattedDate: string) {
+  async fetchTimeslotsForDate(formattedDate: string) {
     const { data, error } = await supabase
       .from('team_timeslots')
       .select(
@@ -101,12 +101,12 @@ export class TimeslotQueryService {
 
     if (error) handleDatabaseError(error, 'Failed to fetch timeslots for date');
     return data ?? [];
-  }
+  },
 
   /**
    * Fetch timeslots for a team within a date range (used by WeekTimeslotDisplay)
    */
-  static async fetchWeekTimeslotsByTeam(teamId: string, startDate: string, endDate: string) {
+  async fetchWeekTimeslotsByTeam(teamId: string, startDate: string, endDate: string) {
     const { data, error } = await supabase
       .from('team_timeslots')
       .select(
@@ -119,16 +119,12 @@ export class TimeslotQueryService {
 
     if (error) handleDatabaseError(error, 'Failed to fetch week timeslots by team');
     return data ?? [];
-  }
+  },
 
   /**
    * Fetch timeslots for a back-to-back pair (used by teamLoaderUtils.getTeamsByBackToBackPair)
    */
-  static async fetchTimeslotsForPair(
-    formattedDate: string,
-    primarySlot: string,
-    secondarySlot: string
-  ) {
+  async fetchTimeslotsForPair(formattedDate: string, primarySlot: string, secondarySlot: string) {
     const { data, error } = await supabase
       .from('team_timeslots')
       .select(
@@ -164,12 +160,12 @@ export class TimeslotQueryService {
 
     if (error) handleDatabaseError(error, 'Failed to fetch timeslots for pair');
     return data ?? [];
-  }
+  },
 
   /**
    * Fetch team timeslots for a given date and timeslot (used by autoScheduleUtils)
    */
-  static async fetchTeamsByTimeslot(formattedDate: string, timeslot: string) {
+  async fetchTeamsByTimeslot(formattedDate: string, timeslot: string) {
     const { data, error } = await supabase
       .from('team_timeslots')
       .select(
@@ -196,12 +192,12 @@ export class TimeslotQueryService {
 
     if (error) handleDatabaseError(error, 'Failed to fetch teams by timeslot');
     return data ?? [];
-  }
+  },
 
   /**
    * Fetch timeslot assignments for validation (used by teamLoaderUtils.validateTeamBackToBackAssignment)
    */
-  static async fetchTimeslotValidation(
+  async fetchTimeslotValidation(
     formattedDate: string,
     teamId: string,
     primarySlot: string,
@@ -218,5 +214,5 @@ export class TimeslotQueryService {
     if (error) handleDatabaseError(error, 'Failed to fetch timeslot validation');
     // No rows (data is null/empty) genuinely means "no assignment" — return null.
     return data ?? null;
-  }
-}
+  },
+};

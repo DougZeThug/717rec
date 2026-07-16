@@ -96,14 +96,25 @@ function isValidFailedBadgeOperation(item: unknown): item is FailedBadgeOperatio
 }
 
 /**
+ * Save failed operations to storage
+ */
+function saveFailedOperations(operations: FailedBadgeOperation[]): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(operations));
+  } catch (e) {
+    errorLog('Failed to save badge operations to storage:', e);
+  }
+}
+
+/**
  * Service to handle failed badge operations with retry capability
  * and admin notifications.
  */
-export class FailedBadgeOperationsService {
+export const FailedBadgeOperationsService = {
   /**
    * Get all failed operations from storage
    */
-  static getFailedOperations(): FailedBadgeOperation[] {
+  getFailedOperations(): FailedBadgeOperation[] {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (!stored) return [];
@@ -114,29 +125,18 @@ export class FailedBadgeOperationsService {
       errorLog('Failed to read badge operations from storage:', e);
       return [];
     }
-  }
-
-  /**
-   * Save failed operations to storage
-   */
-  private static saveFailedOperations(operations: FailedBadgeOperation[]): void {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(operations));
-    } catch (e) {
-      errorLog('Failed to save badge operations to storage:', e);
-    }
-  }
+  },
 
   /**
    * Queue a failed badge operation for retry
    */
-  static queueFailedOperation<T extends BadgeOperationType>(
+  queueFailedOperation<T extends BadgeOperationType>(
     type: T,
     params: BadgeOperationParams[T],
     error: Error | string,
     matchId: string
   ): void {
-    const operations = this.getFailedOperations();
+    const operations = FailedBadgeOperationsService.getFailedOperations();
     const normalizedParams = JSON.stringify(params);
     const existingOperation = operations.find(
       (operation) =>
@@ -148,7 +148,7 @@ export class FailedBadgeOperationsService {
     if (existingOperation) {
       existingOperation.error = error instanceof Error ? error.message : String(error);
       existingOperation.lastRetryAt = new Date().toISOString();
-      this.saveFailedOperations(operations);
+      saveFailedOperations(operations);
       warnLog('Duplicate badge operation merged into existing retry item:', {
         type,
         matchId,
@@ -167,52 +167,52 @@ export class FailedBadgeOperationsService {
     } as FailedBadgeOperation;
 
     operations.push(newOperation);
-    this.saveFailedOperations(operations);
+    saveFailedOperations(operations);
 
     warnLog('Badge operation queued for retry:', { type, matchId, error: newOperation.error });
-  }
+  },
 
   /**
    * Remove a successfully processed operation
    */
-  static removeOperation(operationId: string): void {
-    const operations = this.getFailedOperations();
+  removeOperation(operationId: string): void {
+    const operations = FailedBadgeOperationsService.getFailedOperations();
     const filtered = operations.filter((op) => op.id !== operationId);
-    this.saveFailedOperations(filtered);
-  }
+    saveFailedOperations(filtered);
+  },
 
   /**
    * Clear all failed operations
    */
-  static clearAllOperations(): void {
+  clearAllOperations(): void {
     localStorage.removeItem(STORAGE_KEY);
-  }
+  },
 
   /**
    * Get count of pending failed operations
    */
-  static getFailedOperationCount(): number {
-    return this.getFailedOperations().length;
-  }
+  getFailedOperationCount(): number {
+    return FailedBadgeOperationsService.getFailedOperations().length;
+  },
 
   /**
    * Check if there are any pending retries
    */
-  static hasPendingRetries(): boolean {
-    return this.getFailedOperationCount() > 0;
-  }
+  hasPendingRetries(): boolean {
+    return FailedBadgeOperationsService.getFailedOperationCount() > 0;
+  },
 
   /**
    * Retry all failed operations
    * Returns summary of retry results
    */
-  static async retryFailedOperations(): Promise<{
+  async retryFailedOperations(): Promise<{
     total: number;
     succeeded: number;
     failed: number;
     remaining: FailedBadgeOperation[];
   }> {
-    const operations = this.getFailedOperations();
+    const operations = FailedBadgeOperationsService.getFailedOperations();
 
     if (operations.length === 0) {
       return { total: 0, succeeded: 0, failed: 0, remaining: [] };
@@ -233,7 +233,7 @@ export class FailedBadgeOperationsService {
       }
 
       try {
-        await this.executeOperation(operation);
+        await executeOperation(operation);
         succeeded++;
         badgeLog('Successfully retried badge operation:', operation.type);
       } catch (e) {
@@ -252,7 +252,7 @@ export class FailedBadgeOperationsService {
       await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
     }
 
-    this.saveFailedOperations(remaining);
+    saveFailedOperations(remaining);
 
     return {
       total: operations.length,
@@ -260,96 +260,97 @@ export class FailedBadgeOperationsService {
       failed,
       remaining,
     };
-  }
+  },
+};
 
-  /**
-   * Execute a single badge operation
-   */
-  private static async executeOperation(operation: FailedBadgeOperation): Promise<void> {
-    const { type, params } = operation;
+/**
+ * Execute a single badge operation
+ */
+async function executeOperation(operation: FailedBadgeOperation): Promise<void> {
+  const { type, params } = operation;
 
-    switch (type) {
-      case 'match_badges': {
-        const { error } = await supabase.rpc('process_match_badges', {
-          p_team1_id: params.team1Id,
-          p_team2_id: params.team2Id,
-        });
-        if (error) handleDatabaseError(error, 'Failed to retry match_badges operation');
-        return;
-      }
-
-      case 'kingslayer': {
-        const { error } = await supabase.rpc('award_kingslayer_badge', {
-          p_winner_id: params.winnerId,
-          p_loser_id: params.loserId,
-        });
-        if (error) handleDatabaseError(error, 'Failed to retry kingslayer operation');
-        return;
-      }
-
-      case 'clutch_performer': {
-        const { error } = await supabase.rpc('award_clutch_performer_badge', {
-          p_team_id: params.winnerId,
-        });
-        if (error) handleDatabaseError(error, 'Failed to retry clutch_performer operation');
-        return;
-      }
-
-      case 'consistent_performer': {
-        const { error } = await supabase.rpc('award_consistent_performer_badge', {
-          p_team_id: params.winnerId,
-        });
-        if (error) handleDatabaseError(error, 'Failed to retry consistent_performer operation');
-        return;
-      }
-
-      case 'ice_cold_winner':
-      case 'ice_cold_loser': {
-        const { error } = await supabase.rpc('award_ice_cold_badge', {
-          p_team_id: params.teamId,
-        });
-        if (error) handleDatabaseError(error, `Failed to retry ${type} operation`);
-        return;
-      }
-
-      case 'broom_crew_winner':
-      case 'broom_crew_loser': {
-        const { error } = await supabase.rpc('award_broom_crew_badge', {
-          p_team_id: params.teamId,
-        });
-        if (error) handleDatabaseError(error, `Failed to retry ${type} operation`);
-        return;
-      }
-
-      case 'gatekeeper_winner':
-      case 'gatekeeper_loser': {
-        const { error } = await supabase.rpc('award_gatekeeper_badge', {
-          p_team_id: params.teamId,
-        });
-        if (error) handleDatabaseError(error, `Failed to retry ${type} operation`);
-        return;
-      }
-
-      case 'chaos_agent_winner':
-      case 'chaos_agent_loser': {
-        const { error } = await supabase.rpc('award_chaos_agent_badge', {
-          p_team_id: params.teamId,
-        });
-        if (error) handleDatabaseError(error, `Failed to retry ${type} operation`);
-        return;
-      }
-
-      case 'bully_winner':
-      case 'bully_loser': {
-        const { error } = await supabase.rpc('award_bully_badge', {
-          p_team_id: params.teamId,
-        });
-        if (error) handleDatabaseError(error, `Failed to retry ${type} operation`);
-        return;
-      }
-
-      default:
-        throw new ValidationError(`Unknown badge operation type: ${type}`);
+  switch (type) {
+    case 'match_badges': {
+      const { error } = await supabase.rpc('process_match_badges', {
+        p_team1_id: params.team1Id,
+        p_team2_id: params.team2Id,
+      });
+      if (error) handleDatabaseError(error, 'Failed to retry match_badges operation');
+      return;
     }
+
+    case 'kingslayer': {
+      const { error } = await supabase.rpc('award_kingslayer_badge', {
+        p_winner_id: params.winnerId,
+        p_loser_id: params.loserId,
+      });
+      if (error) handleDatabaseError(error, 'Failed to retry kingslayer operation');
+      return;
+    }
+
+    case 'clutch_performer': {
+      const { error } = await supabase.rpc('award_clutch_performer_badge', {
+        p_team_id: params.winnerId,
+      });
+      if (error) handleDatabaseError(error, 'Failed to retry clutch_performer operation');
+      return;
+    }
+
+    case 'consistent_performer': {
+      const { error } = await supabase.rpc('award_consistent_performer_badge', {
+        p_team_id: params.winnerId,
+      });
+      if (error) handleDatabaseError(error, 'Failed to retry consistent_performer operation');
+      return;
+    }
+
+    case 'ice_cold_winner':
+    case 'ice_cold_loser': {
+      const { error } = await supabase.rpc('award_ice_cold_badge', {
+        p_team_id: params.teamId,
+      });
+      if (error) handleDatabaseError(error, `Failed to retry ${type} operation`);
+      return;
+    }
+
+    case 'broom_crew_winner':
+    case 'broom_crew_loser': {
+      const { error } = await supabase.rpc('award_broom_crew_badge', {
+        p_team_id: params.teamId,
+      });
+      if (error) handleDatabaseError(error, `Failed to retry ${type} operation`);
+      return;
+    }
+
+    case 'gatekeeper_winner':
+    case 'gatekeeper_loser': {
+      const { error } = await supabase.rpc('award_gatekeeper_badge', {
+        p_team_id: params.teamId,
+      });
+      if (error) handleDatabaseError(error, `Failed to retry ${type} operation`);
+      return;
+    }
+
+    case 'chaos_agent_winner':
+    case 'chaos_agent_loser': {
+      const { error } = await supabase.rpc('award_chaos_agent_badge', {
+        p_team_id: params.teamId,
+      });
+      if (error) handleDatabaseError(error, `Failed to retry ${type} operation`);
+      return;
+    }
+
+    case 'bully_winner':
+    case 'bully_loser': {
+      const { error } = await supabase.rpc('award_bully_badge', {
+        p_team_id: params.teamId,
+      });
+      if (error) handleDatabaseError(error, `Failed to retry ${type} operation`);
+      return;
+    }
+
+    /* c8 ignore next 2 -- getFailedOperations filters invalid operation types before retry dispatch. */
+    default:
+      throw new ValidationError(`Unknown badge operation type: ${type}`);
   }
 }

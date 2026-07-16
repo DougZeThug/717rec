@@ -9,12 +9,12 @@ import { scheduleLog, warnLog } from '@/utils/logger';
 
 import { TimeslotTransformer } from './TimeslotTransformer';
 
-export class BackToBackTimeslotService {
+export const BackToBackTimeslotService = {
   /**
    * Add a back-to-back timeslot assignment.
    * Always creates BOTH timeslots for the team.
    */
-  static async addBackToBackTimeslot(
+  async addBackToBackTimeslot(
     date: Date,
     teamId: string,
     pairName: string
@@ -57,13 +57,13 @@ export class BackToBackTimeslotService {
 
     if (error) handleDatabaseError(error, 'Failed to add back-to-back timeslots');
     return TimeslotTransformer.formatTimeslotResponse(data ?? []);
-  }
+  },
 
   /**
    * Legacy method — redirects to back-to-back assignment.
    * @deprecated Use addBackToBackTimeslot instead
    */
-  static addTimeslot(date: Date, teamId: string, timeslot: string): Promise<TeamTimeslot[]> {
+  addTimeslot(date: Date, teamId: string, timeslot: string): Promise<TeamTimeslot[]> {
     warnLog('addTimeslot is deprecated. Converting to back-to-back assignment.');
 
     const pairName = getBackToBackPairName(timeslot);
@@ -71,12 +71,12 @@ export class BackToBackTimeslotService {
       throw new ValidationError(`Cannot determine back-to-back pair for timeslot: ${timeslot}`);
 
     return BackToBackTimeslotService.addBackToBackTimeslot(date, teamId, pairName);
-  }
+  },
 
   /**
    * Delete a timeslot assignment (removes both slots in a back-to-back pair).
    */
-  static async deleteTimeslot(id: string): Promise<void> {
+  async deleteTimeslot(id: string): Promise<void> {
     const { data: timeslot, error: fetchError } = await supabase
       .from('team_timeslots')
       .select('team_id, match_date, is_back_to_back, pair_slot')
@@ -99,5 +99,5 @@ export class BackToBackTimeslotService {
       const { error } = await supabase.from('team_timeslots').delete().eq('id', id);
       if (error) handleDatabaseError(error, 'Failed to delete timeslot');
     }
-  }
-}
+  },
+};

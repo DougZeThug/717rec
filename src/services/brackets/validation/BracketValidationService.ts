@@ -29,11 +29,11 @@ const isValidBracketFormData = (data: unknown): data is BracketFormData => {
   );
 };
 
-export class BracketValidationService {
+export const BracketValidationService = {
   /**
    * Validates complete bracket form data
    */
-  static validateFormData(data: unknown): ValidationResult {
+  validateFormData(data: unknown): ValidationResult {
     const errors: string[] = [];
 
     validationLog('Validating bracket form data');
@@ -79,12 +79,12 @@ export class BracketValidationService {
       isValid: errors.length === 0,
       errors,
     };
-  }
+  },
 
   /**
    * Validates team selection array
    */
-  static validateTeamSelection(teamIds: unknown): TeamValidationResult {
+  validateTeamSelection(teamIds: unknown): TeamValidationResult {
     const errors: string[] = [];
     const invalidTeams: string[] = [];
 
@@ -122,12 +122,12 @@ export class BracketValidationService {
       invalidCount: invalidTeams.length,
     });
     return result;
-  }
+  },
 
   /**
    * Sanitizes form data to prevent invalid submissions
    */
-  static sanitizeFormData(data: unknown): BracketFormData {
+  sanitizeFormData(data: unknown): BracketFormData {
     validationLog('Sanitizing bracket form data');
 
     // Type guard check
@@ -149,22 +149,22 @@ export class BracketValidationService {
 
     validationLog('Data sanitized:', { teamCount: sanitized.teams.length });
     return sanitized as BracketFormData;
-  }
+  },
 
   /**
    * Comprehensive pre-submission validation
    */
-  static validateForSubmission(data: unknown): ValidationResult {
+  validateForSubmission(data: unknown): ValidationResult {
     validationLog('Validating for submission');
 
-    const sanitizedData = this.sanitizeFormData(data);
-    const formValidation = this.validateFormData(sanitizedData);
+    const sanitizedData = BracketValidationService.sanitizeFormData(data);
+    const formValidation = BracketValidationService.validateFormData(sanitizedData);
 
     if (!formValidation.isValid) {
       return formValidation;
     }
 
-    const teamValidation = this.validateTeamSelection(sanitizedData.teams);
+    const teamValidation = BracketValidationService.validateTeamSelection(sanitizedData.teams);
     if (!teamValidation.isValid) {
       return {
         isValid: false,
@@ -173,5 +173,5 @@ export class BracketValidationService {
     }
 
     return { isValid: true, errors: [] };
-  }
-}
+  },
+};
