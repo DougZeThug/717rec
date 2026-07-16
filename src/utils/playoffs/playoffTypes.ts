@@ -72,37 +72,5 @@ type PlayoffMatchType = 'winners' | 'losers' | 'finals' | 'play-in' | 'play-in-2
 export type BracketState = 'pending' | 'in_progress' | 'completed';
 export type BracketFormat = 'Single Elimination' | 'Double Elimination';
 
-/**
- * Match display data used in bracket visualization
- */
-interface BracketMatchDisplay {
-  id: string;
-  round: number;
-  position: number;
-  team1Id: string | null;
-  team2Id: string | null;
-  team1Score: number | null;
-  team2Score: number | null;
-  team1GameWins: number | null;
-  team2GameWins: number | null;
-  winnerId: string | null;
-  loserId: string | null;
-  matchType: PlayoffMatchType;
-  status: 'pending' | 'in_progress' | 'completed';
-  bestOf: number;
-  team1Seed?: number | null;
-  team2Seed?: number | null;
-  nextWinMatchId?: string | null;
-  nextLoseMatchId?: string | null;
-}
-
-type BracketMatchesByType = {
-  winners: BracketMatchDisplay[][];
-  losers: BracketMatchDisplay[][];
-  finals: BracketMatchDisplay[];
-  playIn?: BracketMatchDisplay[][];
-};
-
 // Legacy type aliases for backward compatibility
 export type Team = PlayoffTeam;
-
