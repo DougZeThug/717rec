@@ -48,7 +48,7 @@ Every green check on the repo means something real ran and passed; anything that
       done
   ```
   (The Playwright step needs the same five in its `env:` — mirror the existing job env block.)
-- **If no second project for now:** change the job to `if: ${{ vars.E2E_REAL_BACKEND_ENABLED == 'true' }}` so it doesn't run at all (absent ≠ green), and note in the README's CI table that real-backend E2E is not yet active.
+- **If no second project for now:** remove the `e2e-real-backend` job from `ci.yml` entirely (keep the spec and helper in the repo), and note in the README's CI table that real-backend E2E is not yet active. Deleting beats disabling with `if: ${{ vars.E2E_REAL_BACKEND_ENABLED == 'true' }}`, because GitHub reports a conditionally-skipped job as **Skipped, which still satisfies a required status check** — a disabled-but-required "E2E (real Supabase)" would keep green-lighting merges while testing nothing, which is exactly the failure mode this brief exists to fix. If the flag approach is used anyway (e.g. to keep the YAML in place), the job must never appear in any branch-protection required-checks list until the secrets exist and the flag is on. Restore the job in the same PR that adds the secrets, guard step included.
 
 **Lighthouse:**
 - In `lighthouserc.json`, promote to `"error"` with realistic floors measured from the current build (review measured entry 130.97 kB gz; CI Lighthouse historically passes):
