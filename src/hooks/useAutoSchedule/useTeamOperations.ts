@@ -5,9 +5,7 @@ import { useToast } from '@/hooks/useToast';
 import { DualBlockConfig, PairedTimeBlockTeamsMap, TimeBlockTeamsMap } from '@/types/autoSchedule';
 import { normalizeScheduleDate, validateScheduleDate } from '@/utils/autoSchedule/dateUtils';
 import { validateBackToBackPairAssignments } from '@/utils/autoSchedule/edgeCaseUtils';
-import {
-  getAllBackToBackTeams,
-} from '@/utils/autoSchedule/teamLoaderUtils';
+import { getAllBackToBackTeams } from '@/utils/autoSchedule/teamLoaderUtils';
 import { errorLog, scheduleLog, warnLog } from '@/utils/logger';
 
 import { loadAutoScheduleState, saveAutoScheduleState } from './storage';
