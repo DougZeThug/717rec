@@ -13,7 +13,7 @@ describe('logger', () => {
     captureMessage.mockReset();
   });
 
-  const importLogger = async ({ isDev, shouldLog }: { isDev: boolean; shouldLog: boolean }) => {
+  const importLogger = ({ isDev, shouldLog }: { isDev: boolean; shouldLog: boolean }) => {
     vi.doMock('@/utils/logger-types', () => ({
       isDev,
       shouldLog: vi.fn(() => shouldLog),
@@ -32,7 +32,7 @@ describe('logger', () => {
     logger.warnLog('careful');
     logger.debugLog('details');
     logger.errorLog('broken');
-    logger.imageErrorLog('Alpha', undefined);
+    logger.imageErrorLog('Alpha', null);
     logger.successLog('Saved');
     logger.failureLog('Save failed', new Error('nope'));
 
