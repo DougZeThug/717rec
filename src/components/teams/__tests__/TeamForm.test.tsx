@@ -170,6 +170,42 @@ describe('TeamForm', () => {
     expect(screen.getByRole('button', { name: /create team/i })).toBeEnabled();
   });
 
+  it('removes players and clears the selected image before submit', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+
+    render(<TeamForm team={existingTeam} onSubmit={onSubmit} onCancel={vi.fn()} />);
+
+    await user.click(screen.getAllByRole('button', { name: /remove player/i })[0]);
+    const removeImageButton = screen
+      .getByAltText(/team preview/i)
+      .parentElement?.querySelector('button');
+    expect(removeImageButton).not.toBeNull();
+    await user.click(removeImageButton as HTMLButtonElement);
+    await user.click(screen.getByRole('button', { name: /update team/i }));
+
+    expect(screen.queryByAltText(/team preview/i)).not.toBeInTheDocument();
+    expect(onSubmit).toHaveBeenCalledWith({
+      name: 'Existing Eagles',
+      imageUrl: undefined,
+      players: ['Grace'],
+      wins: 7,
+      losses: 3,
+      division_id: 'division-east',
+    });
+  });
+
+  it('calls onCancel when cancelling the form', async () => {
+    const user = userEvent.setup();
+    const onCancel = vi.fn();
+
+    render(<TeamForm onSubmit={vi.fn()} onCancel={onCancel} />);
+
+    await user.click(screen.getByRole('button', { name: /cancel/i }));
+
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
   it('disables upload and submit controls while an image is uploading', async () => {
     let resolveUpload: (value: string) => void = () => undefined;
     mockUploadTeamImage.mockReturnValueOnce(

@@ -63,7 +63,8 @@ describe('MatchFormRHF (create mode)', () => {
     fireEvent.click(comboboxes[1]);
     fireEvent.click(await screen.findByRole('option', { name: 'Beta' }));
 
-    // Pick a time slot so the form can submit.
+    // Pick a custom date and time slot so the form can submit.
+    fireEvent.change(screen.getByLabelText(/date/i), { target: { value: '2026-08-20' } });
     fireEvent.click(screen.getByRole('button', { name: '7:00 PM' }));
 
     // Score inputs are hidden until the match is marked completed.
