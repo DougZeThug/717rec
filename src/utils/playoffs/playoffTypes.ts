@@ -106,29 +106,3 @@ type BracketMatchesByType = {
 // Legacy type aliases for backward compatibility
 export type Team = PlayoffTeam;
 
-// Updated PlayoffViewModel with string error type for consistency
-export interface PlayoffViewModel {
-  // Bracket data
-  bracket: PlayoffBracket | null;
-  isLoading: boolean;
-  error: string | null; // Updated to use string for UI consistency
-  bracketMatchesByType: BracketMatchesByType | null;
-
-  // Teams data
-  teams: PlayoffTeam[];
-  teamsLoading: boolean;
-
-  // Actions
-  refetch: () => Promise<void>;
-  deleteBracket: (bracketId: string, bracketName: string) => Promise<void>;
-  updateMatchResult: (
-    matchId: string,
-    winnerId: string,
-    loserId: string,
-    team1Score: number,
-    team2Score: number,
-    team1GameWins?: number,
-    team2GameWins?: number,
-    games?: PlayoffGame[]
-  ) => Promise<void>;
-}
