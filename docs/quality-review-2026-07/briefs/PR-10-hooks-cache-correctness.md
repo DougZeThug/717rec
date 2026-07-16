@@ -33,7 +33,7 @@ Listed in §1; plus `src/hooks/useTeamManagement.ts`, tests for each hook (most 
 2. `useTeamRankings`: extract the snapshot upsert out of the read path. The upsert belongs to an explicit action — move it server-side into the existing snapshot flow (`capture-power-snapshots` edge cron already exists) or behind an admin-only explicit mutation; the read hook becomes pure `useQuery`.
 3. `useScoreEntryData`: convert to `useQuery` keyed on the filters (`['mass-score-matches', date, bracketId]`) — TanStack handles race/cancel/stale for free; surface `error` to the tool (PR-08 renders it).
 4. `useMessageApi`: delete the hand-rolled AbortController; use the `signal` TanStack passes to `queryFn`, and **throw** on abort (never return `[]`).
-5. `useBracketsQuery` + `usePreviousRankings`: straight `useQuery` conversions; errors propagate to `error` state; delete the dead promotion branch.
+5. `useBracketsQuery` + `usePreviousRankings`: straight `useQuery` conversions; errors propagate to `error` state; delete the dead promotion branch. **The bracket error can't reach the screen from the hook alone:** `useFiltersState.ts:10` destructures only `{ brackets }` and drops everything else, so its consumer has no error/loading signal to render. Thread `error`/`isLoading`/`refetch` through `useFiltersState` and render the failure state in the Mass Score Entry filter UI (PR-08's ErrorAlert pattern), with a component test asserting a failed bracket fetch shows the retry state instead of a silently empty dropdown.
 6. Update/extend each hook's tests; assert invalidation keys and error propagation.
 
 ## 6. Database requirements

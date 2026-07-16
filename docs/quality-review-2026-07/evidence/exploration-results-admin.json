@@ -13,7 +13,7 @@
       "navError": null,
       "contentRendered": true,
       "textLen": 1193,
-      "title": "717REC — Lancaster's Premier Cornhole League",
+      "title": "717REC \u2014 Lancaster's Premier Cornhole League",
       "h1": "Admin Dashboard",
       "scrollWidth": 1440,
       "hasSkipLink": true,
@@ -28,7 +28,8 @@
         }
       ],
       "guardAbortCount": 0,
-      "screenshot": "/tmp/claude-0/-home-user-717rec/fbbd526d-ace5-5f8d-b537-9f6b728a2332/scratchpad/evidence/screenshots/admin-_admin-desktop-1440.png"
+      "screenshot": "screenshots/admin-_admin-desktop-1440.png",
+      "screenshot_committed": true
     },
     {
       "phase": "admin",
@@ -37,7 +38,7 @@
       "navError": null,
       "contentRendered": true,
       "textLen": 826,
-      "title": "717REC — Lancaster's Premier Cornhole League",
+      "title": "717REC \u2014 Lancaster's Premier Cornhole League",
       "h1": "Admin Notifications",
       "scrollWidth": 1440,
       "hasSkipLink": true,
@@ -46,7 +47,8 @@
       "pageErrors": [],
       "failedRequests": [],
       "guardAbortCount": 0,
-      "screenshot": "/tmp/claude-0/-home-user-717rec/fbbd526d-ace5-5f8d-b537-9f6b728a2332/scratchpad/evidence/screenshots/admin-_admin_notifications-desktop-1440.png"
+      "screenshot": "admin-_admin_notifications-desktop-1440.png",
+      "screenshot_committed": false
     },
     {
       "phase": "admin",
@@ -55,19 +57,20 @@
       "navError": null,
       "contentRendered": true,
       "textLen": 621,
-      "title": "717REC — Lancaster's Premier Cornhole League",
+      "title": "717REC \u2014 Lancaster's Premier Cornhole League",
       "h1": "My Team",
       "scrollWidth": 1440,
       "hasSkipLink": true,
       "imgsNoAlt": 0,
       "consoleErrors": [
         "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
-        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR \u2014 scheduling reconnect"
       ],
       "pageErrors": [],
       "failedRequests": [],
       "guardAbortCount": 0,
-      "screenshot": "/tmp/claude-0/-home-user-717rec/fbbd526d-ace5-5f8d-b537-9f6b728a2332/scratchpad/evidence/screenshots/admin-_my-team-desktop-1440.png"
+      "screenshot": "admin-_my-team-desktop-1440.png",
+      "screenshot_committed": false
     },
     {
       "phase": "admin",
@@ -76,7 +79,7 @@
       "navError": null,
       "contentRendered": true,
       "textLen": 1080,
-      "title": "717REC — Lancaster's Premier Cornhole League",
+      "title": "717REC \u2014 Lancaster's Premier Cornhole League",
       "h1": "Admin Dashboard",
       "hOverflow": false,
       "scrollWidth": 375,
@@ -84,7 +87,7 @@
       "imgsNoAlt": 0,
       "consoleErrors": [
         "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
-        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR \u2014 scheduling reconnect"
       ],
       "pageErrors": [],
       "failedRequests": [
@@ -95,7 +98,8 @@
         }
       ],
       "guardAbortCount": 0,
-      "screenshot": "/tmp/claude-0/-home-user-717rec/fbbd526d-ace5-5f8d-b537-9f6b728a2332/scratchpad/evidence/screenshots/admin-_admin-mobile-375.png"
+      "screenshot": "screenshots/admin-_admin-mobile-375.png",
+      "screenshot_committed": true
     },
     {
       "phase": "admin",
@@ -104,7 +108,7 @@
       "navError": null,
       "contentRendered": true,
       "textLen": 752,
-      "title": "717REC — Lancaster's Premier Cornhole League",
+      "title": "717REC \u2014 Lancaster's Premier Cornhole League",
       "h1": "Admin Notifications",
       "hOverflow": false,
       "scrollWidth": 375,
@@ -112,13 +116,14 @@
       "imgsNoAlt": 0,
       "consoleErrors": [
         "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
-        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect",
-        "[717REC ERROR] [realtime:useContactRequests] channel CHANNEL_ERROR — scheduling reconnect"
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR \u2014 scheduling reconnect",
+        "[717REC ERROR] [realtime:useContactRequests] channel CHANNEL_ERROR \u2014 scheduling reconnect"
       ],
       "pageErrors": [],
       "failedRequests": [],
       "guardAbortCount": 0,
-      "screenshot": "/tmp/claude-0/-home-user-717rec/fbbd526d-ace5-5f8d-b537-9f6b728a2332/scratchpad/evidence/screenshots/admin-_admin_notifications-mobile-375.png"
+      "screenshot": "admin-_admin_notifications-mobile-375.png",
+      "screenshot_committed": false
     },
     {
       "phase": "admin",
@@ -127,7 +132,7 @@
       "navError": null,
       "contentRendered": true,
       "textLen": 547,
-      "title": "717REC — Lancaster's Premier Cornhole League",
+      "title": "717REC \u2014 Lancaster's Premier Cornhole League",
       "h1": "My Team",
       "hOverflow": false,
       "scrollWidth": 375,
@@ -135,12 +140,13 @@
       "imgsNoAlt": 0,
       "consoleErrors": [
         "WebSocket connection to 'wss://wcitdamvochthvxvtxyb.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjaXRkYW12b2NodGh2eHZ0eHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzMDIyNzAsImV4cCI6MjA1OTg3ODI3MH0.MJjOhk6vzWkM3wPgt3jg0Lb_giQILUR4TpbR1Xgh9v",
-        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR — scheduling reconnect"
+        "[717REC ERROR] [realtime:useNotificationsRealtime] channel CHANNEL_ERROR \u2014 scheduling reconnect"
       ],
       "pageErrors": [],
       "failedRequests": [],
       "guardAbortCount": 0,
-      "screenshot": "/tmp/claude-0/-home-user-717rec/fbbd526d-ace5-5f8d-b537-9f6b728a2332/scratchpad/evidence/screenshots/admin-_my-team-mobile-375.png"
+      "screenshot": "admin-_my-team-mobile-375.png",
+      "screenshot_committed": false
     },
     {
       "phase": "admin",

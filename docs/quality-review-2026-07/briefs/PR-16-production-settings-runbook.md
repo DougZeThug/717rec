@@ -1,6 +1,6 @@
 # PR-16 — Production settings runbook + league-night operations guide
 
-**Phase:** 6 (Polish & growth) · **Tier:** 3 · **Agent:** Claude Code (docs) + **Doug manual (all dashboard settings)** · **Parallelizable:** yes, anytime · **Depends on:** nothing · **Expected score impact:** +0.6 overall (Production readiness +6, Security +1)
+**Phase:** 6 (Polish & growth) · **Tier:** 3 · **Agent:** Claude Code (docs) + **Doug manual (all dashboard settings)** · **Parallelizable:** yes — but the league-night playbook's "standings look wrong" entry references the PR-05 drift check, so either land PR-05 first (the review's suggested order does) or write that entry as "available after PR-05" · **Depends on:** PR-05 (soft, for step 3's playbook entry only) · **Expected score impact:** +0.6 overall (Production readiness +6, Security +1)
 
 ## 1. Background
 
@@ -22,12 +22,13 @@ Documentation + Doug's dashboard actions. Zero code.
 ## 5. Implementation steps
 
 1. Create `docs/PRODUCTION_SETTINGS.md` with a table: *setting · where · expected value · why · last verified (date + initials)*. Rows at minimum:
-   - Auth → Email: **Confirm email = ON**; Secure email change = ON.
+   - Auth → Email confirmations: **decide the policy first — do not blindly set ON.** The repo's current, deliberate policy is **OFF**: `docs/OPERATIONS.md:20` documents it ("internal rec-league app used by trusted team members") and `supabase/config.toml:17` sets `enable_confirmations = false`. If Doug keeps OFF, record that with its rationale and verified date. If production policy changes to ON, update `docs/OPERATIONS.md` and `supabase/config.toml` in the same PR so repo and dashboard agree. Secure email change = ON either way.
    - Auth → Passwords: minimum length ≥ 8; **leaked-password protection (HaveIBeenPwned) = ON**.
    - Auth → Rate limits: confirm defaults are active (sign-in, OTP, verifications) — record actual numbers.
-   - Auth → URL configuration: Site URL = production domain; Redirect URLs contain only production + local dev.
+   - Auth → URL configuration: Site URL = production domain; Redirect URLs match `docs/OPERATIONS.md:23`'s existing inventory — `https://717rec.app`, `https://717rec.lovable.app`, plus any preview domain in active use, plus local dev. **Do not prune the lovable.app/staging entries without migrating them first** — login, magic-link, and password-reset redirects fail silently on any deployed surface removed from this list.
    - Database → Backups: daily backups ON; note retention; record how to restore (PITR availability by plan).
    - Edge functions secrets set: `CRON_WEBHOOK_SECRET`, `RESEND_API_KEY` (or equivalent), service keys — names only, never values.
+   - Auth → SMTP: record whether custom SMTP is configured (provider, sender address) or Supabase's built-in sender is in use, and the result of a live test-send (password-reset email to a throwaway account, delivered/spam/failed + date). This closes the "custom SMTP unverified" gap called out in this brief's Background and review §9.
    - API → exposed schemas = public only; RLS "enforced for all tables" spot-check.
    - Hosting (Lovable/custom domain): HTTPS enforced, custom domain status.
 2. Doug walks the dashboards once, sets each to the expected value, and fills the "last verified" column.

@@ -33,11 +33,21 @@ Every green check on the repo means something real ran and passed; anything that
 ## 5. Implementation steps
 
 **Real-backend E2E (choose one):**
-- **Preferred:** Doug creates a dedicated Supabase project (or a staging schema) for E2E and sets repo secrets `E2E_SUPABASE_URL`, `E2E_SUPABASE_ANON_KEY`, `E2E_SUPABASE_SERVICE_ROLE_KEY`, `E2E_TEST_USER_EMAIL`, `E2E_TEST_USER_PASSWORD` (never the production project — the spec seeds and deletes data). Then add a guard step to ci.yml that **fails** the job if the secrets are absent, so it can't silently skip:
+- **Preferred:** Doug creates a **separate, dedicated Supabase project** for E2E and sets repo secrets `E2E_SUPABASE_URL`, `E2E_SUPABASE_ANON_KEY`, `E2E_SUPABASE_SERVICE_ROLE_KEY`, `E2E_TEST_USER_EMAIL`, `E2E_TEST_USER_PASSWORD`. A "staging schema" inside the production project is **not** acceptable: the e2e helper's service-role client and every table operation target the default `public` schema, so pointing these secrets at production-with-a-schema would seed and delete rows in real tables. Then add a guard step that **fails** the job when configuration is incomplete — it must bind and check **all five** secrets (the spec skips if *any* is absent, and a bare `run:` step sees none of them without an `env:` mapping):
   ```yaml
   - name: Require E2E secrets
-    run: test -n "$E2E_SUPABASE_URL" || { echo "::error::E2E secrets missing — job would silently skip"; exit 1; }
+    env:
+      E2E_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      E2E_SUPABASE_ANON_KEY: ${{ secrets.E2E_SUPABASE_ANON_KEY }}
+      E2E_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
+      E2E_TEST_USER_EMAIL: ${{ secrets.E2E_TEST_USER_EMAIL }}
+      E2E_TEST_USER_PASSWORD: ${{ secrets.E2E_TEST_USER_PASSWORD }}
+    run: |
+      for v in E2E_SUPABASE_URL E2E_SUPABASE_ANON_KEY E2E_SUPABASE_SERVICE_ROLE_KEY E2E_TEST_USER_EMAIL E2E_TEST_USER_PASSWORD; do
+        test -n "${!v}" || { echo "::error::$v missing — the real-backend spec would silently skip"; exit 1; }
+      done
   ```
+  (The Playwright step needs the same five in its `env:` — mirror the existing job env block.)
 - **If no second project for now:** change the job to `if: ${{ vars.E2E_REAL_BACKEND_ENABLED == 'true' }}` so it doesn't run at all (absent ≠ green), and note in the README's CI table that real-backend E2E is not yet active.
 
 **Lighthouse:**
@@ -48,7 +58,7 @@ Every green check on the repo means something real ran and passed; anything that
   "categories:best-practices": ["error", { "minScore": 0.85 }],
   "categories:seo": ["error", { "minScore": 0.9 }]
   ```
-- Run Lighthouse locally first (`npx lhci autorun`) and set each floor ~0.05 below the current score so the gate catches regressions without flaking.
+- Calibrate locally first — `lighthouserc.json` collects from `./dist`, so build before running: `npm run build && npx lhci autorun`. Set each floor ~0.05 below the measured score so the gate catches regressions without flaking.
 
 ## 6. Database requirements
 
@@ -66,8 +76,8 @@ None.
 ## 9. Validation commands
 
 ```bash
-npx lhci autorun   # local floor calibration before committing lighthouserc.json
-npm run typecheck && npm run lint && npm run build
+npm run build && npx lhci autorun   # lhci collects from ./dist — build first
+npm run typecheck && npm run lint
 ```
 
 ## 10. Manual verification checklist (Doug)

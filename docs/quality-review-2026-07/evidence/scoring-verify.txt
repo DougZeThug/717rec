@@ -1,0 +1,109 @@
+BEGIN
+=== SETUP: admin, season, division (weight 1.0), 2 teams, 1 match (2-1) ===
+DO
+
+=== S1 HAPPY PATH: approve 2-1 (Alpha beats Beta) ===
+ first_approval_returns 
+------------------------
+ t
+
+--- counters after approval (expect Alpha 1W/0L/2GW/1GL, Beta 0W/1L/1GW/2GL) ---
+   name   | wins | losses | game_wins | game_losses 
+----------+------+--------+-----------+-------------
+ QA Alpha |    1 |      0 |         2 |           1
+ QA Beta  |    0 |      1 |         1 |           2
+
+psql:/tmp/claude-0/-home-user-717rec/fbbd526d-ace5-5f8d-b537-9f6b728a2332/scratchpad/scoring-verify.sql:54: NOTICE:  S1 PASS: counters exactly as hand-computed
+DO
+--- v_team_details after approval (hand-computed: Alpha win%=1.0, power=40*1 + 45*1.0 + 15*(2/3)=95; Beta win%=0, power=0+45+15*(1/3)=50) ---
+   name   | wins | losses | game_wins | game_losses | win_pct | game_win_pct | wtd_win_pct |  sos   | power_score 
+----------+------+--------+-----------+-------------+---------+--------------+-------------+--------+-------------
+ QA Alpha |    1 |      0 |         2 |           1 |  1.0000 |       0.6667 |      1.0000 | 1.0000 |     95.0000
+ QA Beta  |    0 |      1 |         1 |           2 |  0.0000 |       0.3333 |      0.0000 | 1.0000 |     50.0000
+
+psql:/tmp/claude-0/-home-user-717rec/fbbd526d-ace5-5f8d-b537-9f6b728a2332/scratchpad/scoring-verify.sql:77: NOTICE:  S1-view PASS: view math matches hand computation (95.0 / 50.0)
+DO
+
+=== S2 DOUBLE-APPROVAL IDEMPOTENCY: second call must return false and change nothing ===
+ second_approval_returns 
+-------------------------
+ f
+
+   name   | wins | losses | game_wins | game_losses 
+----------+------+--------+-----------+-------------
+ QA Alpha |    1 |      0 |         2 |           1
+ QA Beta  |    0 |      1 |         1 |           2
+
+psql:/tmp/claude-0/-home-user-717rec/fbbd526d-ace5-5f8d-b537-9f6b728a2332/scratchpad/scoring-verify.sql:97: NOTICE:  S2 PASS: double approval is a no-op
+DO
+
+=== S3 REVERSE -> RE-APPROVE ROUND-TRIP ===
+psql:/tmp/claude-0/-home-user-717rec/fbbd526d-ace5-5f8d-b537-9f6b728a2332/scratchpad/scoring-verify.sql:103: NOTICE:  REVERSE TEAM STATS: Winner 00000000-0000-0000-0000-00000000f0c1 (-1W, -2GW), Loser 00000000-0000-0000-0000-00000000f0c2 (-1L, -1GW)
+                                                                                                                                                         reverse_result                                                                                                                                                          
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"success" : true, "rows_affected" : 2, "winner" : {"id" : "00000000-0000-0000-0000-00000000f0c1", "match_win_reversed" : 1, "game_wins_reversed" : 2, "game_losses_reversed" : 1}, "loser" : {"id" : "00000000-0000-0000-0000-00000000f0c2", "match_loss_reversed" : 1, "game_wins_reversed" : 1, "game_losses_reversed" : 2}}
+
+UPDATE 1
+--- counters after reverse (expect all zeros) ---
+   name   | wins | losses | game_wins | game_losses 
+----------+------+--------+-----------+-------------
+ QA Alpha |    0 |      0 |         0 |           0
+ QA Beta  |    0 |      0 |         0 |           0
+
+ reapproval_returns 
+--------------------
+ t
+
+--- counters after re-approve (must be identical to S1) ---
+   name   | wins | losses | game_wins | game_losses 
+----------+------+--------+-----------+-------------
+ QA Alpha |    1 |      0 |         2 |           1
+ QA Beta  |    0 |      1 |         1 |           2
+
+psql:/tmp/claude-0/-home-user-717rec/fbbd526d-ace5-5f8d-b537-9f6b728a2332/scratchpad/scoring-verify.sql:131: NOTICE:  S3 PASS: reverse -> re-approve returns identical counters
+DO
+
+=== S4 DRIFT REPRODUCTION: legacy direct UPDATE of matches (MatchWriteService-style) bypasses counters ===
+INSERT 0 1
+UPDATE 1
+--- teams.wins counters (STALE - still show 1 win) vs v_team_details (CORRECT - shows 2 wins) ---
+   name   | counter_wins | view_wins | counter_gw | view_gw 
+----------+--------------+-----------+------------+---------
+ QA Alpha |            1 |         2 |          2 |       4
+ QA Beta  |            0 |         0 |          1 |       1
+
+psql:/tmp/claude-0/-home-user-717rec/fbbd526d-ace5-5f8d-b537-9f6b728a2332/scratchpad/scoring-verify.sql:162: NOTICE:  S4 CONFIRMED: direct UPDATE causes drift - teams.wins=1 (stale) vs view wins=2 (match-derived)
+DO
+
+=== S5 SCORE_SUBMISSIONS DEDUPE: partial unique index on pending submissions ===
+INSERT 0 1
+--- exact duplicate (same match, message, submitter, pending) must be REJECTED ---
+psql:/tmp/claude-0/-home-user-717rec/fbbd526d-ace5-5f8d-b537-9f6b728a2332/scratchpad/scoring-verify.sql:178: NOTICE:  S5a PASS: exact duplicate pending submission blocked by unique index
+DO
+--- different message for same match is still allowed (two captains reporting) ---
+INSERT 0 1
+ pending_submissions_for_match 
+-------------------------------
+                             2
+
+
+=== S6 DETERMINISM: power score + season stats snapshot run twice, must be identical ===
+SELECT 2
+ first_snapshot_refresh 
+------------------------
+ 
+
+SELECT 2
+ second_snapshot_refresh 
+-------------------------
+ 
+
+--- diff between two runs (expect zero rows) ---
+ team_id | power_score 
+---------+-------------
+
+psql:/tmp/claude-0/-home-user-717rec/fbbd526d-ace5-5f8d-b537-9f6b728a2332/scratchpad/scoring-verify.sql:204: NOTICE:  S6 PASS: power score and snapshot refresh are deterministic
+DO
+
+=== ALL SCENARIOS COMPLETE (rolling back - no data persisted) ===
+ROLLBACK

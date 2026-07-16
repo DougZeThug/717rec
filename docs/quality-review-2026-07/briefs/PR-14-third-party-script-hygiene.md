@@ -14,7 +14,7 @@ During the review's browser walk, all three failed at the sandbox's network edge
 
 ## 2. Objective
 
-Production HTML contains no Lovable editor script and no Google Fonts origin; fonts are self-hosted; Progressier remains.
+**`index.html` scope:** production HTML contains no Lovable editor script (tag *and* `dns-prefetch`) and no Google Fonts origin; fonts are self-hosted; Progressier remains. Note: this brief covers `index.html` resources only — the playoff pages separately inject `brackets-viewer` from jsDelivr at runtime (`src/components/playoffs/viewer/useBracketsViewerScript.ts:7`); vendoring that is owned by **PR-13 step 8**, so after both PRs land, Progressier is the sole third-party runtime script.
 
 ## 3. Exact scope
 
@@ -28,7 +28,7 @@ Production HTML contains no Lovable editor script and no Google Fonts origin; fo
 
 ## 5. Implementation steps
 
-1. Remove the `cdn.gpteng.co` script tag from `index.html`. Re-add it **dev-only** via a tiny Vite plugin (`transformIndexHtml` gated on `mode === 'development'`) so Lovable previews keep working. Verify with Lovable that its editor flow still functions (it edits via GitHub, not via this tag, but confirm).
+1. Remove **every** `cdn.gpteng.co` reference from `index.html` — both the script tag (line 53) and the `dns-prefetch` link (line 37) — or the `grep → 0` acceptance check below fails. Re-add it **dev-only** via a tiny Vite plugin (`transformIndexHtml` gated on `mode === 'development'`) so Lovable previews keep working. Verify with Lovable that its editor flow still functions (it edits via GitHub, not via this tag, but confirm).
 2. Download the used font subsets (Bebas Neue 400; IBM Plex Mono 400/600; Inter 400/500/600/700; Oswald 400–700) as woff2 into `public/fonts/`; declare `@font-face` in `src/styles/fonts.css` with `font-display: swap`; import it in the global stylesheet.
 3. Remove the Google Fonts `preconnect`/`preload`/`noscript` lines from `index.html`.
 4. Audit which families/weights are actually used (`grep -r "Bebas\|Plex\|Oswald" src tailwind.config*`) and drop unused ones — 11 weights across 4 families is likely over-provisioned.

@@ -68,7 +68,7 @@ npm run typecheck && npm run lint && npm run test:coverage && npm run build && n
 
 ## 11. Acceptance criteria
 
-- Characterization suite green; repair layer reduced to an explicit admin repair action; no name-based identity lookups in bracket services (`grep -rn "\.name ===" src/services/brackets` clean of identity comparisons).
+- Characterization suite green; repair layer reduced to an explicit admin repair action; no name-based **identity** lookups in bracket services. Verifiable check (BYE null-checks like `name === null` are legitimate and excluded): `grep -rnE '\.name === (?!null)' --include='*.ts' src/services/brackets` via `grep -P`, or equivalently `grep -rn "\.name ===" src/services/brackets | grep -v "=== null"` — must return nothing; plus a reviewer pass confirming participant resolution uses `team_id`.
 - No runtime CDN fetches.
 
 ## 12. Non-goals / rollback

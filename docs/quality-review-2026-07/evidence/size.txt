@@ -1,0 +1,14 @@
+
+> vite_react_shadcn_ts@1.0.0 size
+> size-limit
+
+  
+  Main entry (index)
+  Size limit: 150 kB
+  Size:       130.97 kB gzipped
+  
+  All JS chunks (gzip)
+  Size limit: 1.2 MB
+  Size:       1.01 MB gzipped
+  
+size exit: 0

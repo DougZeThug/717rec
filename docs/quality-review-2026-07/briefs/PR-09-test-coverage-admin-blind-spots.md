@@ -26,7 +26,7 @@ Test files + `vitest.config.ts` + `src/setupTests.ts`. **No product code changes
 
 ## 4. Files to create / modify
 
-- `src/components/admin/dashboard/auto-schedule/**/__tests__/` (new)
+- `src/components/admin/auto-schedule/**/__tests__/` and, if batch flows are in scope, `src/components/admin/batch-matches/auto-schedule/**/__tests__/` (new — note: the auto-schedule tree lives directly under `admin/`, NOT under `admin/dashboard/`)
 - `src/components/admin/live-corrections/__tests__/` (new)
 - `src/hooks/auth/__tests__/`, `src/pages/__tests__/Auth.test.tsx` (extend)
 - `vitest.config.ts` (per-dir thresholds)
@@ -55,7 +55,7 @@ This PR *is* tests. Keep total runtime reasonable: prefer pure-function tests ov
 ## 9. Validation commands
 
 ```bash
-npm run test:file -- src/utils/autoSchedule src/components/admin/live-corrections src/hooks/auth
+npm run test:file -- src/utils/autoSchedule src/components/admin/auto-schedule src/components/admin/live-corrections src/hooks/auth
 npm run test:coverage && npm run typecheck && npm run lint
 ```
 

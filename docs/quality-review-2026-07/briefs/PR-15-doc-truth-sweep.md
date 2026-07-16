@@ -26,14 +26,14 @@ Documentation and one lockfile decision. Zero product code.
 
 ## 4. Files to modify / delete
 
-Listed above, plus a one-line "Resolved in <PR/commit>" annotation pass over `docs/audits/*` and the previous `docs/quality-review-2026-07` briefs.
+Listed above, plus `.github/workflows/supabase-ci.yml` and a new `deno.json` if option (a) in step 4 is chosen, plus a one-line "Resolved in <PR/commit>" annotation pass over `docs/audits/*` and the previous `docs/quality-review-2026-07` briefs.
 
 ## 5. Implementation steps
 
 1. Fix the table/paths in ARCHITECTURE.md against `src/integrations/supabase/types.ts` (the generated source of truth).
 2. Update or archive IMPROVEMENT-ROADMAP.md (recommend: archive under `docs/audits/archive/` with a pointer to the current review).
 3. Correct DEFINITION_OF_DONE.md and SCHEDULER_README.md; delete the three stale PLAN files.
-4. `deno.lock`: decide — (a) add `deno.json` + run CI `deno test --frozen` (real enforcement) or (b) delete the lockfile and note why. (a) is preferred; it's 10 lines.
+4. `deno.lock`: decide — (a) add `deno.json` **and edit `.github/workflows/supabase-ci.yml`'s edge-function-tests job** to run `deno test --frozen ...` (Deno 2 syntax) so the lockfile is actually enforced in CI, or (b) delete the lockfile and note why. (a) is preferred. The workflow edit is part of this PR's scope — without it the sweep can end with the same inert lockfile it set out to fix; acceptance for (a) is a CI run failing when a dependency hash is deliberately perturbed, then passing when restored.
 5. Annotate prior audit briefs with status (Resolved/Superseded/Open + link).
 6. Add a short "docs maintenance" note to CLAUDE.md or CONTRIBUTING: docs updated in the same PR as the behavior they describe.
 

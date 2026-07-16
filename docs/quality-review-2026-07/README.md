@@ -15,7 +15,7 @@
 2. **A player app.** People with accounts can join a team, manage their team page, and follow live match scoring.
 3. **An admin console.** Doug (and other admins) manage seasons, divisions, teams, scheduling (including auto-scheduling and double-headers), approve or reject publicly-submitted scores, enter scores in bulk, and run the playoffs.
 
-Under the hood: the screens are built with React (via Lovable, which edits this repository automatically); all data lives in Supabase (a hosted PostgreSQL database with login, file storage, and small server functions). The database is the part that "knows the rules": approving a match result, updating team win/loss counters, and recomputing standings happen inside database procedures so they either fully succeed or fully fail together. Public score reports go through a rate-limited server function so the public can't write to the database directly. Security is enforced at the database row level (RLS) — every table checks "is this person an admin?" on the server, not in the browser.
+Under the hood: the screens are built with React (via Lovable, which edits this repository automatically); all data lives in Supabase (a hosted PostgreSQL database with login, file storage, and small server functions). The database is the part that "knows the rules": on every main path, approving a match result, updating team win/loss counters, and recomputing standings happen inside database procedures so they either fully succeed or fully fail together (one admin flow still sidesteps this — the Mass Score Entry delete button, finding F-02). Public score reports go through a rate-limited server function so the public can't write to the database directly. Security is enforced at the database row level (RLS) — every table checks "is this person an admin?" on the server, not in the browser.
 
 A distinctive fact about this codebase: **it is nine days old** (first commit 2026-07-06) and has 352 commits — roughly 55% written by Lovable's bot, the rest by Doug and AI coding agents. It is an AI-built, AI-maintained codebase moving at unusual speed, with an unusually serious safety net (about 3,400 automated tests, 456 test files, and a CI pipeline that checks types, style, tests, coverage, dead code, bundle size, browser smoke tests, accessibility scans, Lighthouse, database migration replays, and leaked secrets). The central theme of this review: **the safety net is real, but nothing forces anyone to stay inside it** — 40% of recent commits bypassed it entirely, and it was red on the day of this review.
 
@@ -35,10 +35,10 @@ That review is two days old, and this repo moves fast in both directions:
 **Fixed since then (verified today, not taken on faith):**
 | Prior finding | Status today | Evidence |
 |---|---|---|
-| knip dead-code gate red (3 orphaned files) | **Fixed** — knip exits 0, zero findings | `evidence/knip.log` |
-| 3 SECURITY DEFINER functions without pinned `search_path` | **Fixed** — 0 of 70 unpinned | `evidence/db-security-audit.log` |
-| Duplicate public score reports accepted | **Fixed** — partial unique index `score_submissions_pending_dedupe`; duplicate insert rejected in live test | `evidence/scoring-verify.log` S5 |
-| 6 user-content tables missing FKs; debug table | **Fixed** — FK hardening migration + its own smoke test now in the suite | `evidence/migration-replay.log` |
+| knip dead-code gate red (3 orphaned files) | **Fixed** — knip exits 0, zero findings | `evidence/knip.txt` |
+| 3 SECURITY DEFINER functions without pinned `search_path` | **Fixed** — 0 of 70 unpinned | `evidence/db-security-audit.txt` |
+| Duplicate public score reports accepted | **Fixed** — partial unique index `score_submissions_pending_dedupe`; duplicate insert rejected in live test | `evidence/scoring-verify.txt` S5 |
+| 6 user-content tables missing FKs; debug table | **Fixed** — FK hardening migration + its own smoke test now in the suite | `evidence/migration-replay.txt` |
 | Optimistic UI not rolled back on failed match update | **Fixed** in product (`6fd916d`) — but the fix broke a stale test, see below | root-cause analysis, §5.1 |
 
 **Broken since then (new, verified today):**
@@ -53,21 +53,21 @@ The pattern matters more than the individual items: **five prior-review fixes la
 
 | Check | Command | Result | Evidence |
 |---|---|---|---|
-| Dependency install | `npm ci` | ✅ exit 0 | `logs` |
-| Type check | `npm run typecheck` | ✅ exit 0, 0 errors | `evidence/typecheck.log` |
-| Lint | `npm run lint` | ✅ exit 0, 0 warnings | `evidence/lint.log` |
+| Dependency install | `npm ci` | ✅ exit 0 | `evidence/` (npm-ci excerpt not committed; exit 0) |
+| Type check | `npm run typecheck` | ✅ exit 0, 0 errors | `evidence/typecheck.txt` |
+| Lint | `npm run lint` | ✅ exit 0, 0 warnings | `evidence/lint.txt` |
 | Unit/integration tests | `npm run test:coverage` | ⚠️ **2 failed** / 3,424 passed / 1 expected-fail (453 files; 235s) | `evidence/test-summary.txt` |
 | Failing tests, isolated rerun | `npm run test:file -- <2 files>` | ⚠️ same 2 fail → deterministic, not flaky | `evidence/test-summary.txt` |
 | Coverage | v8 via same run | ✅ 65.4% lines, 64.0% statements, 59.6% functions, 53.6% branches | `evidence/test-summary.txt` |
-| Production build | `npm run build` | ✅ exit 0 in 15.9s | build log |
-| Bundle budgets | `npm run size` | ✅ entry 130.97 kB gz (limit 150); total 1.01 MB gz (limit 1.2) | `evidence/size.log` |
-| Dead code | `npm run knip` | ✅ exit 0, no findings | `evidence/knip.log` |
-| Dependency vulnerabilities | `npm audit --omit=dev` | ✅ 0 vulnerabilities | `evidence/audit.log` |
-| Migration replay | 334 files, fresh PG15, CI-identical script | ✅ all applied, `ON_ERROR_STOP=1` | `evidence/migration-replay.log` |
-| SQL smoke suites | 7 suites from `supabase/tests/` | ✅ all passed | `evidence/migration-replay.log` |
-| Scoring-math experiments | 6 scenarios on the replayed DB | ✅ all assertions passed; drift scenario confirmed the risk it was designed to demonstrate | `evidence/scoring-verify.log` |
-| DB security audit | catalog queries on replayed DB | ✅ RLS on every table; 0/70 definer functions unpinned; writes admin-gated | `evidence/db-security-audit.log` |
-| Browser e2e (mock backend) | `npm run e2e` (chromium) | ⚠️ first run 6 failed/8 passed — all 6 were `page.goto` timeouts under heavy sandbox load; rerun on idle machine: see §4.1 | e2e logs |
+| Production build | `npm run build` | ✅ exit 0 in 15.9s | `evidence/build.txt` |
+| Bundle budgets | `npm run size` | ✅ entry 130.97 kB gz (limit 150); total 1.01 MB gz (limit 1.2) | `evidence/size.txt` |
+| Dead code | `npm run knip` | ✅ exit 0, no findings | `evidence/knip.txt` |
+| Dependency vulnerabilities | `npm audit --omit=dev` | ✅ 0 vulnerabilities | `evidence/audit.txt` |
+| Migration replay | 334 files, fresh PG15, CI-identical script | ✅ all applied, `ON_ERROR_STOP=1` | `evidence/migration-replay.txt` |
+| SQL smoke suites | 7 suites from `supabase/tests/` | ✅ all passed | `evidence/migration-replay.txt` |
+| Scoring-math experiments | 6 scenarios on the replayed DB | ✅ all assertions passed; drift scenario confirmed the risk it was designed to demonstrate | `evidence/scoring-verify.txt` |
+| DB security audit | catalog queries on replayed DB | ✅ RLS on every table; 0/70 definer functions unpinned; writes admin-gated | `evidence/db-security-audit.txt` |
+| Browser e2e (mock backend) | `npm run e2e` (chromium) | ⚠️ first run 6 failed/8 passed — all 6 were `page.goto` timeouts under heavy sandbox load; rerun on idle machine: see §4.1 | `evidence/e2e-local.txt` |
 | Browser walk-through | 42 page-loads (14 routes × 3 viewports) + harvested detail pages, write-guard on | see §6 | `evidence/exploration-results-anon.json`, screenshots |
 | Admin console audit | authenticated, write-guard on | see §7 | `evidence/exploration-results-admin.json`, screenshots |
 | Edge-function tests (Deno) | — | ❌ not runnable here (no Deno in sandbox); assessed by code read + green `Supabase CI` history | §9 |
@@ -86,7 +86,7 @@ Severity reflects *impact on a real league night*, and every finding was verifie
 | # | Finding | Evidence |
 |---|---|---|
 | F-01 | `main` is red: 2 deterministic unit-test failures; CI test job failing; merges continue anyway (no branch protection; 40% of recent commits are direct bot pushes). Both failures are **stale tests** — the product changes were correct, including one that fixed a real optimistic-rollback bug | test-summary.txt; CI run 29440142270; git history (`329793e`, `6fd916d`) |
-| F-02 | The one remaining non-atomic write path: Mass Score Entry's **delete** runs `deleteMatch` → `reverseTeamStats` → `upsertTeamSeasonStats` as 3 separate calls with client-state amounts; failure after step 1 = permanent counter drift. (The atomic RPC exists and is used by the Schedule page's delete.) | MassScoreEntryTool.tsx:45-89 read in session; drift class empirically demonstrated in scoring-verify.log S4 |
+| F-02 | The one remaining non-atomic write path: Mass Score Entry's **delete** runs `deleteMatch` → `reverseTeamStats` → `upsertTeamSeasonStats` as 3 separate calls with client-state amounts; failure after step 1 = permanent counter drift. (The atomic RPC exists and is used by the Schedule page's delete.) | MassScoreEntryTool.tsx:45-89 read in session; drift class empirically demonstrated in scoring-verify.txt S4 |
 | F-03 | CI's "E2E (real Supabase)" job has never tested anything: all E2E secrets empty, single spec self-skips, job reports success | CI job 87436677539 log: `E2E_SUPABASE_URL:` (blank), `1 skipped` |
 | F-04 | Support/contact messages can be silently lost: `send-support-email` stores tickets into a table **no migration creates** ("Will silently noop if table is missing" — its own comment) and still returns success if email also fails | send-support-email/index.ts:169-186 read in session; `grep -rl support_tickets supabase/migrations` → 0 files |
 | F-05 | Playoff final standings are computed and written **client-side** by whichever browser observes bracket completion — silently skipped if only public viewers (RLS blocks them) or nobody is watching | useBracketCompletion.ts:38-66 read in session |
@@ -103,7 +103,7 @@ Severity reflects *impact on a real league night*, and every finding was verifie
 | F-11 | Coverage blind spots in live admin surfaces: auto-schedule 1.16%, live-corrections 0%, auth ~32%; no per-directory coverage floors | coverage run + coverage-baseline.txt |
 | F-12 | Playoff match editor accepts tied scores after a pre-validation "unlock" write (no rollback); brackets-manager then rejects | useMatchEditorState.ts:128-142 ⚠ *single-source* |
 | F-13 | Seed-management latch never resyncs after "Reset to Auto" — stale seeds can flow into bracket creation | useSeedManagement.ts:36 (latch pattern verified in session) ⚠ *single-source consequence* |
-| F-14 | No route-change focus management (exactly 1 manual `.focus()` in product code); screen-reader users get no signal on navigation | grep census in session; App.tsx |
+| F-14 | ~~No route-change focus management~~ **Corrected after publication:** `RouteFocusManager` exists (`src/components/a11y/RouteFocusManager.tsx`, wired in `App.tsx:291`, tested) and moves focus to the `<main>` landmark on push navigations — the original claim came from a grep pattern (`\.focus()`) that missed `focus({ preventScroll: true })`. Remaining a11y gaps are narrower: axe never scans admin screens, and two React prop warnings fire (`fetchPriority`, forwardRef) | RouteFocusManager.tsx read in session; App.tsx:19,291 |
 | F-15 | Stranded-skeleton failure mode on data pages (no error/retry states) — prior-review finding, still present | sandbox observation + prior review |
 | F-16 | Lighthouse CI assertions all `warn`-level — the step cannot fail | lighthouserc.json |
 
@@ -145,7 +145,7 @@ Same 12 categories and weights as the 2026-07-13 review (weights sum to 100; ove
 | UX & ease of use | 8 | 80 | rich public UX, 18 clean admin sections; F-06/F-09/F-15 deduct |
 | UI visual quality | 7 | 86 | consistent system at 3 viewports (screenshots); minor console warnings |
 | Mobile responsiveness | 7 | 88 | 0 overflow @375 on all routes; bottom nav; admin mobile nav |
-| Accessibility | 6 | 78 | skip links 43/43, alts 100%, axe green (CI); F-14 focus management, admin unscanned |
+| Accessibility | 6 | 84 | skip links 43/43, alts 100%, axe green (CI), route-change focus manager present and tested (F-14 corrected); admin screens unscanned by axe, two React prop warnings |
 | Performance | 6 | 82 | 131KB gz entry (budget 150), code-split admin; third-party scripts, toast storms, warn-only Lighthouse |
 | Production readiness | 6 | 72 | live real league; comprehensive CI **unenforced** (F-01/03/16); settings unverified; F-04 |
 
@@ -153,7 +153,7 @@ Same 12 categories and weights as the 2026-07-13 review (weights sum to 100; ove
 
 Reading this against the prior 84: the score band is the same, but the composition changed materially. Five prior findings were fixed (real +); this review then verified *more* surface — the authenticated admin console, CI enforcement history, edge functions in depth — and found pre-existing problems the prior review couldn't see, plus two same-week test regressions. An 83 with this much verified ground truth is a stronger position than an 84 with less; the gap to 90+ is concentrated in Phase 1+2 (process + five integrity fixes), not spread across the codebase.
 
-Projected trajectory if the plan lands (sums of per-brief estimates, rounded): after Phase 1 ≈ 86 · after Phase 2 ≈ 90 · after Phases 3–4 ≈ 93 · after Phases 5–6 ≈ 95. (Total claimed improvement 13.0 points ≤ the 17-point gap to 100 — the estimates are deliberately conservative.)
+Projected trajectory if the plan lands (sums of per-brief estimates, rounded): after Phase 1 ≈ 86 · after Phase 2 ≈ 90 · after Phases 3–4 ≈ 93 · after Phases 5–6 ≈ 95. (Total claimed improvement 12.8 points ≤ the 17-point gap to 100 — the estimates are deliberately conservative; PR-12's estimate was reduced when verification showed route-focus management already exists.)
 
 ### 8.1 The 16-PR plan at a glance
 
@@ -162,7 +162,7 @@ Projected trajectory if the plan lands (sums of per-brief estimates, rounded): a
 | P1 Baseline | PR-01 fix failing tests · PR-02 merge gate + Lovable lane · PR-03 honest CI gates | trust the green checkmark | all three in parallel; PR-02's protection activates after PR-01 merges |
 | P2 Integrity | PR-04 last non-atomic path · PR-05 drift detector · PR-06 playoff integrity · PR-07 edge-fn hardening | league records can't silently corrupt | 04∥05∥07; 06 after 04 |
 | P3 Admin reliability | PR-08 mass-entry error UI · PR-09 admin test blind spots | admins see the truth | 08 after 04; 09 anytime after 01 |
-| P4 UX & a11y | PR-10 hook cache correctness · PR-11 error states + Unknown Team · PR-12 focus management | users never stranded | 10∥12; 11 after 10 |
+| P4 UX & a11y | PR-10 hook cache correctness · PR-11 error states + Unknown Team · PR-12 admin axe coverage + warning fixes | users never stranded | 10∥12; 11 after 10 |
 | P5 Maintainability | PR-13 brackets simplification · PR-14 third-party script hygiene | reduce the riskiest code mass | 14 anytime; 13 after 06, isolated |
 | P6 Polish | PR-15 doc truth sweep · PR-16 production runbook (Doug-manual) | durable operations | anytime; best last |
 

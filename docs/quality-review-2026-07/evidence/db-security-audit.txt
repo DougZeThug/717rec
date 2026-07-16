@@ -1,0 +1,41 @@
+=== SECURITY DEFINER functions WITHOUT pinned search_path ===
+ proname | args 
+---------+------
+(0 rows)
+
+=== total SECURITY DEFINER count ===
+    70
+
+=== RLS policies on participants / playoff_games / score_submissions / matches / teams ===
+     tablename     |                 policyname                 |  cmd   |        roles         |                            using_clause                             |                  check_clause                  
+-------------------+--------------------------------------------+--------+----------------------+---------------------------------------------------------------------+------------------------------------------------
+ matches           | Admins can delete matches                  | DELETE | {public}             | current_user_is_admin()                                             | 
+ matches           | Admins can create matches                  | INSERT | {public}             |                                                                     | current_user_is_admin()
+ matches           | Public can view matches                    | SELECT | {public}             | true                                                                | 
+ matches           | Admins can update matches                  | UPDATE | {public}             | current_user_is_admin()                                             | current_user_is_admin()
+ participants      | Admins have full access to participants    | ALL    | {public}             | current_user_is_admin()                                             | current_user_is_admin()
+ participants      | Admin delete participants                  | DELETE | {authenticated}      | current_user_is_admin()                                             | 
+ participants      | Admin insert participants                  | INSERT | {authenticated}      |                                                                     | current_user_is_admin()
+ participants      | Public can read participants               | SELECT | {anon,authenticated} | true                                                                | 
+ participants      | Admin update participants                  | UPDATE | {authenticated}      | current_user_is_admin()                                             | current_user_is_admin()
+ playoff_games     | Admin delete playoff games                 | DELETE | {authenticated}      | current_user_is_admin()                                             | 
+ playoff_games     | Admin insert playoff games                 | INSERT | {authenticated}      |                                                                     | current_user_is_admin()
+ playoff_games     | Public can view playoff games              | SELECT | {public}             | true                                                                | 
+ playoff_games     | Admin update playoff games                 | UPDATE | {authenticated}      | current_user_is_admin()                                             | current_user_is_admin()
+ score_submissions | Admins can view all score submissions      | SELECT | {public}             | current_user_is_admin()                                             | 
+ score_submissions | Admins can view score submissions          | SELECT | {authenticated}      | current_user_is_admin()                                             | 
+ score_submissions | Users can view their own score submissions | SELECT | {authenticated}      | ((user_id IS NOT NULL) AND (user_id = ( SELECT auth.uid() AS uid))) | 
+ score_submissions | Admins can update score submissions        | UPDATE | {public}             | current_user_is_admin()                                             | current_user_is_admin()
+ teams             | Admins can delete teams                    | DELETE | {public}             | current_user_is_admin()                                             | 
+ teams             | Admins can create teams                    | INSERT | {authenticated}      |                                                                     | current_user_is_admin()
+ teams             | Public read teams                          | SELECT | {public}             | (NOT is_team_opted_out_active(id))                                  | 
+ teams             | Update teams (admin or approved member)    | UPDATE | {authenticated}      | (current_user_is_admin() OR (EXISTS ( SELECT 1                     +| (current_user_is_admin() OR (EXISTS ( SELECT 1+
+                   |                                            |        |                      |    FROM team_memberships                                           +|    FROM team_memberships                      +
+                   |                                            |        |                      |   WHERE                                                             |   WHERE 
+(21 rows)
+
+=== tables WITHOUT rls enabled ===
+ relname 
+---------
+(0 rows)
+

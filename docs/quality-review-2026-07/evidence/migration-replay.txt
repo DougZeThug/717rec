@@ -1,0 +1,51 @@
+=== PHASE 1: bootstrap + migrations ===
+== bootstrap ==
+CREATE EXTENSION
+CREATE EXTENSION
+CREATE EXTENSION
+CREATE EXTENSION
+CREATE SCHEMA
+CREATE SCHEMA
+CREATE SCHEMA
+CREATE SCHEMA
+CREATE SCHEMA
+psql:/tmp/tmp.P8WoaDFDEc:29: WARNING:  wal_level is insufficient to publish logical changes
+HINT:  Set wal_level to "logical" before creating subscriptions.
+DO
+DO
+DO
+DO
+DO
+GRANT ROLE
+GRANT
+...[truncated - full log retained in review session]...
+DO
+== smoke: supabase/tests/migrations_apply.sql ==
+psql:/tmp/tmp.Woe8plUvLn:57: NOTICE:  Migration apply sanity check OK.
+DO
+== smoke: supabase/tests/score_stats_business_logic.sql ==
+BEGIN
+psql:/tmp/tmp.Woe8plUvLn:359: NOTICE:  UPDATE TEAM STATS: Winner 00000000-0000-0000-0000-00000000c001 (+1W, +0GW), Loser 00000000-0000-0000-0000-00000000c002 (+1L, +0GW)
+psql:/tmp/tmp.Woe8plUvLn:359: NOTICE:  REVERSE TEAM STATS: Winner 00000000-0000-0000-0000-00000000c001 (-1W, -99GW), Loser 00000000-0000-0000-0000-00000000c002 (-1L, -99GW)
+psql:/tmp/tmp.Woe8plUvLn:359: NOTICE:  score_stats_business_logic smoke test passed
+DO
+ROLLBACK
+== smoke: supabase/tests/score_submissions_pending_dedupe.sql ==
+BEGIN
+psql:/tmp/tmp.Woe8plUvLn:442: NOTICE:  [PR-05] score_submissions_pending_dedupe smoke passed
+DO
+ROLLBACK
+== smoke: supabase/tests/seasons_rls.sql ==
+psql:/tmp/tmp.Woe8plUvLn:465: NOTICE:  seasons RLS OK: all canonical policies present.
+DO
+== smoke: supabase/tests/security_definer_search_path.sql ==
+psql:/tmp/tmp.Woe8plUvLn:495: NOTICE:  All SECURITY DEFINER functions in public have a pinned search_path.
+DO
+== smoke: supabase/tests/user_fk_hardening.sql ==
+BEGIN
+psql:/tmp/tmp.Woe8plUvLn:629: NOTICE:  [PR-06] user_fk_hardening smoke passed
+DO
+ROLLBACK
+Ran 7 smoke test(s).
+=== SMOKE TESTS OK ===
+replay exit: 0

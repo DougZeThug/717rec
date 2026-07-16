@@ -11,7 +11,7 @@
 
 ## 2. Objective
 
-All 3,427 unit tests pass on `main`; the "Quality, tests, and coverage" CI job (including the previously-skipped coverage and knip steps) is green.
+Zero **unexpected** test failures on `main` (3,426 passing + 1 pre-existing intentional expected-fail); the "Quality, tests, and coverage" CI job (including the previously-skipped coverage and knip steps) is green.
 
 ## 3. Exact scope
 
@@ -39,6 +39,7 @@ Test-file-only changes. **No product code changes.**
    expect(setMatches).toHaveBeenCalledTimes(1);
    expect(setMatches).toHaveBeenCalledWith([incompleteMatch]); // rollback to the untouched original
    ```
+   Why exactly one call: in `useMatchUpdate.ts` the service call (`await updateMatch(...)`, line 143) runs **before** the optimistic `setMatches(updatedMatches)` (line 172). When the update itself throws, execution never reaches the optimistic write — only the catch block's rollback `setMatches(previousMatches)` (line 199) fires. (A failure *after* line 172, e.g. in `applyStatChanges`, would produce two calls — that scenario is a different test.)
 4. Run the two files, then the full gate (commands below).
 
 ## 6. Database requirements
@@ -58,8 +59,10 @@ None (no product change).
 
 ```bash
 npm run test:file -- src/hooks/__tests__/useTimeslotMutation.test.ts src/hooks/matches/updates/__tests__/useMatchUpdate.test.tsx
-npm run typecheck && npm run lint && npm run test:coverage && npm run build
+npm run typecheck && npm run lint && npm run test:coverage && npm run knip && npm run build
 ```
+
+(`npm run knip` is included deliberately: CI skipped the dead-code step while tests were red, so run it locally to confirm the whole previously-skipped tail of the job is green.)
 
 ## 10. Manual verification checklist (Doug)
 
