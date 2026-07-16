@@ -8,7 +8,7 @@ Deno.env.set(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? 'test-service-key'
 );
 
-import { assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts';
+import { assert, assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts';
 
 import { handleRequest, setRateLimiter } from './index.ts';
 
@@ -143,7 +143,7 @@ Deno.test({
       assertEquals(res.status, 200);
       const body = await res.json();
       assertEquals(body.success, true);
-      assertEquals(body.duplicate);
+      assert(body.duplicate === undefined);
       assertEquals(pending.length, 1);
     } finally {
       restoreFetch();
