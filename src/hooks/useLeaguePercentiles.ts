@@ -9,24 +9,21 @@ export interface TeamPercentiles {
   gameWinPercentage: PercentileResult;
   powerScore: PercentileResult;
   sos: PercentileResult;
-  sweepRate?: PercentileResult;
   championships: PercentileResult;
   playoffWinPercentage: PercentileResult;
 }
 
 export interface LeaguePercentilesData {
   getTeamPercentiles: (teamId: string) => TeamPercentiles | null;
-  allPercentiles: Map<string, TeamPercentiles>;
   isLoading: boolean;
-  totalTeams: number;
 }
 
 export function useLeaguePercentiles(): LeaguePercentilesData {
   const { data: rankings, isLoading } = useCareerRankings();
 
-  const { allPercentiles, totalTeams } = useMemo(() => {
+  const { allPercentiles } = useMemo(() => {
     if (!rankings || rankings.length === 0) {
-      return { allPercentiles: new Map<string, TeamPercentiles>(), totalTeams: 0 };
+      return { allPercentiles: new Map<string, TeamPercentiles>() };
     }
 
     // Extract all values for each stat
@@ -60,7 +57,7 @@ export function useLeaguePercentiles(): LeaguePercentilesData {
       });
     }
 
-    return { allPercentiles: percentileMap, totalTeams: rankings.length };
+    return { allPercentiles: percentileMap };
   }, [rankings]);
 
   const getTeamPercentiles = (teamId: string): TeamPercentiles | null => {
@@ -69,8 +66,6 @@ export function useLeaguePercentiles(): LeaguePercentilesData {
 
   return {
     getTeamPercentiles,
-    allPercentiles,
     isLoading,
-    totalTeams,
   };
 }
