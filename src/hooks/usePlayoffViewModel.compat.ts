@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
-import { usePlayoffViewModel } from '@/hooks/playoffs/usePlayoffViewModel';
 import { useTeamsArray } from '@/hooks/teams';
 import { useDivisions } from '@/hooks/useDivisions';
 import type { BracketsOverviewRow } from '@/services/brackets/BracketReadService';
@@ -12,9 +11,6 @@ import { groupTeamsByDivision } from '@/utils/teamGrouping';
 
 /** Temporary shim exposing the legacy shape for Playoffs.tsx */
 export const usePlayoffData = (isAdmin = false, seasonId?: string | null) => {
-  // Call the view model without a bracketId to get overview data
-  const vm = usePlayoffViewModel(null);
-
   // Fetch divisions data using the proper hook
   const { divisions, isLoading: divisionsLoading } = useDivisions();
 
@@ -137,7 +133,6 @@ export const usePlayoffData = (isAdmin = false, seasonId?: string | null) => {
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- handleBracketCreated exposed via memo intentionally
     [
-      vm,
       divisions,
       divisionsLoading,
       teams,
