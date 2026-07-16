@@ -7,7 +7,6 @@ interface UseScheduleTabsOptions {
   matchesLoading: boolean;
   timeslotsLoading: boolean;
   upcomingMatches: unknown[] | undefined;
-  groupedTimeslots: Record<string, unknown[]>;
 }
 
 interface UseScheduleTabsResult {
@@ -27,7 +26,6 @@ export const useScheduleTabs = ({
   matchesLoading,
   timeslotsLoading,
   upcomingMatches,
-  groupedTimeslots,
 }: UseScheduleTabsOptions): UseScheduleTabsResult => {
   const [activeTab, setActiveTab] = useState<string>(
     () => sessionStorage.getItem(SCHEDULE_TAB_KEY) || 'timeslots'
@@ -71,7 +69,7 @@ export const useScheduleTabs = ({
     }
 
     handleTabChange('timeslots');
-  }, [selectedDate, matchesLoading, timeslotsLoading, upcomingMatches, groupedTimeslots]);
+  }, [selectedDate, matchesLoading, timeslotsLoading, upcomingMatches]);
 
   return { activeTab, handleTabChange };
 };
