@@ -191,10 +191,12 @@ describe('isServiceError', () => {
   });
 
   it('returns false for plain Error and non-errors', () => {
+    const missingError = ((): unknown => undefined)();
+
     expect(isServiceError(new Error('plain'))).toBe(false);
     expect(isServiceError('string')).toBe(false);
     expect(isServiceError(null)).toBe(false);
-    expect(isServiceError(undefined)).toBe(false);
+    expect(isServiceError(missingError)).toBe(false);
   });
 });
 
@@ -234,8 +236,10 @@ describe('getErrorMessage', () => {
   });
 
   it('returns fallback for non-error values', () => {
+    const missingError = ((): unknown => undefined)();
+
     expect(getErrorMessage(null)).toBe('An unknown error occurred');
-    expect(getErrorMessage(undefined)).toBe('An unknown error occurred');
+    expect(getErrorMessage(missingError)).toBe('An unknown error occurred');
     expect(getErrorMessage(42)).toBe('An unknown error occurred');
     expect(getErrorMessage({ code: 1 })).toBe('An unknown error occurred');
   });
@@ -243,8 +247,10 @@ describe('getErrorMessage', () => {
 
 describe('convertErrorToString', () => {
   it('returns null when error is null or undefined', () => {
+    const missingError = ((): unknown => undefined)();
+
     expect(convertErrorToString(null)).toBeNull();
-    expect(convertErrorToString(undefined)).toBeNull();
+    expect(convertErrorToString(missingError)).toBeNull();
   });
 
   it('returns the error message for Error instances', () => {
