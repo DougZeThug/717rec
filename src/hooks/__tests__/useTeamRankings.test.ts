@@ -21,9 +21,7 @@ vi.mock('@/hooks/useAdminAccess', () => ({
   useAdminAccess: vi.fn(() => ({
     isAdminAccessGranted: false,
     isLoading: false,
-    checkAdminAccess: vi.fn(),
     requestAdminAccess: vi.fn(),
-    revokeAdminAccess: vi.fn(),
   })),
 }));
 

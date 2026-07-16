@@ -2,29 +2,13 @@ import { useEffect } from 'react';
 
 import { useAuth } from '@/contexts/auth-context';
 import { toast } from '@/hooks/useToast';
-import { authLog, warnLog } from '@/utils/logger';
-
-// DEPRECATED: This function is no longer needed and always returns false
-const checkAdminAccess = (_inputCode: string) => {
-  warnLog('checkAdminAccess is deprecated and insecure. Admin status is now checked server-side.');
-  return false;
-};
+import { authLog } from '@/utils/logger';
 
 // Function to request admin access (can be used in future for admin request feature)
 const requestAdminAccess = () => {
   toast({
     title: 'Admin Access Request',
     description: 'Please contact an administrator to grant you admin privileges.',
-  });
-};
-
-// SECURITY: Admin access can only be revoked by updating the database
-const revokeAdminAccess = () => {
-  warnLog('Admin access cannot be revoked client-side for security. Contact an administrator.');
-  toast({
-    title: 'Security Notice',
-    description: 'Admin access can only be modified by existing administrators.',
-    variant: 'destructive',
   });
 };
 
@@ -48,9 +32,7 @@ export const useAdminAccess = () => {
 
   return {
     isAdminAccessGranted,
-    checkAdminAccess,
     requestAdminAccess,
-    revokeAdminAccess,
     isLoading: !authInitialized || isProfileLoading,
   };
 };
