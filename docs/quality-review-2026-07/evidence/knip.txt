@@ -1,0 +1,5 @@
+
+> vite_react_shadcn_ts@1.0.0 knip
+> knip
+
+knip exit: 0

@@ -1,0 +1,60 @@
+
+> vite_react_shadcn_ts@1.0.0 build
+> vite build
+
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 5508 modules transformed.
+rendering chunks...
+[32mInlined 3.18 kB (1% of original 223.13 kB) of assets/index-B7bCIcdi.css.[39m
+Time 81ms
+computing gzip size...
+dist/index.html                                          7.37 kB │ gzip:   2.41 kB
+dist/assets/brackets-CdMKTYF3.css                        1.60 kB │ gzip:   0.52 kB
+dist/assets/brackets-viewer-717rec-theme-CFxK4ds1.css    5.14 kB │ gzip:   1.45 kB
+dist/assets/brackets-viewer-CuDlt0MT.css                 6.82 kB │ gzip:   1.64 kB
+dist/assets/index-B7bCIcdi.css                         228.49 kB │ gzip:  33.50 kB
+dist/assets/normalizePowerScore-DC-hP1Wb.js              0.13 kB │ gzip:   0.14 kB │ map:     1.78 kB
+dist/assets/collapsible-C4HwYosG.js                      0.15 kB │ gzip:   0.15 kB │ map:     0.69 kB
+dist/assets/images-B5LGaw76.js                           0.15 kB │ gzip:   0.16 kB │ map:     0.29 kB
+dist/assets/minus-DsQryFgj.js                            0.16 kB │ gzip:   0.17 kB │ map:     0.77 kB
+dist/assets/check-BgFTnPz8.js                            0.17 kB │ gzip:   0.17 kB │ map:     0.78 kB
+dist/assets/chevron-up-B4gQkcVo.js                       0.18 kB │ gzip:   0.17 kB │ map:     0.81 kB
+dist/assets/chevron-down-B6W0-upw.js                     0.18 kB │ gzip:   0.17 kB │ map:     0.82 kB
+dist/assets/chevron-left-B95L915L.js                     0.18 kB │ gzip:   0.18 kB │ map:     0.82 kB
+dist/assets/chevron-right-Czj0MhND.js                    0.18 kB │ gzip:   0.18 kB │ map:     0.83 kB
+dist/assets/plus-M42U5pXc.js                             0.20 kB │ gzip:   0.18 kB │ map:     0.87 kB
+dist/assets/performance-Byw-MPxv.js                      0.20 kB │ gzip:   0.17 kB │ map:     0.96 kB
+dist/assets/arrow-right-CjtqBcGf.js                      0.22 kB │ gzip:   0.20 kB │ map:     0.92 kB
+dist/assets/trending-down-Dav40ll-.js                    0.23 kB │ gzip:   0.20 kB │ map:     0.95 kB
+dist/assets/trending-up-C7R1sX7o.js                      0.23 kB │ gzip:   0.20 kB │ map:     0.93 kB
+dist/assets/circle-check-DpeL7m15.js                     0.23 kB │ gzip:   0.20 kB │ map:     0.96 kB
+dist/assets/teamRequest-DE9y3_--.js                      0.23 kB │ gzip:   0.22 kB │ map:     1.38 kB
+dist/assets/flame-7MbkqfVn.js                            0.24 kB │ gzip:   0.22 kB │ map:     0.89 kB
+dist/assets/info-VHr5PIFE.js                             0.25 kB │ gzip:   0.22 kB │ map:     1.00 kB
+dist/assets/lock-FBUPYZSD.js                             0.25 kB │ gzip:   0.23 kB │ map:     0.99 kB
+dist/assets/circle-check-big-CUS5xEx4.js                 0.25 kB │ gzip:   0.22 kB │ map:     0.98 kB
+dist/assets/rotate-ccw-CanjAyGR.js                       0.25 kB │ gzip:   0.22 kB │ map:     0.95 kB
+dist/assets/utils-DR3AriRh.js                            0.25 kB │ gzip:   0.19 kB │ map:     0.92 kB
+dist/assets/circle-x-ChHDYDch.js                         0.25 kB │ gzip:   0.21 kB │ map:     1.03 kB
+dist/assets/target-C_-QVFbg.js                           0.27 kB │ gzip:   0.20 kB │ map:     1.09 kB
+dist/assets/ellipsis-DDD-p7_I.js                         0.27 kB │ gzip:   0.20 kB │ map:     1.10 kB
+dist/assets/download-D6Gpuuz0.js                         0.28 kB │ gzip:   0.23 kB │ map:     1.03 kB
+dist/assets/pagination-DjUQVpPl.js                       0.28 kB │ gzip:   0.25 kB │ map:     2.44 kB
+dist/assets/activity-CHTbLrOW.js                         0.28 kB │ gzip:   0.24 kB │ map:     0.94 kB
+dist/assets/timer-CcQpMFfP.js                            0.28 kB │ gzip:   0.22 kB │ map:     1.13 kB
+dist/assets/history-DG97-cT-.js                          0.28 kB │ gzip:   0.24 kB │ map:     1.03 kB
+dist/assets/index-D-OdTnb0.js                            0.28 kB │ gzip:   0.22 kB │ map:     0.90 kB
+dist/assets/trash-Bp6qDTHj.js                            0.30 kB │ gzip:   0.23 kB │ map:     1.04 kB
+dist/assets/eye-Bk7lia-1.js                              0.30 kB │ gzip:   0.24 kB │ map:     1.02 kB
+dist/assets/circle-alert-BLM0WSC6.js                     0.30 kB │ gzip:   0.23 kB │ map:     1.18 kB
+dist/assets/skeleton-DLf0l-mz.js                         0.30 kB │ gzip:   0.24 kB │ map:     0.91 kB
+dist/assets/external-link-BUGCFa3o.js                    0.30 kB │ gzip:   0.24 kB │ map:     1.08 kB
+dist/assets/arrow-left-right-B2rBcRKx.js                 0.30 kB │ gzip:   0.23 kB │ map:     1.16 kB
+dist/assets/zap-Ds2B3txG.js                              0.30 kB │ gzip:   0.25 kB │ map:     0.94 kB
+dist/assets/map-pin-NsNiwOzZ.js                          0.31 kB │ gzip:   0.26 kB │ map:     1.05 kB
+dist/assets/image-Cqn5hQIM.js                            0.31 kB │ gzip:   0.26 kB │ map:     1.14 kB
+dist/assets/pprCalc-DK6pyxlp.js                          0.31 kB │ gzip:   0.22 kB │ map:     1.91 kB
+dist/assets/pencil-gy9Mudrm.js                           0.32 kB │ gzip:   0.26 kB │ map:     1.03 kB
+dist/assets/inbox-BUc8sHTH.js                            0.33 kB │ gzip:   0.27 kB │ map:     1.04 kB
+dist/assets/send-D2odKy6T.js                             0.33 kB │ gzip:   0.27 kB │ map:     1.04 kB

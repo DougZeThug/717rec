@@ -1,0 +1,22 @@
+Running 14 tests using 2 workers
+  ✘   2 [chromium] › e2e/a11y.spec.ts:16:3 › a11y: /teams has no detectable WCAG 2 A/AA violations (30.3s)
+  ✘   1 [chromium] › e2e/a11y.spec.ts:16:3 › a11y: / has no detectable WCAG 2 A/AA violations (30.4s)
+  ✘   3 [chromium] › e2e/a11y.spec.ts:16:3 › a11y: /stats has no detectable WCAG 2 A/AA violations (30.3s)
+  ✘   4 [chromium] › e2e/a11y.spec.ts:16:3 › a11y: /history has no detectable WCAG 2 A/AA violations (30.3s)
+  ✓   6 [chromium] › e2e/a11y.spec.ts:16:3 › a11y: /help has no detectable WCAG 2 A/AA violations (29.8s)
+  ✘   5 [chromium] › e2e/a11y.spec.ts:16:3 › a11y: /playoffs has no detectable WCAG 2 A/AA violations (30.3s)
+  ✓   7 [chromium] › e2e/admin-access.spec.ts:81:3 › admin access control › redirects an authenticated non-admin away from admin-only screens (14.4s)
+  ✓   8 [chromium] › e2e/admin-access.spec.ts:95:3 › admin access control › allows an authenticated admin to reach the admin landing screen (15.1s)
+  ✓   9 [chromium] › e2e/admin-mass-score.spec.ts:122:3 › admin mass score submission workflow › enters and submits a valid mass score without depending on other admin flows (17.0s)
+  ✓  10 [chromium] › e2e/admin-mass-score.spec.ts:160:3 › admin mass score submission workflow › blocks an invalid completed mass score before writing match updates (15.9s)
+  ✓  11 [chromium] › e2e/playoff-bracket.spec.ts:30:3 › playoff bracket browser behavior › advances semifinal winners into the final and crowns a champion (16.2s)
+  ✓  12 [chromium] › e2e/score-submission.spec.ts:58:3 › score submission workflow › submits a valid score report for a pending public match (16.8s)
+  ✓  13 [chromium] › e2e/score-submission.spec.ts:109:3 › score submission workflow › blocks an invalid score report before calling submission API (16.1s)
+  ✘  14 [chromium] › e2e/smoke.spec.ts:34:3 › app shell smoke › loads home and navigates via primary nav (15.1s)
+    test-results/a11y-a11y-has-no-detectable-WCAG-2-A-AA-violations-chromium/test-failed-1.png
+    test-results/a11y-a11y-teams-has-no-detectable-WCAG-2-A-AA-violations-chromium/test-failed-1.png
+    test-results/a11y-a11y-stats-has-no-detectable-WCAG-2-A-AA-violations-chromium/test-failed-1.png
+    test-results/a11y-a11y-history-has-no-detectable-WCAG-2-A-AA-violations-chromium/test-failed-1.png
+    test-results/a11y-a11y-playoffs-has-no-detectable-WCAG-2-A-AA-violations-chromium/test-failed-1.png
+
+(First local run; 6 failures were all page.goto networkidle timeouts — sandbox egress artifact; same suite green in CI run 29440142270 on this commit. See README §4.1.)

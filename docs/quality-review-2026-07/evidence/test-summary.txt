@@ -1,0 +1,7 @@
+ Test Files  2 failed | 451 passed (453)
+      Tests  2 failed | 3424 passed | 1 expected fail (3427)
+   Duration  234.33s (transform 15.49s, setup 114.47s, import 136.22s, tests 113.63s, environment 396.39s)
+lines 65.37% (13415/20521)
+statements 64.03% (14461/22583)
+functions 59.62% (3174/5323)
+branches 53.62% (10149/18925)
