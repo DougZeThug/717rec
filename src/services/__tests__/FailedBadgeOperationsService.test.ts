@@ -14,6 +14,8 @@ vi.mock('@/utils/logger', () => ({
   badgeLog: vi.fn(),
 }));
 
+import { errorLog } from '@/utils/logger';
+
 import { FailedBadgeOperationsService } from '../FailedBadgeOperationsService';
 
 const runRetryAndDelays = async () => {
@@ -108,5 +110,84 @@ describe('FailedBadgeOperationsService', () => {
     expect(operations).toHaveLength(1);
     expect(operations[0].id).toBe('op-1');
     expect(operations[0].error).toBe('second error');
+  });
+
+  it('logs storage write failures without interrupting queueing', () => {
+    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('storage full');
+    });
+
+    expect(() =>
+      FailedBadgeOperationsService.queueFailedOperation(
+        'match_badges',
+        { team1Id: 't1', team2Id: 't2' },
+        'write failed',
+        'match-storage'
+      )
+    ).not.toThrow();
+
+    expect(errorLog).toHaveBeenCalledWith(
+      'Failed to save badge operations to storage:',
+      expect.any(Error)
+    );
+
+    setItemSpy.mockRestore();
+  });
+
+  it('retries kingslayer operations with the original winner and loser ids', async () => {
+    localStorage.setItem(
+      'failed_badge_operations',
+      JSON.stringify([
+        {
+          id: 'op-kingslayer',
+          type: 'kingslayer',
+          params: { winnerId: 'winner-1', loserId: 'loser-1' },
+          error: 'previous failure',
+          matchId: 'match-kingslayer',
+          createdAt: '2026-01-01T00:00:00.000Z',
+          retryCount: 0,
+        },
+      ])
+    );
+    mockRpc.mockResolvedValue({ data: { ok: true }, error: null });
+
+    const result = await runRetryAndDelays();
+
+    expect(result.succeeded).toBe(1);
+    expect(mockRpc).toHaveBeenCalledWith('award_kingslayer_badge', {
+      p_winner_id: 'winner-1',
+      p_loser_id: 'loser-1',
+    });
+  });
+
+  it('keeps failed bully retries in storage with updated retry metadata', async () => {
+    localStorage.setItem(
+      'failed_badge_operations',
+      JSON.stringify([
+        {
+          id: 'op-bully',
+          type: 'bully_loser',
+          params: { teamId: 'team-bully' },
+          error: 'previous failure',
+          matchId: 'match-bully',
+          createdAt: '2026-01-01T00:00:00.000Z',
+          retryCount: 0,
+        },
+      ])
+    );
+    mockRpc.mockResolvedValue({ data: null, error: { message: 'rpc failed' } });
+
+    const result = await runRetryAndDelays();
+
+    expect(result.succeeded).toBe(0);
+    expect(result.failed).toBe(1);
+    expect(result.remaining[0]).toMatchObject({
+      id: 'op-bully',
+      type: 'bully_loser',
+      retryCount: 1,
+    });
+    expect(mockRpc).toHaveBeenCalledWith('award_bully_badge', {
+      p_team_id: 'team-bully',
+    });
   });
 });

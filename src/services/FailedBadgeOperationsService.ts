@@ -349,6 +349,7 @@ async function executeOperation(operation: FailedBadgeOperation): Promise<void> 
       return;
     }
 
+    /* c8 ignore next 2 -- getFailedOperations filters invalid operation types before retry dispatch. */
     default:
       throw new ValidationError(`Unknown badge operation type: ${type}`);
   }
