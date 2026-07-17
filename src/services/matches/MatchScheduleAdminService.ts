@@ -86,11 +86,18 @@ export const fetchMatchesForAdmin = (filters: {
  */
 export const fetchScheduleMatches = async (): Promise<ScheduleMatchWithTeams[]> => {
   // First get the active season
-  const { data: activeSeason } = await supabase
+  const { data: activeSeason, error: seasonError } = await supabase
     .from('seasons')
     .select('id')
     .eq('is_active', true)
     .single();
+
+  if (seasonError) {
+    // PGRST116 = no rows returned; treat as "no active season" (valid empty state).
+    // Any other error (network/permission/etc.) must surface as DatabaseError.
+    if (seasonError.code === 'PGRST116') return [];
+    handleDatabaseError(seasonError, 'Failed to fetch active season');
+  }
 
   if (!activeSeason) return [];
 
