@@ -258,3 +258,80 @@ Deno.test({
     }
   },
 });
+
+Deno.test({
+  name: 'store fails and email fails returns 502',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    allowAll();
+    const previousKey = Deno.env.get('RESEND_API_KEY');
+    Deno.env.set('RESEND_API_KEY', 'test-resend-key');
+    globalThis.fetch = ((input: RequestInfo | URL) => {
+      const url = typeof input === 'string' ? input : input.toString();
+      if (url.includes('api.resend.com')) {
+        return Promise.resolve(new Response('resend failed', { status: 500 }));
+      }
+      if (url.includes('/rest/v1/support_tickets')) {
+        return Promise.resolve(
+          new Response(JSON.stringify({ message: 'relation does not exist' }), {
+            status: 500,
+          })
+        );
+      }
+      return Promise.resolve(new Response('{}', { status: 200 }));
+    }) as typeof fetch;
+    try {
+      const res = await handleRequest(makeReq(validPayload));
+      assertEquals(res.status, 502);
+      const body = await res.json();
+      assertEquals(body.stored, false);
+      assertEquals(body.emailed, false);
+    } finally {
+      if (previousKey === undefined) Deno.env.delete('RESEND_API_KEY');
+      else Deno.env.set('RESEND_API_KEY', previousKey);
+      restoreFetch();
+      reset();
+    }
+  },
+});
+
+Deno.test({
+  name: 'email subject strips control characters from name',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    allowAll();
+    const previousKey = Deno.env.get('RESEND_API_KEY');
+    Deno.env.set('RESEND_API_KEY', 'test-resend-key');
+    let resendBody = '';
+    globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input.toString();
+      if (url.includes('api.resend.com')) {
+        resendBody = String(init?.body ?? '');
+        return Promise.resolve(new Response(JSON.stringify({ id: 'stub' }), { status: 200 }));
+      }
+      if (url.includes('/rest/v1/support_tickets')) {
+        return Promise.resolve(new Response('[]', { status: 201 }));
+      }
+      return Promise.resolve(new Response('{}', { status: 200 }));
+    }) as typeof fetch;
+    try {
+      const res = await handleRequest(
+        makeReq({
+          ...validPayload,
+          name: 'Alice\r\nBcc: attacker@example.com',
+        })
+      );
+      assertEquals(res.status, 200);
+      const parsed = JSON.parse(resendBody);
+      assertEquals(parsed.subject.includes('\r'), false);
+      assertEquals(parsed.subject.includes('\n'), false);
+    } finally {
+      if (previousKey === undefined) Deno.env.delete('RESEND_API_KEY');
+      else Deno.env.set('RESEND_API_KEY', previousKey);
+      restoreFetch();
+      reset();
+    }
+  },
+});
