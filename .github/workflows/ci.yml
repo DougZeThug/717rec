@@ -227,7 +227,35 @@ jobs:
     name: E2E (real Supabase)
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # GitHub never delivers Actions repo secrets to fork PRs or
+    # Dependabot-triggered runs, so the secrets guard below would fail those
+    # runs with a false "secret is not set" error. Skip them visibly instead;
+    # pushes and same-repo PRs still enforce.
+    if: >-
+      github.event_name != 'pull_request' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+      github.actor != 'dependabot[bot]')
     steps:
+      # The real-backend spec self-skips when any E2E_* value is absent, which
+      # used to leave this job green without testing anything. Fail fast instead
+      # so a green check always means the spec actually ran.
+      - name: Require E2E secrets
+        env:
+          E2E_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+          E2E_SUPABASE_ANON_KEY: ${{ secrets.E2E_SUPABASE_ANON_KEY }}
+          E2E_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
+          E2E_TEST_USER_EMAIL: ${{ secrets.E2E_TEST_USER_EMAIL }}
+          E2E_TEST_USER_PASSWORD: ${{ secrets.E2E_TEST_USER_PASSWORD }}
+        run: |
+          missing=0
+          for v in E2E_SUPABASE_URL E2E_SUPABASE_ANON_KEY E2E_SUPABASE_SERVICE_ROLE_KEY E2E_TEST_USER_EMAIL E2E_TEST_USER_PASSWORD; do
+            if [ -z "${!v}" ]; then
+              echo "::error::Repo secret $v is not set — without it the real-backend spec silently skips. See docs/E2E_REAL_BACKEND.md."
+              missing=1
+            fi
+          done
+          exit $missing
+
       - name: Checkout code
         uses: actions/checkout@v4
 
