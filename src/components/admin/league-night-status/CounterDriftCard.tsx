@@ -1,6 +1,6 @@
 import { AlertTriangle, CheckCircle2, Scale } from 'lucide-react';
 import React, { useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/useToast';
 
 import {
   AlertDialog,
@@ -28,13 +28,19 @@ const CounterDriftCard: React.FC = () => {
     setConfirmOpen(false);
     try {
       const repaired = await reconcile.mutateAsync();
-      toast.success(
-        repaired === 0
-          ? 'Already in sync — no rows needed repair.'
-          : `Repaired ${repaired} team${repaired === 1 ? '' : 's'}.`
-      );
+      toast({
+        title: repaired === 0 ? 'Already in sync' : 'Counters repaired',
+        description:
+          repaired === 0
+            ? 'No rows needed repair.'
+            : `Repaired ${repaired} team${repaired === 1 ? '' : 's'}.`,
+      });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Repair failed');
+      toast({
+        title: 'Repair failed',
+        description: err instanceof Error ? err.message : 'Unknown error',
+        variant: 'destructive',
+      });
     }
   };
 
