@@ -1538,6 +1538,30 @@ export type Database = {
           },
         ]
       }
+      page_views: {
+        Row: {
+          anon_day_id: string
+          created_at: string
+          id: string
+          path: string
+          ua_class: string
+        }
+        Insert: {
+          anon_day_id: string
+          created_at?: string
+          id?: string
+          path: string
+          ua_class: string
+        }
+        Update: {
+          anon_day_id?: string
+          created_at?: string
+          id?: string
+          path?: string
+          ua_class?: string
+        }
+        Relationships: []
+      }
       participant: {
         Row: {
           id: number
@@ -4468,6 +4492,17 @@ export type Database = {
       }
     }
     Views: {
+      v_daily_traffic: {
+        Row: {
+          android_visitors: number | null
+          day: string | null
+          ios_visitors: number | null
+          other_visitors: number | null
+          pageviews: number | null
+          visitors: number | null
+        }
+        Relationships: []
+      }
       v_head_to_head: {
         Row: {
           game_losses: number | null
