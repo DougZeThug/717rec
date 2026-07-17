@@ -85,9 +85,9 @@ const TeamOfTheWeekCard: React.FC<TeamOfTheWeekCardProps> = ({ trend, weekNumber
               <TeamLogo
                 imageUrl={trend.logoUrl}
                 teamName={trend.teamName}
-                size="lg"
+                size="md"
                 className={cn(
-                  'relative z-10 transition-all duration-300 !w-16 !h-16 !min-w-16 !min-h-16',
+                  'relative z-10 transition-all duration-300 !size-16 !min-w-16 !min-h-16 [&_img]:!size-16 [&_img]:!min-w-16 [&_img]:!min-h-16',
                   shouldApplyWinter
                     ? 'ring-2 ring-cyan-400/30 group-hover:ring-cyan-400/50'
                     : 'ring-2 ring-amber-500/20 group-hover:ring-amber-500/40'
