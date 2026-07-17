@@ -72,6 +72,10 @@ const addToRemoveQueue = (toastId: string) => {
 
 /** Toast state reducer: add, update, dismiss (queues removal), and remove actions. */
 // skipcq: JS-0045 -- the switch is exhaustive over Action and TS enforces it
+const assertNever = (value: never): never => {
+  throw new Error(`Unhandled toast action: ${JSON.stringify(value)}`);
+};
+
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case 'ADD_TOAST':
@@ -122,6 +126,9 @@ const reducer = (state: State, action: Action): State => {
         ...state,
         toasts: state.toasts.filter((t) => t.id !== action.toastId),
       };
+
+    default:
+      return assertNever(action);
   }
 };
 

@@ -130,6 +130,11 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
           ];
         }
         break;
+
+      default: {
+        const exhaustiveCheck: never = confirmAction.type;
+        throw new Error(`Unhandled team operation: ${exhaustiveCheck}`);
+      }
     }
 
     onTeamUpdate?.(updatedTeams);

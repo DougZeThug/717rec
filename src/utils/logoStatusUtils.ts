@@ -1,5 +1,9 @@
 export type LogoStatus = 'optimized' | 'legacy' | 'missing';
 
+const assertNever = (value: never): never => {
+  throw new Error(`Unhandled logo status: ${String(value)}`);
+};
+
 export const getLogoStatus = (imageUrl: string | null | undefined): LogoStatus => {
   if (!imageUrl) return 'missing';
 
@@ -20,6 +24,8 @@ export const getStatusColor = (status: LogoStatus): string => {
       return 'text-yellow-500';
     case 'missing':
       return 'text-red-500';
+    default:
+      return assertNever(status);
   }
 };
 
@@ -31,6 +37,8 @@ export const getStatusLabel = (status: LogoStatus): string => {
       return 'Needs Update';
     case 'missing':
       return 'Missing';
+    default:
+      return assertNever(status);
   }
 };
 
@@ -42,5 +50,7 @@ export const getStatusIcon = (status: LogoStatus): string => {
       return '🟡';
     case 'missing':
       return '🔴';
+    default:
+      return assertNever(status);
   }
 };
