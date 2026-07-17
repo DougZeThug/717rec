@@ -67,10 +67,18 @@ Four GitHub Actions workflows live in `.github/workflows/`:
 
 | Workflow | File | What it runs |
 | --- | --- | --- |
-| CI | `ci.yml` | `quality`: lint, typecheck, full test suite, coverage thresholds, knip dead-code check. `build-size`: production build + bundle-size budgets. `browser`: Playwright smoke tests, blocking axe a11y scan, Lighthouse. `react-doctor`: React best-practice scan. `e2e-real-backend`: E2E golden path against a real Supabase backend. |
+| CI | `ci.yml` | `quality`: lint, typecheck, full test suite, coverage thresholds, knip dead-code check. `build-size`: production build + bundle-size budgets. `browser`: Playwright smoke tests, blocking axe a11y scan, Lighthouse (error-level assertions). `react-doctor`: React best-practice scan. `e2e-real-backend`: E2E golden path against a real Supabase backend — fails fast if the `E2E_*` repo secrets are not configured; skipped on Dependabot/fork PRs, which never receive repo secrets (see `docs/E2E_REAL_BACKEND.md`). |
 | Security | `security.yml` | `audit`: npm audit. `committed-env-files`: fails if local `.env` files are tracked. `gitleaks`: secret scan on PRs, pushes to main, and a weekly cron. |
 | Supabase CI | `supabase-ci.yml` | `db-lint`: `supabase db lint`. `db-apply-and-smoke`: apply migrations + SQL smoke tests. `edge-function-tests`: edge-function Deno tests. |
 | Summarize new issues | `summary.yml` | Posts an AI-generated summary comment on newly opened GitHub issues. |
+
+Lighthouse assertions (`lighthouserc.json`) are error-level and fail the
+`browser` job when breached: performance ≥ 0.25, accessibility ≥ 0.90,
+best-practices ≥ 0.85, SEO ≥ 0.90. Lighthouse runs three times and the
+assertion uses the best run (LHCI's default aggregation), because single-run
+performance scores on shared CI runners are noisy — recent runs on `main`
+measured 0.30–0.51. The floor catches real regressions, not runner noise;
+raise it if measured scores improve.
 
 ## Deployment
 
