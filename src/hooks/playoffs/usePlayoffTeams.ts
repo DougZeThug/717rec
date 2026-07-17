@@ -6,11 +6,8 @@ import type { Team } from '@/utils/playoffs/playoffTypes';
 
 /**
  * Hook for fetching playoff teams with seed information
- * Uses useTeamsQuery internally but adds seed data from teams table
  */
 export const usePlayoffTeams = () => {
-  // Base teams query for cache sharing
-
   return useQuery({
     queryKey: [TEAMS_QUERY_KEY, 'with-seeds'],
     queryFn: (): Promise<Team[]> => fetchPlayoffTeams(),
