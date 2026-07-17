@@ -10,7 +10,7 @@ export interface SubmitContactRequestInput {
   request_type: ContactRequestType;
   submitter_name: string;
   submitter_team?: string | null;
-  submitter_contact?: string;
+  submitter_contact: string;
   players?: string | null;
   message: string;
   website?: string;

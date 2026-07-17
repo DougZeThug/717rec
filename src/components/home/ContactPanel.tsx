@@ -66,10 +66,10 @@ const ContactPanel: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !message.trim()) {
+    if (!name.trim() || !contact.trim() || !message.trim()) {
       toast({
         title: 'Missing info',
-        description: 'Name and message are required.',
+        description: 'Name, contact, and message are required.',
         variant: 'destructive',
       });
       return;
@@ -202,12 +202,13 @@ const ContactPanel: React.FC = () => {
             </div>
 
             <div className="md:col-span-2">
-              <Label htmlFor="contact-contact">Contact (email or phone)</Label>
+              <Label htmlFor="contact-contact">Contact (email or phone) *</Label>
               <Input
                 id="contact-contact"
                 value={contact}
                 onChange={(e) => setContactDraft(e.target.value)}
                 maxLength={255}
+                required
                 placeholder="you@example.com or 717-555-1234"
                 className="mt-1"
               />

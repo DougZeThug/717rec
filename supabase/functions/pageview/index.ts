@@ -2,7 +2,7 @@ import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { z } from 'https://esm.sh/zod@3.23.8';
 
-import { checkRateLimit, hashIp } from '../_shared/rateLimit.ts';
+import { checkRateLimit, getClientIp, hashIp } from '../_shared/rateLimit.ts';
 import { SECURITY_HEADERS } from '../_shared/securityHeaders.ts';
 
 const ALLOWED_ORIGINS = new Set<string>([
@@ -40,12 +40,6 @@ const PayloadSchema = z
 const RATE_LIMIT_WINDOW_SECONDS = 60;
 const RATE_LIMIT_MAX = 60;
 const ENDPOINT_KEY = 'pageview';
-
-function getClientIp(req: Request): string {
-  const fwd = req.headers.get('x-forwarded-for');
-  if (fwd) return fwd.split(',')[0].trim();
-  return req.headers.get('cf-connecting-ip') || req.headers.get('x-real-ip') || 'unknown';
-}
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);

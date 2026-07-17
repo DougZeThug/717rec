@@ -2,7 +2,11 @@ import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { z } from 'https://esm.sh/zod@3.23.8';
 
-import { checkRateLimit as defaultCheckRateLimit, hashIp } from '../_shared/rateLimit.ts';
+import {
+  checkRateLimit as defaultCheckRateLimit,
+  getClientIp,
+  hashIp,
+} from '../_shared/rateLimit.ts';
 import { SECURITY_HEADERS } from '../_shared/securityHeaders.ts';
 
 type RateLimitFn = typeof defaultCheckRateLimit;
@@ -56,9 +60,22 @@ const SUBJECT_KEYS = [
   'other',
 ] as const;
 
+function stripControlChars(str: string, replacement = ''): string {
+  return Array.from(str)
+    .map((char) => {
+      const code = char.charCodeAt(0);
+      return code <= 31 || code === 127 ? replacement : char;
+    })
+    .join('');
+}
+
 const SupportSchema = z
   .object({
-    name: z.string().trim().min(1).max(100),
+    name: z
+      .string()
+      .trim()
+      .transform((value) => stripControlChars(value, ' ').replace(/\s+/g, ' ').trim())
+      .pipe(z.string().min(1).max(100)),
     email: z.string().trim().email().max(255),
     subject: z.enum(SUBJECT_KEYS),
     message: z.string().trim().min(1).max(5000),
@@ -80,12 +97,6 @@ function escapeHtml(str: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
-}
-
-function getClientIp(req: Request): string {
-  const fwd = req.headers.get('x-forwarded-for');
-  if (fwd) return fwd.split(',')[0].trim();
-  return req.headers.get('cf-connecting-ip') || req.headers.get('x-real-ip') || 'unknown';
 }
 
 function countUrls(text: string): number {
@@ -125,9 +136,10 @@ async function handleRequest(req: Request): Promise<Response> {
     ipHash,
     windowSeconds: RATE_LIMIT_WINDOW_SECONDS,
     maxHits: RATE_LIMIT_MAX,
+    failClosedOnError: true,
   });
   if (rl.error) {
-    console.warn('[Support] rate-limit RPC error (failing open):', rl.error);
+    console.warn('[Support] rate-limit RPC error (failing closed):', rl.error);
   }
   if (!rl.allowed) {
     console.warn('[Support] Rate limit exceeded for ip_hash:', ipHash);
@@ -165,26 +177,44 @@ async function handleRequest(req: Request): Promise<Response> {
     return jsonResponse({ error: 'Message contains too many links' }, 400, corsHeaders);
   }
 
-  // Best-effort store of the ticket. Will silently noop if table is missing.
-  await supabase
-    .from('support_tickets')
-    .insert({
-      name: payload.name,
-      email: payload.email,
-      subject: payload.subject,
-      message: payload.message,
-      status: 'new',
-    })
-    .single();
+  const cleanName = payload.name;
+  const cleanSubject = payload.subject;
+
+  const { error: storeError } = await supabase.from('support_tickets').insert({
+    name: cleanName,
+    email: payload.email,
+    subject: cleanSubject,
+    message: payload.message,
+    status: 'new',
+  });
+  const stored = !storeError;
+  if (storeError) {
+    console.error('[Support] support_tickets insert error:', storeError);
+  }
 
   if (!RESEND_API_KEY) {
-    console.log('[Support] No Resend API key — ticket stored, email not sent');
-    return jsonResponse({ success: true, message: 'Ticket received' }, 200, corsHeaders);
+    if (stored) {
+      console.log('[Support] No Resend API key — ticket stored, email not sent');
+      return jsonResponse(
+        { success: true, message: 'Ticket received', stored, emailed: false },
+        200,
+        corsHeaders
+      );
+    }
+    return jsonResponse(
+      {
+        error: 'Unable to receive your ticket right now. Please try again.',
+        stored: false,
+        emailed: false,
+      },
+      502,
+      corsHeaders
+    );
   }
 
   // Send email via Resend — escape all user inputs to prevent XSS.
-  const subjectLabel = SUBJECT_LABELS[payload.subject] ?? escapeHtml(payload.subject);
-  const safeName = escapeHtml(payload.name);
+  const subjectLabel = SUBJECT_LABELS[cleanSubject] ?? escapeHtml(cleanSubject);
+  const safeName = escapeHtml(cleanName);
   const safeEmail = escapeHtml(payload.email);
   const safeMessage = escapeHtml(payload.message);
   const emailHtml = `
@@ -206,35 +236,86 @@ async function handleRequest(req: Request): Promise<Response> {
     </div>
   `;
 
-  const resendResponse = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-    },
-    body: JSON.stringify({
-      from: '717REC Support <noreply@717rec.com>',
-      to: ['admin@717rec.com'],
-      reply_to: payload.email,
-      subject: `[717REC Support] ${subjectLabel} from ${safeName}`,
-      html: emailHtml,
-    }),
-  });
-
-  if (!resendResponse.ok) {
-    const errorText = await resendResponse.text();
-    console.error('[Support] Resend API error:', errorText);
+  let resendResponse: Response;
+  try {
+    resendResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: '717REC Support <noreply@717rec.com>',
+        to: ['admin@717rec.com'],
+        reply_to: payload.email,
+        subject: `[717REC Support] ${subjectLabel} from ${safeName}`,
+        html: emailHtml,
+      }),
+    });
+  } catch (error) {
+    console.error('[Support] Resend transport error:', error);
+    if (stored) {
+      return jsonResponse(
+        {
+          success: true,
+          message: 'Ticket received (email pending)',
+          stored,
+          emailed: false,
+        },
+        200,
+        corsHeaders
+      );
+    }
     return jsonResponse(
-      { success: true, message: 'Ticket received (email pending)' },
-      200,
+      {
+        error: 'Unable to receive your ticket right now. Please try again.',
+        stored: false,
+        emailed: false,
+      },
+      502,
       corsHeaders
     );
   }
 
-  const resendData = (await resendResponse.json()) as { id?: string };
+  if (!resendResponse.ok) {
+    const errorText = await resendResponse.text();
+    console.error('[Support] Resend API error:', errorText);
+    if (stored) {
+      return jsonResponse(
+        {
+          success: true,
+          message: 'Ticket received (email pending)',
+          stored,
+          emailed: false,
+        },
+        200,
+        corsHeaders
+      );
+    }
+    return jsonResponse(
+      {
+        error: 'Unable to receive your ticket right now. Please try again.',
+        stored: false,
+        emailed: false,
+      },
+      502,
+      corsHeaders
+    );
+  }
+
+  const resendData = (await resendResponse.json().catch(() => ({}))) as { id?: string };
   console.log('[Support] Email sent successfully:', resendData.id);
 
-  return jsonResponse({ success: true, message: 'Message sent successfully' }, 200, corsHeaders);
+  return jsonResponse(
+    {
+      success: true,
+      message: stored ? 'Message sent successfully' : 'Email sent successfully',
+      stored,
+      emailed: true,
+    },
+    200,
+    corsHeaders
+  );
 }
 
 export { handleRequest };
