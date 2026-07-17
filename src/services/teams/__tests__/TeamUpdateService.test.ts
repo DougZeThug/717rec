@@ -111,12 +111,12 @@ const setupFullSuccess = () => {
       };
     }
 
-    // 4th call: fetch active season (seasons.select.eq.single)
+    // 4th call: fetch active season (seasons.select.eq.maybeSingle)
     if (table === 'seasons') {
       return {
         select: () => ({
           eq: () => ({
-            single: () => Promise.resolve({ data: { id: 'season-1' }, error: null }),
+            maybeSingle: () => Promise.resolve({ data: { id: 'season-1' }, error: null }),
           }),
         }),
       };
@@ -157,6 +157,81 @@ describe('updateTeamApi', () => {
     expect(result.name).toBe('Updated Team');
     expect(result.wins).toBe(3);
     expect(result.losses).toBe(1);
+  });
+
+  it('handles no active season gracefully', async () => {
+    let seasonStatsUpdated = false;
+    let callCount = 0;
+
+    mockFrom.mockImplementation((table: string) => {
+      callCount++;
+
+      if (table === 'teams' && callCount === 1) {
+        return {
+          select: () => ({
+            eq: () => ({
+              single: () => Promise.resolve({ data: { id: 'team-abc' }, error: null }),
+            }),
+          }),
+        };
+      }
+
+      if (table === 'divisions') {
+        return {
+          select: () => ({
+            eq: () => ({
+              single: () =>
+                Promise.resolve({ data: { id: 'div-1', name: 'Division A' }, error: null }),
+            }),
+          }),
+        };
+      }
+
+      if (table === 'teams' && callCount === 3) {
+        return {
+          update: () => ({
+            eq: () => ({
+              select: () => ({
+                single: () =>
+                  Promise.resolve({
+                    data: {
+                      id: 'team-abc',
+                      name: 'Updated Team',
+                      logo_url: null,
+                      image_url: 'https://img.example.com/image.png',
+                      players: ['Alice', 'Bob'],
+                      division_id: 'div-1',
+                      created_at: '2025-01-01T00:00:00Z',
+                    },
+                    error: null,
+                  }),
+              }),
+            }),
+          }),
+        };
+      }
+
+      if (table === 'seasons') {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () => Promise.resolve({ data: null, error: null }),
+            }),
+          }),
+        };
+      }
+
+      if (table === 'team_season_stats') {
+        seasonStatsUpdated = true;
+      }
+
+      return {};
+    });
+
+    const result = await updateTeamApi(TEAM_ID, makeTeamData());
+
+    expect(result.name).toBe('Updated Team');
+    expect(seasonStatsUpdated).toBe(false);
   });
 
   it('throws NotFoundError when team does not exist', async () => {
@@ -278,7 +353,7 @@ describe('updateTeamApi', () => {
         return {
           select: () => ({
             eq: () => ({
-              single: () => Promise.resolve({ data: { id: 'season-1' }, error: null }),
+              maybeSingle: () => Promise.resolve({ data: { id: 'season-1' }, error: null }),
             }),
           }),
         };
