@@ -7,6 +7,7 @@ export const useTeamSeasonBreakdown = (teamId: string | undefined) => {
     data: advancedStats,
     isLoading,
     error,
+    refetch,
   } = useQuery({
     queryKey: ['team-season-breakdown', teamId],
     queryFn: () => (teamId ? fetchTeamSeasonBreakdown(teamId) : Promise.resolve(null)),
@@ -14,5 +15,5 @@ export const useTeamSeasonBreakdown = (teamId: string | undefined) => {
     staleTime: 5 * 60 * 1000,
   });
 
-  return { advancedStats, isLoading, error };
+  return { advancedStats, isLoading, error, refetch };
 };
