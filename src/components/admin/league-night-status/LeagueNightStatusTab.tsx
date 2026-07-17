@@ -23,9 +23,9 @@ import {
 } from '@/hooks/useOpsHealth';
 import { cn } from '@/lib/utils';
 
+import CounterDriftCard from './CounterDriftCard';
 import { OPS_LINKS } from './opsLinks';
 import TrafficMiniChart from './TrafficMiniChart';
-import CounterDriftCard from './CounterDriftCard';
 
 const STORAGE_KEY = 'adminActiveTab';
 
