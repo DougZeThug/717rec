@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Edit, Loader2, Save } from 'lucide-react';
 import React, { useState } from 'react';
 
@@ -14,6 +15,7 @@ import { errorLog } from '@/utils/logger';
 
 const TeamEditSection: React.FC = () => {
   const { membership, refreshMembership } = useTeamMembership();
+  const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -55,6 +57,9 @@ const TeamEditSection: React.FC = () => {
 
       setIsEditing(false);
       await refreshMembership(); // Refresh to get updated team data
+      // Also invalidate the shared teams list so /teams reflects the new name/image.
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      queryClient.invalidateQueries({ queryKey: ['team-details', membership.team.id] });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to update team details';
       errorLog('Error updating team:', error);

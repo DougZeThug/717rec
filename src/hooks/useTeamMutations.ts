@@ -1,24 +1,22 @@
+import { useQueryClient } from '@tanstack/react-query';
+
 import { useToast } from '@/hooks/useToast';
 import { createTeamApi, deleteTeamApi, updateTeamApi } from '@/services/TeamService';
 import { Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 
-const deleteTeam = async (teamId: string) => {
-  try {
-    await deleteTeamApi(teamId);
-    return true;
-  } catch (error) {
-    errorLog('Error deleting team:', error);
-    throw error;
-  }
-};
-
 export function useTeamMutations() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const invalidateTeamsList = () => {
+    queryClient.invalidateQueries({ queryKey: ['teams'] });
+  };
 
   const createTeam = async (teamData: Omit<Team, 'id' | 'created_at'>) => {
     try {
       const newTeam = await createTeamApi(teamData);
+      invalidateTeamsList();
       toast({
         title: 'Team Created',
         description: `${newTeam.name} has been successfully created.`,
@@ -38,6 +36,8 @@ export function useTeamMutations() {
   const updateTeam = async (teamId: string, teamData: Omit<Team, 'id' | 'created_at'>) => {
     try {
       const updatedTeam = await updateTeamApi(teamId, teamData);
+      invalidateTeamsList();
+      queryClient.invalidateQueries({ queryKey: ['team-details', teamId] });
       toast({
         title: 'Team Updated',
         description: `${updatedTeam.name} has been successfully updated.`,
@@ -67,6 +67,16 @@ export function useTeamMutations() {
   return {
     createTeam,
     updateTeam,
-    deleteTeam,
+    deleteTeam: async (teamId: string) => {
+      try {
+        await deleteTeamApi(teamId);
+        invalidateTeamsList();
+        queryClient.invalidateQueries({ queryKey: ['team-details', teamId] });
+        return true;
+      } catch (error) {
+        errorLog('Error deleting team:', error);
+        throw error;
+      }
+    },
   };
 }
