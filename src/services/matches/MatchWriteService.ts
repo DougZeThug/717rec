@@ -70,11 +70,6 @@ export interface MatchInsertInput {
   team2Id: string | null | undefined;
   date: string;
   location: string;
-  iscompleted: boolean | undefined;
-  team1Score: number | undefined;
-  team2Score: number | undefined;
-  winnerId: string | null | undefined;
-  loserId: string | null | undefined;
   team1_game_wins: number;
   team2_game_wins: number;
 }
@@ -106,11 +101,6 @@ export const createMatch = async (insertInput: MatchInsertInput) => {
       team2_id: insertInput.team2Id,
       date: insertInput.date,
       location: insertInput.location,
-      iscompleted: insertInput.iscompleted,
-      team1_score: insertInput.team1Score,
-      team2_score: insertInput.team2Score,
-      winner_id: insertInput.winnerId,
-      loser_id: insertInput.loserId,
       team1_game_wins: insertInput.team1_game_wins,
       team2_game_wins: insertInput.team2_game_wins,
       round_number: 0,
@@ -121,23 +111,6 @@ export const createMatch = async (insertInput: MatchInsertInput) => {
 
   if (error) handleDatabaseError(error, 'Failed to create match');
   return data;
-};
-
-/**
- * Delete a match by ID
- * @throws {DatabaseError} When database operations fail
- * @throws {NotFoundError} When the match does not exist (e.g. concurrent deletion)
- */
-export const deleteMatch = async (matchId: string) => {
-  const { data, error } = await supabase
-    .from('matches')
-    .delete()
-    .eq('id', matchId)
-    .select('id')
-    .maybeSingle();
-
-  if (error) handleDatabaseError(error, 'Failed to delete match');
-  return ensureFound(data, 'Match', matchId);
 };
 
 /**
@@ -154,28 +127,6 @@ export const updateMatch = async (matchId: string, updatePayload: MatchNonResult
 
   if (error) handleDatabaseError(error, 'Failed to update match');
   return data;
-};
-
-/**
- * Reverse team statistics for a completed match
- * @throws Error if the RPC call fails
- */
-export const reverseTeamStats = async (
-  winnerId: string,
-  loserId: string,
-  winnerGameWins: number,
-  loserGameWins: number
-): Promise<void> => {
-  const { error: reverseError } = await supabase.rpc('reverse_team_stats', {
-    p_winner_id: winnerId,
-    p_loser_id: loserId,
-    p_winner_game_wins: winnerGameWins,
-    p_loser_game_wins: loserGameWins,
-  });
-
-  if (reverseError) {
-    handleDatabaseError(reverseError, 'Failed to reverse team stats');
-  }
 };
 
 /**
