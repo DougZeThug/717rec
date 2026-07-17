@@ -6,6 +6,8 @@ type BracketStandingsServiceArgs = ConstructorParameters<typeof BracketStandings
 type StandingsStorage = Pick<BracketStandingsServiceArgs[0], 'select'>;
 type StandingsManager = Pick<BracketStandingsServiceArgs[1], 'get'>;
 
+const rpcMock = vi.hoisted(() => vi.fn().mockResolvedValue({ data: 1, error: null }));
+
 // Mock dependencies
 vi.mock('../src/integrations/supabase/client', () => ({
   supabase: {
@@ -22,6 +24,7 @@ vi.mock('../src/integrations/supabase/client', () => ({
       }
       return {};
     }),
+    rpc: rpcMock,
   },
 }));
 
@@ -69,7 +72,9 @@ describe('BracketStandingsService', () => {
     );
     await service.calculateFinalStandings('bracket-123');
 
-    // Currently it calls with 1 (the first stage), but it should call with 2 (the final stage)
-    expect(mockManager.get.finalStandings).toHaveBeenCalledWith(2);
+    expect(mockManager.get.finalStandings).not.toHaveBeenCalled();
+    expect(rpcMock).toHaveBeenCalledWith('finalize_bracket_standings', {
+      p_bracket_id: 'bracket-123',
+    });
   });
 });
