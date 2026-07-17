@@ -162,3 +162,67 @@ Do this once when adopting this doc, then re-check quarterly. Fill in the "Last 
 - [ ] SQL editor: run the reconciliation query in §3b. Expect zero rows. Record date.
 
 Nothing here changes code. If any step surfaces a surprise, open an issue instead of fixing it silently — future-you will thank present-you.
+
+---
+
+## 5. Merge gate: how code reaches `main`
+
+Goal: **no commit lands on `main` unless CI has passed on that exact code.** Everyone — Doug, coding agents, and Lovable — goes through a pull request, and GitHub keeps the merge button locked until the required checks are green. This is the PR-02 setup from the 2026-07 quality review (`docs/quality-review-2026-07/briefs/PR-02-branch-protection-and-lovable-merge-gate.md`).
+
+### 5a. The checks, by exact name
+
+Branch protection matches checks by their **exact job name**. These are the current names from `.github/workflows/ci.yml` and `.github/workflows/supabase-ci.yml`:
+
+| Check name (exact) | What it runs | Required? |
+|---|---|---|
+| `Quality and tests` | lint, typecheck, the full unit/integration test suite, knip dead-code scan | **Yes** |
+| `DeepSource coverage` | full test run with coverage **thresholds** (fails if coverage drops below the floors in `vitest.config.ts`), then uploads to DeepSource | **Yes** |
+| `Build and bundle size` | production build + bundle size budgets | **Yes** |
+| `Browser smoke, a11y, and Lighthouse` | Playwright smoke tests, axe accessibility scan, Lighthouse | **Yes** |
+| `React Doctor` | third-party advisory scan | No — advisory |
+| `E2E (real Supabase)` | real-backend e2e — currently self-skips because its secrets aren't set (see PR-03 brief) | No — do **not** require until PR-03 lands |
+| `supabase db lint`, `Apply migrations + SQL smoke tests`, `Edge function Deno tests` | database CI — runs only when `supabase/**` changes | No — must stay advisory: the workflow is path-filtered, so requiring any of these would freeze every non-database PR on "Expected — waiting for status" |
+| `npm audit`, `Gitleaks`, `No committed local env files` | security workflow — runs only when dependency/security-related files change | No — must stay advisory (also path-filtered, same freeze risk) |
+
+**Naming note:** the review brief says to require a check called "Quality, tests, and coverage". That job has since been split in two: the tests live in `Quality and tests` and the coverage thresholds moved to `DeepSource coverage`. Require **both** — together they are the old check.
+
+**Caveat on `DeepSource coverage`:** the thresholds themselves are checked locally on the runner, but the last step uploads to deepsource.com. If DeepSource has an outage, this job goes red and blocks merging even though nothing is wrong with the code. If that ever blocks something urgent: Settings → Branches → edit the rule → temporarily untick just that check, merge, then re-tick it.
+
+### 5b. One-time setup (Doug, ~10 minutes, all in web UIs)
+
+**Lovable side:**
+
+1. Lovable → Project → Settings → GitHub: switch Lovable to commit to a **dedicated branch** (e.g. `lovable/edits`) instead of `main`. Every Lovable edit then arrives as a pull request and faces the same checks as everyone else.
+
+**GitHub side** (repo → Settings → Branches → Add branch protection rule):
+
+1. Branch name pattern: `main`
+2. Tick **Require a pull request before merging**, and leave its "Require approvals" sub-box **unticked** — that is how you get zero required approvals (solo maintainer: the checks are the gate, not human review). Don't tick it by mistake: GitHub won't let you approve your own PR, so requiring even one approval would block every PR you open yourself.
+3. Tick **Require status checks to pass before merging**, and under it tick **Require branches to be up to date before merging**.
+4. In the status-check search box, add the four required checks by exact name: `Quality and tests`, `DeepSource coverage`, `Build and bundle size`, `Browser smoke, a11y, and Lighthouse`. The box can only offer checks that have actually reported on this repo in roughly the last week — it does **not** accept typed-in names. If one is missing, open (or re-run checks on) any recent pull request — the PR that added this section works — wait for CI to finish, then reload the settings page. After saving, re-open the rule and confirm all four names are listed: a silently missing one means the gate is weaker than you think.
+5. Tick **Do not allow bypassing the above settings**. Do not add any app or bot to a bypass list — the whole point is that Lovable's bot goes through the gate too.
+6. Leave force-push and branch-deletion protection at their defaults (blocked).
+
+Last verified: _fill me in_
+
+### 5c. Why CI runs on every PR now (even docs-only ones)
+
+GitHub has no "required only when these files change" concept. `ci.yml` used to skip PRs that touched only docs; combine that with required checks and a docs-only PR would sit forever on "Expected — waiting for status" with the merge button locked. So the `pull_request` trigger in `ci.yml` deliberately has **no `paths:` filter** — every PR runs and reports all four required checks. A docs-only PR burns some free runner minutes; a permanently unmergeable PR costs more.
+
+Related trap, for future-you: don't "optimize" this with `if:` conditions on the jobs — GitHub counts a **skipped job as satisfying a required check**, which quietly turns the gate into a rubber stamp. (Same reason the PR-03 brief prefers deleting a job over disabling it.)
+
+The Supabase workflow keeps its `supabase/**` path filter — that's fine, because none of its jobs are required.
+
+### 5d. Prove the gate works (do once after setup)
+
+- [ ] Branch off `main`, make one unit test fail on purpose (flip an assertion), push, open a PR → merge button disabled, "Required statuses must pass".
+- [ ] Fix the test, push again → button unlocks once checks go green.
+- [ ] Try a direct `git push origin main` with a trivial commit → GitHub rejects it.
+- [ ] Make a small Lovable edit → it appears as a PR from `lovable/edits`, **not** a commit on `main`.
+- [ ] A week later: `git log --oneline -10 main` shows only commits that came through a PR — each one either starts with "Merge pull request #…" or ends with a PR number like `(#1060)` (squash merges). Bot-authored commits are fine *if* they carry a PR number; what must not appear is a commit with no PR behind it.
+
+### 5e. Known limits, fallback, rollback
+
+- **Lighthouse is still warn-only** inside the Browser check until PR-03 lands — a Lighthouse score drop alone won't block a merge yet. Failing tests, build, bundle budgets, smoke, and axe all hard-block already.
+- **If Lovable can't commit to a branch** (Option B in the PR-02 brief): note that the 5b rule as written would hard-block Lovable — it rejects *all* direct pushes to `main`, so the bot's edits would fail outright rather than sneak through. Running Option B means deliberately punching a hole for the bot: set the protection up as a repository **ruleset** instead of a classic rule, with the Lovable app on the ruleset's bypass list (a classic rule can't exempt one app from required status checks). Then add a fast-repair routine (open an issue or fix PR within the hour whenever `main` goes red). That is a stop-gap, not a gate — record here that the gate is not fully in force, and revisit when Lovable ships branch support.
+- **Rollback:** delete the branch protection rule (Settings → Branches) and revert the docs/workflow commit. Nothing in the product changes either way.

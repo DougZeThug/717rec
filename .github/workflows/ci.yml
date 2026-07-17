@@ -20,25 +20,12 @@ on:
       - 'lighthouserc.*'
       - '.github/workflows/ci.yml'
       - '.deepsource.toml'
+  # No paths filter on pull_request: these jobs are required status checks on
+  # main (see docs/OPERATIONS.md §5), and a required check that never reports
+  # leaves the PR stuck on "Expected — waiting for status". Every PR — even a
+  # docs-only one — must run and report them.
   pull_request:
     branches: [main, master]
-    paths:
-      - 'src/**'
-      - 'tests/**'
-      - 'e2e/**'
-      - 'public/**'
-      - 'index.html'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'tsconfig*.json'
-      - 'vite.config.*'
-      - 'vitest.config.*'
-      - 'eslint.config.*'
-      - 'knip.json'
-      - 'playwright.config.*'
-      - 'lighthouserc.*'
-      - '.github/workflows/ci.yml'
-      - '.deepsource.toml'
 
 permissions:
   contents: read
