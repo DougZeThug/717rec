@@ -2,7 +2,11 @@ import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { z } from 'https://esm.sh/zod@3.23.8';
 
-import { checkRateLimit as defaultCheckRateLimit, hashIp } from '../_shared/rateLimit.ts';
+import {
+  checkRateLimit as defaultCheckRateLimit,
+  getClientIp,
+  hashIp,
+} from '../_shared/rateLimit.ts';
 import { SECURITY_HEADERS } from '../_shared/securityHeaders.ts';
 
 type RateLimitFn = typeof defaultCheckRateLimit;
@@ -49,12 +53,6 @@ const RATE_LIMIT_WINDOW_SECONDS = 10 * 60;
 const RATE_LIMIT_MAX = 5;
 const ENDPOINT_KEY = 'submit-score-report';
 
-function getClientIp(req: Request): string {
-  const fwd = req.headers.get('x-forwarded-for');
-  if (fwd) return fwd.split(',')[0].trim();
-  return req.headers.get('cf-connecting-ip') || req.headers.get('x-real-ip') || 'unknown';
-}
-
 function jsonResponse(body: unknown, status: number, cors: Record<string, string>): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -80,6 +78,7 @@ async function handleRequest(req: Request): Promise<Response> {
     ipHash,
     windowSeconds: RATE_LIMIT_WINDOW_SECONDS,
     maxHits: RATE_LIMIT_MAX,
+    failClosedOnError: true,
   });
   if (rl.error) console.warn('[ScoreReport] rate-limit error:', rl.error);
   if (!rl.allowed) {

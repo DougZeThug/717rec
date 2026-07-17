@@ -9,6 +9,7 @@ import { BracketStandingsService } from '../BracketStandingsService';
 // Shared mock for the supabase client used by the service for the stage-matches
 // pre-check and the playoff_team_records upsert.
 const upsertMock = vi.fn().mockResolvedValue({ error: null });
+const rpcMock = vi.hoisted(() => vi.fn().mockResolvedValue({ data: 1, error: null }));
 const stageMatchesResult: { data: unknown; error: unknown } = { data: [], error: null };
 
 vi.mock('@/integrations/supabase/client', () => ({
@@ -26,6 +27,7 @@ vi.mock('@/integrations/supabase/client', () => ({
       }
       return {};
     }),
+    rpc: rpcMock,
   },
 }));
 
@@ -66,6 +68,8 @@ function makeService(opts: {
 describe('BracketStandingsService.calculateFinalStandings', () => {
   beforeEach(() => {
     upsertMock.mockClear();
+    rpcMock.mockClear();
+    rpcMock.mockResolvedValue({ data: 1, error: null });
     stageMatchesResult.data = [];
     stageMatchesResult.error = null;
   });
@@ -93,7 +97,7 @@ describe('BracketStandingsService.calculateFinalStandings', () => {
     expect(upsertMock).not.toHaveBeenCalled();
   });
 
-  it('swallows brackets-manager "Participant not found" errors and returns calculation-error', async () => {
+  it('uses server-side finalize RPC instead of brackets-manager final standings', async () => {
     stageMatchesResult.data = [
       { id: 1, number: 1, group_id: 1, round_id: 1, status: 5, opponent1_id: 1, opponent2_id: 2 },
     ];
@@ -102,8 +106,11 @@ describe('BracketStandingsService.calculateFinalStandings', () => {
 
     const result = await service.calculateFinalStandings('bracket-2');
 
-    expect(result).toEqual({ written: false, reason: 'calculation-error' });
-    expect(upsertMock).not.toHaveBeenCalled();
+    expect(result).toEqual({ written: true });
+    expect(finalStandings).not.toHaveBeenCalled();
+    expect(rpcMock).toHaveBeenCalledWith('finalize_bracket_standings', {
+      p_bracket_id: 'bracket-2',
+    });
   });
 
   it('writes records and returns written=true on the happy path', async () => {
@@ -115,11 +122,10 @@ describe('BracketStandingsService.calculateFinalStandings', () => {
     const result = await service.calculateFinalStandings('bracket-3');
 
     expect(result).toEqual({ written: true });
-    expect(upsertMock).toHaveBeenCalledTimes(1);
-    expect(upsertMock).toHaveBeenCalledWith(
-      [{ team_id: 'team-a', bracket_id: 'bracket-3', placement: 1 }],
-      { onConflict: 'team_id,bracket_id' }
-    );
+    expect(rpcMock).toHaveBeenCalledTimes(1);
+    expect(rpcMock).toHaveBeenCalledWith('finalize_bracket_standings', {
+      p_bracket_id: 'bracket-3',
+    });
   });
 
   it('picks the highest-numbered stage for standings', async () => {
@@ -135,23 +141,29 @@ describe('BracketStandingsService.calculateFinalStandings', () => {
       finalStandings,
     });
 
-    await service.calculateFinalStandings('bracket-4');
+    const result = await service.calculateFinalStandings('bracket-4');
 
-    expect(finalStandings).toHaveBeenCalledWith(20);
+    expect(result).toEqual({ written: true });
+    expect(finalStandings).not.toHaveBeenCalled();
+    expect(rpcMock).toHaveBeenCalledWith('finalize_bracket_standings', {
+      p_bracket_id: 'bracket-4',
+    });
   });
 
-  it('throws a typed DatabaseError when the playoff_team_records upsert fails', async () => {
+  it('returns calculation-error when the finalize RPC fails', async () => {
     stageMatchesResult.data = [
       { id: 1, number: 1, group_id: 1, round_id: 1, status: 5, opponent1_id: 1, opponent2_id: 2 },
     ];
-    upsertMock.mockResolvedValueOnce({
+    rpcMock.mockResolvedValueOnce({
+      data: null,
       error: { message: 'permission denied', code: '42501', details: '', hint: '' },
     });
     const service = makeService({});
 
-    await expect(service.calculateFinalStandings('bracket-err')).rejects.toBeInstanceOf(
-      DatabaseError
-    );
+    await expect(service.calculateFinalStandings('bracket-err')).resolves.toEqual({
+      written: false,
+      reason: 'calculation-error',
+    });
   });
 
   it('wraps unexpected non-service errors in a typed DatabaseError', async () => {

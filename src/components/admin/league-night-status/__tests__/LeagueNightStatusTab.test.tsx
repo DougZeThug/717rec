@@ -18,6 +18,10 @@ vi.mock('../TrafficMiniChart', () => ({
   default: () => <div data-testid="traffic-mini-chart" />,
 }));
 
+vi.mock('../CounterDriftCard', () => ({
+  default: () => <div data-testid="counter-drift-card" />,
+}));
+
 import LeagueNightStatusTab from '../LeagueNightStatusTab';
 import { OPS_LINKS } from '../opsLinks';
 

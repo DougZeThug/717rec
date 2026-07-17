@@ -2,8 +2,20 @@ import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { z } from 'https://esm.sh/zod@3.23.8';
 
-import { checkRateLimit, hashIp } from '../_shared/rateLimit.ts';
+import {
+  checkRateLimit as defaultCheckRateLimit,
+  getClientIp,
+  hashIp,
+} from '../_shared/rateLimit.ts';
 import { SECURITY_HEADERS } from '../_shared/securityHeaders.ts';
+
+type RateLimitFn = typeof defaultCheckRateLimit;
+
+// Test seam — overridable from tests via setRateLimiter().
+let rateLimiterImpl: RateLimitFn = defaultCheckRateLimit;
+export function setRateLimiter(fn: RateLimitFn | null): void {
+  rateLimiterImpl = fn ?? defaultCheckRateLimit;
+}
 
 const ALLOWED_ORIGINS = new Set<string>([
   'https://717rec.app',
@@ -34,7 +46,7 @@ const PayloadSchema = z
     request_type: z.enum(REQUEST_TYPES),
     submitter_name: z.string().trim().min(1).max(120),
     submitter_team: z.string().trim().max(120).optional().nullable(),
-    submitter_contact: z.string().trim().max(255).optional(),
+    submitter_contact: z.string().trim().min(1).max(255),
     players: z.string().trim().max(1000).optional().nullable(),
     message: z.string().trim().min(1).max(2000),
     website: z.string().max(500).optional(), // honeypot
@@ -44,12 +56,6 @@ const PayloadSchema = z
 const RATE_LIMIT_WINDOW_SECONDS = 10 * 60;
 const RATE_LIMIT_MAX = 5;
 const ENDPOINT_KEY = 'submit-contact-request';
-
-function getClientIp(req: Request): string {
-  const fwd = req.headers.get('x-forwarded-for');
-  if (fwd) return fwd.split(',')[0].trim();
-  return req.headers.get('cf-connecting-ip') || req.headers.get('x-real-ip') || 'unknown';
-}
 
 function countUrls(text: string): number {
   const matches = text.match(/https?:\/\/|www\./gi);
@@ -66,8 +72,12 @@ function jsonResponse(body: unknown, status: number, cors: Record<string, string
 async function handleRequest(req: Request): Promise<Response> {
   const corsHeaders = buildCorsHeaders(req);
 
-  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
-  if (req.method !== 'POST') return jsonResponse({ error: 'Method not allowed' }, 405, corsHeaders);
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+  if (req.method !== 'POST') {
+    return jsonResponse({ error: 'Method not allowed' }, 405, corsHeaders);
+  }
 
   const ip = getClientIp(req);
   const ipHash = await hashIp(ip);
@@ -76,11 +86,12 @@ async function handleRequest(req: Request): Promise<Response> {
   const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  const rl = await checkRateLimit(supabase, {
+  const rl = await rateLimiterImpl(supabase, {
     endpoint: ENDPOINT_KEY,
     ipHash,
     windowSeconds: RATE_LIMIT_WINDOW_SECONDS,
     maxHits: RATE_LIMIT_MAX,
+    failClosedOnError: true,
   });
   if (rl.error) console.warn('[ContactRequest] rate-limit error:', rl.error);
   if (!rl.allowed) {

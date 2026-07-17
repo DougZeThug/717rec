@@ -72,6 +72,11 @@ BEGIN
   INSERT INTO public.matches (id, team1_id, team2_id, season_id, round_number, iscompleted)
     VALUES (v_match_id, v_team_id, v_team_id, v_season_id, 1, false);
 
+  -- The message identity triggers require auth.uid() to match inserted user_id.
+  -- Simulate the same JWT claim context that PostgREST supplies in production.
+  PERFORM set_config('request.jwt.claim.sub', v_user_id::text, true);
+  PERFORM set_config('request.jwt.claim.role', 'authenticated', true);
+
   -- Rows in every affected table for v_user_id.
   INSERT INTO public.messages (user_id, username, content, category)
     VALUES (v_user_id, 'fk_user', 'hello', 'general')
