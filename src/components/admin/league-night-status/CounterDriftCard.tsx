@@ -1,6 +1,5 @@
 import { AlertTriangle, CheckCircle2, Scale } from 'lucide-react';
 import React, { useState } from 'react';
-import { toast } from '@/hooks/useToast';
 
 import {
   AlertDialog,
@@ -15,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCounterDrift, useReconcileCounters } from '@/hooks/admin/useCounterDrift';
+import { toast } from '@/hooks/useToast';
 
 const CounterDriftCard: React.FC = () => {
   const driftQuery = useCounterDrift();
@@ -111,9 +111,9 @@ const CounterDriftCard: React.FC = () => {
             <AlertDialogHeader>
               <AlertDialogTitle>Repair standings counters?</AlertDialogTitle>
               <AlertDialogDescription>
-                This recomputes every team's wins, losses, and game counts from completed
-                matches, then refreshes the season-stats cache. Safe to run any time — it does
-                nothing if counters already match.
+                This recomputes every team's wins, losses, and game counts from completed matches,
+                then refreshes the season-stats cache. Safe to run any time — it does nothing if
+                counters already match.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
