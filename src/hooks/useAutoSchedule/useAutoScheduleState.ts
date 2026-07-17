@@ -63,11 +63,6 @@ export const useAutoScheduleState = () => {
   // Edit mode should persist (admin may be mid-edit when navigating away)
   const [isEditMode, setIsEditMode] = useState(() => persistedState.current?.isEditMode ?? false);
 
-  // Team block mapping for validation (supports double headers in multiple blocks)
-  const [teamBlockMap, setTeamBlockMap] = useState<Record<string, string[]>>(
-    () => persistedState.current?.teamBlockMap || {}
-  );
-
   // Persist state changes (debounced via effect)
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -96,7 +91,6 @@ export const useAutoScheduleState = () => {
         generatedMatches: generatedMatches ?? undefined,
         editableMatches,
         matchQualityMetrics,
-        teamBlockMap,
       });
     }, 300);
   }, [
@@ -109,7 +103,6 @@ export const useAutoScheduleState = () => {
     generatedMatches,
     editableMatches,
     matchQualityMetrics,
-    teamBlockMap,
   ]);
 
   // Trigger persist on state changes
@@ -145,7 +138,5 @@ export const useAutoScheduleState = () => {
     setEditableMatches,
     isEditMode,
     setIsEditMode,
-    teamBlockMap,
-    setTeamBlockMap,
   };
 };
