@@ -14,6 +14,7 @@ import { initAnalytics, trackPageView } from '@/utils/analytics';
 import { errorLog, routeLog } from '@/utils/logger';
 import { preloadCoreRoutes } from '@/utils/routePrefetch';
 import { metrics } from '@/utils/sentry';
+import { useFirstPartyPageview } from '@/hooks/useFirstPartyPageview';
 
 import { RouteAnnouncer } from './components/a11y/RouteAnnouncer';
 import { RouteFocusManager } from './components/a11y/RouteFocusManager';
@@ -77,6 +78,9 @@ const AppContent = () => {
   const location = useLocation();
   const navigationStartRef = useLazyRef(() => performance.now());
   const mainRef = useRef<HTMLElement>(null);
+
+  // First-party pageview beacon (fires per route change, PWA-safe)
+  useFirstPartyPageview();
 
   // Alias to a local to avoid the 'location.*' mutable-global heuristic.
   const pathname = location.pathname;
