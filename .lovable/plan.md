@@ -1,22 +1,17 @@
-## Goal
+## Fix
 
-Stop the "E2E (real Supabase)" GitHub check from going red on every push, while keeping all the code and docs in place so it can be re-enabled later.
+The `TrafficMiniChart` I added to `LeagueNightStatusTab` uses `useQuery`, but the tab's test doesn't wrap render in a `QueryClientProvider`. Mock the child component in the test file — matches the existing pattern (the test already mocks `useOpsHealth`) and keeps the test scoped to the tab's own logic.
 
-## Only change
+## Change
 
-**`.github/workflows/ci.yml`** — remove the `e2e-real-backend:` job (approx. lines 213–252, including its "Upload Playwright report" step). Nothing else in the file needs to change; other jobs don't reference it.
+**`src/components/admin/league-night-status/__tests__/LeagueNightStatusTab.test.tsx`** — add alongside the existing `vi.mock` block:
 
-## Deliberately keeping
+```ts
+vi.mock('../TrafficMiniChart', () => ({
+  default: () => <div data-testid="traffic-mini-chart" />,
+}));
+```
 
-- `e2e/real-backend.spec.ts` and `e2e/helpers/realBackend.ts` — untouched.
-- `playwright.config.ts` `real-backend` project + `hasRealBackend` gate — untouched, so `npx playwright test --project=real-backend` still works locally once you set the `E2E_*` env vars.
-- `docs/E2E_REAL_BACKEND.md` and `.env.example` entries — untouched as the future-implementation reference.
+## Verify
 
-## Re-enabling later
-
-When you're ready, restore the job block from git history (or I can re-add it) and add the five secrets in GitHub Settings. No other wiring needed.
-
-## Verification
-
-- `grep "e2e-real-backend" .github/workflows/ci.yml` returns nothing.
-- Next push: the "E2E (real Supabase)" check no longer appears in the checks list. Other jobs (Quality, Browser smoke, etc.) are unaffected.
+`npm run test:file -- src/components/admin/league-night-status/__tests__/LeagueNightStatusTab.test.tsx` — all 6 tests pass.
