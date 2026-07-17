@@ -6,33 +6,6 @@ import { teamLog } from '@/utils/logger';
 import { assertNonEmptyString, assertValidUuid } from '@/utils/validation';
 
 /**
- * Update a team's win/loss record (used by match completion flow).
- * @throws {Error} When no rows are updated or database operation fails
- */
-export const updateTeamWinLossRecord = async (
-  teamId: string,
-  updates: { wins: number; losses: number; game_wins: number; game_losses: number }
-) => {
-  const { error, data } = await supabase
-    .from('teams')
-    .update({
-      wins: updates.wins,
-      losses: updates.losses,
-      game_wins: updates.game_wins,
-      game_losses: updates.game_losses,
-    })
-    .eq('id', teamId)
-    .select();
-
-  if (error) handleDatabaseError(error, 'Failed to update team win/loss record');
-  if (!data?.length) {
-    throw new NotFoundError('Team', teamId);
-  }
-
-  return true;
-};
-
-/**
  * Update only a team's name and image_url (used by team members with edit access).
  * @throws {Error} When database operation fails
  */

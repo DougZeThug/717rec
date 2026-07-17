@@ -33,11 +33,6 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
         team2Id: matchData.team2Id,
         date: dateWithTime.toISOString(),
         location: matchData.location || '',
-        iscompleted: matchData.iscompleted,
-        team1Score: matchData.team1Score,
-        team2Score: matchData.team2Score,
-        winnerId: matchData.winnerId,
-        loserId: matchData.loserId,
         team1_game_wins: matchData.team1_game_wins || 0,
         team2_game_wins: matchData.team2_game_wins || 0,
       });

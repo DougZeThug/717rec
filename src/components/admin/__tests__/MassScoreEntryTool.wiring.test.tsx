@@ -18,10 +18,6 @@ vi.mock('@/hooks/matches/useMatchSubmission', () => ({
   useMatchSubmission: () => ({ handleSubmitScore: mockHandleSubmitScore }),
 }));
 
-vi.mock('@/hooks/matches/updates/utils/statReversalUtils', () => ({
-  reverseTeamStats: vi.fn(),
-}));
-
 vi.mock('@/hooks/matches/utils/queryCacheUtils', () => ({
   invalidateMatchRelatedQueries: vi.fn(),
 }));

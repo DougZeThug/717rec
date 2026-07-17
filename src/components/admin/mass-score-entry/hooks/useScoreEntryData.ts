@@ -50,6 +50,10 @@ export const useScoreEntryData = () => {
     setMatches
   );
 
+  const removeMatch = (matchId: string) => {
+    setMatches((prev) => prev.filter((m) => m.id !== matchId));
+  };
+
   // Track whether this is the initial mount (auto-set date only on first load)
   const isInitialLoad = useRef(true);
 
@@ -218,5 +222,6 @@ export const useScoreEntryData = () => {
     setBracketFilter,
     clearFilters,
     updateFiltersForMatchDate,
+    removeMatch,
   };
 };
