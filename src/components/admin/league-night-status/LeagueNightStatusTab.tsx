@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 
 import { OPS_LINKS } from './opsLinks';
 import TrafficMiniChart from './TrafficMiniChart';
+import CounterDriftCard from './CounterDriftCard';
 
 const STORAGE_KEY = 'adminActiveTab';
 
@@ -245,6 +246,9 @@ const LeagueNightStatusTab: React.FC = () => {
 
       {/* Real daily traffic (first-party beacon; independent of Lovable analytics) */}
       <TrafficMiniChart />
+
+      {/* Data integrity: standings counter drift detector + one-click repair */}
+      <CounterDriftCard />
 
       {/* Quick actions */}
       <Card>
