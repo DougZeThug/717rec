@@ -68,7 +68,7 @@ const Auth = () => {
     handleSignUp,
     handleGoogleSignIn,
     handleNativeGoogleSignIn,
-  } = useAuthForm({ returnTo });
+  } = useAuthForm();
 
   // If user is already logged in, redirect to return path
   useEffect(() => {

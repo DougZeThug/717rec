@@ -56,13 +56,13 @@ describe('useAuthForm', () => {
   });
 
   it('starts on login tab by default', () => {
-    const { result } = renderHook(() => useAuthForm({ returnTo: '/dashboard' }));
+    const { result } = renderHook(() => useAuthForm());
 
     expect(result.current.activeTab).toBe('login');
   });
 
   it('clears field errors and auth error when tab changes', async () => {
-    const { result } = renderHook(() => useAuthForm({ returnTo: '/dashboard' }));
+    const { result } = renderHook(() => useAuthForm());
 
     mockClearAuthError.mockClear();
 
@@ -83,7 +83,7 @@ describe('useAuthForm', () => {
   });
 
   it('short-circuits sign-in/sign-up when validation fails', async () => {
-    const { result } = renderHook(() => useAuthForm({ returnTo: '/dashboard' }));
+    const { result } = renderHook(() => useAuthForm());
 
     await act(async () => {
       await result.current.handleSignIn('bad-email', '123');
@@ -99,7 +99,7 @@ describe('useAuthForm', () => {
 
   it('shows account-created toast when sign-up returns session', async () => {
     mockSignUp.mockResolvedValueOnce({ session: { id: 'session-1' } });
-    const { result } = renderHook(() => useAuthForm({ returnTo: '/dashboard' }));
+    const { result } = renderHook(() => useAuthForm());
 
     await act(async () => {
       await result.current.handleSignUp('user@example.com', '123456');
@@ -122,7 +122,7 @@ describe('useAuthForm', () => {
         })
     );
 
-    const { result } = renderHook(() => useAuthForm({ returnTo: '/dashboard' }));
+    const { result } = renderHook(() => useAuthForm());
 
     let request: Promise<void> | undefined;
     await act(async () => {
@@ -147,7 +147,7 @@ describe('useAuthForm', () => {
       error: { message: 'Native login failed' },
     });
 
-    const { result } = renderHook(() => useAuthForm({ returnTo: '/dashboard' }));
+    const { result } = renderHook(() => useAuthForm());
 
     await act(async () => {
       await result.current.handleNativeGoogleSignIn();
@@ -166,7 +166,7 @@ describe('useAuthForm', () => {
   it('shows Login Error toast on thrown native Google sign-in exception', async () => {
     mockSignInWithGoogleNative.mockRejectedValueOnce(new Error('boom'));
 
-    const { result } = renderHook(() => useAuthForm({ returnTo: '/dashboard' }));
+    const { result } = renderHook(() => useAuthForm());
 
     await act(async () => {
       await result.current.handleNativeGoogleSignIn();
@@ -187,7 +187,7 @@ describe('useAuthForm', () => {
     mockSignUp.mockRejectedValueOnce(new Error('sign-up failed'));
     mockSignInWithGoogle.mockRejectedValueOnce(new Error('oauth failed'));
 
-    const { result } = renderHook(() => useAuthForm({ returnTo: '/dashboard' }));
+    const { result } = renderHook(() => useAuthForm());
 
     await act(async () => {
       await result.current.handleSignIn('user@example.com', '123456');
