@@ -26,7 +26,7 @@ export function useTeamPlayers(teamId: string | undefined) {
     },
     onSuccess: (player) => {
       toast({ title: 'Player added', description: `${player.display_name} joined the roster.` });
-      queryClient.invalidateQueries({ queryKey: liveScoringKeys.teamPlayers(teamId ?? '') });
+      queryClient.invalidateQueries({ queryKey: liveScoringKeys.teamPlayers(player.team_id) });
     },
     onError: (error) => {
       toast({
