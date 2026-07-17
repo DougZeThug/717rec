@@ -76,6 +76,10 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
           scoreLog('BYE match detected - treating as forfeit');
         }
 
+        // For brackets-manager, we use opponent IDs directly (not team UUIDs)
+        const _winnerOpponentId =
+          team1GameWins > team2GameWins ? bmMatchData.opponent1_id : bmMatchData.opponent2_id;
+
         scoreLog(`Calling bracketManagerService.updateMatch for Match ${matchId}`, {
           matchId: parseInt(matchId),
           scores: {

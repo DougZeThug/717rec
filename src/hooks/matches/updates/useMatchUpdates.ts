@@ -1,9 +1,11 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { Match } from '@/types';
 
 import { useMatchDelete } from './useMatchDelete';
 import { useMatchUpdate } from './useMatchUpdate';
+import { invalidateAllDataQueries } from './utils/queryInvalidation';
 
 /**
  * Manages match updates and deletions
@@ -16,9 +18,10 @@ import { useMatchUpdate } from './useMatchUpdate';
  * @returns Object containing state and handlers for match updates/deletions
  */
 export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[]) => void) => {
-  const [editingMatch, setEditingMatch] = useState<Match | undefined>(undefined);
+  const [editingMatch, setEditingMatch] = useState<Match | undefined>();
   const [deleteMatchId, setDeleteMatchId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const queryClient = useQueryClient();
 
   const { handleUpdateMatch, isUpdating } = useMatchUpdate({
     matches,
@@ -44,5 +47,6 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
     setDeleteMatchId,
     handleUpdateMatch,
     handleDeleteMatch,
+    invalidateAllDataQueries: () => invalidateAllDataQueries(queryClient),
   };
 };

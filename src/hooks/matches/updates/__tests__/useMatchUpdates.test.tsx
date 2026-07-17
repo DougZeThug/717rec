@@ -8,11 +8,13 @@ import type { Match } from '@/types';
 const {
   mockHandleUpdateMatch,
   mockHandleDeleteMatch,
+  mockInvalidateAllDataQueries,
   updateHookProps,
   deleteHookProps,
 } = vi.hoisted(() => ({
   mockHandleUpdateMatch: vi.fn(),
   mockHandleDeleteMatch: vi.fn(),
+  mockInvalidateAllDataQueries: vi.fn(),
   updateHookProps: { current: null as Record<string, unknown> | null },
   deleteHookProps: { current: null as Record<string, unknown> | null },
 }));
@@ -29,6 +31,10 @@ vi.mock('../useMatchDelete', () => ({
     deleteHookProps.current = props;
     return { handleDeleteMatch: mockHandleDeleteMatch };
   },
+}));
+
+vi.mock('../utils/queryInvalidation', () => ({
+  invalidateAllDataQueries: mockInvalidateAllDataQueries,
 }));
 
 import { useMatchUpdates } from '../useMatchUpdates';
@@ -95,5 +101,14 @@ describe('useMatchUpdates', () => {
       setIsDeleting(true);
     });
     expect(result.current.isDeleting).toBe(true);
+  });
+
+  it('invalidateAllDataQueries forwards the query client to the shared util', () => {
+    const { result } = renderHook(() => useMatchUpdates([match], vi.fn()), { wrapper });
+
+    result.current.invalidateAllDataQueries();
+
+    expect(mockInvalidateAllDataQueries).toHaveBeenCalledTimes(1);
+    expect(mockInvalidateAllDataQueries).toHaveBeenCalledWith(expect.any(QueryClient));
   });
 });

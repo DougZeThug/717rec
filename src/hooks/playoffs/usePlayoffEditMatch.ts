@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
 import {
@@ -30,6 +30,9 @@ export const usePlayoffEditMatch = () => {
   const [currentBracket, setCurrentBracket] = useState<PlayoffBracket | null>(null);
   const [isQuickEdit, setIsQuickEdit] = useState(false);
   const { toast } = useToast();
+
+  // Track last edited match for optimistic updates
+  const lastEditedMatchRef = useRef<PlayoffMatch | null>(null);
 
   // Use unified match update hook for routing
   const { updateMatch } = usePlayoffMatchUpdate(currentBracket);
@@ -227,6 +230,7 @@ export const usePlayoffEditMatch = () => {
 
       // Store match info for optimistic update
       const matchToSave = editingMatch;
+      lastEditedMatchRef.current = matchToSave;
 
       // 1. Close editor IMMEDIATELY for instant feedback
       setEditingMatch(null);
