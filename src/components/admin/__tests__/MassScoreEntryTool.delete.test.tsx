@@ -80,7 +80,11 @@ vi.mock('framer-motion', () => {
         },
     }
   );
-  return { m: passthrough, motion: passthrough, AnimatePresence: ({ children }: React.PropsWithChildren) => children };
+  return {
+    m: passthrough,
+    motion: passthrough,
+    AnimatePresence: ({ children }: React.PropsWithChildren) => children,
+  };
 });
 
 vi.mock('@/components/admin/AdminSectionWrapper', () => ({
@@ -101,7 +105,9 @@ import MassScoreEntryTool from '../MassScoreEntryTool';
 
 const renderTool = () =>
   render(
-    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+    <QueryClientProvider
+      client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+    >
       <MassScoreEntryTool />
     </QueryClientProvider>
   );
@@ -124,9 +130,7 @@ describe('MassScoreEntryTool delete flow', () => {
     );
     expect(mockRemoveMatch).toHaveBeenCalledExactlyOnceWith('m1');
     expect(mockInvalidateAllDataQueries).toHaveBeenCalledTimes(1);
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Match deleted' })
-    );
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Match deleted' }));
   });
 
   it('on RPC failure: shows destructive toast, does not remove row or invalidate caches', async () => {
