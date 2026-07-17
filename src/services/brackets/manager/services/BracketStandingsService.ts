@@ -5,7 +5,7 @@ import { DatabaseError } from '@/types/errors';
 import { bracketLog, errorLog, failureLog, successLog, warnLog } from '@/utils/logger';
 
 import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
-import type { StorageParticipant, StorageStage } from '../types/BracketServiceTypes';
+import type { StorageStage } from '../types/BracketServiceTypes';
 import type { BracketNormalizationService } from './BracketNormalizationService';
 
 /**
@@ -40,8 +40,21 @@ export class BracketStandingsService {
    * lookup errors) — those are logged and surfaced via the returned
    * 'reason'. Only re-throws on unexpected infrastructure failures.
    */
+  /**
+   * Calculate and store final standings for a completed bracket.
+   *
+   * PR-06: standings are computed and written server-side by the
+   * `finalize_bracket_standings` SQL function (fires automatically via
+   * trigger on bracket completion). This client method now:
+   *   1. Runs the best-effort self-heal pass (GF backfill / propagation)
+   *      so admin "Recalculate Standings" can repair a stuck bracket.
+   *   2. Pre-checks that all matches in the final stage are resolved.
+   *   3. Invokes the admin-only RPC to (re)write playoff_team_records.
+   *
+   * No browser-side write to playoff_team_records occurs anywhere.
+   */
   async calculateFinalStandings(bracketId: string): Promise<FinalStandingsResult> {
-    bracketLog('Calculating final standings from SQL tables:', { bracketId });
+    bracketLog('Requesting server-side final standings:', { bracketId });
 
     try {
       // Get all stages for this bracket from SQL tables
@@ -62,9 +75,6 @@ export class BracketStandingsService {
       // never received its winners due to a silent brackets-manager failure.
       if (this.normalizationService) {
         try {
-          // Run normalization first so GF slots are populated with the canonical
-          // mapping (WB winner → opponent1, LB winner → opponent2) before the
-          // propagation repair pass walks any remaining stuck winners.
           await this.normalizationService.normalizeGrandFinalPopulation(stage.id);
           await this.normalizationService.propagateCompletedMatches(stage.id);
         } catch (healError) {
@@ -72,10 +82,7 @@ export class BracketStandingsService {
         }
       }
 
-      // Pre-check: if any match in this stage is still unresolved (status < 4),
-      // the bracket isn't really done and brackets-manager will throw obscure
-      // "Participant not found" errors while walking the losers bracket. Bail
-      // cleanly so the caller can show a friendly message.
+      // Pre-check: if any match is still unresolved, the bracket isn't done.
       const { data: stageMatches, error: stageMatchesError } = await supabase
         .from('match')
         .select('id, number, group_id, round_id, status, opponent1_id, opponent2_id')
@@ -83,98 +90,37 @@ export class BracketStandingsService {
 
       if (stageMatchesError) {
         errorLog('Failed to load stage matches for completion check:', stageMatchesError);
-        // Fall through; brackets-manager may still succeed.
+        // Fall through; the RPC will re-check server-side.
       } else {
         const unresolved = (stageMatches ?? []).filter(
-          (m) => (m.status ?? 0) < MATCH_STATUS_COMPLETED
+          (m) =>
+            (m.status ?? 0) < MATCH_STATUS_COMPLETED &&
+            !(m.opponent1_id === null && m.opponent2_id === null)
         );
         if (unresolved.length > 0) {
           warnLog('Skipping final standings: bracket has unresolved matches', {
             bracketId,
             stageId: stage.id,
-            unresolvedMatches: unresolved.map((m) => ({
-              id: m.id,
-              number: m.number,
-              group_id: m.group_id,
-              round_id: m.round_id,
-              status: m.status,
-              opponent1_id: m.opponent1_id,
-              opponent2_id: m.opponent2_id,
-            })),
+            unresolvedMatches: unresolved.map((m) => ({ id: m.id, status: m.status })),
           });
           return { written: false, reason: 'incomplete-matches' };
         }
       }
 
-      // Get final standings from brackets-manager.
-      // This can throw "Participant not found" when the bracket has dangling
-      // opponent references (e.g. a BYE slot the library couldn't resolve).
-      // Swallow those — they aren't actionable for the user.
-      interface FinalStanding {
-        id: number;
-        name: string;
-        rank: number;
-      }
-      let finalStandings: FinalStanding[];
-      try {
-        finalStandings = (await this.manager.get.finalStandings(stage.id)) as FinalStanding[];
-      } catch (calcError) {
-        errorLog('brackets-manager.finalStandings threw — skipping standings write', {
-          bracketId,
-          stageId: stage.id,
-          error: calcError instanceof Error ? calcError.message : String(calcError),
-        });
+      // Server-side finalization: SECURITY DEFINER RPC computes placements
+      // from the SQL tables and upserts playoff_team_records. Admin-only.
+      const { data, error } = await supabase.rpc('finalize_bracket_standings', {
+        p_bracket_id: bracketId,
+      });
+
+      if (error) {
+        errorLog('finalize_bracket_standings RPC failed', { bracketId, error });
         return { written: false, reason: 'calculation-error' };
       }
 
-      bracketLog('Final standings calculated:', {
-        stageId: stage.id,
-        standings: finalStandings,
-      });
-
-      // Get participants to map back to team IDs
-      const participants = await this.storage.select('participant', {
-        tournament_id: bracketId,
-      });
-
-      if (!participants) {
-        errorLog('No participants found for bracket:', bracketId);
-        return { written: false, reason: 'no-records' };
-      }
-
-      const participantArray = (
-        Array.isArray(participants) ? participants : [participants]
-      ) as StorageParticipant[];
-
-      // Create a Map for O(1) lookups by participant ID
-      const participantMap = new Map<number, StorageParticipant>();
-      participantArray.forEach((p) => {
-        participantMap.set(p.id, p);
-      });
-
-      // Update playoff_team_records
-      const recordUpdates = finalStandings
-        .map((standing) => {
-          const participant = participantMap.get(standing.id);
-          return {
-            team_id: participant?.team_id,
-            bracket_id: bracketId,
-            placement: standing.rank,
-          };
-        })
-        .filter((r) => r.team_id);
-
-      if (recordUpdates.length > 0) {
-        const { error } = await supabase.from('playoff_team_records').upsert(recordUpdates, {
-          onConflict: 'team_id,bracket_id',
-        });
-
-        if (error) {
-          errorLog('Error updating playoff team records:', error);
-          throw error;
-        }
-
-        successLog('Final standings updated in playoff_team_records', bracketId);
+      const rowsWritten = typeof data === 'number' ? data : 0;
+      if (rowsWritten > 0) {
+        successLog('Final standings written server-side', `${bracketId} (${rowsWritten} rows)`);
         return { written: true };
       }
 

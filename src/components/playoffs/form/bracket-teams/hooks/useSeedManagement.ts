@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { ProcessedTeam, SeedValidationState } from '../types';
 
@@ -46,15 +46,25 @@ export const useSeedManagement = (
   const [pendingChanges, setPendingChanges] = useState<Map<string, number>>(new Map());
   const [draggedTeam, setDraggedTeam] = useState<ProcessedTeam | null>(null);
   const [processedTeams, setProcessedTeams] = useState<ProcessedTeam[]>(safeInitialTeams);
-  const isInitializedRef = useRef(false);
 
-  // Only sync with initialTeams on mount or when explicitly requested
-  useEffect(() => {
-    if (!isInitializedRef.current) {
-      setProcessedTeams(safeInitialTeams);
-      isInitializedRef.current = true;
-    }
-  }, [safeInitialTeams]);
+  // Fingerprint of the incoming teams (ids + seeds). When the server-side
+  // seed set changes (e.g. after "Reset to Auto" clears manual overrides,
+  // or another admin edits seeds), we must resync — the previous one-shot
+  // isInitializedRef latch left stale seeds visible after any reset.
+  const initialFingerprint = useMemo(
+    () => safeInitialTeams.map((t) => `${t.id}:${t.seed ?? ''}`).join('|'),
+    [safeInitialTeams]
+  );
+  const [lastFingerprint, setLastFingerprint] = useState<string>(initialFingerprint);
+
+  // Adjust state during render (React's recommended pattern for
+  // "reset when prop identity changes"): when the incoming seed set
+  // changes and the user has no uncommitted edits or in-flight drag,
+  // resync processedTeams to reflect the new server-side seeds.
+  if (lastFingerprint !== initialFingerprint && pendingChanges.size === 0 && !draggedTeam) {
+    setLastFingerprint(initialFingerprint);
+    setProcessedTeams(safeInitialTeams);
+  }
 
   const isDirty = pendingChanges.size > 0;
   const hasConflicts = safeValidation.hasConflicts;
@@ -105,7 +115,9 @@ export const useSeedManagement = (
     setMode('automatic');
     setPendingChanges(new Map());
     setProcessedTeams(safeInitialTeams);
-    isInitializedRef.current = false; // Allow resync with initialTeams
+    // Clear fingerprint so the render-time resync copies incoming teams
+    // on the next parent update (parent seed data may update async).
+    setLastFingerprint('');
 
     // Clear all manual seeds
     safeInitialTeams.forEach((team) => {
@@ -122,7 +134,7 @@ export const useSeedManagement = (
   const cancelChanges = useCallback(() => {
     setPendingChanges(new Map());
     setProcessedTeams(safeInitialTeams);
-    isInitializedRef.current = false; // Allow resync with initialTeams
+    setLastFingerprint('');
   }, [safeInitialTeams]);
 
   const switchMode = useCallback((newMode: 'automatic' | 'manual') => {

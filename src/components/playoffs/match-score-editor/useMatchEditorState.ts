@@ -105,6 +105,21 @@ export const useMatchEditorState = ({ matchId, onClose, onSaved }: UseMatchEdito
 
       const isBye = !matchData.opponent1 || !matchData.opponent2;
 
+      // Reject ties BEFORE any write (unlock/status mutation happens inside
+      // updateMatch). Playoff matches must have a decisive winner; a tie
+      // would otherwise flow through as a loss/loss update and be rejected
+      // by brackets-manager after the pre-update unlock already mutated
+      // match status. See PR-06.
+      if (!isBye && opponent1Score === opponent2Score) {
+        toast({
+          title: 'Invalid Score',
+          description: 'Playoff matches cannot end tied. Please enter a decisive score.',
+          variant: 'destructive',
+        });
+        setIsSaving(false);
+        return;
+      }
+
       log('Saving brackets-manager match', {
         matchId,
         opponent1Score,
