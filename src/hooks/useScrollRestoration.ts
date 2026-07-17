@@ -114,19 +114,6 @@ const useScrollRestoration = (routeKey?: string) => {
       isRestoring.current = false;
     };
   }, [key]);
-
-  // Clear this route's position when navigating away to a different parent route
-  const clearPosition = () => {
-    try {
-      const positions = JSON.parse(sessionStorage.getItem(SCROLL_POSITIONS_KEY) || '{}');
-      delete positions[key];
-      sessionStorage.setItem(SCROLL_POSITIONS_KEY, JSON.stringify(positions));
-    } catch (_e) {
-      // Ignore storage errors
-    }
-  };
-
-  return { clearPosition };
 };
 
 export default useScrollRestoration;
