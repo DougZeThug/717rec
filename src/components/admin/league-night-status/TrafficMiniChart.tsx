@@ -78,7 +78,10 @@ const TrafficMiniChart: React.FC = () => {
                   <YAxis tick={{ fontSize: 10 }} allowDecimals={false} width={30} />
                   <Tooltip
                     labelFormatter={(v) => fmtDay(String(v))}
-                    formatter={(value: number, name) => [value, name === 'visitors' ? 'Visitors' : name]}
+                    formatter={(value, name) => [
+                      value as number,
+                      name === 'visitors' ? 'Visitors' : String(name),
+                    ]}
                     contentStyle={{ fontSize: 12 }}
                   />
                   <Line
