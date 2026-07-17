@@ -64,8 +64,12 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete, onEdit }) 
   // Handle saving edited message
   const handleSaveEdit = async (content: string) => {
     if (onEdit) {
-      await onEdit(message.id, content);
-      setIsEditing(false);
+      try {
+        await onEdit(message.id, content);
+        setIsEditing(false);
+      } catch {
+        // Error toast shown by API layer; keep form open so edits are preserved for retry.
+      }
     }
   };
 
