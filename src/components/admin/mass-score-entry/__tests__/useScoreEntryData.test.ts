@@ -22,10 +22,6 @@ vi.mock('@/hooks/matches/useMatchSubmission', () => ({
   }),
 }));
 
-vi.mock('@/hooks/matches/updates/utils/statReversalUtils', () => ({
-  reverseTeamStats: vi.fn(),
-}));
-
 vi.mock('@/hooks/matches/utils/queryCacheUtils', () => ({
   invalidateMatchRelatedQueries: vi.fn(),
 }));
@@ -72,7 +68,6 @@ vi.mock('@/utils/logger', () => {
 });
 
 // Import after mocks so the mocked modules are wired in.
-import { reverseTeamStats } from '@/hooks/matches/updates/utils/statReversalUtils';
 import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
 import { fetchMatchesForAdmin } from '@/services/matches/MatchReadService';
 
