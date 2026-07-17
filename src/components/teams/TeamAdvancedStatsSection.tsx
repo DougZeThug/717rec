@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { TeamAdvancedStatsInsightsTab } from '@/components/teams/TeamAdvancedStatsInsightsTab';
 import { TeamAdvancedStatsSeasonsTab } from '@/components/teams/TeamAdvancedStatsSeasonsTab';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
+import { ErrorDisplay } from '@/components/ui/error-display';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTeamSeasonBreakdown } from '@/hooks/useTeamSeasonBreakdown';
@@ -13,7 +14,7 @@ interface TeamAdvancedStatsSectionProps {
 }
 
 const TeamAdvancedStatsSection: React.FC<TeamAdvancedStatsSectionProps> = ({ teamId }) => {
-  const { advancedStats, isLoading } = useTeamSeasonBreakdown(teamId);
+  const { advancedStats, isLoading, error, refetch } = useTeamSeasonBreakdown(teamId);
   const [expandedSeasons, setExpandedSeasons] = useState<Set<string>>(new Set());
 
   const toggleSeason = (seasonId: string) => {
@@ -42,6 +43,25 @@ const TeamAdvancedStatsSection: React.FC<TeamAdvancedStatsSectionProps> = ({ tea
             <Skeleton key={k} className="h-12 w-full" />
           ))}
         </div>
+      </CollapsibleSection>
+    );
+  }
+
+  if (error) {
+    return (
+      <CollapsibleSection
+        title="Advanced Stats"
+        icon={BarChart3}
+        iconColor="text-indigo-500"
+        defaultOpen={false}
+      >
+        <ErrorDisplay
+          variant="inline"
+          error="We couldn't load advanced stats. Please try again."
+          onRetry={() => {
+            void refetch();
+          }}
+        />
       </CollapsibleSection>
     );
   }
