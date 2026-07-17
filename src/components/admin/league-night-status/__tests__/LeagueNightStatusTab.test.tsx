@@ -14,6 +14,10 @@ vi.mock('@/hooks/useOpsHealth', () => ({
   useRealtimeHealth: () => mockUseRealtimeHealth(),
 }));
 
+vi.mock('../TrafficMiniChart', () => ({
+  default: () => <div data-testid="traffic-mini-chart" />,
+}));
+
 import LeagueNightStatusTab from '../LeagueNightStatusTab';
 import { OPS_LINKS } from '../opsLinks';
 
