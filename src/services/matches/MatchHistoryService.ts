@@ -151,11 +151,16 @@ export const fetchSeasonOpponentHistory = async (): Promise<SeasonOpponentData |
     .eq('is_active', true)
     .single();
 
-  // Returns null when no data exists yet (not an error) — caller renders an empty state.
-  if (seasonError || !activeSeason) {
-    warnLog('No active season found:', seasonError);
-    return null;
+  // Only treat "no rows" (PGRST116) as an empty state — caller renders empty UI.
+  // Real errors (network/permission/etc.) must surface so the UI can show them.
+  if (seasonError) {
+    if (seasonError.code === 'PGRST116') {
+      warnLog('No active season found');
+      return null;
+    }
+    handleDatabaseError(seasonError, 'Failed to fetch active season');
   }
+  if (!activeSeason) return null;
 
   // 2. Get all regular season matches for active season (exclude playoff matches)
   const { data: matches, error: matchesError } = await supabase
