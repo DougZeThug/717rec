@@ -80,8 +80,7 @@ export async function handleRequest(req: Request): Promise<Response> {
   const corsHeaders = buildCorsHeaders(req);
 
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
-  if (req.method !== 'POST')
-    return jsonResponse({ error: 'Method not allowed' }, 405, corsHeaders);
+  if (req.method !== 'POST') return jsonResponse({ error: 'Method not allowed' }, 405, corsHeaders);
 
   const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
   const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
