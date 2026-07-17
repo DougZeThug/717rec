@@ -24,7 +24,7 @@ vi.mock('@/services/brackets/manager', () => ({
     checkByeEligibility: vi
       .fn()
       .mockResolvedValue({ ok: false, meta: { status: 0, currentStatusName: 'Locked' } }),
-    updateMatch: vi.fn(),
+    updateMatch: vi.fn().mockResolvedValue(undefined),
     adminToggleByeReady: vi.fn(),
   },
 }));
@@ -77,5 +77,35 @@ describe('useMatchEditorState', () => {
     });
     expect(result.current.opponent1Score).toBe(1);
     expect(result.current.opponent2Score).toBe(7);
+  });
+
+  it('rejects tied scores before writing (PR-06)', async () => {
+    const { bracketManagerService } = await import('@/services/brackets/manager');
+    const { result } = renderHook(() => useMatchEditorState({ matchId: 1, onClose: vi.fn() }), {
+      wrapper,
+    });
+    act(() => {
+      result.current.setOpponent1Score(2);
+      result.current.setOpponent2Score(2);
+    });
+    await act(async () => {
+      await result.current.handleSave();
+    });
+    expect(bracketManagerService.updateMatch).not.toHaveBeenCalled();
+  });
+
+  it('allows decisive (non-tied) scores', async () => {
+    const { bracketManagerService } = await import('@/services/brackets/manager');
+    const { result } = renderHook(() => useMatchEditorState({ matchId: 1, onClose: vi.fn() }), {
+      wrapper,
+    });
+    act(() => {
+      result.current.setOpponent1Score(3);
+      result.current.setOpponent2Score(1);
+    });
+    await act(async () => {
+      await result.current.handleSave();
+    });
+    expect(bracketManagerService.updateMatch).toHaveBeenCalledTimes(1);
   });
 });

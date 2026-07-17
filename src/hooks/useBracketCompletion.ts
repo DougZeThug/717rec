@@ -1,10 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { subscribeWithRetry } from '@/hooks/realtime/subscribeWithRetry';
 import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
-import { bracketManagerService } from '@/services/brackets/manager';
-import { errorLog, log } from '@/utils/logger';
+import { log } from '@/utils/logger';
 
 /** Bracket record from realtime payload */
 interface BracketPayload {
@@ -12,15 +11,23 @@ interface BracketPayload {
   uses_brackets_manager: boolean;
 }
 
+/**
+ * Display-only bracket-completion listener (PR-06).
+ *
+ * Standings are now written server-side by the `finalize_bracket_standings`
+ * SQL trigger — no browser needs to be open. This hook exists solely to
+ * surface a friendly toast when a viewer sees the bracket transition to
+ * completed. It never writes to `playoff_team_records`.
+ */
 export function useBracketCompletion(bracketId: string | undefined) {
   const { toast } = useToast();
-
-  log('🔔 useBracketCompletion hook called', { bracketId });
+  const notifiedRef = useRef(false);
 
   useEffect(() => {
     if (!bracketId) return;
+    notifiedRef.current = false;
 
-    log('🔔 useBracketCompletion effect running', { bracketId });
+    log('useBracketCompletion listening', { bracketId });
 
     const { dispose } = subscribeWithRetry({
       label: `useBracketCompletion(${bracketId})`,
@@ -33,37 +40,18 @@ export function useBracketCompletion(bracketId: string | undefined) {
             table: 'brackets',
             filter: `id=eq.${bracketId}`,
           },
-          async (payload) => {
+          (payload) => {
             const bracket = payload.new as BracketPayload;
-
-            // If bracket just completed, calculate final standings
-            if (bracket.state === 'completed' && bracket.uses_brackets_manager) {
-              try {
-                const result = await bracketManagerService.calculateFinalStandings(bracketId);
-
-                if (result.written) {
-                  toast({
-                    title: 'Tournament Complete!',
-                    description: 'Final standings have been calculated.',
-                  });
-                } else if (result.reason === 'incomplete-matches') {
-                  toast({
-                    title: 'Standings Pending',
-                    description:
-                      'Final standings will be calculated once all matches are complete.',
-                  });
-                }
-                // 'calculation-error' / 'no-stages' / 'no-records' are logged
-                // server-side; no user-facing toast to avoid noise.
-              } catch (error) {
-                errorLog('Failed to calculate final standings:', error);
-                toast({
-                  title: 'Standings Calculation Failed',
-                  description:
-                    'Could not calculate final placements. Please contact an admin to recalculate.',
-                  variant: 'destructive',
-                });
-              }
+            if (
+              bracket.state === 'completed' &&
+              bracket.uses_brackets_manager &&
+              !notifiedRef.current
+            ) {
+              notifiedRef.current = true;
+              toast({
+                title: 'Tournament Complete!',
+                description: 'Final standings have been calculated.',
+              });
             }
           }
         ),
