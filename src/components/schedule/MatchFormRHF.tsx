@@ -223,23 +223,30 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
           )}
         />
 
-        {/* Match Status Toggle */}
-        <FormField
-          control={form.control}
-          name="isCompleted"
-          render={({ field }) => (
-            <FormItem className="flex items-center space-x-2 mb-4">
-              <FormControl>
-                <Switch checked={field.value} onCheckedChange={field.onChange} />
-              </FormControl>
-              <Label htmlFor="isCompleted">Match Completed</Label>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/*
+          Match result inputs (completed toggle + scores) are edit-mode only.
+          In create mode, results must be entered via the atomic score-entry
+          flows (Live Scoring, Mass Score Entry, Score Reports) so team
+          counters are always updated inside a single transaction.
+        */}
+        {match && (
+          <FormField
+            control={form.control}
+            name="isCompleted"
+            render={({ field }) => (
+              <FormItem className="flex items-center space-x-2 mb-4">
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <Label htmlFor="isCompleted">Match Completed</Label>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
-        {/* Score Section (conditionally rendered) */}
-        {isCompleted && (
+        {/* Score Section (edit mode + completed only) */}
+        {match && isCompleted && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded-md bg-muted">
             <FormField
               control={form.control}
