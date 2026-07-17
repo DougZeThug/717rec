@@ -6,9 +6,8 @@ import React, { useState } from 'react';
 import DeleteMatchDialog from '@/components/schedule/DeleteMatchDialog';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { invalidateAllDataQueries } from '@/hooks/matches/updates/utils/queryInvalidation';
-import { reverseTeamStats } from '@/hooks/matches/updates/utils/statReversalUtils';
 import { useToast } from '@/hooks/useToast';
-import { deleteMatch, upsertTeamSeasonStats } from '@/services/matches/MatchWriteService';
+import { deleteMatchWithStatsReversal } from '@/services/matches/MatchWriteService';
 import { errorLog } from '@/utils/logger';
 
 import AdminSectionWrapper from './AdminSectionWrapper';
@@ -40,41 +39,24 @@ const MassScoreEntryTool: React.FC = () => {
     setFilterDate,
     setBracketFilter,
     clearFilters,
+    removeMatch,
   } = useScoreEntryData();
 
   const handleDeleteConfirm = async () => {
     if (!deleteMatchId) return;
     setIsDeleting(true);
     try {
-      const matchToDelete = matches.find((m) => m.id === deleteMatchId);
+      // Atomic delete + stats reversal + season-stats refresh happens
+      // inside a single Postgres transaction, so a stats failure rolls
+      // back the delete and prevents standings drift.
+      await deleteMatchWithStatsReversal(deleteMatchId);
 
-      // Delete the match FIRST to ensure stats are only modified after successful deletion
-      await deleteMatch(deleteMatchId);
-
-      // If match was completed, reverse the team stats AFTER successful deletion
-      if (matchToDelete?.iscompleted && matchToDelete.winnerId && matchToDelete.loserId) {
-        const winnerGameWins =
-          matchToDelete.winnerId === matchToDelete.team1Id
-            ? matchToDelete.team1_game_wins || 0
-            : matchToDelete.team2_game_wins || 0;
-        const loserGameWins =
-          matchToDelete.winnerId === matchToDelete.team1Id
-            ? matchToDelete.team2_game_wins || 0
-            : matchToDelete.team1_game_wins || 0;
-
-        await reverseTeamStats(
-          matchToDelete.winnerId,
-          matchToDelete.loserId,
-          winnerGameWins,
-          loserGameWins
-        );
-      }
-
-      await upsertTeamSeasonStats();
-
+      // The tool's match list comes from a hand-rolled useEffect fetch
+      // (useScoreEntryData), so invalidateAllDataQueries alone will NOT
+      // refresh it — drop the deleted row from local state explicitly.
+      removeMatch(deleteMatchId);
       toast({ title: 'Match deleted', description: 'The match has been removed successfully.' });
       invalidateAllDataQueries(queryClient);
-      queryClient.invalidateQueries({ queryKey: ['mass-score-entry'] });
     } catch (error) {
       errorLog('Failed to delete match:', error);
       toast({
