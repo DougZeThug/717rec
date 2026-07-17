@@ -18,8 +18,7 @@ import { invalidateAllDataQueries } from './utils/queryInvalidation';
  * @returns Object containing state and handlers for match updates/deletions
  */
 export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[]) => void) => {
-  const noEditingMatch: Match | undefined = undefined;
-  const [editingMatch, setEditingMatch] = useState<Match | undefined>(noEditingMatch);
+  const [editingMatch, setEditingMatch] = useState<Match | undefined>();
   const [deleteMatchId, setDeleteMatchId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const queryClient = useQueryClient();

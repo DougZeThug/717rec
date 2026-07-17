@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useAdminAccess } from '../useAdminAccess';
@@ -75,22 +75,5 @@ describe('useAdminAccess', () => {
     (useAuth as ReturnType<typeof vi.fn>).mockReturnValue(makeAuth({ isProfileLoading: true }));
     const { result } = renderHook(() => useAdminAccess());
     expect(result.current.isLoading).toBe(true);
-  });
-
-  it('checkAdminAccess always returns false regardless of input', () => {
-    (useAuth as ReturnType<typeof vi.fn>).mockReturnValue(makeAuth());
-    const { result } = renderHook(() => useAdminAccess());
-    expect(result.current.checkAdminAccess('secret-code')).toBe(false);
-    expect(result.current.checkAdminAccess('')).toBe(false);
-    expect(result.current.checkAdminAccess('admin')).toBe(false);
-  });
-
-  it('revokeAdminAccess fires a destructive toast (client-side revoke is blocked)', () => {
-    (useAuth as ReturnType<typeof vi.fn>).mockReturnValue(makeAuth());
-    const { result } = renderHook(() => useAdminAccess());
-    act(() => {
-      result.current.revokeAdminAccess();
-    });
-    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
   });
 });

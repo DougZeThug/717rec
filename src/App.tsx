@@ -9,6 +9,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { NavigationProvider } from '@/contexts/NavigationContext';
+import { useFirstPartyPageview } from '@/hooks/useFirstPartyPageview';
 import { useLazyRef } from '@/hooks/useLazyRef';
 import { initAnalytics, trackPageView } from '@/utils/analytics';
 import { errorLog, routeLog } from '@/utils/logger';
@@ -77,6 +78,9 @@ const AppContent = () => {
   const location = useLocation();
   const navigationStartRef = useLazyRef(() => performance.now());
   const mainRef = useRef<HTMLElement>(null);
+
+  // First-party pageview beacon (fires per route change, PWA-safe)
+  useFirstPartyPageview();
 
   // Alias to a local to avoid the 'location.*' mutable-global heuristic.
   const pathname = location.pathname;

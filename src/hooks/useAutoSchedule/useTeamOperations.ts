@@ -2,14 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useLazyRef } from '@/hooks/useLazyRef';
 import { useToast } from '@/hooks/useToast';
-import { Team } from '@/types';
 import { DualBlockConfig, PairedTimeBlockTeamsMap, TimeBlockTeamsMap } from '@/types/autoSchedule';
 import { normalizeScheduleDate, validateScheduleDate } from '@/utils/autoSchedule/dateUtils';
 import { validateBackToBackPairAssignments } from '@/utils/autoSchedule/edgeCaseUtils';
-import {
-  getAllBackToBackTeams,
-  getTeamsByBackToBackPair,
-} from '@/utils/autoSchedule/teamLoaderUtils';
+import { getAllBackToBackTeams } from '@/utils/autoSchedule/teamLoaderUtils';
 import { errorLog, scheduleLog, warnLog } from '@/utils/logger';
 
 import { loadAutoScheduleState, saveAutoScheduleState } from './storage';
@@ -179,84 +175,6 @@ export const useTeamOperations = () => {
   );
 
   /**
-   * Load teams for a specific back-to-back pair
-   */
-  const loadTeamsForPair = useCallback(async (date: Date, pairName: string): Promise<Team[]> => {
-    if (!validateScheduleDate(date, `loadTeamsForPair-${pairName}`)) {
-      return [];
-    }
-
-    try {
-      const teams = await getTeamsByBackToBackPair(date, pairName);
-      scheduleLog(`Loaded ${teams.length} teams for ${pairName} pair`);
-      return teams;
-    } catch (error) {
-      errorLog(`Error loading teams for ${pairName} pair:`, error);
-      return [];
-    }
-  }, []);
-
-  /**
-   * Balance team counts for back-to-back pairs
-   * Ensures even numbers of teams in each pair
-   */
-  const balanceBackToBackTeams = useCallback(
-    (
-      dualBlockConfig: DualBlockConfig = {}
-    ): {
-      balancedTeams: TimeBlockTeamsMap;
-      unmatchedTeamIds: string[];
-    } => {
-      const balancedTeams: TimeBlockTeamsMap = {};
-      const unmatchedTeamIds: string[] = [];
-
-      Object.entries(timeBlockTeams).forEach(([pairName, teams]) => {
-        if (!teams || teams.length === 0) {
-          balancedTeams[pairName] = [];
-          return;
-        }
-
-        if (teams.length % 2 === 0) {
-          // Even number - no balancing needed
-          balancedTeams[pairName] = [...teams];
-        } else {
-          // Odd number - remove one team based on strategy
-          const teamsCopy = [...teams];
-          let removedTeam: Team | undefined;
-
-          switch (dualBlockConfig.unmatchedTeamStrategy) {
-            case 'lowest-rank':
-              teamsCopy.sort((a, b) => (a.power_score || 0) - (b.power_score || 0));
-              removedTeam = teamsCopy.shift();
-              break;
-            case 'highest-rank':
-              teamsCopy.sort((a, b) => (b.power_score || 0) - (a.power_score || 0));
-              removedTeam = teamsCopy.shift();
-              break;
-            case 'random':
-            default: {
-              const randomIndex = Math.floor(Math.random() * teamsCopy.length);
-              removedTeam = teamsCopy.splice(randomIndex, 1)[0];
-            }
-          }
-
-          if (removedTeam) {
-            unmatchedTeamIds.push(removedTeam.id);
-            scheduleLog(
-              `Removed team ${removedTeam.name} from ${pairName} pair to balance team count`
-            );
-          }
-
-          balancedTeams[pairName] = teamsCopy;
-        }
-      });
-
-      return { balancedTeams, unmatchedTeamIds };
-    },
-    [timeBlockTeams]
-  );
-
-  /**
    * Get counts for all teams and pairs with odd number of teams
    */
   const getTeamCountStatus = useCallback(() => {
@@ -281,8 +199,6 @@ export const useTeamOperations = () => {
     setTimeBlockTeams,
     setPairedTimeBlockTeams,
     handleLoadTeams,
-    loadTeamsForPair,
-    balanceBackToBackTeams,
     getTeamCountStatus,
   };
 };

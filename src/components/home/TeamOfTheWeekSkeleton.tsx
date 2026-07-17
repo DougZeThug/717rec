@@ -26,7 +26,7 @@ const TeamOfTheWeekSkeleton: React.FC = () => {
 
         <div className="flex items-center gap-4 md:gap-6">
           {/* Logo skeleton */}
-          <Skeleton className="size-16 rounded-full flex-shrink-0" />
+          <Skeleton className="size-16 rounded-xl flex-shrink-0" />
 
           {/* Team info skeleton */}
           <div className="flex-1 min-w-0 space-y-2">

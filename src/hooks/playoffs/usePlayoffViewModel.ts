@@ -118,6 +118,3 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
     updateMatchResult: actions.updateMatchResult,
   };
 }
-
-// Re-export the component hooks for direct use
-export * as playoffActions from './usePlayoffActions';

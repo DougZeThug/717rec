@@ -69,7 +69,6 @@ const Schedule = () => {
     matchesLoading,
     timeslotsLoading,
     upcomingMatches,
-    groupedTimeslots,
   });
 
   // Lazy load teams only when form dialog is open (for team selection dropdown)

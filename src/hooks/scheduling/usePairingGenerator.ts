@@ -12,7 +12,6 @@ import { fetchSeasonHistoryForTeams } from '@/utils/autoSchedule/matchHistorySer
 import { normalizeDate } from '@/utils/dateNormalization';
 import { errorLog, scheduleLog } from '@/utils/logger';
 
-import { useTeamsMap } from '../teams';
 import { scheduleDualBlockPairings } from './utils/dualBlockScheduler';
 import { scheduleStandardPairings } from './utils/standardPairing';
 
@@ -25,7 +24,6 @@ export const usePairingGenerator = () => {
   const [unmatchedTeamIds, setUnmatchedTeamIds] = useState<string[]>([]);
   // Maps team ID to array of block names (supports double headers in multiple blocks)
   const [teamBlockMap, setTeamBlockMap] = useState<Record<string, string[]>>({});
-  const { teams: _teams } = useTeamsMap();
   const { toast } = useToast();
 
   /**

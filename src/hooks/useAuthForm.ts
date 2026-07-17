@@ -8,11 +8,7 @@ import { authLog, errorLog } from '@/utils/logger';
 export const emailSchema = z.string().email('Please enter a valid email address');
 export const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
 
-interface UseAuthFormProps {
-  returnTo: string;
-}
-
-export const useAuthForm = ({ returnTo: _returnTo }: UseAuthFormProps) => {
+export const useAuthForm = () => {
   const {
     signIn,
     signUp,

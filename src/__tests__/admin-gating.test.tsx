@@ -94,8 +94,6 @@ describe('admin route gating', () => {
       isAdminAccessGranted: false,
       isLoading: false,
       requestAdminAccess: vi.fn(),
-      checkAdminAccess: vi.fn(),
-      revokeAdminAccess: vi.fn(),
     });
 
     render(<App />);
@@ -116,8 +114,6 @@ describe('admin route gating', () => {
       isAdminAccessGranted: true,
       isLoading: false,
       requestAdminAccess: vi.fn(),
-      checkAdminAccess: vi.fn(),
-      revokeAdminAccess: vi.fn(),
     });
 
     render(<App />);

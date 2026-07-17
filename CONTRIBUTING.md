@@ -32,8 +32,7 @@ This guarantees PRs cannot merge if `npm ci` fails.
 
 ## Coverage workflow expectations
 
-- **PR gates** should run the lightweight coverage command: `npm run test:coverage:ci`.
-- **DeepSource uploads** should run: `npm run test:coverage:deepsource` (15-minute hard timeout, LCOV output at `coverage/deepsource/lcov.info`).
+- **PR gates** run `npm run test:coverage:deepsource` in the `deepsource-coverage` CI job: it enforces the Vitest thresholds in `vitest.config.ts` and uploads the LCOV artifact to DeepSource (15-minute hard timeout, output at `coverage/deepsource/lcov.info`).
 - **Full-scope coverage** (`npm run test:coverage`) measures all of `src/` and is meant for local analysis and doc-baseline refreshes, not every PR gate. It emits text + JSON summary only; for the HTML report use `npm run test:coverage:full`.
 - The PR checklist and honest coverage baseline live in [TESTING.md](./TESTING.md).
 
