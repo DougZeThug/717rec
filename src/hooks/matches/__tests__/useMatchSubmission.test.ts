@@ -29,7 +29,6 @@ vi.mock('../utils/queryCacheUtils', () => ({
 vi.mock('../validation/useScoreValidation', () => ({
   useScoreValidation: () => ({
     validateScore: vi.fn().mockReturnValue({ isValid: true }),
-    validateMatch: vi.fn().mockReturnValue(true),
   }),
 }));
 
