@@ -1,12 +1,14 @@
 /**
- * Google Analytics integration for 717REC
- * Provides wrapper functions for tracking page views and events
+ * Google Analytics integration for 717REC.
+ *
+ * Loads gtag.js with a short (1s) idle window and uses beacon transport so
+ * pageviews still land when a mobile PWA user closes the tab mid-load. The
+ * previous 8s idle deferral meant most short mobile sessions never fired a
+ * pageview at all — see docs/OPERATIONS.md.
  */
 
-// GA Measurement ID - set via environment or directly here
 const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-C2L4XZJ00B';
 
-// Declare gtag on window
 declare global {
   interface Window {
     gtag: (...args: unknown[]) => void;
@@ -14,72 +16,76 @@ declare global {
   }
 }
 
-/**
- * Initialize Google Analytics
- * Called once on app startup
- */
+const analyticsDisabled = (): boolean => !GA_MEASUREMENT_ID || !import.meta.env.PROD;
+
+let gtagReady = false;
+
+const loadGtag = () => {
+  if (gtagReady) return;
+  gtagReady = true;
+
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+  document.head.appendChild(script);
+
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function gtag(...args: unknown[]) {
+    window.dataLayer.push(args);
+  };
+
+  window.gtag('js', new Date());
+  window.gtag('config', GA_MEASUREMENT_ID, {
+    send_page_view: false,
+    transport_type: 'beacon',
+  });
+};
+
 export const initAnalytics = () => {
-  if (!GA_MEASUREMENT_ID || !import.meta.env.PROD) {
+  if (analyticsDisabled()) {
     console.log('[Analytics] Disabled - no measurement ID or dev mode'); // skipcq: JS-0002
     return;
   }
 
-  // Defer analytics loading significantly to improve TTI
-  // Analytics is non-critical and should load only after page is fully interactive
-  const loadAnalytics = () => {
-    // Load gtag script dynamically
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
-    document.head.appendChild(script);
-
-    // Initialize dataLayer and gtag
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = function gtag(...args: unknown[]) {
-      window.dataLayer.push(args);
-    };
-
-    window.gtag('js', new Date());
-    window.gtag('config', GA_MEASUREMENT_ID, {
-      send_page_view: false, // We'll track manually for SPA
-    });
+  // Load ASAP once the document is interactive, but never later than 1s.
+  const schedule = () => {
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(loadGtag, { timeout: 1000 });
+    } else {
+      setTimeout(loadGtag, 500);
+    }
   };
 
-  // Use requestIdleCallback with a longer timeout to minimize TTI impact
-  // GTM adds ~75KB of unused JS on initial load - defer until truly idle
-  if ('requestIdleCallback' in window) {
-    requestIdleCallback(loadAnalytics, { timeout: 8000 });
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    schedule();
   } else {
-    // Fallback: defer by 5 seconds to allow page to become interactive first
-    setTimeout(loadAnalytics, 5000);
+    document.addEventListener('DOMContentLoaded', schedule, { once: true });
   }
 };
 
-/**
- * Track a page view
- */
 export const trackPageView = (path: string, title?: string) => {
-  if (!GA_MEASUREMENT_ID || !import.meta.env.PROD) {
+  if (analyticsDisabled()) {
     console.log('[Analytics] Page view:', path, title); // skipcq: JS-0002
     return;
   }
 
+  // If the tag hasn't loaded yet, load it now so this first pageview isn't lost.
+  if (!gtagReady) loadGtag();
+
   window.gtag?.('event', 'page_view', {
     page_path: path,
     page_title: title || document.title,
+    transport_type: 'beacon',
   });
 };
 
-/**
- * Track a custom event
- */
 const trackEvent = (eventName: string, params?: Record<string, string | number | boolean>) => {
-  if (!GA_MEASUREMENT_ID || !import.meta.env.PROD) {
+  if (analyticsDisabled()) {
     console.log('[Analytics] Event:', eventName, params); // skipcq: JS-0002
     return;
   }
 
-  window.gtag?.('event', eventName, params);
+  window.gtag?.('event', eventName, { ...(params ?? {}), transport_type: 'beacon' });
 };
 
 // ============================================
