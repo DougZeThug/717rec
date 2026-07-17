@@ -43,6 +43,7 @@ describe('ContactRequestService.submit', () => {
     await ContactRequestService.submit({
       request_type: 'general',
       submitter_name: 'Jane',
+      submitter_contact: 'jane@example.com',
       message: 'hi',
     });
 
@@ -50,6 +51,7 @@ describe('ContactRequestService.submit', () => {
       body: {
         request_type: 'general',
         submitter_name: 'Jane',
+        submitter_contact: 'jane@example.com',
         message: 'hi',
       },
     });
@@ -62,6 +64,7 @@ describe('ContactRequestService.submit', () => {
       ContactRequestService.submit({
         request_type: 'general',
         submitter_name: 'Jane',
+        submitter_contact: 'jane@example.com',
         message: 'hi',
       })
     ).rejects.toThrow('rate limited');
