@@ -11,7 +11,11 @@ import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 import { groupTeamsByDivision } from '@/utils/teamGrouping';
 
 /** Temporary shim exposing the legacy shape for Playoffs.tsx */
-export const usePlayoffData = (isAdmin = false, seasonId?: string | null) => {
+export const usePlayoffData = (
+  isAdmin = false,
+  seasonId?: string | null,
+  activeSeasonId?: string | null
+) => {
   // Call the view model without a bracketId to get overview data
   const vm = usePlayoffViewModel(null);
 
@@ -21,8 +25,8 @@ export const usePlayoffData = (isAdmin = false, seasonId?: string | null) => {
   // Fetch teams data to populate teamsByDivision
   const { teams, isLoading: teamsLoading } = useTeamsArray();
 
-  // Determine if we're viewing a past season
-  const isViewingPastSeason = !!seasonId && seasonId !== undefined;
+  // Determine if we're viewing a past season (any selected season that isn't the active one)
+  const isViewingPastSeason = !!seasonId && !!activeSeasonId && seasonId !== activeSeasonId;
 
   // Fetch brackets data from Supabase with matches included
   const {
