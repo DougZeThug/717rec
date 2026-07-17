@@ -61,15 +61,19 @@ export const useMessageReactions = (messageId: string) => {
   const reactionsQuery = useQuery({
     queryKey,
     queryFn: async () => {
-      // Clear the reconciliation buffers before fetching so a fresh server
-      // snapshot is authoritative. Any INSERT/DELETE events that arrive DURING
-      // the in-flight fetch will re-populate these refs and still be merged in
-      // below. Without this, a reaction deleted while the socket was down
-      // would resurrect on reconnect from stale entries in realtimeInsertsRef.
+      // Snapshot pending deletions BEFORE clearing so async removals in flight
+      // (e.g. fire-and-forget removeReaction from the INSERT handler when the
+      // user toggled off an optimistic reaction) cannot be resurrected by this
+      // refetch. Any INSERT/DELETE events that arrive DURING the in-flight
+      // fetch will re-populate the refs and still be merged in below.
+      const pendingDeleteIds = new Set(realtimeDeletesRef.current);
       realtimeInsertsRef.current.clear();
       realtimeDeletesRef.current.clear();
       const fetched = await MessageReactionsService.fetchReactions(messageId);
       const byId = new Map(fetched.map((reaction) => [reaction.id, reaction]));
+      pendingDeleteIds.forEach((id) => {
+        byId.delete(id);
+      });
       realtimeInsertsRef.current.forEach((reaction, id) => {
         byId.set(id, reaction);
       });
