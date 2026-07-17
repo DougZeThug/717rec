@@ -9,12 +9,12 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { NavigationProvider } from '@/contexts/NavigationContext';
+import { useFirstPartyPageview } from '@/hooks/useFirstPartyPageview';
 import { useLazyRef } from '@/hooks/useLazyRef';
 import { initAnalytics, trackPageView } from '@/utils/analytics';
 import { errorLog, routeLog } from '@/utils/logger';
 import { preloadCoreRoutes } from '@/utils/routePrefetch';
 import { metrics } from '@/utils/sentry';
-import { useFirstPartyPageview } from '@/hooks/useFirstPartyPageview';
 
 import { RouteAnnouncer } from './components/a11y/RouteAnnouncer';
 import { RouteFocusManager } from './components/a11y/RouteFocusManager';

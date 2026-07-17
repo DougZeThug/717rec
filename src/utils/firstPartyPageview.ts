@@ -5,12 +5,7 @@
  * users who close the tab before gtag loads).
  */
 
-export type UaClass =
-  | 'mobile-ios'
-  | 'mobile-android'
-  | 'mobile-other'
-  | 'desktop'
-  | 'unknown';
+export type UaClass = 'mobile-ios' | 'mobile-android' | 'mobile-other' | 'desktop' | 'unknown';
 
 export const classifyUserAgent = (ua: string): UaClass => {
   if (!ua) return 'unknown';

@@ -23,9 +23,7 @@ export const useFirstPartyPageview = (): void => {
 
     sendFirstPartyPageview({
       path: pathname,
-      ua_class: classifyUserAgent(
-        typeof navigator === 'undefined' ? '' : navigator.userAgent
-      ),
+      ua_class: classifyUserAgent(typeof navigator === 'undefined' ? '' : navigator.userAgent),
     });
   }, [pathname]);
 };

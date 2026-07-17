@@ -7,8 +7,9 @@ import { useFirstPartyPageview } from '../useFirstPartyPageview';
 
 const sendMock = vi.fn();
 vi.mock('@/utils/firstPartyPageview', async () => {
-  const actual =
-    await vi.importActual<typeof import('@/utils/firstPartyPageview')>('@/utils/firstPartyPageview');
+  const actual = await vi.importActual<typeof import('@/utils/firstPartyPageview')>(
+    '@/utils/firstPartyPageview'
+  );
   return {
     ...actual,
     sendFirstPartyPageview: (...args: unknown[]) => sendMock(...args),
