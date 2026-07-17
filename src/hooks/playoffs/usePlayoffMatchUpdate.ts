@@ -149,8 +149,12 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
         }
 
         await updatePlayoffMatchScores(matchId, {
-          team1_score: team1Score,
-          team2_score: team2Score,
+          // playoff_matches.team1_score / team2_score store GAME WINS
+          // (v_team_season_agg reads them as game_wins/game_losses).
+          // Never write the binary match outcome here — that would
+          // undercount wins in season aggregates and clutch/sweep math.
+          team1_score: team1GameWins,
+          team2_score: team2GameWins,
           winner_id: winnerId,
           loser_id: loserId,
           status: 'completed',
