@@ -113,6 +113,12 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
     warnLog('Error fetching playoff matches:', playoffMatchesResult.error);
   }
 
+  // Active season lookup: PGRST116 (no rows) is a valid empty state; any other
+  // error must surface so callers don't silently render stale/empty data.
+  if (activeSeasonResult.error && activeSeasonResult.error.code !== 'PGRST116') {
+    handleDatabaseError(activeSeasonResult.error, 'Failed to fetch active season');
+  }
+
   const teamData = teamDataResult.data as TeamData | null;
   const seasonStats = seasonStatsResult.data as SeasonStats[] | null;
   const currentMatches = currentMatchesResult.data as unknown as MatchData[] | null;
