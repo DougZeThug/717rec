@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { ProcessedTeam, SeedValidationState } from '../types';
 
@@ -57,14 +57,18 @@ export const useSeedManagement = (
   );
   const lastFingerprintRef = useRef<string>(initialFingerprint);
 
-  useEffect(() => {
-    if (lastFingerprintRef.current === initialFingerprint) return;
+  // Adjust state during render (React's recommended pattern for
+  // "reset when prop identity changes"): when the incoming seed set
+  // changes and the user has no uncommitted edits or in-flight drag,
+  // resync processedTeams to reflect the new server-side seeds.
+  if (
+    lastFingerprintRef.current !== initialFingerprint &&
+    pendingChanges.size === 0 &&
+    !draggedTeam
+  ) {
     lastFingerprintRef.current = initialFingerprint;
-    // Skip resync while the user has uncommitted local edits or is
-    // mid-drag; otherwise their in-flight changes would be clobbered.
-    if (pendingChanges.size > 0 || draggedTeam) return;
     setProcessedTeams(safeInitialTeams);
-  }, [initialFingerprint, safeInitialTeams, pendingChanges, draggedTeam]);
+  }
 
   const isDirty = pendingChanges.size > 0;
   const hasConflicts = safeValidation.hasConflicts;
