@@ -65,6 +65,10 @@ export const getRivalryType = (record: HeadToHeadRecord): RivalryType | null => 
 /**
  * Gets a narrative label for a rivalry matchup on the schedule.
  */
+const assertNever = (value: never): never => {
+  throw new Error(`Unhandled rivalry type: ${String(value)}`);
+};
+
 export const getRivalryLabel = (
   type: RivalryType,
   teamName: string,
@@ -81,5 +85,7 @@ export const getRivalryLabel = (
       return `Favorite: ${record.wins}-${record.losses} all-time`;
     case 'dominated':
       return `${teamName} is ${record.wins}-${record.losses} all-time`;
+    default:
+      return assertNever(type);
   }
 };
