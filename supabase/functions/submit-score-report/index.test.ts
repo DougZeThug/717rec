@@ -7,6 +7,7 @@ Deno.env.set(
   'SUPABASE_SERVICE_ROLE_KEY',
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? 'test-service-key'
 );
+Deno.env.set('IP_HASH_SALT', Deno.env.get('IP_HASH_SALT') ?? 'test-ip-hash-salt');
 
 import { assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts';
 

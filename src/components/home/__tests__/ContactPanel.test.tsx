@@ -66,6 +66,15 @@ describe('ContactPanel', () => {
     );
   });
 
+  it('requires contact info before submitting anonymous messages', async () => {
+    render(<ContactPanel />);
+    await userEvent.type(screen.getByLabelText(/your name/i), 'Anonymous Captain');
+    await userEvent.type(screen.getByLabelText(/message/i), 'Please help with our schedule.');
+    await userEvent.click(screen.getByRole('button', { name: /send message/i }));
+
+    expect(mockMutateAsync).not.toHaveBeenCalled();
+  });
+
   it('preserves user-typed name when auth resolves and does not show Verified badge when value differs', async () => {
     const { rerender } = render(<ContactPanel />);
 
