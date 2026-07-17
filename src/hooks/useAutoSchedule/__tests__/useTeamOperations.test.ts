@@ -23,7 +23,7 @@ vi.mock('@/utils/autoSchedule/dateUtils', () => ({
 }));
 
 vi.mock('@/utils/autoSchedule/teamLoaderUtils', () => ({
-  getAllBackToBackTeams: (...args: unknown[]) => mockGetAllBackToBackTeams(),
+  getAllBackToBackTeams: () => mockGetAllBackToBackTeams(),
 }));
 
 vi.mock('@/utils/autoSchedule/edgeCaseUtils', () => ({
