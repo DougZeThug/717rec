@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { ProcessedTeam, SeedValidationState } from '../types';
 
@@ -55,18 +55,14 @@ export const useSeedManagement = (
     () => safeInitialTeams.map((t) => `${t.id}:${t.seed ?? ''}`).join('|'),
     [safeInitialTeams]
   );
-  const lastFingerprintRef = useRef<string>(initialFingerprint);
+  const [lastFingerprint, setLastFingerprint] = useState<string>(initialFingerprint);
 
   // Adjust state during render (React's recommended pattern for
   // "reset when prop identity changes"): when the incoming seed set
   // changes and the user has no uncommitted edits or in-flight drag,
   // resync processedTeams to reflect the new server-side seeds.
-  if (
-    lastFingerprintRef.current !== initialFingerprint &&
-    pendingChanges.size === 0 &&
-    !draggedTeam
-  ) {
-    lastFingerprintRef.current = initialFingerprint;
+  if (lastFingerprint !== initialFingerprint && pendingChanges.size === 0 && !draggedTeam) {
+    setLastFingerprint(initialFingerprint);
     setProcessedTeams(safeInitialTeams);
   }
 
@@ -119,9 +115,9 @@ export const useSeedManagement = (
     setMode('automatic');
     setPendingChanges(new Map());
     setProcessedTeams(safeInitialTeams);
-    // Force the fingerprint effect to re-copy incoming teams on the next
-    // render pass (in case the parent's seed data updates asynchronously).
-    lastFingerprintRef.current = '';
+    // Clear fingerprint so the render-time resync copies incoming teams
+    // on the next parent update (parent seed data may update async).
+    setLastFingerprint('');
 
     // Clear all manual seeds
     safeInitialTeams.forEach((team) => {
@@ -138,7 +134,7 @@ export const useSeedManagement = (
   const cancelChanges = useCallback(() => {
     setPendingChanges(new Map());
     setProcessedTeams(safeInitialTeams);
-    lastFingerprintRef.current = '';
+    setLastFingerprint('');
   }, [safeInitialTeams]);
 
   const switchMode = useCallback((newMode: 'automatic' | 'manual') => {
