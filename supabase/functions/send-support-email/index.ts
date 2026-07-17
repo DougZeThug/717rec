@@ -132,6 +132,7 @@ async function handleRequest(req: Request): Promise<Response> {
     ipHash,
     windowSeconds: RATE_LIMIT_WINDOW_SECONDS,
     maxHits: RATE_LIMIT_MAX,
+    failClosedOnError: true,
   });
   if (rl.error) {
     console.warn('[Support] rate-limit RPC error (failing closed):', rl.error);

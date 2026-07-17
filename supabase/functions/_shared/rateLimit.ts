@@ -41,14 +41,15 @@ export interface RateLimitOptions {
   ipHash: string;
   windowSeconds: number;
   maxHits: number;
+  failClosedOnError?: boolean;
 }
 
 /**
  * Calls the public.check_rate_limit RPC. Returns:
  *   - true  → request is allowed (and was recorded)
  *   - false → caller is over the limit; reject with 429
- * On RPC error we fail closed for public form endpoints. A brief false positive
- * is safer than disabling spam throttling for unauthenticated traffic.
+ * On RPC error, callers choose behavior with failClosedOnError. Public form
+ * endpoints fail closed; non-critical analytics callers can keep failing open.
  */
 export async function checkRateLimit(
   client: SupabaseClient,
@@ -62,7 +63,7 @@ export async function checkRateLimit(
   });
 
   if (error) {
-    return { allowed: false, error: error.message };
+    return { allowed: opts.failClosedOnError === true ? false : true, error: error.message };
   }
   return { allowed: data === true, error: null };
 }

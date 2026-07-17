@@ -16,7 +16,7 @@ Deno.test(
   }
 );
 
-Deno.test('checkRateLimit fails closed on RPC error', async () => {
+Deno.test('checkRateLimit fails open on RPC error by default', async () => {
   const client = {
     rpc: () => Promise.resolve({ data: null, error: { message: 'db unavailable' } }),
   };
@@ -26,6 +26,22 @@ Deno.test('checkRateLimit fails closed on RPC error', async () => {
     ipHash: 'hash',
     windowSeconds: 60,
     maxHits: 1,
+  });
+
+  assertEquals(result, { allowed: true, error: 'db unavailable' });
+});
+
+Deno.test('checkRateLimit fails closed on RPC error when requested', async () => {
+  const client = {
+    rpc: () => Promise.resolve({ data: null, error: { message: 'db unavailable' } }),
+  };
+
+  const result = await checkRateLimit(client as never, {
+    endpoint: 'test-endpoint',
+    ipHash: 'hash',
+    windowSeconds: 60,
+    maxHits: 1,
+    failClosedOnError: true,
   });
 
   assertEquals(result, { allowed: false, error: 'db unavailable' });

@@ -46,7 +46,7 @@ const PayloadSchema = z
     request_type: z.enum(REQUEST_TYPES),
     submitter_name: z.string().trim().min(1).max(120),
     submitter_team: z.string().trim().max(120).optional().nullable(),
-    submitter_contact: z.string().trim().min(1).max(255),
+    submitter_contact: z.string().trim().max(255),
     players: z.string().trim().max(1000).optional().nullable(),
     message: z.string().trim().min(1).max(2000),
     website: z.string().max(500).optional(), // honeypot
@@ -91,6 +91,7 @@ async function handleRequest(req: Request): Promise<Response> {
     ipHash,
     windowSeconds: RATE_LIMIT_WINDOW_SECONDS,
     maxHits: RATE_LIMIT_MAX,
+    failClosedOnError: true,
   });
   if (rl.error) console.warn('[ContactRequest] rate-limit error:', rl.error);
   if (!rl.allowed) {

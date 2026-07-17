@@ -69,3 +69,22 @@ Deno.test({
     }
   },
 });
+
+Deno.test({
+  name: 'blank submitter_contact is accepted for current contact form contract',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    allowAll();
+    stubFetch();
+    try {
+      const res = await handleRequest(makeReq({ ...validPayload, submitter_contact: '' }));
+      assertEquals(res.status, 200);
+      const json = await res.json();
+      assertEquals(json.success, true);
+    } finally {
+      restoreFetch();
+      reset();
+    }
+  },
+});
