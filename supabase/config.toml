@@ -31,6 +31,9 @@ verify_jwt = false
 [functions.submit-score-report]
 verify_jwt = false
 
+[functions.pageview]
+verify_jwt = false
+
 [storage]
 enabled = true
 port = 54323

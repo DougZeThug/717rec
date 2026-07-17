@@ -24,6 +24,7 @@ import {
 import { cn } from '@/lib/utils';
 
 import { OPS_LINKS } from './opsLinks';
+import TrafficMiniChart from './TrafficMiniChart';
 
 const STORAGE_KEY = 'adminActiveTab';
 
@@ -241,6 +242,9 @@ const LeagueNightStatusTab: React.FC = () => {
           />
         </CardContent>
       </Card>
+
+      {/* Real daily traffic (first-party beacon; independent of Lovable analytics) */}
+      <TrafficMiniChart />
 
       {/* Quick actions */}
       <Card>
