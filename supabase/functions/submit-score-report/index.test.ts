@@ -21,7 +21,7 @@ function makeReq(body: unknown, init: RequestInit = {}): Request {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-forwarded-for': '127.0.0.1',
+      'x-forwarded-for': '203.0.113.10, 127.0.0.1',
       origin: 'http://localhost:3000',
       ...((init.headers as Record<string, string> | undefined) ?? {}),
     },

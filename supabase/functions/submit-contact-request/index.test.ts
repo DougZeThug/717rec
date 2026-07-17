@@ -24,7 +24,7 @@ function makeReq(body: unknown): Request {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-forwarded-for': '127.0.0.1',
+      'x-forwarded-for': '203.0.113.10, 127.0.0.1',
       origin: 'http://localhost:3000',
     },
     body: JSON.stringify(body),
