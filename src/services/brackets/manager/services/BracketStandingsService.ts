@@ -120,7 +120,7 @@ export class BracketStandingsService {
 
       const rowsWritten = typeof data === 'number' ? data : 0;
       if (rowsWritten > 0) {
-        successLog('Final standings written server-side', { bracketId, rowsWritten });
+        successLog('Final standings written server-side', `${bracketId} (${rowsWritten} rows)`);
         return { written: true };
       }
 
