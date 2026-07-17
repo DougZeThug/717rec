@@ -5,7 +5,13 @@ import { errorLog, scheduleLog } from '@/utils/logger';
 import { type RawMatchRow, transformDatabaseMatches } from '@/utils/matchTransformers';
 
 export const useScheduleData = () => {
-  const { data: matchesData, isLoading: matchesLoading } = useQuery({
+  const {
+    data: matchesData,
+    isLoading: matchesLoading,
+    isError: matchesError,
+    error: matchesErrorObj,
+    refetch: refetchMatches,
+  } = useQuery({
     queryKey: ['matches', 'schedule'],
     queryFn: async () => {
       scheduleLog('Fetching matches data');
@@ -77,6 +83,9 @@ export const useScheduleData = () => {
   return {
     matchesData,
     matchesLoading,
+    matchesError,
+    matchesErrorMessage: matchesErrorObj instanceof Error ? matchesErrorObj.message : null,
+    refetchMatches,
     upcomingMatches,
     completedMatches,
   };
