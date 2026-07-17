@@ -7,6 +7,7 @@ import ScheduleContent from '@/components/schedule/ScheduleContent';
 import ScheduleContentSkeleton from '@/components/schedule/ScheduleContentSkeleton';
 import ScheduleHeader from '@/components/schedule/ScheduleHeader';
 import SeoHead from '@/components/seo/SeoHead';
+import { ErrorDisplay } from '@/components/ui/error-display';
 import { useTeamsQuery } from '@/hooks/teams';
 import { useMatchDates } from '@/hooks/useMatchDates';
 import { useMatchManagement } from '@/hooks/useMatchManagement';
@@ -57,7 +58,15 @@ const Schedule = () => {
   }, [selectedDate]);
 
   // Match data includes team details via JOIN - no separate teams query needed for display
-  const { matchesData, matchesLoading, upcomingMatches, completedMatches } = useScheduleData();
+  const {
+    matchesData,
+    matchesLoading,
+    matchesError,
+    matchesErrorMessage,
+    refetchMatches,
+    upcomingMatches,
+    completedMatches,
+  } = useScheduleData();
 
   // Get dates that have matches for the date strip
   const matchDates = useMatchDates(matchesData);
@@ -165,6 +174,13 @@ const Schedule = () => {
         {/* Matches section with Timeslots tab */}
         {isLoading ? (
           <ScheduleContentSkeleton activeTab={activeTab} />
+        ) : matchesError ? (
+          <ErrorDisplay
+            variant="card"
+            context="Loading schedule"
+            error={matchesErrorMessage ?? 'Failed to load schedule.'}
+            onRetry={() => refetchMatches()}
+          />
         ) : (
           <ScheduleContent
             activeTab={activeTab}
