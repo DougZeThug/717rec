@@ -5228,6 +5228,10 @@ export type Database = {
       }
     }
     Functions: {
+      _do_finalize_bracket_standings: {
+        Args: { p_bracket_id: string }
+        Returns: number
+      }
       activate_season: {
         Args: { season_id: string }
         Returns: {
@@ -5369,6 +5373,10 @@ export type Database = {
       delete_match_with_stats_reversal: {
         Args: { p_match_id: string }
         Returns: Json
+      }
+      finalize_bracket_standings: {
+        Args: { p_bracket_id: string }
+        Returns: number
       }
       finalize_live_match: { Args: { p_match_id: string }; Returns: Json }
       finalize_playoffs: {
