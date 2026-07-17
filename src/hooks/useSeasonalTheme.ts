@@ -6,16 +6,12 @@ import { useLocation } from 'react-router';
  * Use this in components that don't need homepage detection (Navbar, NavItem, etc.)
  */
 export function useSeasonalThemeBase() {
-  const { theme, resolvedTheme } = useTheme();
+  const { theme } = useTheme();
 
   const isWinterTheme = theme === 'winter-frozen';
 
-  // For winter theme, we want dark-style colors
-  const isDark = isWinterTheme || resolvedTheme === 'dark';
-
   return {
     isWinterTheme,
-    isDark,
     // Light winter effects (background, cards, ice pattern) - all pages when winter theme active
     shouldApplyWinterBase: isWinterTheme,
     // Class to add to containers for winter styling
