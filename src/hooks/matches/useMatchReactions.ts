@@ -35,13 +35,14 @@ const countReactions = (reactions: MatchReaction[], userId?: string): ReactionCo
       existing.count += 1;
       existing.users.push(reaction.user_id);
       if (reaction.user_id === userId) existing.hasReacted = true;
-    } else
+    } else {
       counts.push({
         emoji: reaction.emoji,
         count: 1,
         users: [reaction.user_id],
         hasReacted: reaction.user_id === userId,
       });
+    }
   });
   return counts.sort((a, b) => b.count - a.count);
 };
