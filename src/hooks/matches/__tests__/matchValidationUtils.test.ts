@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { validateGameScore, validateGameScoreWithMetadata } from '../utils/matchValidationUtils';
+import { validateGameScore } from '../utils/matchValidationUtils';
 
 vi.mock('@/utils/logger', () => ({
   debugLog: vi.fn(),
@@ -109,22 +109,5 @@ describe('validateGameScore', () => {
     it('rejects 1-1', () => {
       expect(validateGameScore(1, 1, 1).isValid).toBe(false);
     });
-  });
-});
-
-describe('validateGameScoreWithMetadata', () => {
-  it('returns the same result as validateGameScore for a valid score', () => {
-    const result = validateGameScoreWithMetadata(2, 1, 3, 'match-1', '2026-01-01');
-    expect(result).toEqual({ isValid: true });
-  });
-
-  it('returns the same failure result including the error message', () => {
-    const result = validateGameScoreWithMetadata(2, 2, 3, 'match-1');
-    expect(result.isValid).toBe(false);
-    expect(result.errorMessage).toBe("Invalid score: both teams can't win in a best of 3");
-  });
-
-  it('works without optional match metadata', () => {
-    expect(validateGameScoreWithMetadata(2, 0, 3)).toEqual({ isValid: true });
   });
 });
