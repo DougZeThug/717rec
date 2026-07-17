@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -67,13 +67,7 @@ describe('CounterDriftCard', () => {
     await screen.findByText(/in sync/i);
     await user.click(screen.getByRole('button', { name: /repair now/i }));
     const confirm = await screen.findByRole('alertdialog');
-    await user.click(
-      // second "Repair now" — inside the dialog
-      within(confirm).getByRole('button', { name: /repair now/i })
-    );
+    await user.click(within(confirm).getByRole('button', { name: /repair now/i }));
     await waitFor(() => expect(reconcile).toHaveBeenCalledTimes(1));
   });
 });
-
-// local import kept at the bottom so the vi.mock hoists cleanly above
-import { within } from '@testing-library/react';
