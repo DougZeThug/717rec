@@ -51,6 +51,7 @@ const Compare = lazy(() => import('./pages/Compare'));
 const Insights = lazy(() => import('./pages/Insights'));
 const PlayoffBracketE2EProof = lazy(() => import('./components/playoffs/PlayoffBracketE2EProof'));
 const LiveScoring = lazy(() => import('./pages/LiveScoring'));
+const OAuthConsent = lazy(() => import('./pages/OAuthConsent'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -287,6 +288,14 @@ const AppContent = () => {
                   element={
                     <RouteErrorBoundary routeName="Live Scoring">
                       <LiveScoring />
+                    </RouteErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/oauth/consent"
+                  element={
+                    <RouteErrorBoundary routeName="OAuth Consent">
+                      <OAuthConsent />
                     </RouteErrorBoundary>
                   }
                 />
