@@ -114,3 +114,70 @@ describe('reopenGame', () => {
     expect(mockReopenGame).toHaveBeenCalledWith('game-2');
   });
 });
+
+describe('per-game lineup selection', () => {
+  it('starts Game 2 with a different lineup than Game 1', async () => {
+    mockCreateGame.mockResolvedValueOnce({ id: 'game-1' }).mockResolvedValueOnce({ id: 'game-2' });
+    mockSetGamePlayers.mockResolvedValue(null);
+
+    const { result } = renderHook(() => useGameFlow('match-1'), { wrapper: createWrapper() });
+
+    await act(async () => {
+      await result.current.startGame.mutateAsync({
+        gameNumber: 1,
+        team1Id: 'team-1',
+        team2Id: 'team-2',
+        team1PlayerIds: ['p1', 'p2'],
+        team2PlayerIds: ['p3', 'p4'],
+      });
+    });
+
+    await act(async () => {
+      await result.current.startGame.mutateAsync({
+        gameNumber: 2,
+        team1Id: 'team-1',
+        team2Id: 'team-2',
+        // 3-player team subs p5 in for p2; opponent keeps same pair.
+        team1PlayerIds: ['p1', 'p5'],
+        team2PlayerIds: ['p3', 'p4'],
+      });
+    });
+
+    expect(mockSetGamePlayers).toHaveBeenCalledWith('game-1', 'team-1', ['p1', 'p2']);
+    expect(mockSetGamePlayers).toHaveBeenCalledWith('game-2', 'team-1', ['p1', 'p5']);
+  });
+});
+
+describe('updateGamePlayers', () => {
+  it('updates the roster for one side of an in-progress game', async () => {
+    mockSetGamePlayers.mockResolvedValue(null);
+
+    const { result } = renderHook(() => useGameFlow('match-1'), { wrapper: createWrapper() });
+
+    await act(async () => {
+      await result.current.updateGamePlayers.mutateAsync({
+        gameId: 'game-3',
+        teamId: 'team-1',
+        playerIds: ['p7', 'p8'],
+      });
+    });
+
+    expect(mockSetGamePlayers).toHaveBeenCalledWith('game-3', 'team-1', ['p7', 'p8']);
+  });
+
+  it('toasts on failure', async () => {
+    mockSetGamePlayers.mockRejectedValue(new Error('nope'));
+
+    const { result } = renderHook(() => useGameFlow('match-1'), { wrapper: createWrapper() });
+
+    await act(async () => {
+      await result.current.updateGamePlayers
+        .mutateAsync({ gameId: 'game-3', teamId: 'team-1', playerIds: ['p7'] })
+        .catch(() => undefined);
+    });
+
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Could not update players', variant: 'destructive' })
+    );
+  });
+});
