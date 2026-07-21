@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router';
+import { useLocation, useNavigate, useSearchParams } from 'react-router';
 
 import AuthContainer from '@/components/auth/AuthContainer';
 import AuthForm from '@/components/auth/AuthForm';
@@ -53,8 +53,9 @@ const Auth = () => {
   const { user, authInitialized } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const state = location.state as LocationState | undefined;
-  const returnTo = sanitizeReturnTo(state?.returnTo);
+  const returnTo = sanitizeReturnTo(searchParams.get('next') ?? state?.returnTo);
 
   const { isNative } = useNativePlatform();
   const {
