@@ -13,8 +13,9 @@ export function userClient(ctx: ToolContext): SupabaseClient {
 
 export async function requireAdmin(
   supabase: SupabaseClient,
-  userId: string
+  userId: string | undefined
 ): Promise<boolean> {
+  if (!userId) return false;
   const { data } = await supabase
     .from("user_roles")
     .select("role")
