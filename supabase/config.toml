@@ -34,6 +34,9 @@ verify_jwt = false
 [functions.pageview]
 verify_jwt = false
 
+[functions.mcp]
+verify_jwt = false
+
 [storage]
 enabled = true
 port = 54323
