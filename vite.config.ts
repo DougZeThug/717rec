@@ -3,6 +3,7 @@ import { componentTagger } from 'lovable-tagger';
 import path from 'path';
 import { defineConfig, type PluginOption } from 'vite';
 import { beasties } from 'vite-plugin-beasties';
+import { mcpPlugin } from '@lovable.dev/mcp-js/stacks/supabase/vite';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -31,6 +32,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
+    mcpPlugin(),
     mode === 'development' && componentTagger(),
     mode === 'production' &&
       beasties({
