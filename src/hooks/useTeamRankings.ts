@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Match, Ranking, Team } from '@/types';
 import { getTierFromDivision } from '@/utils/autoSchedule/blossom/tierUtils';
 import { debugLog, errorLog } from '@/utils/logger';
-import { saveRankingsToStorage, updateRankChanges } from '@/utils/rankingUtils';
+import { updateRankChanges } from '@/utils/rankingUtils';
 import { calculateStreak } from '@/utils/rankingUtils/calculateStreak';
 
 const getDisplayedPowerScore = (powerScore: number | null | undefined): number | null => {
@@ -13,7 +13,6 @@ const getDisplayedPowerScore = (powerScore: number | null | undefined): number |
 
 import { usePreviousRankings } from './rankings/usePreviousRankings';
 import { useRankingsData } from './rankings/useRankingsData';
-import { useAdminAccess } from './useAdminAccess';
 import { useTeams } from './useTeams';
 
 export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | undefined) => {
@@ -22,7 +21,6 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
   const { previousRankings, lastUpdated } = usePreviousRankings();
   const { latestMatches, matchesLoading, matchesError, refetchMatches } = useRankingsData();
   const { teams: latestTeams, isLoading: teamsLoading, error: teamsError, fetchTeams } = useTeams();
-  const { isAdminAccessGranted } = useAdminAccess();
 
   // Surface the first fetch error from either data source so consumers can show
   // a retryable error state instead of an empty/"no data" screen.
@@ -41,7 +39,10 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
       lastUpdated
     );
 
-    const updateRankings = async () => {
+    // Pure read: computes and sorts rankings from already-fetched data. The
+    // ranking_snapshots baseline is written server-side by the
+    // capture-power-snapshots cron, never as a side effect of rendering.
+    const updateRankings = () => {
       const teamsToUse = teams || latestTeams;
       const matchesToUse = matches || latestMatches;
 
@@ -138,18 +139,6 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
         // Update rank changes based on previous rankings
         const finalRankings = updateRankChanges(sortedRankings);
 
-        if (finalRankings.length > 0) {
-          try {
-            // Only admins are allowed to write ranking_snapshots (RLS). Non-admins
-            // still get a localStorage-only backup so trend arrows keep working.
-            await saveRankingsToStorage(finalRankings, undefined, {
-              persistToDatabase: isAdminAccessGranted,
-            });
-          } catch (saveError) {
-            errorLog('Failed to persist rankings snapshot:', saveError);
-          }
-        }
-
         setRankings(finalRankings);
       } catch (error) {
         errorLog('Error calculating rankings:', error);
@@ -169,7 +158,6 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
     lastUpdated,
     teamsLoading,
     rankings.length,
-    isAdminAccessGranted,
   ]);
 
   return {

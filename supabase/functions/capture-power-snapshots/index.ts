@@ -23,6 +23,88 @@ interface TeamPowerScore {
   division_id: string | null;
 }
 
+interface TeamDetailsRow {
+  team_id: string;
+  name: string | null;
+  divisionname: string | null;
+  win_percentage: number | null;
+  power_score: number | null;
+}
+
+// Mirrors getTierFromDivision in src/utils/autoSchedule/blossom/tierUtils.ts.
+const getTierFromDivision = (divisionName: string | null | undefined): number => {
+  if (!divisionName) return 2; // Default to intermediate
+  const lowerName = divisionName.toLowerCase();
+  if (lowerName.includes('competitive') || lowerName.includes('comp')) return 1;
+  if (lowerName.includes('recreational') || lowerName.includes('rec')) return 3;
+  return 2;
+};
+
+const getDisplayedPowerScore = (powerScore: number | null | undefined): number | null => {
+  if (powerScore === null || powerScore === undefined) return null;
+  return Math.round(powerScore * 10) / 10;
+};
+
+// Must stay in lockstep with the client sort in src/hooks/useTeamRankings.ts so
+// the stored baseline compares like-for-like with what the site displays:
+// 1-decimal power score desc, NULL scores last, then division tier, win %, name.
+const compareTeamsForRanking = (a: TeamDetailsRow, b: TeamDetailsRow): number => {
+  const aScore = getDisplayedPowerScore(a.power_score);
+  const bScore = getDisplayedPowerScore(b.power_score);
+  if (aScore === null && bScore !== null) return 1;
+  if (bScore === null && aScore !== null) return -1;
+  if (aScore !== null && bScore !== null && bScore !== aScore) return bScore - aScore;
+  const tierA = getTierFromDivision(a.divisionname);
+  const tierB = getTierFromDivision(b.divisionname);
+  if (tierA !== tierB) return tierA - tierB;
+  const winA = a.win_percentage ?? 0;
+  const winB = b.win_percentage ?? 0;
+  if (winA !== winB) return winB - winA;
+  return (a.name || '').localeCompare(b.name || '');
+};
+
+// Refresh the ranking_snapshots baseline that powers the site's trend arrows.
+// This write used to happen client-side whenever an admin merely *viewed* the
+// rankings page; it lives here now so rendering a page never writes to the
+// database. Failures are logged but do not block the power-score snapshot.
+async function captureRankingSnapshots(
+  // deno-lint-ignore no-explicit-any
+  supabase: any,
+  seasonId: string
+): Promise<void> {
+  try {
+    const { data, error } = await supabase
+      .from('v_team_details')
+      .select('team_id, name, divisionname, win_percentage, power_score');
+
+    if (error) throw error;
+
+    const teams = (data ?? []) as TeamDetailsRow[];
+    if (teams.length === 0) {
+      console.log('[capture-power-snapshots] No teams found for ranking baseline');
+      return;
+    }
+
+    const snapshots = [...teams].sort(compareTeamsForRanking).map((team, index) => ({
+      team_id: team.team_id,
+      season_id: seasonId,
+      rank_position: index + 1,
+    }));
+
+    const { error: upsertError } = await supabase
+      .from('ranking_snapshots')
+      .upsert(snapshots, { onConflict: 'team_id,season_id', ignoreDuplicates: false });
+
+    if (upsertError) throw upsertError;
+
+    console.log(
+      `[capture-power-snapshots] Refreshed ranking baseline for ${snapshots.length} teams`
+    );
+  } catch (error) {
+    console.error('[capture-power-snapshots] Failed to refresh ranking_snapshots:', error);
+  }
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -79,6 +161,10 @@ Deno.serve(async (req) => {
     console.log(
       `[capture-power-snapshots] Active season: ${activeSeason.name} (${activeSeason.id})`
     );
+
+    // 1b. Refresh the trend-arrow ranking baseline on every run — before the
+    // weekly skip below, which only applies to power_score_snapshots.
+    await captureRankingSnapshots(supabase, activeSeason.id);
 
     // 2. Calculate current week number
     const { data: weekData, error: weekError } = await supabase.rpc('get_season_week_number', {

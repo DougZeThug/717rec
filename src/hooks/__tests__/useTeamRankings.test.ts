@@ -17,14 +17,6 @@ vi.mock('@/hooks/useTeams', () => ({
   useTeams: vi.fn(),
 }));
 
-vi.mock('@/hooks/useAdminAccess', () => ({
-  useAdminAccess: vi.fn(() => ({
-    isAdminAccessGranted: false,
-    isLoading: false,
-    requestAdminAccess: vi.fn(),
-  })),
-}));
-
 vi.mock('@/utils/logger', () => ({
   debugLog: vi.fn(),
   errorLog: vi.fn(),
@@ -151,41 +143,16 @@ describe('useTeamRankings', () => {
     ]);
   });
 
-  it('persists computed rankings when teams are available', async () => {
+  it('never persists snapshots as a side effect of rendering (pure read)', async () => {
     (useTeams as ReturnType<typeof vi.fn>).mockReturnValue({
       teams: [makeTeam('persist-1', 88), makeTeam('persist-2', 77)],
       isLoading: false,
     });
 
-    renderHook(() => useTeamRankings());
+    const { result } = renderHook(() => useTeamRankings());
 
-    await waitFor(() => {
-      expect(saveRankingsToStorage).toHaveBeenCalledTimes(1);
-      expect(saveRankingsToStorage).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({ teamId: 'persist-1' }),
-          expect.objectContaining({ teamId: 'persist-2' }),
-        ]),
-        undefined,
-        expect.objectContaining({ persistToDatabase: false })
-      );
-    });
-  });
-
-  it('persists computed rankings for anonymous context (no session dependency)', async () => {
-    (useTeams as ReturnType<typeof vi.fn>).mockReturnValue({
-      teams: [makeTeam('anon-1', 92)],
-      isLoading: false,
-    });
-
-    renderHook(() => useTeamRankings());
-
-    await waitFor(() => expect(saveRankingsToStorage).toHaveBeenCalledTimes(1));
-    expect(saveRankingsToStorage).toHaveBeenCalledWith(
-      expect.arrayContaining([expect.objectContaining({ teamId: 'anon-1' })]),
-      undefined,
-      expect.objectContaining({ persistToDatabase: false })
-    );
+    await waitFor(() => expect(result.current.rankings.length).toBe(2));
+    expect(saveRankingsToStorage).not.toHaveBeenCalled();
   });
 
   it('propagates a teams fetch error', () => {
