@@ -45,3 +45,71 @@ CREATE POLICY "Admins can update support tickets"
 
 -- Intentionally NO INSERT/SELECT policy for anon: inserts happen via the
 -- service role in the edge function; anon has no read or write access.
+
+-- Audit admin triage of tickets, mirroring contact_requests. The shared
+-- admin-audit trigger records admin INSERT/UPDATE/DELETE into
+-- security_audit_log. Service-role inserts from the edge function have
+-- auth.uid() = NULL and are ignored by the trigger, so only real admin
+-- mutations (e.g. status new -> resolved) are logged.
+DROP TRIGGER IF EXISTS audit_admin_mutation ON public.support_tickets;
+CREATE TRIGGER audit_admin_mutation
+  AFTER INSERT OR UPDATE OR DELETE ON public.support_tickets
+  FOR EACH ROW EXECUTE FUNCTION public.audit_admin_mutation();
+
+-- Extend the audit-coverage guard so the smoke test enforces support_tickets
+-- coverage going forward. Mirrors 20260701180231 with support_tickets appended.
+CREATE OR REPLACE FUNCTION public.admin_audit_coverage_drift()
+RETURNS TABLE(issue text)
+LANGUAGE plpgsql
+STABLE
+SET search_path TO 'pg_catalog', 'public'
+AS $$
+DECLARE
+  t text;
+  audited_tables text[] := ARRAY[
+    'seasons',
+    'divisions',
+    'teams',
+    'team_timeslots',
+    'brackets',
+    'admin_notifications',
+    'hero_cards',
+    'theme_settings',
+    'contact_requests',
+    'season_team_participation',
+    'blind_draw_settings',
+    'challonge_fallback_config',
+    'challonge_fallback_brackets',
+    'support_tickets'
+  ];
+BEGIN
+  IF to_regproc('public.audit_admin_mutation') IS NULL THEN
+    issue := 'missing function public.audit_admin_mutation()';
+    RETURN NEXT;
+  END IF;
+
+  FOREACH t IN ARRAY audited_tables LOOP
+    CONTINUE WHEN to_regclass('public.' || t) IS NULL;
+
+    IF NOT EXISTS (
+      SELECT 1
+      FROM pg_trigger tg
+      JOIN pg_class c ON c.oid = tg.tgrelid
+      JOIN pg_namespace n ON n.oid = c.relnamespace
+      WHERE n.nspname = 'public'
+        AND c.relname = t
+        AND tg.tgname = 'audit_admin_mutation'
+        AND NOT tg.tgisinternal
+        AND tg.tgfoid = 'public.audit_admin_mutation'::regproc
+        AND (tg.tgtype::integer & 1) = 1
+        AND (tg.tgtype::integer & 2) = 0
+        AND (tg.tgtype::integer & 28) = 28
+    ) THEN
+      issue := format('missing or misconfigured audit trigger on public.%s', t);
+      RETURN NEXT;
+    END IF;
+  END LOOP;
+
+  RETURN;
+END;
+$$;
