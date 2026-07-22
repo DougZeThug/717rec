@@ -25,8 +25,9 @@ function userClient(ctx) {
 }
 async function requireAdmin(supabase, userId) {
   if (!userId) return false;
-  const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle();
-  return !!data;
+  const { data, error } = await supabase.from("profiles").select("is_admin").eq("id", userId).maybeSingle();
+  if (error) return false;
+  return data?.is_admin === true;
 }
 function textResult(payload) {
   return {

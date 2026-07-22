@@ -21,13 +21,13 @@ export async function requireAdmin(
   userId: string | undefined
 ): Promise<boolean> {
   if (!userId) return false;
-  const { data } = await supabase
-    .from('user_roles')
-    .select('role')
-    .eq('user_id', userId)
-    .eq('role', 'admin')
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', userId)
     .maybeSingle();
-  return !!data;
+  if (error) return false;
+  return data?.is_admin === true;
 }
 
 export function textResult(payload: unknown) {
