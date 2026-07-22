@@ -79,7 +79,6 @@ describe('BracketSeedingService.updateSeeding', () => {
     // needs (it awaits both without using their return value).
     mockStorage = {
       select: vi.fn(),
-      loadParticipantsForTournament: vi.fn(),
     } as unknown as SupabaseSqlStorage;
 
     mockManager = {
@@ -131,9 +130,6 @@ describe('BracketSeedingService.updateSeeding', () => {
       expect(mockStorage.select).toHaveBeenCalledWith('participant', {
         tournament_id: BRACKET_ID,
       });
-
-      // Participants are cached before the seeding update runs.
-      expect(mockStorage.loadParticipantsForTournament).toHaveBeenCalledWith(BRACKET_ID);
 
       // No BYEs needed for 2 teams; keepSameSize defaults to true. Seeding
       // entries are objects carrying team_id (persisted by the library).
@@ -304,7 +300,6 @@ describe('BracketSeedingService.updateSeeding', () => {
         })
       ).rejects.toThrow(/Seeding update failed:.*Stage with ID 'bracket-1' not found/);
 
-      expect(mockStorage.loadParticipantsForTournament).not.toHaveBeenCalled();
       expect(mockManager.update.seeding).not.toHaveBeenCalled();
     });
 

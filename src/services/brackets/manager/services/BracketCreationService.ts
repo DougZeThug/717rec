@@ -153,10 +153,6 @@ export class BracketCreationService {
         });
       }
 
-      // Refresh cache with updated data
-      this.storage.clearParticipantCache();
-      await this.storage.loadParticipantsForTournament(bracketId);
-
       successLog('Bracket created successfully', bracketId);
     } catch (error) {
       // Comprehensive error logging

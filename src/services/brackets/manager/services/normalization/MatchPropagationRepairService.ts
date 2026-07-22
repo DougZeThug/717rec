@@ -1,7 +1,9 @@
 import { supabase } from '@/integrations/supabase/client';
-import { bracketLog, errorLog } from '@/utils/logger';
+import { handleDatabaseError } from '@/utils/errorHandler';
+import { bracketLog } from '@/utils/logger';
 
 import type { SupabaseSqlStorage } from '../../SupabaseSqlStorage';
+import { BYE_RESULT_SENTINEL } from '../../SupabaseSqlStorage/matchTransforms';
 import type { StorageMatch, StorageRound } from '../../types/BracketServiceTypes';
 import { LbStructureService } from './LbStructureService';
 
@@ -9,6 +11,8 @@ interface PersistedMatchSlotState {
   id: number;
   opponent1_id: number | null;
   opponent2_id: number | null;
+  opponent1_result: string | null;
+  opponent2_result: string | null;
   status: number;
 }
 
@@ -16,17 +20,28 @@ async function getNextMatch(
   nextRoundId: number,
   nextMatchNumber: number
 ): Promise<PersistedMatchSlotState | null> {
-  const { data: nextMatches } = await supabase
+  const { data: nextMatches, error } = await supabase
     .from('match')
-    .select('id, opponent1_id, opponent2_id, status')
+    .select('id, opponent1_id, opponent2_id, opponent1_result, opponent2_result, status')
     .eq('round_id', nextRoundId)
     .eq('number', nextMatchNumber);
 
+  if (error) handleDatabaseError(error, 'Failed to read the next match for propagation');
   if (!nextMatches || !nextMatches.length) return null;
 
   return nextMatches[0] as PersistedMatchSlotState;
 }
 
+/** A slot can receive a winner only if it is empty AND not a stored BYE. */
+const slotAvailable = (id: number | null, result: string | null): boolean =>
+  id === null && result !== BYE_RESULT_SENTINEL;
+
+/**
+ * Repair-only pass (invoked via the admin Repair Bracket action): walks the
+ * losers bracket and the grand final, advancing winners of completed matches
+ * whose propagation was lost (legacy auto-repair era damage). Never rewrites
+ * completed source match results. Errors are thrown loudly.
+ */
 export class MatchPropagationRepairService {
   constructor(
     private storage: SupabaseSqlStorage,
@@ -34,32 +49,27 @@ export class MatchPropagationRepairService {
   ) {}
 
   async propagateCompletedMatches(stageId: number): Promise<void> {
-    try {
-      bracketLog('🔍 propagateCompletedMatches — scanning LB for stuck winners...', { stageId });
+    bracketLog('🔍 propagateCompletedMatches — scanning LB for stuck winners...', { stageId });
 
-      const lbGroup = await this.lbStructureService.findLbGroup(stageId);
-      if (lbGroup) {
-        const rounds = await this.lbStructureService.findGroupRounds(lbGroup.id);
-        const sortedRounds = [...rounds].sort((a, b) => a.number - b.number);
+    const lbGroup = await this.lbStructureService.findLbGroup(stageId);
+    if (lbGroup) {
+      const rounds = await this.lbStructureService.findGroupRounds(lbGroup.id);
+      const sortedRounds = [...rounds].sort((a, b) => a.number - b.number);
 
-        for (let i = 0; i < sortedRounds.length - 1; i += 1) {
-          await this.propagateRoundWinners(sortedRounds[i], sortedRounds[i + 1]);
-        }
+      for (let i = 0; i < sortedRounds.length - 1; i += 1) {
+        await this.propagateRoundWinners(sortedRounds[i], sortedRounds[i + 1]);
       }
-
-      // Cross-group propagation into the Grand Final group.
-      await this.propagateIntoGrandFinal(stageId);
-    } catch (error) {
-      errorLog('Error in propagateCompletedMatches:', error);
     }
+
+    // Cross-group propagation into the Grand Final group.
+    await this.propagateIntoGrandFinal(stageId);
   }
 
   /**
-   * Propagate WB Final winner → GF round 1 opponent1 (target slot found by empty
-   * scan), LB Final winner → GF round 1 opponent2, and GF round 1 winner → GF
-   * round 2 if a reset match exists. Mirrors the round-walker but operates on
-   * single cross-group edges so it works even when brackets-manager silently
-   * fails to advance the WB/LB Final winners.
+   * Propagate WB Final winner → GF round 1 opponent1, LB Final winner → GF
+   * round 1 opponent2, and GF round 1 winner → GF round 2 if a reset match
+   * exists. Operates on single cross-group edges the LB round-walker cannot
+   * see.
    */
   private async propagateIntoGrandFinal(stageId: number): Promise<void> {
     const gfGroup = await this.lbStructureService.findGfGroup(stageId);
@@ -113,11 +123,12 @@ export class MatchPropagationRepairService {
     if (!gfMatch) return;
     if (gfMatch.opponent1_id === winnerId || gfMatch.opponent2_id === winnerId) return;
 
-    const currentSlotId = targetSlot === 'opponent1' ? gfMatch.opponent1_id : gfMatch.opponent2_id;
-    if (currentSlotId) {
-      bracketLog(
-        `⚠️ [PROPAGATE→GF] ${targetSlot} already filled (${currentSlotId}) — skipping winner ${winnerId}`
-      );
+    const targetAvailable =
+      targetSlot === 'opponent1'
+        ? slotAvailable(gfMatch.opponent1_id, gfMatch.opponent1_result)
+        : slotAvailable(gfMatch.opponent2_id, gfMatch.opponent2_result);
+    if (!targetAvailable) {
+      bracketLog(`⚠️ [PROPAGATE→GF] ${targetSlot} not available — skipping winner ${winnerId}`);
       return;
     }
 
@@ -140,7 +151,10 @@ export class MatchPropagationRepairService {
       .update(updateFields)
       .eq('id', gfMatch.id);
     if (gfUpdateError) {
-      errorLog(`[PROPAGATE→GF] Failed to update match ${gfMatch.id}:`, gfUpdateError);
+      handleDatabaseError(
+        gfUpdateError,
+        `Failed to propagate a winner into GF match ${gfMatch.id}`
+      );
     }
   }
 
@@ -172,15 +186,15 @@ export class MatchPropagationRepairService {
       if (!nextMatch) continue;
       if (nextMatch.opponent1_id === winnerId || nextMatch.opponent2_id === winnerId) continue;
 
-      const targetSlot = !nextMatch.opponent1_id
+      const targetSlot = slotAvailable(nextMatch.opponent1_id, nextMatch.opponent1_result)
         ? 'opponent1'
-        : !nextMatch.opponent2_id
+        : slotAvailable(nextMatch.opponent2_id, nextMatch.opponent2_result)
           ? 'opponent2'
           : null;
 
       if (!targetSlot) {
         bracketLog(
-          `⚠️ [PROPAGATE] Both slots occupied in match ${nextMatch.id} — skipping winner ${winnerId}`
+          `⚠️ [PROPAGATE] No available slot in match ${nextMatch.id} — skipping winner ${winnerId}`
         );
         continue;
       }
@@ -209,10 +223,9 @@ export class MatchPropagationRepairService {
         .update(updateFields)
         .eq('id', nextMatch.id);
       if (updateError) {
-        errorLog(`[PROPAGATE] Failed to update match ${nextMatch.id}:`, updateError);
-      } else {
-        bracketLog(`✅ [PROPAGATE] Winner ${winnerId} placed in match ${nextMatch.id}`);
+        handleDatabaseError(updateError, `Failed to advance a winner into match ${nextMatch.id}`);
       }
+      bracketLog(`✅ [PROPAGATE] Winner ${winnerId} placed in match ${nextMatch.id}`);
     }
   }
 }

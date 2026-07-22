@@ -1,75 +1,13 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-vi.mock('@/utils/logger', () => ({
-  bracketLog: vi.fn(),
-}));
-
-import { mergeOpponentSlots, transformMatchFromDb, transformMatchToDb } from '../matchTransforms';
-import type { DbMatch, ParticipantCacheEntry } from '../types';
-
-describe('mergeOpponentSlots', () => {
-  it('drops null opponent1_id when previous slot was filled', () => {
-    const prev: DbMatch = { id: 1, opponent1_id: 99, opponent2_id: 42 };
-    const patch: DbMatch = {
-      id: 1,
-      opponent1_id: null,
-      opponent1_score: null,
-      opponent1_result: null,
-      status: 2,
-    };
-
-    const merged = mergeOpponentSlots(prev, patch);
-
-    expect(merged).not.toHaveProperty('opponent1_id');
-    // Non-opponent fields always pass through
-    expect(merged.status).toBe(2);
-    // Score/result keys (non opponentN_id) still pass through unchanged
-    expect(merged.opponent1_score).toBeNull();
-    expect(merged.opponent1_result).toBeNull();
-  });
-
-  it('drops null opponent2_id when previous slot was filled', () => {
-    const prev: DbMatch = { id: 2, opponent1_id: 1, opponent2_id: 7 };
-    const patch: DbMatch = { id: 2, opponent2_id: null };
-
-    const merged = mergeOpponentSlots(prev, patch);
-
-    expect(merged).not.toHaveProperty('opponent2_id');
-  });
-
-  it('allows null opponent slot when previous slot was already null/missing', () => {
-    const prev: DbMatch = { id: 3, opponent1_id: null, opponent2_id: null };
-    const patch: DbMatch = { id: 3, opponent1_id: null, opponent2_id: null };
-
-    const merged = mergeOpponentSlots(prev, patch);
-
-    expect(merged).toMatchObject({ opponent1_id: null, opponent2_id: null });
-  });
-
-  it('preserves non-null opponent ids in the patch', () => {
-    const prev: DbMatch = { id: 4, opponent1_id: 10, opponent2_id: 20 };
-    const patch: DbMatch = { id: 4, opponent1_id: 11, opponent2_id: 21 };
-
-    const merged = mergeOpponentSlots(prev, patch);
-
-    expect(merged).toMatchObject({ opponent1_id: 11, opponent2_id: 21 });
-  });
-
-  it('treats a null prev (no row found) as no protection — null patch passes through', () => {
-    const patch: DbMatch = { id: 5, opponent1_id: null, opponent2_id: null };
-
-    const merged = mergeOpponentSlots(null, patch);
-
-    expect(merged).toMatchObject({ opponent1_id: null, opponent2_id: null });
-  });
-});
+import { BYE_RESULT_SENTINEL, transformMatchFromDb, transformMatchToDb } from '../matchTransforms';
 
 describe('transformMatchToDb', () => {
   it('flattens nested opponent objects into columns and removes the nested keys', () => {
     const result = transformMatchToDb({
       id: 1,
       number: 1,
-      opponent1: { id: 10, score: 2, result: 'win' },
+      opponent1: { id: 10, position: 1, score: 2, result: 'win' },
       opponent2: { id: 20, score: 1, result: 'loss' },
     });
 
@@ -79,15 +17,19 @@ describe('transformMatchToDb', () => {
       opponent1_id: 10,
       opponent1_score: 2,
       opponent1_result: 'win',
+      opponent1_position: 1,
       opponent2_id: 20,
       opponent2_score: 1,
       opponent2_result: 'loss',
+      opponent2_position: null,
     });
     expect(result).not.toHaveProperty('opponent1');
     expect(result).not.toHaveProperty('opponent2');
   });
 
-  it('nulls all slot columns when opponent is explicitly null (BYE case)', () => {
+  it('stores the BYE sentinel in the result column for strictly-null opponents', () => {
+    // brackets-manager distinguishes `null` (BYE) from `{ id: null }` (TBD);
+    // the id column alone cannot. The sentinel keeps the round-trip faithful.
     const result = transformMatchToDb({
       id: 2,
       opponent1: null,
@@ -97,10 +39,27 @@ describe('transformMatchToDb', () => {
     expect(result).toMatchObject({
       opponent1_id: null,
       opponent1_score: null,
-      opponent1_result: null,
+      opponent1_result: BYE_RESULT_SENTINEL,
       opponent2_id: null,
       opponent2_score: null,
+      opponent2_result: BYE_RESULT_SENTINEL,
+    });
+  });
+
+  it('stores plain null columns for TBD slots ({ id: null })', () => {
+    const result = transformMatchToDb({
+      id: 3,
+      opponent1: { id: null },
+      opponent2: { id: null, position: 1 },
+    });
+
+    expect(result).toMatchObject({
+      opponent1_id: null,
+      opponent1_result: null,
+      opponent1_position: null,
+      opponent2_id: null,
       opponent2_result: null,
+      opponent2_position: 1,
     });
   });
 
@@ -111,42 +70,77 @@ describe('transformMatchToDb', () => {
 });
 
 describe('transformMatchFromDb', () => {
-  const cache = new Map<number, ParticipantCacheEntry>([
-    [10, { position: 3, name: 'Alpha' }],
-    [20, { position: 8, name: 'Beta' }],
-  ]);
+  it('re-inflates opponent columns into nested objects with their stored positions', () => {
+    const result = transformMatchFromDb({
+      id: 1,
+      opponent1_id: 10,
+      opponent1_score: 2,
+      opponent1_result: 'win',
+      opponent1_position: 1,
+      opponent2_id: 20,
+      opponent2_score: 1,
+      opponent2_result: 'loss',
+      opponent2_position: 2,
+    });
 
-  it('re-inflates opponent columns into nested objects with cached position', () => {
-    const result = transformMatchFromDb(
-      {
-        id: 1,
-        opponent1_id: 10,
-        opponent1_score: 2,
-        opponent1_result: 'win',
-        opponent2_id: 20,
-        opponent2_score: 1,
-        opponent2_result: 'loss',
-      },
-      cache
-    );
-
-    expect(result.opponent1).toEqual({ id: 10, position: 3, score: 2, result: 'win' });
-    expect(result.opponent2).toEqual({ id: 20, position: 8, score: 1, result: 'loss' });
+    expect(result.opponent1).toEqual({ id: 10, position: 1, score: 2, result: 'win' });
+    expect(result.opponent2).toEqual({ id: 20, position: 2, score: 1, result: 'loss' });
     expect(result).not.toHaveProperty('opponent1_id');
     expect(result).not.toHaveProperty('opponent2_id');
+    expect(result).not.toHaveProperty('opponent1_position');
+    expect(result).not.toHaveProperty('opponent2_position');
   });
 
-  it('returns position undefined when participant is not in cache or id is null', () => {
-    const result = transformMatchFromDb(
-      {
-        id: 2,
-        opponent1_id: 999, // not cached
-        opponent2_id: null,
-      },
-      cache
-    );
+  it('OMITS score/result/position keys when their columns are NULL (unplayed ≠ started)', () => {
+    // brackets-manager reads `score !== undefined` as "match started" and
+    // `position` as the structural feeder marker; inflating NULL columns as
+    // null values corrupted both semantics.
+    const result = transformMatchFromDb({
+      id: 2,
+      opponent1_id: 10,
+      opponent1_score: null,
+      opponent1_result: null,
+      opponent1_position: null,
+      opponent2_id: 20,
+      opponent2_score: null,
+      opponent2_result: null,
+      opponent2_position: null,
+    });
 
-    expect(result.opponent1).toMatchObject({ id: 999, position: undefined });
-    expect(result.opponent2).toMatchObject({ id: null, position: undefined });
+    expect(result.opponent1).toEqual({ id: 10 });
+    expect(result.opponent2).toEqual({ id: 20 });
+    expect(result.opponent1).not.toHaveProperty('score');
+    expect(result.opponent1).not.toHaveProperty('result');
+    expect(result.opponent1).not.toHaveProperty('position');
+  });
+
+  it('inflates the BYE sentinel back to a strictly-null slot', () => {
+    const result = transformMatchFromDb({
+      id: 3,
+      opponent1_id: 10,
+      opponent1_score: null,
+      opponent1_result: 'win',
+      opponent1_position: null,
+      opponent2_id: null,
+      opponent2_score: null,
+      opponent2_result: BYE_RESULT_SENTINEL,
+      opponent2_position: null,
+    });
+
+    expect(result.opponent1).toEqual({ id: 10, result: 'win' });
+    expect(result.opponent2).toBeNull();
+  });
+
+  it('inflates legacy NULL columns (no sentinel) as a TBD slot, not a BYE', () => {
+    const result = transformMatchFromDb({
+      id: 4,
+      opponent1_id: 999,
+      opponent2_id: null,
+      opponent2_score: null,
+      opponent2_result: null,
+    });
+
+    expect(result.opponent1).toEqual({ id: 999 });
+    expect(result.opponent2).toEqual({ id: null });
   });
 });

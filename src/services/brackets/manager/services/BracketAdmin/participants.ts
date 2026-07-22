@@ -145,9 +145,6 @@ export async function editMatchParticipants(
       .eq('id', matchId);
     if (error) handleDatabaseError(error, 'Failed to update match participants');
 
-    deps.storage.clearParticipantCache();
-    await deps.storage.loadParticipantsForTournament(tournamentId);
-
     successLog(
       `Admin edited participants on match ${matchId}`,
       `opponent1_id=${resolvedOpp1Id}, opponent2_id=${resolvedOpp2Id}`

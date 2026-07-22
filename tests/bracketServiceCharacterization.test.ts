@@ -91,11 +91,9 @@ function mustFindMatch(predicate: (m: MatchRow) => boolean, label: string): Matc
 /**
  * Same rendering as suite A (tests/bracketManagerLibraryNative.test.ts), but
  * reading the fake's SQL rows: "WB R1 M1: T1:win(2) vs BYE [Locked]".
- * A slot with a null id is 'TBD' only when the row distinguishes it; in SQL
- * storage both BYE and TBD slots are null ids, so we follow the service's own
- * convention: null id + null result = TBD, null id + a result on the other
- * side of a bye row still renders TBD. (The library-side BYE distinction only
- * exists in brackets-manager's object model, not in the SQL columns.)
+ * The storage adapter persists a 'bye' sentinel in the result column for
+ * strict-null BYE slots, so the SQL rows now carry the BYE/TBD distinction:
+ * a null id renders as BYE when the sentinel is present, TBD otherwise.
  */
 function snapshotSqlGrid(): string[] {
   const groups = db().rows('group') as { id: number; number: number }[];
@@ -107,6 +105,7 @@ function snapshotSqlGrid(): string[] {
     return participants.find((p) => p.id === id)?.name ?? `#${id}`;
   };
   const renderSide = (id: number | null, score: number | null, result: string | null): string => {
+    if (result === 'bye') return 'BYE';
     if (id === null) return 'TBD';
     let rendered = participantName(id);
     if (result) rendered += `:${result}`;
@@ -130,12 +129,10 @@ function snapshotSqlGrid(): string[] {
 }
 
 /**
- * Score the lowest-id playable match through the real service until none
- * remain. "Playable" is status 2 (Ready) or 3 (Running): the current SQL
- * adapter re-inflates empty scores as null, which brackets-manager reads as
- * "match started", so populated-but-unplayed matches sit at 3 — a
- * characterized artifact of the current adapter (production data shows the
- * same, which is how status 3 ended up in the playoff_matches sync trigger).
+ * Score the lowest-id playable match (Ready 2 or Running 3) through the real
+ * service until none remain. With the faithful storage adapter, unplayed
+ * populated matches sit at Ready (2); Running (3) only appears for partially
+ * scored matches.
  */
 async function playAllReadyMatches(
   service: BracketManagerService,
@@ -218,15 +215,15 @@ describe('bracket service characterization (real service + real library over fak
       });
 
       expect(snapshotSqlGrid()).toEqual([
-        'WB R1 M1: T1:win vs TBD [Locked]',
+        'WB R1 M1: T1:win vs BYE [Locked]',
         'WB R1 M2: T4 vs T5 [Ready]',
-        'WB R1 M3: T2:win vs TBD [Locked]',
+        'WB R1 M3: T2:win vs BYE [Locked]',
         'WB R1 M4: T3 vs T6 [Ready]',
         'WB R2 M1: T1 vs TBD [Waiting]',
         'WB R2 M2: T2 vs TBD [Waiting]',
         'WB R3 M1: TBD vs TBD [Locked]',
-        'LB R1 M1: TBD vs TBD [Locked]',
-        'LB R1 M2: TBD vs TBD [Locked]',
+        'LB R1 M1: BYE vs TBD [Locked]',
+        'LB R1 M2: BYE vs TBD [Locked]',
         'LB R2 M1: TBD vs TBD [Locked]',
         'LB R2 M2: TBD vs TBD [Locked]',
         'LB R3 M1: TBD vs TBD [Locked]',
@@ -274,27 +271,22 @@ describe('bracket service characterization (real service + real library over fak
       });
       await playAllReadyMatches(service);
 
-      // CURRENT BEHAVIOR (changes in the core-refactor step). The library-
-      // native result (suite A) would be 'LB R1 M1: T4:win(2) vs T3:loss(0)'
-      // — T3 and T4 play a real losers-bracket match. Instead, the storage
-      // adapter's lossy round-trip confuses the library's first loser drop,
-      // the defensive merge turns it into a duplicate, and normalizeLosersR1
-      // "fixes" the duplicate by hard-completing the match as a fake bye win
-      // (win, score 0, status 4) BEFORE the second loser arrives. T3 is then
-      // dropped into an already-completed match with a bare 'loss' — the
-      // second WB loser never gets to play their losers-bracket match.
+      // Library-native end state through the faithful adapter — identical to
+      // suite A's memory-db playthrough. (Before the core refactor, the lossy
+      // round-trip + defensive merge produced a fake bye win in LB R1 and T3
+      // never played their losers-bracket match.)
       expect(snapshotSqlGrid()).toEqual([
         'WB R1 M1: T1:win(2) vs T4:loss(0) [Archived]',
         'WB R1 M2: T2:win(2) vs T3:loss(0) [Archived]',
         'WB R2 M1: T1:win(2) vs T2:loss(0) [Archived]',
-        'LB R1 M1: T4:win(0) vs T3:loss [Completed]',
+        'LB R1 M1: T4:win(2) vs T3:loss(0) [Archived]',
         'LB R2 M1: T2:win(2) vs T4:loss(0) [Archived]',
         'GF R1 M1: T1:win(2) vs T2:loss(0) [Completed]',
       ]);
       expect(bracketState()).toBe('completed');
     });
 
-    it('double elimination, 6 teams with BYEs: playthrough completes (current repair layer reshapes LB bye rows)', async () => {
+    it('double elimination, 6 teams with BYEs: library-native playthrough, ghost reset archived', async () => {
       seedBracketRow();
       const service = new BracketManagerService();
       await service.createBracket({
@@ -305,35 +297,34 @@ describe('bracket service characterization (real service + real library over fak
       });
       await playAllReadyMatches(service, { opponent2WinsMatchIds: [] });
 
-      // CURRENT BEHAVIOR (changes in the core-refactor step). Same fake-bye
-      // artifact as the DE-4 scenario, on both LB R1 bye-side matches: the
-      // WB losers T5/T6 are hard-completed as 'win(0) vs TBD' instead of the
-      // library-native 'BYE vs T5:win'. Note also GF2 played after a decisive
-      // GF1 (the ghost reset match), and the inconsistent archival of
-      // repair-written rows (LB R3 stays Completed instead of Archived).
+      // Library-native end state, identical to suite A's memory-db semantics:
+      // BYE matches auto-resolved with the sentinel layout, the LB bye
+      // cascade handled by the library, and — because the WB champion won GF1
+      // decisively — the ghost reset match (GF R2) archived unplayed instead
+      // of being offered as a playable match.
       expect(snapshotSqlGrid()).toEqual([
-        'WB R1 M1: T1:win vs TBD [Archived]',
+        'WB R1 M1: T1:win vs BYE [Archived]',
         'WB R1 M2: T4:win(2) vs T5:loss(0) [Archived]',
-        'WB R1 M3: T2:win vs TBD [Archived]',
+        'WB R1 M3: T2:win vs BYE [Archived]',
         'WB R1 M4: T3:win(2) vs T6:loss(0) [Archived]',
         'WB R2 M1: T1:win(2) vs T4:loss(0) [Archived]',
         'WB R2 M2: T2:win(2) vs T3:loss(0) [Archived]',
         'WB R3 M1: T1:win(2) vs T2:loss(0) [Archived]',
-        'LB R1 M1: T5:win(0) vs TBD [Completed]',
-        'LB R1 M2: T6:win(0) vs TBD [Completed]',
+        'LB R1 M1: BYE vs T5:win [Archived]',
+        'LB R1 M2: BYE vs T6:win [Archived]',
         'LB R2 M1: T3:win(2) vs T5:loss(0) [Archived]',
         'LB R2 M2: T4:win(2) vs T6:loss(0) [Archived]',
-        'LB R3 M1: T3:win(2) vs T4:loss(0) [Completed]',
+        'LB R3 M1: T3:win(2) vs T4:loss(0) [Archived]',
         'LB R4 M1: T2:win(2) vs T3:loss(0) [Archived]',
-        'GF R1 M1: T1:win(2) vs T2:loss(0) [Archived]',
-        'GF R2 M1: T1:win(2) vs T2:loss(0) [Completed]',
+        'GF R1 M1: T1:win(2) vs T2:loss(0) [Completed]',
+        'GF R2 M1: T1 vs T2 [Archived]',
       ]);
       expect(bracketState()).toBe('completed');
     });
   });
 
-  describe('current behavior: BYE bypass (replaced in core-refactor step)', () => {
-    it('scoring a creation-resolved BYE match rides the direct-SQL bypass and hard-completes it', async () => {
+  describe('one-sided matches: normal scoring refused, explicit admin action instead', () => {
+    it('updateMatch refuses BYE and TBD matches with actionable errors', async () => {
       seedBracketRow();
       const service = new BracketManagerService();
       await service.createBracket({
@@ -343,32 +334,65 @@ describe('bracket service characterization (real service + real library over fak
         grandFinalType: 'double',
       });
 
-      // WB R1 M1 is T1 vs BYE — auto-resolved by the library at creation
-      // (status Locked, result win). The current update path detects the null
-      // opponent and bypasses the library entirely, forcing status 4.
+      // WB R1 M1 is T1 vs BYE — auto-resolved by the library at creation.
       const byeMatch = mustFindMatch(
-        (m) => m.number === 1 && m.opponent2_id === null,
+        (m) => m.number === 1 && m.opponent2_id === null && m.opponent2_result === 'bye',
         'WB R1 bye match'
       );
-      await service.updateMatch({
-        matchId: byeMatch.id,
-        scores: { opponent1: { score: 21, result: 'win' } },
+      await expect(
+        service.updateMatch({
+          matchId: byeMatch.id,
+          scores: { opponent1: { score: 21, result: 'win' } },
+        })
+      ).rejects.toThrow('This match has a BYE and resolves automatically');
+
+      // WB R3 M1 is TBD vs TBD — waiting on earlier rounds.
+      const tbdMatch = mustFindMatch(
+        (m) => m.opponent1_id === null && m.opponent1_result === null && m.status === 0,
+        'a TBD match'
+      );
+      await expect(
+        service.updateMatch({
+          matchId: tbdMatch.id,
+          scores: { opponent1: { score: 2, result: 'win' } },
+        })
+      ).rejects.toThrow('This match is still waiting on earlier results');
+    });
+
+    it('adminCompleteByeMatch records a walkover score on a one-sided match (legacy tool)', async () => {
+      seedBracketRow();
+      const service = new BracketManagerService();
+      await service.createBracket({
+        bracketId: BRACKET_ID,
+        format: 'double_elimination',
+        teams: teams(6),
+        grandFinalType: 'double',
       });
+
+      const byeMatch = mustFindMatch(
+        (m) => m.number === 1 && m.opponent2_result === 'bye',
+        'WB R1 bye match'
+      );
+      const result = await service.adminCompleteByeMatch(byeMatch.id, 21);
+      expect(result).toMatchObject({ matchId: byeMatch.id, placedInMatchId: null });
 
       const after = matchRows().find((m) => m.id === byeMatch.id);
       expect(after).toMatchObject({
         status: 4,
         opponent1_score: 21,
         opponent1_result: 'win',
+        // The BYE sentinel on the empty side is preserved.
+        opponent2_result: 'bye',
       });
     });
   });
 
   describe('completion detection (markBracketCompleteIfDone)', () => {
-    it('KNOWN BUG (fixed in core-refactor step): unpopulated TBD matches do not block completion', async () => {
+    it('unpopulated TBD matches BLOCK completion (fixed: they used to be skipped)', async () => {
       // A downstream match whose opponent slots were never populated (silent
-      // propagation failure) is excluded from the "playable" filter, so the
-      // bracket is marked completed while a real match still awaits players.
+      // propagation failure) must keep the bracket incomplete — before the
+      // core refactor it was excluded from the check and the bracket was
+      // marked completed prematurely.
       seedBracketRow();
       db().seed('stage', [
         {
@@ -449,8 +473,8 @@ describe('bracket service characterization (real service + real library over fak
       } as unknown as BracketUpdateContext;
       await markBracketCompleteIfDone(ctx, BRACKET_ID);
 
-      // CURRENT (buggy) behavior: the unplayed final is invisible to the check.
-      expect(bracketState()).toBe('completed');
+      // The unplayed final blocks completion.
+      expect(bracketState()).toBe('pending');
     });
   });
 
@@ -523,14 +547,12 @@ describe('bracket service characterization (real service + real library over fak
         { name: 'T3', team_id: 'uuid-3', position: 4 },
       ]);
 
-      // inner_outer pairing with the new order: 1v4-slot, 2v3-slot.
-      // Status is Running (3), not Ready (2): update.seeding makes the
-      // library RE-READ existing matches through the SQL adapter, whose
-      // null-score inflation reads as "match started" — the same current
-      // adapter artifact characterized in playAllReadyMatches.
+      // inner_outer pairing with the new order: 1v4-slot, 2v3-slot. The
+      // faithful adapter keeps unplayed matches at Ready (the old null-score
+      // inflation used to flip them to Running here).
       const grid = snapshotSqlGrid();
-      expect(grid[0]).toBe('WB R1 M1: T1 vs T3 [Running]');
-      expect(grid[1]).toBe('WB R1 M2: T2 vs T4 [Running]');
+      expect(grid[0]).toBe('WB R1 M1: T1 vs T3 [Ready]');
+      expect(grid[1]).toBe('WB R1 M2: T2 vs T4 [Ready]');
     });
   });
 
@@ -586,13 +608,12 @@ describe('bracket service characterization (real service + real library over fak
         opponent1_score: null,
       });
 
-      // Score it again — the current bypass re-completes and re-propagates.
-      await service.updateMatch({
-        matchId: lbByeMatch.id,
-        scores: { opponent1: { score: 0 } },
-      });
+      // Score it again through the explicit admin action — it re-completes
+      // and re-propagates the winner downstream.
+      await service.adminCompleteByeMatch(lbByeMatch.id, 0);
       const recompleted = matchRows().find((m) => m.id === lbByeMatch.id);
-      expect(recompleted).toMatchObject({ status: 4, opponent1_result: 'win' });
+      expect(recompleted?.status).toBe(4);
+      expect([recompleted?.opponent1_result, recompleted?.opponent2_result]).toContain('win');
     });
   });
 
@@ -681,14 +702,14 @@ describe('bracket service characterization (real service + real library over fak
   });
 
   describe('final standings (server-side RPC)', () => {
-    it('refuses while any populated match is unresolved — including the ghost reset match after a decisive GF1', async () => {
+    it('a decisive GF1 archives the ghost reset match, so standings can finalize (fixed: it used to block)', async () => {
       // With grandFinal 'double', the library leaves GF2 populated+Ready when
-      // the WB champion decisively wins GF1. The standings pre-check (and the
-      // server RPC) treat that ghost match as unresolved, so standings are
-      // never written. Characterized here; the core-refactor step archives
-      // the ghost match so completion and standings agree with the library's
-      // own decisive-match semantics.
+      // the WB champion decisively wins GF1 (its own standings ignore it via
+      // getGrandFinalDecisiveMatch). The update service now archives the
+      // ghost match, so the bracket completes and the standings pre-check
+      // passes instead of reporting incomplete-matches forever.
       seedBracketRow();
+      db().setRpcHandler('finalize_bracket_standings', () => ({ data: 4, error: null }));
       const service = new BracketManagerService();
       await service.createBracket({
         bracketId: BRACKET_ID,
@@ -697,19 +718,25 @@ describe('bracket service characterization (real service + real library over fak
         grandFinalType: 'double',
       });
 
-      // Play everything except the reset match (GF R2).
+      // The WB champion (opponent1) wins every match including GF1; the reset
+      // match is never playable and gets archived automatically.
+      await playAllReadyMatches(service);
+
       const gfGroup = (db().rows('group') as { id: number; number: number }[]).find(
         (g) => g.number === 3
       );
       const gfRound2 = (
         db().rows('round') as { id: number; group_id: number; number: number }[]
       ).find((r) => r.group_id === gfGroup?.id && r.number === 2);
-      const gf2 = matchRows().find((m) => m.round_id === gfRound2?.id);
-      await playAllReadyMatches(service, { skipMatchIds: gf2 ? [gf2.id] : [] });
+      const ghostReset = mustFindMatch((m) => m.round_id === gfRound2?.id, 'the reset match');
+      expect(ghostReset.status).toBe(5);
+      expect(bracketState()).toBe('completed');
 
       const result = await service.calculateFinalStandings(BRACKET_ID);
-      expect(result).toEqual({ written: false, reason: 'incomplete-matches' });
-      expect(db().rpcCalls).toHaveLength(0);
+      expect(result).toEqual({ written: true });
+      expect(db().rpcCalls).toEqual([
+        { name: 'finalize_bracket_standings', args: { p_bracket_id: BRACKET_ID } },
+      ]);
     });
 
     it('invokes the finalize RPC once the bracket is fully resolved', async () => {

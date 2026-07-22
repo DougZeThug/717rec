@@ -5,57 +5,19 @@ import { supabase } from '@/integrations/supabase/client';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { bracketLog, errorLog } from '@/utils/logger';
 
-import {
-  mergeOpponentSlots,
-  transformMatchFromDb,
-  transformMatchToDb,
-} from './SupabaseSqlStorage/matchTransforms';
-import type { BmMatch, DbMatch, Id, ParticipantCacheEntry } from './SupabaseSqlStorage/types';
+import { transformMatchFromDb, transformMatchToDb } from './SupabaseSqlStorage/matchTransforms';
+import type { BmMatch, DbMatch, Id } from './SupabaseSqlStorage/types';
 
 /**
  * Supabase SQL Storage Adapter for brackets-manager
- * Implements the CrudInterface to work directly with Supabase SQL tables
+ * Implements the CrudInterface to work directly with Supabase SQL tables.
+ *
+ * The adapter is a FAITHFUL round-trip: strict-null BYE slots, unset
+ * score/result keys, and structural opponent positions all survive
+ * write-then-read unchanged (see matchTransforms). The library's own state
+ * machine depends on all three.
  */
 export class SupabaseSqlStorage implements CrudInterface {
-  private participantCache: Map<number, ParticipantCacheEntry> = new Map();
-
-  /**
-   * Load participants into cache for a tournament
-   * Call this before bracket operations to ensure position data is available
-   */
-  async loadParticipantsForTournament(tournamentId: string): Promise<void> {
-    const participants = await this.internalSelect('participant', {
-      tournament_id: tournamentId,
-    } as Partial<DataTypes['participant']>);
-
-    const participantArray = Array.isArray(participants) ? participants : [participants];
-
-    bracketLog(
-      `Loading ${participantArray.length} participants into cache for tournament ${tournamentId}`
-    );
-
-    for (const p of participantArray) {
-      // Cast to extended type that includes position from our database schema
-      const participant = p as DataTypes['participant'] & { position?: number };
-      if (participant.id && typeof participant.id === 'number') {
-        this.participantCache.set(participant.id, {
-          position: participant.position ?? 0,
-          name: participant.name ?? '',
-        });
-      }
-    }
-
-    bracketLog(`Participant cache loaded: ${this.participantCache.size} entries`);
-  }
-
-  /**
-   * Clear participant cache - call when bracket structure changes significantly
-   */
-  clearParticipantCache(): void {
-    this.participantCache.clear();
-    bracketLog('Participant cache cleared');
-  }
-
   /**
    * Get Supabase client with proper typing
    */
@@ -63,13 +25,10 @@ export class SupabaseSqlStorage implements CrudInterface {
     return supabase;
   }
 
-  /**
-   * Internal select method that bypasses cache loading
-   */
   private static readonly BRACKET_TABLE_COLUMNS: Record<string, string> = {
     participant: 'id, name, position, team_id, tournament_id',
     match:
-      'id, number, stage_id, group_id, round_id, child_count, status, opponent1_id, opponent1_score, opponent1_result, opponent2_id, opponent2_score, opponent2_result',
+      'id, number, stage_id, group_id, round_id, child_count, status, opponent1_id, opponent1_score, opponent1_result, opponent1_position, opponent2_id, opponent2_score, opponent2_result, opponent2_position',
     stage: 'id, name, number, settings, tournament_id, type',
     group: 'id, name, number, stage_id',
     round: 'id, group_id, name, number, stage_id',
@@ -95,9 +54,7 @@ export class SupabaseSqlStorage implements CrudInterface {
         if (!data) return null;
 
         // For match table, transform from DB format; cast to DataTypes[T] since TypeScript can't infer the conditional
-        return (
-          table === 'match' ? transformMatchFromDb(data as DbMatch, this.participantCache) : data
-        ) as DataTypes[T];
+        return (table === 'match' ? transformMatchFromDb(data as DbMatch) : data) as DataTypes[T];
       } else {
         Object.entries(filter).forEach(([key, value]) => {
           query = query.eq(key, value);
@@ -110,9 +67,7 @@ export class SupabaseSqlStorage implements CrudInterface {
 
     const rawData = (data || []) as DbMatch[];
     const transformedData =
-      table === 'match'
-        ? rawData.map((item) => transformMatchFromDb(item, this.participantCache))
-        : data || [];
+      table === 'match' ? rawData.map((item) => transformMatchFromDb(item)) : data || [];
     return transformedData as DataTypes[T][];
   }
 
@@ -213,35 +168,14 @@ export class SupabaseSqlStorage implements CrudInterface {
   ): Promise<boolean> {
     const client = this.getClient();
 
-    // Transform data for database storage
-    let transformedValues = SupabaseSqlStorage.transformDataForDb(table, values);
+    // Writes are applied verbatim: the library's full-object match updates
+    // are authoritative, including writes that clear an opponent slot
+    // (reset/reseed). The old "defensive merge" that blocked null overwrites
+    // actually CREATED duplicate-participant rows by rejecting the library's
+    // legitimate slot moves.
+    const transformedValues = SupabaseSqlStorage.transformDataForDb(table, values);
 
     bracketLog(`Update ${table}`, { filter });
-
-    // ⭐ DEFENSIVE MERGE: Prevent null from overwriting filled opponent slots
-    if (table === 'match' && ('opponent1' in values || 'opponent2' in values)) {
-      const matchId =
-        typeof filter === 'number' || typeof filter === 'string'
-          ? filter
-          : (filter as { id?: Id }).id;
-      const { data: currentMatch, error: fetchError } = await client
-        .from('match')
-        .select(
-          'id, opponent1_id, opponent2_id, opponent1_result, opponent2_result, round_id, group_id, number, status'
-        )
-        .eq('id', matchId as number)
-        .maybeSingle();
-
-      if (fetchError) {
-        handleDatabaseError(fetchError, 'Failed to fetch match for defensive merge');
-      }
-
-      // Apply defensive merge
-      transformedValues = mergeOpponentSlots(
-        currentMatch as DbMatch | null,
-        transformedValues as DbMatch
-      );
-    }
 
     let query = client.from(table).update(transformedValues as Record<string, unknown>);
 

@@ -257,7 +257,7 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
       await expect(service.updateMatch(options)).resolves.toBeUndefined();
     });
 
-    it('should handle BYE match unlock (status 0 or 1)', async () => {
+    it('should refuse BYE matches — they resolve automatically inside brackets-manager', async () => {
       const options = {
         matchId: 1,
         scores: {
@@ -279,31 +279,15 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
             round_id: 1,
           });
         }
-        if (table === 'match' && typeof filter === 'object') {
-          // Return empty array for LB matches query
-          return Promise.resolve([]);
-        }
-        if (table === 'stage' && filter === 1) {
-          return Promise.resolve({ id: 1, tournament_id: 'test-bracket' });
-        }
-        if (table === 'group') {
-          return Promise.resolve([]);
-        }
-        if (table === 'round') {
-          return Promise.resolve([]);
-        }
         return Promise.resolve(null);
       });
 
-      await expect(service.updateMatch(options)).resolves.toBeUndefined();
-
-      // BYE matches are now auto-completed (status 4) with scores
-      expect(mockSupabaseFrom.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: 4,
-          opponent1_result: 'win',
-        })
+      await expect(service.updateMatch(options)).rejects.toThrow(
+        'This match has a BYE and resolves automatically'
       );
+      // Nothing was written — one-sided matches go through the explicit
+      // adminCompleteByeMatch action instead.
+      expect(mockSupabaseFrom.update).not.toHaveBeenCalled();
     });
 
     it('should throw error with proper message on failure', async () => {
@@ -786,7 +770,8 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
         return Promise.resolve([]);
       });
 
-      mockSupabaseFrom.update.mockResolvedValue({ data: {}, error: null });
+      const updateEq = vi.fn().mockResolvedValue({ error: null });
+      mockSupabaseFrom.update.mockReturnValue({ eq: updateEq });
 
       await expect(service.normalizeLosersR1(stageId)).resolves.toBeUndefined();
 
@@ -796,6 +781,7 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
           opponent2_id: null,
         })
       );
+      expect(updateEq).toHaveBeenCalledWith('id', 1);
     });
 
     it('should shift opponent2 to opponent1 if opponent1 is empty', async () => {
@@ -812,7 +798,7 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
           return Promise.resolve([
             {
               id: 1,
-              opponent1: null, // Empty
+              opponent1: { id: null }, // Empty legacy TBD slot
               opponent2: { id: 2 }, // Should shift
               status: 2,
             },

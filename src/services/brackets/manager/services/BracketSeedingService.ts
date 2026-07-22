@@ -74,9 +74,6 @@ export class BracketSeedingService {
         tbds: seedingArray.filter((s) => s === null).length,
       });
 
-      // Load participants into cache before seeding update
-      await this.storage.loadParticipantsForTournament(bracketId);
-
       // Step 6: Update seeding via brackets-manager
       await this.manager.update.seeding(stageId, seedingArray, keepSameSize);
 

@@ -1,4 +1,5 @@
 import type { SupabaseSqlStorage } from '../../SupabaseSqlStorage';
+import { adminCompleteByeMatch } from './byeCompletion';
 import { isLosersByeMatch } from './eligibility';
 import { adminToggleByeReady } from './lifecycle';
 import { editMatchParticipants } from './participants';
@@ -15,6 +16,10 @@ export class BracketAdminService {
 
   adminToggleByeReady(matchId: number, makeReady: boolean, clearDownstream = false) {
     return adminToggleByeReady({ storage: this.storage }, matchId, makeReady, clearDownstream);
+  }
+
+  adminCompleteByeMatch(matchId: number, score = 0) {
+    return adminCompleteByeMatch({ storage: this.storage }, matchId, score);
   }
 
   editMatchParticipants(
