@@ -41,6 +41,7 @@ vi.mock('@/utils/logger', () => ({
 
 import { supabase } from '@/integrations/supabase/client';
 
+import { __resetBracketRealtimeCoalescerForTests } from '../bracketRealtimeCoalescer';
 import { useBracketsManagerRealtime } from '../useBracketsManagerRealtime';
 
 const BRACKET_ID = 'bracket-abc';
@@ -64,6 +65,7 @@ const createWrapper = () => {
 describe('useBracketsManagerRealtime', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    __resetBracketRealtimeCoalescerForTests();
     capturedPayloadCallback = null;
     capturedSubscribeCallback = null;
 
@@ -146,36 +148,38 @@ describe('useBracketsManagerRealtime', () => {
     await waitFor(() => expect(result.current.realtimeEnabled).toBe(false));
   });
 
-  it('invalidates bracket queries when a payload event fires', async () => {
+  it('coalesces a burst of payload events into ONE invalidation and ONE toast', async () => {
     const { queryClient, wrapper } = createWrapper();
     const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
     renderHook(() => useBracketsManagerRealtime(BRACKET_ID, STAGE_ID), { wrapper });
     await waitFor(() => expect(capturedPayloadCallback).not.toBeNull());
     const payloadCb = capturedPayloadCallback as (payload: unknown) => void;
 
-    act(() => {
-      payloadCb({ eventType: 'UPDATE', new: { id: 1 } });
-    });
+    vi.useFakeTimers();
+    try {
+      // One admin save emits several row events in quick succession.
+      act(() => {
+        for (let i = 0; i < 5; i++) payloadCb({ eventType: 'UPDATE', new: { id: i } });
+      });
+      // Nothing happens until the debounce window closes.
+      expect(invalidateSpy).not.toHaveBeenCalled();
+      expect(mockToast).not.toHaveBeenCalled();
 
-    expect(invalidateSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ queryKey: ['bracket-data', BRACKET_ID] })
-    );
-    expect(invalidateSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ queryKey: ['bracket-info', BRACKET_ID] })
-    );
-  });
+      act(() => {
+        vi.advanceTimersByTime(1600);
+      });
 
-  it('shows Bracket Updated toast when a realtime event fires', async () => {
-    const { wrapper } = createWrapper();
-    renderHook(() => useBracketsManagerRealtime(BRACKET_ID, STAGE_ID), { wrapper });
-    await waitFor(() => expect(capturedPayloadCallback).not.toBeNull());
-    const payloadCb = capturedPayloadCallback as (payload: unknown) => void;
-
-    act(() => {
-      payloadCb({ eventType: 'UPDATE', new: { id: 1 } });
-    });
-
-    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Bracket Updated' }));
+      expect(invalidateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ queryKey: ['bracket-data', BRACKET_ID] })
+      );
+      expect(invalidateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ queryKey: ['bracket-info', BRACKET_ID] })
+      );
+      expect(mockToast).toHaveBeenCalledTimes(1);
+      expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Bracket Updated' }));
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('calls supabase.removeChannel on unmount', async () => {
