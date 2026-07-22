@@ -3,12 +3,9 @@ import { useEffect, useState } from 'react';
 
 import { useBracketsManagerMatch } from '@/hooks/playoffs/useBracketsManagerMatch';
 import { useToast } from '@/hooks/useToast';
-import type { UpdateMatchOptions } from '@/services/brackets/manager';
 import { bracketManagerService } from '@/services/brackets/manager';
 import { errorLog, log } from '@/utils/logger';
 
-type MatchScores = UpdateMatchOptions['scores'];
-type MatchScore = MatchScores[keyof MatchScores];
 type ScoreDraft = {
   key: string;
   opponent1Score: number;
@@ -130,15 +127,10 @@ export const useMatchEditorState = ({ matchId, onClose, onSaved }: UseMatchEdito
       });
 
       if (isBye) {
-        const scores: Partial<Record<keyof MatchScores, MatchScore>> = {};
-
-        if (matchData.opponent1) {
-          scores.opponent1 = { score: opponent1Score, result: 'win' as const };
-        } else if (matchData.opponent2) {
-          scores.opponent2 = { score: opponent2Score, result: 'win' as const };
-        }
-
-        await bracketManagerService.updateMatch({ matchId, scores: scores as MatchScores });
+        // One-sided match: explicit admin action (legacy brackets only — new
+        // brackets resolve BYEs automatically inside brackets-manager).
+        const winnerScore = matchData.opponent1 ? opponent1Score : opponent2Score;
+        await bracketManagerService.adminCompleteByeMatch(matchId, winnerScore);
       } else {
         const scores: {
           opponent1: { score: number; result?: 'win' | 'loss' };

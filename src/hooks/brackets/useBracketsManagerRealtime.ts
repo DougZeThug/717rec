@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 
+import { scheduleBracketRefresh } from '@/hooks/brackets/bracketRealtimeCoalescer';
 import { subscribeWithRetry } from '@/hooks/realtime/subscribeWithRetry';
 import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
@@ -93,14 +94,23 @@ export function useBracketsManagerRealtime(
             bracketLog('Match table updated via realtime:', payload);
             setLastUpdate(new Date());
 
-            queryClientRef.current.invalidateQueries({ queryKey: ['bracket-data', bracketId] });
-            queryClientRef.current.invalidateQueries({ queryKey: ['bracket-info', bracketId] });
-            queryClientRef.current.refetchQueries({ queryKey: ['bracket-data', bracketId] });
-
-            toastRef.current({
-              title: 'Bracket Updated',
-              description: 'Match scores have been updated.',
-              duration: 3000,
+            // One admin save writes several match rows (score, propagation,
+            // archival) — coalesce the burst into a single refresh and at
+            // most one notification per logical save, shared across all hook
+            // instances watching this bracket.
+            scheduleBracketRefresh(`${bracketId}:${stageId}`, {
+              invalidate: () => {
+                queryClientRef.current.invalidateQueries({ queryKey: ['bracket-data', bracketId] });
+                queryClientRef.current.invalidateQueries({ queryKey: ['bracket-info', bracketId] });
+                queryClientRef.current.refetchQueries({ queryKey: ['bracket-data', bracketId] });
+              },
+              notify: () => {
+                toastRef.current({
+                  title: 'Bracket Updated',
+                  description: 'Match scores have been updated.',
+                  duration: 3000,
+                });
+              },
             });
           }
         ),

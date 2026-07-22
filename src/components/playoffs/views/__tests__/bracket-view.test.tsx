@@ -113,6 +113,10 @@ vi.mock('@/hooks/useRecalculateStandings', () => ({
   useRecalculateStandings: () => ({ recalculate: vi.fn(), isRecalculating: false }),
 }));
 
+vi.mock('@/hooks/useRepairBracket', () => ({
+  useRepairBracket: () => ({ repair: vi.fn(), isRepairing: false }),
+}));
+
 vi.mock('next-themes', () => ({
   useTheme: () => ({ resolvedTheme: 'light' }),
 }));

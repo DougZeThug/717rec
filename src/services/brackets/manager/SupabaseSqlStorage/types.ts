@@ -39,15 +39,9 @@ export interface DbMatch {
   opponent1_id?: number | null;
   opponent1_score?: number | null;
   opponent1_result?: string | null;
+  opponent1_position?: number | null;
   opponent2_id?: number | null;
   opponent2_score?: number | null;
   opponent2_result?: string | null;
-}
-
-/**
- * Participant cache entry
- */
-export interface ParticipantCacheEntry {
-  position: number;
-  name: string;
+  opponent2_position?: number | null;
 }

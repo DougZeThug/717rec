@@ -9,6 +9,7 @@ import { bracketLog, errorLog, failureLog, successLog } from '@/utils/logger';
 import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
 import type { CreateBracketOptions, StorageParticipant } from '../types/BracketServiceTypes';
 import { isErrorLike, serializeError } from '../utils/BracketErrorUtils';
+import { assertUniqueSeedingNames } from '../utils/seedingGuards';
 
 /**
  * Service responsible for bracket creation
@@ -31,6 +32,8 @@ export class BracketCreationService {
       format,
       teamCount: teams.length,
     });
+
+    assertUniqueSeedingNames(teams);
 
     try {
       // Step 1: Calculate required bracket size (next power of 2 for brackets-manager)
@@ -58,31 +61,39 @@ export class BracketCreationService {
       });
 
       // Step 3: Create seeding array in simple seed order
-      // brackets-manager will apply seedOrdering: 'inner_outer' to create proper matchups
+      // brackets-manager will apply seedOrdering: 'inner_outer' to create proper matchups.
+      // Seeding entries are objects carrying team_id — the library spreads
+      // extra fields onto the participant rows it inserts, so participants
+      // are linked to teams by id from the start (no name matching).
       bracketLog('📝 Step 3/5: Creating seeding array in seed order...');
 
-      const seeding: (string | null)[] = teamsBySeed
-        .map((t) => t.name)
+      const seeding: ({ name: string; team_id: string } | null)[] = teamsBySeed
+        .map((t) => ({ name: t.name, team_id: t.id }))
         .concat(Array(byesNeeded).fill(null));
 
       bracketLog('✅ Seeding array created:', {
         length: seeding.length,
         teams: seeding.filter((s) => s !== null).length,
         byes: seeding.filter((s) => s === null).length,
-        order: seeding.map((name, idx) => `Seed ${idx + 1}: ${name || 'BYE'}`),
+        order: seeding.map((entry, idx) => `Seed ${idx + 1}: ${entry?.name || 'BYE'}`),
       });
 
       // Step 4: Create bracket stage with brackets-manager
-      // Let the library create participant rows — we sync team_id afterward
       bracketLog('📝 Step 4/5: Creating bracket stage with brackets-manager...');
 
-      // Dynamic LB seed orderings based on bracket size (per brackets-manager docs)
+      // Dynamic LB seed orderings based on bracket size (per brackets-manager docs).
+      // Single elimination REQUIRES exactly one ordering entry — the library
+      // rejects the multi-entry list with "You must specify one seed ordering
+      // method." (Passing the DE list for SE was a long-standing creation bug.)
       const lbOrderings: Record<number, string[]> = {
         4: ['natural', 'reverse'],
         8: ['natural', 'reverse', 'natural'],
         16: ['natural', 'reverse_half_shift', 'reverse', 'natural'],
       };
-      const seedOrdering = ['inner_outer', ...(lbOrderings[bracketSize] || lbOrderings[16])];
+      const seedOrdering =
+        format === 'single_elimination'
+          ? ['inner_outer']
+          : ['inner_outer', ...(lbOrderings[bracketSize] || lbOrderings[16])];
 
       const stageConfig: {
         name: string;
@@ -112,10 +123,11 @@ export class BracketCreationService {
 
       bracketLog('✅ Stage created successfully in SQL tables');
 
-      // Step 5: Post-creation sync — link participants to teams
-      // brackets-manager created participants with names but no team_id/position.
-      // Mirror the pattern from BracketSeedingService to synchronize these fields.
-      bracketLog('📝 Step 5/5: Syncing team_id and position onto participants...');
+      // Step 5: Post-creation sync — write seed positions onto participants.
+      // team_id was persisted by the library itself (carried on the seeding
+      // objects); position is app-specific (1-based seed slot), resolved by
+      // team_id — never by name.
+      bracketLog('📝 Step 5/5: Syncing seed positions onto participants...');
 
       const participants = await this.storage.select('participant', {
         tournament_id: bracketId,
@@ -126,36 +138,26 @@ export class BracketCreationService {
           Array.isArray(participants) ? participants : [participants]
         ) as StorageParticipant[];
 
-        for (const participant of participantArray) {
-          if (participant.name === null) {
-            const { error: byeError } = await supabase
+        const seedIndexByTeamId = new Map(teamsBySeed.map((t, index) => [t.id, index]));
+        await Promise.all(
+          participantArray.map(async (participant) => {
+            const seedIndex = seedIndexByTeamId.get(participant.team_id ?? '');
+            if (seedIndex === undefined) return;
+            const { error: positionError } = await supabase
               .from('participant')
-              .update({ position: null, team_id: null })
+              .update({ position: seedIndex + 1 })
               .eq('id', participant.id);
-            if (byeError) handleDatabaseError(byeError, 'Failed to sync BYE participant');
-          } else {
-            const team = teamsBySeed.find((t) => t.name === participant.name);
-            if (team) {
-              const slotPosition = teamsBySeed.indexOf(team) + 1;
-              const { error: teamError } = await supabase
-                .from('participant')
-                .update({ position: slotPosition, team_id: team.id })
-                .eq('id', participant.id);
-              if (teamError) handleDatabaseError(teamError, 'Failed to sync participant to team');
+            if (positionError) {
+              handleDatabaseError(positionError, 'Failed to sync participant seed position');
             }
-          }
-        }
+          })
+        );
 
         bracketLog('✅ Participant sync complete:', {
           total: participantArray.length,
-          linked: participantArray.filter((p) => p.name !== null).length,
-          byes: participantArray.filter((p) => p.name === null).length,
+          linked: participantArray.filter((p) => p.team_id != null).length,
         });
       }
-
-      // Refresh cache with updated data
-      this.storage.clearParticipantCache();
-      await this.storage.loadParticipantsForTournament(bracketId);
 
       successLog('Bracket created successfully', bracketId);
     } catch (error) {

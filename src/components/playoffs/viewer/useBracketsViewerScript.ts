@@ -3,37 +3,38 @@ import { useEffect, useState } from 'react';
 import { loadBracketStyles } from '@/styles/bracket-styles';
 import { errorLog } from '@/utils/logger';
 
-const BRACKETS_VIEWER_URL =
-  'https://cdn.jsdelivr.net/npm/brackets-viewer@1.8.1/dist/brackets-viewer.min.js';
-let scriptLoadPromise: Promise<void> | null = null;
+import { importViewerBundle } from './viewerBundleLoader';
 
+let viewerLoadPromise: Promise<void> | null = null;
+
+/**
+ * Load the brackets-viewer library from the npm dependency (bundled by Vite
+ * into its own lazy chunk — no runtime CDN fetch). Importing the bundle
+ * executes its IIFE, which registers `window.bracketsViewer`. The version now
+ * always matches the CSS, which was already bundled from the same package.
+ */
 const loadBracketsViewerScript = (): Promise<void> => {
-  if (scriptLoadPromise) return scriptLoadPromise;
+  if (viewerLoadPromise) return viewerLoadPromise;
 
   if (window.bracketsViewer) {
     return Promise.resolve();
   }
 
-  scriptLoadPromise = new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = BRACKETS_VIEWER_URL;
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => {
-      // Clear the cached promise and drop the dead tag so the next mount
-      // retries the download instead of reusing this rejection forever.
-      scriptLoadPromise = null;
-      script.remove();
-      reject(new Error('Failed to load brackets-viewer script'));
-    };
-    document.head.appendChild(script);
-  });
+  viewerLoadPromise = importViewerBundle()
+    .then(() => undefined)
+    .catch((error: unknown) => {
+      // Clear the cached promise so the next mount retries the (chunk) load
+      // instead of reusing this rejection forever. (Browsers do not cache
+      // failed dynamic-import fetches, so the retry re-requests the chunk.)
+      viewerLoadPromise = null;
+      throw error instanceof Error ? error : new Error('Failed to load brackets-viewer');
+    });
 
-  return scriptLoadPromise;
+  return viewerLoadPromise;
 };
 
 /**
- * Hook that loads the brackets-viewer script and CSS.
+ * Hook that loads the brackets-viewer library and CSS.
  * Returns { isReady, error } indicating when the viewer library is available.
  */
 export const useBracketsViewerScript = () => {

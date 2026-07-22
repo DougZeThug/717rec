@@ -188,7 +188,7 @@ export const usePlayoffEditMatch = () => {
             team2Seed: matchData.team2_seed,
             nextWinMatchId: matchData.next_win_match_id,
             nextLoseMatchId: matchData.next_lose_match_id,
-            status: (matchData.status as 'pending' | 'in_progress' | 'completed') || 'pending',
+            status: (matchData.status as PlayoffMatch['status']) || 'pending',
             games: (matchData.playoff_games ?? [])
               .sort((a, b) => (a.game_number ?? 0) - (b.game_number ?? 0))
               .map(toPlayoffGame),

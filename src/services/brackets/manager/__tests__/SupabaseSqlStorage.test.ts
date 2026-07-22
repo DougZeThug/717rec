@@ -32,15 +32,9 @@ describe('SupabaseSqlStorage', () => {
     vi.clearAllMocks();
   });
 
-  it('loadParticipantsForTournament normalizes singleton/array and clearParticipantCache empties cache', async () => {
-    const participantRows = [
-      { id: 11, name: 'Alpha', position: 3, tournament_id: 't1' },
-      { id: 12, name: 'Beta', position: 8, tournament_id: 't1' },
-    ];
-
-    const eqParticipant = vi.fn().mockResolvedValue({ data: participantRows, error: null });
-    const participantSelect = vi.fn(() => ({ eq: eqParticipant }));
-
+  it('select(match, id) inflates structural opponent positions from their columns', async () => {
+    // Positions are the library's feeder markers, persisted per slot — they
+    // come from the match row itself, never from participant seed data.
     const eqMatch = vi.fn().mockReturnThis();
     const maybeSingle = vi.fn().mockResolvedValue({
       data: {
@@ -54,38 +48,22 @@ describe('SupabaseSqlStorage', () => {
         opponent1_id: 11,
         opponent1_score: null,
         opponent1_result: null,
+        opponent1_position: 1,
         opponent2_id: 12,
         opponent2_score: null,
         opponent2_result: null,
+        opponent2_position: null,
       },
       error: null,
     });
     const matchSelect = vi.fn(() => ({ eq: eqMatch, maybeSingle }));
-
-    mockFrom.mockImplementation((table: string) => ({
-      select: table === 'participant' ? participantSelect : matchSelect,
-    }));
+    mockFrom.mockReturnValue({ select: matchSelect });
 
     const storage = new SupabaseSqlStorage();
+    const match = await storage.select('match', 501);
 
-    await storage.loadParticipantsForTournament('t1');
-    const withCache = await storage.select('match', 501);
-
-    storage.clearParticipantCache();
-    const afterClear = await storage.select('match', 501);
-
-    expect(participantSelect).toHaveBeenCalledWith('id, name, position, team_id, tournament_id');
-    expect(eqParticipant).toHaveBeenCalledWith('tournament_id', 't1');
-    expect(withCache).toMatchObject({
-      opponent1: { id: 11, position: 3 },
-      opponent2: { id: 12, position: 8 },
-    });
-    expect(afterClear).toMatchObject({
-      opponent1: { id: 11, position: undefined },
-      opponent2: { id: 12, position: undefined },
-    });
-
-    expect(mockBracketLog).toHaveBeenCalledWith('Participant cache cleared');
+    expect(match).toMatchObject({ opponent1: { id: 11, position: 1 }, opponent2: { id: 12 } });
+    expect((match as { opponent2: object }).opponent2).not.toHaveProperty('position');
   });
 
   it('select(match, id) returns null when no row exists', async () => {
@@ -101,7 +79,7 @@ describe('SupabaseSqlStorage', () => {
     expect(result).toBeNull();
   });
 
-  it('select(match, id) re-inflates opponents and keeps null opponent slot defaults', async () => {
+  it('select(match, id) inflates NULL columns as bare TBD slots and the sentinel as a BYE', async () => {
     const eq = vi.fn().mockReturnThis();
     const maybeSingle = vi.fn().mockResolvedValue({
       data: {
@@ -117,7 +95,7 @@ describe('SupabaseSqlStorage', () => {
         opponent1_result: null,
         opponent2_id: null,
         opponent2_score: null,
-        opponent2_result: null,
+        opponent2_result: 'bye',
       },
       error: null,
     });
@@ -125,12 +103,16 @@ describe('SupabaseSqlStorage', () => {
     mockFrom.mockReturnValue({ select: vi.fn(() => ({ eq, maybeSingle })) });
 
     const storage = new SupabaseSqlStorage();
-    const result = await storage.select('match', 900);
+    const result = (await storage.select('match', 900)) as {
+      opponent1: object | null;
+      opponent2: object | null;
+    };
 
-    expect(result).toMatchObject({
-      opponent1: { id: null, score: null, result: null },
-      opponent2: { id: null, score: null, result: null },
-    });
+    // TBD: id-only object — no score/result keys (the library reads a
+    // defined score as "match started").
+    expect(result.opponent1).toEqual({ id: null });
+    // BYE sentinel: a strictly-null slot.
+    expect(result.opponent2).toBeNull();
   });
 
   it('non-match select uses configured explicit columns', async () => {
@@ -202,41 +184,19 @@ describe('SupabaseSqlStorage', () => {
     expect(singleInsertPayload).not.toHaveProperty('opponent2');
   });
 
-  it('update supports id filter and object filter branches', async () => {
-    const maybeSingle = vi
-      .fn()
-      .mockResolvedValue({ data: { id: 42, opponent1_id: 99, opponent2_id: 77 } });
-    const eqForPrefetch = vi.fn(() => ({ maybeSingle }));
-
+  it('update supports id filter and object filter branches without any prefetch', async () => {
     const eqUpdateId = vi.fn().mockResolvedValue({ error: null });
     const eqUpdateObject = vi
       .fn()
-      .mockReturnValueOnce({ eq: eqUpdateObjectEnd })
-      .mockImplementation(() => ({ error: null }));
-
-    function eqUpdateObjectEnd() {
-      return Promise.resolve({ error: null });
-    }
+      .mockReturnValueOnce({ eq: vi.fn().mockResolvedValue({ error: null }) });
 
     const update = vi
       .fn()
       .mockReturnValueOnce({ eq: eqUpdateId })
       .mockReturnValueOnce({ eq: eqUpdateObject });
+    const select = vi.fn();
 
-    mockFrom.mockImplementation((table: string) => {
-      if (table === 'match') {
-        return {
-          select: vi.fn(() => ({ eq: eqForPrefetch })),
-          update,
-        };
-      }
-
-      return {
-        update: vi.fn(() => ({
-          eq: vi.fn().mockReturnThis(),
-        })),
-      };
-    });
+    mockFrom.mockReturnValue({ select, update });
 
     const storage = new SupabaseSqlStorage();
 
@@ -255,41 +215,40 @@ describe('SupabaseSqlStorage', () => {
     expect(objectResult).toBe(true);
     expect(eqUpdateId).toHaveBeenCalledWith('id', 42);
     expect(eqUpdateObject).toHaveBeenCalledWith('id', 42);
-    expect(eqForPrefetch).toHaveBeenCalledWith('id', 42);
+    // No defensive-merge prefetch: writes are applied verbatim.
+    expect(select).not.toHaveBeenCalled();
   });
 
-  it('update defensive merge prevents null overwrite when existing slot is populated', async () => {
-    const maybeSingle = vi.fn().mockResolvedValue({
-      data: { id: 77, opponent1_id: 1001, opponent2_id: null },
-      error: null,
-    });
+  it('update applies slot clears verbatim — the library is authoritative', async () => {
+    // The retired "defensive merge" used to strip null id writes; that
+    // rejected the library's legitimate slot moves (reset/reseed) and
+    // created duplicate participants downstream.
     const updateEq = vi.fn().mockResolvedValue({ error: null });
     const update = vi.fn<(payload: Record<string, unknown>) => { eq: typeof updateEq }>(() => ({
       eq: updateEq,
     }));
 
-    mockFrom.mockReturnValue({
-      select: vi.fn(() => ({ eq: vi.fn(() => ({ maybeSingle })) })),
-      update,
-    });
+    mockFrom.mockReturnValue({ update });
 
     const storage = new SupabaseSqlStorage();
 
     await storage.update('match', { id: 77 }, {
-      opponent1: { id: null, score: null, result: null },
-      opponent2: { id: null, score: null, result: null },
+      opponent1: { id: null },
+      opponent2: { id: null },
     } as unknown as Partial<DataTypes['match']>);
 
     const payload = update.mock.calls[0][0] as Record<string, unknown>;
-    expect(payload).not.toHaveProperty('opponent1_id');
     expect(payload).toMatchObject({
+      opponent1_id: null,
+      opponent1_score: null,
+      opponent1_result: null,
       opponent2_id: null,
       opponent2_score: null,
       opponent2_result: null,
     });
   });
 
-  it('non-match update bypasses defensive match prefetch', async () => {
+  it('non-match update issues no select', async () => {
     const stageUpdateEq = vi.fn().mockResolvedValue({ error: null });
     const stageUpdate = vi.fn(() => ({ eq: stageUpdateEq }));
     const stageSelect = vi.fn();

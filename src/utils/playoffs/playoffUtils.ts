@@ -1,4 +1,4 @@
-import { PlayoffBracket } from './playoffTypes';
+import { PlayoffBracket, PlayoffMatchStatus } from './playoffTypes';
 
 // UUID validation utility
 export const isValidUuidSafe = (str: string): boolean => {
@@ -13,4 +13,17 @@ export const isBracketComplete = (bracket: PlayoffBracket): boolean => {
 
 export const isBracketInProgress = (bracket: PlayoffBracket): boolean => {
   return bracket.state === 'in_progress';
+};
+
+/**
+ * True when a playoff match is over: 'completed' (just finished) or
+ * 'archived' (finished and superseded by downstream rounds — brackets-manager
+ * status 5). Prefer this over comparing to 'completed' directly.
+ * Also accepts raw brackets-manager numeric statuses (4 Completed,
+ * 5 Archived) for cache entries that carry the numeric form.
+ */
+export const isPlayoffMatchFinished = (
+  status: PlayoffMatchStatus | string | number | undefined | null
+): boolean => {
+  return status === 'completed' || status === 'archived' || status === 4 || status === 5;
 };

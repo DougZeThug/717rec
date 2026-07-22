@@ -62,7 +62,7 @@ export async function transformFromSql(bracketId: string): Promise<ViewerDataWit
         .select('id, number, match_id, status, opponent1_score, opponent2_score'),
       supabase
         .from('participant')
-        .select('id, name, tournament_id, position')
+        .select('id, name, tournament_id, position, team_id')
         .eq('tournament_id', bracketId),
       supabase.from('group').select('id, number, stage_id').eq('stage_id', stageId),
       supabase.from('round').select('id, group_id, number'),
@@ -87,15 +87,16 @@ export async function transformFromSql(bracketId: string): Promise<ViewerDataWit
     participants.map((p) => ({ id: p.id, name: p.name }))
   );
 
-  // Fetch team data to get logos - participant names match team names
-  const teamNames = participants.map((p) => p.name).filter((name): name is string => name !== null);
+  // Fetch team data (logos + canonical names) by participant.team_id —
+  // id-keyed so a mid-playoffs team rename can't break logos or labels.
+  const teamIds = participants.map((p) => p.team_id).filter((id): id is string => id !== null);
 
-  debugLog('Fetching logos for teams:', teamNames);
+  debugLog('Fetching team details for team ids:', teamIds);
 
   const { data: teamsData, error: teamsError } = await supabase
     .from('teams')
-    .select('name, logo_url, image_url')
-    .in('name', teamNames);
+    .select('id, name, logo_url, image_url')
+    .in('id', teamIds);
 
   if (teamsError) {
     errorLog('Error fetching team logos:', teamsError);
@@ -103,20 +104,22 @@ export async function transformFromSql(bracketId: string): Promise<ViewerDataWit
 
   debugLog('Teams data fetched:', teamsData);
 
-  // Create a map of team name -> logo/image
-  const teamLogoMap = new Map<string, { logo_url?: string; image_url?: string }>();
+  // Map of team id -> team detail
+  const teamDetailMap = new Map<string, { name: string; logo_url?: string; image_url?: string }>();
   (teamsData || []).forEach((team) => {
-    teamLogoMap.set(team.name, {
+    teamDetailMap.set(team.id, {
+      name: team.name,
       logo_url: team.logo_url ?? undefined,
       image_url: team.image_url ?? undefined,
     });
   });
 
-  debugLog('Team logo map size:', teamLogoMap.size);
+  debugLog('Team detail map size:', teamDetailMap.size);
 
-  // Transform participants to include logos
+  // Transform participants to include logos; display name prefers the
+  // canonical teams.name, falling back to the participant snapshot name.
   const transformedParticipants = participants.map((p) => {
-    const teamData = p.name ? teamLogoMap.get(p.name) : null;
+    const teamData = p.team_id ? teamDetailMap.get(p.team_id) : null;
     const hasLogo = Boolean(teamData?.logo_url || teamData?.image_url);
 
     debugLog(`Participant "${p.name}":`, {
@@ -130,7 +133,7 @@ export async function transformFromSql(bracketId: string): Promise<ViewerDataWit
     return {
       id: p.id,
       tournament_id: p.tournament_id,
-      name: p.name,
+      name: teamData?.name ?? p.name,
       image: teamData?.image_url || teamData?.logo_url || undefined,
       position: p.position,
     };

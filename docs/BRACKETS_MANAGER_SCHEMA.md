@@ -95,14 +95,24 @@ Represents an individual match between two opponents.
 | `group_id` | integer | NOT NULL, FK → group(id) | Reference to group |
 | `round_id` | integer | NOT NULL, FK → round(id) | Reference to round |
 | `number` | integer | NOT NULL | Match number within round |
-| `status` | integer | NOT NULL, DEFAULT 1 | Match status (1=pending, 2=running, 3=waiting, 4=completed) |
-| `opponent1_id` | integer | NULL | First opponent (participant ID or null for BYE) |
-| `opponent2_id` | integer | NULL | Second opponent (participant ID or null for BYE) |
+| `status` | integer | NOT NULL, DEFAULT 1 | brackets-manager status (0=Locked, 1=Waiting, 2=Ready, 3=Running, 4=Completed, 5=Archived) |
+| `opponent1_id` | integer | NULL | First opponent (participant ID; NULL for TBD/BYE — see `opponent1_result`) |
+| `opponent2_id` | integer | NULL | Second opponent (participant ID; NULL for TBD/BYE — see `opponent2_result`) |
 | `opponent1_score` | integer | NULL | First opponent's score |
 | `opponent2_score` | integer | NULL | Second opponent's score |
-| `opponent1_result` | text | NULL | First opponent's result (win/loss/draw) |
-| `opponent2_result` | text | NULL | Second opponent's result (win/loss/draw) |
+| `opponent1_result` | text | NULL | First opponent's result (win/loss/draw), or the `'bye'` sentinel marking a strict BYE slot |
+| `opponent2_result` | text | NULL | Second opponent's result (win/loss/draw), or the `'bye'` sentinel marking a strict BYE slot |
+| `opponent1_position` | integer | NULL | brackets-manager structural feeder marker for slot 1 (written at stage creation; used for winner/loser routing) |
+| `opponent2_position` | integer | NULL | brackets-manager structural feeder marker for slot 2 |
 | `child_count` | integer | NOT NULL, DEFAULT 0 | Number of child matches feeding into this match |
+
+**BYE vs TBD:** brackets-manager distinguishes a strict BYE (opponent object is
+`null` — no participant will ever occupy the slot) from a TBD slot
+(`{ id: null }` — the participant arrives when a feeder match resolves). Both
+flatten to a NULL id column, so the storage adapter persists a `'bye'` value in
+the otherwise-unused result column of the BYE side and re-inflates it to a
+strict `null` on read. Rows created before this convention (no sentinel) read
+back as TBD.
 
 **Indexes:**
 - `idx_match_stage` on `stage_id`

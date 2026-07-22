@@ -46,7 +46,7 @@ import {
   fetchPlayoffTeams,
   fetchStageAndParticipants,
   fetchStageIdByTournament,
-  fetchTeamsByNames,
+  fetchTeamsByIds,
   validateSeeds,
 } from '../BracketReadService';
 
@@ -673,9 +673,9 @@ describe('fetchGroupsAndMatches', () => {
   });
 });
 
-// ─── fetchTeamsByNames ────────────────────────────────────────────────────────
+// ─── fetchTeamsByIds ──────────────────────────────────────────────────────────
 
-describe('fetchTeamsByNames', () => {
+describe('fetchTeamsByIds', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns teams on success', async () => {
@@ -685,7 +685,7 @@ describe('fetchTeamsByNames', () => {
           Promise.resolve({ data: [{ id: 't-1', name: 'Eagles', image_url: null }], error: null }),
       }),
     });
-    const result = await fetchTeamsByNames(['Eagles']);
+    const result = await fetchTeamsByIds(['t-1']);
     expect(result).toHaveLength(1);
   });
 
@@ -693,14 +693,14 @@ describe('fetchTeamsByNames', () => {
     mockFrom.mockReturnValue({
       select: () => ({ in: () => Promise.resolve({ data: null, error: null }) }),
     });
-    expect(await fetchTeamsByNames(['Eagles'])).toEqual([]);
+    expect(await fetchTeamsByIds(['t-1'])).toEqual([]);
   });
 
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue({
       select: () => ({ in: () => Promise.resolve({ data: null, error: pgError() }) }),
     });
-    await expect(fetchTeamsByNames(['Eagles'])).rejects.toThrow(DatabaseError);
+    await expect(fetchTeamsByIds(['t-1'])).rejects.toThrow(DatabaseError);
   });
 });
 

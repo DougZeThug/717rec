@@ -1,58 +1,79 @@
 import { supabase } from '@/integrations/supabase/client';
-import { bracketLog, errorLog } from '@/utils/logger';
+import { handleDatabaseError } from '@/utils/errorHandler';
+import { bracketLog } from '@/utils/logger';
 
 import type { StorageMatch, StorageStage } from '../../types/BracketServiceTypes';
 import type { BracketUpdateContext } from './types';
 
 /**
- * Check whether every playable match in the tournament is finished and, if so,
- * flip brackets.state to 'completed'. The .neq guard prevents redundant UPDATEs
- * (and the resulting duplicate realtime events). Errors are logged, never thrown.
+ * A match no longer stands in the way of bracket completion when:
+ *  - it is Completed (4) or Archived (5); or
+ *  - it has a strict-null BYE slot and NO TBD slot: BYE matches resolve
+ *    automatically and never "finish" in the normal sense.
  *
- * "Playable" = both opponents present. Reset matches in double-elimination that
- * were not needed (WB champion won the championship) never get a second opponent
- * and are correctly skipped by this filter.
+ * Crucially, a TBD slot ({ id: null } — a participant that arrives when an
+ * earlier match resolves) BLOCKS completion even when the other slot is a
+ * BYE. The old check filtered out every match without two populated slots,
+ * so a silent propagation failure could mark a bracket completed while a
+ * real match still awaited its players.
+ */
+const isMatchSettled = (match: StorageMatch): boolean => {
+  if (match.status === 4 || match.status === 5) return true;
+  const hasStrictBye = match.opponent1 === null || match.opponent2 === null;
+  // No BYE side: both slots hold (or await) real participants — the match
+  // must actually be played, whatever its slot state.
+  if (!hasStrictBye) return false;
+  // BYE side present: settled unless the OTHER side is a TBD still waiting
+  // on an earlier match ("BYE vs TBD" must block until the feeder resolves).
+  const tbdOnNonByeSide =
+    (match.opponent1 !== null && match.opponent1?.id == null) ||
+    (match.opponent2 !== null && match.opponent2?.id == null);
+  return !tbdOnNonByeSide;
+};
+
+/**
+ * Check whether every match in the tournament is settled and, if so, flip
+ * brackets.state to 'completed'. The .neq guard prevents redundant UPDATEs
+ * (and the resulting duplicate realtime events).
+ *
+ * Errors are THROWN: a completion check that cannot read or write leaves the
+ * bracket in an unknown state, and the caller must surface that instead of
+ * carrying on silently.
  */
 export async function markBracketCompleteIfDone(
-  ctx: BracketUpdateContext,
+  ctx: Pick<BracketUpdateContext, 'storage'>,
   tournamentId: string
 ): Promise<void> {
   const { storage } = ctx;
 
-  try {
-    const stages = await storage.select('stage', { tournament_id: tournamentId });
-    if (!stages) return;
-    const stagesArray = (Array.isArray(stages) ? stages : [stages]) as StorageStage[];
+  const stages = await storage.select('stage', { tournament_id: tournamentId });
+  if (!stages) return;
+  const stagesArray = (Array.isArray(stages) ? stages : [stages]) as StorageStage[];
 
-    const matchResults = await Promise.all(
-      stagesArray.map((s) => storage.select('match', { stage_id: s.id }))
-    );
-    const allMatches: StorageMatch[] = matchResults.flatMap((m) =>
-      !m ? [] : ((Array.isArray(m) ? m : [m]) as StorageMatch[])
-    );
+  const matchResults = await Promise.all(
+    stagesArray.map((s) => storage.select('match', { stage_id: s.id }))
+  );
+  const allMatches: StorageMatch[] = matchResults.flatMap((m) =>
+    !m ? [] : ((Array.isArray(m) ? m : [m]) as StorageMatch[])
+  );
 
-    if (allMatches.length === 0) return;
+  if (allMatches.length === 0) return;
 
-    const playable = allMatches.filter((m) => Boolean(m.opponent1?.id) && Boolean(m.opponent2?.id));
-    if (playable.length === 0) return;
-
-    // brackets-manager status: 4 = Completed, 5 = Archived (also done)
-    const allDone = playable.every((m) => m.status === 4 || m.status === 5);
-    if (!allDone) return;
-
-    const { error } = await supabase
-      .from('brackets')
-      .update({ state: 'completed' })
-      .eq('id', tournamentId)
-      .neq('state', 'completed');
-
-    if (error) {
-      errorLog('Failed to mark bracket as completed', error);
-      return;
-    }
-
-    bracketLog(`🏁 Bracket ${tournamentId} marked as completed`);
-  } catch (err) {
-    errorLog('markBracketCompleteIfDone failed', err);
+  const blocking = allMatches.filter((m) => !isMatchSettled(m));
+  if (blocking.length > 0) {
+    bracketLog(`Bracket ${tournamentId} not complete: ${blocking.length} match(es) outstanding`);
+    return;
   }
+
+  const { error } = await supabase
+    .from('brackets')
+    .update({ state: 'completed' })
+    .eq('id', tournamentId)
+    .neq('state', 'completed');
+
+  if (error) {
+    handleDatabaseError(error, 'Failed to mark bracket as completed');
+  }
+
+  bracketLog(`🏁 Bracket ${tournamentId} marked as completed`);
 }

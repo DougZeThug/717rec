@@ -3,6 +3,8 @@ import { BracketsManager } from 'brackets-manager';
 import { BracketAdminService } from './services/BracketAdminService';
 import { BracketCreationService } from './services/BracketCreationService';
 import { BracketNormalizationService } from './services/BracketNormalizationService';
+import type { BracketRepairSummary } from './services/BracketRepairService';
+import { BracketRepairService } from './services/BracketRepairService';
 import { BracketSeedingService } from './services/BracketSeedingService';
 import { BracketStandingsService } from './services/BracketStandingsService';
 import { BracketUpdateService } from './services/BracketUpdateService';
@@ -48,6 +50,7 @@ export class BracketManagerService {
   private seedingService: BracketSeedingService;
   private creationService: BracketCreationService;
   private updateService: BracketUpdateService;
+  private repairService: BracketRepairService;
 
   constructor() {
     this.storage = new SupabaseSqlStorage();
@@ -56,11 +59,7 @@ export class BracketManagerService {
     this.manager = new BracketsManager(this.storage, VERBOSE);
     this.normalizationService = new BracketNormalizationService(this.storage);
     this.adminService = new BracketAdminService(this.storage);
-    this.standingsService = new BracketStandingsService(
-      this.storage,
-      this.manager,
-      this.normalizationService
-    );
+    this.standingsService = new BracketStandingsService(this.storage, this.manager);
     this.seedingService = new BracketSeedingService(this.storage, this.manager);
     this.creationService = new BracketCreationService(this.storage, this.manager);
     this.updateService = new BracketUpdateService(
@@ -68,6 +67,33 @@ export class BracketManagerService {
       this.manager,
       this.normalizationService
     );
+    this.repairService = new BracketRepairService(
+      this.storage,
+      this.manager,
+      this.normalizationService
+    );
+  }
+
+  /**
+   * Admin-only: run a single explicit repair pass over a bracket.
+   *
+   * Consolidates the normalization/propagation machinery (losers-round slot
+   * fixes, grand-final population, stuck-winner propagation, readying fully
+   * populated matches) into one gated action for older/corrupted brackets,
+   * then re-evaluates bracket completion. Returns an auditable summary of
+   * what changed.
+   *
+   * @param bracketId - Bracket ID (stage.tournament_id) to repair
+   *
+   * @throws {NotFoundError} If the bracket has no stages
+   * @throws {DatabaseError} If any repair write fails
+   *
+   * @example
+   * const summary = await bracketManagerService.repairBracket('bracket-uuid');
+   * // { stagesRepaired: 1, matchesChanged: 2, statusesNormalized: 1, bracketMarkedCompleted: false }
+   */
+  repairBracket(bracketId: string): Promise<BracketRepairSummary> {
+    return this.repairService.repairBracket(bracketId);
   }
 
   /**
@@ -104,11 +130,16 @@ export class BracketManagerService {
   }
 
   /**
-   * Update a match result using brackets-manager with SQL storage
+   * Update a match result using brackets-manager with SQL storage.
    *
-   * Updates are serialized via matchUpdateQueue to prevent race conditions.
-   * Special handling for BYE matches: unlocks to status 2 without calling brackets-manager.
-   * For normal matches: runs normalizeLosersR1() 3 times with delays and normalizeGrandFinalPopulation().
+   * The library's own state machine performs the score write, winner/loser
+   * propagation, BYE resolution, and archival. Updates are serialized via
+   * matchUpdateQueue; errors are thrown loudly (no automatic repair — see
+   * repairBracket for the explicit admin action). Archived matches are
+   * temporarily unlocked so admins can correct earlier scores; with a double
+   * grand final, the unneeded reset match is archived when the first
+   * grand-final match is decisive. Bracket completion is re-evaluated after
+   * every update.
    *
    * @param options - Match update options
    * @param options.matchId - Match ID in the brackets-manager database
@@ -116,9 +147,10 @@ export class BracketManagerService {
    * @param options.scores.opponent1 - Score and result for opponent 1
    * @param options.scores.opponent2 - Score and result for opponent 2
    *
-   * @returns Promise that resolves when match is updated and winner is propagated
+   * @returns Promise that resolves when the match is updated and winners propagated
    *
-   * @throws {Error} If match update fails
+   * @throws {ValidationError} For one-sided matches (BYE/TBD) — not scoreable here
+   * @throws {BusinessLogicError} If the library refuses the update or a write fails
    *
    * @example
    * await bracketManagerService.updateMatch({
@@ -131,28 +163,18 @@ export class BracketManagerService {
    *
    * @remarks
    * Both win and loss must be explicitly set for proper loser propagation in double elimination.
-   * Updates are queued and processed serially to prevent race conditions during concurrent updates.
    */
   updateMatch(options: UpdateMatchOptions): Promise<void> {
     return this.updateService.updateMatch(options);
   }
 
   /**
-   * Normalize Losers Bracket Round 1 matches to fix duplicate participant issues
-   *
-   * Clears participant cache, finds LB group and Round 1, checks all matches for duplicates.
-   * Critical fix: detects if same participant is in both opponent slots and uses direct SQL
-   * to bypass defensive merge, clearing opponent2 and setting status to 4 (Waiting/BYE).
-   * Also shifts opponent2 to opponent1 if opponent1 is empty.
+   * Repair-only pass: normalize Losers Bracket Round 1 rows damaged in the
+   * legacy auto-repair era (duplicate participants, lone second-slot
+   * participants). Runs as part of repairBracket; kept public for targeted
+   * admin use and tests. Throws loudly on database failures.
    *
    * @param stageId - Stage ID in the brackets-manager database
-   *
-   * @returns Promise that resolves when normalization is complete
-   *
-   * @remarks
-   * - Public method used externally by tests and other services
-   * - Logs errors but does NOT throw (defensive, non-critical)
-   * - Returns early with log if no LB group or LB R1 found
    *
    * @example
    * await bracketManagerService.normalizeLosersR1(stageId);
@@ -306,6 +328,24 @@ export class BracketManagerService {
    */
   adminToggleByeReady(matchId: number, makeReady: boolean, clearDownstream = false) {
     return this.adminService.adminToggleByeReady(matchId, makeReady, clearDownstream);
+  }
+
+  /**
+   * Admin-only: complete a one-sided (BYE-side) match by advancing its sole
+   * real participant. Legacy-bracket tool — new brackets resolve BYEs
+   * automatically inside brackets-manager.
+   *
+   * @param matchId - Match ID in the brackets-manager database
+   * @param score - Score to record for the advancing team (default 0)
+   *
+   * @throws {ValidationError} If the match has zero or two real teams
+   * @throws {BusinessLogicError} If the match is archived or the next-round slot is occupied
+   *
+   * @example
+   * await bracketManagerService.adminCompleteByeMatch(42, 21);
+   */
+  adminCompleteByeMatch(matchId: number, score = 0) {
+    return this.adminService.adminCompleteByeMatch(matchId, score);
   }
 
   /**

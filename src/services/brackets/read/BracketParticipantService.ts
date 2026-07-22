@@ -114,17 +114,18 @@ export const fetchParticipantsByIds = async (ids: number[]) => {
 };
 
 /**
- * Fetch team details by team names
- * Used by useBracketData hook (step 4)
+ * Fetch team details by team ids (participant.team_id values).
+ * Used by useBracketData hook (step 4). Id-keyed so a team rename
+ * mid-playoffs cannot break resolution.
  */
-export const fetchTeamsByNames = async (teamNames: string[]) => {
+export const fetchTeamsByIds = async (teamIds: string[]) => {
   const { data, error } = await supabase
     .from('teams')
     .select('id, name, image_url')
-    .in('name', teamNames);
+    .in('id', teamIds);
 
   if (error) {
-    handleDatabaseError(error, 'Failed to fetch teams by names');
+    handleDatabaseError(error, 'Failed to fetch teams by ids');
   }
 
   return data ?? [];
