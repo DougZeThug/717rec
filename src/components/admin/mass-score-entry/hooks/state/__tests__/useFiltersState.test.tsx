@@ -2,9 +2,16 @@ import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 const mockBrackets = [{ id: 'b1', title: 'Bracket 1' }];
+const mockBracketsError = new Error('brackets down');
+const mockRefetchBrackets = vi.fn();
 
 vi.mock('@/hooks/brackets/useBracketsQuery', () => ({
-  useBracketsQuery: () => ({ brackets: mockBrackets }),
+  useBracketsQuery: () => ({
+    brackets: mockBrackets,
+    error: mockBracketsError,
+    isLoading: false,
+    refetch: mockRefetchBrackets,
+  }),
 }));
 
 vi.mock('@/utils/logger', () => ({
@@ -47,5 +54,15 @@ describe('useFiltersState', () => {
       result.current.clearFilters();
     });
     expect(result.current.filters).toEqual({});
+  });
+
+  it('threads bracket error, loading, and refetch through instead of dropping them', () => {
+    const { result } = renderHook(() => useFiltersState());
+
+    expect(result.current.bracketsError).toBe(mockBracketsError);
+    expect(result.current.bracketsLoading).toBe(false);
+
+    result.current.refetchBrackets();
+    expect(mockRefetchBrackets).toHaveBeenCalledTimes(1);
   });
 });

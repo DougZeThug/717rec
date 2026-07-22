@@ -1,31 +1,29 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 import { fetchBracketsForSelector } from '@/services/brackets/BracketReadService';
-import { errorLog } from '@/utils/logger';
+import type { BracketOption } from '@/services/brackets/read/BracketSelectorService';
+
+// Stable fallback so consumers don't see a fresh [] reference every render.
+const EMPTY_BRACKETS: BracketOption[] = [];
 
 /**
  * Shared hook for fetching brackets data
- * Consolidates duplicated bracket fetching logic across the app
+ * Consolidates duplicated bracket fetching logic across the app.
+ * Errors propagate to `error` so consumers can render a retryable failure
+ * state instead of a silently empty list.
  */
 export const useBracketsQuery = () => {
-  const [brackets, setBrackets] = useState<{ id: string; title: string }[]>([]);
-
-  const fetchBrackets = async () => {
-    try {
-      const data = await fetchBracketsForSelector();
-      setBrackets(data);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
-      errorLog('Error fetching brackets:', message);
-    }
-  };
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
-    fetchBrackets();
-  }, []);
+  const { data, error, isLoading, refetch } = useQuery({
+    // Lives under the ['brackets'] prefix so bracket create/update flows that
+    // invalidate ['brackets'] also refresh this selector list.
+    queryKey: ['brackets', 'selector'],
+    queryFn: () => fetchBracketsForSelector(),
+  });
 
   return {
-    brackets,
+    brackets: data ?? EMPTY_BRACKETS,
+    error: error ?? null,
+    isLoading,
+    refetch,
   };
 };

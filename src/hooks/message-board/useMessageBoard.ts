@@ -99,11 +99,14 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     queryKey,
     initialPageParam: undefined as string | undefined,
     refetchOnMount: 'always',
-    queryFn: async ({ pageParam }) => {
-      const page = await fetchMessages({
-        ...baseOptions,
-        olderThan: pageParam,
-      });
+    queryFn: async ({ pageParam, signal }) => {
+      const page = await fetchMessages(
+        {
+          ...baseOptions,
+          olderThan: pageParam,
+        },
+        signal
+      );
       const hasMore = page.length === PAGE_SIZE;
       const byId = new Map(page.map((message) => [message.id, message]));
       realtimeDeletesRef.current.forEach((id) => {

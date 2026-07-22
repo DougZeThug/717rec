@@ -1,10 +1,10 @@
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 
 import { useAuth } from '@/contexts/auth-context';
 import { useTeamMembership } from '@/hooks/useTeamMembership';
 import { toast } from '@/hooks/useToast';
 import { MessageService } from '@/services/messages/MessageService';
-import { Message, MessageCategory } from '@/types/reactions';
+import { MessageCategory } from '@/types/reactions';
 import { errorLog } from '@/utils/logger';
 
 import { MessageQueryOptions } from './types';
@@ -13,28 +13,15 @@ export const useMessageApi = () => {
   const { user, profile } = useAuth();
   const { membership } = useTeamMembership();
 
-  // Abort controller for cancelling in-flight requests
-  const abortControllerRef = useRef<AbortController | null>(null);
-
-  const fetchMessages = useCallback(async (options: MessageQueryOptions = {}) => {
-    // Cancel any in-flight request
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    // Create new abort controller
-    abortControllerRef.current = new AbortController();
-
-    try {
-      return await MessageService.fetchMessages(options, abortControllerRef.current.signal);
-    } catch (err: unknown) {
-      // Ignore abort errors - these are intentional cancellations
-      if (err instanceof Error && (err.name === 'AbortError' || err.message?.includes('aborted'))) {
-        return [] as Message[];
-      }
-      throw err;
-    }
-  }, []);
+  // Cancellation is owned by TanStack Query: the caller (useMessageBoard's
+  // queryFn) passes the signal the library hands it, and the library discards
+  // aborted requests itself. Aborts and failures must reject — resolving with
+  // [] here would let an aborted request be cached as an empty page.
+  const fetchMessages = useCallback(
+    (options: MessageQueryOptions = {}, signal?: AbortSignal) =>
+      MessageService.fetchMessages(options, signal),
+    []
+  );
 
   const createMessage = async (content: string, category: MessageCategory = 'General') => {
     if (!user || !profile?.username) {

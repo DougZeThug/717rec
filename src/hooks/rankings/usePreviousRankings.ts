@@ -1,114 +1,55 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
+import { loadRankingsFromDatabase } from '@/services/rankings/RankingPersistenceService';
 import { debugLog, errorLog } from '@/utils/logger';
 
-// Define interface for the stored rankings data with timestamp
-interface RankingsData {
+interface PreviousRankingsResult {
   rankings: Record<string, number>;
-  timestamp: string;
-  version: number;
+  lastUpdated: string | null;
 }
 
-// Minimum time (in hours) before updating historical rankings
-const HISTORY_UPDATE_THRESHOLD_HOURS = 12;
+// Stable fallback so consumers' effect dependencies don't see a fresh {} each render.
+const EMPTY_RANKINGS: Record<string, number> = {};
 
-// Helper to determine if historical data should be updated based on timestamp
-const shouldUpdateHistoricalData = (timestamp: string): boolean => {
-  if (!timestamp) return true;
+/**
+ * Load the previous-rankings baseline used for trend arrows.
+ * Database first (ranking_snapshots), falling back to the localStorage backup
+ * written by saveRankingsToStorage (a plain teamId → rank map). Pure read —
+ * never writes to storage or the database.
+ */
+const loadPreviousRankings = async (): Promise<PreviousRankingsResult> => {
+  try {
+    const dbRankings = await loadRankingsFromDatabase();
+    if (Object.keys(dbRankings).length > 0) {
+      debugLog('Loaded previous rankings from database');
+      return { rankings: dbRankings, lastUpdated: new Date().toISOString() };
+    }
+  } catch (error) {
+    errorLog('Error loading rankings from database, falling back to localStorage:', error);
+  }
 
-  const lastUpdate = new Date(timestamp).getTime();
-  const now = new Date().getTime();
-  const hoursSinceUpdate = (now - lastUpdate) / (1000 * 60 * 60);
-
-  debugLog(`Hours since last historical update: ${hoursSinceUpdate.toFixed(2)}`);
-
-  // Only update if sufficient time has passed
-  return hoursSinceUpdate > HISTORY_UPDATE_THRESHOLD_HOURS;
+  try {
+    const rankings: Record<string, number> = JSON.parse(
+      localStorage.getItem('previousRankings') || '{}'
+    );
+    return { rankings, lastUpdated: localStorage.getItem('rankingsLastUpdated') };
+  } catch (error) {
+    errorLog('Error parsing localStorage rankings backup:', error);
+    return { rankings: EMPTY_RANKINGS, lastUpdated: null };
+  }
 };
 
 export const usePreviousRankings = (): {
   previousRankings: Record<string, number>;
   lastUpdated: string | null;
 } => {
-  const [previousRankings, setPreviousRankings] = useState<Record<string, number>>({});
-  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const { data } = useQuery({
+    queryKey: ['previous-rankings'],
+    queryFn: loadPreviousRankings,
+  });
 
-  useEffect(() => {
-    const loadRankings = async () => {
-      try {
-        debugLog('Loading historical and current ranking data');
-
-        // Try to load from database first
-        const { loadRankingsFromDatabase } =
-          await import('@/services/rankings/RankingPersistenceService');
-        const dbRankings = await loadRankingsFromDatabase();
-
-        if (Object.keys(dbRankings).length > 0) {
-          debugLog('Loaded rankings from database');
-          setPreviousRankings(dbRankings);
-          setLastUpdated(new Date().toISOString());
-          return;
-        }
-
-        // Fallback to localStorage if database is empty
-        const savedHistoricalData = localStorage.getItem('previousRankings');
-        const savedCurrentData = localStorage.getItem('currentRankings');
-
-        if (savedHistoricalData) {
-          try {
-            const parsedHistoricalData: RankingsData = JSON.parse(savedHistoricalData);
-            debugLog('Loaded historical rankings data from localStorage');
-
-            setPreviousRankings(parsedHistoricalData.rankings);
-            setLastUpdated(parsedHistoricalData.timestamp);
-
-            // If there's current data available, check if we need to update historical data
-            if (savedCurrentData) {
-              try {
-                const parsedCurrentData: RankingsData = JSON.parse(savedCurrentData);
-
-                // Check if historical data should be updated based on timestamp
-                if (shouldUpdateHistoricalData(parsedHistoricalData.timestamp)) {
-                  debugLog('Historical data needs updating - threshold time has passed');
-
-                  // Update historical data with the current data
-                  localStorage.setItem('previousRankings', savedCurrentData);
-                  setPreviousRankings(parsedCurrentData.rankings);
-                  setLastUpdated(parsedCurrentData.timestamp);
-                }
-              } catch (parseError) {
-                errorLog('Error parsing current rankings:', parseError);
-              }
-            }
-          } catch (parseError) {
-            errorLog('Error parsing historical rankings:', parseError);
-            // Clear invalid data
-            localStorage.removeItem('previousRankings');
-            setPreviousRankings({});
-          }
-        } else {
-          debugLog('No historical rankings found');
-
-          // If no historical data but we have current data, use that as baseline
-          if (savedCurrentData) {
-            try {
-              const parsedCurrentData: RankingsData = JSON.parse(savedCurrentData);
-              localStorage.setItem('previousRankings', savedCurrentData);
-              setPreviousRankings(parsedCurrentData.rankings);
-              setLastUpdated(parsedCurrentData.timestamp);
-              debugLog('Current rankings promoted to historical rankings (first run)');
-            } catch (parseError) {
-              errorLog('Error parsing current rankings during promotion:', parseError);
-            }
-          }
-        }
-      } catch (error) {
-        errorLog('Error loading rankings data:', error);
-      }
-    };
-
-    loadRankings();
-  }, []);
-
-  return { previousRankings: previousRankings ?? {}, lastUpdated };
+  return {
+    previousRankings: data?.rankings ?? EMPTY_RANKINGS,
+    lastUpdated: data?.lastUpdated ?? null,
+  };
 };

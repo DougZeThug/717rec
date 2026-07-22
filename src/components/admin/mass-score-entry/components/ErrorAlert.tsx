@@ -10,6 +10,7 @@ interface ErrorAlertProps {
   savedCount?: number;
   message?: string;
   onClear?: () => void;
+  onRetry?: () => void;
   onRetryFailed?: () => void;
   retryDisabled?: boolean;
 }
@@ -20,6 +21,7 @@ const ErrorAlert: React.FC<ErrorAlertProps> = ({
   savedCount,
   message,
   onClear,
+  onRetry,
   onRetryFailed,
   retryDisabled = false,
 }) => {
@@ -31,11 +33,24 @@ const ErrorAlert: React.FC<ErrorAlertProps> = ({
         <AlertCircle className="size-4" />
         <AlertDescription className="flex items-center justify-between gap-3">
           <span>{message}</span>
-          {onClear && (
-            <Button type="button" variant="ghost" size="sm" onClick={onClear}>
-              Dismiss
-            </Button>
-          )}
+          <div className="flex gap-2">
+            {onRetry && (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={onRetry}
+                disabled={retryDisabled}
+              >
+                <RotateCcw className="mr-1 size-3" /> Retry
+              </Button>
+            )}
+            {onClear && (
+              <Button type="button" variant="ghost" size="sm" onClick={onClear}>
+                Dismiss
+              </Button>
+            )}
+          </div>
         </AlertDescription>
       </Alert>
     );

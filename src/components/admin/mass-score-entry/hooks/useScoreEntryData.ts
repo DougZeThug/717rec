@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 
 import { useMatchSubmission } from '@/hooks/matches/useMatchSubmission';
@@ -6,6 +6,7 @@ import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheU
 import { useToast } from '@/hooks/useToast';
 import { errorLog, filterLog, scoreLog } from '@/utils/logger';
 
+import { MatchWithTeams } from '../types';
 import { getMatchDisplayName, isSubmittableMatch } from '../utils/submissionEligibility';
 import { useErrorHandling } from './error/useErrorHandling';
 import { useMatchesFetching } from './fetching/useMatchesFetching';
@@ -27,8 +28,6 @@ export const useScoreEntryData = () => {
     setMatches,
     originalMatches: _originalMatches,
     setOriginalMatches,
-    loading,
-    setLoading,
     submitting,
     setSubmitting,
   } = useMatchesState();
@@ -38,6 +37,9 @@ export const useScoreEntryData = () => {
   const {
     filters,
     brackets,
+    bracketsError,
+    bracketsLoading,
+    refetchBrackets,
     setFilterDate,
     setBracketFilter,
     clearFilters,
@@ -46,7 +48,7 @@ export const useScoreEntryData = () => {
 
   const { failedMatches, errorMessages, clearErrors, addError } = useErrorHandling();
 
-  const { fetchMatches } = useMatchesFetching();
+  const { fetchMatches, fetchMatchesOrThrow } = useMatchesFetching();
 
   useMatchEventListeners({ updateFiltersForMatchDate });
 
@@ -55,38 +57,71 @@ export const useScoreEntryData = () => {
     setMatches
   );
 
+  // Date objects aren't stable query-key material — serialize them.
+  const filterDateKey = filters.date ? filters.date.toISOString() : null;
+  const bracketKey = filters.bracketId ?? null;
+  const matchesQueryKey = ['mass-score-matches', filterDateKey, bracketKey];
+
+  const matchesQuery = useQuery({
+    queryKey: matchesQueryKey,
+    queryFn: () => fetchMatchesOrThrow(filters),
+    // The table holds unsaved local edits; background refetches would clobber
+    // them. Refetch only on filter change, explicit refetch(), or invalidation.
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
+
   const removeMatch = (matchId: string) => {
     setMatches((prev) => prev.filter((m) => m.id !== matchId));
+    // Keep the query cache in step so the removed row can't reappear when the
+    // sync effect below re-runs; the merge there preserves other rows' edits.
+    queryClient.setQueryData<MatchWithTeams[]>(matchesQueryKey, (old) =>
+      old?.filter((m) => m.id !== matchId)
+    );
+    // Lists cached under other filters may still contain the row, and the
+    // app-wide 5-minute staleTime would replay them on a filter switch — drop
+    // them so the deleted match can't resurface.
+    queryClient.removeQueries({ queryKey: ['mass-score-matches'], type: 'inactive' });
   };
 
   // Track whether this is the initial mount (auto-set date only on first load)
   const isInitialLoad = useRef(true);
 
+  // Sync fetched server data into the editable local state. TanStack Query only
+  // exposes data for the *current* filter key (raced or stale responses are
+  // discarded by the library), and structural sharing keeps `data` referentially
+  // stable when a refetch returns identical rows, so this runs on real changes only.
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      const fetchedMatches = await fetchMatches(filters);
+    const fetchedMatches = matchesQuery.data;
+    if (!fetchedMatches) return;
 
-      // Only auto-set the date filter on initial mount (not after user clears filters)
-      if (isInitialLoad.current && fetchedMatches.length > 0 && !filters.date) {
-        isInitialLoad.current = false;
-        const latestMatch = [...fetchedMatches].sort((a, b) => {
-          return new Date(b.date ?? '').getTime() - new Date(a.date ?? '').getTime();
-        })[0];
-        if (latestMatch?.date) {
-          filterLog('Auto-setting filter date to latest match date', latestMatch.date);
-          updateFiltersForMatchDate(new Date(latestMatch.date));
-        }
-      } else {
-        isInitialLoad.current = false;
+    // Only auto-set the date filter on initial mount (not after user clears filters)
+    if (isInitialLoad.current && fetchedMatches.length > 0 && !filters.date) {
+      isInitialLoad.current = false;
+      const latestMatch = [...fetchedMatches].sort((a, b) => {
+        return new Date(b.date ?? '').getTime() - new Date(a.date ?? '').getTime();
+      })[0];
+      if (latestMatch?.date) {
+        filterLog('Auto-setting filter date to latest match date', latestMatch.date);
+        updateFiltersForMatchDate(new Date(latestMatch.date));
       }
+    } else {
+      isInitialLoad.current = false;
+    }
 
-      setMatches(fetchedMatches);
-      setLoading(false);
-    };
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- initial mount fetch + filter sync; deps would cause refetch loop
-  }, [filters.date, filters.bracketId]);
+    // Merge instead of replace: rows with unsaved edits keep their local state
+    // so a background refresh can't wipe an admin's in-progress score entry.
+    setMatches((prev) => {
+      const prevById = new Map(prev.map((m) => [m.id, m]));
+      return fetchedMatches.map((fetched) => {
+        const local = prevById.get(fetched.id);
+        return local?.isEdited ? local : fetched;
+      });
+    });
+    // Originals always snapshot pure server state (used for stats reversal).
+    setOriginalMatches(new Map(fetchedMatches.map((m) => [m.id, { ...m }])));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sync runs only when the query result changes
+  }, [matchesQuery.data]);
 
   const handleSubmitAll = async (matchIds?: string[]) => {
     scoreLog('Starting match submission process');
@@ -193,6 +228,10 @@ export const useScoreEntryData = () => {
     } finally {
       // Invalidate cache so React Query re-fetches fresh data in the background.
       await invalidateMatchRelatedQueries(queryClient);
+      // Lists cached under other filters now hold pre-submission scores, and
+      // the app-wide 5-minute staleTime would replay them on a filter switch —
+      // drop them so stale scores can't resurface.
+      queryClient.removeQueries({ queryKey: ['mass-score-matches'], type: 'inactive' });
       const fetchedMatches = await fetchMatches(filters);
 
       // Only merge fetched data if the fetch returned results — an empty array
@@ -223,6 +262,10 @@ export const useScoreEntryData = () => {
             return m;
           })
         );
+
+        // Keep the query cache in step with the fresh server state so a later
+        // cache sync can't resurrect pre-submission scores.
+        queryClient.setQueryData<MatchWithTeams[]>(matchesQueryKey, fetchedMatches);
       }
 
       setSubmitting(false);
@@ -232,12 +275,17 @@ export const useScoreEntryData = () => {
   return {
     matches,
     submittableMatchesCount: matches.filter(isSubmittableMatch).length,
-    loading,
+    loading: matchesQuery.isLoading,
+    loadError: matchesQuery.error ?? null,
+    refetchMatches: matchesQuery.refetch,
     submitting,
     lastBatchSummary,
     failedMatches,
     errorMessages,
     brackets,
+    bracketsError,
+    bracketsLoading,
+    refetchBrackets,
     filters,
     handleScoreChange,
     handleGameWinsChange,

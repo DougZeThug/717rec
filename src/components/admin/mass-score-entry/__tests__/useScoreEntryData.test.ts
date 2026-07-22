@@ -170,6 +170,106 @@ describe('useScoreEntryData - initial load', () => {
   });
 });
 
+describe('useScoreEntryData - load failure', () => {
+  it('surfaces a load error instead of masquerading as an empty list', async () => {
+    vi.mocked(fetchMatchesForAdmin).mockRejectedValue(new Error('network down'));
+
+    const { result } = renderHook(() => useScoreEntryData(), { wrapper: createWrapper() });
+
+    await waitFor(() => expect(result.current.loadError).toBeInstanceOf(Error));
+    expect(result.current.loading).toBe(false);
+    expect(result.current.matches).toEqual([]);
+    expect(typeof result.current.refetchMatches).toBe('function');
+  });
+});
+
+describe('useScoreEntryData - filter changes', () => {
+  it('refetches on filter change and keeps unsaved edits for rows still shown', async () => {
+    const { result } = renderHook(() => useScoreEntryData(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.matches.length).toBeGreaterThan(0));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => {
+      result.current.handleScoreChange(0, 1, 0);
+    });
+    const editedId = result.current.matches[0].id;
+
+    act(() => {
+      result.current.setFilterDate(new Date('2026-06-25T18:00:00.000Z'));
+    });
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await waitFor(() => expect(result.current.matches.length).toBeGreaterThan(0));
+
+    const edited = result.current.matches.find((m) => m.id === editedId);
+    expect(edited?.isEdited).toBe(true);
+    expect(edited?.team1Score).toBe(1);
+  });
+});
+
+describe('useScoreEntryData - cross-filter cache hygiene', () => {
+  const createClientAndWrapper = () => {
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false, staleTime: 5 * 60 * 1000 },
+        mutations: { retry: false },
+      },
+    });
+    const wrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return { queryClient, wrapper };
+  };
+
+  it('drops lists cached under other filters after a submission', async () => {
+    const { queryClient, wrapper } = createClientAndWrapper();
+    const { result } = renderHook(() => useScoreEntryData(), { wrapper });
+    await waitFor(() => expect(result.current.matches.length).toBeGreaterThan(0));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    // Simulate a previously visited filter whose cached rows predate the save.
+    const siblingKey = ['mass-score-matches', '2026-01-01T00:00:00.000Z', null];
+    queryClient.setQueryData(siblingKey, [{ id: 'stale-row' }]);
+
+    act(() => {
+      result.current.handleScoreChange(0, 1, 0);
+    });
+    act(() => {
+      result.current.handleMarkCompleted(0, true);
+    });
+    await act(async () => {
+      await result.current.handleSubmitAll();
+    });
+
+    expect(queryClient.getQueryData(siblingKey)).toBeUndefined();
+  });
+
+  it('removeMatch drops the row from the current cache and clears other filters', async () => {
+    const { queryClient, wrapper } = createClientAndWrapper();
+    const { result } = renderHook(() => useScoreEntryData(), { wrapper });
+    await waitFor(() => expect(result.current.matches.length).toBeGreaterThan(0));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    const siblingKey = ['mass-score-matches', '2026-01-01T00:00:00.000Z', null];
+    queryClient.setQueryData(siblingKey, [{ id: 'stale-row' }]);
+
+    const removedId = result.current.matches[0].id;
+    const currentKey = [
+      'mass-score-matches',
+      result.current.filters.date?.toISOString() ?? null,
+      result.current.filters.bracketId ?? null,
+    ];
+
+    act(() => {
+      result.current.removeMatch(removedId);
+    });
+
+    expect(result.current.matches.find((m) => m.id === removedId)).toBeUndefined();
+    const currentCache = queryClient.getQueryData<{ id: string }[]>(currentKey);
+    expect(currentCache?.find((m) => m.id === removedId)).toBeUndefined();
+    expect(queryClient.getQueryData(siblingKey)).toBeUndefined();
+  });
+});
+
 describe('useScoreEntryData - score handling', () => {
   it('handleScoreChange updates scores, marks edited, and validates', async () => {
     const { result } = renderHook(() => useScoreEntryData(), { wrapper: createWrapper() });

@@ -86,7 +86,8 @@ describe('useMessageBoard', () => {
 
     expect(result.current.messages).toEqual([baseMessage]);
     expect(mockFetchMessages).toHaveBeenCalledWith(
-      expect.objectContaining({ limit: 10, category: null, teamId: null, searchQuery: null })
+      expect.objectContaining({ limit: 10, category: null, teamId: null, searchQuery: null }),
+      expect.any(AbortSignal)
     );
   });
 
@@ -120,7 +121,8 @@ describe('useMessageBoard', () => {
 
     await waitFor(() => {
       expect(mockFetchMessages).toHaveBeenCalledWith(
-        expect.objectContaining({ category: 'Question', searchQuery: 'help' })
+        expect.objectContaining({ category: 'Question', searchQuery: 'help' }),
+        expect.any(AbortSignal)
       );
     });
   });
