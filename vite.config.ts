@@ -2,8 +2,21 @@ import { mcpPlugin } from '@lovable.dev/mcp-js/stacks/supabase/vite';
 import react from '@vitejs/plugin-react-swc';
 import { componentTagger } from 'lovable-tagger';
 import path from 'path';
-import { defineConfig, type PluginOption } from 'vite';
+import { defineConfig, type Plugin, type PluginOption } from 'vite';
 import { beasties } from 'vite-plugin-beasties';
+
+// Dev-only: inject the Lovable editor bridge so in-preview editing works.
+// Never ships to production (apply: 'serve').
+const lovableEditorDevPlugin = (): Plugin => ({
+  name: 'inject-lovable-editor-dev',
+  apply: 'serve',
+  transformIndexHtml(html) {
+    return html.replace(
+      '</body>',
+      '  <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>\n  </body>',
+    );
+  },
+});
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -34,6 +47,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     mcpPlugin(),
     mode === 'development' && componentTagger(),
+    mode === 'development' && lovableEditorDevPlugin(),
     mode === 'production' &&
       beasties({
         options: {
