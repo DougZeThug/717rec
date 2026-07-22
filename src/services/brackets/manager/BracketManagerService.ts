@@ -3,6 +3,8 @@ import { BracketsManager } from 'brackets-manager';
 import { BracketAdminService } from './services/BracketAdminService';
 import { BracketCreationService } from './services/BracketCreationService';
 import { BracketNormalizationService } from './services/BracketNormalizationService';
+import type { BracketRepairSummary } from './services/BracketRepairService';
+import { BracketRepairService } from './services/BracketRepairService';
 import { BracketSeedingService } from './services/BracketSeedingService';
 import { BracketStandingsService } from './services/BracketStandingsService';
 import { BracketUpdateService } from './services/BracketUpdateService';
@@ -48,6 +50,7 @@ export class BracketManagerService {
   private seedingService: BracketSeedingService;
   private creationService: BracketCreationService;
   private updateService: BracketUpdateService;
+  private repairService: BracketRepairService;
 
   constructor() {
     this.storage = new SupabaseSqlStorage();
@@ -68,6 +71,33 @@ export class BracketManagerService {
       this.manager,
       this.normalizationService
     );
+    this.repairService = new BracketRepairService(
+      this.storage,
+      this.manager,
+      this.normalizationService
+    );
+  }
+
+  /**
+   * Admin-only: run a single explicit repair pass over a bracket.
+   *
+   * Consolidates the normalization/propagation machinery (losers-round slot
+   * fixes, grand-final population, stuck-winner propagation, readying fully
+   * populated matches) into one gated action for older/corrupted brackets,
+   * then re-evaluates bracket completion. Returns an auditable summary of
+   * what changed.
+   *
+   * @param bracketId - Bracket ID (stage.tournament_id) to repair
+   *
+   * @throws {NotFoundError} If the bracket has no stages
+   * @throws {DatabaseError} If any repair write fails
+   *
+   * @example
+   * const summary = await bracketManagerService.repairBracket('bracket-uuid');
+   * // { stagesRepaired: 1, matchesChanged: 2, statusesNormalized: 1, bracketMarkedCompleted: false }
+   */
+  repairBracket(bracketId: string): Promise<BracketRepairSummary> {
+    return this.repairService.repairBracket(bracketId);
   }
 
   /**

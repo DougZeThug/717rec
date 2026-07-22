@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Edit, ListOrdered, Loader2, RefreshCw, Trash } from 'lucide-react';
+import { Edit, ListOrdered, Loader2, RefreshCw, Trash, Wrench } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React, { useState } from 'react';
 
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { useRecalculateStandings } from '@/hooks/useRecalculateStandings';
+import { useRepairBracket } from '@/hooks/useRepairBracket';
 import { cn } from '@/lib/utils';
 import {
   fetchBracketParticipants,
@@ -69,6 +70,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
   });
   const standingsMissing = isCompleted && (!existingStandings || existingStandings.length === 0);
   const { recalculate, isRecalculating } = useRecalculateStandings(bracketId);
+  const { repair, isRepairing } = useRepairBracket(bracketId);
 
   // Early return if bracket is not loaded
   if (!bracket) {
@@ -142,6 +144,23 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
                     <RefreshCw className="size-4 mr-2" />
                   )}
                   Recalculate Standings
+                </Button>
+              )}
+
+              {!isCompleted && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="hidden md:flex"
+                  onClick={() => void repair()}
+                  disabled={isRepairing}
+                >
+                  {isRepairing ? (
+                    <Loader2 className="size-4 mr-2 animate-spin" />
+                  ) : (
+                    <Wrench className="size-4 mr-2" />
+                  )}
+                  Repair Bracket
                 </Button>
               )}
 

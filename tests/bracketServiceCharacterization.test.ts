@@ -596,6 +596,90 @@ describe('bracket service characterization (real service + real library over fak
     });
   });
 
+  describe('explicit admin repair (repairBracket)', () => {
+    it('re-propagates a blanked slot, readies the match, and reports an auditable summary', async () => {
+      seedBracketRow();
+      const service = new BracketManagerService();
+      await service.createBracket({
+        bracketId: BRACKET_ID,
+        format: 'double_elimination',
+        teams: teams(4),
+        grandFinalType: 'simple',
+      });
+
+      // Play the first four playable matches (WB R1 ×2, WB R2, LB R1) so the
+      // LB final (LB R2) is populated: T2 (WB R2 loser) vs T4 (LB R1 winner).
+      for (let i = 0; i < 4; i++) {
+        const playable = matchRows()
+          .filter((m) => m.status === 2 || m.status === 3)
+          .sort((a, b) => a.id - b.id)[0];
+        expect(playable).toBeDefined();
+        await service.updateMatch({
+          matchId: playable.id,
+          scores: {
+            opponent1: { score: 2, result: 'win' },
+            opponent2: { score: 0, result: 'loss' },
+          },
+        });
+      }
+
+      // Corrupt the LB final the way a silent propagation failure would:
+      // blank the slot fed by LB R1 and lock the match.
+      const lbGroup = (db().rows('group') as { id: number; number: number }[]).find(
+        (g) => g.number === 2
+      );
+      const lbRound2 = (
+        db().rows('round') as { id: number; group_id: number; number: number }[]
+      ).find((r) => r.group_id === lbGroup?.id && r.number === 2);
+      const lbFinal = mustFindMatch((m) => m.round_id === lbRound2?.id, 'the LB final');
+      expect(lbFinal.opponent2_id).not.toBeNull();
+      const liveRow = db()
+        .tableRows('match')
+        .find((row) => row.id === lbFinal.id);
+      Object.assign(liveRow ?? {}, {
+        opponent2_id: null,
+        opponent2_score: null,
+        opponent2_result: null,
+        status: 1,
+      });
+
+      // One explicit repair pass restores the slot and makes it playable.
+      const summary = await service.repairBracket(BRACKET_ID);
+      expect(summary).toMatchObject({ stagesRepaired: 1, bracketMarkedCompleted: false });
+      expect(summary.matchesChanged).toBeGreaterThanOrEqual(1);
+
+      const repaired = mustFindMatch((m) => m.id === lbFinal.id, 'the repaired LB final');
+      expect(repaired.opponent2_id).toBe(lbFinal.opponent2_id);
+      expect(repaired.status).toBe(2);
+
+      // The bracket plays on to completion afterwards.
+      await playAllReadyMatches(service);
+      expect(bracketState()).toBe('completed');
+    });
+
+    it('reports nothing to repair on a healthy bracket and throws for an unknown one', async () => {
+      seedBracketRow();
+      const service = new BracketManagerService();
+      await service.createBracket({
+        bracketId: BRACKET_ID,
+        format: 'double_elimination',
+        teams: teams(4),
+        grandFinalType: 'simple',
+      });
+
+      const summary = await service.repairBracket(BRACKET_ID);
+      expect(summary).toMatchObject({
+        stagesRepaired: 1,
+        bracketMarkedCompleted: false,
+        statusesNormalized: 0,
+      });
+
+      await expect(service.repairBracket('missing-bracket')).rejects.toThrow(
+        "Bracket stage with ID 'missing-bracket' not found"
+      );
+    });
+  });
+
   describe('final standings (server-side RPC)', () => {
     it('refuses while any populated match is unresolved — including the ghost reset match after a decisive GF1', async () => {
       // With grandFinal 'double', the library leaves GF2 populated+Ready when
