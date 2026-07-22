@@ -1,49 +1,53 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { useToast } from '@/hooks/useToast';
 import { createTeamApi, deleteTeamApi, updateTeamApi } from '@/services/TeamService';
 import { Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 
+type TeamInput = Omit<Team, 'id' | 'created_at'>;
+
 export function useTeamMutations() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const invalidateTeamsList = () => {
+  const invalidateTeamQueries = (teamId?: string) => {
     queryClient.invalidateQueries({ queryKey: ['teams'] });
+    if (teamId) {
+      queryClient.invalidateQueries({ queryKey: ['team-details', teamId] });
+    }
   };
 
-  const createTeam = async (teamData: Omit<Team, 'id' | 'created_at'>) => {
-    try {
-      const newTeam = await createTeamApi(teamData);
-      invalidateTeamsList();
+  const createMutation = useMutation({
+    mutationFn: (teamData: TeamInput) => createTeamApi(teamData),
+    onSuccess: (newTeam) => {
+      invalidateTeamQueries();
       toast({
         title: 'Team Created',
         description: `${newTeam.name} has been successfully created.`,
       });
-      return newTeam;
-    } catch (error) {
+    },
+    onError: (error) => {
       errorLog('Error creating team:', error);
       toast({
         title: 'Error',
         description: 'Failed to create team. Please try again.',
         variant: 'destructive',
       });
-      throw error;
-    }
-  };
+    },
+  });
 
-  const updateTeam = async (teamId: string, teamData: Omit<Team, 'id' | 'created_at'>) => {
-    try {
-      const updatedTeam = await updateTeamApi(teamId, teamData);
-      invalidateTeamsList();
-      queryClient.invalidateQueries({ queryKey: ['team-details', teamId] });
+  const updateMutation = useMutation({
+    mutationFn: ({ teamId, teamData }: { teamId: string; teamData: TeamInput }) =>
+      updateTeamApi(teamId, teamData),
+    onSuccess: (updatedTeam, { teamId }) => {
+      invalidateTeamQueries(teamId);
       toast({
         title: 'Team Updated',
         description: `${updatedTeam.name} has been successfully updated.`,
       });
-      return updatedTeam;
-    } catch (error) {
+    },
+    onError: (error) => {
       errorLog('Error updating team:', error);
       let errorMessage = 'Failed to update team. Please try again.';
 
@@ -60,23 +64,26 @@ export function useTeamMutations() {
         description: errorMessage,
         variant: 'destructive',
       });
-      throw error;
-    }
-  };
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (teamId: string) => deleteTeamApi(teamId),
+    onSuccess: (_result, teamId) => {
+      invalidateTeamQueries(teamId);
+    },
+    onError: (error) => {
+      errorLog('Error deleting team:', error);
+    },
+  });
 
   return {
-    createTeam,
-    updateTeam,
+    createTeam: (teamData: TeamInput) => createMutation.mutateAsync(teamData),
+    updateTeam: (teamId: string, teamData: TeamInput) =>
+      updateMutation.mutateAsync({ teamId, teamData }),
     deleteTeam: async (teamId: string) => {
-      try {
-        await deleteTeamApi(teamId);
-        invalidateTeamsList();
-        queryClient.invalidateQueries({ queryKey: ['team-details', teamId] });
-        return true;
-      } catch (error) {
-        errorLog('Error deleting team:', error);
-        throw error;
-      }
+      await deleteMutation.mutateAsync(teamId);
+      return true;
     },
   };
 }
