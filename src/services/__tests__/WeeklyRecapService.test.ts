@@ -99,7 +99,19 @@ function createSupabaseMock(queuedByTable: Record<string, QueryResult[]>) {
     });
 
     if (!querySpies[table]) querySpies[table] = [];
-    querySpies[table].push({ eq, is, not, in: inFn, neq, gte, lt, order, limit, single, maybeSingle });
+    querySpies[table].push({
+      eq,
+      is,
+      not,
+      in: inFn,
+      neq,
+      gte,
+      lt,
+      order,
+      limit,
+      single,
+      maybeSingle,
+    });
 
     return {
       select: vi.fn(() => query),
