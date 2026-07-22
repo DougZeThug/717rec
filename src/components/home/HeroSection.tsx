@@ -51,7 +51,7 @@ const HeroSection = () => {
             alt="717 Rec Logo"
             width={64}
             height={64}
-            fetchPriority="high"
+            {...{ fetchpriority: 'high' }}
             loading="eager"
             decoding="sync"
             className="h-12 w-auto max-w-full drop-shadow-sm mb-1.5"
@@ -125,7 +125,7 @@ const HeroSection = () => {
               alt="717 Rec Logo"
               width={96}
               height={96}
-              fetchPriority="high"
+              {...{ fetchpriority: 'high' }}
               loading="eager"
               decoding="sync"
               className="h-24 w-auto max-w-full transition-all duration-200 drop-shadow-sm"
