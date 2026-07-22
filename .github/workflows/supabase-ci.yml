@@ -170,12 +170,25 @@ jobs:
             deno-${{ runner.os }}-
       - name: Run Deno tests
         run: |
+          run_deno_tests() {
+            deno test --allow-net --allow-env --allow-read --no-check supabase/functions/
+          }
           if compgen -G "supabase/functions/**/*_test.ts" > /dev/null || \
              compgen -G "supabase/functions/**/*.test.ts" > /dev/null; then
-            deno test \
-              --allow-net --allow-env --allow-read \
-              --no-check \
-              supabase/functions/
+            # Retry to ride out transient dependency-registry hiccups (esm.sh /
+            # deno.land 5xx or timeouts) on a cache miss. Test failures are
+            # deterministic, so a genuine failure still fails all attempts.
+            attempt=1
+            max=3
+            until run_deno_tests; do
+              if [ "$attempt" -ge "$max" ]; then
+                echo "::error::deno test failed after $max attempts"
+                exit 1
+              fi
+              echo "::warning::deno test attempt $attempt failed (often a transient esm.sh/deno.land download error); retrying in $((attempt * 10))s"
+              sleep $((attempt * 10))
+              attempt=$((attempt + 1))
+            done
           else
             echo "No edge function tests found; skipping."
           fi
