@@ -1,5 +1,7 @@
 # PR-10 — Hook correctness: fix stale-cache and write-on-read defects, migrate the last hand-rolled hooks to TanStack Query
 
+> **Resolution status:** Open — hooks/cache remediation brief; not part of PR-15 docs-only scope.
+
 **Phase:** 4 (Consistency & correctness) · **Tier:** 2 · **Agent:** Claude Code or Codex · **Parallelizable:** yes · **Depends on:** nothing · **Expected score impact:** +0.9 overall (Reliability +3, Code quality +4)
 
 ## 1. Background

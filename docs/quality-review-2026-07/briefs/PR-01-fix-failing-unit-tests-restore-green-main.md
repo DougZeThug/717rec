@@ -1,5 +1,7 @@
 # PR-01 — Fix the 2 failing unit tests and restore a green `main`
 
+> **Resolution status:** Resolved — prior red unit-test gate was addressed before PR-15; retained as historical brief.
+
 **Phase:** 1 (Baseline) · **Tier:** 1 · **Agent:** Claude Code or Codex (repo-level test work; not Lovable) · **Parallelizable:** yes (independent of every other brief) · **Depends on:** nothing · **Expected score impact:** +1.0 overall (Automated testing +4, Production readiness +3)
 
 ## 1. Background

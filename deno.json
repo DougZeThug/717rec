@@ -1,0 +1,9 @@
+{
+  "lock": {
+    "path": "deno.lock",
+    "frozen": true
+  },
+  "tasks": {
+    "test:edge-functions": "deno test --allow-net --allow-env --allow-read --no-check supabase/functions/"
+  }
+}

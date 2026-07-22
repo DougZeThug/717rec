@@ -7,6 +7,7 @@
 - **Explain your steps**: (1) tell me what you're about to do and why, (2) show the specific changes, (3) confirm what changed and how to verify
 - Ask for confirmation before major changes
 - When working on multi-step tasks: create a plan file, execute it, then delete the plan file when done
+- Update documentation in the same PR as the behavior, scripts, schema, or CI rules it describes so docs do not drift from the code.
 
 ## Architecture Rules
 

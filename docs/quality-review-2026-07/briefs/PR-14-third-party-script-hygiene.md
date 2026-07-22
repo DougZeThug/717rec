@@ -1,5 +1,7 @@
 # PR-14 — Third-party script hygiene: drop the Lovable editor script from production, self-host fonts
 
+> **Resolution status:** Open — third-party script hygiene brief; not part of PR-15 docs-only scope.
+
 **Phase:** 5 (Performance & maintainability) · **Tier:** 3 · **Agent:** Claude Code or Codex · **Parallelizable:** yes · **Depends on:** nothing · **Expected score impact:** +0.4 overall (Performance +3, Security +1)
 
 ## 1. Background

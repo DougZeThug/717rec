@@ -1,5 +1,7 @@
 # PR-04 — Close the last non-atomic result write path (Mass Score Entry delete) and purge dead drift-capable code
 
+> **Resolution status:** Open — product-code remediation brief; not part of PR-15 docs-only scope.
+
 **Phase:** 2 (Data integrity) · **Tier:** 1 · **Agent:** Claude Code or Codex · **Parallelizable:** yes · **Depends on:** nothing (pairs with PR-05) · **Expected score impact:** +1.0 overall (Reliability & data integrity +6)
 
 ## 1. Background

@@ -1,5 +1,7 @@
 # PR-07 — Edge-function hardening: stop silently losing support tickets; tighten validation and rate limiting
 
+> **Resolution status:** Open — edge-function security remediation brief; not part of PR-15 docs-only scope.
+
 **Phase:** 2 (Security & integrity) · **Tier:** 1 (item 1) / 2 (rest) · **Agent:** Claude Code or Codex (Deno + SQL) · **Parallelizable:** yes · **Depends on:** nothing · **Expected score impact:** +0.8 overall (Reliability +3, Security +2)
 
 ## 1. Background

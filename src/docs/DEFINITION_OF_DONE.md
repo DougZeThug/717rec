@@ -21,7 +21,7 @@ Every feature or bugfix must satisfy this checklist before it's considered "done
 - [ ] No `any` types (use proper typing or `unknown`)
 
 ### Formatting
-- [ ] Code formatted with Prettier (`npm run format` or auto-save)
+- [ ] Code formatted with Prettier-compatible ESLint fixes (`npm run lint:fix`) or editor auto-save
 - [ ] Imports sorted correctly (handled by ESLint plugin)
 
 ### Error Handling

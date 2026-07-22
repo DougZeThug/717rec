@@ -71,8 +71,8 @@ TeamsPage → useTeamsQuery() → TeamFetchService.fetchTeams() → supabase.fro
 
 **Key Tables**:
 - `teams`, `matches`, `profiles`, `divisions`
-- `brackets`, `timeslots`, `team_members`
-- `seasons`, `hero_cards`, `message_board`
+- `brackets`, `timeslots`, `team_memberships`
+- `seasons`, `hero_cards`, `messages`
 
 **Features**:
 - Email + Google OAuth authentication
@@ -105,7 +105,7 @@ TeamsPage → useTeamsQuery() → TeamFetchService.fetchTeams() → supabase.fro
 **Styling**:
 - Global styles: `src/styles/`
 - Tailwind config: `tailwind.config.ts`
-- Theme: `src/lib/utils.ts` (includes custom "winter-frozen" theme)
+- Theme: `src/styles/base.css`, `src/styles/themes/`, and `tailwind.config.ts` define the app-wide theme tokens and winter theme styles; `src/lib/utils.ts` only contains utility helpers.
 
 ## Key Patterns
 

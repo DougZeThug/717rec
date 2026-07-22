@@ -1,5 +1,7 @@
 # ANY Phase 3 — Business-Critical Flows Plan
 
+> **Resolution status:** Open — execution plan remains historical/planning material; do not treat individual items as current findings unless re-verified against code.
+
 > **Revision 2 — 2026-05-12.** This document was rewritten end-to-end after a grounded file-by-file survey of every Phase 3 target. The original plan over-scoped the remaining work because it didn't credit the cleanup that has already shipped through Phase 2 follow-up PRs. This revision re-scopes Phase 3 to only what is still genuinely unsafe.
 
 ---

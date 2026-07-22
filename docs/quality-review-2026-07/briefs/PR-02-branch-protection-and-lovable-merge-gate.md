@@ -1,5 +1,7 @@
 # PR-02 — Enforce a merge gate: branch protection + a safe lane for Lovable edits
 
+> **Resolution status:** Open — process/control recommendation; verify repository settings before closing.
+
 **Phase:** 1 (Baseline) · **Tier:** 1 · **Agent:** Doug manual (GitHub settings) + Claude Code (docs/workflow file) · **Parallelizable:** yes · **Depends on:** PR-01 (main must be green before protection can require the check) · **Expected score impact:** +1.5 overall (Reliability +4, Production readiness +6)
 
 ## 1. Background

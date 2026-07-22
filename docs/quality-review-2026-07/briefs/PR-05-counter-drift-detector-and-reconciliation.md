@@ -1,5 +1,7 @@
 # PR-05 — Counter-drift detector + one-click reconciliation
 
+> **Resolution status:** Open — detector/reconciliation remediation brief; not part of PR-15 docs-only scope.
+
 **Phase:** 2 (Data integrity) · **Tier:** 1 · **Agent:** Claude Code or Codex (SQL + service + small admin UI); not Lovable for the migration · **Parallelizable:** yes (after PR-04 merges, or independently — see dependencies) · **Depends on:** conceptually pairs with PR-04; can land first · **Expected score impact:** +1.2 overall (Reliability & data integrity +7)
 
 ## 1. Background

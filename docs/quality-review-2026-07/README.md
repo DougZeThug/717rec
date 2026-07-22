@@ -1,5 +1,7 @@
 # 717REC — Full Quality Review (2026-07-15)
 
+> **Resolution status:** Open review index. PR-15 resolved the documentation-drift subset; other listed findings keep their individual brief statuses.
+
 **Reviewed commit:** `79744a0dedbebe9a43c3984e1b54b5c8ae2742fd` (tip of `main`, 2026-07-15 14:20 EDT, merge of PR #1043)
 **Review branch:** `claude/717rec-quality-review-vyt20i`
 **Supersedes:** the 2026-07-13 review (84/100) previously stored in this folder — see §3 for what changed in the intervening two days.
@@ -109,7 +111,7 @@ Severity reflects *impact on a real league night*, and every finding was verifie
 
 ### Tier 3 — polish and hygiene (selection)
 
-`.single()` → 406 console noise where empty is legitimate (WeeklyRecapService.ts:55); `fetchPriority` prop warning (HeroSection.tsx:54,128); "Maximum update depth" warning on /schedule (desktop); Lovable editor script + Google Fonts on the production critical path (index.html:43-53); bracket realtime toast storm; brackets-viewer from CDN at runtime; playoff status-mapping trigger bug (3/5→'pending'); doc drift table (ARCHITECTURE.md tables, roadmap, 3 stale plan files, inert deno.lock); `updateScoreSubmissionStatus` lacks pending-status guard; admin approval UI doesn't group conflicting score submissions for the same match.
+`.single()` → 406 console noise where empty is legitimate (WeeklyRecapService.ts:55); `fetchPriority` prop warning (HeroSection.tsx:54,128); "Maximum update depth" warning on /schedule (desktop); Lovable editor script + Google Fonts on the production critical path (index.html:43-53); bracket realtime toast storm; brackets-viewer from CDN at runtime; playoff status-mapping trigger bug (3/5→'pending'); ~~doc drift table (ARCHITECTURE.md tables, roadmap, 3 stale plan files, inert deno.lock)~~ **Resolved by PR-15**; `updateScoreSubmissionStatus` lacks pending-status guard; admin approval UI doesn't group conflicting score submissions for the same match.
 
 **Explicitly re-checked and NOT problems:** score-submission dedupe (unique index works — tested); SECURITY DEFINER search_paths (0/70 unpinned); user FKs (landed, smoke-tested); bun.lock (intentional, documented); `capture-power-snapshots` (fails closed behind secret); public-user bracket editor (refuted — gated at BracketDetail.tsx:192); knip (clean); scoring math (exact to hand computation); anonymous public app makes zero write attempts across 43 page-loads.
 

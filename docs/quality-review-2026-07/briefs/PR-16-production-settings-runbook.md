@@ -1,5 +1,7 @@
 # PR-16 — Production settings runbook + league-night operations guide
 
+> **Resolution status:** Open — production settings/runbook brief; not part of PR-15 docs-only scope.
+
 **Phase:** 6 (Polish & growth) · **Tier:** 3 · **Agent:** Claude Code (docs) + **Doug manual (all dashboard settings)** · **Parallelizable:** yes — but the league-night playbook's "standings look wrong" entry references the PR-05 drift check, so either land PR-05 first (the review's suggested order does) or write that entry as "available after PR-05" · **Depends on:** PR-05 (soft, for step 3's playbook entry only) · **Expected score impact:** +0.6 overall (Production readiness +6, Security +1)
 
 ## 1. Background

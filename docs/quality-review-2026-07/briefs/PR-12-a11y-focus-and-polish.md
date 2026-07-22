@@ -1,5 +1,7 @@
 # PR-12 — Accessibility: extend axe coverage to admin screens + fix the two React prop warnings
 
+> **Resolution status:** Open — accessibility polish brief; not part of PR-15 docs-only scope.
+
 **Phase:** 4 (Accessibility) · **Tier:** 2 · **Agent:** Claude Code or Codex · **Parallelizable:** yes · **Depends on:** nothing · **Expected score impact:** +0.3 overall (Accessibility +3)
 
 > **Rescoped after review verification.** The original version of this brief planned a route-change focus manager. That work **already exists and is wired in**: `src/components/a11y/RouteFocusManager.tsx` (imported in `App.tsx:19`, rendered at `:291`, with its own test) moves focus to the `<main>` landmark on push navigations and correctly skips initial load and back/forward (POP) navigations. Do not reimplement or replace it. The review's original finding (F-14) came from a grep for `\.focus()` that missed `focus({ preventScroll: true })` — the report has been corrected.

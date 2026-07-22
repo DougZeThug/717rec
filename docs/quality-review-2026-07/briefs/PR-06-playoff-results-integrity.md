@@ -1,5 +1,7 @@
 # PR-06 — Playoff results integrity: server-side final standings, tie rejection, seed-latch resync
 
+> **Resolution status:** Open — playoff integrity remediation brief; not part of PR-15 docs-only scope.
+
 **Phase:** 2 (Data integrity) · **Tier:** 1/2 · **Agent:** Claude Code or Codex (needs DB + service work) · **Parallelizable:** after PR-04/05 land (touches adjacent code) · **Depends on:** none strictly · **Expected score impact:** +0.9 overall (Reliability +4, Core functionality +2)
 
 ## 1. Background

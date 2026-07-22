@@ -1,5 +1,7 @@
 # PR-08 — Mass Score Entry reliability: resurrect error reporting, fix the submit filter, serialize the batch
 
+> **Resolution status:** Open — mass-score reliability remediation brief; not part of PR-15 docs-only scope.
+
 **Phase:** 3 (Admin reliability) · **Tier:** 2 · **Agent:** Claude Code or Codex · **Parallelizable:** yes (after PR-04 merges to avoid conflicts in the same file) · **Depends on:** PR-04 · **Expected score impact:** +0.8 overall (Reliability +3, UX +3)
 
 ## 1. Background

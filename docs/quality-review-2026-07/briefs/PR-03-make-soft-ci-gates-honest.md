@@ -1,5 +1,7 @@
 # PR-03 — Make the two "soft" CI gates honest (real-backend E2E + Lighthouse)
 
+> **Resolution status:** Open — CI policy recommendation; verify workflows before closing.
+
 **Phase:** 1 (Baseline) · **Tier:** 2 · **Agent:** Claude Code (workflow YAML) + Doug manual (GitHub secrets) · **Parallelizable:** yes · **Depends on:** nothing · **Expected score impact:** +0.7 overall (Automated testing +3, Production readiness +2)
 
 ## 1. Background

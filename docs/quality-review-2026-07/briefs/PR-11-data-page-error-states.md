@@ -1,5 +1,7 @@
 # PR-11 — Error & empty states for data pages; fix the admin timeslot "Unknown Team" display
 
+> **Resolution status:** Open — UI error-state remediation brief; not part of PR-15 docs-only scope.
+
 **Phase:** 4 (UX) · **Tier:** 2 · **Agent:** Lovable or Claude Code (UI-heavy, low risk — good Lovable candidate) · **Parallelizable:** yes · **Depends on:** PR-10 (hooks must surface errors first for §5.1) · **Expected score impact:** +0.7 overall (UX +4, UI +1)
 
 ## 1. Background

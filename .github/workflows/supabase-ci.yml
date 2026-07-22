@@ -5,10 +5,14 @@ on:
     branches: [main]
     paths:
       - 'supabase/**'
+      - 'deno.json'
+      - 'deno.lock'
       - '.github/workflows/supabase-ci.yml'
   pull_request:
     paths:
       - 'supabase/**'
+      - 'deno.json'
+      - 'deno.lock'
       - '.github/workflows/supabase-ci.yml'
   schedule:
     - cron: '0 6 * * 1' # Mondays 06:00 UTC
@@ -165,13 +169,13 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/deno
-          key: deno-${{ runner.os }}-${{ hashFiles('supabase/functions/**/*.ts') }}
+          key: deno-${{ runner.os }}-${{ hashFiles('deno.json', 'deno.lock', 'supabase/functions/**/*.ts') }}
           restore-keys: |
             deno-${{ runner.os }}-
       - name: Run Deno tests
         run: |
           run_deno_tests() {
-            deno test --allow-net --allow-env --allow-read --no-check supabase/functions/
+            deno test --frozen --allow-net --allow-env --allow-read --no-check supabase/functions/
           }
           if compgen -G "supabase/functions/**/*_test.ts" > /dev/null || \
              compgen -G "supabase/functions/**/*.test.ts" > /dev/null; then

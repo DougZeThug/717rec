@@ -1,5 +1,7 @@
 # PR-09 — Test coverage for the admin blind spots (auto-schedule, live corrections, auth) + mock hygiene
 
+> **Resolution status:** Open — coverage expansion brief; not part of PR-15 docs-only scope.
+
 **Phase:** 3 (Tests) · **Tier:** 2 · **Agent:** Claude Code or Codex · **Parallelizable:** yes; can be split into 3 sub-PRs · **Depends on:** PR-01 · **Expected score impact:** +0.9 overall (Automated testing +6, Reliability +1)
 
 ## 1. Background

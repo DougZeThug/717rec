@@ -1,5 +1,7 @@
 # 717rec Code-Quality Audit — 2026-04-24
 
+> **Resolution status:** Superseded — retained as historical audit context; current findings live in docs/quality-review-2026-07/.
+
 > Fresh audit following the 2026-03-02 `AUDIT-PLAN.md`. Scope: `src/` (1,370 TS/TSX files).
 > Method: architecture-rule checks from `CLAUDE.md` plus standard smell scans (size, duplication, types, console/TODO, tests).
 

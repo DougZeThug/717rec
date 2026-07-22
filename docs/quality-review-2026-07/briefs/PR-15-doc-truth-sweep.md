@@ -1,5 +1,7 @@
 # PR-15 — Documentation truth sweep
 
+> **Resolution status:** Resolved by this PR — documentation drift rows, stale plan files, and Deno lockfile enforcement are addressed here.
+
 **Phase:** 6 (Polish) · **Tier:** 3 · **Agent:** Claude Code, Codex, or Lovable (docs-only) · **Parallelizable:** yes, anytime · **Depends on:** ideally after P1–P4 merge (so docs describe the fixed state) · **Expected score impact:** +0.3 overall (Code quality +1, Production readiness +1)
 
 ## 1. Background

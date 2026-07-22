@@ -1,5 +1,7 @@
 # PR-13 — Brackets subsystem: trust the library, adopt stable team identity, calm the realtime storm
 
+> **Resolution status:** Open — brackets simplification brief; not part of PR-15 docs-only scope.
+
 **Phase:** 5 (Maintainability) · **Tier:** 2/3 · **Agent:** Claude Code or Codex (highest-skill brief in this plan — do NOT give to Lovable) · **Parallelizable:** keep isolated; large blast radius · **Depends on:** PR-06 (finalization must be server-side first) · **Expected score impact:** +0.8 overall (Code quality +4, Reliability +2)
 
 ## 1. Background
