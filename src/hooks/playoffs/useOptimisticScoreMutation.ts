@@ -3,6 +3,7 @@ import { useCallback, useRef } from 'react';
 
 import { useToast } from '@/hooks/useToast';
 import { errorLog, scoreLog } from '@/utils/logger';
+import { isPlayoffMatchFinished } from '@/utils/playoffs/playoffUtils';
 
 interface CachedMatchSnapshot {
   matchId: string;
@@ -72,7 +73,7 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
               ...match,
               opponent1_score: snapshot.team1Score,
               opponent2_score: snapshot.team2Score,
-              status: snapshot.status === 'completed' ? 4 : 2,
+              status: isPlayoffMatchFinished(snapshot.status) ? 4 : 2,
             };
           } else {
             return {

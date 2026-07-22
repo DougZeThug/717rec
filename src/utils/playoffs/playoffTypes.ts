@@ -40,8 +40,17 @@ export interface PlayoffMatch {
   nextWinMatchId?: string | null;
   nextLoseMatchId?: string | null;
   bracket_id: string;
-  status?: 'pending' | 'in_progress' | 'completed';
+  status?: PlayoffMatchStatus;
 }
+
+/**
+ * playoff_matches.status values, synced from brackets-manager match statuses:
+ * 'archived' = finished AND superseded by downstream rounds (bm status 5).
+ * A match is over when its status is 'completed' OR 'archived' — use
+ * isPlayoffMatchFinished() from playoffUtils rather than comparing to
+ * 'completed' directly.
+ */
+export type PlayoffMatchStatus = 'pending' | 'in_progress' | 'completed' | 'archived';
 
 export interface PlayoffGame {
   id: string;
@@ -88,7 +97,7 @@ interface BracketMatchDisplay {
   winnerId: string | null;
   loserId: string | null;
   matchType: PlayoffMatchType;
-  status: 'pending' | 'in_progress' | 'completed';
+  status: PlayoffMatchStatus;
   bestOf: number;
   team1Seed?: number | null;
   team2Seed?: number | null;

@@ -26,6 +26,11 @@ so a non-zero exit code means drift was detected.
   matches with stats reversal, finalizing/reopening live matches,
   update/reverse team stat guardrails, season-stat refreshes, and scorer
   authorization for admins and approved team members.
+- `playoff_status_mapping.sql` — asserts the match → playoff_matches sync
+  triggers map every brackets-manager status correctly
+  (`map_bm_status_to_playoff_status`): 3 Running → 'in_progress',
+  5 Archived → 'archived', and mapped statuses on INSERT (not hardcoded
+  'pending').
 - `_bootstrap.sql` — CI-only Supabase stubs (auth/storage/roles/realtime
   publication). Files prefixed with `_` are helpers and are skipped by
   the smoke runner.
