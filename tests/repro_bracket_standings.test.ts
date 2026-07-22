@@ -6,22 +6,24 @@ type BracketStandingsServiceArgs = ConstructorParameters<typeof BracketStandings
 type StandingsStorage = Pick<BracketStandingsServiceArgs[0], 'select'>;
 type StandingsManager = Pick<BracketStandingsServiceArgs[1], 'get'>;
 
-// Mock dependencies
+// Since PR-06, final standings are computed server-side by the
+// finalize_bracket_standings RPC. The regression guarded here — that the LAST
+// (highest-numbered) stage drives standings, not the first — now manifests as
+// the completion pre-check querying the final stage's matches.
+const { mockMatchEq, mockRpc } = vi.hoisted(() => ({
+  mockMatchEq: vi.fn().mockResolvedValue({ data: [], error: null }),
+  mockRpc: vi.fn().mockResolvedValue({ data: 2, error: null }),
+}));
+
 vi.mock('../src/integrations/supabase/client', () => ({
   supabase: {
     from: vi.fn((table: string) => {
       if (table === 'match') {
-        return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ data: [], error: null }),
-          }),
-        };
-      }
-      if (table === 'playoff_team_records') {
-        return { upsert: vi.fn().mockResolvedValue({ error: null }) };
+        return { select: vi.fn().mockReturnValue({ eq: mockMatchEq }) };
       }
       return {};
     }),
+    rpc: mockRpc,
   },
 }));
 
@@ -56,10 +58,7 @@ describe('BracketStandingsService', () => {
 
     const mockManager: StandingsManager = {
       get: {
-        finalStandings: vi.fn().mockResolvedValue([
-          { id: 101, rank: 1 },
-          { id: 102, rank: 2 },
-        ]),
+        finalStandings: vi.fn(),
       },
     };
 
@@ -69,7 +68,8 @@ describe('BracketStandingsService', () => {
     );
     await service.calculateFinalStandings('bracket-123');
 
-    // Currently it calls with 1 (the first stage), but it should call with 2 (the final stage)
-    expect(mockManager.get.finalStandings).toHaveBeenCalledWith(2);
+    // The completion pre-check must run against the LAST stage (highest
+    // number = 2), not the first one (1).
+    expect(mockMatchEq).toHaveBeenCalledWith('stage_id', 2);
   });
 });
