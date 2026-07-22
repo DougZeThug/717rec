@@ -113,7 +113,7 @@ const Auth = () => {
         </Tabs>
 
         <SocialAuthButtons
-          onGoogleSignIn={handleGoogleSignIn}
+          onGoogleSignIn={() => handleGoogleSignIn(returnTo)}
           onNativeGoogleSignIn={handleNativeGoogleSignIn}
           isNative={isNative}
           isSubmitting={isSubmitting}

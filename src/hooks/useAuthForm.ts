@@ -100,10 +100,10 @@ export const useAuthForm = () => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = async (returnTo?: string) => {
     try {
       setIsSubmitting(true);
-      await signInWithGoogle();
+      await signInWithGoogle(returnTo);
       // Redirect happens at the OAuth provider level
     } catch (error) {
       errorLog('Google sign in error:', error);
