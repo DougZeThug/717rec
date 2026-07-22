@@ -29,9 +29,9 @@ import {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const pgError = (msg = 'query failed') => ({
+const pgError = (msg = 'query failed', code = '42P01') => ({
   message: msg,
-  code: '42P01',
+  code,
   details: null,
   hint: null,
   name: 'PostgrestError',
@@ -230,7 +230,10 @@ describe('fetchSeasonOpponentHistory', () => {
   it('returns null when no active season', async () => {
     mockFrom.mockReturnValue({
       select: () => ({
-        eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError('PGRST116') }) }),
+        eq: () => ({
+          single: () =>
+            Promise.resolve({ data: null, error: pgError('No active season', 'PGRST116') }),
+        }),
       }),
     });
     const result = await fetchSeasonOpponentHistory();
