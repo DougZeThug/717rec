@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
 import { supabase } from '@/integrations/supabase/client';
+import { subscribeWithRetry } from '@/hooks/realtime/subscribeWithRetry';
 import { OpsHealthService } from '@/services/opsHealth/OpsHealthService';
 
 export type RealtimeConnectionState = 'connecting' | 'connected' | 'error' | 'closed';
@@ -41,21 +42,25 @@ export const useRealtimeHealth = (): RealtimeHealth => {
   });
 
   useEffect(() => {
-    const channel = supabase
-      .channel('ops-health-heartbeat')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, () => {
-        // no-op; presence of a message means the socket is alive
-      })
-      .subscribe((status) => {
+    const { dispose } = subscribeWithRetry({
+      label: 'ops-health-heartbeat',
+      build: () =>
+        supabase
+          .channel('ops-health-heartbeat')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, () => {
+            // no-op; presence of a message means the socket is alive
+          }),
+      onStatus: (status) => {
         let next: RealtimeConnectionState = 'connecting';
         if (status === 'SUBSCRIBED') next = 'connected';
         else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') next = 'error';
         else if (status === 'CLOSED') next = 'closed';
         setHealth({ state: next, lastChangeAt: new Date() });
-      });
+      },
+    });
 
     return () => {
-      supabase.removeChannel(channel);
+      dispose();
     };
   }, []);
 
