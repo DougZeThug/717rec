@@ -34,9 +34,13 @@ const TimeslotList: React.FC<TimeslotListProps> = ({ timeslots, teams, onDelete 
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Helper function to get team name by ID
-  const getTeamName = (teamId: string | null): string => {
-    if (!teamId) return 'Unknown Team';
-    const team = teams.find((t) => t.id === teamId);
+  const getTeamName = (timeslot: TeamTimeslot): string => {
+    // Prefer the joined team name from the timeslot query — it always
+    // resolves, even when the public teams list filters out hidden/opted-out
+    // teams. Fall back to the teams prop, then to a friendly placeholder.
+    if (timeslot.teams?.name) return timeslot.teams.name;
+    if (!timeslot.team_id) return 'Unknown Team';
+    const team = teams.find((t) => t.id === timeslot.team_id);
     return team ? team.name : 'Unknown Team';
   };
 
@@ -87,7 +91,7 @@ const TimeslotList: React.FC<TimeslotListProps> = ({ timeslots, teams, onDelete 
             {sortedTimeslots.map((timeslot) => (
               <TableRow key={timeslot.id}>
                 <TableCell className="font-medium">{timeslot.timeslot}</TableCell>
-                <TableCell>{getTeamName(timeslot.team_id)}</TableCell>
+                <TableCell>{getTeamName(timeslot)}</TableCell>
                 <TableCell>
                   <DestructiveIconButton
                     onClick={() => setDeletingTimeslotId(timeslot.id)}
@@ -112,7 +116,7 @@ const TimeslotList: React.FC<TimeslotListProps> = ({ timeslots, teams, onDelete 
               {timeslotToDelete ? (
                 <>
                   {' '}
-                  for <strong>{getTeamName(timeslotToDelete.team_id)}</strong> at{' '}
+                  for <strong>{getTeamName(timeslotToDelete)}</strong> at{' '}
                   <strong>{timeslotToDelete.timeslot}</strong>
                 </>
               ) : (

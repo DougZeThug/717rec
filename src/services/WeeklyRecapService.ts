@@ -52,7 +52,7 @@ export const WeeklyRecapService = {
         .from('seasons')
         .select('id, start_date')
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
       if (!activeSeason) {
         return { weekNumber: null, upsets: [], hotStreaks: [], hasData: false };
@@ -72,7 +72,7 @@ export const WeeklyRecapService = {
         .not('date', 'is', null)
         .order('date', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (!latestMatchRow?.date) {
         // No completed matches with dates — still fetch hot streaks
