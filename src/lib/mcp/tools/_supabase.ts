@@ -3,8 +3,13 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 /** Build a user-scoped Supabase client that forwards the caller's OAuth token so RLS runs as that user. */
 export function userClient(ctx: ToolContext): SupabaseClient {
-  const url = process.env.SUPABASE_URL!;
-  const anon = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY!;
+  const url = process.env.SUPABASE_URL;
+  const anon = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY;
+  if (!url || !anon) {
+    throw new Error(
+      'MCP userClient: SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY (or SUPABASE_ANON_KEY) must be set'
+    );
+  }
   return createClient(url, anon, {
     global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
     auth: { persistSession: false, autoRefreshToken: false },
