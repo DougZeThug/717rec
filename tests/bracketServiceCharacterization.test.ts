@@ -172,18 +172,39 @@ beforeEach(() => {
 
 describe('bracket service characterization (real service + real library over fake DB)', () => {
   describe('creation', () => {
-    it('KNOWN BUG (fixed in identity step): single-elimination creation fails at the library boundary', async () => {
-      // BracketCreationService passes the 3-entry double-elimination
-      // seedOrdering list for every format; the library rejects it for SE.
+    it('single elimination, 4 teams: creates the library-native grid (fixed: SE used to reject the DE seedOrdering list)', async () => {
+      // Before the identity step, BracketCreationService passed the 3-entry
+      // double-elimination seedOrdering list for every format and the library
+      // rejected SE creation outright ("You must specify one seed ordering
+      // method."). SE now gets exactly one ordering entry.
       seedBracketRow();
       const service = new BracketManagerService();
-      await expect(
-        service.createBracket({
-          bracketId: BRACKET_ID,
-          format: 'single_elimination',
-          teams: teams(4),
-        })
-      ).rejects.toThrow('You must specify one seed ordering method');
+      await service.createBracket({
+        bracketId: BRACKET_ID,
+        format: 'single_elimination',
+        teams: teams(4),
+      });
+
+      expect(snapshotSqlGrid()).toEqual([
+        'B R1 M1: T1 vs T4 [Ready]',
+        'B R1 M2: T2 vs T3 [Ready]',
+        'B R2 M1: TBD vs TBD [Locked]',
+      ]);
+      const participants = db().rows('participant') as {
+        name: string | null;
+        team_id: string | null;
+        position: number | null;
+      }[];
+      expect(
+        participants
+          .map((p) => ({ name: p.name, team_id: p.team_id, position: p.position }))
+          .sort((a, b) => (a.position ?? 99) - (b.position ?? 99))
+      ).toEqual([
+        { name: 'T1', team_id: 'uuid-1', position: 1 },
+        { name: 'T2', team_id: 'uuid-2', position: 2 },
+        { name: 'T3', team_id: 'uuid-3', position: 3 },
+        { name: 'T4', team_id: 'uuid-4', position: 4 },
+      ]);
     });
 
     it('double elimination, 6 teams: creates the library-native grid and links participants to teams', async () => {

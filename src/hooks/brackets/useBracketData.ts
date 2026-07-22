@@ -5,7 +5,7 @@ import {
   fetchBracketWithDivision,
   fetchGroupsAndMatches,
   fetchStageAndParticipants,
-  fetchTeamsByNames,
+  fetchTeamsByIds,
 } from '@/services/brackets/BracketReadService';
 import { bracketLog, debugLog, errorLog } from '@/utils/logger';
 
@@ -141,11 +141,11 @@ export const useBracketData = (bracketId: string | null) => {
 
         bracketLog('Raw matches fetched:', matches?.length || 0);
 
-        // Step 4: Fetch team details
+        // Step 4: Fetch team details by id (rename-safe)
         updateProgress('teams');
-        const teamNames =
-          participants?.map((p) => p.name).filter((n): n is string => n !== null) || [];
-        const teamDetails = await fetchTeamsByNames(teamNames);
+        const teamIds =
+          participants?.map((p) => p.team_id).filter((id): id is string => id !== null) || [];
+        const teamDetails = await fetchTeamsByIds(teamIds);
 
         // Step 5: Transform data using the extracted utility
         const result = transformBracketsManagerData({
@@ -163,6 +163,7 @@ export const useBracketData = (bracketId: string | null) => {
             id: p.id,
             name: p.name ?? '',
             position: p.position ?? 0,
+            team_id: p.team_id,
             tournament_id: p.tournament_id,
           })),
           groups: groups || [],

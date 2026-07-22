@@ -61,9 +61,11 @@ export class BracketSeedingService {
       const byesNeeded = bracketSize - teamsBySeed.length;
 
       // Step 4: Create simple seeding array in seed order
-      // brackets-manager's seedOrdering handles bracket positioning
-      const seedingArray: (string | null)[] = teamsBySeed
-        .map((t) => t.name)
+      // brackets-manager's seedOrdering handles bracket positioning.
+      // Entries are objects carrying team_id so any participant rows the
+      // library creates are team-linked from the start (no name matching).
+      const seedingArray: ({ name: string; team_id: string } | null)[] = teamsBySeed
+        .map((t) => ({ name: t.name, team_id: t.id }))
         .concat(Array(byesNeeded).fill(null));
 
       bracketLog('📝 New seeding array prepared:', {
@@ -78,7 +80,9 @@ export class BracketSeedingService {
       // Step 6: Update seeding via brackets-manager
       await this.manager.update.seeding(stageId, seedingArray, keepSameSize);
 
-      // Step 7: Re-read participants (names may have been reassigned by brackets-manager)
+      // Step 7: Re-read participants and re-sync seed positions by team_id.
+      // (team_id itself is stable: existing rows keep theirs; any new rows
+      // were inserted by the library with team_id from the seeding objects.)
       const participants = await this.storage.select('participant', {
         tournament_id: bracketId,
       });
@@ -88,25 +92,23 @@ export class BracketSeedingService {
           Array.isArray(participants) ? participants : [participants]
         ) as StorageParticipant[];
 
-        // Synchronize position and team_id for every participant row
         for (const participant of participantArray) {
-          if (participant.name === null) {
-            // BYE slot — clear team_id and keep a valid position
-            const { error: byeError } = await supabase
+          const seedIndex = teamsBySeed.findIndex((t) => t.id === participant.team_id);
+          if (seedIndex === -1) {
+            // Not in the new seeding (removed team or legacy BYE row) — clear
+            // its slot position so it can't shadow a real seed.
+            const { error: clearError } = await supabase
               .from('participant')
-              .update({ position: null, team_id: null })
+              .update({ position: null })
               .eq('id', participant.id);
-            if (byeError) handleDatabaseError(byeError, 'Failed to clear BYE participant');
+            if (clearError) handleDatabaseError(clearError, 'Failed to clear participant seed');
           } else {
-            const team = teamsBySeed.find((t) => t.name === participant.name);
-            if (team) {
-              // Use 1-based index in the seed-ordered array as the bracket slot position
-              const slotPosition = teamsBySeed.indexOf(team) + 1;
-              const { error: teamError } = await supabase
-                .from('participant')
-                .update({ position: slotPosition, team_id: team.id })
-                .eq('id', participant.id);
-              if (teamError) handleDatabaseError(teamError, 'Failed to sync participant to team');
+            const { error: positionError } = await supabase
+              .from('participant')
+              .update({ position: seedIndex + 1 })
+              .eq('id', participant.id);
+            if (positionError) {
+              handleDatabaseError(positionError, 'Failed to sync participant seed position');
             }
           }
         }

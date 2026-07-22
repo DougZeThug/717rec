@@ -30,7 +30,7 @@ export {
   fetchBracketParticipants,
   fetchParticipantsByIds,
   fetchPlayoffTeams,
-  fetchTeamsByNames,
+  fetchTeamsByIds,
   validateSeeds,
 } from './read/BracketParticipantService';
 export { fetchBracketsForSelector } from './read/BracketSelectorService';

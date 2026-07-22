@@ -20,6 +20,7 @@ interface RawParticipant {
   id: number;
   name: string;
   position: number;
+  team_id: string | null;
   tournament_id: string;
 }
 
@@ -91,26 +92,31 @@ export const transformBracketsManagerData = ({
   });
   bracketLog('Groups mapped:', groupIdToNumberMap.size);
 
-  // Build participant ID to name mapping
-  const participantToTeamMap = new Map<number, string>();
+  // Resolve participants to teams by team_id (rename-safe): participant id →
+  // team_id, then team_id → canonical team detail. Names are display-only and
+  // always come from the teams table when a link exists.
+  const participantToTeamIdMap = new Map<number, string | null>();
   participants.forEach((p) => {
-    participantToTeamMap.set(p.id, p.name);
+    participantToTeamIdMap.set(p.id, p.team_id);
   });
 
-  // Build team name to team detail lookup
   const teamLookup = new Map<string, TeamDetail>();
   teamDetails.forEach((team) => {
-    teamLookup.set(team.name, team);
+    teamLookup.set(team.id, team);
   });
 
   bracketLog('Teams fetched:', teamDetails.length);
 
+  const resolveTeam = (participantId: number | null): TeamDetail | null => {
+    if (!participantId) return null;
+    const teamId = participantToTeamIdMap.get(participantId);
+    return (teamId && teamLookup.get(teamId)) || null;
+  };
+
   // Transform matches
   const transformedMatches = matches.map((match) => {
-    const team1Name = match.opponent1_id ? participantToTeamMap.get(match.opponent1_id) : null;
-    const team2Name = match.opponent2_id ? participantToTeamMap.get(match.opponent2_id) : null;
-    const team1 = team1Name ? teamLookup.get(team1Name) : null;
-    const team2 = team2Name ? teamLookup.get(team2Name) : null;
+    const team1 = resolveTeam(match.opponent1_id);
+    const team2 = resolveTeam(match.opponent2_id);
 
     let winnerId: string | null = null;
     if (match.opponent1_result === 'win' && team1) winnerId = team1.id;
@@ -142,13 +148,14 @@ export const transformBracketsManagerData = ({
 
   bracketLog('Matches transformed:', transformedMatches.length);
 
-  // Transform participants
+  // Transform participants — canonical team name preferred for display,
+  // participant snapshot name as fallback for unlinked/legacy rows.
   const transformedParticipants = participants.map((p) => {
-    const team = teamLookup.get(p.name);
+    const team = p.team_id ? teamLookup.get(p.team_id) : null;
     return {
       position: p.position,
-      team_id: team?.id || '',
-      name: p.name,
+      team_id: p.team_id || '',
+      name: team?.name ?? p.name,
       image_url: team?.image_url,
     };
   });

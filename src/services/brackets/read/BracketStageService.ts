@@ -10,7 +10,7 @@ export const fetchStageAndParticipants = async (bracketId: string) => {
     supabase.from('stage').select('id, name, type, tournament_id').eq('tournament_id', bracketId),
     supabase
       .from('participant')
-      .select('id, name, position, tournament_id')
+      .select('id, name, position, team_id, tournament_id')
       .eq('tournament_id', bracketId),
   ]);
 

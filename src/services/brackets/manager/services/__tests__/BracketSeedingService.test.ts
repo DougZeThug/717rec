@@ -114,8 +114,8 @@ describe('BracketSeedingService.updateSeeding', () => {
       wireSelect({
         stages: [stage()],
         participants: [
-          { id: 1, tournament_id: BRACKET_ID, name: 'Alpha' },
-          { id: 2, tournament_id: BRACKET_ID, name: 'Beta' },
+          { id: 1, tournament_id: BRACKET_ID, name: 'Alpha', team_id: 't1' },
+          { id: 2, tournament_id: BRACKET_ID, name: 'Beta', team_id: 't2' },
         ],
       });
 
@@ -135,13 +135,21 @@ describe('BracketSeedingService.updateSeeding', () => {
       // Participants are cached before the seeding update runs.
       expect(mockStorage.loadParticipantsForTournament).toHaveBeenCalledWith(BRACKET_ID);
 
-      // No BYEs needed for 2 teams; keepSameSize defaults to true.
-      expect(mockManager.update.seeding).toHaveBeenCalledWith(STAGE_ID, ['Alpha', 'Beta'], true);
+      // No BYEs needed for 2 teams; keepSameSize defaults to true. Seeding
+      // entries are objects carrying team_id (persisted by the library).
+      expect(mockManager.update.seeding).toHaveBeenCalledWith(
+        STAGE_ID,
+        [
+          { name: 'Alpha', team_id: 't1' },
+          { name: 'Beta', team_id: 't2' },
+        ],
+        true
+      );
 
-      // Each real team row gets its 1-based seed slot + team_id.
+      // Each row's seed slot is resolved by team_id — never by name.
       expect(participantUpdates).toEqual([
-        { payload: { position: 1, team_id: 't1' }, column: 'id', id: 1 },
-        { payload: { position: 2, team_id: 't2' }, column: 'id', id: 2 },
+        { payload: { position: 1 }, column: 'id', id: 1 },
+        { payload: { position: 2 }, column: 'id', id: 2 },
       ]);
     });
 
@@ -149,8 +157,8 @@ describe('BracketSeedingService.updateSeeding', () => {
       wireSelect({
         stages: [stage()],
         participants: [
-          { id: 1, tournament_id: BRACKET_ID, name: 'Alpha' },
-          { id: 2, tournament_id: BRACKET_ID, name: 'Beta' },
+          { id: 1, tournament_id: BRACKET_ID, name: 'Alpha', team_id: 't1' },
+          { id: 2, tournament_id: BRACKET_ID, name: 'Beta', team_id: 't2' },
         ],
       });
 
@@ -161,13 +169,20 @@ describe('BracketSeedingService.updateSeeding', () => {
         keepSameSize: false,
       });
 
-      expect(mockManager.update.seeding).toHaveBeenCalledWith(STAGE_ID, ['Alpha', 'Beta'], false);
+      expect(mockManager.update.seeding).toHaveBeenCalledWith(
+        STAGE_ID,
+        [
+          { name: 'Alpha', team_id: 't1' },
+          { name: 'Beta', team_id: 't2' },
+        ],
+        false
+      );
 
       // Slot positions come from the *sorted* order, not the input order:
       // Alpha (seed 1) → position 1 even though it was supplied second.
       expect(participantUpdates).toEqual([
-        { payload: { position: 1, team_id: 't1' }, column: 'id', id: 1 },
-        { payload: { position: 2, team_id: 't2' }, column: 'id', id: 2 },
+        { payload: { position: 1 }, column: 'id', id: 1 },
+        { payload: { position: 2 }, column: 'id', id: 2 },
       ]);
     });
 
@@ -175,10 +190,10 @@ describe('BracketSeedingService.updateSeeding', () => {
       wireSelect({
         stages: [stage()],
         participants: [
-          { id: 1, tournament_id: BRACKET_ID, name: 'Alpha' },
-          { id: 2, tournament_id: BRACKET_ID, name: 'Beta' },
-          { id: 3, tournament_id: BRACKET_ID, name: 'Gamma' },
-          { id: 4, tournament_id: BRACKET_ID, name: null }, // BYE slot
+          { id: 1, tournament_id: BRACKET_ID, name: 'Alpha', team_id: 't1' },
+          { id: 2, tournament_id: BRACKET_ID, name: 'Beta', team_id: 't2' },
+          { id: 3, tournament_id: BRACKET_ID, name: 'Gamma', team_id: 't3' },
+          { id: 4, tournament_id: BRACKET_ID, name: null, team_id: null }, // legacy BYE row
         ],
       });
 
@@ -190,15 +205,22 @@ describe('BracketSeedingService.updateSeeding', () => {
       // 3 teams → bracket size 4 → one trailing BYE (null).
       expect(mockManager.update.seeding).toHaveBeenCalledWith(
         STAGE_ID,
-        ['Alpha', 'Beta', 'Gamma', null],
+        [
+          { name: 'Alpha', team_id: 't1' },
+          { name: 'Beta', team_id: 't2' },
+          { name: 'Gamma', team_id: 't3' },
+          null,
+        ],
         true
       );
 
+      // Real teams get 1-based slots; the legacy BYE row (no team_id) has its
+      // stale position cleared.
       expect(participantUpdates).toEqual([
-        { payload: { position: 1, team_id: 't1' }, column: 'id', id: 1 },
-        { payload: { position: 2, team_id: 't2' }, column: 'id', id: 2 },
-        { payload: { position: 3, team_id: 't3' }, column: 'id', id: 3 },
-        { payload: { position: null, team_id: null }, column: 'id', id: 4 },
+        { payload: { position: 1 }, column: 'id', id: 1 },
+        { payload: { position: 2 }, column: 'id', id: 2 },
+        { payload: { position: 3 }, column: 'id', id: 3 },
+        { payload: { position: null }, column: 'id', id: 4 },
       ]);
     });
 
@@ -206,8 +228,8 @@ describe('BracketSeedingService.updateSeeding', () => {
       wireSelect({
         stages: stage(), // returned as an object, not [stage]
         participants: [
-          { id: 1, tournament_id: BRACKET_ID, name: 'Alpha' },
-          { id: 2, tournament_id: BRACKET_ID, name: 'Beta' },
+          { id: 1, tournament_id: BRACKET_ID, name: 'Alpha', team_id: 't1' },
+          { id: 2, tournament_id: BRACKET_ID, name: 'Beta', team_id: 't2' },
         ],
       });
 
@@ -218,7 +240,14 @@ describe('BracketSeedingService.updateSeeding', () => {
         })
       ).resolves.toBeUndefined();
 
-      expect(mockManager.update.seeding).toHaveBeenCalledWith(STAGE_ID, ['Alpha', 'Beta'], true);
+      expect(mockManager.update.seeding).toHaveBeenCalledWith(
+        STAGE_ID,
+        [
+          { name: 'Alpha', team_id: 't1' },
+          { name: 'Beta', team_id: 't2' },
+        ],
+        true
+      );
     });
 
     it('skips participant sync entirely when the re-read returns null', async () => {
@@ -234,12 +263,12 @@ describe('BracketSeedingService.updateSeeding', () => {
       expect(participantUpdates).toEqual([]);
     });
 
-    it('leaves participant rows whose name matches no team untouched', async () => {
+    it('clears the slot position of rows whose team is not in the new seeding', async () => {
       wireSelect({
         stages: [stage()],
         participants: [
-          { id: 1, tournament_id: BRACKET_ID, name: 'Alpha' },
-          { id: 9, tournament_id: BRACKET_ID, name: 'Ghost' }, // no matching team
+          { id: 1, tournament_id: BRACKET_ID, name: 'Alpha', team_id: 't1' },
+          { id: 9, tournament_id: BRACKET_ID, name: 'Ghost', team_id: 't9' }, // removed team
         ],
       });
 
@@ -248,9 +277,11 @@ describe('BracketSeedingService.updateSeeding', () => {
         newSeeding: [team('t1', 'Alpha', 1)],
       });
 
-      // Only Alpha is written; the unmatched "Ghost" row is skipped.
+      // Alpha gets its slot; the removed team's row has its position cleared
+      // so it can't shadow a real seed.
       expect(participantUpdates).toEqual([
-        { payload: { position: 1, team_id: 't1' }, column: 'id', id: 1 },
+        { payload: { position: 1 }, column: 'id', id: 1 },
+        { payload: { position: null }, column: 'id', id: 9 },
       ]);
     });
   });
@@ -344,10 +375,10 @@ describe('BracketSeedingService.updateSeeding', () => {
       ).rejects.toThrow(/Seeding update failed: network down/);
     });
 
-    it('wraps a participant team-sync database error in a BusinessLogicError', async () => {
+    it('wraps a seed-position sync database error in a BusinessLogicError', async () => {
       wireSelect({
         stages: [stage()],
-        participants: [{ id: 1, tournament_id: BRACKET_ID, name: 'Alpha' }],
+        participants: [{ id: 1, tournament_id: BRACKET_ID, name: 'Alpha', team_id: 't1' }],
       });
       updateErrorFor = () => ({ message: 'permission denied', code: '42501' });
 
@@ -357,27 +388,27 @@ describe('BracketSeedingService.updateSeeding', () => {
           newSeeding: [team('t1', 'Alpha', 1)],
         })
       ).rejects.toThrow(
-        /Seeding update failed: Failed to sync participant to team: permission denied/
+        /Seeding update failed: Failed to sync participant seed position: permission denied/
       );
     });
 
-    it('wraps a BYE-clear database error in a BusinessLogicError', async () => {
+    it('wraps a seed-clear database error in a BusinessLogicError', async () => {
       wireSelect({
         stages: [stage()],
         participants: [
-          { id: 1, tournament_id: BRACKET_ID, name: 'Alpha' },
-          { id: 4, tournament_id: BRACKET_ID, name: null },
+          { id: 1, tournament_id: BRACKET_ID, name: 'Alpha', team_id: 't1' },
+          { id: 4, tournament_id: BRACKET_ID, name: null, team_id: null },
         ],
       });
-      // Only the BYE-clear write (team_id set to null) fails.
-      updateErrorFor = (update) => (update.payload.team_id === null ? { message: 'boom' } : null);
+      // Only the position-clear write (row not in the new seeding) fails.
+      updateErrorFor = (update) => (update.payload.position === null ? { message: 'boom' } : null);
 
       await expect(
         service.updateSeeding({
           bracketId: BRACKET_ID,
           newSeeding: [team('t1', 'Alpha', 1), team('t2', 'Beta', 2), team('t3', 'Gamma', 3)],
         })
-      ).rejects.toThrow(/Seeding update failed: Failed to clear BYE participant: boom/);
+      ).rejects.toThrow(/Seeding update failed: Failed to clear participant seed: boom/);
     });
   });
 });
