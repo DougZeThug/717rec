@@ -1,5 +1,5 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { ToolContext } from "@lovable.dev/mcp-js";
+import type { ToolContext } from '@lovable.dev/mcp-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 /** Build a user-scoped Supabase client that forwards the caller's OAuth token so RLS runs as that user. */
 export function userClient(ctx: ToolContext): SupabaseClient {
@@ -17,33 +17,29 @@ export async function requireAdmin(
 ): Promise<boolean> {
   if (!userId) return false;
   const { data } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", userId)
-    .eq("role", "admin")
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', userId)
+    .eq('role', 'admin')
     .maybeSingle();
   return !!data;
 }
 
 export function textResult(payload: unknown) {
   return {
-    content: [{ type: "text" as const, text: JSON.stringify(payload, null, 2) }],
+    content: [{ type: 'text' as const, text: JSON.stringify(payload, null, 2) }],
     structuredContent: { data: payload } as Record<string, unknown>,
   };
 }
 
 export function errorResult(message: string) {
   return {
-    content: [{ type: "text" as const, text: message }],
+    content: [{ type: 'text' as const, text: message }],
     isError: true,
   };
 }
 
 export async function getActiveSeasonId(supabase: SupabaseClient): Promise<string | null> {
-  const { data } = await supabase
-    .from("seasons")
-    .select("id")
-    .eq("is_active", true)
-    .maybeSingle();
+  const { data } = await supabase.from('seasons').select('id').eq('is_active', true).maybeSingle();
   return data?.id ?? null;
 }
