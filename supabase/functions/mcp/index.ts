@@ -256,7 +256,7 @@ var reconcile_counter_drift_default = defineTool9({
   description: "Admin only. Recompute team win/loss/game counters from match history and refresh season stats.",
   inputSchema: {},
   annotations: {
-    readOnlyHint: true,
+    readOnlyHint: false,
     destructiveHint: false,
     idempotentHint: true,
     openWorldHint: false

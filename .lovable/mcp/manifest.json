@@ -178,7 +178,7 @@
         "title": "Reconcile counter drift (admin)",
         "description": "Admin only. Recompute team win/loss/game counters from match history and refresh season stats.",
         "annotations": {
-          "readOnlyHint": true,
+          "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": true,
           "openWorldHint": false
