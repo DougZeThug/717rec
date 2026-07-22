@@ -247,49 +247,61 @@ async function handleRequest(req: Request): Promise<Response> {
     </div>
   `;
 
-  const resendResponse = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-    },
-    body: JSON.stringify({
-      from: '717REC Support <noreply@717rec.com>',
-      to: ['admin@717rec.com'],
-      reply_to: payload.email,
-      subject: `[717REC Support] ${subjectLabel} from ${safeName}`,
-      html: emailHtml,
-    }),
-  });
+  let emailSent = false;
+  try {
+    const resendResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: '717REC Support <noreply@717rec.com>',
+        to: ['admin@717rec.com'],
+        reply_to: payload.email,
+        subject: `[717REC Support] ${subjectLabel} from ${safeName}`,
+        html: emailHtml,
+      }),
+    });
 
-  if (!resendResponse.ok) {
-    const errorText = await resendResponse.text();
-    console.error('[Support] Resend API error:', errorText);
-
-    if (!stored) {
-      // Email failed AND the ticket did not persist → nothing survived.
-      return jsonResponse(
-        {
-          success: false,
-          error: 'We could not send your message right now. Please try again in a moment.',
-        },
-        502,
-        corsHeaders
-      );
+    if (resendResponse.ok) {
+      const resendData = (await resendResponse.json()) as { id?: string };
+      console.log('[Support] Email sent successfully:', resendData.id);
+      emailSent = true;
+    } else {
+      const errorText = await resendResponse.text();
+      console.error('[Support] Resend API error:', errorText);
     }
-    // The ticket is safely stored; the email will be picked up from there.
+  } catch (err) {
+    // A network-level failure (fetch rejects, body parse throws) must NOT bubble
+    // up to the outer 500 handler when the ticket is already stored — otherwise
+    // the client retries and duplicates a ticket we actually kept.
+    console.error('[Support] Resend request failed:', err instanceof Error ? err.message : err);
+  }
+
+  if (emailSent) {
     return jsonResponse(
-      { success: true, stored: true, emailed: false, message: 'Ticket received (email pending)' },
+      { success: true, stored, emailed: true, message: 'Message sent successfully' },
       200,
       corsHeaders
     );
   }
 
-  const resendData = (await resendResponse.json()) as { id?: string };
-  console.log('[Support] Email sent successfully:', resendData.id);
-
+  // Email did not send (non-2xx status or a network failure).
+  if (!stored) {
+    // Nothing survived: neither stored nor emailed.
+    return jsonResponse(
+      {
+        success: false,
+        error: 'We could not send your message right now. Please try again in a moment.',
+      },
+      502,
+      corsHeaders
+    );
+  }
+  // The ticket is safely stored; the email will be picked up from there.
   return jsonResponse(
-    { success: true, stored, emailed: true, message: 'Message sent successfully' },
+    { success: true, stored: true, emailed: false, message: 'Ticket received (email pending)' },
     200,
     corsHeaders
   );

@@ -18,16 +18,19 @@ import {
 import { handleRequest, setRateLimiter, stripControlChars } from './index.ts';
 
 function makeReq(body: unknown, init: RequestInit = {}): Request {
+  // Pull headers out of init first so the outer spread can't clobber the merged
+  // default headers (Content-Type, x-forwarded-for, origin).
+  const { headers: initHeaders, ...restInit } = init;
   return new Request('http://localhost/send-support-email', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'x-forwarded-for': '127.0.0.1',
       origin: 'http://localhost:3000',
-      ...((init.headers as Record<string, string> | undefined) ?? {}),
+      ...((initHeaders as Record<string, string> | undefined) ?? {}),
     },
     body: typeof body === 'string' ? body : JSON.stringify(body),
-    ...init,
+    ...restInit,
   });
 }
 

@@ -80,8 +80,17 @@ export function getTrustedClientIp(req: Request): string {
   const trustedProxyCount = Number(Deno.env.get('TRUSTED_PROXY_COUNT') ?? '1') || 1;
 
   if (Deno.env.get('RATE_LIMIT_DEBUG_HEADERS') === '1') {
-    // Temporary, opt-in header dump for the empirical verification step above.
-    console.log('[rateLimit] request headers:', JSON.stringify(Object.fromEntries(req.headers)));
+    // Temporary, opt-in dump for the empirical verification step above. Log ONLY
+    // the forwarding/IP headers — never the whole header set, which would leak
+    // Authorization bearer tokens and cookies into the function logs.
+    console.log(
+      '[rateLimit] request IP headers:',
+      JSON.stringify({
+        'x-forwarded-for': req.headers.get('x-forwarded-for'),
+        'x-real-ip': req.headers.get('x-real-ip'),
+        'cf-connecting-ip': req.headers.get('cf-connecting-ip'),
+      })
+    );
   }
 
   const xff = req.headers.get('x-forwarded-for');
