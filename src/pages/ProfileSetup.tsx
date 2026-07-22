@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 
 import PageLayout from '@/components/layout/PageLayout';
 import ProfileForm from '@/components/profile/ProfileForm';
@@ -16,11 +16,14 @@ import {
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/auth-context';
+import { sanitizeReturnTo } from '@/utils/auth/sanitizeReturnTo';
 import { authLog } from '@/utils/logger';
 
 const ProfileSetup = () => {
   const { user, profile, refreshProfile, isLoading, authInitialized } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const nextPath = sanitizeReturnTo(searchParams.get('next') ?? undefined);
   const [retries, setRetries] = useState(0);
   const maxRetries = 3;
 
@@ -45,14 +48,27 @@ const ProfileSetup = () => {
       } else {
         // After max retries, redirect to auth
         authLog('Max retries reached, redirecting to auth');
-        navigate('/auth', { state: { returnTo: '/setup-profile' } });
+        const returnTo =
+          '/setup-profile' +
+          (searchParams.get('next') ? `?next=${encodeURIComponent(searchParams.get('next')!)}` : '');
+        navigate('/auth', { state: { returnTo } });
       }
     }
-  }, [user, isLoading, authInitialized, navigate, retries]);
+  }, [user, isLoading, authInitialized, navigate, retries, searchParams]);
+
+  // If the profile is already complete and a `next` destination was requested
+  // (e.g. after Google OAuth for a returning user), redirect straight there.
+  useEffect(() => {
+    if (!authInitialized || isLoading) return;
+    if (user && profile?.username && nextPath && nextPath !== '/setup-profile') {
+      authLog('Profile complete, redirecting to next:', nextPath);
+      navigate(nextPath, { replace: true });
+    }
+  }, [authInitialized, isLoading, user, profile?.username, nextPath, navigate]);
 
   const handleProfileUpdated = async () => {
     await refreshProfile();
-    navigate('/');
+    navigate(nextPath && nextPath !== '/setup-profile' ? nextPath : '/');
   };
 
   // Show loading state while waiting for auth to initialize
