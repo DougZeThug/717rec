@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import PageLayout from '@/components/layout/PageLayout';
 import DeleteMatchDialog from '@/components/schedule/DeleteMatchDialog';
@@ -155,12 +155,49 @@ const Schedule = () => {
   // Only wait for matches - teams are lazy loaded for form
   const isLoading = matchesLoading;
 
+  const scheduleJsonLd = useMemo(() => {
+    const items = (upcomingMatches ?? []).slice(0, 20).map((match, idx) => {
+      const name1 = match.team1Details?.name ?? 'TBD';
+      const name2 = match.team2Details?.name ?? 'TBD';
+      const status =
+        match.status === 'postponed'
+          ? 'https://schema.org/EventPostponed'
+          : match.status === 'canceled'
+            ? 'https://schema.org/EventCancelled'
+            : 'https://schema.org/EventScheduled';
+      return {
+        '@type': 'ListItem',
+        position: idx + 1,
+        item: {
+          '@type': 'SportsEvent',
+          name: `${name1} vs ${name2}`,
+          sport: 'Cornhole',
+          eventStatus: status,
+          ...(match.date ? { startDate: match.date } : {}),
+          ...(match.location
+            ? { location: { '@type': 'Place', name: match.location } }
+            : {}),
+          homeTeam: { '@type': 'SportsTeam', name: name1 },
+          awayTeam: { '@type': 'SportsTeam', name: name2 },
+          organizer: { '@type': 'SportsOrganization', name: '717REC' },
+        },
+      };
+    });
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: '717REC upcoming matches',
+      itemListElement: items,
+    };
+  }, [upcomingMatches]);
+
   return (
     <PageLayout withBackground={true} gradientVariant="blueOrange">
       <SeoHead
         title="Schedule | 717REC Cornhole League"
         description="Upcoming and recent 717REC cornhole matches, weekly timeslots, and matchups by date."
         path="/schedule"
+        jsonLd={scheduleJsonLd}
       />
       <div className="max-w-7xl mx-auto font-inter">
         <ScheduleHeader
