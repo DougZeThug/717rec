@@ -37,6 +37,11 @@ configure({
 // here: Vitest's per-file isolation already stops timer/mock state from leaking
 // between files, and a blanket reset would break files that intentionally set
 // fake timers or spies at file scope. Those files own their own teardown.
+//
+// Mock hygiene: new tests that override shared mock implementations should
+// prefer vi.resetAllMocks() in their own afterEach(). vi.clearAllMocks() only
+// clears call history, so stale mockReturnValue/mockImplementation stubs can
+// leak between tests in the same file.
 afterEach(() => {
   cleanup();
 });

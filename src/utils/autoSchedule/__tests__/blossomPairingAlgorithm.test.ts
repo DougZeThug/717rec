@@ -137,4 +137,42 @@ describe('generatePairingsWithBlossom', () => {
       expect(p).toHaveProperty('hasPlayedBefore');
     }
   });
+
+  it('schedules every even-count team exactly twice with no duplicate opponent pair', async () => {
+    const teams = ['t1', 't2', 't3', 't4', 't5', 't6'].map((id, index) =>
+      createMockTeam({ id, name: id, power_score: 90 - index })
+    );
+
+    const result = await generatePairingsWithBlossom(teams, baseConfig);
+
+    const counts = new Map(teams.map((team) => [team.id, 0]));
+    const pairKeys = new Set<string>();
+    for (const pairing of result) {
+      counts.set(pairing.team1.id, (counts.get(pairing.team1.id) ?? 0) + 1);
+      counts.set(pairing.team2.id, (counts.get(pairing.team2.id) ?? 0) + 1);
+      pairKeys.add([pairing.team1.id, pairing.team2.id].sort().join('-'));
+    }
+
+    expect(result).toHaveLength(teams.length);
+    expect([...counts.values()]).toEqual(teams.map(() => 2));
+    expect(pairKeys.size).toBe(result.length);
+  });
+
+  it('is deterministic when compatibility scoring is deterministic', async () => {
+    const teams = ['t1', 't2', 't3', 't4', 't5', 't6'].map((id, index) =>
+      createMockTeam({ id, name: id, power_score: 100 - index * 7 })
+    );
+    const config = {
+      ...baseConfig,
+      getCompatibilityScoreFn: (team1: (typeof teams)[number], team2: (typeof teams)[number]) =>
+        Math.abs((team1.power_score ?? 0) - (team2.power_score ?? 0)),
+    };
+
+    const first = await generatePairingsWithBlossom(teams, config);
+    const second = await generatePairingsWithBlossom(teams, config);
+
+    const normalize = (pairings: typeof first) =>
+      pairings.map((pairing) => [pairing.team1.id, pairing.team2.id].sort().join('-'));
+    expect(normalize(second)).toEqual(normalize(first));
+  });
 });
