@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -18,8 +19,28 @@ vi.mock('../TrafficMiniChart', () => ({
   default: () => <div data-testid="traffic-mini-chart" />,
 }));
 
+// The tab renders <CounterDriftCard/>, which runs a background counter-drift
+// query. Stub the service so it resolves instantly (no network) — these tests
+// don't assert on the card.
+vi.mock('@/services/admin/DriftService', () => ({
+  DriftService: {
+    fetchDrift: vi.fn().mockResolvedValue([]),
+    reconcile: vi.fn().mockResolvedValue(0),
+  },
+}));
+
 import LeagueNightStatusTab from '../LeagueNightStatusTab';
 import { OPS_LINKS } from '../opsLinks';
+
+// CounterDriftCard uses TanStack Query hooks, so the tree needs a provider.
+const renderTab = () =>
+  render(
+    <QueryClientProvider
+      client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+    >
+      <LeagueNightStatusTab />
+    </QueryClientProvider>
+  );
 
 const freshSnapshot = (): LastPowerSnapshot => ({
   created_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
@@ -58,7 +79,7 @@ describe('LeagueNightStatusTab', () => {
   });
 
   it('renders happy path: connected + fresh snapshot + zero pending', () => {
-    render(<LeagueNightStatusTab />);
+    renderTab();
     expect(screen.getByText(/realtime connected/i)).toBeInTheDocument();
     expect(screen.getByText(/ran .* ago/i)).toBeInTheDocument();
     expect(screen.queryByText(/stale/i)).not.toBeInTheDocument();
@@ -67,21 +88,21 @@ describe('LeagueNightStatusTab', () => {
 
   it('shows a Stale badge for old snapshots', () => {
     mockUseLastPowerSnapshot.mockReturnValue({ data: staleSnapshot(), isLoading: false });
-    render(<LeagueNightStatusTab />);
+    renderTab();
     expect(screen.getByText('Stale')).toBeInTheDocument();
     expect(screen.getByText(/older than 8 days/i)).toBeInTheDocument();
   });
 
   it('shows red state + hint when realtime errors', () => {
     mockUseRealtimeHealth.mockReturnValue({ state: 'error', lastChangeAt: new Date() });
-    render(<LeagueNightStatusTab />);
+    renderTab();
     expect(screen.getByText(/realtime error/i)).toBeInTheDocument();
     expect(screen.getByText(/refresh once/i)).toBeInTheDocument();
   });
 
   it('shows missing-snapshot state when no snapshot has ever been captured', () => {
     mockUseLastPowerSnapshot.mockReturnValue({ data: null, isLoading: false });
-    render(<LeagueNightStatusTab />);
+    renderTab();
     expect(screen.getByText(/no snapshot has ever been captured/i)).toBeInTheDocument();
   });
 
@@ -90,7 +111,7 @@ describe('LeagueNightStatusTab', () => {
       data: { pendingScoreSubmissions: 3, pendingTeamRequests: 0, newContactRequests: 0 },
       isLoading: false,
     });
-    render(<LeagueNightStatusTab />);
+    renderTab();
 
     fireEvent.click(screen.getByRole('button', { name: /score reports.*open section/i }));
     expect(sessionStorage.getItem('adminActiveTab')).toBe('pending-matches');
@@ -98,7 +119,7 @@ describe('LeagueNightStatusTab', () => {
   });
 
   it('quick actions open external links safely', () => {
-    render(<LeagueNightStatusTab />);
+    renderTab();
     const supabaseLink = screen.getByRole('link', { name: /supabase status/i });
     expect(supabaseLink).toHaveAttribute('href', OPS_LINKS.supabaseStatus);
     expect(supabaseLink).toHaveAttribute('target', '_blank');
