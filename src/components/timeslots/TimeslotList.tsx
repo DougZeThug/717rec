@@ -116,7 +116,7 @@ const TimeslotList: React.FC<TimeslotListProps> = ({ timeslots, teams, onDelete 
               {timeslotToDelete ? (
                 <>
                   {' '}
-                  for <strong>{getTeamName(timeslotToDelete.team_id)}</strong> at{' '}
+                  for <strong>{getTeamName(timeslotToDelete)}</strong> at{' '}
                   <strong>{timeslotToDelete.timeslot}</strong>
                 </>
               ) : (
