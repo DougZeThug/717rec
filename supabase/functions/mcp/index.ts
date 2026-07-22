@@ -79,7 +79,8 @@ var get_my_recent_matches_default = defineTool2({
     const supabase = userClient(ctx);
     const seasonId = await getActiveSeasonId(supabase);
     if (!seasonId) return textResult([]);
-    const { data: mem } = await supabase.from("team_memberships").select("team_id").eq("user_id", ctx.getUserId()).eq("season_id", seasonId).eq("status", "approved").maybeSingle();
+    const { data: mem, error: memErr } = await supabase.from("team_memberships").select("team_id").eq("user_id", ctx.getUserId()).eq("is_approved", true).maybeSingle();
+    if (memErr) return errorResult(memErr.message);
     if (!mem?.team_id) return textResult([]);
     const { data, error } = await supabase.from("matches").select("id, match_date, team1_name, team2_name, team1_score, team2_score, division_name").eq("season_id", seasonId).eq("is_completed", true).or(`team1_id.eq.${mem.team_id},team2_id.eq.${mem.team_id}`).order("match_date", { ascending: false }).limit(limit);
     if (error) return errorResult(error.message);
@@ -100,10 +101,11 @@ var get_my_team_default = defineTool3({
     const supabase = userClient(ctx);
     const seasonId = await getActiveSeasonId(supabase);
     if (!seasonId) return textResult(null);
-    const { data: membership, error: memErr } = await supabase.from("team_memberships").select("team_id, teams(id, name, division_name, wins, losses, power_score)").eq("user_id", ctx.getUserId()).eq("season_id", seasonId).eq("status", "approved").maybeSingle();
+    const { data: membership, error: memErr } = await supabase.from("team_memberships").select("team_id, teams(id, name, division_name, wins, losses, power_score)").eq("user_id", ctx.getUserId()).eq("is_approved", true).maybeSingle();
     if (memErr) return errorResult(memErr.message);
     if (!membership) return textResult(null);
-    const { data: roster } = await supabase.from("team_players").select("id, player_name, profile_id").eq("team_id", membership.team_id);
+    const { data: roster, error: rosterErr } = await supabase.from("team_players").select("id, display_name, profile_id").eq("team_id", membership.team_id);
+    if (rosterErr) return errorResult(rosterErr.message);
     return textResult({ team: membership.teams, roster: roster ?? [] });
   }
 });
@@ -122,7 +124,8 @@ var get_my_upcoming_matches_default = defineTool4({
     const supabase = userClient(ctx);
     const seasonId = await getActiveSeasonId(supabase);
     if (!seasonId) return textResult([]);
-    const { data: mem } = await supabase.from("team_memberships").select("team_id").eq("user_id", ctx.getUserId()).eq("season_id", seasonId).eq("status", "approved").maybeSingle();
+    const { data: mem, error: memErr } = await supabase.from("team_memberships").select("team_id").eq("user_id", ctx.getUserId()).eq("is_approved", true).maybeSingle();
+    if (memErr) return errorResult(memErr.message);
     if (!mem?.team_id) return textResult([]);
     const { data, error } = await supabase.from("matches").select("id, match_date, team1_name, team2_name, division_name").eq("season_id", seasonId).eq("is_completed", false).or(`team1_id.eq.${mem.team_id},team2_id.eq.${mem.team_id}`).order("match_date", { ascending: true }).limit(limit);
     if (error) return errorResult(error.message);

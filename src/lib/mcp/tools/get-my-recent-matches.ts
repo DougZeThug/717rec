@@ -16,13 +16,13 @@ export default defineTool({
     const seasonId = await getActiveSeasonId(supabase);
     if (!seasonId) return textResult([]);
 
-    const { data: mem } = await supabase
+    const { data: mem, error: memErr } = await supabase
       .from('team_memberships')
       .select('team_id')
       .eq('user_id', ctx.getUserId())
-      .eq('season_id', seasonId)
-      .eq('status', 'approved')
+      .eq('is_approved', true)
       .maybeSingle();
+    if (memErr) return errorResult(memErr.message);
     if (!mem?.team_id) return textResult([]);
 
     const { data, error } = await supabase
