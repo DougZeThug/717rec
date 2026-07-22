@@ -207,6 +207,69 @@ describe('useScoreEntryData - filter changes', () => {
   });
 });
 
+describe('useScoreEntryData - cross-filter cache hygiene', () => {
+  const createClientAndWrapper = () => {
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false, staleTime: 5 * 60 * 1000 },
+        mutations: { retry: false },
+      },
+    });
+    const wrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return { queryClient, wrapper };
+  };
+
+  it('drops lists cached under other filters after a submission', async () => {
+    const { queryClient, wrapper } = createClientAndWrapper();
+    const { result } = renderHook(() => useScoreEntryData(), { wrapper });
+    await waitFor(() => expect(result.current.matches.length).toBeGreaterThan(0));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    // Simulate a previously visited filter whose cached rows predate the save.
+    const siblingKey = ['mass-score-matches', '2026-01-01T00:00:00.000Z', null];
+    queryClient.setQueryData(siblingKey, [{ id: 'stale-row' }]);
+
+    act(() => {
+      result.current.handleScoreChange(0, 1, 0);
+    });
+    act(() => {
+      result.current.handleMarkCompleted(0, true);
+    });
+    await act(async () => {
+      await result.current.handleSubmitAll();
+    });
+
+    expect(queryClient.getQueryData(siblingKey)).toBeUndefined();
+  });
+
+  it('removeMatch drops the row from the current cache and clears other filters', async () => {
+    const { queryClient, wrapper } = createClientAndWrapper();
+    const { result } = renderHook(() => useScoreEntryData(), { wrapper });
+    await waitFor(() => expect(result.current.matches.length).toBeGreaterThan(0));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    const siblingKey = ['mass-score-matches', '2026-01-01T00:00:00.000Z', null];
+    queryClient.setQueryData(siblingKey, [{ id: 'stale-row' }]);
+
+    const removedId = result.current.matches[0].id;
+    const currentKey = [
+      'mass-score-matches',
+      result.current.filters.date?.toISOString() ?? null,
+      result.current.filters.bracketId ?? null,
+    ];
+
+    act(() => {
+      result.current.removeMatch(removedId);
+    });
+
+    expect(result.current.matches.find((m) => m.id === removedId)).toBeUndefined();
+    const currentCache = queryClient.getQueryData<{ id: string }[]>(currentKey);
+    expect(currentCache?.find((m) => m.id === removedId)).toBeUndefined();
+    expect(queryClient.getQueryData(siblingKey)).toBeUndefined();
+  });
+});
+
 describe('useScoreEntryData - score handling', () => {
   it('handleScoreChange updates scores, marks edited, and validates', async () => {
     const { result } = renderHook(() => useScoreEntryData(), { wrapper: createWrapper() });

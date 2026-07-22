@@ -78,6 +78,10 @@ export const useScoreEntryData = () => {
     queryClient.setQueryData<MatchWithTeams[]>(matchesQueryKey, (old) =>
       old?.filter((m) => m.id !== matchId)
     );
+    // Lists cached under other filters may still contain the row, and the
+    // app-wide 5-minute staleTime would replay them on a filter switch — drop
+    // them so the deleted match can't resurface.
+    queryClient.removeQueries({ queryKey: ['mass-score-matches'], type: 'inactive' });
   };
 
   // Track whether this is the initial mount (auto-set date only on first load)
@@ -224,6 +228,10 @@ export const useScoreEntryData = () => {
     } finally {
       // Invalidate cache so React Query re-fetches fresh data in the background.
       await invalidateMatchRelatedQueries(queryClient);
+      // Lists cached under other filters now hold pre-submission scores, and
+      // the app-wide 5-minute staleTime would replay them on a filter switch —
+      // drop them so stale scores can't resurface.
+      queryClient.removeQueries({ queryKey: ['mass-score-matches'], type: 'inactive' });
       const fetchedMatches = await fetchMatches(filters);
 
       // Only merge fetched data if the fetch returned results — an empty array
