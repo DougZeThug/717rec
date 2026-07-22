@@ -15,13 +15,10 @@ export const useMatchSubmission = () => {
   const { validateScore } = useScoreValidation();
   const submittingMatchIds = useLazyRef<Set<string>>(() => new Set());
 
-  const handleSubmitScore = async ({
-    matchId,
-    team1Score,
-    team2Score,
-    team1GameWins = 0,
-    team2GameWins = 0,
-  }: SubmitScoreParams) => {
+  const handleSubmitScore = async (
+    { matchId, team1Score, team2Score, team1GameWins = 0, team2GameWins = 0 }: SubmitScoreParams,
+    options: { suppressToast?: boolean; suppressInvalidation?: boolean } = {}
+  ) => {
     if (submittingMatchIds.current.has(matchId)) return false;
     submittingMatchIds.current.add(matchId);
     try {
@@ -37,11 +34,13 @@ export const useMatchSubmission = () => {
       // Validate scores before database operations
       const validation = validateScore(team1Score, team2Score);
       if (!validation.isValid) {
-        toast({
-          title: 'Validation Error',
-          description: validation.errorMessage,
-          variant: 'destructive',
-        });
+        if (!options.suppressToast) {
+          toast({
+            title: 'Validation Error',
+            description: validation.errorMessage,
+            variant: 'destructive',
+          });
+        }
         return false;
       }
 
@@ -56,21 +55,27 @@ export const useMatchSubmission = () => {
       });
 
       // Invalidate all relevant query caches
-      await invalidateMatchRelatedQueries(queryClient);
+      if (!options.suppressInvalidation) {
+        await invalidateMatchRelatedQueries(queryClient);
+      }
 
-      toast({
-        title: 'Scores Updated',
-        description: 'Match scores have been successfully updated.',
-      });
+      if (!options.suppressToast) {
+        toast({
+          title: 'Scores Updated',
+          description: 'Match scores have been successfully updated.',
+        });
+      }
 
       return true;
     } catch (error) {
       errorLog('[useMatchSubmission] Error updating scores:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update scores. Please try again.',
-        variant: 'destructive',
-      });
+      if (!options.suppressToast) {
+        toast({
+          title: 'Error',
+          description: 'Failed to update scores. Please try again.',
+          variant: 'destructive',
+        });
+      }
       return false;
     } finally {
       submittingMatchIds.current.delete(matchId);

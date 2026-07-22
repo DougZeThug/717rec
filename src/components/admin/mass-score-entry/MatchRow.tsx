@@ -9,6 +9,7 @@ import MatchStatusSection from './components/MatchStatusSection';
 import ScoreSection from './components/ScoreSection';
 import TeamDisplay from './components/TeamDisplay';
 import { MatchWithTeams } from './types';
+import { getRealMatchId, getUnsubmittableHint } from './utils/submissionEligibility';
 
 interface MatchRowProps {
   match: MatchWithTeams;
@@ -38,6 +39,8 @@ const MatchRow: React.FC<MatchRowProps> = ({
   // Use match state for optimistic updates, fallback to props
   const isSubmitting = match.isSubmitting || propIsSubmitting;
   const hasError = match.submitError || propHasError;
+  const unsubmittableHint = getUnsubmittableHint(match);
+  const realMatchId = getRealMatchId(match.id);
   scoreLog(`MatchRow render for match ${match.id}:`, {
     matchId: match.id,
     index: index,
@@ -78,8 +81,8 @@ const MatchRow: React.FC<MatchRowProps> = ({
   );
 
   const handleClearError = useCallback(() => {
-    onClearError?.(match.id);
-  }, [onClearError, match.id]);
+    onClearError?.(realMatchId);
+  }, [onClearError, realMatchId]);
 
   return (
     <div
@@ -106,6 +109,12 @@ const MatchRow: React.FC<MatchRowProps> = ({
           </div>
         )}
 
+        {unsubmittableHint && !isSubmitting && (
+          <div className="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+            {unsubmittableHint}
+          </div>
+        )}
+
         {/* Team Names Display - Stacked vertical layout */}
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between">
@@ -116,8 +125,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
                 size="icon"
                 className="size-7 text-muted-foreground hover:text-destructive shrink-0"
                 onClick={() => {
-                  const realId = match.id.split('-index-')[0];
-                  onDelete(realId);
+                  onDelete(realMatchId);
                 }}
                 disabled={isSubmitting}
                 aria-label="Delete match"
