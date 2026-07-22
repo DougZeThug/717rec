@@ -16,6 +16,7 @@ import ScoreEntryToolbar from './mass-score-entry/components/ScoreEntryToolbar';
 import SubmitButton from './mass-score-entry/components/SubmitButton';
 import { useScoreEntryData } from './mass-score-entry/hooks/useScoreEntryData';
 import MatchesTable from './mass-score-entry/MatchesTable';
+import { isSubmittableMatch } from './mass-score-entry/utils/submissionEligibility';
 
 const MassScoreEntryTool: React.FC = () => {
   const queryClient = useQueryClient();
@@ -25,8 +26,10 @@ const MassScoreEntryTool: React.FC = () => {
 
   const {
     matches,
+    submittableMatchesCount,
     loading,
     submitting,
+    lastBatchSummary,
     failedMatches,
     errorMessages,
     brackets,
@@ -70,8 +73,9 @@ const MassScoreEntryTool: React.FC = () => {
     }
   };
 
-  // Count edited matches that are valid
-  const validEditedMatchesCount = matches.filter((m) => m.isEdited && m.isValid).length;
+  // Count matches using the same predicate as the submit loop.
+  const validEditedMatchesCount =
+    submittableMatchesCount ?? matches.filter(isSubmittableMatch).length;
 
   // Determine if submission should be disabled
   const disableSubmit = submitting || validEditedMatchesCount === 0;
@@ -130,7 +134,14 @@ const MassScoreEntryTool: React.FC = () => {
         </CardHeader>
 
         <CardContent className="p-3 sm:p-4">
-          <ErrorAlert failedMatches={failedMatches} />
+          <ErrorAlert
+            failedMatches={failedMatches}
+            savedCount={lastBatchSummary?.saved}
+            errorMessages={errorMessages}
+            onRetryFailed={() => handleSubmitAll(failedMatches)}
+            retryDisabled={submitting}
+            onClear={() => clearErrors()}
+          />
 
           <div className="w-full">
             <MatchesTable

@@ -1,6 +1,6 @@
 import { m } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
@@ -8,6 +8,7 @@ import { scoreLog } from '@/utils/logger';
 
 import MatchRow from '../MatchRow';
 import { MatchWithTeams } from '../types';
+import { getRealMatchId } from '../utils/submissionEligibility';
 
 const EMPTY_FAILED_MATCHES: string[] = [];
 const EMPTY_ERROR_MESSAGES: Record<string, string> = {};
@@ -40,6 +41,7 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
   onDeleteMatch,
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  const failedMatchIds = useMemo(() => new Set(failedMatches), [failedMatches]);
 
   // Debug log to track the matches in this group
   useEffect(() => {
@@ -99,8 +101,8 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
                   match={match}
                   index={globalIndex} // Use the global index for parent callbacks
                   isSubmitting={submitting}
-                  hasError={failedMatches?.includes(match.id)}
-                  errorMessage={errorMessages?.[match.id]}
+                  hasError={failedMatchIds.has(getRealMatchId(match.id))}
+                  errorMessage={errorMessages?.[getRealMatchId(match.id)]}
                   onScoreChange={(team1Score, team2Score) =>
                     onScoreChange(globalIndex, team1Score, team2Score)
                   }

@@ -1,11 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useMatchSubmission } from '@/hooks/matches/useMatchSubmission';
 import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
 import { useToast } from '@/hooks/useToast';
 import { errorLog, filterLog, scoreLog } from '@/utils/logger';
 
+import { getMatchDisplayName, isSubmittableMatch } from '../utils/submissionEligibility';
 import { useErrorHandling } from './error/useErrorHandling';
 import { useMatchesFetching } from './fetching/useMatchesFetching';
 import { useFiltersState } from './state/useFiltersState';
@@ -16,6 +17,10 @@ import { useMatchScores } from './useMatchScores';
 export const useScoreEntryData = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [lastBatchSummary, setLastBatchSummary] = useState<{
+    saved: number;
+    failed: number;
+  } | null>(null);
 
   const {
     matches,
@@ -39,7 +44,7 @@ export const useScoreEntryData = () => {
     updateFiltersForMatchDate,
   } = useFiltersState();
 
-  const { failedMatches, errorMessages, clearErrors } = useErrorHandling();
+  const { failedMatches, errorMessages, clearErrors, addError } = useErrorHandling();
 
   const { fetchMatches } = useMatchesFetching();
 
@@ -83,11 +88,16 @@ export const useScoreEntryData = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- initial mount fetch + filter sync; deps would cause refetch loop
   }, [filters.date, filters.bracketId]);
 
-  const handleSubmitAll = async () => {
+  const handleSubmitAll = async (matchIds?: string[]) => {
     scoreLog('Starting match submission process');
 
+    if (submitting) {
+      return;
+    }
+
+    const retryIds = Array.isArray(matchIds) ? new Set(matchIds) : null;
     const validMatches = matches.filter(
-      (match) => match.isEdited && match.isValid && match.iscompleted
+      (match) => isSubmittableMatch(match) && (!retryIds || retryIds.has(match.id))
     );
 
     if (validMatches.length === 0) {
@@ -102,39 +112,56 @@ export const useScoreEntryData = () => {
     setSubmitting(true);
 
     // Optimistic update: mark matches as submitting
-    const validMatchIds = validMatches.map((m) => m.id);
+    const validMatchIds = new Set(validMatches.map((m) => m.id));
     setMatches((prev) =>
       prev.map((m) =>
-        validMatchIds.includes(m.id) ? { ...m, isSubmitting: true, submitError: false } : m
+        validMatchIds.has(m.id) ? { ...m, isSubmitting: true, submitError: false } : m
       )
     );
 
     // Track per-match outcome so the finally block can do a smart merge.
-    // Each inner lambda catches its own errors, so Promise.all never rejects.
-    type SubmissionOutcome = { matchId: string; succeeded: boolean };
-    let submissionOutcomes: SubmissionOutcome[] = [];
+    type SubmissionOutcome = { matchId: string; succeeded: boolean; message?: string };
+    const submissionOutcomes: SubmissionOutcome[] = [];
 
     try {
-      // The atomic resubmit_match_result RPC owns reversal + write + counters
-      // inside a single transaction, so there is no pre-call to make here and
-      // no compensation bookkeeping on failure.
-      submissionOutcomes = await Promise.all(
-        validMatches.map(async (match): Promise<SubmissionOutcome> => {
-          try {
-            const success = await handleSubmitScore({
-              matchId: match.id,
-              team1Score: match.team1Score ?? 0,
-              team2Score: match.team2Score ?? 0,
-              team1GameWins: match.team1_game_wins ?? 0,
-              team2GameWins: match.team2_game_wins ?? 0,
-            });
+      const submitMatch = async (match: (typeof validMatches)[number]) => {
+        try {
+          const submitParams = {
+            matchId: match.id,
+            team1Score: match.team1Score ?? 0,
+            team2Score: match.team2Score ?? 0,
+            team1GameWins: match.team1_game_wins ?? 0,
+            team2GameWins: match.team2_game_wins ?? 0,
+          };
+          const success = await handleSubmitScore(submitParams, {
+            suppressToast: true,
+            suppressInvalidation: true,
+          });
 
-            return { matchId: match.id, succeeded: !!success };
-          } catch (err) {
-            errorLog(`Error submitting match ${match.id}:`, err);
-            return { matchId: match.id, succeeded: false };
+          if (success) {
+            clearErrors(match.id);
+            submissionOutcomes.push({ matchId: match.id, succeeded: true });
+          } else {
+            const message = `Couldn't save ${getMatchDisplayName(match)} — try again.`;
+            addError(match.id, message);
+            submissionOutcomes.push({ matchId: match.id, succeeded: false, message });
           }
-        })
+        } catch (err) {
+          errorLog(`Error submitting match ${match.id}:`, err);
+          const rawMessage = err instanceof Error ? err.message : 'Unknown error';
+          const message = `Couldn't save ${getMatchDisplayName(match)} — try again. ${rawMessage}`;
+          addError(match.id, message);
+          submissionOutcomes.push({ matchId: match.id, succeeded: false, message });
+        }
+      };
+
+      // Submit strictly one-at-a-time. Each RPC rewrites team season stats in a
+      // transaction, so parallel submissions can fight over row locks and create
+      // avoidable deadlocks when a large batch touches the same teams. This
+      // promise chain is intentionally serial without using await inside a loop.
+      await validMatches.reduce(
+        (previousSubmission, match) => previousSubmission.then(() => submitMatch(match)),
+        Promise.resolve()
       );
 
       // Determine which submissions succeeded/failed
@@ -154,18 +181,15 @@ export const useScoreEntryData = () => {
         })
       );
 
-      if (succeededIds.length > 0) {
-        toast({
-          title: '✅ Matches Submitted',
-          description: `${succeededIds.length} match(es) successfully submitted.${failedIds.length > 0 ? ` ${failedIds.length} failed.` : ''}`,
-        });
-      } else {
-        toast({
-          title: 'Error',
-          description: 'Failed to submit matches. Please try again.',
-          variant: 'destructive',
-        });
-      }
+      setLastBatchSummary({ saved: succeededIds.length, failed: failedIds.length });
+      toast({
+        title: failedIds.length > 0 && succeededIds.length === 0 ? 'Error' : '✅ Matches Submitted',
+        description:
+          failedIds.length > 0
+            ? `${succeededIds.length} match(es) successfully submitted. ${failedIds.length} failed. (${succeededIds.length} saved, ${failedIds.length} failed.)`
+            : `${succeededIds.length} match(es) successfully submitted. (${succeededIds.length} saved, ${failedIds.length} failed.)`,
+        variant: failedIds.length > 0 ? 'destructive' : undefined,
+      });
     } finally {
       // Invalidate cache so React Query re-fetches fresh data in the background.
       await invalidateMatchRelatedQueries(queryClient);
@@ -207,8 +231,10 @@ export const useScoreEntryData = () => {
 
   return {
     matches,
+    submittableMatchesCount: matches.filter(isSubmittableMatch).length,
     loading,
     submitting,
+    lastBatchSummary,
     failedMatches,
     errorMessages,
     brackets,

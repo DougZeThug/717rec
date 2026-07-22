@@ -17,9 +17,10 @@ const mockHandleMarkCompleted = vi.fn();
 
 // Defined before mockScoreEntryData so typeof can be used for the variable type
 const _defaultScoreEntryState = {
-  matches: [] as { id: string; isEdited: boolean; isValid: boolean }[],
+  matches: [] as { id: string; isEdited: boolean; isValid: boolean; iscompleted?: boolean }[],
   loading: false,
   submitting: false,
+  lastBatchSummary: null as { saved: number; failed: number } | null,
   failedMatches: [] as string[],
   errorMessages: {} as Record<string, string>,
   brackets: [] as { id: string; title: string }[],
@@ -127,8 +128,8 @@ describe('MassScoreEntryTool', () => {
       mockScoreEntryData = {
         ..._defaultScoreEntryState,
         matches: [
-          { id: 'm1', isEdited: true, isValid: true },
-          { id: 'm2', isEdited: true, isValid: true },
+          { id: 'm1', isEdited: true, isValid: true, iscompleted: true },
+          { id: 'm2', isEdited: true, isValid: true, iscompleted: true },
         ],
       };
 
@@ -141,7 +142,7 @@ describe('MassScoreEntryTool', () => {
       mockScoreEntryData = {
         ..._defaultScoreEntryState,
         submitting: true,
-        matches: [{ id: 'm1', isEdited: true, isValid: true }],
+        matches: [{ id: 'm1', isEdited: true, isValid: true, iscompleted: true }],
       };
 
       renderTool();
@@ -153,7 +154,7 @@ describe('MassScoreEntryTool', () => {
     it('calls handleSubmitAll when submit button is clicked', async () => {
       mockScoreEntryData = {
         ..._defaultScoreEntryState,
-        matches: [{ id: 'm1', isEdited: true, isValid: true }],
+        matches: [{ id: 'm1', isEdited: true, isValid: true, iscompleted: true }],
       };
 
       renderTool();
@@ -214,6 +215,19 @@ describe('MassScoreEntryTool', () => {
 
       // ErrorAlert shows "2 matches failed to update"
       expect(screen.getByText(/2 matches failed to update/i)).toBeInTheDocument();
+    });
+
+    it('disables retry while a batch is submitting', () => {
+      mockScoreEntryData = {
+        ..._defaultScoreEntryState,
+        submitting: true,
+        failedMatches: ['m1'],
+        lastBatchSummary: { saved: 0, failed: 1 },
+      };
+
+      renderTool();
+
+      expect(screen.getByRole('button', { name: /retry failed/i })).toBeDisabled();
     });
 
     it('does not render error alert when no failed matches', () => {
