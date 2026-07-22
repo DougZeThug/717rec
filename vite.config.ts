@@ -13,7 +13,7 @@ const lovableEditorDevPlugin = (): Plugin => ({
   transformIndexHtml(html) {
     return html.replace(
       '</body>',
-      '  <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>\n  </body>',
+      '  <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>\n  </body>'
     );
   },
 });
