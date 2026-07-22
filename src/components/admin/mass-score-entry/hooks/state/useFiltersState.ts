@@ -7,7 +7,12 @@ import { FilterState } from '../../types';
 
 export const useFiltersState = () => {
   const [filters, setFilters] = useState<FilterState>({});
-  const { brackets } = useBracketsQuery();
+  const {
+    brackets,
+    error: bracketsError,
+    isLoading: bracketsLoading,
+    refetch: refetchBrackets,
+  } = useBracketsQuery();
 
   const setFilterDate = (date?: Date) => {
     filterLog('Setting filter date:', date);
@@ -34,6 +39,9 @@ export const useFiltersState = () => {
   return {
     filters,
     brackets,
+    bracketsError,
+    bracketsLoading,
+    refetchBrackets,
     setFilterDate,
     setBracketFilter,
     clearFilters,
