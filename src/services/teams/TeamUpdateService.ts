@@ -99,7 +99,7 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, 'id' | 
     .from('seasons')
     .select('id')
     .eq('is_active', true)
-    .single();
+    .maybeSingle();
 
   if (seasonError) {
     handleDatabaseError(seasonError, 'Failed to fetch active season');

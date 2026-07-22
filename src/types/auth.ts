@@ -18,7 +18,7 @@ export interface AuthContextType {
   authInitialized: boolean;
   signIn: (email: string, password: string) => Promise<AuthResponse>;
   signUp: (email: string, password: string) => Promise<AuthResponse>;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: (returnTo?: string) => Promise<void>;
   signInWithGoogleNative: () => Promise<{
     success: boolean;
     user?: User | null;

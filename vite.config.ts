@@ -1,3 +1,4 @@
+import { mcpPlugin } from '@lovable.dev/mcp-js/stacks/supabase/vite';
 import react from '@vitejs/plugin-react-swc';
 import { componentTagger } from 'lovable-tagger';
 import path from 'path';
@@ -31,6 +32,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
+    mcpPlugin(),
     mode === 'development' && componentTagger(),
     mode === 'production' &&
       beasties({

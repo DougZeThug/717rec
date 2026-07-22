@@ -226,7 +226,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
       });
     } catch (err) {
       errorLog('Error updating message:', err);
-      // Error is already handled in the API function
+      throw err; // Re-throw so caller can preserve edited content
     }
   };
 

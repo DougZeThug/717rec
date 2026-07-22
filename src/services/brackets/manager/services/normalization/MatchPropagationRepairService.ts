@@ -135,7 +135,13 @@ export class MatchPropagationRepairService {
     }
 
     bracketLog(`🔧 [PROPAGATE→GF] Winner ${winnerId} → GF round ${gfRound1.number} ${targetSlot}`);
-    await supabase.from('match').update(updateFields).eq('id', gfMatch.id);
+    const { error: gfUpdateError } = await supabase
+      .from('match')
+      .update(updateFields)
+      .eq('id', gfMatch.id);
+    if (gfUpdateError) {
+      errorLog(`[PROPAGATE→GF] Failed to update match ${gfMatch.id}:`, gfUpdateError);
+    }
   }
 
   private async propagateRoundWinners(round: StorageRound, nextRound: StorageRound): Promise<void> {
@@ -198,8 +204,15 @@ export class MatchPropagationRepairService {
         updateFields.status = 2;
       }
 
-      await supabase.from('match').update(updateFields).eq('id', nextMatch.id);
-      bracketLog(`✅ [PROPAGATE] Winner ${winnerId} placed in match ${nextMatch.id}`);
+      const { error: updateError } = await supabase
+        .from('match')
+        .update(updateFields)
+        .eq('id', nextMatch.id);
+      if (updateError) {
+        errorLog(`[PROPAGATE] Failed to update match ${nextMatch.id}:`, updateError);
+      } else {
+        bracketLog(`✅ [PROPAGATE] Winner ${winnerId} placed in match ${nextMatch.id}`);
+      }
     }
   }
 }

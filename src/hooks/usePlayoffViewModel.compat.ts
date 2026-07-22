@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { usePlayoffViewModel } from '@/hooks/playoffs/usePlayoffViewModel';
 import { useTeamsArray } from '@/hooks/teams';
@@ -11,7 +11,11 @@ import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 import { groupTeamsByDivision } from '@/utils/teamGrouping';
 
 /** Temporary shim exposing the legacy shape for Playoffs.tsx */
-export const usePlayoffData = (isAdmin = false, seasonId?: string | null) => {
+export const usePlayoffData = (
+  isAdmin = false,
+  seasonId?: string | null,
+  activeSeasonId?: string | null
+) => {
   // Call the view model without a bracketId to get overview data
   const vm = usePlayoffViewModel(null);
 
@@ -21,8 +25,8 @@ export const usePlayoffData = (isAdmin = false, seasonId?: string | null) => {
   // Fetch teams data to populate teamsByDivision
   const { teams, isLoading: teamsLoading } = useTeamsArray();
 
-  // Determine if we're viewing a past season
-  const isViewingPastSeason = !!seasonId && seasonId !== undefined;
+  // Determine if we're viewing a past season (any selected season that isn't the active one)
+  const isViewingPastSeason = !!seasonId && !!activeSeasonId && seasonId !== activeSeasonId;
 
   // Fetch brackets data from Supabase with matches included
   const {
@@ -38,7 +42,7 @@ export const usePlayoffData = (isAdmin = false, seasonId?: string | null) => {
       const data: BracketsOverviewRow[] = await fetchBracketsOverview(seasonId);
 
       // Transform to domain objects
-      let brackets: PlayoffBracket[] = (data ?? []).map((br) => ({
+      const brackets: PlayoffBracket[] = (data ?? []).map((br) => ({
         id: br.id,
         name: br.title,
         division: br.divisions?.name ?? undefined,
@@ -56,20 +60,22 @@ export const usePlayoffData = (isAdmin = false, seasonId?: string | null) => {
         uses_brackets_manager: br.uses_brackets_manager ?? false,
       }));
 
-      // For current/active season: hide completed brackets (original behavior)
-      // For past seasons: show only completed brackets
-      if (isViewingPastSeason) {
-        // Show all brackets for past seasons (they should all be completed)
-        bracketLog('Showing all brackets for past season:', { total: brackets.length });
-      } else {
-        // Current season: filter out completed brackets
-        const originalCount = brackets.length;
-        brackets = brackets.filter((b) => b.state !== 'completed');
-        bracketLog('Filtered brackets:', { total: originalCount, active: brackets.length });
-      }
-
       return brackets;
     },
+    // Filter client-side via `select` so switching active seasons (which changes
+    // `isViewingPastSeason` without changing the query key) recomputes correctly.
+    select: useCallback(
+      (data: PlayoffBracket[]) => {
+        if (isViewingPastSeason) {
+          bracketLog('Showing all brackets for past season:', { total: data.length });
+          return data;
+        }
+        const filtered = data.filter((b) => b.state !== 'completed');
+        bracketLog('Filtered brackets:', { total: data.length, active: filtered.length });
+        return filtered;
+      },
+      [isViewingPastSeason]
+    ),
     staleTime: 0,
     gcTime: 0,
     refetchOnMount: 'always',

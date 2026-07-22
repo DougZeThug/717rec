@@ -16,6 +16,7 @@ export default tseslint.config(
       '*.config.js',
       'public/**',
       'src/integrations/supabase/types.ts',
+      'supabase/functions/mcp/**',
     ],
   },
   {
@@ -110,6 +111,8 @@ export default tseslint.config(
       'src/services/**/*.{ts,tsx}',
       'src/hooks/**/*.{ts,tsx}',
       'src/utils/imageUpload.ts',
+      'src/lib/mcp/**/*.{ts,tsx}',
+      'src/pages/OAuthConsent.tsx',
       '**/__tests__/**/*.{ts,tsx}',
       '**/*.test.{ts,tsx}',
       '**/*.spec.{ts,tsx}',

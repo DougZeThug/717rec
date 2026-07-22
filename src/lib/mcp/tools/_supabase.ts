@@ -1,0 +1,50 @@
+import type { ToolContext } from '@lovable.dev/mcp-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+
+/** Build a user-scoped Supabase client that forwards the caller's OAuth token so RLS runs as that user. */
+export function userClient(ctx: ToolContext): SupabaseClient {
+  const url = process.env.SUPABASE_URL;
+  const anon = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY;
+  if (!url || !anon) {
+    throw new Error(
+      'MCP userClient: SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY (or SUPABASE_ANON_KEY) must be set'
+    );
+  }
+  return createClient(url, anon, {
+    global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
+
+export async function requireAdmin(
+  supabase: SupabaseClient,
+  userId: string | undefined
+): Promise<boolean> {
+  if (!userId) return false;
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', userId)
+    .maybeSingle();
+  if (error) return false;
+  return data?.is_admin === true;
+}
+
+export function textResult(payload: unknown) {
+  return {
+    content: [{ type: 'text' as const, text: JSON.stringify(payload, null, 2) }],
+    structuredContent: { data: payload } as Record<string, unknown>,
+  };
+}
+
+export function errorResult(message: string) {
+  return {
+    content: [{ type: 'text' as const, text: message }],
+    isError: true,
+  };
+}
+
+export async function getActiveSeasonId(supabase: SupabaseClient): Promise<string | null> {
+  const { data } = await supabase.from('seasons').select('id').eq('is_active', true).maybeSingle();
+  return data?.id ?? null;
+}

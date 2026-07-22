@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "717rec": {
+      "type": "http",
+      "url": "https://wcitdamvochthvxvtxyb.supabase.co/functions/v1/mcp"
+    }
+  }
+}

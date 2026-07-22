@@ -125,10 +125,12 @@ export const useAuthMethods = (
   }, [clearAuthError, handleAuthError, navigate]);
 
   // Sign in with Google (OAuth)
-  const signInWithGoogle = useCallback(async () => {
+  const signInWithGoogle = useCallback(async (returnTo?: string) => {
     try {
       clearAuthError();
-      await signInWithOAuth(`${window.location.origin}/setup-profile`);
+      const url = new URL('/setup-profile', window.location.origin);
+      if (returnTo) url.searchParams.set('next', returnTo);
+      await signInWithOAuth(url.toString());
     } catch (error) {
       if (error instanceof Error) {
         handleAuthError(error, 'Google login');
