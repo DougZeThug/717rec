@@ -15,7 +15,7 @@ import {
   assertStringIncludes,
 } from 'https://deno.land/std@0.224.0/assert/mod.ts';
 
-import { handleRequest, setRateLimiter } from './index.ts';
+import { handleRequest, setRateLimiter, stripControlChars } from './index.ts';
 
 function makeReq(body: unknown, init: RequestInit = {}): Request {
   return new Request('http://localhost/send-support-email', {
@@ -50,17 +50,28 @@ function reset() {
   setRateLimiter(null);
 }
 
-// Stub Resend + Supabase REST so no real network calls happen.
+// Stub Resend + Supabase REST so no real network calls happen. Both outcomes
+// (the support_tickets insert and the Resend send) are independently toggleable
+// so we can exercise the store/email success matrix.
 const originalFetch = globalThis.fetch;
-function stubFetch() {
+function stubFetch(opts: { insertOk?: boolean; resendOk?: boolean } = {}) {
+  const insertOk = opts.insertOk ?? true;
+  const resendOk = opts.resendOk ?? true;
   globalThis.fetch = ((input: RequestInfo | URL, _init?: RequestInit) => {
     const url = typeof input === 'string' ? input : input.toString();
     if (url.includes('api.resend.com')) {
-      return Promise.resolve(new Response(JSON.stringify({ id: 'stub' }), { status: 200 }));
+      return Promise.resolve(
+        resendOk
+          ? new Response(JSON.stringify({ id: 'stub' }), { status: 200 })
+          : new Response('resend unavailable', { status: 500 })
+      );
     }
-    if (url.includes('supabase')) {
-      // Insert into support_tickets — return empty success.
-      return Promise.resolve(new Response('[]', { status: 200 }));
+    if (url.includes('/rest/v1/support_tickets')) {
+      return Promise.resolve(
+        insertOk
+          ? new Response('', { status: 201 })
+          : new Response(JSON.stringify({ message: 'insert failed' }), { status: 500 })
+      );
     }
     return Promise.resolve(new Response('{}', { status: 200 }));
   }) as typeof fetch;
@@ -238,6 +249,97 @@ Deno.test({
       reset();
     }
   },
+});
+
+Deno.test({
+  name: 'store fails and email disabled → 502 (never a silent success)',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    allowAll();
+    stubFetch({ insertOk: false }); // RESEND_API_KEY is deleted globally in this file
+    try {
+      const res = await handleRequest(makeReq(validPayload));
+      assertEquals(res.status, 502);
+      const body = await res.json();
+      assertEquals(body.success, false);
+    } finally {
+      restoreFetch();
+      reset();
+    }
+  },
+});
+
+Deno.test({
+  name: 'store fails and email fails → 502',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    allowAll();
+    Deno.env.set('RESEND_API_KEY', 'test-resend-key');
+    stubFetch({ insertOk: false, resendOk: false });
+    try {
+      const res = await handleRequest(makeReq(validPayload));
+      assertEquals(res.status, 502);
+      const body = await res.json();
+      assertEquals(body.success, false);
+    } finally {
+      restoreFetch();
+      Deno.env.delete('RESEND_API_KEY');
+      reset();
+    }
+  },
+});
+
+Deno.test({
+  name: 'store succeeds but email fails → 200 with email-pending copy',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    allowAll();
+    Deno.env.set('RESEND_API_KEY', 'test-resend-key');
+    stubFetch({ insertOk: true, resendOk: false });
+    try {
+      const res = await handleRequest(makeReq(validPayload));
+      assertEquals(res.status, 200);
+      const body = await res.json();
+      assertEquals(body.success, true);
+      assertEquals(body.stored, true);
+      assertEquals(body.emailed, false);
+    } finally {
+      restoreFetch();
+      Deno.env.delete('RESEND_API_KEY');
+      reset();
+    }
+  },
+});
+
+Deno.test({
+  name: 'store succeeds and email sends → 200 emailed:true',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    allowAll();
+    Deno.env.set('RESEND_API_KEY', 'test-resend-key');
+    stubFetch({ insertOk: true, resendOk: true });
+    try {
+      const res = await handleRequest(makeReq(validPayload));
+      assertEquals(res.status, 200);
+      const body = await res.json();
+      assertEquals(body.success, true);
+      assertEquals(body.emailed, true);
+    } finally {
+      restoreFetch();
+      Deno.env.delete('RESEND_API_KEY');
+      reset();
+    }
+  },
+});
+
+Deno.test('stripControlChars removes CR/LF/NUL (subject-injection defense)', () => {
+  assertEquals(stripControlChars('Alice\r\nBcc: evil@x.com'), 'AliceBcc: evil@x.com');
+  assertEquals(stripControlChars('a\tb\tc'), 'abc'); // tabs stripped, spaces kept
+  assertEquals(stripControlChars('normal name'), 'normal name');
 });
 
 Deno.test({
