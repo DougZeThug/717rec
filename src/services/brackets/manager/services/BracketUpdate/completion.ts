@@ -41,7 +41,7 @@ const isMatchSettled = (match: StorageMatch): boolean => {
  * carrying on silently.
  */
 export async function markBracketCompleteIfDone(
-  ctx: BracketUpdateContext,
+  ctx: Pick<BracketUpdateContext, 'storage'>,
   tournamentId: string
 ): Promise<void> {
   const { storage } = ctx;

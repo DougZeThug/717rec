@@ -110,16 +110,19 @@ export class BracketRepairService {
       Array.isArray(matches) ? matches : matches ? [matches] : []
     ) as StorageMatch[];
 
-    let normalized = 0;
-    for (const match of matchesArray) {
-      const fullyPopulated = Boolean(match.opponent1?.id) && Boolean(match.opponent2?.id);
-      if (!fullyPopulated || (match.status !== 0 && match.status !== 1)) continue;
-
-      const { error } = await supabase.from('match').update({ status: 2 }).eq('id', match.id);
-      if (error) handleDatabaseError(error, `Failed to ready match ${match.id}`);
-      normalized += 1;
-    }
-    return normalized;
+    const toReady = matchesArray.filter(
+      (match) =>
+        Boolean(match.opponent1?.id) &&
+        Boolean(match.opponent2?.id) &&
+        (match.status === 0 || match.status === 1)
+    );
+    await Promise.all(
+      toReady.map(async (match) => {
+        const { error } = await supabase.from('match').update({ status: 2 }).eq('id', match.id);
+        if (error) handleDatabaseError(error, `Failed to ready match ${match.id}`);
+      })
+    );
+    return toReady.length;
   }
 
   private async reevaluateCompletion(bracketId: string): Promise<boolean> {

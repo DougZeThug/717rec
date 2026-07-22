@@ -9,6 +9,7 @@ import { bracketLog, errorLog, failureLog, successLog } from '@/utils/logger';
 import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
 import type { CreateBracketOptions, StorageParticipant } from '../types/BracketServiceTypes';
 import { isErrorLike, serializeError } from '../utils/BracketErrorUtils';
+import { assertUniqueSeedingNames } from '../utils/seedingGuards';
 
 /**
  * Service responsible for bracket creation
@@ -31,6 +32,8 @@ export class BracketCreationService {
       format,
       teamCount: teams.length,
     });
+
+    assertUniqueSeedingNames(teams);
 
     try {
       // Step 1: Calculate required bracket size (next power of 2 for brackets-manager)
@@ -135,17 +138,20 @@ export class BracketCreationService {
           Array.isArray(participants) ? participants : [participants]
         ) as StorageParticipant[];
 
-        for (const participant of participantArray) {
-          const seedIndex = teamsBySeed.findIndex((t) => t.id === participant.team_id);
-          if (seedIndex === -1) continue;
-          const { error: positionError } = await supabase
-            .from('participant')
-            .update({ position: seedIndex + 1 })
-            .eq('id', participant.id);
-          if (positionError) {
-            handleDatabaseError(positionError, 'Failed to sync participant seed position');
-          }
-        }
+        const seedIndexByTeamId = new Map(teamsBySeed.map((t, index) => [t.id, index]));
+        await Promise.all(
+          participantArray.map(async (participant) => {
+            const seedIndex = seedIndexByTeamId.get(participant.team_id ?? '');
+            if (seedIndex === undefined) return;
+            const { error: positionError } = await supabase
+              .from('participant')
+              .update({ position: seedIndex + 1 })
+              .eq('id', participant.id);
+            if (positionError) {
+              handleDatabaseError(positionError, 'Failed to sync participant seed position');
+            }
+          })
+        );
 
         bracketLog('✅ Participant sync complete:', {
           total: participantArray.length,

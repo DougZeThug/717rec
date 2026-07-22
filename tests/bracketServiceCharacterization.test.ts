@@ -259,6 +259,31 @@ describe('bracket service characterization (real service + real library over fak
     });
   });
 
+  describe('creation guards', () => {
+    it('rejects two selected teams that share a display name (the library resolves seeding by name)', async () => {
+      // brackets-manager maps object seeding back to its participant rows BY
+      // NAME, so a duplicated name would silently seed the same participant
+      // into both slots. The service must refuse up front.
+      seedBracketRow();
+      const service = new BracketManagerService();
+      const clashing = teams(4);
+      clashing[2] = { ...clashing[2], name: clashing[3].name };
+
+      await expect(
+        service.createBracket({
+          bracketId: BRACKET_ID,
+          format: 'double_elimination',
+          teams: clashing,
+          grandFinalType: 'simple',
+        })
+      ).rejects.toThrow('are both named "T4"');
+
+      // Nothing was persisted.
+      expect(matchRows()).toHaveLength(0);
+      expect(db().rows('participant')).toHaveLength(0);
+    });
+  });
+
   describe('full playthroughs through the real service', () => {
     it('double elimination, 4 teams, simple grand final: completes and marks the bracket completed', async () => {
       seedBracketRow();
@@ -384,6 +409,72 @@ describe('bracket service characterization (real service + real library over fak
         // The BYE sentinel on the empty side is preserved.
         opponent2_result: 'bye',
       });
+    });
+
+    it('marks the bracket completed when the walkover settles the last outstanding match', async () => {
+      // Legacy shape: a one-sided final with no BYE sentinel reads as
+      // "T1 vs TBD" and blocks completion — and it is the only unfinished
+      // match. Completing it through the admin tool must run the same
+      // completion re-evaluation a normal score save runs.
+      seedBracketRow();
+      db().seed('stage', [
+        {
+          id: 1,
+          tournament_id: BRACKET_ID,
+          name: 'S',
+          type: 'single_elimination',
+          number: 1,
+          settings: {},
+        },
+      ]);
+      db().seed('group', [{ id: 1, stage_id: 1, number: 1 }]);
+      db().seed('round', [
+        { id: 1, stage_id: 1, group_id: 1, number: 1 },
+        { id: 2, stage_id: 1, group_id: 1, number: 2 },
+      ]);
+      db().seed('participant', [
+        { id: 1, tournament_id: BRACKET_ID, name: 'T1', team_id: 'uuid-1', position: 1 },
+        { id: 2, tournament_id: BRACKET_ID, name: 'T2', team_id: 'uuid-2', position: 2 },
+      ]);
+      db().seed('match', [
+        {
+          id: 1,
+          stage_id: 1,
+          group_id: 1,
+          round_id: 1,
+          number: 1,
+          status: 5,
+          child_count: 0,
+          opponent1_id: 1,
+          opponent1_score: 2,
+          opponent1_result: 'win',
+          opponent2_id: 2,
+          opponent2_score: 0,
+          opponent2_result: 'loss',
+        },
+        // The final: T1 arrived, the other slot never got populated.
+        {
+          id: 2,
+          stage_id: 1,
+          group_id: 1,
+          round_id: 2,
+          number: 1,
+          status: 2,
+          child_count: 0,
+          opponent1_id: 1,
+          opponent1_score: null,
+          opponent1_result: null,
+          opponent2_id: null,
+          opponent2_score: null,
+          opponent2_result: null,
+        },
+      ]);
+
+      const service = new BracketManagerService();
+      const result = await service.adminCompleteByeMatch(2, 21);
+
+      expect(result.placedInMatchId).toBeNull();
+      expect(bracketState()).toBe('completed');
     });
   });
 
@@ -553,6 +644,34 @@ describe('bracket service characterization (real service + real library over fak
       const grid = snapshotSqlGrid();
       expect(grid[0]).toBe('WB R1 M1: T1 vs T3 [Ready]');
       expect(grid[1]).toBe('WB R1 M2: T2 vs T4 [Ready]');
+    });
+
+    it('rejects a seeding update where two teams share a display name', async () => {
+      seedBracketRow();
+      const service = new BracketManagerService();
+      await service.createBracket({
+        bracketId: BRACKET_ID,
+        format: 'double_elimination',
+        teams: teams(4),
+        grandFinalType: 'simple',
+      });
+      const gridBefore = snapshotSqlGrid();
+
+      await expect(
+        service.updateSeeding({
+          bracketId: BRACKET_ID,
+          newSeeding: [
+            { id: 'uuid-1', name: 'T1', seed: 1 },
+            { id: 'uuid-2', name: 'T2', seed: 2 },
+            // uuid-3 renamed to clash with uuid-2.
+            { id: 'uuid-3', name: 'T2', seed: 3 },
+            { id: 'uuid-4', name: 'T4', seed: 4 },
+          ],
+        })
+      ).rejects.toThrow('are both named "T2"');
+
+      // The bracket is untouched.
+      expect(snapshotSqlGrid()).toEqual(gridBefore);
     });
   });
 

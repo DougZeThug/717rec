@@ -12,6 +12,7 @@ import type {
   UpdateSeedingOptions,
 } from '../types/BracketServiceTypes';
 import { serializeError } from '../utils/BracketErrorUtils';
+import { assertUniqueSeedingNames } from '../utils/seedingGuards';
 
 /**
  * Service responsible for updating bracket seeding
@@ -35,6 +36,8 @@ export class BracketSeedingService {
       newSeedingCount: newSeeding.length,
       keepSameSize,
     });
+
+    assertUniqueSeedingNames(newSeeding);
 
     try {
       // Step 1: Get the stage ID for this bracket
@@ -89,26 +92,29 @@ export class BracketSeedingService {
           Array.isArray(participants) ? participants : [participants]
         ) as StorageParticipant[];
 
-        for (const participant of participantArray) {
-          const seedIndex = teamsBySeed.findIndex((t) => t.id === participant.team_id);
-          if (seedIndex === -1) {
-            // Not in the new seeding (removed team or legacy BYE row) — clear
-            // its slot position so it can't shadow a real seed.
-            const { error: clearError } = await supabase
-              .from('participant')
-              .update({ position: null })
-              .eq('id', participant.id);
-            if (clearError) handleDatabaseError(clearError, 'Failed to clear participant seed');
-          } else {
-            const { error: positionError } = await supabase
-              .from('participant')
-              .update({ position: seedIndex + 1 })
-              .eq('id', participant.id);
-            if (positionError) {
-              handleDatabaseError(positionError, 'Failed to sync participant seed position');
+        const seedIndexByTeamId = new Map(teamsBySeed.map((t, index) => [t.id, index]));
+        await Promise.all(
+          participantArray.map(async (participant) => {
+            const seedIndex = seedIndexByTeamId.get(participant.team_id ?? '');
+            if (seedIndex === undefined) {
+              // Not in the new seeding (removed team or legacy BYE row) — clear
+              // its slot position so it can't shadow a real seed.
+              const { error: clearError } = await supabase
+                .from('participant')
+                .update({ position: null })
+                .eq('id', participant.id);
+              if (clearError) handleDatabaseError(clearError, 'Failed to clear participant seed');
+            } else {
+              const { error: positionError } = await supabase
+                .from('participant')
+                .update({ position: seedIndex + 1 })
+                .eq('id', participant.id);
+              if (positionError) {
+                handleDatabaseError(positionError, 'Failed to sync participant seed position');
+              }
             }
-          }
-        }
+          })
+        );
       }
 
       successLog('Seeding updated successfully', bracketId);

@@ -3,7 +3,8 @@ import { BusinessLogicError, ValidationError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { bracketLog, successLog } from '@/utils/logger';
 
-import type { StorageMatch, StorageRound } from '../../types/BracketServiceTypes';
+import type { StorageMatch, StorageRound, StorageStage } from '../../types/BracketServiceTypes';
+import { markBracketCompleteIfDone } from '../BracketUpdate/completion';
 import type { BracketAdminDeps } from './types';
 
 export interface CompleteByeMatchResult {
@@ -77,6 +78,14 @@ export async function adminCompleteByeMatch(
 
   const placedInMatchId = await placeWinnerDownstream(deps, match, winnerParticipantId);
 
+  // If this was the last outstanding real match, the bracket must flip to
+  // 'completed' exactly as a normal score save would (which also fires the
+  // standings finalization downstream).
+  const stage = (await deps.storage.select('stage', match.stage_id)) as StorageStage | null;
+  if (stage) {
+    await markBracketCompleteIfDone({ storage: deps.storage }, String(stage.tournament_id));
+  }
+
   successLog(
     `Admin completed BYE match ${matchId}`,
     placedInMatchId ? `winner advanced to match ${placedInMatchId}` : 'winner already advanced'
@@ -113,8 +122,10 @@ async function placeWinnerDownstream(
     return null;
   }
 
-  const currentRoundMatches = await deps.storage.select('match', { round_id: currentRound.id });
-  const nextRoundMatches = await deps.storage.select('match', { round_id: nextRound.id });
+  const [currentRoundMatches, nextRoundMatches] = await Promise.all([
+    deps.storage.select('match', { round_id: currentRound.id }),
+    deps.storage.select('match', { round_id: nextRound.id }),
+  ]);
   const currentCount = (
     Array.isArray(currentRoundMatches) ? currentRoundMatches : [currentRoundMatches]
   ).length;
