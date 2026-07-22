@@ -134,7 +134,8 @@ describe('MassScoreEntryTool wiring', () => {
           team2Score: 0,
           team1GameWins: 2,
           team2GameWins: 0,
-        })
+        }),
+        expect.objectContaining({ suppressToast: true, suppressInvalidation: true })
       );
     });
     expect(mockToast).toHaveBeenCalledWith(
