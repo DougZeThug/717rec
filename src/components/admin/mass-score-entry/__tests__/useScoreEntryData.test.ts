@@ -254,7 +254,8 @@ describe('useScoreEntryData - submission flow', () => {
         matchId: submittedId,
         team1Score: 1,
         team2Score: 0,
-      })
+      }),
+      expect.objectContaining({ suppressToast: true, suppressInvalidation: true })
     );
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({ title: expect.stringContaining('Submitted') })

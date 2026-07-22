@@ -17,7 +17,7 @@ const mockHandleMarkCompleted = vi.fn();
 
 // Defined before mockScoreEntryData so typeof can be used for the variable type
 const _defaultScoreEntryState = {
-  matches: [] as { id: string; isEdited: boolean; isValid: boolean }[],
+  matches: [] as { id: string; isEdited: boolean; isValid: boolean; iscompleted?: boolean }[],
   loading: false,
   submitting: false,
   failedMatches: [] as string[],
@@ -127,8 +127,8 @@ describe('MassScoreEntryTool', () => {
       mockScoreEntryData = {
         ..._defaultScoreEntryState,
         matches: [
-          { id: 'm1', isEdited: true, isValid: true },
-          { id: 'm2', isEdited: true, isValid: true },
+          { id: 'm1', isEdited: true, isValid: true, iscompleted: true },
+          { id: 'm2', isEdited: true, isValid: true, iscompleted: true },
         ],
       };
 
@@ -141,7 +141,7 @@ describe('MassScoreEntryTool', () => {
       mockScoreEntryData = {
         ..._defaultScoreEntryState,
         submitting: true,
-        matches: [{ id: 'm1', isEdited: true, isValid: true }],
+        matches: [{ id: 'm1', isEdited: true, isValid: true, iscompleted: true }],
       };
 
       renderTool();
@@ -153,7 +153,7 @@ describe('MassScoreEntryTool', () => {
     it('calls handleSubmitAll when submit button is clicked', async () => {
       mockScoreEntryData = {
         ..._defaultScoreEntryState,
-        matches: [{ id: 'm1', isEdited: true, isValid: true }],
+        matches: [{ id: 'm1', isEdited: true, isValid: true, iscompleted: true }],
       };
 
       renderTool();
