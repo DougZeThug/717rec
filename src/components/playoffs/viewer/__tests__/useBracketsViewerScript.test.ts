@@ -8,6 +8,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   loadBracketStyles: vi.fn<() => Promise<void>>(),
   errorLog: vi.fn(),
+  /**
+   * Stands in for evaluating the brackets-viewer dist bundle (an IIFE whose
+   * side effect registers window.bracketsViewer). Tests control whether the
+   * chunk loads, fails, or loads without registering the global.
+   */
+  viewerBundleEvaluation: vi.fn<() => Promise<unknown>>(),
 }));
 
 vi.mock('@/styles/bracket-styles', () => ({
@@ -18,23 +24,24 @@ vi.mock('@/utils/logger', () => ({
   errorLog: mocks.errorLog,
 }));
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+vi.mock('../viewerBundleLoader', () => ({
+  importViewerBundle: mocks.viewerBundleEvaluation,
+}));
 
-const SCRIPT_SELECTOR = 'script[src*="brackets-viewer"]';
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const windowWithViewer = window as unknown as { bracketsViewer?: unknown };
 
+const fakeViewer = () => ({ render: vi.fn(), setParticipantImages: vi.fn() });
+
 /**
- * The hook module caches its script-load promise at module level, so each
- * test imports a fresh copy after vi.resetModules().
+ * The hook module caches its load promise at module level, so each test
+ * imports a fresh copy after vi.resetModules().
  */
 const importHook = async () => {
   const mod = await import('../useBracketsViewerScript');
   return mod.useBracketsViewerScript;
 };
-
-const getInjectedScript = (): HTMLScriptElement | null =>
-  document.head.querySelector<HTMLScriptElement>(SCRIPT_SELECTOR);
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
@@ -44,61 +51,44 @@ describe('useBracketsViewerScript', () => {
     // resetAllMocks (not clearAllMocks) so a mockRejectedValue set in one
     // test cannot leak its rejection into the next test's default behavior.
     vi.resetAllMocks();
+    mocks.loadBracketStyles.mockResolvedValue(undefined);
     delete windowWithViewer.bracketsViewer;
-    document.querySelectorAll(SCRIPT_SELECTOR).forEach((el) => el.remove());
   });
 
-  it('is ready immediately without injecting a script when the viewer global already exists', async () => {
-    windowWithViewer.bracketsViewer = { render: vi.fn(), setParticipantImages: vi.fn() };
+  it('is ready immediately without importing the bundle when the viewer global already exists', async () => {
+    windowWithViewer.bracketsViewer = fakeViewer();
     const useBracketsViewerScript = await importHook();
 
     const { result } = renderHook(() => useBracketsViewerScript());
 
     expect(result.current.isReady).toBe(true);
     expect(result.current.error).toBeNull();
-    expect(getInjectedScript()).toBeNull();
+    expect(mocks.viewerBundleEvaluation).not.toHaveBeenCalled();
     expect(mocks.loadBracketStyles).not.toHaveBeenCalled();
   });
 
-  it('injects the brackets-viewer CDN script with async loading', async () => {
-    const useBracketsViewerScript = await importHook();
-
-    const { result } = renderHook(() => useBracketsViewerScript());
-
-    expect(result.current.isReady).toBe(false);
-    const script = getInjectedScript();
-    expect(script).not.toBeNull();
-    expect(script?.src).toBe(
-      'https://cdn.jsdelivr.net/npm/brackets-viewer@1.8.1/dist/brackets-viewer.min.js'
-    );
-    expect(script?.async).toBe(true);
-  });
-
-  it('becomes ready when the script loads and exposes the viewer global', async () => {
-    const useBracketsViewerScript = await importHook();
-    const { result } = renderHook(() => useBracketsViewerScript());
-
-    const script = getInjectedScript();
-    expect(script).not.toBeNull();
-
-    act(() => {
-      windowWithViewer.bracketsViewer = { render: vi.fn(), setParticipantImages: vi.fn() };
-      script?.dispatchEvent(new Event('load'));
+  it('loads the viewer from the bundled npm dependency — no script tag, no CDN', async () => {
+    mocks.viewerBundleEvaluation.mockImplementation(async () => {
+      windowWithViewer.bracketsViewer = fakeViewer();
+      return {};
     });
+    const useBracketsViewerScript = await importHook();
+
+    const { result } = renderHook(() => useBracketsViewerScript());
 
     await waitFor(() => expect(result.current.isReady).toBe(true));
     expect(result.current.error).toBeNull();
     expect(mocks.loadBracketStyles).toHaveBeenCalledTimes(1);
+    // The old implementation injected a CDN <script> tag; nothing may touch
+    // the DOM now.
+    expect(document.head.querySelector('script[src*="brackets-viewer"]')).toBeNull();
   });
 
-  it('reports an error when the script loads but the viewer global is missing', async () => {
+  it('reports an error when the bundle evaluates but the viewer global is missing', async () => {
+    mocks.viewerBundleEvaluation.mockResolvedValue({});
     const useBracketsViewerScript = await importHook();
-    const { result } = renderHook(() => useBracketsViewerScript());
 
-    act(() => {
-      // Load fires but the library never attached itself to window
-      getInjectedScript()?.dispatchEvent(new Event('load'));
-    });
+    const { result } = renderHook(() => useBracketsViewerScript());
 
     await waitFor(() => expect(result.current.error).toBe('brackets-viewer library not loaded'));
     expect(result.current.isReady).toBe(false);
@@ -107,90 +97,88 @@ describe('useBracketsViewerScript', () => {
     );
   });
 
-  it('reports an error when the script fails to load', async () => {
+  it('reports an error when the bundle chunk fails to load', async () => {
+    mocks.viewerBundleEvaluation.mockRejectedValue(new Error('chunk failed'));
     const useBracketsViewerScript = await importHook();
-    const { result } = renderHook(() => useBracketsViewerScript());
 
-    act(() => {
-      getInjectedScript()?.dispatchEvent(new Event('error'));
-    });
+    const { result } = renderHook(() => useBracketsViewerScript());
 
     await waitFor(() => expect(result.current.error).toBe('Failed to load bracket viewer library'));
     expect(result.current.isReady).toBe(false);
     expect(mocks.errorLog).toHaveBeenCalledWith(
       'Failed to load brackets-viewer resources:',
-      expect.any(Error)
+      expect.anything()
     );
   });
 
   it('reports an error when loading the bracket styles fails', async () => {
+    mocks.viewerBundleEvaluation.mockImplementation(async () => {
+      windowWithViewer.bracketsViewer = fakeViewer();
+      return {};
+    });
     mocks.loadBracketStyles.mockRejectedValue(new Error('css import failed'));
     const useBracketsViewerScript = await importHook();
+
     const { result } = renderHook(() => useBracketsViewerScript());
 
     await waitFor(() => expect(result.current.error).toBe('Failed to load bracket viewer library'));
     expect(result.current.isReady).toBe(false);
   });
 
-  it('reuses the in-flight script load instead of injecting a second tag', async () => {
+  it('shares one bundle evaluation across concurrent mounts', async () => {
+    mocks.viewerBundleEvaluation.mockImplementation(async () => {
+      windowWithViewer.bracketsViewer = fakeViewer();
+      return {};
+    });
     const useBracketsViewerScript = await importHook();
 
     const first = renderHook(() => useBracketsViewerScript());
     const second = renderHook(() => useBracketsViewerScript());
 
-    expect(document.querySelectorAll(SCRIPT_SELECTOR)).toHaveLength(1);
-
-    act(() => {
-      windowWithViewer.bracketsViewer = { render: vi.fn(), setParticipantImages: vi.fn() };
-      getInjectedScript()?.dispatchEvent(new Event('load'));
-    });
-
     await waitFor(() => expect(first.result.current.isReady).toBe(true));
     await waitFor(() => expect(second.result.current.isReady).toBe(true));
-    expect(document.querySelectorAll(SCRIPT_SELECTOR)).toHaveLength(1);
+    expect(mocks.viewerBundleEvaluation).toHaveBeenCalledTimes(1);
   });
 
-  it('retries the download on a fresh mount after a failed load', async () => {
-    const useBracketsViewerScript = await importHook();
-
-    // First mount: script fails to load
+  it('retries the load on a fresh mount after a failed chunk load', async () => {
+    // First mount: the chunk fails.
+    mocks.viewerBundleEvaluation.mockRejectedValueOnce(new Error('offline'));
+    let useBracketsViewerScript = await importHook();
     const first = renderHook(() => useBracketsViewerScript());
-    act(() => {
-      getInjectedScript()?.dispatchEvent(new Event('error'));
-    });
     await waitFor(() =>
       expect(first.result.current.error).toBe('Failed to load bracket viewer library')
     );
     first.unmount();
 
-    // Failed tag must be gone so the retry can inject a fresh one
-    expect(getInjectedScript()).toBeNull();
-
-    // Second mount: a new script tag is injected and this time it loads
-    const second = renderHook(() => useBracketsViewerScript());
-    const retryScript = getInjectedScript();
-    expect(retryScript).not.toBeNull();
-
-    act(() => {
-      windowWithViewer.bracketsViewer = { render: vi.fn(), setParticipantImages: vi.fn() };
-      retryScript?.dispatchEvent(new Event('load'));
+    // Browsers do not cache failed dynamic-import fetches, so a later mount
+    // re-requests the chunk; vi.resetModules() emulates that fresh registry.
+    vi.resetModules();
+    mocks.viewerBundleEvaluation.mockImplementation(async () => {
+      windowWithViewer.bracketsViewer = fakeViewer();
+      return {};
     });
+    useBracketsViewerScript = await importHook();
+    const second = renderHook(() => useBracketsViewerScript());
 
     await waitFor(() => expect(second.result.current.isReady).toBe(true));
     expect(second.result.current.error).toBeNull();
   });
 
   it('ignores late results after unmount (no error state mutation)', async () => {
+    let rejectEvaluation: ((error: Error) => void) | undefined;
+    mocks.viewerBundleEvaluation.mockImplementation(
+      () =>
+        new Promise<unknown>((_resolve, reject) => {
+          rejectEvaluation = reject;
+        })
+    );
     const useBracketsViewerScript = await importHook();
     const { result, unmount } = renderHook(() => useBracketsViewerScript());
 
     unmount();
 
-    act(() => {
-      getInjectedScript()?.dispatchEvent(new Event('error'));
-    });
-    // Allow the rejected promise chain to settle; cancelled flag must swallow it
     await act(async () => {
+      rejectEvaluation?.(new Error('too late'));
       await Promise.resolve();
       await Promise.resolve();
     });
