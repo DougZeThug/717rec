@@ -47,7 +47,7 @@ describe('MatchFormRHF (create mode)', () => {
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
-  it('selects teams, toggles completion, enters scores and submits the expected payload', async () => {
+  it('selects teams, picks a slot, and submits the create-mode payload', async () => {
     const onSubmit = vi.fn();
     render(<MatchFormRHF teams={teams} onSubmit={onSubmit} onCancel={vi.fn()} />);
 
@@ -67,20 +67,11 @@ describe('MatchFormRHF (create mode)', () => {
     fireEvent.change(screen.getByLabelText(/date/i), { target: { value: '2026-08-20' } });
     fireEvent.click(screen.getByRole('button', { name: '7:00 PM' }));
 
-    // Score inputs are hidden until the match is marked completed.
+    // Result inputs (completion toggle + scores) are edit-mode only. In create
+    // mode results must be entered via the atomic score-entry flows, so neither
+    // the switch nor the score inputs render here.
+    expect(screen.queryByRole('switch')).not.toBeInTheDocument();
     expect(screen.queryAllByRole('spinbutton')).toHaveLength(0);
-
-    // Toggle the "Match Completed" switch.
-    fireEvent.click(screen.getByRole('switch'));
-
-    // Now the conditional score section is rendered with a labelled input per team.
-    const scoreInputs = await screen.findAllByRole('spinbutton');
-    expect(scoreInputs).toHaveLength(2);
-    expect(screen.getByText('Alpha Score')).toBeInTheDocument();
-    expect(screen.getByText('Beta Score')).toBeInTheDocument();
-
-    fireEvent.change(scoreInputs[0], { target: { value: '21' } });
-    fireEvent.change(scoreInputs[1], { target: { value: '15' } });
 
     fireEvent.click(screen.getByRole('button', { name: /create match/i }));
 
@@ -89,12 +80,12 @@ describe('MatchFormRHF (create mode)', () => {
       expect.objectContaining({
         team1Id: 'team-a',
         team2Id: 'team-b',
-        iscompleted: true,
-        team1Score: 21,
-        team2Score: 15,
+        iscompleted: false,
+        team1Score: undefined,
+        team2Score: undefined,
+        winnerId: undefined,
+        loserId: undefined,
         timeSlot: '7:00 PM',
-        winnerId: 'team-a',
-        loserId: 'team-b',
         location: '',
       })
     );
