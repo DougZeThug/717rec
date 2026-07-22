@@ -5,9 +5,8 @@
 // src/lib/mcp/index.ts
 import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.24.0";
 
-// src/lib/mcp/tools/list-teams.ts
+// src/lib/mcp/tools/get-counter-drift.ts
 import { defineTool } from "npm:@lovable.dev/mcp-js@0.24.0";
-import { z } from "npm:zod@^4.4.3";
 
 // src/lib/mcp/tools/_supabase.ts
 import { createClient } from "npm:@supabase/supabase-js@^2.110.3";
@@ -41,115 +40,34 @@ async function getActiveSeasonId(supabase) {
   return data?.id ?? null;
 }
 
-// src/lib/mcp/tools/list-teams.ts
-var list_teams_default = defineTool({
-  name: "list_teams",
-  title: "List teams",
-  description: "List teams in the active season for 717rec. Optionally filter by division (Competitive, Intermediate, Recreational).",
-  inputSchema: {
-    division: z.string().optional().describe("Optional division name filter (case-insensitive).")
-  },
+// src/lib/mcp/tools/get-counter-drift.ts
+var get_counter_drift_default = defineTool({
+  name: "get_counter_drift",
+  title: "Get counter drift (admin)",
+  description: "Admin only. List teams whose denormalized win/loss/game counters differ from the recomputed values.",
+  inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ division }, ctx) => {
+  handler: async (_input, ctx) => {
     if (!ctx.isAuthenticated()) return errorResult("Not authenticated");
     const supabase = userClient(ctx);
-    const seasonId = await getActiveSeasonId(supabase);
-    if (!seasonId) return textResult([]);
-    let query = supabase.from("team_season_stats").select("team_id, team_name, division_name, wins, losses, power_score").eq("season_id", seasonId);
-    if (division) query = query.ilike("division_name", division);
-    const { data, error } = await query.order("power_score", { ascending: false, nullsFirst: false });
-    if (error) return errorResult(error.message);
-    return textResult(data ?? []);
-  }
-});
-
-// src/lib/mcp/tools/get-standings.ts
-import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.24.0";
-import { z as z2 } from "npm:zod@^4.4.3";
-var get_standings_default = defineTool2({
-  name: "get_standings",
-  title: "Get standings",
-  description: "Get current active-season standings sorted by rank. Optional division filter.",
-  inputSchema: {
-    division: z2.string().optional().describe("Optional division filter.")
-  },
-  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ division }, ctx) => {
-    if (!ctx.isAuthenticated()) return errorResult("Not authenticated");
-    const supabase = userClient(ctx);
-    const seasonId = await getActiveSeasonId(supabase);
-    if (!seasonId) return textResult([]);
-    let query = supabase.from("team_season_stats").select(
-      "team_id, team_name, division_name, wins, losses, ties, game_wins, game_losses, power_score, current_rank"
-    ).eq("season_id", seasonId);
-    if (division) query = query.ilike("division_name", division);
-    const { data, error } = await query.order("current_rank", { ascending: true, nullsFirst: false });
-    if (error) return errorResult(error.message);
-    return textResult(data ?? []);
-  }
-});
-
-// src/lib/mcp/tools/get-schedule.ts
-import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.24.0";
-import { z as z3 } from "npm:zod@^4.4.3";
-var get_schedule_default = defineTool3({
-  name: "get_schedule",
-  title: "Get schedule",
-  description: "Get scheduled or recent matches for the active season. Filter by team id and by upcoming vs recent.",
-  inputSchema: {
-    scope: z3.enum(["upcoming", "recent", "all"]).default("upcoming"),
-    teamId: z3.string().uuid().optional(),
-    limit: z3.number().int().min(1).max(200).default(50)
-  },
-  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ scope, teamId, limit }, ctx) => {
-    if (!ctx.isAuthenticated()) return errorResult("Not authenticated");
-    const supabase = userClient(ctx);
-    const seasonId = await getActiveSeasonId(supabase);
-    if (!seasonId) return textResult([]);
-    let query = supabase.from("matches").select(
-      "id, match_date, team1_id, team1_name, team2_id, team2_name, team1_score, team2_score, is_completed, division_name"
-    ).eq("season_id", seasonId).limit(limit);
-    if (teamId) query = query.or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`);
-    if (scope === "upcoming") query = query.eq("is_completed", false).order("match_date", { ascending: true });
-    else if (scope === "recent") query = query.eq("is_completed", true).order("match_date", { ascending: false });
-    else query = query.order("match_date", { ascending: false });
-    const { data, error } = await query;
-    if (error) return errorResult(error.message);
-    return textResult(data ?? []);
-  }
-});
-
-// src/lib/mcp/tools/get-my-upcoming-matches.ts
-import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.24.0";
-import { z as z4 } from "npm:zod@^4.4.3";
-var get_my_upcoming_matches_default = defineTool4({
-  name: "get_my_upcoming_matches",
-  title: "Get my upcoming matches",
-  description: "List upcoming matches for the signed-in user's team in the active season.",
-  inputSchema: { limit: z4.number().int().min(1).max(50).default(10) },
-  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ limit }, ctx) => {
-    if (!ctx.isAuthenticated()) return errorResult("Not authenticated");
-    const supabase = userClient(ctx);
-    const seasonId = await getActiveSeasonId(supabase);
-    if (!seasonId) return textResult([]);
-    const { data: mem } = await supabase.from("team_memberships").select("team_id").eq("user_id", ctx.getUserId()).eq("season_id", seasonId).eq("status", "approved").maybeSingle();
-    if (!mem?.team_id) return textResult([]);
-    const { data, error } = await supabase.from("matches").select("id, match_date, team1_name, team2_name, division_name").eq("season_id", seasonId).eq("is_completed", false).or(`team1_id.eq.${mem.team_id},team2_id.eq.${mem.team_id}`).order("match_date", { ascending: true }).limit(limit);
+    if (!await requireAdmin(supabase, ctx.getUserId()))
+      return errorResult("Admin access required");
+    const { data, error } = await supabase.from("v_counter_drift").select(
+      "team_id, name, counter_wins, derived_wins, counter_losses, derived_losses, counter_game_wins, derived_game_wins, counter_game_losses, derived_game_losses"
+    );
     if (error) return errorResult(error.message);
     return textResult(data ?? []);
   }
 });
 
 // src/lib/mcp/tools/get-my-recent-matches.ts
-import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.24.0";
-import { z as z5 } from "npm:zod@^4.4.3";
-var get_my_recent_matches_default = defineTool5({
+import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { z } from "npm:zod@^4.4.3";
+var get_my_recent_matches_default = defineTool2({
   name: "get_my_recent_matches",
   title: "Get my recent matches",
   description: "List recently completed matches for the signed-in user's team in the active season.",
-  inputSchema: { limit: z5.number().int().min(1).max(50).default(10) },
+  inputSchema: { limit: z.number().int().min(1).max(50).default(10) },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ limit }, ctx) => {
     if (!ctx.isAuthenticated()) return errorResult("Not authenticated");
@@ -165,8 +83,8 @@ var get_my_recent_matches_default = defineTool5({
 });
 
 // src/lib/mcp/tools/get-my-team.ts
-import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.24.0";
-var get_my_team_default = defineTool6({
+import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.24.0";
+var get_my_team_default = defineTool3({
   name: "get_my_team",
   title: "Get my team",
   description: "Get the team the signed-in user belongs to in the active season, with roster.",
@@ -185,45 +103,31 @@ var get_my_team_default = defineTool6({
   }
 });
 
-// src/lib/mcp/tools/get-counter-drift.ts
-import { defineTool as defineTool7 } from "npm:@lovable.dev/mcp-js@0.24.0";
-var get_counter_drift_default = defineTool7({
-  name: "get_counter_drift",
-  title: "Get counter drift (admin)",
-  description: "Admin only. List teams whose denormalized win/loss/game counters differ from the recomputed values.",
-  inputSchema: {},
+// src/lib/mcp/tools/get-my-upcoming-matches.ts
+import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { z as z2 } from "npm:zod@^4.4.3";
+var get_my_upcoming_matches_default = defineTool4({
+  name: "get_my_upcoming_matches",
+  title: "Get my upcoming matches",
+  description: "List upcoming matches for the signed-in user's team in the active season.",
+  inputSchema: { limit: z2.number().int().min(1).max(50).default(10) },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async (_input, ctx) => {
+  handler: async ({ limit }, ctx) => {
     if (!ctx.isAuthenticated()) return errorResult("Not authenticated");
     const supabase = userClient(ctx);
-    if (!await requireAdmin(supabase, ctx.getUserId())) return errorResult("Admin access required");
-    const { data, error } = await supabase.from("v_counter_drift").select("*");
+    const seasonId = await getActiveSeasonId(supabase);
+    if (!seasonId) return textResult([]);
+    const { data: mem } = await supabase.from("team_memberships").select("team_id").eq("user_id", ctx.getUserId()).eq("season_id", seasonId).eq("status", "approved").maybeSingle();
+    if (!mem?.team_id) return textResult([]);
+    const { data, error } = await supabase.from("matches").select("id, match_date, team1_name, team2_name, division_name").eq("season_id", seasonId).eq("is_completed", false).or(`team1_id.eq.${mem.team_id},team2_id.eq.${mem.team_id}`).order("match_date", { ascending: true }).limit(limit);
     if (error) return errorResult(error.message);
     return textResult(data ?? []);
   }
 });
 
-// src/lib/mcp/tools/reconcile-counter-drift.ts
-import { defineTool as defineTool8 } from "npm:@lovable.dev/mcp-js@0.24.0";
-var reconcile_counter_drift_default = defineTool8({
-  name: "reconcile_counter_drift",
-  title: "Reconcile counter drift (admin)",
-  description: "Admin only. Recompute team win/loss/game counters from match history and refresh season stats.",
-  inputSchema: {},
-  annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-  handler: async (_input, ctx) => {
-    if (!ctx.isAuthenticated()) return errorResult("Not authenticated");
-    const supabase = userClient(ctx);
-    if (!await requireAdmin(supabase, ctx.getUserId())) return errorResult("Admin access required");
-    const { data, error } = await supabase.rpc("reconcile_team_counters");
-    if (error) return errorResult(error.message);
-    return textResult({ reconciled: true, result: data });
-  }
-});
-
 // src/lib/mcp/tools/get-ops-health.ts
-import { defineTool as defineTool9 } from "npm:@lovable.dev/mcp-js@0.24.0";
-var get_ops_health_default = defineTool9({
+import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.24.0";
+var get_ops_health_default = defineTool5({
   name: "get_ops_health",
   title: "Get ops health (admin)",
   description: "Admin only. Pending score submissions, pending team requests, last power snapshot time.",
@@ -232,7 +136,8 @@ var get_ops_health_default = defineTool9({
   handler: async (_input, ctx) => {
     if (!ctx.isAuthenticated()) return errorResult("Not authenticated");
     const supabase = userClient(ctx);
-    if (!await requireAdmin(supabase, ctx.getUserId())) return errorResult("Admin access required");
+    if (!await requireAdmin(supabase, ctx.getUserId()))
+      return errorResult("Admin access required");
     const [pending, requests, snap] = await Promise.all([
       supabase.from("score_submissions").select("id", { count: "exact", head: true }).eq("status", "pending"),
       supabase.from("team_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
@@ -243,6 +148,119 @@ var get_ops_health_default = defineTool9({
       pending_team_requests: requests.count ?? 0,
       last_power_snapshot_at: snap.data?.captured_at ?? null
     });
+  }
+});
+
+// src/lib/mcp/tools/get-schedule.ts
+import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { z as z3 } from "npm:zod@^4.4.3";
+var get_schedule_default = defineTool6({
+  name: "get_schedule",
+  title: "Get schedule",
+  description: "Get scheduled or recent matches for the active season. Filter by team id and by upcoming vs recent.",
+  inputSchema: {
+    scope: z3.enum(["upcoming", "recent", "all"]).default("upcoming"),
+    teamId: z3.string().uuid().optional(),
+    limit: z3.number().int().min(1).max(200).default(50)
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ scope, teamId, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) return errorResult("Not authenticated");
+    const supabase = userClient(ctx);
+    const seasonId = await getActiveSeasonId(supabase);
+    if (!seasonId) return textResult([]);
+    let query = supabase.from("matches").select(
+      "id, match_date, team1_id, team1_name, team2_id, team2_name, team1_score, team2_score, is_completed, division_name"
+    ).eq("season_id", seasonId).limit(limit);
+    if (teamId) query = query.or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`);
+    if (scope === "upcoming")
+      query = query.eq("is_completed", false).order("match_date", { ascending: true });
+    else if (scope === "recent")
+      query = query.eq("is_completed", true).order("match_date", { ascending: false });
+    else query = query.order("match_date", { ascending: false });
+    const { data, error } = await query;
+    if (error) return errorResult(error.message);
+    return textResult(data ?? []);
+  }
+});
+
+// src/lib/mcp/tools/get-standings.ts
+import { defineTool as defineTool7 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { z as z4 } from "npm:zod@^4.4.3";
+var get_standings_default = defineTool7({
+  name: "get_standings",
+  title: "Get standings",
+  description: "Get current active-season standings sorted by rank. Optional division filter.",
+  inputSchema: {
+    division: z4.string().optional().describe("Optional division filter.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ division }, ctx) => {
+    if (!ctx.isAuthenticated()) return errorResult("Not authenticated");
+    const supabase = userClient(ctx);
+    const seasonId = await getActiveSeasonId(supabase);
+    if (!seasonId) return textResult([]);
+    let query = supabase.from("team_season_stats").select(
+      "team_id, team_name, division_name, wins, losses, ties, game_wins, game_losses, power_score, current_rank"
+    ).eq("season_id", seasonId);
+    if (division) query = query.ilike("division_name", division);
+    const { data, error } = await query.order("current_rank", {
+      ascending: true,
+      nullsFirst: false
+    });
+    if (error) return errorResult(error.message);
+    return textResult(data ?? []);
+  }
+});
+
+// src/lib/mcp/tools/list-teams.ts
+import { defineTool as defineTool8 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { z as z5 } from "npm:zod@^4.4.3";
+var list_teams_default = defineTool8({
+  name: "list_teams",
+  title: "List teams",
+  description: "List teams in the active season for 717rec. Optionally filter by division (Competitive, Intermediate, Recreational).",
+  inputSchema: {
+    division: z5.string().optional().describe("Optional division name filter (case-insensitive).")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ division }, ctx) => {
+    if (!ctx.isAuthenticated()) return errorResult("Not authenticated");
+    const supabase = userClient(ctx);
+    const seasonId = await getActiveSeasonId(supabase);
+    if (!seasonId) return textResult([]);
+    let query = supabase.from("team_season_stats").select("team_id, team_name, division_name, wins, losses, power_score").eq("season_id", seasonId);
+    if (division) query = query.ilike("division_name", division);
+    const { data, error } = await query.order("power_score", {
+      ascending: false,
+      nullsFirst: false
+    });
+    if (error) return errorResult(error.message);
+    return textResult(data ?? []);
+  }
+});
+
+// src/lib/mcp/tools/reconcile-counter-drift.ts
+import { defineTool as defineTool9 } from "npm:@lovable.dev/mcp-js@0.24.0";
+var reconcile_counter_drift_default = defineTool9({
+  name: "reconcile_counter_drift",
+  title: "Reconcile counter drift (admin)",
+  description: "Admin only. Recompute team win/loss/game counters from match history and refresh season stats.",
+  inputSchema: {},
+  annotations: {
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: false
+  },
+  handler: async (_input, ctx) => {
+    if (!ctx.isAuthenticated()) return errorResult("Not authenticated");
+    const supabase = userClient(ctx);
+    if (!await requireAdmin(supabase, ctx.getUserId()))
+      return errorResult("Admin access required");
+    const { data, error } = await supabase.rpc("reconcile_team_counters");
+    if (error) return errorResult(error.message);
+    return textResult({ reconciled: true, result: data });
   }
 });
 

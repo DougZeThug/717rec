@@ -14,9 +14,15 @@ interface AuthorizationDetails {
 
 // Supabase auth.oauth is beta; local typed wrapper avoids grepping node_modules.
 interface OAuthAuthorizationsApi {
-  getAuthorizationDetails: (id: string) => Promise<{ data: AuthorizationDetails | null; error: { message: string } | null }>;
-  approveAuthorization: (id: string) => Promise<{ data: AuthorizationDetails | null; error: { message: string } | null }>;
-  denyAuthorization: (id: string) => Promise<{ data: AuthorizationDetails | null; error: { message: string } | null }>;
+  getAuthorizationDetails: (
+    id: string
+  ) => Promise<{ data: AuthorizationDetails | null; error: { message: string } | null }>;
+  approveAuthorization: (
+    id: string
+  ) => Promise<{ data: AuthorizationDetails | null; error: { message: string } | null }>;
+  denyAuthorization: (
+    id: string
+  ) => Promise<{ data: AuthorizationDetails | null; error: { message: string } | null }>;
 }
 const authOauth = (supabase.auth as unknown as { oauth: OAuthAuthorizationsApi }).oauth;
 
@@ -109,8 +115,8 @@ const OAuthConsent = () => {
     <main className="mx-auto max-w-lg px-4 py-16">
       <h1 className="text-2xl font-semibold mb-3">Connect {clientName} to your 717rec account</h1>
       <p className="text-muted-foreground mb-6">
-        This will let {clientName} use 717rec on your behalf: read standings, your team, your matches,
-        and (if you are an admin) run admin ops tools as you.
+        This will let {clientName} use 717rec on your behalf: read standings, your team, your
+        matches, and (if you are an admin) run admin ops tools as you.
       </p>
       <div className="flex gap-3">
         <Button onClick={() => decide(true)} disabled={busy}>
