@@ -280,6 +280,12 @@ export const fetchAllTeamsCareerData = async (
     allTeamDetailsArchiveResult.data as TeamDetailsArchive[] | null
   );
 
+  // Active season lookup: PGRST116 (no rows) is a valid empty state; any other
+  // error must surface so callers don't silently render corrupted data.
+  if (activeSeasonResult.error && activeSeasonResult.error.code !== 'PGRST116') {
+    handleDatabaseError(activeSeasonResult.error, 'Failed to fetch active season');
+  }
+
   const currentSeasonId = (activeSeasonResult.data as { id: string } | null)?.id || null;
 
   // 3. Group per-team data from bulk results
