@@ -6,9 +6,7 @@ export interface BreadcrumbCrumb {
 }
 
 /** Build a schema.org BreadcrumbList JSON-LD object for the given crumbs. */
-export const buildBreadcrumbJsonLd = (
-  crumbs: BreadcrumbCrumb[]
-): Record<string, unknown> => ({
+export const buildBreadcrumbJsonLd = (crumbs: BreadcrumbCrumb[]): Record<string, unknown> => ({
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
   itemListElement: crumbs.map((c, idx) => ({
