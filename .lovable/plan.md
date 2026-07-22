@@ -1,37 +1,29 @@
-## Goal
+## Problem
 
-Add a committed `.mcp.json` at the repository root so a fresh Claude Code Web session auto-discovers the 717rec MCP server.
+CI's Deno test step is failing on:
 
-## File to create
-
-`.mcp.json` (repo root):
-
-```json
-{
-  "mcpServers": {
-    "717rec": {
-      "type": "http",
-      "url": "https://wcitdamvochthvxvtxyb.supabase.co/functions/v1/mcp"
-    }
-  }
-}
+```
+supabase/functions/_shared/rateLimit.test.ts:1
+Module not found "https://deno.land/std@0.190.0/assert/mod.ts"
 ```
 
-That's the whole change — one new file, no code edits, no dependency changes.
+`std@0.190.0` predates the `assert/mod.ts` layout (assert lived at `testing/asserts.ts` back then), so that URL 404s. Every other edge-function test in the repo already uses `std@0.224.0/assert/mod.ts` (see `_shared/securityHeaders.test.ts`, `pageview/index.test.ts`).
 
-## After it's committed
+Note: `supabase/functions/_shared/rateLimit.test.ts` does not exist on `origin/main` or in the working tree — it appears to live on the PR branch that CI is running. The fix below still applies unambiguously because the required import path is the same across every other test file.
 
-In a new Claude Code Web session:
-1. Run `/mcp`.
-2. Select **717rec** and approve the project MCP server.
-3. Complete the Supabase OAuth sign-in through the 717rec consent screen.
+## Plan
 
-The 401 you're seeing on a raw `curl` is expected — the endpoint requires an OAuth bearer token. `/mcp` is what walks you through getting one.
+1. In `supabase/functions/_shared/rateLimit.test.ts`, change the assert import from
+   `https://deno.land/std@0.190.0/assert/mod.ts` → `https://deno.land/std@0.224.0/assert/mod.ts`.
+   If the file also imports anything else from `std@0.190.0/...`, bump those to `std@0.224.0/...` too.
+2. Grep the rest of `supabase/functions/` for any remaining `std@0.190.0` references. The runtime `http/server.ts` imports in `pageview`, `send-support-email`, `submit-contact-request`, and `submit-score-report` still work at 0.190.0, so leave those alone unless you want a consistency sweep — flagged as optional.
+3. Re-run the Deno test job to confirm green.
 
-## If `/mcp` never offers authentication
+## One clarification
 
-Check in Lovable: **717rec project → More → Agent integrations** and confirm the app is published, agent integrations are enabled, the MCP URL matches, and access is set to Sign-in enabled.
+I don't have `rateLimit.test.ts` in this checkout (not on `origin/main`, not in the working tree). Two options:
 
-## Out of scope
+- **A (preferred):** Paste the current contents of `supabase/functions/_shared/rateLimit.test.ts` from the PR branch and I'll patch just the import line.
+- **B:** I write a fresh `rateLimit.test.ts` from scratch that mirrors `securityHeaders.test.ts` and exercises the exports of `rateLimit.ts`. Only choose this if the file doesn't already exist somewhere you care about — otherwise my version will collide with yours on merge.
 
-No changes to the MCP server itself, tools, `vite.config.ts`, or the consent page — everything server-side is already deployed from the previous turn.
+Which do you want?
