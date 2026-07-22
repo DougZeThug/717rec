@@ -21,7 +21,9 @@ DECLARE
   v_match_ids  integer[] := '{}';
   v_step_match integer;
   v_status     text;
-  v_expected   text[] := ARRAY['pending', 'pending', 'in_progress', 'in_progress', 'completed', 'archived'];
+  -- Statuses 0..6: 6 (GameCancelled) is a match_game-only status that should
+  -- never appear on match rows; the mapping clamps it to 'archived'.
+  v_expected   text[] := ARRAY['pending', 'pending', 'in_progress', 'in_progress', 'completed', 'archived', 'archived'];
   v_bm_status  integer;
 BEGIN
   -- Direct mapping-function assertions (incl. defensive > 5 clamp).
@@ -47,9 +49,9 @@ BEGIN
     VALUES (v_stage_id, v_group_id, 1, 'Round 1')
     RETURNING id INTO v_round_id;
 
-  -- INSERT trigger: one match per brackets-manager status 0..5. The shell
+  -- INSERT trigger: one match per brackets-manager status 0..6. The shell
   -- row in playoff_matches must carry the mapped status from the start.
-  FOR v_bm_status IN 0..5 LOOP
+  FOR v_bm_status IN 0..6 LOOP
     INSERT INTO public.match (stage_id, group_id, round_id, number, status)
       VALUES (v_stage_id, v_group_id, v_round_id, v_bm_status + 1, v_bm_status)
       RETURNING id INTO v_step_match;
@@ -64,7 +66,7 @@ BEGIN
 
   -- UPDATE trigger: step one match through the lifecycle.
   v_step_match := v_match_ids[1];
-  FOR v_bm_status IN 1..5 LOOP
+  FOR v_bm_status IN 1..6 LOOP
     UPDATE public.match SET status = v_bm_status WHERE id = v_step_match;
 
     SELECT pm.status INTO v_status

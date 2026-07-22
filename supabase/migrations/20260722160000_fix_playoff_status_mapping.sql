@@ -13,6 +13,11 @@
 --   4    -> 'completed'
 --   2, 3 -> 'in_progress' (populated/live; 2 kept as-is from prior behavior)
 --   else -> 'pending'
+-- Note on >= 5: brackets-model defines status 6 (GameCancelled) for match
+-- GAMES only; it should never appear on match rows. If one ever does, a
+-- cancelled thing is closest to "no longer playable" — archived — rather
+-- than pending/live, so the helper clamps defensively instead of matching 5
+-- exactly.
 --
 -- The INSERT trigger previously hardcoded 'pending', which was wrong for
 -- matches the library creates already resolved (BYE auto-wins insert at
