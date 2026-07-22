@@ -175,9 +175,7 @@ const Schedule = () => {
           sport: 'Cornhole',
           eventStatus: status,
           ...(match.date ? { startDate: match.date } : {}),
-          ...(match.location
-            ? { location: { '@type': 'Place', name: match.location } }
-            : {}),
+          ...(match.location ? { location: { '@type': 'Place', name: match.location } } : {}),
           homeTeam: { '@type': 'SportsTeam', name: name1 },
           awayTeam: { '@type': 'SportsTeam', name: name2 },
           organizer: { '@type': 'SportsOrganization', name: '717REC' },
