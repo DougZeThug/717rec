@@ -28,20 +28,17 @@
     </script>
     
     <!-- Preconnect hints for faster resource loading -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://wcitdamvochthvxvtxyb.supabase.co" crossorigin />
     <link rel="preconnect" href="https://progressier.app" crossorigin />
     <link rel="dns-prefetch" href="https://wcitdamvochthvxvtxyb.supabase.co" />
-    <link rel="dns-prefetch" href="https://cdn.gpteng.co" />
-    
+
     <!-- Preload critical above-the-fold image for faster LCP -->
     <link rel="preload" href="/lovable-uploads/59ad55fe-8358-4e10-8e93-3e13a6a46a58.png" as="image" fetchpriority="high" type="image/png" />
-    
-    <!-- Non-blocking font loading -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
-    
+
+    <!-- Preload self-hosted fonts used above the fold -->
+    <link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/bebas-neue-400.woff2" as="font" type="font/woff2" crossorigin />
+
     <link rel="manifest" href="https://progressier.app/zSi8fMHT6esPjglbvDZn/progressier.json"/>
     <script defer src="https://progressier.app/zSi8fMHT6esPjglbvDZn/script.js"></script>
     
@@ -49,7 +46,6 @@
   </head>
   <body>
     <div id="root"></div>
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx" fetchpriority="high"></script>
   </body>
 </html>
