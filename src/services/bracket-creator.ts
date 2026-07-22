@@ -110,7 +110,10 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
 
     onProgress?.('Creating bracket record...');
 
-    // Create bracket record in database
+    // Create bracket record in database. grandFinalType is NOT stored here:
+    // brackets-manager persists it in stage.settings.grandFinal at stage
+    // creation, and the viewer reads it from there. (Older rows carry a
+    // legacy copy in the brackets.participants JSONB — see MatchTransformer.)
     const { data: bracketData, error: bracketError } = await supabase
       .from('brackets')
       .insert({
@@ -120,9 +123,6 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
         state: 'pending',
         uses_brackets_manager: true,
         season_id: seasonId || null,
-        participants: {
-          grandFinalType: grandFinalType || 'simple',
-        },
       })
       .select()
       .single();
@@ -130,24 +130,6 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
     if (bracketError) throw bracketError;
 
     createdBracketId = bracketData.id;
-
-    onProgress?.('Storing participants...');
-
-    // Insert participants into the participants table
-    const participantInserts = sortedTeams.map((team) => ({
-      bracket_id: bracketData.id,
-      team_id: team.id,
-      position: team.seed || 0,
-    }));
-
-    const { error: participantsError } = await supabase
-      .from('participants')
-      .insert(participantInserts);
-
-    if (participantsError) {
-      errorLog('Failed to insert participants:', participantsError);
-      // Don't throw - bracket is already created, just log the error
-    }
 
     onProgress?.('Generating matches with brackets-manager...');
 

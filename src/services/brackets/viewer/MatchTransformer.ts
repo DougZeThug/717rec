@@ -9,7 +9,11 @@ import { ViewerMatch, ViewerMatchGame, ViewerStage } from './types';
 export function transformBracket(bracket: PlayoffBracket): ViewerStage {
   const isDoubleElim = bracket.format === 'Double Elimination';
 
-  // Extract grandFinalType from bracket metadata
+  // LEGACY ROWS ONLY: brackets created before PR-13 smuggled grandFinalType
+  // into the brackets.participants JSONB; this transform only runs on the
+  // !uses_brackets_manager fallback path, so keep reading it for those rows.
+  // New brackets rely on stage.settings.grandFinal (persisted by
+  // brackets-manager at stage creation and read by SqlBracketTransformer).
   let grandFinalType: 'simple' | 'double' | undefined = 'simple';
   if (isDoubleElim && bracket.participants && typeof bracket.participants === 'object') {
     const metadata = bracket.participants as unknown as { grandFinalType?: string };

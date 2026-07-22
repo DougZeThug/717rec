@@ -1,5 +1,3 @@
-export * from '../sqlChecks';
-
 // Main facade
 export { bracketManagerService } from './BracketManagerService';
 

@@ -40,14 +40,14 @@ type TeamDetailRow = {
   losses: number;
 };
 
-let participantInsertCapture: Array<{ bracket_id: string; team_id: string; position: number }> = [];
+let bracketInsertCapture: Record<string, unknown> | null = null;
+let tablesTouched: string[] = [];
 
 interface SupabaseSetup {
   fullTeamData?: TeamDetailRow[];
   teamError?: unknown;
   bracketData?: { id: string; created_at: string; format: string } | null;
   bracketError?: unknown;
-  participantsError?: unknown;
 }
 
 const defaultBracketData = {
@@ -61,10 +61,11 @@ function installSupabase({
   teamError = null,
   bracketData = defaultBracketData,
   bracketError = null,
-  participantsError = null,
 }: SupabaseSetup) {
-  participantInsertCapture = [];
+  bracketInsertCapture = null;
+  tablesTouched = [];
   mockFrom.mockImplementation((table: string) => {
+    tablesTouched.push(table);
     if (table === 'v_team_details') {
       return {
         select: () => ({
@@ -74,20 +75,15 @@ function installSupabase({
     }
     if (table === 'brackets') {
       return {
-        insert: () => ({
-          select: () => ({
-            single: () => Promise.resolve({ data: bracketData, error: bracketError }),
-          }),
-        }),
-        delete: () => ({ eq: (...args: unknown[]) => deleteEq(...args) }),
-      };
-    }
-    if (table === 'participants') {
-      return {
-        insert: (rows: typeof participantInsertCapture) => {
-          participantInsertCapture = rows;
-          return Promise.resolve({ error: participantsError });
+        insert: (row: Record<string, unknown>) => {
+          bracketInsertCapture = row;
+          return {
+            select: () => ({
+              single: () => Promise.resolve({ data: bracketData, error: bracketError }),
+            }),
+          };
         },
+        delete: () => ({ eq: (...args: unknown[]) => deleteEq(...args) }),
       };
     }
     return {};
@@ -224,7 +220,7 @@ describe('createBracket — seeding order', () => {
 // ─── Persistence + return value ───────────────────────────────────────────────
 
 describe('createBracket — persistence', () => {
-  it('stores participants with positions matching the seeded order', async () => {
+  it('writes no legacy tables and no JSONB metadata — participants and grandFinalType live in brackets-manager tables', async () => {
     installSupabase({
       fullTeamData: [
         { team_id: 'a', name: 'A', power_score: 30, wins: 5, losses: 5 },
@@ -233,16 +229,24 @@ describe('createBracket — persistence', () => {
     });
     await createBracket({
       ...baseOptions,
+      grandFinalType: 'double',
       teams: [
         { id: 'a', name: 'A' },
         { id: 'b', name: 'B' },
       ],
     });
 
-    expect(participantInsertCapture).toEqual([
-      { bracket_id: 'bracket-1', team_id: 'b', position: 1 },
-      { bracket_id: 'bracket-1', team_id: 'a', position: 2 },
-    ]);
+    // The legacy plural `participants` table is never touched (its rows were
+    // dead weight — brackets-manager reads the singular `participant` table,
+    // populated via bracketManagerService.createBracket).
+    expect(tablesTouched).not.toContain('participants');
+    // grandFinalType is not smuggled into the brackets.participants JSONB;
+    // it reaches the library through createBracket options and persists in
+    // stage.settings.grandFinal.
+    expect(bracketInsertCapture).not.toHaveProperty('participants');
+    expect(mockManagerCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ grandFinalType: 'double' })
+    );
   });
 
   it('returns a bracket record reflecting the seeded participants', async () => {
