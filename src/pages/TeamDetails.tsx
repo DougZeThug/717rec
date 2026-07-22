@@ -4,6 +4,7 @@ import { useLocation, useNavigate, useParams } from 'react-router';
 
 import TeamBadgeCollection from '@/components/badges/TeamBadgeCollection';
 import AnimatedBreadcrumbs from '@/components/navigation/AnimatedBreadcrumbs';
+import SeoHead from '@/components/seo/SeoHead';
 import HeadToHeadRecords from '@/components/stats/HeadToHeadRecords';
 import MatchList from '@/components/teams/MatchList';
 import PlayerList from '@/components/teams/PlayerList';
@@ -270,8 +271,45 @@ const TeamDetails = () => {
   const sweepStats = calculateSweepRate(teamId || '', pastMatches);
   const clutchRecord = calculateClutchRecord(teamId || '', pastMatches);
 
+  const teamPath = `/teams/${teamParam ?? teamId ?? ''}`;
+  const teamUrl = `https://717rec.app${teamPath}`;
+  const logo =
+    team.logoUrl && /^https?:\/\//.test(team.logoUrl)
+      ? team.logoUrl
+      : team.imageUrl && /^https?:\/\//.test(team.imageUrl)
+        ? team.imageUrl
+        : undefined;
+  const teamJsonLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'SportsTeam',
+    name: team.name,
+    sport: 'Cornhole',
+    url: teamUrl,
+    memberOf: {
+      '@type': 'SportsOrganization',
+      name: '717REC',
+      url: 'https://717rec.app/',
+    },
+    ...(logo ? { logo } : {}),
+    ...(team.divisionName ? { subOrganization: team.divisionName } : {}),
+    ...(team.players && team.players.length > 0
+      ? { athlete: team.players.map((name) => ({ '@type': 'Person', name })) }
+      : {}),
+  };
+  const descParts = [
+    `${team.name} — 717REC cornhole team`,
+    team.divisionName ? `${team.divisionName} division` : null,
+    `${team.wins ?? 0}-${team.losses ?? 0} record`,
+  ].filter(Boolean);
+
   return (
     <>
+      <SeoHead
+        title={`${team.name} | 717REC Cornhole League`}
+        description={`${descParts.join(', ')}. Roster, stats, and match history.`}
+        path={teamPath}
+        jsonLd={teamJsonLd}
+      />
       <TeamDetailsStickyNav />
       <div className="container mx-auto px-4 py-2 md:py-8 space-y-2 md:space-y-4">
         {/* Breadcrumbs - full version on desktop */}
