@@ -51,7 +51,7 @@ const TeamDivisionSelect = ({ team, divisions, actions }: TeamMobileCardProps) =
     onValueChange={(value) => actions.onDivisionChange(team.id, value)}
     disabled={actions.isUpdatingTeam(team.id)}
   >
-    <SelectTrigger className="w-full">
+    <SelectTrigger aria-label={`Set division for ${team.name}`} className="w-full">
       <SelectValue />
     </SelectTrigger>
     <SelectContent>
