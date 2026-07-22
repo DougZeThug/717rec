@@ -18,16 +18,16 @@ export default defineTool({
       .from('team_memberships')
       .select('team_id, teams(id, name, division_name, wins, losses, power_score)')
       .eq('user_id', ctx.getUserId())
-      .eq('season_id', seasonId)
-      .eq('status', 'approved')
+      .eq('is_approved', true)
       .maybeSingle();
     if (memErr) return errorResult(memErr.message);
     if (!membership) return textResult(null);
 
-    const { data: roster } = await supabase
+    const { data: roster, error: rosterErr } = await supabase
       .from('team_players')
-      .select('id, player_name, profile_id')
+      .select('id, display_name, profile_id')
       .eq('team_id', membership.team_id);
+    if (rosterErr) return errorResult(rosterErr.message);
 
     return textResult({ team: membership.teams, roster: roster ?? [] });
   },
