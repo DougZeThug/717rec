@@ -125,21 +125,24 @@ export const useAuthMethods = (
   }, [clearAuthError, handleAuthError, navigate]);
 
   // Sign in with Google (OAuth)
-  const signInWithGoogle = useCallback(async (returnTo?: string) => {
-    try {
-      clearAuthError();
-      const url = new URL('/setup-profile', window.location.origin);
-      if (returnTo) url.searchParams.set('next', returnTo);
-      await signInWithOAuth(url.toString());
-    } catch (error) {
-      if (error instanceof Error) {
-        handleAuthError(error, 'Google login');
-      } else {
-        handleAuthError(new Error('Failed to initialize Google login'), 'Google login');
+  const signInWithGoogle = useCallback(
+    async (returnTo?: string) => {
+      try {
+        clearAuthError();
+        const url = new URL('/setup-profile', window.location.origin);
+        if (returnTo) url.searchParams.set('next', returnTo);
+        await signInWithOAuth(url.toString());
+      } catch (error) {
+        if (error instanceof Error) {
+          handleAuthError(error, 'Google login');
+        } else {
+          handleAuthError(new Error('Failed to initialize Google login'), 'Google login');
+        }
+        throw error;
       }
-      throw error;
-    }
-  }, [clearAuthError, handleAuthError]);
+    },
+    [clearAuthError, handleAuthError]
+  );
 
   // Sign in with Google Native (mobile)
   const signInWithGoogleNative = useCallback(async () => {

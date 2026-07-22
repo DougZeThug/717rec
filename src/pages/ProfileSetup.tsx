@@ -50,7 +50,9 @@ const ProfileSetup = () => {
         authLog('Max retries reached, redirecting to auth');
         const returnTo =
           '/setup-profile' +
-          (searchParams.get('next') ? `?next=${encodeURIComponent(searchParams.get('next')!)}` : '');
+          (searchParams.get('next')
+            ? `?next=${encodeURIComponent(searchParams.get('next')!)}`
+            : '');
         navigate('/auth', { state: { returnTo } });
       }
     }
