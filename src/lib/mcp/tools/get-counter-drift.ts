@@ -17,7 +17,7 @@ export default defineTool({
     const { data, error } = await supabase
       .from('v_counter_drift')
       .select(
-        'team_id, name, counter_wins, derived_wins, counter_losses, derived_losses, counter_game_wins, derived_game_wins, counter_game_losses, derived_game_losses',
+        'team_id, name, counter_wins, derived_wins, counter_losses, derived_losses, counter_game_wins, derived_game_wins, counter_game_losses, derived_game_losses'
       );
     if (error) return errorResult(error.message);
     return textResult(data ?? []);
