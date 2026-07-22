@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "entry": ["index.html", "e2e/**/*.spec.ts"],
+  "entry": ["index.html", "e2e/**/*.spec.ts", "src/lib/mcp/**/*.ts"],
   "project": ["src/**/*.{ts,tsx}"],
   "ignore": ["src/integrations/supabase/types.ts"],
   "ignoreDependencies": ["events"],
