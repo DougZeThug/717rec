@@ -15,6 +15,7 @@ import { useMatchTimeslots } from '@/hooks/useMatchTimeslots';
 import { useScheduleData } from '@/hooks/useScheduleData';
 import { useScheduleTabs } from '@/hooks/useScheduleTabs';
 import { Match } from '@/types';
+import { buildBreadcrumbJsonLd } from '@/utils/breadcrumbJsonLd';
 import { normalizeDate } from '@/utils/dateNormalization';
 import { scheduleLog } from '@/utils/logger';
 
@@ -191,13 +192,22 @@ const Schedule = () => {
     };
   }, [upcomingMatches]);
 
+  const breadcrumbJsonLd = useMemo(
+    () =>
+      buildBreadcrumbJsonLd([
+        { name: 'Home', path: '/' },
+        { name: 'Schedule', path: '/schedule' },
+      ]),
+    []
+  );
+
   return (
     <PageLayout withBackground={true} gradientVariant="blueOrange">
       <SeoHead
         title="Schedule | 717REC Cornhole League"
         description="Upcoming and recent 717REC cornhole matches, weekly timeslots, and matchups by date."
         path="/schedule"
-        jsonLd={scheduleJsonLd}
+        jsonLd={[scheduleJsonLd, breadcrumbJsonLd]}
       />
       <div className="max-w-7xl mx-auto font-inter">
         <ScheduleHeader

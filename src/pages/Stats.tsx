@@ -6,6 +6,7 @@ import StatsContainer from '@/components/stats/containers/StatsContainer';
 import { useRankingsData } from '@/hooks/rankings/useRankingsData';
 import useScrollRestoration from '@/hooks/useScrollRestoration';
 import { useTeamRankings } from '@/hooks/useTeamRankings';
+import { buildBreadcrumbJsonLd } from '@/utils/breadcrumbJsonLd';
 
 const Stats = () => {
   useScrollRestoration('/stats');
@@ -33,13 +34,22 @@ const Stats = () => {
     [rankings]
   );
 
+  const breadcrumbJsonLd = useMemo(
+    () =>
+      buildBreadcrumbJsonLd([
+        { name: 'Home', path: '/' },
+        { name: 'Standings', path: '/stats' },
+      ]),
+    []
+  );
+
   return (
     <PageLayout>
       <SeoHead
         title="Standings & Rankings | 717REC"
         description="Current 717REC standings, power scores, strength of schedule, and division rankings updated weekly."
         path="/stats"
-        jsonLd={standingsJsonLd}
+        jsonLd={[standingsJsonLd, breadcrumbJsonLd]}
       />
       <StatsContainer
         matches={latestMatches || []}
