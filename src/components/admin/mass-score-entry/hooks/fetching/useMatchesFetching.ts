@@ -5,16 +5,17 @@ import { errorLog } from '@/utils/logger';
 import { FilterState, MatchWithTeams } from '../../types';
 import { transformDatabaseMatchToMatchWithTeams } from '../../utils/matchTransformUtils';
 
+// Throwing variant for TanStack queryFn use: failures propagate to the
+// query's error state so the tool can render a retryable error instead of
+// an empty list that looks like "no matches". Module scope keeps its
+// reference stable across renders.
+const fetchMatchesOrThrow = async (filters: FilterState) => {
+  const data = await fetchMatchesForAdmin(filters);
+  return data.map(transformDatabaseMatchToMatchWithTeams) as MatchWithTeams[];
+};
+
 export const useMatchesFetching = () => {
   const { toast } = useToast();
-
-  // Throwing variant for TanStack queryFn use: failures propagate to the
-  // query's error state so the tool can render a retryable error instead of
-  // an empty list that looks like "no matches".
-  const fetchMatchesOrThrow = async (filters: FilterState) => {
-    const data = await fetchMatchesForAdmin(filters);
-    return data.map(transformDatabaseMatchToMatchWithTeams) as MatchWithTeams[];
-  };
 
   // Swallowing variant kept for the post-submission refresh, where an empty
   // result must not blank the just-submitted list (see handleSubmitAll).
