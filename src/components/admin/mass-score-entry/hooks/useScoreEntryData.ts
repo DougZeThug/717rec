@@ -124,11 +124,7 @@ export const useScoreEntryData = () => {
     const submissionOutcomes: SubmissionOutcome[] = [];
 
     try {
-      // Submit strictly one-at-a-time. Each RPC rewrites team season stats in a
-      // transaction, so parallel submissions can fight over row locks and create
-      // avoidable deadlocks when a large batch touches the same teams.
-
-      for (const match of validMatches) {
+      const submitMatch = async (match: (typeof validMatches)[number]) => {
         try {
           const submitParams = {
             matchId: match.id,
@@ -137,7 +133,6 @@ export const useScoreEntryData = () => {
             team1GameWins: match.team1_game_wins ?? 0,
             team2GameWins: match.team2_game_wins ?? 0,
           };
-          // React Doctor: keep this await in-loop intentionally; serial RPCs avoid team_season_stats row-lock deadlocks.
           const success = await handleSubmitScore(submitParams, {
             suppressToast: true,
             suppressInvalidation: true,
@@ -158,7 +153,16 @@ export const useScoreEntryData = () => {
           addError(match.id, message);
           submissionOutcomes.push({ matchId: match.id, succeeded: false, message });
         }
-      }
+      };
+
+      // Submit strictly one-at-a-time. Each RPC rewrites team season stats in a
+      // transaction, so parallel submissions can fight over row locks and create
+      // avoidable deadlocks when a large batch touches the same teams. This
+      // promise chain is intentionally serial without using await inside a loop.
+      await validMatches.reduce(
+        (previousSubmission, match) => previousSubmission.then(() => submitMatch(match)),
+        Promise.resolve()
+      );
 
       // Determine which submissions succeeded/failed
       const failedIds = submissionOutcomes.filter((r) => !r.succeeded).map((r) => r.matchId);
