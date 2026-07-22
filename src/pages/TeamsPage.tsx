@@ -4,6 +4,7 @@ import PageLayout from '@/components/layout/PageLayout';
 import SeoHead from '@/components/seo/SeoHead';
 import TeamsPageContainer from '@/components/teams/TeamsPageContainer';
 import { useTeamsArray } from '@/hooks/teams';
+import { buildBreadcrumbJsonLd } from '@/utils/breadcrumbJsonLd';
 
 const TeamsPage: React.FC = () => {
   const { teams } = useTeamsArray();
@@ -28,6 +29,10 @@ const TeamsPage: React.FC = () => {
           name: t.name,
         })),
       },
+      buildBreadcrumbJsonLd([
+        { name: 'Home', path: '/' },
+        { name: 'Teams', path: '/teams' },
+      ]),
     ],
     [teams]
   );
